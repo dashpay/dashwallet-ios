@@ -19,7 +19,6 @@
 
 #import "DWBalanceProtocol.h"
 #import "DWDashPayProtocol.h"
-#import "DWSyncContainerProtocol.h"
 #import "DWTxDisplayModeProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN

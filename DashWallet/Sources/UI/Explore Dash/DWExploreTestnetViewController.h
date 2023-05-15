@@ -15,7 +15,6 @@
 //  limitations under the License.
 //
 
-#import "DWSyncProtocol.h"
 #import "dashwallet-Swift.h"
 #import <UIKit/UIKit.h>
 

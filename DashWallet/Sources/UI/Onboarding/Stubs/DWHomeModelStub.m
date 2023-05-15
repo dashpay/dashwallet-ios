@@ -22,7 +22,6 @@
 #import "DWEnvironment.h"
 #import "DWPayModelStub.h"
 #import "DWReceiveModelStub.h"
-#import "DWSyncModelStub.h"
 #import "DWTransactionListDataProviderStub.h"
 #import "DWTransactionStub.h"
 #import "dashwallet-Swift.h"

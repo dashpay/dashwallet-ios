@@ -305,7 +305,6 @@
 		2A913E7123A2667E006A2A59 /* Onboarding.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A913E7023A2667E006A2A59 /* Onboarding.storyboard */; };
 		2A913E7F23A30609006A2A59 /* DWRootModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E7E23A30609006A2A59 /* DWRootModelStub.m */; };
 		2A913E8223A30623006A2A59 /* DWHomeModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8123A30623006A2A59 /* DWHomeModelStub.m */; };
-		2A913E8523A309EA006A2A59 /* DWSyncModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8423A309EA006A2A59 /* DWSyncModelStub.m */; };
 		2A913E8923A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8823A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.m */; };
 		2A913E8C23A3134E006A2A59 /* UIView+DWEmbedding.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8B23A3134E006A2A59 /* UIView+DWEmbedding.m */; };
 		2A913E9023A31713006A2A59 /* UIViewController+DWEmbedding.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8F23A31713006A2A59 /* UIViewController+DWEmbedding.m */; };
@@ -1330,17 +1329,13 @@
 		2A913E6E23A26663006A2A59 /* DWOnboardingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWOnboardingViewController.m; sourceTree = "<group>"; };
 		2A913E7023A2667E006A2A59 /* Onboarding.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Onboarding.storyboard; sourceTree = "<group>"; };
 		2A913E7323A2EB0E006A2A59 /* DWBalanceProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceProtocol.h; sourceTree = "<group>"; };
-		2A913E7623A2EF06006A2A59 /* DWSyncProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSyncProtocol.h; sourceTree = "<group>"; };
 		2A913E7723A2F2B6006A2A59 /* DWTxDisplayModeProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDisplayModeProtocol.h; sourceTree = "<group>"; };
-		2A913E7923A2F637006A2A59 /* DWSyncContainerProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSyncContainerProtocol.h; sourceTree = "<group>"; };
 		2A913E7A23A2F7ED006A2A59 /* DWHomeProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeProtocol.h; sourceTree = "<group>"; };
 		2A913E7B23A2FF4A006A2A59 /* DWRootProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRootProtocol.h; sourceTree = "<group>"; };
 		2A913E7D23A30609006A2A59 /* DWRootModelStub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRootModelStub.h; sourceTree = "<group>"; };
 		2A913E7E23A30609006A2A59 /* DWRootModelStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRootModelStub.m; sourceTree = "<group>"; };
 		2A913E8023A30623006A2A59 /* DWHomeModelStub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeModelStub.h; sourceTree = "<group>"; };
 		2A913E8123A30623006A2A59 /* DWHomeModelStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeModelStub.m; sourceTree = "<group>"; };
-		2A913E8323A309EA006A2A59 /* DWSyncModelStub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSyncModelStub.h; sourceTree = "<group>"; };
-		2A913E8423A309EA006A2A59 /* DWSyncModelStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSyncModelStub.m; sourceTree = "<group>"; };
 		2A913E8623A30C2D006A2A59 /* DWBalanceDisplayOptionsProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceDisplayOptionsProtocol.h; sourceTree = "<group>"; };
 		2A913E8723A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceDisplayOptionsStub.h; sourceTree = "<group>"; };
 		2A913E8823A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalanceDisplayOptionsStub.m; sourceTree = "<group>"; };
@@ -2559,13 +2554,14 @@
 			path = DataMigration;
 			sourceTree = "<group>";
 		};
-		2A1A60B92674083B003DAC65 /* SyncingAlert */ = {
+		2A1A60B92674083B003DAC65 /* Syncing Views */ = {
 			isa = PBXGroup;
 			children = (
-				C9F451EC2A0BF1EF00825057 /* View */,
-				C9F451EA2A0BF10B00825057 /* SyncingAlertViewController.swift */,
+				C9F4520C2A121EEF00825057 /* Model */,
+				C9F4520D2A121EF900825057 /* Sync View */,
+				C9F451EC2A0BF1EF00825057 /* Alert */,
 			);
-			path = SyncingAlert;
+			path = "Syncing Views";
 			sourceTree = "<group>";
 		};
 		2A1AE78B23F463FB00179A6E /* Views */ = {
@@ -2692,7 +2688,6 @@
 		2A307CB322E6FA7F00A18347 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				C9F452062A11F27400825057 /* Sync View */,
 				C9F451FF2A0CE63C00825057 /* Home Balance View */,
 				C9F451FE2A0CE60400825057 /* Home Header View */,
 				2A2CD70B22F97A9D008C7BC9 /* Shortcuts */,
@@ -3602,8 +3597,6 @@
 				2A913E8623A30C2D006A2A59 /* DWBalanceDisplayOptionsProtocol.h */,
 				2A913E7323A2EB0E006A2A59 /* DWBalanceProtocol.h */,
 				2A913E7A23A2F7ED006A2A59 /* DWHomeProtocol.h */,
-				2A913E7923A2F637006A2A59 /* DWSyncContainerProtocol.h */,
-				2A913E7623A2EF06006A2A59 /* DWSyncProtocol.h */,
 				2A913E7723A2F2B6006A2A59 /* DWTxDisplayModeProtocol.h */,
 				2A56EF0724193BA9002C32F3 /* DWDashPayProtocol.h */,
 			);
@@ -3623,8 +3616,6 @@
 				2AB3416123A81E8B004E37A7 /* DWReceiveModelStub.m */,
 				2A913E7D23A30609006A2A59 /* DWRootModelStub.h */,
 				2A913E7E23A30609006A2A59 /* DWRootModelStub.m */,
-				2A913E8323A309EA006A2A59 /* DWSyncModelStub.h */,
-				2A913E8423A309EA006A2A59 /* DWSyncModelStub.m */,
 				2A913EA623A79AD2006A2A59 /* DWTransactionListDataProviderStub.h */,
 				2A913EA723A79AD2006A2A59 /* DWTransactionListDataProviderStub.m */,
 				2A913EB423A7E145006A2A59 /* DWTransactionStub.h */,
@@ -3748,7 +3739,7 @@
 		2A9CEBB622E1FA0000A50237 /* Home */ = {
 			isa = PBXGroup;
 			children = (
-				2A1A60B92674083B003DAC65 /* SyncingAlert */,
+				2A1A60B92674083B003DAC65 /* Syncing Views */,
 				2A913E7223A2EAEF006A2A59 /* Protocols */,
 				2A2CD6E522F46D1A008C7BC9 /* Models */,
 				2A307CB322E6FA7F00A18347 /* Views */,
@@ -5710,12 +5701,13 @@
 			path = Style;
 			sourceTree = "<group>";
 		};
-		C9F451EC2A0BF1EF00825057 /* View */ = {
+		C9F451EC2A0BF1EF00825057 /* Alert */ = {
 			isa = PBXGroup;
 			children = (
 				C9F451ED2A0BF1F500825057 /* SyncingAlertContentView.swift */,
+				C9F451EA2A0BF10B00825057 /* SyncingAlertViewController.swift */,
 			);
-			path = View;
+			path = Alert;
 			sourceTree = "<group>";
 		};
 		C9F451FE2A0CE60400825057 /* Home Header View */ = {
@@ -5737,10 +5729,17 @@
 			path = "Home Balance View";
 			sourceTree = "<group>";
 		};
-		C9F452062A11F27400825057 /* Sync View */ = {
+		C9F4520C2A121EEF00825057 /* Model */ = {
 			isa = PBXGroup;
 			children = (
 				C9F452072A11F28600825057 /* SyncModel.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		C9F4520D2A121EF900825057 /* Sync View */ = {
+			isa = PBXGroup;
+			children = (
 				C9F451F62A0CAE1300825057 /* SyncView.swift */,
 				2A4E531922EA382B00E5168A /* SyncView.xib */,
 			);
@@ -6978,7 +6977,6 @@
 				C9F42FA429DBC6E5001BC549 /* PaymentsViewController.swift in Sources */,
 				2A7AF3832482954C001D74F9 /* DWDPContactsItemsFactory.m in Sources */,
 				4774DCDD28F43A68008CF87D /* ServiceDataSource.swift in Sources */,
-				2A913E8523A309EA006A2A59 /* DWSyncModelStub.m in Sources */,
 				47838B7A2900196F0003E8AB /* ConverterView.swift in Sources */,
 				2A0C69CA23142E11001B8C90 /* DWModalBaseAnimation.m in Sources */,
 				C9F42FB829DFC507001BC549 /* SpendableTransaction.swift in Sources */,

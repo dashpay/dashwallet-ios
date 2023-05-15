@@ -17,7 +17,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWSyncProtocol.h"
 #import "DWWipeDelegate.h"
 #import "dashwallet-Swift.h"
 

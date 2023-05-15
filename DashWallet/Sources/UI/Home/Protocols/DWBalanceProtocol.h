@@ -18,7 +18,6 @@
 #import <Foundation/Foundation.h>
 
 #import "DWBalanceDisplayOptionsProtocol.h"
-#import "DWSyncContainerProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
