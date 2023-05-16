@@ -147,7 +147,7 @@ extension DerivationPathKeysModel {
     func itemForInfo(_ info: DerivationPathInfo, atIndex index: Int) -> DerivationPathKeysItem {
         let wallet = DWEnvironment.sharedInstance().currentWallet
         let index = UInt32(index)
-        
+
         switch info {
         case .address:
             let address = derivationPath.address(at: index)
@@ -179,14 +179,13 @@ extension DerivationPathKeysModel {
                 return DerivationPathKeysItem(info: info, value: key)
             }
         case .keyId:
-            let pubKeyData = self.derivationPath.publicKeyData(at: index) as NSData
+            let pubKeyData = derivationPath.publicKeyData(at: index) as NSData
             var bytes = pubKeyData.hash160()
             let hexString = NSData(bytes: &bytes, length: MemoryLayout<UInt160>.size).hexString()
             return DerivationPathKeysItem(info: info, value: hexString)
-            
+
         case .privatePublicKeysBase64:
             return autoreleasepool {
-                
                 guard let phrase = wallet.seedPhraseIfAuthenticated() else {
                     return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
                 }
@@ -195,9 +194,9 @@ extension DerivationPathKeysModel {
                 let opaquePrivateKey = self.derivationPath.privateKey(at: index, fromSeed: seed)!
                 let privateKeyData = DSKeyManager.privateKeyData(opaquePrivateKey)
                 let pubKeyData = self.derivationPath.publicKeyData(at: index)
-                
-                let data = privateKeyData + pubKeyData
-                
+
+                let data = privateKeyData + pubKeyData.dropFirst()
+
                 return DerivationPathKeysItem(info: info, value: data.base64EncodedString())
             }
         case .publicKeyLegacy:
