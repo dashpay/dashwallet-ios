@@ -182,7 +182,16 @@ extension DerivationPathKeysModel {
         case .privatePublicKeysBase64:
             return DerivationPathKeysItem(info: info, value: NSLocalizedString("TBI", comment: ""))
         case .publicKeyLegacy:
-            return DerivationPathKeysItem(info: info, value: NSLocalizedString("TBI", comment: ""))
+            return autoreleasepool {
+                guard let phrase = wallet.seedPhraseIfAuthenticated() else {
+                    return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
+                }
+                let seed = DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
+
+                let opaqueKey = self.derivationPath.privateKey(at: UInt32(index), fromSeed: seed)!
+                let key = DSKeyManager.blsPublicKeySerialize(opaqueKey, legacy: true)
+                return DerivationPathKeysItem(info: info, value: key)
+            }
         }
     }
 }
