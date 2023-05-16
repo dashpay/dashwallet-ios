@@ -7438,7 +7438,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Dash;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 6.3.3;
+				MARKETING_VERSION = 7.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -7496,7 +7496,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Dash;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 6.3.3;
+				MARKETING_VERSION = 7.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
@@ -7817,7 +7817,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Dash;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 6.3.3;
+				MARKETING_VERSION = 7.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
@@ -8034,7 +8034,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Dash;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 6.3.3;
+				MARKETING_VERSION = 7.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
