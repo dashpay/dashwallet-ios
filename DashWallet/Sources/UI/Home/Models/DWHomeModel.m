@@ -114,7 +114,7 @@ static BOOL IsJailbroken(void) {
         _receiveModel = [[DWReceiveModel alloc] init];
         [_receiveModel updateReceivingInfo];
 
-        
+
         _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
 
         _payModel = [[DWPayModel alloc] init];
@@ -153,6 +153,10 @@ static BOOL IsJailbroken(void) {
         [notificationCenter addObserver:self
                                selector:@selector(willWipeWalletNotification)
                                    name:DWWillWipeWalletNotification
+                                 object:nil];
+        [notificationCenter addObserver:self
+                               selector:@selector(fiatCurrencyDidChangeNotification)
+                                   name:DWApp.fiatCurrencyDidChangeNotification
                                  object:nil];
 
         [self reloadTxDataSource];
@@ -367,6 +371,11 @@ static BOOL IsJailbroken(void) {
 - (void)applicationWillEnterForegroundNotification {
     [self startSyncIfNeeded];
     [self.balanceDisplayOptions hideBalanceIfNeeded];
+}
+
+- (void)fiatCurrencyDidChangeNotification {
+    [self updateBalance];
+    [self reloadTxDataSource];
 }
 
 - (void)syncStateChangedNotification {

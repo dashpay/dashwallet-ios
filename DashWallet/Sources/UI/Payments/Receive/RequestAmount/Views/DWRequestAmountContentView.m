@@ -23,7 +23,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRequestAmountContentView () 
+@interface DWRequestAmountContentView ()
 
 @property (nonatomic, strong) id<DWReceiveModelProtocol> model;
 @property (nonatomic, strong) DWAmountPreviewView *amountView;
@@ -46,16 +46,16 @@ NS_ASSUME_NONNULL_BEGIN
         [self addSubview:amountView];
         _amountView = amountView;
 
-        
+
         DWReceiveContentView *contentView = [DWReceiveContentView viewWith:model];
         contentView.translatesAutoresizingMaskIntoConstraints = NO;
         contentView.viewType = DWReceiveViewType_Default;
         __weak typeof(self) weakSelf = self;
-        
-        contentView.shareHandler = ^(UIButton *sender){
+
+        contentView.shareHandler = ^(UIButton *sender) {
             [weakSelf.delegate requestAmountContentView:weakSelf shareButtonAction:sender];
         };
-        
+
         [contentView setSpecifyAmountButtonHidden:YES];
         [self addSubview:contentView];
         _contentView = contentView;

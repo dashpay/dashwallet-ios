@@ -39,7 +39,7 @@ final class BalanceView: UIView {
             reloadView()
         }
     }
-    
+
     public var tint: UIColor? {
         didSet {
             reloadView()
@@ -71,7 +71,7 @@ extension BalanceView {
     public func reloadData() {
         reloadView()
     }
-    
+
     private func reloadView() {
         let mainAmountString = dataSource?.mainAmountString ?? NumberFormatter.dashFormatter.string(from: 0)!
         let supplementaryAmountString = dataSource?.supplementaryAmountString ?? NumberFormatter.fiatFormatter.string(from: 0)!

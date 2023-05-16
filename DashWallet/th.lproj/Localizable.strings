@@ -118,9 +118,6 @@
 /* No comment provided by engineer. */
 "Add a New Contact" = "เพิ่มรายชื่อใหม่";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Add Shortcut" = "เพิ่มทางลัด";
-
 /* No comment provided by engineer. */
 "Address" = "ที่อยู่";
 
@@ -199,8 +196,8 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "ซ่อนยอดคงเหลืออัตโนมัติ";
 
-/* No comment provided by engineer. */
-"Available balance" = "ยอดเงินคงเหลือ";
+/* Translate it as short as possible! (24 symbols max) */
+"Backup" = "Backup";
 
 /* No comment provided by engineer. */
 "Backup Passphrase" = "สำรองวลีรหัสผ่าน";
@@ -211,14 +208,14 @@
 /* No comment provided by engineer. */
 "Backup your passphrase to create a CrowdNode account" = "สำรองข้อมูลรหัสผ่านของคุณเพื่อสร้างบัญชี CrowdNode";
 
+/* Back up wallet */
+"Backup your recovery phrase" = "Backup your recovery phrase";
+
 /* No comment provided by engineer. */
 "Bad recovery phrase" = "วลีกู้คืนไม่ดี";
 
 /* Send Screen: to address */
 "Balance" = "ยอดคงเหลือ";
-
-/* No comment provided by engineer. */
-"Balance hidden" = "ยอดคงเหลือถูกซ่อน";
 
 /* CrowdNode */
 "Balance: " = "ยอดคงเหลือ: ";
@@ -245,11 +242,11 @@
    buy */
 "Buy" = "ซื้อ";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Buy & Sell" = "Buy & Sell";
+
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "ซื้อ & ขาย Dash";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Buy / Sell Dash" = "ซื้อ / ขาย Dash";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "ซื้อบัตรของขวัญ";
@@ -728,6 +725,9 @@
 "How to Use a Gift Card" = "การใช้บัตรของขวัญ";
 
 /* No comment provided by engineer. */
+"HPMN Operator Keys" = "HPMN Operator Keys";
+
+/* No comment provided by engineer. */
 "I Accept" = "ฉันยอมรับ";
 
 /* No comment provided by engineer. */
@@ -738,9 +738,6 @@
 
 /* No comment provided by engineer. */
 "I wrote it down" = "ฉันได้เขียนลงไปแล้ว";
-
-/* No comment provided by engineer. */
-"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "หากคุณทำอุปกรณ์นี้สูญหาย คุณก็จะสูญเสียเงินของคุณ รับวลีการกู้คืนเพื่อให้คุณสามารถกู้คืนกระเป๋าสตางค์ของคุณบนอุปกรณ์อื่นอุปกรณ์อื่น";
 
 /* No comment provided by engineer. */
 "If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "หากคุณสูญเสียวลีรหัสผ่านสำหรับกระเป๋าเงินนี้และสูญเสียอุปกรณ์นี้หรือถอนการติดตั้งกระเป๋าเงิน Dash คุณจะสูญเสียการเข้าถึงเงินทุนของคุณใน CrowdNode และเงินทุนภายในกระเป๋าเงินนี้";
@@ -824,13 +821,10 @@
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "ดูเหมือนว่าคุณกำลังพยายามกู้คืนกระเป๋าเงินของคุณโดยใช้วลีการกู้คืน 12 คำ แต่คุณได้ป้อน 11 คำเท่านั้นคุณต้องการกู้คืนคำที่หายไปโดยอัตโนมัติหรือไม่";
 
 /* No comment provided by engineer. */
-"It's Important" = "สำคัญ";
-
-/* No comment provided by engineer. */
 "Join Evolution" = "เข้าร่วมกับวิวัฒนาการ";
 
 /* No comment provided by engineer. */
-"Keypair %ld" = "Keypair %ld";
+"Keypair" = "Keypair";
 
 /* Explore Dash */
 "Last device sync" = "การซิงค์อุปกรณ์ล่าสุด";
@@ -874,9 +868,6 @@
 
 /* Dash Service Overview */
 "Link your Uphold account" = "เชื่อมต่อบัญชี Uphold ของคุณ";
-
-/* No comment provided by engineer. */
-"Load more" = "โหลดเพิ่ม";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "สกุลเงินท้องถิ่น";
@@ -925,6 +916,9 @@
 
 /* Map */
 "Map" = "แผนที่";
+
+/* No comment provided by engineer. */
+"Masternode Keys" = "Masternode Keys";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "รายการมาสเตอร์โหนด #%1$d of %2$d";
@@ -1115,9 +1109,6 @@
 /* Explore Dash/Merchants/Filters */
 "Payment Type" = "ประเภทการชำระเงิน";
 
-/* No comment provided by engineer. */
-"Payments" = "การชำระเงิน";
-
 /* Coinbase/Payment Methods */
 "PayPal" = "PayPal";
 
@@ -1141,6 +1132,9 @@
 
 /* Network Unavailable */
 "Please check your network connection" = "โปรดตรวจสอบการเชื่อมต่อเครือข่ายของคุณ";
+
+/* No comment provided by engineer. */
+"Please copy the Dash address first and try again" = "Please copy the Dash address first and try again";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "โปรดป้อน PIN เพื่ออัปเกรด Wallet";
@@ -1173,7 +1167,7 @@
 "Please write it down" = "กรุณาเขียนลงไป";
 
 /* No comment provided by engineer. */
-"Previously used at IP address" = "ใช้ก่อนหน้านี้ที่ที่อยู่ IP";
+"Previously used at: " = "Previously used at: ";
 
 /* No comment provided by engineer. */
 "Private key" = "Private key";
@@ -1310,17 +1304,14 @@
 /* No comment provided by engineer. */
 "Scan QR Code" = "สแกนโค้ด QR";
 
+/* (Send by) Scanning QR code */
+"Scan QR code" = "Scan QR code";
+
 /* A title of the quick receive screen */
 "Scan this to Pay" = "สแกนสิ่งนี้เพื่อจ่าย";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Scan to Pay" = "สแกนเพื่อจ่าย";
-
 /* No comment provided by engineer. */
 "Scan to Send" = "สแกนเพื่อส่ง";
-
-/* (Send by) Scanning QR code */
-"Scanning QR code" = "สแกนโค้ด QR";
 
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "ตรวจพบการบันทึกภาพหน้าจอ วลีกู้คืนใหม่::";
@@ -1345,12 +1336,6 @@
 
 /* No comment provided by engineer. */
 "Searching for username %@ on the Dash Network" = "กำลังหาชื่อผู้ใช้ %@ บนเครือข่าย Dash";
-
-/* No comment provided by engineer. */
-"Secure now" = "ปลอดภัย";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Secure Wallet Now" = "ทำให้ Wallet ปลอดภัยตอนนี้";
 
 /* No comment provided by engineer. */
 "Security" = "ความปลอดภัย";
@@ -1385,9 +1370,6 @@
 /* CrowdNode Confirm */
 "Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "ส่ง %@ จากที่อยู่หลักของ Dash ของคุณที่คุณใช้สำหรับบัญชี CrowdNode ของคุณในปัจจุบัน";
 
-/* Send by (scanning QR code) */
-"Send by" = "ส่งจาก";
-
 /* No comment provided by engineer. */
 "Send Contact Request" = "ส่งคำขอการติดต่อ";
 
@@ -1398,8 +1380,8 @@
 /* No comment provided by engineer. */
 "Send to" = "ส่งไปยัง";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Send to Address" = "ส่งไปยังที่อยู่";
+/* No comment provided by engineer. */
+"Send to copied address or QR code" = "Send to copied address or QR code";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "ส่งกับ NFC";
@@ -1449,8 +1431,8 @@
 /* No comment provided by engineer. */
 "Setup Wallet" = "ตั้งค่า wallet";
 
-/* No comment provided by engineer. */
-"Share" = "แบ่งปัน";
+/* Receive screen */
+"Share address" = "Share address";
 
 /* No comment provided by engineer. */
 "Shop with DASH at over 150k merchants" = "ซื้อสินค้าด้วย DASH ที่มีร้านค้ามากกว่า 150k ร้าน";
@@ -1542,14 +1524,8 @@
 /* Balance */
 "Syncing…" = "กำลังซิงค์ ...";
 
-/* Pay using NFC (should be as short as possible) */
-"Tap" = "กด";
-
 /* No comment provided by engineer. */
 "Tap to hide balance" = "กดเพื่อซ่อนยอดคงเหลือ";
-
-/* No comment provided by engineer. */
-"Tap to unhide balance" = "กดเพื่อเลิกซ่อนยอดคงเหลือ";
 
 /* No comment provided by engineer. */
 "Tax Category" = "หมวดภาษี";
@@ -1598,9 +1574,6 @@
 
 /* CrowdNode Confirm */
 "This QR already contains the payment request for %@" = "QR นี้มีคำขอชำระเงินแล้ว %@";
-
-/* No comment provided by engineer. */
-"This recovery phrase is your access to the funds in this wallet." = "วลีกู้คืนนี้จะทำให้คุณเข้าถึงจำนวนเงินในวอลเล็ท";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Wallet นี้ยังมีข้อมูลหรือการซิงค์ที่ยังไม่เสร็จสิ้น คุณไม่สามารถลบข้อมูลได้โดยไม่ใช้วลีกู้คืน";
@@ -1704,7 +1677,7 @@
 "Used" = "ใช้แล้ว";
 
 /* No comment provided by engineer. */
-"Used at IP address" = "ใช้ที่ที่อยู่ IP";
+"Used at: " = "Used at: ";
 
 /* No comment provided by engineer. */
 "Username taken" = "ใช้ชื่อผู้ใช้แล้ว";
@@ -1764,16 +1737,10 @@
 "Wallet disabled" = "wallet ถูกปิดการใช้งาน";
 
 /* No comment provided by engineer. */
-"Wallet Keys" = "Wallet Keys";
-
-/* No comment provided by engineer. */
 "Warning" = "คำเตือน";
 
 /* No comment provided by engineer. */
 "WARNING" = "คำเตือน";
-
-/* No comment provided by engineer. */
-"We are about to show you the secret key to your wallet." = "เรากำลังจะแสดงให้คุณเห็นถึง การเข้ารหัสและถอดรหัสโดยใช้กุญแจรหัสตัวเดียวกันในการเข้าถึงกระเป๋าสตางค์ของคุณ";
 
 /* CrowdNode */
 "We couldn’t create your CrowdNode account." = "เราไม่สามารถสร้างบัญชี CrowdNode ของคุณได้";
@@ -1783,9 +1750,6 @@
 
 /* CrowdNode */
 "We couldn’t withdraw from your CrowdNode account." = "เราไม่สามารถถอนตัวจากบัญชี CrowdNode ของคุณได้";
-
-/* No comment provided by engineer. */
-"We do not store this recovery phrase." = "เราไม่เก็บรักษาวลีกู้คืนนี้";
 
 /* No comment provided by engineer. */
 "We have 2 types of merchants" = "เรามีร้านค้า 2 ประเภท";
@@ -1878,9 +1842,6 @@
 /* Coinbase */
 "You receive" = "คุณได้รับ";
 
-/* No comment provided by engineer. */
-"You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "คุณได้รับ Dash! หากคุณทำอุปกรณ์นี้หายคุณจะเสียเงิน รับวลีการกู้คืนเพื่อให้คุณสามารถกู้คืนกระเป๋าเงินของคุณบนอุปกรณ์อื่น";
-
 /* Coinbase */
 "You send" = "คุณส่ง";
 
@@ -1899,8 +1860,8 @@
 /* No comment provided by engineer. */
 "You will lose all your manually reclassified transactions types" = "คุณจะสูญเสียประเภทธุรกรรมที่จัดประเภทใหม่ด้วยตนเองทั้งหมดของคุณ";
 
-/* No comment provided by engineer. */
-"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "คุณจะต้องใช้วลีกู้คืนนี้เพื่อเข้าถึงเงินทุนของคุณหากอุปกรณ์นี้สูญหายได้รับความเสียหายหรือหาก Dash Wallet เคยถอนการติดตั้งโดยไม่ได้ตั้งใจจากอุปกรณ์นี้";
+/* Back up wallet */
+"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "คุณจะได้รับ %@ Dash บนกระเป๋าของคุณบนอุปกรณ์นี้ โปรดทราบว่าอาจใช้เวลาสูงสุด 2-3 นาทีในการโอน";
@@ -1946,6 +1907,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "กระเป๋าเงินของคุณปลอดภัยแล้ว คุณสามารถใช้วลีกู้คืนได้ทุกเวลาเพื่อกู้คืนบัญชีของคุณบนอุปกรณ์อื่น";
-
-/* No comment provided by engineer. */
-"Сopied address or QR" = "คัดลอกที่อยู่หรือ QR";

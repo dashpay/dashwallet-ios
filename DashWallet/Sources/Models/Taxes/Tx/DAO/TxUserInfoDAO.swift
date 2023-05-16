@@ -23,7 +23,6 @@ import SQLite
 protocol TxUserInfoDAO {
     func create(dto: TxUserInfo)
     func get(by hash: Data) -> TxUserInfo?
-    func all() -> [TxUserInfo]
     func update(dto: TxUserInfo)
     func delete(dto: TxUserInfo)
     func deleteAll()
@@ -34,6 +33,8 @@ protocol TxUserInfoDAO {
 class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
     private var db: Connection { DatabaseConnection.shared.db }
     private var cache: [Data: TxUserInfo] = [:]
+
+    private let queue = DispatchQueue(label: "org.dash.infrastructure.queue.tx-user-info-dao", attributes: .concurrent)
 
     func create(dto: TxUserInfo) {
         do {
@@ -49,7 +50,9 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
             print(error)
         }
 
-        cache[dto.txHash] = dto
+        queue.async(flags: .barrier) { [weak self] in
+            self?.cache[dto.txHash] = dto
+        }
     }
 
     func all() -> [TxUserInfo] {
@@ -60,7 +63,6 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         do {
             for txInfo in try db.prepare(txUserInfos) {
                 let userInfo = TxUserInfo(row: txInfo)
-                cache[userInfo.txHash] = userInfo
                 userInfos.append(userInfo)
             }
         } catch {
@@ -71,7 +73,7 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
     }
 
     func get(by hash: Data) -> TxUserInfo? {
-        if let cached = cache[hash] {
+        if let cached = cachedValue(by: hash) {
             return cached
         }
 
@@ -80,7 +82,9 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         do {
             for txInfo in try db.prepare(txUserInfo) {
                 let userInfo = TxUserInfo(row: txInfo)
-                cache[hash] = userInfo
+                queue.async(flags: .barrier) { [weak self] in
+                    self?.cache[hash] = userInfo
+                }
                 return userInfo
             }
         } catch {
@@ -90,18 +94,32 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         return nil
     }
 
+    private func cachedValue(by key: Data) -> TxUserInfo? {
+        var v: TxUserInfo?
+
+        queue.sync {
+            v = cache[key]
+        }
+
+        return v
+    }
+
     func update(dto: TxUserInfo) {
         create(dto: dto)
     }
 
     func delete(dto: TxUserInfo) {
-        cache[dto.txHash] = nil
+        queue.async(flags: .barrier) { [weak self] in
+            self?.cache[dto.txHash] = nil
+        }
     }
 
     func deleteAll() {
         do {
             try db.run(TxUserInfo.table.delete())
-            cache = [:]
+            queue.async(flags: .barrier) { [weak self] in
+                self?.cache = [:]
+            }
         } catch {
             print(error)
         }
