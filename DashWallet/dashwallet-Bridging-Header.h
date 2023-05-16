@@ -22,6 +22,7 @@ static const bool _SNAPSHOT = 0;
 #import "DSOperationQueue.h"
 #import "DSDerivationPathFactory.h"
 #import "DSKeyManager.h"
+#import "BigIntTypes.h"
 
 //MARK: DashWallet
 #import "DWActionButton.h"
