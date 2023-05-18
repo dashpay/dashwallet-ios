@@ -235,78 +235,78 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
 }
 
 - (uint64_t)increaseBlockHeight {
-    switch (self.chainType) {
-        case DSChainType_MainNet:
+    switch (self.chainType.tag) {
+        case ChainType_MainNet:
             return 158000;
-        case DSChainType_TestNet:
+        case ChainType_TestNet:
             return 4030;
-        case DSChainType_DevNet:
+        case ChainType_DevNet:
             return 4030;
     }
 }
 
 - (uint64_t)period {
-    switch (self.chainType) {
-        case DSChainType_MainNet:
+    switch (self.chainType.tag) {
+        case ChainType_MainNet:
             return 576 * 30;
-        case DSChainType_TestNet:
+        case ChainType_TestNet:
             return 10;
-        case DSChainType_DevNet:
+        case ChainType_DevNet:
             return 10;
     }
 }
 
 - (uint64_t)brrHeight {
-    switch (self.chainType) {
-        case DSChainType_MainNet:
+    switch (self.chainType.tag) {
+        case ChainType_MainNet:
             return 1374912;
-        case DSChainType_TestNet:
+        case ChainType_TestNet:
             return 387500;
-        case DSChainType_DevNet:
+        case ChainType_DevNet:
             return 300;
     }
 }
 
 - (uint64_t)superblockCycle {
-    switch (self.chainType) {
-        case DSChainType_MainNet:
+    switch (self.chainType.tag) {
+        case ChainType_MainNet:
             return 16616;
-        case DSChainType_TestNet:
+        case ChainType_TestNet:
             return 24;
-        case DSChainType_DevNet:
+        case ChainType_DevNet:
             return 24;
     }
 }
 
 - (uint64_t)superblockStartBlock {
-    switch (self.chainType) {
-        case DSChainType_MainNet:
+    switch (self.chainType.tag) {
+        case ChainType_MainNet:
             return 614820;
-        case DSChainType_TestNet:
+        case ChainType_TestNet:
             return 4200;
-        case DSChainType_DevNet:
+        case ChainType_DevNet:
             return 24;
     }
 }
 
 - (uint64_t)subsidyDecreaseBlockCount {
-    switch (self.chainType) {
-        case DSChainType_MainNet:
+    switch (self.chainType.tag) {
+        case ChainType_MainNet:
             return 210240;
-        case DSChainType_TestNet:
+        case ChainType_TestNet:
             return 210240;
-        case DSChainType_DevNet:
+        case ChainType_DevNet:
             return 210240;
     }
 }
 
 - (uint64_t)budgetPaymentsStartBlock {
-    switch (self.chainType) {
-        case DSChainType_MainNet:
+    switch (self.chainType.tag) {
+        case ChainType_MainNet:
             return 328008;
-        case DSChainType_TestNet:
+        case ChainType_TestNet:
             return 4100;
-        case DSChainType_DevNet:
+        case ChainType_DevNet:
             return 4100;
     }
 }

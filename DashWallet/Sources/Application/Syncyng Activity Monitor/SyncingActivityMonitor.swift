@@ -64,8 +64,6 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
     @objc
     public var state: State = .unknown {
         didSet {
-            guard state != oldValue else { return }
-
             if state == .syncDone {
                 DWGlobalOptions.sharedInstance().isResyncingWallet = false
             }

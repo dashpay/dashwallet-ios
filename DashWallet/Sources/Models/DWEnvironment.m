@@ -46,7 +46,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
 
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     if (![userDefaults objectForKey:CURRENT_CHAIN_TYPE_KEY]) {
-        [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
+        [userDefaults setInteger:ChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
     }
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain mainnet]]; // initialization
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain testnet]]; // initialization
@@ -62,19 +62,19 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
 
 - (void)reset {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    DSChainType chainType = [userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY];
-    switch (chainType) {
-        case DSChainType_MainNet:
+    // DSChainType chainType = [userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY];
+    switch ([userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY]) {
+        case ChainType_MainNet:
             self.currentChain = [DSChain mainnet];
             break;
-        case DSChainType_TestNet:
+        case ChainType_TestNet:
             self.currentChain = [DSChain testnet];
             break;
-        case DSChainType_DevNet: // we will only have evonet
+        case ChainType_DevNet: // we will only have evonet
             self.currentChain = [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier];
             if (!self.currentChain) {
                 NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-                [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
+                [userDefaults setInteger:ChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
                 self.currentChain = [DSChain mainnet];
             }
             break;
@@ -117,19 +117,19 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
 
 - (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion {
     if (self.currentChain != [DSChain mainnet]) {
-        [self switchToNetwork:DSChainType_MainNet withIdentifier:nil withCompletion:completion];
+        [self switchToNetwork:ChainType_MainNet withIdentifier:nil withCompletion:completion];
     }
 }
 
 - (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion {
     if (self.currentChain != [DSChain testnet]) {
-        [self switchToNetwork:DSChainType_TestNet withIdentifier:nil withCompletion:completion];
+        [self switchToNetwork:ChainType_TestNet withIdentifier:nil withCompletion:completion];
     }
 }
 
 - (void)switchToEvonetWithCompletion:(void (^)(BOOL success))completion {
     if (self.currentChain != [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier]) {
-        [self switchToNetwork:DSChainType_DevNet withIdentifier:DWDevnetEvonetIdentifier withCompletion:completion];
+        [self switchToNetwork:ChainType_DevNet withIdentifier:DWDevnetEvonetIdentifier withCompletion:completion];
     }
 }
 
@@ -155,9 +155,9 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
     return [NSOrderedSet orderedSetWithArray:serviceLocations];
 }
 
-- (void)switchToNetwork:(DSChainType)chainType withIdentifier:(NSString *)identifier withCompletion:(void (^)(BOOL success))completion {
+- (void)switchToNetwork:(ChainType_Tag)chainType withIdentifier:(NSString *)identifier withCompletion:(void (^)(BOOL success))completion {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    DSChainType originalChainType = [userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY];
+    ChainType_Tag originalChainType = [userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY];
     if (originalChainType == chainType) {
         // Notification isn't send here as the chain remains the same
         completion(YES); // didn't really switch but good enough
@@ -166,13 +166,13 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
     DSWallet *wallet = [self currentWallet];
     DSChain *destinationChain = nil;
     switch (chainType) {
-        case DSChainType_MainNet:
+        case ChainType_MainNet:
             destinationChain = [DSChain mainnet];
             break;
-        case DSChainType_TestNet:
+        case ChainType_TestNet:
             destinationChain = [DSChain testnet];
             break;
-        case DSChainType_DevNet:
+        case ChainType_DevNet:
             destinationChain = [DSChain devnetWithIdentifier:identifier];
             if (!destinationChain && [identifier isEqualToString:DWDevnetEvonetIdentifier]) {
                 // TODO: add devnet eventually
@@ -206,8 +206,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
         if (self.currentChain) {
             [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
         }
-        [userDefaults setInteger:chainType
-                          forKey:CURRENT_CHAIN_TYPE_KEY];
+        [userDefaults setInteger:chainType forKey:CURRENT_CHAIN_TYPE_KEY];
         [self reset];
         [self.currentChainManager.peerManager connect];
         [[NSNotificationCenter defaultCenter] postNotificationName:DWCurrentNetworkDidChangeNotification

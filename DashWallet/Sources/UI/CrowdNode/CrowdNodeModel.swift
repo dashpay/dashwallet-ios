@@ -328,12 +328,9 @@ extension CrowdNodeModel {
         let result = await wallet.seed(withPrompt: NSLocalizedString("Sign the message", comment: "CrowdNode"), forAmount: 1)
 
         if !result.1 {
-            let key = wallet.privateKey(forAddress: crowdNode.accountAddress, fromSeed: result.0!)
-            let signResult = await key?.signMessageDigest(email.magicDigest())
-
-            if signResult?.0 == true {
-                let signature = (signResult!.1 as NSData).base64String()
-                try await crowdNode.registerEmailForAccount(email: email, signature: signature)
+            if let key = wallet.privateKey(forAddress: crowdNode.accountAddress, fromSeed: result.0!) {
+                let signature = DSKeyManager.signMesasageDigest(key, digest: email.magicDigest())
+                try await crowdNode.registerEmailForAccount(email: email, signature: signature.base64EncodedString())
                 return true
             }
         }

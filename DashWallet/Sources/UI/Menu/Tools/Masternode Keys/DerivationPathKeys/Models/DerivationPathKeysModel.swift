@@ -36,9 +36,12 @@ struct DerivationPathKeysItem {
 
 // MARK: - DerivationPathInfo
 
-enum DerivationPathInfo: CaseIterable {
+enum DerivationPathInfo {
+    case keyId
+    case privatePublicKeysBase64
     case address
     case publicKey
+    case publicKeyLegacy
     case privateKey
     case wifPrivateKey
 }
@@ -46,14 +49,35 @@ enum DerivationPathInfo: CaseIterable {
 extension DerivationPathInfo {
     var title: String {
         switch self {
+        case .keyId:
+            return NSLocalizedString("Key Id", comment: "")
+        case .privatePublicKeysBase64:
+            return NSLocalizedString("Private / Public Keys (base64)", comment: "")
         case .address:
             return NSLocalizedString("Address", comment: "")
         case .publicKey:
             return NSLocalizedString("Public key", comment: "")
+        case .publicKeyLegacy:
+            return NSLocalizedString("Public key (legacy)", comment: "")
         case .privateKey:
             return NSLocalizedString("Private key", comment: "")
         case .wifPrivateKey:
             return NSLocalizedString("WIF Private key", comment: "")
+        }
+    }
+}
+
+extension MNKey {
+    var infos: [DerivationPathInfo] {
+        switch self {
+        case .owner:
+            return [.address, .privateKey, .wifPrivateKey]
+        case .voting:
+            return [.address, .privateKey, .wifPrivateKey]
+        case .operator:
+            return [.publicKey, .publicKeyLegacy, .privateKey]
+        case .hpmnOperator:
+            return [.keyId, .privatePublicKeysBase64]
         }
     }
 }
@@ -64,13 +88,14 @@ final class DerivationPathKeysModel {
     let key: MNKey
     let derivationPath: DSAuthenticationKeysDerivationPath
 
-    let infoItems = DerivationPathInfo.allCases
+    let infoItems: [DerivationPathInfo]
 
     var visibleIndexes: Int
 
     init(key: MNKey, derivationPath: DSAuthenticationKeysDerivationPath) {
         self.key = key
         self.derivationPath = derivationPath
+        infoItems = key.infos
         visibleIndexes = Int(derivationPath.firstUnusedIndex())
     }
 
@@ -121,13 +146,14 @@ extension DerivationPathKeysModel {
 
     func itemForInfo(_ info: DerivationPathInfo, atIndex index: Int) -> DerivationPathKeysItem {
         let wallet = DWEnvironment.sharedInstance().currentWallet
+        let index = UInt32(index)
 
         switch info {
         case .address:
-            let address = derivationPath.address(at: UInt32(index))
+            let address = derivationPath.address(at: index)
             return DerivationPathKeysItem(info: info, value: address)
         case .publicKey:
-            let publicKeyData = derivationPath.publicKeyData(at: UInt32(index))
+            let publicKeyData = derivationPath.publicKeyData(at: index)
             return DerivationPathKeysItem(info: info, value: publicKeyData.hexEncodedString())
         case .privateKey:
             return autoreleasepool {
@@ -136,9 +162,10 @@ extension DerivationPathKeysModel {
                 }
                 let seed = DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
 
-                let key = self.derivationPath.privateKey(at: UInt32(index), fromSeed: seed)!
+                let opaqueKey = self.derivationPath.privateKey(at: index, fromSeed: seed)!
 
-                return DerivationPathKeysItem(info: info, value: key.secretKeyString)
+                let key = DSKeyManager.secretKeyHexString(opaqueKey)
+                return DerivationPathKeysItem(info: info, value: key)
             }
         case .wifPrivateKey:
             return autoreleasepool {
@@ -147,9 +174,41 @@ extension DerivationPathKeysModel {
                 }
                 let seed = DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
 
-                let key = self.derivationPath.privateKey(at: UInt32(index), fromSeed: seed)!
+                let opaqueKey = self.derivationPath.privateKey(at: index, fromSeed: seed)!
+                let key = DSKeyManager.serializedPrivateKey(opaqueKey, chainType: wallet.chain.chainType)
+                return DerivationPathKeysItem(info: info, value: key)
+            }
+        case .keyId:
+            let pubKeyData = derivationPath.publicKeyData(at: index) as NSData
+            var bytes = pubKeyData.hash160()
+            let hexString = NSData(bytes: &bytes, length: MemoryLayout<UInt160>.size).hexString()
+            return DerivationPathKeysItem(info: info, value: hexString)
 
-                return DerivationPathKeysItem(info: info, value: key.serializedPrivateKey(for: wallet.chain)!)
+        case .privatePublicKeysBase64:
+            return autoreleasepool {
+                guard let phrase = wallet.seedPhraseIfAuthenticated() else {
+                    return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
+                }
+                let seed = DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
+
+                let opaquePrivateKey = self.derivationPath.privateKey(at: index, fromSeed: seed)!
+                let privateKeyData = DSKeyManager.privateKeyData(opaquePrivateKey)
+                let pubKeyData = self.derivationPath.publicKeyData(at: index)
+
+                let data = privateKeyData + pubKeyData.dropFirst()
+
+                return DerivationPathKeysItem(info: info, value: data.base64EncodedString())
+            }
+        case .publicKeyLegacy:
+            return autoreleasepool {
+                guard let phrase = wallet.seedPhraseIfAuthenticated() else {
+                    return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
+                }
+                let seed = DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
+
+                let opaqueKey = self.derivationPath.privateKey(at: index, fromSeed: seed)!
+                let key = DSKeyManager.blsPublicKeySerialize(opaqueKey, legacy: true)
+                return DerivationPathKeysItem(info: info, value: key)
             }
         }
     }
