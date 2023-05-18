@@ -276,10 +276,6 @@ NS_ASSUME_NONNULL_BEGIN
     return YES;
 }
 
-- (void)forceStartSyncingActivity {
-    [[SyncingActivityMonitor shared] forceStartSyncingActivity];
-}
-
 - (void)walletDidWipe {
 #if DASHPAY_ENABLED
     self.dashPayModel = [[DWDashPayModel alloc] init];

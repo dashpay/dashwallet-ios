@@ -119,7 +119,7 @@ NS_ASSUME_NONNULL_BEGIN
         self.currentNetworkDidChangeBlock();
     }
 
-    [homeModel forceStartSyncingActivity];
+    [SyncingActivityMonitor.shared forceStartSyncingActivity];
 }
 
 @end
