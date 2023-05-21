@@ -58,8 +58,7 @@ final class WalletKeysOverviewModel {
         ownerDerivationPath = factory.providerOwnerKeysDerivationPath(for: wallet)
         votingDerivationPath = factory.providerVotingKeysDerivationPath(for: wallet)
         operatorDerivationPath = factory.providerOperatorKeysDerivationPath(for: wallet)
-        hpmnOperatorDerivationPath = operatorDerivationPath
-        // hpmnOperatorDerivationPath = factory.platformNodeKeysDerivationPath(for: wallet) //We will use it in another branch
+        hpmnOperatorDerivationPath = factory.platformNodeKeysDerivationPath(for: wallet)
     }
 
     func derivationPath(for type: MNKey) -> DSAuthenticationKeysDerivationPath {

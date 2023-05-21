@@ -98,11 +98,10 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
     DSAccount *testingAccount = [testingWallet accountWithNumber:0];
     DSAccount *ourAccount = [DWEnvironment sharedInstance].currentAccount;
 
-    NSData *testingExtended32Data = testingAccount.bip32DerivationPath.extendedPublicKey.publicKeyData;
-    NSData *accountExtended32Data = ourAccount.bip32DerivationPath.extendedPublicKey.publicKeyData;
-
-    NSData *testingExtended44Data = testingAccount.bip44DerivationPath.extendedPublicKey.publicKeyData;
-    NSData *accountExtended44Data = ourAccount.bip44DerivationPath.extendedPublicKey.publicKeyData;
+    NSData *testingExtended32Data = [DSKeyManager publicKeyData:testingAccount.bip32DerivationPath.extendedPublicKey];
+    NSData *accountExtended32Data = [DSKeyManager publicKeyData:ourAccount.bip32DerivationPath.extendedPublicKey];
+    NSData *testingExtended44Data = [DSKeyManager publicKeyData:testingAccount.bip44DerivationPath.extendedPublicKey];
+    NSData *accountExtended44Data = [DSKeyManager publicKeyData:ourAccount.bip44DerivationPath.extendedPublicKey];
 
     return ([testingExtended32Data isEqual:accountExtended32Data] ||
             [testingExtended44Data isEqual:accountExtended44Data] ||

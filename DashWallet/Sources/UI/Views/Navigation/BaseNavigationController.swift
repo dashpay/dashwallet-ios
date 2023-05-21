@@ -27,7 +27,7 @@ extension NavigationStackControllable {
     func shouldPopViewController() -> Bool { true }
 }
 
-// MARK: - NavigationBarDisplayable
+// MARK: - NavigationBarStyleable
 
 protocol NavigationBarStyleable: UIViewController {
     var backButtonTintColor: UIColor { get }
@@ -88,16 +88,17 @@ class BaseNavigationController: UINavigationController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    @IBAction func cancelButtonAction() {
+    @IBAction
+    func cancelButtonAction() {
         dismiss(animated: true)
     }
-    
+
     @objc
     public func setCancelButtonHidden(_ hidden: Bool) {
         let cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelButtonAction))
         topViewController?.navigationItem.rightBarButtonItem = cancelButton
     }
-    
+
     override func responds(to aSelector: Selector!) -> Bool {
         super.responds(to: aSelector) || (_delegate?.responds(to: aSelector!) ?? false)
     }
@@ -153,11 +154,11 @@ extension BaseNavigationController: UINavigationControllerDelegate {
         var backButtonTintColor = UIColor.dw_label()
         var prefersLargeTitles = false
         var largeTitleDisplayMode = UINavigationItem.LargeTitleDisplayMode.automatic;
-        
+
         if let viewController = viewController as? NavigationBarDisplayable {
             hideBackButton = viewController.isBackButtonHidden
             hideNavigationBar = viewController.isNavigationBarHidden
-            
+
         } else if let vc = viewController as? NavigationFullscreenable {
             hideNavigationBar = vc.requiresNoNavigationBar
         }
@@ -167,7 +168,7 @@ extension BaseNavigationController: UINavigationControllerDelegate {
             prefersLargeTitles = viewController.prefersLargeTitles
             largeTitleDisplayMode = viewController.largeTitleDisplayMode
         }
-        
+
         delegate?.navigationController?(navigationController, willShow: viewController, animated: animated)
 
         if !hideBackButton && viewController.navigationItem.leftBarButtonItem == nil {
@@ -184,14 +185,14 @@ extension BaseNavigationController: UINavigationControllerDelegate {
         }
 
         viewController.navigationItem.hidesBackButton = true
-        
+
         if let vc = viewController as? NavigationBarAppearanceCustomizable {
             vc.setNavigationBarAppearance()
         }
 
         navigationController.setNavigationBarHidden(hideNavigationBar, animated: animated)
         navigationController.navigationBar.prefersLargeTitles = prefersLargeTitles
-        
+
         viewController.navigationItem.largeTitleDisplayMode = largeTitleDisplayMode
     }
 

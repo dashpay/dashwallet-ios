@@ -176,7 +176,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setupView {
     UIImage *logoImage = nil;
     CGFloat logoHeight;
-    if ([DWEnvironment sharedInstance].currentChain.chainType == DSChainType_TestNet) {
+    if ([DWEnvironment sharedInstance].currentChain.chainType.tag == ChainType_TestNet) {
         logoImage = [UIImage imageNamed:@"dash_logo_testnet"];
         logoHeight = 40.0;
     }

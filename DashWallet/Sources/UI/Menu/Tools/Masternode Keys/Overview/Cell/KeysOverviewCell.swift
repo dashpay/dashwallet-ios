@@ -43,7 +43,7 @@ final class KeysOverviewCell: UITableViewCell {
 
     private func configureHierarchy() {
         backgroundColor = .dw_background()
-        contentView.backgroundColor = .dw_background()
+        contentView.backgroundColor = .clear
 
         let mainStackView = UIStackView()
         mainStackView.translatesAutoresizingMaskIntoConstraints = false

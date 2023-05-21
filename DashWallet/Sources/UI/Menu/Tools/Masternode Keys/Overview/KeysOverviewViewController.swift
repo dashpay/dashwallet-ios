@@ -87,13 +87,13 @@ extension KeysOverviewViewController: UITableViewDataSource, UITableViewDelegate
         tableView.deselectRow(at: indexPath, animated: true)
 
         let showVcBlock = { [weak self] in
-            guard let self else { return }
+            guard let wSelf = self else { return }
 
-            let item = model.items[indexPath.row]
-            let derivationPath = model.derivationPath(for: item)
+            let item = wSelf.model.items[indexPath.row]
+            let derivationPath = wSelf.model.derivationPath(for: item)
             let vc = DerivationPathKeysViewController(with: item, derivationPath: derivationPath)
             vc.hidesBottomBarWhenPushed = true
-            navigationController?.pushViewController(vc, animated: true)
+            wSelf.navigationController?.pushViewController(vc, animated: true)
         }
 
         if DSAuthenticationManager.sharedInstance().didAuthenticate {

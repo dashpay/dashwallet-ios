@@ -124,7 +124,7 @@ public class ExploreDash {
         }
 
         try FileManager.default.copyItem(at: dbURL, to: destinationPath)
-        
+
         ExploreDatabaseSyncManager.share.exploreDatabaseLastVersion = bundleExploreDatabaseSyncTime
         ExploreDatabaseSyncManager.share.exploreDatabaseLastSyncTimestamp = bundleExploreDatabaseSyncTime
     }
@@ -132,7 +132,7 @@ public class ExploreDash {
     private func removeCurrentDatabaseIfNeeded() {
         let destinationPath = FileManager.documentsDirectoryURL.appendingPathComponent(kExploreDashDatabaseName)
         var isDirectory: ObjCBool = true
-        
+
         guard FileManager.default.fileExists(atPath: destinationPath.path, isDirectory: &isDirectory) else { return }
 
         /// Remove if it's a dirrectory
