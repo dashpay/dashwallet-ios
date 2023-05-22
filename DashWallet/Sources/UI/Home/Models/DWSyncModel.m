@@ -72,6 +72,9 @@ static float const MAX_PROGRESS_DELTA = 0.1;            // 10%
     if (self) {
         _syncMonitor = SyncingActivityMonitor.shared;
         [_syncMonitor addObserver:self];
+        
+        self.state = _syncMonitor.state;
+        self.progress = _syncMonitor.progress;
     }
     return self;
 }
@@ -86,6 +89,9 @@ static float const MAX_PROGRESS_DELTA = 0.1;            // 10%
     DWSyncLog(@"[DW Sync] forceStartSyncingActivity");
 
     [_syncMonitor forceStartSyncingActivity];
+    
+    self.state = _syncMonitor.state;
+    self.progress = _syncMonitor.progress;
 }
 
 #pragma mark Private

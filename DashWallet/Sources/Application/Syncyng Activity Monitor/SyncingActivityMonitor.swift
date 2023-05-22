@@ -54,16 +54,16 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
         case unknown
     }
 
+    @objc
     public var progress: Double = 0 {
         didSet {
             observers.forEach { $0.syncingActivityMonitorProgressDidChange(progress) }
         }
     }
 
-    @objc public var state: State = .unknown {
+    @objc
+    public var state: State = .unknown {
         didSet {
-            guard state != oldValue else { return }
-
             if state == .syncDone {
                 DWGlobalOptions.sharedInstance().isResyncingWallet = false
             }
