@@ -17,29 +17,45 @@
 
 import Foundation
 
-@objc(DWBalanceModel)
-final class BalanceModel: NSObject {
-    @objc
-    let value: UInt64
+final class BalanceModel {
+    var value: UInt64 = 0
 
-    @objc
-    init(with value: UInt64) {
-        self.value = value
-
-        super.init()
+    init() {
+        reloadBalance()
     }
 
-    @objc
+    private func reloadBalance() {
+        let balanceValue = DWEnvironment.sharedInstance().currentWallet.balance
+        
+        if (balanceValue > value &&
+            value > 0 &&
+            UIApplication.shared.applicationState != .background &&
+            SyncingActivityMonitor.shared.progress > 0.995) {
+            UIDevice.current.dw_playCoinSound()
+        }
+
+        value = balanceValue
+        
+        let options = DWGlobalOptions.sharedInstance()
+        if (balanceValue > 0
+            && options.walletNeedsBackup
+            && (options.balanceChangedDate == nil)) {
+            options.balanceChangedDate = Date()
+        }
+
+        options.userHasBalance = balanceValue > 0;
+    }
+}
+
+extension BalanceModel {
     func dashAmountStringWithFont(_ font: UIFont, tintColor: UIColor) -> NSAttributedString {
         NSAttributedString.dashAttributedString(for: value, tintColor: tintColor, font: font)
     }
 
-    @objc
     func mainAmountString() -> String {
         value.formattedDashAmount
     }
 
-    @objc
     func fiatAmountString() -> String {
         CurrencyExchanger.shared.fiatAmountString(for: value.dashAmount)
     }

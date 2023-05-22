@@ -70,6 +70,7 @@ final class HomeBalanceView: UIView {
         dataSource?.isBalanceHidden ?? false
     }
 
+    private let model = BalanceModel()
     override init(frame: CGRect) {
         super.init(frame: frame)
         commonInit()

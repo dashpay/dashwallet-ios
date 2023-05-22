@@ -2648,7 +2648,6 @@
 			isa = PBXGroup;
 			children = (
 				2A913EA123A799D9006A2A59 /* Transactions */,
-				472D13E7299E4EE7006903F1 /* BalanceModel.swift */,
 				2A4E533622F023AB00E5168A /* DWHomeModel.h */,
 				2A4E533722F023AB00E5168A /* DWHomeModel.m */,
 				C9F452042A0CF4E500825057 /* HomeModel.swift */,
@@ -5723,6 +5722,7 @@
 		C9F451FF2A0CE63C00825057 /* Home Balance View */ = {
 			isa = PBXGroup;
 			children = (
+				472D13E7299E4EE7006903F1 /* BalanceModel.swift */,
 				C9F067F129E4576D0022D958 /* HomeBalanceView.swift */,
 				C9F067F329E457790022D958 /* HomeBalanceView.xib */,
 			);

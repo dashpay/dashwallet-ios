@@ -44,7 +44,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) DSReachabilityManager *reachability;
 @property (readonly, nonatomic, strong) DWTransactionListDataProvider *dataProvider;
 
-@property (nullable, nonatomic, strong) DWBalanceModel *balanceModel;
 @property (nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
 
 @property (nonatomic, strong) SyncingActivityMonitor *syncMonitor;
@@ -492,25 +491,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateBalance {
     [self.receiveModel updateReceivingInfo];
-
-    uint64_t balanceValue = [DWEnvironment sharedInstance].currentWallet.balance;
-    if (self.balanceModel &&
-        balanceValue > self.balanceModel.value &&
-        self.balanceModel.value > 0 &&
-        [UIApplication sharedApplication].applicationState != UIApplicationStateBackground &&
-        [SyncingActivityMonitor shared].progress > 0.995) {
-        [[UIDevice currentDevice] dw_playCoinSound];
-    }
-
-    self.balanceModel = [[DWBalanceModel alloc] initWith:balanceValue];
-
-    DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
-    if (balanceValue > 0 && options.walletNeedsBackup && !options.balanceChangedDate) {
-        options.balanceChangedDate = [NSDate date];
-    }
-
-    options.userHasBalance = balanceValue > 0;
-
     [self.updatesObserver homeModelWantToReloadShortcuts:self];
 }
 
@@ -538,14 +518,6 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     return [mutableTransactions copy];
-}
-
-- (NSString *)supplementaryAmountString {
-    return [self.balanceModel fiatAmountString];
-}
-
-- (NSString *)mainAmountString {
-    return [self.balanceModel mainAmountString];
 }
 
 - (BOOL)isBalanceHidden {

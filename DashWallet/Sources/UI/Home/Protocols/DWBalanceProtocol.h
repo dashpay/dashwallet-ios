@@ -25,7 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWBalanceProtocol
 
-@property (readonly, nullable, nonatomic, strong) DWBalanceModel *balanceModel;
 @property (readonly, nonatomic, strong) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
 
 @end

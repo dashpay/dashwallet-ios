@@ -59,6 +59,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWAlertController.h"
 #import "DWHomeProtocol.h"
 #import "DWDPRegistrationErrorRetryDelegate.h"
+#import "UIDevice+DashWallet.h"
 
 //MARK: Backup Wallet
 #import "DWBackupSeedPhraseViewController.h"
