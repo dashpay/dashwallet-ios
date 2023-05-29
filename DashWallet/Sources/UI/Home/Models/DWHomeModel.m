@@ -278,6 +278,18 @@ NS_ASSUME_NONNULL_BEGIN
 #endif /* DASHPAY_ENABLED */
 }
 
+- (void)checkCrowdNodeState {
+    if (SyncingActivityMonitor.shared.state == SyncingActivityMonitorStateSyncDone) {
+        [CrowdNodeObjcWrapper restoreState];
+
+        if ([CrowdNodeObjcWrapper isInterrupted]) {
+            // Continue signup
+            [CrowdNodeObjcWrapper continueInterrupted];
+        }
+    }
+}
+
+
 #pragma mark - DWShortcutsModelDataSource
 
 - (BOOL)shouldShowCreateUserNameButton {
@@ -522,6 +534,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)syncingActivityMonitorStateDidChangeWithPreviousState:(enum SyncingActivityMonitorState)previousState state:(enum SyncingActivityMonitorState)state {
     BOOL isSynced = state == SyncingActivityMonitorStateSyncDone;
+    
     if (isSynced) {
         [self.dashPayModel updateUsernameStatus];
 
@@ -529,6 +542,8 @@ NS_ASSUME_NONNULL_BEGIN
             [self.receiveModel updateReceivingInfo];
             [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
         }
+        
+        [self checkCrowdNodeState];
     }
 
     [self updateBalance];
