@@ -34,7 +34,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 @interface DWSetupViewController () <DWSetPinViewControllerDelegate,
                                      DWBiometricAuthViewControllerDelegate,
                                      DWSecureWalletDelegate,
-                                     DWRecoverViewControllerDelegate>
+                                     DWRecoverViewControllerDelegate,
+                                     DWBackupInfoViewControllerDelegate>
 
 @property (nonatomic, assign) BOOL initialAnimationCompleted;
 

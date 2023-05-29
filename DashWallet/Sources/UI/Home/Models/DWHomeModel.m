@@ -37,7 +37,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeModel () <DWBalanceViewDataSource, SyncingActivityMonitorObserver>
+@interface DWHomeModel () <SyncingActivityMonitorObserver>
 
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (strong, nonatomic) DSReachabilityManager *reachability;

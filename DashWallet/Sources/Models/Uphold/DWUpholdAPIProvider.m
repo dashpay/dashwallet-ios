@@ -84,7 +84,7 @@ typedef void (^UpholdHTTPLoaderCompletionBlock)(id _Nullable parsedData, DWUphol
 
 #pragma mark - API Provider
 
-static NSSet<NSString *> *FiatCurrencyCodes() {
+static NSSet<NSString *> *FiatCurrencyCodes(void) {
     return [NSSet setWithObjects:
                       @"ARS", @"AUD", @"BRL", @"CAD", @"DKK", @"AED", @"EUR", @"HKD", @"INR", @"ILS", @"KES",
                       @"MXN", @"NZD", @"NOK", @"PHP", @"PLN", @"GBP", @"SGD", @"SEK", @"CHF", @"USD", @"JPY", @"CNY", nil];
