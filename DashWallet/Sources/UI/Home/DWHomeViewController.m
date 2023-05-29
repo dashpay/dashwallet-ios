@@ -17,7 +17,6 @@
 
 #import "DWHomeViewController.h"
 
-#import "DWBalanceDisplayOptionsProtocol.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWHomeModel.h"
@@ -97,7 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
 
-    [self.model.balanceDisplayOptions hideBalanceIfNeeded];
+    [self.view hideBalanceIfNeeded];
 }
 
 #pragma mark - DWHomeViewDelegate

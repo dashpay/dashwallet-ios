@@ -17,7 +17,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWBalanceProtocol.h"
 #import "DWDashPayProtocol.h"
 #import "DWTxDisplayModeProtocol.h"
 
@@ -43,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)homeModelWantToReloadShortcuts:(id<DWHomeProtocol>)model;
 @end
 
-@protocol DWHomeProtocol <DWBalanceProtocol, DWTxDisplayModeProtocol>
+@protocol DWHomeProtocol <DWTxDisplayModeProtocol>
 
 @property (nullable, nonatomic, weak) id<DWHomeModelUpdatesObserver> updatesObserver;
 

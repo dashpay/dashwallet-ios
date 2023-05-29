@@ -17,7 +17,6 @@
 
 #import "DWHomeModelStub.h"
 
-#import "DWBalanceDisplayOptionsStub.h"
 #import "DWDashPayModel.h"
 #import "DWEnvironment.h"
 #import "DWPayModelStub.h"
@@ -34,15 +33,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, strong) DWTransactionListDataProviderStub *dataProvider;
 
-@property (nullable, nonatomic, strong) DWBalanceModel *balanceModel;
-
 @property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
 
 @end
 
 @implementation DWHomeModelStub
 
-@synthesize balanceDisplayOptions = _balanceDisplayOptions;
 @synthesize displayMode = _displayMode;
 @synthesize payModel = _payModel;
 @synthesize receiveModel = _receiveModel;
@@ -63,7 +59,6 @@ NS_ASSUME_NONNULL_BEGIN
         _dashPayModel = [[DWDashPayModel alloc] init]; // TODO: DP consider using stub
 #endif                                                 /* DASHPAY_ENABLED */
         _payModel = [[DWPayModelStub alloc] init];
-        _balanceDisplayOptions = [[DWBalanceDisplayOptionsStub alloc] init];
         _allowedToShowReclassifyYourTransactions = NO;
 
         [self updateBalance];
@@ -142,7 +137,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)updateBalance {
-    self.balanceModel = [[DWBalanceModel alloc] initWith:42 * DUFFS];
 }
 
 - (void)reloadTxDataSource {
@@ -150,18 +144,6 @@ NS_ASSUME_NONNULL_BEGIN
                                                                 registrationStatus:[self.dashPayModel registrationStatus]];
 
     [self.updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:NO];
-}
-
-- (NSString *)supplementaryAmountString {
-    return [self.balanceModel fiatAmountString];
-}
-
-- (NSString *)mainAmountString {
-    return [self.balanceModel mainAmountString];
-}
-
-- (BOOL)isBalanceHidden {
-    return self.balanceDisplayOptions.balanceHidden;
 }
 
 @end

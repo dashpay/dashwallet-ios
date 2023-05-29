@@ -70,6 +70,11 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         setupView()
     }
 
+    @objc
+    func hideBalanceIfNeeded() {
+        headerView?.balanceView.hideBalanceIfNeeded()
+    }
+    
     override func layoutSubviews() {
         super.layoutSubviews()
 
@@ -89,7 +94,6 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         backgroundColor = UIColor.dw_secondaryBackground()
 
         headerView = HomeHeaderView(frame: CGRect.zero)
-        headerView.balanceDataSource = self
         headerView.delegate = self
 
         topOverscrollView = UIView(frame: CGRect.zero)
@@ -145,6 +149,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         tableView.reloadData()
 
         headerView.reloadBalance()
+        reloadShortcuts()
     }
 
     func homeModel(_ model: DWHomeProtocol, didReceiveNewIncomingTransaction transaction: DSTransaction) {
@@ -153,6 +158,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
 
     func homeModelDidChangeInnerModels(_ model: DWHomeProtocol) {
         headerView.reloadBalance()
+        reloadShortcuts()
     }
 
     func homeModelWant(toReloadShortcuts model: DWHomeProtocol) {
@@ -182,11 +188,6 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
 extension HomeView: HomeHeaderViewDelegate {
     func homeHeaderView(_ headerView: HomeHeaderView, retrySyncButtonAction sender: UIView) {
         model?.retrySyncing()
-    }
-
-    func homeHeaderViewDidToggleBalanceVisibility(_ headerView: HomeHeaderView) {
-        model?.balanceDisplayOptions.balanceHidden.toggle()
-        headerView.reloadBalance()
     }
 
     func homeHeaderViewDidUpdateContents(_ view: HomeHeaderView) {
@@ -264,18 +265,3 @@ extension HomeView: UITableViewDataSource, UITableViewDelegate {
 
 }
 
-// MARK: HomeBalanceViewDataSource
-
-extension HomeView: HomeBalanceViewDataSource {
-    var isBalanceHidden: Bool {
-        model?.balanceDisplayOptions.balanceHidden ?? false
-    }
-
-    var mainAmountString: String {
-        model?.balanceModel?.mainAmountString() ?? "0"
-    }
-
-    var supplementaryAmountString: String {
-        model?.balanceModel?.fiatAmountString() ?? "Not available"
-    }
-}

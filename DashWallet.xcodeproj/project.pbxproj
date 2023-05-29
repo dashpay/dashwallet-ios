@@ -203,7 +203,6 @@
 		2A6300492328EA8900827825 /* DWLockActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6300482328EA8900827825 /* DWLockActionButton.m */; };
 		2A63004E2328F37C00827825 /* DWLockScreenViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A63004D2328F37C00827825 /* DWLockScreenViewController.m */; };
 		2A6688FD24BCB739008E10F0 /* DWDPTxItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6688FC24BCB739008E10F0 /* DWDPTxItemView.m */; };
-		2A6B8E542387056200A2E5FA /* DWBalanceDisplayOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6B8E532387056200A2E5FA /* DWBalanceDisplayOptions.m */; };
 		2A741DC223639A9700840ADF /* TodayExtension.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A741DC123639A9700840ADF /* TodayExtension.storyboard */; };
 		2A741DC323639C7E00840ADF /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
 		2A741DC62363A06000840ADF /* DWURLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A741DC52363A06000840ADF /* DWURLParser.m */; };
@@ -305,7 +304,6 @@
 		2A913E7123A2667E006A2A59 /* Onboarding.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A913E7023A2667E006A2A59 /* Onboarding.storyboard */; };
 		2A913E7F23A30609006A2A59 /* DWRootModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E7E23A30609006A2A59 /* DWRootModelStub.m */; };
 		2A913E8223A30623006A2A59 /* DWHomeModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8123A30623006A2A59 /* DWHomeModelStub.m */; };
-		2A913E8923A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8823A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.m */; };
 		2A913E8C23A3134E006A2A59 /* UIView+DWEmbedding.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8B23A3134E006A2A59 /* UIView+DWEmbedding.m */; };
 		2A913E9023A31713006A2A59 /* UIViewController+DWEmbedding.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8F23A31713006A2A59 /* UIViewController+DWEmbedding.m */; };
 		2A913E9523A3F75F006A2A59 /* DWInitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E9423A3F75F006A2A59 /* DWInitialViewController.m */; };
@@ -724,7 +722,6 @@
 		C9F451FD2A0CC4A300825057 /* BadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451FC2A0CC4A300825057 /* BadgeView.swift */; };
 		C9F452012A0CE6C900825057 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F452002A0CE6C900825057 /* HomeView.swift */; };
 		C9F452032A0CEB5800825057 /* TxListEmptyTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F452022A0CEB5800825057 /* TxListEmptyTableViewCell.swift */; };
-		C9F452052A0CF4E500825057 /* HomeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F452042A0CF4E500825057 /* HomeModel.swift */; };
 		C9F452082A11F28600825057 /* SyncModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F452072A11F28600825057 /* SyncModel.swift */; };
 		C9F4520B2A1209D100825057 /* HomeHeaderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F4520A2A1209D100825057 /* HomeHeaderModel.swift */; };
 		CC5F88E358330F8EE192D5BE /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */; };
@@ -1123,8 +1120,6 @@
 		2A6688FA24BCB3AC008E10F0 /* DWDPBasicItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPBasicItem.h; sourceTree = "<group>"; };
 		2A6688FB24BCB739008E10F0 /* DWDPTxItemView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPTxItemView.h; sourceTree = "<group>"; };
 		2A6688FC24BCB739008E10F0 /* DWDPTxItemView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPTxItemView.m; sourceTree = "<group>"; };
-		2A6B8E522387056200A2E5FA /* DWBalanceDisplayOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceDisplayOptions.h; sourceTree = "<group>"; };
-		2A6B8E532387056200A2E5FA /* DWBalanceDisplayOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalanceDisplayOptions.m; sourceTree = "<group>"; };
 		2A741DC02363993600840ADF /* DWTodayViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTodayViewController.h; sourceTree = "<group>"; };
 		2A741DC123639A9700840ADF /* TodayExtension.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = TodayExtension.storyboard; sourceTree = "<group>"; };
 		2A741DC42363A06000840ADF /* DWURLParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWURLParser.h; sourceTree = "<group>"; };
@@ -1328,7 +1323,6 @@
 		2A913E6D23A26663006A2A59 /* DWOnboardingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWOnboardingViewController.h; sourceTree = "<group>"; };
 		2A913E6E23A26663006A2A59 /* DWOnboardingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWOnboardingViewController.m; sourceTree = "<group>"; };
 		2A913E7023A2667E006A2A59 /* Onboarding.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Onboarding.storyboard; sourceTree = "<group>"; };
-		2A913E7323A2EB0E006A2A59 /* DWBalanceProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceProtocol.h; sourceTree = "<group>"; };
 		2A913E7723A2F2B6006A2A59 /* DWTxDisplayModeProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDisplayModeProtocol.h; sourceTree = "<group>"; };
 		2A913E7A23A2F7ED006A2A59 /* DWHomeProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeProtocol.h; sourceTree = "<group>"; };
 		2A913E7B23A2FF4A006A2A59 /* DWRootProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRootProtocol.h; sourceTree = "<group>"; };
@@ -1336,9 +1330,6 @@
 		2A913E7E23A30609006A2A59 /* DWRootModelStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRootModelStub.m; sourceTree = "<group>"; };
 		2A913E8023A30623006A2A59 /* DWHomeModelStub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeModelStub.h; sourceTree = "<group>"; };
 		2A913E8123A30623006A2A59 /* DWHomeModelStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeModelStub.m; sourceTree = "<group>"; };
-		2A913E8623A30C2D006A2A59 /* DWBalanceDisplayOptionsProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceDisplayOptionsProtocol.h; sourceTree = "<group>"; };
-		2A913E8723A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceDisplayOptionsStub.h; sourceTree = "<group>"; };
-		2A913E8823A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalanceDisplayOptionsStub.m; sourceTree = "<group>"; };
 		2A913E8A23A3134E006A2A59 /* UIView+DWEmbedding.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+DWEmbedding.h"; sourceTree = "<group>"; };
 		2A913E8B23A3134E006A2A59 /* UIView+DWEmbedding.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWEmbedding.m"; sourceTree = "<group>"; };
 		2A913E8E23A31713006A2A59 /* UIViewController+DWEmbedding.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIViewController+DWEmbedding.h"; sourceTree = "<group>"; };
@@ -1988,7 +1979,6 @@
 		C9F451FC2A0CC4A300825057 /* BadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeView.swift; sourceTree = "<group>"; };
 		C9F452002A0CE6C900825057 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		C9F452022A0CEB5800825057 /* TxListEmptyTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxListEmptyTableViewCell.swift; sourceTree = "<group>"; };
-		C9F452042A0CF4E500825057 /* HomeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeModel.swift; sourceTree = "<group>"; };
 		C9F452072A11F28600825057 /* SyncModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncModel.swift; sourceTree = "<group>"; };
 		C9F4520A2A1209D100825057 /* HomeHeaderModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeHeaderModel.swift; sourceTree = "<group>"; };
 		CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.release.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.release.xcconfig"; sourceTree = "<group>"; };
@@ -2650,10 +2640,7 @@
 				2A913EA123A799D9006A2A59 /* Transactions */,
 				2A4E533622F023AB00E5168A /* DWHomeModel.h */,
 				2A4E533722F023AB00E5168A /* DWHomeModel.m */,
-				C9F452042A0CF4E500825057 /* HomeModel.swift */,
 				47081198298CF57D003FCA3D /* TransactionListDataSource.swift */,
-				2A6B8E522387056200A2E5FA /* DWBalanceDisplayOptions.h */,
-				2A6B8E532387056200A2E5FA /* DWBalanceDisplayOptions.m */,
 				2A56EF0424193AEB002C32F3 /* DWDashPayModel.h */,
 				2A56EF0524193AEB002C32F3 /* DWDashPayModel.m */,
 				2AFF01D9243F4559003718DC /* DWDPRegistrationStatus.h */,
@@ -3593,8 +3580,6 @@
 		2A913E7223A2EAEF006A2A59 /* Protocols */ = {
 			isa = PBXGroup;
 			children = (
-				2A913E8623A30C2D006A2A59 /* DWBalanceDisplayOptionsProtocol.h */,
-				2A913E7323A2EB0E006A2A59 /* DWBalanceProtocol.h */,
 				2A913E7A23A2F7ED006A2A59 /* DWHomeProtocol.h */,
 				2A913E7723A2F2B6006A2A59 /* DWTxDisplayModeProtocol.h */,
 				2A56EF0724193BA9002C32F3 /* DWDashPayProtocol.h */,
@@ -3605,8 +3590,6 @@
 		2A913E7C23A305E5006A2A59 /* Stubs */ = {
 			isa = PBXGroup;
 			children = (
-				2A913E8723A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.h */,
-				2A913E8823A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.m */,
 				2A913E8023A30623006A2A59 /* DWHomeModelStub.h */,
 				2A913E8123A30623006A2A59 /* DWHomeModelStub.m */,
 				2AB3415C23A8133A004E37A7 /* DWPayModelStub.h */,
@@ -6465,7 +6448,6 @@
 				478C982F294305D800FAA0F0 /* ActivePaymentMethodView.swift in Sources */,
 				47CDEEC72949DC38008AE06D /* BasicInfoController.swift in Sources */,
 				2AD1CEA822E0C8C900C99324 /* DWPreviewSeedPhraseModel.m in Sources */,
-				2A913E8923A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.m in Sources */,
 				2A0C69CD23142F90001B8C90 /* DWModalPresentationAnimation.m in Sources */,
 				110C679A29227948006B580C /* UINavigationController+CrowdNode.swift in Sources */,
 				2A8B9E7A2302E67400FF8653 /* DWReceiveModel.m in Sources */,
@@ -6763,7 +6745,6 @@
 				2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */,
 				2A9FFE802230FF4600956D5F /* DWSelectorFormTableViewCell.m in Sources */,
 				2A3CCEF9242BB1B900300AF8 /* DWRegistrationCompletedViewController.m in Sources */,
-				C9F452052A0CF4E500825057 /* HomeModel.swift in Sources */,
 				2ADC9D712462D4AD001D7C0D /* DWUserProfileHeaderView.m in Sources */,
 				47305872295C971F004641DA /* UIViewController+AlertPresenting.swift in Sources */,
 				2A9CEBB522E1EAC900A50237 /* DWTabBarView.m in Sources */,
@@ -6859,7 +6840,6 @@
 				2A8B9E5622FEDF2900FF8653 /* DWControllerCollectionView.m in Sources */,
 				2A9FFDF52230FF1A00956D5F /* SFSafariViewController+DashWallet.m in Sources */,
 				2AD6E54D2487CE0100B52F14 /* DWContactsDataSourceObject.m in Sources */,
-				2A6B8E542387056200A2E5FA /* DWBalanceDisplayOptions.m in Sources */,
 				474C7218298A422500475CA6 /* TransactionItemView.swift in Sources */,
 				474C7211298A1A9500475CA6 /* UIView+Reuse.swift in Sources */,
 				2A9FFE072230FF2B00956D5F /* DWUpholdClient.m in Sources */,

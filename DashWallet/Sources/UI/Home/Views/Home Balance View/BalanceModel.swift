@@ -18,12 +18,35 @@
 import Foundation
 
 final class BalanceModel {
-    var value: UInt64 = 0
-
+    private(set) var state: SyncingActivityMonitor.State
+    
+    private(set) var value: UInt64 = 0
+    var isBalanceHidden: Bool
+    
+    var balanceDidChange: (() -> ())?
+    
     init() {
+        isBalanceHidden = DWGlobalOptions.sharedInstance().balanceHidden
+        state = SyncingActivityMonitor.shared.state
+        
+        SyncingActivityMonitor.shared.add(observer: self)
+        
         reloadBalance()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(self.applicationWillEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
     }
 
+    func hideBalanceIfNeeded() {
+        if DWGlobalOptions.sharedInstance().balanceHidden {
+            isBalanceHidden = true
+        }
+    }
+    
+    @objc
+    func applicationWillEnterForeground(_ notification: NSNotification) {
+        hideBalanceIfNeeded()
+    }
+    
     private func reloadBalance() {
         let balanceValue = DWEnvironment.sharedInstance().currentWallet.balance
         
@@ -43,7 +66,35 @@ final class BalanceModel {
             options.balanceChangedDate = Date()
         }
 
-        options.userHasBalance = balanceValue > 0;
+        options.userHasBalance = balanceValue > 0
+        
+        balanceDidChange?()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        SyncingActivityMonitor.shared.remove(observer: self)
+    }
+}
+
+extension BalanceModel: BalanceViewDataSource {
+    var mainAmountString: String {
+        value.formattedDashAmount
+    }
+
+    var supplementaryAmountString: String {
+        fiatAmountString()
+    }
+}
+
+extension BalanceModel: SyncingActivityMonitorObserver {
+    func syncingActivityMonitorProgressDidChange(_ progress: Double) {
+        // NOP
+    }
+
+    func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
+        self.state = state
+        reloadBalance()
     }
 }
 
@@ -52,11 +103,8 @@ extension BalanceModel {
         NSAttributedString.dashAttributedString(for: value, tintColor: tintColor, font: font)
     }
 
-    func mainAmountString() -> String {
-        value.formattedDashAmount
-    }
-
     func fiatAmountString() -> String {
         CurrencyExchanger.shared.fiatAmountString(for: value.dashAmount)
     }
 }
+

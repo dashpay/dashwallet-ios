@@ -25,7 +25,6 @@ protocol HomeHeaderViewDelegate: AnyObject {
     func homeHeaderView(_ headerView: HomeHeaderView, profileButtonAction sender: UIControl)
     func homeHeaderView(_ headerView: HomeHeaderView, retrySyncButtonAction sender: UIView)
     func homeHeaderViewDidUpdateContents(_ headerView: HomeHeaderView)
-    func homeHeaderViewDidToggleBalanceVisibility(_ headerView: HomeHeaderView)
 }
 
 // MARK: - HomeHeaderView
@@ -40,15 +39,6 @@ final class HomeHeaderView: UIView {
     private(set) var syncView: SyncView!
     private(set) var shortcutsView: ShortcutsView!
     private(set) var stackView: UIStackView!
-
-    weak var balanceDataSource: HomeBalanceViewDataSource? {
-        get {
-            balanceView.dataSource
-        }
-        set {
-            balanceView.dataSource = newValue
-        }
-    }
 
     weak var shortcutsDelegate: ShortcutsActionDelegate? {
         get {
@@ -189,10 +179,6 @@ extension HomeHeaderView: HomeBalanceViewDelegate {
     func balanceView(_ view: HomeBalanceView, balanceLongPressAction sender: UIControl) {
         let action = ShortcutAction(type: .localCurrency)
         shortcutsDelegate?.shortcutsView(view, didSelectAction: action, sender: sender)
-    }
-
-    func balanceViewDidToggleBalanceVisibility(_ view: HomeBalanceView) {
-        delegate?.homeHeaderViewDidToggleBalanceVisibility(self)
     }
 }
 

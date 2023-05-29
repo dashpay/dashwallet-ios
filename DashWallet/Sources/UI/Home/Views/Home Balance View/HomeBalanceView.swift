@@ -22,13 +22,6 @@ import Foundation
 @objc(DWHomeBalanceViewDelegate)
 protocol HomeBalanceViewDelegate: AnyObject {
     func balanceView(_ view: HomeBalanceView, balanceLongPressAction sender: UIControl)
-    func balanceViewDidToggleBalanceVisibility(_ view: HomeBalanceView)
-}
-
-// MARK: - HomeBalanceViewDataSource
-
-protocol HomeBalanceViewDataSource: BalanceViewDataSource {
-    var isBalanceHidden: Bool { get }
 }
 
 // MARK: - HomeBalanceViewState
@@ -50,14 +43,6 @@ final class HomeBalanceView: UIView {
     @IBOutlet private var amountsView: UIView!
     @IBOutlet private var balanceView: BalanceView!
 
-    weak var dataSource: HomeBalanceViewDataSource? {
-        didSet {
-            balanceView.dataSource = dataSource
-            reloadView()
-            reloadData()
-        }
-    }
-
     weak var delegate: HomeBalanceViewDelegate?
 
     var state: HomeBalanceViewState = .default {
@@ -67,25 +52,32 @@ final class HomeBalanceView: UIView {
     }
 
     private var isBalanceHidden: Bool {
-        dataSource?.isBalanceHidden ?? false
+        model.isBalanceHidden
     }
 
     private let model = BalanceModel()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
+        
         commonInit()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+       
         commonInit()
     }
 
-    @objc
+    func hideBalanceIfNeeded() {
+        model.hideBalanceIfNeeded()
+        hideBalance(model.isBalanceHidden)
+    }
+    
     func reloadView() {
         var titleString = ""
 
-        let isBalanceHidden = dataSource?.isBalanceHidden ?? false
+        let isBalanceHidden = model.isBalanceHidden
 
         if !isBalanceHidden && state == .syncing {
             titleString = NSLocalizedString("Syncing Balance", comment: "")
@@ -107,12 +99,13 @@ final class HomeBalanceView: UIView {
         hideBalance(isBalanceHidden)
     }
 
-    @objc
     public func reloadData() {
         balanceView.reloadData()
     }
 
     private func commonInit() {
+        
+        
         Bundle.main.loadNibNamed("HomeBalanceView", owner: self, options: nil)
         contentView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(contentView)
@@ -145,7 +138,8 @@ final class HomeBalanceView: UIView {
         balanceButton.addGestureRecognizer(recognizer)
 
         balanceView.tint = .white
-
+        balanceView.dataSource = model
+        
         let isBalanceHidden = isBalanceHidden
         hidingView.alpha = isBalanceHidden ? 1.0 : 0.0
         amountsView.alpha = isBalanceHidden ? 0.0 : 1.0
@@ -153,6 +147,14 @@ final class HomeBalanceView: UIView {
 
         NotificationCenter.default.addObserver(self, selector: #selector(contentSizeCategoryDidChangeNotification(_:)), name: UIContentSizeCategory.didChangeNotification,
                                                object: nil)
+        
+        reloadView()
+        reloadData()
+        
+        model.balanceDidChange = { [weak self] in
+            self?.reloadView()
+            self?.reloadData()
+        }
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -163,7 +165,8 @@ final class HomeBalanceView: UIView {
 
     @IBAction
     private func balanceButtonAction(_ sender: UIControl) {
-        delegate?.balanceViewDidToggleBalanceVisibility(self)
+        model.isBalanceHidden.toggle()
+        reloadView()
     }
 
     @objc
@@ -176,7 +179,6 @@ final class HomeBalanceView: UIView {
         reloadData()
     }
 
-    @objc
     func hideBalance(_ hidden: Bool) {
         let animated = window != nil
         let isAlreadyHidden = amountsView.alpha == 0

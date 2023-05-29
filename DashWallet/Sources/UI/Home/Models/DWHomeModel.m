@@ -23,7 +23,6 @@
 #import <UIKit/UIApplication.h>
 
 #import "AppDelegate.h"
-#import "DWBalanceDisplayOptions.h"
 #import "DWDashPayConstants.h"
 #import "DWDashPayContactsUpdater.h"
 #import "DWDashPayModel.h"
@@ -59,7 +58,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWHomeModel
 
-@synthesize balanceDisplayOptions = _balanceDisplayOptions;
 @synthesize displayMode = _displayMode;
 @synthesize payModel = _payModel;
 @synthesize receiveModel = _receiveModel;
@@ -99,7 +97,6 @@ NS_ASSUME_NONNULL_BEGIN
         [_receiveModel updateReceivingInfo];
 
         _payModel = [[DWPayModel alloc] init];
-        _balanceDisplayOptions = [[DWBalanceDisplayOptions alloc] init];
 
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
@@ -334,7 +331,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)applicationWillEnterForegroundNotification {
     [self startSyncIfNeeded];
-    [self.balanceDisplayOptions hideBalanceIfNeeded];
 }
 
 - (void)fiatCurrencyDidChangeNotification {
@@ -518,10 +514,6 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     return [mutableTransactions copy];
-}
-
-- (BOOL)isBalanceHidden {
-    return self.balanceDisplayOptions.balanceHidden;
 }
 
 #pragma mark SyncingActivityMonitorObserver

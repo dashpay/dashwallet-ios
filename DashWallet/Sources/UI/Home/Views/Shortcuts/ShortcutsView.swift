@@ -121,7 +121,6 @@ class ShortcutsView: UIView {
             contentView.widthAnchor.constraint(equalTo: widthAnchor),
         ])
 
-
         collectionView.layer.cornerRadius = 8
         collectionView.layer.masksToBounds = true
 
@@ -146,7 +145,9 @@ class ShortcutsView: UIView {
     }
 
     private func updateCellSizeForContentSizeCategory(_ contentSizeCategory: UIContentSizeCategory, initialSetup: Bool) {
-        let cellSize = cellSize(for: contentSizeCategory)
+        var cellSize = cellSize(for: contentSizeCategory)
+        cellSize.height = ceil(cellSize.height) // This fixes the autolayout issue when the size of the cell is higher than the collection view itself
+        
         collectionViewHeightConstraint.constant = cellSize.height
         setNeedsUpdateConstraints()
 
