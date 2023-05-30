@@ -29,7 +29,9 @@ extension UIDevice {
     static var isIphone6: Bool { isIphone && screenMaxLength <= 667.0 }
     static var isIphone6Plus: Bool { isIphone && screenMaxLength <= 736.0 }
 
-    static var hasHomeIndicator: Bool { (UIApplication.shared.delegate?.window??.safeAreaInsets.bottom ?? 0) > 0 }
+    static var hasHomeIndicator: Bool {
+        (UIApplication.shared.delegate?.window??.safeAreaInsets.bottom ?? 0) > 0
+    }
 }
 
 

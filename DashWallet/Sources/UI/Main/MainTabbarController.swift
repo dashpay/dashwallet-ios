@@ -102,6 +102,7 @@ class MainTabbarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        delegate = self
         configureHierarchy()
     }
 
@@ -159,7 +160,7 @@ extension MainTabbarController {
 
         NSLayoutConstraint.activate([
             paymentButton.centerXAnchor.constraint(equalTo: tabBar.centerXAnchor),
-            paymentButton.topAnchor.constraint(equalTo: tabBar.topAnchor, constant: 4),
+            paymentButton.topAnchor.constraint(equalTo: tabBar.topAnchor, constant: UIDevice.hasHomeIndicator ? 4 : 1),
 
             paymentButton.widthAnchor.constraint(equalToConstant: PaymentButton.kCenterCircleSize),
             paymentButton.heightAnchor.constraint(equalToConstant: PaymentButton.kCenterCircleSize),
@@ -320,6 +321,12 @@ extension MainTabbarController: DWHomeViewControllerDelegate {
                 self.tabBar.isUserInteractionEnabled = true
             }
         }
+    }
+}
+
+extension MainTabbarController: UITabBarControllerDelegate {
+    func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
+        !(viewController is EmptyController)
     }
 }
 

@@ -19,7 +19,7 @@ import UIKit
 
 @objc(DWPaymentsButton)
 final class PaymentButton: UIButton {
-    static let kCenterCircleSize: CGFloat = 48.0
+    static let kCenterCircleSize: CGFloat = 47.0
 
     @objc
     var isOpened = false
