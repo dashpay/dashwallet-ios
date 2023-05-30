@@ -139,17 +139,20 @@ extension SyncingHeaderView {
         guard isSyncing else {
             return
         }
-        let percentString = String(format: "%0.1f%%", progress * 100.0)
+        
+        let string = NSMutableAttributedString()
 
-        let result = NSMutableAttributedString()
-
-        let str1 = NSAttributedString(string: String(format: "%@ ", NSLocalizedString("Syncing", comment: "")),
+        let syncingString = NSAttributedString(string: String(format: "%@ ", NSLocalizedString("Syncing", comment: "")),
                                       attributes: [NSAttributedString.Key.font: UIFont.dw_font(forTextStyle: .body)])
-        result.append(str1)
+        string.append(syncingString)
 
-        let str2 = NSAttributedString(string: percentString, attributes: [NSAttributedString.Key.font: UIFont.dw_font(forTextStyle: .headline)])
-        result.append(str2)
-
-        syncingButton.setAttributedTitle(result, for: .normal)
+        if DWEnvironment.sharedInstance().currentChainManager.peerManager.connected || progress > 0 {
+            let percentString = String(format: "%0.1f%%", progress * 100.0)
+            let progressString = NSAttributedString(string: percentString,
+                                          attributes: [NSAttributedString.Key.font: UIFont.dw_font(forTextStyle: .headline)])
+            string.append(progressString)
+        }
+        
+        syncingButton.setAttributedTitle(string, for: .normal)
     }
 }
