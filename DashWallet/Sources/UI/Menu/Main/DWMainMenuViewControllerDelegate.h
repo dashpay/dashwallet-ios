@@ -1,6 +1,6 @@
-//
-//  Created by Andrew Podkovyrin
-//  Copyright © 2020 Dash Core Group. All rights reserved.
+//  
+//  Created by PT
+//  Copyright © 2023 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,14 +15,17 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
-NS_ASSUME_NONNULL_BEGIN
+#ifndef DWMainMenuViewControllerDelegate_h
+#define DWMainMenuViewControllerDelegate_h
 
-@interface DWPaymentsButton : UIButton
+@protocol DWMainMenuViewControllerDelegate <NSObject>
 
-@property (nonatomic, assign) BOOL opened;
+- (void)mainMenuViewControllerImportPrivateKey:(DWMainMenuViewController *)controller;
+- (void)mainMenuViewControllerOpenHomeScreen:(DWMainMenuViewController *)controller;
+- (void)showPaymentsControllerWithActivePage:(NSInteger)pageIndex;
 
 @end
 
-NS_ASSUME_NONNULL_END
+#endif /* DWMainMenuViewControllerDelegate_h */

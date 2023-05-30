@@ -17,23 +17,25 @@
 
 import Foundation
 
+// MARK: - BalanceModel
+
 final class BalanceModel {
     private(set) var state: SyncingActivityMonitor.State
-    
+
     private(set) var value: UInt64 = 0
     var isBalanceHidden: Bool
-    
+
     var balanceDidChange: (() -> ())?
-    
+
     init() {
         isBalanceHidden = DWGlobalOptions.sharedInstance().balanceHidden
         state = SyncingActivityMonitor.shared.state
-        
+
         SyncingActivityMonitor.shared.add(observer: self)
-        
+
         reloadBalance()
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(self.applicationWillEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
+
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationWillEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
     }
 
     func hideBalanceIfNeeded() {
@@ -41,41 +43,43 @@ final class BalanceModel {
             isBalanceHidden = true
         }
     }
-    
+
     @objc
     func applicationWillEnterForeground(_ notification: NSNotification) {
         hideBalanceIfNeeded()
     }
-    
+
     private func reloadBalance() {
         let balanceValue = DWEnvironment.sharedInstance().currentWallet.balance
-        
-        if (balanceValue > value &&
+
+        if balanceValue > value &&
             value > 0 &&
             UIApplication.shared.applicationState != .background &&
-            SyncingActivityMonitor.shared.progress > 0.995) {
+            SyncingActivityMonitor.shared.progress > 0.995 {
             UIDevice.current.dw_playCoinSound()
         }
 
         value = balanceValue
-        
+
         let options = DWGlobalOptions.sharedInstance()
-        if (balanceValue > 0
+        if balanceValue > 0
             && options.walletNeedsBackup
-            && (options.balanceChangedDate == nil)) {
+            && (options.balanceChangedDate == nil) {
             options.balanceChangedDate = Date()
         }
 
         options.userHasBalance = balanceValue > 0
-        
+
         balanceDidChange?()
     }
-    
+
     deinit {
         NotificationCenter.default.removeObserver(self)
         SyncingActivityMonitor.shared.remove(observer: self)
     }
 }
+
+// MARK: BalanceViewDataSource
 
 extension BalanceModel: BalanceViewDataSource {
     var mainAmountString: String {
@@ -86,6 +90,8 @@ extension BalanceModel: BalanceViewDataSource {
         fiatAmountString()
     }
 }
+
+// MARK: SyncingActivityMonitorObserver
 
 extension BalanceModel: SyncingActivityMonitorObserver {
     func syncingActivityMonitorProgressDidChange(_ progress: Double) {

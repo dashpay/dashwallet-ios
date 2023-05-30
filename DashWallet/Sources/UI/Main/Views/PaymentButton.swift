@@ -17,6 +17,23 @@
 
 import UIKit
 
+@objc(DWPaymentsButton)
 final class PaymentButton: UIButton {
+    static let kCenterCircleSize: CGFloat = 48.0
+
+    @objc
     var isOpened = false
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+
+        backgroundColor = .dw_dashBlue()
+        setImage(UIImage(named: "tabbar_pay_button")!, for: .normal)
+        layer.cornerRadius = PaymentButton.kCenterCircleSize / 2.0
+        layer.masksToBounds = true
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 }

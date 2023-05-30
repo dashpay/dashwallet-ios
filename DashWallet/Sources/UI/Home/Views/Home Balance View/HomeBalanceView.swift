@@ -56,16 +56,16 @@ final class HomeBalanceView: UIView {
     }
 
     private let model = BalanceModel()
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
+
         commonInit()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
-       
+
         commonInit()
     }
 
@@ -73,7 +73,7 @@ final class HomeBalanceView: UIView {
         model.hideBalanceIfNeeded()
         hideBalance(model.isBalanceHidden)
     }
-    
+
     func reloadView() {
         var titleString = ""
 
@@ -104,8 +104,6 @@ final class HomeBalanceView: UIView {
     }
 
     private func commonInit() {
-        
-        
         Bundle.main.loadNibNamed("HomeBalanceView", owner: self, options: nil)
         contentView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(contentView)
@@ -139,7 +137,7 @@ final class HomeBalanceView: UIView {
 
         balanceView.tint = .white
         balanceView.dataSource = model
-        
+
         let isBalanceHidden = isBalanceHidden
         hidingView.alpha = isBalanceHidden ? 1.0 : 0.0
         amountsView.alpha = isBalanceHidden ? 0.0 : 1.0
@@ -147,10 +145,10 @@ final class HomeBalanceView: UIView {
 
         NotificationCenter.default.addObserver(self, selector: #selector(contentSizeCategoryDidChangeNotification(_:)), name: UIContentSizeCategory.didChangeNotification,
                                                object: nil)
-        
+
         reloadView()
         reloadData()
-        
+
         model.balanceDidChange = { [weak self] in
             self?.reloadView()
             self?.reloadData()

@@ -28,7 +28,7 @@ protocol SyncModel {
 
     var progressDidChange: ((Double) -> ())? { get set }
     var progress: Double { get }
-    
+
     func forceStartSyncingActivity()
 }
 

@@ -71,7 +71,7 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
             guard oldValue != state else {
                 return
             }
-            
+
             NotificationCenter.default.post(name: .syncStateChangedNotification, object: nil,
                                             userInfo: [
                                                 kSyncStateChangedFromStateKey: oldValue,

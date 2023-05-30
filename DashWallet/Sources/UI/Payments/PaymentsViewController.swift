@@ -73,7 +73,6 @@ class PaymentsViewController: BaseViewController {
 
     private var receiveModel: DWReceiveModelProtocol!
     private var payModel: DWPayModelProtocol!
-    private var dataProvider: DWTransactionListDataProviderProtocol?
 
     private var payViewController: PayViewController!
     private var receiveViewController: ReceiveViewController!
@@ -103,14 +102,16 @@ class PaymentsViewController: BaseViewController {
         super.viewDidAppear(animated)
     }
 
+    class func controller() -> PaymentsViewController {
+        sb("Payments").vc(PaymentsViewController.self)
+    }
+
     @objc
     class func controller(withReceiveModel receiveModel: DWReceiveModelProtocol?,
-                          payModel: DWPayModelProtocol?,
-                          dataProvider: DWTransactionListDataProviderProtocol?) -> PaymentsViewController {
-        let controller = sb("Payments").vc(PaymentsViewController.self)
+                          payModel: DWPayModelProtocol?) -> PaymentsViewController {
+        let controller = controller()
         controller.receiveModel = receiveModel
         controller.payModel = payModel
-        controller.dataProvider = dataProvider
         return controller
     }
 }

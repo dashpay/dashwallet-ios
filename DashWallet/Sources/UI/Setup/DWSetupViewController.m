@@ -20,7 +20,6 @@
 #import "DWBiometricAuthModel.h"
 #import "DWBiometricAuthViewController.h"
 #import "DWGlobalOptions.h"
-#import "DWMainTabbarViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWRecoverViewController.h"
 #import "DWSetPinModel.h"

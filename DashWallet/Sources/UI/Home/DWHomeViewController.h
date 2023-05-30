@@ -16,20 +16,13 @@
 //
 
 #import "DWBasePayViewController.h"
-
 #import "DWHomeProtocol.h"
 #import "DWWipeDelegate.h"
-#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWHomeViewController;
-
-@protocol DWHomeViewControllerDelegate <NSObject>
-
-- (void)showPaymentsControllerWithActivePage:(DWPaymentsViewControllerIndex)pageIndex;
-
-@end
+@protocol DWHomeViewControllerDelegate;
 
 @interface DWHomeViewController : DWBasePayViewController
 

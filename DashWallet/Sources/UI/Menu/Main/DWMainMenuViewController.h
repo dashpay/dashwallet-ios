@@ -18,19 +18,11 @@
 #import <UIKit/UIKit.h>
 
 #import "DWWipeDelegate.h"
-#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWMainMenuViewController;
-
-@protocol DWMainMenuViewControllerDelegate <NSObject>
-
-- (void)mainMenuViewControllerImportPrivateKey:(DWMainMenuViewController *)controller;
-- (void)mainMenuViewControllerOpenHomeScreen:(DWMainMenuViewController *)controller;
-- (void)showPaymentsControllerWithActivePage:(DWPaymentsViewControllerIndex)pageIndex;
-
-@end
+@protocol DWMainMenuViewControllerDelegate;
 
 @interface DWMainMenuViewController : UIViewController
 

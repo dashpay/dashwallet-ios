@@ -74,7 +74,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
     func hideBalanceIfNeeded() {
         headerView?.balanceView.hideBalanceIfNeeded()
     }
-    
+
     override func layoutSubviews() {
         super.layoutSubviews()
 

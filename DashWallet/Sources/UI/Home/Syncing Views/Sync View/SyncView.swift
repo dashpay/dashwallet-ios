@@ -129,7 +129,7 @@ final class SyncView: UIView {
     @IBAction
     func retryButtonAction(_ sender: Any) {
         model.forceStartSyncingActivity()
-        
+
         delegate?.syncViewRetryButtonAction(self)
     }
 
