@@ -137,6 +137,7 @@ final class SyncView: UIView {
         super.awakeFromNib()
 
         commonInit()
+        updateView()
     }
 }
 
