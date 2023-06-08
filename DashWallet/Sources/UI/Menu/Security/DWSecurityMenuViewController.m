@@ -37,7 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWSecurityMenuViewController () <DWSetPinViewControllerDelegate, DWSecureWalletDelegate>
 
-@property (readonly, nonatomic, strong) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
 @property (null_resettable, nonatomic, strong) DWSecurityMenuModel *model;
 @property (nonatomic, strong) DWFormTableViewController *formController;
 
@@ -45,11 +44,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWSecurityMenuViewController
 
-- (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions {
+- (instancetype)init {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
-        _balanceDisplayOptions = balanceDisplayOptions;
-
+    
         self.title = NSLocalizedString(@"Security", nil);
         self.hidesBottomBarWhenPushed = YES;
     }
@@ -58,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DWSecurityMenuModel *)model {
     if (!_model) {
-        _model = [[DWSecurityMenuModel alloc] initWithBalanceDisplayOptions:self.balanceDisplayOptions];
+        _model = [[DWSecurityMenuModel alloc] init];
     }
 
     return _model;

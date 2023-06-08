@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -19,10 +19,12 @@ import UIKit
 
 let MAX_ALLOWED_BUTTON_WIDTH: CGFloat = 108.0
 
+// MARK: - PayTableViewCell
+
 class PayTableViewCell: UITableViewCell {
     @IBOutlet private weak var iconImageView: UIImageView!
     @IBOutlet private weak var titleLabel: UILabel!
-    
+
     override func awakeFromNib() {
         super.awakeFromNib()
         titleLabel.font = UIFont.dw_font(forTextStyle: .subheadline)
@@ -30,7 +32,7 @@ class PayTableViewCell: UITableViewCell {
 
     var model: DWPayOptionModel? {
         didSet {
-            guard let model = model else { return }
+            guard let model else { return }
 
             let type = model.type
             titleLabel.text = model.title

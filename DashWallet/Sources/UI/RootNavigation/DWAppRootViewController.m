@@ -21,7 +21,6 @@
 #import <DashSync/UIWindow+DSUtils.h>
 
 #import "DWLockScreenViewController.h"
-#import "DWMainTabbarViewController.h"
 #import "DWRootModel.h"
 #import "DWSetupViewController.h"
 #import "DWUIKit.h"
@@ -40,7 +39,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 @property (readonly, nonatomic, strong) id<DWRootProtocol> model;
 
-@property (null_resettable, nonatomic, strong) DWMainTabbarViewController *mainController;
+@property (null_resettable, nonatomic, strong) MainTabbarController *mainController;
 
 @property (nullable, nonatomic, strong) UIImageView *overlayImageView;
 @property (nonatomic, strong) UIWindow *lockWindow;
@@ -70,7 +69,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 #pragma mark - Public
 
 + (Class)mainControllerClass {
-    return [DWMainTabbarViewController class];
+    return [MainTabbarController class];
 }
 
 - (void)setLaunchingAsDeferredController {
@@ -120,7 +119,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
     else if ([action isKindOfClass:DWURLPayAction.class]) {
         NSURL *paymentURL = [(DWURLPayAction *)action paymentURL];
-        [self.mainController performPayToURL:paymentURL];
+        [self.mainController performPayTo:paymentURL];
     }
     else {
         NSAssert(NO, @"Unhandled action", action);
@@ -397,14 +396,13 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     return navigationController;
 }
 
-- (DWMainTabbarViewController *)mainController {
+- (MainTabbarController *)mainController {
     if (_mainController == nil) {
         id<DWHomeProtocol> homeModel = self.model.homeModel;
         Class klass = [self.class mainControllerClass];
-        DWMainTabbarViewController *controller = [[klass alloc] init];
-        controller.homeModel = homeModel;
-        controller.delegate = self;
-        controller.demoMode = self.demoMode;
+        MainTabbarController *controller = [[MainTabbarController alloc] initWithHomeModel:self.model.homeModel];
+        controller.wipeDelegate = self;
+        controller.isDemoMode = self.demoMode;
         controller.demoDelegate = self.demoDelegate;
 
         _mainController = controller;

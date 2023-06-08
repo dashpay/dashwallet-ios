@@ -21,8 +21,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWBalanceDisplayOptionsProtocol;
-
 @interface DWSecurityMenuModel : NSObject
 
 @property (readonly, assign, nonatomic) BOOL hasTouchID;
@@ -35,8 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setBiometricsEnabled:(BOOL)enabled completion:(void (^)(BOOL success))completion;
 
-- (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions;
-- (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 
 @end

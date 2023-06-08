@@ -119,9 +119,6 @@
 		2A10EB412358D2A900C38B61 /* ResetWalletInfo.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A10EB402358D2A900C38B61 /* ResetWalletInfo.storyboard */; };
 		2A10EB442358D2CA00C38B61 /* DWResetWalletInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A10EB432358D2CA00C38B61 /* DWResetWalletInfoViewController.m */; };
 		2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F59E2194BD6200E7B563 /* DWDataMigrationManager.m */; };
-		2A12E61923ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A12E61823ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m */; };
-		2A1A60BC2674084F003DAC65 /* DWSyncingAlertContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1A60BB2674084F003DAC65 /* DWSyncingAlertContentView.m */; };
-		2A1A60BF26740E27003DAC65 /* DWSyncingAlertViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1A60BE26740E27003DAC65 /* DWSyncingAlertViewController.m */; };
 		2A1AE78E23F4668B00179A6E /* DWUsernameHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1AE78D23F4668B00179A6E /* DWUsernameHeaderView.m */; };
 		2A1AE79223F468CD00179A6E /* DWPlanetarySystemView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1AE79123F468CD00179A6E /* DWPlanetarySystemView.m */; };
 		2A1AF6DE23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A1AF6DC23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib */; };
@@ -143,10 +140,8 @@
 		2A2CD71822F99CAE008C7BC9 /* ShortcutsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A2CD71722F99CAE008C7BC9 /* ShortcutsView.xib */; };
 		2A2CD72222F9B571008C7BC9 /* DWIntrinsicCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD72122F9B571008C7BC9 /* DWIntrinsicCollectionView.m */; };
 		2A2CD72522FA05DD008C7BC9 /* DWPressableButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD72422FA05DD008C7BC9 /* DWPressableButton.m */; };
-		2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A307CBB22E8925100A18347 /* DWHomeView.m */; };
 		2A307CBF22E8A44200A18347 /* DWButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A307CBE22E8A44200A18347 /* DWButton.m */; };
 		2A36A88B2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A36A88A2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m */; };
-		2A392565234CD21300316EA6 /* DWTabBarButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A392564234CD21300316EA6 /* DWTabBarButton.m */; };
 		2A392568234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A392567234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m */; };
 		2A3CCEF9242BB1B900300AF8 /* DWRegistrationCompletedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3CCEF8242BB1B900300AF8 /* DWRegistrationCompletedViewController.m */; };
 		2A3CCEFC242BB1DD00300AF8 /* DWDPAvatarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3CCEFB242BB1DD00300AF8 /* DWDPAvatarView.m */; };
@@ -176,21 +171,16 @@
 		2A4431E922D738C0009BAF7F /* DWSeedPhraseModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431E822D738C0009BAF7F /* DWSeedPhraseModel.m */; };
 		2A4663032279DC2F0027533B /* DashWalletScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4663022279DC2F0027533B /* DashWalletScreenshotsUITests.swift */; };
 		2A46630D2279DD7D0027533B /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A46630C2279DD7D0027533B /* SnapshotHelper.swift */; };
-		2A4E1D5325056297008AC53F /* DWPaymentsButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E1D5225056297008AC53F /* DWPaymentsButton.m */; };
 		2A4E531422E9F0A200E5168A /* DWStartViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D12196E25D00A6E7E6 /* DWStartViewController.m */; };
 		2A4E531522E9F0A200E5168A /* DWStartModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D62196E5CF00A6E7E6 /* DWStartModel.m */; };
-		2A4E531822EA381F00E5168A /* DWSyncView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E531722EA381F00E5168A /* DWSyncView.m */; };
-		2A4E531A22EA382B00E5168A /* DWSyncView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E531922EA382B00E5168A /* DWSyncView.xib */; };
+		2A4E531A22EA382B00E5168A /* SyncView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E531922EA382B00E5168A /* SyncView.xib */; };
 		2A4E531D22EA49FE00E5168A /* DWProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E531C22EA49FE00E5168A /* DWProgressView.m */; };
-		2A4E532022EB2DF400E5168A /* DWHomeHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E531F22EB2DF400E5168A /* DWHomeHeaderView.m */; };
 		2A4E533822F023AB00E5168A /* DWHomeModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E533722F023AB00E5168A /* DWHomeModel.m */; };
-		2A4E534022F025FE00E5168A /* DWTxListEmptyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E533E22F025FE00E5168A /* DWTxListEmptyTableViewCell.m */; };
-		2A4E534122F025FE00E5168A /* DWTxListEmptyTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E533F22F025FE00E5168A /* DWTxListEmptyTableViewCell.xib */; };
+		2A4E534122F025FE00E5168A /* TxListEmptyTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E533F22F025FE00E5168A /* TxListEmptyTableViewCell.xib */; };
 		2A4E534422F02BC300E5168A /* UIView+DWReuseHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E534322F02BC300E5168A /* UIView+DWReuseHelper.m */; };
 		2A4E534B22F03A9E00E5168A /* DWFilterHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E534A22F03A9E00E5168A /* DWFilterHeaderView.m */; };
 		2A4E534D22F03AAC00E5168A /* DWFilterHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E534C22F03AAC00E5168A /* DWFilterHeaderView.xib */; };
-		2A4E535022F19BE300E5168A /* DWSyncModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E534F22F19BE300E5168A /* DWSyncModel.m */; };
-		2A4E535522F1D0D900E5168A /* DWTxListTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E535322F1D0D900E5168A /* DWTxListTableViewCell.xib */; };
+		2A4E535522F1D0D900E5168A /* TxListTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E535322F1D0D900E5168A /* TxListTableViewCell.xib */; };
 		2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E535B22F335C200E5168A /* DWTransactionListDataProvider.m */; };
 		2A5279BC23D994BC00F856D3 /* CoreNFC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A5279BB23D994BC00F856D3 /* CoreNFC.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		2A56EEFB2417E30F002C32F3 /* DWConfirmUsernameContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EEFA2417E30F002C32F3 /* DWConfirmUsernameContentView.m */; };
@@ -204,14 +194,12 @@
 		2A5E4548243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5E4546243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m */; };
 		2A5E4549243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A5E4547243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib */; };
 		2A60C9452444BF3A00AF72CF /* DWConfirmUsernameContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A60C9442444BF3900AF72CF /* DWConfirmUsernameContentView.xib */; };
-		2A612AB724409D6E0060CC77 /* DWDashPayProfileView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A612AB624409D6E0060CC77 /* DWDashPayProfileView.m */; };
 		2A63003F2327B4BB00827825 /* DWPaymentOutput+DWView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A63003E2327B4BB00827825 /* DWPaymentOutput+DWView.m */; };
 		2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A6300412328CCE900827825 /* LockScreen.storyboard */; };
 		2A6300452328D07500827825 /* DWLockPinInputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6300442328D07500827825 /* DWLockPinInputView.m */; };
 		2A6300492328EA8900827825 /* DWLockActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6300482328EA8900827825 /* DWLockActionButton.m */; };
 		2A63004E2328F37C00827825 /* DWLockScreenViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A63004D2328F37C00827825 /* DWLockScreenViewController.m */; };
 		2A6688FD24BCB739008E10F0 /* DWDPTxItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6688FC24BCB739008E10F0 /* DWDPTxItemView.m */; };
-		2A6B8E542387056200A2E5FA /* DWBalanceDisplayOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6B8E532387056200A2E5FA /* DWBalanceDisplayOptions.m */; };
 		2A741DC223639A9700840ADF /* TodayExtension.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A741DC123639A9700840ADF /* TodayExtension.storyboard */; };
 		2A741DC323639C7E00840ADF /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
 		2A741DC62363A06000840ADF /* DWURLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A741DC52363A06000840ADF /* DWURLParser.m */; };
@@ -313,8 +301,6 @@
 		2A913E7123A2667E006A2A59 /* Onboarding.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A913E7023A2667E006A2A59 /* Onboarding.storyboard */; };
 		2A913E7F23A30609006A2A59 /* DWRootModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E7E23A30609006A2A59 /* DWRootModelStub.m */; };
 		2A913E8223A30623006A2A59 /* DWHomeModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8123A30623006A2A59 /* DWHomeModelStub.m */; };
-		2A913E8523A309EA006A2A59 /* DWSyncModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8423A309EA006A2A59 /* DWSyncModelStub.m */; };
-		2A913E8923A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8823A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.m */; };
 		2A913E8C23A3134E006A2A59 /* UIView+DWEmbedding.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8B23A3134E006A2A59 /* UIView+DWEmbedding.m */; };
 		2A913E9023A31713006A2A59 /* UIViewController+DWEmbedding.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8F23A31713006A2A59 /* UIViewController+DWEmbedding.m */; };
 		2A913E9523A3F75F006A2A59 /* DWInitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E9423A3F75F006A2A59 /* DWInitialViewController.m */; };
@@ -329,11 +315,8 @@
 		2A919F9C24A4DCAD0018C9A3 /* DWDPSmallContactView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A919F9B24A4DCAD0018C9A3 /* DWDPSmallContactView.m */; };
 		2A919F9F24A65CE00018C9A3 /* DWDPAmountContactView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A919F9E24A65CE00018C9A3 /* DWDPAmountContactView.m */; };
 		2A951CE423D1B92C00602824 /* DWBaseContactsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A951CE323D1B92C00602824 /* DWBaseContactsModel.m */; };
-		2A9CEBA822E1D5A200A50237 /* DWMainTabbarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBA722E1D5A200A50237 /* DWMainTabbarViewController.m */; };
 		2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */; };
-		2A9CEBB522E1EAC900A50237 /* DWTabBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBB422E1EAC900A50237 /* DWTabBarView.m */; };
 		2A9CEBB922E1FA1000A50237 /* DWHomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBB822E1FA1000A50237 /* DWHomeViewController.m */; };
-		2A9D72A82497C52E00F79CD8 /* DWBadgeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9D72A72497C52E00F79CD8 /* DWBadgeView.m */; };
 		2A9D72AC249A0EE000F79CD8 /* DWDPNewIncomingRequestObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9D72AB249A0EE000F79CD8 /* DWDPNewIncomingRequestObject.m */; };
 		2A9E7DC723F6928C00CDA1EE /* DWTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9E7DC623F6928C00CDA1EE /* DWTextField.m */; };
 		2A9E7DCA23F6BD5200CDA1EE /* DWUsernameValidationView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9E7DC923F6BD5200CDA1EE /* DWUsernameValidationView.m */; };
@@ -431,7 +414,6 @@
 		2AD6E5602487E13F00B52F14 /* DWRequestsContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD6E55F2487E13F00B52F14 /* DWRequestsContentViewController.m */; };
 		2AD6E5632487E16400B52F14 /* DWRequestsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD6E5622487E16400B52F14 /* DWRequestsViewController.m */; };
 		2AD6E56A2487E1DB00B52F14 /* DWRequestsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD6E5692487E1DB00B52F14 /* DWRequestsModel.m */; };
-		2AD7BCBE2673BDE9008FF133 /* DWSyncingHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD7BCBD2673BDE9008FF133 /* DWSyncingHeaderView.m */; };
 		2AD85A9F245881740045B480 /* DWQRScanStatusView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD85A9E245881740045B480 /* DWQRScanStatusView.m */; };
 		2ADB396924223D9B00A6F898 /* DWDashPayAnimationView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADB396824223D9B00A6F898 /* DWDashPayAnimationView.m */; };
 		2ADB396C242615C200A6F898 /* CALayer+MBAnimationPersistence.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADB396B242615C200A6F898 /* CALayer+MBAnimationPersistence.m */; };
@@ -702,6 +684,7 @@
 		C917024129D462C6008C034D /* PayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C917024029D462C6008C034D /* PayViewController.swift */; };
 		C91E919729FBACE6003E7883 /* ExtendedPublicKeysModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E919629FBACE6003E7883 /* ExtendedPublicKeysModel.swift */; };
 		C91E91AE29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E91AD29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift */; };
+		C94946E12A25F037008A678D /* DemoMainTabbarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94946E02A25F037008A678D /* DemoMainTabbarViewController.swift */; };
 		C94F5E8829D3E7E30034FD57 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */; };
 		C94F5E8A29D3FCCF0034FD57 /* ShortcutAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8929D3FCCF0034FD57 /* ShortcutAction.swift */; };
 		C94F5E8C29D3FEC10034FD57 /* ShortcutsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8B29D3FEC10034FD57 /* ShortcutsModel.swift */; };
@@ -722,6 +705,21 @@
 		C9F42FB429DD86FB001BC549 /* BackupInfoItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FB329DD86FB001BC549 /* BackupInfoItemView.swift */; };
 		C9F42FB629DD8702001BC549 /* BackupInfoItemView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9F42FB529DD8702001BC549 /* BackupInfoItemView.xib */; };
 		C9F42FB829DFC507001BC549 /* SpendableTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FB729DFC506001BC549 /* SpendableTransaction.swift */; };
+		C9F451E52A0B986E00825057 /* MainTabbarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451E42A0B986E00825057 /* MainTabbarController.swift */; };
+		C9F451E72A0BA16400825057 /* PaymentButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451E62A0BA16400825057 /* PaymentButton.swift */; };
+		C9F451E92A0BDAE700825057 /* UIApplication+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451E82A0BDAE700825057 /* UIApplication+DashWallet.swift */; };
+		C9F451EB2A0BF10B00825057 /* SyncingAlertViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451EA2A0BF10B00825057 /* SyncingAlertViewController.swift */; };
+		C9F451EE2A0BF1F500825057 /* SyncingAlertContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451ED2A0BF1F500825057 /* SyncingAlertContentView.swift */; };
+		C9F451F32A0C933700825057 /* SyncingHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451F22A0C933700825057 /* SyncingHeaderView.swift */; };
+		C9F451F52A0CAC9400825057 /* HomeHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451F42A0CAC9400825057 /* HomeHeaderView.swift */; };
+		C9F451F72A0CAE1300825057 /* SyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451F62A0CAE1300825057 /* SyncView.swift */; };
+		C9F451F92A0CB08900825057 /* ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451F82A0CB08900825057 /* ProgressView.swift */; };
+		C9F451FB2A0CC2A800825057 /* DashPayProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451FA2A0CC2A800825057 /* DashPayProfileView.swift */; };
+		C9F451FD2A0CC4A300825057 /* BadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451FC2A0CC4A300825057 /* BadgeView.swift */; };
+		C9F452012A0CE6C900825057 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F452002A0CE6C900825057 /* HomeView.swift */; };
+		C9F452032A0CEB5800825057 /* TxListEmptyTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F452022A0CEB5800825057 /* TxListEmptyTableViewCell.swift */; };
+		C9F452082A11F28600825057 /* SyncModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F452072A11F28600825057 /* SyncModel.swift */; };
+		C9F4520B2A1209D100825057 /* HomeHeaderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F4520A2A1209D100825057 /* HomeHeaderModel.swift */; };
 		CC5F88E358330F8EE192D5BE /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */; };
 		DE3A167A235B79D705C0A962 /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 982607F21196681DAC51A074 /* libPods-dashwallet.a */; };
 		FB248B5D1F73803100405AE0 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB248B5C1F73803100405AE0 /* UserNotifications.framework */; };
@@ -959,13 +957,7 @@
 		2A11F59D2194BD6200E7B563 /* DWDataMigrationManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDataMigrationManager.h; sourceTree = "<group>"; };
 		2A11F59E2194BD6200E7B563 /* DWDataMigrationManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDataMigrationManager.m; sourceTree = "<group>"; };
 		2A12E61623AB9B8D001CAF58 /* DWDemoDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDemoDelegate.h; sourceTree = "<group>"; };
-		2A12E61723ABC7D3001CAF58 /* DWDemoMainTabbarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDemoMainTabbarViewController.h; sourceTree = "<group>"; };
-		2A12E61823ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDemoMainTabbarViewController.m; sourceTree = "<group>"; };
 		2A12E61A23ABC8E1001CAF58 /* DWExtendedContainerViewController+DWProtected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWExtendedContainerViewController+DWProtected.h"; sourceTree = "<group>"; };
-		2A1A60BA2674084F003DAC65 /* DWSyncingAlertContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSyncingAlertContentView.h; sourceTree = "<group>"; };
-		2A1A60BB2674084F003DAC65 /* DWSyncingAlertContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSyncingAlertContentView.m; sourceTree = "<group>"; };
-		2A1A60BD26740E27003DAC65 /* DWSyncingAlertViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSyncingAlertViewController.h; sourceTree = "<group>"; };
-		2A1A60BE26740E27003DAC65 /* DWSyncingAlertViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSyncingAlertViewController.m; sourceTree = "<group>"; };
 		2A1AE78C23F4668B00179A6E /* DWUsernameHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUsernameHeaderView.h; sourceTree = "<group>"; };
 		2A1AE78D23F4668B00179A6E /* DWUsernameHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUsernameHeaderView.m; sourceTree = "<group>"; };
 		2A1AE79023F468CD00179A6E /* DWPlanetarySystemView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPlanetarySystemView.h; sourceTree = "<group>"; };
@@ -1006,16 +998,12 @@
 		2A2CD72122F9B571008C7BC9 /* DWIntrinsicCollectionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWIntrinsicCollectionView.m; sourceTree = "<group>"; };
 		2A2CD72322FA05DD008C7BC9 /* DWPressableButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPressableButton.h; sourceTree = "<group>"; };
 		2A2CD72422FA05DD008C7BC9 /* DWPressableButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPressableButton.m; sourceTree = "<group>"; };
-		2A307CBA22E8925100A18347 /* DWHomeView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeView.h; sourceTree = "<group>"; };
-		2A307CBB22E8925100A18347 /* DWHomeView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeView.m; sourceTree = "<group>"; };
 		2A307CBD22E8A44200A18347 /* DWButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWButton.h; sourceTree = "<group>"; };
 		2A307CBE22E8A44200A18347 /* DWButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWButton.m; sourceTree = "<group>"; };
 		2A36A887234F3F400014DC60 /* DWSelectorFormItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSelectorFormItem.h; sourceTree = "<group>"; };
 		2A36A8892350A05B0014DC60 /* DWBackupSeedPhraseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBackupSeedPhraseViewController.h; sourceTree = "<group>"; };
 		2A36A88A2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBackupSeedPhraseViewController.m; sourceTree = "<group>"; };
 		2A36A88C2350A18A0014DC60 /* DWPreviewSeedPhraseViewController+DWProtected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWPreviewSeedPhraseViewController+DWProtected.h"; sourceTree = "<group>"; };
-		2A392563234CD21300316EA6 /* DWTabBarButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTabBarButton.h; sourceTree = "<group>"; };
-		2A392564234CD21300316EA6 /* DWTabBarButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTabBarButton.m; sourceTree = "<group>"; };
 		2A392566234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSAttributedString+DWHighlightText.h"; sourceTree = "<group>"; };
 		2A392567234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSAttributedString+DWHighlightText.m"; sourceTree = "<group>"; };
 		2A3CCEF7242BB1B900300AF8 /* DWRegistrationCompletedViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRegistrationCompletedViewController.h; sourceTree = "<group>"; };
@@ -1070,29 +1058,19 @@
 		2A4663042279DC2F0027533B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2A46630C2279DD7D0027533B /* SnapshotHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SnapshotHelper.swift; path = fastlane/SnapshotHelper.swift; sourceTree = SOURCE_ROOT; };
 		2A46630E2279DF490027533B /* DashWalletScreenshotsUITests-Briding-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DashWalletScreenshotsUITests-Briding-Header.h"; sourceTree = "<group>"; };
-		2A4E1D5125056297008AC53F /* DWPaymentsButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentsButton.h; sourceTree = "<group>"; };
-		2A4E1D5225056297008AC53F /* DWPaymentsButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPaymentsButton.m; sourceTree = "<group>"; };
-		2A4E531622EA381F00E5168A /* DWSyncView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSyncView.h; sourceTree = "<group>"; };
-		2A4E531722EA381F00E5168A /* DWSyncView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSyncView.m; sourceTree = "<group>"; };
-		2A4E531922EA382B00E5168A /* DWSyncView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWSyncView.xib; sourceTree = "<group>"; };
+		2A4E531922EA382B00E5168A /* SyncView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SyncView.xib; sourceTree = "<group>"; };
 		2A4E531B22EA49FE00E5168A /* DWProgressView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWProgressView.h; sourceTree = "<group>"; };
 		2A4E531C22EA49FE00E5168A /* DWProgressView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWProgressView.m; sourceTree = "<group>"; };
-		2A4E531E22EB2DF400E5168A /* DWHomeHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeHeaderView.h; sourceTree = "<group>"; };
-		2A4E531F22EB2DF400E5168A /* DWHomeHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeHeaderView.m; sourceTree = "<group>"; };
 		2A4E533622F023AB00E5168A /* DWHomeModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeModel.h; sourceTree = "<group>"; };
 		2A4E533722F023AB00E5168A /* DWHomeModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeModel.m; sourceTree = "<group>"; };
-		2A4E533D22F025FE00E5168A /* DWTxListEmptyTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxListEmptyTableViewCell.h; sourceTree = "<group>"; };
-		2A4E533E22F025FE00E5168A /* DWTxListEmptyTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxListEmptyTableViewCell.m; sourceTree = "<group>"; };
-		2A4E533F22F025FE00E5168A /* DWTxListEmptyTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWTxListEmptyTableViewCell.xib; sourceTree = "<group>"; };
+		2A4E533F22F025FE00E5168A /* TxListEmptyTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TxListEmptyTableViewCell.xib; sourceTree = "<group>"; };
 		2A4E534222F02BC300E5168A /* UIView+DWReuseHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+DWReuseHelper.h"; sourceTree = "<group>"; };
 		2A4E534322F02BC300E5168A /* UIView+DWReuseHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWReuseHelper.m"; sourceTree = "<group>"; };
 		2A4E534522F02C6000E5168A /* DWUIKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUIKit.h; sourceTree = "<group>"; };
 		2A4E534922F03A9E00E5168A /* DWFilterHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWFilterHeaderView.h; sourceTree = "<group>"; };
 		2A4E534A22F03A9E00E5168A /* DWFilterHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWFilterHeaderView.m; sourceTree = "<group>"; };
 		2A4E534C22F03AAC00E5168A /* DWFilterHeaderView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWFilterHeaderView.xib; sourceTree = "<group>"; };
-		2A4E534E22F19BE300E5168A /* DWSyncModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSyncModel.h; sourceTree = "<group>"; };
-		2A4E534F22F19BE300E5168A /* DWSyncModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSyncModel.m; sourceTree = "<group>"; };
-		2A4E535322F1D0D900E5168A /* DWTxListTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWTxListTableViewCell.xib; sourceTree = "<group>"; };
+		2A4E535322F1D0D900E5168A /* TxListTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TxListTableViewCell.xib; sourceTree = "<group>"; };
 		2A4E535A22F335C200E5168A /* DWTransactionListDataProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataProvider.h; sourceTree = "<group>"; };
 		2A4E535B22F335C200E5168A /* DWTransactionListDataProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTransactionListDataProvider.m; sourceTree = "<group>"; };
 		2A4E535D22F33BD200E5168A /* DWTransactionListDataProviderProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataProviderProtocol.h; sourceTree = "<group>"; };
@@ -1120,8 +1098,6 @@
 		2A5E4546243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPRegistrationStatusTableViewCell.m; sourceTree = "<group>"; };
 		2A5E4547243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWDPRegistrationStatusTableViewCell.xib; sourceTree = "<group>"; };
 		2A60C9442444BF3900AF72CF /* DWConfirmUsernameContentView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWConfirmUsernameContentView.xib; sourceTree = "<group>"; };
-		2A612AB524409D6E0060CC77 /* DWDashPayProfileView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDashPayProfileView.h; sourceTree = "<group>"; };
-		2A612AB624409D6E0060CC77 /* DWDashPayProfileView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDashPayProfileView.m; sourceTree = "<group>"; };
 		2A63003D2327B4BB00827825 /* DWPaymentOutput+DWView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWPaymentOutput+DWView.h"; sourceTree = "<group>"; };
 		2A63003E2327B4BB00827825 /* DWPaymentOutput+DWView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWPaymentOutput+DWView.m"; sourceTree = "<group>"; };
 		2A6300412328CCE900827825 /* LockScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LockScreen.storyboard; sourceTree = "<group>"; };
@@ -1134,8 +1110,6 @@
 		2A6688FA24BCB3AC008E10F0 /* DWDPBasicItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPBasicItem.h; sourceTree = "<group>"; };
 		2A6688FB24BCB739008E10F0 /* DWDPTxItemView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPTxItemView.h; sourceTree = "<group>"; };
 		2A6688FC24BCB739008E10F0 /* DWDPTxItemView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPTxItemView.m; sourceTree = "<group>"; };
-		2A6B8E522387056200A2E5FA /* DWBalanceDisplayOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceDisplayOptions.h; sourceTree = "<group>"; };
-		2A6B8E532387056200A2E5FA /* DWBalanceDisplayOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalanceDisplayOptions.m; sourceTree = "<group>"; };
 		2A741DC02363993600840ADF /* DWTodayViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTodayViewController.h; sourceTree = "<group>"; };
 		2A741DC123639A9700840ADF /* TodayExtension.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = TodayExtension.storyboard; sourceTree = "<group>"; };
 		2A741DC42363A06000840ADF /* DWURLParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWURLParser.h; sourceTree = "<group>"; };
@@ -1339,22 +1313,13 @@
 		2A913E6D23A26663006A2A59 /* DWOnboardingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWOnboardingViewController.h; sourceTree = "<group>"; };
 		2A913E6E23A26663006A2A59 /* DWOnboardingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWOnboardingViewController.m; sourceTree = "<group>"; };
 		2A913E7023A2667E006A2A59 /* Onboarding.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Onboarding.storyboard; sourceTree = "<group>"; };
-		2A913E7323A2EB0E006A2A59 /* DWBalanceProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceProtocol.h; sourceTree = "<group>"; };
-		2A913E7623A2EF06006A2A59 /* DWSyncProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSyncProtocol.h; sourceTree = "<group>"; };
 		2A913E7723A2F2B6006A2A59 /* DWTxDisplayModeProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDisplayModeProtocol.h; sourceTree = "<group>"; };
-		2A913E7823A2F575006A2A59 /* DWShortcutsProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWShortcutsProtocol.h; sourceTree = "<group>"; };
-		2A913E7923A2F637006A2A59 /* DWSyncContainerProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSyncContainerProtocol.h; sourceTree = "<group>"; };
 		2A913E7A23A2F7ED006A2A59 /* DWHomeProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeProtocol.h; sourceTree = "<group>"; };
 		2A913E7B23A2FF4A006A2A59 /* DWRootProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRootProtocol.h; sourceTree = "<group>"; };
 		2A913E7D23A30609006A2A59 /* DWRootModelStub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRootModelStub.h; sourceTree = "<group>"; };
 		2A913E7E23A30609006A2A59 /* DWRootModelStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRootModelStub.m; sourceTree = "<group>"; };
 		2A913E8023A30623006A2A59 /* DWHomeModelStub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeModelStub.h; sourceTree = "<group>"; };
 		2A913E8123A30623006A2A59 /* DWHomeModelStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeModelStub.m; sourceTree = "<group>"; };
-		2A913E8323A309EA006A2A59 /* DWSyncModelStub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSyncModelStub.h; sourceTree = "<group>"; };
-		2A913E8423A309EA006A2A59 /* DWSyncModelStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSyncModelStub.m; sourceTree = "<group>"; };
-		2A913E8623A30C2D006A2A59 /* DWBalanceDisplayOptionsProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceDisplayOptionsProtocol.h; sourceTree = "<group>"; };
-		2A913E8723A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceDisplayOptionsStub.h; sourceTree = "<group>"; };
-		2A913E8823A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalanceDisplayOptionsStub.m; sourceTree = "<group>"; };
 		2A913E8A23A3134E006A2A59 /* UIView+DWEmbedding.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+DWEmbedding.h"; sourceTree = "<group>"; };
 		2A913E8B23A3134E006A2A59 /* UIView+DWEmbedding.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWEmbedding.m"; sourceTree = "<group>"; };
 		2A913E8E23A31713006A2A59 /* UIViewController+DWEmbedding.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIViewController+DWEmbedding.h"; sourceTree = "<group>"; };
@@ -1386,16 +1351,10 @@
 		2A951CE223D1B92C00602824 /* DWBaseContactsModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseContactsModel.h; sourceTree = "<group>"; };
 		2A951CE323D1B92C00602824 /* DWBaseContactsModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseContactsModel.m; sourceTree = "<group>"; };
 		2A9CEBA422E1D26500A50237 /* DWSecureWalletDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecureWalletDelegate.h; sourceTree = "<group>"; };
-		2A9CEBA622E1D5A200A50237 /* DWMainTabbarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMainTabbarViewController.h; sourceTree = "<group>"; };
-		2A9CEBA722E1D5A200A50237 /* DWMainTabbarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMainTabbarViewController.m; sourceTree = "<group>"; };
 		2A9CEBAB22E1DA4000A50237 /* DWAppRootViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAppRootViewController.h; sourceTree = "<group>"; };
 		2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAppRootViewController.m; sourceTree = "<group>"; };
-		2A9CEBB322E1EAC900A50237 /* DWTabBarView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTabBarView.h; sourceTree = "<group>"; };
-		2A9CEBB422E1EAC900A50237 /* DWTabBarView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTabBarView.m; sourceTree = "<group>"; };
 		2A9CEBB722E1FA1000A50237 /* DWHomeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeViewController.h; sourceTree = "<group>"; };
 		2A9CEBB822E1FA1000A50237 /* DWHomeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeViewController.m; sourceTree = "<group>"; };
-		2A9D72A62497C52E00F79CD8 /* DWBadgeView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBadgeView.h; sourceTree = "<group>"; };
-		2A9D72A72497C52E00F79CD8 /* DWBadgeView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBadgeView.m; sourceTree = "<group>"; };
 		2A9D72A9249A0E7800F79CD8 /* DWDPNewIncomingRequestItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPNewIncomingRequestItem.h; sourceTree = "<group>"; };
 		2A9D72AA249A0EE000F79CD8 /* DWDPNewIncomingRequestObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPNewIncomingRequestObject.h; sourceTree = "<group>"; };
 		2A9D72AB249A0EE000F79CD8 /* DWDPNewIncomingRequestObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPNewIncomingRequestObject.m; sourceTree = "<group>"; };
@@ -1601,8 +1560,6 @@
 		2AD6E5622487E16400B52F14 /* DWRequestsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRequestsViewController.m; sourceTree = "<group>"; };
 		2AD6E5682487E1DB00B52F14 /* DWRequestsModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRequestsModel.h; sourceTree = "<group>"; };
 		2AD6E5692487E1DB00B52F14 /* DWRequestsModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRequestsModel.m; sourceTree = "<group>"; };
-		2AD7BCBC2673BDE9008FF133 /* DWSyncingHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSyncingHeaderView.h; sourceTree = "<group>"; };
-		2AD7BCBD2673BDE9008FF133 /* DWSyncingHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSyncingHeaderView.m; sourceTree = "<group>"; };
 		2AD85A9C245874B30045B480 /* DWCaptureSessionFrameDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCaptureSessionFrameDelegate.h; sourceTree = "<group>"; };
 		2AD85A9D245881740045B480 /* DWQRScanStatusView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQRScanStatusView.h; sourceTree = "<group>"; };
 		2AD85A9E245881740045B480 /* DWQRScanStatusView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQRScanStatusView.m; sourceTree = "<group>"; };
@@ -1974,6 +1931,9 @@
 		C917024029D462C6008C034D /* PayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayViewController.swift; sourceTree = "<group>"; };
 		C91E919629FBACE6003E7883 /* ExtendedPublicKeysModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedPublicKeysModel.swift; sourceTree = "<group>"; };
 		C91E91AD29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedPublicKeysViewController.swift; sourceTree = "<group>"; };
+		C94946DE2A25EDA8008A678D /* DWHomeViewControllerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeViewControllerDelegate.h; sourceTree = "<group>"; };
+		C94946DF2A25EE24008A678D /* DWMainMenuViewControllerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMainMenuViewControllerDelegate.h; sourceTree = "<group>"; };
+		C94946E02A25F037008A678D /* DemoMainTabbarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoMainTabbarViewController.swift; sourceTree = "<group>"; };
 		C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C94F5E8929D3FCCF0034FD57 /* ShortcutAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutAction.swift; sourceTree = "<group>"; };
 		C94F5E8B29D3FEC10034FD57 /* ShortcutsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsModel.swift; sourceTree = "<group>"; };
@@ -1995,6 +1955,21 @@
 		C9F42FB329DD86FB001BC549 /* BackupInfoItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupInfoItemView.swift; sourceTree = "<group>"; };
 		C9F42FB529DD8702001BC549 /* BackupInfoItemView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BackupInfoItemView.xib; sourceTree = "<group>"; };
 		C9F42FB729DFC506001BC549 /* SpendableTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpendableTransaction.swift; sourceTree = "<group>"; };
+		C9F451E42A0B986E00825057 /* MainTabbarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabbarController.swift; sourceTree = "<group>"; };
+		C9F451E62A0BA16400825057 /* PaymentButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentButton.swift; sourceTree = "<group>"; };
+		C9F451E82A0BDAE700825057 /* UIApplication+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+DashWallet.swift"; sourceTree = "<group>"; };
+		C9F451EA2A0BF10B00825057 /* SyncingAlertViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncingAlertViewController.swift; sourceTree = "<group>"; };
+		C9F451ED2A0BF1F500825057 /* SyncingAlertContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncingAlertContentView.swift; sourceTree = "<group>"; };
+		C9F451F22A0C933700825057 /* SyncingHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncingHeaderView.swift; sourceTree = "<group>"; };
+		C9F451F42A0CAC9400825057 /* HomeHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeHeaderView.swift; sourceTree = "<group>"; };
+		C9F451F62A0CAE1300825057 /* SyncView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncView.swift; sourceTree = "<group>"; };
+		C9F451F82A0CB08900825057 /* ProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView.swift; sourceTree = "<group>"; };
+		C9F451FA2A0CC2A800825057 /* DashPayProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashPayProfileView.swift; sourceTree = "<group>"; };
+		C9F451FC2A0CC4A300825057 /* BadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeView.swift; sourceTree = "<group>"; };
+		C9F452002A0CE6C900825057 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		C9F452022A0CEB5800825057 /* TxListEmptyTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxListEmptyTableViewCell.swift; sourceTree = "<group>"; };
+		C9F452072A11F28600825057 /* SyncModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncModel.swift; sourceTree = "<group>"; };
+		C9F4520A2A1209D100825057 /* HomeHeaderModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeHeaderModel.swift; sourceTree = "<group>"; };
 		CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.release.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.release.xcconfig"; sourceTree = "<group>"; };
 		D58B25CB4DC36975E05D3C0A /* Pods-dashwallet no watch.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.debug.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.debug.xcconfig"; sourceTree = "<group>"; };
 		EA95ACF6CA2A73810B9BB451 /* Pods-DashWalletScreenshotsUITests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -2558,15 +2533,14 @@
 			path = DataMigration;
 			sourceTree = "<group>";
 		};
-		2A1A60B92674083B003DAC65 /* SyncingAlert */ = {
+		2A1A60B92674083B003DAC65 /* Syncing Views */ = {
 			isa = PBXGroup;
 			children = (
-				2A1A60BA2674084F003DAC65 /* DWSyncingAlertContentView.h */,
-				2A1A60BB2674084F003DAC65 /* DWSyncingAlertContentView.m */,
-				2A1A60BD26740E27003DAC65 /* DWSyncingAlertViewController.h */,
-				2A1A60BE26740E27003DAC65 /* DWSyncingAlertViewController.m */,
+				C9F4520C2A121EEF00825057 /* Model */,
+				C9F4520D2A121EF900825057 /* Sync View */,
+				C9F451EC2A0BF1EF00825057 /* Alert */,
 			);
-			path = SyncingAlert;
+			path = "Syncing Views";
 			sourceTree = "<group>";
 		};
 		2A1AE78B23F463FB00179A6E /* Views */ = {
@@ -2653,14 +2627,9 @@
 			isa = PBXGroup;
 			children = (
 				2A913EA123A799D9006A2A59 /* Transactions */,
-				472D13E7299E4EE7006903F1 /* BalanceModel.swift */,
 				2A4E533622F023AB00E5168A /* DWHomeModel.h */,
 				2A4E533722F023AB00E5168A /* DWHomeModel.m */,
-				2A4E534E22F19BE300E5168A /* DWSyncModel.h */,
-				2A4E534F22F19BE300E5168A /* DWSyncModel.m */,
 				47081198298CF57D003FCA3D /* TransactionListDataSource.swift */,
-				2A6B8E522387056200A2E5FA /* DWBalanceDisplayOptions.h */,
-				2A6B8E532387056200A2E5FA /* DWBalanceDisplayOptions.m */,
 				2A56EF0424193AEB002C32F3 /* DWDashPayModel.h */,
 				2A56EF0524193AEB002C32F3 /* DWDashPayModel.m */,
 				2AFF01D9243F4559003718DC /* DWDPRegistrationStatus.h */,
@@ -2694,21 +2663,11 @@
 		2A307CB322E6FA7F00A18347 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C9F451FF2A0CE63C00825057 /* Home Balance View */,
+				C9F451FE2A0CE60400825057 /* Home Header View */,
 				2A2CD70B22F97A9D008C7BC9 /* Shortcuts */,
 				2A4E533C22F025ED00E5168A /* Cells */,
-				C9F067F129E4576D0022D958 /* HomeBalanceView.swift */,
-				C9F067F329E457790022D958 /* HomeBalanceView.xib */,
-				2A307CBA22E8925100A18347 /* DWHomeView.h */,
-				2A307CBB22E8925100A18347 /* DWHomeView.m */,
-				2A4E531622EA381F00E5168A /* DWSyncView.h */,
-				2A4E531722EA381F00E5168A /* DWSyncView.m */,
-				2A4E531922EA382B00E5168A /* DWSyncView.xib */,
-				2A4E531E22EB2DF400E5168A /* DWHomeHeaderView.h */,
-				2A4E531F22EB2DF400E5168A /* DWHomeHeaderView.m */,
-				2A612AB524409D6E0060CC77 /* DWDashPayProfileView.h */,
-				2A612AB624409D6E0060CC77 /* DWDashPayProfileView.m */,
-				2AD7BCBC2673BDE9008FF133 /* DWSyncingHeaderView.h */,
-				2AD7BCBD2673BDE9008FF133 /* DWSyncingHeaderView.m */,
+				C9F452002A0CE6C900825057 /* HomeView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -2771,6 +2730,8 @@
 				2ADC9D1B24603C4F001D7C0D /* UISearchBar+DWAdditions.m */,
 				47AE8C1428C6378E00490F5E /* HairlineView.swift */,
 				C9F42FAF29DC27F4001BC549 /* EmptyView.swift */,
+				C9F451F82A0CB08900825057 /* ProgressView.swift */,
+				C9F451FC2A0CC4A300825057 /* BadgeView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -2836,8 +2797,6 @@
 				2A74EFF723053ECE00C475EB /* DWIntrinsicTextView.m */,
 				2A0C69B12312E8A0001B8C90 /* DWWindow.h */,
 				2A0C69B22312E8A0001B8C90 /* DWWindow.m */,
-				2A9D72A62497C52E00F79CD8 /* DWBadgeView.h */,
-				2A9D72A72497C52E00F79CD8 /* DWBadgeView.m */,
 			);
 			path = SharedViews;
 			sourceTree = "<group>";
@@ -2873,10 +2832,10 @@
 		2A44313C22CF631E009BAF7F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				4751137228DAF27300223B77 /* Assembly */,
 				C9F42FA729DC09C6001BC549 /* Style */,
 				11C5F51128E5D0C500F6F135 /* CrowdNode */,
 				47A50F362912D9A800C70123 /* Payment Controller */,
-				4751137228DAF27300223B77 /* Assembly */,
 				4751136A28D9A3BE00223B77 /* Portal */,
 				0F6EDFE028C8AE32000427E7 /* Coinbase */,
 				47AE8BB328C1305E00490F5E /* Explore Dash */,
@@ -3002,15 +2961,15 @@
 		2A4E533C22F025ED00E5168A /* Cells */ = {
 			isa = PBXGroup;
 			children = (
+				C9F451F22A0C933700825057 /* SyncingHeaderView.swift */,
 				2A5E4544243E0595006BA067 /* RegistrationStatus */,
-				2A4E533D22F025FE00E5168A /* DWTxListEmptyTableViewCell.h */,
-				2A4E533E22F025FE00E5168A /* DWTxListEmptyTableViewCell.m */,
-				2A4E533F22F025FE00E5168A /* DWTxListEmptyTableViewCell.xib */,
+				C9F452022A0CEB5800825057 /* TxListEmptyTableViewCell.swift */,
+				2A4E533F22F025FE00E5168A /* TxListEmptyTableViewCell.xib */,
 				2A4E534922F03A9E00E5168A /* DWFilterHeaderView.h */,
 				2A4E534A22F03A9E00E5168A /* DWFilterHeaderView.m */,
 				2A4E534C22F03AAC00E5168A /* DWFilterHeaderView.xib */,
 				474C7219298A803200475CA6 /* TxListTableViewCell.swift */,
-				2A4E535322F1D0D900E5168A /* DWTxListTableViewCell.xib */,
+				2A4E535322F1D0D900E5168A /* TxListTableViewCell.xib */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -3144,6 +3103,7 @@
 				2A7A7BB32347928B00451078 /* Views */,
 				2A7A7BB02347927700451078 /* DWMainMenuViewController.h */,
 				2A7A7BB12347927700451078 /* DWMainMenuViewController.m */,
+				C94946DF2A25EE24008A678D /* DWMainMenuViewControllerDelegate.h */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -3610,12 +3570,7 @@
 		2A913E7223A2EAEF006A2A59 /* Protocols */ = {
 			isa = PBXGroup;
 			children = (
-				2A913E8623A30C2D006A2A59 /* DWBalanceDisplayOptionsProtocol.h */,
-				2A913E7323A2EB0E006A2A59 /* DWBalanceProtocol.h */,
 				2A913E7A23A2F7ED006A2A59 /* DWHomeProtocol.h */,
-				2A913E7823A2F575006A2A59 /* DWShortcutsProtocol.h */,
-				2A913E7923A2F637006A2A59 /* DWSyncContainerProtocol.h */,
-				2A913E7623A2EF06006A2A59 /* DWSyncProtocol.h */,
 				2A913E7723A2F2B6006A2A59 /* DWTxDisplayModeProtocol.h */,
 				2A56EF0724193BA9002C32F3 /* DWDashPayProtocol.h */,
 			);
@@ -3625,8 +3580,6 @@
 		2A913E7C23A305E5006A2A59 /* Stubs */ = {
 			isa = PBXGroup;
 			children = (
-				2A913E8723A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.h */,
-				2A913E8823A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.m */,
 				2A913E8023A30623006A2A59 /* DWHomeModelStub.h */,
 				2A913E8123A30623006A2A59 /* DWHomeModelStub.m */,
 				2AB3415C23A8133A004E37A7 /* DWPayModelStub.h */,
@@ -3635,8 +3588,6 @@
 				2AB3416123A81E8B004E37A7 /* DWReceiveModelStub.m */,
 				2A913E7D23A30609006A2A59 /* DWRootModelStub.h */,
 				2A913E7E23A30609006A2A59 /* DWRootModelStub.m */,
-				2A913E8323A309EA006A2A59 /* DWSyncModelStub.h */,
-				2A913E8423A309EA006A2A59 /* DWSyncModelStub.m */,
 				2A913EA623A79AD2006A2A59 /* DWTransactionListDataProviderStub.h */,
 				2A913EA723A79AD2006A2A59 /* DWTransactionListDataProviderStub.m */,
 				2A913EB423A7E145006A2A59 /* DWTransactionStub.h */,
@@ -3726,8 +3677,7 @@
 			isa = PBXGroup;
 			children = (
 				2A9CEBB222E1EAAA00A50237 /* Views */,
-				2A9CEBA622E1D5A200A50237 /* DWMainTabbarViewController.h */,
-				2A9CEBA722E1D5A200A50237 /* DWMainTabbarViewController.m */,
+				C9F451E42A0B986E00825057 /* MainTabbarController.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -3745,12 +3695,7 @@
 		2A9CEBB222E1EAAA00A50237 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				2A9CEBB322E1EAC900A50237 /* DWTabBarView.h */,
-				2A9CEBB422E1EAC900A50237 /* DWTabBarView.m */,
-				2A392563234CD21300316EA6 /* DWTabBarButton.h */,
-				2A392564234CD21300316EA6 /* DWTabBarButton.m */,
-				2A4E1D5125056297008AC53F /* DWPaymentsButton.h */,
-				2A4E1D5225056297008AC53F /* DWPaymentsButton.m */,
+				C9F451E62A0BA16400825057 /* PaymentButton.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -3758,7 +3703,7 @@
 		2A9CEBB622E1FA0000A50237 /* Home */ = {
 			isa = PBXGroup;
 			children = (
-				2A1A60B92674083B003DAC65 /* SyncingAlert */,
+				2A1A60B92674083B003DAC65 /* Syncing Views */,
 				2A913E7223A2EAEF006A2A59 /* Protocols */,
 				2A2CD6E522F46D1A008C7BC9 /* Models */,
 				2A307CB322E6FA7F00A18347 /* Views */,
@@ -3776,6 +3721,7 @@
 				2A1B7DC223266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m */,
 				2A3DC86F23972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.h */,
 				2A3DC87023972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m */,
+				C94946DE2A25EDA8008A678D /* DWHomeViewControllerDelegate.h */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -4053,8 +3999,7 @@
 				2AB3417623A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m */,
 				2AB3417123A926C9004E37A7 /* DWDemoAppRootViewController.h */,
 				2AB3417223A926C9004E37A7 /* DWDemoAppRootViewController.m */,
-				2A12E61723ABC7D3001CAF58 /* DWDemoMainTabbarViewController.h */,
-				2A12E61823ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m */,
+				C94946E02A25F037008A678D /* DemoMainTabbarViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -4288,6 +4233,7 @@
 				47083B3129892D770010AF71 /* DSTransaction+DashWallet.swift */,
 				474C7210298A1A9500475CA6 /* UIView+Reuse.swift */,
 				472D13E9299E5396006903F1 /* NSAttributedString+Builder.swift */,
+				C9F451E82A0BDAE700825057 /* UIApplication+DashWallet.swift */,
 			);
 			path = Categories;
 			sourceTree = "<group>";
@@ -5719,6 +5665,52 @@
 			path = Style;
 			sourceTree = "<group>";
 		};
+		C9F451EC2A0BF1EF00825057 /* Alert */ = {
+			isa = PBXGroup;
+			children = (
+				C9F451ED2A0BF1F500825057 /* SyncingAlertContentView.swift */,
+				C9F451EA2A0BF10B00825057 /* SyncingAlertViewController.swift */,
+			);
+			path = Alert;
+			sourceTree = "<group>";
+		};
+		C9F451FE2A0CE60400825057 /* Home Header View */ = {
+			isa = PBXGroup;
+			children = (
+				C9F451FA2A0CC2A800825057 /* DashPayProfileView.swift */,
+				C9F451F42A0CAC9400825057 /* HomeHeaderView.swift */,
+				C9F4520A2A1209D100825057 /* HomeHeaderModel.swift */,
+			);
+			path = "Home Header View";
+			sourceTree = "<group>";
+		};
+		C9F451FF2A0CE63C00825057 /* Home Balance View */ = {
+			isa = PBXGroup;
+			children = (
+				472D13E7299E4EE7006903F1 /* BalanceModel.swift */,
+				C9F067F129E4576D0022D958 /* HomeBalanceView.swift */,
+				C9F067F329E457790022D958 /* HomeBalanceView.xib */,
+			);
+			path = "Home Balance View";
+			sourceTree = "<group>";
+		};
+		C9F4520C2A121EEF00825057 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				C9F452072A11F28600825057 /* SyncModel.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		C9F4520D2A121EF900825057 /* Sync View */ = {
+			isa = PBXGroup;
+			children = (
+				C9F451F62A0CAE1300825057 /* SyncView.swift */,
+				2A4E531922EA382B00E5168A /* SyncView.xib */,
+			);
+			path = "Sync View";
+			sourceTree = "<group>";
+		};
 		EBFC2EA47915CD4F5BA81564 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -6014,7 +6006,7 @@
 				2A1AF6DF23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib in Resources */,
 				2A4431D622D52F67009BAF7F /* DWInfoTextCell.xib in Resources */,
 				2A44314922CF82EF009BAF7F /* BiometricAuth.storyboard in Resources */,
-				2A4E534122F025FE00E5168A /* DWTxListEmptyTableViewCell.xib in Resources */,
+				2A4E534122F025FE00E5168A /* TxListEmptyTableViewCell.xib in Resources */,
 				2A8B9E3D22FD71E100FF8653 /* Payments.storyboard in Resources */,
 				2A4E534D22F03AAC00E5168A /* DWFilterHeaderView.xib in Resources */,
 				757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */,
@@ -6033,8 +6025,8 @@
 				75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */,
 				2ADF83FF23633116008459A7 /* SharedAssets.xcassets in Resources */,
 				2A4431C522D4CAFA009BAF7F /* BackupInfo.storyboard in Resources */,
-				2A4E531A22EA382B00E5168A /* DWSyncView.xib in Resources */,
-				2A4E535522F1D0D900E5168A /* DWTxListTableViewCell.xib in Resources */,
+				2A4E531A22EA382B00E5168A /* SyncView.xib in Resources */,
+				2A4E535522F1D0D900E5168A /* TxListTableViewCell.xib in Resources */,
 				C9F42FB629DD8702001BC549 /* BackupInfoItemView.xib in Resources */,
 				47AE8BB028BFF28700490F5E /* explore.db in Resources */,
 				2A0C69F423179C0F001B8C90 /* DWConfirmPaymentContentView.xib in Resources */,
@@ -6390,12 +6382,12 @@
 				4709C32128818D5400B4BD48 /* Foundation+Bitcoin.swift in Sources */,
 				47AE8BE928C1305F00490F5E /* AtmDetailsView.swift in Sources */,
 				2A9FFE872230FF4700956D5F /* DWPlaceholderFormTableViewCell.m in Sources */,
-				2A4E532022EB2DF400E5168A /* DWHomeHeaderView.m in Sources */,
 				2A0C69F22316B93F001B8C90 /* DWTitleDetailCellView.m in Sources */,
 				47C661B828FE907300028A8D /* AmountInputControl.swift in Sources */,
 				2A1F640C238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m in Sources */,
 				11B8449428F27C470082770C /* ApiCode.swift in Sources */,
 				47838B92290701470003E8AB /* CoinbaseEntryPointModel.swift in Sources */,
+				C9F451EB2A0BF10B00825057 /* SyncingAlertViewController.swift in Sources */,
 				2A56EF002419310C002C32F3 /* DWDashPayConstants.m in Sources */,
 				11B8449628F5B9F80082770C /* CrowdNodeResponse.swift in Sources */,
 				47AE8BB228BFF61A00490F5E /* FileManager+DashWallet.swift in Sources */,
@@ -6431,14 +6423,12 @@
 				477F50102950A55A003C7508 /* Coinbase+Error.swift in Sources */,
 				2A63003F2327B4BB00827825 /* DWPaymentOutput+DWView.m in Sources */,
 				2ACD53EE234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m in Sources */,
-				2A9CEBA822E1D5A200A50237 /* DWMainTabbarViewController.m in Sources */,
 				11860923297598B400279FCC /* AddressStatus.swift in Sources */,
 				C91E919729FBACE6003E7883 /* ExtendedPublicKeysModel.swift in Sources */,
 				4751CAD5297024EA00F63AC4 /* OrderPreviewViewController.swift in Sources */,
 				478C982F294305D800FAA0F0 /* ActivePaymentMethodView.swift in Sources */,
 				47CDEEC72949DC38008AE06D /* BasicInfoController.swift in Sources */,
 				2AD1CEA822E0C8C900C99324 /* DWPreviewSeedPhraseModel.m in Sources */,
-				2A913E8923A30DA8006A2A59 /* DWBalanceDisplayOptionsStub.m in Sources */,
 				2A0C69CD23142F90001B8C90 /* DWModalPresentationAnimation.m in Sources */,
 				110C679A29227948006B580C /* UINavigationController+CrowdNode.swift in Sources */,
 				2A8B9E7A2302E67400FF8653 /* DWReceiveModel.m in Sources */,
@@ -6465,7 +6455,6 @@
 				11517C852949E6F0004FC7BF /* CrowdNodeEndpoint.swift in Sources */,
 				0F71317528F4365C0072F454 /* ServiceEntryPointModel.swift in Sources */,
 				47AE8B9528BFACA100490F5E /* ExploreDash.swift in Sources */,
-				2A4E535022F19BE300E5168A /* DWSyncModel.m in Sources */,
 				2A7A7BE02348DC1900451078 /* DWToolsMenuViewController.m in Sources */,
 				2AE8B66B23CF0F390016F221 /* DWUsernamePendingViewController.m in Sources */,
 				4789D22F2981067C00BAFEFA /* UpholdAmountModel.swift in Sources */,
@@ -6486,6 +6475,9 @@
 				C3DAD2CF247585C10001624F /* NSPredicate+DWFullTextSearch.m in Sources */,
 				47F2C6842860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift in Sources */,
 				2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */,
+				C9F451FD2A0CC4A300825057 /* BadgeView.swift in Sources */,
+				C9F451F52A0CAC9400825057 /* HomeHeaderView.swift in Sources */,
+				C9F451F92A0CB08900825057 /* ProgressView.swift in Sources */,
 				2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */,
 				47AE8BF628C1306000490F5E /* ExplorePointOfUseListViewController.swift in Sources */,
 				117ECC7E29742A42003D798E /* CrowdNodeWebViewController.swift in Sources */,
@@ -6498,17 +6490,16 @@
 				2A8B9E4F22FED47E00FF8653 /* DWOverlapControl.m in Sources */,
 				119E8D062905200300D406C1 /* CoinsToAddressTxFilter.swift in Sources */,
 				2AB3417323A926C9004E37A7 /* DWDemoAppRootViewController.m in Sources */,
-				2AD7BCBE2673BDE9008FF133 /* DWSyncingHeaderView.m in Sources */,
 				2A9FFE9B2230FF4700956D5F /* DWUpholdLogoutTutorialViewController.m in Sources */,
 				47CF46A529654E190067B6EE /* CBAccount.swift in Sources */,
 				47AF180529070B720025803E /* Types.swift in Sources */,
 				2A0C69EB2316B344001B8C90 /* DWConfirmPaymentViewController.m in Sources */,
 				2A7AF3402481A1B2001D74F9 /* DWDPGenericItemView.m in Sources */,
 				4774DCDB28F3FA9C008CF87D /* Coinbase.swift in Sources */,
+				C9F452082A11F28600825057 /* SyncModel.swift in Sources */,
 				C9F42FAB29DC1098001BC549 /* ReceiveContentView.swift in Sources */,
 				47838B7528FFD1D10003E8AB /* AmountView.swift in Sources */,
 				4759D512292FD6F3002F20DC /* DWBasePayViewController.m in Sources */,
-				2A12E61923ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m in Sources */,
 				1193FF3629602835004EA8D7 /* CrowdNodeTransferModel.swift in Sources */,
 				2A44312622CCC14F009BAF7F /* DWSetPinViewController.m in Sources */,
 				47F4B6C7294842DF00AED4C9 /* ConfirmOrderController.swift in Sources */,
@@ -6520,13 +6511,16 @@
 				47A2A2E2293DCCEA00938DB7 /* Coinbase+Constants.swift in Sources */,
 				47AE8C0728C2274200490F5E /* PointOfUseListSearchCell.swift in Sources */,
 				4774DCE128F44BA4008CF87D /* ServiceDataProvider.swift in Sources */,
+				C9F451E72A0BA16400825057 /* PaymentButton.swift in Sources */,
 				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,
+				C9F451FB2A0CC2A800825057 /* DashPayProfileView.swift in Sources */,
 				110D1781298BA9AF005BEB30 /* WKWebView+CrowdNode.swift in Sources */,
 				47FA3AFF29350929008D58DC /* SyncingActivityMonitor.swift in Sources */,
 				C9F42FB029DC27F4001BC549 /* EmptyView.swift in Sources */,
 				2AFCB9BE23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m in Sources */,
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanModel.m in Sources */,
 				2A3DC87123972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m in Sources */,
+				C9F451F72A0CAE1300825057 /* SyncView.swift in Sources */,
 				47522F502927CB9000EE143E /* SuccessfulOperationStatusViewController.swift in Sources */,
 				47E94B9A296D7F99000FE68E /* CustodialSwapsModel.swift in Sources */,
 				2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */,
@@ -6572,6 +6566,7 @@
 				2A0C699C23104588001B8C90 /* DWPaymentInput.m in Sources */,
 				2AE9549D23D0C4F4003612B3 /* DWBaseContactsViewController.m in Sources */,
 				114D16B629812730009A124C /* OnlineAccountDetailsController.swift in Sources */,
+				C9F451E92A0BDAE700825057 /* UIApplication+DashWallet.swift in Sources */,
 				110D1784298E68A8005BEB30 /* OnlineAccountInfoController.swift in Sources */,
 				470AE1882926600A001A0514 /* PaymentController.swift in Sources */,
 				2ADB396C242615C200A6F898 /* CALayer+MBAnimationPersistence.m in Sources */,
@@ -6675,6 +6670,7 @@
 				2A8B9E2922FB1C5D00FF8653 /* DWSharedUIConstants.m in Sources */,
 				2A858A12237EE89C0097A7B5 /* BRAppleWatchTransactionData.m in Sources */,
 				47A50F3E29192F8D00C70123 /* TerritoriesListViewController.swift in Sources */,
+				C9F4520B2A1209D100825057 /* HomeHeaderModel.swift in Sources */,
 				47C6E6E02919578C003FEDF2 /* TerritoryListModel.swift in Sources */,
 				2A9FFE952230FF4700956D5F /* DWUpholdConfirmTransferModel.m in Sources */,
 				2AFF01DB243F4559003718DC /* DWDPRegistrationStatus.m in Sources */,
@@ -6719,6 +6715,7 @@
 				475AE2B92974348F009A1055 /* App.swift in Sources */,
 				2A0C69A3231048DA001B8C90 /* DWPaymentProcessor.m in Sources */,
 				2A7AF32824814A17001D74F9 /* DWNotificationsData.m in Sources */,
+				C9F451F32A0C933700825057 /* SyncingHeaderView.swift in Sources */,
 				114CFED2296489CD005F421B /* MinimumDepositBanner.swift in Sources */,
 				47838B8F2906D7340003E8AB /* BalanceView.swift in Sources */,
 				2AD85A9F245881740045B480 /* DWQRScanStatusView.m in Sources */,
@@ -6730,14 +6727,12 @@
 				2A3CCEF9242BB1B900300AF8 /* DWRegistrationCompletedViewController.m in Sources */,
 				2ADC9D712462D4AD001D7C0D /* DWUserProfileHeaderView.m in Sources */,
 				47305872295C971F004641DA /* UIViewController+AlertPresenting.swift in Sources */,
-				2A9CEBB522E1EAC900A50237 /* DWTabBarView.m in Sources */,
 				2A858A0F237EE89C0097A7B5 /* DSWatchTransactionDataObject.m in Sources */,
 				47FA3B0229364991008D58DC /* HTTPClient.swift in Sources */,
 				2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressExtractor.m in Sources */,
 				477F501529531C07003C7508 /* ViewModel+Coinbase.swift in Sources */,
 				478A9297299242EC0008C43E /* CNCreateAccountTxDetailsModel.swift in Sources */,
 				47A2A2EC293E618600938DB7 /* CBUser.swift in Sources */,
-				2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */,
 				47A2A2EE293E622700938DB7 /* CBSecureTokenService.swift in Sources */,
 				C9F42FA129DA95F5001BC549 /* PayTableViewCell.swift in Sources */,
 				C3DAD2C8247538AA0001624F /* DWTitleActionHeaderView.m in Sources */,
@@ -6752,6 +6747,7 @@
 				2A7A7BB22347927700451078 /* DWMainMenuViewController.m in Sources */,
 				47838B7D290133610003E8AB /* PointOfUseListFiltersViewController.swift in Sources */,
 				47AE8C1A28C6A21A00490F5E /* AllMerchantLocationsDataProvider.swift in Sources */,
+				C9F451E52A0B986E00825057 /* MainTabbarController.swift in Sources */,
 				47B30D78290BFCA60080C326 /* NumberFormatter+DashWallet.swift in Sources */,
 				2AEC5CBB2494045C00F4A689 /* DWNotificationsFetchedDataSource.m in Sources */,
 				47AF18082907B7880025803E /* BaseAmountModel.swift in Sources */,
@@ -6766,6 +6762,7 @@
 				11E47BAD28EB3A7D0097CFA0 /* CrowdNode+Constants.swift in Sources */,
 				47F006022971B1FF0029EB10 /* CurrencyExchanger.swift in Sources */,
 				2A5BD5922451D68300688A8D /* DWMinLengthUsernameValidationRule.m in Sources */,
+				C94946E12A25F037008A678D /* DemoMainTabbarViewController.swift in Sources */,
 				11AE3DD62997AA36000856EE /* MessageStatus.swift in Sources */,
 				2AD1CEAB22E18F1800C99324 /* DWGlobalOptions.m in Sources */,
 				2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */,
@@ -6823,7 +6820,6 @@
 				2A8B9E5622FEDF2900FF8653 /* DWControllerCollectionView.m in Sources */,
 				2A9FFDF52230FF1A00956D5F /* SFSafariViewController+DashWallet.m in Sources */,
 				2AD6E54D2487CE0100B52F14 /* DWContactsDataSourceObject.m in Sources */,
-				2A6B8E542387056200A2E5FA /* DWBalanceDisplayOptions.m in Sources */,
 				474C7218298A422500475CA6 /* TransactionItemView.swift in Sources */,
 				474C7211298A1A9500475CA6 /* UIView+Reuse.swift in Sources */,
 				2A9FFE072230FF2B00956D5F /* DWUpholdClient.m in Sources */,
@@ -6831,9 +6827,7 @@
 				47F4B6CA29484C9800AED4C9 /* ConfirmOrderModel.swift in Sources */,
 				472CEE012924AA6D00656B48 /* PointOfUseListEmptyResultsView.swift in Sources */,
 				C94F5E8C29D3FEC10034FD57 /* ShortcutsModel.swift in Sources */,
-				2A4E531822EA381F00E5168A /* DWSyncView.m in Sources */,
 				2A6300452328D07500827825 /* DWLockPinInputView.m in Sources */,
-				2A392565234CD21300316EA6 /* DWTabBarButton.m in Sources */,
 				2A0C69AC23125074001B8C90 /* UIView+DWHUD.m in Sources */,
 				2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */,
 				2A7AF36924826681001D74F9 /* DWDPRespondedIncomingRequestObject.m in Sources */,
@@ -6896,16 +6890,17 @@
 				2A307CBF22E8A44200A18347 /* DWButton.m in Sources */,
 				0F6EDFD128C896BD000427E7 /* CoinbaseCreateAddressesRequest.swift in Sources */,
 				2A10EB352358996700C38B61 /* DWImportWalletInfoViewController.m in Sources */,
+				C9F452032A0CEB5800825057 /* TxListEmptyTableViewCell.swift in Sources */,
+				C9F451EE2A0BF1F500825057 /* SyncingAlertContentView.swift in Sources */,
 				471A2605289ACD5C0056B7B2 /* AddressUserInfo.swift in Sources */,
-				2A1A60BF26740E27003DAC65 /* DWSyncingAlertViewController.m in Sources */,
 				47AE8C0C28C53E4A00490F5E /* MerchantInfoViewController.swift in Sources */,
 				11E47BAB28EB38510097CFA0 /* SendCoinsService.swift in Sources */,
 				C94F5E8A29D3FCCF0034FD57 /* ShortcutAction.swift in Sources */,
 				2A0C69E0231556D6001B8C90 /* DWModalChevronView.m in Sources */,
 				2A58815921A5906C00FD4D2C /* DWBaseLegacyViewController.m in Sources */,
 				C3CA2030247E54C400158074 /* DWNoNotificationsCell.m in Sources */,
+				C9F452012A0CE6C900825057 /* HomeView.swift in Sources */,
 				47A2E3AC2972B1A60032A63B /* CoinbaseRatesProvider.swift in Sources */,
-				2A4E534022F025FE00E5168A /* DWTxListEmptyTableViewCell.m in Sources */,
 				472D13DF299DF5C6006903F1 /* TaxReportGenerator.swift in Sources */,
 				119E8D122909513F00D406C1 /* CrowdNodeError.swift in Sources */,
 				111C3C4E296C52F800788E18 /* WithdrawalLimit.swift in Sources */,
@@ -6927,7 +6922,6 @@
 				2A9FFE8E2230FF4700956D5F /* DWUpholdAuthViewController.m in Sources */,
 				2A1F640F238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m in Sources */,
 				2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */,
-				2A612AB724409D6E0060CC77 /* DWDashPayProfileView.m in Sources */,
 				2A3CCEFC242BB1DD00300AF8 /* DWDPAvatarView.m in Sources */,
 				47B30D7C29100ABA0080C326 /* UIStackView+DashWallet.swift in Sources */,
 				2ADC9D7C24644E46001D7C0D /* DWUserProfileContactActionsCell.m in Sources */,
@@ -6942,7 +6936,6 @@
 				C9F42FA429DBC6E5001BC549 /* PaymentsViewController.swift in Sources */,
 				2A7AF3832482954C001D74F9 /* DWDPContactsItemsFactory.m in Sources */,
 				4774DCDD28F43A68008CF87D /* ServiceDataSource.swift in Sources */,
-				2A913E8523A309EA006A2A59 /* DWSyncModelStub.m in Sources */,
 				47838B7A2900196F0003E8AB /* ConverterView.swift in Sources */,
 				2A0C69CA23142E11001B8C90 /* DWModalBaseAnimation.m in Sources */,
 				C9F42FB829DFC507001BC549 /* SpendableTransaction.swift in Sources */,
@@ -6957,10 +6950,8 @@
 				47CF46A1296540EF0067B6EE /* AccountService.swift in Sources */,
 				47C6E6E7291A90B3003FEDF2 /* ListHandlerView.swift in Sources */,
 				2A7A7BCD2347F01B00451078 /* DWSecurityMenuViewController.m in Sources */,
-				2A4E1D5325056297008AC53F /* DWPaymentsButton.m in Sources */,
 				11BD738128E7356100A34022 /* CrowdNode.swift in Sources */,
 				47AE8B9F28BFAD8200490F5E /* SQLite+ExloreDash.swift in Sources */,
-				2A1A60BC2674084F003DAC65 /* DWSyncingAlertContentView.m in Sources */,
 				2A4E534B22F03A9E00E5168A /* DWFilterHeaderView.m in Sources */,
 				2A951CE423D1B92C00602824 /* DWBaseContactsModel.m in Sources */,
 				2A1F6415238FEEA900A9B505 /* DWAdvancedSecurityModel.m in Sources */,
@@ -6984,7 +6975,6 @@
 				1141E4C5291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift in Sources */,
 				47C6E6E329196D48003FEDF2 /* TerritoriesListCell.swift in Sources */,
 				2A4E531D22EA49FE00E5168A /* DWProgressView.m in Sources */,
-				2A9D72A82497C52E00F79CD8 /* DWBadgeView.m in Sources */,
 				47A5146428491C60005A8E3E /* TxDetailCells.swift in Sources */,
 				477F501729543834003C7508 /* BaseViewController+NetworkReachability.swift in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
@@ -7438,7 +7428,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Dash;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 7.0.0;
+				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -7496,7 +7486,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Dash;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 7.0.0;
+				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
@@ -7581,7 +7571,7 @@
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 7.0.0;
+				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -7603,7 +7593,7 @@
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 7.0.0;
+				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -7624,7 +7614,7 @@
 				EXCLUDED_ARCHS = "";
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 7.0.0;
+				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -7647,7 +7637,7 @@
 				EXCLUDED_ARCHS = "";
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 7.0.0;
+				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -7675,7 +7665,7 @@
 				INFOPLIST_FILE = TodayExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 7.0.0;
+				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -7700,7 +7690,7 @@
 				INFOPLIST_FILE = TodayExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 7.0.0;
+				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -7817,7 +7807,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Dash;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 7.0.0;
+				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
@@ -7845,7 +7835,7 @@
 				INFOPLIST_FILE = TodayExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 7.0.0;
+				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -7897,7 +7887,7 @@
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 7.0.0;
+				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -7918,7 +7908,7 @@
 				EXCLUDED_ARCHS = "";
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 7.0.0;
+				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -8034,7 +8024,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Dash;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 7.0.0;
+				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
@@ -8061,7 +8051,7 @@
 				INFOPLIST_FILE = TodayExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 7.0.0;
+				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -8112,7 +8102,7 @@
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 7.0.0;
+				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -8133,7 +8123,7 @@
 				EXCLUDED_ARCHS = "";
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 7.0.0;
+				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;

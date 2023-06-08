@@ -20,7 +20,6 @@
 #import "DWBiometricAuthModel.h"
 #import "DWBiometricAuthViewController.h"
 #import "DWGlobalOptions.h"
-#import "DWMainTabbarViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWRecoverViewController.h"
 #import "DWSetPinModel.h"
@@ -34,7 +33,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 @interface DWSetupViewController () <DWSetPinViewControllerDelegate,
                                      DWBiometricAuthViewControllerDelegate,
                                      DWSecureWalletDelegate,
-                                     DWRecoverViewControllerDelegate>
+                                     DWRecoverViewControllerDelegate,
+                                     DWBackupInfoViewControllerDelegate>
 
 @property (nonatomic, assign) BOOL initialAnimationCompleted;
 

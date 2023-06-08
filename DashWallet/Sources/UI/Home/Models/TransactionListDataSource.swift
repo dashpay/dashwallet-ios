@@ -147,8 +147,7 @@ final class TransactionListDataSource: NSObject, UITableViewDataSource {
                 cell.update(with: txs)
                 return cell
             case .tx(let tx):
-                let cellId = TxListTableViewCell.dw_reuseIdentifier
-                let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! TxListTableViewCell
+                let cell = tableView.dequeueReusableCell(type: TxListTableViewCell.self, for: indexPath)
                 cell.update(with: tx)
                 return cell
             }
@@ -166,7 +165,7 @@ enum TransactionListDataItemType: Int {
 
 extension TransactionListDataSource {
     @objc
-    func itemType(by indexPath: NSIndexPath) -> TransactionListDataItemType {
+    func itemType(by indexPath: IndexPath) -> TransactionListDataItemType {
         if case TransactionListDataItem.tx = _items[indexPath.row] {
             return .tx
         }

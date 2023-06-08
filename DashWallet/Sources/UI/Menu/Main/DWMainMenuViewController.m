@@ -39,7 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
                                         DWExploreTestnetViewControllerDelegate>
 
 @property (nonatomic, strong) DWMainMenuContentView *view;
-@property (nonatomic, strong) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
 
 @end
 
@@ -47,11 +46,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @dynamic view;
 
-- (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions {
+- (instancetype)init {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
-        _balanceDisplayOptions = balanceDisplayOptions;
-
         self.title = NSLocalizedString(@"More", nil);
     }
     return self;
@@ -108,7 +105,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWMainMenuItemType_Security: {
-            DWSecurityMenuViewController *controller = [[DWSecurityMenuViewController alloc] initWithBalanceDisplayOptions:self.balanceDisplayOptions];
+            DWSecurityMenuViewController *controller = [[DWSecurityMenuViewController alloc] init];
             controller.delegate = self.delegate;
             [self.navigationController pushViewController:controller animated:YES];
 

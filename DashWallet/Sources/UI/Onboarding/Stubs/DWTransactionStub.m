@@ -21,7 +21,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static UInt256 RandomUInt256() {
+static UInt256 RandomUInt256(void) {
     return ((UInt256){.u64 = {
                           ((uint64_t)arc4random() << 32) | (uint64_t)arc4random(),
                           ((uint64_t)arc4random() << 32) | (uint64_t)arc4random(),

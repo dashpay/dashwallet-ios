@@ -17,7 +17,6 @@
 
 #import "DWDemoAppRootViewController.h"
 
-#import "DWDemoMainTabbarViewController.h"
 #import "DWRootModelStub.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -40,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (Class)mainControllerClass {
-    return [DWDemoMainTabbarViewController class];
+    return [DemoMainTabbarViewController class];
 }
 
 #pragma mark - Demo Mode
