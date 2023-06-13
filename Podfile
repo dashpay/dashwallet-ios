@@ -20,6 +20,28 @@ target 'dashwallet' do
   # Debugging purposes
   #  pod 'Reveal-SDK', :configurations => ['Debug']
   
+end
+
+target 'dashpay' do
+  platform :ios, '14.0'
+  
+  pod 'DashSync', :path => '../DashSync/'
+  pod 'SQLite.swift', '~> 0.13.3'
+  pod 'SQLiteMigrationManager.swift'
+  pod 'CloudInAppMessaging', '0.1.0'
+  pod 'FirebaseStorage', '8.15.0'
+  pod 'Firebase/DynamicLinks'
+  pod 'SSZipArchive'
+  pod 'KVO-MVVM', '0.5.6'
+  pod 'UIViewController-KeyboardAdditions', '1.2.1'
+  pod 'MBProgressHUD', '1.1.0'
+  pod 'MMSegmentSlider', :git => 'https://github.com/podkovyrin/MMSegmentSlider', :commit => '2d91366'
+  pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
+  pod 'SDWebImage', '5.13.2'
+  pod 'Moya', '~> 15.0'
+  # Debugging purposes
+  #  pod 'Reveal-SDK', :configurations => ['Debug']
+  
   target 'DashWalletTests' do
     inherit! :search_paths
   end
@@ -29,6 +51,7 @@ target 'dashwallet' do
   end
 
 end
+
 
 target 'TodayExtension' do
   platform :ios, '13.0'
