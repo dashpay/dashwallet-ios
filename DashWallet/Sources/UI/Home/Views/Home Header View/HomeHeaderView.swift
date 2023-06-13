@@ -25,6 +25,8 @@ protocol HomeHeaderViewDelegate: AnyObject {
     func homeHeaderView(_ headerView: HomeHeaderView, profileButtonAction sender: UIControl)
     func homeHeaderView(_ headerView: HomeHeaderView, retrySyncButtonAction sender: UIView)
     func homeHeaderViewDidUpdateContents(_ headerView: HomeHeaderView)
+    
+    func homeHeaderViewJoinDashPayAction(_ headerView: HomeHeaderView)
 }
 
 // MARK: - HomeHeaderView
@@ -39,7 +41,9 @@ final class HomeHeaderView: UIView {
     private(set) var syncView: SyncView!
     private(set) var shortcutsView: ShortcutsView!
     private(set) var stackView: UIStackView!
-
+    
+    private(set) var welcomeView: DWDPWelcomeView? // Available only in DashPay
+    
     weak var shortcutsDelegate: ShortcutsActionDelegate? {
         get {
             shortcutsView.actionDelegate
@@ -70,7 +74,16 @@ final class HomeHeaderView: UIView {
         shortcutsView = ShortcutsView(frame: .zero)
         shortcutsView.translatesAutoresizingMaskIntoConstraints = false
 
+        #if DASHPAY
+        welcomeView = DWDPWelcomeView(frame: .zero)
+        welcomeView!.translatesAutoresizingMaskIntoConstraints = false
+        welcomeView!.addTarget(self, action: #selector(joinDashPayAction), for: .touchUpInside)
+        
+        let views: [UIView] = [profileView, balanceView, shortcutsView, syncView, welcomeView!]
+        #else
         let views: [UIView] = [profileView, balanceView, shortcutsView, syncView]
+        #endif
+        
         let stackView = UIStackView(arrangedSubviews: views)
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
@@ -86,7 +99,6 @@ final class HomeHeaderView: UIView {
 
         if model.state == .syncFailed || model.state == .noConnection {
             showSyncView()
-
         } else {
             hideSyncView()
         }
@@ -133,6 +145,11 @@ final class HomeHeaderView: UIView {
         delegate?.homeHeaderView(self, profileButtonAction: sender)
     }
 
+    @objc
+    func joinDashPayAction() {
+        delegate?.homeHeaderViewJoinDashPayAction(self)
+    }
+    
     func parentScrollViewDidScroll(_ scrollView: UIScrollView) { }
 
     func reloadBalance() {

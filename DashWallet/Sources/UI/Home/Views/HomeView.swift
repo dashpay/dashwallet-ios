@@ -197,6 +197,10 @@ extension HomeView: HomeHeaderViewDelegate {
     func homeHeaderView(_ view: HomeHeaderView, profileButtonAction sender: UIControl) {
         delegate?.homeView(self, profileButtonAction: sender)
     }
+    
+    func homeHeaderViewJoinDashPayAction(_ headerView: HomeHeaderView) {
+        
+    }
 }
 
 // MARK: SyncingHeaderViewDelegate

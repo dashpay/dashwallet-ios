@@ -57,7 +57,7 @@
                                         <constraint firstItem="tWo-qc-7g0" firstAttribute="centerX" secondItem="nmB-Kb-Zbl" secondAttribute="centerX" id="YB9-Ml-tKl"/>
                                     </constraints>
                                 </view>
-                                <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="a19-pf-lti" userLabel="Amounts View" customClass="BalanceView" customModule="dashwallet">
+                                <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="a19-pf-lti" userLabel="Amounts View" customClass="BalanceView" customModule="dashpay" customModuleProvider="target">
                                     <rect key="frame" x="0.0" y="21.000000000000007" width="374" height="51.999999999999993"/>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

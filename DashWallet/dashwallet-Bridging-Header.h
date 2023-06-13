@@ -102,6 +102,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWDPRegistrationErrorRetryDelegate.h"
 #import "DWDPUserObject.h"
 #import "DWModalUserProfileViewController.h"
+#import "DWDPWelcomeView.h"
 
 //MARK: CrowdNode
 #import "DWCheckbox.h"
