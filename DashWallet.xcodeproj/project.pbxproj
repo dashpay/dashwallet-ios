@@ -1385,6 +1385,9 @@
 		C9D2C95E2A386D7E00D15901 /* DWBasePressableControl.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D2C95D2A386D7E00D15901 /* DWBasePressableControl.m */; };
 		C9D2C9622A386DA200D15901 /* DWDPWelcomeView.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D2C9602A386DA200D15901 /* DWDPWelcomeView.m */; };
 		C9D2C9652A38733B00D15901 /* DPAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C9D2C9642A38733B00D15901 /* DPAssets.xcassets */; };
+		C9D2C9692A3875BA00D15901 /* DWCurrentUserProfileModel.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D2C9672A3875BA00D15901 /* DWCurrentUserProfileModel.m */; };
+		C9D2C96C2A38762800D15901 /* DWDPUpdateProfileModel.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D2C96B2A38762800D15901 /* DWDPUpdateProfileModel.m */; };
+		C9D2C9712A38778E00D15901 /* DWDashPaySetupModel.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D2C9702A38778E00D15901 /* DWDashPaySetupModel.m */; };
 		C9F067F229E4576D0022D958 /* HomeBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F067F129E4576D0022D958 /* HomeBalanceView.swift */; };
 		C9F067F429E543630022D958 /* HomeBalanceView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9F067F329E457790022D958 /* HomeBalanceView.xib */; };
 		C9F42F9F29DA82E5001BC549 /* PayableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */; };
@@ -2645,6 +2648,12 @@
 		C9D2C9602A386DA200D15901 /* DWDPWelcomeView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPWelcomeView.m; sourceTree = "<group>"; };
 		C9D2C9612A386DA200D15901 /* DWDPWelcomeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPWelcomeView.h; sourceTree = "<group>"; };
 		C9D2C9642A38733B00D15901 /* DPAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = DPAssets.xcassets; sourceTree = "<group>"; };
+		C9D2C9672A3875BA00D15901 /* DWCurrentUserProfileModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWCurrentUserProfileModel.m; sourceTree = "<group>"; };
+		C9D2C9682A3875BA00D15901 /* DWCurrentUserProfileModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWCurrentUserProfileModel.h; sourceTree = "<group>"; };
+		C9D2C96A2A38762700D15901 /* DWDPUpdateProfileModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPUpdateProfileModel.h; sourceTree = "<group>"; };
+		C9D2C96B2A38762800D15901 /* DWDPUpdateProfileModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPUpdateProfileModel.m; sourceTree = "<group>"; };
+		C9D2C96F2A38778E00D15901 /* DWDashPaySetupModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDashPaySetupModel.h; sourceTree = "<group>"; };
+		C9D2C9702A38778E00D15901 /* DWDashPaySetupModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDashPaySetupModel.m; sourceTree = "<group>"; };
 		C9F067F129E4576D0022D958 /* HomeBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeBalanceView.swift; sourceTree = "<group>"; };
 		C9F067F329E457790022D958 /* HomeBalanceView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HomeBalanceView.xib; sourceTree = "<group>"; };
 		C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayableViewController.swift; sourceTree = "<group>"; };
@@ -6407,6 +6416,7 @@
 		C9D2C9582A386A5B00D15901 /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
+				C9D2C96D2A38777A00D15901 /* Setup */,
 				C9D2C9592A386A6700D15901 /* Home */,
 				C9D2C95A2A386D5200D15901 /* Shared */,
 			);
@@ -6416,6 +6426,7 @@
 		C9D2C9592A386A6700D15901 /* Home */ = {
 			isa = PBXGroup;
 			children = (
+				C9D2C9662A3875AB00D15901 /* Model */,
 				C9D2C95F2A386D9700D15901 /* Views */,
 			);
 			path = Home;
@@ -6453,6 +6464,34 @@
 				C9D2C9642A38733B00D15901 /* DPAssets.xcassets */,
 			);
 			path = Assets;
+			sourceTree = "<group>";
+		};
+		C9D2C9662A3875AB00D15901 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				C9D2C96A2A38762700D15901 /* DWDPUpdateProfileModel.h */,
+				C9D2C96B2A38762800D15901 /* DWDPUpdateProfileModel.m */,
+				C9D2C9682A3875BA00D15901 /* DWCurrentUserProfileModel.h */,
+				C9D2C9672A3875BA00D15901 /* DWCurrentUserProfileModel.m */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		C9D2C96D2A38777A00D15901 /* Setup */ = {
+			isa = PBXGroup;
+			children = (
+				C9D2C96E2A38778400D15901 /* Model */,
+			);
+			path = Setup;
+			sourceTree = "<group>";
+		};
+		C9D2C96E2A38778400D15901 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				C9D2C96F2A38778E00D15901 /* DWDashPaySetupModel.h */,
+				C9D2C9702A38778E00D15901 /* DWDashPaySetupModel.m */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 		C9F42FA729DC09C6001BC549 /* Style */ = {
@@ -8274,6 +8313,7 @@
 				C9D2C7852A320AA000D15901 /* BalanceModel.swift in Sources */,
 				C9D2C7862A320AA000D15901 /* TxReclassifyTransactionsInfoViewController.swift in Sources */,
 				C9D2C7872A320AA000D15901 /* DWTransactionListDataProvider.m in Sources */,
+				C9D2C9692A3875BA00D15901 /* DWCurrentUserProfileModel.m in Sources */,
 				C9D2C7882A320AA000D15901 /* DWModalPopupTransition.m in Sources */,
 				C9D2C7892A320AA000D15901 /* DWAdvancedSecurityViewController.m in Sources */,
 				C9D2C78A2A320AA000D15901 /* DWInputUsernameViewController.m in Sources */,
@@ -8522,8 +8562,10 @@
 				C9D2C87C2A320AA000D15901 /* DWSwitcherFormCellModel.m in Sources */,
 				C9D2C87D2A320AA000D15901 /* DWIntrinsicTextView.m in Sources */,
 				C9D2C87E2A320AA000D15901 /* DWExploreTestnetViewController.m in Sources */,
+				C9D2C96C2A38762800D15901 /* DWDPUpdateProfileModel.m in Sources */,
 				C9D2C87F2A320AA000D15901 /* AddressUserInfoDAO.swift in Sources */,
 				C9D2C8802A320AA000D15901 /* DWDashPayContactsUpdater.m in Sources */,
+				C9D2C9712A38778E00D15901 /* DWDashPaySetupModel.m in Sources */,
 				C9D2C8812A320AA000D15901 /* DWModalTransition.m in Sources */,
 				C9D2C8822A320AA000D15901 /* DWUpholdMainModel.m in Sources */,
 				C9D2C8832A320AA000D15901 /* MerchantsDataProvider.swift in Sources */,

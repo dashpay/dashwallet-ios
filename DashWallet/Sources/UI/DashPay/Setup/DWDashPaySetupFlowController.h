@@ -21,9 +21,22 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWDashPaySetupFlowController;
+
+@protocol DWDashPaySetupFlowControllerDelegate <NSObject>
+
+- (void)dashPaySetupFlowController:(DWDashPaySetupFlowController *)controller
+                didConfirmUsername:(NSString *)username;
+
+@end
+
 @interface DWDashPaySetupFlowController : UIViewController
 
-- (instancetype)initWithDashPayModel:(id<DWDashPayProtocol>)dashPayModel;
+- (instancetype)initWithDashPayModel:(id<DWDashPayProtocol>)dashPayModel
+                          invitation:(nullable NSURL *)invitationURL
+                     definedUsername:(nullable NSString *)definedUsername;
+
+- (instancetype)initWithConfirmationDelegate:(id<DWDashPaySetupFlowControllerDelegate>)delegate;
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;

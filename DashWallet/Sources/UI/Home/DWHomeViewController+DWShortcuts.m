@@ -173,7 +173,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showCreateUsername {
     DWDashPaySetupFlowController *controller = [[DWDashPaySetupFlowController alloc]
-        initWithDashPayModel:self.model.dashPayModel];
+        initWithDashPayModel:self.model.dashPayModel
+                  invitation:nil
+             definedUsername:nil];
     controller.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:controller animated:YES completion:nil];
 }

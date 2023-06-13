@@ -21,6 +21,7 @@
 #import "DWContainerViewController.h"
 #import "DWCreateUsernameViewController.h"
 #import "DWDPRegistrationStatus.h"
+#import "DWDashPaySetupModel.h"
 #import "DWRegistrationCompletedViewController.h"
 #import "DWUIKit.h"
 #import "DWUsernameHeaderView.h"
@@ -49,6 +50,9 @@ NS_ASSUME_NONNULL_BEGIN
                                             DWRegistrationCompletedViewControllerDelegate>
 
 @property (readonly, nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
+@property (nullable, nonatomic, readonly, strong) NSURL *invitationURL;
+@property (nullable, nonatomic, readonly, copy) NSString *definedUsername;
+@property (nullable, nonatomic, weak) id<DWDashPaySetupFlowControllerDelegate> confirmationDelegate;
 
 @property (null_resettable, nonatomic, strong) DWUsernameHeaderView *headerView;
 @property (null_resettable, nonatomic, strong) UIView *contentView;
@@ -63,10 +67,24 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWDashPaySetupFlowController
 
-- (instancetype)initWithDashPayModel:(id<DWDashPayProtocol>)dashPayModel {
+- (instancetype)initWithDashPayModel:(id<DWDashPayProtocol>)dashPayModel
+                          invitation:(NSURL *)invitationURL
+                     definedUsername:(NSString *)definedUsername {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _dashPayModel = dashPayModel;
+        _invitationURL = invitationURL;
+        _definedUsername = definedUsername;
+    }
+    return self;
+}
+
+- (instancetype)initWithConfirmationDelegate:(id<DWDashPaySetupFlowControllerDelegate>)delegate {
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        _dashPayModel = [[DWDashPaySetupModel alloc] init];
+        _invitationURL = nil;
+        _confirmationDelegate = delegate;
     }
     return self;
 }
@@ -137,6 +155,12 @@ NS_ASSUME_NONNULL_END
     [self.headerView showInitialAnimation];
 }
 
+#pragma mark - DWNavigationFullscreenable
+
+- (BOOL)requiresNoNavigationBar {
+    return YES;
+}
+
 #pragma mark - Private
 
 - (void)registrationStatusUpdatedNotification {
@@ -148,6 +172,11 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)setCurrentStateController {
+    if (self.definedUsername != nil) {
+        [self createUsername:self.definedUsername];
+        return;
+    }
+
     if (self.dashPayModel.registrationStatus == nil || self.dashPayModel.registrationStatus.failed) {
         [self showCreateUsernameController];
 
@@ -164,7 +193,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)createUsername:(NSString *)username {
     __weak typeof(self) weakSelf = self;
-    [self.dashPayModel createUsername:username];
+    [self.dashPayModel createUsername:username invitation:self.invitationURL];
     [self showPendingController:username];
 }
 
@@ -181,6 +210,7 @@ NS_ASSUME_NONNULL_END
         _headerView = [[DWUsernameHeaderView alloc] initWithFrame:CGRectZero];
         _headerView.translatesAutoresizingMaskIntoConstraints = NO;
         _headerView.preservesSuperviewLayoutMargins = YES;
+        _headerView.cancelButton.hidden = self.confirmationDelegate != nil;
         [_headerView.cancelButton addTarget:self
                                      action:@selector(cancelButtonAction)
                            forControlEvents:UIControlEventTouchUpInside];
@@ -259,9 +289,14 @@ NS_ASSUME_NONNULL_END
     NSString *username = controller.username;
     [controller dismissViewControllerAnimated:YES
                                    completion:^{
-                                       // initiate creation process once confirmation is dismissed because
-                                       // DashSync will be showing pin request modally
-                                       [self createUsername:username];
+                                       if (self.confirmationDelegate) {
+                                           [self.confirmationDelegate dashPaySetupFlowController:self didConfirmUsername:username];
+                                       }
+                                       else {
+                                           // initiate creation process once confirmation is dismissed because
+                                           // DashSync will be showing pin request modally
+                                           [self createUsername:username];
+                                       }
                                    }];
 }
 
