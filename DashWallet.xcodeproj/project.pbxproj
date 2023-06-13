@@ -1411,7 +1411,6 @@
 		C9F451F52A0CAC9400825057 /* HomeHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451F42A0CAC9400825057 /* HomeHeaderView.swift */; };
 		C9F451F72A0CAE1300825057 /* SyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451F62A0CAE1300825057 /* SyncView.swift */; };
 		C9F451F92A0CB08900825057 /* ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451F82A0CB08900825057 /* ProgressView.swift */; };
-		C9F451FB2A0CC2A800825057 /* DashPayProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451FA2A0CC2A800825057 /* DashPayProfileView.swift */; };
 		C9F451FD2A0CC4A300825057 /* BadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451FC2A0CC4A300825057 /* BadgeView.swift */; };
 		C9F452012A0CE6C900825057 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F452002A0CE6C900825057 /* HomeView.swift */; };
 		C9F452032A0CEB5800825057 /* TxListEmptyTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F452022A0CEB5800825057 /* TxListEmptyTableViewCell.swift */; };
@@ -6452,6 +6451,7 @@
 		C9D2C95F2A386D9700D15901 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C9F451FA2A0CC2A800825057 /* DashPayProfileView.swift */,
 				C9D2C9612A386DA200D15901 /* DWDPWelcomeView.h */,
 				C9D2C9602A386DA200D15901 /* DWDPWelcomeView.m */,
 			);
@@ -6514,7 +6514,6 @@
 		C9F451FE2A0CE60400825057 /* Home Header View */ = {
 			isa = PBXGroup;
 			children = (
-				C9F451FA2A0CC2A800825057 /* DashPayProfileView.swift */,
 				C9F451F42A0CAC9400825057 /* HomeHeaderView.swift */,
 				C9F4520A2A1209D100825057 /* HomeHeaderModel.swift */,
 			);
@@ -7554,7 +7553,6 @@
 				4774DCE128F44BA4008CF87D /* ServiceDataProvider.swift in Sources */,
 				C9F451E72A0BA16400825057 /* PaymentButton.swift in Sources */,
 				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,
-				C9F451FB2A0CC2A800825057 /* DashPayProfileView.swift in Sources */,
 				110D1781298BA9AF005BEB30 /* WKWebView+CrowdNode.swift in Sources */,
 				47FA3AFF29350929008D58DC /* SyncingActivityMonitor.swift in Sources */,
 				C9F42FB029DC27F4001BC549 /* EmptyView.swift in Sources */,

@@ -79,7 +79,7 @@ class DashPayProfileView: UIControl {
         contentView.addSubview(badgeView)
 
         NSLayoutConstraint.activate([
-            contentView.topAnchor.constraint(equalTo: topAnchor),
+            contentView.topAnchor.constraint(equalTo: topAnchor, constant: 10),
             contentView.leadingAnchor.constraint(equalTo: leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: trailingAnchor),
             contentView.bottomAnchor.constraint(equalTo: bottomAnchor),

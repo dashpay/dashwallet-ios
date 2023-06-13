@@ -25,7 +25,7 @@ protocol HomeHeaderViewDelegate: AnyObject {
     func homeHeaderView(_ headerView: HomeHeaderView, profileButtonAction sender: UIControl)
     func homeHeaderView(_ headerView: HomeHeaderView, retrySyncButtonAction sender: UIView)
     func homeHeaderViewDidUpdateContents(_ headerView: HomeHeaderView)
-    
+
     func homeHeaderViewJoinDashPayAction(_ headerView: HomeHeaderView)
 }
 
@@ -36,14 +36,17 @@ final class HomeHeaderView: UIView {
 
     public weak var delegate: HomeHeaderViewDelegate?
 
-    private(set) var profileView: DashPayProfileView!
+
     private(set) var balanceView: HomeBalanceView!
     private(set) var syncView: SyncView!
     private(set) var shortcutsView: ShortcutsView!
     private(set) var stackView: UIStackView!
-    
-    private(set) var welcomeView: DWDPWelcomeView? // Available only in DashPay
-    
+
+    // Available only in DashPay
+    private(set) var profileView: DashPayProfileView?
+    private(set) var welcomeView: DWDPWelcomeView?
+    private var isProfileReady = false
+
     weak var shortcutsDelegate: ShortcutsActionDelegate? {
         get {
             shortcutsView.actionDelegate
@@ -60,11 +63,6 @@ final class HomeHeaderView: UIView {
 
         super.init(frame: frame)
 
-        profileView = DashPayProfileView(frame: .zero)
-        profileView.translatesAutoresizingMaskIntoConstraints = false
-        profileView.addTarget(self, action: #selector(profileViewAction(_:)), for: .touchUpInside)
-        profileView.isHidden = true
-
         balanceView = HomeBalanceView(frame: .zero)
         balanceView.delegate = self
 
@@ -75,15 +73,20 @@ final class HomeHeaderView: UIView {
         shortcutsView.translatesAutoresizingMaskIntoConstraints = false
 
         #if DASHPAY
+        profileView = DashPayProfileView(frame: .zero)
+        profileView!.translatesAutoresizingMaskIntoConstraints = false
+        profileView!.addTarget(self, action: #selector(profileViewAction(_:)), for: .touchUpInside)
+        profileView!.isHidden = true
+
         welcomeView = DWDPWelcomeView(frame: .zero)
         welcomeView!.translatesAutoresizingMaskIntoConstraints = false
         welcomeView!.addTarget(self, action: #selector(joinDashPayAction), for: .touchUpInside)
-        
-        let views: [UIView] = [profileView, balanceView, shortcutsView, syncView, welcomeView!]
+
+        let views: [UIView] = [profileView!, balanceView, shortcutsView, syncView, welcomeView!]
         #else
-        let views: [UIView] = [profileView, balanceView, shortcutsView, syncView]
+        let views: [UIView] = [balanceView, shortcutsView, syncView]
         #endif
-        
+
         let stackView = UIStackView(arrangedSubviews: views)
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
@@ -148,8 +151,11 @@ final class HomeHeaderView: UIView {
     @objc
     func joinDashPayAction() {
         delegate?.homeHeaderViewJoinDashPayAction(self)
+
+        isProfileReady.toggle()
+        updateProfileView()
     }
-    
+
     func parentScrollViewDidScroll(_ scrollView: UIScrollView) { }
 
     func reloadBalance() {
@@ -165,7 +171,10 @@ final class HomeHeaderView: UIView {
     }
 
     private func updateProfileView() {
-        profileView.isHidden = true
+        profileView!.username = "madmax"
+
+        profileView!.isHidden = !isProfileReady
+        welcomeView!.isHidden = isProfileReady
 
         // TODO: Platform
 //        let status = model?.dashPayModel.registrationStatus
