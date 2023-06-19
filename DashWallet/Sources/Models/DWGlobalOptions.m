@@ -37,9 +37,6 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic balanceHidden;
 @dynamic shouldDisplayOnboarding;
 @dynamic paymentsScreenCurrentTab;
-@dynamic dashpayUsername;
-@dynamic dashpayRegistrationCompleted;
-@dynamic mostRecentViewedNotificationDate;
 @dynamic resyncingWallet;
 @dynamic selectedPaymentCurrency;
 @dynamic shouldDisplayReclassifyYourTransactionsFlow;
@@ -47,6 +44,12 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic dateHistoricalRatesActivated;
 @dynamic exploreDashMerchantsInfoShown;
 @dynamic coinbaseInfoShown;
+
+#ifdef DASHPAY
+@dynamic dashpayUsername;
+@dynamic dashpayRegistrationCompleted;
+@dynamic mostRecentViewedNotificationDate;
+#endif
 
 #pragma mark - Init
 
@@ -137,9 +140,6 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     self.shortcuts = nil;
     self.localNotificationsEnabled = YES;
     self.balanceHidden = NO;
-    self.dashpayUsername = nil;
-    self.dashpayRegistrationCompleted = NO;
-    self.mostRecentViewedNotificationDate = nil;
     self.resyncingWallet = NO;
     self.selectedPaymentCurrency = DWPaymentCurrencyDash;
     self.shouldDisplayReclassifyYourTransactionsFlow = YES;
@@ -147,6 +147,13 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     self.dateHistoricalRatesActivated = nil;
     self.exploreDashMerchantsInfoShown = NO;
     self.coinbaseInfoShown = NO;
+    
+#ifdef DASHPAY
+    self.dashpayUsername = nil;
+    self.dashpayRegistrationCompleted = NO;
+    self.mostRecentViewedNotificationDate = nil;
+    self.dashPayRegistrationOpenedOnce = NO;
+#endif
 }
 
 @end

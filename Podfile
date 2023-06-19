@@ -39,6 +39,8 @@ target 'dashpay' do
   pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
   pod 'SDWebImage', '5.13.2'
   pod 'Moya', '~> 15.0'
+  pod 'TOCropViewController', '2.6.1'
+
   # Debugging purposes
   #  pod 'Reveal-SDK', :configurations => ['Debug']
   

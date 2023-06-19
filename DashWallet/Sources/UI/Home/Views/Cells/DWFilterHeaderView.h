@@ -16,6 +16,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "BaseCollectionReusableView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,10 +25,11 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWFilterHeaderViewDelegate <NSObject>
 
 - (void)filterHeaderView:(DWFilterHeaderView *)view filterButtonAction:(UIView *)sender;
+- (void)filterHeaderView:(DWFilterHeaderView *)view infoButtonAction:(UIView *)sender;
 
 @end
 
-@interface DWFilterHeaderView : UICollectionReusableView
+@interface DWFilterHeaderView : BaseCollectionReusableView
 
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UIButton *filterButton;
@@ -35,6 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) CGFloat padding;
 
 @property (nullable, nonatomic, weak) id<DWFilterHeaderViewDelegate> delegate;
+
+@property (strong, nonatomic) IBOutlet UIButton *infoButton;
 
 @end
 

@@ -55,6 +55,9 @@
 #error "Debug flag FRESH_INSTALL is active during Release build. Comment this out to continue."
 #endif /* (FRESH_INSTALL && !DEBUG) */
 
+#if DASHPAY
+NSNotificationName const DWDashPayAvailabilityStatusUpdatedNotification = @"DWDashPayAvailabilityStatusUpdatedNotification";
+#endif
 NS_ASSUME_NONNULL_BEGIN
 
 @interface AppDelegate () <DWStartViewControllerDelegate, UNUserNotificationCenterDelegate>

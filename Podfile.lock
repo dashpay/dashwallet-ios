@@ -699,7 +699,7 @@ PODS:
   - nanopb/decode (2.30908.0)
   - nanopb/encode (2.30908.0)
   - PromisesObjC (2.2.0)
-  - Protobuf (3.23.1)
+  - Protobuf (3.23.2)
   - SDWebImage (5.13.2):
     - SDWebImage/Core (= 5.13.2)
   - SDWebImage/Core (5.13.2)
@@ -714,6 +714,7 @@ PODS:
   - tinycbor (0.5.4-alpha1)
   - TinyCborObjc (0.4.6):
     - tinycbor (= 0.5.4-alpha1)
+  - TOCropViewController (2.6.1)
   - UIViewController-KeyboardAdditions (1.2.1)
 
 DEPENDENCIES:
@@ -731,6 +732,7 @@ DEPENDENCIES:
   - SQLite.swift (~> 0.13.3)
   - SQLiteMigrationManager.swift
   - SSZipArchive
+  - TOCropViewController (= 2.6.1)
   - UIViewController-KeyboardAdditions (= 1.2.1)
 
 SPEC REPOS:
@@ -770,6 +772,7 @@ SPEC REPOS:
     - SSZipArchive
     - tinycbor
     - TinyCborObjc
+    - TOCropViewController
     - UIViewController-KeyboardAdditions
 
 EXTERNAL SOURCES:
@@ -822,15 +825,16 @@ SPEC CHECKSUMS:
   Moya: 138f0573e53411fb3dc17016add0b748dfbd78ee
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   PromisesObjC: 09985d6d70fbe7878040aa746d78236e6946d2ef
-  Protobuf: 3dd214698ddb7afd832da281c777b2e9facef401
+  Protobuf: 5df4e9d2abd535fb675c68d171f6bc87983d27a6
   SDWebImage: 72f86271a6f3139cc7e4a89220946489d4b9a866
   SQLite.swift: 903bfa3bc9ab06345fdfbb578e34f47cfcf417da
   SQLiteMigrationManager.swift: 5383578f5bc8955c06695e8bf04835ee0e6673a8
   SSZipArchive: fe6a26b2a54d5a0890f2567b5cc6de5caa600aef
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
   TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80
+  TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: 923bcf58ceb233fa904192267a41641c010ae7f9
+PODFILE CHECKSUM: c83209e59b05badf5f6be34c40c5780bbdd9ebb2
 
 COCOAPODS: 1.12.1

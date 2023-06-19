@@ -49,6 +49,14 @@ NS_ASSUME_NONNULL_BEGIN
                                                object:nil];
 }
 
+- (void)setInsetsForContentPadding:(UIEdgeInsets)contentPadding imageTitlePadding:(CGFloat)imageTitlePadding {
+    self.contentEdgeInsets = UIEdgeInsetsMake(contentPadding.top,
+                                              contentPadding.left,
+                                              contentPadding.bottom,
+                                              contentPadding.right + imageTitlePadding);
+    self.titleEdgeInsets = UIEdgeInsetsMake(0, imageTitlePadding, 0, -imageTitlePadding);
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

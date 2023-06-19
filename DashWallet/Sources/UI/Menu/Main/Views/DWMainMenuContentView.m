@@ -63,6 +63,26 @@ NS_ASSUME_NONNULL_BEGIN
     [self.tableView reloadData];
 }
 
+- (void)updateUserHeader {
+    //[self.userModel update];
+    [self updateHeader];
+}
+
+- (void)updateHeader {
+    //TODO: DashPay
+//    UIView *header = nil;
+//    if (self.dashPayReady.isDashPayReady) {
+//        header = self.joinHeaderView;
+//    }
+//    else if (self.userModel.blockchainIdentity != nil) {
+//        [self.headerView update];
+//        header = self.headerView;
+//    }
+//
+//    self.tableView.tableHeaderView = header;
+//    [self setNeedsLayout];
+}
+
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {

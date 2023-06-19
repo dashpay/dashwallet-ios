@@ -24,6 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface DWButton : UIButton
 
+- (void)setInsetsForContentPadding:(UIEdgeInsets)contentPadding imageTitlePadding:(CGFloat)imageTitlePadding;
+
 @end
 
 NS_ASSUME_NONNULL_END

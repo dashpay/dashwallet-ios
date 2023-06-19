@@ -31,7 +31,9 @@ class DashPayProfileView: UIControl {
 
     var username: String? {
         didSet {
-            avatarView.username = username
+            if let username {
+                avatarView.configure(withUsername: username)
+            }
         }
     }
 

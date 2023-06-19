@@ -100,7 +100,7 @@ extension BaseTxDetailsViewController: UITableViewDelegate {
 
 // MARK: - TXDetailViewController
 
-@objc
+@objc(DWTxDetailViewController)
 class TXDetailViewController: BaseTxDetailsViewController {
     @objc var model: TxDetailModel!
 

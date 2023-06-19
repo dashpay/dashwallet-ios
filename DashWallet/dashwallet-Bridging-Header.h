@@ -103,6 +103,13 @@ static const bool _SNAPSHOT = 0;
 #import "DWDPUserObject.h"
 #import "DWModalUserProfileViewController.h"
 #import "DWDPWelcomeView.h"
+#import "DWInvitationActionsView.h"
+#import "DWInvitationPreviewViewController.h"
+#import "DWInvitationLinkBuilder.h"
+#import "DWSuccessInvitationView.h"
+#import "DWInvitationMessageView.h"
+#import "DWScrollingViewController.h"
+#import "UIView+DWEmbedding.h"
 
 //MARK: CrowdNode
 #import "DWCheckbox.h"

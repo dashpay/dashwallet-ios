@@ -51,18 +51,22 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) NSDate *dateReclassifyYourTransactionsFlowActivated;
 @property (nullable, nonatomic, strong) NSDate *dateHistoricalRatesActivated;
 @property (nonatomic, assign) NSInteger paymentsScreenCurrentTab;
-
-@property (nullable, nonatomic, copy) NSString *dashpayUsername;
-@property (nonatomic, assign) BOOL dashpayRegistrationCompleted;
-@property (nullable, nonatomic, strong) NSDate *mostRecentViewedNotificationDate;
-
 @property (nonatomic, assign, getter=isResyncingWallet) BOOL resyncingWallet;
 
 @property (nonatomic, assign) DWPaymentCurrency selectedPaymentCurrency;
 
 @property (nonatomic, assign) BOOL exploreDashMerchantsInfoShown;
-
 @property (nonatomic, assign) BOOL coinbaseInfoShown;
+
+#ifdef DASHPAY
+@property (nonatomic, assign) BOOL dashPayRegistrationOpenedOnce;
+@property (nonatomic, assign) BOOL dashpayRegistrationCompleted;
+@property (nonatomic, assign) BOOL dpInvitationFlowEnabled;
+@property (nonatomic, assign) BOOL shouldShowInvitationsBadge;
+
+@property (nullable, nonatomic, copy) NSString *dashpayUsername;
+@property (nullable, nonatomic, strong) NSDate *mostRecentViewedNotificationDate;
+#endif
 // Non-dynamic
 
 - (BOOL)lockScreenDisabled;

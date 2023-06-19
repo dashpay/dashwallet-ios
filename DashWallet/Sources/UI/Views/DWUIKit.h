@@ -29,4 +29,7 @@
 
 #import "UIViewController+DWEmbedding.h"
 
+#import "NSLayoutConstraint+DWAutolayout.h"
+#import "UIView+DWAutolayout.h"
+
 #endif /* DWUIKit_h */

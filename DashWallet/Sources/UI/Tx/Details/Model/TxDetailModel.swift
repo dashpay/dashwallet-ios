@@ -19,7 +19,7 @@ import Foundation
 
 // MARK: - TxDetailModel
 
-@objc
+@objc(DWTxDetailModel)
 class TxDetailModel: NSObject {
     var transaction: Transaction
     var transactionId: String

@@ -106,7 +106,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)homeView:(DWHomeView *)homeView profileButtonAction:(UIControl *)sender {
-    DWNotificationsViewController *controller = [[DWNotificationsViewController alloc] init];
+    DWNotificationsViewController *controller = [[DWNotificationsViewController alloc] initWithPayModel:self.payModel dataProvider:self.dataProvider];
     [self.navigationController pushViewController:controller animated:YES];
 }
 
@@ -206,8 +206,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)presentTransactionDetails:(DSTransaction *)transaction {
-    TxDetailModel *model = [[TxDetailModel alloc] initWithTransaction:transaction];
-    TXDetailViewController *controller = [[TXDetailViewController alloc] initWithModel:model];
+    DWTxDetailModel *model = [[DWTxDetailModel alloc] initWithTransaction:transaction];
+    DWTxDetailViewController *controller = [[DWTxDetailViewController alloc] initWithModel:model];
 
     DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];
     [self presentViewController:nvc animated:YES completion:nil];

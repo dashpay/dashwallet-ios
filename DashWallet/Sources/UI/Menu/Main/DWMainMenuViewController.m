@@ -31,6 +31,10 @@
 #import "SFSafariViewController+DashWallet.h"
 #import "dashwallet-Swift.h"
 
+#ifdef DASHPAY
+#import "DWMainMenuViewController+DashPay.h"
+#endif
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWMainMenuViewController () <DWMainMenuContentViewDelegate,
@@ -68,9 +72,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
-    self.view.model = [[DWMainMenuModel alloc] init];
+    
     self.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeNever;
-    //    self.navigationController.navigationBar.prefersLargeTitles = NO;
+    
+#ifdef DASHPAY
+    //BOOL invitationsEnabled = ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled && (self.userProfileModel.blockchainIdentity != nil)); //TODO: DashPay
+    //self.view.model = [[DWMainMenuModel alloc] initWithInvitesEnabled:invitationsEnabled]; //TODO: DashPay
+    self.view.model = [[DWMainMenuModel alloc] init];
+    [self.view updateUserHeader];
+#else
+    self.view.model = [[DWMainMenuModel alloc] init];
+#endif
+    
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
