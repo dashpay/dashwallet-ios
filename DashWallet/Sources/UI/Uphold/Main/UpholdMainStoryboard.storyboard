@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="SNl-Ez-Rsa">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="SNl-Ez-Rsa">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -17,17 +19,17 @@
             <objects>
                 <viewController id="SNl-Ez-Rsa" customClass="DWUpholdMainViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="3TV-oO-cBv">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="uphold_logo" translatesAutoresizingMaskIntoConstraints="NO" id="f4S-Ig-Mp1">
-                                <rect key="frame" x="250" y="64" width="100" height="141"/>
+                            <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="service.uphold.square" translatesAutoresizingMaskIntoConstraints="NO" id="f4S-Ig-Mp1">
+                                <rect key="frame" x="156.66666666666666" y="123" width="80" height="80"/>
                             </imageView>
                             <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="rdD-oF-hUw">
-                                <rect key="frame" x="290" y="270.5" width="20" height="20"/>
+                                <rect key="frame" x="186.66666666666666" y="268.33333333333331" width="20" height="20"/>
                             </activityIndicatorView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="..." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="bPd-EX-JdY">
-                                <rect key="frame" x="20" y="270.5" width="560" height="23.5"/>
+                                <rect key="frame" x="20" y="268.33333333333331" width="353" height="23.666666666666686"/>
                                 <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="20"/>
                                 <color key="textColor" red="0.0" green="0.55294117647058827" blue="0.89411764705882346" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
@@ -35,8 +37,8 @@
                                     <fragment content="#bc-ignore!"/>
                                 </attributedString>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BzX-au-frW" customClass="DWActionButton">
-                                <rect key="frame" x="283" y="270.5" width="34" height="39"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BzX-au-frW" customClass="DWActionButton">
+                                <rect key="frame" x="179.66666666666666" y="268.33333333333331" width="34" height="39"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="39" id="ROc-mH-c8d"/>
                                 </constraints>
@@ -54,7 +56,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="w0x-R5-6yg" customClass="DWActionButton">
-                                <rect key="frame" x="22" y="474" width="556" height="50"/>
+                                <rect key="frame" x="22" y="692" width="349" height="50"/>
                                 <color key="backgroundColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="50" id="eNk-Yu-nlA"/>
@@ -76,7 +78,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bkb-VD-Oq6" customClass="DWActionButton">
-                                <rect key="frame" x="22" y="546" width="556" height="50"/>
+                                <rect key="frame" x="22" y="764" width="349" height="50"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="50" id="JBR-UR-H2k"/>
                                 </constraints>
@@ -95,7 +97,7 @@
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your Uphold account Dash balance is" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JZt-mf-cRK">
-                                <rect key="frame" x="22" y="229" width="556" height="19.5"/>
+                                <rect key="frame" x="22" y="227" width="349" height="19.333333333333343"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -104,6 +106,7 @@
                                 </attributedString>
                             </label>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="Goh-EE-eVN"/>
                         <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="BzX-au-frW" firstAttribute="top" secondItem="JZt-mf-cRK" secondAttribute="bottom" constant="22" id="0Et-fX-is8"/>
@@ -125,7 +128,6 @@
                             <constraint firstItem="bkb-VD-Oq6" firstAttribute="leading" secondItem="Goh-EE-eVN" secondAttribute="leading" constant="22" id="uvP-U5-uot"/>
                             <constraint firstItem="JZt-mf-cRK" firstAttribute="leading" secondItem="Goh-EE-eVN" secondAttribute="leading" constant="22" id="xFo-hS-RLn"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="Goh-EE-eVN"/>
                     </view>
                     <connections>
                         <outlet property="balanceActivityIndicator" destination="rdD-oF-hUw" id="afl-wq-FOv"/>
@@ -143,7 +145,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="uphold_logo" width="100" height="141"/>
+        <image name="service.uphold.square" width="80" height="80"/>
         <namedColor name="SecondaryBackgroundColor">
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

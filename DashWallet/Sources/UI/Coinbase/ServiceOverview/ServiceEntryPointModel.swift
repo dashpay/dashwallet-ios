@@ -77,7 +77,7 @@ extension Service {
     var entryIcon: String {
         switch self {
         case .coinbase: return "service.coinbase.square"
-        case .uphold: return "service.uphold.square"
+        case .uphold: return "uphold_logo"
         }
     }
 
