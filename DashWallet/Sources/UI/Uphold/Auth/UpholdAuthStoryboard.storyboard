@@ -18,17 +18,16 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Bwv-Wn-hrH" userLabel="Info View">
-                                <rect key="frame" x="16" y="123.00000000000001" width="361" height="218.33333333333337"/>
+                                <rect key="frame" x="16" y="123.00000000000001" width="361" height="198.33333333333337"/>
                                 <subviews>
-                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="uphold_logo" translatesAutoresizingMaskIntoConstraints="NO" id="g2S-Xe-WLc">
-                                        <rect key="frame" x="160.66666666666666" y="0.0" width="40" height="100"/>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="service.uphold.square" translatesAutoresizingMaskIntoConstraints="NO" id="g2S-Xe-WLc">
+                                        <rect key="frame" x="140.66666666666666" y="0.0" width="80" height="80"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="40" id="N2W-fG-iRo"/>
-                                            <constraint firstAttribute="height" constant="100" id="tZo-3H-dgh"/>
+                                            <constraint firstAttribute="height" constant="80" id="tZo-3H-dgh"/>
                                         </constraints>
                                     </imageView>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TJj-fr-ZH9" userLabel="Embed View">
-                                        <rect key="frame" x="0.0" y="132" width="361" height="86.333333333333314"/>
+                                        <rect key="frame" x="0.0" y="112" width="361" height="86.333333333333314"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MdV-BP-3Kw" userLabel="Center View">
                                                 <rect key="frame" x="3" y="0.0" width="355.33333333333331" height="86.333333333333329"/>
@@ -150,9 +149,9 @@
         </scene>
     </scenes>
     <resources>
+        <image name="service.uphold.square" width="80" height="80"/>
         <image name="uphold-buy-dash-icon" width="25" height="30"/>
         <image name="uphold-transfer-icon" width="23" height="24"/>
-        <image name="uphold_logo" width="18.666666030883789" height="26"/>
         <namedColor name="SecondaryBackgroundColor">
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
