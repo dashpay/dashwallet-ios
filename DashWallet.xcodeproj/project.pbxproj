@@ -178,7 +178,6 @@
 		2A4E535522F1D0D900E5168A /* TxListTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E535322F1D0D900E5168A /* TxListTableViewCell.xib */; };
 		2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E535B22F335C200E5168A /* DWTransactionListDataProvider.m */; };
 		2A5279BC23D994BC00F856D3 /* CoreNFC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A5279BB23D994BC00F856D3 /* CoreNFC.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		2A56EF0624193AEB002C32F3 /* DWDashPayModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EF0524193AEB002C32F3 /* DWDashPayModel.m */; };
 		2A58815921A5906C00FD4D2C /* DWBaseLegacyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseLegacyViewController.m */; };
 		2A5E4548243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5E4546243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.m */; };
 		2A5E4549243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A5E4547243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib */; };
@@ -267,7 +266,6 @@
 		2A913EB623A7E145006A2A59 /* DWTransactionStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913EB523A7E145006A2A59 /* DWTransactionStub.m */; };
 		2A9172C425233DC50024B4C5 /* DWPhraseRepairViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9172C325233DC50024B4C5 /* DWPhraseRepairViewController.m */; };
 		2A9172D325233F4F0024B4C5 /* DWPhraseRepairChildViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9172D225233F4F0024B4C5 /* DWPhraseRepairChildViewController.m */; };
-		2A919F9F24A65CE00018C9A3 /* DWDPAmountContactView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A919F9E24A65CE00018C9A3 /* DWDPAmountContactView.m */; };
 		2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */; };
 		2A9CEBB922E1FA1000A50237 /* DWHomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBB822E1FA1000A50237 /* DWHomeViewController.m */; };
 		2A9FFDF42230FF1A00956D5F /* UIView+DWAnimations.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFDEF2230FF1A00956D5F /* UIView+DWAnimations.m */; };
@@ -8497,7 +8495,6 @@
 				47EE171729560DC200BA1986 /* ErrorPresentable.swift in Sources */,
 				2ACCD8E2231E507900A96B62 /* DWPinInputStepView.m in Sources */,
 				2A74EFED2305318000C475EB /* DWRecoverViewController.m in Sources */,
-				2A919F9F24A65CE00018C9A3 /* DWDPAmountContactView.m in Sources */,
 				2A913EAE23A7AC86006A2A59 /* DWBaseTransactionListDataProvider.m in Sources */,
 				0F6EDFCC28C896BD000427E7 /* CoinbaseTransactionsRequest.swift in Sources */,
 				2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */,
@@ -8597,7 +8594,6 @@
 				2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */,
 				47B30D7C29100ABA0080C326 /* UIStackView+DashWallet.swift in Sources */,
 				47AE8B9C28BFAD3600490F5E /* ExplorePointOfUse.swift in Sources */,
-				2A56EF0624193AEB002C32F3 /* DWDashPayModel.m in Sources */,
 				117ED4A128EC86E0006E3EE4 /* TransactionObserver.swift in Sources */,
 				2A4431D522D52F67009BAF7F /* DWInfoTextCell.m in Sources */,
 				47EE17192959CDC200BA1986 /* ColorizedText.swift in Sources */,

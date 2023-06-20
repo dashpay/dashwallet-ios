@@ -161,9 +161,10 @@ NS_ASSUME_NONNULL_BEGIN
             }
             paymentRequest.requestedFiatCurrencyCode = CurrencyExchangerObjcWrapper.localCurrencyCode;
         }
-
+#if DASHPAY
         paymentRequest.dashpayUsername = [DWGlobalOptions sharedInstance].dashpayUsername;
-
+#endif
+        
         UIImage *rawQRImage = nil;
         if (!hasAmount && [paymentRequest.data isEqual:appGroupOptions.receiveRequestData]) {
             NSData *qrImageData = appGroupOptions.receiveQRImageData;

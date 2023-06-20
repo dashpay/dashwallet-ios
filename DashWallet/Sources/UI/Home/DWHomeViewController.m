@@ -23,12 +23,15 @@
 #import "DWHomeViewController+DWBackupReminder.h"
 #import "DWHomeViewController+DWJailbreakCheck.h"
 #import "DWHomeViewController+DWShortcuts.h"
-#import "DWModalUserProfileViewController.h"
-#import "DWNotificationsViewController.h"
 #import "DWWindow.h"
 #import "UIViewController+DWTxFilter.h"
 #import "UIWindow+DSUtils.h"
 #import "dashwallet-Swift.h"
+
+#if DASHPAY
+#import "DWNotificationsViewController.h"
+#import "DWModalUserProfileViewController.h"
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -106,8 +109,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)homeView:(DWHomeView *)homeView profileButtonAction:(UIControl *)sender {
+#if DASHPAY
     DWNotificationsViewController *controller = [[DWNotificationsViewController alloc] initWithPayModel:self.payModel dataProvider:self.dataProvider];
     [self.navigationController pushViewController:controller animated:YES];
+#endif
 }
 
 - (void)homeView:(DWHomeView *)homeView didSelectTransaction:(DSTransaction *)transaction {
@@ -143,6 +148,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Private
 
+#if DASHPAY
 - (void)payViewControllerDidHidePaymentResultToContact:(nullable id<DWDPBasicUserItem>)contact {
     if (!contact) {
         return;
@@ -154,6 +160,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                   dataProvider:self.dataProvider];
     [self presentViewController:profile animated:YES completion:nil];
 }
+#endif
 
 - (id<DWPayModelProtocol>)payModel {
     return self.model.payModel;

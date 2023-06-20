@@ -19,7 +19,10 @@
 
 #import <DashSync/DashSync.h>
 
+#if DASHPAY
 #import "DWDashPaySetupFlowController.h"
+#endif
+
 #import "DWExploreTestnetViewController.h"
 #import "DWGlobalOptions.h"
 #import "DWHomeViewController+DWImportPrivateKeyDelegateImpl.h"
@@ -172,12 +175,14 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showCreateUsername {
+#if DASHPAY
     DWDashPaySetupFlowController *controller = [[DWDashPaySetupFlowController alloc]
         initWithDashPayModel:self.model.dashPayModel
                   invitation:nil
              definedUsername:nil];
     controller.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:controller animated:YES completion:nil];
+#endif
 }
 
 - (void)showExploreDash {

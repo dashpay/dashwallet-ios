@@ -19,7 +19,6 @@ import AuthenticationServices
 import Foundation
 
 // MARK: - CBAuth
-
 extension Notification.Name {
     static let userDidChangeNotification: Notification.Name = .init(rawValue: "userDidChangeNotification")
 }

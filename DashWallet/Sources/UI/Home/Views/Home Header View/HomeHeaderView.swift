@@ -43,9 +43,11 @@ final class HomeHeaderView: UIView {
     private(set) var stackView: UIStackView!
 
     // Available only in DashPay
+    #if DASHPAY
     private(set) var profileView: DashPayProfileView?
     private(set) var welcomeView: DWDPWelcomeView?
     private var isProfileReady = false
+    #endif
 
     weak var shortcutsDelegate: ShortcutsActionDelegate? {
         get {
@@ -83,6 +85,7 @@ final class HomeHeaderView: UIView {
         welcomeView!.addTarget(self, action: #selector(joinDashPayAction), for: .touchUpInside)
 
         let views: [UIView] = [profileView!, balanceView, shortcutsView, syncView, welcomeView!]
+        updateProfileView()
         #else
         let views: [UIView] = [balanceView, shortcutsView, syncView]
         #endif
@@ -123,7 +126,7 @@ final class HomeHeaderView: UIView {
 //                      }];
 
         reloadBalance()
-        updateProfileView()
+
 
         model.stateDidChage = { [weak self] state in
             self?.balanceView.state = state == .syncing ? .syncing : .default
@@ -148,26 +151,13 @@ final class HomeHeaderView: UIView {
         delegate?.homeHeaderView(self, profileButtonAction: sender)
     }
 
+    #if DASHPAY
     @objc
     func joinDashPayAction() {
         delegate?.homeHeaderViewJoinDashPayAction(self)
 
         isProfileReady.toggle()
         updateProfileView()
-    }
-
-    func parentScrollViewDidScroll(_ scrollView: UIScrollView) { }
-
-    func reloadBalance() {
-        let isSyncing = SyncingActivityMonitor.shared.state == .syncing
-
-        balanceView.reloadView()
-        balanceView.reloadData()
-        balanceView.state = isSyncing ? .syncing : .`default`
-    }
-
-    func reloadShortcuts() {
-        shortcutsView.reloadData()
     }
 
     private func updateProfileView() {
@@ -187,6 +177,25 @@ final class HomeHeaderView: UIView {
 //        }
 //        delegate?.homeHeaderViewDidUpdateContents(self)
     }
+
+    #endif
+
+    func parentScrollViewDidScroll(_ scrollView: UIScrollView) { }
+
+    func reloadBalance() {
+        let isSyncing = SyncingActivityMonitor.shared.state == .syncing
+
+        balanceView.reloadView()
+        balanceView.reloadData()
+        balanceView.state = isSyncing ? .syncing : .`default`
+    }
+
+    func reloadShortcuts() {
+        shortcutsView.reloadData()
+    }
+
+
+
 
     private func hideSyncView() {
         syncView.isHidden = true
