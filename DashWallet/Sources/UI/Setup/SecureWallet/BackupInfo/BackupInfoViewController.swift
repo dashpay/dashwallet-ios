@@ -145,11 +145,6 @@ final class BackupInfoViewController: BaseViewController {
         }
     }
 
-    @IBAction
-    func closeButtonAction() {
-        delegate?.secureWalletRoutineDidCanceled(self)
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
