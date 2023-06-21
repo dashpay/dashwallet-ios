@@ -80,7 +80,7 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
 }
 
 - (void)wipeWallet {
-    [DWApp cleanUp];
+    [DWApp cleanUp]; //Send notificaiton
     [[DWEnvironment sharedInstance] clearAllWallets];
     [[DWGlobalOptions sharedInstance] restoreToDefaults];
     [[DWAppGroupOptions sharedInstance] restoreToDefaults];
