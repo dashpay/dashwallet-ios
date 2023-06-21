@@ -350,9 +350,10 @@ final class SourceView: UIView {
         addSubview(stackView)
 
         imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.layer.cornerRadius = 17
-        imageView.backgroundColor = .dw_secondaryBackground()
+        imageView.backgroundColor = .clear
         stackView.addArrangedSubview(imageView)
 
         let labelStackView = UIStackView()
