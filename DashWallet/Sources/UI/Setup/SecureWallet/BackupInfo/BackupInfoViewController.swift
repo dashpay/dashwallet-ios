@@ -123,10 +123,26 @@ final class BackupInfoViewController: BaseViewController {
 
     @IBAction
     func backupButtonAction() {
-        let controller = DWBackupSeedPhraseViewController(model: seedPhraseModel)
-        controller.shouldCreateNewWalletOnScreenshot = shouldCreateNewWalletOnScreenshot
-        controller.delegate = delegate
-        navigationController?.pushViewController(controller, animated: true)
+        if type == .setup {
+            showSeedPhraseViewController()
+        } else {
+            DSAuthenticationManager.sharedInstance()
+                .authenticate(withPrompt: nil,
+                              usingBiometricAuthentication: false,
+                              alertIfLockout: true) { [weak self] authenticated, _, _ in
+                    guard authenticated else {
+                        return
+                    }
+
+                    guard let self else {
+                        return
+                    }
+
+                    self.seedPhraseModel = DWPreviewSeedPhraseModel()
+                    self.seedPhraseModel.getOrCreateNewWallet()
+                    self.showSeedPhraseViewController()
+                }
+        }
     }
 
     @IBAction
@@ -180,6 +196,13 @@ extension BackupInfoViewController {
             showCloseButtonIfNeeded()
             bottomButtonStack.isHidden = false
         }
+    }
+
+    private func showSeedPhraseViewController() {
+        let controller = DWBackupSeedPhraseViewController(model: seedPhraseModel)
+        controller.shouldCreateNewWalletOnScreenshot = shouldCreateNewWalletOnScreenshot
+        controller.delegate = delegate
+        navigationController?.pushViewController(controller, animated: true)
     }
 
     private func reloadCloseButton() {
