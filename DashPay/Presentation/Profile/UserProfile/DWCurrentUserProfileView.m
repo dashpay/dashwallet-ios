@@ -116,21 +116,23 @@ NS_ASSUME_NONNULL_END
 - (void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     _blockchainIdentity = blockchainIdentity;
 
-    __weak typeof(self) weakSelf = self;
-    [self.avatarImageView dw_setAvatarWithURLString:blockchainIdentity.avatarPath
-                                         completion:^(UIImage *_Nullable image) {
-                                             __strong typeof(weakSelf) strongSelf = weakSelf;
-                                             if (!strongSelf) {
-                                                 return;
-                                             }
-
-                                             if (image) {
-                                                 strongSelf.avatarImageView.image = image;
-                                             }
-                                             else {
-                                                 strongSelf.avatarImageView.image = [UIImage imageNamed:@"dp_current_user_placeholder"];
-                                             }
-                                         }];
+    self.avatarImageView.image = [UIImage imageNamed:@"dp_current_user_placeholder"];
+    
+//    __weak typeof(self) weakSelf = self;
+//    [self.avatarImageView dw_setAvatarWithURLString:blockchainIdentity.avatarPath
+//                                         completion:^(UIImage *_Nullable image) {
+//                                             __strong typeof(weakSelf) strongSelf = weakSelf;
+//                                             if (!strongSelf) {
+//                                                 return;
+//                                             }
+//
+//                                             if (image) {
+//                                                 strongSelf.avatarImageView.image = image;
+//                                             }
+//                                             else {
+//                                                 strongSelf.avatarImageView.image = [UIImage imageNamed:@"dp_current_user_placeholder"];
+//                                             }
+//                                         }];
 
     [self reloadAttributedData];
 }
@@ -152,7 +154,23 @@ NS_ASSUME_NONNULL_END
 #pragma mark - Private
 
 - (void)reloadAttributedData {
-    self.infoLabel.attributedText = [self.blockchainIdentity dw_asTitleSubtitle];
+    NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
+    [result beginEditing];
+    NSString *title = nil;
+    NSString *subtitle = @"Max";
+
+    if (title != nil) {
+        [result appendAttributedString:[[NSAttributedString alloc]
+                                           initWithString:title
+                                               attributes:@{
+                                                   NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3],
+                                                   NSForegroundColorAttributeName : [UIColor dw_darkTitleColor],
+                                               }]];
+    }
+    
+    [result endEditing];
+    
+    self.infoLabel.attributedText = result; //[self.blockchainIdentity dw_asTitleSubtitle];
 }
 
 @end

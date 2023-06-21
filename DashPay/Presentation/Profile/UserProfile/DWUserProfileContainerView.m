@@ -87,33 +87,33 @@ NS_ASSUME_NONNULL_END
                                                 constant:padding],
         ]];
 
-        [self mvvm_observe:DW_KEYPATH(self, userModel.updateModel.state)
-                      with:^(typeof(self) self, id value) {
-                          switch (self.userModel.updateModel.state) {
-                              case DWDPUpdateProfileModelState_Ready:
-                                  [self update];
-                                  self.profileView.hidden = NO;
-                                  self.updatingView.hidden = YES;
-                                  self.errorView.hidden = YES;
-                                  break;
-                              case DWDPUpdateProfileModelState_Loading:
-                                  self.profileView.hidden = YES;
-                                  self.updatingView.hidden = NO;
-                                  self.errorView.hidden = YES;
-                                  break;
-                              case DWDPUpdateProfileModelState_Error:
-                                  self.profileView.hidden = YES;
-                                  self.updatingView.hidden = YES;
-                                  self.errorView.hidden = NO;
-                                  break;
-                          }
-                      }];
+//        [self mvvm_observe:DW_KEYPATH(self, userModel.updateModel.state)
+//                      with:^(typeof(self) self, id value) {
+//                          switch (self.userModel.updateModel.state) {
+//                              case DWDPUpdateProfileModelState_Ready:
+//                                  [self update];
+//                                  self.profileView.hidden = NO;
+//                                  self.updatingView.hidden = YES;
+//                                  self.errorView.hidden = YES;
+//                                  break;
+//                              case DWDPUpdateProfileModelState_Loading:
+//                                  self.profileView.hidden = YES;
+//                                  self.updatingView.hidden = NO;
+//                                  self.errorView.hidden = YES;
+//                                  break;
+//                              case DWDPUpdateProfileModelState_Error:
+//                                  self.profileView.hidden = YES;
+//                                  self.updatingView.hidden = YES;
+//                                  self.errorView.hidden = NO;
+//                                  break;
+//                          }
+//                      }];
     }
     return self;
 }
 
 - (void)update {
-    self.profileView.blockchainIdentity = self.userModel.blockchainIdentity;
+    self.profileView.blockchainIdentity = nil; //self.userModel.blockchainIdentity;
 }
 
 #pragma mark - DWErrorUpdatingUserProfileViewDelegate

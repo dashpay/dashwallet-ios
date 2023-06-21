@@ -15,7 +15,6 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUIView.h>
 
 #import "DWCurrentUserProfileView.h"
 
@@ -23,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWCurrentUserProfileModel;
 
-@interface DWUserProfileContainerView : KVOUIView
+@interface DWUserProfileContainerView : UIView
 
 @property (nonatomic, strong) DWCurrentUserProfileModel *userModel;
 @property (nullable, nonatomic, weak) id<DWCurrentUserProfileViewDelegate> delegate;

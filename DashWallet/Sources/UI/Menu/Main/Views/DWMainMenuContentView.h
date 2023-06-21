@@ -19,6 +19,11 @@
 
 #import "DWMainMenuItem.h"
 
+#if DASHPAY
+#import "DWCurrentUserProfileModel.h"
+#import "DWDashPayReadyProtocol.h"
+#endif
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWMainMenuModel;
@@ -27,6 +32,12 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWMainMenuContentViewDelegate <NSObject>
 
 - (void)mainMenuContentView:(DWMainMenuContentView *)view didSelectMenuItem:(id<DWMainMenuItem>)item;
+
+#if DASHPAY
+- (void)mainMenuContentView:(DWMainMenuContentView *)view joinDashPayAction:(UIButton *)sender;
+- (void)mainMenuContentView:(DWMainMenuContentView *)view showQRAction:(UIButton *)sender;
+- (void)mainMenuContentView:(DWMainMenuContentView *)view editProfileAction:(UIButton *)sender;
+#endif
 
 @end
 
@@ -38,7 +49,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 
-#ifdef DASHPAY
+#if DASHPAY
+@property (nonatomic, strong) DWCurrentUserProfileModel *userModel;
+@property (nonatomic, strong) id<DWDashPayReadyProtocol> dashPayReady;
 - (void)updateUserHeader;
 #endif
 

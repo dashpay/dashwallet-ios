@@ -22,11 +22,24 @@
 #import "DWSharedUIConstants.h"
 #import "DWUIKit.h"
 
+#if DASHPAY
+#import "DWUserProfileContainerView.h"
+#import "DWDPWelcomeMenuView.h"
+#import "DWDashPayReadyProtocol.h"
+#endif
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWMainMenuContentView () <UITableViewDataSource, UITableViewDelegate>
 
 @property (nonatomic, strong) UITableView *tableView;
+
+#if DASHPAY
+@property (nonatomic, strong) DWUserProfileContainerView *headerView;
+@property (nonatomic, strong) DWDPWelcomeMenuView *joinHeaderView;
+
+@property (assign, nonatomic) bool hasUsername;
+#endif
 
 @end
 
@@ -49,6 +62,18 @@ NS_ASSUME_NONNULL_BEGIN
         [self addSubview:tableView];
         _tableView = tableView;
 
+#if DASHPAY
+        DWUserProfileContainerView *headerView = [[DWUserProfileContainerView alloc] initWithFrame:CGRectZero];
+        headerView.delegate = self;
+        _headerView = headerView;
+        
+        DWDPWelcomeMenuView *joinHeaderView = [[DWDPWelcomeMenuView alloc] initWithFrame:CGRectZero];
+        [joinHeaderView.joinButton addTarget:self
+                                      action:@selector(joinButtonAction:)
+                            forControlEvents:UIControlEventTouchUpInside];
+        _joinHeaderView = joinHeaderView;
+#endif
+        
         NSString *cellId = DWMainMenuTableViewCell.dw_reuseIdentifier;
         UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
         NSParameterAssert(nib);
@@ -63,24 +88,19 @@ NS_ASSUME_NONNULL_BEGIN
     [self.tableView reloadData];
 }
 
-- (void)updateUserHeader {
-    //[self.userModel update];
-    [self updateHeader];
-}
+- (void)layoutSubviews {
+    [super layoutSubviews];
 
-- (void)updateHeader {
-    //TODO: DashPay
-//    UIView *header = nil;
-//    if (self.dashPayReady.isDashPayReady) {
-//        header = self.joinHeaderView;
-//    }
-//    else if (self.userModel.blockchainIdentity != nil) {
-//        [self.headerView update];
-//        header = self.headerView;
-//    }
-//
-//    self.tableView.tableHeaderView = header;
-//    [self setNeedsLayout];
+#if DASHPAY
+    UIView *tableHeaderView = self.tableView.tableHeaderView;
+    if (tableHeaderView) {
+        CGSize headerSize = [tableHeaderView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
+        if (CGRectGetHeight(tableHeaderView.frame) != headerSize.height) {
+            tableHeaderView.frame = CGRectMake(0.0, 0.0, headerSize.width, headerSize.height);
+            self.tableView.tableHeaderView = tableHeaderView;
+        }
+    }
+#endif
 }
 
 #pragma mark - UITableViewDataSource
@@ -114,6 +134,50 @@ NS_ASSUME_NONNULL_BEGIN
     [self.delegate mainMenuContentView:self didSelectMenuItem:menuItem];
 }
 
+#if DASHPAY
+
+- (void)updateUserHeader {
+    //[self.userModel update]; //TODO: DashPay
+    [self updateHeader];
+}
+
+- (void)updateHeader {
+    UIView *header = nil;
+    if(self.hasUsername) {
+        header = self.headerView;
+        [self.headerView update];
+    } else {
+        header = self.joinHeaderView;
+    }
+    
+//    if (self.dashPayReady.isDashPayReady) {
+        
+//    }
+//    else if (self.userModel.blockchainIdentity != nil) {
+//        [self.headerView update];
+//        header = self.headerView;
+//    }
+
+    self.tableView.tableHeaderView = header;
+    [self setNeedsLayout];
+}
+
+#pragma mark - DWCurrentUserProfileViewDelegate
+
+- (void)currentUserProfileView:(DWCurrentUserProfileView *)view showQRAction:(UIButton *)sender {
+    [self.delegate mainMenuContentView:self showQRAction:sender];
+}
+
+- (void)currentUserProfileView:(DWCurrentUserProfileView *)view editProfileAction:(UIButton *)sender {
+    [self.delegate mainMenuContentView:self editProfileAction:sender];
+}
+
+- (void)joinButtonAction:(UIButton *)sender {
+    self.hasUsername = !_hasUsername;
+    [self updateHeader];
+    //[self.delegate mainMenuContentView:self joinDashPayAction:sender];
+}
+#endif
 @end
 
 NS_ASSUME_NONNULL_END
