@@ -185,7 +185,6 @@ final class HomeHeaderView: UIView {
     func reloadBalance() {
         let isSyncing = SyncingActivityMonitor.shared.state == .syncing
 
-        balanceView.reloadView()
         balanceView.reloadData()
         balanceView.state = isSyncing ? .syncing : .`default`
     }
