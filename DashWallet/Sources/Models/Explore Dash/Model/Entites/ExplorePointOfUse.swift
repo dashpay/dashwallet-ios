@@ -80,6 +80,15 @@ extension ExplorePointOfUse {
             return Int64.max
         }
     }
+    
+    var emptyLogoImageName: String {
+        switch category {
+        case .merchant(_), .unknown:
+            return "image.explore.dash.wts.item.logo.empty"
+        case .atm:
+            return "image.explore.dash.atm.item.logo.empty"
+        }
+    }
 }
 
 // MARK: - ExplorePointOfUse.Atm
