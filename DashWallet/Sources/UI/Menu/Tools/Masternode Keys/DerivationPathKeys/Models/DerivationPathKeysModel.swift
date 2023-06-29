@@ -153,8 +153,16 @@ extension DerivationPathKeysModel {
             let address = derivationPath.address(at: index)
             return DerivationPathKeysItem(info: info, value: address)
         case .publicKey:
-            let publicKeyData = derivationPath.publicKeyData(at: index)
-            return DerivationPathKeysItem(info: info, value: publicKeyData.hexEncodedString())
+            return autoreleasepool {
+                guard let phrase = wallet.seedPhraseIfAuthenticated() else {
+                    return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
+                }
+                let seed = DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
+
+                let opaqueKey = self.derivationPath.privateKey(at: index, fromSeed: seed)!
+                let key = DSKeyManager.blsPublicKeySerialize(opaqueKey, legacy: false)
+                return DerivationPathKeysItem(info: info, value: key)
+            }
         case .privateKey:
             return autoreleasepool {
                 guard let phrase = wallet.seedPhraseIfAuthenticated() else {
