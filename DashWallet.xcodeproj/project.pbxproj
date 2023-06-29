@@ -685,6 +685,9 @@
 		C91E919729FBACE6003E7883 /* ExtendedPublicKeysModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E919629FBACE6003E7883 /* ExtendedPublicKeysModel.swift */; };
 		C91E91AE29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E91AD29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift */; };
 		C94946E12A25F037008A678D /* DemoMainTabbarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94946E02A25F037008A678D /* DemoMainTabbarViewController.swift */; };
+		C94D98212A4CC78F00F3BEE1 /* DashInputField.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94D98202A4CC78F00F3BEE1 /* DashInputField.swift */; };
+		C94D98232A4CC85400F3BEE1 /* UIView+Dash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94D98222A4CC85400F3BEE1 /* UIView+Dash.swift */; };
+		C94D98252A4CC8FD00F3BEE1 /* UIControl+Dash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94D98242A4CC8FD00F3BEE1 /* UIControl+Dash.swift */; };
 		C94F5E8829D3E7E30034FD57 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */; };
 		C94F5E8A29D3FCCF0034FD57 /* ShortcutAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8929D3FCCF0034FD57 /* ShortcutAction.swift */; };
 		C94F5E8C29D3FEC10034FD57 /* ShortcutsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8B29D3FEC10034FD57 /* ShortcutsModel.swift */; };
@@ -1934,6 +1937,9 @@
 		C94946DE2A25EDA8008A678D /* DWHomeViewControllerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeViewControllerDelegate.h; sourceTree = "<group>"; };
 		C94946DF2A25EE24008A678D /* DWMainMenuViewControllerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMainMenuViewControllerDelegate.h; sourceTree = "<group>"; };
 		C94946E02A25F037008A678D /* DemoMainTabbarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoMainTabbarViewController.swift; sourceTree = "<group>"; };
+		C94D98202A4CC78F00F3BEE1 /* DashInputField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashInputField.swift; sourceTree = "<group>"; };
+		C94D98222A4CC85400F3BEE1 /* UIView+Dash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Dash.swift"; sourceTree = "<group>"; };
+		C94D98242A4CC8FD00F3BEE1 /* UIControl+Dash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIControl+Dash.swift"; sourceTree = "<group>"; };
 		C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C94F5E8929D3FCCF0034FD57 /* ShortcutAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutAction.swift; sourceTree = "<group>"; };
 		C94F5E8B29D3FEC10034FD57 /* ShortcutsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsModel.swift; sourceTree = "<group>"; };
@@ -2732,6 +2738,9 @@
 				C9F42FAF29DC27F4001BC549 /* EmptyView.swift */,
 				C9F451F82A0CB08900825057 /* ProgressView.swift */,
 				C9F451FC2A0CC4A300825057 /* BadgeView.swift */,
+				C94D98202A4CC78F00F3BEE1 /* DashInputField.swift */,
+				C94D98222A4CC85400F3BEE1 /* UIView+Dash.swift */,
+				C94D98242A4CC8FD00F3BEE1 /* UIControl+Dash.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -6783,6 +6792,7 @@
 				2A6300492328EA8900827825 /* DWLockActionButton.m in Sources */,
 				47AE8BA128BFADB600490F5E /* PointOfUseDAO.swift in Sources */,
 				4759D51729300212002F20DC /* ProvideAmountViewController.swift in Sources */,
+				C94D98252A4CC8FD00F3BEE1 /* UIControl+Dash.swift in Sources */,
 				2AD1CE7722DB51B500C99324 /* DWCheckbox.m in Sources */,
 				2ACCD8592319399100A96B62 /* DWRequestAmountViewController.m in Sources */,
 				C909615329F28E3700002D82 /* DerivationPathKeysModel.swift in Sources */,
@@ -6793,6 +6803,7 @@
 				2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */,
 				47C661AF28FDAA3400028A8D /* BaseAmountViewController.swift in Sources */,
 				478C982C2942F03500FAA0F0 /* SendingToView.swift in Sources */,
+				C94D98232A4CC85400F3BEE1 /* UIView+Dash.swift in Sources */,
 				4709C318287EA23000B4BD48 /* TxUserInfoDAO.swift in Sources */,
 				2A0C69E323155A0E001B8C90 /* DWModalContentView.m in Sources */,
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,
@@ -6829,6 +6840,7 @@
 				C94F5E8C29D3FEC10034FD57 /* ShortcutsModel.swift in Sources */,
 				2A6300452328D07500827825 /* DWLockPinInputView.m in Sources */,
 				2A0C69AC23125074001B8C90 /* UIView+DWHUD.m in Sources */,
+				C94D98212A4CC78F00F3BEE1 /* DashInputField.swift in Sources */,
 				2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */,
 				2A7AF36924826681001D74F9 /* DWDPRespondedIncomingRequestObject.m in Sources */,
 				0F6EDFC928C896BD000427E7 /* CoinbaseTokenResponse.swift in Sources */,
