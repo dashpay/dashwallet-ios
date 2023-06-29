@@ -189,7 +189,7 @@ extension ExplorePointOfUse: RowDecodable {
         let longitude = row[ExplorePointOfUse.longitude]
         var website: String?
 
-        if var value = row[ExplorePointOfUse.website], !value.isEmpty {
+        if let value = row[ExplorePointOfUse.website], !value.isEmpty {
             if !value.hasPrefix("http") {
                 website = "https://" + value
             } else {
@@ -197,9 +197,9 @@ extension ExplorePointOfUse: RowDecodable {
             }
         }
 
-        let phone: String? = row[ExplorePointOfUse.phone]?.digits
-        let logoLocation = row[ExplorePointOfUse.logoLocation]
-        let coverImage: String? = row[ExplorePointOfUse.coverImage]
+        let phone: String? = try? row.get(ExplorePointOfUse.phone)?.digits
+        let logoLocation: String? = try? row.get(ExplorePointOfUse.logoLocation)
+        let coverImage: String? = try? row.get(ExplorePointOfUse.coverImage)
         let source: String? = row[ExplorePointOfUse.source]
 
         let category: Category
