@@ -40,6 +40,11 @@ class CoinbaseObjcWrapper: NSObject {
     static func start() {
         wrapped.initialize()
     }
+
+    @objc
+    static func reset() {
+        wrapped.reset()
+    }
 }
 
 // MARK: - Coinbase
@@ -59,9 +64,15 @@ class Coinbase {
         auth = CBAuth()
         accountService = AccountService(authInterop: auth)
         paymentMethodsService = PaymentMethods(authInterop: auth)
-        currencyExchanger.startExchangeRateFetching()
 
+        currencyExchanger.startExchangeRateFetching()
         prefetchData()
+    }
+
+    func reset() {
+        Task {
+            try await signOut()
+        }
     }
 
     private func prefetchData() {

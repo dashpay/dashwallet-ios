@@ -74,33 +74,9 @@ final class HomeBalanceView: UIView {
         hideBalance(model.isBalanceHidden)
     }
 
-    func reloadView() {
-        var titleString = ""
-
-        let isBalanceHidden = model.isBalanceHidden
-
-        if !isBalanceHidden && state == .syncing {
-            titleString = NSLocalizedString("Syncing Balance", comment: "")
-
-            titleLabel.alpha = 0.8
-            titleLabel.layer.removeAllAnimations()
-
-            UIView.animate(withDuration: 0.8,
-                           delay:0.0,
-                           options:[.allowUserInteraction, .curveEaseInOut, .autoreverse, .repeat],
-                           animations: { self.titleLabel.alpha = 0.3 },
-                           completion: nil)
-
-        } else {
-            titleLabel.layer.removeAllAnimations()
-        }
-
-        titleLabel.text = titleString
-        hideBalance(isBalanceHidden)
-    }
-
     public func reloadData() {
-        balanceView.reloadData()
+        model.reloadBalance()
+        reloadView()
     }
 
     private func commonInit() {
@@ -147,12 +123,35 @@ final class HomeBalanceView: UIView {
                                                object: nil)
 
         reloadView()
-        reloadData()
 
         model.balanceDidChange = { [weak self] in
-            self?.reloadView()
-            self?.reloadData()
+            self?.balanceView.reloadData()
         }
+    }
+
+    private func reloadView() {
+        var titleString = ""
+
+        let isBalanceHidden = model.isBalanceHidden
+
+        if !isBalanceHidden && state == .syncing {
+            titleString = NSLocalizedString("Syncing Balance", comment: "")
+
+            titleLabel.alpha = 0.8
+            titleLabel.layer.removeAllAnimations()
+
+            UIView.animate(withDuration: 0.8,
+                           delay:0.0,
+                           options:[.allowUserInteraction, .curveEaseInOut, .autoreverse, .repeat],
+                           animations: { self.titleLabel.alpha = 0.3 },
+                           completion: nil)
+
+        } else {
+            titleLabel.layer.removeAllAnimations()
+        }
+
+        titleLabel.text = titleString
+        hideBalance(isBalanceHidden)
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -188,7 +187,6 @@ final class HomeBalanceView: UIView {
             self.amountsView.alpha = hidden ? 0.0 : 1.0
 
             self.tapToUnhideLabel.alpha = hidden ? 0.0 : 1.0
-            self.reloadData()
         }
     }
 }

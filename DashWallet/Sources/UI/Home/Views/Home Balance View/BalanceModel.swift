@@ -44,12 +44,7 @@ final class BalanceModel {
         }
     }
 
-    @objc
-    func applicationWillEnterForeground(_ notification: NSNotification) {
-        hideBalanceIfNeeded()
-    }
-
-    private func reloadBalance() {
+    func reloadBalance() {
         let balanceValue = DWEnvironment.sharedInstance().currentWallet.balance
 
         if balanceValue > value &&
@@ -71,6 +66,11 @@ final class BalanceModel {
         options.userHasBalance = balanceValue > 0
 
         balanceDidChange?()
+    }
+
+    @objc
+    func applicationWillEnterForeground(_ notification: NSNotification) {
+        hideBalanceIfNeeded()
     }
 
     deinit {
