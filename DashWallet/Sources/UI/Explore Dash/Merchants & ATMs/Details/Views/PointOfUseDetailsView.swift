@@ -149,7 +149,7 @@ extension PointOfUseDetailsView {
         if let str = merchant.logoLocation, let url = URL(string: str) {
             logoImageView.sd_setImage(with: url, completed: nil)
         } else {
-            logoImageView.image = UIImage(named: "image.explore.dash.wts.item.logo.empty")
+            logoImageView.image = UIImage(named: merchant.emptyLogoImageName)
         }
 
         let subStackView = UIStackView()
