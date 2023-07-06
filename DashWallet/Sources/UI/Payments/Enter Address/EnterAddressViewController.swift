@@ -37,18 +37,12 @@ final class EnterAddressViewController: BaseViewController, PayableViewControlle
     // MARK: Actions
     private func continueButtonAction() {
         payModel.payToAddress(from: addressField.text) { [weak self] success in
-            guard let strongSelf = self else { return }
+            guard let self else { return }
 
             if success {
-                strongSelf.performPayToPasteboardAction()
+                self.performPayToPasteboardAction()
             } else {
-                let title = NSLocalizedString("Clipboard doesn't contain a valid Dash address", comment: "")
-                let message = NSLocalizedString("Please copy the Dash address first and try again", comment: "");
-                let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-                let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel, handler: nil)
-                alert.addAction(okAction)
-
-                strongSelf.present(alert, animated: true, completion: nil)
+                self.addressField.errorMessage = NSLocalizedString("Invalid Dash address", comment: "")
             }
         }
     }

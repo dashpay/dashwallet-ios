@@ -87,6 +87,7 @@ final class PasteboardContentView: UIView {
 
         textView = TappableTextView()
         textView.isEditable = false
+        textView.textColor = .dw_label()
         textView.backgroundColor = .dw_background()
         textView.translatesAutoresizingMaskIntoConstraints = false
         textView.font = .dw_font(forTextStyle: .caption1)
