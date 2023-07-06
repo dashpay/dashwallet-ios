@@ -60,11 +60,7 @@ final class ReceiveContentView: UIView {
 
     @IBAction
     func secondButtonAction() {
-        if viewType == .default {
-            shareHandler?(secondButton)
-        } else {
-            exitHandler?()
-        }
+        shareHandler?(secondButton)
     }
 
     @objc

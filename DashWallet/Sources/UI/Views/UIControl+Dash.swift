@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -17,35 +17,37 @@
 
 import UIKit
 
+// MARK: - TPActionTrampoline
+
 //  Thanks Mike Ash
 //  https://www.mikeash.com/pyblog/friday-qa-2015-12-25-swifty-targetaction.html
-internal class TPActionTrampoline<T>: NSObject
-{
+internal class TPActionTrampoline<T>: NSObject {
     var action: (T) -> Void
-    
-    init(action: @escaping (T) -> Void)
-    {
+
+    init(action: @escaping (T) -> Void) {
         self.action = action
     }
-    
-    @objc func action(_ sender: NSObject)
-    {
+
+    @objc
+    func action(_ sender: NSObject) {
         action(sender as! T)
     }
 }
 
 let UIControlActionFunctionProtocolAssociatedObjectKey = UnsafeMutablePointer<Int8>.allocate(capacity: 1)
 
-public protocol UIControlActionFunctionProtocol {}
+// MARK: - UIControlActionFunctionProtocol
 
-extension UIControl: UIControlActionFunctionProtocol {}
+public protocol UIControlActionFunctionProtocol { }
 
-public extension UIControlActionFunctionProtocol where Self: UIControl
-{
-    func addAction(_ events: UIControl.Event, _ action: @escaping (Self) -> Void)
-    {
+// MARK: - UIControl + UIControlActionFunctionProtocol
+
+extension UIControl: UIControlActionFunctionProtocol { }
+
+extension UIControlActionFunctionProtocol where Self: UIControl {
+    public func addAction(_ events: UIControl.Event, _ action: @escaping (Self) -> Void) {
         let trampoline = TPActionTrampoline(action: action)
-        self.addTarget(trampoline, action: #selector(TPActionTrampoline<Self>.action(_:)), for: events)
+        addTarget(trampoline, action: #selector(TPActionTrampoline<Self>.action(_:)), for: events)
         objc_setAssociatedObject(self, UIControlActionFunctionProtocolAssociatedObjectKey, trampoline, .OBJC_ASSOCIATION_RETAIN)
     }
 }

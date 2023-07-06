@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -15,65 +15,97 @@
 //  limitations under the License.
 //
 
-import UIKit
 import QuartzCore
+import UIKit
 
-class DashInputField: UIView
-{
-    enum PlaceholderState
-    {
+// MARK: - DashInputField
+
+extension DashInputField.PlaceholderState {
+    var isTop: Bool {
+        self == .top
+    }
+}
+
+// MARK: - DashInputField
+
+class DashInputField: UIView {
+    enum PlaceholderState {
         case top
         case `default`
     }
-    
+
     public var textDidChange: ((String) -> ())?
-    
+
+    private var borderView: UIView!
     private var backgroundView: UIView!
-    
-    internal var textField: DashTextField!
-    
+
+    internal var textView: DashTextField!
+
     private var placeholderLabel: UILabel!
     private var placeholderState: PlaceholderState = .default
-    
+
     private var errorView: InputFieldErrorView!
-    
-    public var errorMessage: String?
-    {
-        didSet
-        {
+
+    private var clearButton: UIButton!
+
+    public var errorMessage: String? {
+        didSet {
             if oldValue == errorMessage { return }
-            
+
             errorView.isHidden = errorMessage == nil
             errorView.text = errorMessage
-            
+
+            updateBackgroundView()
             setNeedsLayout()
             invalidateIntrinsicContentSize()
         }
     }
-    
-    var text: String
-    {
-        set {
-            textField.text = newValue
-            updateLayout(animated: false)
-        }
-        get {
-            textField.text ?? ""
+
+    public var hasError: Bool {
+        errorMessage != nil
+    }
+
+    public var accessoryView: UIView? {
+        didSet {
+            oldValue?.removeFromSuperview()
+            if let view = accessoryView {
+                addSubview(view)
+                setNeedsLayout()
+            }
         }
     }
-    
-    var isEnabled: Bool
-    {
+
+    public var hasAccessoryView: Bool {
+        accessoryView != nil
+    }
+
+    var text: String {
         set {
-            textField.isEnabled = newValue
+            textView.text = newValue
+            updateLayout(animated: false)
+
+            resetErrorMessage()
+            updateBackgroundView()
+            updateButtonsVisibility()
+
+            invalidateIntrinsicContentSize()
+        }
+        get {
+            textView.text
+        }
+    }
+
+    var isEnabled: Bool {
+        set {
+            textView.isEditable = newValue
             updateBackgroundView()
         }
         get {
-            textField.isEnabled
+            textView.isEditable
         }
     }
-    @IBInspectable var placeholder: String?
-    {
+
+    @IBInspectable var placeholder: String? {
         set {
             placeholderLabel.text = newValue
         }
@@ -81,19 +113,16 @@ class DashInputField: UIView
             placeholderLabel.text
         }
     }
-    
-    var textInsets: UIEdgeInsets = .init(top: 10, left: 13, bottom: 0, right: 13)
-    {
-        didSet
-        {
-            textField.textInsets = textInsets
+
+    var textInsets: UIEdgeInsets = .init(top: 10, left: 13, bottom: 0, right: 13) {
+        didSet {
+            textView.textInsets = textInsets
         }
     }
-    
-    private weak var outsideDelegate: UITextFieldDelegate?
-    
-    var delegate: UITextFieldDelegate?
-    {
+
+    private weak var outsideDelegate: UITextViewDelegate?
+
+    var delegate: UITextViewDelegate? {
         set {
             outsideDelegate = newValue
         }
@@ -101,418 +130,436 @@ class DashInputField: UIView
             outsideDelegate
         }
     }
-    
-    var isEditing: Bool
-    {
-        textField.isEditing
+
+    var isEditing: Bool {
+        textView.isFirstResponder
     }
-    
+
     var originalPlaceholderFrame: CGRect = .zero
     var originalPlaceholderPosition: CGPoint = .zero
     var originalPlaceholderTransform: CGAffineTransform = .identity
-    
-    override var intrinsicContentSize: CGSize
-    {
-        .init(width: -1, height: 58 + (errorMessage == nil ? 0 : 18))
+
+    override var intrinsicContentSize: CGSize {
+        let textViewHeight = textView.contentSize.height + 25 + 10 // textView.contentSize.height + top padding + bottom padding
+        let height = textViewHeight + (hasError ? 23 : 0)
+        return CGSize(width: UIView.noIntrinsicMetric, height: min(120, max(58, height)))
     }
-    
+
     @discardableResult
-    override func becomeFirstResponder() -> Bool
-    {
-        textField.becomeFirstResponder()
+    override func becomeFirstResponder() -> Bool {
+        textView.becomeFirstResponder()
     }
-    
+
     @discardableResult
-    override func resignFirstResponder() -> Bool
-    {
-        textField.resignFirstResponder()
+    override func resignFirstResponder() -> Bool {
+        textView.resignFirstResponder()
     }
-    
-    override var canBecomeFirstResponder: Bool
-    {
-        textField.canBecomeFirstResponder
+
+    override var canBecomeFirstResponder: Bool {
+        textView.canBecomeFirstResponder
     }
-    
-    override var canResignFirstResponder: Bool
-    {
-        textField.canResignFirstResponder
+
+    override var canResignFirstResponder: Bool {
+        textView.canResignFirstResponder
     }
-    
-    override init(frame: CGRect)
-    {
+
+    override init(frame: CGRect) {
         super.init(frame: frame)
-        
+
         configureLayout()
     }
-    
-    required init?(coder: NSCoder)
-    {
+
+    required init?(coder: NSCoder) {
         super.init(coder: coder)
-        
+
         configureLayout()
     }
-    
-    internal func configureLayout()
-    {
-        clipsToBounds = true
-        
-        textField = DashTextField()
-        textField.clipsToBounds = true
-        textField.layer.cornerRadius = 10
-        
+
+    internal func configureLayout() {
+        clipsToBounds = false
+
+        textView = DashTextField()
+        textView.backgroundColor = .clear
+        textView.clipsToBounds = true
+        textView.font = .dw_font(forTextStyle: .body)
+
+        borderView = UIView()
+        borderView.backgroundColor = .clear
+        borderView.layer.cornerRadius = 12
+        borderView.borderWidth = 4
+        borderView.borderColor = .dw_dashBlue()
+        borderView.layer.opacity = 0.2
+        addSubview(borderView)
+
         backgroundView = UIView()
+        backgroundView.backgroundColor = .clear
         backgroundView.layer.cornerRadius = 10
-        backgroundView.borderWidth = isEditing ? 2 : 1
-        backgroundView.borderColor = isEditing ? .label : .systemGray
+        backgroundView.borderWidth = 1
         addSubview(backgroundView)
-        
-        textField.textInsets = textInsets
-        textField.delegate = self
-        textField.addAction(.editingChanged) { [weak self] (sender) in
-            self?.textDidChange?(sender.text ?? "")
-        }
-        addSubview(textField)
-        
-        var frame = CGRect(x: textInsets.left, y: 0, width: bounds.width, height: textField.font!.lineHeight)
-        frame.origin.y = ceil((bounds.height - frame.height)/2)
-        
+
+        textView.isEditable = true
+        textView.showsVerticalScrollIndicator = false
+        textView.showsHorizontalScrollIndicator = false
+        textView.delegate = self
+        addSubview(textView)
+
+        var frame = CGRect(x: textInsets.left, y: 0, width: 200, height: textView.font!.lineHeight)
+        frame.origin.y = ceil((intrinsicContentSize.height - frame.height)/2)
+
         placeholderLabel = UILabel()
-        placeholderLabel.textColor = .systemGray
+        placeholderLabel.textColor = .placeholderText
         placeholderLabel.anchorPoint = CGPoint(x: 0, y: 0)
-        placeholderLabel.font = textField.font
+        placeholderLabel.font = textView.font
         placeholderLabel.frame = frame
         addSubview(placeholderLabel)
-        
+
         errorView = InputFieldErrorView()
+        errorView.isHidden = true
         addSubview(errorView)
-        
+
+        clearButton = UIButton(type: .custom)
+        clearButton.setImage(UIImage(systemName: "xmark.circle"), for: .normal)
+        clearButton.tintColor = .systemGray
+        clearButton.isHidden = true
+        clearButton.addTarget(self, action: #selector(clearButtonTapped), for: .touchUpInside)
+        addSubview(clearButton)
+
         updateLayout(animated: false)
     }
-    
-    func updateLayout(animated: Bool = true)
-    {
-        updateBackgroundView()
-        
-        let oldState = placeholderState
-        placeholderState = (isEditing || !text.isEmpty) ? .top : .default
-        
-        if placeholderState == oldState { return }
-        
-        let isTop = placeholderState == .top
-        
+
+    func updateLayout(animated: Bool = true) {
+        let newPlaceholderState: PlaceholderState = (isEditing || !text.isEmpty) ? .top : .default
+
+        guard placeholderState != newPlaceholderState else { return }
+        placeholderState = newPlaceholderState
+
+        let isTop = placeholderState.isTop
         var transform = placeholderLabel.transform
-        
-        if isTop
-        {
+
+        var accessoryViewFrame = accessoryView?.frame ?? .zero
+
+        if isTop {
             let currentPointSize: CGFloat = !isTop ? 12 : 17
             let newPointSize: CGFloat = isTop ? 12 : 17
             let scaleFactor = newPointSize/currentPointSize
-            
+
             transform = transform.scaledBy(x: scaleFactor, y: scaleFactor)
-                                     .translatedBy(x: 0, y: -15)
-        }else{
+                .translatedBy(x: 0, y: -15)
+
+            accessoryViewFrame.origin.y = textView.frame.minY + (textView.frame.height - accessoryViewFrame.height)/2
+        } else {
             transform = .identity
+            accessoryViewFrame.origin.y = (bounds.height - accessoryViewFrame.height)/2
         }
-        
+
+
         UIView.animate(withDuration: 0.3) { [unowned self] in
             placeholderLabel.transform = transform
+            accessoryView?.frame = accessoryViewFrame
         }
     }
-    
-    private func updateBackgroundView()
-    {
-        if isEnabled
-        {
-            backgroundView.borderWidth = isEditing ? 2 : 1
-            backgroundView.borderColor = isEditing ? .label : .systemGray
-        }else{
-            backgroundView.borderWidth = 1
-            backgroundView.borderColor = .systemGray3
+
+    private func updateBackgroundView() {
+        if isEnabled {
+            borderView.isHidden = !isEditing || hasError
+
+            if hasError {
+                backgroundView.borderColor = .systemRed
+                backgroundView.backgroundColor = .systemRed.withAlphaComponent(0.1)
+            } else {
+                backgroundView.borderColor = isEditing ? .dw_dashBlue() : .darkGray.withAlphaComponent(0.5)
+                backgroundView.backgroundColor = .clear
+            }
+        } else {
+            borderView.isHidden = true
+            backgroundView.borderColor = .darkGray.withAlphaComponent(0.1)
+            backgroundView.backgroundColor = .clear
         }
     }
-    
-    override func layoutSubviews()
-    {
+
+    private func updateButtonsVisibility() {
+        clearButton.isHidden = text.isEmpty
+        accessoryView?.isHidden = !text.isEmpty || !clearButton.isHidden
+    }
+
+    private func resetErrorMessage() {
+        errorMessage = nil
+    }
+
+    @objc
+    private func clearButtonTapped() {
+        errorMessage = nil
+        textView.text = ""
+        textViewDidChange(textView)
+    }
+
+    override func layoutSubviews() {
+        var bounds = bounds
+        bounds.size.height -= (hasError ? 23 : 0)
+
+        let rightPadding: CGFloat = hasAccessoryView ? accessoryView!.frame.width : 20
+
         var frame = bounds
-        if errorMessage != nil
-        {
-            frame.size.height = 58
+        frame.origin.x = 0
+        frame.origin.y = 25
+        frame.size.width -= rightPadding
+        frame.size.height -= 35
+        textView.frame = frame
+
+        if let accessoryView {
+            var accessoryViewFrame = accessoryView.frame
+            accessoryViewFrame.origin.x = bounds.width - accessoryView.bounds.width - 10
+            if isEditing {
+                accessoryViewFrame.origin.y = textView.frame.minY + (textView.frame.height - accessoryViewFrame.height)/2
+            } else {
+                accessoryViewFrame.origin.y = (self.bounds.height - accessoryViewFrame.height)/2
+            }
+            accessoryView.frame = accessoryViewFrame
         }
-        textField.frame = frame.insetBy(dx: 2, dy: 2)
-        backgroundView.frame = .init(x: 0, y: 0, width: bounds.width, height: frame.height)
-        
-        errorView.frame = CGRect(x: 0, y: 63, width: bounds.width, height: 13)
-        
+
+        backgroundView.frame = bounds
+        borderView.frame = bounds.insetBy(dx: -3.5, dy: -3.5)
+        errorView.frame = CGRect(x: 10,
+                                 y: borderView.frame.maxY + 5,
+                                 width: bounds.width - 10,
+                                 height: 13)
+
+        let buttonSize: CGFloat = 20
+        clearButton.frame = CGRect(x: bounds.width - buttonSize - 10,
+                                   y: textView.frame.minY + textView.bounds.height / 2 - buttonSize / 2,
+                                   width: buttonSize,
+                                   height: buttonSize)
+
         super.layoutSubviews()
     }
 }
 
-extension DashInputField: UITextInputTraits
-{
-    @IBInspectable var autocapitalizationType: UITextAutocapitalizationType
-    {
-        set {
-            textField.autocapitalizationType = newValue
-        }
-        get {
-            textField.autocapitalizationType
-        }
+// MARK: UITextViewDelegate
+
+extension DashInputField: UITextViewDelegate {
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        outsideDelegate?.textViewDidBeginEditing?(textView)
+
+        updateLayout(animated: true)
+        updateBackgroundView()
+        updateButtonsVisibility()
     }
-    
-    @IBInspectable var autocorrectionType: UITextAutocorrectionType
-    {
-        set {
-            textField.autocorrectionType = newValue
-        }
-        get {
-            textField.autocorrectionType
-        }
+
+    func textViewDidEndEditing(_ textView: UITextView) {
+        outsideDelegate?.textViewDidEndEditing?(textView)
+
+        updateLayout(animated: true)
+        updateBackgroundView()
+        updateButtonsVisibility()
     }
-    
-    
-    @IBInspectable var spellCheckingType: UITextSpellCheckingType
-    {
-        set {
-            textField.spellCheckingType = newValue
-        }
-        get {
-            textField.spellCheckingType
-        }
-    }
-    
-    var smartQuotesType: UITextSmartQuotesType
-    {
-        set {
-            textField.smartQuotesType = newValue
-        }
-        get {
-            textField.smartQuotesType
-        }
-    }
-    
-    
-    var smartDashesType: UITextSmartDashesType
-    {
-        set {
-            textField.smartDashesType = newValue
-        }
-        get {
-            textField.smartDashesType
-        }
-    }
-    
-    
-    var smartInsertDeleteType: UITextSmartInsertDeleteType
-    {
-        set {
-            textField.smartInsertDeleteType = newValue
-        }
-        get {
-            textField.smartInsertDeleteType
-        }
-    }
-    
-    @IBInspectable var keyboardType: UIKeyboardType
-    {
-        set {
-            textField.keyboardType = newValue
-        }
-        get {
-            textField.keyboardType
-        }
-    }
-    
-    @IBInspectable var keyboardAppearance: UIKeyboardAppearance
-    {
-        set {
-            textField.keyboardAppearance = newValue
-        }
-        get {
-            textField.keyboardAppearance
-        }
-    }
-    
-    @IBInspectable var returnKeyType: UIReturnKeyType
-    {
-        set {
-            textField.returnKeyType = newValue
-        }
-        get {
-            textField.returnKeyType
-        }
-    }
-    
-    var enablesReturnKeyAutomatically: Bool
-    {
-        set {
-            textField.enablesReturnKeyAutomatically = newValue
-        }
-        get {
-            textField.enablesReturnKeyAutomatically
-        }
-    }
-    
-    @IBInspectable var isSecureTextEntry: Bool
-    {
-        set {
-            textField.isSecureTextEntry = newValue
-        }
-        get {
-            textField.isSecureTextEntry
-        }
-    }
-    
-    @IBInspectable var textContentType: UITextContentType
-    {
-        set {
-            textField.textContentType = newValue
-        }
-        get {
-            textField.textContentType
+
+    func textViewDidChange(_ textView: UITextView) {
+        textDidChange?(textView.text)
+        outsideDelegate?.textViewDidChange?(textView)
+
+        DispatchQueue.main.async {
+            self.resetErrorMessage()
+            self.updateButtonsVisibility()
+            self.invalidateIntrinsicContentSize()
         }
     }
 }
 
-class DashTextField: UITextField
-{
-    var textInsets: UIEdgeInsets = .init(top: 0, left: 10, bottom: 0, right: 10) {
+
+// MARK: UITextInputTraits
+
+extension DashInputField: UITextInputTraits {
+    @IBInspectable var autocapitalizationType: UITextAutocapitalizationType {
+        set {
+            textView.autocapitalizationType = newValue
+        }
+        get {
+            textView.autocapitalizationType
+        }
+    }
+
+    @IBInspectable var autocorrectionType: UITextAutocorrectionType {
+        set {
+            textView.autocorrectionType = newValue
+        }
+        get {
+            textView.autocorrectionType
+        }
+    }
+
+
+    @IBInspectable var spellCheckingType: UITextSpellCheckingType {
+        set {
+            textView.spellCheckingType = newValue
+        }
+        get {
+            textView.spellCheckingType
+        }
+    }
+
+    var smartQuotesType: UITextSmartQuotesType {
+        set {
+            textView.smartQuotesType = newValue
+        }
+        get {
+            textView.smartQuotesType
+        }
+    }
+
+
+    var smartDashesType: UITextSmartDashesType {
+        set {
+            textView.smartDashesType = newValue
+        }
+        get {
+            textView.smartDashesType
+        }
+    }
+
+
+    var smartInsertDeleteType: UITextSmartInsertDeleteType {
+        set {
+            textView.smartInsertDeleteType = newValue
+        }
+        get {
+            textView.smartInsertDeleteType
+        }
+    }
+
+    @IBInspectable var keyboardType: UIKeyboardType {
+        set {
+            textView.keyboardType = newValue
+        }
+        get {
+            textView.keyboardType
+        }
+    }
+
+    @IBInspectable var keyboardAppearance: UIKeyboardAppearance {
+        set {
+            textView.keyboardAppearance = newValue
+        }
+        get {
+            textView.keyboardAppearance
+        }
+    }
+
+    @IBInspectable var returnKeyType: UIReturnKeyType {
+        set {
+            textView.returnKeyType = newValue
+        }
+        get {
+            textView.returnKeyType
+        }
+    }
+
+    var enablesReturnKeyAutomatically: Bool {
+        set {
+            textView.enablesReturnKeyAutomatically = newValue
+        }
+        get {
+            textView.enablesReturnKeyAutomatically
+        }
+    }
+
+    @IBInspectable var isSecureTextEntry: Bool {
+        set {
+            textView.isSecureTextEntry = newValue
+        }
+        get {
+            textView.isSecureTextEntry
+        }
+    }
+
+    @IBInspectable var textContentType: UITextContentType {
+        set {
+            textView.textContentType = newValue
+        }
+        get {
+            textView.textContentType
+        }
+    }
+}
+
+// MARK: - DashTextField
+
+class DashTextField: UITextView {
+    var textInsets: UIEdgeInsets = .init(top: 0, left: 7, bottom: 0, right: 7) {
         didSet {
-            setNeedsLayout()
+            textContainerInset = textInsets
         }
     }
-    
-    override init(frame: CGRect)
-    {
-        super.init(frame: frame)
-        
+
+    override init(frame: CGRect, textContainer: NSTextContainer?) {
+        super.init(frame: frame, textContainer: textContainer)
         configureLayout()
     }
-    
-    required init?(coder: NSCoder)
-    {
+
+    required init?(coder: NSCoder) {
         super.init(coder: coder)
-        
         configureLayout()
     }
-    
-    override func textRect(forBounds bounds: CGRect) -> CGRect
-    {
-        return CGRect(
-            x: bounds.origin.x + textInsets.left,
-            y: bounds.origin.y + textInsets.top,
-            width: bounds.size.width - (textInsets.left + textInsets.right),
-            height: bounds.size.height - (textInsets.top + textInsets.bottom)
-        )
+
+    internal func configureLayout() {
+        textContainerInset = textInsets
     }
-    
-    override func editingRect(forBounds bounds: CGRect) -> CGRect
-    {
-        return self.textRect(forBounds: bounds)
-    }
-    
-    internal func configureLayout()
-    {
-        borderStyle = .none
-    }
-    
-    override func layoutSubviews()
-    {
+
+    override func layoutSubviews() {
         super.layoutSubviews()
     }
 }
 
-extension DashInputField: UITextFieldDelegate
-{
-    func textFieldDidEndEditing(_ textField: UITextField)
-    {
-        updateLayout()
-        
-        outsideDelegate?.textFieldDidEndEditing?(textField)
-    }
-    
-    func textFieldDidBeginEditing(_ textField: UITextField)
-    {
-        updateLayout()
-        
-        outsideDelegate?.textFieldDidBeginEditing?(textField)
-    }
-    
-    func textFieldDidChangeSelection(_ textField: UITextField)
-    {
-        outsideDelegate?.textFieldDidChangeSelection?(textField)
-    }
-    
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool
-    {
-        return outsideDelegate?.textFieldShouldBeginEditing?(textField) ?? true
-    }
-    
-    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool
-    {
-        return outsideDelegate?.textFieldShouldEndEditing?(textField) ?? true
-    }
-    
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool
-    {
-        return outsideDelegate?.textField?(textField, shouldChangeCharactersIn: range, replacementString: string) ?? true
+
+// MARK: - InputFieldErrorView
+
+class InputFieldErrorView: UIView {
+
+    public var icon: UIImage? {
+        didSet {
+            iconView.image = icon
+            iconView.isHidden = icon == nil
+        }
     }
 
-    func textFieldShouldClear(_ textField: UITextField) -> Bool
-    {
-        outsideDelegate?.textFieldShouldClear?(textField) ?? true
-    }
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool
-    {
-        outsideDelegate?.textFieldShouldReturn?(textField) ?? true
-    }
-}
-
-class InputFieldErrorView: UIView
-{
     private var iconView: UIImageView!
     private var errorLabel: UILabel!
-    
-    var text: String?
-    {
+
+    var text: String? {
         didSet {
             errorLabel.text = text
         }
     }
-    
-    override var intrinsicContentSize: CGSize
-    {
+
+    override var intrinsicContentSize: CGSize {
         .init(width: -1, height: 20)
     }
-    
-    override init(frame: CGRect)
-    {
+
+    override init(frame: CGRect) {
         super.init(frame: frame)
-        
+
         configureLayout()
     }
-    
-    required init?(coder: NSCoder)
-    {
+
+    required init?(coder: NSCoder) {
         super.init(coder: coder)
-        
+
         configureLayout()
     }
-    
-    private func configureLayout()
-    {
-        iconView = UIImageView(image: UIImage(systemName: "xmark.octagon", withConfiguration: UIImage.SymbolConfiguration(pointSize: 11, weight: .medium, scale: .default)))
+
+    private func configureLayout() {
+        iconView = UIImageView()
         iconView.contentMode = .center
-        iconView.tintColor = .dw_red()
+        iconView.tintColor = .systemRed
         iconView.setContentHuggingPriority(.defaultLow, for: .horizontal)
         iconView.setContentCompressionResistancePriority(.required, for: .horizontal)
-        
+        iconView.isHidden = true
+
         errorLabel = UILabel()
         errorLabel.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
         errorLabel.font = .systemFont(ofSize: 11, weight: .medium)
-        errorLabel.textColor = .dw_red()
-        
-        let stackView = UIStackView(arrangedSubviews: [iconView, errorLabel])
+        errorLabel.textColor = .systemRed
+
+        let stackView = UIStackView(arrangedSubviews: [errorLabel])
         stackView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         stackView.axis = .horizontal
         stackView.spacing = 3

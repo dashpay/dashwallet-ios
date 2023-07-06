@@ -53,6 +53,14 @@ class PayViewController: BaseViewController, PayableViewController {
         return controller
     }
 
+    // MARK: Actions
+
+    private func showEnterAddressController() {
+        let vc = EnterAddressViewController()
+        vc.paymentControllerDelegate = self
+        navigationController?.pushViewController(vc, animated: true)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -116,7 +124,7 @@ extension PayViewController: UITableViewDataSource, UITableViewDelegate {
         case .scanQR:
             performScanQRCodeAction(delegate: self)
         case .pasteboard:
-            payToAddressAction()
+            showEnterAddressController()
         case .NFC:
             performNFCReadingAction()
         @unknown default:

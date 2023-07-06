@@ -324,6 +324,8 @@ extension MainTabbarController: DWHomeViewControllerDelegate {
     }
 }
 
+// MARK: UITabBarControllerDelegate
+
 extension MainTabbarController: UITabBarControllerDelegate {
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
         !(viewController is EmptyController)

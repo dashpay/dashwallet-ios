@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -15,84 +15,76 @@
 //  limitations under the License.
 //
 
-extension UIView
-{
-    var isUserInterfaceDark: Bool
-    {
+extension UIView {
+    var isUserInterfaceDark: Bool {
         traitCollection.userInterfaceStyle == .dark
     }
-    
-    var anchorPoint: CGPoint
-    {
-        set
-        {
+
+    var anchorPoint: CGPoint {
+        set {
             let oldOrigin = frame.origin
             layer.anchorPoint = newValue
             let newOrigin = frame.origin
-            
+
             let translation = CGPoint(x: newOrigin.x - oldOrigin.x, y: newOrigin.y - oldOrigin.y)
             center = CGPoint(x: center.x - translation.x, y: center.y - translation.y)
         }
-        
-        get
-        {
+
+        get {
             layer.anchorPoint
         }
     }
-    
+
     @objc var borderWidth: CGFloat {
         set {
             layer.borderWidth = newValue
         }
         get {
-            return layer.borderWidth
+            layer.borderWidth
         }
     }
-    
+
     @objc var cornerRadius: CGFloat {
         set {
             layer.cornerRadius = newValue
         }
         get {
-            return layer.cornerRadius
+            layer.cornerRadius
         }
     }
-    
+
     var topCornerRadius: CGFloat {
         get {
-            return layer.cornerRadius
+            layer.cornerRadius
         }
         set {
             layer.cornerRadius = newValue
             layer.masksToBounds = newValue > 0
-            
-            if #available(iOS 11.0, *)
-            {
+
+            if #available(iOS 11.0, *) {
                 layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
             }
         }
     }
-    
+
     var bottomCornerRadius: CGFloat {
         get {
-            return layer.cornerRadius
+            layer.cornerRadius
         }
         set {
             layer.cornerRadius = newValue
             layer.masksToBounds = newValue > 0
-            
-            if #available(iOS 11.0, *)
-            {
+
+            if #available(iOS 11.0, *) {
                 layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
             }
         }
     }
-    
+
     @objc var borderColor: UIColor? {
         set {
             guard let uiColor = newValue else { return }
             layer.borderColor = uiColor.cgColor
-            
         }
         get {
             guard let color = layer.borderColor else { return nil }
