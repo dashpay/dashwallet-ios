@@ -143,78 +143,61 @@ extension DerivationPathKeysModel {
             return NSLocalizedString("Not yet used", comment: "")
         }
     }
+    
+    func privateKeyAtIndex(index: UInt32, forWallet wallet: DSWallet) -> UnsafeMutablePointer<OpaqueKey>? {
+        guard let phrase = wallet.seedPhraseIfAuthenticated() else {
+            return nil
+        }
+        let seed = DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
+        let opaqueKey = self.derivationPath.privateKey(at: index, fromSeed: seed)!
+        return opaqueKey
+    }
 
     func itemForInfo(_ info: DerivationPathInfo, atIndex index: Int) -> DerivationPathKeysItem {
         let wallet = DWEnvironment.sharedInstance().currentWallet
         let index = UInt32(index)
-
-        switch info {
-        case .address:
-            let address = derivationPath.address(at: index)
-            return DerivationPathKeysItem(info: info, value: address)
-        case .publicKey:
-            return autoreleasepool {
-                guard let phrase = wallet.seedPhraseIfAuthenticated() else {
+        return autoreleasepool {
+            switch info {
+            case .address:
+                let address = derivationPath.address(at: index)
+                return DerivationPathKeysItem(info: info, value: address)
+            case .publicKey:
+                guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
                     return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
                 }
-                let seed = DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
-
-                let opaqueKey = self.derivationPath.privateKey(at: index, fromSeed: seed)!
                 let key = DSKeyManager.blsPublicKeySerialize(opaqueKey, legacy: false)
                 return DerivationPathKeysItem(info: info, value: key)
-            }
-        case .publicKeyLegacy:
-            return autoreleasepool {
-                guard let phrase = wallet.seedPhraseIfAuthenticated() else {
+            case .publicKeyLegacy:
+                guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
                     return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
                 }
-                let seed = DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
-                let opaqueKey = self.derivationPath.privateKey(at: index, fromSeed: seed)!
                 let key = DSKeyManager.blsPublicKeySerialize(opaqueKey, legacy: true)
                 return DerivationPathKeysItem(info: info, value: key)
-            }
-        case .privateKey:
-            return autoreleasepool {
-                guard let phrase = wallet.seedPhraseIfAuthenticated() else {
+            case .privateKey:
+                guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
                     return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
                 }
-                let seed = DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
-
-                let opaqueKey = self.derivationPath.privateKey(at: index, fromSeed: seed)!
-
                 let key = DSKeyManager.secretKeyHexString(opaqueKey)
                 return DerivationPathKeysItem(info: info, value: key)
-            }
-        case .wifPrivateKey:
-            return autoreleasepool {
-                guard let phrase = wallet.seedPhraseIfAuthenticated() else {
+            case .wifPrivateKey:
+                guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
                     return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
                 }
-                let seed = DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
-
-                let opaqueKey = self.derivationPath.privateKey(at: index, fromSeed: seed)!
                 let key = DSKeyManager.serializedPrivateKey(opaqueKey, chainType: wallet.chain.chainType)
                 return DerivationPathKeysItem(info: info, value: key)
-            }
-        case .keyId:
-            let pubKeyData = derivationPath.publicKeyData(at: index) as NSData
-            var bytes = pubKeyData.hash160()
-            let hexString = NSData(bytes: &bytes, length: MemoryLayout<UInt160>.size).hexString()
-            return DerivationPathKeysItem(info: info, value: hexString)
-
-        case .privatePublicKeysBase64:
-            return autoreleasepool {
-                guard let phrase = wallet.seedPhraseIfAuthenticated() else {
+            case .keyId:
+                let pubKeyData = derivationPath.publicKeyData(at: index) as NSData
+                var bytes = pubKeyData.hash160()
+                let hexString = NSData(bytes: &bytes, length: MemoryLayout<UInt160>.size).hexString()
+                return DerivationPathKeysItem(info: info, value: hexString)
+                
+            case .privatePublicKeysBase64:
+                guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
                     return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
                 }
-                let seed = DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
-
-                let opaquePrivateKey = self.derivationPath.privateKey(at: index, fromSeed: seed)!
-                let privateKeyData = DSKeyManager.privateKeyData(opaquePrivateKey)
+                let privateKeyData = DSKeyManager.privateKeyData(opaqueKey)
                 let pubKeyData = self.derivationPath.publicKeyData(at: index)
-
-                let data = privateKeyData + pubKeyData.dropFirst()
-
+                let data = privateKeyData + pubKeyData
                 return DerivationPathKeysItem(info: info, value: data.base64EncodedString())
             }
         }
