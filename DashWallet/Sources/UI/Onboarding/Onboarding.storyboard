@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="mfe-wo-u6J">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="mfe-wo-u6J">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="collection view cell content view" minToolsVersion="11.0"/>
@@ -107,23 +108,9 @@
                                     <action selector="pageValueChangedAction:" destination="mfe-wo-u6J" eventType="valueChanged" id="maf-Xk-VzB"/>
                                 </connections>
                             </pageControl>
-                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="39" translatesAutoresizingMaskIntoConstraints="NO" id="RB2-Fy-ILD" userLabel="Skip Button" customClass="DWActionButton">
+                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="39" translatesAutoresizingMaskIntoConstraints="NO" id="oul-q7-isF" userLabel="Finish Button" customClass="ActionButton" customModule="dashwallet" customModuleProvider="target">
                                 <rect key="frame" x="96.666666666666686" y="779" width="200" height="39"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="39" id="7G5-0Q-iyB"/>
-                                </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="small" value="YES"/>
-                                </userDefinedRuntimeAttributes>
-                                <connections>
-                                    <action selector="skipButtonAction:" destination="mfe-wo-u6J" eventType="touchUpInside" id="xlR-po-XgS"/>
-                                </connections>
-                            </view>
-                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="39" translatesAutoresizingMaskIntoConstraints="NO" id="oul-q7-isF" userLabel="Finish Button" customClass="DWActionButton">
-                                <rect key="frame" x="96.666666666666686" y="779" width="200" height="39"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="39" id="K1j-dE-2o4"/>
                                 </constraints>
@@ -132,29 +119,42 @@
                                     <userDefinedRuntimeAttribute type="boolean" keyPath="small" value="YES"/>
                                 </userDefinedRuntimeAttributes>
                                 <connections>
-                                    <action selector="skipButtonAction:" destination="mfe-wo-u6J" eventType="touchUpInside" id="Zg3-2b-boJ"/>
+                                    <action selector="skipButtonAction:" destination="mfe-wo-u6J" eventType="touchUpInside" id="peU-yr-My5"/>
                                 </connections>
                             </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GC9-ME-Bqe">
+                                <rect key="frame" x="159" y="779" width="75" height="39"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="39" id="mn3-GQ-ycU"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Button">
+                                    <color key="baseForegroundColor" name="DashBlueColor"/>
+                                </buttonConfiguration>
+                                <connections>
+                                    <action selector="skipButtonAction:" destination="mfe-wo-u6J" eventType="touchUpInside" id="uRy-cl-zmf"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Pqj-mv-iun"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="TZ0-fC-5QE" secondAttribute="trailing" id="2J1-OD-FGJ"/>
                             <constraint firstAttribute="trailing" secondItem="hHh-RO-hDv" secondAttribute="trailing" id="2LH-sy-iEk"/>
-                            <constraint firstItem="RB2-Fy-ILD" firstAttribute="centerX" secondItem="7uN-mz-x2B" secondAttribute="centerX" id="B5Q-si-WEI"/>
-                            <constraint firstItem="RB2-Fy-ILD" firstAttribute="top" secondItem="QG9-h2-t4z" secondAttribute="bottom" constant="8" id="GO5-sB-KDu"/>
-                            <constraint firstAttribute="bottomMargin" secondItem="RB2-Fy-ILD" secondAttribute="bottom" id="LTH-Of-1Wq"/>
+                            <constraint firstItem="GC9-ME-Bqe" firstAttribute="top" secondItem="hHh-RO-hDv" secondAttribute="bottom" id="2hd-hf-Kbz"/>
+                            <constraint firstItem="oul-q7-isF" firstAttribute="bottom" secondItem="Pqj-mv-iun" secondAttribute="bottom" id="3de-xG-Y0l"/>
                             <constraint firstItem="TZ0-fC-5QE" firstAttribute="centerX" secondItem="7uN-mz-x2B" secondAttribute="centerX" id="Q0S-Bz-KAc"/>
                             <constraint firstAttribute="trailing" secondItem="dxp-Sr-wRy" secondAttribute="trailing" id="R6O-0T-zTN"/>
-                            <constraint firstItem="RB2-Fy-ILD" firstAttribute="top" secondItem="hHh-RO-hDv" secondAttribute="bottom" id="Xuo-V8-Pq2"/>
                             <constraint firstItem="TZ0-fC-5QE" firstAttribute="top" secondItem="7uN-mz-x2B" secondAttribute="top" id="em4-GA-e3M"/>
                             <constraint firstItem="dxp-Sr-wRy" firstAttribute="leading" secondItem="7uN-mz-x2B" secondAttribute="leading" id="fyt-Fw-ype"/>
+                            <constraint firstItem="oul-q7-isF" firstAttribute="top" secondItem="QG9-h2-t4z" secondAttribute="bottom" constant="8" id="hT1-gt-bHR"/>
                             <constraint firstItem="TZ0-fC-5QE" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="7uN-mz-x2B" secondAttribute="leading" id="jNw-4Z-JdX"/>
-                            <constraint firstItem="oul-q7-isF" firstAttribute="centerX" secondItem="7uN-mz-x2B" secondAttribute="centerX" id="kej-qq-RQx"/>
                             <constraint firstItem="hHh-RO-hDv" firstAttribute="top" secondItem="7uN-mz-x2B" secondAttribute="topMargin" id="mCN-WQ-9vB"/>
+                            <constraint firstItem="oul-q7-isF" firstAttribute="centerX" secondItem="7uN-mz-x2B" secondAttribute="centerX" id="owE-U6-Ktv"/>
                             <constraint firstAttribute="bottom" secondItem="dxp-Sr-wRy" secondAttribute="bottom" id="prC-pl-4wC"/>
+                            <constraint firstItem="oul-q7-isF" firstAttribute="top" secondItem="hHh-RO-hDv" secondAttribute="bottom" id="rLq-6o-AjB"/>
                             <constraint firstItem="dxp-Sr-wRy" firstAttribute="top" secondItem="7uN-mz-x2B" secondAttribute="top" id="rdM-Iq-JLX"/>
-                            <constraint firstItem="oul-q7-isF" firstAttribute="centerY" secondItem="RB2-Fy-ILD" secondAttribute="centerY" id="wU8-oE-Fde"/>
+                            <constraint firstItem="GC9-ME-Bqe" firstAttribute="centerX" secondItem="7uN-mz-x2B" secondAttribute="centerX" id="wdm-4s-auq"/>
                             <constraint firstItem="QG9-h2-t4z" firstAttribute="centerX" secondItem="7uN-mz-x2B" secondAttribute="centerX" id="y8g-vj-iCX"/>
                             <constraint firstItem="hHh-RO-hDv" firstAttribute="leading" secondItem="7uN-mz-x2B" secondAttribute="leading" id="ymy-bp-pPa"/>
                             <constraint firstAttribute="bottom" secondItem="TZ0-fC-5QE" secondAttribute="bottom" id="ztv-do-KPo"/>
@@ -162,12 +162,11 @@
                     </view>
                     <connections>
                         <outlet property="collectionView" destination="hHh-RO-hDv" id="SaQ-n9-Pqf"/>
-                        <outlet property="contentBottomConstraint" destination="LTH-Of-1Wq" id="Tn9-wu-2cn"/>
                         <outlet property="finishButton" destination="oul-q7-isF" id="krT-K0-2Jy"/>
                         <outlet property="miniWalletView" destination="TZ0-fC-5QE" id="n4P-aZ-MHX"/>
                         <outlet property="miniWalletViewRatioConstraint" destination="idL-sr-PZ6" id="0II-QX-hSF"/>
                         <outlet property="pageControl" destination="QG9-h2-t4z" id="nwz-i3-Mkr"/>
-                        <outlet property="skipButton" destination="RB2-Fy-ILD" id="HoB-wj-CM5"/>
+                        <outlet property="skipButton" destination="GC9-ME-Bqe" id="son-Po-cPb"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="hl3-0b-DB1" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -177,6 +176,9 @@
     </scenes>
     <resources>
         <image name="image_bg" width="750" height="1624"/>
+        <namedColor name="DashBlueColor">
+            <color red="0.0" green="0.55294117647058827" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
