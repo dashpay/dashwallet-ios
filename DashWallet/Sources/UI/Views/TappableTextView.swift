@@ -86,10 +86,4 @@ final public class TappableTextView: UITextView {
 
         action(tappedText)
     }
-
-//    public override func layoutSubviews() {
-//        super.layoutSubviews()
-//
-//        textContainer.size = bounds.size
-//    }
 }
