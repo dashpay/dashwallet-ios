@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nullable, nonatomic, strong) DWPaymentInput *pasteboardPaymentInput;
 
 - (void)performNFCReadingWithCompletion:(void (^)(DWPaymentInput *paymentInput))completion;
+- (void)payToAddressFromString:(NSString *)string completion:(void (^)(BOOL success))completion;
 - (void)payToAddressFromPasteboardAvailable:(void (^)(BOOL success))completion;
 
 - (DWPaymentInput *)paymentInputWithURL:(NSURL *)url;

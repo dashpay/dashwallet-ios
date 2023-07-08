@@ -84,7 +84,6 @@
 		11E47BA828EAE7AD0097CFA0 /* CrowdNodeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BA728EAE7AD0097CFA0 /* CrowdNodeModel.swift */; };
 		11E47BAB28EB38510097CFA0 /* SendCoinsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */; };
 		11E47BAD28EB3A7D0097CFA0 /* CrowdNode+Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BAC28EB3A7D0097CFA0 /* CrowdNode+Constants.swift */; };
-		11EA863A29952E9800ABD7B4 /* OutlinedTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA863929952E9800ABD7B4 /* OutlinedTextField.swift */; };
 		11ED906B29681773003784F9 /* StakingInfoDialogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11ED906A29681773003784F9 /* StakingInfoDialogController.swift */; };
 		1FC212F0BAB5FB85C59E9CD3 /* libPods-TodayExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02771AC5DDCA0A1749C6A05B /* libPods-TodayExtension.a */; };
 		222040C61C1A1940005CE1C3 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222040C51C1A1940005CE1C3 /* WebKit.framework */; };
@@ -685,12 +684,21 @@
 		C91E919729FBACE6003E7883 /* ExtendedPublicKeysModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E919629FBACE6003E7883 /* ExtendedPublicKeysModel.swift */; };
 		C91E91AE29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E91AD29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift */; };
 		C94946E12A25F037008A678D /* DemoMainTabbarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94946E02A25F037008A678D /* DemoMainTabbarViewController.swift */; };
+		C94D98212A4CC78F00F3BEE1 /* DashInputField.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94D98202A4CC78F00F3BEE1 /* DashInputField.swift */; };
+		C94D98232A4CC85400F3BEE1 /* UIView+Dash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94D98222A4CC85400F3BEE1 /* UIView+Dash.swift */; };
+		C94D98252A4CC8FD00F3BEE1 /* UIControl+Dash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94D98242A4CC8FD00F3BEE1 /* UIControl+Dash.swift */; };
+		C94D98282A53035D00F3BEE1 /* EnterAddressViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94D98272A53035D00F3BEE1 /* EnterAddressViewController.swift */; };
+		C94D982A2A53038400F3BEE1 /* EnterAddressModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94D98292A53038400F3BEE1 /* EnterAddressModel.swift */; };
+		C94D982E2A544E8E00F3BEE1 /* UIButton+Dash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94D982D2A544E8E00F3BEE1 /* UIButton+Dash.swift */; };
 		C94F5E8829D3E7E30034FD57 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */; };
 		C94F5E8A29D3FCCF0034FD57 /* ShortcutAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8929D3FCCF0034FD57 /* ShortcutAction.swift */; };
 		C94F5E8C29D3FEC10034FD57 /* ShortcutsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8B29D3FEC10034FD57 /* ShortcutsModel.swift */; };
 		C94F5E8E29D404850034FD57 /* ShortcutCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8D29D404850034FD57 /* ShortcutCell.swift */; };
 		C94F5E9029D4060A0034FD57 /* ShortcutsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8F29D4060A0034FD57 /* ShortcutsView.swift */; };
+		C9829CDE2A562822007132E4 /* TappableLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9829CDD2A562822007132E4 /* TappableLabel.swift */; };
+		C9829CE22A562CEE007132E4 /* TappableTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9829CE12A562CEE007132E4 /* TappableTextView.swift */; };
 		C9903A5429E6A5F600535A4E /* KeysOverviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9903A5329E6A5F600535A4E /* KeysOverviewViewController.swift */; };
+		C9C1335A2A561FFA00B66651 /* PasteboardContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9C133592A561FFA00B66651 /* PasteboardContentView.swift */; };
 		C9F067F229E4576D0022D958 /* HomeBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F067F129E4576D0022D958 /* HomeBalanceView.swift */; };
 		C9F067F429E543630022D958 /* HomeBalanceView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9F067F329E457790022D958 /* HomeBalanceView.xib */; };
 		C9F42F9F29DA82E5001BC549 /* PayableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */; };
@@ -895,7 +903,6 @@
 		11E47BA728EAE7AD0097CFA0 /* CrowdNodeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeModel.swift; sourceTree = "<group>"; };
 		11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCoinsService.swift; sourceTree = "<group>"; };
 		11E47BAC28EB3A7D0097CFA0 /* CrowdNode+Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CrowdNode+Constants.swift"; sourceTree = "<group>"; };
-		11EA863929952E9800ABD7B4 /* OutlinedTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutlinedTextField.swift; sourceTree = "<group>"; };
 		11ED906A29681773003784F9 /* StakingInfoDialogController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StakingInfoDialogController.swift; sourceTree = "<group>"; };
 		206554BC730E9F2BB594D044 /* Pods-TodayExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TodayExtension/Pods-TodayExtension.debug.xcconfig"; sourceTree = "<group>"; };
 		2142023B66B3AB7DC260D9A9 /* Pods-TodayExtension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-TodayExtension/Pods-TodayExtension.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -1934,13 +1941,22 @@
 		C94946DE2A25EDA8008A678D /* DWHomeViewControllerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeViewControllerDelegate.h; sourceTree = "<group>"; };
 		C94946DF2A25EE24008A678D /* DWMainMenuViewControllerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMainMenuViewControllerDelegate.h; sourceTree = "<group>"; };
 		C94946E02A25F037008A678D /* DemoMainTabbarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoMainTabbarViewController.swift; sourceTree = "<group>"; };
+		C94D98202A4CC78F00F3BEE1 /* DashInputField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashInputField.swift; sourceTree = "<group>"; };
+		C94D98222A4CC85400F3BEE1 /* UIView+Dash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Dash.swift"; sourceTree = "<group>"; };
+		C94D98242A4CC8FD00F3BEE1 /* UIControl+Dash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIControl+Dash.swift"; sourceTree = "<group>"; };
+		C94D98272A53035D00F3BEE1 /* EnterAddressViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressViewController.swift; sourceTree = "<group>"; };
+		C94D98292A53038400F3BEE1 /* EnterAddressModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressModel.swift; sourceTree = "<group>"; };
+		C94D982D2A544E8E00F3BEE1 /* UIButton+Dash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIButton+Dash.swift"; sourceTree = "<group>"; };
 		C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C94F5E8929D3FCCF0034FD57 /* ShortcutAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutAction.swift; sourceTree = "<group>"; };
 		C94F5E8B29D3FEC10034FD57 /* ShortcutsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsModel.swift; sourceTree = "<group>"; };
 		C94F5E8D29D404850034FD57 /* ShortcutCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutCell.swift; sourceTree = "<group>"; };
 		C94F5E8F29D4060A0034FD57 /* ShortcutsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsView.swift; sourceTree = "<group>"; };
+		C9829CDD2A562822007132E4 /* TappableLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TappableLabel.swift; sourceTree = "<group>"; };
+		C9829CE12A562CEE007132E4 /* TappableTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TappableTextView.swift; sourceTree = "<group>"; };
 		C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.debug.xcconfig"; sourceTree = "<group>"; };
 		C9903A5329E6A5F600535A4E /* KeysOverviewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysOverviewViewController.swift; sourceTree = "<group>"; };
+		C9C133592A561FFA00B66651 /* PasteboardContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteboardContentView.swift; sourceTree = "<group>"; };
 		C9F067F129E4576D0022D958 /* HomeBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeBalanceView.swift; sourceTree = "<group>"; };
 		C9F067F329E457790022D958 /* HomeBalanceView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HomeBalanceView.xib; sourceTree = "<group>"; };
 		C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayableViewController.swift; sourceTree = "<group>"; };
@@ -2732,6 +2748,12 @@
 				C9F42FAF29DC27F4001BC549 /* EmptyView.swift */,
 				C9F451F82A0CB08900825057 /* ProgressView.swift */,
 				C9F451FC2A0CC4A300825057 /* BadgeView.swift */,
+				C94D98202A4CC78F00F3BEE1 /* DashInputField.swift */,
+				C94D98222A4CC85400F3BEE1 /* UIView+Dash.swift */,
+				C94D98242A4CC8FD00F3BEE1 /* UIControl+Dash.swift */,
+				C94D982D2A544E8E00F3BEE1 /* UIButton+Dash.swift */,
+				C9829CE12A562CEE007132E4 /* TappableTextView.swift */,
+				C9829CDD2A562822007132E4 /* TappableLabel.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -3408,6 +3430,7 @@
 		2A8B9E3822FC7F3B00FF8653 /* Payments */ = {
 			isa = PBXGroup;
 			children = (
+				C94D98262A53034A00F3BEE1 /* Enter Address */,
 				2A0C69AD2312C666001B8C90 /* ScanQR */,
 				2A0C69A023104798001B8C90 /* PaymentModels */,
 				2AB8CDD5220D80F100A3D1DB /* Amount */,
@@ -4542,7 +4565,6 @@
 			isa = PBXGroup;
 			children = (
 				47083B3429893E2C0010AF71 /* Tx Cell */,
-				11EA863929952E9800ABD7B4 /* OutlinedTextField.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -5657,6 +5679,24 @@
 			path = Model;
 			sourceTree = "<group>";
 		};
+		C94D98262A53034A00F3BEE1 /* Enter Address */ = {
+			isa = PBXGroup;
+			children = (
+				C9C133582A561FEF00B66651 /* Views */,
+				C94D98272A53035D00F3BEE1 /* EnterAddressViewController.swift */,
+				C94D98292A53038400F3BEE1 /* EnterAddressModel.swift */,
+			);
+			path = "Enter Address";
+			sourceTree = "<group>";
+		};
+		C9C133582A561FEF00B66651 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				C9C133592A561FFA00B66651 /* PasteboardContentView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		C9F42FA729DC09C6001BC549 /* Style */ = {
 			isa = PBXGroup;
 			children = (
@@ -6425,6 +6465,7 @@
 				2ACD53EE234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m in Sources */,
 				11860923297598B400279FCC /* AddressStatus.swift in Sources */,
 				C91E919729FBACE6003E7883 /* ExtendedPublicKeysModel.swift in Sources */,
+				C9829CE22A562CEE007132E4 /* TappableTextView.swift in Sources */,
 				4751CAD5297024EA00F63AC4 /* OrderPreviewViewController.swift in Sources */,
 				478C982F294305D800FAA0F0 /* ActivePaymentMethodView.swift in Sources */,
 				47CDEEC72949DC38008AE06D /* BasicInfoController.swift in Sources */,
@@ -6578,6 +6619,7 @@
 				2A913EA423A799F3006A2A59 /* DWTransactionListDataItemObject.m in Sources */,
 				2A9FFE052230FF2B00956D5F /* DWUpholdAPIProvider.m in Sources */,
 				2A56EEFB2417E30F002C32F3 /* DWConfirmUsernameContentView.m in Sources */,
+				C94D98282A53035D00F3BEE1 /* EnterAddressViewController.swift in Sources */,
 				47F2C67D28602D4F00C2B774 /* BasePageSheetViewController.swift in Sources */,
 				2A827B7224B5CA1800A42042 /* DWListCollectionLayout.m in Sources */,
 				119E8D0429051F9900D406C1 /* CrowdNodeRequest.swift in Sources */,
@@ -6626,6 +6668,7 @@
 				C3DAD2C3247512BA0001624F /* DWBaseContactsContentViewController.m in Sources */,
 				2AE2F0F9245C16C8001DD722 /* DWUserProfileViewController.m in Sources */,
 				2A0C69D723143B2F001B8C90 /* DWBaseModalViewController.m in Sources */,
+				C9C1335A2A561FFA00B66651 /* PasteboardContentView.swift in Sources */,
 				2A7A7BD02348A34800451078 /* DWSecurityMenuModel.m in Sources */,
 				C909615929F29C9200002D82 /* KeysOverviewCell.swift in Sources */,
 				2ACCD86E2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m in Sources */,
@@ -6634,6 +6677,7 @@
 				2AB3417723A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m in Sources */,
 				474C721A298A803200475CA6 /* TxListTableViewCell.swift in Sources */,
 				2ADC9D722462D4AD001D7C0D /* DWStretchyHeaderListCollectionLayout.m in Sources */,
+				C9829CDE2A562822007132E4 /* TappableLabel.swift in Sources */,
 				111C3C50296D5A4700788E18 /* TxWithinTimePeriod.swift in Sources */,
 				0F6EDFC528C896BD000427E7 /* CoinbaseSwapeTradeRequest.swift in Sources */,
 				2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */,
@@ -6710,6 +6754,7 @@
 				0F6EDFD628C896BD000427E7 /* CoinbaseAPIEndpoint.swift in Sources */,
 				47F4B6CD29485A8B00AED4C9 /* ConfirmOrderCells.swift in Sources */,
 				0F6EDFCE28C896BD000427E7 /* CoinbaseUserAccountData.swift in Sources */,
+				C94D982A2A53038400F3BEE1 /* EnterAddressModel.swift in Sources */,
 				2AFF01E5243F8626003718DC /* DWDPRegistrationDoneTableViewCell.m in Sources */,
 				47AE8BA628BFADD900490F5E /* AtmDAO.swift in Sources */,
 				475AE2B92974348F009A1055 /* App.swift in Sources */,
@@ -6783,6 +6828,7 @@
 				2A6300492328EA8900827825 /* DWLockActionButton.m in Sources */,
 				47AE8BA128BFADB600490F5E /* PointOfUseDAO.swift in Sources */,
 				4759D51729300212002F20DC /* ProvideAmountViewController.swift in Sources */,
+				C94D98252A4CC8FD00F3BEE1 /* UIControl+Dash.swift in Sources */,
 				2AD1CE7722DB51B500C99324 /* DWCheckbox.m in Sources */,
 				2ACCD8592319399100A96B62 /* DWRequestAmountViewController.m in Sources */,
 				C909615329F28E3700002D82 /* DerivationPathKeysModel.swift in Sources */,
@@ -6793,6 +6839,7 @@
 				2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */,
 				47C661AF28FDAA3400028A8D /* BaseAmountViewController.swift in Sources */,
 				478C982C2942F03500FAA0F0 /* SendingToView.swift in Sources */,
+				C94D98232A4CC85400F3BEE1 /* UIView+Dash.swift in Sources */,
 				4709C318287EA23000B4BD48 /* TxUserInfoDAO.swift in Sources */,
 				2A0C69E323155A0E001B8C90 /* DWModalContentView.m in Sources */,
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,
@@ -6829,6 +6876,7 @@
 				C94F5E8C29D3FEC10034FD57 /* ShortcutsModel.swift in Sources */,
 				2A6300452328D07500827825 /* DWLockPinInputView.m in Sources */,
 				2A0C69AC23125074001B8C90 /* UIView+DWHUD.m in Sources */,
+				C94D98212A4CC78F00F3BEE1 /* DashInputField.swift in Sources */,
 				2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */,
 				2A7AF36924826681001D74F9 /* DWDPRespondedIncomingRequestObject.m in Sources */,
 				0F6EDFC928C896BD000427E7 /* CoinbaseTokenResponse.swift in Sources */,
@@ -6836,11 +6884,11 @@
 				2A1AE79223F468CD00179A6E /* DWPlanetarySystemView.m in Sources */,
 				47C6E6E5291A68B6003FEDF2 /* AppliedFiltersView.swift in Sources */,
 				2A7A7BAE234770C900451078 /* DWCaptureSessionManager.m in Sources */,
+				C94D982E2A544E8E00F3BEE1 /* UIButton+Dash.swift in Sources */,
 				2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */,
 				2AD6E56A2487E1DB00B52F14 /* DWRequestsModel.m in Sources */,
 				2A7AF35924824FEB001D74F9 /* DWDPTextStatusCell.m in Sources */,
 				2AD6E55A2487D9AF00B52F14 /* DWContactsViewController.m in Sources */,
-				11EA863A29952E9800ABD7B4 /* OutlinedTextField.swift in Sources */,
 				472D13E6299E3C82006903F1 /* AmountPreviewView.swift in Sources */,
 				4759D514292FEFFC002F20DC /* ModalNavigationController.swift in Sources */,
 				2A919F9C24A4DCAD0018C9A3 /* DWDPSmallContactView.m in Sources */,
@@ -7154,7 +7202,7 @@
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = DashWalletScreenshotsUITests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -7187,7 +7235,7 @@
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = DashWalletScreenshotsUITests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.DashWalletScreenshotsUITests;
@@ -7219,7 +7267,7 @@
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = DashWalletScreenshotsUITests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.DashWalletScreenshotsUITests;
@@ -7251,7 +7299,7 @@
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = DashWalletScreenshotsUITests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.DashWalletScreenshotsUITests;
@@ -7316,7 +7364,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
@@ -7377,7 +7425,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CFLAGS = (
 					"-frandom-seed=$@",
@@ -7426,7 +7474,7 @@
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Dash;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
@@ -7484,7 +7532,7 @@
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Dash;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
@@ -7663,7 +7711,7 @@
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				INFOPLIST_FILE = TodayExtension/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
@@ -7688,7 +7736,7 @@
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				INFOPLIST_FILE = TodayExtension/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
@@ -7746,7 +7794,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CFLAGS = (
 					"-frandom-seed=$@",
@@ -7805,7 +7853,7 @@
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Dash;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
@@ -7833,7 +7881,7 @@
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				INFOPLIST_FILE = TodayExtension/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
@@ -7973,7 +8021,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
@@ -8022,7 +8070,7 @@
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Dash;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
@@ -8049,7 +8097,7 @@
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				INFOPLIST_FILE = TodayExtension/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				MARKETING_VERSION = 7.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
