@@ -49,7 +49,6 @@ NS_ASSUME_NONNULL_BEGIN
 
         DWReceiveContentView *contentView = [DWReceiveContentView viewWith:model];
         contentView.translatesAutoresizingMaskIntoConstraints = NO;
-        contentView.viewType = DWReceiveViewType_Default;
         __weak typeof(self) weakSelf = self;
 
         contentView.shareHandler = ^(UIButton *sender) {

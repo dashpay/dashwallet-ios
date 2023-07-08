@@ -30,16 +30,10 @@ final class ReceiveContentView: UIView {
     private var model: DWReceiveModelProtocol!
     private var feedbackGenerator = UINotificationFeedbackGenerator()
 
-    @objc
-    public var viewType: ReceiveViewType = .default
-
     public var specifyAmountHandler: (() -> Void)?
 
     @objc
     public var shareHandler: ((UIButton) -> Void)?
-
-    @objc
-    public var exitHandler: (() -> Void)?
 
     @IBAction
     func addressButtonAction() {
@@ -90,7 +84,7 @@ final class ReceiveContentView: UIView {
 extension ReceiveContentView {
     private func configureHierarchy() {
         specifyAmountButton.setTitle(NSLocalizedString("Specify Amount", comment: "Receive screen"), for: .normal)
-        secondButton.setTitle(viewType.secondButtonTitle, for: .normal)
+        secondButton.setTitle(NSLocalizedString("Share address", comment: "Receive screen"), for: .normal)
     }
 
     private func reloadView() {
@@ -103,10 +97,7 @@ extension ReceiveContentView {
         qrCodeButton.isHidden = model.qrCodeImage == nil
 
         specifyAmountButton.isEnabled = hasValue
-
-        if viewType == .default {
-            secondButton.isEnabled = hasValue
-        }
+        secondButton.isEnabled = hasValue
     }
 }
 
