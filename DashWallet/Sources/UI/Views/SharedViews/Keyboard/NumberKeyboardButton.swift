@@ -159,12 +159,12 @@ class NumberKeyboardButton: UIView {
         UIView.animate(withDuration: 0.075,
                        delay: 0,
                        options: [.curveEaseOut, .beginFromCurrentState]) { [unowned self] in
-            if self.isHighlighted {
-                self.backgroundColor = Styles.backgroundHighlightedColor
-                self.titleLabel.textColor = Styles.textHighlightedColor
+            if isHighlighted {
+                backgroundColor = Styles.backgroundHighlightedColor
+                titleLabel.textColor = Styles.textHighlightedColor
             } else {
-                self.backgroundColor = customBackgroundColor
-                self.titleLabel.textColor = Styles.textColor
+                backgroundColor = customBackgroundColor
+                titleLabel.textColor = Styles.textColor
             }
         }
     }

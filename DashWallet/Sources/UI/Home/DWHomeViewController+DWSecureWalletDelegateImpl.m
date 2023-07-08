@@ -16,6 +16,7 @@
 //
 
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -28,7 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)secureWalletRoutineDidVerify:(UIViewController *)controller {
-    [self.model reloadShortcuts];
+    DWHomeView *view = (DWHomeView *) self.view;
+    [view reloadShortcuts];
 }
 
 - (void)secureWalletRoutineDidFinish:(DWVerifiedSuccessfullyViewController *)controller {

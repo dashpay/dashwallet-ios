@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -17,6 +17,8 @@
 
 import Foundation
 
+// MARK: - BackupInfoItem
+
 private enum BackupInfoItem {
     case notStoredByDash
     case unableToRestore
@@ -29,7 +31,7 @@ extension BackupInfoItem {
         case .unableToRestore: return "You will NOT be able to restore the wallet without a recovery phrase"
         }
     }
-    
+
     var description: String {
         switch self {
         case .notStoredByDash: return "Anyone that has your recovery phrase can access your funds."
@@ -45,98 +47,117 @@ extension BackupInfoItem {
     }
 }
 
+// MARK: - SecureWalletInfoType
+
 @objc(DWSecureWalletInfoType)
 enum SecureWalletInfoType: Int {
     @objc(DWSecureWalletInfoType_Setup)
     case setup
-    
+
     @objc(DWSecureWalletInfoType_Reminder)
     case reminder
 }
 
+// MARK: - BackupInfoViewControllerDelegate
+
 @objc(DWBackupInfoViewControllerDelegate)
-protocol BackupInfoViewControllerDelegate: DWSecureWalletDelegate {
-}
+protocol BackupInfoViewControllerDelegate: DWSecureWalletDelegate { }
+
+// MARK: - BackupInfoViewController
 
 @objc(DWBackupInfoViewController)
 final class BackupInfoViewController: BaseViewController {
     @IBOutlet private var titleLabel: UILabel!
     @IBOutlet private var subtitleLabel: UILabel!
-    
+
     @IBOutlet private var contentView: UIStackView!
-    
+
     @IBOutlet private var bottomButtonStack: UIStackView!
     @IBOutlet private var showRecoveryPhraseButton: UIButton!
     @IBOutlet private var skipButton: UIButton!
-   
+
     private var closeButton: UIBarButtonItem!
     private var seedPhraseModel: DWPreviewSeedPhraseModel!
-    
+
     @objc
     public weak var delegate: BackupInfoViewControllerDelegate?
-    
+
     public var type: SecureWalletInfoType = .setup
-    
+
     @objc
-    var isSkipButtonHidden: Bool = true {
+    var isSkipButtonHidden = true {
         didSet {
             if isViewLoaded {
                 skipButton?.isHidden = isSkipButtonHidden
             }
         }
     }
-    
+
     @objc
-    var isCloseButtonHidden: Bool = false {
+    var isCloseButtonHidden = false {
         didSet {
             if isViewLoaded {
                 reloadCloseButton()
             }
         }
     }
-    
+
     @objc
-    var isAllActionHidden: Bool = false {
+    var isAllActionHidden = false {
         didSet {
             if isViewLoaded {
                 reloadView()
             }
         }
     }
-    
+
     @objc
     private func closeAction() {
         delegate?.secureWalletRoutineDidCanceled(self)
     }
-    
-    @IBAction func skipButtonAction() {
+
+    @IBAction
+    func skipButtonAction() {
         delegate?.secureWalletRoutineDidCanceled(self)
     }
-    
-    @IBAction func backupButtonAction() {
-        let controller = DWBackupSeedPhraseViewController(model: seedPhraseModel)
-        controller.shouldCreateNewWalletOnScreenshot = shouldCreateNewWalletOnScreenshot
-        controller.delegate = delegate
-        navigationController?.pushViewController(controller, animated: true)
+
+    @IBAction
+    func backupButtonAction() {
+        if type == .setup {
+            showSeedPhraseViewController()
+        } else {
+            DSAuthenticationManager.sharedInstance()
+                .authenticate(withPrompt: nil,
+                              usingBiometricAuthentication: false,
+                              alertIfLockout: true) { [weak self] authenticated, _, _ in
+                    guard authenticated else {
+                        return
+                    }
+
+                    guard let self else {
+                        return
+                    }
+
+                    self.seedPhraseModel = DWPreviewSeedPhraseModel()
+                    self.seedPhraseModel.getOrCreateNewWallet()
+                    self.showSeedPhraseViewController()
+                }
+        }
     }
-    
-    @IBAction func closeButtonAction() {
-        delegate?.secureWalletRoutineDidCanceled(self)
-    }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         if type == .setup {
             // Create wallet entry point
-            self.seedPhraseModel = DWPreviewSeedPhraseModel()
+            seedPhraseModel = DWPreviewSeedPhraseModel()
             seedPhraseModel.getOrCreateNewWallet()
         }
 
-        
+
         configureHierarchy()
     }
-    
+
     @objc
     static func controller(with type: SecureWalletInfoType) -> BackupInfoViewController {
         let controller = vc(BackupInfoViewController.self, from: sb("BackupInfo"))
@@ -148,41 +169,50 @@ final class BackupInfoViewController: BaseViewController {
 extension BackupInfoViewController {
     private func configureHierarchy() {
         titleLabel.text = NSLocalizedString("Backup your recovery phrase", comment: "Back up wallet")
-        subtitleLabel.text = NSLocalizedString("You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device.", comment: "Back up wallet")
+        subtitleLabel
+            .text = NSLocalizedString("You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device.",
+                                      comment: "Back up wallet")
         showRecoveryPhraseButton.setTitle(NSLocalizedString("Show Recovery Phrase", comment: "Back up wallet"), for: .normal)
         skipButton.setTitle(NSLocalizedString("Skip", comment: "Back up wallet"), for: .normal)
-        
+
         show(item: .notStoredByDash)
         show(item: .unableToRestore)
-        
+
         skipButton.isHidden = isSkipButtonHidden
         reloadCloseButton()
         reloadView()
     }
-    
+
     private func reloadView() {
         if isAllActionHidden {
             hideCloseButton()
             bottomButtonStack.isHidden = true
-        }else{
+        } else {
             showCloseButtonIfNeeded()
             bottomButtonStack.isHidden = false
         }
     }
-    
+
+    private func showSeedPhraseViewController() {
+        let controller = DWBackupSeedPhraseViewController(model: seedPhraseModel)
+        controller.shouldCreateNewWalletOnScreenshot = shouldCreateNewWalletOnScreenshot
+        controller.delegate = delegate
+        navigationController?.pushViewController(controller, animated: true)
+    }
+
     private func reloadCloseButton() {
         if isCloseButtonHidden {
             hideCloseButton()
-        }else{
+        } else {
             showCloseButton()
         }
     }
-    
+
     private func show(item: BackupInfoItem) {
         let view = itemView(from: item)
         contentView.addArrangedSubview(view)
     }
-    
+
     private func itemView(from item: BackupInfoItem) -> BackupInfoItemView {
         let view = BackupInfoItemView.view()
         view.titleLabel.text = item.title
@@ -190,20 +220,20 @@ extension BackupInfoViewController {
         view.iconView.image = item.icon
         return view
     }
-    
+
     private func showCloseButtonIfNeeded() {
         if !isCloseButtonHidden {
             showCloseButton()
         }
     }
+
     private func showCloseButton() {
         let item = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeAction))
         navigationItem.rightBarButtonItem = item
-        
+
         closeButton = item
-       
     }
-    
+
     private func hideCloseButton() {
         navigationItem.rightBarButtonItem = nil
         closeButton = nil
@@ -212,9 +242,11 @@ extension BackupInfoViewController {
 
 extension BackupInfoViewController {
     var shouldCreateNewWalletOnScreenshot: Bool {
-        return type == .reminder
+        type == .reminder
     }
 }
+
+// MARK: NavigationBarDisplayable
 
 extension BackupInfoViewController: NavigationBarDisplayable {
     var isBackButtonHidden: Bool { isAllActionHidden == false }

@@ -17,7 +17,6 @@
 
 import UIKit
 
-@objc(DWTxListTableViewCell)
 final class TxListTableViewCell: UITableViewCell {
     @IBOutlet var txItemView: TransactionItemView!
 
@@ -30,6 +29,4 @@ final class TxListTableViewCell: UITableViewCell {
 
         dw_pressedAnimation(.light, pressed: highlighted)
     }
-
-    override class var dw_reuseIdentifier: String { "DWTxListTableViewCell" }
 }

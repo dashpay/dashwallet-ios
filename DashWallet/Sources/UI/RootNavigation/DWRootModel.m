@@ -21,7 +21,6 @@
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWHomeModel.h"
-#import "DWSyncModel.h"
 #import "dashwallet-Swift.h"
 
 #import <DashSync/DSBiometricsAuthenticator.h>
@@ -98,7 +97,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)setupDidFinish {
-    [self.homeModel.shortcutsModel reloadShortcuts];
+    //TODO: check whether we really need to do that here
+    //[self.homeModel.shortcutsModel reloadShortcuts];
 }
 
 - (void)wipeWallet {
@@ -119,7 +119,7 @@ NS_ASSUME_NONNULL_BEGIN
         self.currentNetworkDidChangeBlock();
     }
 
-    [homeModel forceStartSyncingActivity];
+    [SyncingActivityMonitor.shared forceStartSyncingActivity];
 }
 
 @end

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -17,55 +17,43 @@
 
 import Foundation
 
-@objc(DWShortcutsModelDataSource)
-protocol ShortcutsModelDataSource: AnyObject {
-    func shouldShowCreateUserNameButton() -> Bool
-}
-
-@objc(DWShortcutsModelDelegate)
-protocol ShortcutsModelDelegate: AnyObject {
-    func shortcutItemsDidChange()
-}
 
 let MAX_SHORTCUTS_COUNT = 4
 
-@objc(DWShortcutsModel)
-class ShortcutsModel: NSObject {
+// MARK: - ShortcutsModel
+
+final class ShortcutsModel {
     private var mutableItems: [ShortcutAction] = []
-    
-    weak var dataSource: ShortcutsModelDataSource?
-    weak var delegate: ShortcutsModelDelegate?
-    
+
+    var shortcutItemsDidChangeHandler: (() -> ())?
+
     @objc
-    init(dataSource: ShortcutsModelDataSource) {
-        super.init()
-        
-        self.dataSource = dataSource
-        
+    init() {
         reloadShortcuts()
     }
 
     var items: [ShortcutAction] {
-        return mutableItems
+        mutableItems
     }
 
     @objc
     func reloadShortcuts() {
         mutableItems = Self.userShortcuts()
-        delegate?.shortcutItemsDidChange()
+        shortcutItemsDidChangeHandler?()
     }
 
+    // TODO: Move this to HomeModel
     static func userShortcuts() -> [ShortcutAction] {
         let options = DWGlobalOptions.sharedInstance()
         let walletNeedsBackup = options.walletNeedsBackup
         let userHasBalance = options.userHasBalance
-        
+
         var mutableItems = [ShortcutAction]()
-        mutableItems.reserveCapacity(3)
-        
+        mutableItems.reserveCapacity(2)
+
         if walletNeedsBackup {
             mutableItems.append(ShortcutAction(type: .secureWallet))
-            
+
             if userHasBalance {
                 mutableItems.append(ShortcutAction(type: .receive))
                 mutableItems.append(ShortcutAction(type: .payToAddress))
@@ -73,7 +61,7 @@ class ShortcutsModel: NSObject {
             } else {
                 mutableItems.append(ShortcutAction(type: .explore))
                 mutableItems.append(ShortcutAction(type: .receive))
-                
+
                 if DWEnvironment.sharedInstance().currentChain.isMainnet() {
                     mutableItems.append(ShortcutAction(type: .buySellDash))
                 }
@@ -87,13 +75,13 @@ class ShortcutsModel: NSObject {
             } else {
                 mutableItems.append(ShortcutAction(type: .explore))
                 mutableItems.append(ShortcutAction(type: .receive))
-                
+
                 if DWEnvironment.sharedInstance().currentChain.isMainnet() {
                     mutableItems.append(ShortcutAction(type: .buySellDash))
                 }
             }
         }
-        
+
         return mutableItems
     }
 }

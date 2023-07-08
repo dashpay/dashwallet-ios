@@ -129,7 +129,7 @@ final class CrowdNodeModel {
         onlineAccountState = crowdNode.onlineAccountState
         observeState()
         observeBalances()
-        
+
         crowdNode.restoreState()
         getAccountAddress()
     }

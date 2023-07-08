@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -16,6 +16,8 @@
 //
 
 import Foundation
+
+// MARK: - ShortcutActionType
 
 @objc(DWShortcutActionType)
 enum ShortcutActionType: Int {
@@ -103,9 +105,8 @@ extension ShortcutActionType {
         default:
             fatalError("Image not found for shortcut type: \(self)")
         }
-    
     }
-    
+
     var title: String {
         switch self {
         case .secureWallet:
@@ -148,31 +149,32 @@ extension ShortcutActionType {
         case .explore:
             return NSLocalizedString("Explore", comment: "Translate it as short as possible! (24 symbols max)")
         }
-
     }
 }
+
+// MARK: - ShortcutAction
 
 @objc(DWShortcutAction)
 class ShortcutAction: NSObject {
     @objc
     let type: ShortcutActionType
-    
+
     @objc
     let enabled: Bool
-    
+
     init(type: ShortcutActionType, enabled: Bool = true) {
         self.type = type
         self.enabled = enabled
     }
-    
+
     @objc
     static func action(type: ShortcutActionType) -> ShortcutAction {
-        return ShortcutAction(type: type, enabled: true)
+        ShortcutAction(type: type, enabled: true)
     }
-    
+
     @objc
     static func action(type: ShortcutActionType, enabled: Bool) -> ShortcutAction {
-        return ShortcutAction(type: type, enabled: enabled)
+        ShortcutAction(type: type, enabled: enabled)
     }
 }
 
@@ -180,19 +182,19 @@ extension ShortcutAction {
     var title: String {
         type.title
     }
-    
+
     var icon: UIImage {
         type.icon
     }
-    
+
     var alpha: CGFloat {
         enabled ? 1 : 0.4
     }
-    
+
     var showsGradientLayer: Bool {
         false
     }
-    
+
     var textColor: UIColor {
         .dw_darkTitle()
     }

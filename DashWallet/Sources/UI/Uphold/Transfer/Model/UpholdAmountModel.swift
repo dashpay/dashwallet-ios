@@ -149,7 +149,7 @@ final class UpholdAmountModel: BaseAmountModel {
 
 extension UpholdAmountModel: ConverterViewDataSource {
     var fromItem: SourceViewDataProvider? {
-        ConverterViewSourceItem(image: .asset("service.uphold.square"),
+        ConverterViewSourceItem(image: .asset("uphold_logo"),
                                 title: "Uphold",
                                 balanceFormatted: card.formattedDashAmount,
                                 fiatBalanceFormatted: card.fiatBalanceFormatted)

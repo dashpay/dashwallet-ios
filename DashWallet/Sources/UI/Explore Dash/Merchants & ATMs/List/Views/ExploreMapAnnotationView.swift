@@ -64,7 +64,7 @@ final class ExploreMapAnnotationView: MKAnnotationView {
         if let str = pointOfUse.logoLocation, let url = URL(string: str) {
             imageView.sd_setImage(with: url, completed: nil)
         } else {
-            imageView.image = UIImage(named: "image.explore.dash.wts.item.logo.empty")
+            imageView.image = UIImage(named: pointOfUse.emptyLogoImageName)
         }
     }
 
@@ -77,6 +77,7 @@ final class ExploreMapAnnotationView: MKAnnotationView {
         imageView.layer.masksToBounds = true
         imageView.layer.borderColor = UIColor.white.cgColor
         imageView.layer.borderWidth = 2
+        imageView.contentMode = .scaleAspectFit
         addSubview(imageView)
 
         imageView.frame = bounds

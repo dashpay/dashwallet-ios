@@ -170,7 +170,7 @@ public final class CrowdNode {
         let topUpTx = try await sendCoinsService.sendCoins(address: accountAddress,
                                                            amount: amount)
         let filter = SpendableTransaction(transactionManager: transactionManager, txHashData: topUpTx.txHashData)
-        
+
         if filter.matches(tx: topUpTx) {
             return topUpTx
         } else {
@@ -276,11 +276,11 @@ extension CrowdNode {
         DSLogger.log("found signUp CrowdNode request, account: \(address)")
         signUpState = SignUpState.signingUp
     }
-    
+
     private func validatePrefs() {
         if let accountAddress = prefs.accountAddress {
             let wallet = DWEnvironment.sharedInstance().currentWallet
-            
+
             if !wallet.containsAddress(accountAddress) {
                 DSLogger.log("Found alien address in CrowdNode prefs")
                 reset()

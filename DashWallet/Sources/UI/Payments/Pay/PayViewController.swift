@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -17,26 +17,30 @@
 
 import UIKit
 
+// MARK: - PayViewControllerDelegate
+
 @objc(DWPayViewControllerDelegate)
 protocol PayViewControllerDelegate: AnyObject {
     func payViewControllerDidFinishPayment(_ controller: PayViewController, contact: DWDPBasicUserItem?)
 }
 
+// MARK: - PayViewController
+
 @objc(DWPayViewController)
 class PayViewController: BaseViewController, PayableViewController {
     @IBOutlet weak var tableView: UITableView!
-    
+
     @objc
     var paymentController: PaymentController!
-    
+
     @objc
     var payModel: DWPayModelProtocol!
 
     var maxActionButtonWidth: CGFloat = 0
-    
+
     @objc
-    var demoMode: Bool = false
-    
+    var demoMode = false
+
     @objc
     var delegate: PayViewControllerDelegate?
 
@@ -51,7 +55,7 @@ class PayViewController: BaseViewController, PayableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         configurePaymentController()
         configureHierarchy()
     }
@@ -67,14 +71,14 @@ class PayViewController: BaseViewController, PayableViewController {
     }
 }
 
-private extension PayViewController {
-    func configurePaymentController() {
+extension PayViewController {
+    private func configurePaymentController() {
         paymentController = PaymentController()
         paymentController.delegate = self
         paymentController.presentationContextProvider = self
     }
-    
-    func configureHierarchy() {
+
+    private func configureHierarchy() {
         let cellId = PayTableViewCell.reuseIdentifier
         let nib = UINib(nibName: cellId, bundle: nil)
         tableView.register(nib, forCellReuseIdentifier: cellId)
@@ -89,10 +93,12 @@ private extension PayViewController {
     }
 }
 
+// MARK: UITableViewDataSource, UITableViewDelegate
+
 extension PayViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return payModel.options.count
+        payModel.options.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -105,7 +111,7 @@ extension PayViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let payOption = payModel.options[indexPath.row]
-        
+
         switch payOption.type {
         case .scanQR:
             performScanQRCodeAction(delegate: self)
@@ -121,43 +127,45 @@ extension PayViewController: UITableViewDataSource, UITableViewDelegate {
 
 
 
+// MARK: DWQRScanModelDelegate
+
 extension PayViewController: DWQRScanModelDelegate {
     func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
         dismiss(animated: true) { [weak self] in
             self?.paymentController.performPayment(with: paymentInput)
         }
     }
-    
+
     func qrScanModelDidCancel(_ viewModel: DWQRScanModel) {
         dismiss(animated: true)
     }
 }
 
+// MARK: PaymentControllerDelegate, PaymentControllerPresentationContextProviding
+
 extension PayViewController: PaymentControllerDelegate, PaymentControllerPresentationContextProviding {
     func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor {
         self
     }
-    
+
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, transaction: DSTransaction) {
         let model = TxDetailModel(transaction: transaction)
         let vc = SuccessTxDetailViewController(model: model)
         vc.modalPresentationStyle = .fullScreen
         vc.contactItem = paymentController.contactItem
         vc.delegate = self
-        self.present(vc, animated: true)
+        present(vc, animated: true)
     }
-    
-    func paymentControllerDidCancelTransaction(_ controller: PaymentController) {
-        
-    }
-    
-    func paymentControllerDidFailTransaction(_ controller: PaymentController) {
-        
-    }
+
+    func paymentControllerDidCancelTransaction(_ controller: PaymentController) { }
+
+    func paymentControllerDidFailTransaction(_ controller: PaymentController) { }
 }
+
+// MARK: SuccessTxDetailViewControllerDelegate
 
 extension PayViewController: SuccessTxDetailViewControllerDelegate {
     func txDetailViewControllerDidFinish(controller: SuccessTxDetailViewController) {
-        self.delegate?.payViewControllerDidFinishPayment(self, contact: paymentController.contactItem)
+        delegate?.payViewControllerDidFinishPayment(self, contact: paymentController.contactItem)
     }
 }

@@ -43,6 +43,7 @@ extension KeysOverviewViewController {
 
     private func configureHierarchy() {
         title = NSLocalizedString("Masternode Keys", comment: "")
+
         view.backgroundColor = .dw_secondaryBackground()
 
         tableView = UITableView(frame: .zero, style: .insetGrouped)

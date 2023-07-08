@@ -17,32 +17,19 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWSyncProtocol.h"
 #import "DWWipeDelegate.h"
-#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWMainMenuViewController;
-@protocol DWBalanceDisplayOptionsProtocol;
-
-@protocol DWMainMenuViewControllerDelegate <NSObject>
-
-- (void)mainMenuViewControllerImportPrivateKey:(DWMainMenuViewController *)controller;
-- (void)mainMenuViewControllerOpenHomeScreen:(DWMainMenuViewController *)controller;
-- (void)showPaymentsControllerWithActivePage:(DWPaymentsViewControllerIndex)pageIndex;
-
-@end
+@protocol DWMainMenuViewControllerDelegate;
 
 @interface DWMainMenuViewController : UIViewController
 
 @property (nullable, nonatomic, weak) id<DWWipeDelegate, DWMainMenuViewControllerDelegate> delegate;
 
-- (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions;
-
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 - (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 
 @end

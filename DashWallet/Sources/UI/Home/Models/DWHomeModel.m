@@ -23,7 +23,6 @@
 #import <UIKit/UIApplication.h>
 
 #import "AppDelegate.h"
-#import "DWBalanceDisplayOptions.h"
 #import "DWDashPayConstants.h"
 #import "DWDashPayContactsUpdater.h"
 #import "DWDashPayModel.h"
@@ -31,7 +30,6 @@
 #import "DWGlobalOptions.h"
 #import "DWPayModel.h"
 #import "DWReceiveModel.h"
-#import "DWSyncModel.h"
 #import "DWTransactionListDataProvider.h"
 #import "DWVersionManager.h"
 #import "UIDevice+DashWallet.h"
@@ -39,31 +37,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static BOOL IsJailbroken(void) {
-    struct stat s;
-    BOOL jailbroken = (stat("/bin/sh", &s) == 0) ? YES : NO; // if we can see /bin/sh, the app isn't sandboxed
-
-    // some anti-jailbreak detection tools re-sandbox apps, so do a secondary check for any MobileSubstrate dyld images
-    for (uint32_t count = _dyld_image_count(), i = 0; i < count && !jailbroken; i++) {
-        if (strstr(_dyld_get_image_name(i), "MobileSubstrate"))
-            jailbroken = YES;
-    }
-
-#if TARGET_IPHONE_SIMULATOR
-    jailbroken = NO;
-#endif
-
-    return jailbroken;
-}
-
-@interface DWHomeModel () <DWShortcutsModelDataSource, DWBalanceViewDataSource, DWHomeBalanceViewDataSource>
+@interface DWHomeModel () <SyncingActivityMonitorObserver>
 
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (strong, nonatomic) DSReachabilityManager *reachability;
 @property (readonly, nonatomic, strong) DWTransactionListDataProvider *dataProvider;
 
-@property (nullable, nonatomic, strong) DWBalanceModel *balanceModel;
 @property (nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
+
+@property (nonatomic, strong) SyncingActivityMonitor *syncMonitor;
 
 @property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *receivedDataSource;
@@ -76,13 +58,10 @@ static BOOL IsJailbroken(void) {
 
 @implementation DWHomeModel
 
-@synthesize balanceDisplayOptions = _balanceDisplayOptions;
 @synthesize displayMode = _displayMode;
 @synthesize payModel = _payModel;
 @synthesize receiveModel = _receiveModel;
 @synthesize dashPayModel = _dashPayModel;
-@synthesize shortcutsModel = _shortcutsModel;
-@synthesize syncModel = _syncModel;
 @synthesize updatesObserver = _updatesObserver;
 @synthesize allDataSource = _allDataSource;
 @synthesize allowedToShowReclassifyYourTransactions = _allowedToShowReclassifyYourTransactions;
@@ -99,10 +78,13 @@ static BOOL IsJailbroken(void) {
             [_reachability startMonitoring];
         }
 
+        _syncMonitor = SyncingActivityMonitor.shared;
+        [_syncMonitor addObserver:self];
+
+        
         _dataProvider = [[DWTransactionListDataProvider alloc] init];
 
-        _syncModel = [[DWSyncModel alloc] init];
-
+        
 #if DASHPAY_ENABLED
         _dashPayModel = [[DWDashPayModel alloc] init];
 #endif /* DASHPAY_ENABLED */
@@ -114,12 +96,7 @@ static BOOL IsJailbroken(void) {
         _receiveModel = [[DWReceiveModel alloc] init];
         [_receiveModel updateReceivingInfo];
 
-
-        _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
-
         _payModel = [[DWPayModel alloc] init];
-
-        _balanceDisplayOptions = [[DWBalanceDisplayOptions alloc] init];
 
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
@@ -137,10 +114,6 @@ static BOOL IsJailbroken(void) {
         [notificationCenter addObserver:self
                                selector:@selector(transactionManagerTransactionStatusDidChangeNotification)
                                    name:DSTransactionManagerTransactionStatusDidChangeNotification
-                                 object:nil];
-        [notificationCenter addObserver:self
-                               selector:@selector(syncStateChangedNotification)
-                                   name:DWSyncStateChangedNotification
                                  object:nil];
         [notificationCenter addObserver:self
                                selector:@selector(chainWalletsDidChangeNotification:)
@@ -169,6 +142,8 @@ static BOOL IsJailbroken(void) {
 }
 
 - (void)dealloc {
+    [_syncMonitor removeObserver:self];
+
     DSLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
@@ -197,10 +172,6 @@ static BOOL IsJailbroken(void) {
 - (BOOL)isAllowedToShowReclassifyYourTransactions {
     BOOL shouldDisplayReclassifyYourTransactionsFlow = [DWGlobalOptions sharedInstance].shouldDisplayReclassifyYourTransactionsFlow;
     return _allowedToShowReclassifyYourTransactions && shouldDisplayReclassifyYourTransactionsFlow;
-}
-
-- (BOOL)isJailbroken {
-    return IsJailbroken();
 }
 
 - (BOOL)isWalletEmpty {
@@ -245,10 +216,6 @@ static BOOL IsJailbroken(void) {
 
     // Show wallet backup reminder after 24h since balance has been changed
     return (secondsSinceBalanceChanged > DAY_TIME_INTERVAL);
-}
-
-- (void)reloadShortcuts {
-    [self.shortcutsModel reloadShortcuts];
 }
 
 - (void)registerForPushNotifications {
@@ -297,7 +264,7 @@ static BOOL IsJailbroken(void) {
                                                               if (needsCheck) {
                                                                   // Show backup reminder shortcut
                                                                   [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
-                                                                  [self reloadShortcuts];
+                                                                  [self.updatesObserver homeModelWantToReloadShortcuts:self];
                                                               }
                                                           }];
                        }];
@@ -305,17 +272,23 @@ static BOOL IsJailbroken(void) {
     return YES;
 }
 
-- (void)forceStartSyncingActivity {
-    DWSyncModel *syncModel = (DWSyncModel *)self.syncModel;
-    NSAssert([syncModel isKindOfClass:DWSyncModel.class], @"Internal inconsistency");
-    [syncModel forceStartSyncingActivity];
-}
-
 - (void)walletDidWipe {
 #if DASHPAY_ENABLED
     self.dashPayModel = [[DWDashPayModel alloc] init];
 #endif /* DASHPAY_ENABLED */
 }
+
+- (void)checkCrowdNodeState {
+    if (SyncingActivityMonitor.shared.state == SyncingActivityMonitorStateSyncDone) {
+        [CrowdNodeObjcWrapper restoreState];
+
+        if ([CrowdNodeObjcWrapper isInterrupted]) {
+            // Continue signup
+            [CrowdNodeObjcWrapper continueInterrupted];
+        }
+    }
+}
+
 
 #pragma mark - DWShortcutsModelDataSource
 
@@ -343,14 +316,14 @@ static BOOL IsJailbroken(void) {
     BOOL canRegisterUsername = YES;
     const uint64_t balanceValue = wallet.balance;
     BOOL isEnoughBalance = balanceValue >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME;
-    BOOL isSynced = self.syncModel.state == DWSyncModelState_SyncDone;
+    BOOL isSynced = [SyncingActivityMonitor shared].state == SyncingActivityMonitorStateSyncDone;
     return canRegisterUsername && isSynced && isEnoughBalance;
 }
 
 #pragma mark - Notifications
 
 - (void)reachabilityDidChangeNotification {
-    [self reloadShortcuts];
+    [self.updatesObserver homeModelWantToReloadShortcuts:self];
 
     if (self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable &&
         [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
@@ -370,27 +343,12 @@ static BOOL IsJailbroken(void) {
 
 - (void)applicationWillEnterForegroundNotification {
     [self startSyncIfNeeded];
-    [self.balanceDisplayOptions hideBalanceIfNeeded];
 }
 
 - (void)fiatCurrencyDidChangeNotification {
     [self updateBalance];
     [self reloadTxDataSource];
-}
-
-- (void)syncStateChangedNotification {
-    BOOL isSynced = self.syncModel.state == DWSyncModelState_SyncDone;
-    if (isSynced) {
-        [self.dashPayModel updateUsernameStatus];
-
-        if (self.dashPayModel.username != nil) {
-            [self.receiveModel updateReceivingInfo];
-            [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
-        }
-    }
-
-    [self updateBalance];
-    [self reloadTxDataSource];
+    [self.updatesObserver homeModelDidChangeInnerModels:self];
 }
 
 - (void)chainWalletsDidChangeNotification:(NSNotification *)notification {
@@ -541,26 +499,7 @@ static BOOL IsJailbroken(void) {
 
 - (void)updateBalance {
     [self.receiveModel updateReceivingInfo];
-
-    uint64_t balanceValue = [DWEnvironment sharedInstance].currentWallet.balance;
-    if (self.balanceModel &&
-        balanceValue > self.balanceModel.value &&
-        self.balanceModel.value > 0 &&
-        [UIApplication sharedApplication].applicationState != UIApplicationStateBackground &&
-        self.syncModel.progress > 0.995) {
-        [[UIDevice currentDevice] dw_playCoinSound];
-    }
-
-    self.balanceModel = [[DWBalanceModel alloc] initWith:balanceValue];
-
-    DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
-    if (balanceValue > 0 && options.walletNeedsBackup && !options.balanceChangedDate) {
-        options.balanceChangedDate = [NSDate date];
-    }
-
-    options.userHasBalance = balanceValue > 0;
-
-    [self reloadShortcuts];
+    [self.updatesObserver homeModelWantToReloadShortcuts:self];
 }
 
 - (NSArray<DSTransaction *> *)filterTransactions:(NSArray<DSTransaction *> *)allTransactions
@@ -589,16 +528,26 @@ static BOOL IsJailbroken(void) {
     return [mutableTransactions copy];
 }
 
-- (NSString *)supplementaryAmountString {
-    return [self.balanceModel fiatAmountString];
-}
+#pragma mark SyncingActivityMonitorObserver
 
-- (NSString *)mainAmountString {
-    return [self.balanceModel mainAmountString];
-}
+- (void)syncingActivityMonitorProgressDidChange:(double)progress {}
 
-- (BOOL)isBalanceHidden {
-    return self.balanceDisplayOptions.balanceHidden;
+- (void)syncingActivityMonitorStateDidChangeWithPreviousState:(enum SyncingActivityMonitorState)previousState state:(enum SyncingActivityMonitorState)state {
+    BOOL isSynced = state == SyncingActivityMonitorStateSyncDone;
+    
+    if (isSynced) {
+        [self.dashPayModel updateUsernameStatus];
+
+        if (self.dashPayModel.username != nil) {
+            [self.receiveModel updateReceivingInfo];
+            [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
+        }
+        
+        [self checkCrowdNodeState];
+    }
+
+    [self updateBalance];
+    [self reloadTxDataSource];
 }
 
 @end

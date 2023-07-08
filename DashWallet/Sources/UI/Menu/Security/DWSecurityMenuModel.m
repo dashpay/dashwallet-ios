@@ -21,7 +21,6 @@
 #import <DashSync/DashSync.h>
 
 #import "DWAdvancedSecurityModel.h"
-#import "DWBalanceDisplayOptionsProtocol.h"
 #import "DWBiometricAuthModel.h"
 #import "DWGlobalOptions.h"
 
@@ -53,17 +52,15 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWSecurityMenuModel ()
 
 @property (assign, nonatomic) BOOL biometricsEnabled;
-@property (readonly, strong, nonatomic) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
 @property (readonly, nonatomic, strong) DWBiometricAuthModel *biometricAuthModel;
 
 @end
 
 @implementation DWSecurityMenuModel
 
-- (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions {
+- (instancetype)init {
     self = [super init];
     if (self) {
-        _balanceDisplayOptions = balanceDisplayOptions;
 
         _biometricAuthModel = [[DWBiometricAuthModel alloc] init];
 
@@ -91,7 +88,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setBalanceHidden:(BOOL)balanceHidden {
     [DWGlobalOptions sharedInstance].balanceHidden = balanceHidden;
-    self.balanceDisplayOptions.balanceHidden = balanceHidden;
 }
 
 - (void)changePinContinueBlock:(void (^)(BOOL allowed))continueBlock {

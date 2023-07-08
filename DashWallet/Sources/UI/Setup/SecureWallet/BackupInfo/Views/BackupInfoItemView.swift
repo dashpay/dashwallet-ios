@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -21,10 +21,10 @@ final class BackupInfoItemView: UIView {
     @IBOutlet var iconView: UIImageView!
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var descriptionLabel: UILabel!
-    
+
     override func awakeFromNib() {
         super.awakeFromNib()
-        
+
         titleLabel.font = .dw_font(forTextStyle: .subheadline).withWeight(UIFont.Weight.semibold.rawValue)
     }
 }

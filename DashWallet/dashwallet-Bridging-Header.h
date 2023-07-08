@@ -26,42 +26,19 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: DashWallet
 #import "DWActionButton.h"
-#import "DWDPBasicUserItem.h"
 #import "DWEnvironment.h"
 #import "DWTitleDetailCellModel.h"
 #import "DWTitleDetailItem.h"
 #import "DWGlobalOptions.h"
-#import "DWDPUserObject.h"
 #import "DWUIKit.h"
 #import "DWAboutModel.h"
 #import "DWDateFormatter.h"
-#import "DWDPRegistrationStatus.h"
-#import "DWDPRegistrationErrorTableViewCell.h"
-#import "DWDPRegistrationDoneTableViewCell.h"
-#import "DWDPRegistrationStatusTableViewCell.h"
-#import "DWDPRegistrationErrorRetryDelegate.h"
-
-//MARK: CrowdNode
-#import "DWCheckbox.h"
-#import "DWPreviewSeedPhraseModel.h"
-#import "DWSeedPhraseModel.h"
-#import "DWSecureWalletDelegate.h"
-#import "UIImage+Utils.h"
-#import "NSData+Dash.h"
-// end CrowdNode
-
-
 #import "DWBaseActionButtonViewController.h"
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
 #import "DWInputValidator.h"
 #import "DWAmountInputValidator.h"
-#import "DWPaymentProcessor.h"
 #import "DWConfirmSendPaymentViewController.h"
-#import "DWPaymentOutput.h"
-#import "DWPaymentInput.h"
-#import "DWPaymentInputBuilder.h"
 #import "DWLocalCurrencyViewController.h"
-#import "DWPayModelProtocol.h"
 #import "DWDemoDelegate.h"
 #import "DWModalPopupTransition.h"
 #import "DWModalTransition.h"
@@ -75,7 +52,9 @@ static const bool _SNAPSHOT = 0;
 #import "CALayer+DWShadow.h"
 #import "DSTransaction+DashWallet.h"
 #import "DWAlertController.h"
-
+#import "DWHomeProtocol.h"
+#import "DWDPRegistrationErrorRetryDelegate.h"
+#import "UIDevice+DashWallet.h"
 
 //MARK: Backup Wallet
 #import "DWBackupSeedPhraseViewController.h"
@@ -90,11 +69,13 @@ static const bool _SNAPSHOT = 0;
 #import "DWTransactionListDataProviderProtocol.h"
 #import "DWQuickReceiveViewController.h"
 #import "DWQRScanViewController.h"
-#import "DWQRScanModel.h"
 #import "DWRequestAmountViewController.h"
 #import "UIViewController+DWShareReceiveInfo.h"
 #import "DWImportWalletInfoViewController.h"
-
+#import "DWPaymentProcessor.h"
+#import "DWPaymentOutput.h"
+#import "DWPaymentInput.h"
+#import "DWPaymentInputBuilder.h"
 
 //MARK: Uphold
 #import "DWUpholdTransactionObject.h"
@@ -111,5 +92,28 @@ static const bool _SNAPSHOT = 0;
 #import <SDWebImage/SDWebImage.h>
 #import "DWPhoneWCSessionManager.h"
 
-//MARK: Platform
+//MARK: DashPay
 #import "DWDPBasicUserItem.h"
+#import "DWDPAvatarView.h"
+#import "DWDPRegistrationStatus.h"
+#import "DWDPRegistrationErrorTableViewCell.h"
+#import "DWDPRegistrationDoneTableViewCell.h"
+#import "DWDPRegistrationStatusTableViewCell.h"
+#import "DWDPRegistrationErrorRetryDelegate.h"
+#import "DWDPUserObject.h"
+#import "DWModalUserProfileViewController.h"
+
+//MARK: CrowdNode
+#import "DWCheckbox.h"
+#import "DWPreviewSeedPhraseModel.h"
+#import "DWSeedPhraseModel.h"
+#import "UIImage+Utils.h"
+#import "NSData+Dash.h"
+
+//MARK: Tabbar
+#import "DWHomeViewController.h"
+#import "DWMainMenuViewController.h"
+#import "DWWipeDelegate.h"
+#import "DWPayModel.h"
+#import "DWHomeViewControllerDelegate.h"
+#import "DWMainMenuViewControllerDelegate.h"

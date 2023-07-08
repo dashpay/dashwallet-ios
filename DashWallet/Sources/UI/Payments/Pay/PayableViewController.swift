@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -17,6 +17,8 @@
 
 import Foundation
 
+// MARK: - PayableViewController
+
 protocol PayableViewController: DWQRScanModelDelegate {
     var payModel: DWPayModelProtocol! { get }
     var paymentController: PaymentController! { get }
@@ -24,7 +26,7 @@ protocol PayableViewController: DWQRScanModelDelegate {
 
 extension PayableViewController where Self: UIViewController {
     func payToAddressAction() {
-        guard let payModel = payModel else { return }
+        guard let payModel else { return }
 
         payModel.payToAddress { [weak self] success in
             guard let strongSelf = self else { return }
@@ -42,34 +44,32 @@ extension PayableViewController where Self: UIViewController {
             }
         }
     }
-    
+
     func performScanQRCodeAction(delegate: DWQRScanModelDelegate) {
         if let vc = presentedViewController, vc is DWQRScanViewController {
             return;
         }
-        
+
         let controller = DWQRScanViewController()
         controller.model.delegate = delegate
         present(controller, animated: true, completion: nil)
     }
-    
+
     func performNFCReadingAction() {
         payModel?.performNFCReading(completion: { [weak self] paymentInput in
             guard let strongSelf = self else { return }
             strongSelf.processPaymentInput(paymentInput)
         })
     }
-    
+
     func performPayToPasteboardAction() {
         guard let paymentInput = payModel?.pasteboardPaymentInput else { return }
         processPaymentInput(paymentInput)
     }
-    
+
     func processPaymentInput(_ input: DWPaymentInput) {
         paymentController.performPayment(with: input)
     }
 }
 
-extension PayableViewController where Self: UIViewController {
-    
-}
+extension PayableViewController where Self: UIViewController { }

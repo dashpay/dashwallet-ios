@@ -17,25 +17,21 @@
 
 #import "DWHomeModelStub.h"
 
-#import "DWBalanceDisplayOptionsStub.h"
 #import "DWDashPayModel.h"
 #import "DWEnvironment.h"
 #import "DWPayModelStub.h"
 #import "DWReceiveModelStub.h"
-#import "DWSyncModelStub.h"
 #import "DWTransactionListDataProviderStub.h"
 #import "DWTransactionStub.h"
 #import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeModelStub () <DWShortcutsModelDataSource, DWBalanceViewDataSource>
+@interface DWHomeModelStub () <DWBalanceViewDataSource>
 
 @property (readonly, nonatomic, copy) NSArray<DWTransactionStub *> *stubTxs;
 
 @property (readonly, nonatomic, strong) DWTransactionListDataProviderStub *dataProvider;
-
-@property (nullable, nonatomic, strong) DWBalanceModel *balanceModel;
 
 @property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
 
@@ -43,13 +39,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWHomeModelStub
 
-@synthesize balanceDisplayOptions = _balanceDisplayOptions;
 @synthesize displayMode = _displayMode;
 @synthesize payModel = _payModel;
 @synthesize receiveModel = _receiveModel;
 @synthesize dashPayModel = _dashPayModel;
-@synthesize shortcutsModel = _shortcutsModel;
-@synthesize syncModel = _syncModel;
 @synthesize updatesObserver = _updatesObserver;
 @synthesize allDataSource = _allDataSource;
 @synthesize allowedToShowReclassifyYourTransactions = _allowedToShowReclassifyYourTransactions;
@@ -57,7 +50,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _syncModel = [[DWSyncModelStub alloc] init];
         _dataProvider = [[DWTransactionListDataProviderStub alloc] init];
 
         _stubTxs = [DWTransactionStub stubs];
@@ -66,9 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if DASHPAY_ENABLED
         _dashPayModel = [[DWDashPayModel alloc] init]; // TODO: DP consider using stub
 #endif                                                 /* DASHPAY_ENABLED */
-        _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
         _payModel = [[DWPayModelStub alloc] init];
-        _balanceDisplayOptions = [[DWBalanceDisplayOptionsStub alloc] init];
         _allowedToShowReclassifyYourTransactions = NO;
 
         [self updateBalance];
@@ -108,19 +98,14 @@ NS_ASSUME_NONNULL_BEGIN
     return NO;
 }
 
-- (BOOL)isJailbroken {
-    return NO;
-}
-
 - (BOOL)isWalletEmpty {
     return NO;
 }
 
-- (void)reloadShortcuts {
-    [self.shortcutsModel reloadShortcuts];
+- (void)retrySyncing {
 }
 
-- (void)retrySyncing {
+- (void)checkCrowdNodeState {
 }
 
 - (void)registerForPushNotifications {
@@ -155,7 +140,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)updateBalance {
-    self.balanceModel = [[DWBalanceModel alloc] initWith:42 * DUFFS];
 }
 
 - (void)reloadTxDataSource {
@@ -163,18 +147,6 @@ NS_ASSUME_NONNULL_BEGIN
                                                                 registrationStatus:[self.dashPayModel registrationStatus]];
 
     [self.updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:NO];
-}
-
-- (NSString *)supplementaryAmountString {
-    return [self.balanceModel fiatAmountString];
-}
-
-- (NSString *)mainAmountString {
-    return [self.balanceModel mainAmountString];
-}
-
-- (BOOL)isBalanceHidden {
-    return self.balanceDisplayOptions.balanceHidden;
 }
 
 @end
