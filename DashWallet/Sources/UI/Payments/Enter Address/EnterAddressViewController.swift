@@ -22,11 +22,11 @@ import UIKit
 @objc(DWEnterAddressViewController)
 final class EnterAddressViewController: BaseViewController, PayableViewController {
     private var addressField: DashInputField!
-    private var showPasteboardContentButton: UIButton!
+    private var showPasteboardContentButton: DashButton!
     private var pasteboardContentView: PasteboardContentView!
 
     private var scrollView: UIScrollView!
-    private var continueButton: UIButton!
+    private var continueButton: ActionButton!
 
     private var model = EnterAddressModel()
     var payModel: DWPayModelProtocol! { model }
@@ -106,8 +106,9 @@ extension EnterAddressViewController {
         addressField.translatesAutoresizingMaskIntoConstraints = false
         stackView.addArrangedSubview(addressField)
 
-        showPasteboardContentButton = TintedButton(title: NSLocalizedString("Show content in the clipboard", comment: "Enter Address Screen"),
-                                                   font: .dw_font(forTextStyle: .subheadline))
+        showPasteboardContentButton = TintedButton()
+        showPasteboardContentButton.titleLabelFont = UIFont.dw_font(forTextStyle: .footnote)
+        showPasteboardContentButton.setTitle(NSLocalizedString("Show content in the clipboard", comment: "Enter Address Screen"), for: .normal)
         showPasteboardContentButton.translatesAutoresizingMaskIntoConstraints = false
         showPasteboardContentButton.addAction(.touchUpInside) { [weak self] _ in
             self?.showPasteboardContentIfNeeded()
@@ -123,9 +124,9 @@ extension EnterAddressViewController {
 
         stackView.addArrangedSubview(pasteboardContentView)
 
-        continueButton = DWActionButton(frame: .zero)
-        continueButton.translatesAutoresizingMaskIntoConstraints = false
+        continueButton = ActionButton()
         continueButton.setTitle(NSLocalizedString("Continue", comment: "Continue"), for: .normal)
+        continueButton.translatesAutoresizingMaskIntoConstraints = false
         continueButton.addAction(.touchUpInside) { [weak self] _ in
             self?.continueButtonAction()
         }
