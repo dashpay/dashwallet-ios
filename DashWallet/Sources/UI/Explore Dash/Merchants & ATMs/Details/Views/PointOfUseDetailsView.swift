@@ -240,7 +240,7 @@ extension PointOfUseDetailsView {
     private func actionButton(title: String, icon: String, action: Selector) -> UIButton {
         let largeConfig = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular, scale: .default)
 
-        let button = VerticalButton(frame: .zero)
+        let button = VerticalButton()
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitle(title, for: .normal)
         button.setImage(UIImage(systemName: icon, withConfiguration: largeConfig), for: .normal)
@@ -250,7 +250,7 @@ extension PointOfUseDetailsView {
 
     @objc
     internal func configureBottomButton() {
-        let payButton = DWActionButton()
+        let payButton = ActionButton()
         payButton.translatesAutoresizingMaskIntoConstraints = false
         payButton.addTarget(self, action: #selector(payAction), for: .touchUpInside)
         payButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
@@ -282,62 +282,18 @@ extension PointOfUseDetailsView {
 
 // MARK: - VerticalButton
 
-class VerticalButton: DWTintedButton {
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+final class VerticalButton: DashButton {
+    init() {
+        var configuration = UIButton.Configuration.tinted
+        configuration.imagePlacement = .top
+        configuration.titleAlignment = .center
+        configuration.imagePadding = 3
+        super.init(configuration: configuration)
 
-        imageView?.contentMode = .scaleAspectFit;
-        titleLabel?.font = .dw_mediumFont(ofSize: 11)
-
-        layer.cornerRadius = 9
-        centerVertically(padding: 3)
+        titleLabelFont = .dw_mediumFont(ofSize: 11)
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    override func resetAppearance() {
-        super.resetAppearance()
-
-        imageView?.contentMode = .scaleAspectFit;
-        titleLabel?.font = .dw_mediumFont(ofSize: 11)
-
-        layer.cornerRadius = 9
-        centerVertically(padding: 3)
-    }
-
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        contentHorizontalAlignment = .left
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        centerVertically(padding: 3)
-    }
-}
-
-extension UIButton {
-    func centerVertically(padding: CGFloat = 6.0) {
-        guard let imageViewSize = imageView?.frame.size,
-              let titleLabelSize = titleLabel?.frame.size else {
-            return
-        }
-
-        imageEdgeInsets = UIEdgeInsets(top: 0.0,
-                                       left: 0.0,
-                                       bottom: 20.0,
-                                       right: -titleLabelSize.width)
-
-        titleEdgeInsets = UIEdgeInsets(top: 14.0,
-                                       left: -imageViewSize.width,
-                                       bottom: -5.0,
-                                       right: 0.0)
-
-        contentEdgeInsets = UIEdgeInsets(top: 0.0,
-                                         left: 0.0,
-                                         bottom: -7.0,
-                                         right: 0.0)
     }
 }

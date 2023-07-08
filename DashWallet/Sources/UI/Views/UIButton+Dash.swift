@@ -59,6 +59,7 @@ extension UIButton.Configuration {
 
     public static func configuration(from configuration: UIButton.Configuration, with title: String?, and font: UIFont?) -> UIButton.Configuration {
         var style = configuration
+        style.imagePadding = 10
 
         var background = style.background
         background.cornerRadius = 6
@@ -100,7 +101,7 @@ extension UIButton.Configuration {
 
         var attributes = AttributeContainer()
         attributes.foregroundColor = configuration.baseForegroundColor
-        attributes.font = font ?? .dw_font(forTextStyle: .body)
+        attributes.font = font
 
         let attributedString = AttributedString(configuration.title ?? "", attributes: attributes)
         configuration.attributedTitle = attributedString
@@ -111,9 +112,9 @@ extension UIButton.Configuration {
 
 // MARK: - TintedButton
 
-final class TintedButton: DashButton {
+class TintedButton: DashButton {
     init() {
-        super.init(configuration: .tinted())
+        super.init(configuration: .tinted)
     }
 
     required init?(coder: NSCoder) {
@@ -190,7 +191,9 @@ class ActionButton: DashButton {
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
+
+        configuration = .action()
     }
 
     private var activityIndicatorView: ActivityIndicatorView!
@@ -308,7 +311,17 @@ class DashButton: UIButton {
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
+
+        configuration = .dashPlain()
+
+        // Dynamic type support
+        titleLabel?.adjustsFontForContentSizeCategory = true
+        titleLabel?.adjustsFontSizeToFitWidth = true
+        titleLabel?.minimumScaleFactor = 0.5
+        titleLabel?.lineBreakMode = .byClipping
+
+        NotificationCenter.default.addObserver(self, selector: #selector(setNeedsLayout), name: UIContentSizeCategory.didChangeNotification, object: nil)
     }
 
     override func updateConfiguration() {

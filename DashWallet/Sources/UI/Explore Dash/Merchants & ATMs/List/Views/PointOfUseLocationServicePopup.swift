@@ -93,7 +93,7 @@ class PointOfUseLocationServicePopup: UIView {
         label.font = UIFont.dw_font(forTextStyle: UIFont.TextStyle.footnote)
         label.text = details
         textStackView.addArrangedSubview(label)
-        let continueButton = DWActionButton()
+        let continueButton = ActionButton()
         continueButton.translatesAutoresizingMaskIntoConstraints = false
         continueButton.setTitle(NSLocalizedString("Continue", comment: ""), for: .normal)
         continueButton.addTarget(self, action: #selector(continueButtonAction), for: .touchUpInside)
