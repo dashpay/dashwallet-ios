@@ -105,13 +105,13 @@
                                     <constraint firstItem="TJj-fr-ZH9" firstAttribute="top" secondItem="g2S-Xe-WLc" secondAttribute="bottom" constant="32" id="sQS-9t-tTT"/>
                                 </constraints>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fmf-gf-ZKx" customClass="DWActionButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fmf-gf-ZKx" customClass="DWActionButton2">
                                 <rect key="frame" x="22" y="738" width="349" height="50"/>
-                                <color key="backgroundColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="50" id="Ifs-Hw-QAz"/>
                                 </constraints>
                                 <state key="normal" title="Link Uphold Account"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Link Uphold Account"/>
                                 <attributedString key="userComments">
                                     <fragment content="#bc-ignore!"/>
                                 </attributedString>

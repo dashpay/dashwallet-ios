@@ -69,12 +69,12 @@ extension UIButton.Configuration {
         if let font {
             var attributes = AttributeContainer()
             attributes.foregroundColor = style.baseForegroundColor
-            attributes.font = font ?? .dw_font(forTextStyle: .body)
+            attributes.font = font
 
             let attributedString = AttributedString(title ?? "", attributes: attributes)
 
             style.attributedTitle = attributedString
-        } else {
+        } else if let title {
             style.title = title
         }
 
@@ -115,10 +115,57 @@ extension UIButton.Configuration {
 class TintedButton: DashButton {
     init() {
         super.init(configuration: .tinted)
+
+        tintColor = .dw_dashBlue()
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
+    }
+
+    override func updateConfiguration() {
+        super.updateConfiguration()
+
+        guard let configuration else {
+            return
+        }
+
+        var updatedConfiguration = configuration
+
+        var background = configuration.background
+
+        var foregroundColor: UIColor?
+        var backgroundColor: UIColor?
+
+        switch state {
+        case .normal:
+            backgroundColor = tintColor.withAlphaComponent(0.08)
+            foregroundColor = tintColor
+        case .highlighted:
+            backgroundColor = tintColor.withAlphaComponent(0.06)
+            foregroundColor = tintColor.withAlphaComponent(0.9)
+        case .disabled:
+            backgroundColor = .dw_disabledButton()
+            foregroundColor = .dw_disabledButtonText()
+        default:
+            backgroundColor = tintColor.withAlphaComponent(0.08)
+            foregroundColor = tintColor
+        }
+
+        background.backgroundColorTransformer = UIConfigurationColorTransformer { _ in
+            backgroundColor ?? .clear
+        }
+
+        updatedConfiguration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+
+            var container = incoming
+            container.foregroundColor = foregroundColor
+
+            return container
+        }
+
+        updatedConfiguration.background = background
+        self.configuration = updatedConfiguration
     }
 }
 
@@ -138,7 +185,7 @@ final class ImageButton: UIButton {
 
 // MARK: - ActionButton
 
-// @objc(DWActionButton)
+@objc(DWActionButton2)
 class ActionButton: DashButton {
     final class ActivityIndicatorView: UIView {
         var color: UIColor {
@@ -186,6 +233,7 @@ class ActionButton: DashButton {
         }
     }
 
+    @objc
     init() {
         super.init(configuration: .action())
     }
@@ -300,20 +348,20 @@ class DashButton: UIButton {
         super.init(frame: .zero)
 
         self.configuration = configuration
-
-        // Dynamic type support
-        titleLabel?.adjustsFontForContentSizeCategory = true
-        titleLabel?.adjustsFontSizeToFitWidth = true
-        titleLabel?.minimumScaleFactor = 0.5
-        titleLabel?.lineBreakMode = .byClipping
-
-        NotificationCenter.default.addObserver(self, selector: #selector(setNeedsLayout), name: UIContentSizeCategory.didChangeNotification, object: nil)
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
 
-        configuration = .dashPlain()
+        if let configuration {
+            self.configuration = UIButton.Configuration.configuration(from: configuration, with: nil, and: nil)
+        } else {
+            configuration = .dashPlain()
+        }
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
 
         // Dynamic type support
         titleLabel?.adjustsFontForContentSizeCategory = true
