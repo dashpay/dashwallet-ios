@@ -24,8 +24,8 @@ class OrderPreviewViewController: BaseViewController, NetworkReachabilityHandlin
     internal var reachabilityObserver: Any!
 
     internal var tableView: UITableView!
-    internal var actionButton: DWActionButton!
-    internal var retryButton: DWTintedButton!
+    internal var actionButton: ActionButton!
+    internal var retryButton: TintedButton!
     internal var networkUnavailableView: UIView!
     internal var buttonsStackView: UIStackView!
 
@@ -86,7 +86,7 @@ class OrderPreviewViewController: BaseViewController, NetworkReachabilityHandlin
 
     @objc
     func retryAction() {
-        retryButton.showActivityIndicator()
+        // retryButton.showActivityIndicator()
         retryButton.isEnabled = false
         model.retry()
     }
@@ -162,7 +162,7 @@ extension OrderPreviewViewController {
 
         model.orderChangeHandle = { [weak self] in
             self?.tableView.reloadData()
-            self?.retryButton.hideActivityIndicator()
+            // self?.retryButton.hideActivityIndicator()
             self?.retryButton.isEnabled = true
             self?.startCounting()
         }
@@ -206,14 +206,14 @@ extension OrderPreviewViewController {
         cancelButton.addTarget(self, action: #selector(cancelAction), for: .touchUpInside)
         buttonsStackView.addArrangedSubview(cancelButton)
 
-        actionButton = DWActionButton(frame: .zero)
+        actionButton = ActionButton()
         actionButton.translatesAutoresizingMaskIntoConstraints = false
         actionButton.setTitle(NSLocalizedString("Confirm (%@)", comment: "Coinbase/Buy Dash/Confirm Order"), for: .normal)
         actionButton.addTarget(self, action: #selector(confirmAction), for: .touchUpInside)
         actionButton.isHidden = true
         buttonsStackView.addArrangedSubview(actionButton)
 
-        retryButton = DWTintedButton(frame: .zero)
+        retryButton = TintedButton()
         retryButton.translatesAutoresizingMaskIntoConstraints = false
         retryButton.addTarget(self, action: #selector(retryAction), for: .touchUpInside)
         retryButton.setImage(UIImage(systemName: "arrow.clockwise"), for: .normal)

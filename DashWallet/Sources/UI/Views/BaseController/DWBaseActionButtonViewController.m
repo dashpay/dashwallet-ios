@@ -19,7 +19,6 @@
 
 #import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
 
-#import "DWActionButton.h"
 #import "DWUIKit.h"
 #import "DevicesCompatibility.h"
 #import "dashwallet-Swift.h"
@@ -56,7 +55,7 @@ CGFloat DWBottomButtonHeight(void) {
 @property (nullable, nonatomic, strong) UIStackView *stackView;
 @property (nullable, nonatomic, strong) id<DWActionButtonProtocol> actionButton;
 
-@property (nullable, nonatomic, strong) DWActionButton *bottomActionButton;
+@property (nullable, nonatomic, strong) DWActionButton2 *bottomActionButton;
 @property (nullable, nonatomic, strong) UIBarButtonItem *barActionButton;
 
 @property (nullable, strong, nonatomic) NSLayoutConstraint *contentBottomConstraint;
@@ -117,8 +116,8 @@ CGFloat DWBottomButtonHeight(void) {
     NSString *actionButtonTitle = [self actionButtonTitle];
     NSString *actionButtonDisabledTitle = [self actionButtonDisabledTitle];
     if (![self.class isActionButtonInNavigationBar]) {
-        [(DWActionButton *)self.actionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
-        [(DWActionButton *)self.actionButton setTitle:actionButtonDisabledTitle forState:UIControlStateDisabled];
+        [(DWActionButton2 *)self.actionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
+        [(DWActionButton2 *)self.actionButton setTitle:actionButtonDisabledTitle forState:UIControlStateDisabled];
     }
 }
 
@@ -168,7 +167,7 @@ CGFloat DWBottomButtonHeight(void) {
 
     NSMutableArray<__kindof UIView *> *arrangedSubviews = [NSMutableArray array];
 
-    DWActionButton *bottomActionButton = nil;
+    DWActionButton2 *bottomActionButton = nil;
     if ([self.class showsActionButton]) {
         NSString *actionButtonTitle = [self actionButtonTitle];
         NSString *actionButtonDisabledTitle = [self actionButtonDisabledTitle];
@@ -185,7 +184,7 @@ CGFloat DWBottomButtonHeight(void) {
             self.barActionButton = barButtonItem;
         }
         else {
-            bottomActionButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
+            bottomActionButton = [[DWActionButton2 alloc] init];
             bottomActionButton.translatesAutoresizingMaskIntoConstraints = NO;
             [bottomActionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
             [bottomActionButton setTitle:actionButtonDisabledTitle forState:UIControlStateDisabled];

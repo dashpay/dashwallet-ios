@@ -17,7 +17,7 @@
 
 #import "DWAdvancedSecurityViewController.h"
 
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWAdvancedSecurityModel.h"
 #import "DWFormTableViewController.h"
 #import "DWSecurityStatusView.h"
@@ -237,9 +237,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.securityStatusView = securityStatusView;
 
     // button width will be adjusted in viewDidLayoutSubviews
-    DWActionButton *resetButton = [[DWActionButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 320.0, 54.0)];
-    resetButton.usedOnDarkBackground = NO;
-    resetButton.inverted = YES;
+    DashButton *resetButton = [[DashButton alloc] init];
     [resetButton setTitle:NSLocalizedString(@"Reset to Default", nil) forState:UIControlStateNormal];
     [resetButton addTarget:self action:@selector(resetButtonAction) forControlEvents:UIControlEventTouchUpInside];
     formController.tableView.tableFooterView = resetButton;

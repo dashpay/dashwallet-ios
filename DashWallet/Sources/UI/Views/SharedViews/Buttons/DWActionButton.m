@@ -261,27 +261,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@implementation DWTintedButton
-
-- (void)resetAppearance {
-    [super resetAppearance];
-}
-
-- (UIColor *)_backgroundColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
-    return [self.accentColor colorWithAlphaComponent:0.1f];
-}
-
-- (UIColor *)_textColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
-    return self.accentColor;
-}
-
-- (UIColor *)_borderColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
-    return [self.accentColor colorWithAlphaComponent:0.1f];
-}
-
-- (CGFloat)_borderWidthForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
-    return 0.0;
-}
-
-@end
 NS_ASSUME_NONNULL_END

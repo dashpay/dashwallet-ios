@@ -64,7 +64,7 @@ final class SyncingHeaderView: UITableViewHeaderFooterView {
         titleLabel.setContentHuggingPriority(.defaultHigh + 1, for: .horizontal)
         addSubview(titleLabel)
 
-        syncingButton = DWButton()
+        syncingButton = DashButton()
         syncingButton.translatesAutoresizingMaskIntoConstraints = false
         syncingButton.contentHorizontalAlignment = .right
         syncingButton.setTitleColor(UIColor.dw_darkTitle(), for: .normal)

@@ -17,7 +17,7 @@
 
 #import "DWUserProfileContactActionsCell.h"
 
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWUIKit.h"
 #import "DWUserProfileModel.h"
 
@@ -61,17 +61,15 @@ NS_ASSUME_NONNULL_END
         [contentView addSubview:titleLabel];
         _titleLabel = titleLabel;
 
-        DWActionButton *mainButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
+        DWActionButton2 *mainButton = [[DWActionButton2 alloc] init];
         mainButton.translatesAutoresizingMaskIntoConstraints = NO;
-        mainButton.accentColor = [UIColor dw_greenColor];
-        mainButton.small = YES;
+        mainButton.tintColor = [UIColor dw_greenColor];
         [mainButton addTarget:self action:@selector(mainButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         _mainButton = mainButton;
 
-        DWActionButton *secondaryButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
+        DWActionButton2 *secondaryButton = [[DWActionButton2 alloc] init];
         secondaryButton.translatesAutoresizingMaskIntoConstraints = NO;
-        secondaryButton.accentColor = [UIColor dw_quaternaryTextColor];
-        secondaryButton.small = YES;
+        secondaryButton.tintColor = [UIColor dw_quaternaryTextColor];
         [mainButton addTarget:self action:@selector(secondaryButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         _secondaryButton = secondaryButton;
 

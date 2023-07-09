@@ -288,9 +288,9 @@ final class VerticalButton: DashButton {
         configuration.imagePlacement = .top
         configuration.titleAlignment = .center
         configuration.imagePadding = 3
-        super.init(configuration: configuration)
+        configuration.buttonSize = .small
 
-        titleLabelFont = .dw_mediumFont(ofSize: 11)
+        super.init(configuration: configuration)
     }
 
     required init?(coder: NSCoder) {
