@@ -63,11 +63,12 @@ final class CrowdNodePortalController: UIViewController {
 
     @objc
     func infoButtonAction() {
-        if viewModel.signUpState == .linkedOnline {
-            present(OnlineAccountDetailsController.controller(), animated: true)
-        } else {
-            present(StakingInfoDialogController.controller(), animated: true)
-        }
+        present(WithdrawalConfirmationController.controller(amount: 100, currency: "USD"), animated: true)
+//        if viewModel.signUpState == .linkedOnline {
+//            present(OnlineAccountDetailsController.controller(), animated: true)
+//        } else {
+//            present(StakingInfoDialogController.controller(), animated: true)
+//        }
     }
 
     @IBAction

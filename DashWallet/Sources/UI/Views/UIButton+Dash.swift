@@ -241,7 +241,15 @@ class ActionButton: DashButton {
     required init?(coder: NSCoder) {
         super.init(coder: coder)
 
-        configuration = .action()
+        var actionConfiguration: UIButton.Configuration = .action()
+
+        if let configuration {
+            actionConfiguration.title = configuration.title
+            actionConfiguration.baseForegroundColor = configuration.baseForegroundColor
+            actionConfiguration.baseBackgroundColor = configuration.baseBackgroundColor
+        }
+
+        configuration = actionConfiguration
     }
 
     private var activityIndicatorView: ActivityIndicatorView!
@@ -363,13 +371,7 @@ class DashButton: UIButton {
     override init(frame: CGRect) {
         super.init(frame: frame)
 
-        // Dynamic type support
-        titleLabel?.adjustsFontForContentSizeCategory = true
-        titleLabel?.adjustsFontSizeToFitWidth = true
-        titleLabel?.minimumScaleFactor = 0.5
-        titleLabel?.lineBreakMode = .byClipping
-
-        NotificationCenter.default.addObserver(self, selector: #selector(setNeedsLayout), name: UIContentSizeCategory.didChangeNotification, object: nil)
+        configureButton()
     }
 
     override func updateConfiguration() {
@@ -387,6 +389,16 @@ class DashButton: UIButton {
             updatedConfiguration.attributedTitle = AttributedString(updatedConfiguration.title ?? "", attributes: attributes)
             self.configuration = updatedConfiguration
         }
+    }
+
+    private func configureButton() {
+        // Dynamic type support
+        titleLabel?.adjustsFontForContentSizeCategory = true
+        titleLabel?.adjustsFontSizeToFitWidth = true
+        titleLabel?.minimumScaleFactor = 0.5
+        titleLabel?.lineBreakMode = .byClipping
+
+        NotificationCenter.default.addObserver(self, selector: #selector(setNeedsLayout), name: UIContentSizeCategory.didChangeNotification, object: nil)
     }
 
     deinit {

@@ -2,6 +2,7 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_0" orientation="portrait" appearance="dark"/>
     <dependencies>
+        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
@@ -56,8 +57,8 @@
                                 <constraints>
                                     <constraint firstAttribute="height" constant="46" id="XCM-8z-ZOE"/>
                                 </constraints>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Create Account"/>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal" title="Create Account"/>
                                 <connections>
                                     <action selector="continueAction" destination="Y6W-OH-hqX" eventType="touchUpInside" id="M7h-fG-nBq"/>
                                 </connections>
@@ -375,33 +376,33 @@
                                     <constraint firstItem="Cbd-Ir-htv" firstAttribute="leading" secondItem="trq-ib-m1w" secondAttribute="leading" id="tMg-Rc-4Je"/>
                                 </constraints>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EhN-vc-U2C" customClass="DWActionButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pOX-4p-mjM" customClass="DWActionButton">
                                 <rect key="frame" x="20" y="744" width="350" height="46"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="46" id="zlI-YT-E1b"/>
+                                    <constraint firstAttribute="height" constant="46" id="Wl9-Bq-XTM"/>
                                 </constraints>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Continue"/>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal" title="Continue"/>
                                 <connections>
-                                    <action selector="continueAction" destination="xBw-OW-Vmo" eventType="touchUpInside" id="OYP-Bo-fNH"/>
+                                    <action selector="continueAction" destination="xBw-OW-Vmo" eventType="touchUpInside" id="1hs-Pn-fAD"/>
                                 </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="7hj-7p-jsx"/>
                         <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="EhN-vc-U2C" firstAttribute="leading" secondItem="7hj-7p-jsx" secondAttribute="leading" constant="20" id="1sK-xd-AQ0"/>
                             <constraint firstItem="trq-ib-m1w" firstAttribute="leading" secondItem="7hj-7p-jsx" secondAttribute="leading" constant="28" id="A4i-Il-jJv"/>
                             <constraint firstItem="7hj-7p-jsx" firstAttribute="trailing" secondItem="4LF-hx-9fT" secondAttribute="trailing" constant="40" id="AB7-Zc-r2x"/>
-                            <constraint firstItem="7hj-7p-jsx" firstAttribute="trailing" secondItem="EhN-vc-U2C" secondAttribute="trailing" constant="20" id="CXc-2f-tH6"/>
                             <constraint firstItem="trq-ib-m1w" firstAttribute="top" secondItem="w8U-Ls-3lS" secondAttribute="bottom" id="EXk-xv-8XT"/>
                             <constraint firstItem="g40-Eq-Qi9" firstAttribute="top" secondItem="7hj-7p-jsx" secondAttribute="top" constant="15" id="JtZ-sG-RAR"/>
                             <constraint firstItem="g40-Eq-Qi9" firstAttribute="centerX" secondItem="7hj-7p-jsx" secondAttribute="centerX" id="KrG-I0-kcV"/>
+                            <constraint firstItem="pOX-4p-mjM" firstAttribute="leading" secondItem="7hj-7p-jsx" secondAttribute="leading" constant="20" id="WUl-OA-tae"/>
                             <constraint firstItem="7hj-7p-jsx" firstAttribute="trailing" secondItem="trq-ib-m1w" secondAttribute="trailing" constant="20" id="afE-Qy-Ylb"/>
                             <constraint firstItem="w8U-Ls-3lS" firstAttribute="centerY" secondItem="7hj-7p-jsx" secondAttribute="centerY" constant="30" id="bsJ-8G-w8T"/>
+                            <constraint firstItem="7hj-7p-jsx" firstAttribute="trailing" secondItem="pOX-4p-mjM" secondAttribute="trailing" constant="20" id="gls-xg-bvb"/>
                             <constraint firstItem="7hj-7p-jsx" firstAttribute="leading" secondItem="w8U-Ls-3lS" secondAttribute="leading" constant="-28" id="jOO-nE-tY8"/>
-                            <constraint firstItem="7hj-7p-jsx" firstAttribute="bottom" secondItem="EhN-vc-U2C" secondAttribute="bottom" constant="20" id="jwM-PJ-zcR"/>
                             <constraint firstItem="w8U-Ls-3lS" firstAttribute="trailing" secondItem="7hj-7p-jsx" secondAttribute="trailing" constant="-20" id="lq9-kQ-A2R"/>
+                            <constraint firstItem="7hj-7p-jsx" firstAttribute="bottom" secondItem="pOX-4p-mjM" secondAttribute="bottom" constant="20" id="o1X-TE-hui"/>
                             <constraint firstItem="4LF-hx-9fT" firstAttribute="top" secondItem="g40-Eq-Qi9" secondAttribute="bottom" constant="30" id="tjv-4s-jsY"/>
                             <constraint firstItem="4LF-hx-9fT" firstAttribute="leading" secondItem="7hj-7p-jsx" secondAttribute="leading" constant="40" id="urc-dz-LWE"/>
                         </constraints>
@@ -2326,7 +2327,7 @@
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="OrY-98-FXg" userLabel="Buttons Stack">
                                 <rect key="frame" x="20" y="744" width="350" height="46"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XbJ-72-r6V">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XbJ-72-r6V" customClass="DashButton" customModule="dashwallet" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="167.66666666666666" height="46"/>
                                         <color key="backgroundColor" name="QuaternaryFillColor"/>
                                         <constraints>
