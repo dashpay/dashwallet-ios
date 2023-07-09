@@ -107,7 +107,7 @@
 
 - (UIButton *)actionButton {
     if (_actionButton == nil) {
-        DWActionButton2 *button = [[DWActionButton2 alloc] init];
+        DWActionButton *button = [[DWActionButton alloc] init];
         button.translatesAutoresizingMaskIntoConstraints = NO;
         [button setTitle:NSLocalizedString(@"Continue", nil) forState:UIControlStateNormal];
         [button addTarget:self action:@selector(actionButtonAction) forControlEvents:UIControlEventTouchUpInside];

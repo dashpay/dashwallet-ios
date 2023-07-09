@@ -185,7 +185,7 @@ final class ImageButton: UIButton {
 
 // MARK: - ActionButton
 
-@objc(DWActionButton2)
+@objc(DWActionButton)
 class ActionButton: DashButton {
     final class ActivityIndicatorView: UIView {
         var color: UIColor {

@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWUserProfileSendRequestCell ()
 
 @property (readonly, nonatomic, strong) UILabel *textLabel;
-@property (readonly, nonatomic, strong) DWActionButton2 *sendRequestButton;
+@property (readonly, nonatomic, strong) DWActionButton *sendRequestButton;
 @property (readonly, nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
 
 @property (nullable, nonatomic, strong) NSLayoutConstraint *contentWidthConstraint;

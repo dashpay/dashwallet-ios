@@ -2,7 +2,6 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="mfe-wo-u6J">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -107,7 +106,7 @@
                                     <action selector="pageValueChangedAction:" destination="mfe-wo-u6J" eventType="valueChanged" id="maf-Xk-VzB"/>
                                 </connections>
                             </pageControl>
-                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="39" translatesAutoresizingMaskIntoConstraints="NO" id="oul-q7-isF" userLabel="Finish Button" customClass="DWActionButton2">
+                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="39" translatesAutoresizingMaskIntoConstraints="NO" id="oul-q7-isF" userLabel="Finish Button" customClass="DWActionButton">
                                 <rect key="frame" x="96.666666666666686" y="779" width="200" height="39"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>

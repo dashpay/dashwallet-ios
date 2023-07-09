@@ -34,7 +34,7 @@ static CGFloat const BUTTON_HEIGHT = 40.0;
 @property (readonly, nonatomic, strong) UILabel *detailsLabel;
 @property (readonly, nonatomic, strong) UIView *bottomContentView;
 @property (readonly, nonatomic, strong) UILabel *pendingLabel;
-@property (readonly, nonatomic, strong) DWActionButton2 *actionButton;
+@property (readonly, nonatomic, strong) DWActionButton *actionButton;
 @property (readonly, nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
 
 @end
@@ -115,7 +115,7 @@ NS_ASSUME_NONNULL_END
         pendingStackView.axis = UILayoutConstraintAxisVertical;
         [bottomContentView addSubview:pendingStackView];
 
-        DWActionButton2 *actionButton = [[DWActionButton2 alloc] init];
+        DWActionButton *actionButton = [[DWActionButton alloc] init];
         actionButton.translatesAutoresizingMaskIntoConstraints = NO;
         [actionButton addTarget:self action:@selector(actionButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         [actionButton setTitle:NSLocalizedString(@"Pay", nil) forState:UIControlStateNormal];

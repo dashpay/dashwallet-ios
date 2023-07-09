@@ -53,13 +53,13 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)setup_contactRequestItemView {
-    DWActionButton2 *acceptButton = [[DWActionButton2 alloc] init];
+    DWActionButton *acceptButton = [[DWActionButton alloc] init];
     acceptButton.translatesAutoresizingMaskIntoConstraints = NO;
     [acceptButton setTitle:NSLocalizedString(@"Accept", nil) forState:UIControlStateNormal];
     [self.accessoryView addSubview:acceptButton];
     _acceptButton = acceptButton;
 
-    DWActionButton2 *declineButton = [[DWActionButton2 alloc] init];
+    DWActionButton *declineButton = [[DWActionButton alloc] init];
     declineButton.translatesAutoresizingMaskIntoConstraints = NO;
     declineButton.tintColor = [UIColor dw_declineButtonColor];
     [declineButton setImage:[UIImage imageNamed:@"icon_decline"] forState:UIControlStateNormal];

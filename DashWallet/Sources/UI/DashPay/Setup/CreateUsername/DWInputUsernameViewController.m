@@ -247,7 +247,7 @@ NS_ASSUME_NONNULL_END
 
 - (UIButton *)registerButton {
     if (_registerButton == nil) {
-        _registerButton = [[DWActionButton2 alloc] init];
+        _registerButton = [[DWActionButton alloc] init];
         _registerButton.translatesAutoresizingMaskIntoConstraints = NO;
         [_registerButton setTitle:NSLocalizedString(@"Register", @"Button title, Register (username)")
                          forState:UIControlStateNormal];

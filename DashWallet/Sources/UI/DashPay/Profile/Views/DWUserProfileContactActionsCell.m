@@ -61,13 +61,13 @@ NS_ASSUME_NONNULL_END
         [contentView addSubview:titleLabel];
         _titleLabel = titleLabel;
 
-        DWActionButton2 *mainButton = [[DWActionButton2 alloc] init];
+        DWActionButton *mainButton = [[DWActionButton alloc] init];
         mainButton.translatesAutoresizingMaskIntoConstraints = NO;
         mainButton.tintColor = [UIColor dw_greenColor];
         [mainButton addTarget:self action:@selector(mainButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         _mainButton = mainButton;
 
-        DWActionButton2 *secondaryButton = [[DWActionButton2 alloc] init];
+        DWActionButton *secondaryButton = [[DWActionButton alloc] init];
         secondaryButton.translatesAutoresizingMaskIntoConstraints = NO;
         secondaryButton.tintColor = [UIColor dw_quaternaryTextColor];
         [mainButton addTarget:self action:@selector(secondaryButtonAction:) forControlEvents:UIControlEventTouchUpInside];

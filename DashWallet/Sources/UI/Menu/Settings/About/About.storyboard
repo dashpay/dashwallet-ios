@@ -38,7 +38,7 @@
                                 <color key="textColor" name="SecondaryTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="odB-g7-n30" customClass="DWButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="odB-g7-n30" customClass="DashButton" customModule="dashwallet" customModuleProvider="target">
                                 <rect key="frame" x="20" y="363.5" width="374" height="44"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="N9b-1b-4qG"/>
@@ -58,7 +58,7 @@
                                 <color key="textColor" name="SecondaryTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="39" translatesAutoresizingMaskIntoConstraints="NO" id="QEh-Hn-zyc" userLabel="Review Rate Button" customClass="DWActionButton2">
+                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="39" translatesAutoresizingMaskIntoConstraints="NO" id="QEh-Hn-zyc" userLabel="Review Rate Button" customClass="DWActionButton">
                                 <rect key="frame" x="107" y="712" width="200" height="39"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>

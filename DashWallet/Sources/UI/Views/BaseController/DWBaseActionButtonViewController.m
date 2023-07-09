@@ -55,7 +55,7 @@ CGFloat DWBottomButtonHeight(void) {
 @property (nullable, nonatomic, strong) UIStackView *stackView;
 @property (nullable, nonatomic, strong) id<DWActionButtonProtocol> actionButton;
 
-@property (nullable, nonatomic, strong) DWActionButton2 *bottomActionButton;
+@property (nullable, nonatomic, strong) DWActionButton *bottomActionButton;
 @property (nullable, nonatomic, strong) UIBarButtonItem *barActionButton;
 
 @property (nullable, strong, nonatomic) NSLayoutConstraint *contentBottomConstraint;
@@ -116,8 +116,8 @@ CGFloat DWBottomButtonHeight(void) {
     NSString *actionButtonTitle = [self actionButtonTitle];
     NSString *actionButtonDisabledTitle = [self actionButtonDisabledTitle];
     if (![self.class isActionButtonInNavigationBar]) {
-        [(DWActionButton2 *)self.actionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
-        [(DWActionButton2 *)self.actionButton setTitle:actionButtonDisabledTitle forState:UIControlStateDisabled];
+        [(DWActionButton *)self.actionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
+        [(DWActionButton *)self.actionButton setTitle:actionButtonDisabledTitle forState:UIControlStateDisabled];
     }
 }
 
@@ -167,7 +167,7 @@ CGFloat DWBottomButtonHeight(void) {
 
     NSMutableArray<__kindof UIView *> *arrangedSubviews = [NSMutableArray array];
 
-    DWActionButton2 *bottomActionButton = nil;
+    DWActionButton *bottomActionButton = nil;
     if ([self.class showsActionButton]) {
         NSString *actionButtonTitle = [self actionButtonTitle];
         NSString *actionButtonDisabledTitle = [self actionButtonDisabledTitle];
@@ -184,7 +184,7 @@ CGFloat DWBottomButtonHeight(void) {
             self.barActionButton = barButtonItem;
         }
         else {
-            bottomActionButton = [[DWActionButton2 alloc] init];
+            bottomActionButton = [[DWActionButton alloc] init];
             bottomActionButton.translatesAutoresizingMaskIntoConstraints = NO;
             [bottomActionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
             [bottomActionButton setTitle:actionButtonDisabledTitle forState:UIControlStateDisabled];
