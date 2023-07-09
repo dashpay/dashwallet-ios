@@ -28,12 +28,14 @@ extension UIButton.Configuration {
         return style
     }
 
-    public static func dashPlain(title: String? = nil, font: UIFont? = nil) -> UIButton.Configuration {
-        configuration(from: .plain(), with: title, and: font)
+    public static func dashPlain() -> UIButton.Configuration {
+        var configuration = configuration(from: .plain())
+        configuration.contentInsets = .init(top: 0, leading: 0, bottom: 0, trailing: 0)
+        return configuration
     }
 
     public static var tinted: UIButton.Configuration {
-        var configuration = configuration(from: .tinted(), with: nil, and: nil)
+        var configuration = configuration(from: .tinted())
         configuration.baseForegroundColor = .dw_dashBlue()
 
         var background = configuration.background
@@ -47,8 +49,8 @@ extension UIButton.Configuration {
         return configuration
     }
 
-    public static func action(title: String? = nil, font: UIFont? = nil) -> UIButton.Configuration {
-        var configuration = configuration(from: .filled(), with: title, and: font)
+    public static func action() -> UIButton.Configuration {
+        var configuration = configuration(from: .filled())
 
         var background = configuration.background
         background.cornerRadius = 8
@@ -57,7 +59,7 @@ extension UIButton.Configuration {
         return configuration
     }
 
-    public static func configuration(from configuration: UIButton.Configuration, with title: String?, and font: UIFont?) -> UIButton.Configuration {
+    public static func configuration(from configuration: UIButton.Configuration, with title: String? = nil, and font: UIFont? = nil) -> UIButton.Configuration {
         var style = configuration
         style.imagePadding = 10
 
@@ -85,14 +87,14 @@ extension UIButton.Configuration {
         set {
             var attributes = AttributeContainer()
             attributes.foregroundColor = baseForegroundColor
-            attributes.font = font ?? .dw_font(forTextStyle: .body)
+            attributes.font = newValue
 
             let attributedString = AttributedString(title ?? "", attributes: attributes)
             attributedTitle = attributedString
         }
 
         get {
-            attributedTitle?.font ?? .dw_font(forTextStyle: .footnote)
+            attributedTitle?.font ?? .dw_font(forTextStyle: .body)
         }
     }
 
@@ -228,7 +230,7 @@ class ActionButton: ActivityIndicatorButton {
             backgroundColor = accentColor
             foregroundColor = .white
         case .highlighted:
-            strokeWidth = 1
+            strokeWidth = 2
             strokeColor = accentColor
             foregroundColor = accentColor
             backgroundColor = .clear
@@ -266,7 +268,52 @@ class ActionButton: ActivityIndicatorButton {
 
 // MARK: - PlainButton
 
-final class PlainButton: DashButton { }
+final class PlainButton: ActivityIndicatorButton {
+    init() {
+        super.init(configuration: .dashPlain())
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+
+        configuration = .dashPlain()
+    }
+
+    override func updateConfiguration() {
+        guard let configuration else {
+            return
+        }
+
+        var updatedConfiguration = configuration
+
+        var foregroundColor: UIColor?
+
+        switch state {
+        case .normal:
+            foregroundColor = accentColor
+        case .highlighted:
+            foregroundColor = accentColor.withAlphaComponent(0.7)
+        case .disabled:
+            foregroundColor = .dw_disabledButtonText()
+        default:
+            backgroundColor = accentColor
+        }
+
+        if let foregroundColor {
+            updatedConfiguration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+
+                var container = incoming
+                container.foregroundColor = foregroundColor
+                container.font = .title3
+                return container
+            }
+        }
+
+        self.configuration = updatedConfiguration
+
+        super.updateConfiguration()
+    }
+}
 
 // MARK: - ActivityIndicatorButton
 
