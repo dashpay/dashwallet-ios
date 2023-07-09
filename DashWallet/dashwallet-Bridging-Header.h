@@ -23,6 +23,7 @@ static const bool _SNAPSHOT = 0;
 #import "DSDerivationPathFactory.h"
 #import "DSKeyManager.h"
 #import "BigIntTypes.h"
+#import "NSString+Dash.h"
 
 //MARK: DashWallet
 #import "DWActionButton.h"

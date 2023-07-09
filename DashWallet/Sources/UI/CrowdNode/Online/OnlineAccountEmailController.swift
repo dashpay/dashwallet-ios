@@ -23,9 +23,8 @@ final class OnlineAccountEmailController: UIViewController {
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel = CrowdNodeModel.shared
 
-    @IBOutlet var input: OutlinedTextField!
+    @IBOutlet var input: DashInputField!
     @IBOutlet var continueButton: DWActionButton!
-    @IBOutlet var errorLabel: UILabel!
     @IBOutlet var actionButtonBottomConstraint: NSLayoutConstraint!
 
     private var isInProgress = false {
@@ -104,16 +103,25 @@ final class OnlineAccountEmailController: UIViewController {
     }
 }
 
-// MARK: UITextFieldDelegate
+// MARK: UITextViewDelegate
 
-extension OnlineAccountEmailController: UITextFieldDelegate {
+extension OnlineAccountEmailController: UITextViewDelegate {
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        guard let range = text.rangeOfCharacter(from: .newlines) else {
+            return true
+        }
+
+        input.resignFirstResponder()
+        return false
+    }
+
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         validateAndSign()
         return true
     }
 
     private func configureEmailInput() {
-        input.label = NSLocalizedString("Email", comment: "CrowdNode")
+        input.placeholder = NSLocalizedString("Email", comment: "CrowdNode")
         input.text = viewModel.emailForAccount
         input.placeholder = NSLocalizedString("e.g. johndoe@mail.com", comment: "CrowdNode")
         input.textContentType = .emailAddress
@@ -122,13 +130,13 @@ extension OnlineAccountEmailController: UITextFieldDelegate {
         input.autocapitalizationType = .none
         input.spellCheckingType = .no
         input.delegate = self
-        input.addTarget(self, action: #selector(onInputTextChanged), for: .editingChanged)
+        input.textDidChange = { [weak self] _ in
+            self?.onInputTextChanged()
+        }
     }
 
     @objc
     private func onInputTextChanged() {
-        input.isError = false
-        errorLabel.isHidden = true
         continueButton.isEnabled = isEmail(text: input.text)
     }
 
@@ -145,26 +153,21 @@ extension OnlineAccountEmailController {
     private func validateAndSign() {
         if isEmail(text: input.text) {
             isInProgress = true
-            input.isError = false
-            errorLabel.isHidden = true
 
             Task {
                 do {
-                    let isSent = try await viewModel.signAndSendEmail(email: input.text!.trimmingCharacters(in: .whitespacesAndNewlines))
+                    let isSent = try await viewModel.signAndSendEmail(email: input.text.trimmingCharacters(in: .whitespacesAndNewlines))
 
                     if !isSent {
                         isInProgress = false
                     }
                 } catch {
                     isInProgress = false
-                    errorLabel.isHidden = false
-                    errorLabel.text = error.localizedDescription
+                    input.errorMessage = error.localizedDescription
                 }
             }
         } else {
-            input.isError = true
-            errorLabel.isHidden = false
-            errorLabel.text = NSLocalizedString("Invalid Email", comment: "CrowdNode Online")
+            input.errorMessage = NSLocalizedString("Invalid Email", comment: "CrowdNode Online")
         }
     }
 

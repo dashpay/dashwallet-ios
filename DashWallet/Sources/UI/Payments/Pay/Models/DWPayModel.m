@@ -80,16 +80,23 @@ NS_ASSUME_NONNULL_BEGIN
     [session beginSession];
 }
 
+- (void)payToAddressFromString:(NSString *)string completion:(void (^)(BOOL success))completion {
+    NSArray<NSString *> *contents = [self.pasteboardExtractor extractAddressesFromString:string];
+    [self payToAddressFromContents:contents completion:completion];
+}
+
 - (void)payToAddressFromPasteboardAvailable:(void (^)(BOOL success))completion {
     NSArray<NSString *> *contents = [self.pasteboardExtractor extractAddresses];
+    [self payToAddressFromContents:contents completion:completion];
+}
+
+- (void)payToAddressFromContents: (NSArray<NSString *> *)contents completion:(void (^)(BOOL success))completion {
     if (contents.count == 0) {
         self.pasteboardPaymentInput = nil;
 
-        if (completion) {
+        if (completion)
             completion(NO);
-        }
-    }
-    else {
+    } else {
         __weak typeof(self) weakSelf = self;
         [self.inputBuilder payFirstFromArray:contents
                                       source:DWPaymentInputSource_Pasteboard
