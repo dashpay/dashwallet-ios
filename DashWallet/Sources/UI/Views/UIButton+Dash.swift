@@ -30,8 +30,7 @@ extension UIButton.Configuration {
 
     public static func dashPlain() -> UIButton.Configuration {
         var configuration = configuration(from: .plain())
-        configuration.contentInsets = .init(top: 0, leading: 0, bottom: 0, trailing: 0)
-        configuration.baseForegroundColor = .dw_darkTitle()
+        configuration.baseForegroundColor = .dw_dashBlue()
         return configuration
     }
 
@@ -267,6 +266,7 @@ class ActionButton: ActivityIndicatorButton {
 
 // MARK: - PlainButton
 
+@objc
 final class PlainButton: ActivityIndicatorButton {
     init() {
         super.init(configuration: .dashPlain())

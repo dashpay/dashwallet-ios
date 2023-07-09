@@ -86,7 +86,7 @@ class OrderPreviewViewController: BaseViewController, NetworkReachabilityHandlin
 
     @objc
     func retryAction() {
-        // retryButton.showActivityIndicator()
+        retryButton.showActivityIndicator()
         retryButton.isEnabled = false
         model.retry()
     }
@@ -162,7 +162,7 @@ extension OrderPreviewViewController {
 
         model.orderChangeHandle = { [weak self] in
             self?.tableView.reloadData()
-            // self?.retryButton.hideActivityIndicator()
+            self?.retryButton.hideActivityIndicator()
             self?.retryButton.isEnabled = true
             self?.startCounting()
         }

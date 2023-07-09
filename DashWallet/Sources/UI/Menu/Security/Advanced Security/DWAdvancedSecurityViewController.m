@@ -236,12 +236,20 @@ NS_ASSUME_NONNULL_BEGIN
     formController.tableView.tableHeaderView = securityStatusView;
     self.securityStatusView = securityStatusView;
 
-    // button width will be adjusted in viewDidLayoutSubviews
-    DashButton *resetButton = [[DashButton alloc] init];
+    // Footer size will be adjusted in viewDidLayoutSubviews
+    UIView *tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
+    tableFooterView.backgroundColor = [UIColor clearColor];
+    formController.tableView.tableFooterView = tableFooterView;
+    
+    PlainButton *resetButton = [[PlainButton alloc] init];
+    [resetButton setTranslatesAutoresizingMaskIntoConstraints:NO];
     [resetButton setTitle:NSLocalizedString(@"Reset to Default", nil) forState:UIControlStateNormal];
     [resetButton addTarget:self action:@selector(resetButtonAction) forControlEvents:UIControlEventTouchUpInside];
-    formController.tableView.tableFooterView = resetButton;
-
+    [tableFooterView addSubview:resetButton];
+    
+    [[resetButton.centerYAnchor constraintEqualToAnchor:tableFooterView.centerYAnchor] setActive:YES];
+    [[resetButton.centerXAnchor constraintEqualToAnchor:tableFooterView.centerXAnchor] setActive:YES];
+    
     [self dw_embedChild:formController];
     self.formController = formController;
 
@@ -281,6 +289,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (footerView) {
         CGRect frame = footerView.frame;
         frame.size.width = CGRectGetWidth(tableView.bounds);
+        frame.size.height = 60.0f;
         footerView.frame = frame;
 
         tableView.tableFooterView = footerView;

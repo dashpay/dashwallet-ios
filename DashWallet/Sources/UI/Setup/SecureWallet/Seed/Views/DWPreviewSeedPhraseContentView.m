@@ -86,8 +86,7 @@ static CGFloat const PHRASE_WARNING_PADDING = 36.0;
         [self addSubview:screenshotWarningStackView];
         _screenshotWarningStackView = screenshotWarningStackView;
 
-        DashButton *screenshotDescriptionButton = [[DashButton alloc] init];
-        screenshotDescriptionButton.tintColor = [UIColor dw_dashBlueColor];
+        PlainButton *screenshotDescriptionButton = [[PlainButton alloc] init];
         screenshotDescriptionButton.translatesAutoresizingMaskIntoConstraints = NO;
         screenshotDescriptionButton.configuration.buttonSize = UIButtonConfigurationSizeSmall;
         [screenshotDescriptionButton setTitle:NSLocalizedString(@"Why I should not take a screenshot?", nil) forState:UIControlStateNormal];

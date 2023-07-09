@@ -22,7 +22,7 @@ final class FailedOperationStatusViewController: BaseViewController, NavigationB
 
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var descriptionLabel: UILabel!
-    @IBOutlet var contactSupportButton: DashButton!
+    @IBOutlet var contactSupportButton: TintedButton!
     @IBOutlet var cancelButton: UIButton!
     @IBOutlet var retryButton: UIButton!
 

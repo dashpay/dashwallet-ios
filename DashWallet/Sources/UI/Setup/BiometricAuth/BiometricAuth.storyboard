@@ -2,6 +2,7 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="LkF-gM-ELT">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
+        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -64,7 +65,7 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ppP-lX-CGk" userLabel="Skip Button">
                                 <rect key="frame" x="16" y="760" width="361" height="54"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cXC-Se-3N5">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cXC-Se-3N5" customClass="PlainButton" customModule="dashwallet" customModuleProvider="target">
                                         <rect key="frame" x="143" y="7.6666666666666288" width="75" height="39"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="39" id="5fn-t5-9fP"/>
@@ -93,7 +94,7 @@
                             <constraint firstItem="ppP-lX-CGk" firstAttribute="top" secondItem="6pG-XX-G9G" secondAttribute="bottom" constant="8" id="98O-Gw-mlZ"/>
                             <constraint firstItem="azW-bJ-LPi" firstAttribute="leading" secondItem="Y3D-LC-66G" secondAttribute="leadingMargin" id="MG2-Az-KHJ"/>
                             <constraint firstItem="6pG-XX-G9G" firstAttribute="top" secondItem="azW-bJ-LPi" secondAttribute="bottom" id="NN2-yE-CAq"/>
-                            <constraint firstAttribute="bottomMargin" secondItem="ppP-lX-CGk" secondAttribute="bottom" constant="4" id="RhP-uI-5QW"/>
+                            <constraint firstItem="qq6-ly-xma" firstAttribute="bottom" secondItem="ppP-lX-CGk" secondAttribute="bottom" constant="4" id="RhP-uI-5QW"/>
                             <constraint firstItem="ppP-lX-CGk" firstAttribute="leading" secondItem="Y3D-LC-66G" secondAttribute="leadingMargin" id="X88-nv-Ujf"/>
                             <constraint firstItem="6pG-XX-G9G" firstAttribute="leading" secondItem="Y3D-LC-66G" secondAttribute="leadingMargin" id="cI7-YS-4Lp"/>
                             <constraint firstAttribute="trailingMargin" secondItem="6pG-XX-G9G" secondAttribute="trailing" id="hAg-AF-nQZ"/>

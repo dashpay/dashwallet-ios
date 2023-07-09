@@ -2327,7 +2327,7 @@
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="OrY-98-FXg" userLabel="Buttons Stack">
                                 <rect key="frame" x="20" y="744" width="350" height="46"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XbJ-72-r6V" customClass="DashButton" customModule="dashwallet" customModuleProvider="target">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XbJ-72-r6V" customClass="PlainButton" customModule="dashwallet" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="167.66666666666666" height="46"/>
                                         <color key="backgroundColor" name="QuaternaryFillColor"/>
                                         <constraints>
@@ -2340,6 +2340,9 @@
                                         <userDefinedRuntimeAttributes>
                                             <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
                                                 <integer key="value" value="10"/>
+                                            </userDefinedRuntimeAttribute>
+                                            <userDefinedRuntimeAttribute type="color" keyPath="accentColor">
+                                                <color key="value" name="DarkTitleColor"/>
                                             </userDefinedRuntimeAttribute>
                                         </userDefinedRuntimeAttributes>
                                         <connections>

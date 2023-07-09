@@ -300,9 +300,9 @@ extension CrowdNodeModel {
 
         // CrowdNode gets the withdrawal request, adds it to the balance,
         // sends the InQueue response and then calculates withdrawal amount from what's left.
-        // let adjustedResult = (crowdNodeBalance + requestValue - inQueueResponse - inQueueResponseFee) * requestPermil / ApiCode.withdrawAll.rawValue - withdrawalTxFee
+        let adjustedResult = (crowdNodeBalance + requestValue - inQueueResponse - inQueueResponseFee) * requestPermil / ApiCode.withdrawAll.rawValue - withdrawalTxFee
 
-        return min(crowdNodeBalance, 0)
+        return min(crowdNodeBalance, adjustedResult)
     }
 }
 

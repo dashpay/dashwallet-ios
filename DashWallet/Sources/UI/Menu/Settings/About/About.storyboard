@@ -38,7 +38,7 @@
                                 <color key="textColor" name="SecondaryTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="odB-g7-n30" customClass="DashButton" customModule="dashwallet" customModuleProvider="target">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="odB-g7-n30" customClass="PlainButton" customModule="dashwallet" customModuleProvider="target">
                                 <rect key="frame" x="20" y="363.5" width="374" height="44"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="N9b-1b-4qG"/>
@@ -97,7 +97,7 @@
                                     </label>
                                 </subviews>
                             </stackView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BuN-nF-nFD" customClass="DashButton" customModule="dashwallet" customModuleProvider="target">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BuN-nF-nFD" customClass="PlainButton" customModule="dashwallet" customModuleProvider="target">
                                 <rect key="frame" x="169.5" y="759" width="75" height="39"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="39" id="0Oy-6i-3ZE"/>

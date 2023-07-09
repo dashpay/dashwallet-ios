@@ -47,7 +47,7 @@ final class SyncingHeaderView: UITableViewHeaderFooterView {
         }
     }
 
-    private var syncingButton: UIButton!
+    private var syncingButton: PlainButton!
 
     internal lazy var model: SyncModel = SyncModelImpl()
 
@@ -64,10 +64,12 @@ final class SyncingHeaderView: UITableViewHeaderFooterView {
         titleLabel.setContentHuggingPriority(.defaultHigh + 1, for: .horizontal)
         addSubview(titleLabel)
 
-        syncingButton = DashButton()
+        syncingButton = PlainButton()
+        syncingButton.accentColor = .dw_darkTitle()
+        syncingButton.configuration?.titleAlignment = .trailing
+        syncingButton.configuration?.contentInsets = .init(top: 0, leading: 0, bottom: 0, trailing: 0) // We want remove default insets to make sure the title is stick to right
         syncingButton.translatesAutoresizingMaskIntoConstraints = false
         syncingButton.contentHorizontalAlignment = .right
-        syncingButton.setTitleColor(UIColor.dw_darkTitle(), for: .normal)
         syncingButton.setContentHuggingPriority(.defaultHigh - 1, for: .horizontal)
         syncingButton.setContentCompressionResistancePriority(.required - 1, for: .horizontal)
         syncingButton.addTarget(self, action: #selector(syncingButtonAction(_:)), for: .touchUpInside)
@@ -99,9 +101,6 @@ final class SyncingHeaderView: UITableViewHeaderFooterView {
             filterButton.heightAnchor.constraint(equalToConstant: 44.0),
             filterButton.widthAnchor.constraint(equalToConstant: 44.0),
         ])
-
-        model.networkStatusDidChange = { [weak self] _ in
-        }
 
         model.progressDidChange = { [weak self] progress in
             self?.progress = Float(progress)

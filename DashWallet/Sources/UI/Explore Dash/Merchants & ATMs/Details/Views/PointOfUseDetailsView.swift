@@ -241,6 +241,7 @@ extension PointOfUseDetailsView {
         let largeConfig = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular, scale: .default)
 
         let button = VerticalButton()
+        button.configuration?.buttonSize = .mini
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitle(title, for: .normal)
         button.setImage(UIImage(systemName: icon, withConfiguration: largeConfig), for: .normal)
@@ -253,7 +254,6 @@ extension PointOfUseDetailsView {
         let payButton = ActionButton()
         payButton.translatesAutoresizingMaskIntoConstraints = false
         payButton.addTarget(self, action: #selector(payAction), for: .touchUpInside)
-        payButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
         containerView.addArrangedSubview(payButton)
 
         if case .merchant(let m) = merchant.category {
@@ -282,18 +282,18 @@ extension PointOfUseDetailsView {
 
 // MARK: - VerticalButton
 
-final class VerticalButton: DashButton {
-    init() {
-        var configuration = UIButton.Configuration.tinted
-        configuration.imagePlacement = .top
-        configuration.titleAlignment = .center
-        configuration.imagePadding = 3
-        configuration.buttonSize = .small
+final class VerticalButton: TintedButton {
+    override func updateConfiguration() {
+        super.updateConfiguration()
 
-        super.init(configuration: configuration)
-    }
+        guard let configuration else {
+            return
+        }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        var updatedConfiguration = configuration
+        updatedConfiguration.imagePlacement = .top
+        updatedConfiguration.titleAlignment = .center
+        updatedConfiguration.imagePadding = 3
+        self.configuration = updatedConfiguration
     }
 }

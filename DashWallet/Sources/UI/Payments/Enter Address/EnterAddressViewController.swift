@@ -22,7 +22,7 @@ import UIKit
 @objc(DWEnterAddressViewController)
 final class EnterAddressViewController: BaseViewController, PayableViewController {
     private var addressField: DashInputField!
-    private var showPasteboardContentButton: DashButton!
+    private var showPasteboardContentButton: TintedButton!
     private var pasteboardContentView: PasteboardContentView!
 
     private var scrollView: UIScrollView!
@@ -36,15 +36,18 @@ final class EnterAddressViewController: BaseViewController, PayableViewControlle
 
     // MARK: Actions
     private func continueButtonAction() {
-        payModel.payToAddress(from: addressField.text) { [weak self] success in
-            guard let self else { return }
+        present(OrderPreviewViewController(), animated: true)
+        return
 
-            if success {
-                self.performPayToPasteboardAction()
-            } else {
-                self.addressField.errorMessage = NSLocalizedString("Invalid Dash address", comment: "")
-            }
-        }
+                payModel.payToAddress(from: addressField.text) { [weak self] success in
+                    guard let self else { return }
+
+                    if success {
+                        self.performPayToPasteboardAction()
+                    } else {
+                        self.addressField.errorMessage = NSLocalizedString("Invalid Dash address", comment: "")
+                    }
+                }
     }
 
     override func viewDidLoad() {
