@@ -31,6 +31,7 @@ extension UIButton.Configuration {
     public static func dashPlain() -> UIButton.Configuration {
         var configuration = configuration(from: .plain())
         configuration.contentInsets = .init(top: 0, leading: 0, bottom: 0, trailing: 0)
+        configuration.baseForegroundColor = .dw_darkTitle()
         return configuration
     }
 
@@ -117,8 +118,6 @@ extension UIButton.Configuration {
 class TintedButton: ActivityIndicatorButton {
     init() {
         super.init(configuration: .tinted)
-
-        tintColor = .dw_dashBlue()
     }
 
     required init?(coder: NSCoder) {
@@ -139,17 +138,17 @@ class TintedButton: ActivityIndicatorButton {
 
         switch state {
         case .normal:
-            backgroundColor = tintColor.withAlphaComponent(0.08)
-            foregroundColor = tintColor
+            backgroundColor = accentColor.withAlphaComponent(0.08)
+            foregroundColor = accentColor
         case .highlighted:
-            backgroundColor = tintColor.withAlphaComponent(0.06)
-            foregroundColor = tintColor.withAlphaComponent(0.9)
+            backgroundColor = accentColor.withAlphaComponent(0.06)
+            foregroundColor = accentColor.withAlphaComponent(0.9)
         case .disabled:
             backgroundColor = .dw_disabledButton()
             foregroundColor = .dw_disabledButtonText()
         default:
-            backgroundColor = tintColor.withAlphaComponent(0.08)
-            foregroundColor = tintColor
+            backgroundColor = accentColor.withAlphaComponent(0.08)
+            foregroundColor = accentColor
         }
 
         background.backgroundColorTransformer = UIConfigurationColorTransformer { _ in
