@@ -112,7 +112,7 @@ extension UIButton.Configuration {
 
 // MARK: - TintedButton
 
-class TintedButton: DashButton {
+class TintedButton: ActivityIndicatorButton {
     init() {
         super.init(configuration: .tinted)
 
@@ -124,8 +124,6 @@ class TintedButton: DashButton {
     }
 
     override func updateConfiguration() {
-        super.updateConfiguration()
-
         guard let configuration else {
             return
         }
@@ -166,6 +164,9 @@ class TintedButton: DashButton {
 
         updatedConfiguration.background = background
         self.configuration = updatedConfiguration
+
+        // Apply super configuration
+        super.updateConfiguration()
     }
 }
 
@@ -186,7 +187,90 @@ final class ImageButton: UIButton {
 // MARK: - ActionButton
 
 @objc(DWActionButton)
-class ActionButton: DashButton {
+class ActionButton: ActivityIndicatorButton {
+    @objc
+    init() {
+        super.init(configuration: .action())
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+
+        var actionConfiguration: UIButton.Configuration = .action()
+
+        if let configuration {
+            actionConfiguration.title = configuration.title
+            actionConfiguration.baseForegroundColor = configuration.baseForegroundColor
+            actionConfiguration.baseBackgroundColor = configuration.baseBackgroundColor
+        }
+
+        configuration = actionConfiguration
+    }
+
+    override func updateConfiguration() {
+        super.updateConfiguration()
+
+        guard let configuration else {
+            return
+        }
+
+        var updatedConfiguration = configuration
+
+        var background = configuration.background
+
+        var strokeWidth: CGFloat = 0
+        var strokeColor: UIColor?
+        var foregroundColor: UIColor?
+        var backgroundColor: UIColor?
+
+        switch state {
+        case .normal:
+            backgroundColor = accentColor
+            foregroundColor = .white
+        case .highlighted:
+            strokeWidth = 1
+            strokeColor = accentColor
+            foregroundColor = accentColor
+            backgroundColor = .clear
+        case .disabled:
+            backgroundColor = .dw_disabledButton()
+            foregroundColor = .dw_disabledButtonText()
+        default:
+            backgroundColor = accentColor
+            foregroundColor = .white
+        }
+
+        background.strokeWidth = strokeWidth
+        background.strokeColor = strokeColor
+
+        if let backgroundColor {
+            background.backgroundColorTransformer = UIConfigurationColorTransformer { _ in
+                backgroundColor
+            }
+        }
+
+        if let foregroundColor, !showsActivityIndicator {
+            updatedConfiguration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+
+                var container = incoming
+                container.foregroundColor = foregroundColor
+                container.font = .title3
+                return container
+            }
+        }
+
+        updatedConfiguration.background = background
+        self.configuration = updatedConfiguration
+    }
+}
+
+// MARK: - PlainButton
+
+final class PlainButton: DashButton { }
+
+// MARK: - ActivityIndicatorButton
+
+class ActivityIndicatorButton: DashButton {
     final class ActivityIndicatorView: UIView {
         var color: UIColor {
             set {
@@ -227,33 +311,8 @@ class ActionButton: DashButton {
         }
     }
 
-    public var accentColor: UIColor = .dw_dashBlue() {
-        didSet {
-            setNeedsUpdateConfiguration()
-        }
-    }
-
-    @objc
-    init() {
-        super.init(configuration: .action())
-    }
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-
-        var actionConfiguration: UIButton.Configuration = .action()
-
-        if let configuration {
-            actionConfiguration.title = configuration.title
-            actionConfiguration.baseForegroundColor = configuration.baseForegroundColor
-            actionConfiguration.baseBackgroundColor = configuration.baseBackgroundColor
-        }
-
-        configuration = actionConfiguration
-    }
-
     private var activityIndicatorView: ActivityIndicatorView!
-    private var showsActivityIndicator = false
+    internal var showsActivityIndicator = false
 
     @objc
     public func showActivityIndicator() {
@@ -263,7 +322,7 @@ class ActionButton: DashButton {
 
         activityIndicatorView.start()
 
-        isEnabled = false
+        isUserInteractionEnabled = false
         showsActivityIndicator = true
         setNeedsUpdateConfiguration()
     }
@@ -272,7 +331,7 @@ class ActionButton: DashButton {
     public func hideActivityIndicator() {
         activityIndicatorView?.stop()
 
-        isEnabled = true
+        isUserInteractionEnabled = true
         showsActivityIndicator = false
         setNeedsUpdateConfiguration()
     }
@@ -286,26 +345,7 @@ class ActionButton: DashButton {
 
         var background = configuration.background
 
-        var strokeWidth: CGFloat = 0
-        var strokeColor: UIColor?
         var foregroundColor: UIColor?
-        var backgroundColor: UIColor?
-
-        switch state {
-        case .normal:
-            backgroundColor = accentColor
-            foregroundColor = .white
-        case .highlighted:
-            strokeWidth = 1
-            strokeColor = accentColor
-            foregroundColor = accentColor
-        case .disabled:
-            backgroundColor = .dw_disabledButton()
-            foregroundColor = .dw_disabledButtonText()
-        default:
-            backgroundColor = accentColor
-            foregroundColor = .white
-        }
 
         if showsActivityIndicator {
             // Use custom background to show activity indicator instead of updatedConfiguration.showsActivityIndicator property
@@ -317,19 +357,13 @@ class ActionButton: DashButton {
             background.customView = nil
         }
 
-        background.strokeWidth = strokeWidth
-        background.strokeColor = strokeColor
+        if let foregroundColor {
+            updatedConfiguration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
 
-        background.backgroundColorTransformer = UIConfigurationColorTransformer { _ in
-            backgroundColor ?? .clear
-        }
-
-        updatedConfiguration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
-
-            var container = incoming
-            container.foregroundColor = foregroundColor
-
-            return container
+                var container = incoming
+                container.foregroundColor = foregroundColor
+                return container
+            }
         }
 
         updatedConfiguration.background = background
@@ -337,9 +371,17 @@ class ActionButton: DashButton {
     }
 }
 
+
 // MARK: - DashButton
 
 class DashButton: UIButton {
+    @IBInspectable
+    public var accentColor: UIColor = .dw_dashBlue() {
+        didSet {
+            setNeedsUpdateConfiguration()
+        }
+    }
+
     /// Configures the title label font.
     /// A nil value uses the default button's font: `UIFont.dw_font(forTextStyle: .body)`
     public var titleLabelFont: UIFont? {
@@ -379,16 +421,18 @@ class DashButton: UIButton {
             return
         }
 
-        if let titleLabelFont {
-            var updatedConfiguration = configuration
+        var updatedConfiguration = configuration
+        updatedConfiguration.baseForegroundColor = accentColor
 
+        if let titleLabelFont {
             var attributes = AttributeContainer()
             attributes.foregroundColor = updatedConfiguration.baseForegroundColor
             attributes.font = titleLabelFont
 
             updatedConfiguration.attributedTitle = AttributedString(updatedConfiguration.title ?? "", attributes: attributes)
-            self.configuration = updatedConfiguration
         }
+
+        self.configuration = updatedConfiguration
     }
 
     private func configureButton() {
