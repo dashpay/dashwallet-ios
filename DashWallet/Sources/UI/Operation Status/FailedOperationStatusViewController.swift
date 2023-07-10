@@ -22,7 +22,7 @@ final class FailedOperationStatusViewController: BaseViewController, NavigationB
 
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var descriptionLabel: UILabel!
-    @IBOutlet var contactSupportButton: UIButton!
+    @IBOutlet var contactSupportButton: TintedButton!
     @IBOutlet var cancelButton: UIButton!
     @IBOutlet var retryButton: UIButton!
 
@@ -69,8 +69,9 @@ final class FailedOperationStatusViewController: BaseViewController, NavigationB
         titleLabel.text = headerText
         descriptionLabel.text = descriptionText
 
-        contactSupportButton.layer.cornerRadius = 6
+        contactSupportButton.configuration?.buttonSize = .small
         contactSupportButton.setTitle(supportButtonText, for: .normal)
+
         cancelButton.setTitle(NSLocalizedString("Cancel", comment: "Coinbase"), for: .normal)
         retryButton.setTitle(NSLocalizedString("Retry", comment: "Coinbase"), for: .normal)
     }

@@ -27,7 +27,7 @@ final class NewAccountViewController: UIViewController, UITextViewDelegate {
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var explainerLabel1: UILabel!
     @IBOutlet var explainerLabel2: UILabel!
-    @IBOutlet var actionButton: DWActionButton!
+    @IBOutlet var actionButton: ActionButton!
     @IBOutlet var addressLabel: UILabel!
     @IBOutlet var acceptTermsCheckBox: DWCheckbox!
     @IBOutlet var acceptTermsText: UITextView!

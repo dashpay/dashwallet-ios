@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="cEa-SB-WK2">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="cEa-SB-WK2">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -12,18 +13,18 @@
             <objects>
                 <viewController id="cEa-SB-WK2" customClass="DWImportWalletInfoViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="osB-98-Alj">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="uWw-Bn-0Ho" customClass="DWCenteredTableView">
-                                <rect key="frame" x="20" y="0.0" width="560" height="526"/>
+                                <rect key="frame" x="16" y="59" width="361" height="685"/>
                                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                 <view key="tableHeaderView" contentMode="scaleToFill" id="o8K-o0-QdN">
-                                    <rect key="frame" x="0.0" y="0.0" width="560" height="140"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="361" height="140"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Q6O-w5-a8W" userLabel="Title Label">
-                                            <rect key="frame" x="0.0" y="32" width="560" height="76"/>
+                                            <rect key="frame" x="0.0" y="32" width="361" height="76"/>
                                             <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
                                             <color key="textColor" name="DarkTitleColor"/>
@@ -45,8 +46,8 @@
                                 </connections>
                             </tableView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jAI-Lu-GJ3" userLabel="Scan Private Key" customClass="DWActionButton">
-                                <rect key="frame" x="20" y="542" width="560" height="54"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <rect key="frame" x="16" y="760" width="361" height="54"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="54" id="rg2-om-SFH"/>
                                 </constraints>
@@ -58,6 +59,7 @@
                                 </connections>
                             </view>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="a6b-xj-nUD"/>
                         <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="uWw-Bn-0Ho" firstAttribute="top" secondItem="a6b-xj-nUD" secondAttribute="top" id="7d8-a8-yCZ"/>
@@ -68,7 +70,6 @@
                             <constraint firstAttribute="bottomMargin" secondItem="jAI-Lu-GJ3" secondAttribute="bottom" constant="4" id="fza-Ah-tiU"/>
                             <constraint firstItem="jAI-Lu-GJ3" firstAttribute="top" secondItem="uWw-Bn-0Ho" secondAttribute="bottom" constant="16" id="g9e-fu-gtJ"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="a6b-xj-nUD"/>
                     </view>
                     <connections>
                         <outlet property="contentBottomConstraint" destination="fza-Ah-tiU" id="hpN-Ke-Ibx"/>

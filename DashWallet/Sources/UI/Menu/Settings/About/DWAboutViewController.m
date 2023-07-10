@@ -82,6 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.appVersionLabel.text = [self.model appVersion];
     self.dashSyncVersionLabel.text = [self.model dashSyncVersion];
     self.descriptionLabel.text = NSLocalizedString(@"This app is open source:", nil);
+    self.repositoryURLButton.configuration.buttonSize = UIButtonConfigurationSizeSmall;
     [self.repositoryURLButton setTitle:@"https://github.com/dashpay/dashwallet-ios" forState:UIControlStateNormal];
     self.rateReviewLabel.text = NSLocalizedString(@"Help us improve your experience", nil);
     [self.rateReviewButton setTitle:NSLocalizedString(@"Review & Rate the app", nil) forState:UIControlStateNormal];

@@ -28,7 +28,7 @@ class AtmDetailsView: PointOfUseDetailsView {
         buttonsStackView.distribution = .fillEqually
         headerContainerView.addArrangedSubview(buttonsStackView)
 
-        let payButton = DWActionButton()
+        let payButton = ActionButton()
         payButton.translatesAutoresizingMaskIntoConstraints = false
         payButton.addTarget(self, action: #selector(payAction), for: .touchUpInside)
         payButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
@@ -37,7 +37,7 @@ class AtmDetailsView: PointOfUseDetailsView {
         buttonsStackView.addArrangedSubview(payButton)
 
         if let atm = merchant.atm, atm.type == .buySell || atm.type == .sell {
-            let sellButton = DWActionButton()
+            let sellButton = ActionButton()
             sellButton.translatesAutoresizingMaskIntoConstraints = false
             sellButton.addTarget(self, action: #selector(sellAction), for: .touchUpInside)
             sellButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)

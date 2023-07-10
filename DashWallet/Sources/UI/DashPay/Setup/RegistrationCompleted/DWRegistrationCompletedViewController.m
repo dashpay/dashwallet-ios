@@ -17,7 +17,6 @@
 
 #import "DWRegistrationCompletedViewController.h"
 
-#import "DWActionButton.h"
 #import "DWBaseActionButtonViewController.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
@@ -108,7 +107,7 @@
 
 - (UIButton *)actionButton {
     if (_actionButton == nil) {
-        DWActionButton *button = [[DWActionButton alloc] initWithFrame:CGRectZero];
+        DWActionButton *button = [[DWActionButton alloc] init];
         button.translatesAutoresizingMaskIntoConstraints = NO;
         [button setTitle:NSLocalizedString(@"Continue", nil) forState:UIControlStateNormal];
         [button addTarget:self action:@selector(actionButtonAction) forControlEvents:UIControlEventTouchUpInside];

@@ -60,9 +60,8 @@ final class SyncingAlertContentView: UIView {
         subtitleLabel.numberOfLines = 0
         addSubview(subtitleLabel)
 
-        let okButton = DWActionButton()
+        let okButton = ActionButton()
         okButton.translatesAutoresizingMaskIntoConstraints = false
-        okButton.small = true
         okButton.setTitle(NSLocalizedString("OK", comment: ""), for: .normal)
         okButton.addTarget(self, action: #selector(okButtonAction(sender:)), for: .touchUpInside)
         addSubview(okButton)

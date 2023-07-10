@@ -17,7 +17,7 @@
 
 #import "DWSearchStateViewController.h"
 
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -156,11 +156,8 @@ NS_ASSUME_NONNULL_END
 
 - (UIButton *)actionButton {
     if (_actionButton == nil) {
-        DWActionButton *button = [[DWActionButton alloc] initWithFrame:CGRectZero];
+        DashButton *button = [[DashButton alloc] init];
         button.translatesAutoresizingMaskIntoConstraints = NO;
-        button.small = YES;
-        button.inverted = YES;
-        button.usedOnDarkBackground = NO;
         [button addTarget:self action:@selector(actionButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         _actionButton = button;
     }

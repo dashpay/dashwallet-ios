@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="LkF-gM-ELT">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="LkF-gM-ELT">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -12,20 +14,20 @@
             <objects>
                 <viewController id="LkF-gM-ELT" customClass="DWBiometricAuthViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Y3D-LC-66G">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="azW-bJ-LPi" userLabel="Layout View">
-                                <rect key="frame" x="20" y="0.0" width="560" height="480"/>
+                                <rect key="frame" x="16" y="0.0" width="361" height="698"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nd3-zm-ixF">
-                                        <rect key="frame" x="0.0" y="170" width="560" height="140.5"/>
+                                        <rect key="frame" x="0.0" y="279" width="361" height="140.33333333333337"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" placeholderIntrinsicWidth="98" placeholderIntrinsicHeight="98" translatesAutoresizingMaskIntoConstraints="NO" id="dmQ-x9-4xv" userLabel="Icon Image View">
-                                                <rect key="frame" x="231" y="0.0" width="98" height="98"/>
+                                                <rect key="frame" x="131.66666666666666" y="0.0" width="98" height="98"/>
                                             </imageView>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1sf-VT-6yn" userLabel="Title Label">
-                                                <rect key="frame" x="0.0" y="114" width="560" height="26.5"/>
+                                                <rect key="frame" x="0.0" y="114" width="361" height="26.333333333333343"/>
                                                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
                                                 <color key="textColor" name="DarkTitleColor"/>
@@ -51,53 +53,60 @@
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6pG-XX-G9G" userLabel="Enable Button" customClass="DWActionButton">
-                                <rect key="frame" x="20" y="480" width="560" height="54"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <rect key="frame" x="16" y="698" width="361" height="54"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="54" id="1Y3-bG-X75"/>
                                 </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
-                                </userDefinedRuntimeAttributes>
                                 <connections>
                                     <action selector="enableBiometricButtonAction:" destination="LkF-gM-ELT" eventType="touchUpInside" id="5eV-lB-IjB"/>
                                 </connections>
                             </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ppP-lX-CGk" userLabel="Skip Button" customClass="DWActionButton">
-                                <rect key="frame" x="20" y="542" width="560" height="54"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ppP-lX-CGk" userLabel="Skip Button">
+                                <rect key="frame" x="16" y="760" width="361" height="54"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cXC-Se-3N5" customClass="PlainButton" customModule="dashwallet" customModuleProvider="target">
+                                        <rect key="frame" x="143" y="7.6666666666666288" width="75" height="39"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="39" id="5fn-t5-9fP"/>
+                                        </constraints>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" title="Button">
+                                            <color key="baseForegroundColor" name="DashBlueColor"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="skipBiometricButtonAction:" destination="LkF-gM-ELT" eventType="touchUpInside" id="xu8-gf-R2k"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="54" id="LhY-6X-FIZ"/>
+                                    <constraint firstItem="cXC-Se-3N5" firstAttribute="centerX" secondItem="ppP-lX-CGk" secondAttribute="centerX" id="fwO-Oz-hpa"/>
+                                    <constraint firstItem="cXC-Se-3N5" firstAttribute="centerY" secondItem="ppP-lX-CGk" secondAttribute="centerY" id="k8u-3V-BSJ"/>
                                 </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
-                                </userDefinedRuntimeAttributes>
-                                <connections>
-                                    <action selector="skipBiometricButtonAction:" destination="LkF-gM-ELT" eventType="touchUpInside" id="sWP-bH-qQD"/>
-                                </connections>
                             </view>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="qq6-ly-xma"/>
                         <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="azW-bJ-LPi" firstAttribute="top" secondItem="Y3D-LC-66G" secondAttribute="top" id="1Xm-8i-1E2"/>
                             <constraint firstItem="ppP-lX-CGk" firstAttribute="top" secondItem="6pG-XX-G9G" secondAttribute="bottom" constant="8" id="98O-Gw-mlZ"/>
                             <constraint firstItem="azW-bJ-LPi" firstAttribute="leading" secondItem="Y3D-LC-66G" secondAttribute="leadingMargin" id="MG2-Az-KHJ"/>
                             <constraint firstItem="6pG-XX-G9G" firstAttribute="top" secondItem="azW-bJ-LPi" secondAttribute="bottom" id="NN2-yE-CAq"/>
-                            <constraint firstAttribute="bottomMargin" secondItem="ppP-lX-CGk" secondAttribute="bottom" constant="4" id="RhP-uI-5QW"/>
+                            <constraint firstItem="qq6-ly-xma" firstAttribute="bottom" secondItem="ppP-lX-CGk" secondAttribute="bottom" constant="4" id="RhP-uI-5QW"/>
                             <constraint firstItem="ppP-lX-CGk" firstAttribute="leading" secondItem="Y3D-LC-66G" secondAttribute="leadingMargin" id="X88-nv-Ujf"/>
                             <constraint firstItem="6pG-XX-G9G" firstAttribute="leading" secondItem="Y3D-LC-66G" secondAttribute="leadingMargin" id="cI7-YS-4Lp"/>
                             <constraint firstAttribute="trailingMargin" secondItem="6pG-XX-G9G" secondAttribute="trailing" id="hAg-AF-nQZ"/>
                             <constraint firstAttribute="trailingMargin" secondItem="azW-bJ-LPi" secondAttribute="trailing" id="s4U-eW-WW1"/>
                             <constraint firstItem="ppP-lX-CGk" firstAttribute="trailing" secondItem="Y3D-LC-66G" secondAttribute="trailingMargin" id="vEb-3b-F8Q"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="qq6-ly-xma"/>
                     </view>
                     <connections>
                         <outlet property="contentBottomConstraint" destination="RhP-uI-5QW" id="qmU-nC-l0V"/>
                         <outlet property="enableBiometricButton" destination="6pG-XX-G9G" id="roY-wJ-I8L"/>
                         <outlet property="logoImageView" destination="dmQ-x9-4xv" id="oVV-e1-V7f"/>
-                        <outlet property="skipBiometricButton" destination="ppP-lX-CGk" id="Dsl-VA-urd"/>
+                        <outlet property="skipBiometricButton" destination="cXC-Se-3N5" id="OIX-iw-dHh"/>
                         <outlet property="titleLabel" destination="1sf-VT-6yn" id="KZ3-gq-fY8"/>
                     </connections>
                 </viewController>
@@ -109,6 +118,9 @@
     <resources>
         <namedColor name="DarkTitleColor">
             <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="DashBlueColor">
+            <color red="0.0" green="0.55294117647058827" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="SecondaryBackgroundColor">
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

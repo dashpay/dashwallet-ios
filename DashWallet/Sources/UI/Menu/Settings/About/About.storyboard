@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Khk-i4-iGF">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Khk-i4-iGF">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -18,28 +18,28 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dash_logo_template" translatesAutoresizingMaskIntoConstraints="NO" id="bL4-py-5Pp">
-                                <rect key="frame" x="147.5" y="119" width="119" height="33"/>
+                                <rect key="frame" x="147.5" y="123" width="119" height="33"/>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="App Version Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pJw-Vp-Xdk">
-                                <rect key="frame" x="20" y="190" width="374" height="20.5"/>
+                                <rect key="frame" x="20" y="194" width="374" height="24"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
                                 <color key="textColor" name="DarkTitleColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DashSync Version Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HJF-Ju-zuu">
-                                <rect key="frame" x="20" y="220.5" width="374" height="14.5"/>
+                                <rect key="frame" x="20" y="228" width="374" height="16"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                 <color key="textColor" name="QuaternaryTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Description Label" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qL5-kd-XMW">
-                                <rect key="frame" x="20" y="335" width="374" height="16"/>
+                                <rect key="frame" x="20" y="344" width="374" height="19.5"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                 <color key="textColor" name="SecondaryTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="odB-g7-n30" customClass="DWButton">
-                                <rect key="frame" x="20" y="351" width="374" height="44"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="odB-g7-n30" customClass="PlainButton" customModule="dashwallet" customModuleProvider="target">
+                                <rect key="frame" x="20" y="363.5" width="374" height="44"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="N9b-1b-4qG"/>
                                 </constraints>
@@ -53,69 +53,63 @@
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Rate Label" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZKZ-c6-sFB">
-                                <rect key="frame" x="20" y="681.5" width="374" height="16"/>
+                                <rect key="frame" x="20" y="676.5" width="374" height="19.5"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                 <color key="textColor" name="SecondaryTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <view contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="39" translatesAutoresizingMaskIntoConstraints="NO" id="QEh-Hn-zyc" userLabel="Review Rate Button" customClass="DWActionButton">
-                                <rect key="frame" x="107" y="713.5" width="200" height="39"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <rect key="frame" x="107" y="712" width="200" height="39"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="39" id="pEd-iP-fQY"/>
                                 </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="small" value="YES"/>
-                                </userDefinedRuntimeAttributes>
                                 <connections>
                                     <action selector="rateReviewAction:" destination="Khk-i4-iGF" eventType="touchUpInside" id="fcR-pK-nxl"/>
                                 </connections>
                             </view>
-                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="39" translatesAutoresizingMaskIntoConstraints="NO" id="y5q-5a-QDG" userLabel="Support Button" customClass="DWActionButton">
-                                <rect key="frame" x="107" y="760.5" width="200" height="39"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="39" id="j7K-2U-YzK"/>
-                                </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="small" value="YES"/>
-                                </userDefinedRuntimeAttributes>
-                                <connections>
-                                    <action selector="contactSupportButtonAction:" destination="Khk-i4-iGF" eventType="touchUpInside" id="26l-tG-Fgt"/>
-                                </connections>
-                            </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Copyright Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vjR-PV-utO">
-                                <rect key="frame" x="20" y="843.5" width="374" height="14.5"/>
+                                <rect key="frame" x="20" y="842" width="374" height="16"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                 <color key="textColor" name="QuaternaryTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Explore Dash" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AjW-TX-RBq">
-                                <rect key="frame" x="157" y="249" width="100" height="20.5"/>
+                                <rect key="frame" x="157" y="258" width="100" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="aFo-fd-7Pl">
-                                <rect key="frame" x="152.5" y="277.5" width="109.5" height="33"/>
+                                <rect key="frame" x="148.5" y="286.5" width="117" height="36"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Last device sync " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PIm-EL-Mxu">
-                                        <rect key="frame" x="0.0" y="0.0" width="109.5" height="14.5"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="117" height="16"/>
                                         <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                         <color key="textColor" name="QuaternaryTextColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Last server update " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iAP-pI-diT">
-                                        <rect key="frame" x="0.0" y="18.5" width="109.5" height="14.5"/>
+                                        <rect key="frame" x="0.0" y="20" width="117" height="16"/>
                                         <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                         <color key="textColor" name="QuaternaryTextColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                 </subviews>
                             </stackView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BuN-nF-nFD" customClass="PlainButton" customModule="dashwallet" customModuleProvider="target">
+                                <rect key="frame" x="169.5" y="759" width="75" height="39"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="39" id="0Oy-6i-3ZE"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Button">
+                                    <color key="baseForegroundColor" name="DashBlueColor"/>
+                                </buttonConfiguration>
+                                <connections>
+                                    <action selector="contactSupportButtonAction:" destination="Khk-i4-iGF" eventType="touchUpInside" id="ugF-Ku-1oV"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="3ga-QA-gmh"/>
                         <color key="backgroundColor" name="SecondaryBackgroundColor"/>
@@ -126,14 +120,16 @@
                             <constraint firstItem="ZKZ-c6-sFB" firstAttribute="trailing" secondItem="Lne-qW-KeG" secondAttribute="trailingMargin" id="74B-i4-YUZ"/>
                             <constraint firstItem="QEh-Hn-zyc" firstAttribute="top" secondItem="ZKZ-c6-sFB" secondAttribute="bottom" constant="16" id="DGy-qx-fwC"/>
                             <constraint firstItem="vjR-PV-utO" firstAttribute="leading" secondItem="Lne-qW-KeG" secondAttribute="leadingMargin" id="EZd-w3-a5f"/>
+                            <constraint firstItem="BuN-nF-nFD" firstAttribute="centerX" secondItem="Lne-qW-KeG" secondAttribute="centerX" id="HLc-5S-bJH"/>
                             <constraint firstAttribute="trailingMargin" secondItem="odB-g7-n30" secondAttribute="trailing" id="L85-x6-v3i"/>
                             <constraint firstAttribute="trailingMargin" secondItem="pJw-Vp-Xdk" secondAttribute="trailing" id="Las-np-yke"/>
-                            <constraint firstItem="y5q-5a-QDG" firstAttribute="top" secondItem="QEh-Hn-zyc" secondAttribute="bottom" constant="8" id="MEf-KO-0cK"/>
+                            <constraint firstItem="vjR-PV-utO" firstAttribute="top" secondItem="BuN-nF-nFD" secondAttribute="bottom" constant="44" id="Q3h-RK-sax"/>
                             <constraint firstItem="aFo-fd-7Pl" firstAttribute="centerX" secondItem="Lne-qW-KeG" secondAttribute="centerX" id="Qli-lk-e6r"/>
                             <constraint firstItem="pJw-Vp-Xdk" firstAttribute="leading" secondItem="Lne-qW-KeG" secondAttribute="leadingMargin" id="Sns-l5-ovQ"/>
                             <constraint firstItem="bL4-py-5Pp" firstAttribute="centerX" secondItem="Lne-qW-KeG" secondAttribute="centerX" id="Tg2-Pg-9sW"/>
                             <constraint firstItem="AjW-TX-RBq" firstAttribute="top" secondItem="HJF-Ju-zuu" secondAttribute="bottom" constant="14" id="URj-Xq-T9e"/>
                             <constraint firstItem="odB-g7-n30" firstAttribute="top" secondItem="qL5-kd-XMW" secondAttribute="bottom" id="Wno-o3-AkN"/>
+                            <constraint firstItem="BuN-nF-nFD" firstAttribute="top" secondItem="QEh-Hn-zyc" secondAttribute="bottom" constant="8" id="awa-ig-9uH"/>
                             <constraint firstItem="HJF-Ju-zuu" firstAttribute="leading" secondItem="Lne-qW-KeG" secondAttribute="leadingMargin" id="b4l-JB-G3P"/>
                             <constraint firstItem="aFo-fd-7Pl" firstAttribute="top" secondItem="AjW-TX-RBq" secondAttribute="bottom" constant="8" id="bBx-9X-UeY"/>
                             <constraint firstItem="HJF-Ju-zuu" firstAttribute="top" secondItem="pJw-Vp-Xdk" secondAttribute="bottom" constant="10" id="fix-LI-K1s"/>
@@ -142,17 +138,15 @@
                             <constraint firstItem="AjW-TX-RBq" firstAttribute="centerX" secondItem="Lne-qW-KeG" secondAttribute="centerX" id="kth-Pl-Kwb"/>
                             <constraint firstItem="qL5-kd-XMW" firstAttribute="top" secondItem="HJF-Ju-zuu" secondAttribute="bottom" constant="100" id="o8k-Nd-Rfi"/>
                             <constraint firstItem="bL4-py-5Pp" firstAttribute="top" secondItem="3ga-QA-gmh" secondAttribute="top" constant="75" id="p3n-zV-4Zt"/>
-                            <constraint firstItem="y5q-5a-QDG" firstAttribute="centerX" secondItem="Lne-qW-KeG" secondAttribute="centerX" id="s5l-wt-zhl"/>
                             <constraint firstItem="qL5-kd-XMW" firstAttribute="leading" secondItem="Lne-qW-KeG" secondAttribute="leadingMargin" id="vdN-ng-k5H"/>
                             <constraint firstAttribute="bottomMargin" secondItem="vjR-PV-utO" secondAttribute="bottom" constant="4" id="x3w-nm-ckx"/>
-                            <constraint firstItem="vjR-PV-utO" firstAttribute="top" secondItem="y5q-5a-QDG" secondAttribute="bottom" constant="44" id="xkq-WQ-Qth"/>
                             <constraint firstAttribute="trailingMargin" secondItem="HJF-Ju-zuu" secondAttribute="trailing" id="yZF-Gm-Qe5"/>
                             <constraint firstItem="pJw-Vp-Xdk" firstAttribute="top" secondItem="bL4-py-5Pp" secondAttribute="bottom" constant="38" id="yv8-Eg-e37"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="appVersionLabel" destination="pJw-Vp-Xdk" id="Yxy-lr-OnK"/>
-                        <outlet property="contactSupportButton" destination="y5q-5a-QDG" id="Lb9-go-ES0"/>
+                        <outlet property="contactSupportButton" destination="BuN-nF-nFD" id="p5e-LP-3zC"/>
                         <outlet property="copyrightLabel" destination="vjR-PV-utO" id="ekz-QT-lQn"/>
                         <outlet property="dashLogoImageView" destination="bL4-py-5Pp" id="ue8-PG-Zkc"/>
                         <outlet property="dashSyncVersionLabel" destination="HJF-Ju-zuu" id="Av7-Z6-NVw"/>
@@ -184,7 +178,7 @@
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="SecondaryTextColor">
-            <color red="0.28627450980392155" green="0.28627450980392155" blue="0.28627450980392155" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.32156862745098042" green="0.36078431372549019" blue="0.40000000000000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>
