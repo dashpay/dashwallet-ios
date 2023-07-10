@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="YdS-GS-a75">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="YdS-GS-a75">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -12,27 +14,27 @@
             <objects>
                 <viewController id="YdS-GS-a75" customClass="DWResetWalletInfoViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="MJh-PJ-Dsr">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9vr-43-mdL" userLabel="Layout View">
-                                <rect key="frame" x="20" y="0.0" width="560" height="480"/>
+                                <rect key="frame" x="16" y="0.0" width="361" height="698"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="omW-8e-y0S">
-                                        <rect key="frame" x="0.0" y="150.5" width="560" height="179"/>
+                                        <rect key="frame" x="0.0" y="259.66666666666669" width="361" height="178.66666666666669"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" placeholderIntrinsicWidth="75" placeholderIntrinsicHeight="96" image="icon_warning" translatesAutoresizingMaskIntoConstraints="NO" id="cfX-qC-vNv" userLabel="Icon Image View">
-                                                <rect key="frame" x="242.5" y="0.0" width="75" height="96"/>
+                                                <rect key="frame" x="143" y="0.0" width="75" height="96"/>
                                             </imageView>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9A9-eA-i1Z" userLabel="Title Label">
-                                                <rect key="frame" x="0.0" y="122" width="560" height="26.5"/>
+                                                <rect key="frame" x="0.0" y="121.99999999999999" width="361" height="26.333333333333329"/>
                                                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
                                                 <color key="textColor" name="DarkTitleColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PB9-c1-jiF" userLabel="Description Label">
-                                                <rect key="frame" x="0.0" y="158.5" width="560" height="20.5"/>
+                                                <rect key="frame" x="0.0" y="158.33333333333331" width="361" height="20.333333333333343"/>
                                                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                 <color key="textColor" name="SecondaryTextColor"/>
@@ -61,33 +63,41 @@
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4uM-RK-mYH" userLabel="Continue Button" customClass="DWActionButton">
-                                <rect key="frame" x="20" y="480" width="560" height="54"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <rect key="frame" x="16" y="698" width="361" height="54"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="54" id="EQ9-WK-row"/>
                                 </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
-                                </userDefinedRuntimeAttributes>
                                 <connections>
                                     <action selector="continueButtonAction:" destination="YdS-GS-a75" eventType="touchUpInside" id="89V-Ef-eTb"/>
                                 </connections>
                             </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="43t-zS-NdU" userLabel="Cancel Button" customClass="DWActionButton">
-                                <rect key="frame" x="20" y="542" width="560" height="54"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="43t-zS-NdU" userLabel="Cancel Button">
+                                <rect key="frame" x="16" y="760" width="361" height="54"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="R2o-68-XtX" customClass="PlainButton" customModule="dashwallet" customModuleProvider="target">
+                                        <rect key="frame" x="143" y="7.6666666666666288" width="75" height="39"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="39" id="L6g-Bk-iuY"/>
+                                        </constraints>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" title="Button">
+                                            <color key="baseForegroundColor" name="DashBlueColor"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="cancelButtonAction:" destination="YdS-GS-a75" eventType="touchUpInside" id="Ow9-Ev-1kv"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
+                                    <constraint firstItem="R2o-68-XtX" firstAttribute="centerX" secondItem="43t-zS-NdU" secondAttribute="centerX" id="35C-Fg-p6o"/>
                                     <constraint firstAttribute="height" constant="54" id="SCg-nk-Pth"/>
+                                    <constraint firstItem="R2o-68-XtX" firstAttribute="centerY" secondItem="43t-zS-NdU" secondAttribute="centerY" id="a7B-Ha-POX"/>
                                 </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
-                                </userDefinedRuntimeAttributes>
-                                <connections>
-                                    <action selector="cancelButtonAction:" destination="YdS-GS-a75" eventType="touchUpInside" id="tln-zm-31O"/>
-                                </connections>
                             </view>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="0Iz-dE-ln6"/>
                         <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="4uM-RK-mYH" firstAttribute="top" secondItem="9vr-43-mdL" secondAttribute="bottom" id="0jH-2D-rZG"/>
@@ -101,10 +111,9 @@
                             <constraint firstItem="4uM-RK-mYH" firstAttribute="leading" secondItem="MJh-PJ-Dsr" secondAttribute="leadingMargin" id="ifZ-id-QJN"/>
                             <constraint firstAttribute="trailingMargin" secondItem="4uM-RK-mYH" secondAttribute="trailing" id="yab-3h-pQv"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="0Iz-dE-ln6"/>
                     </view>
                     <connections>
-                        <outlet property="cancelButton" destination="43t-zS-NdU" id="1K7-pE-RyI"/>
+                        <outlet property="cancelButton" destination="R2o-68-XtX" id="Lyf-tg-Yb9"/>
                         <outlet property="contentBottomConstraint" destination="eNu-bS-UNq" id="ZiA-28-by7"/>
                         <outlet property="continueButton" destination="4uM-RK-mYH" id="S43-pE-JUY"/>
                         <outlet property="descriptionLabel" destination="PB9-c1-jiF" id="ils-OE-Xt3"/>
@@ -121,11 +130,14 @@
         <namedColor name="DarkTitleColor">
             <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
+        <namedColor name="DashBlueColor">
+            <color red="0.0" green="0.55294117647058827" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
         <namedColor name="SecondaryBackgroundColor">
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="SecondaryTextColor">
-            <color red="0.29019607843137257" green="0.29019607843137257" blue="0.29019607843137257" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.32156862745098042" green="0.36078431372549019" blue="0.40000000000000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

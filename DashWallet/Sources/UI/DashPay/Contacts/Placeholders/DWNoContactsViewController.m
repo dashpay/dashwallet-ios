@@ -17,7 +17,7 @@
 
 #import "DWNoContactsViewController.h"
 
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWGlobalOptions.h"
 #import "DWInvitationSuggestionView.h"
 #import "DWUIKit.h"

@@ -1,5 +1,5 @@
 //
-//  Created by Sam Westrich
+//  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,26 +15,16 @@
 //  limitations under the License.
 //
 
-#import "DWBaseActionButton.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWActionButton : DWBaseActionButton
+/**
+ UIButton with Dynamic type support
+ */
+@interface DWButton : UIButton
 
-@property (assign, nonatomic) IBInspectable BOOL usedOnDarkBackground;
-@property (assign, nonatomic) IBInspectable BOOL inverted;
-@property (assign, nonatomic) IBInspectable BOOL small;
-@property (null_resettable, nonatomic, strong) IBInspectable UIColor *accentColor;
-
-- (void)showActivityIndicator;
-- (void)hideActivityIndicator;
-
-// NOTE: Internal usage only!
-- (void)resetAppearance;
-
-@end
-
-@interface DWTintedButton : DWActionButton
+- (void)setInsetsForContentPadding:(UIEdgeInsets)contentPadding imageTitlePadding:(CGFloat)imageTitlePadding;
 
 @end
 

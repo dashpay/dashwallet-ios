@@ -17,7 +17,7 @@
 
 #import "DWPreviewSeedPhraseContentView.h"
 
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWCheckbox.h"
 #import "DWSeedPhraseTitledView.h"
 #import "DWSeedUIConstants.h"
@@ -35,7 +35,7 @@ static CGFloat const PHRASE_WARNING_PADDING = 36.0;
 @property (nonatomic, strong) DWSeedPhraseTitledView *seedPhraseView;
 @property (nonatomic, strong) DWCheckbox *confirmationCheckbox;
 @property (nonatomic, strong) UIStackView *screenshotWarningStackView;
-@property (nonatomic, strong) DWActionButton *screenshotDescriptionButton;
+@property (nonatomic, strong) DashButton *screenshotDescriptionButton;
 
 @property (nonatomic, strong) NSLayoutConstraint *seedPhraseTopConstraint;
 
@@ -86,10 +86,9 @@ static CGFloat const PHRASE_WARNING_PADDING = 36.0;
         [self addSubview:screenshotWarningStackView];
         _screenshotWarningStackView = screenshotWarningStackView;
 
-        DWActionButton *screenshotDescriptionButton = [[DWActionButton alloc] init];
+        PlainButton *screenshotDescriptionButton = [[PlainButton alloc] init];
         screenshotDescriptionButton.translatesAutoresizingMaskIntoConstraints = NO;
-        screenshotDescriptionButton.inverted = YES;
-        screenshotDescriptionButton.small = YES;
+        screenshotDescriptionButton.configuration.buttonSize = UIButtonConfigurationSizeSmall;
         [screenshotDescriptionButton setTitle:NSLocalizedString(@"Why I should not take a screenshot?", nil) forState:UIControlStateNormal];
         [screenshotDescriptionButton addTarget:self action:@selector(screenshotDescriptionButtonAction) forControlEvents:UIControlEventTouchUpInside];
         [self addSubview:screenshotDescriptionButton];

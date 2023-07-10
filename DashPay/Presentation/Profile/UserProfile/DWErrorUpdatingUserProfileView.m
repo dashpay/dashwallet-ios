@@ -17,7 +17,7 @@
 
 #import "DWErrorUpdatingUserProfileView.h"
 
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -58,21 +58,15 @@ NS_ASSUME_NONNULL_END
         titleLabel.text = NSLocalizedString(@"Error updating your profile", nil);
         [contentView addSubview:titleLabel];
 
-        DWActionButton *retryButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
+        DWActionButton *retryButton = [[DWActionButton alloc] init];
         retryButton.translatesAutoresizingMaskIntoConstraints = NO;
-        retryButton.usedOnDarkBackground = NO;
-        retryButton.small = YES;
-        retryButton.inverted = NO;
         [retryButton setTitle:NSLocalizedString(@"Try again", nil) forState:UIControlStateNormal];
         [retryButton addTarget:self
                         action:@selector(retryButtonAction:)
               forControlEvents:UIControlEventTouchUpInside];
 
-        DWActionButton *cancelButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
+        PlainButton *cancelButton = [[PlainButton alloc] init];
         cancelButton.translatesAutoresizingMaskIntoConstraints = NO;
-        cancelButton.usedOnDarkBackground = NO;
-        cancelButton.small = YES;
-        cancelButton.inverted = YES;
         [cancelButton setTitle:NSLocalizedString(@"Cancel", nil) forState:UIControlStateNormal];
         [cancelButton addTarget:self
                          action:@selector(cancelButtonAction:)

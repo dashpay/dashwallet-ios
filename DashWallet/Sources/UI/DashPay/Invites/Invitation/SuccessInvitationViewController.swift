@@ -56,9 +56,8 @@ import UIKit
         
         sendButton.setTitle(NSLocalizedString("Send Invitation", comment: ""), for: .normal)
         
-        let laterButton = DWActionButton()
+        let laterButton = PlainButton()
         laterButton.translatesAutoresizingMaskIntoConstraints = false
-        laterButton.inverted = true
         laterButton.setTitle(NSLocalizedString("Maybe later", comment: ""), for: .normal)
         laterButton.addTarget(self, action: #selector(laterButtonAction), for: .touchUpInside)
         buttonsView.addArrangedSubview(laterButton)

@@ -20,7 +20,6 @@
 #import <TOCropViewController/TOCropViewController.h>
 #import <TOCropViewController/UIImage+CropRotate.h>
 
-#import "DWActionButton.h"
 #import "DWBaseActionButtonViewController.h"
 #import "DWDPAvatarView.h"
 #import "DWFaceDetector.h"
@@ -247,7 +246,7 @@ NS_ASSUME_NONNULL_END
 
 - (UIButton *)selectButton {
     if (_selectButton == nil) {
-        DWActionButton *button = [[DWActionButton alloc] initWithFrame:CGRectZero];
+        DWActionButton *button = [[DWActionButton alloc] init];
         button.translatesAutoresizingMaskIntoConstraints = NO;
         [button setTitle:NSLocalizedString(@"Select", nil) forState:UIControlStateNormal];
         [button addTarget:self
@@ -260,9 +259,8 @@ NS_ASSUME_NONNULL_END
 
 - (UIButton *)cancelButton {
     if (_cancelButton == nil) {
-        DWActionButton *button = [[DWActionButton alloc] initWithFrame:CGRectZero];
+        PlainButton *button = [[PlainButton alloc] init];
         button.translatesAutoresizingMaskIntoConstraints = NO;
-        button.inverted = YES;
         [button setTitle:NSLocalizedString(@"Cancel", nil) forState:UIControlStateNormal];
         [button addTarget:self
                       action:@selector(cancelButtonAction:)

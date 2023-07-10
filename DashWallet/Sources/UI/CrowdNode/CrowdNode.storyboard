@@ -57,8 +57,8 @@
                                 <constraints>
                                     <constraint firstAttribute="height" constant="46" id="XCM-8z-ZOE"/>
                                 </constraints>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Create Account"/>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal" title="Create Account"/>
                                 <connections>
                                     <action selector="continueAction" destination="Y6W-OH-hqX" eventType="touchUpInside" id="M7h-fG-nBq"/>
                                 </connections>
@@ -376,33 +376,33 @@
                                     <constraint firstItem="Cbd-Ir-htv" firstAttribute="leading" secondItem="trq-ib-m1w" secondAttribute="leading" id="tMg-Rc-4Je"/>
                                 </constraints>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EhN-vc-U2C" customClass="DWActionButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pOX-4p-mjM" customClass="DWActionButton">
                                 <rect key="frame" x="20" y="744" width="350" height="46"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="46" id="zlI-YT-E1b"/>
+                                    <constraint firstAttribute="height" constant="46" id="Wl9-Bq-XTM"/>
                                 </constraints>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Continue"/>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal" title="Continue"/>
                                 <connections>
-                                    <action selector="continueAction" destination="xBw-OW-Vmo" eventType="touchUpInside" id="OYP-Bo-fNH"/>
+                                    <action selector="continueAction" destination="xBw-OW-Vmo" eventType="touchUpInside" id="1hs-Pn-fAD"/>
                                 </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="7hj-7p-jsx"/>
                         <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="EhN-vc-U2C" firstAttribute="leading" secondItem="7hj-7p-jsx" secondAttribute="leading" constant="20" id="1sK-xd-AQ0"/>
                             <constraint firstItem="trq-ib-m1w" firstAttribute="leading" secondItem="7hj-7p-jsx" secondAttribute="leading" constant="28" id="A4i-Il-jJv"/>
                             <constraint firstItem="7hj-7p-jsx" firstAttribute="trailing" secondItem="4LF-hx-9fT" secondAttribute="trailing" constant="40" id="AB7-Zc-r2x"/>
-                            <constraint firstItem="7hj-7p-jsx" firstAttribute="trailing" secondItem="EhN-vc-U2C" secondAttribute="trailing" constant="20" id="CXc-2f-tH6"/>
                             <constraint firstItem="trq-ib-m1w" firstAttribute="top" secondItem="w8U-Ls-3lS" secondAttribute="bottom" id="EXk-xv-8XT"/>
                             <constraint firstItem="g40-Eq-Qi9" firstAttribute="top" secondItem="7hj-7p-jsx" secondAttribute="top" constant="15" id="JtZ-sG-RAR"/>
                             <constraint firstItem="g40-Eq-Qi9" firstAttribute="centerX" secondItem="7hj-7p-jsx" secondAttribute="centerX" id="KrG-I0-kcV"/>
+                            <constraint firstItem="pOX-4p-mjM" firstAttribute="leading" secondItem="7hj-7p-jsx" secondAttribute="leading" constant="20" id="WUl-OA-tae"/>
                             <constraint firstItem="7hj-7p-jsx" firstAttribute="trailing" secondItem="trq-ib-m1w" secondAttribute="trailing" constant="20" id="afE-Qy-Ylb"/>
                             <constraint firstItem="w8U-Ls-3lS" firstAttribute="centerY" secondItem="7hj-7p-jsx" secondAttribute="centerY" constant="30" id="bsJ-8G-w8T"/>
+                            <constraint firstItem="7hj-7p-jsx" firstAttribute="trailing" secondItem="pOX-4p-mjM" secondAttribute="trailing" constant="20" id="gls-xg-bvb"/>
                             <constraint firstItem="7hj-7p-jsx" firstAttribute="leading" secondItem="w8U-Ls-3lS" secondAttribute="leading" constant="-28" id="jOO-nE-tY8"/>
-                            <constraint firstItem="7hj-7p-jsx" firstAttribute="bottom" secondItem="EhN-vc-U2C" secondAttribute="bottom" constant="20" id="jwM-PJ-zcR"/>
                             <constraint firstItem="w8U-Ls-3lS" firstAttribute="trailing" secondItem="7hj-7p-jsx" secondAttribute="trailing" constant="-20" id="lq9-kQ-A2R"/>
+                            <constraint firstItem="7hj-7p-jsx" firstAttribute="bottom" secondItem="pOX-4p-mjM" secondAttribute="bottom" constant="20" id="o1X-TE-hui"/>
                             <constraint firstItem="4LF-hx-9fT" firstAttribute="top" secondItem="g40-Eq-Qi9" secondAttribute="bottom" constant="30" id="tjv-4s-jsY"/>
                             <constraint firstItem="4LF-hx-9fT" firstAttribute="leading" secondItem="7hj-7p-jsx" secondAttribute="leading" constant="40" id="urc-dz-LWE"/>
                         </constraints>
@@ -2129,27 +2129,27 @@
                                     </view>
                                 </subviews>
                             </stackView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="H4o-wk-rfA" userLabel="Action Button" customClass="DWActionButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="a4t-Xp-CZ6" userLabel="Action Button" customClass="DWActionButton">
                                 <rect key="frame" x="20" y="744" width="350" height="46"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="46" id="QpN-4b-0a5"/>
+                                    <constraint firstAttribute="height" constant="46" id="wIY-hD-BK9"/>
                                 </constraints>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Continue"/>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal" title="Continue"/>
                                 <connections>
-                                    <action selector="continueAction" destination="YMn-Sw-fHD" eventType="touchUpInside" id="A6M-lP-o95"/>
+                                    <action selector="continueAction" destination="YMn-Sw-fHD" eventType="touchUpInside" id="28s-2r-Zv3"/>
                                 </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Qhp-jq-i6L"/>
-                        <color key="backgroundColor" name="BackgroundColor"/>
+                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="H4o-wk-rfA" firstAttribute="leading" secondItem="Qhp-jq-i6L" secondAttribute="leading" constant="20" id="980-dR-9gh"/>
-                            <constraint firstItem="Qhp-jq-i6L" firstAttribute="bottom" secondItem="H4o-wk-rfA" secondAttribute="bottom" constant="20" id="DF8-qr-VyQ"/>
                             <constraint firstItem="UD3-PA-cd9" firstAttribute="trailing" secondItem="Qhp-jq-i6L" secondAttribute="trailing" constant="-20" id="Qvc-Un-Dfd"/>
-                            <constraint firstItem="Qhp-jq-i6L" firstAttribute="trailing" secondItem="H4o-wk-rfA" secondAttribute="trailing" constant="20" id="R3Z-bO-ofb"/>
                             <constraint firstItem="UD3-PA-cd9" firstAttribute="top" secondItem="Qhp-jq-i6L" secondAttribute="top" constant="20" id="ZD6-EX-SqA"/>
+                            <constraint firstItem="Qhp-jq-i6L" firstAttribute="bottom" secondItem="a4t-Xp-CZ6" secondAttribute="bottom" constant="20" id="kax-dw-eH4"/>
                             <constraint firstItem="UD3-PA-cd9" firstAttribute="leading" secondItem="Qhp-jq-i6L" secondAttribute="leading" constant="20" id="oqT-m6-UHM"/>
+                            <constraint firstItem="Qhp-jq-i6L" firstAttribute="trailing" secondItem="a4t-Xp-CZ6" secondAttribute="trailing" constant="20" id="wNA-Zh-13V"/>
+                            <constraint firstItem="a4t-Xp-CZ6" firstAttribute="leading" secondItem="Qhp-jq-i6L" secondAttribute="leading" constant="20" id="zQA-6z-Fva"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -2184,13 +2184,13 @@
                                 </attributedString>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6Wq-XN-Ocw" userLabel="Action Button" customClass="DWActionButton">
+                            <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6Wq-XN-Ocw" userLabel="Action Button" customClass="DWActionButton">
                                 <rect key="frame" x="20" y="744" width="350" height="46"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="46" id="TEO-op-Btk"/>
                                 </constraints>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Continue"/>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                <state key="normal" title="Continue"/>
                                 <connections>
                                     <action selector="onContinue" destination="YhO-Y4-2od" eventType="touchUpInside" id="zEr-re-EJo"/>
                                 </connections>
@@ -2200,7 +2200,7 @@
                             </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="fNT-fg-f9Z"/>
-                        <color key="backgroundColor" name="BackgroundColor"/>
+                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="fNT-fg-f9Z" firstAttribute="trailing" secondItem="VOf-bx-F8y" secondAttribute="trailing" constant="15" id="0VO-a8-woD"/>
                             <constraint firstItem="VOf-bx-F8y" firstAttribute="leading" secondItem="fNT-fg-f9Z" secondAttribute="leading" constant="15" id="5og-gZ-h2C"/>
@@ -2327,7 +2327,7 @@
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="OrY-98-FXg" userLabel="Buttons Stack">
                                 <rect key="frame" x="20" y="744" width="350" height="46"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XbJ-72-r6V">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XbJ-72-r6V" customClass="PlainButton" customModule="dashwallet" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="167.66666666666666" height="46"/>
                                         <color key="backgroundColor" name="QuaternaryFillColor"/>
                                         <constraints>
@@ -2341,12 +2341,15 @@
                                             <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
                                                 <integer key="value" value="10"/>
                                             </userDefinedRuntimeAttribute>
+                                            <userDefinedRuntimeAttribute type="color" keyPath="accentColor">
+                                                <color key="value" name="DarkTitleColor"/>
+                                            </userDefinedRuntimeAttribute>
                                         </userDefinedRuntimeAttributes>
                                         <connections>
                                             <action selector="onCancel" destination="h6e-Ca-f5w" eventType="touchUpInside" id="YZP-uL-QHK"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3Zh-D0-o2I">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3Zh-D0-o2I" customClass="DWActionButton">
                                         <rect key="frame" x="182.66666666666663" y="0.0" width="167.33333333333337" height="46"/>
                                         <color key="backgroundColor" name="DashBlueColor"/>
                                         <constraints>
@@ -2411,6 +2414,7 @@
             <point key="canvasLocation" x="6605" y="4"/>
         </scene>
     </scenes>
+    <color key="tintColor" name="DashBlueColor"/>
     <resources>
         <image name="bell.circle.fill" catalog="system" width="128" height="123"/>
         <image name="chevron.right" catalog="system" width="97" height="128"/>

@@ -17,9 +17,7 @@
 
 #import "DWSearchStateViewController.h"
 
-#import "DWActionButton.h"
-#import "DWGlobalOptions.h"
-#import "DWInvitationSuggestionView.h"
+#import "dashwallet-Swift.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -39,10 +37,10 @@ typedef NS_ENUM(NSUInteger, DWUserSearchState) {
 @property (null_resettable, nonatomic, strong) UIImageView *iconImageView;
 @property (null_resettable, nonatomic, strong) UILabel *descriptionLabel;
 @property (null_resettable, nonatomic, strong) UIButton *actionButton;
-@property (null_resettable, nonatomic, strong) DWInvitationSuggestionView *invitationView;
 
 @property (nonatomic, assign) DWUserSearchState state;
 @property (nullable, copy, nonatomic) NSString *searchQuery;
+@property (nullable, nonatomic, strong) NSError *error;
 
 @end
 
@@ -52,6 +50,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)setPlaceholderGlobalState {
     self.searchQuery = nil;
+    self.error = nil;
     self.state = DWUserSearchState_PlaceholderGlobal;
 
     [self reloadData];
@@ -59,6 +58,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)setPlaceholderLocalState {
     self.searchQuery = nil;
+    self.error = nil;
     self.state = DWUserSearchState_PlaceholderLocal;
 
     [self reloadData];
@@ -66,6 +66,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)setSearchingStateWithQuery:(NSString *)query {
     self.searchQuery = query;
+    self.error = nil;
     self.state = DWUserSearchState_Searching;
 
     [self reloadData];
@@ -73,6 +74,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)setNoResultsGlobalStateWithQuery:(NSString *)query {
     self.searchQuery = query;
+    self.error = nil;
     self.state = DWUserSearchState_NoResultsGlobal;
 
     [self reloadData];
@@ -80,13 +82,15 @@ NS_ASSUME_NONNULL_END
 
 - (void)setNoResultsLocalStateWithQuery:(NSString *)query {
     self.searchQuery = query;
+    self.error = nil;
     self.state = DWUserSearchState_NoResultsLocal;
 
     [self reloadData];
 }
 
-- (void)setErrorState {
+- (void)setErrorStateWithError:(NSError *)error {
     self.searchQuery = nil;
+    self.error = error;
     self.state = DWUserSearchState_Error;
 
     [self reloadData];
@@ -110,8 +114,6 @@ NS_ASSUME_NONNULL_END
     horizontalStackView.alignment = UIStackViewAlignmentCenter;
     [self.view addSubview:horizontalStackView];
 
-    [self.view addSubview:self.invitationView];
-
     UILayoutGuide *guide = self.view.layoutMarginsGuide;
 
     [NSLayoutConstraint activateConstraints:@[
@@ -120,10 +122,6 @@ NS_ASSUME_NONNULL_END
         [guide.trailingAnchor constraintEqualToAnchor:horizontalStackView.trailingAnchor],
         [self.view.bottomAnchor constraintEqualToAnchor:horizontalStackView.bottomAnchor],
         [self.actionButton.heightAnchor constraintEqualToConstant:44.0],
-
-        [self.invitationView.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor],
-        [guide.trailingAnchor constraintEqualToAnchor:self.invitationView.trailingAnchor],
-        [guide.bottomAnchor constraintEqualToAnchor:self.invitationView.bottomAnchor],
     ]];
 
     [self reloadData];
@@ -158,27 +156,12 @@ NS_ASSUME_NONNULL_END
 
 - (UIButton *)actionButton {
     if (_actionButton == nil) {
-        DWActionButton *button = [[DWActionButton alloc] initWithFrame:CGRectZero];
+        DashButton *button = [[DashButton alloc] init];
         button.translatesAutoresizingMaskIntoConstraints = NO;
-        button.small = YES;
-        button.inverted = YES;
-        button.usedOnDarkBackground = NO;
         [button addTarget:self action:@selector(actionButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         _actionButton = button;
     }
     return _actionButton;
-}
-
-- (DWInvitationSuggestionView *)invitationView {
-    if (!_invitationView) {
-        _invitationView = [[DWInvitationSuggestionView alloc] init];
-        _invitationView.translatesAutoresizingMaskIntoConstraints = NO;
-        [_invitationView.inviteButton addTarget:self
-                                         action:@selector(inviteButtonAction:)
-                               forControlEvents:UIControlEventTouchUpInside];
-        _invitationView.alpha = [DWGlobalOptions sharedInstance].dpInvitationFlowEnabled ? 1.0 : 0.0;
-    }
-    return _invitationView;
 }
 
 - (void)reloadData {
@@ -222,12 +205,7 @@ NS_ASSUME_NONNULL_END
     [self.delegate searchStateViewController:self buttonAction:sender];
 }
 
-- (void)inviteButtonAction:(UIButton *)sender {
-    [self.delegate searchStateViewController:self inviteButtonAction:sender];
-}
-
 - (void)configurePlaceholderState {
-    self.invitationView.hidden = YES;
     self.actionButton.hidden = YES;
 
     [self.iconImageView stopAnimating];
@@ -257,7 +235,6 @@ NS_ASSUME_NONNULL_END
 - (void)configureSearchingAnimationState {
     NSParameterAssert(self.searchQuery);
 
-    self.invitationView.hidden = YES;
     self.actionButton.hidden = YES;
 
     if (self.iconImageView.animationImages == nil) {
@@ -299,7 +276,6 @@ NS_ASSUME_NONNULL_END
 - (void)configureNoResultsGlobalState {
     NSParameterAssert(self.searchQuery);
 
-    self.invitationView.hidden = NO;
     self.actionButton.hidden = YES;
 
     [self.iconImageView stopAnimating];
@@ -332,7 +308,6 @@ NS_ASSUME_NONNULL_END
 - (void)configureNoResultsLocalState {
     NSParameterAssert(self.searchQuery);
 
-    self.invitationView.hidden = YES;
     self.actionButton.hidden = YES;
 
     [self.iconImageView stopAnimating];
@@ -363,27 +338,28 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)configureSearchErrorState {
-    self.invitationView.hidden = YES;
     self.actionButton.hidden = YES;
 
     [self.iconImageView stopAnimating];
     self.iconImageView.animationImages = nil;
-    self.iconImageView.image = [UIImage imageNamed:@"network_unavailable"];
+    self.iconImageView.image = [UIImage imageNamed:@"dp_user_search_warning"];
 
     NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
     [result beginEditing];
 
     NSAttributedString *title =
-        [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Network Unavailable", nil)
+        [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Error", nil)
                                         attributes:@{NSFontAttributeName : self.boldFont}];
     [result appendAttributedString:title];
 
-    [result appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
+    if (self.error) {
+        [result appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
 
-    NSAttributedString *subtitle =
-        [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Unable to search for a user", nil)
-                                        attributes:@{NSFontAttributeName : self.regularFont}];
-    [result appendAttributedString:subtitle];
+        NSAttributedString *subtitle =
+            [[NSAttributedString alloc] initWithString:self.error.localizedDescription
+                                            attributes:@{NSFontAttributeName : self.regularFont}];
+        [result appendAttributedString:subtitle];
+    }
 
     [result endEditing];
 
@@ -391,7 +367,6 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)configureActionButtonForSearchUsers {
-    self.invitationView.hidden = YES;
     self.actionButton.hidden = NO;
     self.actionButton.imageEdgeInsets = UIEdgeInsetsMake(0.0, -8.0, 0.0, 0.0);
     [self.actionButton setImage:[UIImage imageNamed:@"dp_search_add_contact"] forState:UIControlStateNormal];
@@ -400,7 +375,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (UIFont *)regularFont {
-    return [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
+    return [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
 }
 
 - (UIFont *)boldFont {

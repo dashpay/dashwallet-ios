@@ -17,7 +17,7 @@
 
 #import "DWInvitationActionsView.h"
 
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWTextField.h"
 #import "DWUIKit.h"
 
@@ -63,12 +63,10 @@ static NSTimeInterval DEBOUNCE_DELAY = 0.2;
         
         DWActionButton *copyButton = [[DWActionButton alloc] init];
         copyButton.translatesAutoresizingMaskIntoConstraints = NO;
-        copyButton.inverted = YES;
         [copyButton addTarget:self action:@selector(copyButtonAction) forControlEvents:UIControlEventTouchUpInside];
         [copyButton setTitle:NSLocalizedString(@"Copy Invitation Link", nil) forState:UIControlStateNormal];
         [copyButton setImage:[[UIImage imageNamed:@"invitation_copy"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]
                     forState:UIControlStateNormal];
-        [copyButton setInsetsForContentPadding:UIEdgeInsetsMake(0, 20, 0, 20) imageTitlePadding:10];
         [self addSubview:copyButton];
 
         [NSLayoutConstraint activateConstraints:@[

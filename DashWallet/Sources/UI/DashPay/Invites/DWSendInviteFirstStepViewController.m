@@ -17,7 +17,7 @@
 
 #import "DWSendInviteFirstStepViewController.h"
 
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN

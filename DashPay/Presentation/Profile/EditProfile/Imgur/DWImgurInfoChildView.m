@@ -17,7 +17,7 @@
 
 #import "DWImgurInfoChildView.h"
 
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWBorderedActionButton.h"
 #import "DWImgurItemView.h"
 #import "DWUIKit.h"
@@ -70,11 +70,8 @@ NS_ASSUME_NONNULL_END
         stackView.spacing = 20.0;
         [self addSubview:stackView];
 
-        DWActionButton *okButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
+        DWActionButton *okButton = [[DWActionButton alloc] init];
         okButton.translatesAutoresizingMaskIntoConstraints = NO;
-        okButton.usedOnDarkBackground = NO;
-        okButton.small = YES;
-        okButton.inverted = NO;
         [okButton setTitle:NSLocalizedString(@"Agree", nil) forState:UIControlStateNormal];
         [okButton addTarget:self
                       action:@selector(okButtonAction)

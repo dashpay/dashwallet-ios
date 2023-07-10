@@ -26,7 +26,6 @@ static const bool _SNAPSHOT = 0;
 #import "NSString+Dash.h"
 
 //MARK: DashWallet
-#import "DWActionButton.h"
 #import "DWEnvironment.h"
 #import "DWTitleDetailCellModel.h"
 #import "DWTitleDetailItem.h"

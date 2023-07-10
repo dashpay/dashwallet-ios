@@ -17,7 +17,7 @@
 
 #import "DWAvatarExternalSourceView.h"
 
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWBorderedActionButton.h"
 #import "DWUIKit.h"
 
@@ -94,11 +94,8 @@ NS_ASSUME_NONNULL_END
         [self addSubview:descLabel];
         _descLabel = descLabel;
 
-        DWActionButton *okButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
+        DWActionButton *okButton = [[DWActionButton alloc] init];
         okButton.translatesAutoresizingMaskIntoConstraints = NO;
-        okButton.usedOnDarkBackground = NO;
-        okButton.small = YES;
-        okButton.inverted = NO;
         [okButton setTitle:NSLocalizedString(@"OK", nil) forState:UIControlStateNormal];
         [okButton addTarget:self
                       action:@selector(okButtonAction)

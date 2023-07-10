@@ -17,7 +17,7 @@
 
 #import "DWUserProfileHeaderView.h"
 
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWDPAvatarView.h"
 #import "DWPendingContactInfoView.h"
 #import "DWUIKit.h"
@@ -112,7 +112,7 @@ NS_ASSUME_NONNULL_END
         pendingStackView.axis = UILayoutConstraintAxisVertical;
         [bottomContentView addSubview:pendingStackView];
 
-        DWActionButton *actionButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
+        DWActionButton *actionButton = [[DWActionButton alloc] init];
         actionButton.translatesAutoresizingMaskIntoConstraints = NO;
         [actionButton addTarget:self action:@selector(actionButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         [actionButton setTitle:NSLocalizedString(@"Pay", nil) forState:UIControlStateNormal];

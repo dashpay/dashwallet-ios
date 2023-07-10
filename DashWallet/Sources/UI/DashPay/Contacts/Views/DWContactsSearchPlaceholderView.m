@@ -17,7 +17,7 @@
 
 #import "DWContactsSearchPlaceholderView.h"
 
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -47,11 +47,8 @@ NS_ASSUME_NONNULL_END
         [label setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
         _descriptionLabel = label;
 
-        DWActionButton *button = [[DWActionButton alloc] initWithFrame:CGRectZero];
+        PlainButton *button = [[PlainButton alloc] init];
         button.translatesAutoresizingMaskIntoConstraints = NO;
-        button.small = YES;
-        button.inverted = YES;
-        button.usedOnDarkBackground = NO;
         button.imageEdgeInsets = UIEdgeInsetsMake(0.0, -8.0, 0.0, 0.0);
         [button setImage:[UIImage imageNamed:@"dp_search_add_contact"] forState:UIControlStateNormal];
         [button setTitle:NSLocalizedString(@"Search for a User on the Dash Network", nil)

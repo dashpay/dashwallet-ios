@@ -17,7 +17,7 @@
 
 #import "DWAvatarExternalLoadingView.h"
 
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWHourGlassAnimationView.h"
 #import "DWUIKit.h"
 
@@ -64,11 +64,8 @@ NS_ASSUME_NONNULL_END
         subtitleLabel.text = NSLocalizedString(@"Fetching Image", nil);
         [self addSubview:subtitleLabel];
 
-        DWActionButton *cancelButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
+        PlainButton *cancelButton = [[PlainButton alloc] init];
         cancelButton.translatesAutoresizingMaskIntoConstraints = NO;
-        cancelButton.usedOnDarkBackground = NO;
-        cancelButton.small = YES;
-        cancelButton.inverted = YES;
         [cancelButton setTitle:NSLocalizedString(@"Cancel", nil) forState:UIControlStateNormal];
         [cancelButton addTarget:self
                          action:@selector(cancelButtonAction)

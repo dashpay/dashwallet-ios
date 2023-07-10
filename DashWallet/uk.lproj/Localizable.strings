@@ -309,9 +309,6 @@
 "Clear trusted node?" = "Видалити довірений вузол?";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid Dash address" = "Буфер обміну не містить Dash адресу";
-
-/* No comment provided by engineer. */
 "Close" = "Закрити";
 
 /* No comment provided by engineer. */
@@ -790,6 +787,9 @@
 /* Balance */
 "Invalid amount" = "Invalid amount";
 
+/* No comment provided by engineer. */
+"Invalid Dash address" = "Invalid Dash address";
+
 /* CrowdNode Online */
 "Invalid Email" = "Invalid Email";
 
@@ -822,6 +822,9 @@
 
 /* No comment provided by engineer. */
 "Join Evolution" = "Приєднатись до Evolution";
+
+/* No comment provided by engineer. */
+"Key Id" = "Key Id";
 
 /* No comment provided by engineer. */
 "Keypair" = "Keypair";
@@ -1134,9 +1137,6 @@
 "Please check your network connection" = "Будь ласка, перевірте підключення до мережі";
 
 /* No comment provided by engineer. */
-"Please copy the Dash address first and try again" = "Please copy the Dash address first and try again";
-
-/* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Введіть PIN-код, щоб оновити гаманець";
 
 /* Leftover balance warning */
@@ -1170,6 +1170,9 @@
 "Previously used at: " = "Previously used at: ";
 
 /* No comment provided by engineer. */
+"Private / Public Keys (base64)" = "Private / Public Keys (base64)";
+
+/* No comment provided by engineer. */
 "Private key" = "Приватний ключ";
 
 /* No comment provided by engineer. */
@@ -1183,6 +1186,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Публічний ключ";
+
+/* No comment provided by engineer. */
+"Public key (legacy)" = "Public key (legacy)";
 
 /* Coinbase/Buy Dash */
 "Purchase" = "Покупка";
@@ -1437,6 +1443,9 @@
 /* No comment provided by engineer. */
 "Shop with DASH at over 150k merchants" = "Shop with DASH at over 150k merchants";
 
+/* Enter Address Screen */
+"Show content in the clipboard" = "Show content in the clipboard";
+
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Показати ключі Мастернод";
 
@@ -1523,6 +1532,9 @@
 
 /* Balance */
 "Syncing…" = "Syncing…";
+
+/* Enter Address Screen */
+"Tap the address from the clipboard to paste it" = "Tap the address from the clipboard to paste it";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Торкніться, щоб приховати баланс";
@@ -1732,6 +1744,9 @@
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Wait until wallet is synced to complete the transaction";
+
+/* Enter Address Screen */
+"Wallet Address" = "Wallet Address";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "Гаманець вимкнено";

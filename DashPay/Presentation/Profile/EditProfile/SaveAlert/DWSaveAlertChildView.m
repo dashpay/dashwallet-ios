@@ -15,9 +15,9 @@
 //  limitations under the License.
 //
 
-#import "DWSaveAlertChildView.h"
-#import "DWActionButton.h"
 #import "DWBorderedActionButton.h"
+#import "DWSaveAlertChildView.h"
+#import "dashwallet-Swift.h"
 #import "DWUIKit.h"
 
 static CGFloat const ViewCornerRadius = 8.0;
@@ -70,11 +70,8 @@ NS_ASSUME_NONNULL_END
         [self addSubview:subtitleLabel];
         _subtitleLabel = subtitleLabel;
 
-        DWActionButton *okButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
+        DWActionButton *okButton = [[DWActionButton alloc] init];
         okButton.translatesAutoresizingMaskIntoConstraints = NO;
-        okButton.usedOnDarkBackground = NO;
-        okButton.small = YES;
-        okButton.inverted = NO;
         [okButton setTitle:NSLocalizedString(@"Yes", nil) forState:UIControlStateNormal];
         [okButton addTarget:self
                       action:@selector(okButtonAction)

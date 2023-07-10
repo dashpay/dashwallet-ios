@@ -18,7 +18,7 @@
 #import "DPAlertViewController.h"
 
 #import "DPAlertChildContentsView.h"
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWModalPopupTransition.h"
 #import "DWUIKit.h"
 
@@ -65,11 +65,8 @@
     childView.desc = self.desc;
     [contentView addSubview:childView];
 
-    DWActionButton *okButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
+    DWActionButton *okButton = [[DWActionButton alloc] init];
     okButton.translatesAutoresizingMaskIntoConstraints = NO;
-    okButton.usedOnDarkBackground = NO;
-    okButton.small = YES;
-    okButton.inverted = NO;
     [okButton setTitle:NSLocalizedString(@"OK", nil) forState:UIControlStateNormal];
     [okButton addTarget:self action:@selector(closeButtonAction:) forControlEvents:UIControlEventTouchUpInside];
     [contentView addSubview:okButton];

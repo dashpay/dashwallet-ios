@@ -17,7 +17,7 @@
 
 #import "DWInvitationSuggestionView.h"
 
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWUIKit.h"
 
 @implementation DWInvitationSuggestionView
@@ -40,9 +40,8 @@
         inviteImageView.image = [UIImage imageNamed:@"menu_invite"];
         inviteImageView.contentMode = UIViewContentModeCenter;
 
-        DWActionButton *inviteButton = [[DWActionButton alloc] init];
+        PlainButton *inviteButton = [[PlainButton alloc] init];
         inviteButton.translatesAutoresizingMaskIntoConstraints = NO;
-        inviteButton.inverted = YES;
         [inviteButton setTitle:NSLocalizedString(@"Invite Someone to join the Dash Network", nil) forState:UIControlStateNormal];
 
         UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[

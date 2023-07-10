@@ -309,9 +309,6 @@
 "Clear trusted node?" = "信頼されているノードを消去しますか？";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid Dash address" = "クリップボードに有効なDashアドレスが含まれていません";
-
-/* No comment provided by engineer. */
 "Close" = "閉じる";
 
 /* No comment provided by engineer. */
@@ -790,6 +787,9 @@
 /* Balance */
 "Invalid amount" = "無効な金額";
 
+/* No comment provided by engineer. */
+"Invalid Dash address" = "Invalid Dash address";
+
 /* CrowdNode Online */
 "Invalid Email" = "無効なEメール";
 
@@ -822,6 +822,9 @@
 
 /* No comment provided by engineer. */
 "Join Evolution" = "エボリューションに参加する";
+
+/* No comment provided by engineer. */
+"Key Id" = "Key Id";
 
 /* No comment provided by engineer. */
 "Keypair" = "Keypair";
@@ -1134,9 +1137,6 @@
 "Please check your network connection" = "ネットワーク接続を確認してください";
 
 /* No comment provided by engineer. */
-"Please copy the Dash address first and try again" = "Please copy the Dash address first and try again";
-
-/* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "ウォレットをアップグレードするためPINを入力してください";
 
 /* Leftover balance warning */
@@ -1170,6 +1170,9 @@
 "Previously used at: " = "Previously used at: ";
 
 /* No comment provided by engineer. */
+"Private / Public Keys (base64)" = "Private / Public Keys (base64)";
+
+/* No comment provided by engineer. */
 "Private key" = "プライベートキー";
 
 /* No comment provided by engineer. */
@@ -1183,6 +1186,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "パブリックキー";
+
+/* No comment provided by engineer. */
+"Public key (legacy)" = "Public key (legacy)";
 
 /* Coinbase/Buy Dash */
 "Purchase" = "購入";
@@ -1437,6 +1443,9 @@
 /* No comment provided by engineer. */
 "Shop with DASH at over 150k merchants" = "150,000店以上の加盟店でDASHを使ってお買い物";
 
+/* Enter Address Screen */
+"Show content in the clipboard" = "Show content in the clipboard";
+
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "マスターノードキーを表示する";
 
@@ -1523,6 +1532,9 @@
 
 /* Balance */
 "Syncing…" = "同期中…";
+
+/* Enter Address Screen */
+"Tap the address from the clipboard to paste it" = "Tap the address from the clipboard to paste it";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "タップして残高を非表示にする";
@@ -1732,6 +1744,9 @@
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "ウォレットが同期されるまで待ち、取引を完了させます。";
+
+/* Enter Address Screen */
+"Wallet Address" = "Wallet Address";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "ウォレットは機能停止しています";

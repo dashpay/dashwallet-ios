@@ -41,7 +41,7 @@ class InvitationSourceItem: NSObject, UIActivityItemSource
     internal var actionsView: DWInvitationActionsView!
     internal var invitationView: UIView!
     internal var buttonsView: UIStackView!
-    internal var sendButton: DWActionButton!
+    internal var sendButton: ActionButton!
     private var bottomConstraint:  NSLayoutConstraint!
     
     internal let invitation: DSBlockchainInvitation
@@ -167,7 +167,7 @@ class InvitationSourceItem: NSObject, UIActivityItemSource
             view.addGestureRecognizer(tap)
             buttonsView.addArrangedSubview(view)
         }else{
-            sendButton = DWActionButton()
+            sendButton = ActionButton()
             sendButton.translatesAutoresizingMaskIntoConstraints = false
             sendButton.setTitle(NSLocalizedString("Send again", comment: ""), for: .normal)
             sendButton.addTarget(self, action: #selector(sendButtonAction), for: .touchUpInside)

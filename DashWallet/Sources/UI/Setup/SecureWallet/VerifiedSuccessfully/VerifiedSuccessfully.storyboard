@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="PEk-iI-57W">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="PEk-iI-57W">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -12,46 +14,42 @@
             <objects>
                 <viewController id="PEk-iI-57W" customClass="DWVerifiedSuccessfullyViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="54K-It-TJG">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="70R-CV-sC3" customClass="DWCenteredScrollView">
-                                <rect key="frame" x="20" y="0.0" width="560" height="600"/>
+                                <rect key="frame" x="16" y="59" width="361" height="759"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cyD-gM-R0G" userLabel="Content View">
-                                        <rect key="frame" x="0.0" y="0.0" width="560" height="248"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="361" height="247.66666666666666"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_security" translatesAutoresizingMaskIntoConstraints="NO" id="GJ9-4Z-JDo">
-                                                <rect key="frame" x="242.5" y="0.0" width="75" height="96"/>
+                                                <rect key="frame" x="143" y="0.0" width="75" height="96"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="75" id="XWX-T1-yIL"/>
                                                     <constraint firstAttribute="height" constant="96" id="oMs-yc-swi"/>
                                                 </constraints>
                                             </imageView>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Kqh-mH-tqk" userLabel="Title Label">
-                                                <rect key="frame" x="0.0" y="124" width="560" height="26.5"/>
+                                                <rect key="frame" x="0.0" y="123.99999999999999" width="361" height="26.333333333333329"/>
                                                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
                                                 <color key="textColor" name="DarkTitleColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8z5-yC-Rn6" userLabel="Description Label">
-                                                <rect key="frame" x="0.0" y="164.5" width="560" height="20.5"/>
+                                                <rect key="frame" x="0.0" y="164.33333333333334" width="361" height="20.333333333333343"/>
                                                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                 <color key="textColor" name="SecondaryTextColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jC3-Xp-Uc5" customClass="DWActionButton">
-                                                <rect key="frame" x="253" y="209" width="54" height="39"/>
+                                                <rect key="frame" x="153.66666666666666" y="208.66666666666669" width="54" height="39"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="39" id="ZL8-1r-ADg"/>
                                                 </constraints>
                                                 <state key="normal" title="Button"/>
-                                                <userDefinedRuntimeAttributes>
-                                                    <userDefinedRuntimeAttribute type="boolean" keyPath="small" value="YES"/>
-                                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
-                                                </userDefinedRuntimeAttributes>
                                                 <connections>
                                                     <action selector="continueButtonAction" destination="PEk-iI-57W" eventType="touchUpInside" id="afH-Y5-9po"/>
                                                 </connections>
@@ -83,6 +81,7 @@
                                 </constraints>
                             </scrollView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="Z0P-NO-yr4"/>
                         <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="70R-CV-sC3" firstAttribute="leading" secondItem="54K-It-TJG" secondAttribute="leadingMargin" id="EEq-nm-8c1"/>
@@ -90,7 +89,6 @@
                             <constraint firstItem="70R-CV-sC3" firstAttribute="bottom" secondItem="Z0P-NO-yr4" secondAttribute="bottom" id="bsW-dC-bk2"/>
                             <constraint firstAttribute="trailingMargin" secondItem="70R-CV-sC3" secondAttribute="trailing" id="nf4-Yn-7e5"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="Z0P-NO-yr4"/>
                     </view>
                     <connections>
                         <outlet property="continueButton" destination="jC3-Xp-Uc5" id="llf-BZ-HVR"/>
@@ -114,7 +112,7 @@
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="SecondaryTextColor">
-            <color red="0.28627450980392155" green="0.28627450980392155" blue="0.28627450980392155" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.32156862745098042" green="0.36078431372549019" blue="0.40000000000000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

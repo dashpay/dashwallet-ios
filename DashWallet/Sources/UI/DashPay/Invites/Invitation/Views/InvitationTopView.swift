@@ -102,7 +102,7 @@ class InvitationTopView: BaseInvitationTopView {
 
 class BaseInvitationTopView: UIView {
     
-    var previewButton: DWActionButton = DWActionButton()
+    var previewButton: PlainButton = PlainButton()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -110,7 +110,6 @@ class BaseInvitationTopView: UIView {
         self.backgroundColor = UIColor.dw_background()
         
         previewButton.translatesAutoresizingMaskIntoConstraints = false
-        previewButton.inverted = true
         previewButton.setTitle(NSLocalizedString("Preview Invitation", comment: ""), for: .normal)
         self.addSubview(previewButton)
         

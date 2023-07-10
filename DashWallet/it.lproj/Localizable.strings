@@ -309,9 +309,6 @@
 "Clear trusted node?" = "Rimuovere il nodo affidabile?";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid Dash address" = "Gli appunti non contiene un indirizzo Dash valido";
-
-/* No comment provided by engineer. */
 "Close" = "Chiudi";
 
 /* No comment provided by engineer. */
@@ -790,6 +787,9 @@
 /* Balance */
 "Invalid amount" = "Importo non valido";
 
+/* No comment provided by engineer. */
+"Invalid Dash address" = "Invalid Dash address";
+
 /* CrowdNode Online */
 "Invalid Email" = "E-mail non valida";
 
@@ -822,6 +822,9 @@
 
 /* No comment provided by engineer. */
 "Join Evolution" = "Aderisci a Evolution";
+
+/* No comment provided by engineer. */
+"Key Id" = "Key Id";
 
 /* No comment provided by engineer. */
 "Keypair" = "Keypair";
@@ -1134,9 +1137,6 @@
 "Please check your network connection" = "Si prega di controllare la connessione di rete";
 
 /* No comment provided by engineer. */
-"Please copy the Dash address first and try again" = "Please copy the Dash address first and try again";
-
-/* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Inserisci il PIN per aggiornare il portafoglio";
 
 /* Leftover balance warning */
@@ -1170,6 +1170,9 @@
 "Previously used at: " = "Previously used at: ";
 
 /* No comment provided by engineer. */
+"Private / Public Keys (base64)" = "Private / Public Keys (base64)";
+
+/* No comment provided by engineer. */
 "Private key" = "Chiave privata";
 
 /* No comment provided by engineer. */
@@ -1183,6 +1186,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Chiave pubblica";
+
+/* No comment provided by engineer. */
+"Public key (legacy)" = "Public key (legacy)";
 
 /* Coinbase/Buy Dash */
 "Purchase" = "Acquisto";
@@ -1437,6 +1443,9 @@
 /* No comment provided by engineer. */
 "Shop with DASH at over 150k merchants" = "Fai acquisti con DASH presso oltre 150.000 commercianti";
 
+/* Enter Address Screen */
+"Show content in the clipboard" = "Show content in the clipboard";
+
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Mostra le chiavi masternode";
 
@@ -1523,6 +1532,9 @@
 
 /* Balance */
 "Syncing…" = "Sincronizzazione...";
+
+/* Enter Address Screen */
+"Tap the address from the clipboard to paste it" = "Tap the address from the clipboard to paste it";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Tocca per nascondere il saldo";
@@ -1732,6 +1744,9 @@
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Attendi fino a quando il portafoglio non viene sincronizzato per completare la transazione";
+
+/* Enter Address Screen */
+"Wallet Address" = "Wallet Address";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "Portafoglio disabilitato";

@@ -18,7 +18,7 @@
 #import "DWInvitationPreviewViewController.h"
 
 #import "DSBlockchainIdentity+DWDisplayName.h"
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWEnvironment.h"
 #import "DWModalPopupTransition.h"
 #import "DWSuccessInvitationView.h"
@@ -83,11 +83,8 @@ NS_ASSUME_NONNULL_END
     subtitle.numberOfLines = 0;
     [contentView addSubview:subtitle];
 
-    DWActionButton *okButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
+    PlainButton *okButton = [[PlainButton alloc] init];
     okButton.translatesAutoresizingMaskIntoConstraints = NO;
-    okButton.usedOnDarkBackground = NO;
-    okButton.small = YES;
-    okButton.inverted = YES;
     [okButton setTitle:NSLocalizedString(@"Close", nil) forState:UIControlStateNormal];
     [okButton addTarget:self action:@selector(closeButtonAction:) forControlEvents:UIControlEventTouchUpInside];
     [contentView addSubview:okButton];

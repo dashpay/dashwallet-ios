@@ -24,7 +24,7 @@ final class OnlineAccountEmailController: UIViewController {
     private let viewModel = CrowdNodeModel.shared
 
     @IBOutlet var input: DashInputField!
-    @IBOutlet var continueButton: DWActionButton!
+    @IBOutlet var continueButton: ActionButton!
     @IBOutlet var actionButtonBottomConstraint: NSLayoutConstraint!
 
     private var isInProgress = false {

@@ -61,8 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
         [self.backgroundColors removeObjectForKey:@(state)];
     }
 
-    [self updateButtonHighlighted:self.highlighted
-                         selected:self.selected];
+    [self updateButtonHighlighted:self.highlighted selected:self.selected];
 }
 
 #pragma mark - Border color
@@ -79,8 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
         [self.borderColors removeObjectForKey:@(state)];
     }
 
-    [self updateButtonHighlighted:self.highlighted
-                         selected:self.selected];
+    [self updateButtonHighlighted:self.highlighted selected:self.selected];
 }
 
 #pragma mark - Border width
@@ -97,8 +95,7 @@ NS_ASSUME_NONNULL_BEGIN
         [self.borderWidths removeObjectForKey:@(state)];
     }
 
-    [self updateButtonHighlighted:self.highlighted
-                         selected:self.selected];
+    [self updateButtonHighlighted:self.highlighted selected:self.selected];
 }
 
 #pragma mark - Private

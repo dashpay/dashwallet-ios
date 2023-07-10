@@ -18,7 +18,7 @@
 #import "DWUserProfileModalQRContentView.h"
 
 #import "DSBlockchainIdentity+DWDisplayTitleSubtitle.h"
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWEnvironment.h"
 #import "DWReceiveModelProtocol.h"
 #import "DWUIKit.h"
@@ -70,18 +70,13 @@ NS_ASSUME_NONNULL_END
         [contentView addSubview:infoLabel];
         _infoLabel = infoLabel;
 
-        DWActionButton *shareButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
-        shareButton.usedOnDarkBackground = NO;
-        shareButton.small = YES;
+        DWActionButton *shareButton = [[DWActionButton alloc] init];
         [shareButton setTitle:NSLocalizedString(@"Share", nil) forState:UIControlStateNormal];
         [shareButton addTarget:self
                         action:@selector(shareButtonAction:)
               forControlEvents:UIControlEventTouchUpInside];
 
-        DWActionButton *closeButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
-        closeButton.usedOnDarkBackground = NO;
-        closeButton.small = YES;
-        closeButton.inverted = YES;
+        PlainButton *closeButton = [[PlainButton alloc] init];
         [closeButton setTitle:NSLocalizedString(@"Close", nil) forState:UIControlStateNormal];
         [closeButton addTarget:self
                         action:@selector(closeButtonAction:)

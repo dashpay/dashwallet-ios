@@ -19,7 +19,6 @@
 
 #import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
 
-#import "DWActionButton.h"
 #import "DWUIKit.h"
 #import "DevicesCompatibility.h"
 #import "dashwallet-Swift.h"
@@ -185,7 +184,7 @@ CGFloat DWBottomButtonHeight(void) {
             self.barActionButton = barButtonItem;
         }
         else {
-            bottomActionButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
+            bottomActionButton = [[DWActionButton alloc] init];
             bottomActionButton.translatesAutoresizingMaskIntoConstraints = NO;
             [bottomActionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
             [bottomActionButton setTitle:actionButtonDisabledTitle forState:UIControlStateDisabled];

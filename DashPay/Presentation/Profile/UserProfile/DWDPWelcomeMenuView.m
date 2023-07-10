@@ -17,7 +17,7 @@
 
 #import "DWDPWelcomeMenuView.h"
 
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWShadowView.h"
 #import "DWUIKit.h"
 
@@ -70,11 +70,8 @@ NS_ASSUME_NONNULL_END
         subtitleLabel.textAlignment = NSTextAlignmentCenter;
         [contentView addSubview:subtitleLabel];
 
-        DWActionButton *joinButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
+        DWActionButton *joinButton = [[DWActionButton alloc] init];
         joinButton.translatesAutoresizingMaskIntoConstraints = NO;
-        joinButton.usedOnDarkBackground = NO;
-        joinButton.small = YES;
-        joinButton.inverted = NO;
         [joinButton setTitle:NSLocalizedString(@"Join", nil) forState:UIControlStateNormal];
         [contentView addSubview:joinButton];
         _joinButton = joinButton;

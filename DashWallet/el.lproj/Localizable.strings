@@ -309,9 +309,6 @@
 "Clear trusted node?" = "Εκκαθάριση εμπίστου κόμβου;";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid Dash address" = "Το πρόχειρο δεν περιέχει κάποια έγκυρη διεύθυνση Dash";
-
-/* No comment provided by engineer. */
 "Close" = "κλείσιμο";
 
 /* No comment provided by engineer. */
@@ -790,6 +787,9 @@
 /* Balance */
 "Invalid amount" = "Ανεπαρκές ποσό";
 
+/* No comment provided by engineer. */
+"Invalid Dash address" = "Invalid Dash address";
+
 /* CrowdNode Online */
 "Invalid Email" = "Μη έγκυρο email";
 
@@ -822,6 +822,9 @@
 
 /* No comment provided by engineer. */
 "Join Evolution" = "Εγγραφείτε στο Evolution";
+
+/* No comment provided by engineer. */
+"Key Id" = "Key Id";
 
 /* No comment provided by engineer. */
 "Keypair" = "Keypair";
@@ -1134,9 +1137,6 @@
 "Please check your network connection" = "Ελέγξτε τη σύνδεση δικτύου σας";
 
 /* No comment provided by engineer. */
-"Please copy the Dash address first and try again" = "Please copy the Dash address first and try again";
-
-/* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Παρακαλώ εισάγετε το PIN για να αναβαθμίσετε το πορτοφόλι";
 
 /* Leftover balance warning */
@@ -1170,6 +1170,9 @@
 "Previously used at: " = "Previously used at: ";
 
 /* No comment provided by engineer. */
+"Private / Public Keys (base64)" = "Private / Public Keys (base64)";
+
+/* No comment provided by engineer. */
 "Private key" = "Ιδιωτικό κλειδί";
 
 /* No comment provided by engineer. */
@@ -1183,6 +1186,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Δημόσιο κλειδί";
+
+/* No comment provided by engineer. */
+"Public key (legacy)" = "Public key (legacy)";
 
 /* Coinbase/Buy Dash */
 "Purchase" = "Αγορά";
@@ -1437,6 +1443,9 @@
 /* No comment provided by engineer. */
 "Shop with DASH at over 150k merchants" = "Αγοράστε με το DASH σε πάνω από 150 χιλιάδες εμπόρους";
 
+/* Enter Address Screen */
+"Show content in the clipboard" = "Show content in the clipboard";
+
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Προβολή κλειδιών Masternode";
 
@@ -1523,6 +1532,9 @@
 
 /* Balance */
 "Syncing…" = "Συγχρονισμός...";
+
+/* Enter Address Screen */
+"Tap the address from the clipboard to paste it" = "Tap the address from the clipboard to paste it";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Πατήστε για να κρύψετε το υπόλοιπο";
@@ -1732,6 +1744,9 @@
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Περιμένετε μέχρι να συγχρονιστεί το πορτοφόλι για να ολοκληρώσετε τη συναλλαγή";
+
+/* Enter Address Screen */
+"Wallet Address" = "Wallet Address";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "Το πορτοφόλι απενεργοποιήθηκε";
