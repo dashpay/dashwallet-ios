@@ -20,7 +20,6 @@
 #import "DPAlertViewController+DWInvite.h"
 #import "DWConfirmInvitationViewController.h"
 #import "DWFullScreenModalControllerViewController.h"
-#import "DWNavigationController.h"
 #import "DWSendInviteFirstStepViewController.h"
 
 #import "DWUIKit.h"

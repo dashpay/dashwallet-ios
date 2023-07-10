@@ -16,9 +16,8 @@
 //
 
 #import "DWBaseActionButtonViewController.h"
-
 #import "DWGetStarted.h"
-#import "DWNavigationFullscreenable.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

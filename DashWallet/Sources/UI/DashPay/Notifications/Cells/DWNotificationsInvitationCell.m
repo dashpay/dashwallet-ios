@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_END
     if (self) {
         UIView *view = [[UIView alloc] init];
         view.translatesAutoresizingMaskIntoConstraints = NO;
-        view.backgroundColor = [UIColor dw_lightBlueColor];
+        view.backgroundColor = [UIColor dw_dashNavigationBlueColor];
         view.layer.cornerRadius = 8;
         view.layer.masksToBounds = YES;
         [self.contentView addSubview:view];

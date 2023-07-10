@@ -101,10 +101,11 @@ class InvitationSourceItem: NSObject, UIActivityItemSource
     @objc func profileAction() {
         let item = DWDPUserObject(blockchainIdentity: invitation.identity)
         let payModel = DWPayModel()
-        let dataProvider = DWTransactionListDataProviderStub()
-        
-        let profileController = DWUserProfileViewController(item: item, payModel: payModel, dataProvider: dataProvider, shouldSkipUpdating: true, shownAfterPayment: false)
-        self.navigationController?.pushViewController(profileController, animated: true)
+        //TODO: DashPay
+//        let dataProvider = DWTransactionListDataProviderStub()
+//
+//        let profileController = DWUserProfileViewController(item: item, payModel: payModel, dataProvider: dataProvider, shouldSkipUpdating: true, shownAfterPayment: false)
+//        self.navigationController?.pushViewController(profileController, animated: true)
     }
     
     //MARK: Hierarchy

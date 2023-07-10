@@ -19,8 +19,8 @@
 
 #import "DWDPWelcomeViewController.h"
 #import "DWGetStartedViewController.h"
-#import "DWNavigationController.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

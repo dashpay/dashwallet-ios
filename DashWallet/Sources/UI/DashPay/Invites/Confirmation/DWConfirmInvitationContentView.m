@@ -20,7 +20,7 @@
 #import "DWCheckbox.h"
 #import "DWDashPayConstants.h"
 #import "DWUIKit.h"
-#import "NSAttributedString+DWBuilder.h"
+#import "dashwallet-Swift.h"
 #import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN

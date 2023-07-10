@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DWNavigationChildViewController.h"
+@import UIKit;
 
 #import "DWDashPayProtocol.h"
 #import "DWDashPayReadyProtocol.h"
@@ -24,7 +24,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRootContactsViewController : DWNavigationChildViewController
+@interface DWRootContactsViewController : UIViewController
 
 - (instancetype)initWithPayModel:(id<DWPayModelProtocol>)payModel
                     dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider

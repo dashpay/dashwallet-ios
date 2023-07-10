@@ -6374,8 +6374,7 @@
 				C943B48E2A40A54600AF23C5 /* Global */,
 				C943B49E2A40A54600AF23C5 /* Notifications */,
 			);
-			name = DashPay;
-			path = "../../../../DashWallet-Platform/DashWallet/Sources/UI/DashPay";
+			path = DashPay;
 			sourceTree = "<group>";
 		};
 		C943B3502A40A54500AF23C5 /* Contacts */ = {
