@@ -219,6 +219,12 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_grayButtonColor {
+    UIColor *color = [UIColor colorNamed:@"GrayButtonColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END
