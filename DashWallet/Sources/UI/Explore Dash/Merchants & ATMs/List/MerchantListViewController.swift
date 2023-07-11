@@ -39,6 +39,7 @@ enum MerchantsListSegment: Int {
         let showReversedLocation: Bool
         let showMap: Bool
         let showLocationServiceSettings: Bool
+        var showsFilters = true
         var defaultFilters = PointOfUseListFilters()
         defaultFilters.merchantPaymentTypes = [.dash, .giftCard]
         defaultFilters.radius = .twenty
@@ -51,7 +52,7 @@ enum MerchantsListSegment: Int {
             showReversedLocation = false
             showMap = false
             dataProvider = OnlineMerchantsDataProvider()
-
+            showsFilters = false
         case .nearby:
             showLocationServiceSettings = true
             showReversedLocation = true
@@ -67,7 +68,7 @@ enum MerchantsListSegment: Int {
 
         return .init(tag: rawValue, title: title, showMap: showMap, showLocationServiceSettings: showLocationServiceSettings,
                      showReversedLocation: showReversedLocation, dataProvider: dataProvider, filterGroups: filterGroups,
-                     defaultFilters: defaultFilters, territoriesDataSource: territories)
+                     defaultFilters: defaultFilters, territoriesDataSource: territories, showsFilters: showsFilters)
     }
 }
 
@@ -86,11 +87,11 @@ extension MerchantsListSegment {
     var filterGroups: [PointOfUseListFiltersGroup] {
         switch self {
         case .online:
-            return [.paymentType]
+            return []
         case .nearby:
-            return [.paymentType, .sortByDistanceOrName, .radius]
+            return [.sortByDistanceOrName, .radius]
         case .all:
-            return [.paymentType, .sortByName, .territory, .radius]
+            return [.sortByName, .territory, .radius]
         }
     }
 
@@ -228,6 +229,12 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
         if DWLocationManager.shared.isAuthorized {
             model.currentSegment = model.segments[MerchantsListSegment.nearby.rawValue]
         }
+    }
+
+    override func refreshFilterCell() {
+        super.refreshFilterCell()
+
+        filterCell?.filterButton.isHidden = !(DWLocationManager.shared.isAuthorized && model.currentSegment.showsFilters)
     }
 
     override func configureHierarchy() {
