@@ -41,7 +41,7 @@ protocol PaymentControllerPresentationContextProviding: AnyObject {
 
 // MARK: - AmountProviding
 
-protocol AmountProviding: ActivityIndicatorPreviewing, ErrorPresentable { }
+protocol AmountProviding: ActivityIndicatorPreviewing, ErrorPresentable, PaymentControllerPresentationAnchor { }
 
 // MARK: - PaymentController
 
@@ -83,7 +83,7 @@ final class PaymentController: NSObject {
 
 extension PaymentController {
     var presentationAnchor: PaymentControllerPresentationAnchor? {
-        presentationContextProvider?.presentationAnchorForPaymentController(self)
+        provideAmountViewController ?? presentationContextProvider?.presentationAnchorForPaymentController(self)
     }
 
     private func showAlert(with title: String?, message: String?) {
@@ -164,13 +164,18 @@ extension PaymentController: DWPaymentProcessorDelegate {
         if let vc = confirmViewController {
             vc.update(with: paymentOutput)
         } else {
-            let vc = ConfirmPaymentViewController(dataSource: paymentOutput)
-            vc.delegate = self
+            let authManager = DSAuthenticationManager.sharedInstance()
+            authManager.authenticate(withPrompt: nil,
+                                     usingBiometricAuthentication: true,
+                                     alertIfLockout: true) { [weak self] _, _, _ in
+                let vc = ConfirmPaymentViewController(dataSource: paymentOutput)
+                vc.delegate = self
 
-            // TODO: demo mode
+                // TODO: demo mode
 
-            presentationAnchor?.present(vc, animated: true)
-            confirmViewController = vc
+                self?.presentationAnchor?.topController().present(vc, animated: true)
+                self?.confirmViewController = vc
+            }
         }
     }
 

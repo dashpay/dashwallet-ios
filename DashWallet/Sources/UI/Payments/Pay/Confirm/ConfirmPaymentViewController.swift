@@ -138,9 +138,13 @@ extension ConfirmPaymentViewController {
         confirmButton = ActionButton()
         confirmButton.setTitle(model.actionButtonTitle, for: .normal)
         confirmButton.addAction(.touchUpInside) { [weak self] _ in
-            self?.isSendingEnabled = false
-            self?.model.confirmPayment()
+            guard let self else { return }
+
+            self.isSendingEnabled = false
+            self.model.confirmPayment()
+            self.delegate?.confirmPaymentViewControllerDidConfirm(self)
         }
+
         bottomButtonsStack.addArrangedSubview(confirmButton)
 
         NSLayoutConstraint.activate([
