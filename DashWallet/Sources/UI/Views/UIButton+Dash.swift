@@ -212,8 +212,8 @@ class ActionButton: ActivityIndicatorButton {
 
         if let configuration {
             actionConfiguration.title = configuration.title
-            actionConfiguration.baseForegroundColor = configuration.baseForegroundColor
-            actionConfiguration.baseBackgroundColor = configuration.baseBackgroundColor
+            actionConfiguration.baseForegroundColor = configuration.baseForegroundColor ?? actionConfiguration.baseForegroundColor
+            actionConfiguration.baseBackgroundColor = configuration.baseBackgroundColor ?? actionConfiguration.baseBackgroundColor
         }
 
         configuration = actionConfiguration
