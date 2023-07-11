@@ -39,6 +39,7 @@ enum MerchantsListSegment: Int {
         let showReversedLocation: Bool
         let showMap: Bool
         let showLocationServiceSettings: Bool
+        var showsFilters = true
         var defaultFilters = PointOfUseListFilters()
         defaultFilters.merchantPaymentTypes = [.dash, .giftCard]
         defaultFilters.radius = .twenty
@@ -51,7 +52,7 @@ enum MerchantsListSegment: Int {
             showReversedLocation = false
             showMap = false
             dataProvider = OnlineMerchantsDataProvider()
-
+            showsFilters = false
         case .nearby:
             showLocationServiceSettings = true
             showReversedLocation = true
@@ -67,7 +68,7 @@ enum MerchantsListSegment: Int {
 
         return .init(tag: rawValue, title: title, showMap: showMap, showLocationServiceSettings: showLocationServiceSettings,
                      showReversedLocation: showReversedLocation, dataProvider: dataProvider, filterGroups: filterGroups,
-                     defaultFilters: defaultFilters, territoriesDataSource: territories)
+                     defaultFilters: defaultFilters, territoriesDataSource: territories, showsFilters: showsFilters)
     }
 }
 
@@ -86,11 +87,11 @@ extension MerchantsListSegment {
     var filterGroups: [PointOfUseListFiltersGroup] {
         switch self {
         case .online:
-            return [.paymentType]
+            return []
         case .nearby:
-            return [.paymentType, .sortByDistanceOrName, .radius]
+            return [.sortByDistanceOrName, .radius]
         case .all:
-            return [.paymentType, .sortByName, .territory, .radius]
+            return [.sortByName, .territory, .radius]
         }
     }
 
@@ -230,13 +231,14 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
         }
     }
 
+    override func refreshFilterCell() {
+        super.refreshFilterCell()
+
+        filterCell?.filterButton.isHidden = !(DWLocationManager.shared.isAuthorized && model.currentSegment.showsFilters)
+    }
+
     override func configureHierarchy() {
         title = NSLocalizedString("Where to Spend", comment: "");
-
-        let infoButton = UIButton(type: .infoLight)
-        infoButton.tintColor = .dw_label()
-        infoButton.addTarget(self, action: #selector(infoButtonAction), for: .touchUpInside)
-        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: infoButton)
 
         super.configureHierarchy()
 
@@ -271,28 +273,6 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-
-        showInfoViewControllerIfNeeded()
-    }
-}
-
-// MARK: Actions
-extension MerchantListViewController {
-    private func showInfoViewControllerIfNeeded() {
-        if !DWGlobalOptions.sharedInstance().exploreDashMerchantsInfoShown {
-            showInfoViewController()
-            DWGlobalOptions.sharedInstance().exploreDashMerchantsInfoShown = true
-        }
-    }
-
-    private func showInfoViewController() {
-        let vc = MerchantInfoViewController()
-        present(vc, animated: true, completion: nil)
-    }
-
-    @objc
-    private func infoButtonAction() {
-        showInfoViewController()
     }
 }
 
