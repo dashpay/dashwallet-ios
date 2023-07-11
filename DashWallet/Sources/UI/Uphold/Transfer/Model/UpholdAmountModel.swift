@@ -31,6 +31,7 @@ enum UpholdRequestTransferModelState {
 // MARK: - UpholdAmountModel
 
 final class UpholdAmountModel: BaseAmountModel {
+    public let card: DWUpholdCardObject
     public var transaction: DWUpholdTransactionObject?
     public var state: UpholdRequestTransferModelState = .none {
         didSet {
@@ -42,18 +43,11 @@ final class UpholdAmountModel: BaseAmountModel {
 
     public var stateHandler: ((UpholdRequestTransferModelState) -> Void)?
 
-    var transferModel: DWUpholdConfirmTransferModel? {
-        assert(self.state == .success, "Inconsistent state");
-        guard let tx = transaction else { return nil }
-        return DWUpholdConfirmTransferModel(card: card, transaction: tx)
-    }
-
     override var isAllowedToContinue: Bool {
         isAmountValidForProceeding &&
             card.available.plainDashAmount >= amount.plainAmount
     }
 
-    private let card: DWUpholdCardObject
     private var createTransactionCancellationToken: DWUpholdCancellationToken?
 
     init(card: DWUpholdCardObject) {

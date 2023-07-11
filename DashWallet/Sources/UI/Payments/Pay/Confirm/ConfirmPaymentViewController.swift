@@ -27,7 +27,7 @@ protocol ConfirmPaymentViewControllerDelegate: AnyObject {
 
 // MARK: - ConfirmPaymentViewController
 
-final class ConfirmPaymentViewController: SheetViewController {
+class ConfirmPaymentViewController: SheetViewController {
     public var delegate: ConfirmPaymentViewControllerDelegate?
     public var isSendingEnabled = true {
         didSet {
@@ -44,10 +44,15 @@ final class ConfirmPaymentViewController: SheetViewController {
     private var tableView: UITableView!
     private var confirmButton: ActionButton!
 
-    private let model: ConfirmPaymentModel
+    internal let model: ConfirmPaymentModel
 
-    init(dataSource: ConfirmPaymentDataSource) {
-        model = .init(dataSource: dataSource)
+    convenience init(dataSource: ConfirmPaymentDataSource) {
+        let model = ConfirmPaymentModel(dataSource: dataSource)
+        self.init(model: model)
+    }
+
+    init(model: ConfirmPaymentModel) {
+        self.model = model
 
         super.init(nibName: nil, bundle: nil)
     }

@@ -38,7 +38,7 @@ public protocol ConfirmPaymentDataSource {
 
 // MARK: - ConfirmPaymentModel
 
-final class ConfirmPaymentModel {
+class ConfirmPaymentModel {
     private(set) var dataSource: ConfirmPaymentDataSource!
     private(set) var items: [DWTitleDetailItem]!
 
