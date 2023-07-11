@@ -50,6 +50,7 @@ final class PaymentController: NSObject {
     @objc weak var presentationContextProvider: PaymentControllerPresentationContextProviding?
 
     @objc public var contactItem: DWDPBasicUserItem?
+    @objc public var locksBalance = false
 
     private var paymentProcessor: DWPaymentProcessor
     private weak var confirmViewController: DWConfirmSendPaymentViewController?
@@ -129,6 +130,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
     func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String,
                           details: DSPaymentProtocolDetails?, contactItem: DWDPBasicUserItem) {
         let vc = ProvideAmountViewController(address: sendingDestination)
+        vc.locksBalance = locksBalance
         vc.delegate = self
         vc.hidesBottomBarWhenPushed = true
         // vc.contactItem = nil //TODO: pass contactItem

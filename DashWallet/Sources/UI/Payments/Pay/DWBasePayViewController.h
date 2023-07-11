@@ -34,6 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL demoMode;
 @property (nullable, nonatomic, weak) id<DWDemoDelegate> demoDelegate;
 
+@property (nonatomic, assign) BOOL locksBalance;
+
 - (void)performScanQRCodeAction;
 /// Check pasteboard and pay
 - (void)payToAddressAction;

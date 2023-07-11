@@ -28,6 +28,7 @@ protocol ProvideAmountViewControllerDelegate: AnyObject {
 final class ProvideAmountViewController: SendAmountViewController {
     weak var delegate: ProvideAmountViewControllerDelegate?
 
+    public var locksBalance = false
     private var balanceLabel: UILabel!
 
     private let address: String
@@ -166,8 +167,22 @@ final class ProvideAmountViewController: SendAmountViewController {
 
     @objc
     func toggleBalanceVisibilityAction() {
-        isBalanceHidden.toggle()
-        updateBalance()
+        let toggleBalance = { [weak self] in
+            guard let self else { return }
+
+            self.isBalanceHidden.toggle()
+            self.updateBalance()
+        }
+
+        if locksBalance && isBalanceHidden {
+            DSAuthenticationManager.sharedInstance().authenticate(withPrompt: nil, usingBiometricAuthentication: false, alertIfLockout: true) { authenticatedOrSuccess, _, _ in
+
+                guard authenticatedOrSuccess else { return }
+                toggleBalance()
+            }
+        } else {
+            toggleBalance()
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {

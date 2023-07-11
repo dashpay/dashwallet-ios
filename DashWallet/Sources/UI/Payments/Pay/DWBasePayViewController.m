@@ -51,6 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.paymentController = [[PaymentController alloc] init];
     _paymentController.delegate = self;
+    _paymentController.locksBalance = self.locksBalance;
     _paymentController.presentationContextProvider = self;
     _paymentController.contactItem = [self contactItem];
 }
