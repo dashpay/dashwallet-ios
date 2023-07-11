@@ -233,11 +233,6 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
     override func configureHierarchy() {
         title = NSLocalizedString("Where to Spend", comment: "");
 
-        let infoButton = UIButton(type: .infoLight)
-        infoButton.tintColor = .dw_label()
-        infoButton.addTarget(self, action: #selector(infoButtonAction), for: .touchUpInside)
-        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: infoButton)
-
         super.configureHierarchy()
 
         tableView.register(MerchantItemCell.self, forCellReuseIdentifier: MerchantItemCell.reuseIdentifier)
@@ -271,28 +266,6 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-
-        showInfoViewControllerIfNeeded()
-    }
-}
-
-// MARK: Actions
-extension MerchantListViewController {
-    private func showInfoViewControllerIfNeeded() {
-        if !DWGlobalOptions.sharedInstance().exploreDashMerchantsInfoShown {
-            showInfoViewController()
-            DWGlobalOptions.sharedInstance().exploreDashMerchantsInfoShown = true
-        }
-    }
-
-    private func showInfoViewController() {
-        let vc = MerchantInfoViewController()
-        present(vc, animated: true, completion: nil)
-    }
-
-    @objc
-    private func infoButtonAction() {
-        showInfoViewController()
     }
 }
 
