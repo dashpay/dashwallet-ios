@@ -29,7 +29,16 @@ protocol ConfirmPaymentViewControllerDelegate: AnyObject {
 
 final class ConfirmPaymentViewController: SheetViewController {
     public var delegate: ConfirmPaymentViewControllerDelegate?
-    public var isSendingEnabled = true
+    public var isSendingEnabled = true {
+        didSet {
+            if !oldValue && isSendingEnabled {
+                model.stopPayment()
+            }
+
+            confirmButton.isEnabled = isSendingEnabled
+            isModalInPresentation = !isSendingEnabled
+        }
+    }
 
     private var balanceView: BalanceView!
     private var tableView: UITableView!
@@ -66,6 +75,12 @@ final class ConfirmPaymentViewController: SheetViewController {
 
 extension ConfirmPaymentViewController {
     private func configureModel() {
+        model.actionButtonTitleDidChange = { [weak self] in
+            guard let self else { return }
+
+            self.confirmButton.setTitle(self.model.actionButtonTitle, for: .normal)
+        }
+
         model.dataSourceDidChange = { [weak self] in
             self?.balanceView.reloadData()
             self?.tableView.reloadData()
@@ -107,15 +122,20 @@ extension ConfirmPaymentViewController {
         cancelButton.addAction(.touchUpInside) { [weak self] _ in
             guard let self else { return }
 
-            self.dismiss(animated: true)
+            self.model.stopPayment()
             self.delegate?.confirmPaymentViewControllerDidCancel(self)
+            self.dismiss(animated: true)
         }
 
         cancelButton.setTitle(NSLocalizedString("Cancel", comment: "Payment confirmation"), for: .normal)
         bottomButtonsStack.addArrangedSubview(cancelButton)
 
         confirmButton = ActionButton()
-        confirmButton.setTitle(NSLocalizedString("Confirm", comment: "Payment confirmation"), for: .normal)
+        confirmButton.setTitle(model.actionButtonTitle, for: .normal)
+        confirmButton.addAction(.touchUpInside) { [weak self] _ in
+            self?.isSendingEnabled = false
+            self?.model.confirmPayment()
+        }
         bottomButtonsStack.addArrangedSubview(confirmButton)
 
         NSLayoutConstraint.activate([

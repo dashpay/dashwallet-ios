@@ -42,8 +42,12 @@ final class ConfirmPaymentModel {
     private(set) var dataSource: ConfirmPaymentDataSource!
     private(set) var items: [DWTitleDetailItem]!
 
+    public var actionButtonTitleDidChange: (() -> ())?
     public var dataSourceDidChange: (() -> ())?
+    public var period: UInt8 = 0
 
+    private var isSendingNow = false
+    private var sendingTimer: Timer?
     private var currencyExchangeToken: CurrencyExchangerObserver!
 
     init(dataSource: ConfirmPaymentDataSource) {
@@ -52,6 +56,28 @@ final class ConfirmPaymentModel {
         currencyExchangeToken = CurrencyExchanger.shared.addObserver { [weak self] _ in
             self?.dataSourceDidChange?()
         }
+    }
+
+    public func confirmPayment() {
+        isSendingNow = true
+
+        sendingTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            guard let self else { return }
+
+            self.period += 1
+            self.period %= 4
+            self.actionButtonTitleDidChange?()
+        }
+    }
+
+    public func stopPayment() {
+        isSendingNow = false
+        period = 0
+
+        sendingTimer?.invalidate()
+        sendingTimer = nil
+
+        actionButtonTitleDidChange?()
     }
 
     public func update(with dataSource: ConfirmPaymentDataSource) {
@@ -89,7 +115,41 @@ final class ConfirmPaymentModel {
     }
 
     deinit {
+        stopPayment()
+
         CurrencyExchanger.shared.removeObserver(currencyExchangeToken)
+    }
+}
+
+extension ConfirmPaymentModel {
+    var actionButtonTitle: String {
+        if isSendingNow {
+            if dataSource.hasCommonName {
+                switch period {
+                case 1:
+                    return NSLocalizedString("Paying.", comment: "2 out of 4 in the Paying Animation")
+                case 2:
+                    return NSLocalizedString("Paying..", comment: "3 out of 4 in the Paying Animation")
+                case 3:
+                    return NSLocalizedString("Paying...", comment: "4 out of 4 in the Paying Animation")
+                default:
+                    return NSLocalizedString("Paying", comment: "1 out of 4 in the Paying Animation")
+                }
+            } else {
+                switch period {
+                case 1:
+                    return NSLocalizedString("Sending.", comment: "2 out of 4 in the Sending Animation")
+                case 2:
+                    return NSLocalizedString("Sending..", comment: "3 out of 4 in the Sending Animation")
+                case 3:
+                    return NSLocalizedString("Sending...", comment: "4 out of 4 in the Sending Animation")
+                default:
+                    return NSLocalizedString("Sending", comment: "1 out of 4 in the Sending Animation")
+                }
+            }
+        } else {
+            return NSLocalizedString("Confirm", comment: "Payment confirmation")
+        }
     }
 }
 
