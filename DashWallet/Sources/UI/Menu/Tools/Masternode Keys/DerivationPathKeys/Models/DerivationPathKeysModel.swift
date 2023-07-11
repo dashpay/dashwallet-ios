@@ -187,7 +187,7 @@ extension DerivationPathKeysModel {
                 return DerivationPathKeysItem(info: info, value: key)
             case .keyId:
                 let pubKeyData = derivationPath.publicKeyData(at: index) as NSData
-                var bytes = pubKeyData.hash160()
+                var bytes = pubKeyData.sha256()
                 let hexString = NSData(bytes: &bytes, length: MemoryLayout<UInt160>.size).hexString()
                 return DerivationPathKeysItem(info: info, value: hexString)
                 
