@@ -52,7 +52,8 @@ final class PaymentController: NSObject {
     @objc public var contactItem: DWDPBasicUserItem?
 
     private var paymentProcessor: DWPaymentProcessor
-    private weak var confirmViewController: DWConfirmSendPaymentViewController?
+    private weak var paymentOutput: DWPaymentOutput?
+    private weak var confirmViewController: ConfirmPaymentViewController?
     private weak var provideAmountViewController: AmountProviding?
 
     override init() {
@@ -98,16 +99,16 @@ extension PaymentController {
     }
 }
 
-// MARK: DWConfirmPaymentViewControllerDelegate
+// MARK: ConfirmPaymentViewControllerDelegate
 
-extension PaymentController: DWConfirmPaymentViewControllerDelegate {
-    func confirmPaymentViewControllerDidConfirm(_ controller: DWConfirmPaymentViewController) {
-        if let vc = controller as? DWConfirmSendPaymentViewController, let output = vc.paymentOutput {
+extension PaymentController: ConfirmPaymentViewControllerDelegate {
+    func confirmPaymentViewControllerDidConfirm(_ controller: ConfirmPaymentViewController) {
+        if let output = paymentOutput {
             paymentProcessor.confirmPaymentOutput(output)
         }
     }
 
-    func confirmPaymentViewControllerDidCancel(_ controller: DWConfirmPaymentViewController) {
+    func confirmPaymentViewControllerDidCancel(_ controller: ConfirmPaymentViewController) {
         provideAmountViewController?.hideActivityIndicator()
         delegate?.paymentControllerDidCancelTransaction(self)
     }
@@ -150,7 +151,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
         let actionAction = UIAlertAction(title: actionTitle, style: .default) { _ in
             actionBlock?()
 
-            self.confirmViewController?.sendingEnabled = true
+            self.confirmViewController?.isSendingEnabled = true
         }
 
         alert.addAction(actionAction)
@@ -158,11 +159,12 @@ extension PaymentController: DWPaymentProcessorDelegate {
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
+        self.paymentOutput = paymentOutput
+
         if let vc = confirmViewController {
-            vc.paymentOutput = paymentOutput
+            vc.update(with: paymentOutput)
         } else {
-            let vc = DWConfirmSendPaymentViewController()
-            vc.paymentOutput = paymentOutput
+            let vc = ConfirmPaymentViewController(dataSource: paymentOutput)
             vc.delegate = self
 
             // TODO: demo mode
@@ -174,7 +176,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
     func paymentProcessorDidCancelTransactionSigning(_ processor: DWPaymentProcessor) {
         provideAmountViewController?.hideActivityIndicator()
-        confirmViewController?.sendingEnabled = true
+        confirmViewController?.isSendingEnabled = true
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, didFailWithError error: Error?, title: String?, message: String?) {
@@ -185,7 +187,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
         presentationAnchor?.topController().view.dw_hideProgressHUD()
         provideAmountViewController?.hideActivityIndicator()
 
-        confirmViewController?.sendingEnabled = true
+        confirmViewController?.isSendingEnabled = true
 
         if error.domain == DSErrorDomain,
            error.code == DSErrorInsufficientFunds

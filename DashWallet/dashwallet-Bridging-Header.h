@@ -75,6 +75,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWImportWalletInfoViewController.h"
 #import "DWPaymentProcessor.h"
 #import "DWPaymentOutput.h"
+#import "DWPaymentOutput+DWView.h"
 #import "DWPaymentInput.h"
 #import "DWPaymentInputBuilder.h"
 

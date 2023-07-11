@@ -19,9 +19,11 @@
 
 #import "DWConfirmPaymentViewProtocol.h"
 
+@protocol ConfirmPaymentDataSource;
+
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWPaymentOutput (DWView) <DWConfirmPaymentViewProtocol>
+@interface DWPaymentOutput (DWView) <DWConfirmPaymentViewProtocol, ConfirmPaymentDataSource>
 
 @end
 

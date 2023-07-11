@@ -32,7 +32,20 @@ static NSString *sanitizeString(NSString *s) {
     return sane;
 }
 
+
 @implementation DWPaymentOutput (DWView)
+
+//- (id<DWTitleDetailItem> _Nullable)addressWith:(UIFont * _Nonnull)font tintColor:(UIColor * _Nonnull)tintColor {
+//    return [self totalWith:font tintColor:tintColor];
+//}
+//
+//- (id<DWTitleDetailItem> _Nullable)feeWith:(UIFont * _Nonnull)font tintColor:(UIColor * _Nonnull)tintColor {
+//    return [self totalWith:font tintColor:tintColor];
+//}
+//
+//- (id<DWTitleDetailItem> _Nonnull)totalWith:(UIFont * _Nonnull)font tintColor:(UIColor * _Nonnull)tintColor {
+//    return [self totalWith:font tintColor:tintColor];
+//}
 
 - (BOOL)hasCommonName {
     return self.name != nil;

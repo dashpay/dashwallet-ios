@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -19,45 +19,48 @@ import UIKit
 
 import UIKit
 
+// MARK: - TitleValueCell
+
 class TitleValueCell: TitleCell {
     private let valueLabel: UILabel
-    
+
     override var intrinsicContentSize: CGSize {
         .init(width: TitleValueCell.noIntrinsicMetric, height: 42)
     }
-    
+
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         valueLabel = UILabel()
-        
+
         super.init(style: style, reuseIdentifier: reuseIdentifier)
 
         configureHierarchy()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     public func update(with title: String, value: String) {
         super.update(with: title)
-        
+
         valueLabel.text = value
     }
-    
+
     override internal func configureHierarchy() {
         super.configureHierarchy()
-        
+
         valueLabel.translatesAutoresizingMaskIntoConstraints = false
         valueLabel.font = UIFont.dw_font(forTextStyle: .footnote)
         valueLabel.textColor = .dw_darkTitle()
         valueLabel.lineBreakMode = .byTruncatingMiddle
         valueLabel.textAlignment = .right
-        
+
         contentView.addSubview(valueLabel)
-        
+
         NSLayoutConstraint.activate([
+            valueLabel.leadingAnchor.constraint(equalTo: titleLabel.trailingAnchor, constant: 10),
             valueLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            valueLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+            valueLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
         ])
     }
 }
@@ -65,7 +68,7 @@ class TitleValueCell: TitleCell {
 extension TitleValueCell { // DWTitleDetailItem
     public func update(with item: DWTitleDetailItem) {
         titleLabel.text = item.title
-        
+
         if let text = item.plainDetail {
             valueLabel.text = text
         }
