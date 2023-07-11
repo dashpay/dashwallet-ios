@@ -27,7 +27,7 @@ protocol ConfirmPaymentViewControllerDelegate: AnyObject {
 
 // MARK: - ConfirmPaymentViewController
 
-final class ConfirmPaymentViewController: BaseViewController {
+final class ConfirmPaymentViewController: SheetViewController {
     public var delegate: ConfirmPaymentViewControllerDelegate?
     public var isSendingEnabled = true
 
@@ -52,6 +52,10 @@ final class ConfirmPaymentViewController: BaseViewController {
         model.update(with: dataSource)
     }
 
+    override func contentViewHeight() -> CGFloat {
+        190 + CGFloat(model.items.count)*46 + view.safeAreaInsets.bottom
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -70,6 +74,8 @@ extension ConfirmPaymentViewController {
 
     private func configureHierarchy() {
         view.backgroundColor = .dw_secondaryBackground()
+
+        presentationController?.delegate = self
 
         balanceView = BalanceView()
         balanceView.dataSource = model
@@ -160,4 +166,14 @@ extension ConfirmPaymentViewController: UITableViewDelegate, UITableViewDataSour
     }
 }
 
+// MARK: UIAdaptivePresentationControllerDelegate
 
+extension ConfirmPaymentViewController: UIAdaptivePresentationControllerDelegate {
+    func presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
+        delegate?.confirmPaymentViewControllerDidCancel(self)
+    }
+
+    func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
+        true
+    }
+}

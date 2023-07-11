@@ -695,6 +695,7 @@
 		C956AF262A5CACE6002FAB75 /* TitleValueCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C956AF252A5CACE6002FAB75 /* TitleValueCell.swift */; };
 		C956AF282A5CAD4D002FAB75 /* TitleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C956AF272A5CAD4D002FAB75 /* TitleCell.swift */; };
 		C956AF2B2A5CC97F002FAB75 /* ConfirmPaymentModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C956AF2A2A5CC97F002FAB75 /* ConfirmPaymentModel.swift */; };
+		C956AF2D2A5CEA1F002FAB75 /* SheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C956AF2C2A5CEA1F002FAB75 /* SheetViewController.swift */; };
 		C9829CDE2A562822007132E4 /* TappableLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9829CDD2A562822007132E4 /* TappableLabel.swift */; };
 		C9829CE22A562CEE007132E4 /* TappableTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9829CE12A562CEE007132E4 /* TappableTextView.swift */; };
 		C9903A5429E6A5F600535A4E /* KeysOverviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9903A5329E6A5F600535A4E /* KeysOverviewViewController.swift */; };
@@ -1947,6 +1948,7 @@
 		C956AF252A5CACE6002FAB75 /* TitleValueCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleValueCell.swift; sourceTree = "<group>"; };
 		C956AF272A5CAD4D002FAB75 /* TitleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleCell.swift; sourceTree = "<group>"; };
 		C956AF2A2A5CC97F002FAB75 /* ConfirmPaymentModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmPaymentModel.swift; sourceTree = "<group>"; };
+		C956AF2C2A5CEA1F002FAB75 /* SheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetViewController.swift; sourceTree = "<group>"; };
 		C9829CDD2A562822007132E4 /* TappableLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TappableLabel.swift; sourceTree = "<group>"; };
 		C9829CE12A562CEE007132E4 /* TappableTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TappableTextView.swift; sourceTree = "<group>"; };
 		C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.debug.xcconfig"; sourceTree = "<group>"; };
@@ -2750,6 +2752,7 @@
 				C94D982D2A544E8E00F3BEE1 /* UIButton+Dash.swift */,
 				C9829CE12A562CEE007132E4 /* TappableTextView.swift */,
 				C9829CDD2A562822007132E4 /* TappableLabel.swift */,
+				C956AF2C2A5CEA1F002FAB75 /* SheetViewController.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -6662,6 +6665,7 @@
 				C3DAD2C3247512BA0001624F /* DWBaseContactsContentViewController.m in Sources */,
 				2AE2F0F9245C16C8001DD722 /* DWUserProfileViewController.m in Sources */,
 				2A0C69D723143B2F001B8C90 /* DWBaseModalViewController.m in Sources */,
+				C956AF2D2A5CEA1F002FAB75 /* SheetViewController.swift in Sources */,
 				C9C1335A2A561FFA00B66651 /* PasteboardContentView.swift in Sources */,
 				2A7A7BD02348A34800451078 /* DWSecurityMenuModel.m in Sources */,
 				C909615929F29C9200002D82 /* KeysOverviewCell.swift in Sources */,
