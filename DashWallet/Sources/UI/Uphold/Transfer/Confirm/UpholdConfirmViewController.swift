@@ -32,8 +32,8 @@ final class UpholdConfirmViewController: ConfirmPaymentViewController {
 
     public var upholdModel: UpholdConfirmTransferModel { model as! UpholdConfirmTransferModel }
 
-    init(card: DWUpholdCardObject, transaction: DWUpholdTransactionObject) {
-        let model = UpholdConfirmTransferModel(card: card, transaction: transaction)
+    init(card: DWUpholdCardObject, transaction: DWUpholdTransactionObject, fiatCurrency: String) {
+        let model = UpholdConfirmTransferModel(card: card, transaction: transaction, fiatCurrency: fiatCurrency)
 
         super.init(model: model)
     }

@@ -46,8 +46,8 @@ class ConfirmPaymentViewController: SheetViewController {
 
     internal let model: ConfirmPaymentModel
 
-    convenience init(dataSource: ConfirmPaymentDataSource) {
-        let model = ConfirmPaymentModel(dataSource: dataSource)
+    convenience init(dataSource: ConfirmPaymentDataSource, fiatCurrency: String) {
+        let model = ConfirmPaymentModel(dataSource: dataSource, fiatCurrency: fiatCurrency)
         self.init(model: model)
     }
 

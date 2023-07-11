@@ -146,7 +146,7 @@ extension UpholdAmountModel: ConverterViewDataSource {
         ConverterViewSourceItem(image: .asset("uphold_logo"),
                                 title: "Uphold",
                                 balanceFormatted: card.formattedDashAmount,
-                                fiatBalanceFormatted: card.fiatBalanceFormatted)
+                                fiatBalanceFormatted: card.fiatBalanceFormatted(supplementaryCurrencyCode))
     }
 
     var toItem: SourceViewDataProvider? {
@@ -159,13 +159,14 @@ extension DWUpholdCardObject {
         available.formattedDashAmount
     }
 
-    var fiatBalanceFormatted: String {
+    func fiatBalanceFormatted(_ currency: String) -> String {
         let amount = available.decimalValue
-        guard let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: amount, to: App.fiatCurrency) else {
+
+        guard let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: amount, to: currency) else {
             return NSLocalizedString("Updating Price", comment: "Exchange")
         }
 
-        let nf = NumberFormatter.fiatFormatter(currencyCode: App.fiatCurrency)
+        let nf = NumberFormatter.fiatFormatter(currencyCode: currency)
         return nf.string(from: fiatAmount as NSNumber)!
     }
 }

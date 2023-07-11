@@ -64,7 +64,7 @@ final class UpholdTransferViewController: BaseAmountViewController {
                 guard let tx = self.upholdAmountModel.transaction else { return }
                 let card = self.upholdAmountModel.card
 
-                let controller = UpholdConfirmViewController(card: card, transaction: tx)
+                let controller = UpholdConfirmViewController(card: card, transaction: tx, fiatCurrency: model.supplementaryCurrencyCode)
                 controller.resultDelegate = self
                 controller.otpProvider = self
                 self.present(controller, animated: true)

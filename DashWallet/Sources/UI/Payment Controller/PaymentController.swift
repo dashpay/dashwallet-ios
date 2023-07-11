@@ -52,6 +52,7 @@ final class PaymentController: NSObject {
     @objc public var contactItem: DWDPBasicUserItem?
 
     private var paymentProcessor: DWPaymentProcessor
+    private var fiatCurrency: String = App.fiatCurrency
     private weak var paymentOutput: DWPaymentOutput?
     private weak var confirmViewController: ConfirmPaymentViewController?
     private weak var provideAmountViewController: AmountProviding?
@@ -165,7 +166,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
         if let vc = confirmViewController {
             vc.update(with: paymentOutput)
         } else {
-            let vc = ConfirmPaymentViewController(dataSource: paymentOutput)
+            let vc = ConfirmPaymentViewController(dataSource: paymentOutput, fiatCurrency: fiatCurrency)
             vc.delegate = self
 
             // TODO: demo mode
@@ -241,7 +242,8 @@ extension PaymentController: DWPaymentProcessorDelegate {
 // MARK: ProvideAmountViewControllerDelegate
 
 extension PaymentController: ProvideAmountViewControllerDelegate {
-    func provideAmountViewControllerDidInput(amount: UInt64) {
+    func provideAmountViewControllerDidInput(amount: UInt64, selectedCurrency: String) {
+        fiatCurrency = selectedCurrency
         paymentProcessor.provideAmount(amount)
     }
 }

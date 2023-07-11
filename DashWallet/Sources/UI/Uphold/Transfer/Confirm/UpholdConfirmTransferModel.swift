@@ -52,12 +52,12 @@ class UpholdConfirmTransferModel: ConfirmPaymentModel {
 
     weak var stateNotifier: UpholdConfirmTransferModelStateNotifier?
 
-    init(card: DWUpholdCardObject, transaction: DWUpholdTransactionObject) {
+    init(card: DWUpholdCardObject, transaction: DWUpholdTransactionObject, fiatCurrency: String) {
         self.card = card
         self.transaction = transaction
         state = .none
 
-        super.init(dataSource: transaction)
+        super.init(dataSource: transaction, fiatCurrency: fiatCurrency)
     }
 
     func confirm(withOTPToken otpToken: String?) {

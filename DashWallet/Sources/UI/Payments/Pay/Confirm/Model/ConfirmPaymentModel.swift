@@ -50,7 +50,10 @@ class ConfirmPaymentModel {
     private var sendingTimer: Timer?
     private var currencyExchangeToken: CurrencyExchangerObserver!
 
-    init(dataSource: ConfirmPaymentDataSource) {
+    private let fiatCurrency: String
+
+    init(dataSource: ConfirmPaymentDataSource, fiatCurrency: String) {
+        self.fiatCurrency = fiatCurrency
         update(with: dataSource)
 
         currencyExchangeToken = CurrencyExchanger.shared.addObserver { [weak self] _ in
@@ -163,8 +166,9 @@ extension ConfirmPaymentModel: BalanceViewDataSource {
     var supplementaryAmountString: String {
         let fiat: String
 
-        if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: dataSource.amountToDisplay.dashAmount, to: App.fiatCurrency) {
-            fiat = NumberFormatter.fiatFormatter.string(from: fiatAmount as NSNumber)!
+        if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: dataSource.amountToDisplay.dashAmount, to: fiatCurrency) {
+            let nf = NumberFormatter.fiatFormatter(currencyCode: fiatCurrency)
+            fiat = nf.string(from: fiatAmount as NSNumber)!
         } else {
             fiat = NSLocalizedString("Syncing...", comment: "Balance")
         }
