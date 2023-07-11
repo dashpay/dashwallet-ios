@@ -132,6 +132,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
         let vc = ProvideAmountViewController(address: sendingDestination)
         vc.delegate = self
         vc.hidesBottomBarWhenPushed = true
+        vc.definesPresentationContext = true
         // vc.contactItem = nil //TODO: pass contactItem
         // vc.demoMode = self.demoMode; //TODO: demoMode
         presentationAnchor!.navigationController?.pushViewController(vc, animated: true)
@@ -164,18 +165,13 @@ extension PaymentController: DWPaymentProcessorDelegate {
         if let vc = confirmViewController {
             vc.update(with: paymentOutput)
         } else {
-            let authManager = DSAuthenticationManager.sharedInstance()
-            authManager.authenticate(withPrompt: nil,
-                                     usingBiometricAuthentication: true,
-                                     alertIfLockout: true) { [weak self] _, _, _ in
-                let vc = ConfirmPaymentViewController(dataSource: paymentOutput)
-                vc.delegate = self
+            let vc = ConfirmPaymentViewController(dataSource: paymentOutput)
+            vc.delegate = self
 
-                // TODO: demo mode
+            // TODO: demo mode
 
-                self?.presentationAnchor?.topController().present(vc, animated: true)
-                self?.confirmViewController = vc
-            }
+            presentationAnchor?.topController().present(vc, animated: true)
+            confirmViewController = vc
         }
     }
 
