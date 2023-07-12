@@ -63,16 +63,16 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
         }
         startNetworkMonitoring()
         configureObservers()
-
-        if mode == .deposit && viewModel.shouldShowWithdrawalLimitsDialog {
-            showWithdrawalLimitsInfo()
-            viewModel.shouldShowWithdrawalLimitsDialog = false
-        }
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         viewModel.showNotificationOnResult = false
+        
+        if mode == .deposit && viewModel.shouldShowWithdrawalLimitsDialog {
+            showWithdrawalLimitsInfo()
+            viewModel.shouldShowWithdrawalLimitsDialog = false
+        }
     }
 
     override func viewDidDisappear(_ animated: Bool) {
