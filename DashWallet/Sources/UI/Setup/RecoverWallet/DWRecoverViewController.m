@@ -193,6 +193,11 @@ NS_ASSUME_NONNULL_BEGIN
     [self showAlertWithTitle:nil message:message];
 }
 
+- (void)recoverContentView:(DWRecoverContentView *)view phraseDidChange:(NSString *)phrase {
+    BOOL isPhraseValid = [self.model wordsInPhrase:phrase] >= 10;
+    [self.actionButton setEnabled:isPhraseValid];
+}
+
 #pragma mark - DWPhraseRepairViewControllerDelegate
 
 - (void)phraseRepairViewControllerDidFindLastWords:(NSArray<NSString *> *)lastWords {
@@ -221,7 +226,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.model = [[DWRecoverModel alloc] initWithAction:self.action];
 
-    self.actionButton.enabled = YES;
+    self.actionButton.enabled = NO;
 
     DWRecoverContentView *contentView = [[DWRecoverContentView alloc] initWithFrame:CGRectZero];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
