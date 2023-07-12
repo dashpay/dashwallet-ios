@@ -234,7 +234,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
     override func refreshFilterCell() {
         super.refreshFilterCell()
 
-        filterCell?.filterButton.isHidden = !(DWLocationManager.shared.isAuthorized && model.currentSegment.showsFilters)
+        filterCell?.filterButton.isHidden = !model.currentSegment.showsFilters
     }
 
     override func configureHierarchy() {
