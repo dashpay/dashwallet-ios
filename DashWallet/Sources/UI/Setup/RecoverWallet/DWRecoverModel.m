@@ -79,15 +79,6 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
     return [[DSBIP39Mnemonic sharedInstance] phraseIsValid:phrase];
 }
 
-- (NSInteger)wordsInPhrase:(NSString *)phrase {
-    __block NSInteger count = 0;
-    [phrase enumerateSubstringsInRange:NSMakeRange(0, [phrase length]) options:NSStringEnumerationByWords usingBlock:^(NSString * _Nullable substring, NSRange substringRange, NSRange enclosingRange, BOOL * _Nonnull stop) {
-        count++;
-    }];
-    
-    return count;
-}
-
 - (void)wipeWallet {
     [DWApp cleanUp]; //Send notificaiton
     [[DWEnvironment sharedInstance] clearAllWallets];

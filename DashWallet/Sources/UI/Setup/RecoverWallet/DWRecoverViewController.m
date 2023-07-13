@@ -194,7 +194,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)recoverContentView:(DWRecoverContentView *)view phraseDidChange:(NSString *)phrase {
-    BOOL isPhraseValid = [self.model wordsInPhrase:phrase] >= 10;
+    BOOL isPhraseValid = [phrase wordsCount] >= 10;
     [self.actionButton setEnabled:isPhraseValid];
 }
 
