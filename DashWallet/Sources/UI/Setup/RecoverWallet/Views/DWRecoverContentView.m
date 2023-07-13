@@ -23,6 +23,7 @@
 #import "DWRecoverTextView.h"
 #import "DWSeedUIConstants.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -146,6 +147,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - UITextViewDelegate
 
+- (void)textViewDidChange:(UITextView *)textView {
+    [self.delegate recoverContentView:self phraseDidChange:textView.text];
+}
+
 - (BOOL)textView:(UITextView *)textView
     shouldChangeTextInRange:(NSRange)range
             replacementText:(NSString *)text {
@@ -161,6 +166,9 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)recoverWalletWithCurrentSeedPhrase {
+    NSUInteger count = [self.textView.text wordsCount];
+    if (count < 10) { return; }
+    
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be deallocated immediately
         UITextView *textView = self.textView;
         NSString *phrase = textView.text;
