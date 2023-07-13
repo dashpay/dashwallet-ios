@@ -24,6 +24,7 @@ class BaseViewController: UIViewController {
         super.loadView()
 
         viewRespectsSystemMinimumLayoutMargins = false
+        view.layoutMargins = .init(top: 0, left: 15, bottom: 0, right: 15)
         view.directionalLayoutMargins = .init(top: 0, leading: 15, bottom: 0, trailing: 15)
     }
 }

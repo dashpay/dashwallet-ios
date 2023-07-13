@@ -41,7 +41,7 @@ protocol PaymentControllerPresentationContextProviding: AnyObject {
 
 // MARK: - AmountProviding
 
-protocol AmountProviding: ActivityIndicatorPreviewing, ErrorPresentable { }
+protocol AmountProviding: ActivityIndicatorPreviewing, ErrorPresentable, PaymentControllerPresentationAnchor { }
 
 // MARK: - PaymentController
 
@@ -53,7 +53,9 @@ final class PaymentController: NSObject {
     @objc public var locksBalance = false
 
     private var paymentProcessor: DWPaymentProcessor
-    private weak var confirmViewController: DWConfirmSendPaymentViewController?
+    private var fiatCurrency: String = App.fiatCurrency
+    private weak var paymentOutput: DWPaymentOutput?
+    private weak var confirmViewController: ConfirmPaymentViewController?
     private weak var provideAmountViewController: AmountProviding?
 
     override init() {
@@ -83,7 +85,7 @@ final class PaymentController: NSObject {
 
 extension PaymentController {
     var presentationAnchor: PaymentControllerPresentationAnchor? {
-        presentationContextProvider?.presentationAnchorForPaymentController(self)
+        provideAmountViewController ?? presentationContextProvider?.presentationAnchorForPaymentController(self)
     }
 
     private func showAlert(with title: String?, message: String?) {
@@ -99,16 +101,16 @@ extension PaymentController {
     }
 }
 
-// MARK: DWConfirmPaymentViewControllerDelegate
+// MARK: ConfirmPaymentViewControllerDelegate
 
-extension PaymentController: DWConfirmPaymentViewControllerDelegate {
-    func confirmPaymentViewControllerDidConfirm(_ controller: DWConfirmPaymentViewController) {
-        if let vc = controller as? DWConfirmSendPaymentViewController, let output = vc.paymentOutput {
+extension PaymentController: ConfirmPaymentViewControllerDelegate {
+    func confirmPaymentViewControllerDidConfirm(_ controller: ConfirmPaymentViewController) {
+        if let output = paymentOutput {
             paymentProcessor.confirmPaymentOutput(output)
         }
     }
 
-    func confirmPaymentViewControllerDidCancel(_ controller: DWConfirmPaymentViewController) {
+    func confirmPaymentViewControllerDidCancel(_ controller: ConfirmPaymentViewController) {
         provideAmountViewController?.hideActivityIndicator()
         delegate?.paymentControllerDidCancelTransaction(self)
     }
@@ -133,6 +135,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
         vc.locksBalance = locksBalance
         vc.delegate = self
         vc.hidesBottomBarWhenPushed = true
+        vc.definesPresentationContext = true
         // vc.contactItem = nil //TODO: pass contactItem
         // vc.demoMode = self.demoMode; //TODO: demoMode
         presentationAnchor!.navigationController?.pushViewController(vc, animated: true)
@@ -152,7 +155,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
         let actionAction = UIAlertAction(title: actionTitle, style: .default) { _ in
             actionBlock?()
 
-            self.confirmViewController?.sendingEnabled = true
+            self.confirmViewController?.isSendingEnabled = true
         }
 
         alert.addAction(actionAction)
@@ -160,23 +163,24 @@ extension PaymentController: DWPaymentProcessorDelegate {
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
+        self.paymentOutput = paymentOutput
+
         if let vc = confirmViewController {
-            vc.paymentOutput = paymentOutput
+            vc.update(with: paymentOutput)
         } else {
-            let vc = DWConfirmSendPaymentViewController()
-            vc.paymentOutput = paymentOutput
+            let vc = ConfirmPaymentViewController(dataSource: paymentOutput, fiatCurrency: fiatCurrency)
             vc.delegate = self
 
             // TODO: demo mode
 
-            presentationAnchor?.present(vc, animated: true)
+            presentationAnchor?.topController().present(vc, animated: true)
             confirmViewController = vc
         }
     }
 
     func paymentProcessorDidCancelTransactionSigning(_ processor: DWPaymentProcessor) {
         provideAmountViewController?.hideActivityIndicator()
-        confirmViewController?.sendingEnabled = true
+        confirmViewController?.isSendingEnabled = true
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, didFailWithError error: Error?, title: String?, message: String?) {
@@ -187,7 +191,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
         presentationAnchor?.topController().view.dw_hideProgressHUD()
         provideAmountViewController?.hideActivityIndicator()
 
-        confirmViewController?.sendingEnabled = true
+        confirmViewController?.isSendingEnabled = true
 
         if error.domain == DSErrorDomain,
            error.code == DSErrorInsufficientFunds
@@ -240,7 +244,8 @@ extension PaymentController: DWPaymentProcessorDelegate {
 // MARK: ProvideAmountViewControllerDelegate
 
 extension PaymentController: ProvideAmountViewControllerDelegate {
-    func provideAmountViewControllerDidInput(amount: UInt64) {
+    func provideAmountViewControllerDidInput(amount: UInt64, selectedCurrency: String) {
+        fiatCurrency = selectedCurrency
         paymentProcessor.provideAmount(amount)
     }
 }

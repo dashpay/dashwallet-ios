@@ -19,7 +19,6 @@
 
 #import <DashSync/DashSync.h>
 
-#import "DWConfirmSendPaymentViewController.h"
 #import "DWHomeViewController.h"
 #import "DWPayModelProtocol.h"
 #import "DWPaymentInputBuilder.h"

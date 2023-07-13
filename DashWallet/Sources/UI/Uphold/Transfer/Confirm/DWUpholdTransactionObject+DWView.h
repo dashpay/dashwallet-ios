@@ -15,12 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DWConfirmPaymentViewProtocol.h"
 #import "DWUpholdTransactionObject.h"
+
+@protocol ConfirmPaymentDataSource;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdTransactionObject (DWView) <DWConfirmPaymentViewProtocol>
+@interface DWUpholdTransactionObject (DWView) <ConfirmPaymentDataSource>
 
 @end
 

@@ -31,6 +31,7 @@ enum UpholdRequestTransferModelState {
 // MARK: - UpholdAmountModel
 
 final class UpholdAmountModel: BaseAmountModel {
+    public let card: DWUpholdCardObject
     public var transaction: DWUpholdTransactionObject?
     public var state: UpholdRequestTransferModelState = .none {
         didSet {
@@ -42,18 +43,11 @@ final class UpholdAmountModel: BaseAmountModel {
 
     public var stateHandler: ((UpholdRequestTransferModelState) -> Void)?
 
-    var transferModel: DWUpholdConfirmTransferModel? {
-        assert(self.state == .success, "Inconsistent state");
-        guard let tx = transaction else { return nil }
-        return DWUpholdConfirmTransferModel(card: card, transaction: tx)
-    }
-
     override var isAllowedToContinue: Bool {
         isAmountValidForProceeding &&
             card.available.plainDashAmount >= amount.plainAmount
     }
 
-    private let card: DWUpholdCardObject
     private var createTransactionCancellationToken: DWUpholdCancellationToken?
 
     init(card: DWUpholdCardObject) {
@@ -152,7 +146,7 @@ extension UpholdAmountModel: ConverterViewDataSource {
         ConverterViewSourceItem(image: .asset("uphold_logo"),
                                 title: "Uphold",
                                 balanceFormatted: card.formattedDashAmount,
-                                fiatBalanceFormatted: card.fiatBalanceFormatted)
+                                fiatBalanceFormatted: card.fiatBalanceFormatted(supplementaryCurrencyCode))
     }
 
     var toItem: SourceViewDataProvider? {
@@ -165,13 +159,14 @@ extension DWUpholdCardObject {
         available.formattedDashAmount
     }
 
-    var fiatBalanceFormatted: String {
+    func fiatBalanceFormatted(_ currency: String) -> String {
         let amount = available.decimalValue
-        guard let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: amount, to: App.fiatCurrency) else {
+
+        guard let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: amount, to: currency) else {
             return NSLocalizedString("Updating Price", comment: "Exchange")
         }
 
-        let nf = NumberFormatter.fiatFormatter(currencyCode: App.fiatCurrency)
+        let nf = NumberFormatter.fiatFormatter(currencyCode: currency)
         return nf.string(from: fiatAmount as NSNumber)!
     }
 }

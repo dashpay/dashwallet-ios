@@ -20,7 +20,7 @@ import UIKit
 // MARK: - ProvideAmountViewControllerDelegate
 
 protocol ProvideAmountViewControllerDelegate: AnyObject {
-    func provideAmountViewControllerDidInput(amount: UInt64)
+    func provideAmountViewControllerDidInput(amount: UInt64, selectedCurrency: String)
 }
 
 // MARK: - ProvideAmountViewController
@@ -54,7 +54,8 @@ final class ProvideAmountViewController: SendAmountViewController {
             let paymentCurrency: DWPaymentCurrency = wSelf.sendAmountModel.activeAmountType == .main ? .dash : .fiat
             DWGlobalOptions.sharedInstance().selectedPaymentCurrency = paymentCurrency
 
-            wSelf.delegate?.provideAmountViewControllerDidInput(amount: wSelf.model.amount.plainAmount)
+            wSelf.delegate?.provideAmountViewControllerDidInput(amount: wSelf.model.amount.plainAmount,
+                                                                selectedCurrency: wSelf.model.supplementaryCurrencyCode)
         }
     }
 
