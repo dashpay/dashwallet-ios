@@ -26,16 +26,81 @@
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d продавець у %@</string>
+			<key>few</key>
+			<string>%d продавців у %@</string>
+			<key>many</key>
+			<string>%d продавців у %@</string>
+			<key>other</key>
+			<string>%d продавців у %@</string>
+		</dict>
 	</dict>
 	<key>%d merchant(s)</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@merchants@</string>
+		<key>merchants</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d продавець</string>
+			<key>few</key>
+			<string>%d продавців</string>
+			<key>many</key>
+			<string>%d продавців</string>
+			<key>other</key>
+			<string>%d продавців</string>
+		</dict>
 	</dict>
-    <key>%d transaction(s)</key>
-    <dict>
-        <key>NSStringLocalizedFormatKey</key>
-        <string>%#@transactions@</string>
-    </dict>
+	<key>%d transaction(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@transactions@</string>
+		<key>transactions</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d транзакція</string>
+			<key>few</key>
+			<string>%d транзакцій</string>
+			<key>many</key>
+			<string>%d транзакцій</string>
+			<key>other</key>
+			<string>%d транзакцій</string>
+		</dict>
+	</dict>
+	<key>%d key(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@keys@</string>
+		<key>keys</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d ключ</string>
+			<key>few</key>
+			<string>%d ключів</string>
+			<key>many</key>
+			<string>%d ключів</string>
+			<key>other</key>
+			<string>%d ключів</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

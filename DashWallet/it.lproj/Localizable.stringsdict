@@ -17,7 +17,7 @@
 			<key>many</key>
 			<string>%ID in uso</string>
 			<key>other</key>
-			<string>%ID in uso</string>
+			<string>%lD in uso </string>
 		</dict>
 	</dict>
 	<key>%d merchant(s) in %@</key>
@@ -56,23 +56,41 @@
 			<string>%d mercanti</string>
 		</dict>
 	</dict>
-    <key>%d transaction(s)</key>
-    <dict>
-        <key>NSStringLocalizedFormatKey</key>
-        <string>%#@transactions@</string>
-        <key>transactions</key>
-        <dict>
-            <key>NSStringFormatSpecTypeKey</key>
-            <string>NSStringPluralRuleType</string>
-            <key>NSStringFormatValueTypeKey</key>
-            <string>d</string>
-            <key>one</key>
-            <string>%d transazioni</string>
-            <key>many</key>
-            <string>%d transazioni</string>
-            <key>other</key>
-            <string>%d transazioni</string>
-        </dict>
-    </dict>
+	<key>%d transaction(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@transactions@</string>
+		<key>transactions</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d transazioni</string>
+			<key>many</key>
+			<string>%d transazioni</string>
+			<key>other</key>
+			<string>%d transazioni</string>
+		</dict>
+	</dict>
+	<key>%d key(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@keys@</string>
+		<key>keys</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d chiavi</string>
+			<key>many</key>
+			<string>%d chiavi</string>
+			<key>other</key>
+			<string>%d chiavi  </string>
+		</dict>
+	</dict>
 </dict>
 </plist>
