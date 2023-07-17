@@ -166,13 +166,13 @@ extension DerivationPathKeysModel {
                     return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
                 }
                 let key = DSKeyManager.blsPublicKeySerialize(opaqueKey, legacy: false)
-                return DerivationPathKeysItem(info: info, value: key)
+                return DerivationPathKeysItem(info: info, value: key.lowercased())
             case .publicKeyLegacy:
                 guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
                     return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
                 }
                 let key = DSKeyManager.blsPublicKeySerialize(opaqueKey, legacy: true)
-                return DerivationPathKeysItem(info: info, value: key)
+                return DerivationPathKeysItem(info: info, value: key.lowercased())
             case .privateKey:
                 guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
                     return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
@@ -189,7 +189,7 @@ extension DerivationPathKeysModel {
                 let pubKeyData = derivationPath.publicKeyData(at: index) as NSData
                 var bytes = pubKeyData.sha256()
                 let hexString = NSData(bytes: &bytes, length: MemoryLayout<UInt160>.size).hexString()
-                return DerivationPathKeysItem(info: info, value: hexString)
+                return DerivationPathKeysItem(info: info, value: hexString.lowercased())
                 
             case .privatePublicKeysBase64:
                 guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
