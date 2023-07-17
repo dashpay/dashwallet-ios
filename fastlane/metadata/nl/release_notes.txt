@@ -1,0 +1,7 @@
+# Kleine update:
+
+De nieuwste versie bevat stabiliteit- en prestatieverbeteringen.
+
+# Grote uitgave:
+
+Versie <RELEASE_VERSION> brengt de introductie van <FEATURE> op iOS. <CONCISE_DESC>

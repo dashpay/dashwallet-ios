@@ -1,0 +1,20 @@
+Dash Wallet es la primera billetera de Dash para iPhone, Dash - Dinero Digital - es una mejor alternativa a bitcoin que tiene su foco en pagos.
+
+Dash es una criptomoneda que busca corregir los defectos que sufren otras criptomonedas. Se basa en una red de Masternodes para permitir opciones como transacciones instantáneas, características de privacidad opcionales y un mecanismo de financiación directa para poner en marcha ideas innovadoras.
+
+Intuitiva y segura, Dash Wallet te brinda control total sobre tu dinero digital. Envía y recibe pagos rápidos al instante, con la billetera móvil más segura disponible.
+
+Dash Wallet es la primera y única billetera de iPhone que se conecta directamente a la red de Dash. Esto significa que no hay servidores para ser pirateado o derrumbado, tus fondos siempre están seguros. Incluso si tu teléfono se pierde, se daña o te lo roban, puedes recuperar fácilmente tus fondos utilizando tu frase de recuperación personal.
+
+Características:
+
+* Envía y recibe pagos de Dash en segundos, en línea o personalmente
+* Pagos con un botón para comerciantes y sitios web que aceptan Dash
+* Paga rápidamente con el reconocimiento facial de Face ID
+* Barrido de billeteras de papel (Ej: las usadas para almacenamiento en frío)
+* Integraciones de terceros para auxiliar los usuarios a comprar y vender Dash
+* Frase de recuperación sencilla que te permite recuperar tus fondos cuando tu dispositivo se pierde o se daña
+* Configuraciones flexibles para cumplir con una variedad de preferencias de seguridad personalizadas
+* Cliente directo de la red de Dash - sin servidores que sean vulnerados o atacados
+
+Dash Wallet es de código abierto y gratuito. No hay tarifas adicionales por transacción o costos. Envía cualquier cantidad de dinero a cualquier persona en el mundo de forma instantánea. Así es como debería ser el dinero.

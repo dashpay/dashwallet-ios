@@ -1,0 +1,20 @@
+Ang Dashwallet ang kauna-unahang wallet ng iPhone para sa Dash- Digital Cash- mas makabagong alternatibo kaysa bitcoin na nakafocus sa mga bayarin.
+
+Ang Dash ay isang crypto-currency na naglalayon na maisaayos ang kamalian na nararanasan ng ibang crypto-currencies. Ito ay umaasa sa network ng Masternodes para makamit ang inaasahang bagay tulad ng mabilis na transaksyon, opsyonal na pribadong katangian, at ang direktang pagpopondo para masimulan ang makabagong idea.
+
+Mabisa at sigurado, ang Dash Wallet ay nagbibigay sa iyo ng kumpletong kontrol sa iyong digital cash. Mabilis na magpadala at tumanggap ng bayad sa Dash, na may pinakaligtas na mobile wallet.
+
+Ang Dash Wallet ang una at nag-iisang iPhone wallet na kumo-konekta ng diretso sa Dash network. Ito ay nangangahulugan na walang server na maaring i-hack o pabagsakin- ang iyong funds ay palaging ligtas. Kahit na ay iyong phone ay nawala, nasira o nanakaw, madali mong makukuha ulit ang iyong pondo gamit ang iyong personal na recovery phrase.
+
+Katangian:
+
+* Magpadala at tumanggap ng bayad sa Dash sa loob ng ilang segundo, online o sa ibang tao
+* Isang button para sa bayad sa mga websites o merchants na tumatanggap ng Dash
+* Magbayad ng mabilis gamit ang Face ID recognition
+* Pinagpalisan ng papel na pitaka (Mga ginagamit para sa cold storage)
+* 3rd party integrasyon na payagan ang mga gumagamit na makabili at magbenta ng Dash
+*Ang simpleng recovery phrase ay hinahayaan ka na makuha ulit ang iyong pondo kung sakaling mawala o masira ang iyong device
+Flexible settings para makita ang saklaw ng pasadyang kagustuhan na seguridad 
+* Diretsong dash network client - walang mga server na maaring i-hack o mapatumba
+
+Ang Dash Wallet ay isang open source at libre. Walang ekstrang bayad sa transaksyon o gastos. Magpadala ng kahit anong halaga ng pera saan mang panig ng mundo.

@@ -56,23 +56,41 @@
 			<string>%d comercios</string>
 		</dict>
 	</dict>
-    <key>%d transaction(s)</key>
-    <dict>
-        <key>NSStringLocalizedFormatKey</key>
-        <string>%#@transactions@</string>
-        <key>transactions</key>
-        <dict>
-            <key>NSStringFormatSpecTypeKey</key>
-            <string>NSStringPluralRuleType</string>
-            <key>NSStringFormatValueTypeKey</key>
-            <string>d</string>
-            <key>one</key>
-            <string>%d transacción</string>
-            <key>many</key>
-            <string>%d transacciones</string>
-            <key>other</key>
-            <string>%d transacciones</string>
-        </dict>
-    </dict>
+	<key>%d transaction(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@transactions@</string>
+		<key>transactions</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d transacción</string>
+			<key>many</key>
+			<string>%d transacciones</string>
+			<key>other</key>
+			<string>%d transacciones</string>
+		</dict>
+	</dict>
+	<key>%d key(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@keys@</string>
+		<key>keys</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d llave</string>
+			<key>many</key>
+			<string>%d llaves</string>
+			<key>other</key>
+			<string>%d llaves</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

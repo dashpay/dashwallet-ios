@@ -1,0 +1,7 @@
+# Aggiornamento Minore:
+
+L'ultima versione contiene miglioramenti della stabilità e delle prestazioni.
+
+# Versione principale:
+
+Versione <RELEASE_VERSION> porta l'introduzione di <FEATURE> su iOS. <CONCISE_DESC>
