@@ -18,7 +18,7 @@
         <scene sceneID="ogp-1V-8Dw">
             <objects>
                 <viewController id="SNl-Ez-Rsa" customClass="DWUpholdMainViewController" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="3TV-oO-cBv">
+                    <view key="view" contentMode="scaleToFill" ambiguous="YES" id="3TV-oO-cBv">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -37,7 +37,7 @@
                                     <fragment content="#bc-ignore!"/>
                                 </attributedString>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BzX-au-frW" customClass="PlainButton" customModule="dashpay" customModuleProvider="target">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BzX-au-frW" customClass="PlainButton" customModule="dashwallet" customModuleProvider="target">
                                 <rect key="frame" x="163.33333333333334" y="268.33333333333331" width="66.666666666666657" height="39"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="39" id="ROc-mH-c8d"/>
@@ -50,10 +50,6 @@
                                 <attributedString key="userComments">
                                     <fragment content="#bc-ignore!"/>
                                 </attributedString>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="small" value="YES"/>
-                                </userDefinedRuntimeAttributes>
                                 <connections>
                                     <action selector="retryButtonAction:" destination="SNl-Ez-Rsa" eventType="touchUpInside" id="Paj-iI-dJi"/>
                                 </connections>
@@ -75,7 +71,7 @@
                                     <action selector="transferButtonAction:" destination="SNl-Ez-Rsa" eventType="touchUpInside" id="Fj4-N0-tMd"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bkb-VD-Oq6" customClass="PlainButton" customModule="dashpay" customModuleProvider="target">
+                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bkb-VD-Oq6" customClass="PlainButton" customModule="dashwallet" customModuleProvider="target">
                                 <rect key="frame" x="22" y="764" width="349" height="50"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="50" id="JBR-UR-H2k"/>
@@ -86,9 +82,6 @@
                                 <attributedString key="userComments">
                                     <fragment content="#bc-ignore!"/>
                                 </attributedString>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
-                                </userDefinedRuntimeAttributes>
                                 <connections>
                                     <action selector="buyButtonAction:" destination="SNl-Ez-Rsa" eventType="touchUpInside" id="czB-9z-0Th"/>
                                 </connections>
