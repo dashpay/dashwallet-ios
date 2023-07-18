@@ -37,18 +37,6 @@ final class PasteboardContentView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    @objc
-    func textTapped(recognizer: UITapGestureRecognizer) {
-        let point = recognizer.location(in: self)
-
-        guard let textPosition = textView.closestPosition(to: point),
-              let range = textView.tokenizer.rangeEnclosingPosition(textPosition, with: .word, inDirection: .init(rawValue: 1)) else {
-            return
-        }
-
-        print(textView.text(in: range) ?? "Not found, this should not happen")
-    }
-
     public func update(with string: String) {
         textView.text = string
 
@@ -56,7 +44,7 @@ final class PasteboardContentView: UIView {
 
         let words = string.split(separator: " ")
         for word in words {
-            let word = String(word)
+            let word = String(word).trimmingCharacters(in: .punctuationCharacters)
 
             guard word.isValidDashAddress(on: chain) ||
                 word.isValidDashPrivateKey(on: chain) else { continue }
@@ -94,11 +82,6 @@ final class PasteboardContentView: UIView {
         textView.textContainerInset = .init(top: 0, left: 0, bottom: 0, right: 10)
         textView.textContainer.lineFragmentPadding = 0
         stackView.addArrangedSubview(textView)
-
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(textTapped))
-        tapGesture.numberOfTapsRequired = 1
-        addGestureRecognizer(tapGesture)
 
         // A method in your UITextView subclass
 
