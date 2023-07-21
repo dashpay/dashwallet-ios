@@ -126,6 +126,7 @@ extension MainTabbarController {
         let homeVC = DWHomeViewController()
         homeVC.delegate = self
         homeVC.model = homeModel
+        homeController = homeVC
 
         var nvc = BaseNavigationController(rootViewController: homeVC)
         nvc.tabBarItem = item
@@ -144,6 +145,7 @@ extension MainTabbarController {
         item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
         let menuVC = DWMainMenuViewController()
         menuVC.delegate = self
+        menuNavigationController = menuVC
 
         nvc = BaseNavigationController(rootViewController: menuVC)
         nvc.tabBarItem = item

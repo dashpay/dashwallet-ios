@@ -77,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UIColor *)dw_buttonBlackTitleColor;
 
-
++ (UIColor *)dw_grayButtonColor;
 @end
 
 NS_ASSUME_NONNULL_END

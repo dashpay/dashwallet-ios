@@ -20,7 +20,7 @@ import UIKit
 // MARK: - ProvideAmountViewControllerDelegate
 
 protocol ProvideAmountViewControllerDelegate: AnyObject {
-    func provideAmountViewControllerDidInput(amount: UInt64)
+    func provideAmountViewControllerDidInput(amount: UInt64, selectedCurrency: String)
 }
 
 // MARK: - ProvideAmountViewController
@@ -28,6 +28,7 @@ protocol ProvideAmountViewControllerDelegate: AnyObject {
 final class ProvideAmountViewController: SendAmountViewController {
     weak var delegate: ProvideAmountViewControllerDelegate?
 
+    public var locksBalance = false
     private var balanceLabel: UILabel!
 
     private let address: String
@@ -53,7 +54,8 @@ final class ProvideAmountViewController: SendAmountViewController {
             let paymentCurrency: DWPaymentCurrency = wSelf.sendAmountModel.activeAmountType == .main ? .dash : .fiat
             DWGlobalOptions.sharedInstance().selectedPaymentCurrency = paymentCurrency
 
-            wSelf.delegate?.provideAmountViewControllerDidInput(amount: wSelf.model.amount.plainAmount)
+            wSelf.delegate?.provideAmountViewControllerDidInput(amount: wSelf.model.amount.plainAmount,
+                                                                selectedCurrency: wSelf.model.supplementaryCurrencyCode)
         }
     }
 
@@ -166,8 +168,22 @@ final class ProvideAmountViewController: SendAmountViewController {
 
     @objc
     func toggleBalanceVisibilityAction() {
-        isBalanceHidden.toggle()
-        updateBalance()
+        let toggleBalance = { [weak self] in
+            guard let self else { return }
+
+            self.isBalanceHidden.toggle()
+            self.updateBalance()
+        }
+
+        if locksBalance && isBalanceHidden {
+            DSAuthenticationManager.sharedInstance().authenticate(withPrompt: nil, usingBiometricAuthentication: false, alertIfLockout: true) { authenticatedOrSuccess, _, _ in
+
+                guard authenticatedOrSuccess else { return }
+                toggleBalance()
+            }
+        } else {
+            toggleBalance()
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {

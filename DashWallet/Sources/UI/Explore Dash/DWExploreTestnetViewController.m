@@ -107,7 +107,7 @@
     headerView.translatesAutoresizingMaskIntoConstraints = NO;
     headerView.image = [UIImage imageNamed:@"image.explore.dash.wallet"];
     headerView.title = NSLocalizedString(@"Explore Dash", nil);
-    headerView.subtitle = NSLocalizedString(@"Easily shop with your DASH at over 155,000 locations and online merchants", nil);
+    headerView.subtitle = NSLocalizedString(@"Find merchants that accept Dash, where to buy it and how to earn income with it.", nil);
     [headerView setContentHuggingPriority:UILayoutPriorityDefaultHigh forAxis:UILayoutConstraintAxisVertical];
 
     DWExploreTestnetViewController *__weak weakSelf = self;

@@ -171,6 +171,19 @@ extension String {
     }
 }
 
+@objc
+extension NSString {
+    var wordsCount: UInt {
+        var count: UInt = 0
+
+        enumerateSubstrings(in: NSMakeRange(0, length), options: [.byWords]) { _, _, _, _ in
+            count += 1
+        }
+
+        return count
+    }
+}
+
 extension NSRange {
     var isValid: Bool {
         location != NSNotFound

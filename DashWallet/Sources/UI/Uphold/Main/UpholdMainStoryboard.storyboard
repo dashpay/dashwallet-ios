@@ -50,10 +50,6 @@
                                 <attributedString key="userComments">
                                     <fragment content="#bc-ignore!"/>
                                 </attributedString>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="small" value="YES"/>
-                                </userDefinedRuntimeAttributes>
                                 <connections>
                                     <action selector="retryButtonAction:" destination="SNl-Ez-Rsa" eventType="touchUpInside" id="Paj-iI-dJi"/>
                                 </connections>
@@ -86,17 +82,9 @@
                                 <attributedString key="userComments">
                                     <fragment content="#bc-ignore!"/>
                                 </attributedString>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
-                                </userDefinedRuntimeAttributes>
                                 <connections>
                                     <action selector="buyButtonAction:" destination="SNl-Ez-Rsa" eventType="touchUpInside" id="czB-9z-0Th"/>
                                 </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GBn-dU-zij">
-                                <rect key="frame" x="159" y="408.66666666666669" width="75" height="35"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Button"/>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your Uphold account Dash balance is" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JZt-mf-cRK">
                                 <rect key="frame" x="22" y="227" width="349" height="19.333333333333343"/>
@@ -116,6 +104,7 @@
                             <constraint firstItem="rdD-oF-hUw" firstAttribute="top" secondItem="JZt-mf-cRK" secondAttribute="bottom" constant="22" id="2iV-z1-O47"/>
                             <constraint firstAttribute="bottomMargin" secondItem="bkb-VD-Oq6" secondAttribute="bottom" constant="4" id="2vo-5V-6SF"/>
                             <constraint firstItem="w0x-R5-6yg" firstAttribute="leading" secondItem="Goh-EE-eVN" secondAttribute="leading" constant="22" id="9Gk-CS-hoZ"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="bkb-VD-Oq6" secondAttribute="bottom" constant="4" id="GWp-vD-lx7"/>
                             <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="bkb-VD-Oq6" secondAttribute="trailing" constant="22" id="Ms2-HH-wJa"/>
                             <constraint firstItem="bPd-EX-JdY" firstAttribute="top" secondItem="JZt-mf-cRK" secondAttribute="bottom" constant="22" id="OFN-Ry-F4g"/>
                             <constraint firstItem="bPd-EX-JdY" firstAttribute="leading" secondItem="Goh-EE-eVN" secondAttribute="leading" constant="20" id="Saf-hc-Ugz"/>
@@ -124,10 +113,8 @@
                             <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="JZt-mf-cRK" secondAttribute="trailing" constant="22" id="YXd-Xk-mwr"/>
                             <constraint firstItem="BzX-au-frW" firstAttribute="centerX" secondItem="3TV-oO-cBv" secondAttribute="centerX" id="aot-UB-gBc"/>
                             <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="bPd-EX-JdY" secondAttribute="trailing" constant="20" id="dbd-6R-OUE"/>
-                            <constraint firstItem="GBn-dU-zij" firstAttribute="centerY" secondItem="3TV-oO-cBv" secondAttribute="centerY" id="hCB-6K-85v"/>
                             <constraint firstItem="bkb-VD-Oq6" firstAttribute="top" secondItem="w0x-R5-6yg" secondAttribute="bottom" constant="22" id="jFL-hB-JFh"/>
                             <constraint firstItem="bkb-VD-Oq6" firstAttribute="centerX" secondItem="3TV-oO-cBv" secondAttribute="centerX" id="o5X-RI-hls"/>
-                            <constraint firstItem="GBn-dU-zij" firstAttribute="centerX" secondItem="3TV-oO-cBv" secondAttribute="centerX" id="p0y-Sn-05x"/>
                             <constraint firstItem="rdD-oF-hUw" firstAttribute="centerX" secondItem="3TV-oO-cBv" secondAttribute="centerX" id="pfP-sh-nmK"/>
                             <constraint firstItem="JZt-mf-cRK" firstAttribute="top" secondItem="f4S-Ig-Mp1" secondAttribute="bottom" constant="24" id="q6e-7A-Ve9"/>
                             <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="w0x-R5-6yg" secondAttribute="trailing" constant="22" id="tMW-l3-rcQ"/>

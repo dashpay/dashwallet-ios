@@ -36,18 +36,15 @@ final class EnterAddressViewController: BaseViewController, PayableViewControlle
 
     // MARK: Actions
     private func continueButtonAction() {
-        present(OrderPreviewViewController(), animated: true)
-        return
+        payModel.payToAddress(from: addressField.text) { [weak self] success in
+            guard let self else { return }
 
-                payModel.payToAddress(from: addressField.text) { [weak self] success in
-                    guard let self else { return }
-
-                    if success {
-                        self.performPayToPasteboardAction()
-                    } else {
-                        self.addressField.errorMessage = NSLocalizedString("Invalid Dash address", comment: "")
-                    }
-                }
+            if success {
+                self.performPayToPasteboardAction()
+            } else {
+                self.addressField.errorMessage = NSLocalizedString("Invalid Dash address", comment: "")
+            }
+        }
     }
 
     override func viewDidLoad() {

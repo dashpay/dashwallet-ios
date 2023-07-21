@@ -218,7 +218,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)clearFixedPeer {
     DSPeerManager *peerManager = [DWEnvironment sharedInstance].currentChainManager.peerManager;
     [peerManager removeTrustedPeerHost];
-    [peerManager disconnect];
     [peerManager connect];
 }
 

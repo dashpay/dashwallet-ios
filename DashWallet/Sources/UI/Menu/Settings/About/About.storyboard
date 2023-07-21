@@ -65,7 +65,7 @@
                                     <constraint firstAttribute="height" constant="39" id="pEd-iP-fQY"/>
                                 </constraints>
                                 <connections>
-                                    <action selector="rateReviewAction:" destination="Khk-i4-iGF" eventType="touchUpInside" id="fcR-pK-nxl"/>
+                                    <action selector="rateReviewAction:" destination="Khk-i4-iGF" eventType="touchUpInside" id="Ovz-X6-Vhn"/>
                                 </connections>
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Copyright Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vjR-PV-utO">

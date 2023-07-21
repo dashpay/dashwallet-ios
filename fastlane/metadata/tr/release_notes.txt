@@ -1,0 +1,7 @@
+# Küçük Güncelleme:
+
+En son sürüm, tutarlılık ve performans iyileştirmeleri içerir.
+
+# Ana sürüm:
+
+Versiyon <RELEASE_VERSION> IOS üzerinde <FEATURE> tanıtımını getiriyor. <CONCISE_DESC>

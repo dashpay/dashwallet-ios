@@ -19,7 +19,6 @@
 
 #import <DashSync/DashSync.h>
 
-#import "DWConfirmSendPaymentViewController.h"
 #import "DWHomeViewController.h"
 #import "DWPayModelProtocol.h"
 #import "DWPaymentInputBuilder.h"
@@ -51,6 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.paymentController = [[PaymentController alloc] init];
     _paymentController.delegate = self;
+    _paymentController.locksBalance = self.locksBalance;
     _paymentController.presentationContextProvider = self;
     _paymentController.contactItem = [self contactItem];
 }

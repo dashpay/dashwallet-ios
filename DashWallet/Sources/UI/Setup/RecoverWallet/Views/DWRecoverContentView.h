@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWRecoverContentViewDelegate <NSObject>
 
+- (void)recoverContentView:(DWRecoverContentView *)view phraseDidChange:(NSString *)phrase;
 - (void)recoverContentView:(DWRecoverContentView *)view showIncorrectWord:(NSString *)incorrectWord;
 - (void)recoverContentView:(DWRecoverContentView *)view offerToReplaceIncorrectWord:(NSString *)incorrectWord inPhrase:(NSString *)phrase;
 - (void)recoverContentView:(DWRecoverContentView *)view usedWordsHaveInvalidCount:(NSArray *)words;

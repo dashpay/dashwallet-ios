@@ -459,6 +459,11 @@ extension CrowdNode {
 
     func calculateWithdrawalPermil(forAmount: UInt64) -> UInt64 {
         let maxPermil = ApiCode.withdrawAll.rawValue
+
+        if balance == 0 {
+            return maxPermil
+        }
+
         let permil = UInt64(round(Double(forAmount * maxPermil) / Double(balance)))
         let requestPermil = min(permil, maxPermil)
 
