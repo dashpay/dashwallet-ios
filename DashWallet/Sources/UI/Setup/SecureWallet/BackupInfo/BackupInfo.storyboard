@@ -53,9 +53,6 @@
                                         <constraints>
                                             <constraint firstAttribute="height" constant="54" id="fqS-w8-Z3Z"/>
                                         </constraints>
-                                        <userDefinedRuntimeAttributes>
-                                            <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
-                                        </userDefinedRuntimeAttributes>
                                         <connections>
                                             <action selector="backupButtonAction" destination="3GU-qr-r9Q" eventType="touchUpInside" id="qqy-vP-TIl"/>
                                         </connections>

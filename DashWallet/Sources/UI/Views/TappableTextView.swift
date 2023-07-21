@@ -45,7 +45,7 @@ final public class TappableTextView: UITextView {
     }
 
     public func setAction(for text: String, action: @escaping TappableLabelAction) {
-        var text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard let attributedText else { return }
         guard let currentText = attributedText.string as NSString? else { return }

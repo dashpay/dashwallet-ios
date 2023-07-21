@@ -113,10 +113,6 @@
                                 <constraints>
                                     <constraint firstAttribute="height" constant="39" id="K1j-dE-2o4"/>
                                 </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="small" value="YES"/>
-                                </userDefinedRuntimeAttributes>
                                 <connections>
                                     <action selector="skipButtonAction:" destination="mfe-wo-u6J" eventType="touchUpInside" id="peU-yr-My5"/>
                                 </connections>
