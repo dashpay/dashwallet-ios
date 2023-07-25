@@ -309,9 +309,6 @@
 "Clear trusted node?" = "Clear trusted node?";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid Dash address" = "Clipboard doesn't contain a valid Dash address";
-
-/* No comment provided by engineer. */
 "Close" = "Close";
 
 /* No comment provided by engineer. */
@@ -533,9 +530,6 @@
 "Earlier" = "Earlier";
 
 /* No comment provided by engineer. */
-"Easily shop with your DASH at over 155,000 locations and online merchants" = "Easily shop with your DASH at over 155,000 locations and online merchants";
-
-/* No comment provided by engineer. */
 "Easily stake Dash and earn passive income with a few simple clicks." = "Easily stake Dash and earn passive income with a few simple clicks.";
 
 /* Input username textfield placeholder */
@@ -638,6 +632,9 @@
 "Find a user on the Dash Network" = "Find a user on the Dash Network";
 
 /* No comment provided by engineer. */
+"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Find merchants that accept Dash, where to buy it and how to earn income with it.";
+
+/* No comment provided by engineer. */
 "Find merchants who accept Dash as payment." = "Find merchants who accept Dash as payment.";
 
 /* No comment provided by engineer. */
@@ -725,7 +722,7 @@
 "How to Use a Gift Card" = "How to Use a Gift Card";
 
 /* No comment provided by engineer. */
-"HPMN Operator Keys" = "HPMN Operator Keys";
+"HPMN Operator Keys" = "Evolution Node ID Keys";
 
 /* No comment provided by engineer. */
 "I Accept" = "I Accept";
@@ -790,6 +787,9 @@
 /* Balance */
 "Invalid amount" = "Invalid amount";
 
+/* No comment provided by engineer. */
+"Invalid Dash address" = "Invalid Dash address";
+
 /* CrowdNode Online */
 "Invalid Email" = "Invalid Email";
 
@@ -822,6 +822,9 @@
 
 /* No comment provided by engineer. */
 "Join Evolution" = "Join Evolution";
+
+/* No comment provided by engineer. */
+"Key Id" = "Key Id";
 
 /* No comment provided by engineer. */
 "Keypair" = "Keypair";
@@ -1134,9 +1137,6 @@
 "Please check your network connection" = "Please check your network connection";
 
 /* No comment provided by engineer. */
-"Please copy the Dash address first and try again" = "Please copy the Dash address first and try again";
-
-/* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Please enter PIN to upgrade wallet";
 
 /* Leftover balance warning */
@@ -1170,6 +1170,9 @@
 "Previously used at: " = "Previously used at: ";
 
 /* No comment provided by engineer. */
+"Private / Public Keys (base64)" = "Private / Public Keys (base64)";
+
+/* No comment provided by engineer. */
 "Private key" = "Private key";
 
 /* No comment provided by engineer. */
@@ -1183,6 +1186,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Public key";
+
+/* No comment provided by engineer. */
+"Public key (legacy)" = "Public key (legacy)";
 
 /* Coinbase/Buy Dash */
 "Purchase" = "Purchase";
@@ -1437,6 +1443,9 @@
 /* No comment provided by engineer. */
 "Shop with DASH at over 150k merchants" = "Shop with DASH at over 150k merchants";
 
+/* Enter Address Screen */
+"Show content in the clipboard" = "Show content in the clipboard";
+
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Show Masternode Keys";
 
@@ -1457,9 +1466,6 @@
 
 /* No comment provided by engineer. */
 "Skip" = "Skip";
-
-/* No comment provided by engineer. */
-"skip" = "skip";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Something went wrong";
@@ -1523,6 +1529,9 @@
 
 /* Balance */
 "Syncing…" = "Syncing…";
+
+/* Enter Address Screen */
+"Tap the address from the clipboard to paste it" = "Tap the address from the clipboard to paste it";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Tap to hide balance";
@@ -1732,6 +1741,9 @@
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Wait until wallet is synced to complete the transaction";
+
+/* Enter Address Screen */
+"Wallet Address" = "Wallet Address";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "Wallet disabled";

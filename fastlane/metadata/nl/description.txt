@@ -1,0 +1,20 @@
+Dash portemonnee is de eerste iPhone-portemonnee voor Dash - Digital Cash - een innovatief alternatief voor Bitcoin.
+
+Dash is een cryptovaluta die probeert de fouten op te lossen waar andere cryptovaluta aan lijden. Het vertrouwt op een netwerk van Masternodes om zaken zoals directe transacties, optionele privacyfuncties en een direct financieringsmechanisme die het mogelijk maken om innovatieve ideeën op gang te brengen.
+
+Dash Wallet geeft je intuïtief en veilig volledige controle over je digitale cash. Verstuur en ontvang Dash-betalingen direct met de veiligste mobiele portemonnee die er is.
+
+Dash Wallet is de eerste en enige portemonnee voor iPhone die direct met het Dash-netwerk is verbonden. Dit betekent dat er geen servers zijn die gehackt kunnen worden of down kunnen gaan - je geld is altijd veilig. Zelf als je telefoon verloren, stuk of gestolen is kun je makkelijk je saldo herstellen met je persoonlijke herstelzin.
+
+Features:
+
+* Verstuur en ontvang Dash-betalingen binnen seconden, online of persoonlijk
+* Betalingen naar Dash-acceptanten  en -website met een druk op de knop
+* Betaal snel met gezichtsherkenning
+* Importeren van papieren portemonnees (die gebruikt worden voor koude opslag)
+* Integraties van derden zodat gebruikers Dash kunnen kopen en verkopen
+* Eenvoudige herstelzin zorgt dat je je fondsen kan herstellen als je je apparaat verloren of stuk is
+* Flexibele instellingen om te voldoen aan een reeks aangepaste beveiligingsvoorkeuren
+* Directe Dash netwerkclient - geen centrale server om gehackt te worden of om offline te gaan
+
+Dash Wallet is open source en gratis. Er zijn geen transactiekosten. Maak instantaan een gewenst bedrag over wie ook ter wereld. dit is hoe geld zou moeten zijn.

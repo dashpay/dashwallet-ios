@@ -23,9 +23,9 @@ static const bool _SNAPSHOT = 0;
 #import "DSDerivationPathFactory.h"
 #import "DSKeyManager.h"
 #import "BigIntTypes.h"
+#import "NSString+Dash.h"
 
 //MARK: DashWallet
-#import "DWActionButton.h"
 #import "DWEnvironment.h"
 #import "DWTitleDetailCellModel.h"
 #import "DWTitleDetailItem.h"
@@ -37,14 +37,12 @@ static const bool _SNAPSHOT = 0;
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
 #import "DWInputValidator.h"
 #import "DWAmountInputValidator.h"
-#import "DWConfirmSendPaymentViewController.h"
 #import "DWLocalCurrencyViewController.h"
 #import "DWDemoDelegate.h"
 #import "DWModalPopupTransition.h"
 #import "DWModalTransition.h"
 #import "UIView+DWHUD.h"
 #import "UIView+DWAnimations.h"
-#import "DWConfirmSendPaymentViewController.h"
 #import "UIViewController+KeyboardAdditions.h"
 #import "SFSafariViewController+DashWallet.h"
 #import "UIFont+DWFont.h"
@@ -55,6 +53,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWHomeProtocol.h"
 #import "DWDPRegistrationErrorRetryDelegate.h"
 #import "UIDevice+DashWallet.h"
+#import "DWCenteredTableView.h"
 
 //MARK: Backup Wallet
 #import "DWBackupSeedPhraseViewController.h"
@@ -74,17 +73,17 @@ static const bool _SNAPSHOT = 0;
 #import "DWImportWalletInfoViewController.h"
 #import "DWPaymentProcessor.h"
 #import "DWPaymentOutput.h"
+#import "DWPaymentOutput+DWView.h"
 #import "DWPaymentInput.h"
 #import "DWPaymentInputBuilder.h"
 
 //MARK: Uphold
 #import "DWUpholdTransactionObject.h"
+#import "DWUpholdTransactionObject+DWView.h"
 #import "DWUpholdViewController.h"
 #import "DWUpholdClient.h"
 #import "DWUpholdCardObject.h"
 #import "DWUpholdOTPViewController.h"
-#import "DWUpholdConfirmViewController.h"
-#import "DWUpholdConfirmTransferModel.h"
 #import "DWUpholdOTPProvider.h"
 #import "DWUpholdClientCancellationToken.h"
 

@@ -61,9 +61,10 @@ final class UpholdTransferViewController: BaseAmountViewController {
                 self.view.isUserInteractionEnabled = false
                 self.showActivityIndicator()
             case .success:
-                guard let txModel = self.upholdAmountModel.transferModel else { return }
+                guard let tx = self.upholdAmountModel.transaction else { return }
+                let card = self.upholdAmountModel.card
 
-                let controller = DWUpholdConfirmViewController(model: txModel)
+                let controller = UpholdConfirmViewController(card: card, transaction: tx, fiatCurrency: model.supplementaryCurrencyCode)
                 controller.resultDelegate = self
                 controller.otpProvider = self
                 self.present(controller, animated: true)
@@ -146,15 +147,15 @@ extension UpholdTransferViewController: DWUpholdOTPProvider {
     }
 }
 
-// MARK: DWUpholdConfirmViewControllerDelegate
+// MARK: UpholdConfirmViewControllerDelegate
 
-extension UpholdTransferViewController: DWUpholdConfirmViewControllerDelegate {
-    func upholdConfirmViewController(_ controller: DWUpholdConfirmViewController, didSendTransaction transaction: DWUpholdTransactionObject) {
+extension UpholdTransferViewController: UpholdConfirmViewControllerDelegate {
+    func upholdConfirmViewController(_ controller: UpholdConfirmViewController, didSendTransaction transaction: DWUpholdTransactionObject) {
         hideActivityIndicator()
         delegate?.upholdTransferViewController(self, didSend: transaction)
     }
 
-    func upholdConfirmViewControllerDidCancelTransaction(_ controller: DWUpholdConfirmViewController) {
+    func upholdConfirmViewControllerDidCancelTransaction(_ controller: UpholdConfirmViewController) {
         hideActivityIndicator()
     }
 }

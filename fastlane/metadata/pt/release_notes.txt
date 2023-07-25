@@ -1,0 +1,7 @@
+# Atualização secundária:
+
+A versão mais recente contém melhorias de estabilidade e desempenho.
+
+# Lançamento principal:
+
+Versão <RELEASE_VERSION> traz a introdução de <FEATURE> no iOS. <CONCISE_DESC>

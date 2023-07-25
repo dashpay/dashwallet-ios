@@ -77,7 +77,7 @@ class MerchantInfoViewController: PointOfUseInfoViewController {
         giftCardStack.addArrangedSubview(learnMoreButton)
         contentView.addArrangedSubview(UIView())
 
-        let continueButton = DWActionButton()
+        let continueButton = ActionButton()
         continueButton.translatesAutoresizingMaskIntoConstraints = false
         continueButton.setTitle(NSLocalizedString("Continue", comment: ""), for: .normal)
         continueButton.addTarget(self, action: #selector(continueButtonAction), for: .touchUpInside)

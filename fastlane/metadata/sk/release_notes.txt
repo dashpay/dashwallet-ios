@@ -1,0 +1,7 @@
+# Menšia aktualizácia:
+
+Najnovšia verzia obsahuje vylepšenia stability a výkonu.
+
+# Hlavná aktualizácia:
+
+Verzia <RELEASE_VERSION> prináša predstavenie <FEATURE> na iOS. <CONCISE_DESC>

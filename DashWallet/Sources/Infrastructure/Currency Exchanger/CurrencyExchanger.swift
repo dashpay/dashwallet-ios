@@ -105,6 +105,9 @@ class CurrencyExchangerObjcWrapper: NSObject {
     }
 }
 
+public typealias CurrencyExchangerObserver = String
+public typealias CurrencyExchangerObserverHandler = (CurrencyExchanger) -> ()
+
 // MARK: - CurrencyExchanger
 
 public final class CurrencyExchanger {
@@ -119,6 +122,8 @@ public final class CurrencyExchanger {
     private let dataProvider: RatesProvider
     private var pricesByCode: [String: RateObject]!
     private var plainPricesByCode: [String: Decimal]!
+
+    private lazy var observers: [CurrencyExchangerObserver: CurrencyExchangerObserverHandler] = [:]
 
     init(dataProvider: RatesProvider) {
         self.dataProvider = dataProvider
@@ -137,6 +142,16 @@ public final class CurrencyExchanger {
         guard let rate = plainPricesByCode[currency] else { throw CurrencyExchanger.Error.ratesNotAvailable }
 
         return rate
+    }
+
+    public func addObserver(_ observer: @escaping CurrencyExchangerObserverHandler) -> CurrencyExchangerObserver {
+        let handle = UUID().uuidString
+        observers[handle] = observer
+        return handle
+    }
+
+    public func removeObserver(_ observer: CurrencyExchangerObserver) {
+        observers.removeValue(forKey: observer)
     }
 
     public func convertDash(amount: Decimal, to currency: String) throws -> Decimal {
@@ -225,6 +240,13 @@ extension CurrencyExchanger {
             self.pricesByCode = pricesByCode
             self.plainPricesByCode = plainPricesByCode
             self.currencies = array
+            self.fireHandlers()
+        }
+    }
+
+    private func fireHandlers() {
+        for item in observers {
+            item.value(self)
         }
     }
 }

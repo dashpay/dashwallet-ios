@@ -17,7 +17,7 @@
 
 #import "DWUserProfileSendRequestCell.h"
 
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWShadowView.h"
 #import "DWUIKit.h"
 #import "DWUserProfileModel.h"
@@ -65,11 +65,10 @@ NS_ASSUME_NONNULL_END
         textLabel.textAlignment = NSTextAlignmentCenter;
         _textLabel = textLabel;
 
-        DWActionButton *sendRequestButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
+        DashButton *sendRequestButton = [[DashButton alloc] init];
         sendRequestButton.translatesAutoresizingMaskIntoConstraints = NO;
         [sendRequestButton setImage:[UIImage imageNamed:@"dp_send_request"] forState:UIControlStateNormal];
         [sendRequestButton setTitle:NSLocalizedString(@"Send Contact Request", nil) forState:UIControlStateNormal];
-        sendRequestButton.inverted = YES;
         [sendRequestButton addTarget:self
                               action:@selector(sendRequestButtonAction:)
                     forControlEvents:UIControlEventTouchUpInside];

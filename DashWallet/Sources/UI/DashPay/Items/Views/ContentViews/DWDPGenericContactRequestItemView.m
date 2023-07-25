@@ -17,7 +17,7 @@
 
 #import "DWDPGenericContactRequestItemView.h"
 
-#import "DWActionButton.h"
+#import "dashwallet-Swift.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -53,16 +53,15 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)setup_contactRequestItemView {
-    DWActionButton *acceptButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
+    DWActionButton *acceptButton = [[DWActionButton alloc] init];
     acceptButton.translatesAutoresizingMaskIntoConstraints = NO;
-    acceptButton.small = YES;
     [acceptButton setTitle:NSLocalizedString(@"Accept", nil) forState:UIControlStateNormal];
     [self.accessoryView addSubview:acceptButton];
     _acceptButton = acceptButton;
 
-    DWActionButton *declineButton = [[DWActionButton alloc] initWithFrame:CGRectZero];
+    DWActionButton *declineButton = [[DWActionButton alloc] init];
     declineButton.translatesAutoresizingMaskIntoConstraints = NO;
-    declineButton.accentColor = [UIColor dw_declineButtonColor];
+    declineButton.tintColor = [UIColor dw_declineButtonColor];
     [declineButton setImage:[UIImage imageNamed:@"icon_decline"] forState:UIControlStateNormal];
     [self.accessoryView addSubview:declineButton];
     _declineButton = declineButton;

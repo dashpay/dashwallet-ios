@@ -588,11 +588,11 @@ PODS:
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
-  - DashSharedCore (0.4.5)
+  - DashSharedCore (0.4.10)
   - DashSync (0.1.0):
     - CocoaLumberjack (= 3.7.2)
     - DAPI-GRPC (= 0.22.0-dev.8)
-    - DashSharedCore (= 0.4.5)
+    - DashSharedCore (= 0.4.10)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
     - TinyCborObjc (= 0.4.6)
@@ -621,9 +621,9 @@ PODS:
     - GoogleUtilities/Environment (~> 7.7)
     - nanopb (< 2.30910.0, >= 2.30908.0)
     - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleUtilities/Environment (7.11.1):
+  - GoogleUtilities/Environment (7.11.4):
     - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleUtilities/Logger (7.11.1):
+  - GoogleUtilities/Logger (7.11.4):
     - GoogleUtilities/Environment
   - gRPC-Core (1.49.0):
     - gRPC-Core/Implementation (= 1.49.0)
@@ -698,7 +698,7 @@ PODS:
     - nanopb/encode (= 2.30908.0)
   - nanopb/decode (2.30908.0)
   - nanopb/encode (2.30908.0)
-  - PromisesObjC (2.2.0)
+  - PromisesObjC (2.3.0)
   - Protobuf (3.23.4)
   - SDWebImage (5.13.2):
     - SDWebImage/Core (= 5.13.2)
@@ -800,8 +800,8 @@ SPEC CHECKSUMS:
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
-  DashSharedCore: 6e9af4b23b9ec40ae33040fb9ae4d12b320c70ec
-  DashSync: a00e5103f25ea8f62632f9c763902df7353b0468
+  DashSharedCore: d107a64758acebc53edacc160ad450f539ff33ee
+  DashSync: 4a9504583105eb2ace98f38f377cb44fe62f5021
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   Firebase: 5f8193dff4b5b7c5d5ef72ae54bb76c08e2b841d
@@ -810,7 +810,7 @@ SPEC CHECKSUMS:
   FirebaseDynamicLinks: 1dc816ef789c5adac6fede0b46d11478175c70e4
   FirebaseStorage: 8019af461599b2c3bc61c6a5dbdfa3d2de66a4d9
   GoogleDataTransport: f0308f5905a745f94fb91fea9c6cbaf3831cb1bd
-  GoogleUtilities: 9aa0ad5a7bc171f8bae016300bfcfa3fb8425749
+  GoogleUtilities: c63691989bf362ba0505507da00eeb326192e83e
   gRPC: 64f36d689b2ecd99c4351f74e6f91347cdc65d9f
   gRPC-Core: 3a9fdb5967d42211e875826f3f6fc163ea02c2a1
   gRPC-ProtoRPC: 1c223e0f1732bb8d0b9e9e0ea60cc0fe995b8e2d
@@ -821,7 +821,7 @@ SPEC CHECKSUMS:
   MMSegmentSlider: db7ee0d6eb2eefbd511179195bf288ff2cebac0a
   Moya: 138f0573e53411fb3dc17016add0b748dfbd78ee
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
-  PromisesObjC: 09985d6d70fbe7878040aa746d78236e6946d2ef
+  PromisesObjC: 7f84fefd35e085854377a97e19424ae424cc7a9e
   Protobuf: c6bc59bbab3d38a71c67f62d7cb7ca8f8ea4eca1
   SDWebImage: 72f86271a6f3139cc7e4a89220946489d4b9a866
   SQLite.swift: 903bfa3bc9ab06345fdfbb578e34f47cfcf417da

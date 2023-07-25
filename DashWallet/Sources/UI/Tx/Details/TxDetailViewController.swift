@@ -319,7 +319,7 @@ class SuccessTxDetailViewController: TXDetailViewController, NavigationBarDispla
     @objc var contactItem: DWDPBasicUserItem?
     @objc weak var delegate: SuccessTxDetailViewControllerDelegate?
 
-    internal var closeButton: DWActionButton!
+    internal var closeButton: ActionButton!
 
     override func closeAction() {
         dismiss(animated: true) { [weak self] in
@@ -332,7 +332,7 @@ class SuccessTxDetailViewController: TXDetailViewController, NavigationBarDispla
     override func configureHierarchy() {
         super.configureHierarchy()
 
-        closeButton = DWActionButton(frame: .zero)
+        closeButton = ActionButton()
         closeButton.translatesAutoresizingMaskIntoConstraints = false
         closeButton.setTitle(NSLocalizedString("Close", comment: ""), for: .normal)
         closeButton.addTarget(self, action: #selector(closeAction), for: .touchUpInside)

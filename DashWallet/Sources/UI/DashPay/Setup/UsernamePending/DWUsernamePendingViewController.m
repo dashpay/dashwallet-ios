@@ -17,7 +17,6 @@
 
 #import "DWUsernamePendingViewController.h"
 
-#import "DWBaseActionButton.h"
 #import "DWBaseActionButtonViewController.h"
 #import "DWDashPayAnimationView.h"
 #import "DWUIKit.h"
@@ -156,11 +155,10 @@ NS_ASSUME_NONNULL_END
 
 - (UIButton *)actionButton {
     if (_actionButton == nil) {
-        DWBaseActionButton *actionButton = [[DWBaseActionButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 320.0, 54.0)];
+        DashButton *actionButton = [[DashButton alloc] init];
         actionButton.translatesAutoresizingMaskIntoConstraints = NO;
         actionButton.layer.cornerRadius = 8;
         actionButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
-        [actionButton setBackgroundColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [actionButton setTitleColor:[UIColor dw_dashBlueColor] forState:UIControlStateNormal];
         [actionButton setTitleColor:[[UIColor dw_dashBlueColor] colorWithAlphaComponent:0.5] forState:UIControlStateHighlighted];
         [actionButton setTitle:NSLocalizedString(@"Let me know when it’s done", nil)

@@ -103,6 +103,7 @@ struct PointOfUseListSegment: Hashable {
     var filterGroups: [PointOfUseListFiltersGroup]
     var defaultFilters: PointOfUseListFilters!
     var territoriesDataSource: TerritoryDataSource?
+    var showsFilters: Bool
 }
 
 // MARK: - PointOfUseListModel

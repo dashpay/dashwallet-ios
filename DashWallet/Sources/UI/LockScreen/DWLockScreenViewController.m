@@ -102,6 +102,10 @@ static CGFloat ActionButtonsHeight(void) {
     return controller;
 }
 
+- (BOOL)locksBalance {
+    return YES;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 

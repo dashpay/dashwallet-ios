@@ -36,7 +36,7 @@ enum AtmListSegmnets: Int {
 
         return .init(tag: rawValue, title: title, showMap: true, showLocationServiceSettings: false, showReversedLocation: true,
                      dataProvider: dataProvider, filterGroups: filterGroups, defaultFilters: defaultFilters,
-                     territoriesDataSource: territories)
+                     territoriesDataSource: territories, showsFilters: true)
     }
 }
 

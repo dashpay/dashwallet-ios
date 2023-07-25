@@ -17,32 +17,11 @@
 
 import Foundation
 
-// MARK: - ReceiveViewType
-
-@objc(DWReceiveViewType)
-enum ReceiveViewType: Int {
-    @objc(DWReceiveViewType_Default)
-    case `default`
-
-    @objc(DWReceiveViewType_QuickReceive)
-    case quick
-}
-
-extension ReceiveViewType {
-    var secondButtonTitle: String {
-        if self == .default {
-            return NSLocalizedString("Share address", comment: "Receive screen")
-        } else {
-            return NSLocalizedString("Exit", comment: "Receive screen")
-        }
-    }
-}
 
 // MARK: - ReceiveViewControllerDelegate
 
 @objc(DWReceiveViewControllerDelegate)
 protocol ReceiveViewControllerDelegate: AnyObject {
-    func receiveViewControllerExitButtonAction(_ controller: ReceiveViewController)
     func importPrivateKeyButtonAction(_ controller: ReceiveViewController)
 }
 
@@ -51,9 +30,6 @@ protocol ReceiveViewControllerDelegate: AnyObject {
 @objc(DWReceiveViewController)
 class ReceiveViewController: BaseViewController {
     var model: DWReceiveModelProtocol!
-
-    @objc
-    var viewType: ReceiveViewType = .default
 
     @objc
     weak var delegate: ReceiveViewControllerDelegate?
@@ -98,7 +74,6 @@ extension ReceiveViewController {
         view.addSubview(mainStackView)
 
         let receiveContentView = ReceiveContentView.view(with: model)
-        receiveContentView.viewType = viewType
         receiveContentView.specifyAmountHandler = { [weak self] in
             guard let self else { return }
 
@@ -109,10 +84,6 @@ extension ReceiveViewController {
         receiveContentView.shareHandler = { [weak self] sender in
             guard let self else { return }
             self.dw_shareReceiveInfo(self.model, sender: sender)
-        }
-        receiveContentView.exitHandler = { [weak self] in
-            guard let self else { return }
-            self.delegate?.receiveViewControllerExitButtonAction(self)
         }
 
         receiveContentView.backgroundColor = .dw_background()

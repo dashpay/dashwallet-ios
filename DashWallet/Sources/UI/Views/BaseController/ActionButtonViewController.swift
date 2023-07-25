@@ -24,9 +24,9 @@ protocol ActionButtonProtocol: AnyObject {
     var isHidden: Bool { get set }
 }
 
-// MARK: - DWActionButton + ActionButtonProtocol
+// MARK: - ActionButton + ActionButtonProtocol
 
-extension DWActionButton: ActionButtonProtocol { }
+extension ActionButton: ActionButtonProtocol { }
 
 // MARK: - UIBarButtonItem + ActionButtonProtocol
 
@@ -56,7 +56,7 @@ class ActionButtonViewController: BaseViewController, ActivityIndicatorPreviewin
     internal var isKeyboardNotificationsEnabled = false
     internal var showsActionButton: Bool { true }
     internal var isActionButtonInNavigationBar: Bool { false }
-    internal var actionButtonTitle: String? {
+    internal var actionButtonTitle: String! {
         fatalError("Must be overriden in subclass")
     }
 
@@ -64,7 +64,7 @@ class ActionButtonViewController: BaseViewController, ActivityIndicatorPreviewin
 
     internal var stackView: UIStackView!
     internal var buttonContainer: UIView!
-    private var button: DWActionButton!
+    private var button: ActionButton!
     private var barButton: UIBarButtonItem!
     private var contentBottomConstraint: NSLayoutConstraint!
 
@@ -161,10 +161,9 @@ extension ActionButtonViewController {
             buttonContainer.translatesAutoresizingMaskIntoConstraints = false
             stackView.addArrangedSubview(buttonContainer)
 
-            button = DWActionButton(frame: .zero)
-            button.translatesAutoresizingMaskIntoConstraints = false
+            button = ActionButton()
             button.setTitle(actionButtonTitle, for: .normal)
-            button.setTitle(actionButtonDisabledTitle, for: .disabled)
+            button.translatesAutoresizingMaskIntoConstraints = false
             button.addTarget(self, action: #selector(actionButtonAction(sender:)), for: .touchUpInside)
 
             if _SNAPSHOT {
