@@ -67,7 +67,7 @@ class ConfirmPaymentViewController: SheetViewController {
     }
 
     override func contentViewHeight() -> CGFloat {
-        190 + CGFloat(model.items.count)*46 + view.safeAreaInsets.bottom
+        190 + CGFloat(model.items.count)*46
     }
 
     override func viewDidLoad() {

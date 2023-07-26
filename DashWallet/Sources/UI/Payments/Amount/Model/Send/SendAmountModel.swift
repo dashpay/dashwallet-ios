@@ -55,10 +55,7 @@ class SendAmountModel: BaseAmountModel {
         let account = DWEnvironment.sharedInstance().currentAccount
         let allAvailableFunds = account.maxOutputAmount
 
-        let authenticationManager = DSAuthenticationManager.sharedInstance()
-        let canShowInsufficientFunds = authenticationManager.didAuthenticate
-
-        return canShowInsufficientFunds && (plainAmount > allAvailableFunds)
+        return plainAmount > allAvailableFunds
     }
 
     private var syncingActivityMonitor: SyncingActivityMonitor { SyncingActivityMonitor.shared }

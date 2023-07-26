@@ -71,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)payToAddressAction {
     DWEnterAddressViewController *vc = [[DWEnterAddressViewController alloc] init];
-    
+    vc.paymentControllerDelegate = self;
     DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController: vc];
     [self presentViewController:nvc animated:YES completion:nil];
 }
@@ -157,15 +157,16 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)paymentControllerDidFinishTransaction:(PaymentController *_Nonnull)controller transaction:(DSTransaction *_Nonnull)transaction {
+    [self dismissViewControllerAnimated:true completion:^{
+        TxDetailModel *model = [[TxDetailModel alloc] initWithTransaction:transaction];
+        SuccessTxDetailViewController *vc = [[SuccessTxDetailViewController alloc] initWithModel:model];
+        vc.contactItem = _paymentController.contactItem;
+        vc.delegate = self;
+        [self presentViewController:vc
+                           animated:YES
+                         completion:nil];
+    }];
 
-    TxDetailModel *model = [[TxDetailModel alloc] initWithTransaction:transaction];
-    SuccessTxDetailViewController *vc = [[SuccessTxDetailViewController alloc] initWithModel:model];
-    vc.modalPresentationStyle = UIModalPresentationFullScreen;
-    vc.contactItem = _paymentController.contactItem;
-    vc.delegate = self;
-    [self presentViewController:vc
-                       animated:YES
-                     completion:nil];
 }
 
 - (UIViewController *_Nonnull)presentationAnchorForPaymentController:(PaymentController *_Nonnull)controller {
