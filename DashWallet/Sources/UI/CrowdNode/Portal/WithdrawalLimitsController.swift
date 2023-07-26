@@ -52,6 +52,7 @@ final class WithdrawalLimitsController: BaseViewController {
     }
 
     override func viewDidLoad() {
+        DSLogger.log("CrowdNodeDeposit: limits super.viewDidLoad")
         super.viewDidLoad()
 
         configureHierarchy()
@@ -61,28 +62,34 @@ final class WithdrawalLimitsController: BaseViewController {
 // MARK: Life cycle
 extension WithdrawalLimitsController {
     private func configureHierarchy() {
+        DSLogger.log("CrowdNodeDeposit: limits configureHierarchy")
         view.backgroundColor = .dw_secondaryBackground()
 
         let action = UIAction { [weak self] _ in
             self?.closeAction()
         }
+        DSLogger.log("CrowdNodeDeposit: limits set rightBarButtonItem")
         let closeItem = UIBarButtonItem(systemItem: .close, primaryAction: action)
         navigationItem.rightBarButtonItem = closeItem
 
+        DSLogger.log("CrowdNodeDeposit: limits set scrollView")
         let scrollView = UIScrollView(frame: .zero)
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
 
+        DSLogger.log("CrowdNodeDeposit: limits set contentView")
         let contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = .clear
         scrollView.addSubview(contentView)
 
+        DSLogger.log("CrowdNodeDeposit: limits set iconView")
         let iconView = UIImageView(image: UIImage(named: model?.icon ?? "image.crowdnode.info"))
         iconView.contentMode = .scaleAspectFit
         iconView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(iconView)
 
+        DSLogger.log("CrowdNodeDeposit: limits set titleLabel")
         let titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.textAlignment = .center
@@ -90,6 +97,7 @@ extension WithdrawalLimitsController {
         titleLabel.text = NSLocalizedString("CrowdNode withdrawal limits", comment: "CrowdNode")
         scrollView.addSubview(titleLabel)
 
+        DSLogger.log("CrowdNodeDeposit: limits set titleLabel")
         let descriptionLabel = UILabel()
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         descriptionLabel.numberOfLines = 0
@@ -100,26 +108,33 @@ extension WithdrawalLimitsController {
         descriptionLabel.text = NSLocalizedString("Due to CrowdNode’s terms of service users can withdraw no more than:", comment: "CrowdNode")
         scrollView.addSubview(descriptionLabel)
 
+        DSLogger.log("CrowdNodeDeposit: limits set limitsStackView")
         let limitsStackView = UIStackView()
         limitsStackView.translatesAutoresizingMaskIntoConstraints = false
         limitsStackView.axis = .horizontal
         limitsStackView.distribution = .fillEqually
         scrollView.addSubview(limitsStackView)
 
+        DSLogger.log("CrowdNodeDeposit: limits set limitLabelsStackView")
         let limitLabelsStackView = UIStackView()
         limitLabelsStackView.translatesAutoresizingMaskIntoConstraints = false
         limitLabelsStackView.axis = .horizontal
         limitLabelsStackView.distribution = .fillEqually
         scrollView.addSubview(limitLabelsStackView)
 
+        DSLogger.log("CrowdNodeDeposit: limits enumerate limits")
         model?.limits.enumerated().forEach {
+            DSLogger.log("CrowdNodeDeposit: limit \($0.element)")
             let isHighlighted = $0.offset == model?.highlightedLimit
+            DSLogger.log("CrowdNodeDeposit: create limit")
             let limit = createLimitText(limit: $0.element, isHighlighted: isHighlighted)
             limitsStackView.addArrangedSubview(limit)
+            DSLogger.log("CrowdNodeDeposit: create createLimitLabel")
             let limitLabel = createLimitLabel(label: limitLabels[$0.offset], isHighlighted: isHighlighted)
             limitLabelsStackView.addArrangedSubview(limitLabel)
         }
 
+        DSLogger.log("CrowdNodeDeposit: limits activate constraints")
         let frameGuide = scrollView.frameLayoutGuide
         let contentGuide = scrollView.contentLayoutGuide
 
@@ -160,6 +175,7 @@ extension WithdrawalLimitsController {
         ])
 
         if let text = model?.buttonText {
+            DSLogger.log("CrowdNodeDeposit: limits set onlineAccountHint")
             let onlineAccountHint = UILabel()
             onlineAccountHint.translatesAutoresizingMaskIntoConstraints = false
             onlineAccountHint.numberOfLines = 0
@@ -170,6 +186,7 @@ extension WithdrawalLimitsController {
             onlineAccountHint.text = NSLocalizedString("Withdraw without limits with an online account on CrowdNode website.", comment: "CrowdNode")
             scrollView.addSubview(onlineAccountHint)
 
+            DSLogger.log("CrowdNodeDeposit: limits set actionButton")
             let actionButton = UIButton(type: .custom)
             actionButton.translatesAutoresizingMaskIntoConstraints = false
             actionButton.addTarget(self, action: #selector(actionButtonAction), for: .touchUpInside)
@@ -179,6 +196,7 @@ extension WithdrawalLimitsController {
             actionButton.setTitle(text, for: .normal)
             scrollView.addSubview(actionButton)
 
+            DSLogger.log("CrowdNodeDeposit: limits activate buttonText constraint")
             NSLayoutConstraint.activate([
                 onlineAccountHint.topAnchor.constraint(equalTo: limitLabelsStackView.bottomAnchor, constant: 30),
                 onlineAccountHint.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),

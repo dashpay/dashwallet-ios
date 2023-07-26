@@ -98,7 +98,8 @@ final class CrowdNodeModel {
     var needsBackup: Bool { DWGlobalOptions.sharedInstance().walletNeedsBackup }
     var canSignUp: Bool { !needsBackup && hasEnoughWalletBalance }
     var shouldShowFirstDepositBanner: Bool {
-        !crowdNode.hasAnyDeposits() && crowdNodeBalance < CrowdNode.minimumDeposit
+        DSLogger.log("CrowdNodeDeposit: get shouldShowFirstDepositBanner. Balance: \(crowdNodeBalance)")
+        return !crowdNode.hasAnyDeposits() && crowdNodeBalance < CrowdNode.minimumDeposit
     }
 
     var canWithdraw: Bool {
