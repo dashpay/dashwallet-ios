@@ -19,32 +19,25 @@ import UIKit
 
 // MARK: - PayViewControllerDelegate
 
-@objc(DWPayViewControllerDelegate)
 protocol PayViewControllerDelegate: AnyObject {
     func payViewControllerDidFinishPayment(_ controller: PayViewController, contact: DWDPBasicUserItem?)
 }
 
 // MARK: - PayViewController
 
-@objc(DWPayViewController)
 class PayViewController: BaseViewController, PayableViewController {
     @IBOutlet weak var tableView: UITableView!
 
-    @objc
     var paymentController: PaymentController!
 
-    @objc
     var payModel: DWPayModelProtocol!
 
     var maxActionButtonWidth: CGFloat = 0
 
-    @objc
     var demoMode = false
 
-    @objc
     var delegate: PayViewControllerDelegate?
 
-    @objc
     static func controller(with payModel: DWPayModelProtocol) -> PayViewController {
         let storyboard = UIStoryboard(name: "Pay", bundle: nil)
         let controller = storyboard.instantiateInitialViewController() as! PayViewController

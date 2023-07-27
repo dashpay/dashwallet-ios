@@ -23,8 +23,8 @@ final class PasteboardContentView: UIView {
     private var textView: TappableTextView!
 
     override var intrinsicContentSize: CGSize {
-        let h = textView.contentSize.height + 36 + 10 // textView.contentSize.height + top padding + bottom padding
-        return CGSize(width: UIView.noIntrinsicMetric, height: min(200, h))
+        let h = textView.contentSize.height + 36 + 10 + 5 // textView.contentSize.height + top padding + bottom padding
+        return CGSize(width: UIView.noIntrinsicMetric, height: min(220, h))
     }
 
     override init(frame: CGRect) {
@@ -54,7 +54,9 @@ final class PasteboardContentView: UIView {
             }
         }
 
-        invalidateIntrinsicContentSize()
+        DispatchQueue.main.async {
+            self.invalidateIntrinsicContentSize()
+        }
     }
 
     private func configureHierarchy() {

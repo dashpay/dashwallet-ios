@@ -24,32 +24,24 @@ class SheetViewController: BaseViewController, DWModalPresentationControllerDele
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
 
 
-        let contentViewHeight = contentViewHeight()
-        if contentViewHeight != -1 {
-            if #available(iOS 16.0, *) {
-                modalPresentationStyle = .pageSheet
+        if #available(iOS 16.0, *) {
+            modalPresentationStyle = .pageSheet
 
-                guard let sheet = sheetPresentationController else { return }
+            guard let sheet = sheetPresentationController else { return }
 
-                let detents: [UISheetPresentationController.Detent]
+            let detents: [UISheetPresentationController.Detent]
 
-                let fitId = UISheetPresentationController.Detent.Identifier("fit")
-                detents = [UISheetPresentationController.Detent.custom(identifier: fitId) { _ in
-                    contentViewHeight
-                }]
-                sheet.prefersGrabberVisible = true
-                sheet.detents = detents
-            } else {
-                modalPresentationStyle = .custom
-
-                modalTransition = DWModalTransition()
-                modalTransition?.modalPresentationControllerDelegate = self
-                transitioningDelegate = modalTransition
-            }
+            let fitId = UISheetPresentationController.Detent.Identifier("fit")
+            detents = [UISheetPresentationController.Detent.custom(identifier: fitId) { [weak self] _ in
+                self?.contentViewHeight() ?? 100
+            }]
+            sheet.prefersGrabberVisible = true
+            sheet.detents = detents
         } else {
             modalPresentationStyle = .custom
 
             modalTransition = DWModalTransition()
+            modalTransition?.modalPresentationControllerDelegate = self
             transitioningDelegate = modalTransition
         }
     }
