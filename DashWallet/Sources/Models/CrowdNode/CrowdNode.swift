@@ -475,11 +475,9 @@ extension CrowdNode {
         let wallet = DWEnvironment.sharedInstance().currentWallet
         let filter = CrowdNodeDepositTx(accountAddress: accountAddress)
 
-        let result = wallet.allTransactions.contains {
+        return wallet.allTransactions.contains {
             tx in filter.matches(tx: tx)
         }
-        
-        return result
     }
 
     private func checkWithdrawalLimits(_ amount: UInt64) throws {
