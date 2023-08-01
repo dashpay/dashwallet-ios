@@ -33,7 +33,6 @@ enum TransferDirection {
     case withdraw
 
     var imageName: String {
-        DSLogger.log("CrowdNodeDeposit: get imageName")
         switch self {
         case .deposit: return "image.explore.dash.wts.dash"
         case .withdraw: return "image.crowdnode.logo"
@@ -41,7 +40,6 @@ enum TransferDirection {
     }
 
     var title: String {
-        DSLogger.log("CrowdNodeDeposit: get title")
         switch self {
         case .deposit: return NSLocalizedString("Deposit", comment: "CrowdNode")
         case .withdraw: return NSLocalizedString("Withdraw", comment: "CrowdNode")
@@ -49,7 +47,6 @@ enum TransferDirection {
     }
 
     var direction: String {
-        DSLogger.log("CrowdNodeDeposit: get direction")
         switch self {
         case .deposit: return NSLocalizedString("from Dash Wallet", comment: "from Dash Wallet")
         case .withdraw: return NSLocalizedString("from CrowdNode", comment: "from CrowdNode")
@@ -57,7 +54,6 @@ enum TransferDirection {
     }
 
     var keyboardHeader: String {
-        DSLogger.log("CrowdNodeDeposit: get keyboardHeader")
         switch self {
         case .deposit: return NSLocalizedString("Sending to CrowdNode account", comment: "CrowdNode")
         case .withdraw: return NSLocalizedString("Sending to Dash Wallet on this device", comment: "CrowdNode")
@@ -65,7 +61,6 @@ enum TransferDirection {
     }
 
     var keyboardHeaderIcon: String {
-        DSLogger.log("CrowdNodeDeposit: get keyboardHeaderIcon")
         switch self {
         case .deposit: return "image.crowdnode.logo"
         case .withdraw: return "image.explore.dash.wts.dash"
@@ -102,7 +97,6 @@ final class CrowdNodeTransferModel: SendAmountModel {
     public var direction: TransferDirection = .deposit
 
     var dashPriceDisplayString: String {
-        DSLogger.log("CrowdNodeDeposit: get dashPriceDisplayString")
         let dashAmount = kOneDash
         let dashAmountFormatted = dashAmount.formattedDashAmount
         let fiatBalanceFormatted = CurrencyExchanger.shared.fiatAmountString(in: localCurrencyCode, for: dashAmount.dashAmount)
