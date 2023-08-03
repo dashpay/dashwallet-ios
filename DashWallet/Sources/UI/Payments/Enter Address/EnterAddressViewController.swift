@@ -32,6 +32,7 @@ final class EnterAddressViewController: BaseViewController, PayableViewControlle
     var payModel: DWPayModelProtocol! { model }
 
     internal var paymentController: PaymentController!
+    @objc
     weak var paymentControllerDelegate: PaymentControllerDelegate?
 
     // MARK: Actions

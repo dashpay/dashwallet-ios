@@ -471,14 +471,20 @@ extension CrowdNode {
     }
 
     func hasAnyDeposits() -> Bool {
+        DSLogger.log("CrowdNodeDeposit: hasAnyDeposits")
         guard !accountAddress.isEmpty else { return false }
 
+        DSLogger.log("CrowdNodeDeposit: get currentWallet")
         let wallet = DWEnvironment.sharedInstance().currentWallet
+        DSLogger.log("CrowdNodeDeposit: create CrowdNodeDepositTx")
         let filter = CrowdNodeDepositTx(accountAddress: accountAddress)
 
-        return wallet.allTransactions.contains {
+        DSLogger.log("CrowdNodeDeposit: enumerate allTransactions")
+        let result = wallet.allTransactions.contains {
             tx in filter.matches(tx: tx)
         }
+        DSLogger.log("CrowdNodeDeposit: hasAnyDeposits: return \(result)")
+        return result
     }
 
     private func checkWithdrawalLimits(_ amount: UInt64) throws {

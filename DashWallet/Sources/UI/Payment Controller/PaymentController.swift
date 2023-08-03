@@ -212,14 +212,14 @@ extension PaymentController: DWPaymentProcessorDelegate {
             vc.dismiss(animated: true) {
                 if let vc = self.presentationContextProvider as? UIViewController,
                    vc.navigationController?.topViewController is ProvideAmountViewController {
-                    vc.navigationController?.popViewController(animated: true)
+                    vc.navigationController?.popToRootViewController(animated: true)
                 }
                 self.delegate?.paymentControllerDidFinishTransaction(self, transaction: transaction)
             }
         } else {
             if let vc = presentationContextProvider as? UIViewController,
                vc.navigationController?.topViewController is ProvideAmountViewController {
-                vc.navigationController?.popViewController(animated: true)
+                vc.navigationController?.popToRootViewController(animated: true)
             }
 
             delegate?.paymentControllerDidFinishTransaction(self, transaction: transaction)
