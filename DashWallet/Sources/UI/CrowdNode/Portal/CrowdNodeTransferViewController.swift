@@ -43,56 +43,44 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     override var amountInputStyle: AmountInputControl.Style { .oppositeAmount }
 
     static func controller(mode: TransferDirection) -> CrowdNodeTransferController {
-        DSLogger.log("CrowdNodeDeposit: create transfer model for \(mode)")
         let model = CrowdNodeTransferModel()
         model.direction = mode
 
-        DSLogger.log("CrowdNodeDeposit: create viewController")
         let vc = CrowdNodeTransferController(model: model)
         return vc
     }
 
     override func viewDidLoad() {
-        DSLogger.log("CrowdNodeDeposit: super.viewDidLoad")
         super.viewDidLoad()
 
-        DSLogger.log("CrowdNodeDeposit: viewDidLoad")
         view.backgroundColor = .dw_secondaryBackground()
 
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.largeTitleDisplayMode = .never
 
         networkStatusDidChange = { [weak self] _ in
-            DSLogger.log("CrowdNodeDeposit: networkStatusDidChange")
             self?.reloadView()
         }
         startNetworkMonitoring()
         configureObservers()
-        DSLogger.log("CrowdNodeDeposit: viewDidLoad end")
     }
 
     override func viewDidAppear(_ animated: Bool) {
-        DSLogger.log("CrowdNodeDeposit: super.viewDidAppear")
         super.viewDidAppear(animated)
-        DSLogger.log("CrowdNodeDeposit: viewDidAppear")
         viewModel.showNotificationOnResult = false
         
         if mode == .deposit && viewModel.shouldShowWithdrawalLimitsDialog {
             showWithdrawalLimitsInfo()
             viewModel.shouldShowWithdrawalLimitsDialog = false
         }
-        
-        DSLogger.log("CrowdNodeDeposit: viewDidAppear end")
     }
 
     override func viewDidDisappear(_ animated: Bool) {
-        DSLogger.log("CrowdNodeDeposit: super.viewDidDisappear")
         super.viewDidDisappear(animated)
         viewModel.showNotificationOnResult = true
     }
 
     override var actionButtonTitle: String? {
-        DSLogger.log("CrowdNodeDeposit: get actionButtonTitle")
         return mode.title
     }
 
@@ -113,10 +101,8 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     }
 
     override func configureModel() {
-        DSLogger.log("CrowdNodeDeposit: super.configureModel")
         super.configureModel()
 
-        DSLogger.log("CrowdNodeDeposit: configureModel")
         model.inputsSwappedHandler = { [weak self] _ in
             self?.updateBalanceLabel()
         }
@@ -172,28 +158,21 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
 
 extension CrowdNodeTransferController {
     override func configureHierarchy() {
-        DSLogger.log("CrowdNodeDeposit: super.configureHierarchy")
         super.configureHierarchy()
-
-        DSLogger.log("CrowdNodeDeposit: configureTitleBar")
         configureTitleBar()
 
-        DSLogger.log("CrowdNodeDeposit: set fromLabel")
         fromLabel = FromLabel(icon: mode.imageName, text: mode.direction)
         contentView.addSubview(fromLabel)
 
-        DSLogger.log("CrowdNodeDeposit: set KeyboardHeader")
         let keyboardHeader = KeyboardHeader(icon: mode.keyboardHeaderIcon, text: mode.keyboardHeader)
         keyboardHeader.translatesAutoresizingMaskIntoConstraints = false
         topKeyboardView = keyboardHeader
 
-        DSLogger.log("CrowdNodeDeposit: set NetworkUnavailableView")
         networkUnavailableView = NetworkUnavailableView(frame: .zero)
         networkUnavailableView.translatesAutoresizingMaskIntoConstraints = false
         networkUnavailableView.isHidden = true
         contentView.addSubview(networkUnavailableView)
 
-        DSLogger.log("CrowdNodeDeposit: activate transfer screen constraints")
         NSLayoutConstraint.activate([
             fromLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             NSLayoutConstraint(item: fromLabel!, attribute: .centerY, relatedBy: .equal, toItem: view, attribute: .centerY, multiplier: 0.38, constant: 0),
@@ -207,11 +186,9 @@ extension CrowdNodeTransferController {
         ])
 
         if mode == .deposit && viewModel.shouldShowFirstDepositBanner {
-            DSLogger.log("CrowdNodeDeposit: set MinimumDepositBanner")
             let minimumDepositBanner = MinimumDepositBanner(frame: .zero)
             contentView.addSubview(minimumDepositBanner)
 
-            DSLogger.log("CrowdNodeDeposit: activate MinimumDepositBanner constraints")
             NSLayoutConstraint.activate([
                 minimumDepositBanner.heightAnchor.constraint(equalToConstant: 32),
                 minimumDepositBanner.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
@@ -219,7 +196,6 @@ extension CrowdNodeTransferController {
                 minimumDepositBanner.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 0),
             ])
 
-            DSLogger.log("CrowdNodeDeposit: set UITapGestureRecognizer")
             let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(minimumDepositBannerTapAction))
             minimumDepositBanner.addGestureRecognizer(tapGestureRecognizer)
             self.minimumDepositBanner = minimumDepositBanner
@@ -227,7 +203,6 @@ extension CrowdNodeTransferController {
     }
 
     private func configureTitleBar() {
-        DSLogger.log("CrowdNodeDeposit: configureTitleBar")
         let titleViewStackView = UIStackView()
         titleViewStackView.alignment = .center
         titleViewStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -235,14 +210,12 @@ extension CrowdNodeTransferController {
         titleViewStackView.spacing = 1
         navigationItem.titleView = titleViewStackView
 
-        DSLogger.log("CrowdNodeDeposit: titleLabel")
         let titleLabel = UILabel()
         titleLabel.font = .dw_mediumFont(ofSize: 16)
         titleLabel.minimumScaleFactor = 0.5
         titleLabel.text = mode.title
         titleViewStackView.addArrangedSubview(titleLabel)
 
-        DSLogger.log("CrowdNodeDeposit: set dashPriceLabel")
         dashPriceLabel = UILabel()
         dashPriceLabel.font = .dw_font(forTextStyle: .footnote)
         dashPriceLabel.textColor = .dw_secondaryText()
@@ -261,7 +234,6 @@ extension CrowdNodeTransferController {
 extension CrowdNodeTransferController {
     private func reloadView() {
         let isOnline = networkStatus == .online
-        DSLogger.log("CrowdNodeDeposit: reloadView, isOnline: \(isOnline)")
         networkUnavailableView.isHidden = isOnline
         keyboardContainer.isHidden = !isOnline
         if let btn = actionButton as? UIButton { btn.superview?.isHidden = !isOnline }
@@ -327,20 +299,15 @@ extension CrowdNodeTransferController {
     }
 
     private func showWithdrawalLimitsInfo() {
-        DSLogger.log("CrowdNodeDeposit: showWithdrawalLimitsInfo")
         let vc = WithdrawalLimitsController()
-        DSLogger.log("CrowdNodeDeposit: assign WithdrawalLimitDialogModel")
         vc.model = WithdrawalLimitDialogModel(icon: "image.crowdnode.info", buttonText: nil, limits: viewModel.withdrawalLimits, highlightedLimit: -1)
-        DSLogger.log("CrowdNodeDeposit: create BaseNavigationController")
         let nvc = BaseNavigationController(rootViewController: vc)
-        DSLogger.log("CrowdNodeDeposit: present BaseNavigationController")
         present(nvc, animated: true)
     }
 }
 
 extension CrowdNodeTransferController {
     func configureObservers() {
-        DSLogger.log("CrowdNodeDeposit: configureObservers")
         viewModel.$crowdNodeBalance
             .receive(on: DispatchQueue.main)
             .removeDuplicates()
@@ -366,13 +333,10 @@ extension CrowdNodeTransferController {
     }
 
     private func updateBalanceLabel() {
-        DSLogger.log("CrowdNodeDeposit: updateBalanceLabel")
         let amount = mode == .deposit ? viewModel.walletBalance : viewModel.crowdNodeBalance
-        DSLogger.log("CrowdNodeDeposit: formatted balance: \(amount)")
         let formatted = model.activeAmountType == .main
             ? amount.formattedDashAmount
             : CurrencyExchanger.shared.fiatAmountString(in: model.localCurrencyCode, for: amount.dashAmount)
-        DSLogger.log("CrowdNodeDeposit: set balance label: \(formatted)")
         fromLabel.balanceText = NSLocalizedString("Balance: ", comment: "CrowdNode") + formatted
     }
 }

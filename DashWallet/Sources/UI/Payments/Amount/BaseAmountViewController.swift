@@ -56,7 +56,6 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     func maxButtonAction() { }
 
     init(model: BaseAmountModel) {
-        DSLogger.log("CrowdNodeDeposit: BaseAmountViewController init")
         self.model = model
 
         super.init(nibName: nil, bundle: nil)
@@ -67,7 +66,6 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     }
 
     internal func configureModel() {
-        DSLogger.log("CrowdNodeDeposit: BaseAmountViewController configureModel")
         model.amountChangeHandler = { [weak self] _ in
             self?.amountDidChange()
         }
@@ -86,7 +84,6 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     }
 
     internal func amountDidChange() {
-        DSLogger.log("CrowdNodeDeposit: BaseAmountViewController amountDidChange")
         actionButton?.isEnabled = model.isAllowedToContinue
         amountView.amountInputControl.reloadData()
         showErrorIfNeeded()
@@ -126,7 +123,6 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     }
 
     override func viewDidAppear(_ animated: Bool) {
-        DSLogger.log("CrowdNodeDeposit: BaseAmountViewController viewDidAppear")
         super.viewDidAppear(animated)
 
         actionButton?.isEnabled = model.isAllowedToContinue
@@ -135,7 +131,6 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     }
 
     override func viewDidLoad() {
-        DSLogger.log("CrowdNodeDeposit: BaseAmountViewController viewDidLoad")
         super.viewDidLoad()
 
         configureHierarchy()
@@ -146,7 +141,6 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
 extension BaseAmountViewController {
     @objc
     internal func configureHierarchy() {
-        DSLogger.log("CrowdNodeDeposit: BaseAmountViewController configureHierarchy")
         contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = .dw_secondaryBackground()
