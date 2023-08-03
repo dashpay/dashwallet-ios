@@ -54,6 +54,7 @@ class CBAuth {
 
         Task {
             try await refreshUserToken()
+            try await refreshAccount()
         }
     }
 
