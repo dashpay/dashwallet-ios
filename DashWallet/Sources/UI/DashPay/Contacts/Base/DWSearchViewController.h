@@ -17,9 +17,9 @@
 
 @import UIKit;
 
-#import "dashwallet-Swift.h"
-
 NS_ASSUME_NONNULL_BEGIN
+
+@protocol DWNavigationFullscreenable;
 
 @interface DWSearchViewController : UIViewController <DWNavigationFullscreenable, UISearchBarDelegate>
 

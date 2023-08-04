@@ -52,7 +52,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.title = NSLocalizedString(@"Contacts", nil);
+    self.navigationItem.title = NSLocalizedString(@"Contacts", nil);
 
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
