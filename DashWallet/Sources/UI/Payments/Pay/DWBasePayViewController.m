@@ -158,9 +158,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)paymentControllerDidFinishTransaction:(PaymentController *_Nonnull)controller transaction:(DSTransaction *_Nonnull)transaction {
     [self dismissViewControllerAnimated:true completion:^{
-        TxDetailModel *model = [[TxDetailModel alloc] initWithTransaction:transaction];
+        DWTxDetailModel *model = [[DWTxDetailModel alloc] initWithTransaction:transaction];
         SuccessTxDetailViewController *vc = [[SuccessTxDetailViewController alloc] initWithModel:model];
-        vc.contactItem = _paymentController.contactItem;
+        vc.contactItem = self->_paymentController.contactItem;
         vc.delegate = self;
         [self presentViewController:vc
                            animated:YES
