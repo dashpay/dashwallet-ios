@@ -37,7 +37,7 @@ NSNotificationName const DWDashPaySentContactRequestToInviter = @"kDWDashPaySent
 @property (nullable, nonatomic, strong) NSError *lastRegistrationError;
 @property (nonatomic, assign) BOOL isInvitationNotificationAllowed;
 @property (nullable, nonatomic, strong) NSURL *invitation;
-
+@property (nullable, nonatomic, copy) NSString *mockUsername; // TODO: remove when DashPay is restored
 @end
 
 NS_ASSUME_NONNULL_END
@@ -83,8 +83,16 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSString *)username {
+    if (_mockUsername != nil) { // TODO: remove when DashPay is restored
+        return _mockUsername;
+    }
+    
     DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
     return blockchainIdentity.currentDashpayUsername;// ?: [DWGlobalOptions sharedInstance].persistedDashPayUsername; //TODO: DashPay
+}
+
+- (void)mockUsername:(NSString *)username {
+    _mockUsername = username;
 }
 
 - (DSBlockchainIdentity *)blockchainIdentity {

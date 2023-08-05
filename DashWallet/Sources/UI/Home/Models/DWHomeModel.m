@@ -93,6 +93,8 @@ NS_ASSUME_NONNULL_BEGIN
         
 #if DASHPAY
         _dashPayModel = [[DWDashPayModel alloc] init];
+//        _isDashPayReady = [self shouldShowCreateUserNameButton] && ![DWGlobalOptions sharedInstance].dashPayRegistrationOpenedOnce; // TODO
+        _isDashPayReady = true;
 #endif /* DASHPAY_ENABLED */
 
         // set empty datasource
@@ -286,10 +288,6 @@ NS_ASSUME_NONNULL_BEGIN
 #if DASHPAY
     self.dashPayModel = [[DWDashPayModel alloc] init];
 #endif /* DASHPAY_ENABLED */
-}
-
-- (BOOL)isDashPayReadyMainSuggestion {
-    return self.isDashPayReady && ![DWGlobalOptions sharedInstance].dashPayRegistrationOpenedOnce;
 }
 
 - (void)checkCrowdNodeState {

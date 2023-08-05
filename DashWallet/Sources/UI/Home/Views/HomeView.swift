@@ -199,7 +199,7 @@ extension HomeView: HomeHeaderViewDelegate {
     }
     
     func homeHeaderViewJoinDashPayAction(_ headerView: HomeHeaderView) {
-        
+        model?.dashPayModel.mockUsername("madmax") // TODO: replace
     }
 }
 
