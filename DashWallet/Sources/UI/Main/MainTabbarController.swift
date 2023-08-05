@@ -372,18 +372,18 @@ extension MainTabbarController: UITabBarControllerDelegate {
     }
 }
 
-// MARK: - EmptyController
-
 // MARK: DWExploreTestnetViewControllerDelegate
 
 extension MainTabbarController: DWExploreTestnetViewControllerDelegate {
     func exploreTestnetViewControllerShowSendPayment(_ controller: DWExploreTestnetViewController) {
-        // TODO
+        showPaymentsController(withActivePage: PaymentsViewControllerState.pay)
     }
     
     func exploreTestnetViewControllerShowReceivePayment(_ controller: DWExploreTestnetViewController) {
-        // TODO
+        showPaymentsController(withActivePage: PaymentsViewControllerState.receive)
     }
 }
+
+// MARK: - EmptyController
 
 private final class EmptyController: UIViewController { }
