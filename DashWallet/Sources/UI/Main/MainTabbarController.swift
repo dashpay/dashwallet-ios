@@ -48,7 +48,26 @@ extension MainTabbarTabs {
             name = "tabbar_other_icon"
         }
 
-        return UIImage(named: name)!
+        return UIImage(named: name)!.withRenderingMode(.alwaysOriginal)
+    }
+    
+    var selectedIcon: UIImage {
+        let name: String
+
+        switch self {
+        case .home:
+            name = "tabbar_home_selected"
+        case .contacts:
+            name = "tabbar_contacts_selected"
+        case .payment:
+            return UIImage()
+        case .explore:
+            name = "tabbar_discover_selected"
+        case .more:
+            name = "tabbar_other_selected"
+        }
+
+        return UIImage(named: name)!.withRenderingMode(.alwaysOriginal)
     }
 }
 
@@ -127,7 +146,7 @@ extension MainTabbarController {
         var viewControllers: [UIViewController] = []
 
         // Home
-        var item = UITabBarItem(title: nil, image: MainTabbarTabs.home.icon, tag: 0)
+        var item = UITabBarItem(title: nil, image: MainTabbarTabs.home.icon, selectedImage: MainTabbarTabs.home.selectedIcon)
         item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
 
         let homeVC = DWHomeViewController()
@@ -141,7 +160,7 @@ extension MainTabbarController {
             
         #if DASHPAY
         // Contacts
-        item = UITabBarItem(title: nil, image: MainTabbarTabs.contacts.icon, tag: 1)
+        item = UITabBarItem(title: nil, image: MainTabbarTabs.contacts.icon, selectedImage: MainTabbarTabs.contacts.selectedIcon)
         item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
         
         let contactsVC = DWRootContactsViewController(payModel: homeModel.payModel, dataProvider: homeModel.getDataProvider(), dashPayModel: homeModel.dashPayModel, dashPayReady: homeModel)
@@ -161,7 +180,7 @@ extension MainTabbarController {
         
         #if DASHPAY
         // Explore
-        item = UITabBarItem(title: nil, image: MainTabbarTabs.explore.icon, tag: 3)
+        item = UITabBarItem(title: nil, image: MainTabbarTabs.explore.icon, selectedImage: MainTabbarTabs.explore.selectedIcon)
         item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
         
         let exploreVC = DWExploreTestnetViewController()
@@ -173,7 +192,7 @@ extension MainTabbarController {
         #endif
 
         // More
-        item = UITabBarItem(title: nil, image: MainTabbarTabs.more.icon, tag: 4)
+        item = UITabBarItem(title: nil, image: MainTabbarTabs.more.icon, selectedImage: MainTabbarTabs.more.selectedIcon)
         item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
         let menuVC = DWMainMenuViewController()
         menuVC.delegate = self
@@ -201,8 +220,6 @@ extension MainTabbarController {
         ])
 
         tabBar.barTintColor = .dw_background()
-        tabBar.tintColor = .dw_dashBlue()
-        tabBar.unselectedItemTintColor = .dw_tabbarInactiveButton()
     }
 
     private func closePayments(completion: (() -> Void)? = nil) {
