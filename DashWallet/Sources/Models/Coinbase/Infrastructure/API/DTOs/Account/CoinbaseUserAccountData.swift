@@ -116,7 +116,7 @@ struct Balance: Codable {
 
 struct Currency: Codable {
     let code, name, color: String
-    let sortIndex, exponent: Int
+    let exponent: Int
     let type: CurrencyType
     let addressRegex, assetID, slug, destinationTagName: String?
     let destinationTagRegex: String?
@@ -125,8 +125,8 @@ struct Currency: Codable {
         case code
         case name
         case color
-        case sortIndex = "sort_index"
-        case exponent, type
+        case exponent
+        case type
         case addressRegex = "address_regex"
         case assetID = "asset_id"
         case slug
