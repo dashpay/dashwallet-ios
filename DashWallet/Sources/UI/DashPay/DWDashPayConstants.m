@@ -24,5 +24,6 @@ uint64_t DWDP_MIN_BALANCE_TO_CREATE_INVITE = (DUFFS / 100);   // 0.01 Dash
 
 NSInteger DW_MIN_USERNAME_LENGTH = 3;
 NSInteger DW_MAX_USERNAME_LENGTH = 24;
+BOOL MOCK_DASHPAY = YES; // TODO: remove once Platform is available
 
 NSString *const DWDP_THUMBNAIL_SERVER = @"http://54.74.4.114";

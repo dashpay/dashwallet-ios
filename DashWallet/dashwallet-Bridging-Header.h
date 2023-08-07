@@ -126,3 +126,4 @@ static const bool _SNAPSHOT = 0;
 #import "DWMainMenuViewControllerDelegate.h"
 #import "DWExploreTestnetViewController.h"
 #import "DWRootContactsViewController.h"
+#import "DWDashPayConstants.h"

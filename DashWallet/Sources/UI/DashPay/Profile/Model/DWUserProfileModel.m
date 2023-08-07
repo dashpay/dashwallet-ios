@@ -23,6 +23,7 @@
 #import "DWGlobalOptions.h"
 #import "DWProfileTxsFetchedDataSource.h"
 #import "DWUserProfileDataSourceObject.h"
+#import "DWDashPayConstants.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -155,6 +156,11 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)sendContactRequest:(void (^)(BOOL success))completion {
+    if (MOCK_DASHPAY) {
+        completion(YES);
+        return;
+    }
+    
     self.sendRequestState = DWUserProfileModelState_Loading;
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;

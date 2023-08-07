@@ -23,6 +23,7 @@
 #import "DWDashPayContactsActions.h"
 #import "DWDashPayContactsUpdater.h"
 #import "DWEnvironment.h"
+#import "DWDashPayConstants.h"
 
 @implementation DWBaseContactsModel
 
@@ -42,6 +43,10 @@
 }
 
 - (BOOL)hasBlockchainIdentity {
+    if (MOCK_DASHPAY) {
+        return YES;
+    }
+    
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
     return myBlockchainIdentity != nil;
