@@ -83,7 +83,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSString *)username {
-    if (_mockUsername != nil) { // TODO: remove when DashPay is restored
+    if (MOCK_DASHPAY && _mockUsername != nil) { // TODO: remove when DashPay is restored
         return _mockUsername;
     }
     
