@@ -78,9 +78,12 @@ class MainTabbarController: UITabBarController {
     static let kAnimationDuration: TimeInterval = 0.35
 
     weak var homeController: DWHomeViewController?
-    weak var contactsNavigationController: DWRootContactsViewController?
     weak var menuNavigationController: DWMainMenuViewController?
+    
+    #if DASHPAY
+    weak var contactsNavigationController: DWRootContactsViewController?
     weak var exploreNavigationController: DWExploreTestnetViewController?
+    #endif
 
     // TODO: Refactor this and send notification about wiped wallet instead of chaining the delegate
     @objc

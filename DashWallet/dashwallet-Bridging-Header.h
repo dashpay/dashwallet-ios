@@ -125,5 +125,8 @@ static const bool _SNAPSHOT = 0;
 #import "DWHomeViewControllerDelegate.h"
 #import "DWMainMenuViewControllerDelegate.h"
 #import "DWExploreTestnetViewController.h"
-#import "DWRootContactsViewController.h"
+
+#if DASHPAY
 #import "DWDashPayConstants.h"
+#import "DWRootContactsViewController.h"
+#endif
