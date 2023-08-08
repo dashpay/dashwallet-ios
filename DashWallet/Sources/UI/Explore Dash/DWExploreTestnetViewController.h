@@ -15,12 +15,12 @@
 //  limitations under the License.
 //
 
-#import "dashwallet-Swift.h"
 #import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWExploreTestnetViewController;
+@protocol DWNavigationFullscreenable;
 
 @protocol DWExploreTestnetViewControllerDelegate <NSObject>
 

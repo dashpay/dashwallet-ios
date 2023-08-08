@@ -21,7 +21,9 @@ import UIKit
 
 private enum MainTabbarTabs: Int, CaseIterable {
     case home
+    case contacts
     case payment
+    case explore
     case more
 }
 
@@ -36,13 +38,36 @@ extension MainTabbarTabs {
         switch self {
         case .home:
             name = "tabbar_home_icon"
+        case .contacts:
+            name = "tabbar_contacts_icon"
         case .payment:
             return UIImage()
+        case .explore:
+            name = "tabbar_discover_icon"
         case .more:
             name = "tabbar_other_icon"
         }
 
-        return UIImage(named: name)!
+        return UIImage(named: name)!.withRenderingMode(.alwaysOriginal)
+    }
+    
+    var selectedIcon: UIImage {
+        let name: String
+
+        switch self {
+        case .home:
+            name = "tabbar_home_selected"
+        case .contacts:
+            name = "tabbar_contacts_selected"
+        case .payment:
+            return UIImage()
+        case .explore:
+            name = "tabbar_discover_selected"
+        case .more:
+            name = "tabbar_other_selected"
+        }
+
+        return UIImage(named: name)!.withRenderingMode(.alwaysOriginal)
     }
 }
 
@@ -53,8 +78,12 @@ class MainTabbarController: UITabBarController {
     static let kAnimationDuration: TimeInterval = 0.35
 
     weak var homeController: DWHomeViewController?
-    // weak var contactsNavigationController: DWContacts?
     weak var menuNavigationController: DWMainMenuViewController?
+    
+    #if DASHPAY
+    weak var contactsNavigationController: DWRootContactsViewController?
+    weak var exploreNavigationController: DWExploreTestnetViewController?
+    #endif
 
     // TODO: Refactor this and send notification about wiped wallet instead of chaining the delegate
     @objc
@@ -120,7 +149,7 @@ extension MainTabbarController {
         var viewControllers: [UIViewController] = []
 
         // Home
-        var item = UITabBarItem(title: nil, image: MainTabbarTabs.home.icon, tag: 0)
+        var item = UITabBarItem(title: nil, image: MainTabbarTabs.home.icon, selectedImage: MainTabbarTabs.home.selectedIcon)
         item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
 
         let homeVC = DWHomeViewController()
@@ -131,17 +160,42 @@ extension MainTabbarController {
         var nvc = BaseNavigationController(rootViewController: homeVC)
         nvc.tabBarItem = item
         viewControllers.append(nvc)
+            
+        #if DASHPAY
+        // Contacts
+        item = UITabBarItem(title: nil, image: MainTabbarTabs.contacts.icon, selectedImage: MainTabbarTabs.contacts.selectedIcon)
+        item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
+        
+        let contactsVC = DWRootContactsViewController(payModel: homeModel.payModel, dataProvider: homeModel.getDataProvider(), dashPayModel: homeModel.dashPayModel, dashPayReady: homeModel)
+        contactsNavigationController = contactsVC
+        nvc = BaseNavigationController(rootViewController: contactsVC)
+        nvc.tabBarItem = item
+        viewControllers.append(nvc)
+        #endif
 
         // Payment
-        item = UITabBarItem(title: "", image: UIImage(), tag: 1)
+        item = UITabBarItem(title: "", image: UIImage(), tag: 2)
         item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
 
         let vc = EmptyController()
         vc.tabBarItem = item
         viewControllers.append(vc)
+        
+        #if DASHPAY
+        // Explore
+        item = UITabBarItem(title: nil, image: MainTabbarTabs.explore.icon, selectedImage: MainTabbarTabs.explore.selectedIcon)
+        item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
+        
+        let exploreVC = DWExploreTestnetViewController()
+        exploreVC.delegate = self
+        exploreNavigationController = exploreVC
+        nvc = BaseNavigationController(rootViewController: exploreVC)
+        nvc.tabBarItem = item
+        viewControllers.append(nvc)
+        #endif
 
         // More
-        item = UITabBarItem(title: nil, image: MainTabbarTabs.more.icon, tag: 2)
+        item = UITabBarItem(title: nil, image: MainTabbarTabs.more.icon, selectedImage: MainTabbarTabs.more.selectedIcon)
         item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
         let menuVC = DWMainMenuViewController()
         menuVC.delegate = self
@@ -169,8 +223,6 @@ extension MainTabbarController {
         ])
 
         tabBar.barTintColor = .dw_background()
-        tabBar.tintColor = .dw_dashBlue()
-        tabBar.unselectedItemTintColor = .dw_tabbarInactiveButton()
     }
 
     private func closePayments(completion: (() -> Void)? = nil) {
@@ -190,17 +242,6 @@ extension MainTabbarController {
             completion?()
         }
     }
-
-//    private func contactsNavigationController() -> DWNavigationController {
-//        if contactsNavigationController == nil {
-//            let contactsController = DWContactsViewController(payModel: homeModel.payModel, dataProvider: homeModel.getDataProvider)
-//
-//            contactsNavigationController = DWNavigationController(rootViewController: contactsController)
-//            contactsNavigationController.delegate = self
-//        }
-//
-//        return contactsNavigationController!
-//    }
 }
 
 // MARK: - Public
@@ -331,6 +372,18 @@ extension MainTabbarController: DWHomeViewControllerDelegate {
 extension MainTabbarController: UITabBarControllerDelegate {
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
         !(viewController is EmptyController)
+    }
+}
+
+// MARK: DWExploreTestnetViewControllerDelegate
+
+extension MainTabbarController: DWExploreTestnetViewControllerDelegate {
+    func exploreTestnetViewControllerShowSendPayment(_ controller: DWExploreTestnetViewController) {
+        showPaymentsController(withActivePage: PaymentsViewControllerState.pay)
+    }
+    
+    func exploreTestnetViewControllerShowReceivePayment(_ controller: DWExploreTestnetViewController) {
+        showPaymentsController(withActivePage: PaymentsViewControllerState.receive)
     }
 }
 

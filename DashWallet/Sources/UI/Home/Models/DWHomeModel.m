@@ -54,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *receivedDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *sentDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *rewardsDataSource;
+@property (nonatomic, assign) BOOL isDashPayReady;
 
 @property (nonatomic, assign) BOOL upgradedExtendedKeys;
 
@@ -68,6 +69,8 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize updatesObserver = _updatesObserver;
 @synthesize allDataSource = _allDataSource;
 @synthesize allowedToShowReclassifyYourTransactions = _allowedToShowReclassifyYourTransactions;
+@synthesize isDashPayReady = _isDashPayReady;
+
 
 - (instancetype)init {
     self = [super init];
@@ -90,6 +93,8 @@ NS_ASSUME_NONNULL_BEGIN
         
 #if DASHPAY
         _dashPayModel = [[DWDashPayModel alloc] init];
+//        _isDashPayReady = [self shouldShowCreateUserNameButton] && ![DWGlobalOptions sharedInstance].dashPayRegistrationOpenedOnce; // TODO
+        _isDashPayReady = true;
 #endif /* DASHPAY_ENABLED */
 
         // set empty datasource

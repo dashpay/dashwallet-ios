@@ -122,6 +122,10 @@ NS_ASSUME_NONNULL_END
 }
 
 - (BOOL)canOpenBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    if (MOCK_DASHPAY) {
+        return YES;
+    }
+    
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
     return !uint256_eq(myBlockchainIdentity.uniqueID, blockchainIdentity.uniqueID);
@@ -164,6 +168,23 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)performSearchWithQuery:(NSString *)query offset:(uint32_t)offset {
+    if (MOCK_DASHPAY) {
+        NSMutableArray<id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>> *items = [NSMutableArray array];
+        
+        for (int i = 0; i < 3; i++) {
+            DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+            NSString *username = [NSString stringWithFormat:@"%@%d", query, i];
+            DSBlockchainIdentity *identity = [wallet createBlockchainIdentityForUsername:username];
+            id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem> item = [self.itemsFactory itemForBlockchainIdentity:identity];
+            [items addObject:item];
+        }
+        
+        self.searchRequest.hasNextPage = NO;
+        self.searchRequest.items = items;
+        
+        [self.delegate userSearchModel:self completedWithItems:items];
+    }
+    
     self.searchRequest.requestInProgress = YES;
 
     DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;

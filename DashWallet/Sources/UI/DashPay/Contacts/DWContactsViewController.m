@@ -50,11 +50,11 @@ NS_ASSUME_NONNULL_END
 
     switch (self.intent) {
         case DWContactsControllerIntent_Default:
-            self.title = NSLocalizedString(@"Contacts", nil);
+            self.navigationItem.title = NSLocalizedString(@"Contacts", nil);
             break;
 
         case DWContactsControllerIntent_PayToSelector:
-            self.title = NSLocalizedString(@"Send to a Contact", nil);
+            self.navigationItem.title = NSLocalizedString(@"Send to a Contact", nil);
             break;
     }
 

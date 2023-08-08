@@ -156,13 +156,14 @@ final class HomeHeaderView: UIView {
     func joinDashPayAction() {
         delegate?.homeHeaderViewJoinDashPayAction(self)
 
-        isProfileReady.toggle()
-        updateProfileView()
+        if (MOCK_DASHPAY.boolValue) {
+            isProfileReady.toggle()
+            updateProfileView()
+        }
     }
 
     private func updateProfileView() {
         profileView!.username = "madmax"
-
         profileView!.isHidden = !isProfileReady
         welcomeView!.isHidden = isProfileReady
 

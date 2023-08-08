@@ -199,7 +199,11 @@ extension HomeView: HomeHeaderViewDelegate {
     }
     
     func homeHeaderViewJoinDashPayAction(_ headerView: HomeHeaderView) {
-        
+        #if DASHPAY
+        if (MOCK_DASHPAY.boolValue) {
+            model?.dashPayModel.mockUsername("madmax")
+        }
+        #endif
     }
 }
 

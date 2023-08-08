@@ -51,6 +51,8 @@ extern NSNotificationName const DWDashPaySentContactRequestToInviter;
                                  NSString *_Nullable errorTitle,
                                  NSString *_Nullable errorMessage))completion;
 
+- (void)mockUsername:(NSString *)username; // TODO: remove when DashPay is restored
+
 @end
 
 NS_ASSUME_NONNULL_END
