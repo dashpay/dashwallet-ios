@@ -23,6 +23,7 @@
 #import "DWEnvironment.h"
 #import "DWIncomingFetchedDataSource.h"
 #import "DWRequestsModel.h"
+#import "DWDashPayConstants.h"
 
 @implementation DWContactsModel
 
@@ -39,6 +40,10 @@
 }
 
 - (BOOL)canOpenBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    if (MOCK_DASHPAY) {
+        return YES;
+    }
+    
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
     return !uint256_eq(myBlockchainIdentity.uniqueID, blockchainIdentity.uniqueID);
@@ -50,7 +55,8 @@
 
 - (void)rebuildFRCDataSources {
     DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
-    if (!blockchainIdentity) {
+    
+    if (!blockchainIdentity && !MOCK_DASHPAY) {
         return;
     }
 
