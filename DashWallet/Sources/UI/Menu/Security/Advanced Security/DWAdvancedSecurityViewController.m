@@ -357,6 +357,10 @@ NS_ASSUME_NONNULL_BEGIN
     self.securityStatusView.securityLevel = self.model.securityLevel;
 }
 
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END
