@@ -37,7 +37,7 @@ class DashPayProfileView: UIControl {
         }
     }
 
-    var unreadCount = 0 {
+    var unreadCount: UInt = 0 {
         didSet {
             badgeView.text = "\(unreadCount)"
             bellImageView.isHidden = unreadCount > 0

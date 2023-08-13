@@ -164,6 +164,11 @@ NS_ASSUME_NONNULL_END
 #pragma mark - Private
 
 - (void)registrationStatusUpdatedNotification {
+    if (MOCK_DASHPAY) {
+        [self setCurrentStateController];
+        return;
+    }
+    
     if (self.dashPayModel.lastRegistrationError) {
         [self dw_displayErrorModally:self.dashPayModel.lastRegistrationError];
     }
@@ -230,6 +235,12 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)showPendingController:(NSString *)username {
+    if (MOCK_DASHPAY) {
+        [DWGlobalOptions sharedInstance].dashpayUsername = username;
+        [self showRegistrationCompletedController:username];
+        return;
+    }
+    
     DWUsernamePendingViewController *controller = [[DWUsernamePendingViewController alloc] init];
     controller.username = username;
     controller.delegate = self;
