@@ -51,6 +51,9 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
     var model: DWHomeProtocol? {
         didSet {
             model?.updatesObserver = self
+            #if DASHPAY
+            updateHeaderView()
+            #endif
         }
     }
 
@@ -144,7 +147,6 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
                                                selector: #selector(updateHeaderView),
                                                name:NSNotification.Name.DWNotificationsProviderDidUpdate,
                                                object:nil);
-        updateHeaderView()
         #endif
     }
 
@@ -196,8 +198,11 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
     
     // MARK: DWDashPayRegistrationStatusUpdated
     
+    #if DASHPAY
     @objc
     func updateHeaderView() {
+        headerView.welcomeView?.isHidden = DWGlobalOptions.sharedInstance().dashPayRegistrationOpenedOnce || model?.shouldShowCreateUserNameButton() != true
+        
         let status = model?.dashPayModel.registrationStatus
         let completed = model?.dashPayModel.registrationCompleted ?? false
         
@@ -209,6 +214,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
             headerView.updateProfileView(username: nil)
         }
     }
+    #endif
 }
 
 // MARK: HomeHeaderViewDelegate

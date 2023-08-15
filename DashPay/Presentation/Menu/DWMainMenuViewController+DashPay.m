@@ -28,8 +28,7 @@
                           aboutMe:(NSString *)rawAboutMe
                   avatarURLString:(nullable NSString *)avatarURLString {
     DWMainMenuContentView *view = (DWMainMenuContentView *) self.view;
-    //TODO: DashPay
-    //[view.userModel.updateModel updateWithDisplayName:rawDisplayName aboutMe:rawAboutMe avatarURLString:avatarURLString];
+    [view.userModel.updateModel updateWithDisplayName:rawDisplayName aboutMe:rawAboutMe avatarURLString:avatarURLString];
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
 

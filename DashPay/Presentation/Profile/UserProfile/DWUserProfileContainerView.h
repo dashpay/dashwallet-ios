@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) DWCurrentUserProfileModel *userModel;
 @property (nullable, nonatomic, weak) id<DWCurrentUserProfileViewDelegate> delegate;
 
+- (void)registrationStatusDidUpdate;
 - (void)update;
 
 @end

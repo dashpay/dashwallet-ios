@@ -84,6 +84,7 @@ final class HomeHeaderView: UIView {
         welcomeView = DWDPWelcomeView(frame: .zero)
         welcomeView!.translatesAutoresizingMaskIntoConstraints = false
         welcomeView!.addTarget(self, action: #selector(joinDashPayAction), for: .touchUpInside)
+        welcomeView!.isHidden = true
 
         let views: [UIView] = [profileView!, balanceView, shortcutsView, syncView, welcomeView!]
         #else
@@ -141,16 +142,17 @@ final class HomeHeaderView: UIView {
     }
 
     func updateProfileView(username: String?, unreadCount: UInt = 0) {
-        let isProfileReady = username != nil
-        profileView!.isHidden = !isProfileReady
-        welcomeView!.isHidden = isProfileReady
-        
-        profileView!.username = username
-        profileView!.unreadCount = unreadCount
+        if let username = username {
+            profileView!.isHidden = false
+            profileView!.username = username
+            profileView!.unreadCount = unreadCount
+        } else {
+            profileView!.isHidden = true
+        }
         
         delegate?.homeHeaderViewDidUpdateContents(self)
     }
-
+    
     #endif
 
     func parentScrollViewDidScroll(_ scrollView: UIScrollView) { }

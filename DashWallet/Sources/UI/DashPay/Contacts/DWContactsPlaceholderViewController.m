@@ -98,10 +98,12 @@
                            selector:@selector(update)
                                name:DWDashPayRegistrationStatusUpdatedNotification
                              object:nil];
-    [notificationCenter addObserver:self
-                           selector:@selector(update)
-                               name:DWDashPayAvailabilityStatusUpdatedNotification
-                             object:nil];
+    
+    // TODO: never posted. Check if needed
+//    [notificationCenter addObserver:self
+//                           selector:@selector(update)
+//                               name:DWDashPayAvailabilityStatusUpdatedNotification
+//                             object:nil];
 
     [self update];
 }
@@ -117,7 +119,7 @@
 }
 
 - (void)update {
-    self.actionButton.enabled = [self.dashPayReady isDashPayReady];
+    self.actionButton.enabled = [self.dashPayReady shouldShowCreateUserNameButton];
 }
 
 @end

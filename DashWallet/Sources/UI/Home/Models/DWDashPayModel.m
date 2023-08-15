@@ -333,6 +333,11 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)registerIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    if (MOCK_DASHPAY) {
+        [self handleSteps:DSBlockchainIdentityRegistrationStep_All error:nil];
+        return;
+    }
+    
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
 
     __weak typeof(self) weakSelf = self;

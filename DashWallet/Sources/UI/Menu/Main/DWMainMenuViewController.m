@@ -30,9 +30,12 @@
 #import "DWUpholdViewController.h"
 #import "SFSafariViewController+DashWallet.h"
 #import "dashwallet-Swift.h"
+#import "DWRootEditProfileViewController.h"
 
 #ifdef DASHPAY
 #import "DWMainMenuViewController+DashPay.h"
+#import "DWUserProfileModalQRViewController.h"
+#import "DWDashPaySetupFlowController.h"
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
@@ -40,9 +43,16 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWMainMenuViewController () <DWMainMenuContentViewDelegate,
                                         DWToolsMenuViewControllerDelegate,
                                         DWSettingsMenuViewControllerDelegate,
-                                        DWExploreTestnetViewControllerDelegate>
+                                        DWExploreTestnetViewControllerDelegate,
+                                        DWRootEditProfileViewControllerDelegate>
 
 @property (nonatomic, strong) DWMainMenuContentView *view;
+@property (nonatomic, strong) id<DWReceiveModelProtocol> receiveModel;
+#if DASHPAY
+@property (nonatomic, strong) id<DWDashPayReadyProtocol> dashPayReady;
+@property (nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
+@property (nonatomic, strong) DWCurrentUserProfileModel *userProfileModel;
+#endif
 
 @end
 
@@ -58,6 +68,24 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+#if DASHPAY
+- (instancetype)initWithDashPayModel:(id<DWDashPayProtocol>)dashPayModel
+                        receiveModel:(id<DWReceiveModelProtocol>)receiveModel
+                        dashPayReady:(id<DWDashPayReadyProtocol>)dashPayReady
+                    userProfileModel:(DWCurrentUserProfileModel *)userProfileModel {
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        _receiveModel = receiveModel;
+        _dashPayReady = dashPayReady;
+        _dashPayModel = dashPayModel;
+        _userProfileModel = userProfileModel;
+
+        self.title = NSLocalizedString(@"More", nil);
+    }
+    return self;
+}
+#endif
+
 - (void)loadView {
     const CGRect frame = [UIScreen mainScreen].bounds;
     self.view = [[DWMainMenuContentView alloc] initWithFrame:frame];
@@ -67,6 +95,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+#if DASHPAY
+    self.view.userModel = self.userProfileModel;
+    self.view.dashPayReady = self.dashPayReady;
+#endif
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -152,6 +185,31 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
+#if DASHPAY
+- (void)mainMenuContentView:(DWMainMenuContentView *)view showQRAction:(UIButton *)sender {
+    DWUserProfileModalQRViewController *controller = [[DWUserProfileModalQRViewController alloc] initWithModel:self.receiveModel];
+    [self presentViewController:controller animated:YES completion:nil];
+}
+
+- (void)mainMenuContentView:(DWMainMenuContentView *)view editProfileAction:(UIButton *)sender {
+    DWRootEditProfileViewController *controller = [[DWRootEditProfileViewController alloc] init];
+    controller.delegate = self;
+    DWNavigationController *navigation = [[DWNavigationController alloc] initWithRootViewController:controller];
+    navigation.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:navigation animated:YES completion:nil];
+}
+
+- (void)mainMenuContentView:(DWMainMenuContentView *)view joinDashPayAction:(UIButton *)sender {
+    DWDashPaySetupFlowController *controller =
+        [[DWDashPaySetupFlowController alloc]
+            initWithDashPayModel:self.dashPayModel
+                      invitation:nil
+                 definedUsername:nil];
+    controller.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:controller animated:YES completion:nil];
+}
+#endif
+
 #pragma mark - DWToolsMenuViewControllerDelegate
 
 - (void)toolsMenuViewControllerImportPrivateKey:(DWToolsMenuViewController *)controller {
@@ -174,6 +232,22 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)exploreTestnetViewControllerShowReceivePayment:(DWExploreTestnetViewController *)controller {
     [self.delegate showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive];
 }
+
+#pragma mark - DWRootEditProfileViewControllerDelegate
+
+#if DASHPAY
+- (void)editProfileViewController:(DWRootEditProfileViewController *)controller
+                updateDisplayName:(NSString *)rawDisplayName
+                          aboutMe:(NSString *)rawAboutMe
+                  avatarURLString:(nullable NSString *)avatarURLString {
+    [self.view.userModel.updateModel updateWithDisplayName:rawDisplayName aboutMe:rawAboutMe avatarURLString:avatarURLString];
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)editProfileViewControllerDidCancel:(DWRootEditProfileViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+#endif
 
 @end
 

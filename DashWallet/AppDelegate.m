@@ -56,7 +56,7 @@
 #endif /* (FRESH_INSTALL && !DEBUG) */
 
 #if DASHPAY
-NSNotificationName const DWDashPayAvailabilityStatusUpdatedNotification = @"DWDashPayAvailabilityStatusUpdatedNotification";
+//NSNotificationName const DWDashPayAvailabilityStatusUpdatedNotification = @"DWDashPayAvailabilityStatusUpdatedNotification"; // TODO: check if needed
 #endif
 NS_ASSUME_NONNULL_BEGIN
 
