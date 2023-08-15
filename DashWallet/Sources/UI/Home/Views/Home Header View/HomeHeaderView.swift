@@ -22,11 +22,13 @@ private let kAvatarSize = CGSize(width: 72.0, height: 72.0)
 // MARK: - HomeHeaderViewDelegate
 
 protocol HomeHeaderViewDelegate: AnyObject {
-    func homeHeaderView(_ headerView: HomeHeaderView, profileButtonAction sender: UIControl)
     func homeHeaderView(_ headerView: HomeHeaderView, retrySyncButtonAction sender: UIView)
     func homeHeaderViewDidUpdateContents(_ headerView: HomeHeaderView)
 
+    #if DASHPAY
+    func homeHeaderView(_ headerView: HomeHeaderView, profileButtonAction sender: UIControl)
     func homeHeaderViewJoinDashPayAction(_ headerView: HomeHeaderView)
+    #endif
 }
 
 // MARK: - HomeHeaderView
@@ -46,7 +48,6 @@ final class HomeHeaderView: UIView {
     #if DASHPAY
     private(set) var profileView: DashPayProfileView?
     private(set) var welcomeView: DWDPWelcomeView?
-    private var isProfileReady = false
     #endif
 
     weak var shortcutsDelegate: ShortcutsActionDelegate? {
@@ -83,9 +84,9 @@ final class HomeHeaderView: UIView {
         welcomeView = DWDPWelcomeView(frame: .zero)
         welcomeView!.translatesAutoresizingMaskIntoConstraints = false
         welcomeView!.addTarget(self, action: #selector(joinDashPayAction), for: .touchUpInside)
+        welcomeView!.isHidden = true
 
         let views: [UIView] = [profileView!, balanceView, shortcutsView, syncView, welcomeView!]
-        updateProfileView()
         #else
         let views: [UIView] = [balanceView, shortcutsView, syncView]
         #endif
@@ -109,24 +110,7 @@ final class HomeHeaderView: UIView {
             hideSyncView()
         }
 
-        // TODO: Platform
-//        [self mvvm_observe:DW_KEYPATH(self, model.dashPayModel.registrationStatus)
-//                      with:^(typeof(self) self, id value) {
-//                          [self updateProfileView];
-//                      }];
-//
-//        [self mvvm_observe:DW_KEYPATH(self, model.dashPayModel.username)
-//                      with:^(typeof(self) self, id value) {
-//                          [self updateProfileView];
-//                      }];
-//
-//        [self mvvm_observe:DW_KEYPATH(self, model.dashPayModel.unreadNotificationsCount)
-//                      with:^(typeof(self) self, id value) {
-//                          self.profileView.unreadCount = self.model.dashPayModel.unreadNotificationsCount;
-//                      }];
-
         reloadBalance()
-
 
         model.stateDidChage = { [weak self] state in
             self?.balanceView.state = state == .syncing ? .syncing : .default
@@ -145,40 +129,30 @@ final class HomeHeaderView: UIView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
+    #if DASHPAY
     @objc
     func profileViewAction(_ sender: UIControl) {
         delegate?.homeHeaderView(self, profileButtonAction: sender)
     }
-
-    #if DASHPAY
+    
     @objc
     func joinDashPayAction() {
         delegate?.homeHeaderViewJoinDashPayAction(self)
+    }
 
-        if (MOCK_DASHPAY.boolValue) {
-            isProfileReady.toggle()
-            updateProfileView()
+    func updateProfileView(username: String?, unreadCount: UInt = 0) {
+        if let username = username {
+            profileView!.isHidden = false
+            profileView!.username = username
+            profileView!.unreadCount = unreadCount
+        } else {
+            profileView!.isHidden = true
         }
+        
+        delegate?.homeHeaderViewDidUpdateContents(self)
     }
-
-    private func updateProfileView() {
-        profileView!.username = "madmax"
-        profileView!.isHidden = !isProfileReady
-        welcomeView!.isHidden = isProfileReady
-
-        // TODO: Platform
-//        let status = model?.dashPayModel.registrationStatus
-//        let completed = model?.dashPayModel.registrationCompleted ?? false
-//        if status?.state == .done || completed {
-//            profileView.username = model?.dashPay
-//            profileView.isHidden = false
-//        } else {
-//            profileView.isHidden = true
-//        }
-//        delegate?.homeHeaderViewDidUpdateContents(self)
-    }
-
+    
     #endif
 
     func parentScrollViewDidScroll(_ scrollView: UIScrollView) { }
@@ -193,9 +167,6 @@ final class HomeHeaderView: UIView {
     func reloadShortcuts() {
         shortcutsView.reloadData()
     }
-
-
-
 
     private func hideSyncView() {
         syncView.isHidden = true

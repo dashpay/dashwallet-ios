@@ -108,6 +108,15 @@ NS_ASSUME_NONNULL_END
 - (void)performValidationWithUsername:(NSString *)username {
     DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;
     __weak typeof(self) weakSelf = self;
+    
+    if (MOCK_DASHPAY) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            self.validationResult = DWUsernameValidationRuleResultValid;
+        });
+        
+        return;
+    }
+    
     self.request = [manager
         searchIdentityByDashpayUsername:username
                          withCompletion:^(BOOL succeess, DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error) {

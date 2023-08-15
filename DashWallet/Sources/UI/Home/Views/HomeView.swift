@@ -51,6 +51,9 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
     var model: DWHomeProtocol? {
         didSet {
             model?.updatesObserver = self
+            #if DASHPAY
+            updateHeaderView()
+            #endif
         }
     }
 
@@ -133,6 +136,18 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
                                                selector: #selector(setNeedsLayout),
                                                name: UIContentSizeCategory.didChangeNotification,
                                                object: nil)
+        
+        #if DASHPAY
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(updateHeaderView),
+                                               name:NSNotification.Name.DWDashPayRegistrationStatusUpdated,
+                                               object: nil)
+        
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(updateHeaderView),
+                                               name:NSNotification.Name.DWNotificationsProviderDidUpdate,
+                                               object:nil);
+        #endif
     }
 
     // MARK: - DWHomeModelUpdatesObserver
@@ -169,18 +184,37 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
     // MARK: - DWDPRegistrationErrorRetryDelegate
 
     func registrationErrorRetryAction() {
-        // TODO: Platform
-//        if model?.dashPayModel.canRetry ?? false {
-//            model?.dashPayModel.retry()
-//        } else {
-//            delegate?.homeViewShowDashPayRegistrationFlow(self)
-//        }
+        if model?.dashPayModel.canRetry() ?? false {
+            model?.dashPayModel.retry()
+        } else {
+            delegate?.homeViewShowDashPayRegistrationFlow(self)
+        }
     }
 
     @objc
     func reloadShortcuts() {
         headerView?.reloadShortcuts()
     }
+    
+    // MARK: DWDashPayRegistrationStatusUpdated
+    
+    #if DASHPAY
+    @objc
+    func updateHeaderView() {
+        headerView.welcomeView?.isHidden = DWGlobalOptions.sharedInstance().dashPayRegistrationOpenedOnce || model?.shouldShowCreateUserNameButton() != true
+        
+        let status = model?.dashPayModel.registrationStatus
+        let completed = model?.dashPayModel.registrationCompleted ?? false
+        
+        if status?.state == .done || completed {
+            let username = model?.dashPayModel.username
+            let notificaitonAmount = model?.dashPayModel.unreadNotificationsCount ?? 0
+            headerView.updateProfileView(username: username, unreadCount: notificaitonAmount)
+        } else {
+            headerView.updateProfileView(username: nil)
+        }
+    }
+    #endif
 }
 
 // MARK: HomeHeaderViewDelegate
@@ -198,13 +232,11 @@ extension HomeView: HomeHeaderViewDelegate {
         delegate?.homeView(self, profileButtonAction: sender)
     }
     
+    #if DASHPAY
     func homeHeaderViewJoinDashPayAction(_ headerView: HomeHeaderView) {
-        #if DASHPAY
-        if (MOCK_DASHPAY.boolValue) {
-            model?.dashPayModel.mockUsername("madmax")
-        }
-        #endif
+        delegate?.homeViewShowDashPayRegistrationFlow(self)
     }
+    #endif
 }
 
 // MARK: SyncingHeaderViewDelegate

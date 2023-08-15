@@ -19,11 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSNotificationName const DWDashPayAvailabilityStatusUpdatedNotification;
+//extern NSNotificationName const DWDashPayAvailabilityStatusUpdatedNotification; TODO: check if needed
 
 @protocol DWDashPayReadyProtocol <NSObject>
 
-@property (readonly, nonatomic, assign) BOOL isDashPayReady;
+- (BOOL)shouldShowCreateUserNameButton;
 
 @end
 

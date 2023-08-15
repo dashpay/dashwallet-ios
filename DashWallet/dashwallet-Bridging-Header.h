@@ -129,4 +129,5 @@ static const bool _SNAPSHOT = 0;
 #if DASHPAY
 #import "DWDashPayConstants.h"
 #import "DWRootContactsViewController.h"
+#import "DWNotificationsProvider.h"
 #endif

@@ -21,24 +21,22 @@
 #import "DWMainMenuTableViewCell.h"
 #import "DWSharedUIConstants.h"
 #import "DWUIKit.h"
+#import "DWUserProfileContainerView.h"
 
 #if DASHPAY
-#import "DWUserProfileContainerView.h"
 #import "DWDPWelcomeMenuView.h"
 #import "DWDashPayReadyProtocol.h"
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWMainMenuContentView () <UITableViewDataSource, UITableViewDelegate>
+@interface DWMainMenuContentView () <UITableViewDataSource, UITableViewDelegate, DWCurrentUserProfileViewDelegate>
 
 @property (nonatomic, strong) UITableView *tableView;
 
 #if DASHPAY
 @property (nonatomic, strong) DWUserProfileContainerView *headerView;
 @property (nonatomic, strong) DWDPWelcomeMenuView *joinHeaderView;
-
-@property (assign, nonatomic) bool hasUsername;
 #endif
 
 @end
@@ -137,26 +135,19 @@ NS_ASSUME_NONNULL_BEGIN
 #if DASHPAY
 
 - (void)updateUserHeader {
-    //[self.userModel update]; //TODO: DashPay
+    [self.userModel update];
     [self updateHeader];
 }
 
 - (void)updateHeader {
     UIView *header = nil;
-    if(self.hasUsername) {
-        header = self.headerView;
-        [self.headerView update];
-    } else {
+    if ([self.dashPayReady shouldShowCreateUserNameButton]) {
         header = self.joinHeaderView;
     }
-    
-//    if (self.dashPayReady.isDashPayReady) {
-        
-//    }
-//    else if (self.userModel.blockchainIdentity != nil) {
-//        [self.headerView update];
-//        header = self.headerView;
-//    }
+    else if (self.userModel.blockchainIdentity != nil) {
+        [self.headerView update];
+        header = self.headerView;
+    }
 
     self.tableView.tableHeaderView = header;
     [self setNeedsLayout];
@@ -173,9 +164,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)joinButtonAction:(UIButton *)sender {
-    self.hasUsername = !_hasUsername;
-    [self updateHeader];
-    //[self.delegate mainMenuContentView:self joinDashPayAction:sender];
+    [self.delegate mainMenuContentView:self joinDashPayAction:sender];
 }
 #endif
 @end
