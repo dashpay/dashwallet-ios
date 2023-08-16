@@ -134,6 +134,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if DASHPAY
 
+- (void)setUserModel:(DWCurrentUserProfileModel *)userModel {
+    _userModel = userModel;
+
+    self.headerView.userModel = userModel;
+}
+
 - (void)updateUserHeader {
     [self.userModel update];
     [self updateHeader];
