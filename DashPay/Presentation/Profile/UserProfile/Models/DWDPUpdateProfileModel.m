@@ -19,6 +19,10 @@
 
 #import "DWEnvironment.h"
 
+// if MOCK_DASHPAY
+#import "DWDashPayConstants.h"
+#import "DWGlobalOptions.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDPUpdateProfileModel ()
@@ -33,6 +37,14 @@ NS_ASSUME_NONNULL_END
 @implementation DWDPUpdateProfileModel
 
 - (DSBlockchainIdentity *)blockchainIdentity {
+    if (MOCK_DASHPAY) {
+        NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
+        
+        if (username != nil) {
+            return [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
+        }
+    }
+    
     return [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
 }
 
