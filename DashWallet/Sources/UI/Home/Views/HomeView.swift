@@ -178,6 +178,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
 
     func homeModelWant(toReloadShortcuts model: DWHomeProtocol) {
         reloadShortcuts()
+        updateHeaderView()
     }
 
 
@@ -201,17 +202,19 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
     #if DASHPAY
     @objc
     func updateHeaderView() {
-        headerView.welcomeView?.isHidden = DWGlobalOptions.sharedInstance().dashPayRegistrationOpenedOnce || model?.shouldShowCreateUserNameButton() != true
-        
-        let status = model?.dashPayModel.registrationStatus
-        let completed = model?.dashPayModel.registrationCompleted ?? false
-        
-        if status?.state == .done || completed {
-            let username = model?.dashPayModel.username
-            let notificaitonAmount = model?.dashPayModel.unreadNotificationsCount ?? 0
-            headerView.updateProfileView(username: username, unreadCount: notificaitonAmount)
-        } else {
-            headerView.updateProfileView(username: nil)
+        if let model = self.model {
+            headerView.welcomeView?.isHidden = DWGlobalOptions.sharedInstance().dashPayRegistrationOpenedOnce || model.shouldShowCreateUserNameButton() != true
+            
+            let status = model.dashPayModel.registrationStatus
+            let completed = model.dashPayModel.registrationCompleted
+            
+            if status?.state == .done || completed {
+                let username = model.dashPayModel.username
+                let notificaitonAmount = model.dashPayModel.unreadNotificationsCount
+                headerView.updateProfileView(username: username, unreadCount: notificaitonAmount)
+            } else {
+                headerView.updateProfileView(username: nil)
+            }
         }
     }
     #endif
