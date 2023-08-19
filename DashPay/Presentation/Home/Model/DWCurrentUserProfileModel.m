@@ -18,6 +18,9 @@
 #import "DWCurrentUserProfileModel.h"
 
 #import "DWEnvironment.h"
+// if MOCK_DASHPAY
+#import "DWDashPayConstants.h"
+#import "DWGlobalOptions.h"
 
 @interface DWCurrentUserProfileModel ()
 
@@ -36,6 +39,14 @@
 }
 
 - (DSBlockchainIdentity *)blockchainIdentity {
+    if (MOCK_DASHPAY) {
+        NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
+        
+        if (username != nil) {
+            return [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
+        }
+    }
+    
     return [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
 }
 
@@ -50,6 +61,14 @@
     }
 
     self.state = DWCurrentUserProfileModel_Loading;
+    
+    if (MOCK_DASHPAY) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            self.state = DWCurrentUserProfileModel_Done;
+        });
+        
+        return;
+    }
 
     __weak typeof(self) weakSelf = self;
     [self.blockchainIdentity fetchProfileWithCompletion:^(BOOL success, NSError *_Nonnull error) {

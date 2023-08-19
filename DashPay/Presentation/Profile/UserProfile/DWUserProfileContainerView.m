@@ -92,6 +92,8 @@ NS_ASSUME_NONNULL_END
                                                  selector:@selector(registrationStatusDidUpdate)
                                                      name:DWDashPayRegistrationStatusUpdatedNotification
                                                    object:nil];
+        
+        [self registrationStatusDidUpdate];
     }
     return self;
 }

@@ -33,6 +33,9 @@
 #import "DWSharedUIConstants.h"
 #import "DWTextInputFormTableViewCell.h"
 #import "DWUIKit.h"
+// if MOCK_DASHPAY
+#import "DWDashPayConstants.h"
+#import "DWGlobalOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -101,6 +104,15 @@ NS_ASSUME_NONNULL_END
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
     self.blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+    
+    if (MOCK_DASHPAY && self.blockchainIdentity == nil) {
+        NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
+        
+        if (username != nil) {
+            self.blockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
+        }
+    }
+    
     NSParameterAssert(self.blockchainIdentity);
 
     [self setupItems];
