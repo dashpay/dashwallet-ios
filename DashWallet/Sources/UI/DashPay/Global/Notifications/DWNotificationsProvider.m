@@ -27,6 +27,8 @@
 #import "DWDPEstablishedContactNotificationObject.h"
 #import "DWDPNewIncomingRequestNotificationObject.h"
 #import "DWDPOutgoingRequestNotificationObject.h"
+// if MOCK_DASHPAY
+#import "DWDashPayConstants.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -74,6 +76,15 @@ NS_ASSUME_NONNULL_END
 
 - (void)forceUpdate {
     DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+    
+    if (MOCK_DASHPAY) {
+        NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
+        
+        if (username != nil) {
+            blockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
+        }
+    }
+    
     if (!blockchainIdentity) {
         return;
     }
@@ -99,6 +110,28 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)reload {
+    if (MOCK_DASHPAY) {
+        NSMutableArray<id<DWDPBasicUserItem, DWDPNotificationItem>> *newItems = [NSMutableArray array];
+        NSMutableArray<id<DWDPBasicUserItem, DWDPNotificationItem>> *oldItems = [NSMutableArray array];
+        
+        DSBlockchainIdentity *identity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:@"tonnypaperoni"];
+        DWDPNewIncomingRequestNotificationObject *incoming = [[DWDPNewIncomingRequestNotificationObject alloc] initWithBlockchainIdentity:identity];
+        [newItems addObject:incoming];
+        
+        identity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:@"jamesholden"];
+        incoming = [[DWDPNewIncomingRequestNotificationObject alloc] initWithBlockchainIdentity:identity];
+        [oldItems addObject:incoming];
+        
+        identity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:@"johndoe"];
+        DWDPOutgoingRequestNotificationObject *outgoing = [[DWDPOutgoingRequestNotificationObject alloc] initWithBlockchainIdentity:identity];
+        [oldItems addObject:outgoing];
+
+        self.data = [[DWNotificationsData alloc] initWithUnreadItems:[newItems reverseObjectEnumerator].allObjects
+                                                            oldItems:[oldItems reverseObjectEnumerator].allObjects];
+        return;
+    }
+    
+    
     // fetched objects come in a reversed order (from old to new)
     NSArray<DSFriendRequestEntity *> *fetchedObjects = self.fetchedDataSource.fetchedResultsController.fetchedObjects;
 

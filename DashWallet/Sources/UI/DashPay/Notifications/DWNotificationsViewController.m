@@ -69,10 +69,9 @@ NS_ASSUME_NONNULL_END
 }
 
 - (BOOL)invitationMessageHidden {
-    //TODO: DashPay
-//    if ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled == NO) {
-//        return YES;
-//    }
+    if ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled == NO) {
+        return YES;
+    }
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     const uint64_t balanceValue = wallet.balance;
@@ -108,8 +107,7 @@ NS_ASSUME_NONNULL_END
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
-    //TODO: DashPay
-    //[DWGlobalOptions sharedInstance].shouldShowInvitationsBadge = NO;
+    [DWGlobalOptions sharedInstance].shouldShowInvitationsBadge = NO;
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
