@@ -45,10 +45,23 @@ final class DerivationPathKeysViewController: BaseViewController, NavigationStac
         tableView.insertSections([model.visibleIndexes], with: .automatic)
     }
 
+    @objc func applicationWillResignActiveNotification() {
+        navigationController?.popViewController(animated: false)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
         configureHierarchy()
+        
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(applicationWillResignActiveNotification),
+                                               name: UIApplication.willResignActiveNotification,
+                                               object: nil)
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }
 

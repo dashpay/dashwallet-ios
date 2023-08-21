@@ -41,6 +41,7 @@ final class EnterAddressViewController: BaseViewController, PayableViewControlle
             guard let self else { return }
 
             if success {
+                self.addressField.resignFirstResponder()
                 self.performPayToPasteboardAction()
             } else {
                 self.addressField.errorMessage = NSLocalizedString("Invalid Dash address", comment: "")
