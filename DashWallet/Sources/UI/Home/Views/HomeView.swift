@@ -178,7 +178,9 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
 
     func homeModelWant(toReloadShortcuts model: DWHomeProtocol) {
         reloadShortcuts()
+        #if DASHPAY
         updateHeaderView()
+        #endif
     }
 
 
