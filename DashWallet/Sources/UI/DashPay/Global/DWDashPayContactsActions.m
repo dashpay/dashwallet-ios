@@ -44,22 +44,20 @@
     newRequestItem.requestState = DWDPNewIncomingRequestItemState_Processing;
     
     if (MOCK_DASHPAY) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
-            DSDashpayUserEntity *contact = [DSDashpayUserEntity managedObjectInBlockedContext:context];
-            DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-            contact.chain = [wallet.chain chainEntityInContext:context];
-            DSBlockchainIdentityUsernameEntity *username = [DSBlockchainIdentityUsernameEntity managedObjectInBlockedContext:context];
-            username.stringValue = item.username;
-            DSBlockchainIdentityEntity *entity = [DSBlockchainIdentityEntity managedObjectInBlockedContext:context];
-            entity.uniqueID = [item.username dataUsingEncoding:NSUTF8StringEncoding];
-            username.blockchainIdentity = entity;
-            entity.dashpayUsername = username;
-            contact.associatedBlockchainIdentity = entity;
-            NSError *error = [contact applyTransientDashpayUser:item.blockchainIdentity.transientDashpayUser save:YES];
+        NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
+        DSDashpayUserEntity *contact = [DSDashpayUserEntity managedObjectInBlockedContext:context];
+        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+        contact.chain = [wallet.chain chainEntityInContext:context];
+        DSBlockchainIdentityUsernameEntity *username = [DSBlockchainIdentityUsernameEntity managedObjectInBlockedContext:context];
+        username.stringValue = item.username;
+        DSBlockchainIdentityEntity *entity = [DSBlockchainIdentityEntity managedObjectInBlockedContext:context];
+        entity.uniqueID = [item.username dataUsingEncoding:NSUTF8StringEncoding];
+        username.blockchainIdentity = entity;
+        entity.dashpayUsername = username;
+        contact.associatedBlockchainIdentity = entity;
+        NSError *error = [contact applyTransientDashpayUser:item.blockchainIdentity.transientDashpayUser save:YES];
             
-            newRequestItem.requestState = DWDPNewIncomingRequestItemState_Accepted;
-        });
+        newRequestItem.requestState = DWDPNewIncomingRequestItemState_Accepted;
         
         return;
     }
