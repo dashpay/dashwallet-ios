@@ -41,7 +41,6 @@ class CSVBuilder<HeaderIdentifierType: CustomStringConvertible, ItemIdentifierTy
 
         var rowValues: [String] = Array(repeating: "", count: columns.count)
 
-//        for (i, item) in items.enumerated()
         for item in items {
             for (i, column) in columns.enumerated() {
                 rowValues[i] = cellValueProvider(column, item)
