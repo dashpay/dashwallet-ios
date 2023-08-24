@@ -17,10 +17,15 @@
 
 import UIKit
 
+// MARK: - EnterAddressViewControllerDelegate
+
+protocol EnterAddressViewControllerDelegate: AnyObject {
+    func enterAddressViewControllerDidPreparePaymentInput(_ viewController: EnterAddressViewController, input: DWPaymentInput)
+}
+
 // MARK: - EnterAddressViewController
 
-@objc(DWEnterAddressViewController)
-final class EnterAddressViewController: BaseViewController, PayableViewController {
+final class EnterAddressViewController: BaseViewController {
     private var addressField: DashInputField!
     private var showPasteboardContentButton: TintedButton!
     private var pasteboardContentView: PasteboardContentView!
@@ -31,28 +36,31 @@ final class EnterAddressViewController: BaseViewController, PayableViewControlle
     private var model = EnterAddressModel()
     var payModel: DWPayModelProtocol! { model }
 
-    internal var paymentController: PaymentController!
-    @objc
-    weak var paymentControllerDelegate: PaymentControllerDelegate?
+    weak var delegate: EnterAddressViewControllerDelegate?
 
     // MARK: Actions
     private func continueButtonAction() {
         payModel.payToAddress(from: addressField.text) { [weak self] success in
             guard let self else { return }
 
-            if success {
-                self.addressField.resignFirstResponder()
-                self.performPayToPasteboardAction()
-            } else {
+            guard success, let paymentInput = payModel?.pasteboardPaymentInput else {
                 self.addressField.errorMessage = NSLocalizedString("Invalid Dash address", comment: "")
+                return
             }
+
+            self.delegate?.enterAddressViewControllerDidPreparePaymentInput(self, input: paymentInput)
         }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        addressField.resignFirstResponder()
+
+        super.viewWillDisappear(animated)
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        configurePaymentController()
         configureHierarchy()
 
         updateView()
@@ -60,12 +68,6 @@ final class EnterAddressViewController: BaseViewController, PayableViewControlle
 }
 
 extension EnterAddressViewController {
-    private func configurePaymentController() {
-        paymentController = PaymentController()
-        paymentController.delegate = paymentControllerDelegate
-        paymentController.presentationContextProvider = self
-    }
-
     private func configureHierarchy() {
         view.backgroundColor = .dw_secondaryBackground()
 
@@ -169,31 +171,36 @@ extension EnterAddressViewController {
     private func showPasteboardContentIfNeeded() {
         guard let string = model.extraxtPasteboardStrings() else { return }
 
-        pasteboardContentView.update(with: string)
         pasteboardContentView.isHidden = false
         showPasteboardContentButton.isHidden = true
+
+        pasteboardContentView.update(with: string)
     }
 }
 
 // MARK: DWQRScanModelDelegate
 
 extension EnterAddressViewController: DWQRScanModelDelegate {
+    func performScanQRCodeAction(delegate: DWQRScanModelDelegate) {
+        if let vc = presentedViewController, vc is DWQRScanViewController {
+            return;
+        }
+
+        let controller = DWQRScanViewController()
+        controller.model.delegate = delegate
+        present(controller, animated: true, completion: nil)
+    }
+
     func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
         dismiss(animated: true) { [weak self] in
-            self?.paymentController.performPayment(with: paymentInput)
+            guard let self else { return }
+
+            self.delegate?.enterAddressViewControllerDidPreparePaymentInput(self, input: paymentInput)
         }
     }
 
     func qrScanModelDidCancel(_ viewModel: DWQRScanModel) {
         dismiss(animated: true)
-    }
-}
-
-// MARK: PaymentControllerPresentationContextProviding
-
-extension EnterAddressViewController: PaymentControllerPresentationContextProviding {
-    func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor {
-        self
     }
 }
 

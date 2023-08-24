@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionTypePayToAddress: {
-            [self payToAddressAction:sender];
+            [self.delegate showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_EnterAddress];
             break;
         }
         case DWShortcutActionTypeBuySellDash: {
@@ -165,10 +165,6 @@ NS_ASSUME_NONNULL_BEGIN
     DWImportWalletInfoViewController *controller = [DWImportWalletInfoViewController controller];
     controller.delegate = self;
     [self presentControllerModallyInNavigationController:controller];
-}
-
-- (void)payToAddressAction:(UIView *)sender {
-    [self payToAddressAction];
 }
 
 - (void)showCreateUsername {

@@ -29,6 +29,9 @@ enum PaymentsViewControllerState: Int {
 
     @objc(DWPaymentsViewControllerIndex_Pay)
     case pay = 1
+
+    @objc(DWPaymentsViewControllerIndex_EnterAddress)
+    case enterAddress = 2
 }
 
 // MARK: - PaymentsViewControllerDelegate
@@ -37,7 +40,7 @@ enum PaymentsViewControllerState: Int {
 protocol PaymentsViewControllerDelegate: AnyObject {
     func paymentsViewControllerWantsToImportPrivateKey(_ controller: PaymentsViewController)
     func paymentsViewControllerDidCancel(_ controller: PaymentsViewController)
-    func paymentsViewControllerDidFinishPayment(_ controller: PaymentsViewController, contact: DWDPBasicUserItem?)
+    func paymentsViewControllerDidFinishPayment(_ controller: PaymentsViewController, tx: DSTransaction, contact: DWDPBasicUserItem?)
 }
 
 // MARK: - PaymentsViewController
@@ -60,6 +63,11 @@ class PaymentsViewController: BaseViewController {
     @objc
     var currentState: PaymentsViewControllerState = .pay {
         didSet {
+            if currentState == .enterAddress {
+                forceShowingEnterAddress = true
+                currentState = .pay
+            }
+
             if currentState == .none {
                 currentState = PaymentsViewControllerState(rawValue: DWGlobalOptions.sharedInstance().paymentsScreenCurrentTab)!
             }
@@ -79,6 +87,8 @@ class PaymentsViewController: BaseViewController {
 
     private var pageController: SendReceivePageController!
 
+    private var forceShowingEnterAddress = false
+
     @IBAction
     func segmentedControlAction() {
         let idx = segmentedControl.selectedSegmentIndex
@@ -96,6 +106,17 @@ class PaymentsViewController: BaseViewController {
         super.viewDidLoad()
 
         configureHierarchy()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        DispatchQueue.main.async {
+            if self.forceShowingEnterAddress {
+                self.payViewController.showEnterAddressController(animated: false)
+                self.forceShowingEnterAddress = false
+            }
+        }
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -169,8 +190,8 @@ extension PaymentsViewController: SendReceivePageControllerDelegate {
 // MARK: PayViewControllerDelegate
 
 extension PaymentsViewController: PayViewControllerDelegate {
-    func payViewControllerDidFinishPayment(_ controller: PayViewController, contact: DWDPBasicUserItem?) {
-        delegate?.paymentsViewControllerDidFinishPayment(self, contact: contact)
+    func payViewControllerDidFinishPayment(_ controller: PayViewController, tx: DSTransaction, contact: DWDPBasicUserItem?) {
+        delegate?.paymentsViewControllerDidFinishPayment(self, tx: tx, contact: contact)
     }
 }
 
