@@ -208,12 +208,23 @@ extension PaymentController: DWPaymentProcessorDelegate {
                           transaction: DSTransaction, contactItem: DWDPBasicUserItem?) {
         presentationAnchor?.topController().view.dw_hideProgressHUD()
 
-        if let vc = confirmViewController {
-            vc.dismiss(animated: true) {
-                self.delegate?.paymentControllerDidFinishTransaction(self, transaction: transaction)
+        let finishBlock = {
+            if let vc = self.presentationAnchor?.navigationController?.topViewController as? AmountProviding {
+                vc.navigationController?.popViewController(animated: true)
+
+                DispatchQueue.main.async {
+                    self.delegate?.paymentControllerDidFinishTransaction(self, transaction: transaction)
+                }
             }
-        } else {
-            delegate?.paymentControllerDidFinishTransaction(self, transaction: transaction)
+        }
+
+        guard let vc = confirmViewController else {
+            finishBlock()
+            return
+        }
+
+        vc.dismiss(animated: true) {
+            finishBlock()
         }
     }
 
