@@ -87,7 +87,6 @@ class InvitationTopView: BaseInvitationTopView {
         let defaultTitle = NSString.localizedStringWithFormat(NSLocalizedString("Invitation %ld", comment: "") as NSString, index)
         let title = invitation.name ?? (tag ?? String(defaultTitle))
         titleLabel.text = title
-            
         
         let transaction: DSTransaction = invitation.identity.registrationCreditFundingTransaction!
         let chain = DWEnvironment.sharedInstance().currentChain

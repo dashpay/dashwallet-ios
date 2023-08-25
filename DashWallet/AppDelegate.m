@@ -94,6 +94,10 @@ NS_ASSUME_NONNULL_BEGIN
     }
 #endif /* FRESH_INSTALL */
     
+#if DASHPAY
+    [DWGlobalOptions sharedInstance].dpInvitationFlowEnabled = YES;
+#endif
+    
     [DSLogger sharedInstance];
     [FIRApp configure];
     [ExploreDashObjcWrapper configure];

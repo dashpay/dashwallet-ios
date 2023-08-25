@@ -49,6 +49,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic dashpayUsername;
 @dynamic dashpayRegistrationCompleted;
 @dynamic mostRecentViewedNotificationDate;
+@dynamic dpInvitationFlowEnabled;
 #endif
 
 #pragma mark - Init
