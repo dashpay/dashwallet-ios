@@ -206,12 +206,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)syncingActivityMonitorStateDidChangeWithPreviousState:(SyncingActivityMonitorState)previousState state:(SyncingActivityMonitorState)state {
     
 #if DASHPAY
-    if (_invitationSetup != nil) {
-        [self handleDeeplink:_invitationSetup.invitation definedUsername:_invitationSetup.chosenUsername];
-        _invitationSetup = nil;
+    if (state == SyncingActivityMonitorStateSyncDone) {
+        if (_invitationSetup != nil) {
+            [self handleDeeplink:_invitationSetup.invitation definedUsername:_invitationSetup.chosenUsername];
+            _invitationSetup = nil;
+        }
+        
+        [SyncingActivityMonitor.shared removeObserver:self];
     }
-    
-    [SyncingActivityMonitor.shared removeObserver:self];
 #endif
 }
 
