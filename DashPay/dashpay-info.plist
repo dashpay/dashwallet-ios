@@ -114,6 +114,12 @@
 	<string>$(CLIENT_ID)</string>
 	<key>CLIENT_SECRET</key>
 	<string>$(CLIENT_SECRET)</string>
+	<key>FirebaseDeepLinkPasteboardRetrievalEnabled</key>
+	<false/>
+	<key>FirebaseDynamicLinksCustomDomains</key>
+	<array>
+		<string>https://invitations.dashpay.io/link</string>
+	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>

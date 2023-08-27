@@ -33,6 +33,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL launchingWasDeferred;
 @property (nullable, nonatomic, strong) DWAppRootViewController *rootController;
 
+#if DASHPAY
+@property (nullable, nonatomic, strong) NSURL *deferredDeeplink;
+#endif
+
 @end
 
 @implementation DWInitialViewController
@@ -68,6 +72,17 @@ NS_ASSUME_NONNULL_BEGIN
     [self.rootController setLaunchingAsDeferredController];
 }
 
+#if DASHPAY
+- (void)handleDeeplink:(NSURL *)url {
+    if (self.rootController) {
+        [self.rootController handleDeeplink:url];
+    }
+    else {
+        self.deferredDeeplink = url;
+    }
+}
+#endif
+
 - (void)handleURL:(NSURL *)url {
     [self.rootController handleURL:url];
 }
@@ -102,6 +117,13 @@ NS_ASSUME_NONNULL_BEGIN
     if (self.launchingWasDeferred) {
         [controller setLaunchingAsDeferredController];
     }
+    
+#if DASHPAY
+    if (self.deferredDeeplink) {
+        [controller handleDeeplink:self.deferredDeeplink];
+        self.deferredDeeplink = nil;
+    }
+#endif
 
     return controller;
 }

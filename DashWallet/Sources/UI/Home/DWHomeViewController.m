@@ -31,13 +31,19 @@
 #if DASHPAY
 #import "DWNotificationsViewController.h"
 #import "DWModalUserProfileViewController.h"
+#import "DPAlertViewController.h"
+#import "DWInvitationSetupState.h"
+#import "DWDashPaySetupFlowController.h"
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeViewController () <DWHomeViewDelegate, DWShortcutsActionDelegate, TxReclassifyTransactionsInfoViewControllerDelegate>
+@interface DWHomeViewController () <DWHomeViewDelegate, DWShortcutsActionDelegate, TxReclassifyTransactionsInfoViewControllerDelegate, SyncingActivityMonitorObserver>
 
 @property (strong, nonatomic) DWHomeView *view;
+#if DASHPAY
+@property (strong, nonatomic) DWInvitationSetupState *invitationSetup;
+#endif
 
 @end
 
@@ -97,6 +103,51 @@ NS_ASSUME_NONNULL_BEGIN
     [self.view hideBalanceIfNeeded];
 }
 
+#if DASHPAY
+- (void)handleDeeplink:(NSURL *)url definedUsername:(nullable NSString *)definedUsername {
+    if (self.model.dashPayModel.blockchainIdentity != nil) {
+        NSString *title = NSLocalizedString(@"Username already found", nil);
+        NSString *message = NSLocalizedString(@"You cannot claim this invite since you already have a Dash username", nil);
+        DPAlertViewController *alert =
+            [[DPAlertViewController alloc] initWithIcon:[UIImage imageNamed:@"icon_invitation_error"]
+                                                  title:title
+                                            description:message];
+        [self presentViewController:alert animated:YES completion:nil];
+
+        return;
+    }
+
+    if (SyncingActivityMonitor.shared.state != SyncingActivityMonitorStateSyncDone) {
+        DWInvitationSetupState *state = [[DWInvitationSetupState alloc] init];
+        state.invitation = url;
+        state.chosenUsername = definedUsername;
+        _invitationSetup = state;
+        [SyncingActivityMonitor.shared addObserver:self];
+        
+        return;
+    }
+    
+    __weak typeof(self) weakSelf = self;
+    [self.model handleDeeplink:url completion:^(BOOL success, NSString *_Nullable errorTitle, NSString *_Nullable errorMessage) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        if (success) {
+            [strongSelf showCreateUsernameWithInvitation:url definedUsername:definedUsername];
+        }
+        else {
+            DPAlertViewController *alert =
+                [[DPAlertViewController alloc] initWithIcon:[UIImage imageNamed:@"icon_invitation_error"]
+                                                       title:errorTitle
+                                                 description:errorMessage];
+                [strongSelf presentViewController:alert animated:YES completion:nil];
+            }
+        }];
+}
+#endif
+
 #pragma mark - DWHomeViewDelegate
 
 - (void)homeView:(DWHomeView *)homeView showTxFilter:(UIView *)sender {
@@ -144,6 +195,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)shortcutsView:(UIView *)view didSelectAction:(DWShortcutAction *)action sender:(UIView *)sender {
     [self performActionForShortcut:action sender:sender];
+}
+
+#pragma mark - SyncingActivityMonitorObserver
+
+- (void)syncingActivityMonitorProgressDidChange:(double)progress {
+    // pass
+}
+
+- (void)syncingActivityMonitorStateDidChangeWithPreviousState:(SyncingActivityMonitorState)previousState state:(SyncingActivityMonitorState)state {
+    
+#if DASHPAY
+    if (_invitationSetup != nil) {
+        [self handleDeeplink:_invitationSetup.invitation definedUsername:_invitationSetup.chosenUsername];
+        _invitationSetup = nil;
+    }
+    
+    [SyncingActivityMonitor.shared removeObserver:self];
+#endif
 }
 
 #pragma mark - Private

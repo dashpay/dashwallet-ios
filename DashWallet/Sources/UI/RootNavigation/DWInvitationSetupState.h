@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2021 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,23 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWBasePayViewController.h"
-#import "DWHomeProtocol.h"
-#import "DWWipeDelegate.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWHomeViewController;
-@protocol DWHomeViewControllerDelegate;
+@interface DWInvitationSetupState : NSObject
 
-@interface DWHomeViewController : DWBasePayViewController
-
-@property (strong, nonatomic) id<DWHomeProtocol> model;
-@property (nullable, nonatomic, weak) id<DWHomeViewControllerDelegate, DWWipeDelegate> delegate;
-
-#if DASHPAY
-- (void)handleDeeplink:(NSURL *)url definedUsername:(nullable NSString *)definedUsername;
-#endif
+@property (nullable, nonatomic, strong) NSURL *invitation;
+@property (nullable, nonatomic, copy) NSString *chosenUsername;
 
 @end
 
