@@ -25,6 +25,9 @@
 #import "DWNetworkErrorViewController.h"
 #import "DWNotificationsProvider.h"
 
+// if MOCK_DASHPAY
+#import "DWDashPayConstants.h"
+
 
 @implementation DWDashPayContactsActions
 
@@ -39,6 +42,25 @@
 
     __block id<DWDPNewIncomingRequestItem> newRequestItem = (id<DWDPNewIncomingRequestItem>)item;
     newRequestItem.requestState = DWDPNewIncomingRequestItemState_Processing;
+    
+    if (MOCK_DASHPAY) {
+        NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
+        DSDashpayUserEntity *contact = [DSDashpayUserEntity managedObjectInBlockedContext:context];
+        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+        contact.chain = [wallet.chain chainEntityInContext:context];
+        DSBlockchainIdentityUsernameEntity *username = [DSBlockchainIdentityUsernameEntity managedObjectInBlockedContext:context];
+        username.stringValue = item.username;
+        DSBlockchainIdentityEntity *entity = [DSBlockchainIdentityEntity managedObjectInBlockedContext:context];
+        entity.uniqueID = [item.username dataUsingEncoding:NSUTF8StringEncoding];
+        username.blockchainIdentity = entity;
+        entity.dashpayUsername = username;
+        contact.associatedBlockchainIdentity = entity;
+        NSError *error = [contact applyTransientDashpayUser:item.blockchainIdentity.transientDashpayUser save:YES];
+            
+        newRequestItem.requestState = DWDPNewIncomingRequestItemState_Accepted;
+        
+        return;
+    }
 
     void (^resultCompletion)(BOOL success, NSArray<NSError *> *errors) = ^(BOOL success, NSArray<NSError *> *errors) {
         if (newRequestItem == nil)

@@ -160,7 +160,7 @@ NS_ASSUME_NONNULL_END
         self.sendRequestState = DWUserProfileModelState_Loading;
         
         NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
-        DSDashpayUserEntity *contact = contact = [DSDashpayUserEntity managedObjectInBlockedContext:context];
+        DSDashpayUserEntity *contact = [DSDashpayUserEntity managedObjectInBlockedContext:context];
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
         contact.chain = [wallet.chain chainEntityInContext:context];
         DSBlockchainIdentity *identity = [wallet createBlockchainIdentityForUsername:_item.username];
