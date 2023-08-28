@@ -354,7 +354,8 @@ extension MainTabbarController: DWHomeViewControllerDelegate {
         let payModel = DWPayModel()
 
         let controller = PaymentsViewController.controller(withReceiveModel: receiveModel,
-                                                           payModel: payModel)
+                                                           payModel: payModel,
+                                                           dataProvider: homeModel.getDataProvider())
 
         controller.delegate = self
         controller.currentState = pageIndex

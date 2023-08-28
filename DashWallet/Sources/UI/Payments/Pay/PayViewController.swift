@@ -31,6 +31,8 @@ class PayViewController: BaseViewController, PayableViewController {
     var paymentController: PaymentController!
 
     var payModel: DWPayModelProtocol!
+    
+    var dataProvider: DWTransactionListDataProviderProtocol!
 
     var maxActionButtonWidth: CGFloat = 0
 
@@ -38,10 +40,11 @@ class PayViewController: BaseViewController, PayableViewController {
 
     var delegate: PayViewControllerDelegate?
 
-    static func controller(with payModel: DWPayModelProtocol) -> PayViewController {
+    static func controller(with payModel: DWPayModelProtocol, dataProvider: DWTransactionListDataProviderProtocol) -> PayViewController {
         let storyboard = UIStoryboard(name: "Pay", bundle: nil)
         let controller = storyboard.instantiateInitialViewController() as! PayViewController
         controller.payModel = payModel
+        controller.dataProvider = dataProvider
 
         return controller
     }
@@ -120,6 +123,8 @@ extension PayViewController: UITableViewDataSource, UITableViewDelegate {
             showEnterAddressController()
         case .NFC:
             performNFCReadingAction()
+        case .dashPayUser:
+            performPayToDashPayUser(with: dataProvider, delegate: self)
         @unknown default:
             break
         }
@@ -168,5 +173,19 @@ extension PayViewController: PaymentControllerDelegate, PaymentControllerPresent
 extension PayViewController: SuccessTxDetailViewControllerDelegate {
     func txDetailViewControllerDidFinish(controller: SuccessTxDetailViewController) {
         delegate?.payViewControllerDidFinishPayment(self, contact: paymentController.contactItem)
+    }
+}
+
+// MARK: DWContactsViewControllerPayDelegate
+extension PayViewController: DWContactsViewControllerPayDelegate {
+    func contactsViewController(_ controller: DWContactsViewController, payTo item: DWDPBasicUserItem) {
+        dismiss(animated: true) { [weak self] in
+            self?.performPayToUser(userItem: item)
+        }
+    }
+    
+    private func performPayToUser(userItem: DWDPBasicUserItem) {
+        let paymentInput = payModel.paymentInput(withUser: userItem)
+        self.paymentController.performPayment(with: paymentInput)
     }
 }

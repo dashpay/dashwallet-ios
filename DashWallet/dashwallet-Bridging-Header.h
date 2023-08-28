@@ -130,4 +130,5 @@ static const bool _SNAPSHOT = 0;
 #import "DWDashPayConstants.h"
 #import "DWRootContactsViewController.h"
 #import "DWNotificationsProvider.h"
+#import "DWContactsViewController.h"
 #endif

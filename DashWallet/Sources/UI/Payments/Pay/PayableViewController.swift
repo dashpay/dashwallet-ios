@@ -50,6 +50,15 @@ extension PayableViewController where Self: UIViewController {
     func processPaymentInput(_ input: DWPaymentInput) {
         paymentController.performPayment(with: input)
     }
+    
+    func performPayToDashPayUser(with dataProvider: DWTransactionListDataProviderProtocol, delegate: DWContactsViewControllerPayDelegate) {
+        let controller = DWContactsViewController(payModel: payModel, dataProvider: dataProvider)
+        controller.intent = .payToSelector
+        controller.payDelegate = delegate
+        controller.hidesBottomBarWhenPushed = true
+        
+        present(controller, animated: true, completion: nil)
+    }
 }
 
 extension PayableViewController where Self: UIViewController { }
