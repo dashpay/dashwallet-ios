@@ -36,6 +36,7 @@
 #import "DWMainMenuViewController+DashPay.h"
 #import "DWUserProfileModalQRViewController.h"
 #import "DWDashPaySetupFlowController.h"
+#import "DWInvitationHistoryViewController.h"
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
@@ -109,12 +110,11 @@ NS_ASSUME_NONNULL_BEGIN
     self.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeNever;
     
 #ifdef DASHPAY
-    //BOOL invitationsEnabled = ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled && (self.userProfileModel.blockchainIdentity != nil)); //TODO: DashPay
-    //self.view.model = [[DWMainMenuModel alloc] initWithInvitesEnabled:invitationsEnabled]; //TODO: DashPay
-    self.view.model = [[DWMainMenuModel alloc] init];
+    BOOL invitationsEnabled = ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled && (self.userProfileModel.blockchainIdentity != nil));
+    self.view.model = [[DWMainMenuModel alloc] initWithInvitesEnabled:invitationsEnabled];
     [self.view updateUserHeader];
 #else
-    self.view.model = [[DWMainMenuModel alloc] init];
+    self.view.model = [[DWMainMenuModel alloc] initWithInvitesEnabled:NO];
 #endif
     
 }
@@ -182,6 +182,14 @@ NS_ASSUME_NONNULL_BEGIN
             [self presentViewController:safariViewController animated:YES completion:nil];
             break;
         }
+#if DASHPAY
+        case DWMainMenuItemType_Invite: {
+            DWInvitationHistoryViewController *controller = [[DWInvitationHistoryViewController alloc] init];
+            controller.hidesBottomBarWhenPushed = YES;
+            [self.navigationController pushViewController:controller animated:YES];
+            break;
+        }
+#endif
     }
 }
 

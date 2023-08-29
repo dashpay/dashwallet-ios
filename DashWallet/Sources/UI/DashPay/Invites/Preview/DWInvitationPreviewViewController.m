@@ -123,6 +123,15 @@ NS_ASSUME_NONNULL_END
     // Setup
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    
+    if (MOCK_DASHPAY) {
+        NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
+        
+        if (username != nil) {
+            myBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
+        }
+    }
+    
     iconView.blockchainIdentity = myBlockchainIdentity;
 
     NSMutableAttributedString *desc = [[NSMutableAttributedString alloc] init];

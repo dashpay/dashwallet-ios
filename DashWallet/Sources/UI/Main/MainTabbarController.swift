@@ -285,6 +285,15 @@ extension MainTabbarController {
         assert(isDemoMode, "Invalid usage. Should be used in Demo mode only")
         closePayments()
     }
+    
+    #if DASHPAY
+    @objc
+    public func handleDeeplink(_ url: URL, definedUsername: String?) {
+        dismiss(animated: false, completion: nil)
+        selectedIndex = MainTabbarTabs.home.rawValue
+        homeController?.handleDeeplink(url, definedUsername: definedUsername)
+    }
+    #endif
 }
 
 // MARK: DWMainMenuViewControllerDelegate

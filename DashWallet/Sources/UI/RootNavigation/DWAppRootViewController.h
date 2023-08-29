@@ -33,6 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setLaunchingAsDeferredController;
 
+#if DASHPAY
+- (void)handleDeeplink:(NSURL *)url;
+#endif
 - (void)handleURL:(NSURL *)url;
 - (void)handleFile:(NSData *)file;
 

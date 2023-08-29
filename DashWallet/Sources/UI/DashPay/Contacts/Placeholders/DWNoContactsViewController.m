@@ -40,7 +40,7 @@
     if (!_invitationView) {
         _invitationView = [[DWInvitationSuggestionView alloc] init];
         _invitationView.translatesAutoresizingMaskIntoConstraints = NO;
-        //_invitationView.alpha = [DWGlobalOptions sharedInstance].dpInvitationFlowEnabled ? 1.0 : 0.0; TODO: DashPay
+        _invitationView.alpha = [DWGlobalOptions sharedInstance].dpInvitationFlowEnabled ? 1.0 : 0.0;
     }
     return _invitationView;
 }
