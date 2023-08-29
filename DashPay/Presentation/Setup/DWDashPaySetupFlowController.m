@@ -277,6 +277,10 @@ NS_ASSUME_NONNULL_END
 #pragma mark - Actions
 
 - (void)cancelButtonAction {
+    if ([_containerController.currentController isKindOfClass:[DWRegistrationCompletedViewController class]]) {
+        [self.dashPayModel completeRegistration];
+    }
+        
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
