@@ -96,7 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionTypeCreateUsername: {
-            [self showCreateUsername];
+            [self showCreateUsernameWithInvitation:nil definedUsername:nil];
             break;
         }
         case DWShortcutActionTypeReceive: {
@@ -174,7 +174,8 @@ NS_ASSUME_NONNULL_BEGIN
     [self payToAddressAction];
 }
 
-- (void)showCreateUsername {
+- (void)showCreateUsernameWithInvitation:(nullable NSURL *)invitationURL
+                         definedUsername:(nullable NSString *)definedUsername {
 #if DASHPAY
     DWDashPaySetupFlowController *controller = [[DWDashPaySetupFlowController alloc]
         initWithDashPayModel:self.model.dashPayModel

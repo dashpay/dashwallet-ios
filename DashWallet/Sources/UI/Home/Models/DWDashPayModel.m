@@ -90,6 +90,14 @@ NS_ASSUME_NONNULL_END
 }
 
 - (DSBlockchainIdentity *)blockchainIdentity {
+    if (MOCK_DASHPAY) {
+        NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
+        
+        if (username != nil) {
+            return [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
+        }
+    }
+    
     return [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
 }
 
@@ -267,6 +275,11 @@ NS_ASSUME_NONNULL_END
             completion:(void (^)(BOOL success,
                                  NSString *_Nullable errorTitle,
                                  NSString *_Nullable errorMessage))completion {
+    if (MOCK_DASHPAY) {
+        completion(YES, nil, nil);
+        return;
+    }
+    
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     [DSBlockchainInvitation
         verifyInvitationLink:url.absoluteString
@@ -344,6 +357,7 @@ NS_ASSUME_NONNULL_END
     [blockchainIdentity registerOnNetwork:[self steps]
         withFundingAccount:account
         forTopupAmount:DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        pinPrompt:@"Would you like to create this user?"
         stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
@@ -370,6 +384,7 @@ NS_ASSUME_NONNULL_END
     [blockchainIdentity continueRegisteringOnNetwork:[self steps]
         withFundingAccount:account
         forTopupAmount:DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        pinPrompt:@"Would you like to create this user?"
         stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {

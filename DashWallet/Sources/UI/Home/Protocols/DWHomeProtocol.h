@@ -71,6 +71,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)retrySyncing;
 - (void)checkCrowdNodeState;
+
+#if DASHPAY
+- (void)handleDeeplink:(NSURL *)url
+            completion:(void (^)(BOOL success,
+                                 NSString *_Nullable errorTitle,
+                                 NSString *_Nullable errorMessage))completion;
+#endif
+
 @end
 
 NS_ASSUME_NONNULL_END
