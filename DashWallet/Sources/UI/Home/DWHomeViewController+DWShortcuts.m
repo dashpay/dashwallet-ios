@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionTypePayToAddress: {
-            [self payToAddressAction:sender];
+            [self.delegate showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_EnterAddress];
             break;
         }
         case DWShortcutActionTypeBuySellDash: {

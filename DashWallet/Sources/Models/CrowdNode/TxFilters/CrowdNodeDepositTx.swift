@@ -23,7 +23,7 @@ final class CrowdNodeDepositTx: TransactionFilter {
     }
 
     func matches(tx: DSTransaction) -> Bool {
-        let allFromAccount = tx.inputAddresses.allSatisfy { $0 as! String == accountAddress }
+        let allFromAccount = tx.inputAddresses.allSatisfy { $0 as? String == accountAddress }
         guard allFromAccount else { return false }
         let crowdNodeAddress = CrowdNode.crowdNodeAddress
 

@@ -69,13 +69,6 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentViewController:controller animated:YES completion:nil];
 }
 
-- (void)payToAddressAction {
-    DWEnterAddressViewController *vc = [[DWEnterAddressViewController alloc] init];
-    vc.paymentControllerDelegate = self;
-    DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController: vc];
-    [self presentViewController:nvc animated:YES completion:nil];
-}
-
 - (void)performPayToPasteboardAction {
     DWPaymentInput *paymentInput = self.payModel.pasteboardPaymentInput;
     NSParameterAssert(paymentInput);
