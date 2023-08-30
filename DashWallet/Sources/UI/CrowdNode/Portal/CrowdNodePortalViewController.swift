@@ -245,7 +245,6 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
 
         switch item {
         case .deposit:
-            DSLogger.log("CrowdNodeDeposit: navigate to transfer with deposit mode")
             navigationController?.pushViewController(CrowdNodeTransferController.controller(mode: TransferDirection.deposit), animated: true)
         case .withdraw:
             if viewModel.canWithdraw {

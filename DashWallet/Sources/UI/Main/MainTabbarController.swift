@@ -235,17 +235,14 @@ extension MainTabbarController {
     private func closePayments(completion: (() -> Void)? = nil) {
         paymentButton.isOpened = false
 
-        guard let currentController = selectedViewController,
-              currentController.topController() is PaymentsViewController else {
-            tabBar.isUserInteractionEnabled = true
+        guard let top = selectedViewController?.topController(),
+              top != selectedViewController
+        else {
             completion?()
             return
         }
 
-        tabBar.isUserInteractionEnabled = false
-
-        currentController.topController().dismiss(animated: true) {
-            self.tabBar.isUserInteractionEnabled = true
+        top.dismiss(animated: true) {
             completion?()
         }
     }
@@ -319,9 +316,22 @@ extension MainTabbarController: DWWipeDelegate {
 // MARK: PaymentsViewControllerDelegate
 
 extension MainTabbarController: PaymentsViewControllerDelegate {
+    func paymentsViewControllerDidFinishPayment(_ controller: PaymentsViewController, tx: DSTransaction, contact: DWDPBasicUserItem?) {
+        closePayments { [weak self] in
+            self?.presentTxDetails(for: tx, contact: contact)
+        }
+    }
+
+    private func presentTxDetails(for tx: DSTransaction, contact: DWDPBasicUserItem?) {
+        let model = TxDetailModel(transaction: Transaction(transaction: tx))
+        let vc = SuccessTxDetailViewController(model: model)
+        vc.modalPresentationStyle = .fullScreen
+        vc.contactItem = contact
+        vc.delegate = self
+        selectedViewController?.topController().present(vc, animated: true)
+    }
+
     func paymentsViewControllerWantsToImportPrivateKey(_ controller: PaymentsViewController) {
-        // Make sure we enable tabbar before showing the scanner
-        tabBar.isUserInteractionEnabled = true
         paymentButton.isOpened = false
 
         controller.dismiss(animated: true) {
@@ -331,20 +341,6 @@ extension MainTabbarController: PaymentsViewControllerDelegate {
 
     func paymentsViewControllerDidCancel(_ controller: PaymentsViewController) {
         closePayments()
-    }
-
-    func paymentsViewControllerDidFinishPayment(_ controller: PaymentsViewController, contact: DWDPBasicUserItem?) {
-        closePayments {
-            // TODO: DashPay
-//            guard let contact else {
-//                return
-//            }
-//
-//            let profile = DWModalUserProfileViewController(item: contact,
-//                                                           payModel: self.homeModel.payModel,
-//                                                           dataProvider: self.homeModel.getDataProvider)
-//            self.present(profile, animated: true, completion: nil)
-        }
     }
 }
 
@@ -356,7 +352,6 @@ extension MainTabbarController: DWHomeViewControllerDelegate {
     }
 
     func showPaymentsController(withActivePage pageIndex: PaymentsViewControllerState) {
-        tabBar.isUserInteractionEnabled = false
         paymentButton.isOpened = true
 
         let receiveModel = DWReceiveModel()
@@ -377,9 +372,7 @@ extension MainTabbarController: DWHomeViewControllerDelegate {
         if isDemoMode {
             demoDelegate?.presentModalController(navigationController, sender: self)
         } else {
-            selectedViewController?.topController().present(navigationController, animated: true) {
-                self.tabBar.isUserInteractionEnabled = true
-            }
+            selectedViewController?.topController().present(navigationController, animated: true)
         }
     }
 }
@@ -407,3 +400,9 @@ extension MainTabbarController: DWExploreTestnetViewControllerDelegate {
 // MARK: - EmptyController
 
 private final class EmptyController: UIViewController { }
+
+// MARK: - MainTabbarController + SuccessTxDetailViewControllerDelegate
+
+extension MainTabbarController: SuccessTxDetailViewControllerDelegate {
+    func txDetailViewControllerDidFinish(controller: SuccessTxDetailViewController) { }
+}

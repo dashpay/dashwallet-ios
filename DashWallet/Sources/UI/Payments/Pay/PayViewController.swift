@@ -20,7 +20,7 @@ import UIKit
 // MARK: - PayViewControllerDelegate
 
 protocol PayViewControllerDelegate: AnyObject {
-    func payViewControllerDidFinishPayment(_ controller: PayViewController, contact: DWDPBasicUserItem?)
+    func payViewControllerDidFinishPayment(_ controller: PayViewController, tx: DSTransaction, contact: DWDPBasicUserItem?)
 }
 
 // MARK: - PayViewController
@@ -40,21 +40,12 @@ class PayViewController: BaseViewController, PayableViewController {
 
     var delegate: PayViewControllerDelegate?
 
-    static func controller(with payModel: DWPayModelProtocol, dataProvider: DWTransactionListDataProviderProtocol) -> PayViewController {
-        let storyboard = UIStoryboard(name: "Pay", bundle: nil)
-        let controller = storyboard.instantiateInitialViewController() as! PayViewController
-        controller.payModel = payModel
-        controller.dataProvider = dataProvider
-
-        return controller
-    }
-
     // MARK: Actions
 
-    private func showEnterAddressController() {
+    public func showEnterAddressController(animated: Bool = true) {
         let vc = EnterAddressViewController()
-        vc.paymentControllerDelegate = self
-        navigationController?.pushViewController(vc, animated: true)
+        vc.delegate = self
+        navigationController?.pushViewController(vc, animated: animated)
     }
 
     override func viewDidLoad() {
@@ -72,6 +63,15 @@ class PayViewController: BaseViewController, PayableViewController {
                 self.performPayToPasteboardAction()
             }
         }
+    }
+
+    static func controller(with payModel: DWPayModelProtocol, dataProvider: DWTransactionListDataProviderProtocol) -> PayViewController {
+        let storyboard = UIStoryboard(name: "Pay", bundle: nil)
+        let controller = storyboard.instantiateInitialViewController() as! PayViewController
+        controller.payModel = payModel
+        controller.dataProvider = dataProvider
+
+        return controller
     }
 }
 
@@ -151,16 +151,11 @@ extension PayViewController: DWQRScanModelDelegate {
 
 extension PayViewController: PaymentControllerDelegate, PaymentControllerPresentationContextProviding {
     func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor {
-        self
+        navigationController?.visibleViewController ?? self
     }
 
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, transaction: DSTransaction) {
-        let model = TxDetailModel(transaction: transaction)
-        let vc = SuccessTxDetailViewController(model: model)
-        vc.modalPresentationStyle = .fullScreen
-        vc.contactItem = paymentController.contactItem
-        vc.delegate = self
-        present(vc, animated: true)
+        delegate?.payViewControllerDidFinishPayment(self, tx: transaction, contact: paymentController.contactItem)
     }
 
     func paymentControllerDidCancelTransaction(_ controller: PaymentController) { }
@@ -168,11 +163,11 @@ extension PayViewController: PaymentControllerDelegate, PaymentControllerPresent
     func paymentControllerDidFailTransaction(_ controller: PaymentController) { }
 }
 
-// MARK: SuccessTxDetailViewControllerDelegate
+// MARK: EnterAddressViewControllerDelegate
 
-extension PayViewController: SuccessTxDetailViewControllerDelegate {
-    func txDetailViewControllerDidFinish(controller: SuccessTxDetailViewController) {
-        delegate?.payViewControllerDidFinishPayment(self, contact: paymentController.contactItem)
+extension PayViewController: EnterAddressViewControllerDelegate {
+    func enterAddressViewControllerDidPreparePaymentInput(_ viewController: EnterAddressViewController, input: DWPaymentInput) {
+        processPaymentInput(input)
     }
 }
 

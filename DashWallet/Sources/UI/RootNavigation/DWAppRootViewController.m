@@ -336,7 +336,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             self.lockWindow.alpha = 1.0;
         
             if (self.deferredDeeplinkToProcess) {
+#if DASHPAY
                 [self handleDeeplink:self.deferredDeeplinkToProcess];
+#endif
             }
             else if (self.deferredURLToProcess) {
                 [self handleURL:self.deferredURLToProcess];

@@ -37,8 +37,28 @@ final class PasteboardContentView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    @discardableResult
+    override func becomeFirstResponder() -> Bool {
+        textView.becomeFirstResponder()
+    }
+
+    @discardableResult
+    override func resignFirstResponder() -> Bool {
+        textView.resignFirstResponder()
+    }
+
+    override var canBecomeFirstResponder: Bool {
+        textView.canBecomeFirstResponder
+    }
+
+    override var canResignFirstResponder: Bool {
+        textView.canResignFirstResponder
+    }
+
     public func update(with string: String) {
         textView.text = string
+        textView.setNeedsLayout()
+        textView.layoutIfNeeded()
 
         let chain = DWEnvironment.sharedInstance().currentChain
 

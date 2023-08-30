@@ -97,15 +97,10 @@ extension KeysOverviewViewController: UITableViewDataSource, UITableViewDelegate
             wSelf.navigationController?.pushViewController(vc, animated: true)
         }
 
-        if DSAuthenticationManager.sharedInstance().didAuthenticate {
-            showVcBlock()
-        }
-        else {
-            DSAuthenticationManager.sharedInstance().authenticate(withPrompt: nil, usingBiometricAuthentication: false, alertIfLockout: true) { authenticatedOrSuccess, _, _ in
+        DSAuthenticationManager.sharedInstance().authenticate(withPrompt: nil, usingBiometricAuthentication: false, alertIfLockout: true) { authenticatedOrSuccess, _, _ in
 
-                guard authenticatedOrSuccess else { return }
-                showVcBlock()
-            }
+            guard authenticatedOrSuccess else { return }
+            showVcBlock()
         }
     }
 }
