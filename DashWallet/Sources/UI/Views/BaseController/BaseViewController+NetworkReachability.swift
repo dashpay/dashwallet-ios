@@ -32,7 +32,6 @@ extension NetworkReachabilityHandling {
     internal var reachability: DSReachabilityManager { DSReachabilityManager.shared() }
 
     public func startNetworkMonitoring() {
-        DSLogger.log("CrowdNodeDeposit: startNetworkMonitoring")
         if !reachability.isMonitoring {
             reachability.startMonitoring()
         }
