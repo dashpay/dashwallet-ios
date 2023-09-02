@@ -61,9 +61,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (BOOL)shouldAcceptIncomingAfterPayment {
-    //TODO: DashPay
-    //return ([DWGlobalOptions sharedInstance].confirmationAcceptContactRequestIsOn && [self friendshipStatusInternal] == DSBlockchainIdentityFriendshipStatus_Incoming);
-    return YES;
+    return ([DWGlobalOptions sharedInstance].confirmationAcceptContactRequestIsOn && [self friendshipStatusInternal] == DSBlockchainIdentityFriendshipStatus_Incoming);
 }
 
 - (void)setDisplayMode:(DWHomeTxDisplayMode)displayMode {
@@ -267,26 +265,39 @@ NS_ASSUME_NONNULL_END
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    if (myBlockchainIdentity == nil) {
-        return;
-    }
-
     DSBlockchainIdentity *friendBlockchainIdentity = self.item.blockchainIdentity;
-    NSAssert(myBlockchainIdentity.matchingDashpayUserInViewContext, @"Invalid DSBlockchainIdentity: myBlockchainIdentity");
-    DSDashpayUserEntity *me = [myBlockchainIdentity matchingDashpayUserInContext:context];
     DSDashpayUserEntity *friend = nil;
-    if (friendBlockchainIdentity.matchingDashpayUserInViewContext) {
-        friend = [friendBlockchainIdentity matchingDashpayUserInContext:context];
-    }
-
     DSFriendRequestEntity *meToFriend = nil;
-    if (friend != nil) {
-        meToFriend = [[me.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@", friend]] anyObject];
-    }
-
     DSFriendRequestEntity *friendToMe = nil;
-    if (friend != nil) {
-        friendToMe = [[me.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@", friend]] anyObject];
+    
+    if (MOCK_DASHPAY) {
+        meToFriend = self.item.friendRequestToPay;
+        friendBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:self.item.username];
+        NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
+        
+        if (username != nil) {
+            myBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
+        }
+    } else {
+        if (myBlockchainIdentity == nil) {
+            return;
+        }
+        
+        NSAssert(myBlockchainIdentity.matchingDashpayUserInViewContext, @"Invalid DSBlockchainIdentity: myBlockchainIdentity");
+        DSDashpayUserEntity *me = [myBlockchainIdentity matchingDashpayUserInContext:context];
+        
+        if (friendBlockchainIdentity.matchingDashpayUserInViewContext) {
+            friend = [friendBlockchainIdentity matchingDashpayUserInContext:context];
+        }
+        
+        
+        if (friend != nil) {
+            meToFriend = [[me.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@", friend]] anyObject];
+        }
+
+        if (friend != nil) {
+            friendToMe = [[me.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@", friend]] anyObject];
+        }
     }
 
     BOOL shouldShowContactRequests = YES;

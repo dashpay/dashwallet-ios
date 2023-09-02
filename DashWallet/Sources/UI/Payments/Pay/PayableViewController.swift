@@ -51,6 +51,7 @@ extension PayableViewController where Self: UIViewController {
         paymentController.performPayment(with: input)
     }
     
+#if DASHPAY
     func performPayToDashPayUser(with dataProvider: DWTransactionListDataProviderProtocol, delegate: DWContactsViewControllerPayDelegate) {
         let controller = DWContactsViewController(payModel: payModel, dataProvider: dataProvider)
         controller.intent = .payToSelector
@@ -59,6 +60,7 @@ extension PayableViewController where Self: UIViewController {
         
         present(controller, animated: true, completion: nil)
     }
+#endif
 }
 
 extension PayableViewController where Self: UIViewController { }

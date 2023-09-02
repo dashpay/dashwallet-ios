@@ -52,6 +52,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic shouldShowInvitationsBadge;
 @dynamic dashPayRegistrationOpenedOnce;
 @dynamic dpInvitationFlowEnabled;
+@dynamic confirmationAcceptContactRequestIsOn;
 #endif
 
 #pragma mark - Init
@@ -66,6 +67,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
         DW_KEYPATH(self, shouldDisplayOnboarding) : @YES,
         DW_KEYPATH(self, shouldDisplayReclassifyYourTransactionsFlow) : @YES,
         DW_KEYPATH(self, coinbaseInfoShown) : @NO,
+        DW_KEYPATH(self, confirmationAcceptContactRequestIsOn) : @YES,
     };
 
     self = [super initWithUserDefaults:nil defaults:defaults];
@@ -156,6 +158,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     self.dashpayRegistrationCompleted = NO;
     self.mostRecentViewedNotificationDate = nil;
     self.dashPayRegistrationOpenedOnce = NO;
+    self.confirmationAcceptContactRequestIsOn = YES;
 #endif
 }
 

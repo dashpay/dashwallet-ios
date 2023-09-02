@@ -41,7 +41,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performPayToPasteboardAction;
 - (void)performNFCReadingAction;
 - (void)performPayToURL:(NSURL *)url;
+#if DASHPAY
 - (void)performPayToUser:(id<DWDPBasicUserItem>)userItem;
+#endif
 
 - (void)handleFile:(NSData *)file;
 
