@@ -41,6 +41,7 @@ class ServiceDataProviderImpl: ServiceDataProvider {
 
     private var upholdDataSource: ServiceDataSource = UpholdDataSource()
     private var coinbaseDataSource: ServiceDataSource = CoinbaseDataSource()
+    private var topperDataSource: ServiceDataSource = TopperDataSource()
 
     private var items: [ServiceItem] = []
 
@@ -65,6 +66,8 @@ class ServiceDataProviderImpl: ServiceDataProvider {
         coinbaseDataSource.serviceDidUpdate = { [weak self] item in
             self?.updateService(with: item)
         }
+        
+        self.updateService(with: topperDataSource.item)
     }
 
     private func updateService(with item: ServiceItem) {
