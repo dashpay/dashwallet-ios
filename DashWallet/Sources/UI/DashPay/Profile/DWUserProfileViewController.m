@@ -376,7 +376,7 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - DWTxDetailFullscreenViewControllerDelegate
 
-// TODO: 
+//TODO: DashPay
 //- (void)detailFullscreenViewControllerDidFinish:(DWTxDetailsViewController *)controller {
 //    if (self.model.shouldAcceptIncomingAfterPayment) {
 //        [self.model acceptContactRequest];
