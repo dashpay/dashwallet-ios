@@ -82,6 +82,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (DWSearchStateViewController *)stateController {
+
     if (_stateController == nil) {
         _stateController = [[DWSearchStateViewController alloc] init];
         _stateController.delegate = self;

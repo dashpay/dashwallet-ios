@@ -170,10 +170,6 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentControllerModallyInNavigationController:controller];
 }
 
-- (void)payToAddressAction:(UIView *)sender {
-    [self payToAddressAction];
-}
-
 - (void)showCreateUsernameWithInvitation:(nullable NSURL *)invitationURL
                          definedUsername:(nullable NSString *)definedUsername {
 #if DASHPAY

@@ -37,7 +37,6 @@ NSNotificationName const DWDashPaySentContactRequestToInviter = @"kDWDashPaySent
 @property (nullable, nonatomic, strong) NSError *lastRegistrationError;
 @property (nonatomic, assign) BOOL isInvitationNotificationAllowed;
 @property (nullable, nonatomic, strong) NSURL *invitation;
-@property (nullable, nonatomic, copy) NSString *mockUsername; // TODO: remove when DashPay is restored
 @end
 
 NS_ASSUME_NONNULL_END
@@ -106,9 +105,10 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSUInteger)unreadNotificationsCount {
-    //TODO: DashPay
-    if (self.isInvitationNotificationAllowed) // && [DWGlobalOptions sharedInstance].shouldShowInvitationsBadge) {
+    if (self.isInvitationNotificationAllowed &&
+        [DWGlobalOptions sharedInstance].shouldShowInvitationsBadge) {
         return 1;
+    }
     
     return [DWNotificationsProvider sharedInstance].data.unreadItems.count;
 }
