@@ -19,7 +19,7 @@ import Foundation
 import SwiftJWT
 import CryptorECC
 
-struct MyClaims: Claims {
+struct TopperClaims: Claims {
     let jti: String
     let sub: String
     let iat: Date
@@ -28,43 +28,85 @@ struct MyClaims: Claims {
 }
 
 class Topper {
-    public static let shared = Topper()
+    private static let baseUrl = "https://app.topperpay.com/"
+    private static let sandboxUrl = "https://app.sandbox.topperpay.com/"
+    private static let supportedAssetsUrl = "https://api.topperpay.com/assets/crypto-onramp"
     
-    func generateToken() -> String? {
-        if let path = Bundle.main.path(forResource: "Topper-Info", ofType: "plist"),
-           let dict = NSDictionary(contentsOfFile: path) as? [String: AnyObject] {
-            let keyId = dict["KEY_ID"] as! String
-            let widgetId = dict["WIDGET_ID"] as! String
-            let privateKey = dict["PRIVATE_KEY"] as! String
+    private var keyId: String = ""
+    private var widgetId: String = ""
+    private var privateKey: String = ""
+    private var isSandbox: Bool = false
+    private var supportedAssets = Set<String>()
+    
+    var hasValidCredentials: Bool {
+        return !keyId.isEmpty && !widgetId.isEmpty && !privateKey.isEmpty
+    }
+    
+    init(keyId: String, widgetId: String, privateKey: String, isSandbox: Bool) {
+        self.keyId = keyId
+        self.widgetId = widgetId
+        self.privateKey = privateKey
+        self.isSandbox = isSandbox
+    }
+    
+    func isSupportedAsset(asset: String) -> Bool {
+        return supportedAssets.contains(asset)
+    }
+    
+    func getOnRampUrl(desiredSourceAsset: String, receiverAddress: String, walletName: String) -> String {
+        let currency = isSupportedAsset(asset: desiredSourceAsset) ? desiredSourceAsset : kDefaultCurrencyCode
+        let token = generateToken(
+            privateKeyData: Data(privateKey.utf8),
+            sourceAsset: currency,
+            receiverAddress: receiverAddress,
+            walletName: walletName
+        )
             
-            let privateKeyData = Data(privateKey.utf8)
+        return "\(isSandbox ? Topper.sandboxUrl : Topper.baseUrl)?bt=\(token)"
+    }
+    
+    func refreshSupportedAssets() {
+        let task = URLSession.shared.dataTask(with: URL(string: Topper.supportedAssetsUrl)!) { [weak self] (data, _, error) in
+            
+            if error != nil || data == nil {
+                print("Topper: request failed. \(String(describing: error))")
+            } else {
+                do {
+                    let root = try JSONDecoder().decode(SupportedTopperAssets.self, from: data!)
+                    self?.supportedAssets = Set(root.assets.source.map { $0.code })
+                } catch {
+                    print("Topper: failed to decode JSON. \(error)")
+                }
+            }
+        }
+            
+        task.resume()
+    }
+    
+    private func generateToken(privateKeyData: Data, sourceAsset: String, receiverAddress: String, walletName: String) -> String {
+            
+        do {
             let header = Header(kid: keyId)
-            let claims = MyClaims(
+            let claims = TopperClaims(
                 jti: UUID().uuidString,
                 sub: widgetId,
                 iat: Date(),
-                source: [
-                    "asset": "USD",
-                    "amount": "10.0"
-                ],
+                source: [ "asset": sourceAsset ],
                 target: [
-                    "address": "Xe66CJjSjxdyzpqYMsRPhWuy3gueC5tDTD",
+                    "address": receiverAddress,
+                    "amount": "1",
                     "asset": "DASH",
                     "network": "dash",
-                    "label": "Dash Wallet"
+                    "priority": "fast",
+                    "label": walletName
                 ]
             )
             
             var jwt = JWT(header: header, claims: claims)
-            
-            do {
-                let token = try jwt.sign(using: JWTSigner.es256(privateKey: privateKeyData))
-                return "https://app.topperpay.com/?bt=\(token)"
-            } catch {
-                return nil
-            }
+            return try jwt.sign(using: JWTSigner.es256(privateKey: privateKeyData))
+        } catch {
+            DSLogger.log("Topper: failed to generate a JWT token. \(error)")
+            return ""
         }
-        
-        return nil
     }
 }
