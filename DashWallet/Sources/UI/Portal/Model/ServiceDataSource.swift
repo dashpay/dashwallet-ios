@@ -115,26 +115,3 @@ class CoinbaseDataSource: ServiceDataSource {
         Coinbase.shared.removeUserDidChangeListener(handle: userDidChangeListenerHandle)
     }
 }
-
-// MARK: - TopperDataSource
-
-class TopperDataSource: ServiceDataSource {
-//    private var coinbase = Coinbase.shared
-//    private var isAuthorized: Bool { coinbase.isAuthorized }
-//
-//    private var cancelables = [AnyCancellable]()
-//
-//    private var userDidChangeListenerHandle: UserDidChangeListenerHandle!
-//
-//    private var accountDidChangeHandle: AnyObject?
-
-    override init() {
-        super.init()
-
-        item = .init(status: .idle, service: .topper)
-    }
-
-    override func refresh() {
-        
-    }
-}

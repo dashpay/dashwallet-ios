@@ -32,7 +32,6 @@ final class PortalViewController: UIViewController {
     private var currentSnapshot: NSDiffableDataSourceSnapshot<PortalModel.Section, ServiceItem>!
 
     private var model = PortalModel()
-    private let topper = TopperViewModel.shared
     private var hasNetwork: Bool { model.networkStatus == .online }
 
     @objc var showCloseButton = false
@@ -77,7 +76,7 @@ final class PortalViewController: UIViewController {
     
     @objc
     func topperAction() {
-        let urlString = topper.topperBuyUrl(walletName: "Dash Wallet lol")
+        let urlString = TopperViewModel.shared.topperBuyUrl(walletName: Bundle.main.infoDictionary!["CFBundleDisplayName"] as! String)
         if let url = URL(string: urlString) {
             let safariViewController = SFSafariViewController.dw_controller(with: url)
             present(safariViewController, animated: true)

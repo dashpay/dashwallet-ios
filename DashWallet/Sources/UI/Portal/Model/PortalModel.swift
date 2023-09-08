@@ -42,6 +42,14 @@ extension Service {
         case .topper: return NSLocalizedString("Topper", comment: "Dash Portal")
         }
     }
+    
+    var subtitle: String {
+        switch self {
+        case .coinbase: return NSLocalizedString("Link your account", comment: "Dash Portal")
+        case .uphold: return NSLocalizedString("Link your account", comment: "Dash Portal")
+        case .topper: return NSLocalizedString("Buy Dash · No account needed", comment: "Dash Portal")
+        }
+    }
 
     var icon: String {
         switch self {
