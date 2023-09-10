@@ -126,6 +126,8 @@ extension CustodialSwapsViewController: ConverterViewDelegate {
             self.amountView.inputTypeSwitcher.reloadData()
             self.amountView.amountInputControl.reloadData()
             self.actionButton?.isEnabled = self.model.isAllowedToContinue
+            showErrorIfNeeded()
+            
             self.dismiss(animated: true)
         }
 
