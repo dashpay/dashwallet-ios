@@ -110,11 +110,21 @@ class CustodialSwapsModel: CoinbaseAmountModel {
 
     override func selectAllFundsWithoutAuth() {
         guard let selectedAccount else { return }
-
-        let max = AmountObject(localAmountString: selectedAccount.info.balance.amount,
+        let max: AmountObject!
+        
+        if currentInputItem == .app {
+            max = AmountObject(plainAmount: selectedAccount.info.plainAmountInDash,
+                               fiatCurrencyCode: amount.fiatCurrencyCode,
+                               localFormatter: supplementaryNumberFormatter,
+                               currencyExchanger: currencyExchanger).localAmount
+            
+        } else {
+            max = AmountObject(localAmountString: selectedAccount.info.balance.amount,
                                fiatCurrencyCode: selectedAccount.info.balance.currency,
                                localFormatter: supplementaryNumberFormatter,
                                currencyExchanger: currencyExchanger)
+        }
+        
         supplementaryAmount = max
         mainAmount = supplementaryAmount.dashAmount
         amountDidChange()
