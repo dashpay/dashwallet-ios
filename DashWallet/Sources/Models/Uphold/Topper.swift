@@ -61,7 +61,7 @@ class Topper {
             receiverAddress: receiverAddress,
             walletName: walletName
         )
-            
+        
         return "\(isSandbox ? Topper.sandboxUrl : Topper.baseUrl)?bt=\(token)"
     }
     
@@ -69,13 +69,13 @@ class Topper {
         let task = URLSession.shared.dataTask(with: URL(string: Topper.supportedAssetsUrl)!) { [weak self] (data, _, error) in
             
             if error != nil || data == nil {
-                print("Topper: request failed. \(String(describing: error))")
+                DSLogger.log("Topper: request failed. \(String(describing: error))")
             } else {
                 do {
                     let root = try JSONDecoder().decode(SupportedTopperAssets.self, from: data!)
                     self?.supportedAssets = Set(root.assets.source.map { $0.code })
                 } catch {
-                    print("Topper: failed to decode JSON. \(error)")
+                    DSLogger.log("Topper: failed to decode JSON. \(error)")
                 }
             }
         }
