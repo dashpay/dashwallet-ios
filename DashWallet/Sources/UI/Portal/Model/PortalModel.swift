@@ -23,6 +23,7 @@ import Foundation
 enum Service: CaseIterable {
     case coinbase
     case uphold
+    case topper
 }
 
 // MARK: - PortalModel.Section
@@ -38,6 +39,15 @@ extension Service {
         switch self {
         case .coinbase: return NSLocalizedString("Coinbase", comment: "Dash Portal")
         case .uphold: return NSLocalizedString("Uphold", comment: "Dash Portal")
+        case .topper: return NSLocalizedString("Topper", comment: "Dash Portal")
+        }
+    }
+    
+    var subtitle: String {
+        switch self {
+        case .coinbase: return NSLocalizedString("Link your account", comment: "Dash Portal")
+        case .uphold: return NSLocalizedString("Link your account", comment: "Dash Portal")
+        case .topper: return NSLocalizedString("Buy Dash · No account needed", comment: "Dash Portal")
         }
     }
 
@@ -45,6 +55,7 @@ extension Service {
         switch self {
         case .coinbase: return "portal.coinbase"
         case .uphold: return "portal.uphold"
+        case .topper: return "portal.topper"
         }
     }
 
@@ -52,6 +63,7 @@ extension Service {
         switch self {
         case .coinbase: return false
         case .uphold: return true
+        case .topper: return true
         }
     }
 
