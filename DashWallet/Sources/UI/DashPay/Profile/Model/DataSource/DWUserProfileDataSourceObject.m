@@ -161,6 +161,11 @@ NS_ASSUME_NONNULL_END
             }
             
             NSDate *txDate = [transaction date];
+            
+            if (MOCK_DASHPAY && transaction == nil) {
+                txDate = [NSDate date];
+            }
+            
             DWDPTxObject *txObject = [[DWDPTxObject alloc] initWithTransaction:transaction
                                                                   dataProvider:self.txDataProvider
                                                             blockchainIdentity:self.friendBlockchainIdentity];

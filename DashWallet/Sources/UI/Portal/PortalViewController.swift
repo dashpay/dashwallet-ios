@@ -73,6 +73,15 @@ final class PortalViewController: UIViewController {
             navigationController?.pushViewController(vc, animated: true)
         }
     }
+    
+    @objc
+    func topperAction() {
+        let urlString = TopperViewModel.shared.topperBuyUrl(walletName: Bundle.main.infoDictionary!["CFBundleDisplayName"] as! String)
+        if let url = URL(string: urlString) {
+            let safariViewController = SFSafariViewController.dw_controller(with: url)
+            present(safariViewController, animated: true)
+        }
+    }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -167,6 +176,8 @@ extension PortalViewController: UICollectionViewDelegate, UICollectionViewDataSo
             upholdAction()
         case .coinbase:
             coinbaseAction()
+        case .topper:
+            topperAction()
         }
     }
 }

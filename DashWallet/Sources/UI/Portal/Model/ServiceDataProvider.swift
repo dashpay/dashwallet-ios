@@ -42,7 +42,9 @@ class ServiceDataProviderImpl: ServiceDataProvider {
     private var upholdDataSource: ServiceDataSource = UpholdDataSource()
     private var coinbaseDataSource: ServiceDataSource = CoinbaseDataSource()
 
-    private var items: [ServiceItem] = []
+    private var items: [ServiceItem] = [
+        .init(status: .idle, service: .topper) // Topper item doesn't need a data source
+    ]
 
     init() {
         initializeDataSources()
