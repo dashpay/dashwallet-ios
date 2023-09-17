@@ -188,6 +188,14 @@ extension CoinbaseEntryPointViewController: UITableViewDelegate, UITableViewData
     }
 }
 
+// MARK: - ItemCellDataProvider
+
+protocol ItemCellDataProvider {
+    var icon: String { get }
+    var title: String { get }
+    var description: String { get }
+}
+
 // MARK: - ItemCell
 
 final class ItemCell: UITableViewCell {
@@ -195,7 +203,7 @@ final class ItemCell: UITableViewCell {
     @IBOutlet var nameLabel: UILabel!
     @IBOutlet var secondaryLabel: UILabel!
 
-    fileprivate func update(with item: CoinbaseEntryPointItem) {
+    fileprivate func update(with item: ItemCellDataProvider) {
         iconView.image = .init(named: item.icon)
         nameLabel.text = item.title
         secondaryLabel.text = item.description

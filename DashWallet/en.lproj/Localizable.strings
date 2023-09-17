@@ -217,6 +217,9 @@
 /* Send Screen: to address */
 "Balance" = "Balance";
 
+/* Uphold entry point */
+"Balance not available" = "Balance not available";
+
 /* CrowdNode */
 "Balance: " = "Balance: ";
 
@@ -451,6 +454,9 @@
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "Dash balance on Coinbase";
+
+/* Uphold Entry Point */
+"Dash balance on Uphold" = "Dash balance on Uphold";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";

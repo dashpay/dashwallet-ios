@@ -26,7 +26,9 @@ enum CoinbaseEntryPointItem: CaseIterable {
     case transferDash
 }
 
-extension CoinbaseEntryPointItem {
+// MARK: ItemCellDataProvider
+
+extension CoinbaseEntryPointItem: ItemCellDataProvider {
     static let supportedCases: [CoinbaseEntryPointItem] = [.buyDash, .convertCrypto, .transferDash]
 
     var title: String {

@@ -678,6 +678,7 @@
 		C917024129D462C6008C034D /* PayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C917024029D462C6008C034D /* PayViewController.swift */; };
 		C91E919729FBACE6003E7883 /* ExtendedPublicKeysModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E919629FBACE6003E7883 /* ExtendedPublicKeysModel.swift */; };
 		C91E91AE29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E91AD29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift */; };
+		C92963BD2AA0B00C00B96B22 /* UpholdPortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92963BC2AA0B00C00B96B22 /* UpholdPortalViewController.swift */; };
 		C94946E12A25F037008A678D /* DemoMainTabbarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94946E02A25F037008A678D /* DemoMainTabbarViewController.swift */; };
 		C94D98212A4CC78F00F3BEE1 /* DashInputField.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94D98202A4CC78F00F3BEE1 /* DashInputField.swift */; };
 		C94D98232A4CC85400F3BEE1 /* UIView+Dash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94D98222A4CC85400F3BEE1 /* UIView+Dash.swift */; };
@@ -730,6 +731,8 @@
 		C9F452032A0CEB5800825057 /* TxListEmptyTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F452022A0CEB5800825057 /* TxListEmptyTableViewCell.swift */; };
 		C9F452082A11F28600825057 /* SyncModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F452072A11F28600825057 /* SyncModel.swift */; };
 		C9F4520B2A1209D100825057 /* HomeHeaderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F4520A2A1209D100825057 /* HomeHeaderModel.swift */; };
+		C9FAABB52AB793CE00878224 /* UpholdPortal.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C9FAABB42AB793CE00878224 /* UpholdPortal.storyboard */; };
+		C9FAABB72AB799AE00878224 /* UpholdPortalModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9FAABB62AB799AE00878224 /* UpholdPortalModel.swift */; };
 		CC5F88E358330F8EE192D5BE /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */; };
 		DE3A167A235B79D705C0A962 /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 982607F21196681DAC51A074 /* libPods-dashwallet.a */; };
 		FB248B5D1F73803100405AE0 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB248B5C1F73803100405AE0 /* UserNotifications.framework */; };
@@ -1923,6 +1926,7 @@
 		C917024029D462C6008C034D /* PayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayViewController.swift; sourceTree = "<group>"; };
 		C91E919629FBACE6003E7883 /* ExtendedPublicKeysModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedPublicKeysModel.swift; sourceTree = "<group>"; };
 		C91E91AD29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedPublicKeysViewController.swift; sourceTree = "<group>"; };
+		C92963BC2AA0B00C00B96B22 /* UpholdPortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpholdPortalViewController.swift; sourceTree = "<group>"; };
 		C94946DE2A25EDA8008A678D /* DWHomeViewControllerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeViewControllerDelegate.h; sourceTree = "<group>"; };
 		C94946DF2A25EE24008A678D /* DWMainMenuViewControllerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMainMenuViewControllerDelegate.h; sourceTree = "<group>"; };
 		C94946E02A25F037008A678D /* DemoMainTabbarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoMainTabbarViewController.swift; sourceTree = "<group>"; };
@@ -1978,6 +1982,8 @@
 		C9F452022A0CEB5800825057 /* TxListEmptyTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxListEmptyTableViewCell.swift; sourceTree = "<group>"; };
 		C9F452072A11F28600825057 /* SyncModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncModel.swift; sourceTree = "<group>"; };
 		C9F4520A2A1209D100825057 /* HomeHeaderModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeHeaderModel.swift; sourceTree = "<group>"; };
+		C9FAABB42AB793CE00878224 /* UpholdPortal.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = UpholdPortal.storyboard; sourceTree = "<group>"; };
+		C9FAABB62AB799AE00878224 /* UpholdPortalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpholdPortalModel.swift; sourceTree = "<group>"; };
 		CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.release.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.release.xcconfig"; sourceTree = "<group>"; };
 		D58B25CB4DC36975E05D3C0A /* Pods-dashwallet no watch.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.debug.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.debug.xcconfig"; sourceTree = "<group>"; };
 		EA95ACF6CA2A73810B9BB451 /* Pods-DashWalletScreenshotsUITests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -3815,6 +3821,7 @@
 		2A9FFE462230FF4600956D5F /* Uphold */ = {
 			isa = PBXGroup;
 			children = (
+				C92963BB2AA0AFF800B96B22 /* Portal */,
 				2A9FFE472230FF4600956D5F /* Auth */,
 				2A9FFE6C2230FF4600956D5F /* Main */,
 				2A9FFE692230FF4600956D5F /* Root */,
@@ -5649,6 +5656,16 @@
 			path = Model;
 			sourceTree = "<group>";
 		};
+		C92963BB2AA0AFF800B96B22 /* Portal */ = {
+			isa = PBXGroup;
+			children = (
+				C9FAABB62AB799AE00878224 /* UpholdPortalModel.swift */,
+				C92963BC2AA0B00C00B96B22 /* UpholdPortalViewController.swift */,
+				C9FAABB42AB793CE00878224 /* UpholdPortal.storyboard */,
+			);
+			path = Portal;
+			sourceTree = "<group>";
+		};
 		C94D98262A53034A00F3BEE1 /* Enter Address */ = {
 			isa = PBXGroup;
 			children = (
@@ -6030,6 +6047,7 @@
 				474C720D298A19D100475CA6 /* TxDetailHeaderCell.xib in Resources */,
 				2AB231D42196E27300A6E7E6 /* StartStoryboard.storyboard in Resources */,
 				2A60C9452444BF3A00AF72CF /* DWConfirmUsernameContentView.xib in Resources */,
+				C9FAABB52AB793CE00878224 /* UpholdPortal.storyboard in Resources */,
 				2A1AF6DF23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib in Resources */,
 				2A4431D622D52F67009BAF7F /* DWInfoTextCell.xib in Resources */,
 				2A44314922CF82EF009BAF7F /* BiometricAuth.storyboard in Resources */,
@@ -6624,6 +6642,7 @@
 				2A7F3B1F238C651200DEA3EF /* DWSecurityStatusView.m in Sources */,
 				2AD6E5602487E13F00B52F14 /* DWRequestsContentViewController.m in Sources */,
 				2ACCD8D1231D33EA00A96B62 /* DWAnimatedShapeLayer.m in Sources */,
+				C9FAABB72AB799AE00878224 /* UpholdPortalModel.swift in Sources */,
 				2ADC9D732462D4AD001D7C0D /* DWUserProfileNavigationTitleView.m in Sources */,
 				2A9E7DC723F6928C00CDA1EE /* DWTextField.m in Sources */,
 				C3DAD268246AA6F10001624F /* DWScreenshotWarningViewController.m in Sources */,
@@ -6769,6 +6788,7 @@
 				2ACCA3B524BF280A00DB32DE /* DWDPTxObject.m in Sources */,
 				0F71317728F436920072F454 /* ServiceOverviewTableCell.swift in Sources */,
 				2AD6E5532487D50200B52F14 /* DWContactsModel.m in Sources */,
+				C92963BD2AA0B00C00B96B22 /* UpholdPortalViewController.swift in Sources */,
 				47838B87290670630003E8AB /* CoinbaseEntryPointViewController.swift in Sources */,
 				2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */,
 				47AE8C0528C1F74A00490F5E /* PointOfUseListFiltersCell.swift in Sources */,
