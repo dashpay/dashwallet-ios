@@ -23,6 +23,7 @@
 #import "DWHomeViewController+DWBackupReminder.h"
 #import "DWHomeViewController+DWJailbreakCheck.h"
 #import "DWHomeViewController+DWShortcuts.h"
+#import "DWRootEditProfileViewController.h"
 #import "DWWindow.h"
 #import "UIViewController+DWTxFilter.h"
 #import "UIWindow+DSUtils.h"
@@ -38,11 +39,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeViewController () <DWHomeViewDelegate, DWShortcutsActionDelegate, TxReclassifyTransactionsInfoViewControllerDelegate, SyncingActivityMonitorObserver>
+@interface DWHomeViewController () <DWHomeViewDelegate,
+                                    DWShortcutsActionDelegate,
+                                    TxReclassifyTransactionsInfoViewControllerDelegate,
+                                    SyncingActivityMonitorObserver,
+                                    DWRootEditProfileViewControllerDelegate>
 
 @property (strong, nonatomic) DWHomeView *view;
 #if DASHPAY
 @property (strong, nonatomic) DWInvitationSetupState *invitationSetup;
+@property (strong, nonatomic) DWDPAvatarView *avatarView;
 #endif
 
 @end
@@ -159,12 +165,16 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentViewController:controller animated:YES completion:nil];
 }
 
-- (void)homeView:(DWHomeView *)homeView profileButtonAction:(UIControl *)sender {
 #if DASHPAY
-    DWNotificationsViewController *controller = [[DWNotificationsViewController alloc] initWithPayModel:self.payModel dataProvider:self.dataProvider];
-    [self.navigationController pushViewController:controller animated:YES];
-#endif
+- (void)homeView:(DWHomeView * _Nonnull)homeView didUpdateProfile:(DSBlockchainIdentity * _Nullable)identity unreadNotifications:(NSUInteger)unreadNotifications {
+    
+    self.avatarView.blockchainIdentity = identity;
+    self.avatarView.hidden = identity == nil;
+    BOOL hasNotifications = (unreadNotifications > 0);
+    [self refreshNotificationBell:hasNotifications];
 }
+
+#endif
 
 - (void)homeView:(DWHomeView *)homeView didSelectTransaction:(DSTransaction *)transaction {
     [self presentTransactionDetails:transaction];
@@ -217,6 +227,22 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 }
 
+#pragma mark - DWRootEditProfileViewControllerDelegate
+
+#if DASHPAY
+- (void)editProfileViewController:(DWRootEditProfileViewController *)controller
+                updateDisplayName:(NSString *)rawDisplayName
+                          aboutMe:(NSString *)rawAboutMe
+                  avatarURLString:(nullable NSString *)avatarURLString {
+    [self.model.dashPayModel.userProfile.updateModel updateWithDisplayName:rawDisplayName aboutMe:rawAboutMe avatarURLString:avatarURLString];
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)editProfileViewControllerDidCancel:(DWRootEditProfileViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+#endif
+
 #pragma mark - Private
 
 #if DASHPAY
@@ -230,6 +256,33 @@ NS_ASSUME_NONNULL_BEGIN
                                                       payModel:self.payModel
                                                   dataProvider:self.dataProvider];
     [self presentViewController:profile animated:YES completion:nil];
+}
+
+- (void)refreshNotificationBell:(BOOL)hasNotifications {
+    UIImage *notificationsImage;
+    
+    if (hasNotifications) {
+        notificationsImage = [UIImage imageNamed:@"icon_bell_active"];
+    } else {
+        notificationsImage = [UIImage imageNamed:@"icon_bell"];
+    }
+    
+    notificationsImage = [notificationsImage imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    UIBarButtonItem *notificationButton = [[UIBarButtonItem alloc] initWithImage:notificationsImage style:UIBarButtonItemStylePlain target:self action:@selector(notificationAction)];
+    self.navigationItem.rightBarButtonItem = notificationButton;
+}
+
+- (void)notificationAction {
+    DWNotificationsViewController *controller = [[DWNotificationsViewController alloc] initWithPayModel:self.payModel dataProvider:self.dataProvider];
+    [self.navigationController pushViewController:controller animated:YES];
+}
+
+- (void)profileAction {
+    DWRootEditProfileViewController *controller = [[DWRootEditProfileViewController alloc] init];
+    controller.delegate = self;
+    DWNavigationController *navigation = [[DWNavigationController alloc] initWithRootViewController:controller];
+    navigation.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:navigation animated:YES completion:nil];
 }
 #endif
 
@@ -263,6 +316,18 @@ NS_ASSUME_NONNULL_BEGIN
     [contentView addSubview:imageView];
 
     self.navigationItem.titleView = contentView;
+    
+#if DASHPAY
+    DWDPAvatarView *avatarView = [[DWDPAvatarView alloc] initWithFrame:(CGRect){{0.0, 0.0}, CGSizeMake(30.0, 30.0)}];
+    avatarView.small = YES;
+    avatarView.hidden = YES;
+    avatarView.backgroundMode = DWDPAvatarBackgroundMode_Random;
+    UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(profileAction)];
+    [avatarView addGestureRecognizer:tapRecognizer];
+    _avatarView = avatarView;
+    UIBarButtonItem *avatarButton = [[UIBarButtonItem alloc] initWithCustomView:avatarView];
+    self.navigationItem.leftBarButtonItem = avatarButton;
+#endif
 
     self.view.model = self.model;
 }
@@ -290,8 +355,6 @@ NS_ASSUME_NONNULL_BEGIN
     DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];
     [self presentViewController:nvc animated:YES completion:nil];
 }
-
-
 
 @end
 

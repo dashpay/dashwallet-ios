@@ -26,7 +26,6 @@ protocol HomeHeaderViewDelegate: AnyObject {
     func homeHeaderViewDidUpdateContents(_ headerView: HomeHeaderView)
 
     #if DASHPAY
-    func homeHeaderView(_ headerView: HomeHeaderView, profileButtonAction sender: UIControl)
     func homeHeaderViewJoinDashPayAction(_ headerView: HomeHeaderView)
     #endif
 }
@@ -38,7 +37,6 @@ final class HomeHeaderView: UIView {
 
     public weak var delegate: HomeHeaderViewDelegate?
 
-
     private(set) var balanceView: HomeBalanceView!
     private(set) var syncView: SyncView!
     private(set) var shortcutsView: ShortcutsView!
@@ -46,7 +44,6 @@ final class HomeHeaderView: UIView {
 
     // Available only in DashPay
     #if DASHPAY
-    private(set) var profileView: DashPayProfileView?
     private(set) var welcomeView: DWDPWelcomeView?
     #endif
 
@@ -75,21 +72,16 @@ final class HomeHeaderView: UIView {
         shortcutsView = ShortcutsView(frame: .zero)
         shortcutsView.translatesAutoresizingMaskIntoConstraints = false
 
-        #if DASHPAY
-        profileView = DashPayProfileView(frame: .zero)
-        profileView!.translatesAutoresizingMaskIntoConstraints = false
-        profileView!.addTarget(self, action: #selector(profileViewAction(_:)), for: .touchUpInside)
-        profileView!.isHidden = true
-
+    #if DASHPAY
         welcomeView = DWDPWelcomeView(frame: .zero)
         welcomeView!.translatesAutoresizingMaskIntoConstraints = false
         welcomeView!.addTarget(self, action: #selector(joinDashPayAction), for: .touchUpInside)
         welcomeView!.isHidden = true
 
-        let views: [UIView] = [profileView!, balanceView, shortcutsView, syncView, welcomeView!]
-        #else
+        let views: [UIView] = [balanceView, shortcutsView, syncView, welcomeView!]
+    #else
         let views: [UIView] = [balanceView, shortcutsView, syncView]
-        #endif
+    #endif
 
         let stackView = UIStackView(arrangedSubviews: views)
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -131,26 +123,10 @@ final class HomeHeaderView: UIView {
     }
     
     #if DASHPAY
-    @objc
-    func profileViewAction(_ sender: UIControl) {
-        delegate?.homeHeaderView(self, profileButtonAction: sender)
-    }
     
     @objc
     func joinDashPayAction() {
         delegate?.homeHeaderViewJoinDashPayAction(self)
-    }
-
-    func updateProfileView(username: String?, unreadCount: UInt = 0) {
-        if let username = username {
-            profileView!.isHidden = false
-            profileView!.username = username
-            profileView!.unreadCount = unreadCount
-        } else {
-            profileView!.isHidden = true
-        }
-        
-        delegate?.homeHeaderViewDidUpdateContents(self)
     }
     
     #endif

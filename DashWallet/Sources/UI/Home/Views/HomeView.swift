@@ -23,11 +23,14 @@ import UIKit
 protocol HomeViewDelegate: AnyObject {
     func homeView(_ homeView: HomeView, showTxFilter sender: UIView)
     func homeView(_ homeView: HomeView, showSyncingStatus sender: UIView)
-    func homeView(_ homeView: HomeView, profileButtonAction sender: UIControl)
     func homeView(_ homeView: HomeView, didSelectTransaction transaction: DSTransaction)
     func homeViewShowDashPayRegistrationFlow(_ homeView: HomeView)
     func homeView(_ homeView: HomeView, showReclassifyYourTransactionsFlowWithTransaction transaction: DSTransaction)
     func homeView(_ homeView: HomeView, showCrowdNodeTxs transactions: [DSTransaction])
+    
+#if DASHPAY
+    func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt)
+#endif
 }
 
 // MARK: - HomeView
@@ -211,11 +214,12 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
             let completed = model.dashPayModel.registrationCompleted
             
             if status?.state == .done || completed {
-                let username = model.dashPayModel.username
+                let identity = model.dashPayModel.blockchainIdentity
                 let notificaitonAmount = model.dashPayModel.unreadNotificationsCount
-                headerView.updateProfileView(username: username, unreadCount: notificaitonAmount)
+                
+                delegate?.homeView(self, didUpdateProfile: identity, unreadNotifications: notificaitonAmount)
             } else {
-                headerView.updateProfileView(username: nil)
+                delegate?.homeView(self, didUpdateProfile: nil, unreadNotifications: 0)
             }
         }
     }
@@ -231,10 +235,6 @@ extension HomeView: HomeHeaderViewDelegate {
 
     func homeHeaderViewDidUpdateContents(_ view: HomeHeaderView) {
         setNeedsLayout()
-    }
-
-    func homeHeaderView(_ view: HomeHeaderView, profileButtonAction sender: UIControl) {
-        delegate?.homeView(self, profileButtonAction: sender)
     }
     
     #if DASHPAY
