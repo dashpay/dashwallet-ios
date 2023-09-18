@@ -54,7 +54,9 @@ class ServiceItem: Hashable {
     }
 
     var name: String { service.title }
+    var subtitle: String { service.subtitle }
     var icon: String { service.icon }
+    var showAdditionalInfo: Bool { service == .topper }
 
     var status: Status
     var service: Service
@@ -65,7 +67,7 @@ class ServiceItem: Hashable {
 
     var usageCount = 0
 
-    var isInUse: Bool { status == .syncing || status == .authorized }
+    var isInUse: Bool { status == .syncing || status == .authorized || service == .topper }
 
     init(status: Status, service: Service, dashBalance: UInt64? = nil) {
         self.status = status

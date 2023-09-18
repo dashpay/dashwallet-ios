@@ -20,7 +20,6 @@ import Foundation
 
 
 // MARK: - Constants
-private let kDefaultCurrencyCode = "USD"
 private let kFiatCurrencyCodeKey = "LOCAL_CURRENCY_CODE"
 
 // MARK: - AppObjcWrapper

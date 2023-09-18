@@ -549,11 +549,19 @@
 		47F4B6CD29485A8B00AED4C9 /* ConfirmOrderCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F4B6CC29485A8B00AED4C9 /* ConfirmOrderCells.swift */; };
 		47FA3AFF29350929008D58DC /* SyncingActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3AFE29350929008D58DC /* SyncingActivityMonitor.swift */; };
 		47FA3B0229364991008D58DC /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3B0129364991008D58DC /* HTTPClient.swift */; };
+		7513DA882AB175E0005D55F6 /* TopperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720E2AA9F58E0066557E /* TopperViewModel.swift */; };
+		7513DA892AB17606005D55F6 /* Topper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E2F3C92AA4D1B900C3B458 /* Topper.swift */; };
+		7513DA8A2AB17666005D55F6 /* SupportedTopperAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */; };
+		7527720D2AA9B2630066557E /* SupportedTopperAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */; };
+		7527720F2AA9F58E0066557E /* TopperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720E2AA9F58E0066557E /* TopperViewModel.swift */; };
+		752772122AAA1CE30066557E /* Coinbase-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752772112AAA1CE30066557E /* Coinbase-Info.plist */; };
 		754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
 		755E6DFE2A99E7A000A42870 /* DWInvitationSetupState.m in Sources */ = {isa = PBXBuildFile; fileRef = 755E6DFC2A99E7A000A42870 /* DWInvitationSetupState.m */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
 		75AE5A7F2A87C363006CD4BA /* DWConfirmUsernameContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C943B5712A40ED4200AF23C5 /* DWConfirmUsernameContentView.xib */; };
 		75D5F3CE191EC270004AB296 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3CD191EC270004AB296 /* main.m */; };
+		75E2F3C82AA4CF1900C3B458 /* Topper-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75E2F3C72AA4CF1900C3B458 /* Topper-Info.plist */; };
+		75E2F3CA2AA4D1B900C3B458 /* Topper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E2F3C92AA4D1B900C3B458 /* Topper.swift */; };
 		75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 75E83CF51B5F997A0038FB70 /* coinflip.aiff */; };
 		7EE06A55AFE483FA7824B06E /* libPods-DashWalletTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BEAE29AA65F429DD9EF1A1A7 /* libPods-DashWalletTests.a */; };
 		A90D08EA4AA9019A2D806A9C /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17427514C25A58AB4AEDF999 /* libPods-dashwallet.a */; };
@@ -2371,6 +2379,9 @@
 		7511E8D31AE5FF390025F1B3 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
 		7511E8E31AE5FFCC0025F1B3 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; lineEnding = 0; name = nl; path = nl.lproj/Localizable.strings; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		7511E8EB1AE600220025F1B3 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedTopperAssets.swift; sourceTree = "<group>"; };
+		7527720E2AA9F58E0066557E /* TopperViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopperViewModel.swift; sourceTree = "<group>"; };
+		752772112AAA1CE30066557E /* Coinbase-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Coinbase-Info.plist"; sourceTree = "<group>"; };
 		755E6DFC2A99E7A000A42870 /* DWInvitationSetupState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWInvitationSetupState.m; sourceTree = "<group>"; };
 		755E6DFD2A99E7A000A42870 /* DWInvitationSetupState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInvitationSetupState.h; sourceTree = "<group>"; };
 		756A8F131CE566F6007893E2 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Interface.strings; sourceTree = "<group>"; };
@@ -2388,6 +2399,8 @@
 		75DE02491B0EB7C80027FF08 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75DE024D1B0EB7FC0027FF08 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75DE02511B0EB8030027FF08 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; lineEnding = 0; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		75E2F3C72AA4CF1900C3B458 /* Topper-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Topper-Info.plist"; sourceTree = "<group>"; };
+		75E2F3C92AA4D1B900C3B458 /* Topper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Topper.swift; sourceTree = "<group>"; };
 		75E83CF51B5F997A0038FB70 /* coinflip.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = coinflip.aiff; sourceTree = "<group>"; };
 		75EDC78DE1686E55AE12233C /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; sourceTree = "<group>"; };
 		75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
@@ -4488,6 +4501,8 @@
 				2A9FFDFF2230FF2B00956D5F /* DWUpholdConstants.m */,
 				2A9FFDF72230FF2B00956D5F /* DWUpholdTransactionObject.h */,
 				2A9FFDFD2230FF2B00956D5F /* DWUpholdTransactionObject.m */,
+				75E2F3C92AA4D1B900C3B458 /* Topper.swift */,
+				7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */,
 			);
 			path = Uphold;
 			sourceTree = "<group>";
@@ -4554,6 +4569,7 @@
 				2A9FFE4B2230FF4600956D5F /* Transfer */,
 				2A913E6923A15419006A2A59 /* DWUpholdAuthURLNotification.h */,
 				2A913E6A23A15419006A2A59 /* DWUpholdAuthURLNotification.m */,
+				7527720E2AA9F58E0066557E /* TopperViewModel.swift */,
 			);
 			path = Uphold;
 			sourceTree = "<group>";
@@ -6011,7 +6027,9 @@
 		75D5F3C8191EC270004AB296 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				752772112AAA1CE30066557E /* Coinbase-Info.plist */,
 				C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */,
+				75E2F3C72AA4CF1900C3B458 /* Topper-Info.plist */,
 				47AE8BAF28BFF28400490F5E /* explore.db */,
 				47A5145E2848F75A005A8E3E /* dashwallet-Bridging-Header.h */,
 				2A8F420821BED16300858B91 /* DashSyncCurrentCommit */,
@@ -7642,6 +7660,7 @@
 				4709C30F287E787700B4BD48 /* Migrations.bundle in Resources */,
 				474C720F298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib in Resources */,
 				2ADC722923B5547000D9DD37 /* Localizable.stringsdict in Resources */,
+				75E2F3C82AA4CF1900C3B458 /* Topper-Info.plist in Resources */,
 				2A2CD71822F99CAE008C7BC9 /* ShortcutsView.xib in Resources */,
 				C9F067F429E543630022D958 /* HomeBalanceView.xib in Resources */,
 				2A5E4549243E06E7006BA067 /* DWDPRegistrationStatusTableViewCell.xib in Resources */,
@@ -7678,6 +7697,7 @@
 				2A7A7BBF2347950700451078 /* DWMainMenuTableViewCell.xib in Resources */,
 				2AD1CE9F22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard in Resources */,
 				2A4430EB22CBBA82009BAF7F /* Setup.storyboard in Resources */,
+				752772122AAA1CE30066557E /* Coinbase-Info.plist in Resources */,
 				C94F5E8829D3E7E30034FD57 /* GoogleService-Info.plist in Resources */,
 				2A811559269CE09300215F81 /* uphold-logout.jpg in Resources */,
 				2ACCD865231959CD00A96B62 /* AmountPreviewView.xib in Resources */,
@@ -8246,6 +8266,7 @@
 				119E8D0C2907C61400D406C1 /* CrowdNodeTopUpTx.swift in Sources */,
 				C9F42FB429DD86FB001BC549 /* BackupInfoItemView.swift in Sources */,
 				118A1393291AA21B002641E4 /* AccountCreatingController.swift in Sources */,
+				7527720D2AA9B2630066557E /* SupportedTopperAssets.swift in Sources */,
 				2A4E534422F02BC300E5168A /* UIView+DWReuseHelper.m in Sources */,
 				2A913E9C23A53B8E006A2A59 /* DWExtendedContainerViewController.m in Sources */,
 				11517C852949E6F0004FC7BF /* CrowdNodeEndpoint.swift in Sources */,
@@ -8508,6 +8529,7 @@
 				2AD1CEA222DFC80900C99324 /* DWCenteredScrollView.m in Sources */,
 				2A9172C425233DC50024B4C5 /* DWPhraseRepairViewController.m in Sources */,
 				2A44314C22CF8801009BAF7F /* DWBiometricAuthModel.m in Sources */,
+				7527720F2AA9F58E0066557E /* TopperViewModel.swift in Sources */,
 				2ACCD8ED231ECCF000A96B62 /* DWNumberKeyboardInputViewAudioFeedback.m in Sources */,
 				11E47BAD28EB3A7D0097CFA0 /* CrowdNode+Constants.swift in Sources */,
 				47F006022971B1FF0029EB10 /* CurrencyExchanger.swift in Sources */,
@@ -8687,6 +8709,7 @@
 				C9F067F229E4576D0022D958 /* HomeBalanceView.swift in Sources */,
 				47838B82290271170003E8AB /* PointOfUseListFiltersModel.swift in Sources */,
 				4751CAD92970509600F63AC4 /* ConvertCryptoOrderPreviewViews.swift in Sources */,
+				75E2F3CA2AA4D1B900C3B458 /* Topper.swift in Sources */,
 				2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */,
 				47083B3B298948B70010AF71 /* CNCreateAccountTxDetailsViewController.swift in Sources */,
 				1141E4C5291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift in Sources */,
@@ -8877,6 +8900,7 @@
 				C9D2C6FE2A320AA000D15901 /* HomeHeaderView.swift in Sources */,
 				C9D2C6FF2A320AA000D15901 /* ProgressView.swift in Sources */,
 				C9D2C7002A320AA000D15901 /* DWAmountInputValidator.m in Sources */,
+				7513DA8A2AB17666005D55F6 /* SupportedTopperAssets.swift in Sources */,
 				C9D2C7012A320AA000D15901 /* ExplorePointOfUseListViewController.swift in Sources */,
 				C9D2C7022A320AA000D15901 /* CrowdNodeWebViewController.swift in Sources */,
 				C9D2C7032A320AA000D15901 /* UIViewController+DWDisplayError.m in Sources */,
@@ -9165,6 +9189,7 @@
 				C9D2C7E22A320AA000D15901 /* CrowdNodeWithdrawalReceivedTx.swift in Sources */,
 				C943B4B62A40A54600AF23C5 /* DWFetchedResultsDataSource.m in Sources */,
 				C9D2C7E32A320AA000D15901 /* PointOfUseListSegmentedCell.swift in Sources */,
+				7513DA892AB17606005D55F6 /* Topper.swift in Sources */,
 				C943B33C2A408CED00AF23C5 /* DWHourGlassAnimationView.m in Sources */,
 				C956AF0E2A5B592E002FAB75 /* UIControl+Dash.swift in Sources */,
 				C9D2C7E42A320AA000D15901 /* DWURLRequestHandler.m in Sources */,
@@ -9286,6 +9311,7 @@
 				C943B3372A408CED00AF23C5 /* DWEditProfileTextFieldCell.m in Sources */,
 				C9D2C8492A320AA000D15901 /* DWAppRootViewController.m in Sources */,
 				C9D2C84A2A320AA000D15901 /* (null) in Sources */,
+				7513DA882AB175E0005D55F6 /* TopperViewModel.swift in Sources */,
 				C9D2C84B2A320AA000D15901 /* UITableView+DashWallet.swift in Sources */,
 				C9D2C84C2A320AA000D15901 /* TransferAmountViewController.swift in Sources */,
 				C9D2C84D2A320AA000D15901 /* ShortcutCell.swift in Sources */,
@@ -9870,8 +9896,6 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
-				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -9922,8 +9946,6 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
-				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -10507,8 +10529,6 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
-				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -10749,8 +10769,6 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
-				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
