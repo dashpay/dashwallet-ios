@@ -32,10 +32,12 @@ final class ProvideAmountViewController: SendAmountViewController {
     private var balanceLabel: UILabel!
 
     private let address: String
+    private let contact: DWDPBasicUserItem?
     private var isBalanceHidden = true
 
-    init(address: String) {
+    init(address: String, contact: DWDPBasicUserItem?) {
         self.address = address
+        self.contact = contact
         super.init(model: SendAmountModel())
     }
 
@@ -88,14 +90,32 @@ final class ProvideAmountViewController: SendAmountViewController {
         toLabel.textColor = .dw_label()
         toLabel.text = NSLocalizedString("to", comment: "Send Screen: to address")
         sendContainer.addSubview(toLabel)
+        
+        let destinationLabel = UILabel()
+        destinationLabel.translatesAutoresizingMaskIntoConstraints = false
+        destinationLabel.font = .dw_font(forTextStyle: .body)
+        destinationLabel.textColor = .dw_label()
+        destinationLabel.lineBreakMode = .byTruncatingMiddle
+        sendContainer.addSubview(destinationLabel)
 
-        let addressLabel = UILabel()
-        addressLabel.translatesAutoresizingMaskIntoConstraints = false
-        addressLabel.font = .dw_font(forTextStyle: .body)
-        addressLabel.textColor = .dw_label()
-        addressLabel.text = address
-        addressLabel.lineBreakMode = .byTruncatingMiddle
-        sendContainer.addSubview(addressLabel)
+    #if DASHPAY
+        let avatarView = DWDPAvatarView()
+        
+        if let contact = contact {
+            destinationLabel.text = contact.username
+            avatarView.blockchainIdentity = contact.blockchainIdentity
+            avatarView.translatesAutoresizingMaskIntoConstraints = false
+            avatarView.backgroundMode = .random
+            avatarView.isUserInteractionEnabled = false
+            avatarView.isSmall = true
+            sendContainer.addSubview(avatarView)
+        } else {
+            destinationLabel.text = address
+            avatarView.isHidden = true
+        }
+    #else
+        destinationLabel.text = address
+    #endif
 
         let balanceStackView = UIStackView()
         balanceStackView.axis = .horizontal
@@ -137,8 +157,12 @@ final class ProvideAmountViewController: SendAmountViewController {
 
         amountView.removeFromSuperview()
         stackView.addArrangedSubview(amountView)
-
-        NSLayoutConstraint.activate([
+        
+        titleLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        toLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        destinationLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        
+        var constraints = [
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
             stackView.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
@@ -147,18 +171,44 @@ final class ProvideAmountViewController: SendAmountViewController {
             titleLabel.topAnchor.constraint(equalTo: sendContainer.topAnchor),
             titleLabel.bottomAnchor.constraint(equalTo: sendContainer.bottomAnchor),
 
-            toLabel.leadingAnchor.constraint(equalTo: titleLabel.trailingAnchor, constant: 2),
+            toLabel.leadingAnchor.constraint(equalTo: titleLabel.trailingAnchor, constant: 8),
             toLabel.lastBaselineAnchor.constraint(equalTo: titleLabel.lastBaselineAnchor),
-
-            addressLabel.leadingAnchor.constraint(equalTo: toLabel.trailingAnchor, constant: 2),
-            addressLabel.lastBaselineAnchor.constraint(equalTo: titleLabel.lastBaselineAnchor),
-            addressLabel.trailingAnchor.constraint(equalTo: sendContainer.trailingAnchor),
-
+            
+            destinationLabel.lastBaselineAnchor.constraint(equalTo: titleLabel.lastBaselineAnchor),
+            
             spacer.widthAnchor.constraint(equalToConstant: 6),
 
             showHideBalanceButton.widthAnchor.constraint(equalToConstant: 24),
             showHideBalanceButton.heightAnchor.constraint(equalToConstant: 24),
+        ]
+        
+    #if DASHPAY
+        avatarView.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        
+        if contact != nil {
+            constraints.append(contentsOf: [
+                avatarView.leadingAnchor.constraint(equalTo: toLabel.trailingAnchor, constant: 6),
+                avatarView.bottomAnchor.constraint(equalTo: sendContainer.bottomAnchor, constant: -2),
+                avatarView.widthAnchor.constraint(equalToConstant: 20),
+                avatarView.heightAnchor.constraint(equalToConstant: 20),
+                
+                destinationLabel.leadingAnchor.constraint(equalTo: avatarView.trailingAnchor, constant: 6),
+                destinationLabel.trailingAnchor.constraint(equalTo: sendContainer.trailingAnchor)
+            ])
+        } else {
+            constraints.append(contentsOf: [
+                destinationLabel.leadingAnchor.constraint(equalTo: toLabel.trailingAnchor, constant: 6),
+                destinationLabel.trailingAnchor.constraint(equalTo: sendContainer.trailingAnchor)
+            ])
+        }
+    #else
+        constraints.append(contentsOf: [
+            destinationLabel.leadingAnchor.constraint(equalTo: toLabel.trailingAnchor, constant: 2),
+            destinationLabel.trailingAnchor.constraint(equalTo: sendContainer.trailingAnchor)
         ])
+    #endif
+
+        NSLayoutConstraint.activate(constraints)
     }
 
     @objc

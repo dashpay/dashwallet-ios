@@ -20,12 +20,19 @@ import UIKit
 // MARK: - ReceiveContentView
 
 @objc(DWReceiveContentView)
-final class ReceiveContentView: UIView {
+final class ReceiveContentView: UIStackView {
     @IBOutlet var qrCodeButton: UIButton!
     @IBOutlet var actionButtonsStackView: UIStackView!
     @IBOutlet var addressButton: UIButton!
     @IBOutlet var specifyAmountButton: UIButton!
     @IBOutlet var secondButton: UIButton!
+    
+    // DashPay
+    @IBOutlet var qrContainer: UIView!
+    @IBOutlet var addressContainer: UIView!
+    @IBOutlet var usernameContainer: UIView!
+    @IBOutlet var addressLabel: UILabel!
+    @IBOutlet var usernameLabel: UILabel!
 
     private var model: DWReceiveModelProtocol!
     private var feedbackGenerator = UINotificationFeedbackGenerator()
@@ -46,6 +53,14 @@ final class ReceiveContentView: UIView {
         feedbackGenerator.notificationOccurred(.success)
         model.copyQRImageToPasteboard()
     }
+    
+#if DASHPAY
+    @objc
+    private func copyUsernameAction() {
+        feedbackGenerator.notificationOccurred(.success)
+        model.copyUsernameToPasteboard()
+    }
+#endif
 
     @IBAction
     func specifyAmountButtonAction() {
@@ -70,6 +85,7 @@ final class ReceiveContentView: UIView {
     @objc
     static func view(with model: DWReceiveModelProtocol) -> ReceiveContentView {
         let view = UINib.view(Self.self)
+        
         view.model = model
 
         model.delegate = view
@@ -85,19 +101,51 @@ extension ReceiveContentView {
     private func configureHierarchy() {
         specifyAmountButton.setTitle(NSLocalizedString("Specify Amount", comment: "Receive screen"), for: .normal)
         secondButton.setTitle(NSLocalizedString("Share address", comment: "Receive screen"), for: .normal)
+        
+    #if DASHPAY
+        addressContainer.isHidden = false
+        usernameContainer.isHidden = false
+        addressButton.isHidden = true
+        
+        let copyAddress = UITapGestureRecognizer(target: self, action: #selector(addressButtonAction))
+        addressContainer.addGestureRecognizer(copyAddress)
+        
+        let copyUsername = UITapGestureRecognizer(target: self, action: #selector(copyUsernameAction))
+        usernameContainer.addGestureRecognizer(copyUsername)
+        
+        if UIScreen.main.bounds.size.height <= 670 {
+            NSLayoutConstraint.activate([
+                qrContainer.heightAnchor.constraint(equalToConstant: 270),
+                qrCodeButton.topAnchor.constraint(equalTo: qrContainer.topAnchor, constant: 10),
+                usernameContainer.heightAnchor.constraint(equalToConstant: 45)
+            ])
+        }
+    #else
+        addressContainer.isHidden = true
+        usernameContainer.isHidden = true
+        addressButton.isHidden = false
+    #endif
     }
 
     private func reloadView() {
-        let hasValue = model.paymentAddress != nil
+        let hasAddress = model.paymentAddress != nil
 
+    #if DASHPAY
+        let hasUsername = model.username != nil
+        addressLabel.text = model.paymentAddress
+        usernameLabel.text = model.username
+        addressContainer.isHidden = !hasAddress
+        usernameContainer.isHidden = !hasUsername
+    #else
         addressButton.setTitle(model.paymentAddress, for: .normal)
-        addressButton.isHidden = !hasValue
+        addressButton.isHidden = !hasAddress
+    #endif
 
         qrCodeButton.setImage(model.qrCodeImage, for: .normal)
         qrCodeButton.isHidden = model.qrCodeImage == nil
 
-        specifyAmountButton.isEnabled = hasValue
-        secondButton.isEnabled = hasValue
+        specifyAmountButton.isEnabled = hasAddress
+        secondButton.isEnabled = hasAddress
     }
 }
 
