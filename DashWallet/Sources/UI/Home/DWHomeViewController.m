@@ -169,9 +169,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)homeView:(DWHomeView * _Nonnull)homeView didUpdateProfile:(DSBlockchainIdentity * _Nullable)identity unreadNotifications:(NSUInteger)unreadNotifications {
     
     self.avatarView.blockchainIdentity = identity;
-    self.avatarView.hidden = identity == nil;
-    BOOL hasNotifications = (unreadNotifications > 0);
-    [self refreshNotificationBell:hasNotifications];
+    BOOL hasIdentity = identity != nil;
+    BOOL hasNotifications = unreadNotifications > 0;
+    self.avatarView.hidden = !hasIdentity;
+    [self refreshNotificationBell:hasIdentity hasNotifications:hasNotifications];
 }
 
 #endif
@@ -258,7 +259,12 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentViewController:profile animated:YES completion:nil];
 }
 
-- (void)refreshNotificationBell:(BOOL)hasNotifications {
+- (void)refreshNotificationBell:(BOOL)hasIdentity hasNotifications:(BOOL)hasNotifications {
+    if (!hasIdentity) {
+        self.navigationItem.rightBarButtonItem = nil;
+        return;
+    }
+    
     UIImage *notificationsImage;
     
     if (hasNotifications) {
