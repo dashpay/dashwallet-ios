@@ -951,7 +951,6 @@
 		C9D2C7202A320AA000D15901 /* ServiceDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4774DCE028F44BA3008CF87D /* ServiceDataProvider.swift */; };
 		C9D2C7212A320AA000D15901 /* PaymentButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451E62A0BA16400825057 /* PaymentButton.swift */; };
 		C9D2C7222A320AA000D15901 /* DWPreviewSeedPhraseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431DA22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m */; };
-		C9D2C7232A320AA000D15901 /* DashPayProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451FA2A0CC2A800825057 /* DashPayProfileView.swift */; };
 		C9D2C7242A320AA000D15901 /* WKWebView+CrowdNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110D1780298BA9AF005BEB30 /* WKWebView+CrowdNode.swift */; };
 		C9D2C7252A320AA000D15901 /* SyncingActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3AFE29350929008D58DC /* SyncingActivityMonitor.swift */; };
 		C9D2C7262A320AA000D15901 /* EmptyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FAF29DC27F4001BC549 /* EmptyView.swift */; };
@@ -2915,7 +2914,6 @@
 		C9F451F42A0CAC9400825057 /* HomeHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeHeaderView.swift; sourceTree = "<group>"; };
 		C9F451F62A0CAE1300825057 /* SyncView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncView.swift; sourceTree = "<group>"; };
 		C9F451F82A0CB08900825057 /* ProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView.swift; sourceTree = "<group>"; };
-		C9F451FA2A0CC2A800825057 /* DashPayProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashPayProfileView.swift; sourceTree = "<group>"; };
 		C9F451FC2A0CC4A300825057 /* BadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeView.swift; sourceTree = "<group>"; };
 		C9F452002A0CE6C900825057 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		C9F452022A0CEB5800825057 /* TxListEmptyTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxListEmptyTableViewCell.swift; sourceTree = "<group>"; };
@@ -7228,7 +7226,6 @@
 		C9D2C95F2A386D9700D15901 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				C9F451FA2A0CC2A800825057 /* DashPayProfileView.swift */,
 				C9D2C9612A386DA200D15901 /* DWDPWelcomeView.h */,
 				C9D2C9602A386DA200D15901 /* DWDPWelcomeView.m */,
 			);
@@ -8945,7 +8942,6 @@
 				C9D2C7202A320AA000D15901 /* ServiceDataProvider.swift in Sources */,
 				C9D2C7212A320AA000D15901 /* PaymentButton.swift in Sources */,
 				C9D2C7222A320AA000D15901 /* DWPreviewSeedPhraseViewController.m in Sources */,
-				C9D2C7232A320AA000D15901 /* DashPayProfileView.swift in Sources */,
 				C943B4B42A40A54600AF23C5 /* DWIncomingFetchedDataSource.m in Sources */,
 				C943B4B02A40A54600AF23C5 /* DWContactsContentViewController.m in Sources */,
 				C9D2C7242A320AA000D15901 /* WKWebView+CrowdNode.swift in Sources */,
