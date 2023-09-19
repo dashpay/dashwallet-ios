@@ -221,6 +221,8 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
             } else {
                 delegate?.homeView(self, didUpdateProfile: nil, unreadNotifications: 0)
             }
+            
+            setNeedsLayout()
         }
     }
     #endif
