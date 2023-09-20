@@ -43,7 +43,7 @@ final class PortalViewController: UIViewController {
 
     @objc
     func upholdAction() {
-        let vc = DWUpholdViewController()
+        let vc = IntegrationViewController.controller(model: UpholdPortalModel())
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }

@@ -63,15 +63,16 @@ protocol IntegrationEntryPointItem: ItemCellDataProvider {
 // MARK: - BaseIntegrationModel
 
 class BaseIntegrationModel: BalanceViewDataSource {
-    private(set) var mainAmountString: String = ""
-    private(set) var supplementaryAmountString: String = ""
-    private(set) var balanceTitle: String = ""
-    private(set) var signOutTitle: String = ""
-    private(set) var items: [IntegrationEntryPointItem] = []
+    var mainAmountString: String { "" }
+    var supplementaryAmountString: String { "" }
+    var balanceTitle: String { "" }
+    var signInTitle: String { "" }
+    var signOutTitle: String { "" }
+    var items: [IntegrationEntryPointItem] { [] }
+    var shouldPopOnLogout: Bool { false }
+    @Published var isLoggedIn = false
     
     let service: Service
-    
-    var userDidSignOut: (() -> ())?
     var userDidChange: (() -> ())?
     
     init(service: Service) {

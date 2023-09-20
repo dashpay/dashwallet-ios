@@ -25,6 +25,7 @@ struct CoinbaseEntryPointItem: IntegrationEntryPointItem {
 
     var title: String { type.title }
     var icon: String { type.icon }
+    var alwaysEnabled: Bool { false }
 
     var description: String {
         switch type {
@@ -75,20 +76,26 @@ final class CoinbaseEntryPointModel: BaseIntegrationModel {
         NSLocalizedString("Dash balance on Coinbase", comment: "Coinbase Entry Point")
     }
     
+    override var signInTitle: String {
+        NSLocalizedString("Link Uphold Account", comment: "Uphold Entry Point")
+    }
+    
     override var signOutTitle: String {
         NSLocalizedString("Disconnect Coinbase Account", comment: "Coinbase Entry Point")
     }
+    
+    override var shouldPopOnLogout: Bool { true }
 
     private var userDidChangeListenerHandle: UserDidChangeListenerHandle!
     private var accountDidChangeHandle: AnyObject?
 
     init() {
         super.init(service: .coinbase)
-        
+    
         userDidChangeListenerHandle = Coinbase.shared.addUserDidChangeListener { [weak self] user in
-            if user == nil {
-                self?.userDidSignOut?()
-            } else {
+            self?.isLoggedIn = user != nil
+            
+            if user != nil {
                 self?.userDidChange?()
             }
         }

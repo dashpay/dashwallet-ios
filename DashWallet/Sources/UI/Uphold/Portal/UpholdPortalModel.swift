@@ -26,6 +26,7 @@ struct UpholdEntryPointItem: IntegrationEntryPointItem {
     
     var title: String { type.title }
     var icon: String { type.icon }
+    var alwaysEnabled: Bool { type == .buyDash }
 
     var description: String {
         switch type {
@@ -91,8 +92,12 @@ final class UpholdPortalModel: BaseIntegrationModel {
         NSLocalizedString("Dash balance on Uphold", comment: "Uphold Entry Point")
     }
     
+    override var signInTitle: String {
+        NSLocalizedString("Link Uphold Account", comment: "Uphold Entry Point")
+    }
+    
     override var signOutTitle: String {
-        NSLocalizedString("Disconnect Coinbase Account", comment: "Coinbase Entry Point")
+        NSLocalizedString("Disconnect Uphold Account", comment: "Uphold Entry Point")
     }
     
     
@@ -100,7 +105,9 @@ final class UpholdPortalModel: BaseIntegrationModel {
         super.init(service: .uphold)
         
         NotificationCenter.default.publisher(for: NSNotification.Name.DWUpholdClientUserDidLogout)
-            .sink { [weak self] _ in self?.userDidSignOut?() }
+            .sink { [weak self] _ in
+                self?.isLoggedIn = false
+            }
             .store(in: &cancellableBag)
     }
 

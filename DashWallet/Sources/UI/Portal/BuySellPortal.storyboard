@@ -72,16 +72,16 @@
                                                                     </constraints>
                                                                 </imageView>
                                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="SLz-yN-ubG">
-                                                                    <rect key="frame" x="59" y="12.333333333333332" width="273" height="33.666666666666671"/>
+                                                                    <rect key="frame" x="61" y="12.333333333333332" width="271" height="33.666666666666671"/>
                                                                     <subviews>
                                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aRV-gu-l15">
-                                                                            <rect key="frame" x="0.0" y="0.0" width="273" height="18"/>
+                                                                            <rect key="frame" x="0.0" y="0.0" width="271" height="18"/>
                                                                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                                                             <nil key="textColor"/>
                                                                             <nil key="highlightedColor"/>
                                                                         </label>
                                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="u1c-jJ-dxu">
-                                                                            <rect key="frame" x="0.0" y="18" width="273" height="15.666666666666664"/>
+                                                                            <rect key="frame" x="0.0" y="18" width="271" height="15.666666666666664"/>
                                                                             <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                                                             <color key="textColor" systemColor="secondaryLabelColor"/>
                                                                             <nil key="highlightedColor"/>
@@ -103,7 +103,7 @@
                                                                 <constraint firstItem="M4I-Bp-zPO" firstAttribute="leading" secondItem="SLz-yN-ubG" secondAttribute="trailing" constant="10" id="Sg2-Aw-jQo"/>
                                                                 <constraint firstItem="C8k-7w-H5f" firstAttribute="top" secondItem="YJr-hu-Aun" secondAttribute="top" constant="12" id="T4T-cR-lhN"/>
                                                                 <constraint firstItem="SLz-yN-ubG" firstAttribute="centerY" secondItem="YJr-hu-Aun" secondAttribute="centerY" id="Tnu-Y4-YqQ"/>
-                                                                <constraint firstItem="SLz-yN-ubG" firstAttribute="leading" secondItem="C8k-7w-H5f" secondAttribute="trailing" constant="10" id="mpK-Yx-eFs"/>
+                                                                <constraint firstItem="SLz-yN-ubG" firstAttribute="leading" secondItem="C8k-7w-H5f" secondAttribute="trailing" constant="12" id="mpK-Yx-eFs"/>
                                                                 <constraint firstAttribute="trailing" secondItem="M4I-Bp-zPO" secondAttribute="trailing" constant="20" id="trp-Qd-ygK"/>
                                                             </constraints>
                                                         </view>
@@ -329,7 +329,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ZGY-Rx-Kog" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-729" y="18"/>
+            <point key="canvasLocation" x="-1531" y="18"/>
         </scene>
         <!--Integration View Controller-->
         <scene sceneID="gvg-0p-Zf5">
@@ -509,57 +509,29 @@
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="qd5-Z5-oBS">
-                                    <rect key="frame" x="0.0" y="0.0" width="140" height="40"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="125" height="40"/>
                                     <subviews>
-                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="portal.coinbase" translatesAutoresizingMaskIntoConstraints="NO" id="iWe-CJ-GGP">
-                                            <rect key="frame" x="0.0" y="2.6666666666666679" width="35" height="35"/>
+                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" verticalHuggingPriority="251" image="portal.coinbase" translatesAutoresizingMaskIntoConstraints="NO" id="iWe-CJ-GGP">
+                                            <rect key="frame" x="0.0" y="2.6666666666666679" width="47.333333333333336" height="35"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="35" id="3bq-0M-f2l"/>
-                                                <constraint firstAttribute="width" constant="35" id="4pc-Ft-93n"/>
                                             </constraints>
                                         </imageView>
-                                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="LcP-2a-hRF">
-                                            <rect key="frame" x="43" y="5" width="97" height="30"/>
-                                            <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Coinbase" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QXV-dh-sFv">
-                                                    <rect key="frame" x="0.0" y="0.0" width="97" height="16"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="height" constant="16" id="d00-KC-3Ui"/>
-                                                    </constraints>
-                                                    <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
-                                                    <nil key="textColor"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
-                                                <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="cN0-JC-GTB">
-                                                    <rect key="frame" x="0.0" y="18" width="97" height="12"/>
-                                                    <subviews>
-                                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="S3V-FJ-f92">
-                                                            <rect key="frame" x="0.0" y="4" width="4" height="4"/>
-                                                            <color key="backgroundColor" systemColor="systemGreenColor"/>
-                                                            <constraints>
-                                                                <constraint firstAttribute="height" constant="4" id="Oow-2m-GsR"/>
-                                                                <constraint firstAttribute="width" constant="4" id="yAr-ZW-c7V"/>
-                                                            </constraints>
-                                                        </view>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalCompressionResistancePriority="753" text="Connected" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="91J-kA-rKu">
-                                                            <rect key="frame" x="7" y="0.0" width="90" height="12"/>
-                                                            <constraints>
-                                                                <constraint firstAttribute="height" constant="12" id="nIq-Ob-rfG"/>
-                                                            </constraints>
-                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
-                                                            <color key="textColor" systemColor="secondaryLabelColor"/>
-                                                            <nil key="highlightedColor"/>
-                                                        </label>
-                                                    </subviews>
-                                                </stackView>
-                                            </subviews>
-                                        </stackView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Coinbase" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QXV-dh-sFv">
+                                            <rect key="frame" x="55.333333333333336" y="12" width="69.666666666666657" height="16"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="16" id="d00-KC-3Ui"/>
+                                            </constraints>
+                                            <fontDescription key="fontDescription" type="system" weight="medium" pointSize="16"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
                                     </subviews>
                                 </stackView>
                             </subviews>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
-                                <constraint firstAttribute="trailing" secondItem="qd5-Z5-oBS" secondAttribute="trailing" id="GBG-fL-fQH"/>
+                                <constraint firstAttribute="trailing" secondItem="qd5-Z5-oBS" secondAttribute="trailing" constant="15" id="GBG-fL-fQH"/>
                                 <constraint firstItem="qd5-Z5-oBS" firstAttribute="leading" secondItem="uqB-Y9-j7F" secondAttribute="leading" id="gge-uU-pi6"/>
                                 <constraint firstItem="qd5-Z5-oBS" firstAttribute="top" secondItem="uqB-Y9-j7F" secondAttribute="top" id="nNQ-Br-zNi"/>
                                 <constraint firstAttribute="bottom" secondItem="qd5-Z5-oBS" secondAttribute="bottom" id="pMR-5x-rbt"/>
@@ -573,18 +545,18 @@
                     <connections>
                         <outlet property="balanceTitleLabel" destination="BWY-xR-0vR" id="fRO-zo-MgJ"/>
                         <outlet property="balanceView" destination="ufR-Iq-OaE" id="KYF-T2-gfA"/>
-                        <outlet property="connectionStatusLabel" destination="91J-kA-rKu" id="mVS-DP-ccE"/>
-                        <outlet property="connectionStatusView" destination="S3V-FJ-f92" id="lsk-0f-wMv"/>
                         <outlet property="lastKnownBalanceLabel" destination="ygs-WO-WZc" id="v1x-I4-OXX"/>
                         <outlet property="mainContentView" destination="Qwx-pw-5ll" id="RxR-nc-Pqb"/>
                         <outlet property="networkUnavailableView" destination="luS-Cc-Gdg" id="1ni-zc-MMC"/>
+                        <outlet property="serviceNameIcon" destination="iWe-CJ-GGP" id="jR5-xO-YIQ"/>
+                        <outlet property="serviceNameLabel" destination="QXV-dh-sFv" id="gzI-76-Ces"/>
                         <outlet property="signOutButton" destination="KIR-Uh-Htl" id="KTQ-5X-Zu6"/>
                         <outlet property="tableView" destination="vgr-eL-Or5" id="OxQ-pJ-ZxG"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="zVA-Zm-IHT" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1540" y="18"/>
+            <point key="canvasLocation" x="-738" y="18"/>
         </scene>
     </scenes>
     <resources>

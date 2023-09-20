@@ -16,18 +16,20 @@
 //
 
 import UIKit
+import Combine
 
 // MARK: - IntegrationViewController
 
 final class IntegrationViewController: BaseViewController, NetworkReachabilityHandling {
+    private var cancellableBag = Set<AnyCancellable>()
     /// Conform to NetworkReachabilityHandling
     var networkStatusDidChange: ((NetworkStatus) -> ())?
     var reachabilityObserver: Any!
 
     public var userSignedOutBlock: ((Bool) -> Void)?
 
-    @IBOutlet var connectionStatusView: UIView!
-    @IBOutlet var connectionStatusLabel: UILabel!
+    @IBOutlet var serviceNameLabel: UILabel!
+    @IBOutlet var serviceNameIcon: UIImageView!
     @IBOutlet var balanceTitleLabel: UILabel!
     @IBOutlet var balanceView: BalanceView!
     @IBOutlet var tableView: UITableView!
@@ -61,6 +63,11 @@ final class IntegrationViewController: BaseViewController, NetworkReachabilityHa
         }
         startNetworkMonitoring()
     }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        cancellableBag.removeAll()
+    }
 
     deinit {
         stopNetworkMonitoring()
@@ -76,24 +83,62 @@ final class IntegrationViewController: BaseViewController, NetworkReachabilityHa
 
 extension IntegrationViewController {
     private func configureModel() {
-        model.userDidSignOut = { [weak self] in
-            self?.popIntegrationFlow()
-        }
         model.userDidChange = { [weak self] in
             self?.reloadView()
         }
+        
+        model.$isLoggedIn
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isLoggedIn in
+                guard let wSelf = self else { return }
+                
+                if wSelf.model.shouldPopOnLogout && !isLoggedIn {
+                    wSelf.popIntegrationFlow()
+                } else {
+                    wSelf.reloadView()
+                }
+            }
+            .store(in: &cancellableBag)
     }
 
     private func reloadView() {
         let isOnline = networkStatus == .online
-        lastKnownBalanceLabel.isHidden = isOnline
+        lastKnownBalanceLabel.isHidden = isOnline || !model.isLoggedIn
         networkUnavailableView.isHidden = isOnline
         mainContentView.isHidden = !isOnline
-        connectionStatusView.backgroundColor = isOnline ? .systemGreen : .systemRed
-        connectionStatusLabel.text = isOnline
-            ? NSLocalizedString("Connected", comment: "Integration Entry Point")
-            : NSLocalizedString("Disconnected", comment: "Integration Entry Point")
         balanceView.dataSource = model
+        balanceView.isHidden = !model.isLoggedIn
+        balanceTitleLabel.isHidden = !model.isLoggedIn
+        configureLogoutButton(isLoggedIn: model.isLoggedIn)
+    }
+    
+    private func setTableHeight() {
+        var height: CGFloat = 0
+        for section in 0..<tableView.numberOfSections {
+            for row in 0..<tableView.numberOfRows(inSection: section) {
+                let indexPath = IndexPath(row: row, section: section)
+                height += tableView.delegate?.tableView?(tableView, heightForRowAt: indexPath) ?? 62.0
+            }
+        }
+        
+        tableView.heightAnchor.constraint(equalToConstant: height).isActive = true
+        view.layoutIfNeeded()
+    }
+    
+    private func configureLogoutButton(isLoggedIn: Bool) {
+        if isLoggedIn {
+            signOutButton.titleLabel?.textColor = .dw_label()
+            signOutButton.backgroundColor = .dw_background()
+            signOutButton.setImage(UIImage(named: "logout"), for: .normal)
+            signOutButton.setTitle(model.signOutTitle, for: .normal)
+            signOutButton.contentHorizontalAlignment = .left
+        } else {
+            signOutButton.titleLabel?.textColor = UIColor(named: "DashBlueColor")
+            signOutButton.backgroundColor = UIColor(named: "LightBlueButtonColor")
+            signOutButton.setImage(nil, for: .normal)
+            signOutButton.setTitle(model.signInTitle, for: .normal)
+            signOutButton.contentHorizontalAlignment = .center
+        }
     }
 
     private func configureHierarchy() {
@@ -101,12 +146,13 @@ extension IntegrationViewController {
 
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.largeTitleDisplayMode = .never
+        
+        serviceNameLabel.text = model.service.title
+        serviceNameIcon.image = UIImage(named: model.service.icon)
 
         lastKnownBalanceLabel.text = NSLocalizedString("Last known balance", comment: "Integration Entry Point")
         lastKnownBalanceLabel.isHidden = true
         networkUnavailableView.isHidden = true
-
-        connectionStatusView.layer.cornerRadius = 2
 
         balanceTitleLabel.text = model.balanceTitle
 
@@ -116,13 +162,12 @@ extension IntegrationViewController {
         tableView.layer.cornerRadius = 10
         tableView.clipsToBounds = true
         tableView.backgroundColor = .dw_background()
-
-        signOutButton.backgroundColor = .dw_background()
-        signOutButton.titleLabel?.font = UIFont.dw_mediumFont(ofSize: 14)
+        
+        signOutButton.titleLabel?.font = UIFont.dw_mediumFont(ofSize: 15)
         signOutButton.layer.cornerRadius = 10
-        signOutButton.setTitle(model.signOutTitle, for: .normal)
 
         reloadView()
+        setTableHeight()
     }
 
     private func showError(_ error: LocalizedError) {
@@ -151,7 +196,7 @@ extension IntegrationViewController: UITableViewDelegate, UITableViewDataSource 
         let isLastItem = indexPath.item == (model.items.count - 1)
 
         let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath) as! ItemCell
-        cell.update(with: model.items[indexPath.item])
+        cell.update(with: model.items[indexPath.item], isLoggedIn: model.isLoggedIn)
         cell.separatorInset = .init(top: 0, left: isLastItem ? 2000 : 63, bottom: 0, right: 0)
         return cell
     }
@@ -191,6 +236,7 @@ protocol ItemCellDataProvider {
     var icon: String { get }
     var title: String { get }
     var description: String { get }
+    var alwaysEnabled: Bool { get }
 }
 
 // MARK: - ItemCell
@@ -200,8 +246,8 @@ final class ItemCell: UITableViewCell {
     @IBOutlet var nameLabel: UILabel!
     @IBOutlet var secondaryLabel: UILabel!
 
-    fileprivate func update(with item: ItemCellDataProvider) {
-        iconView.image = .init(named: item.icon)
+    fileprivate func update(with item: ItemCellDataProvider, isLoggedIn: Bool) {
+        iconView.image = .init(named: isLoggedIn ? item.icon : item.icon + ".disabled")
         nameLabel.text = item.title
         secondaryLabel.text = item.description
     }
