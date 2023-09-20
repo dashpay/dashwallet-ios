@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "icon.convert-crypto.png",
+      "filename" : "buy.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "icon.convert-crypto@2x.png",
+      "filename" : "buy@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "icon.convert-crypto@3x.png",
+      "filename" : "buy@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

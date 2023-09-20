@@ -16,6 +16,28 @@
 //
 
 import Foundation
+import Combine
+
+// MARK: IntegrationEntryPointItem
+
+struct UpholdEntryPointItem: IntegrationEntryPointItem {
+    let type: IntegrationItemType
+    static let supportedCases = [.buyDash, .transferDash].map { UpholdEntryPointItem(type: $0) }
+    
+    var title: String { type.title }
+    var icon: String { type.icon }
+
+    var description: String {
+        switch type {
+        case .buyDash:
+            return NSLocalizedString("Receive directly into Dash Wallet", comment: "Uphold Entry Point")
+        case .transferDash:
+            return NSLocalizedString("From Uphold to Dash Wallet", comment: "Uphold Entry Point")
+        default:
+            return ""
+        }
+    }
+}
 
 // MARK: - UpholdPortalModelState
 
@@ -28,7 +50,13 @@ enum UpholdPortalModelState: Int {
 
 // MARK: - UpholdPortalModel
 
-final class UpholdPortalModel {
+final class UpholdPortalModel: BaseIntegrationModel {
+    private var cancellableBag = Set<AnyCancellable>()
+    
+    override var items: [IntegrationEntryPointItem] {
+        UpholdEntryPointItem.supportedCases
+    }
+    
     private var state: UpholdPortalModelState = .loading {
         didSet {
             if oldValue != state {
@@ -41,6 +69,40 @@ final class UpholdPortalModel {
     private var fiatCards: [DWUpholdCardObject]?
 
     var stateDidChangeHandler: ((UpholdPortalModelState) -> Void)?
+    
+    
+    override var mainAmountString: String {
+        guard let dashCard else {
+            return NSLocalizedString("Balance not available", comment: "Uphold entry point")
+        }
+
+        return dashCard.formattedDashAmount
+    }
+
+    override var supplementaryAmountString: String {
+        guard let dashCard else {
+            return NSLocalizedString("Balance not available", comment: "Uphold entry point")
+        }
+
+        return dashCard.fiatBalanceFormatted(App.fiatCurrency)
+    }
+    
+    override var balanceTitle: String {
+        NSLocalizedString("Dash balance on Uphold", comment: "Uphold Entry Point")
+    }
+    
+    override var signOutTitle: String {
+        NSLocalizedString("Disconnect Coinbase Account", comment: "Coinbase Entry Point")
+    }
+    
+    
+    init() {
+        super.init(service: .uphold)
+        
+        NotificationCenter.default.publisher(for: NSNotification.Name.DWUpholdClientUserDidLogout)
+            .sink { [weak self] _ in self?.userDidSignOut?() }
+            .store(in: &cancellableBag)
+    }
 
     func fetch() {
         state = .loading
@@ -64,7 +126,7 @@ final class UpholdPortalModel {
         return DWUpholdClient.sharedInstance().buyDashURL(forCard: dashCard)
     }
 
-    func logOut() {
+    override func signOut() {
         DWUpholdClient.sharedInstance().logOut()
     }
 
@@ -75,25 +137,5 @@ final class UpholdPortalModel {
     func successMessageText(for transaction: DWUpholdTransactionObject) -> String {
         String(format: NSLocalizedString("Your transaction was sent and the amount should appear in your wallet in a few minutes.", comment: ""),
                NSLocalizedString("Transaction id", comment: ""), transaction.identifier)
-    }
-}
-
-// MARK: BalanceViewDataSource
-
-extension UpholdPortalModel: BalanceViewDataSource {
-    var mainAmountString: String {
-        guard let dashCard else {
-            return NSLocalizedString("Balance not available", comment: "Uphold entry point")
-        }
-
-        return dashCard.formattedDashAmount
-    }
-
-    var supplementaryAmountString: String {
-        guard let dashCard else {
-            return NSLocalizedString("Balance not available", comment: "Uphold entry point")
-        }
-
-        return dashCard.fiatBalanceFormatted(App.fiatCurrency)
     }
 }

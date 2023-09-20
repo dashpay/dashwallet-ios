@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "icon.buy-dash.png",
+      "filename" : "convert.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "icon.buy-dash@2x.png",
+      "filename" : "convert@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "icon.buy-dash@3x.png",
+      "filename" : "convert@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

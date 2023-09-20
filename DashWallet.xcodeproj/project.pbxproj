@@ -512,7 +512,7 @@
 		47838B7D290133610003E8AB /* PointOfUseListFiltersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B7C290133610003E8AB /* PointOfUseListFiltersViewController.swift */; };
 		47838B7F290160860003E8AB /* ExploreDash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 47838B7E290160860003E8AB /* ExploreDash.storyboard */; };
 		47838B82290271170003E8AB /* PointOfUseListFiltersModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B81290271170003E8AB /* PointOfUseListFiltersModel.swift */; };
-		47838B87290670630003E8AB /* CoinbaseEntryPointViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B86290670630003E8AB /* CoinbaseEntryPointViewController.swift */; };
+		47838B87290670630003E8AB /* IntegrationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B86290670630003E8AB /* IntegrationViewController.swift */; };
 		47838B8C29068F110003E8AB /* BaseResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B8B29068F110003E8AB /* BaseResponse.swift */; };
 		47838B8F2906D7340003E8AB /* BalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B8E2906D7340003E8AB /* BalanceView.swift */; };
 		47838B92290701470003E8AB /* CoinbaseEntryPointModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B91290701470003E8AB /* CoinbaseEntryPointModel.swift */; };
@@ -632,6 +632,7 @@
 		47F4B6CD29485A8B00AED4C9 /* ConfirmOrderCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F4B6CC29485A8B00AED4C9 /* ConfirmOrderCells.swift */; };
 		47FA3AFF29350929008D58DC /* SyncingActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3AFE29350929008D58DC /* SyncingActivityMonitor.swift */; };
 		47FA3B0229364991008D58DC /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3B0129364991008D58DC /* HTTPClient.swift */; };
+		7513DA8C2AB9643F005D55F6 /* BaseIntegrationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7513DA8B2AB9643F005D55F6 /* BaseIntegrationModel.swift */; };
 		7527720D2AA9B2630066557E /* SupportedTopperAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */; };
 		7527720F2AA9F58E0066557E /* TopperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720E2AA9F58E0066557E /* TopperViewModel.swift */; };
 		752772122AAA1CE30066557E /* Coinbase-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752772112AAA1CE30066557E /* Coinbase-Info.plist */; };
@@ -678,7 +679,6 @@
 		C917024129D462C6008C034D /* PayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C917024029D462C6008C034D /* PayViewController.swift */; };
 		C91E919729FBACE6003E7883 /* ExtendedPublicKeysModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E919629FBACE6003E7883 /* ExtendedPublicKeysModel.swift */; };
 		C91E91AE29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E91AD29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift */; };
-		C92963BD2AA0B00C00B96B22 /* UpholdPortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92963BC2AA0B00C00B96B22 /* UpholdPortalViewController.swift */; };
 		C94946E12A25F037008A678D /* DemoMainTabbarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94946E02A25F037008A678D /* DemoMainTabbarViewController.swift */; };
 		C94D98212A4CC78F00F3BEE1 /* DashInputField.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94D98202A4CC78F00F3BEE1 /* DashInputField.swift */; };
 		C94D98232A4CC85400F3BEE1 /* UIView+Dash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94D98222A4CC85400F3BEE1 /* UIView+Dash.swift */; };
@@ -731,7 +731,7 @@
 		C9F452032A0CEB5800825057 /* TxListEmptyTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F452022A0CEB5800825057 /* TxListEmptyTableViewCell.swift */; };
 		C9F452082A11F28600825057 /* SyncModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F452072A11F28600825057 /* SyncModel.swift */; };
 		C9F4520B2A1209D100825057 /* HomeHeaderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F4520A2A1209D100825057 /* HomeHeaderModel.swift */; };
-		C9FAABB52AB793CE00878224 /* UpholdPortal.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C9FAABB42AB793CE00878224 /* UpholdPortal.storyboard */; };
+		C9FAABB52AB793CE00878224 /* BuySellPortal.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C9FAABB42AB793CE00878224 /* BuySellPortal.storyboard */; };
 		C9FAABB72AB799AE00878224 /* UpholdPortalModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9FAABB62AB799AE00878224 /* UpholdPortalModel.swift */; };
 		CC5F88E358330F8EE192D5BE /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */; };
 		DE3A167A235B79D705C0A962 /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 982607F21196681DAC51A074 /* libPods-dashwallet.a */; };
@@ -1695,7 +1695,7 @@
 		47838B7C290133610003E8AB /* PointOfUseListFiltersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseListFiltersViewController.swift; sourceTree = "<group>"; };
 		47838B7E290160860003E8AB /* ExploreDash.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ExploreDash.storyboard; sourceTree = "<group>"; };
 		47838B81290271170003E8AB /* PointOfUseListFiltersModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseListFiltersModel.swift; sourceTree = "<group>"; };
-		47838B86290670630003E8AB /* CoinbaseEntryPointViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseEntryPointViewController.swift; sourceTree = "<group>"; };
+		47838B86290670630003E8AB /* IntegrationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegrationViewController.swift; sourceTree = "<group>"; };
 		47838B8B29068F110003E8AB /* BaseResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseResponse.swift; sourceTree = "<group>"; };
 		47838B8E2906D7340003E8AB /* BalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceView.swift; sourceTree = "<group>"; };
 		47838B91290701470003E8AB /* CoinbaseEntryPointModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseEntryPointModel.swift; sourceTree = "<group>"; };
@@ -1833,6 +1833,7 @@
 		7511E8D31AE5FF390025F1B3 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
 		7511E8E31AE5FFCC0025F1B3 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; lineEnding = 0; name = nl; path = nl.lproj/Localizable.strings; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		7511E8EB1AE600220025F1B3 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		7513DA8B2AB9643F005D55F6 /* BaseIntegrationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseIntegrationModel.swift; sourceTree = "<group>"; };
 		7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedTopperAssets.swift; sourceTree = "<group>"; };
 		7527720E2AA9F58E0066557E /* TopperViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopperViewModel.swift; sourceTree = "<group>"; };
 		752772112AAA1CE30066557E /* Coinbase-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Coinbase-Info.plist"; sourceTree = "<group>"; };
@@ -1926,7 +1927,6 @@
 		C917024029D462C6008C034D /* PayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayViewController.swift; sourceTree = "<group>"; };
 		C91E919629FBACE6003E7883 /* ExtendedPublicKeysModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedPublicKeysModel.swift; sourceTree = "<group>"; };
 		C91E91AD29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedPublicKeysViewController.swift; sourceTree = "<group>"; };
-		C92963BC2AA0B00C00B96B22 /* UpholdPortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpholdPortalViewController.swift; sourceTree = "<group>"; };
 		C94946DE2A25EDA8008A678D /* DWHomeViewControllerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeViewControllerDelegate.h; sourceTree = "<group>"; };
 		C94946DF2A25EE24008A678D /* DWMainMenuViewControllerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMainMenuViewControllerDelegate.h; sourceTree = "<group>"; };
 		C94946E02A25F037008A678D /* DemoMainTabbarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoMainTabbarViewController.swift; sourceTree = "<group>"; };
@@ -1982,7 +1982,7 @@
 		C9F452022A0CEB5800825057 /* TxListEmptyTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxListEmptyTableViewCell.swift; sourceTree = "<group>"; };
 		C9F452072A11F28600825057 /* SyncModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncModel.swift; sourceTree = "<group>"; };
 		C9F4520A2A1209D100825057 /* HomeHeaderModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeHeaderModel.swift; sourceTree = "<group>"; };
-		C9FAABB42AB793CE00878224 /* UpholdPortal.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = UpholdPortal.storyboard; sourceTree = "<group>"; };
+		C9FAABB42AB793CE00878224 /* BuySellPortal.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BuySellPortal.storyboard; sourceTree = "<group>"; };
 		C9FAABB62AB799AE00878224 /* UpholdPortalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpholdPortalModel.swift; sourceTree = "<group>"; };
 		CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.release.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.release.xcconfig"; sourceTree = "<group>"; };
 		D58B25CB4DC36975E05D3C0A /* Pods-dashwallet no watch.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.debug.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.debug.xcconfig"; sourceTree = "<group>"; };
@@ -2104,8 +2104,7 @@
 		0F0E651728CA1FE30075B252 /* CoinbaseEntryPoint */ = {
 			isa = PBXGroup;
 			children = (
-				47838B90290701320003E8AB /* Model */,
-				47838B86290670630003E8AB /* CoinbaseEntryPointViewController.swift */,
+				47838B91290701470003E8AB /* CoinbaseEntryPointModel.swift */,
 			);
 			path = CoinbaseEntryPoint;
 			sourceTree = "<group>";
@@ -4657,6 +4656,8 @@
 				4774DCE328F46679008CF87D /* Views */,
 				478A2C6F28DC551E00AD1420 /* Model */,
 				4751136B28D9A3DB00223B77 /* PortalViewController.swift */,
+				C9FAABB42AB793CE00878224 /* BuySellPortal.storyboard */,
+				47838B86290670630003E8AB /* IntegrationViewController.swift */,
 			);
 			path = Portal;
 			sourceTree = "<group>";
@@ -4857,14 +4858,6 @@
 			path = BalanceView;
 			sourceTree = "<group>";
 		};
-		47838B90290701320003E8AB /* Model */ = {
-			isa = PBXGroup;
-			children = (
-				47838B91290701470003E8AB /* CoinbaseEntryPointModel.swift */,
-			);
-			path = Model;
-			sourceTree = "<group>";
-		};
 		4789D22D2981067600BAFEFA /* Model */ = {
 			isa = PBXGroup;
 			children = (
@@ -4880,6 +4873,7 @@
 				478A2C7028DC554200AD1420 /* PortalModel.swift */,
 				4774DCE028F44BA3008CF87D /* ServiceDataProvider.swift */,
 				4774DCDC28F43A68008CF87D /* ServiceDataSource.swift */,
+				7513DA8B2AB9643F005D55F6 /* BaseIntegrationModel.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -5660,8 +5654,6 @@
 			isa = PBXGroup;
 			children = (
 				C9FAABB62AB799AE00878224 /* UpholdPortalModel.swift */,
-				C92963BC2AA0B00C00B96B22 /* UpholdPortalViewController.swift */,
-				C9FAABB42AB793CE00878224 /* UpholdPortal.storyboard */,
 			);
 			path = Portal;
 			sourceTree = "<group>";
@@ -6047,7 +6039,7 @@
 				474C720D298A19D100475CA6 /* TxDetailHeaderCell.xib in Resources */,
 				2AB231D42196E27300A6E7E6 /* StartStoryboard.storyboard in Resources */,
 				2A60C9452444BF3A00AF72CF /* DWConfirmUsernameContentView.xib in Resources */,
-				C9FAABB52AB793CE00878224 /* UpholdPortal.storyboard in Resources */,
+				C9FAABB52AB793CE00878224 /* BuySellPortal.storyboard in Resources */,
 				2A1AF6DF23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib in Resources */,
 				2A4431D622D52F67009BAF7F /* DWInfoTextCell.xib in Resources */,
 				2A44314922CF82EF009BAF7F /* BiometricAuth.storyboard in Resources */,
@@ -6788,8 +6780,7 @@
 				2ACCA3B524BF280A00DB32DE /* DWDPTxObject.m in Sources */,
 				0F71317728F436920072F454 /* ServiceOverviewTableCell.swift in Sources */,
 				2AD6E5532487D50200B52F14 /* DWContactsModel.m in Sources */,
-				C92963BD2AA0B00C00B96B22 /* UpholdPortalViewController.swift in Sources */,
-				47838B87290670630003E8AB /* CoinbaseEntryPointViewController.swift in Sources */,
+				47838B87290670630003E8AB /* IntegrationViewController.swift in Sources */,
 				2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */,
 				47AE8C0528C1F74A00490F5E /* PointOfUseListFiltersCell.swift in Sources */,
 				47081199298CF57D003FCA3D /* TransactionListDataSource.swift in Sources */,
@@ -6831,6 +6822,7 @@
 				2A74EFE92305264200C475EB /* DWBaseActionButtonViewController.m in Sources */,
 				0F6EDFC828C896BD000427E7 /* CoinbasePaymentMethodsResponse.swift in Sources */,
 				2A913E8C23A3134E006A2A59 /* UIView+DWEmbedding.m in Sources */,
+				7513DA8C2AB9643F005D55F6 /* BaseIntegrationModel.swift in Sources */,
 				2A6300492328EA8900827825 /* DWLockActionButton.m in Sources */,
 				47AE8BA128BFADB600490F5E /* PointOfUseDAO.swift in Sources */,
 				4759D51729300212002F20DC /* ProvideAmountViewController.swift in Sources */,

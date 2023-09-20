@@ -51,7 +51,7 @@ final class PortalViewController: UIViewController {
     @objc
     func coinbaseAction() {
         if Coinbase.shared.isAuthorized {
-            let vc = CoinbaseEntryPointViewController.controller()
+            let vc = IntegrationViewController.controller(model: CoinbaseEntryPointModel())
             vc.userSignedOutBlock = { [weak self] isNeedToShowSignOutError in
                 guard let self else { return }
 
@@ -111,7 +111,7 @@ final class PortalViewController: UIViewController {
 
     @objc
     class func controller() -> PortalViewController {
-        vc(PortalViewController.self, from: sb("Coinbase"))
+        vc(PortalViewController.self, from: sb("BuySellPortal"))
     }
 }
 

@@ -17,80 +17,74 @@
 
 import Foundation
 
-// MARK: - CoinbaseEntryPointItem
+// MARK: IntegrationEntryPointItem
 
-enum CoinbaseEntryPointItem: CaseIterable {
-    case buyDash
-    case sellDash
-    case convertCrypto
-    case transferDash
-}
+struct CoinbaseEntryPointItem: IntegrationEntryPointItem {
+    let type: IntegrationItemType
+    static let supportedCases = [.buyDash, .convertCrypto, .transferDash].map { CoinbaseEntryPointItem(type: $0) }
 
-// MARK: ItemCellDataProvider
-
-extension CoinbaseEntryPointItem: ItemCellDataProvider {
-    static let supportedCases: [CoinbaseEntryPointItem] = [.buyDash, .convertCrypto, .transferDash]
-
-    var title: String {
-        switch self {
-        case .buyDash:
-            return NSLocalizedString("Buy Dash", comment: "Coinbase Entry Point")
-        case .sellDash:
-            return NSLocalizedString("Sell Dash", comment: "Coinbase Entry Point")
-        case .convertCrypto:
-            return NSLocalizedString("Convert Crypto", comment: "Coinbase Entry Point")
-        case .transferDash:
-            return NSLocalizedString("Transfer Dash", comment: "Coinbase Entry Point")
-        }
-    }
+    var title: String { type.title }
+    var icon: String { type.icon }
 
     var description: String {
-        switch self {
+        switch type {
         case .buyDash:
             return NSLocalizedString("Receive directly into Dash Wallet", comment: "Coinbase Entry Point")
         case .sellDash:
             return NSLocalizedString("Receive directly into Coinbase", comment: "Coinbase Entry Point")
         case .convertCrypto:
-            return NSLocalizedString("Between Dash Wallet and Coinbase.", comment: "Coinbase Entry Point")
+            return NSLocalizedString("Between Dash Wallet and Coinbase", comment: "Coinbase Entry Point")
         case .transferDash:
-            return NSLocalizedString("Between Dash Wallet and Coinbase.", comment: "Coinbase Entry Point")
-        }
-    }
-
-    var icon: String {
-        switch self {
-        case .buyDash:
-            return "buyCoinbase"
-        case .sellDash:
-            return "sellDash"
-        case .convertCrypto:
-            return "convertCrypto"
-        case .transferDash:
-            return "transferCoinbase"
+            return NSLocalizedString("Between Dash Wallet and Coinbase", comment: "Coinbase Entry Point")
         }
     }
 }
 
 // MARK: - CoinbaseEntryPointModel
 
-final class CoinbaseEntryPointModel {
-    let items: [CoinbaseEntryPointItem] = CoinbaseEntryPointItem.supportedCases
+final class CoinbaseEntryPointModel: BaseIntegrationModel {
+    override var items: [IntegrationEntryPointItem] {
+        CoinbaseEntryPointItem.supportedCases
+    }
 
     var hasPaymentMethods = false
-
-    var userDidSignOut: (() -> ())?
-    var userDidChange: (() -> ())?
 
     var balance: UInt64 {
         guard let amount = Coinbase.shared.lastKnownBalance else { return 0 }
 
         return amount
     }
+    
+    override var mainAmountString: String {
+        balance.formattedDashAmount
+    }
+
+    override var supplementaryAmountString: String {
+        let fiat: String
+
+        if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: balance.dashAmount, to: App.fiatCurrency) {
+            fiat = NumberFormatter.fiatFormatter.string(from: fiatAmount as NSNumber)!
+        } else {
+            fiat = NSLocalizedString("Syncing...", comment: "Balance")
+        }
+
+        return fiat
+    }
+    
+    override var balanceTitle: String {
+        NSLocalizedString("Dash balance on Coinbase", comment: "Coinbase Entry Point")
+    }
+    
+    override var signOutTitle: String {
+        NSLocalizedString("Disconnect Coinbase Account", comment: "Coinbase Entry Point")
+    }
 
     private var userDidChangeListenerHandle: UserDidChangeListenerHandle!
     private var accountDidChangeHandle: AnyObject?
 
     init() {
+        super.init(service: .coinbase)
+        
         userDidChangeListenerHandle = Coinbase.shared.addUserDidChangeListener { [weak self] user in
             if user == nil {
                 self?.userDidSignOut?()
@@ -109,34 +103,35 @@ final class CoinbaseEntryPointModel {
         }
     }
 
-    public func signOut() {
+    override func signOut() {
         Task {
             try await Coinbase.shared.signOut()
         }
+    }
+    
+    override func validate(operation type: IntegrationItemType) -> LocalizedError? {
+        switch type {
+        case .buyDash:
+            return hasPaymentMethods ? nil : Coinbase.Error.GeneralFailureReason.noPaymentMethods
+        default:
+            return super.validate(operation: type)
+        }
+    }
+    
+    override func handle(error: Swift.Error) {
+        super.handle(error: error)
+        
+        if case Coinbase.Error.GeneralFailureReason.noPaymentMethods = error {
+            addPaymentMethod()
+        }
+    }
+    
+    private func addPaymentMethod() {
+        UIApplication.shared.open(kCoinbaseAddPaymentMethodsURL)
     }
 
     deinit {
         NotificationCenter.default.removeObserver(accountDidChangeHandle!)
         Coinbase.shared.removeUserDidChangeListener(handle: userDidChangeListenerHandle)
-    }
-}
-
-// MARK: BalanceViewDataSource
-
-extension CoinbaseEntryPointModel: BalanceViewDataSource {
-    var mainAmountString: String {
-        balance.formattedDashAmount
-    }
-
-    var supplementaryAmountString: String {
-        let fiat: String
-
-        if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: balance.dashAmount, to: App.fiatCurrency) {
-            fiat = NumberFormatter.fiatFormatter.string(from: fiatAmount as NSNumber)!
-        } else {
-            fiat = NSLocalizedString("Syncing...", comment: "Balance")
-        }
-
-        return fiat
     }
 }

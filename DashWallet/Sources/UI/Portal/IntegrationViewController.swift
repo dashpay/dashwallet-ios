@@ -17,9 +17,9 @@
 
 import UIKit
 
-// MARK: - CoinbaseEntryPointViewController
+// MARK: - IntegrationViewController
 
-final class CoinbaseEntryPointViewController: BaseViewController, NetworkReachabilityHandling {
+final class IntegrationViewController: BaseViewController, NetworkReachabilityHandling {
     /// Conform to NetworkReachabilityHandling
     var networkStatusDidChange: ((NetworkStatus) -> ())?
     var reachabilityObserver: Any!
@@ -36,7 +36,7 @@ final class CoinbaseEntryPointViewController: BaseViewController, NetworkReachab
     @IBOutlet var mainContentView: UIView!
     @IBOutlet var lastKnownBalanceLabel: UILabel!
 
-    private let model = CoinbaseEntryPointModel()
+    private var model: BaseIntegrationModel!
 
     private var isNeedToShowSignOutError = true
 
@@ -46,7 +46,7 @@ final class CoinbaseEntryPointViewController: BaseViewController, NetworkReachab
         model.signOut()
     }
 
-    private func popCoinbaseFlow() {
+    private func popIntegrationFlow() {
         userSignedOutBlock?(isNeedToShowSignOutError)
     }
 
@@ -66,15 +66,18 @@ final class CoinbaseEntryPointViewController: BaseViewController, NetworkReachab
         stopNetworkMonitoring()
     }
 
-    class func controller() -> CoinbaseEntryPointViewController {
-        vc(CoinbaseEntryPointViewController.self, from: sb("Coinbase"))
+    class func controller(model: BaseIntegrationModel) -> IntegrationViewController {
+        let vc = vc(IntegrationViewController.self, from: sb("BuySellPortal"))
+        vc.model = model
+        
+        return vc
     }
 }
 
-extension CoinbaseEntryPointViewController {
+extension IntegrationViewController {
     private func configureModel() {
         model.userDidSignOut = { [weak self] in
-            self?.popCoinbaseFlow()
+            self?.popIntegrationFlow()
         }
         model.userDidChange = { [weak self] in
             self?.reloadView()
@@ -88,8 +91,8 @@ extension CoinbaseEntryPointViewController {
         mainContentView.isHidden = !isOnline
         connectionStatusView.backgroundColor = isOnline ? .systemGreen : .systemRed
         connectionStatusLabel.text = isOnline
-            ? NSLocalizedString("Connected", comment: "Coinbase Entry Point")
-            : NSLocalizedString("Disconnected", comment: "Coinbase Entry Point")
+            ? NSLocalizedString("Connected", comment: "Integration Entry Point")
+            : NSLocalizedString("Disconnected", comment: "Integration Entry Point")
         balanceView.dataSource = model
     }
 
@@ -99,13 +102,13 @@ extension CoinbaseEntryPointViewController {
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.largeTitleDisplayMode = .never
 
-        lastKnownBalanceLabel.text = NSLocalizedString("Last known balance", comment: "Coinbase Entry Point")
+        lastKnownBalanceLabel.text = NSLocalizedString("Last known balance", comment: "Integration Entry Point")
         lastKnownBalanceLabel.isHidden = true
         networkUnavailableView.isHidden = true
 
         connectionStatusView.layer.cornerRadius = 2
 
-        balanceTitleLabel.text = NSLocalizedString("Dash balance on Coinbase", comment: "Coinbase Entry Point")
+        balanceTitleLabel.text = model.balanceTitle
 
         balanceView.dashSymbolColor = .dw_dashBlue()
 
@@ -115,35 +118,31 @@ extension CoinbaseEntryPointViewController {
         tableView.backgroundColor = .dw_background()
 
         signOutButton.backgroundColor = .dw_background()
-        signOutButton.titleLabel?.font = UIFont.dw_font(forTextStyle: .body).withWeight(UIFont.Weight.medium.rawValue)
+        signOutButton.titleLabel?.font = UIFont.dw_mediumFont(ofSize: 14)
         signOutButton.layer.cornerRadius = 10
-        signOutButton.setTitle(NSLocalizedString("Disconnect Coinbase Account", comment: "Coinbase Entry Point"), for: .normal)
+        signOutButton.setTitle(model.signOutTitle, for: .normal)
 
         reloadView()
     }
 
-    private func showNoPaymentMethodsFlow() {
-        let title = NSLocalizedString("No payment methods found", comment: "Coinbase/Buy Dash")
-        let message = NSLocalizedString("Please add a payment method on Coinbase", comment: "Coinbase/Buy Dash")
+    private func showError(_ error: LocalizedError) {
+        let title = error.failureReason
+        let message = error.localizedDescription
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let addAction = UIAlertAction(title: NSLocalizedString("Add", comment: ""), style: .default) { [weak self] _ in
-            self?.addPaymentMethod()
+        let confirmAction = UIAlertAction(title: error.recoverySuggestion, style: .default) { [weak self] _ in
+            self?.model.handle(error: error)
         }
-        alert.addAction(addAction)
+        alert.addAction(confirmAction)
 
         let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel)
         alert.addAction(cancelAction)
         present(alert, animated: true)
     }
-
-    private func addPaymentMethod() {
-        UIApplication.shared.open(kCoinbaseAddPaymentMethodsURL)
-    }
 }
 
 // MARK: UITableViewDelegate, UITableViewDataSource
 
-extension CoinbaseEntryPointViewController: UITableViewDelegate, UITableViewDataSource {
+extension IntegrationViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         model.items.count
     }
@@ -167,20 +166,18 @@ extension CoinbaseEntryPointViewController: UITableViewDelegate, UITableViewData
         let item = model.items[indexPath.item]
         let vc: UIViewController
 
-        switch item {
-        case .buyDash:
-            guard model.hasPaymentMethods else {
-                showNoPaymentMethodsFlow()
-                return
-            }
-
-            vc = BuyDashViewController()
-        case .sellDash:
-            vc = BuyDashViewController()
-        case .convertCrypto:
-            vc = CustodialSwapsViewController()
-        case .transferDash:
-            vc = TransferAmountViewController()
+        if let error = model.validate(operation: item.type) {
+            showError(error)
+            return
+        }
+        
+        switch model.service {
+        case .coinbase:
+            vc = getCoinbaseVcFor(operation: item.type)
+        case .uphold:
+            vc = getUpholdVcFor(operation: item.type)
+        default:
+            return
         }
 
         vc.hidesBottomBarWhenPushed = true
@@ -213,5 +210,38 @@ final class ItemCell: UITableViewCell {
         super.awakeFromNib()
 
         contentView.backgroundColor = .dw_background()
+    }
+}
+
+// MARK: - Coinbase
+extension IntegrationViewController {
+    private func getCoinbaseVcFor(operation: IntegrationItemType) -> UIViewController {
+        switch operation {
+        case .buyDash:
+            return BuyDashViewController()
+        case .sellDash:
+            return BuyDashViewController()
+        case .convertCrypto:
+            return CustodialSwapsViewController()
+        case .transferDash:
+            return TransferAmountViewController()
+        }
+    }
+}
+
+// MARK: - Uphold
+extension IntegrationViewController {
+    private func getUpholdVcFor(operation: IntegrationItemType) -> UIViewController {
+        return DWUpholdViewController.init() // TODO
+//        switch operation {
+//        case .buyDash:
+//            return BuyDashViewController()
+//        case .sellDash:
+//            return BuyDashViewController()
+//        case .convertCrypto:
+//            return CustodialSwapsViewController()
+//        case .transferDash:
+//            return TransferAmountViewController()
+//        }
     }
 }
