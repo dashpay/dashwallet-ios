@@ -17,6 +17,7 @@
 
 import Foundation
 import Combine
+import AuthenticationServices
 
 // MARK: IntegrationEntryPointItem
 
@@ -54,6 +55,7 @@ enum UpholdPortalModelState: Int {
 
 final class UpholdPortalModel: BaseIntegrationModel {
     private var cancellableBag = Set<AnyCancellable>()
+    private var authenticationSession: Any?
     
     override var items: [IntegrationEntryPointItem] {
         UpholdEntryPointItem.supportedCases
@@ -67,7 +69,7 @@ final class UpholdPortalModel: BaseIntegrationModel {
         }
     }
 
-    private var dashCard: DWUpholdCardObject?
+    private(set) var dashCard: DWUpholdCardObject?
     private var fiatCards: [DWUpholdCardObject]?
 
     var stateDidChangeHandler: ((UpholdPortalModelState) -> Void)?
@@ -101,9 +103,17 @@ final class UpholdPortalModel: BaseIntegrationModel {
         NSLocalizedString("Disconnect Uphold Account", comment: "Uphold Entry Point")
     }
     
+    override var authenticationUrl: URL? {
+        DWUpholdClient.sharedInstance().startAuthRoutineByURL()
+    }
+    
+    override var logoutUrl: URL? {
+        URL(string: "https://wallet.uphold.com/dashboard/more")
+    }
     
     init() {
         super.init(service: .uphold)
+        isLoggedIn = DWUpholdClient.sharedInstance().isAuthorized
         
         NotificationCenter.default.publisher(for: NSNotification.Name.DWUpholdClientUserDidLogout)
             .sink { [weak self] _ in
@@ -112,7 +122,9 @@ final class UpholdPortalModel: BaseIntegrationModel {
             .store(in: &cancellableBag)
     }
 
-    func fetch() {
+    override func refresh() {
+        guard isLoggedIn else { return }
+        
         state = .loading
 
         DWUpholdClient.sharedInstance().getCards { [weak self] dashCard, fiatCards in
@@ -133,9 +145,26 @@ final class UpholdPortalModel: BaseIntegrationModel {
 
         return DWUpholdClient.sharedInstance().buyDashURL(forCard: dashCard)
     }
+    
+    override func logIn(callbackUrl: URL?) {
+        guard let url = callbackUrl else { return }
+        
+        DWUpholdClient.sharedInstance().completeAuthRoutine(with: url) { [weak self] success in
+            self?.isLoggedIn = success
+            self?.refresh()
+        }
+    }
 
-    override func signOut() {
+    override func logOut() {
         DWUpholdClient.sharedInstance().logOut()
+    }
+    
+    override func onFinish() {
+        DWUpholdClient.sharedInstance().updateLastAccessDate();
+    }
+    
+    override func isValidCallbackUrl(url: URL) -> Bool {
+        url.absoluteString.contains("uphold")
     }
 
     func transactionURL(for transaction: DWUpholdTransactionObject) -> URL? {

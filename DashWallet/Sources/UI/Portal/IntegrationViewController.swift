@@ -17,6 +17,7 @@
 
 import UIKit
 import Combine
+import AuthenticationServices
 
 // MARK: - IntegrationViewController
 
@@ -33,7 +34,7 @@ final class IntegrationViewController: BaseViewController, NetworkReachabilityHa
     @IBOutlet var balanceTitleLabel: UILabel!
     @IBOutlet var balanceView: BalanceView!
     @IBOutlet var tableView: UITableView!
-    @IBOutlet var signOutButton: UIButton!
+    @IBOutlet var signInOutButton: UIButton!
     @IBOutlet var networkUnavailableView: UIView!
     @IBOutlet var mainContentView: UIView!
     @IBOutlet var lastKnownBalanceLabel: UILabel!
@@ -41,11 +42,18 @@ final class IntegrationViewController: BaseViewController, NetworkReachabilityHa
     private var model: BaseIntegrationModel!
 
     private var isNeedToShowSignOutError = true
+    private var authSession: ASWebAuthenticationSession? = nil
 
     @IBAction
     func signOutAction() {
         isNeedToShowSignOutError = false
-        model.signOut()
+        
+        if model.isLoggedIn {
+            model.logOut()
+            onLogout()
+        } else {
+            initAuthentication(url: model.authenticationUrl)
+        }
     }
 
     private func popIntegrationFlow() {
@@ -64,9 +72,16 @@ final class IntegrationViewController: BaseViewController, NetworkReachabilityHa
         startNetworkMonitoring()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        model.refresh()
+    }
+    
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
+        
         cancellableBag.removeAll()
+        model.onFinish()
     }
 
     deinit {
@@ -90,13 +105,20 @@ extension IntegrationViewController {
         model.$isLoggedIn
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isLoggedIn in
-                guard let wSelf = self else { return }
+                guard let strongSelf = self else { return }
                 
-                if wSelf.model.shouldPopOnLogout && !isLoggedIn {
-                    wSelf.popIntegrationFlow()
+                if strongSelf.model.shouldPopOnLogout && !isLoggedIn {
+                    strongSelf.popIntegrationFlow()
                 } else {
-                    wSelf.reloadView()
+                    strongSelf.reloadView()
                 }
+            }
+            .store(in: &cancellableBag)
+        
+        NotificationCenter.default.publisher(for: NSNotification.Name.authURLReceived)
+            .sink { [weak self] n in
+                guard let url = n.object as? URL else { return }
+                self?.handleCallbackURL(url: url)
             }
             .store(in: &cancellableBag)
     }
@@ -110,6 +132,7 @@ extension IntegrationViewController {
         balanceView.isHidden = !model.isLoggedIn
         balanceTitleLabel.isHidden = !model.isLoggedIn
         configureLogoutButton(isLoggedIn: model.isLoggedIn)
+        tableView.reloadData()
     }
     
     private func setTableHeight() {
@@ -127,19 +150,17 @@ extension IntegrationViewController {
     
     private func configureLogoutButton(isLoggedIn: Bool) {
         if isLoggedIn {
-            signOutButton.titleLabel?.textColor = .dw_label()
-            signOutButton.backgroundColor = .dw_background()
-            signOutButton.setImage(UIImage(named: "logout"), for: .normal)
-            signOutButton.setTitle(model.signOutTitle, for: .normal)
-            signOutButton.contentHorizontalAlignment = .left
-            signOutButton.heightAnchor.constraint(equalToConstant: 62).isActive = true
+            signInOutButton.setTitle(model.signOutTitle, for: .normal)
+            signInOutButton.setTitleColor(.dw_label(), for: .normal)
+            signInOutButton.backgroundColor = .dw_background()
+            signInOutButton.setImage(UIImage(named: "logout"), for: .normal)
+            signInOutButton.contentHorizontalAlignment = .left
         } else {
-            signOutButton.titleLabel?.textColor = UIColor(named: "DashBlueColor")
-            signOutButton.backgroundColor = UIColor(named: "LightBlueButtonColor")
-            signOutButton.setImage(nil, for: .normal)
-            signOutButton.setTitle(model.signInTitle, for: .normal)
-            signOutButton.contentHorizontalAlignment = .center
-            signOutButton.heightAnchor.constraint(equalToConstant: 48).isActive = true
+            signInOutButton.setTitle(model.signInTitle, for: .normal)
+            signInOutButton.setTitleColor(UIColor(named: "DashBlueColor"), for: .normal)
+            signInOutButton.backgroundColor = UIColor(named: "LightBlueButtonColor")
+            signInOutButton.setImage(nil, for: .normal)
+            signInOutButton.contentHorizontalAlignment = .center
         }
     }
 
@@ -165,8 +186,8 @@ extension IntegrationViewController {
         tableView.clipsToBounds = true
         tableView.backgroundColor = .dw_background()
         
-        signOutButton.titleLabel?.font = UIFont.dw_mediumFont(ofSize: 15)
-        signOutButton.layer.cornerRadius = 10
+        signInOutButton.titleLabel?.font = UIFont.dw_mediumFont(ofSize: 15)
+        signInOutButton.layer.cornerRadius = 10
 
         reloadView()
         setTableHeight()
@@ -215,24 +236,172 @@ extension IntegrationViewController: UITableViewDelegate, UITableViewDataSource 
         tableView.deselectRow(at: indexPath, animated: true)
 
         let item = model.items[indexPath.item]
-        let vc: UIViewController
 
         if let error = model.validate(operation: item.type) {
             showError(error)
             return
         }
+    
+        if let vc = getViewControllerFor(operation: item.type) {
+            vc.hidesBottomBarWhenPushed = true
+            navigationController?.pushViewController(vc, animated: true)
+        }
+    }
+}
+
+// MARK: - Authentication
+
+extension IntegrationViewController: ASWebAuthenticationPresentationContextProviding {
+    private func initAuthentication(url: URL?) {
+        guard let url = url else { return }
         
-        switch model.service {
-        case .coinbase:
-            vc = getCoinbaseVcFor(operation: item.type)
-        case .uphold:
-            vc = getUpholdVcFor(operation: item.type)
-        default:
+        signInOutButton.isUserInteractionEnabled = false
+
+        // Starting iOS 14.5 `callbackURLScheme` is required to have the following format:
+        // "The provided scheme is not valid. A scheme should not include special characters such as ":" or "/"."
+        // See https://developer.apple.com/forums/thread/679251
+        let callbackURLScheme = "dashwallet://".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+        
+        let completionHandler: (URL?, Error?) -> Void = { [weak self] callbackURL, error in
+            guard let strongSelf = self else {
+                return
+            }
+
+            if let callbackURL = callbackURL {
+                strongSelf.handleCallbackURL(url: callbackURL)
+            }
+            
+            strongSelf.signInOutButton.isUserInteractionEnabled = true
+        }
+        
+        let authenticationSession = ASWebAuthenticationSession(url: url, callbackURLScheme: callbackURLScheme, completionHandler: completionHandler)
+        
+        authenticationSession.presentationContextProvider = self
+        authenticationSession.start()
+        self.authSession = authenticationSession
+    }
+    
+    private func handleCallbackURL(url: URL) {
+        guard model.isValidCallbackUrl(url: url) else {
             return
         }
 
-        vc.hidesBottomBarWhenPushed = true
-        navigationController?.pushViewController(vc, animated: true)
+        self.authSession = nil
+        model.logIn(callbackUrl: url)
+    }
+
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        self.view.window!
+    }
+}
+
+// MARK: - Service Routing
+
+extension IntegrationViewController {
+    func getViewControllerFor(operation: IntegrationItemType) -> UIViewController? {
+        switch model.service {
+        case .coinbase:
+            return getCoinbaseVcFor(operation: operation)
+        case .uphold:
+            return getUpholdVcFor(operation: operation)
+        default:
+            return nil
+        }
+    }
+    
+    func onLogout() {
+        if model.service == .uphold {
+            onUpholdLogout()
+        }
+    }
+}
+
+// MARK: - Coinbase
+
+extension IntegrationViewController {
+    private func getCoinbaseVcFor(operation: IntegrationItemType) -> UIViewController {
+        switch operation {
+        case .buyDash:
+            return BuyDashViewController()
+        case .sellDash:
+            return BuyDashViewController()
+        case .convertCrypto:
+            return CustodialSwapsViewController()
+        case .transferDash:
+            return TransferAmountViewController()
+        }
+    }
+}
+
+// MARK: - Uphold
+
+extension IntegrationViewController: DWUpholdLogoutTutorialViewControllerDelegate, UpholdTransferViewControllerDelegate {
+    
+    private func getUpholdVcFor(operation: IntegrationItemType) -> UIViewController? {
+        switch operation {
+        case .buyDash:
+            return BuyDashViewController() // TODO: topper
+        case .transferDash:
+            return createUpholdTransferController()
+        default:
+            return nil
+        }
+    }
+    
+    func onUpholdLogout() {
+        let logoutTutorialController = DWUpholdLogoutTutorialViewController.controller()
+        logoutTutorialController.delegate = self
+        let alertController = DWAlertController(contentController: logoutTutorialController)
+        alertController.setupActions(logoutTutorialController.providedActions)
+        alertController.preferredAction = logoutTutorialController.preferredAction
+        present(alertController, animated: true, completion: nil)
+    }
+    
+    func upholdLogoutTutorialViewControllerDidCancel(_ controller: DWUpholdLogoutTutorialViewController) {
+        controller.dismiss(animated: true)
+    }
+    
+    func upholdLogoutTutorialViewControllerOpenUpholdWebsite(_ controller: DWUpholdLogoutTutorialViewController) {
+        controller.dismiss(animated: true, completion: { [weak self] in
+            guard let url = self?.model.logoutUrl else { return }
+            self?.initAuthentication(url: url)
+        })
+    }
+    
+    private func createUpholdTransferController() -> UIViewController? {
+        guard model.isLoggedIn else { return nil }
+        guard let dashCard = (self.model as? UpholdPortalModel)?.dashCard else { return nil }
+        
+        let controller = UpholdTransferViewController.init(card: dashCard)
+        controller.delegate = self
+        controller.hidesBottomBarWhenPushed = true
+        
+        return controller
+    }
+    
+    func upholdTransferViewController(_ vc: UpholdTransferViewController, didSend transaction: DWUpholdTransactionObject) {
+        navigationController?.popViewController(animated: true)
+
+        let model = self.model as! UpholdPortalModel
+        let alert = UIAlertController(title: NSLocalizedString("Uphold", comment: ""),
+                                      message: model.successMessageText(for: transaction),
+                                      preferredStyle: .alert)
+
+        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""),
+                                     style: .cancel,
+                                     handler: nil)
+        alert.addAction(okAction)
+
+        let openAction = UIAlertAction(title: NSLocalizedString("See on Uphold", comment: ""),
+                                       style: .default) { _ in
+            if let url = model.transactionURL(for: transaction) {
+                UIApplication.shared.open(url)
+            }
+        }
+        alert.addAction(openAction)
+        alert.preferredAction = openAction
+
+        navigationController?.present(alert, animated: true, completion: nil)
     }
 }
 
@@ -269,35 +438,13 @@ final class ItemCell: UITableViewCell {
     }
 }
 
-// MARK: - Coinbase
-extension IntegrationViewController {
-    private func getCoinbaseVcFor(operation: IntegrationItemType) -> UIViewController {
-        switch operation {
-        case .buyDash:
-            return BuyDashViewController()
-        case .sellDash:
-            return BuyDashViewController()
-        case .convertCrypto:
-            return CustodialSwapsViewController()
-        case .transferDash:
-            return TransferAmountViewController()
-        }
-    }
+// MARK: - Notifications
+
+extension Notification.Name {
+    static let authURLReceived: Notification.Name = .init(rawValue: "DWAuthURLNotification")
 }
 
-// MARK: - Uphold
-extension IntegrationViewController {
-    private func getUpholdVcFor(operation: IntegrationItemType) -> UIViewController {
-        return DWUpholdViewController.init() // TODO
-//        switch operation {
-//        case .buyDash:
-//            return BuyDashViewController()
-//        case .sellDash:
-//            return BuyDashViewController()
-//        case .convertCrypto:
-//            return CustodialSwapsViewController()
-//        case .transferDash:
-//            return TransferAmountViewController()
-//        }
-    }
+
+@objc extension NSNotification {
+    public static let authURLReceived = Notification.Name.authURLReceived
 }

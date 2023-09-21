@@ -111,7 +111,7 @@ final class CoinbaseEntryPointModel: BaseIntegrationModel {
         }
     }
 
-    override func signOut() {
+    override func logOut() {
         Task {
             try await Coinbase.shared.signOut()
         }

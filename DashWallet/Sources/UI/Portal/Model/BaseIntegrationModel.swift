@@ -70,6 +70,8 @@ class BaseIntegrationModel: BalanceViewDataSource {
     var signOutTitle: String { "" }
     var items: [IntegrationEntryPointItem] { [] }
     var shouldPopOnLogout: Bool { false }
+    var authenticationUrl: URL? { nil }
+    var logoutUrl: URL? { nil }
     @Published var isLoggedIn = false
     
     let service: Service
@@ -85,5 +87,15 @@ class BaseIntegrationModel: BalanceViewDataSource {
     
     func handle(error: Error) { }
     
-    func signOut() { }
+    func logIn(callbackUrl: URL?) { }
+    
+    func logOut() { }
+    
+    func refresh() { }
+    
+    func onFinish() { }
+    
+    func isValidCallbackUrl(url: URL) -> Bool {
+        false
+    }
 }
