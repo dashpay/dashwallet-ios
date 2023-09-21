@@ -132,12 +132,14 @@ extension IntegrationViewController {
             signOutButton.setImage(UIImage(named: "logout"), for: .normal)
             signOutButton.setTitle(model.signOutTitle, for: .normal)
             signOutButton.contentHorizontalAlignment = .left
+            signOutButton.heightAnchor.constraint(equalToConstant: 62).isActive = true
         } else {
             signOutButton.titleLabel?.textColor = UIColor(named: "DashBlueColor")
             signOutButton.backgroundColor = UIColor(named: "LightBlueButtonColor")
             signOutButton.setImage(nil, for: .normal)
             signOutButton.setTitle(model.signInTitle, for: .normal)
             signOutButton.contentHorizontalAlignment = .center
+            signOutButton.heightAnchor.constraint(equalToConstant: 48).isActive = true
         }
     }
 
@@ -202,7 +204,11 @@ extension IntegrationViewController: UITableViewDelegate, UITableViewDataSource 
     }
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        62.0
+        if model.items[indexPath.item].hasAdditionalInfo {
+            return 90.0
+        } else {
+            return 62.0
+        }
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -237,6 +243,7 @@ protocol ItemCellDataProvider {
     var title: String { get }
     var description: String { get }
     var alwaysEnabled: Bool { get }
+    var hasAdditionalInfo: Bool { get }
 }
 
 // MARK: - ItemCell
@@ -245,11 +252,14 @@ final class ItemCell: UITableViewCell {
     @IBOutlet var iconView: UIImageView!
     @IBOutlet var nameLabel: UILabel!
     @IBOutlet var secondaryLabel: UILabel!
+    // The additional info view is pre-set to "Powered by Topper" for now.
+    @IBOutlet var additionalInfoView: UIView!
 
     fileprivate func update(with item: ItemCellDataProvider, isLoggedIn: Bool) {
-        iconView.image = .init(named: isLoggedIn ? item.icon : item.icon + ".disabled")
+        iconView.image = .init(named: isLoggedIn || item.alwaysEnabled ? item.icon : item.icon + ".disabled")
         nameLabel.text = item.title
         secondaryLabel.text = item.description
+        additionalInfoView.isHidden = !item.hasAdditionalInfo
     }
 
     override func awakeFromNib() {

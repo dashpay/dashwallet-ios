@@ -27,6 +27,7 @@ struct UpholdEntryPointItem: IntegrationEntryPointItem {
     var title: String { type.title }
     var icon: String { type.icon }
     var alwaysEnabled: Bool { type == .buyDash }
+    var hasAdditionalInfo: Bool { type == .buyDash }
 
     var description: String {
         switch type {

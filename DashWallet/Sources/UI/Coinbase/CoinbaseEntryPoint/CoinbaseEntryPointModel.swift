@@ -26,6 +26,7 @@ struct CoinbaseEntryPointItem: IntegrationEntryPointItem {
     var title: String { type.title }
     var icon: String { type.icon }
     var alwaysEnabled: Bool { false }
+    var hasAdditionalInfo: Bool { false }
 
     var description: String {
         switch type {
