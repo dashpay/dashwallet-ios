@@ -42,53 +42,42 @@ struct UpholdEntryPointItem: IntegrationEntryPointItem {
     }
 }
 
-// MARK: - UpholdPortalModelState
-
-enum UpholdPortalModelState: Int {
-    case signedOut
-    case loading
-    case ready
-    case failed
-}
-
 // MARK: - UpholdPortalModel
 
 final class UpholdPortalModel: BaseIntegrationModel {
-    private var cancellableBag = Set<AnyCancellable>()
     private var authenticationSession: Any?
     
     override var items: [IntegrationEntryPointItem] {
         UpholdEntryPointItem.supportedCases
     }
-    
-    private var state: UpholdPortalModelState = .loading {
-        didSet {
-            if oldValue != state {
-                stateDidChangeHandler?(state)
-            }
-        }
-    }
 
     private(set) var dashCard: DWUpholdCardObject?
     private var fiatCards: [DWUpholdCardObject]?
-
-    var stateDidChangeHandler: ((UpholdPortalModelState) -> Void)?
-    
     
     override var mainAmountString: String {
-        guard let dashCard else {
-            return NSLocalizedString("Balance not available", comment: "Uphold entry point")
+        if let dashCard = dashCard {
+            return dashCard.formattedDashAmount
         }
-
-        return dashCard.formattedDashAmount
+        
+        if let lastKnownBalance = DWUpholdClient.sharedInstance().lastKnownBalance {
+            return lastKnownBalance.formattedDashAmount
+        }
+        
+        return (0 as UInt64).formattedDashAmount
     }
 
     override var supplementaryAmountString: String {
-        guard let dashCard else {
-            return NSLocalizedString("Balance not available", comment: "Uphold entry point")
+        if let dashCard = dashCard {
+            return dashCard.fiatBalanceFormatted(App.fiatCurrency)
         }
-
-        return dashCard.fiatBalanceFormatted(App.fiatCurrency)
+        
+        if let lastKnownBalance = DWUpholdClient.sharedInstance().lastKnownBalance {
+            if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: lastKnownBalance as Decimal, to: App.fiatCurrency) {
+                return NumberFormatter.fiatFormatter.string(from: fiatAmount as NSNumber)!
+            }
+        }
+        
+        return NSLocalizedString("Syncing...", comment: "Balance")
     }
     
     override var balanceTitle: String {

@@ -115,6 +115,26 @@ extension IntegrationViewController {
             }
             .store(in: &cancellableBag)
         
+        model.$state
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                guard let strongSelf = self else { return }
+                
+                if state == .loading {
+                    UIView.animate(withDuration: 0.5,
+                                   delay:0.0,
+                                   options:[.allowUserInteraction, .curveEaseInOut, .autoreverse, .repeat],
+                                   animations: { strongSelf.balanceTitleLabel.alpha = 0 },
+                                   completion: nil)
+                } else {
+                    strongSelf.balanceTitleLabel.layer.removeAllAnimations()
+                    strongSelf.balanceTitleLabel.alpha = 1
+                }
+                
+                strongSelf.reloadView()
+            }
+            .store(in: &cancellableBag)
+        
         NotificationCenter.default.publisher(for: NSNotification.Name.authURLReceived)
             .sink { [weak self] n in
                 guard let url = n.object as? URL else { return }
@@ -125,7 +145,7 @@ extension IntegrationViewController {
 
     private func reloadView() {
         let isOnline = networkStatus == .online
-        lastKnownBalanceLabel.isHidden = isOnline || !model.isLoggedIn
+        lastKnownBalanceLabel.isHidden = (isOnline && model.state != .failed) || !model.isLoggedIn
         networkUnavailableView.isHidden = isOnline
         mainContentView.isHidden = !isOnline
         balanceView.dataSource = model

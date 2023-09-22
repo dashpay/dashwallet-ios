@@ -21,7 +21,6 @@
 
 #import "DWUIKit.h"
 #import "DWUpholdClient.h"
-#import "DWUpholdMainModel.h"
 #import "dashwallet-Swift.h"
 #import <UIKit/UIKit.h>
 
@@ -37,8 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UIButton *buyButton;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
 
-@property (strong, nonatomic) DWUpholdMainModel *model;
-
 @end
 
 @implementation DWUpholdMainViewController
@@ -46,13 +43,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)controller {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"UpholdMainStoryboard" bundle:nil];
     return [storyboard instantiateInitialViewController];
-}
-
-- (DWUpholdMainModel *)model {
-    if (!_model) {
-        _model = [[DWUpholdMainModel alloc] init];
-    }
-    return _model;
 }
 
 - (void)viewDidLoad {
@@ -77,47 +67,42 @@ NS_ASSUME_NONNULL_BEGIN
                                name:DWUpholdClientUserDidLogoutNotification
                              object:nil];
 
-    [notificationCenter addObserver:self.model
-                           selector:@selector(fetch)
-                               name:UIApplicationDidBecomeActiveNotification
-                             object:nil];
-
-    [self mvvm_observe:@"self.model.state"
-                  with:^(typeof(self) self, NSNumber *value) {
-                      switch (self.model.state) {
-                          case DWUpholdMainModelState_Loading: {
-                              self.titleLabel.text = NSLocalizedString(@"Your Uphold account Dash balance is", nil);
-                              [self.balanceActivityIndicator startAnimating];
-                              self.balanceLabel.hidden = YES;
-                              self.retryButton.hidden = YES;
-                              self.transferButton.enabled = NO;
-                              self.buyButton.enabled = NO;
-
-                              break;
-                          }
-                          case DWUpholdMainModelState_Done: {
-                              self.titleLabel.text = NSLocalizedString(@"Your Uphold account Dash balance is", nil);
-                              [self.balanceActivityIndicator stopAnimating];
-                              self.balanceLabel.hidden = NO;
-                              self.balanceLabel.attributedText = [self.model availableDashString];
-                              self.retryButton.hidden = YES;
-                              self.transferButton.enabled = YES;
-                              self.buyButton.enabled = YES;
-
-                              break;
-                          }
-                          case DWUpholdMainModelState_Failed: {
-                              self.titleLabel.text = NSLocalizedString(@"Something went wrong", nil);
-                              [self.balanceActivityIndicator stopAnimating];
-                              self.balanceLabel.hidden = YES;
-                              self.retryButton.hidden = NO;
-                              self.transferButton.enabled = NO;
-                              self.buyButton.enabled = NO;
-
-                              break;
-                          }
-                      }
-                  }];
+//    [self mvvm_observe:@"self.model.state"
+//                  with:^(typeof(self) self, NSNumber *value) {
+//                      switch (self.model.state) {
+//                          case DWUpholdMainModelState_Loading: {
+//                              self.titleLabel.text = NSLocalizedString(@"Your Uphold account Dash balance is", nil);
+//                              [self.balanceActivityIndicator startAnimating];
+//                              self.balanceLabel.hidden = YES;
+//                              self.retryButton.hidden = YES;
+//                              self.transferButton.enabled = NO;
+//                              self.buyButton.enabled = NO;
+//
+//                              break;
+//                          }
+//                          case DWUpholdMainModelState_Done: {
+//                              self.titleLabel.text = NSLocalizedString(@"Your Uphold account Dash balance is", nil);
+//                              [self.balanceActivityIndicator stopAnimating];
+//                              self.balanceLabel.hidden = NO;
+//                              self.balanceLabel.attributedText = [self.model availableDashString];
+//                              self.retryButton.hidden = YES;
+//                              self.transferButton.enabled = YES;
+//                              self.buyButton.enabled = YES;
+//
+//                              break;
+//                          }
+//                          case DWUpholdMainModelState_Failed: {
+//                              self.titleLabel.text = NSLocalizedString(@"Something went wrong", nil);
+//                              [self.balanceActivityIndicator stopAnimating];
+//                              self.balanceLabel.hidden = YES;
+//                              self.retryButton.hidden = NO;
+//                              self.transferButton.enabled = NO;
+//                              self.buyButton.enabled = NO;
+//
+//                              break;
+//                          }
+//                      }
+//                  }];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -135,7 +120,7 @@ NS_ASSUME_NONNULL_BEGIN
     rightBarButtonItem.tintColor = [UIColor dw_labelColor];
     [navigationItem setRightBarButtonItem:rightBarButtonItem animated:YES];
 
-    [self.model fetch];
+//    [self.model fetch];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -159,66 +144,47 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Actions
 
-- (IBAction)retryButtonAction:(id)sender {
-    [self.model fetch];
-}
-
-- (IBAction)transferButtonAction:(id)sender {
-    DWUpholdTransferViewController *controller = [[DWUpholdTransferViewController alloc] initWithCard:self.model.dashCard];
-    controller.delegate = self;
-    controller.hidesBottomBarWhenPushed = YES;
-    [self.navigationController pushViewController:controller animated:YES];
-}
-
-- (IBAction)buyButtonAction:(id)sender {
-    NSURL *url = [self.model buyDashURL];
-    if (!url) {
-        return;
-    }
-
-    [self openSafariAppWithURL:url];
-}
-
 - (void)logOutButtonAction:(id)sender {
-    [self.model logOut];
+//    [self.model logOut];
     [self.delegate upholdMainViewControllerUserDidLogout:self];
 }
 
 #pragma mark - DWUpholdTransferViewControllerDelegate
 
-- (void)upholdTransferViewController:(DWUpholdTransferViewController *)controller
-                  didSendTransaction:(DWUpholdTransactionObject *)transaction {
-    [self.navigationController popViewControllerAnimated:YES];
-
-    UIAlertController *alert =
-        [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Uphold", nil)
-                                            message:[self.model successMessageTextForTransaction:transaction]
-                                     preferredStyle:UIAlertControllerStyleAlert];
-
-    UIAlertAction *okAction =
-        [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
-                                 style:UIAlertActionStyleCancel
-                               handler:nil];
-    [alert addAction:okAction];
-
-    UIAlertAction *openAction =
-        [UIAlertAction actionWithTitle:NSLocalizedString(@"See on Uphold", nil)
-                                 style:UIAlertActionStyleDefault
-                               handler:^(UIAlertAction *_Nonnull action) {
-                                   [self openSafariAppWithURL:[self.model transactionURLForTransaction:transaction]];
-                               }];
-    [alert addAction:openAction];
-    alert.preferredAction = openAction;
-
-    [self.navigationController presentViewController:alert animated:YES completion:nil];
-}
+// TODO:
+//- (void)upholdTransferViewController:(DWUpholdTransferViewController *)controller
+//                  didSendTransaction:(DWUpholdTransactionObject *)transaction {
+//    [self.navigationController popViewControllerAnimated:YES];
+//
+//    UIAlertController *alert =
+//        [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Uphold", nil)
+//                                            message:[self.model successMessageTextForTransaction:transaction]
+//                                     preferredStyle:UIAlertControllerStyleAlert];
+//
+//    UIAlertAction *okAction =
+//        [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
+//                                 style:UIAlertActionStyleCancel
+//                               handler:nil];
+//    [alert addAction:okAction];
+//
+//    UIAlertAction *openAction =
+//        [UIAlertAction actionWithTitle:NSLocalizedString(@"See on Uphold", nil)
+//                                 style:UIAlertActionStyleDefault
+//                               handler:^(UIAlertAction *_Nonnull action) {
+//                                   [self openSafariAppWithURL:[self.model transactionURLForTransaction:transaction]];
+//                               }];
+//    [alert addAction:openAction];
+//    alert.preferredAction = openAction;
+//
+//    [self.navigationController presentViewController:alert animated:YES completion:nil];
+//}
 
 #pragma mark - Private
 
 - (void)reloadAttributedData {
-    if (self.model.state == DWUpholdMainModelState_Done) {
-        self.balanceLabel.attributedText = [self.model availableDashString];
-    }
+//    if (self.model.state == DWUpholdMainModelState_Done) {
+//        self.balanceLabel.attributedText = [self.model availableDashString];
+//    }
 }
 
 - (void)openSafariAppWithURL:(NSURL *)url {

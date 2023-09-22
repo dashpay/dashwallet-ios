@@ -332,7 +332,6 @@
 		2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE552230FF4600956D5F /* UpholdOTPStoryboard.storyboard */; };
 		2A9FFE9B2230FF4700956D5F /* DWUpholdLogoutTutorialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE652230FF4600956D5F /* DWUpholdLogoutTutorialViewController.m */; };
 		2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE662230FF4600956D5F /* UpholdLogoutTutorialStoryboard.storyboard */; };
-		2A9FFE9F2230FF4700956D5F /* DWUpholdMainModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE6D2230FF4600956D5F /* DWUpholdMainModel.m */; };
 		2A9FFEA02230FF4700956D5F /* UpholdMainStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE6E2230FF4600956D5F /* UpholdMainStoryboard.storyboard */; };
 		2A9FFEA12230FF4700956D5F /* DWUpholdMainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE712230FF4600956D5F /* DWUpholdMainViewController.m */; };
 		2A9FFF192233E56E00956D5F /* DWIntrinsicTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF072233E56E00956D5F /* DWIntrinsicTableView.m */; };
@@ -1396,10 +1395,8 @@
 		2A9FFE652230FF4600956D5F /* DWUpholdLogoutTutorialViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdLogoutTutorialViewController.m; sourceTree = "<group>"; };
 		2A9FFE662230FF4600956D5F /* UpholdLogoutTutorialStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdLogoutTutorialStoryboard.storyboard; sourceTree = "<group>"; };
 		2A9FFE672230FF4600956D5F /* DWUpholdLogoutTutorialViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdLogoutTutorialViewController.h; sourceTree = "<group>"; };
-		2A9FFE6D2230FF4600956D5F /* DWUpholdMainModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdMainModel.m; sourceTree = "<group>"; };
 		2A9FFE6E2230FF4600956D5F /* UpholdMainStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdMainStoryboard.storyboard; sourceTree = "<group>"; };
 		2A9FFE6F2230FF4600956D5F /* DWUpholdMainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdMainViewController.h; sourceTree = "<group>"; };
-		2A9FFE702230FF4600956D5F /* DWUpholdMainModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdMainModel.h; sourceTree = "<group>"; };
 		2A9FFE712230FF4600956D5F /* DWUpholdMainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdMainViewController.m; sourceTree = "<group>"; };
 		2A9FFF072233E56E00956D5F /* DWIntrinsicTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWIntrinsicTableView.m; sourceTree = "<group>"; };
 		2A9FFF0C2233E56E00956D5F /* DWIntrinsicTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWIntrinsicTableView.h; sourceTree = "<group>"; };
@@ -3865,8 +3862,6 @@
 		2A9FFE6C2230FF4600956D5F /* Main */ = {
 			isa = PBXGroup;
 			children = (
-				2A9FFE702230FF4600956D5F /* DWUpholdMainModel.h */,
-				2A9FFE6D2230FF4600956D5F /* DWUpholdMainModel.m */,
 				2A9FFE6F2230FF4600956D5F /* DWUpholdMainViewController.h */,
 				2A9FFE712230FF4600956D5F /* DWUpholdMainViewController.m */,
 				2A9FFE6E2230FF4600956D5F /* UpholdMainStoryboard.storyboard */,
@@ -6873,7 +6868,6 @@
 				471A2608289ACDA00056B7B2 /* AddressUserInfoDAO.swift in Sources */,
 				2AEC5CC2249755BB00F4A689 /* DWDashPayContactsUpdater.m in Sources */,
 				2A0C69D323143568001B8C90 /* DWModalTransition.m in Sources */,
-				2A9FFE9F2230FF4700956D5F /* DWUpholdMainModel.m in Sources */,
 				47AE8BF928C1306000490F5E /* MerchantsDataProvider.swift in Sources */,
 				119E8D082905409300D406C1 /* FullCrowdNodeSignUpTxSet.swift in Sources */,
 				2A4431E922D738C0009BAF7F /* DWSeedPhraseModel.m in Sources */,

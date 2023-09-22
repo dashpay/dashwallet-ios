@@ -16,6 +16,7 @@
 //
 
 import Foundation
+import Combine
 
 // MARK: - IntegrationItemType
 
@@ -60,9 +61,19 @@ protocol IntegrationEntryPointItem: ItemCellDataProvider {
     var type: IntegrationItemType { get }
 }
 
+// MARK: - IntegraionPortalModelState
+
+enum IntegraionPortalModelState: Int {
+    case loading
+    case ready
+    case failed
+}
+
 // MARK: - BaseIntegrationModel
 
 class BaseIntegrationModel: BalanceViewDataSource {
+    var cancellableBag = Set<AnyCancellable>()
+    
     var mainAmountString: String { "" }
     var supplementaryAmountString: String { "" }
     var balanceTitle: String { "" }
@@ -73,12 +84,19 @@ class BaseIntegrationModel: BalanceViewDataSource {
     var authenticationUrl: URL? { nil }
     var logoutUrl: URL? { nil }
     @Published var isLoggedIn = false
+    @Published var state: IntegraionPortalModelState = .ready
     
     let service: Service
     var userDidChange: (() -> ())?
     
     init(service: Service) {
         self.service = service
+        
+        NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
+            .sink { [weak self] _ in
+                self?.refresh()
+            }
+            .store(in: &cancellableBag)
     }
     
     func validate(operation type: IntegrationItemType) -> LocalizedError? {
