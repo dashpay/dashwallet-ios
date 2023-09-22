@@ -360,7 +360,7 @@ extension IntegrationViewController: DWUpholdLogoutTutorialViewControllerDelegat
     private func getUpholdVcFor(operation: IntegrationItemType) -> UIViewController? {
         switch operation {
         case .buyDash:
-            return BuyDashViewController() // TODO: topper
+            return createTopperWidget()
         case .transferDash:
             return createUpholdTransferController()
         default:
@@ -386,6 +386,15 @@ extension IntegrationViewController: DWUpholdLogoutTutorialViewControllerDelegat
             guard let url = self?.model.logoutUrl else { return }
             self?.initAuthentication(url: url)
         })
+    }
+    
+    private func createTopperWidget() -> UIViewController? {
+        let urlString = TopperViewModel.shared.topperBuyUrl(walletName: Bundle.main.infoDictionary!["CFBundleDisplayName"] as! String)
+        if let url = URL(string: urlString) {
+            return SFSafariViewController.dw_controller(with: url)
+        }
+        
+        return nil
     }
     
     private func createUpholdTransferController() -> UIViewController? {
