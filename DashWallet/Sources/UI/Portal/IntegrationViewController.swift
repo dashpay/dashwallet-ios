@@ -39,7 +39,7 @@ final class IntegrationViewController: BaseViewController, NetworkReachabilityHa
     @IBOutlet var mainContentView: UIView!
     @IBOutlet var lastKnownBalanceLabel: UILabel!
 
-    private var model: BaseIntegrationModel!
+    internal var model: BaseIntegrationModel!
 
     private var isNeedToShowSignOutError = true
     private var authSession: ASWebAuthenticationSession? = nil
@@ -272,7 +272,7 @@ extension IntegrationViewController: UITableViewDelegate, UITableViewDataSource 
 // MARK: - Authentication
 
 extension IntegrationViewController: ASWebAuthenticationPresentationContextProviding {
-    private func initAuthentication(url: URL?) {
+    internal func initAuthentication(url: URL?) {
         guard let url = url else { return }
         
         signInOutButton.isUserInteractionEnabled = false
@@ -318,7 +318,7 @@ extension IntegrationViewController: ASWebAuthenticationPresentationContextProvi
 // MARK: - Service Routing
 
 extension IntegrationViewController {
-    func getViewControllerFor(operation: IntegrationItemType) -> UIViewController? {
+    private func getViewControllerFor(operation: IntegrationItemType) -> UIViewController? {
         switch model.service {
         case .coinbase:
             return getCoinbaseVcFor(operation: operation)
@@ -329,108 +329,10 @@ extension IntegrationViewController {
         }
     }
     
-    func onLogout() {
+    private func onLogout() {
         if model.service == .uphold {
             onUpholdLogout()
         }
-    }
-}
-
-// MARK: - Coinbase
-
-extension IntegrationViewController {
-    private func getCoinbaseVcFor(operation: IntegrationItemType) -> UIViewController {
-        switch operation {
-        case .buyDash:
-            return BuyDashViewController()
-        case .sellDash:
-            return BuyDashViewController()
-        case .convertCrypto:
-            return CustodialSwapsViewController()
-        case .transferDash:
-            return TransferAmountViewController()
-        }
-    }
-}
-
-// MARK: - Uphold
-
-extension IntegrationViewController: DWUpholdLogoutTutorialViewControllerDelegate, UpholdTransferViewControllerDelegate {
-    
-    private func getUpholdVcFor(operation: IntegrationItemType) -> UIViewController? {
-        switch operation {
-        case .buyDash:
-            return createTopperWidget()
-        case .transferDash:
-            return createUpholdTransferController()
-        default:
-            return nil
-        }
-    }
-    
-    func onUpholdLogout() {
-        let logoutTutorialController = DWUpholdLogoutTutorialViewController.controller()
-        logoutTutorialController.delegate = self
-        let alertController = DWAlertController(contentController: logoutTutorialController)
-        alertController.setupActions(logoutTutorialController.providedActions)
-        alertController.preferredAction = logoutTutorialController.preferredAction
-        present(alertController, animated: true, completion: nil)
-    }
-    
-    func upholdLogoutTutorialViewControllerDidCancel(_ controller: DWUpholdLogoutTutorialViewController) {
-        controller.dismiss(animated: true)
-    }
-    
-    func upholdLogoutTutorialViewControllerOpenUpholdWebsite(_ controller: DWUpholdLogoutTutorialViewController) {
-        controller.dismiss(animated: true, completion: { [weak self] in
-            guard let url = self?.model.logoutUrl else { return }
-            self?.initAuthentication(url: url)
-        })
-    }
-    
-    private func createTopperWidget() -> UIViewController? {
-        let urlString = TopperViewModel.shared.topperBuyUrl(walletName: Bundle.main.infoDictionary!["CFBundleDisplayName"] as! String)
-        if let url = URL(string: urlString) {
-            return SFSafariViewController.dw_controller(with: url)
-        }
-        
-        return nil
-    }
-    
-    private func createUpholdTransferController() -> UIViewController? {
-        guard model.isLoggedIn else { return nil }
-        guard let dashCard = (self.model as? UpholdPortalModel)?.dashCard else { return nil }
-        
-        let controller = UpholdTransferViewController.init(card: dashCard)
-        controller.delegate = self
-        controller.hidesBottomBarWhenPushed = true
-        
-        return controller
-    }
-    
-    func upholdTransferViewController(_ vc: UpholdTransferViewController, didSend transaction: DWUpholdTransactionObject) {
-        navigationController?.popViewController(animated: true)
-
-        let model = self.model as! UpholdPortalModel
-        let alert = UIAlertController(title: NSLocalizedString("Uphold", comment: ""),
-                                      message: model.successMessageText(for: transaction),
-                                      preferredStyle: .alert)
-
-        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""),
-                                     style: .cancel,
-                                     handler: nil)
-        alert.addAction(okAction)
-
-        let openAction = UIAlertAction(title: NSLocalizedString("See on Uphold", comment: ""),
-                                       style: .default) { _ in
-            if let url = model.transactionURL(for: transaction) {
-                UIApplication.shared.open(url)
-            }
-        }
-        alert.addAction(openAction)
-        alert.preferredAction = openAction
-
-        navigationController?.present(alert, animated: true, completion: nil)
     }
 }
 

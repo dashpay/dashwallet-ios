@@ -181,22 +181,18 @@ NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDi
                                           if (dashCard) {
                                               [strongSelf setLastKnownBalance:dashCard.available];
 
-//                                              if (!dashCard.address) {
-//                                                  [strongSelf createDashCardAddress:dashCard
-//                                                                         completion:^(DWUpholdCardObject *_Nullable card) {
-//                                                                             if (completion) {
-//                                                                                 completion(card, fiatCards);
-//                                                                             }
-//                                                                         }];
-//                                              }
-//                                              else {
-//                                                  if (completion) {
-//                                                      completion(dashCard, fiatCards);
-//                                                  }
-//                                              }
-                                              
-                                              if (completion) {
-                                                  completion(dashCard, fiatCards);
+                                              if (!dashCard.address) {
+                                                  [strongSelf createDashCardAddress:dashCard
+                                                                         completion:^(DWUpholdCardObject *_Nullable card) {
+                                                                             if (completion) {
+                                                                                 completion(card, fiatCards);
+                                                                             }
+                                                                         }];
+                                              }
+                                              else {
+                                                  if (completion) {
+                                                      completion(dashCard, fiatCards);
+                                                  }
                                               }
                                           }
                                           else {
