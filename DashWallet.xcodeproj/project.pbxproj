@@ -332,8 +332,6 @@
 		2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE552230FF4600956D5F /* UpholdOTPStoryboard.storyboard */; };
 		2A9FFE9B2230FF4700956D5F /* DWUpholdLogoutTutorialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE652230FF4600956D5F /* DWUpholdLogoutTutorialViewController.m */; };
 		2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE662230FF4600956D5F /* UpholdLogoutTutorialStoryboard.storyboard */; };
-		2A9FFEA02230FF4700956D5F /* UpholdMainStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE6E2230FF4600956D5F /* UpholdMainStoryboard.storyboard */; };
-		2A9FFEA12230FF4700956D5F /* DWUpholdMainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE712230FF4600956D5F /* DWUpholdMainViewController.m */; };
 		2A9FFF192233E56E00956D5F /* DWIntrinsicTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF072233E56E00956D5F /* DWIntrinsicTableView.m */; };
 		2A9FFF272233E5D000956D5F /* DWDecimalInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF252233E5CF00956D5F /* DWDecimalInputValidator.m */; };
 		2A9FFF2A2233E60F00956D5F /* DWUpholdAccountObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF292233E60F00956D5F /* DWUpholdAccountObject.m */; };
@@ -1395,9 +1393,6 @@
 		2A9FFE652230FF4600956D5F /* DWUpholdLogoutTutorialViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdLogoutTutorialViewController.m; sourceTree = "<group>"; };
 		2A9FFE662230FF4600956D5F /* UpholdLogoutTutorialStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdLogoutTutorialStoryboard.storyboard; sourceTree = "<group>"; };
 		2A9FFE672230FF4600956D5F /* DWUpholdLogoutTutorialViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdLogoutTutorialViewController.h; sourceTree = "<group>"; };
-		2A9FFE6E2230FF4600956D5F /* UpholdMainStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdMainStoryboard.storyboard; sourceTree = "<group>"; };
-		2A9FFE6F2230FF4600956D5F /* DWUpholdMainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdMainViewController.h; sourceTree = "<group>"; };
-		2A9FFE712230FF4600956D5F /* DWUpholdMainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdMainViewController.m; sourceTree = "<group>"; };
 		2A9FFF072233E56E00956D5F /* DWIntrinsicTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWIntrinsicTableView.m; sourceTree = "<group>"; };
 		2A9FFF0C2233E56E00956D5F /* DWIntrinsicTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWIntrinsicTableView.h; sourceTree = "<group>"; };
 		2A9FFF242233E5CF00956D5F /* DWDecimalInputValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDecimalInputValidator.h; sourceTree = "<group>"; };
@@ -3807,7 +3802,6 @@
 			isa = PBXGroup;
 			children = (
 				C92963BB2AA0AFF800B96B22 /* Portal */,
-				2A9FFE6C2230FF4600956D5F /* Main */,
 				2A9FFE642230FF4600956D5F /* LogoutTutorial */,
 				2A9FFE4B2230FF4600956D5F /* Transfer */,
 				7527720E2AA9F58E0066557E /* TopperViewModel.swift */,
@@ -3857,16 +3851,6 @@
 				2A9FFE662230FF4600956D5F /* UpholdLogoutTutorialStoryboard.storyboard */,
 			);
 			path = LogoutTutorial;
-			sourceTree = "<group>";
-		};
-		2A9FFE6C2230FF4600956D5F /* Main */ = {
-			isa = PBXGroup;
-			children = (
-				2A9FFE6F2230FF4600956D5F /* DWUpholdMainViewController.h */,
-				2A9FFE712230FF4600956D5F /* DWUpholdMainViewController.m */,
-				2A9FFE6E2230FF4600956D5F /* UpholdMainStoryboard.storyboard */,
-			);
-			path = Main;
 			sourceTree = "<group>";
 		};
 		2A9FFF3622357F2900956D5F /* Validation */ = {
@@ -6009,7 +5993,6 @@
 				2A4E534D22F03AAC00E5168A /* DWFilterHeaderView.xib in Resources */,
 				757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */,
 				2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */,
-				2A9FFEA02230FF4700956D5F /* UpholdMainStoryboard.storyboard in Resources */,
 				4709C30F287E787700B4BD48 /* Migrations.bundle in Resources */,
 				474C720F298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib in Resources */,
 				2ADC722923B5547000D9DD37 /* Localizable.stringsdict in Resources */,
@@ -6460,7 +6443,6 @@
 				4789D22F2981067C00BAFEFA /* UpholdAmountModel.swift in Sources */,
 				2A0C69BD23140779001B8C90 /* DWModalInteractiveTransition.m in Sources */,
 				2AD6E5632487E16400B52F14 /* DWRequestsViewController.m in Sources */,
-				2A9FFEA12230FF4700956D5F /* DWUpholdMainViewController.m in Sources */,
 				2A7AF36324825A0C001D74F9 /* DWDPUserObject.m in Sources */,
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
 				47083B3629893E700010AF71 /* CNCreateAccountCell.swift in Sources */,
