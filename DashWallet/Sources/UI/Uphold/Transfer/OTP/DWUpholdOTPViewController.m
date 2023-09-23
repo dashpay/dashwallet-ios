@@ -114,7 +114,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Actions
 
 - (void)okButtonAction {
-    [self confirmOTPToken];
+    [self confirmOTPToken:self.textField.text];
 }
 
 - (void)cancelButtonAction {
@@ -130,14 +130,22 @@ NS_ASSUME_NONNULL_BEGIN
     if (string.length == 0) {
         return YES;
     }
-
+    
     NSString *resultText = [textField.text stringByAppendingString:string];
-
-    return [self isLooksLikeOTPToken:resultText];
+        
+    if ([self isLooksLikeOTPToken:resultText]) {
+        if (resultText.length == 6) {
+            [self confirmOTPToken:resultText];
+        }
+        
+        return YES;
+    }
+    
+    return NO;
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
-    [self confirmOTPToken];
+    [self confirmOTPToken:self.textField.text];
 
     return YES;
 }
@@ -157,8 +165,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Private
 
-- (void)confirmOTPToken {
-    if (self.textField.text.length < 1) {
+- (void)confirmOTPToken:(NSString *)code {
+    if (code.length < 1) {
         [self.textField dw_shakeView];
 
         return;
@@ -167,7 +175,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self.textField resignFirstResponder];
 
     if (self.completionBlock) {
-        self.completionBlock(self, self.textField.text);
+        self.completionBlock(self, code);
         self.completionBlock = nil;
     }
 }
