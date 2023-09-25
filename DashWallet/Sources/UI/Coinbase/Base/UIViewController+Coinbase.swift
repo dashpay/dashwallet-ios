@@ -22,7 +22,7 @@ extension BaseViewController {
         let vc = SuccessfulOperationStatusViewController.initiate(from: sb("OperationStatus"))
         vc.closeHandler = { [weak self] in
             guard let wSelf = self else { return }
-            guard let rootController = wSelf.navigationController?.controller(by: CoinbaseEntryPointViewController.self) else {
+            guard let rootController = wSelf.navigationController?.controller(by: IntegrationViewController.self) else {
                 wSelf.navigationController?.popToRootViewController(animated: true)
                 return
             }

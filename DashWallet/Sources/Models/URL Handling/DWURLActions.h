@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 //
 
-@interface DWURLUpholdAction : DWURLAction
+@interface DWURLIntegrationAction : DWURLAction
 
 @property (nonatomic, strong) NSURL *url;
 

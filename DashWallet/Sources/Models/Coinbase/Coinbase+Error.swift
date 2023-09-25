@@ -26,6 +26,7 @@ extension Coinbase {
         enum GeneralFailureReason: LocalizedError {
             case noActiveUser
             case revokedToken
+            case noPaymentMethods
 
             var errorDescription: String? {
                 switch self {
@@ -33,6 +34,26 @@ extension Coinbase {
                     return NSLocalizedString("No active user", comment: "Coinbase")
                 case .revokedToken:
                     return NSLocalizedString("For your security, you have been signed out.", comment: "Coinbase")
+                case .noPaymentMethods:
+                    return NSLocalizedString("Please add a payment method on Coinbase", comment: "Coinbase/Buy Dash")
+                }
+            }
+            
+            var failureReason: String? {
+                switch self {
+                case .noPaymentMethods:
+                    return NSLocalizedString("No payment methods found", comment: "Coinbase/Buy Dash")
+                default:
+                    return ""
+                }
+            }
+            
+            var recoverySuggestion: String? {
+                switch self {
+                case .noPaymentMethods:
+                    return NSLocalizedString("Add", comment: "Coinbase/Buy Dash")
+                default:
+                    return ""
                 }
             }
         }

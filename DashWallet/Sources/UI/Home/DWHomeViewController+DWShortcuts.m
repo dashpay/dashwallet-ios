@@ -28,7 +28,6 @@
 #import "DWPayModelProtocol.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSettingsMenuModel.h"
-#import "DWUpholdViewController.h"
 #import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN

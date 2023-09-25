@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 //
 
-@implementation DWURLUpholdAction
+@implementation DWURLIntegrationAction
 @end
 
 //
