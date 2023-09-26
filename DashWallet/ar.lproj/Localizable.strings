@@ -217,9 +217,6 @@
 /* Send Screen: to address */
 "Balance" = "رصيد";
 
-/* Uphold entry point */
-"Balance not available" = "Balance not available";
-
 /* CrowdNode */
 "Balance: " = "Balance: ";
 
@@ -230,7 +227,7 @@
 "Bank Wire" = "Bank Wire";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "بين محفظة داش و كوين بيس.";
+"Between Dash Wallet and Coinbase" = "بين محفظة داش و كوين اكس";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "بين محفظة داش وحساب Coinbase الخاص بك";
@@ -266,8 +263,8 @@
 /* Dash Service Overview */
 "Buy Dash with fiat" = "شراء داش عن طريق فيات";
 
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "شراء داش من حساب أفلود";
+/* Dash Portal */
+"Buy Dash · No account needed" = "قم بشراء داش - لا حساب لازم";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "شراء بطاقات الهدايا مع داش الخاص بك";
@@ -453,10 +450,10 @@
 "Dash" = "داش";
 
 /* Coinbase Entry Point */
-"Dash balance on Coinbase" = "Dash balance on Coinbase";
+"Dash balance on Coinbase" = "رصيد داش على كوين بيس";
 
 /* Uphold Entry Point */
-"Dash balance on Uphold" = "Dash balance on Uphold";
+"Dash balance on Uphold" = "رصيد داش على Uphold ";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";
@@ -509,6 +506,9 @@
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "افصل حساب كوين بيس";
+
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "الغاء اتصال حساب Uphold ";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -669,6 +669,9 @@
 
 /* from Dash Wallet */
 "from Dash Wallet" = "من Dash Wallet";
+
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "من Uphold الى محفظة داش";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "من Uphold إلى محفظة داش";
@@ -870,7 +873,7 @@
 "Link Uphold account" = "رابط حساب أفلود";
 
 /* Buy Sell Portal */
-"Link your account" = "Link your account";
+"Link your account" = "قم بايصال حسابك";
 
 /* Dash Service Overview */
 "Link your Coinbase account" = "اربط حسابك على Coinbase";
@@ -892,9 +895,6 @@
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "سجّل الدخول إلى CrowdNode";
-
-/* No comment provided by engineer. */
-"Log Out" = "تسجيل الخروج";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "تسجيل الخروج من Uphold";
@@ -1221,7 +1221,7 @@
 "Receive directly into Coinbase" = "Receive directly into Coinbase";
 
 /* Coinbase Entry Point */
-"Receive directly into Dash Wallet" = "Receive directly into Dash Wallet";
+"Receive directly into Dash Wallet" = "استلم مباشرةً إلى محفظة داش";
 
 /* Received transaction */
 "Received" = "تم الاستلام";
@@ -1450,7 +1450,7 @@
 "Shop with DASH at over 150k merchants" = "Shop with DASH at over 150k merchants";
 
 /* Enter Address Screen */
-"Show content in the clipboard" = "Show content in the clipboard";
+"Show content in the clipboard" = "اظهر المحتوى في لوحة الملاحظات ";
 
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Show Masternode Keys";
@@ -1537,7 +1537,7 @@
 "Syncing…" = "Syncing…";
 
 /* Enter Address Screen */
-"Tap the address from the clipboard to paste it" = "Tap the address from the clipboard to paste it";
+"Tap the address from the clipboard to paste it" = "اضغط على العنوان من لوحة الملاحظات للصقه";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "اضغط لاخفاء الرصيد";
@@ -1605,6 +1605,9 @@
 /* No comment provided by engineer. */
 "Tools" = "ادوات";
 
+/* Dash Portal */
+"Topper" = "Topper";
+
 /* No comment provided by engineer. */
 "Total" = "المجموع";
 
@@ -1621,9 +1624,6 @@
    Coinbase Entry Point
    Dash Service Overview */
 "Transfer Dash" = "تحويل داش";
-
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "نقل داش من حسابك في أفلود لهذه المحفظة";
 
 /* CrowdNode */
 "Transfer Error" = "Transfer Error";
@@ -1749,7 +1749,7 @@
 "Wait until wallet is synced to complete the transaction" = "Wait until wallet is synced to complete the transaction";
 
 /* Enter Address Screen */
-"Wallet Address" = "Wallet Address";
+"Wallet Address" = "عنوان المحفظة ";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "المحفظة معطلة";
@@ -1913,9 +1913,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
-
-/* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "رصيد داش في حسابك في أفلود هو";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Your username %@ has been successfully created on the Dash Network";

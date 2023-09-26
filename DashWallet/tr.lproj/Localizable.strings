@@ -217,9 +217,6 @@
 /* Send Screen: to address */
 "Balance" = "Bakiye";
 
-/* Uphold entry point */
-"Balance not available" = "Balance not available";
-
 /* CrowdNode */
 "Balance: " = "Bakiye:";
 
@@ -230,7 +227,7 @@
 "Bank Wire" = "Banka Havalesi";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "Dash Cüzdanı ve Coinbase arasında.";
+"Between Dash Wallet and Coinbase" = "Coinbase ve Dash Cüzdanı arasında";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Dash Cüzdanı ile Coinbase hesabınız arasında";
@@ -266,8 +263,8 @@
 /* Dash Service Overview */
 "Buy Dash with fiat" = "Fiat ile Dash satın alın";
 
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Uphold hesabı ile Dash al";
+/* Dash Portal */
+"Buy Dash · No account needed" = "Dash Satın Al · Hesap gerekmez";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "Dash'iniz ile hediye kartları satın alın";
@@ -456,7 +453,7 @@
 "Dash balance on Coinbase" = "Coinbase'deki Dash bakiyesi";
 
 /* Uphold Entry Point */
-"Dash balance on Uphold" = "Dash balance on Uphold";
+"Dash balance on Uphold" = "Uphold’daki Dash bakiyeniz";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash ödemesi %@ altında olamaz";
@@ -509,6 +506,9 @@
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Coinbase Hesabının Bağlantısını Kes";
+
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "Uphold Hesabının Bağlantısını Kes";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -669,6 +669,9 @@
 
 /* from Dash Wallet */
 "from Dash Wallet" = "Dash Cüzdanından";
+
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "Uphold’dan Dash Cüzdanına";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "Uphold'dan Dash Cüzdanınıza";
@@ -892,9 +895,6 @@
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "CrowdNode'da oturum açın";
-
-/* No comment provided by engineer. */
-"Log Out" = "Çıkış Yap";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Uphold'dan çıkış yap";
@@ -1450,7 +1450,7 @@
 "Shop with DASH at over 150k merchants" = "150 binden fazla satıcıda DASH ile alışveriş yapın";
 
 /* Enter Address Screen */
-"Show content in the clipboard" = "Show content in the clipboard";
+"Show content in the clipboard" = "İçeriği panoda göster";
 
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Anadüğüm Anahtarlarını Göster";
@@ -1537,7 +1537,7 @@
 "Syncing…" = "Senkronize ediliyor…";
 
 /* Enter Address Screen */
-"Tap the address from the clipboard to paste it" = "Tap the address from the clipboard to paste it";
+"Tap the address from the clipboard to paste it" = "Yapıştırmak için panodaki adresi seçin";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Bakiyeyi gizlemek için tıkla";
@@ -1605,6 +1605,9 @@
 /* No comment provided by engineer. */
 "Tools" = "Araçlar";
 
+/* Dash Portal */
+"Topper" = "Topper";
+
 /* No comment provided by engineer. */
 "Total" = "Toplam";
 
@@ -1621,9 +1624,6 @@
    Coinbase Entry Point
    Dash Service Overview */
 "Transfer Dash" = "Transfer Dash";
-
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Upholf hesabınızdan bu cüzdana Dash aktarın";
 
 /* CrowdNode */
 "Transfer Error" = "Aktarım Hatası";
@@ -1749,7 +1749,7 @@
 "Wait until wallet is synced to complete the transaction" = "İşlemi tamamlamak için cüzdan senkronize edilene kadar bekleyin";
 
 /* Enter Address Screen */
-"Wallet Address" = "Wallet Address";
+"Wallet Address" = "Cüzdan Adresi";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "Cüzdan devredışı";
@@ -1913,9 +1913,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "İşleminiz yapıldı ve birkaç dakika içinde tutar cüzdanınızda görülecek.";
-
-/* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Uphold hesabınızın Dash bakiyesi:";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Kullanıcı adınız %@ Dash Ağında başarıyla oluşturuldu";

@@ -217,9 +217,6 @@
 /* Send Screen: to address */
 "Balance" = "Balanse";
 
-/* Uphold entry point */
-"Balance not available" = "Balance not available";
-
 /* CrowdNode */
 "Balance: " = "Balanse:";
 
@@ -230,7 +227,7 @@
 "Bank Wire" = "Bank Wire";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "Sa pagitan ng Dash Wallet at Coinbase.";
+"Between Dash Wallet and Coinbase" = "Sa pagitan ng Dash Wallet at Coinbase";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Sa pagitan ng Dash Wallet at ng iyong Coinbase account";
@@ -266,8 +263,8 @@
 /* Dash Service Overview */
 "Buy Dash with fiat" = "Bumili ng Dash gamit ang fiat";
 
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Bumili ng Dash na may Uphold na account";
+/* Dash Portal */
+"Buy Dash · No account needed" = "Bumili ng Dash · Walang kinakailangang account";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "Bumili ng mga gift card gamit ang iyong Dash";
@@ -456,7 +453,7 @@
 "Dash balance on Coinbase" = "Dash balanse sa Coinbase";
 
 /* Uphold Entry Point */
-"Dash balance on Uphold" = "Dash balance on Uphold";
+"Dash balance on Uphold" = "Dash balanse sa Uphold";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Ang pagbabayad ng Dash ay hindi dapat bababa sa %@";
@@ -509,6 +506,9 @@
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Idiskonekta ang Coinbase Account";
+
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "Idiskonekta ang Uphold Account";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -669,6 +669,9 @@
 
 /* from Dash Wallet */
 "from Dash Wallet" = "mula sa Dash Wallet";
+
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "Mula sa Uphold hanggang Dash Wallet";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "Mula sa Uphold hanggang sa iyong Dash Wallet";
@@ -892,9 +895,6 @@
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Mag-log in sa CrowdNode";
-
-/* No comment provided by engineer. */
-"Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Mag-log out mula sa Uphold";
@@ -1605,6 +1605,9 @@
 /* No comment provided by engineer. */
 "Tools" = "Kagamitan";
 
+/* Dash Portal */
+"Topper" = "Topper";
+
 /* No comment provided by engineer. */
 "Total" = "Kabuuan";
 
@@ -1621,9 +1624,6 @@
    Coinbase Entry Point
    Dash Service Overview */
 "Transfer Dash" = "Ilipat ang Dash";
-
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Ilipat ang Dash mula sa iyong Uphold account patungo sa pitaka.";
 
 /* CrowdNode */
 "Transfer Error" = "Error sa Paglipat";
@@ -1913,9 +1913,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Ang iyong transaksyon ay naipadala at ang halaga ay dapat makita sa iyong pitaka sa loob ng ilang minuto.";
-
-/* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Ang balanse ng iyong Dash sa Uphold account ay";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Ang iyong username %@ ay matagumpay na nilikha sa Network ng Dash";

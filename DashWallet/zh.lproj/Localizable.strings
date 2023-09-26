@@ -217,9 +217,6 @@
 /* Send Screen: to address */
 "Balance" = "余额";
 
-/* Uphold entry point */
-"Balance not available" = "Balance not available";
-
 /* CrowdNode */
 "Balance: " = "余额:";
 
@@ -230,7 +227,7 @@
 "Bank Wire" = "电汇";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "在 Dash钱包和 Coinbase之间.";
+"Between Dash Wallet and Coinbase" = "在 Dash钱包与 Coinbase之间";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "在Dash钱包和您的Coinbase账户之间";
@@ -266,8 +263,8 @@
 /* Dash Service Overview */
 "Buy Dash with fiat" = "通过法币购买Dash";
 
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "通过Uphold账户购买Dash";
+/* Dash Portal */
+"Buy Dash · No account needed" = "购买Dash · 无需账户";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "使用Dash购买礼品卡";
@@ -456,7 +453,7 @@
 "Dash balance on Coinbase" = "Coinbase上的Dash余额";
 
 /* Uphold Entry Point */
-"Dash balance on Uphold" = "Dash balance on Uphold";
+"Dash balance on Uphold" = "Uphold 上的Dash余额";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash付款不能小于 %@";
@@ -509,6 +506,9 @@
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "取消 Coinbase账户的关联";
+
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "断开 Uphold 账户";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -669,6 +669,9 @@
 
 /* from Dash Wallet */
 "from Dash Wallet" = "来自Dash钱包";
+
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "从 Uphold 转到您的Dash钱包";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "从Uphold到您的Dash钱包";
@@ -892,9 +895,6 @@
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "登录到CrowdNode";
-
-/* No comment provided by engineer. */
-"Log Out" = "退出";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "从Uphold退出";
@@ -1605,6 +1605,9 @@
 /* No comment provided by engineer. */
 "Tools" = "工具";
 
+/* Dash Portal */
+"Topper" = "Topper";
+
 /* No comment provided by engineer. */
 "Total" = "总计";
 
@@ -1621,9 +1624,6 @@
    Coinbase Entry Point
    Dash Service Overview */
 "Transfer Dash" = "转账 Dash";
-
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "将Dash从您的Uphold账户转移到此钱包";
 
 /* CrowdNode */
 "Transfer Error" = "转账发生错误";
@@ -1913,9 +1913,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "您的交易已被发送, 金额将几分钟内出现在您的钱包.";
-
-/* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "您Uphold账户中Dash余额是";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "您的用户名 %@ 已经在Dash网络上成功创建";

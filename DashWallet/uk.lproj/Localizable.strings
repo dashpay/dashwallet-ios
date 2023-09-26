@@ -217,9 +217,6 @@
 /* Send Screen: to address */
 "Balance" = "Баланс";
 
-/* Uphold entry point */
-"Balance not available" = "Balance not available";
-
 /* CrowdNode */
 "Balance: " = "Баланс:";
 
@@ -230,7 +227,7 @@
 "Bank Wire" = "Банківський переказ";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "Між Dash Wallet і Coinbase.";
+"Between Dash Wallet and Coinbase" = "Між Dash Wallet і Coinbase";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Між Dash Wallet і вашим Coinbase акаунтом";
@@ -266,8 +263,8 @@
 /* Dash Service Overview */
 "Buy Dash with fiat" = "Купити Dash за фіат";
 
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Купити Dash за допомогою акаунта Uphold";
+/* Dash Portal */
+"Buy Dash · No account needed" = "Купити Dash · Обліковий запис не потрібен";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "Купуйте подарункові картки за допомогою Dash";
@@ -456,7 +453,7 @@
 "Dash balance on Coinbase" = "Баланс Dash на Coinbase";
 
 /* Uphold Entry Point */
-"Dash balance on Uphold" = "Dash balance on Uphold";
+"Dash balance on Uphold" = "Баланс Dash на Uphold";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Платежі Dash не можуть бути меншими ніж %@";
@@ -509,6 +506,9 @@
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "ВІдключити обліковий запис Coinbase";
+
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "ВІдключити обліковий запис Uphold";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -669,6 +669,9 @@
 
 /* from Dash Wallet */
 "from Dash Wallet" = "з Dash Wallet";
+
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "Від Uphold до Dash Wallet";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "Від Uphold до вашого Dash Wallet";
@@ -892,9 +895,6 @@
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Ввійти в CrowdNode";
-
-/* No comment provided by engineer. */
-"Log Out" = "Вийти";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Вийти з Uphold";
@@ -1605,6 +1605,9 @@
 /* No comment provided by engineer. */
 "Tools" = "Інструменти";
 
+/* Dash Portal */
+"Topper" = "Topper";
+
 /* No comment provided by engineer. */
 "Total" = "Всього";
 
@@ -1621,9 +1624,6 @@
    Coinbase Entry Point
    Dash Service Overview */
 "Transfer Dash" = "Переказати Dash";
-
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Переказати Dash з Uphold облікового запису на цей гаманець";
 
 /* CrowdNode */
 "Transfer Error" = "Помилка передачі";
@@ -1913,9 +1913,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Ваша транзакція була відправлена ​​і її сума відобразиться у вашому гаманці за кілька хвилин.";
-
-/* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Ваш баланс Dash на Uphold складає";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Ваше ім’я користувача %@ було успішно створено в Dash Network";

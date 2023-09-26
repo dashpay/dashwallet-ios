@@ -217,9 +217,6 @@
 /* Send Screen: to address */
 "Balance" = "ยอดคงเหลือ";
 
-/* Uphold entry point */
-"Balance not available" = "Balance not available";
-
 /* CrowdNode */
 "Balance: " = "ยอดคงเหลือ: ";
 
@@ -230,7 +227,7 @@
 "Bank Wire" = "การโอนเงินผ่านทางธนาคาร ";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "ระหว่างกระเป๋าเงิน Dash และ Coinbase";
+"Between Dash Wallet and Coinbase" = "ระหว่าง Dash Wallet และ Coinbase";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "ระหว่างกระเป๋าเงิน Dash และบัญชี Coinbase ของคุณ";
@@ -266,8 +263,8 @@
 /* Dash Service Overview */
 "Buy Dash with fiat" = "ซื้อ Dash ด้วยเงินสด";
 
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "ซื้อ Dash ด้วยบัญชี Uphold";
+/* Dash Portal */
+"Buy Dash · No account needed" = "ซื้อ Dash · ไม่ต้องใช้บัญชี";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "ซื้อบัตรของขวัญด้วย Dash ของคุณ";
@@ -456,7 +453,7 @@
 "Dash balance on Coinbase" = "ยอดคงเหลือของ Dash บน Coinbase";
 
 /* Uphold Entry Point */
-"Dash balance on Uphold" = "Dash balance on Uphold";
+"Dash balance on Uphold" = "ยอด Dash คงเหลือใน Uphold";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "การชำระเงิน Dash ไม่สามารถจะน้อยกว่า %@";
@@ -509,6 +506,9 @@
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "ตัดการเชื่อมต่อบัญชี Coinbase";
+
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "ยกเลิกการเชื่อมต่อบัญชี Uphold";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -638,7 +638,7 @@
 "Find a user on the Dash Network" = "ค้นหาผู้ใช้บนเครือข่าย Dash";
 
 /* No comment provided by engineer. */
-"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Find merchants that accept Dash, where to buy it and how to earn income with it.";
+"Find merchants that accept Dash, where to buy it and how to earn income with it." = "ค้นหาร้านค้าที่รับ Dash ซื้อได้ที่ไหนและวิธีสร้างรายได้จาก Dash";
 
 /* No comment provided by engineer. */
 "Find merchants who accept Dash as payment." = "ค้นหาร้าค้าที่ยอมรับการชำระเงินด้วย Dash ";
@@ -669,6 +669,9 @@
 
 /* from Dash Wallet */
 "from Dash Wallet" = "จากกระเป๋าเงิน Dash ";
+
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "จาก Uphold สู่กระเป๋าเงิน Dash";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "จาก Uphold ไปสู่กระเป๋าเงิน Dash ของคุณ";
@@ -728,7 +731,7 @@
 "How to Use a Gift Card" = "การใช้บัตรของขวัญ";
 
 /* No comment provided by engineer. */
-"HPMN Operator Keys" = "Evolution Node ID Keys";
+"HPMN Operator Keys" = "วิวัฒนาการรหัส Node ID";
 
 /* No comment provided by engineer. */
 "I Accept" = "ฉันยอมรับ";
@@ -794,7 +797,7 @@
 "Invalid amount" = "จำนวนเงินไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"Invalid Dash address" = "Invalid Dash address";
+"Invalid Dash address" = "ที่อยู่ Dash ไม่ถูกต้อง";
 
 /* CrowdNode Online */
 "Invalid Email" = "อีเมลไม่ถูกต้อง";
@@ -892,9 +895,6 @@
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "ลงชื่อเข้าใช้ CrowdNode";
-
-/* No comment provided by engineer. */
-"Log Out" = "ออกจากระบบ";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "ออกจากระบบ Uphold";
@@ -1194,7 +1194,7 @@
 "Public key" = "Public key";
 
 /* No comment provided by engineer. */
-"Public key (legacy)" = "Public key (legacy)";
+"Public key (legacy)" = "รหัสสาธารณะ (legacy)";
 
 /* Coinbase/Buy Dash */
 "Purchase" = "ซื้อ";
@@ -1450,7 +1450,7 @@
 "Shop with DASH at over 150k merchants" = "ซื้อสินค้าด้วย DASH ที่มีร้านค้ามากกว่า 150k ร้าน";
 
 /* Enter Address Screen */
-"Show content in the clipboard" = "Show content in the clipboard";
+"Show content in the clipboard" = "แสดงเนื้อหาในคลิปบอร์ด";
 
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "แสดง masternode keys";
@@ -1537,7 +1537,7 @@
 "Syncing…" = "กำลังซิงค์ ...";
 
 /* Enter Address Screen */
-"Tap the address from the clipboard to paste it" = "Tap the address from the clipboard to paste it";
+"Tap the address from the clipboard to paste it" = "แตะที่อยู่จากคลิปบอร์ดเพื่อวาง";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "กดเพื่อซ่อนยอดคงเหลือ";
@@ -1605,6 +1605,9 @@
 /* No comment provided by engineer. */
 "Tools" = "เครื่องมือ";
 
+/* Dash Portal */
+"Topper" = "Topper";
+
 /* No comment provided by engineer. */
 "Total" = "ทั้งหมด";
 
@@ -1621,9 +1624,6 @@
    Coinbase Entry Point
    Dash Service Overview */
 "Transfer Dash" = "โอน Dash";
-
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "โอน Dash จากบัญชี Uphold ไปยัง wallet นี้";
 
 /* CrowdNode */
 "Transfer Error" = "การโอนผิดพลาด";
@@ -1749,7 +1749,7 @@
 "Wait until wallet is synced to complete the transaction" = "รอจนกว่ากระเป๋าเงินจะถูกซิงค์เพื่อทำธุรกรรมให้เสร็จสมบูรณ์";
 
 /* Enter Address Screen */
-"Wallet Address" = "Wallet Address";
+"Wallet Address" = "ที่อยู่กระเป๋าเงิน";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "wallet ถูกปิดการใช้งาน";
@@ -1913,9 +1913,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "ธุรกรรมของคุณถูกส่งแล้วและจำนวนเงินจะปรากฏใน wallet ของคุณในอีกไม่กี่นาที";
-
-/* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "ยอด Dash ของบัญชี Uphold ของคุณคือ";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "ชื่อผู้ใช้ของคุณ %@ ได้รับการสร้างที่ประสบความสำเร็จบนเครือข่าย Dash";
