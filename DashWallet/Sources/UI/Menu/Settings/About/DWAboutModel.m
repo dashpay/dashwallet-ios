@@ -203,7 +203,7 @@ NS_ASSUME_NONNULL_BEGIN
                 host = @(inet_ntop(AF_INET6, &addr, s, sizeof(s)));
             }
             [[DWEnvironment sharedInstance].currentChainManager.peerManager setTrustedPeerHost:[NSString stringWithFormat:@"%@:%d", host, port]];
-            [[DWEnvironment sharedInstance].currentChainManager.peerManager disconnect];
+            [[DWEnvironment sharedInstance].currentChainManager.peerManager disconnect:DSDisconnectReason_TrustedPeerSet];
             [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
             break;
         }
