@@ -217,9 +217,6 @@
 /* Send Screen: to address */
 "Balance" = "餘額";
 
-/* Uphold entry point */
-"Balance not available" = "Balance not available";
-
 /* CrowdNode */
 "Balance: " = "結餘: ";
 
@@ -230,7 +227,7 @@
 "Bank Wire" = "電匯";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "在達世幣錢包和 Coinbase 之間。";
+"Between Dash Wallet and Coinbase" = "在達世幣錢包和 Coinbase 之間。";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "在達世幣錢包和您的 Coinbase 帳戶之間";
@@ -266,8 +263,8 @@
 /* Dash Service Overview */
 "Buy Dash with fiat" = "用法定貨幣來購買達世幣";
 
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "用Uphold 帳戶來購買達世幣";
+/* Dash Portal */
+"Buy Dash · No account needed" = "購買達世幣 · 無需賬戶";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "使用達世幣購買禮品卡";
@@ -456,7 +453,7 @@
 "Dash balance on Coinbase" = "Coinbase 上的達世幣結餘";
 
 /* Uphold Entry Point */
-"Dash balance on Uphold" = "Dash balance on Uphold";
+"Dash balance on Uphold" = "Uphold 上的達世幣結餘";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "達世幣付款不能低於 %@";
@@ -509,6 +506,9 @@
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "斷開 Coinbase 帳戶的連接";
+
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "斷開 Uphold 帳戶的連接";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -638,7 +638,7 @@
 "Find a user on the Dash Network" = "在達世幣網絡上查找用戶";
 
 /* No comment provided by engineer. */
-"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Find merchants that accept Dash, where to buy it and how to earn income with it.";
+"Find merchants that accept Dash, where to buy it and how to earn income with it." = "尋找接受達世幣的商家、可以在哪裡購買以及如何透過它賺取收入。";
 
 /* No comment provided by engineer. */
 "Find merchants who accept Dash as payment." = "查找接受達世幣作為付款的商家。";
@@ -669,6 +669,9 @@
 
 /* from Dash Wallet */
 "from Dash Wallet" = "來自達世幣錢包";
+
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "從 Uphold 轉到你的達世幣錢包";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "從 Uphold 轉到你的達世幣錢包";
@@ -728,7 +731,7 @@
 "How to Use a Gift Card" = "如何使用禮品卡";
 
 /* No comment provided by engineer. */
-"HPMN Operator Keys" = "Evolution Node ID Keys";
+"HPMN Operator Keys" = "Evolution 節點 ID 金鑰";
 
 /* No comment provided by engineer. */
 "I Accept" = "我接受";
@@ -794,7 +797,7 @@
 "Invalid amount" = "金額無效";
 
 /* No comment provided by engineer. */
-"Invalid Dash address" = "Invalid Dash address";
+"Invalid Dash address" = "無效的達世幣位址";
 
 /* CrowdNode Online */
 "Invalid Email" = "無效的電郵";
@@ -892,9 +895,6 @@
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "登入到 CrowdNode";
-
-/* No comment provided by engineer. */
-"Log Out" = "登出";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "從Uphold登出";
@@ -1194,7 +1194,7 @@
 "Public key" = "公鑰";
 
 /* No comment provided by engineer. */
-"Public key (legacy)" = "Public key (legacy)";
+"Public key (legacy)" = "公鑰 (舊版) ";
 
 /* Coinbase/Buy Dash */
 "Purchase" = "購買";
@@ -1605,6 +1605,9 @@
 /* No comment provided by engineer. */
 "Tools" = "工具";
 
+/* Dash Portal */
+"Topper" = "Topper";
+
 /* No comment provided by engineer. */
 "Total" = "總額";
 
@@ -1621,9 +1624,6 @@
    Coinbase Entry Point
    Dash Service Overview */
 "Transfer Dash" = "轉賬達世幣";
-
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "將達世幣從您的Uphold帳戶轉移到此錢包";
 
 /* CrowdNode */
 "Transfer Error" = "轉賬發生錯誤";
@@ -1913,9 +1913,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "您的交易已發送，金額應在幾分鐘內顯示在您的錢包中。";
-
-/* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "您的Uphold帳戶中的達世幣結餘是";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "您的用戶名 %@ 已在達世幣網絡上成功創建";

@@ -217,9 +217,6 @@
 /* Send Screen: to address */
 "Balance" = "Υπόλοιπο";
 
-/* Uphold entry point */
-"Balance not available" = "Balance not available";
-
 /* CrowdNode */
 "Balance: " = "Υπόλοιπο:";
 
@@ -230,7 +227,7 @@
 "Bank Wire" = "Τραπεζικό έμβασμα";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "Μεταξύ Dash Wallet και Coinbase.";
+"Between Dash Wallet and Coinbase" = "Μεταξύ Dash Wallet και Coinbase.";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Μεταξύ του Dash Wallet και του λογαριασμού σας στην Coinbase.";
@@ -266,8 +263,8 @@
 /* Dash Service Overview */
 "Buy Dash with fiat" = "Αγορά Dash με χρήματα";
 
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Αγορά Dash μεσώ Uphold λογαριασμού";
+/* Dash Portal */
+"Buy Dash · No account needed" = "Αγοράστε Dash - Δεν απαιτείται λογαριασμός";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "Αγοράστε δωροκάρτες με το Dash σας";
@@ -456,7 +453,7 @@
 "Dash balance on Coinbase" = "Υπόλοιπο Dash στην Coinbase";
 
 /* Uphold Entry Point */
-"Dash balance on Uphold" = "Dash balance on Uphold";
+"Dash balance on Uphold" = "Υπόλοιπο Dash στο Uphold";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Οι Dash πληρωμές δεν μπορεί να είναι μικρότερες από %@";
@@ -509,6 +506,9 @@
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Αποσύνδεση λογαριασμού Coinbase";
+
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "Αποσύνδεση λογαριασμού Uphold";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -669,6 +669,9 @@
 
 /* from Dash Wallet */
 "from Dash Wallet" = "από το Dash Wallet";
+
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "Από την Uphold στο Dash Wallet";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "Από την Uphold στο Dash Wallet σας";
@@ -892,9 +895,6 @@
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Συνδεθείτε στο CrowdNode";
-
-/* No comment provided by engineer. */
-"Log Out" = "Αποσύνδεση";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Αποσύνδεση από το Uphold";
@@ -1605,6 +1605,9 @@
 /* No comment provided by engineer. */
 "Tools" = "Εργαλεία";
 
+/* Dash Portal */
+"Topper" = "Topper";
+
 /* No comment provided by engineer. */
 "Total" = "Σύνολο";
 
@@ -1621,9 +1624,6 @@
    Coinbase Entry Point
    Dash Service Overview */
 "Transfer Dash" = "Μεταφορά Dash";
-
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Μεταφέρετε Dash από τον Uphold λογαριασμό σας σε αυτό το πορτοφόλι";
 
 /* CrowdNode */
 "Transfer Error" = "Σφάλμα μεταφοράς";
@@ -1913,9 +1913,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Η συναλλαγή σας απεστάλη και το ποσό θα πρέπει να εμφανιστεί στο πορτοφόλι σας σε λίγα λεπτά.";
-
-/* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Το υπόλοιπο του Uphold λογαριασμού σας σε Dash είναι";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Το όνομα χρήστη %@ δημιουργήθηκε με επιτυχία στο Dash Δίκτυο";

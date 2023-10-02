@@ -217,9 +217,6 @@
 /* Send Screen: to address */
 "Balance" = "잔액";
 
-/* Uphold entry point */
-"Balance not available" = "Balance not available";
-
 /* CrowdNode */
 "Balance: " = "잔고:";
 
@@ -230,7 +227,7 @@
 "Bank Wire" = "은행 송금";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "대시 지갑과 코인베이스 사이에서";
+"Between Dash Wallet and Coinbase" = "대시 지갑과 코인베이스 사이";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "대시 지갑과 코인베이스 계정간";
@@ -266,8 +263,8 @@
 /* Dash Service Overview */
 "Buy Dash with fiat" = "법정 화폐로 대시 구매하기";
 
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "업홀드 계정으로 대시 매수";
+/* Dash Portal */
+"Buy Dash · No account needed" = "대시 구매하기 · 계정이 필요하지 않습니다";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "대시로 기프트 카드 구매";
@@ -456,7 +453,7 @@
 "Dash balance on Coinbase" = "코인베이스의 대시 잔액";
 
 /* Uphold Entry Point */
-"Dash balance on Uphold" = "Dash balance on Uphold";
+"Dash balance on Uphold" = "업홀드 내 대시 잔고";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "대시 지불은 %@보다 적을 수 없습니다";
@@ -509,6 +506,9 @@
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "코인베이스 계정 연결 해제";
+
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "업홀드 계정 연결 해제";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -638,7 +638,7 @@
 "Find a user on the Dash Network" = "대시 네트워크에서 사용자를 검색합니다";
 
 /* No comment provided by engineer. */
-"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Find merchants that accept Dash, where to buy it and how to earn income with it.";
+"Find merchants that accept Dash, where to buy it and how to earn income with it." = "대시를 받는 판매자를 찾고, 구매처를 확인하고, 수익을 얻는 방법을 확인하세요.";
 
 /* No comment provided by engineer. */
 "Find merchants who accept Dash as payment." = "대시 지불을 받는 상점을 찾아보세요.";
@@ -669,6 +669,9 @@
 
 /* from Dash Wallet */
 "from Dash Wallet" = "대시 지갑에서";
+
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "업홀드에서 대시 지갑으로";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "업홀드에서 당신의 대시 지갑으로";
@@ -728,7 +731,7 @@
 "How to Use a Gift Card" = "기프트 카드 사용 방법";
 
 /* No comment provided by engineer. */
-"HPMN Operator Keys" = "Evolution Node ID Keys";
+"HPMN Operator Keys" = "에볼루션 노드 ID 키";
 
 /* No comment provided by engineer. */
 "I Accept" = "수락합니다";
@@ -794,7 +797,7 @@
 "Invalid amount" = "유효하지 않은 금액";
 
 /* No comment provided by engineer. */
-"Invalid Dash address" = "Invalid Dash address";
+"Invalid Dash address" = "유효하지 않은 대시 주소";
 
 /* CrowdNode Online */
 "Invalid Email" = "유효하지 않은 이메일";
@@ -892,9 +895,6 @@
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "크라우드노드에 로그인";
-
-/* No comment provided by engineer. */
-"Log Out" = "로그아웃";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "업홀드에서 로그아웃";
@@ -1194,7 +1194,7 @@
 "Public key" = "공개 키";
 
 /* No comment provided by engineer. */
-"Public key (legacy)" = "Public key (legacy)";
+"Public key (legacy)" = "공공 키 (레거시)";
 
 /* Coinbase/Buy Dash */
 "Purchase" = "매수하기";
@@ -1605,6 +1605,9 @@
 /* No comment provided by engineer. */
 "Tools" = "도구";
 
+/* Dash Portal */
+"Topper" = "토퍼";
+
 /* No comment provided by engineer. */
 "Total" = "총합";
 
@@ -1621,9 +1624,6 @@
    Coinbase Entry Point
    Dash Service Overview */
 "Transfer Dash" = "대시 송금하기";
-
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "당신의 대시를 업홀드 계정에서 이 지갑으로 전송합니다";
 
 /* CrowdNode */
 "Transfer Error" = "송금 오류";
@@ -1913,9 +1913,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "당신의 거래가 완료되었으며 수 분 이내에 당신의 지갑에 잔액이 표시될 예정입니다.";
-
-/* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "당신의 업홀드 계정 대시 잔고는 다음과 같습니다";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "당신의 사용자 이름인 %@가 대시 네트워크에 성공적으로 생성되었습니다";

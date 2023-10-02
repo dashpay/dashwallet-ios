@@ -217,9 +217,6 @@
 /* Send Screen: to address */
 "Balance" = "Saldo";
 
-/* Uphold entry point */
-"Balance not available" = "Balance not available";
-
 /* CrowdNode */
 "Balance: " = "Saldo:";
 
@@ -230,7 +227,7 @@
 "Bank Wire" = "Transfer antar bank";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "Antara Dompet Dash dan Coinbase.";
+"Between Dash Wallet and Coinbase" = "Between Dash Wallet and Coinbase";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Antara Dash Wallet dan akun Coinbase Anda";
@@ -266,8 +263,8 @@
 /* Dash Service Overview */
 "Buy Dash with fiat" = "Beli Dash dengan fiat";
 
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Beli Dash dengan akun Uphold";
+/* Dash Portal */
+"Buy Dash · No account needed" = "Buy Dash · No account needed";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "Beli kartu hadiah dengan Dash Anda";
@@ -510,6 +507,9 @@
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Putuskan Sambungan Akun Coinbase";
 
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "Disconnect Uphold Account";
+
 /* Buy Sell Portal
    Coinbase Entry Point */
 "Disconnected" = "Terputus";
@@ -669,6 +669,9 @@
 
 /* from Dash Wallet */
 "from Dash Wallet" = "dari Wallet Dash";
+
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "From Uphold to Dash Wallet";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "Dari Uphold ke Dompet Dash anda";
@@ -892,9 +895,6 @@
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Masuk ke CrowdNode";
-
-/* No comment provided by engineer. */
-"Log Out" = "Keluar";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Keluar dari Uphold";
@@ -1605,6 +1605,9 @@
 /* No comment provided by engineer. */
 "Tools" = "Alat";
 
+/* Dash Portal */
+"Topper" = "Topper";
+
 /* No comment provided by engineer. */
 "Total" = "Total";
 
@@ -1621,9 +1624,6 @@
    Coinbase Entry Point
    Dash Service Overview */
 "Transfer Dash" = "Transfer Dash";
-
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash dari akun Uphold Anda ke dompet ini";
 
 /* CrowdNode */
 "Transfer Error" = "Kesalahan Transfer";
@@ -1913,9 +1913,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Transaksi Anda telah dikirim dan jumlahnya akan muncul di dompet Anda dalam beberapa menit.";
-
-/* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Saldo Dash akun Uphold Anda adalah";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Nama pengguna anda %@ telah sukses dibuat di jaringan Dash";

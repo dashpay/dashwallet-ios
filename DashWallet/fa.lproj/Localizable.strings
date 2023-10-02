@@ -217,9 +217,6 @@
 /* Send Screen: to address */
 "Balance" = "موجودی";
 
-/* Uphold entry point */
-"Balance not available" = "Balance not available";
-
 /* CrowdNode */
 "Balance: " = "Balance: ";
 
@@ -230,7 +227,7 @@
 "Bank Wire" = "Bank Wire";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "بین دش والت و کوین‌بیس";
+"Between Dash Wallet and Coinbase" = "بین دش والت و کوینبیس";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "بین داش والت و حساب کوین‌بیس شما";
@@ -266,8 +263,8 @@
 /* Dash Service Overview */
 "Buy Dash with fiat" = "خرید دش با پول رسمی";
 
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "خرید دش با حساب آپهلد";
+/* Dash Portal */
+"Buy Dash · No account needed" = "دش بخرید - بدون نیاز به حساب";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "خرید کارت هدیه با دش";
@@ -456,7 +453,7 @@
 "Dash balance on Coinbase" = "موجودش دش در کوینبیس";
 
 /* Uphold Entry Point */
-"Dash balance on Uphold" = "Dash balance on Uphold";
+"Dash balance on Uphold" = "موجودی دش در آپهولد";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";
@@ -509,6 +506,9 @@
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "قطع اتصال به حساب کوین‌بیس";
+
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "قطع اتصال حساب آپهولد";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -638,7 +638,7 @@
 "Find a user on the Dash Network" = "Find a user on the Dash Network";
 
 /* No comment provided by engineer. */
-"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Find merchants that accept Dash, where to buy it and how to earn income with it.";
+"Find merchants that accept Dash, where to buy it and how to earn income with it." = "پدیرندگانی را بیابید که دش قبول می‌کنند، محل خرید و نیز کسب درآمد با دش";
 
 /* No comment provided by engineer. */
 "Find merchants who accept Dash as payment." = "یافتن فروشندگانی که دش را می‌پذیرند";
@@ -669,6 +669,9 @@
 
 /* from Dash Wallet */
 "from Dash Wallet" = "از دش والت";
+
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "از آپهولد به دش والت";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "از آپهولد به دش والت‌ شما";
@@ -728,7 +731,7 @@
 "How to Use a Gift Card" = "چطور از کارت هدیه استفاده کنیم";
 
 /* No comment provided by engineer. */
-"HPMN Operator Keys" = "Evolution Node ID Keys";
+"HPMN Operator Keys" = "کلیدهای شناسه اولوشن نود";
 
 /* No comment provided by engineer. */
 "I Accept" = "I Accept";
@@ -892,9 +895,6 @@
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "ورود به کراودنود";
-
-/* No comment provided by engineer. */
-"Log Out" = "خروج";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "خروج از آپهولد";
@@ -1605,6 +1605,9 @@
 /* No comment provided by engineer. */
 "Tools" = "ابزارها";
 
+/* Dash Portal */
+"Topper" = "تاپر";
+
 /* No comment provided by engineer. */
 "Total" = "مجموع";
 
@@ -1621,9 +1624,6 @@
    Coinbase Entry Point
    Dash Service Overview */
 "Transfer Dash" = "انتقال دش";
-
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "انتقال دش از حساب آپهلد به این کیف پول";
 
 /* CrowdNode */
 "Transfer Error" = "Transfer Error";
@@ -1913,9 +1913,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
-
-/* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "موجودی حساب آپهلد شما برابر است با";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Your username %@ has been successfully created on the Dash Network";

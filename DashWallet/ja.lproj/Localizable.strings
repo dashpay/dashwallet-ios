@@ -217,9 +217,6 @@
 /* Send Screen: to address */
 "Balance" = "残高";
 
-/* Uphold entry point */
-"Balance not available" = "Balance not available";
-
 /* CrowdNode */
 "Balance: " = "残高:";
 
@@ -230,7 +227,7 @@
 "Bank Wire" = "銀行振込";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "DashウォレットとCoinbase間で行います。";
+"Between Dash Wallet and Coinbase" = "DashウォレットとCoinbase間";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "DashウォレットとCoinbaseアカウント間";
@@ -266,8 +263,8 @@
 /* Dash Service Overview */
 "Buy Dash with fiat" = "Dashをフィアットで購入する";
 
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "UpholdアカウントでDashを買う";
+/* Dash Portal */
+"Buy Dash · No account needed" = "Dashを購入 · アカウント不要";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "Dashでギフトカードを購入";
@@ -456,7 +453,7 @@
 "Dash balance on Coinbase" = "CoinbaseでのDashの残高";
 
 /* Uphold Entry Point */
-"Dash balance on Uphold" = "Dash balance on Uphold";
+"Dash balance on Uphold" = "Uphold上のDash残高";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dashの送金は %@ 以上でないと送れません";
@@ -509,6 +506,9 @@
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Coinbaseのアカウントを切断する";
+
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "Upholdアカウントを切断する";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -638,7 +638,7 @@
 "Find a user on the Dash Network" = "Dashのネットワークでユーザーを探す";
 
 /* No comment provided by engineer. */
-"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Find merchants that accept Dash, where to buy it and how to earn income with it.";
+"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Dashを使用できる加盟店、Dashを購入できる場所、Dashで収入を得る方法を探します。";
 
 /* No comment provided by engineer. */
 "Find merchants who accept Dash as payment." = "Dashでの支払いが可能な加盟店を探します。";
@@ -669,6 +669,9 @@
 
 /* from Dash Wallet */
 "from Dash Wallet" = "Dash Walletから";
+
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "UpholdからDashウォレットへ";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "UpholdからDashウォレットへ";
@@ -728,7 +731,7 @@
 "How to Use a Gift Card" = "ギフトカードの使用方法";
 
 /* No comment provided by engineer. */
-"HPMN Operator Keys" = "Evolution Node ID Keys";
+"HPMN Operator Keys" = "エボリューションのノードIDキー";
 
 /* No comment provided by engineer. */
 "I Accept" = "承認しました";
@@ -794,7 +797,7 @@
 "Invalid amount" = "無効な金額";
 
 /* No comment provided by engineer. */
-"Invalid Dash address" = "Invalid Dash address";
+"Invalid Dash address" = "無効なDashアドレス";
 
 /* CrowdNode Online */
 "Invalid Email" = "無効なEメール";
@@ -892,9 +895,6 @@
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "CrowdNodeにログイン";
-
-/* No comment provided by engineer. */
-"Log Out" = "ログアウトする";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Upholdからログアウトする";
@@ -1194,7 +1194,7 @@
 "Public key" = "パブリックキー";
 
 /* No comment provided by engineer. */
-"Public key (legacy)" = "Public key (legacy)";
+"Public key (legacy)" = "パブリックキー(レガシー)";
 
 /* Coinbase/Buy Dash */
 "Purchase" = "購入";
@@ -1605,6 +1605,9 @@
 /* No comment provided by engineer. */
 "Tools" = "ツール";
 
+/* Dash Portal */
+"Topper" = "Topper";
+
 /* No comment provided by engineer. */
 "Total" = "合計";
 
@@ -1621,9 +1624,6 @@
    Coinbase Entry Point
    Dash Service Overview */
 "Transfer Dash" = "Dashを送金する";
-
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "あなたのUpholdアカウントからこのウォレットにDashを送金する";
 
 /* CrowdNode */
 "Transfer Error" = "送金エラー";
@@ -1913,9 +1913,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "あなたの取引は送られたので、数分内にその金額がウォレットに表示されるでしょう";
-
-/* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "あなたのUpholdアカウントのDash残高は";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "あなたのユーザー名%@はDashネットワークに無事作成されました。";

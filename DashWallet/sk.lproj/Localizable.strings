@@ -217,9 +217,6 @@
 /* Send Screen: to address */
 "Balance" = "Zostatok";
 
-/* Uphold entry point */
-"Balance not available" = "Balance not available";
-
 /* CrowdNode */
 "Balance: " = "Zostatok: ";
 
@@ -230,7 +227,7 @@
 "Bank Wire" = "Bankový prevod";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "Medzi peňaženkou Dash a Coinbase.";
+"Between Dash Wallet and Coinbase" = "Medzi Dash peňaženkou a Coinbase";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Medzi Dash peňaženkou a vaším účtom na Coinbase";
@@ -266,8 +263,8 @@
 /* Dash Service Overview */
 "Buy Dash with fiat" = "Kúpiť si Dash za hotovosť";
 
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Kúpiť Dash s účtom na Upholde";
+/* Dash Portal */
+"Buy Dash · No account needed" = "Kúpiť Dash · Nie je potrebný žiadny účet";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "Kúpte si darčekové poukážky s Dashom";
@@ -456,7 +453,7 @@
 "Dash balance on Coinbase" = "Zostatok Dash na Coinbase";
 
 /* Uphold Entry Point */
-"Dash balance on Uphold" = "Dash balance on Uphold";
+"Dash balance on Uphold" = "Zostatok Dash na Upholde";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash platby nemôžu byť menšie ako %@";
@@ -509,6 +506,9 @@
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Odpojte Coinbase účet";
+
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "Odpojiť Uphold účet";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -669,6 +669,9 @@
 
 /* from Dash Wallet */
 "from Dash Wallet" = "z Dash peňaženky";
+
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "Z Upholdu do Dash peňaženky";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "Z Upholdu do vašej Dash peňaženky";
@@ -892,9 +895,6 @@
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Prihláste sa do CrowdNode";
-
-/* No comment provided by engineer. */
-"Log Out" = "Odhlásiť";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Odhlásiť s Upholdu";
@@ -1605,6 +1605,9 @@
 /* No comment provided by engineer. */
 "Tools" = "Nástroje";
 
+/* Dash Portal */
+"Topper" = "Topper";
+
 /* No comment provided by engineer. */
 "Total" = "Celkovo";
 
@@ -1621,9 +1624,6 @@
    Coinbase Entry Point
    Dash Service Overview */
 "Transfer Dash" = "Preniesť Dash";
-
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Preneste Dash z vášho účtu na Upholde do tejto peňaženky";
 
 /* CrowdNode */
 "Transfer Error" = "Chyba prenosu";
@@ -1913,9 +1913,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Vaša transakcia bola odoslaná a čiastka by sa mala objaviť vo vašej peňaženke v priebehu niekoľkých minút.";
-
-/* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Zostatok na vašom Uphold účte je";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Vaše používateľské meno %@ bolo úspešne vytvorené v sieti Dash";

@@ -217,9 +217,6 @@
 /* Send Screen: to address */
 "Balance" = "Guthaben";
 
-/* Uphold entry point */
-"Balance not available" = "Balance not available";
-
 /* CrowdNode */
 "Balance: " = "Guthaben:";
 
@@ -230,7 +227,7 @@
 "Bank Wire" = "Banküberweisung";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "Zwischen Dash Wallet und Coinbase.";
+"Between Dash Wallet and Coinbase" = "Zwischen der Dash Wallet und Coinbase";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Zwischen Dash Wallet und deinem Coinbase Konto";
@@ -266,8 +263,8 @@
 /* Dash Service Overview */
 "Buy Dash with fiat" = "Dash mit Fiatwährung kaufen";
 
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Dash über Uphold-Konto kaufen";
+/* Dash Portal */
+"Buy Dash · No account needed" = "Dash kaufen. Es wird kein Konto benötigt.";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "Kaufe Gutscheinkarten mit Dash";
@@ -456,7 +453,7 @@
 "Dash balance on Coinbase" = "Dash Guthaben auf Coinbase";
 
 /* Uphold Entry Point */
-"Dash balance on Uphold" = "Dash balance on Uphold";
+"Dash balance on Uphold" = "Dash Guthaben auf Uphold";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash-Zahlungen können nicht kleiner als %@ sein";
@@ -509,6 +506,9 @@
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Coinbase Konto trennen";
+
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "Die Verbindung zu deinem Uphold Konto auflösen";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -638,7 +638,7 @@
 "Find a user on the Dash Network" = "Finde einen Benutzer des Dash-Netzwerks";
 
 /* No comment provided by engineer. */
-"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Find merchants that accept Dash, where to buy it and how to earn income with it.";
+"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Finde Händler die Dash akzeptieren, Orte wo du Dash kaufen kannst und Wege wie du Einkommen damit erzielen kannst.";
 
 /* No comment provided by engineer. */
 "Find merchants who accept Dash as payment." = "Finde Händler, die Dash als Zahlungsmethode akzeptieren.";
@@ -669,6 +669,9 @@
 
 /* from Dash Wallet */
 "from Dash Wallet" = "von Dash Wallet";
+
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "Von Uphold zur Dash Wallet";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "Von Uphold auf deine Dash Wallet";
@@ -892,9 +895,6 @@
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Bei CrowdNode anmelden";
-
-/* No comment provided by engineer. */
-"Log Out" = "Abmelden";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Aus Uphold abmelden";
@@ -1194,7 +1194,7 @@
 "Public key" = "öffentlicher Schlüssel";
 
 /* No comment provided by engineer. */
-"Public key (legacy)" = "Public key (legacy)";
+"Public key (legacy)" = "Öffentlicher Schlüssel (Legacy)";
 
 /* Coinbase/Buy Dash */
 "Purchase" = "Kaufen";
@@ -1605,6 +1605,9 @@
 /* No comment provided by engineer. */
 "Tools" = "Werkzeuge";
 
+/* Dash Portal */
+"Topper" = "Topper";
+
 /* No comment provided by engineer. */
 "Total" = "Gesamt";
 
@@ -1621,9 +1624,6 @@
    Coinbase Entry Point
    Dash Service Overview */
 "Transfer Dash" = "Dash übertragen";
-
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Dash vom Uphold-Konto an die Wallet transferieren";
 
 /* CrowdNode */
 "Transfer Error" = "Übertragungsfehler";
@@ -1913,9 +1913,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Deine Transaktion wurde versendet und der Betrag sollte in ein paar Minuten in der Wallet zu sehen sein.";
-
-/* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Das Dash-Guthaben deines Uphold-Kontos beträgt";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Dein Benutzername %@ wurde erfolgreich im Dash-Netzwerk erstellt";

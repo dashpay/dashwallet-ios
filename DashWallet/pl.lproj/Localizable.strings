@@ -217,9 +217,6 @@
 /* Send Screen: to address */
 "Balance" = "Saldo";
 
-/* Uphold entry point */
-"Balance not available" = "Balance not available";
-
 /* CrowdNode */
 "Balance: " = "Saldo:";
 
@@ -230,7 +227,7 @@
 "Bank Wire" = "Transfer Bankowy";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "Pomiędzy Porfelem Dash a Coinbase";
+"Between Dash Wallet and Coinbase" = "Pomiędzy portfelem Dash i Coinbase";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Pomiędzy twoim Portfelem Dash a twoim kontem na Coinbase";
@@ -266,8 +263,8 @@
 /* Dash Service Overview */
 "Buy Dash with fiat" = "Kup Dash za normalne pieniądze";
 
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Kup Dash za pomocą konta Uphold";
+/* Dash Portal */
+"Buy Dash · No account needed" = "Kup Dash · Konto nie jest potrzebne";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "Kup karty podarunkowe za pomocą Dash";
@@ -456,7 +453,7 @@
 "Dash balance on Coinbase" = "Saldo Dash na Coinbase";
 
 /* Uphold Entry Point */
-"Dash balance on Uphold" = "Dash balance on Uphold";
+"Dash balance on Uphold" = "Saldo Dash na Uphold";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Płatności Dash nie mogą być mniejsze niż %@";
@@ -509,6 +506,9 @@
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Rozłącz Konto Coinbase";
+
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "Odzłącz Konto Uphold";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -638,7 +638,7 @@
 "Find a user on the Dash Network" = "Znajdź użytkownika na Sieci Dash";
 
 /* No comment provided by engineer. */
-"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Find merchants that accept Dash, where to buy it and how to earn income with it.";
+"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Znajdź handlowców którzy akceptują Dash, gdzie go zakupić oraz jak zarabiać dzięki niemu.";
 
 /* No comment provided by engineer. */
 "Find merchants who accept Dash as payment." = "Znajdź sprzedawcę, który przyjmuje płatności w Dash. ";
@@ -669,6 +669,9 @@
 
 /* from Dash Wallet */
 "from Dash Wallet" = "Od Portfela Dash";
+
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "Z Uphold do portfela Dash";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "Z konta Uphold do Portfela Dash";
@@ -728,7 +731,7 @@
 "How to Use a Gift Card" = "Jak Używać Kart Podarunkowych";
 
 /* No comment provided by engineer. */
-"HPMN Operator Keys" = "Evolution Node ID Keys";
+"HPMN Operator Keys" = "Klucze Evolution Node ID";
 
 /* No comment provided by engineer. */
 "I Accept" = "Akceptuję";
@@ -794,7 +797,7 @@
 "Invalid amount" = "Niewłaściwa ilość";
 
 /* No comment provided by engineer. */
-"Invalid Dash address" = "Invalid Dash address";
+"Invalid Dash address" = "Nieprawidłowy adres Dash";
 
 /* CrowdNode Online */
 "Invalid Email" = "Email jest niepoprawny";
@@ -892,9 +895,6 @@
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Zaloguj się do CrowdNode";
-
-/* No comment provided by engineer. */
-"Log Out" = "Wyloguj";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Wyloguj z Uphold";
@@ -1194,7 +1194,7 @@
 "Public key" = "Klucz publiczny";
 
 /* No comment provided by engineer. */
-"Public key (legacy)" = "Public key (legacy)";
+"Public key (legacy)" = "Klucz publiczny (legacy)";
 
 /* Coinbase/Buy Dash */
 "Purchase" = "Kup";
@@ -1605,6 +1605,9 @@
 /* No comment provided by engineer. */
 "Tools" = "Narzędzia";
 
+/* Dash Portal */
+"Topper" = "Topper";
+
 /* No comment provided by engineer. */
 "Total" = "Całkowite";
 
@@ -1621,9 +1624,6 @@
    Coinbase Entry Point
    Dash Service Overview */
 "Transfer Dash" = "Przetransferuj Dash";
-
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Prześlij Dash ze swojego konta Uphold do tego portfela";
 
 /* CrowdNode */
 "Transfer Error" = "Błąd Przelewu";
@@ -1913,9 +1913,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Twoja transakcja została wysłana a ilość powinna pojawić się na Twoim koncie w kilka minut.";
-
-/* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Stan Twojego konta Uphold w Dash to";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Twoja nazwa użytkownika %@ została stworzona na Sieci Dash";
