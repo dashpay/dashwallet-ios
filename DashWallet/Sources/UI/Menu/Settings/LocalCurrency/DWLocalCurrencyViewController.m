@@ -33,6 +33,7 @@ static CGFloat const SECTION_SPACING = 10.0;
 @interface DWLocalCurrencyViewController () <UISearchBarDelegate, UISearchResultsUpdating>
 
 @property (nonatomic, assign) DWNavigationAppearance navigationAppearance;
+@property (nonatomic, assign) DWCurrencyPickerPresentationMode presentationMode;
 @property (nonatomic, strong) DWLocalCurrencyModel *model;
 @property (nonatomic, strong) UILabel *priceSourceLabel;
 
@@ -41,10 +42,12 @@ static CGFloat const SECTION_SPACING = 10.0;
 @implementation DWLocalCurrencyViewController
 
 - (instancetype)initWithNavigationAppearance:(DWNavigationAppearance)navigationAppearance
+                            presentationMode:(DWCurrencyPickerPresentationMode)mode
                                 currencyCode:(nullable NSString *)currencyCode {
     self = [super initWithStyle:UITableViewStylePlain];
     if (self) {
         self.navigationAppearance = navigationAppearance;
+        self.presentationMode = mode;
         if (navigationAppearance == DWNavigationAppearance_Default) {
             self.title = NSLocalizedString(@"Local Currency", nil);
         }
@@ -59,8 +62,10 @@ static CGFloat const SECTION_SPACING = 10.0;
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    UIBarButtonItem *barButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemClose target:self action:@selector(closeButtonAction)];
-    self.navigationItem.rightBarButtonItem = barButton;
+    if (self.presentationMode == DWCurrencyPickerPresentationMode_Dialog) {
+        UIBarButtonItem *barButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemClose target:self action:@selector(closeButtonAction)];
+        self.navigationItem.rightBarButtonItem = barButton;
+    }
 
     self.title = NSLocalizedString(@"Local Currency", nil);
 

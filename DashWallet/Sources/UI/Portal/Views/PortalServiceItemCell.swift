@@ -21,6 +21,7 @@ class PortalServiceItemCell: UICollectionViewCell {
     @IBOutlet var iconView: UIImageView!
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var subtitleLabel: UILabel!
+    @IBOutlet var additionalInfo: UIView!
 
     @IBOutlet var statusView: UIView!
     @IBOutlet var statusIcon: UIView!
@@ -38,7 +39,7 @@ class PortalServiceItemCell: UICollectionViewCell {
         titleLabel.text = item.name
 
         if item.status == .idle {
-            subtitleLabel.text = NSLocalizedString("Link your account", comment: "Buy Sell Portal")
+            subtitleLabel.text = item.subtitle
             statusView.isHidden = true
             subtitleLabel.isHidden = false
         } else if !isEnabled {
@@ -69,6 +70,8 @@ class PortalServiceItemCell: UICollectionViewCell {
             statusLabel.text = item.status.statusString
             balanceLabel.attributedText = item.balanceValue
         }
+        
+        additionalInfo.isHidden = !item.showAdditionalInfo
     }
 
     override func awakeFromNib() {

@@ -17,6 +17,7 @@ target 'dashwallet' do
   pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
   pod 'SDWebImage', '5.13.2'
   pod 'Moya', '~> 15.0'
+  pod 'SwiftJWT', '3.6.200'
   # Debugging purposes
   #  pod 'Reveal-SDK', :configurations => ['Debug']
   

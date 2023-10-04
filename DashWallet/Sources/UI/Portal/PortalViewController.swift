@@ -43,7 +43,7 @@ final class PortalViewController: UIViewController {
 
     @objc
     func upholdAction() {
-        let vc = DWUpholdViewController()
+        let vc = IntegrationViewController.controller(model: UpholdPortalModel())
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
@@ -51,7 +51,7 @@ final class PortalViewController: UIViewController {
     @objc
     func coinbaseAction() {
         if Coinbase.shared.isAuthorized {
-            let vc = CoinbaseEntryPointViewController.controller()
+            let vc = IntegrationViewController.controller(model: CoinbaseEntryPointModel())
             vc.userSignedOutBlock = { [weak self] isNeedToShowSignOutError in
                 guard let self else { return }
 
@@ -71,6 +71,15 @@ final class PortalViewController: UIViewController {
             let vc = ServiceOverviewViewController.controller()
             vc.hidesBottomBarWhenPushed = true
             navigationController?.pushViewController(vc, animated: true)
+        }
+    }
+    
+    @objc
+    func topperAction() {
+        let urlString = TopperViewModel.shared.topperBuyUrl(walletName: Bundle.main.infoDictionary!["CFBundleDisplayName"] as! String)
+        if let url = URL(string: urlString) {
+            let safariViewController = SFSafariViewController.dw_controller(with: url)
+            present(safariViewController, animated: true)
         }
     }
 
@@ -102,7 +111,7 @@ final class PortalViewController: UIViewController {
 
     @objc
     class func controller() -> PortalViewController {
-        vc(PortalViewController.self, from: sb("Coinbase"))
+        vc(PortalViewController.self, from: sb("BuySellPortal"))
     }
 }
 
@@ -167,6 +176,8 @@ extension PortalViewController: UICollectionViewDelegate, UICollectionViewDataSo
             upholdAction()
         case .coinbase:
             coinbaseAction()
+        case .topper:
+            topperAction()
         }
     }
 }

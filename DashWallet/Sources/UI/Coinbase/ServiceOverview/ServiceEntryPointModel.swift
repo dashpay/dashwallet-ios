@@ -64,6 +64,8 @@ extension Service {
                                  serviceSubtitle: NSLocalizedString("From Uphold to your Dash Wallet",
                                                                     comment: "Dash Service Overview")),
             ]
+            
+        case .topper: return []
         }
     }
 
@@ -71,6 +73,7 @@ extension Service {
         switch self {
         case .coinbase: return NSLocalizedString("Link your Coinbase account", comment: "Dash Service Overview")
         case .uphold: return NSLocalizedString("Link your Uphold account", comment: "Dash Service Overview")
+        case .topper: return ""
         }
     }
 
@@ -78,6 +81,7 @@ extension Service {
         switch self {
         case .coinbase: return "service.coinbase.square"
         case .uphold: return "uphold_logo"
+        case .topper: return "portal.topper"
         }
     }
 
@@ -85,6 +89,7 @@ extension Service {
         switch self {
         case .coinbase: return NSLocalizedString("Link Coinbase Account", comment: "Dash Service Overview")
         case .uphold: return NSLocalizedString("Link Uphold account", comment: "Dash Service Overview")
+        case .topper: return ""
         }
     }
 }

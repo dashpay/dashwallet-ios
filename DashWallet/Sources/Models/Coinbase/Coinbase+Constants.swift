@@ -20,9 +20,7 @@ import Foundation
 extension Coinbase {
     // MARK: API
     static let callbackURLScheme = "authhub"
-    static let clientSecret = Bundle.main.infoDictionary?["CLIENT_SECRET"]
     static let redirectUri = "authhub://oauth-callback"
-    static let clientID = Bundle.main.infoDictionary?["CLIENT_ID"]
     static let grantType = "authorization_code"
     static let responseType = "code"
     static let scope =
@@ -31,5 +29,23 @@ extension Coinbase {
     static let sendLimitAmount: Decimal = 1.0
     static let sendLimitPeriod = "month"
     static let account = "all"
+    
+    static let clientSecret: String = {
+        if let path = Bundle.main.path(forResource: "Coinbase-Info", ofType: "plist"),
+           let dict = NSDictionary(contentsOfFile: path) as? [String: AnyObject] {
+            return dict["CLIENT_SECRET"] as! String
+        } else {
+            return ""
+        }
+    }()
+    
+    static let clientID: String = {
+        if let path = Bundle.main.path(forResource: "Coinbase-Info", ofType: "plist"),
+           let dict = NSDictionary(contentsOfFile: path) as? [String: AnyObject] {
+            return dict["CLIENT_ID"] as! String
+        } else {
+            return ""
+        }
+    }()
 }
 

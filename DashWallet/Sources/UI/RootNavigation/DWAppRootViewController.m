@@ -26,7 +26,6 @@
 #import "DWUIKit.h"
 #import "DWURLParser.h"
 #import "DWURLRequestHandler.h"
-#import "DWUpholdAuthURLNotification.h"
 #import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -110,9 +109,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     if ([action isKindOfClass:DWURLScanQRAction.class]) {
         [self.mainController performScanQRCodeAction];
     }
-    else if ([action isKindOfClass:DWURLUpholdAction.class]) {
-        NSURL *url = [(DWURLUpholdAction *)action url];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DWUpholdAuthURLNotification object:url];
+    else if ([action isKindOfClass:DWURLIntegrationAction.class]) {
+        NSURL *url = [(DWURLIntegrationAction *)action url];
+        [[NSNotificationCenter defaultCenter] postNotificationName:NSNotification.authURLReceived object:url];
     }
     else if ([action isKindOfClass:DWURLRequestAction.class]) {
         [DWURLRequestHandler handleURLRequest:(DWURLRequestAction *)action];

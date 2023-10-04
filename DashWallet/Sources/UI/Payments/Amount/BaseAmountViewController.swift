@@ -115,6 +115,7 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
 
     internal func showCurrencyList() {
         let currencyController = DWLocalCurrencyViewController(navigationAppearance: .white,
+                                                               presentationMode: .dialog,
                                                                currencyCode: model.localCurrencyCode)
         currencyController.isGlobal = false
         currencyController.delegate = self
