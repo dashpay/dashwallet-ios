@@ -62,8 +62,6 @@ final class IntegrationViewController: BaseViewController, NetworkReachabilityHa
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        configureModel()
         configureHierarchy()
 
         networkStatusDidChange = { [weak self] _ in
@@ -74,6 +72,7 @@ final class IntegrationViewController: BaseViewController, NetworkReachabilityHa
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        configureModel()
         model.refresh()
     }
     
