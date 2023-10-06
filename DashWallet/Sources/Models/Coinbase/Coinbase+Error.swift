@@ -29,6 +29,7 @@ extension Coinbase {
             case noPaymentMethods
             case noCashAccount
             case rateNotFound
+            case depositFailed
 
             var errorDescription: String? {
                 switch self {
@@ -42,6 +43,8 @@ extension Coinbase {
                     return NSLocalizedString("No cash account found", comment: "Coinbase")
                 case .rateNotFound:
                     return NSLocalizedString("Could not find exchange rate.", comment: "")
+                case .depositFailed:
+                    return NSLocalizedString("Failed to make a deposit.", comment: "Coinbase")
                 }
             }
             

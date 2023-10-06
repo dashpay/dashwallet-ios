@@ -264,6 +264,25 @@ extension CBAccount {
     }
 }
 
+// MARK: Deposit
+
+extension CBAccount {
+    public func deposit(from paymentMethodId: String, amount: UInt64) async throws -> CoinbaseDepositResponse {
+        guard let localNumber = try? Coinbase.shared.currencyExchanger.convertDash(amount: amount.dashAmount, to: Coinbase.defaultFiat) else {
+            throw Coinbase.Error.general(.rateNotFound)
+        }
+        
+        let formatter = NumberFormatter.decimalFormatter
+        formatter.maximumFractionDigits = 2
+        let amountStr = formatter.string(from: NSDecimalNumber(decimal: localNumber))!.coinbaseAmount()
+        try await authInterop.refreshTokenIfNeeded()
+        let request = CoinbaseDepositRequest(amount: amountStr, currency: Coinbase.defaultFiat, paymentMethod: paymentMethodId)
+        let result: BaseDataResponse<CoinbaseDepositResponse> = try await httpClient.request(.deposit(accountId: info.id, dto: request))
+        
+        return result.data
+    }
+}
+
 // MARK: SourceViewDataProvider
 
 extension CBAccount: SourceViewDataProvider {

@@ -182,8 +182,23 @@ extension Coinbase {
         } catch Coinbase.Error.userSessionRevoked {
             try await auth.signOut()
             throw Coinbase.Error.userSessionRevoked
-        } catch {
-            throw error
+        }
+    }
+    
+    /// Deposit to the fiat account
+    ///
+    /// - Parameters:
+    ///   - paymentMethodId: Id of the payment method with which to make the deposit
+    ///   - amount: Plain amount in Dash
+    ///
+    /// - Throws: Coinbase.Error
+    ///
+    func depositToFiatAccount(from paymentMethodId: String, amount: UInt64) async throws {
+        do {
+            try await accountService.deposit(to: Coinbase.defaultFiat, from: paymentMethodId, amount: amount)
+        } catch Coinbase.Error.userSessionRevoked {
+            try await auth.signOut()
+            throw Coinbase.Error.userSessionRevoked
         }
     }
 

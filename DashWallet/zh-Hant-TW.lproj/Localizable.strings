@@ -593,6 +593,9 @@
 "Face ID limit" = "Face ID 解鎖的限制";
 
 /* Coinbase */
+"Failed to make a deposit." = "Failed to make a deposit.";
+
+/* Coinbase */
 "Failed to start auth session" = "Failed to start auth session";
 
 /* Buy Sell Portal */

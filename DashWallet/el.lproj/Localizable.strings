@@ -593,6 +593,9 @@
 "Face ID limit" = "όριο Face ID ";
 
 /* Coinbase */
+"Failed to make a deposit." = "Failed to make a deposit.";
+
+/* Coinbase */
 "Failed to start auth session" = "Αποτυχία εκκίνησης περιόδου λειτουργίας εξουσιοδότησης";
 
 /* Buy Sell Portal */

@@ -62,6 +62,15 @@ class AccountService {
         let account = try await account(by: accountName)
         return try await account.placeCoinbaseBuyOrder(amount: amount)
     }
+    
+    public func deposit(to accountName: String, from paymentMethodId: String, amount: UInt64) async throws {
+        let account = try await account(by: accountName)
+        let result = try await account.deposit(from: paymentMethodId, amount: amount)
+        
+        if result.status != "created" {
+            throw Coinbase.Error.general(.depositFailed)
+        }
+    }
 
     func placeTradeOrder(from origin: CBAccount, to destination: CBAccount, amount: String) async throws -> CoinbaseSwapeTrade {
         try await origin.convert(amount: amount, to: destination)

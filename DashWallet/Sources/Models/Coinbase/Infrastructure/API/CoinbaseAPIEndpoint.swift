@@ -133,6 +133,7 @@ struct CoinbaseAPIError: Decodable {
 public enum CoinbaseEndpoint {
     case account(String)
     case accounts
+    case deposit(accountId: String, dto: CoinbaseDepositRequest)
     case userAuthInformation
     case exchangeRates(String)
     case activePaymentMethods
@@ -176,6 +177,7 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
         switch self {
         case .account(let name): return "/v2/accounts/\(name)"
         case .accounts: return "/v2/accounts"
+        case .deposit(let accountId, _): return "v2/accounts/\(accountId)/deposits"
         case .userAuthInformation: return "/v2/user/auth"
         case .exchangeRates: return "/v2/exchange-rates"
         case .activePaymentMethods: return "/v2/payment-methods"
@@ -196,7 +198,7 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
 
     public var method: Moya.Method {
         switch self {
-        case .getToken, .placeBuyOrder, .sendCoinsToWallet, .swapTrade, .swapTradeCommit, .createCoinbaseAccountAddress, .refreshToken, .revokeToken:
+        case .getToken, .placeBuyOrder, .sendCoinsToWallet, .swapTrade, .swapTradeCommit, .createCoinbaseAccountAddress, .refreshToken, .revokeToken, .deposit:
             return .post
         default:
             return .get
@@ -234,6 +236,8 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
         case .swapTrade(let dto):
             return .requestJSONEncodable(dto)
         case .placeBuyOrder(let dto):
+            return .requestJSONEncodable(dto)
+        case .deposit(_, let dto):
             return .requestJSONEncodable(dto)
         case .accounts:
             return .requestParameters(parameters: ["limit": 300, "order": "asc"], encoding: URLEncoding.default)

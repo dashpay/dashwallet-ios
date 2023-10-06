@@ -593,6 +593,9 @@
 "Face ID limit" = "Face ID limiet";
 
 /* Coinbase */
+"Failed to make a deposit." = "Failed to make a deposit.";
+
+/* Coinbase */
 "Failed to start auth session" = "Kan authenticatiesessie niet starten";
 
 /* Buy Sell Portal */

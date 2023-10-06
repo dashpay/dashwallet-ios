@@ -94,12 +94,6 @@ final class BuyDashModel: CoinbaseAmountModel {
                 return Coinbase.Error.general(.noPaymentMethods)
             }
             
-            // TODO
-//            coinBaseRepository.depositToFiatAccount(
-//                            uiState.value.paymentMethod!!.paymentMethodId,
-//                            amountStr
-//                        )
-            
             select(paymentMethod: method)
         } else {
             return Coinbase.Error.transactionFailed(.notEnoughFunds)

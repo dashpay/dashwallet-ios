@@ -52,6 +52,10 @@ final class ConfirmOrderModel: OrderPreviewModel {
     }
     
     func placeOrder() async throws {
+        if paymentMethod.type.isBankAccount {
+            try await Coinbase.shared.depositToFiatAccount(from: paymentMethod.id, amount: amountToTransfer)
+        }
+        
         let result = try await Coinbase.shared.placeCoinbaseBuyOrder(amount: amountToTransfer)
         
         if !result.success {
