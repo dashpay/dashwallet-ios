@@ -136,8 +136,7 @@ public enum CoinbaseEndpoint {
     case userAuthInformation
     case exchangeRates(String)
     case activePaymentMethods
-    case placeBuyOrder(String, CoinbasePlaceBuyOrderRequest)
-    case commitBuyOrder(String, String)
+    case placeBuyOrder(CoinbasePlaceBuyOrderRequest)
     case sendCoinsToWallet(accountId: String, verificationCode: String?, dto: CoinbaseTransactionsRequest)
     case getBaseIdForUSDModel(String)
     case swapTrade(CoinbaseSwapeTradeRequest)
@@ -180,8 +179,7 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
         case .userAuthInformation: return "/v2/user/auth"
         case .exchangeRates: return "/v2/exchange-rates"
         case .activePaymentMethods: return "/v2/payment-methods"
-        case .placeBuyOrder(let accountId, _): return "/v2/accounts/\(accountId)/buys"
-        case .commitBuyOrder(let accountId, let orderID): return "/v2/accounts/\(accountId)/buys/\(orderID)/commit"
+        case .placeBuyOrder: return "api/v3/brokerage/orders"
         case .sendCoinsToWallet(let accountId, _, _): return "/v2/accounts/\(accountId)/transactions"
         case .getBaseIdForUSDModel: return "/v2/assets/prices"
         case .swapTrade: return "/v2/trades"
@@ -198,7 +196,7 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
 
     public var method: Moya.Method {
         switch self {
-        case .getToken, .commitBuyOrder, .placeBuyOrder, .sendCoinsToWallet, .swapTrade, .swapTradeCommit, .createCoinbaseAccountAddress, .refreshToken, .revokeToken:
+        case .getToken, .placeBuyOrder, .sendCoinsToWallet, .swapTrade, .swapTradeCommit, .createCoinbaseAccountAddress, .refreshToken, .revokeToken:
             return .post
         default:
             return .get
@@ -215,13 +213,9 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
                 "account": Coinbase.account,
             ]
 
-            if let value = Coinbase.clientID as? String {
-                queryItems["client_id"] = value
-            }
-
-            if let value = Coinbase.clientSecret as? String {
-                queryItems["client_secret"] = value
-            }
+            queryItems["client_id"] = Coinbase.clientID
+            queryItems["client_secret"] = Coinbase.clientSecret
+            
             return .requestParameters(parameters: queryItems, encoding: JSONEncoding.default)
         case .refreshToken(let refreshToken):
             var queryItems: [String: Any] = [
@@ -229,13 +223,9 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
                 "grant_type": "refresh_token",
             ]
 
-            if let value = Coinbase.clientID as? String {
-                queryItems["client_id"] = value
-            }
-
-            if let value = Coinbase.clientSecret as? String {
-                queryItems["client_secret"] = value
-            }
+            queryItems["client_id"] = Coinbase.clientID
+            queryItems["client_secret"] = Coinbase.clientSecret
+            
             return .requestParameters(parameters: queryItems, encoding: JSONEncoding.default)
         case .revokeToken(let token):
             return .requestParameters(parameters: ["token": token], encoding: JSONEncoding.default)
@@ -243,7 +233,7 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
             return .requestJSONEncodable(dto)
         case .swapTrade(let dto):
             return .requestJSONEncodable(dto)
-        case .placeBuyOrder(_, let dto):
+        case .placeBuyOrder(let dto):
             return .requestJSONEncodable(dto)
         case .accounts:
             return .requestParameters(parameters: ["limit": 300, "order": "asc"], encoding: URLEncoding.default)

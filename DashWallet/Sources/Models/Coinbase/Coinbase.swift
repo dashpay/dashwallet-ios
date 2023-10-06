@@ -109,6 +109,14 @@ extension Coinbase {
     var dashAccount: CBAccount? {
         accountService.dashAccount
     }
+    
+    public func getUsdAccount() async -> CBAccount? {
+        do {
+            return try await accountService.account(by: Coinbase.defaultFiat)
+        } catch {
+            return nil
+        }
+    }
 }
 
 extension Coinbase {
@@ -168,30 +176,9 @@ extension Coinbase {
     ///
     /// - Throws: Coinbase.Error
     ///
-    func placeCoinbaseBuyOrder(amount: UInt64,
-                               paymentMethod: CoinbasePaymentMethod) async throws -> CoinbasePlaceBuyOrder {
+    func placeCoinbaseBuyOrder(amount: UInt64) async throws -> CoinbasePlaceBuyOrder {
         do {
-            return try await accountService.placeBuyOrder(for: kDashAccount, amount: amount, paymentMethod: paymentMethod)
-        } catch Coinbase.Error.userSessionRevoked {
-            try await auth.signOut()
-            throw Coinbase.Error.userSessionRevoked
-        } catch {
-            throw error
-        }
-    }
-
-    /// Commit Buy Order
-    ///
-    /// - Parameters:
-    ///   - orderID: Order id from `CoinbasePlaceBuyOrder` you receive by calling `placeCoinbaseBuyOrder`
-    ///
-    /// - Returns: CoinbasePlaceBuyOrder
-    ///
-    /// - Throws: Coinbase.Error
-    ///
-    func commitCoinbaseBuyOrder(orderID: String) async throws -> CoinbasePlaceBuyOrder {
-        do {
-            return try await accountService.commitBuyOrder(accountName: kDashAccount, orderID: orderID)
+            return try await accountService.placeBuyOrder(for: kDashAccount, amount: amount)
         } catch Coinbase.Error.userSessionRevoked {
             try await auth.signOut()
             throw Coinbase.Error.userSessionRevoked

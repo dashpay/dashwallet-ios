@@ -17,13 +17,6 @@
 
 import Foundation
 
-// MARK: - BuyDashModelDelegate
-
-protocol BuyDashModelDelegate: AnyObject {
-    func buyDashModelDidPlace(order: CoinbasePlaceBuyOrder)
-    func buyDashModelFailedToPlaceOrder(with error: Coinbase.Error)
-}
-
 // MARK: - BuyDashFailureReason
 
 enum BuyDashFailureReason {
@@ -34,8 +27,7 @@ enum BuyDashFailureReason {
 // MARK: - BuyDashModel
 
 final class BuyDashModel: CoinbaseAmountModel {
-    weak var delegate: BuyDashModelDelegate?
-
+    
     @Published var paymentMethods: [CoinbasePaymentMethod] = []
 
     var activePaymentMethod: CoinbasePaymentMethod? {
@@ -77,24 +69,43 @@ final class BuyDashModel: CoinbaseAmountModel {
         selectedPaymentMethod = paymentMethod
     }
 
-    public func buy() {
-        guard let paymentMethod = activePaymentMethod else {
-            return
+    public func validateBuyDash(retryWithDeposit: Bool) async -> Coinbase.Error {
+        guard let account = await Coinbase.shared.getUsdAccount() else {
+            return Coinbase.Error.general(.noCashAccount)
         }
-
+        
         let amount = amount.plainAmount
-        Task {
-            do {
-                let order = try await Coinbase.shared.placeCoinbaseBuyOrder(amount: amount, paymentMethod: paymentMethod)
-                await MainActor.run { [weak self] in
-                    self?.delegate?.buyDashModelDidPlace(order: order)
-                }
-            } catch {
-                await MainActor.run { [weak self] in
-                    self?.error = error
-                }
+        let cashBalanceInDash = account.info.plainAmountInDash
+        
+        if cashBalanceInDash >= amount {
+            let fiatMethod = paymentMethods.first { method in
+                method.type == .fiatAccount && method.currency == Coinbase.defaultFiat
             }
+            
+            guard let method = fiatMethod else {
+                return Coinbase.Error.general(.noCashAccount)
+            }
+            
+            select(paymentMethod: method)
+        } else if retryWithDeposit {
+            let bankAccountMethod = paymentMethods.first { $0.type.isBankAccount }
+            
+            guard let method = bankAccountMethod else {
+                return Coinbase.Error.general(.noPaymentMethods)
+            }
+            
+            // TODO
+//            coinBaseRepository.depositToFiatAccount(
+//                            uiState.value.paymentMethod!!.paymentMethodId,
+//                            amountStr
+//                        )
+            
+            select(paymentMethod: method)
+        } else {
+            return Coinbase.Error.transactionFailed(.notEnoughFunds)
         }
+        
+        return Coinbase.Error.unknownError
     }
 }
 

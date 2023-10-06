@@ -330,9 +330,6 @@
 "Confirm & Pay" = "确认并付款";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"Confirm (%@)" = "确认 (%@)";
-
-/* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "确认 (%1$d%2$@)";
 
 /* No comment provided by engineer. */
@@ -393,6 +390,9 @@
 
 /* No comment provided by engineer. */
 "Could not connect to the Dash network, please check that you are connected to the internet." = "无法连接到Dash网络，请检查您是否已连接到了互联网。";
+
+/* No comment provided by engineer. */
+"Could not find exchange rate." = "Could not find exchange rate.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "无法付款";
@@ -1009,6 +1009,9 @@
 
 /* Coinbase */
 "No active user" = "没有活跃用户";
+
+/* Coinbase */
+"No cash account found" = "No cash account found";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "没有支付方式";
@@ -1821,6 +1824,9 @@
 /* CrowdNode */
 "Withdrawal requested" = "提款请求";
 
+/* Coinbase */
+"Would you like to make a deposit for your purchase using a linked bank account?" = "Would you like to make a deposit for your purchase using a linked bank account?";
+
 /* No comment provided by engineer. */
 "Yes" = "是的";
 
@@ -1838,6 +1844,9 @@
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "您可以使用指纹识别来认证下方交易";
+
+/* Coinbase */
+"You don’t have enough balance" = "You don’t have enough balance";
 
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "您超出了 Coinbase的授权限制.";

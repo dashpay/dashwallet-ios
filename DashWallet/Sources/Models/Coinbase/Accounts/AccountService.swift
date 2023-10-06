@@ -58,16 +58,9 @@ class AccountService {
         return tx
     }
 
-    public func placeBuyOrder(for accountName: String, amount: UInt64, paymentMethod: CoinbasePaymentMethod) async throws -> CoinbasePlaceBuyOrder {
+    public func placeBuyOrder(for accountName: String, amount: UInt64) async throws -> CoinbasePlaceBuyOrder {
         let account = try await account(by: accountName)
-        return try await account.placeCoinbaseBuyOrder(amount: amount, paymentMethod: paymentMethod)
-    }
-
-    public func commitBuyOrder(accountName: String, orderID: String) async throws -> CoinbasePlaceBuyOrder {
-        let account = try await account(by: accountName)
-
-        let order = try await account.commitCoinbaseBuyOrder(orderID: orderID)
-        return order
+        return try await account.placeCoinbaseBuyOrder(amount: amount)
     }
 
     func placeTradeOrder(from origin: CBAccount, to destination: CBAccount, amount: String) async throws -> CoinbaseSwapeTrade {

@@ -330,9 +330,6 @@
 "Confirm & Pay" = "確認 & 支払い";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"Confirm (%@)" = "確認する (%@)";
-
-/* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "確認する (%1$d%2$@)";
 
 /* No comment provided by engineer. */
@@ -393,6 +390,9 @@
 
 /* No comment provided by engineer. */
 "Could not connect to the Dash network, please check that you are connected to the internet." = "Dashのネットワークにつなげられませんでした。インターネットに接続されているか確認してください。";
+
+/* No comment provided by engineer. */
+"Could not find exchange rate." = "Could not find exchange rate.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "支払いを完了できませんでした";
@@ -1009,6 +1009,9 @@
 
 /* Coinbase */
 "No active user" = "アクティブなユーザーがいません";
+
+/* Coinbase */
+"No cash account found" = "No cash account found";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "支払い方法がありません";
@@ -1821,6 +1824,9 @@
 /* CrowdNode */
 "Withdrawal requested" = "出金がリクエストされました";
 
+/* Coinbase */
+"Would you like to make a deposit for your purchase using a linked bank account?" = "Would you like to make a deposit for your purchase using a linked bank account?";
+
 /* No comment provided by engineer. */
 "Yes" = "はい";
 
@@ -1838,6 +1844,9 @@
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "以下の支払いにはTouch IDの指紋認証をご利用いただけます";
+
+/* Coinbase */
+"You don’t have enough balance" = "You don’t have enough balance";
 
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "Coinbaseの認証制限を超えてしまいました。";

@@ -32,66 +32,60 @@ final class ConfirmOrderModel: OrderPreviewModel {
     var completionHandle: (() -> Void)?
     var failureHandle: ((ConfirmOrderError) -> Void)?
     var orderChangeHandle: (() -> Void)?
+    var showCountdown: Bool = false
 
-    var order: CoinbasePlaceBuyOrder
+//    var order: CoinbasePlaceBuyOrder
     let paymentMethod: CoinbasePaymentMethod
 
     /// Plain amount in Dash
     let amountToTransfer: UInt64
+    private let fiatAmount: Decimal?
+    private let feeAmount: Decimal?
 
-    init(order: CoinbasePlaceBuyOrder, paymentMethod: CoinbasePaymentMethod, plainAmount: UInt64) {
-        self.order = order
+    init(paymentMethod: CoinbasePaymentMethod, plainAmount: UInt64) {
         self.paymentMethod = paymentMethod
         amountToTransfer = plainAmount
+        
+        let fee = UInt64(Double(amountToTransfer) * Coinbase.buyFee)
+        fiatAmount = try? Coinbase.shared.currencyExchanger.convertDash(amount: amountToTransfer.dashAmount, to: Coinbase.defaultFiat)
+        feeAmount = try? Coinbase.shared.currencyExchanger.convertDash(amount: fee.dashAmount, to: Coinbase.defaultFiat)
+    }
+    
+    func placeOrder() async throws {
+        let result = try await Coinbase.shared.placeCoinbaseBuyOrder(amount: amountToTransfer)
+        
+        if !result.success {
+            throw Coinbase.Error.transactionFailed(.message(result.errorResponse?.message ?? result.failureReason))
+        }
+        
+        try await transferFromCoinbase(amount: amountToTransfer, with: nil)
     }
 
-    func placeOrder() {
-        guard let orderId = order.id else {
-            failureHandle?(.error)
-            return
-        }
-
-        let amount = amountToTransfer
-
-        Task { [weak self] in
-            do {
-                let _ = try await Coinbase.shared.commitCoinbaseBuyOrder(orderID: orderId)
-                try await self?.transferFromCoinbase(amount: amount, with: nil)
-            } catch {
-                await MainActor.run { [weak self] in
-                    self?.failureHandle?(.error)
-                }
-            }
-        }
-    }
-
-    func retry() {
-        Task { [weak self] in
-            let order = try await Coinbase.shared.placeCoinbaseBuyOrder(amount: amountToTransfer, paymentMethod: paymentMethod)
-            self?.order = order
-
-            await MainActor.run { [weak self] in
-                self?.orderChangeHandle?()
-            }
-        }
-    }
+    func retry() { }
 }
 
 extension ConfirmOrderModel {
     func formattedValue(for item: ConfirmOrderItem) -> String {
-        let value: String
+        var value: String = ""
 
         switch item {
         case .paymentMethod:
             value = paymentMethod.name
         case .purchaseAmount:
-            value = order.subtotal.formattedFiatAmount
+            if let amount = fiatAmount {
+                value = amount.formattedFiatAmount
+            }
         case .feeAmount:
-            value = order.fee.formattedFiatAmount
+            if let fee = feeAmount {
+                value = fee.formattedFiatAmount
+            }
         case .totalAmount:
-            value = order.total.formattedFiatAmount
+            if let amount = fiatAmount, let fee = feeAmount {
+                let total = amount + fee
+                value = total.formattedFiatAmount
+            }
         case .amountInDash:
-            value = order.amount.formattedDashAmount
+            value = amountToTransfer.formattedDashAmount
         }
 
         return value
