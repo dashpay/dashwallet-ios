@@ -281,6 +281,9 @@
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "업홀드 계정으로 대시 매수";
 
+/* Dash Portal */
+"Buy Dash · No account needed" = "Buy Dash · No account needed";
+
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "대시로 기프트 카드 구매";
 
@@ -343,6 +346,9 @@
 
 /* Coinbase/Buy Dash */
 "Coinbase Fee" = "코인베이스 수수료";
+
+/* No comment provided by engineer. */
+"CoinJoin" = "CoinJoin";
 
 /* No comment provided by engineer. */
 "Confirm" = "승인";
@@ -981,6 +987,9 @@
 "Let me know when it’s done" = "완료되면 알려주세요";
 
 /* No comment provided by engineer. */
+"Let your friends and family to join Dash" = "Let your friends and family to join Dash";
+
+/* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Let your friends and family to join the Dash Network. Invite them to the world of social banking.";
 
 /* Validation rule */
@@ -1085,6 +1094,9 @@
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "상점 검색은 위치 서비스를 켰을 때 보다 잘 작동합니다.";
 
+/* CoinJoin */
+"Mixing your Dash coins will make your transactions more private" = "Mixing your Dash coins will make your transactions more private";
+
 /* No comment provided by engineer. */
 "More" = "더 알아보기";
 
@@ -1135,6 +1147,9 @@
 
 /* (List of) New (notifications) */
 "New" = "새로운 알림";
+
+/* Coinbase */
+"Newly received Dash will be automatically mixed when the wallet is opened" = "Newly received Dash will be automatically mixed when the wallet is opened";
 
 /* No comment provided by engineer. */
 "NFC device" = "NFC 장치";
@@ -1582,6 +1597,9 @@
 "Send to a Contact" = "Send to a Contact";
 
 /* No comment provided by engineer. */
+"Send to contact" = "Send to contact";
+
+/* No comment provided by engineer. */
 "Send to copied address or QR code" = "복사된 주소 혹은 QR 코드에 보내기";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -1824,6 +1842,9 @@
 /* No comment provided by engineer. */
 "Tools" = "도구";
 
+/* Dash Portal */
+"Topper" = "Topper";
+
 /* No comment provided by engineer. */
 "Total" = "총합";
 
@@ -1867,6 +1888,9 @@
 
 /* Alert title */
 "Turn device passcode on" = "비밀번호 켜기";
+
+/* Coinbase */
+"Turning this feature on will result a higher battery usage" = "Turning this feature on will result a higher battery usage";
 
 /* Coinbase */
 "Two factor auth required" = "2단계 인증이 필요합니다";
@@ -1951,6 +1975,9 @@
 
 /* No comment provided by engineer. */
 "User (Fetching Info)" = "User (Fetching Info)";
+
+/* No comment provided by engineer. */
+"Username already found" = "Username already found";
 
 /* No comment provided by engineer. */
 "Username available" = "Username available";
@@ -2116,6 +2143,9 @@
 "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
 
 /* No comment provided by engineer. */
+"You cannot claim this invite since you already have a Dash username" = "You cannot claim this invite since you already have a Dash username";
+
+/* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "You do not have any contacts at the moment";
 
 /* Coinbase */
@@ -2165,6 +2195,9 @@
 
 /* Back up wallet */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "이 기기가 분실되거나 망가지는 경우, 혹은 이 기기에서 대시 월렛이 삭제 되는 경우 자금에 접근하기 위해서는 이 복구 문구가 필요합니다.";
+
+/* Coinbase */
+"You will only be able to spend Dash that has been mixed when this is turned on. This can be turned off at any time." = "You will only be able to spend Dash that has been mixed when this is turned on. This can be turned off at any time.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "이 기기의 대시 지갑에 %@ 대시를 받게 됩니다. 거래를 완료하는 데에는 2-3분 가량 소요될 수 있다는 점에 주의 해주십시오.";

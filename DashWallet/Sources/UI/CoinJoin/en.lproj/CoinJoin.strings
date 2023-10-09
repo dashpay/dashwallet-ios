@@ -1,0 +1,8 @@
+/* Class = "UIButton"; configuration.title = "Continue"; ObjectID = "1tF-oT-BN1"; */
+"1tF-oT-BN1.configuration.title" = "Continue";
+
+/* Class = "UIButton"; normalTitle = "Skip"; ObjectID = "1tF-oT-BN1"; */
+"1tF-oT-BN1.normalTitle" = "Skip";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "dod-hd-Z8n"; */
+"dod-hd-Z8n.text" = "Label";
