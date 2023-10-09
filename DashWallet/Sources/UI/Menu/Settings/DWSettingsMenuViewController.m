@@ -25,6 +25,7 @@
 #import "UIView+DWHUD.h"
 #import "UIViewController+DWDisplayError.h"
 #import <DashSync/DashSync.h>
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -137,6 +138,21 @@ NS_ASSUME_NONNULL_BEGIN
         };
         [items addObject:cellModel];
     }
+    
+#if DASHPAY
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"CoinJoin", nil)];
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf showCoinJoinController];
+        };
+        [items addObject:cellModel];
+    }
+#endif
 
     return [items copy];
 }
@@ -213,6 +229,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)showAboutController {
     DWAboutViewController *aboutViewController = [DWAboutViewController controller];
     [self.navigationController pushViewController:aboutViewController animated:YES];
+}
+
+- (void)showCoinJoinController {
+    CoinJoinInfoViewController *coinJoinViewController = [CoinJoinInfoViewController controller];
+    [self.navigationController pushViewController:coinJoinViewController animated:YES];
 }
 
 - (void)showChangeNetworkFromSourceView:(UIView *)sourceView sourceRect:(CGRect)sourceRect {

@@ -281,6 +281,9 @@
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "Αγορά Dash μεσώ Uphold λογαριασμού";
 
+/* Dash Portal */
+"Buy Dash · No account needed" = "Buy Dash · No account needed";
+
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "Αγοράστε δωροκάρτες με το Dash σας";
 
@@ -343,6 +346,9 @@
 
 /* Coinbase/Buy Dash */
 "Coinbase Fee" = "Προμήθεια Coinbase";
+
+/* No comment provided by engineer. */
+"CoinJoin" = "CoinJoin";
 
 /* No comment provided by engineer. */
 "Confirm" = "Επιβεβαίωση";
@@ -981,6 +987,9 @@
 "Let me know when it’s done" = "Ενημερώστε με όταν ολοκληρωθεί";
 
 /* No comment provided by engineer. */
+"Let your friends and family to join Dash" = "Let your friends and family to join Dash";
+
+/* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Let your friends and family to join the Dash Network. Invite them to the world of social banking.";
 
 /* Validation rule */
@@ -1085,6 +1094,9 @@
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "Η εμπορική αναζήτηση λειτουργεί καλύτερα με ενεργοποιημένες τις Υπηρεσίες τοποθεσίας.";
 
+/* CoinJoin */
+"Mixing your Dash coins will make your transactions more private" = "Mixing your Dash coins will make your transactions more private";
+
 /* No comment provided by engineer. */
 "More" = "Περισσότερα";
 
@@ -1135,6 +1147,9 @@
 
 /* (List of) New (notifications) */
 "New" = "Νέο";
+
+/* Coinbase */
+"Newly received Dash will be automatically mixed when the wallet is opened" = "Newly received Dash will be automatically mixed when the wallet is opened";
 
 /* No comment provided by engineer. */
 "NFC device" = "Συσκευή NFC";
@@ -1582,6 +1597,9 @@
 "Send to a Contact" = "Send to a Contact";
 
 /* No comment provided by engineer. */
+"Send to contact" = "Send to contact";
+
+/* No comment provided by engineer. */
 "Send to copied address or QR code" = "Αποστολή στη αντιγραμμένη διεύθυνση η QR κωδικο";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -1824,6 +1842,9 @@
 /* No comment provided by engineer. */
 "Tools" = "Εργαλεία";
 
+/* Dash Portal */
+"Topper" = "Topper";
+
 /* No comment provided by engineer. */
 "Total" = "Σύνολο";
 
@@ -1867,6 +1888,9 @@
 
 /* Alert title */
 "Turn device passcode on" = "Ενεργοποιήστε τον κωδικό πρόσβασης της συσκευής";
+
+/* Coinbase */
+"Turning this feature on will result a higher battery usage" = "Turning this feature on will result a higher battery usage";
 
 /* Coinbase */
 "Two factor auth required" = "Απαιτείται εξουσιοδότηση δύο παραγόντων";
@@ -1951,6 +1975,9 @@
 
 /* No comment provided by engineer. */
 "User (Fetching Info)" = "User (Fetching Info)";
+
+/* No comment provided by engineer. */
+"Username already found" = "Username already found";
 
 /* No comment provided by engineer. */
 "Username available" = "Username available";
@@ -2116,6 +2143,9 @@
 "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
 
 /* No comment provided by engineer. */
+"You cannot claim this invite since you already have a Dash username" = "You cannot claim this invite since you already have a Dash username";
+
+/* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "You do not have any contacts at the moment";
 
 /* Coinbase */
@@ -2165,6 +2195,9 @@
 
 /* Back up wallet */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "Θα χρειαστείτε αυτή τη φράση ανάκτησης για να αποκτήσετε πρόσβαση στα χρήματά σας εάν αυτή η συσκευή χαθεί, καταστραφεί ή εάν το Πορτοφόλι Dash απεγκατασταθει τυχαία από αυτήν τη συσκευή.";
+
+/* Coinbase */
+"You will only be able to spend Dash that has been mixed when this is turned on. This can be turned off at any time." = "You will only be able to spend Dash that has been mixed when this is turned on. This can be turned off at any time.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "Θα λάβετε Dash %@ στο Dash Wallet σας σε αυτή τη συσκευή. Λάβετε υπόψη ότι μπορεί να χρειαστούν έως και 2-3 λεπτά για να ολοκληρωθεί η μεταφορά.";

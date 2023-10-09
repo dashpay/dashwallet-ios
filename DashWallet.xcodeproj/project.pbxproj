@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 53;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -40,7 +40,6 @@
 		111C3C50296D5A4700788E18 /* TxWithinTimePeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C4F296D5A4700788E18 /* TxWithinTimePeriod.swift */; };
 		111C3C52296D620D00788E18 /* CrowdNode+UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C51296D620D00788E18 /* CrowdNode+UserDefaults.swift */; };
 		111C3C54296D6A2D00788E18 /* CrowdNodeWithdrawalReceivedTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C53296D6A2D00788E18 /* CrowdNodeWithdrawalReceivedTx.swift */; };
-		1121A8B728E5DB6E00464C31 /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1121A8B628E5DB6E00464C31 /* CrowdNode.storyboard */; };
 		1141E4C2291BB12200ACDA9E /* CrowdNodeTransferViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1141E4C1291BB12200ACDA9E /* CrowdNodeTransferViewController.swift */; };
 		1141E4C5291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1141E4C4291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift */; };
 		114573A42949B221009DCF27 /* VerifiedSuccessfullyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114573A32949B221009DCF27 /* VerifiedSuccessfullyViewController.swift */; };
@@ -558,6 +557,12 @@
 		754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
 		755E6DFE2A99E7A000A42870 /* DWInvitationSetupState.m in Sources */ = {isa = PBXBuildFile; fileRef = 755E6DFC2A99E7A000A42870 /* DWInvitationSetupState.m */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
+		75889B762AD296E700C17F5D /* CoinJoinInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */; };
+		75889B792AD2A04900C17F5D /* CoinJoinInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */; };
+		75889B7A2AD2D78A00C17F5D /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75889B7D2AD2D78A00C17F5D /* CrowdNode.storyboard */; };
+		75889B7B2AD2D78A00C17F5D /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75889B7D2AD2D78A00C17F5D /* CrowdNode.storyboard */; };
+		75889B7F2AD2D7F800C17F5D /* CoinJoin.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75889B812AD2D7F800C17F5D /* CoinJoin.storyboard */; };
+		75889B892AD2DF0200C17F5D /* CoinJoin.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75889B812AD2D7F800C17F5D /* CoinJoin.storyboard */; };
 		75AE5A7F2A87C363006CD4BA /* DWConfirmUsernameContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C943B5712A40ED4200AF23C5 /* DWConfirmUsernameContentView.xib */; };
 		75D5F3CE191EC270004AB296 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3CD191EC270004AB296 /* main.m */; };
 		75E2F3C82AA4CF1900C3B458 /* Topper-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75E2F3C72AA4CF1900C3B458 /* Topper-Info.plist */; };
@@ -1404,7 +1409,6 @@
 		C9D2C9352A320AA000D15901 /* OperationStatus.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1193FF3D2962F1BE004EA8D7 /* OperationStatus.storyboard */; };
 		C9D2C9362A320AA000D15901 /* UpholdLogoutTutorialStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE662230FF4600956D5F /* UpholdLogoutTutorialStoryboard.storyboard */; };
 		C9D2C9372A320AA000D15901 /* UpholdAuthStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE492230FF4600956D5F /* UpholdAuthStoryboard.storyboard */; };
-		C9D2C9382A320AA000D15901 /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1121A8B628E5DB6E00464C31 /* CrowdNode.storyboard */; };
 		C9D2C9392A320AA000D15901 /* DWDPRegistrationDoneTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AFF01E4243F8625003718DC /* DWDPRegistrationDoneTableViewCell.xib */; };
 		C9D2C93A2A320AA000D15901 /* ResetWalletInfo.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A10EB402358D2A900C38B61 /* ResetWalletInfo.storyboard */; };
 		C9D2C93B2A320AA000D15901 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */; };
@@ -1583,7 +1587,6 @@
 		111C3C4F296D5A4700788E18 /* TxWithinTimePeriod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxWithinTimePeriod.swift; sourceTree = "<group>"; };
 		111C3C51296D620D00788E18 /* CrowdNode+UserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CrowdNode+UserDefaults.swift"; sourceTree = "<group>"; };
 		111C3C53296D6A2D00788E18 /* CrowdNodeWithdrawalReceivedTx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeWithdrawalReceivedTx.swift; sourceTree = "<group>"; };
-		1121A8B628E5DB6E00464C31 /* CrowdNode.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = CrowdNode.storyboard; sourceTree = "<group>"; };
 		1141E4C1291BB12200ACDA9E /* CrowdNodeTransferViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeTransferViewController.swift; sourceTree = "<group>"; };
 		1141E4C4291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeToCrowdNodeViewController.swift; sourceTree = "<group>"; };
 		114573A32949B221009DCF27 /* VerifiedSuccessfullyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifiedSuccessfullyViewController.swift; sourceTree = "<group>"; };
@@ -2385,6 +2388,9 @@
 		755E6DFD2A99E7A000A42870 /* DWInvitationSetupState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInvitationSetupState.h; sourceTree = "<group>"; };
 		756A8F131CE566F6007893E2 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Interface.strings; sourceTree = "<group>"; };
 		757E09981ADB8EEB006FD352 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinInfoViewController.swift; sourceTree = "<group>"; };
+		75889B7C2AD2D78A00C17F5D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/CrowdNode.storyboard; sourceTree = "<group>"; };
+		75889B802AD2D7F800C17F5D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/CoinJoin.storyboard; sourceTree = "<group>"; };
 		759816E519357D6F005060EA /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
 		759816E619357D6F005060EA /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
 		75CE194E1B9642EB000778E4 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -3341,7 +3347,7 @@
 				1141E4C3291FDC3B00ACDA9E /* Getting Started */,
 				1141E4C0291BB0FC00ACDA9E /* Portal */,
 				11BD737A28E6BCD400A34022 /* New Account */,
-				1121A8B628E5DB6E00464C31 /* CrowdNode.storyboard */,
+				75889B7D2AD2D78A00C17F5D /* CrowdNode.storyboard */,
 				11E47BA728EAE7AD0097CFA0 /* CrowdNodeModel.swift */,
 			);
 			path = CrowdNode;
@@ -3788,6 +3794,7 @@
 		2A44313C22CF631E009BAF7F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				75889B742AD296D500C17F5D /* CoinJoin */,
 				C943B34F2A40A54500AF23C5 /* DashPay */,
 				4751137228DAF27300223B77 /* Assembly */,
 				C9F42FA729DC09C6001BC549 /* Style */,
@@ -5938,6 +5945,15 @@
 			path = Networking;
 			sourceTree = "<group>";
 		};
+		75889B742AD296D500C17F5D /* CoinJoin */ = {
+			isa = PBXGroup;
+			children = (
+				75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */,
+				75889B812AD2D7F800C17F5D /* CoinJoin.storyboard */,
+			);
+			path = CoinJoin;
+			sourceTree = "<group>";
+		};
 		75D5F3B5191EC270004AB296 = {
 			isa = PBXGroup;
 			children = (
@@ -7653,6 +7669,7 @@
 				2A4E534D22F03AAC00E5168A /* DWFilterHeaderView.xib in Resources */,
 				757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */,
 				2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */,
+				75889B7F2AD2D7F800C17F5D /* CoinJoin.storyboard in Resources */,
 				2A9FFEA02230FF4700956D5F /* UpholdMainStoryboard.storyboard in Resources */,
 				4709C30F287E787700B4BD48 /* Migrations.bundle in Resources */,
 				474C720F298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib in Resources */,
@@ -7683,7 +7700,7 @@
 				1193FF3E2962F1BE004EA8D7 /* OperationStatus.storyboard in Resources */,
 				2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
 				2A9FFE8F2230FF4700956D5F /* UpholdAuthStoryboard.storyboard in Resources */,
-				1121A8B728E5DB6E00464C31 /* CrowdNode.storyboard in Resources */,
+				75889B7A2AD2D78A00C17F5D /* CrowdNode.storyboard in Resources */,
 				2AFF01E6243F8626003718DC /* DWDPRegistrationDoneTableViewCell.xib in Resources */,
 				2A10EB412358D2A900C38B61 /* ResetWalletInfo.storyboard in Resources */,
 				FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */,
@@ -7778,6 +7795,7 @@
 				C9D2C92A2A320AA000D15901 /* explore.db in Resources */,
 				C9D2C92B2A320AA000D15901 /* (null) in Resources */,
 				C9D2C92C2A320AA000D15901 /* Coinbase.storyboard in Resources */,
+				75889B892AD2DF0200C17F5D /* CoinJoin.storyboard in Resources */,
 				C9D2C92E2A320AA000D15901 /* ImportWalletInfo.storyboard in Resources */,
 				C9D2C92F2A320AA000D15901 /* ReceiveContentView.xib in Resources */,
 				C9D2C9302A320AA000D15901 /* VerifySeedPhrase.storyboard in Resources */,
@@ -7789,7 +7807,7 @@
 				C9D2C9362A320AA000D15901 /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
 				C943B5542A40C23500AF23C5 /* DWFilterHeaderView.xib in Resources */,
 				C9D2C9372A320AA000D15901 /* UpholdAuthStoryboard.storyboard in Resources */,
-				C9D2C9382A320AA000D15901 /* CrowdNode.storyboard in Resources */,
+				75889B7B2AD2D78A00C17F5D /* CrowdNode.storyboard in Resources */,
 				C9D2C9392A320AA000D15901 /* DWDPRegistrationDoneTableViewCell.xib in Resources */,
 				C9D2C93A2A320AA000D15901 /* ResetWalletInfo.storyboard in Resources */,
 				C9D2C93B2A320AA000D15901 /* LaunchScreen.storyboard in Resources */,
@@ -8614,6 +8632,7 @@
 				C9F42FA929DC09CF001BC549 /* Style.swift in Sources */,
 				C917024129D462C6008C034D /* PayViewController.swift in Sources */,
 				479E7924287C00EC00D0F7D7 /* DatabaseConnection.swift in Sources */,
+				75889B762AD296E700C17F5D /* CoinJoinInfoViewController.swift in Sources */,
 				2A9FFE822230FF4700956D5F /* DWSwitcherFormCellModel.m in Sources */,
 				2A74EFF823053ECE00C475EB /* DWIntrinsicTextView.m in Sources */,
 				47AE8C0128C1306000490F5E /* DWExploreTestnetViewController.m in Sources */,
@@ -9051,6 +9070,7 @@
 				C9D2C76F2A320AA000D15901 /* DWProgressAnimator.mm in Sources */,
 				C943B3192A408CED00AF23C5 /* DWDPUpdateProfileModel.m in Sources */,
 				C9D2C7702A320AA000D15901 /* CrowdNodeModel.swift in Sources */,
+				75889B792AD2A04900C17F5D /* CoinJoinInfoViewController.swift in Sources */,
 				C9D2C7712A320AA000D15901 /* UIDevice+Compatibility.swift in Sources */,
 				C9D2C7722A320AA000D15901 /* DWSeedWordView.m in Sources */,
 				C9D2C7732A320AA000D15901 /* DWSecurityStatusView.m in Sources */,
@@ -9578,6 +9598,22 @@
 			name = Localizable.strings;
 			sourceTree = "<group>";
 		};
+		75889B7D2AD2D78A00C17F5D /* CrowdNode.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				75889B7C2AD2D78A00C17F5D /* Base */,
+			);
+			name = CrowdNode.storyboard;
+			sourceTree = "<group>";
+		};
+		75889B812AD2D7F800C17F5D /* CoinJoin.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				75889B802AD2D7F800C17F5D /* Base */,
+			);
+			name = CoinJoin.storyboard;
+			sourceTree = "<group>";
+		};
 		BA913BE01BD57E4D005A7C0E /* Interface.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -9922,7 +9958,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 7.0.2;
+				MARKETING_VERSION = 7.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -9981,7 +10017,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 7.0.2;
+				MARKETING_VERSION = 7.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
@@ -10074,7 +10110,7 @@
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 7.0.2;
+				MARKETING_VERSION = 7.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -10096,7 +10132,7 @@
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 7.0.2;
+				MARKETING_VERSION = 7.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -10121,7 +10157,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 7.0.2;
+				MARKETING_VERSION = 7.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -10148,7 +10184,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 7.0.2;
+				MARKETING_VERSION = 7.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -10229,7 +10265,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 148;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -10259,7 +10295,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 6.0.0;
+				MARKETING_VERSION = 6.1.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Moya/Moya.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLiteMigrationManager.swift/SQLiteMigrationManager.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/FBLPromises/PromisesObjC.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/SSZipArchive/SSZipArchive.modulemap\" -DDASHPAY";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashpaytnt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -10284,7 +10320,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 148;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -10313,7 +10349,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 6.0.0;
+				MARKETING_VERSION = 6.1.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Moya/Moya.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLiteMigrationManager.swift/SQLiteMigrationManager.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/FBLPromises/PromisesObjC.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/SSZipArchive/SSZipArchive.modulemap\"";
 				"OTHER_SWIFT_FLAGS[arch=*]" = "-DDebug -DDASH_TESTNET -DDASHPAY";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashpaytnt;
@@ -10338,7 +10374,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 148;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -10378,7 +10414,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 6.0.0;
+				MARKETING_VERSION = 6.1.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Moya/Moya.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLiteMigrationManager.swift/SQLiteMigrationManager.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/FBLPromises/PromisesObjC.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/SSZipArchive/SSZipArchive.modulemap\" -DDASHPAY";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashpaytnt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -10402,7 +10438,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 148;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -10441,7 +10477,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 6.0.0;
+				MARKETING_VERSION = 6.1.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Moya/Moya.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLiteMigrationManager.swift/SQLiteMigrationManager.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/FBLPromises/PromisesObjC.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/SSZipArchive/SSZipArchive.modulemap\"";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashpaytnt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -10564,7 +10600,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 7.0.2;
+				MARKETING_VERSION = 7.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
@@ -10652,7 +10688,7 @@
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 7.0.2;
+				MARKETING_VERSION = 7.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -10677,7 +10713,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 7.0.2;
+				MARKETING_VERSION = 7.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -10794,7 +10830,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 7.0.2;
+				MARKETING_VERSION = 7.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
@@ -10880,7 +10916,7 @@
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 7.0.2;
+				MARKETING_VERSION = 7.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -10905,7 +10941,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 7.0.2;
+				MARKETING_VERSION = 7.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
