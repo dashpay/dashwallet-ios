@@ -92,7 +92,7 @@ extension CoinbaseCodeConfirmationPreviewing where Self: BaseViewController {
 protocol CoinbaseTransactionHandling: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionDelegate, ErrorPresentable { }
 
 extension CoinbaseTransactionHandling where Self: BaseViewController {
-    func transferFromCoinbaseToWalletDidFail(with error: Coinbase.Error) {
+    func transferFromCoinbaseToWalletDidFail(with error: Error) {
         if case Coinbase.Error.transactionFailed(let r) = error {
             switch r {
             case .twoFactorRequired:

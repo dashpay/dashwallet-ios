@@ -631,6 +631,8 @@
 		752772122AAA1CE30066557E /* Coinbase-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752772112AAA1CE30066557E /* Coinbase-Info.plist */; };
 		754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
+		75CED09E2ACFD0ED0095F10C /* CoinbaseDepositRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CED09D2ACFD0ED0095F10C /* CoinbaseDepositRequest.swift */; };
+		75CED0A02ACFED200095F10C /* CoinbaseDepositResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CED09F2ACFED200095F10C /* CoinbaseDepositResponse.swift */; };
 		75D5F3CE191EC270004AB296 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3CD191EC270004AB296 /* main.m */; };
 		75E2F3C82AA4CF1900C3B458 /* Topper-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75E2F3C72AA4CF1900C3B458 /* Topper-Info.plist */; };
 		75E2F3CA2AA4D1B900C3B458 /* Topper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E2F3C92AA4D1B900C3B458 /* Topper.swift */; };
@@ -1826,6 +1828,8 @@
 		759816E619357D6F005060EA /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
 		75CE194E1B9642EB000778E4 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75CE50B51B5216F100DBC18C /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = DashWalletTests/Info.plist; sourceTree = SOURCE_ROOT; };
+		75CED09D2ACFD0ED0095F10C /* CoinbaseDepositRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseDepositRequest.swift; sourceTree = "<group>"; };
+		75CED09F2ACFED200095F10C /* CoinbaseDepositResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseDepositResponse.swift; sourceTree = "<group>"; };
 		75D5F3BE191EC270004AB296 /* dashwallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = dashwallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D5F3C9191EC270004AB296 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		75D5F3CD191EC270004AB296 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -4903,6 +4907,7 @@
 		47A2A2E3293DF63F00938DB7 /* DTOs */ = {
 			isa = PBXGroup;
 			children = (
+				75CED09C2ACFD0E00095F10C /* Deposit */,
 				0F6EDFB028C896BC000427E7 /* Base */,
 				4751CACB2970004500F63AC4 /* Account */,
 				4751CACA2970003D00F63AC4 /* Exchange Rates */,
@@ -5385,6 +5390,15 @@
 				47FA3B0129364991008D58DC /* HTTPClient.swift */,
 			);
 			path = Networking;
+			sourceTree = "<group>";
+		};
+		75CED09C2ACFD0E00095F10C /* Deposit */ = {
+			isa = PBXGroup;
+			children = (
+				75CED09D2ACFD0ED0095F10C /* CoinbaseDepositRequest.swift */,
+				75CED09F2ACFED200095F10C /* CoinbaseDepositResponse.swift */,
+			);
+			path = Deposit;
 			sourceTree = "<group>";
 		};
 		75D5F3B5191EC270004AB296 = {
@@ -6688,6 +6702,7 @@
 				2A913E8223A30623006A2A59 /* DWHomeModelStub.m in Sources */,
 				2ADC9D1C24603C4F001D7C0D /* UISearchBar+DWAdditions.m in Sources */,
 				2A74F0042305C59700C475EB /* UIViewController+DWTxFilter.m in Sources */,
+				75CED0A02ACFED200095F10C /* CoinbaseDepositResponse.swift in Sources */,
 				2ACCA3AD24BE117300DB32DE /* DWProfileTxsFetchedDataSource.m in Sources */,
 				117ED4A828ED66F9006E3EE4 /* TransactionFilter.swift in Sources */,
 				C3DAD2C024747F580001624F /* DWSearchViewController.m in Sources */,
@@ -6821,6 +6836,7 @@
 				C94F5E8C29D3FEC10034FD57 /* ShortcutsModel.swift in Sources */,
 				2A6300452328D07500827825 /* DWLockPinInputView.m in Sources */,
 				2A0C69AC23125074001B8C90 /* UIView+DWHUD.m in Sources */,
+				75CED09E2ACFD0ED0095F10C /* CoinbaseDepositRequest.swift in Sources */,
 				C94D98212A4CC78F00F3BEE1 /* DashInputField.swift in Sources */,
 				2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */,
 				2A7AF36924826681001D74F9 /* DWDPRespondedIncomingRequestObject.m in Sources */,

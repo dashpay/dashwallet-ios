@@ -1,6 +1,6 @@
-//
-//  Created by tkhp
-//  Copyright © 2022 Dash Core Group. All rights reserved.
+//  
+//  Created by Andrei Ashikhmin
+//  Copyright © 2023 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,18 +15,16 @@
 //  limitations under the License.
 //
 
-import UIKit
+import Foundation
 
+public struct CoinbaseDepositRequest: Codable {
+    let amount: String
+    let currency: String
+    let paymentMethod: String
 
-// MARK: - OrderPreviewModel
-
-protocol OrderPreviewModel: CoinbaseTransactionSendable {
-    var completionHandle: (() -> Void)? { set get }
-    var failureHandle: ((ConfirmOrderError) -> Void)? { set get }
-    var orderChangeHandle: (() -> Void)? { set get }
-    var showCountdown: Bool { get }
-
-    func placeOrder() async throws
-    func retry()
+    enum CodingKeys: String, CodingKey {
+        case amount
+        case currency
+        case paymentMethod = "payment_method"
+    }
 }
-

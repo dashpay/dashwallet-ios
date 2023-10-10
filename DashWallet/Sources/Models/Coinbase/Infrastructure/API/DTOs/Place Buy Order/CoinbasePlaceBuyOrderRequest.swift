@@ -7,18 +7,34 @@
 
 import Foundation
 
-// MARK: - CoinBasePlaceBuyOrderRequest
-public struct CoinbasePlaceBuyOrderRequest: Codable {
-    let amount: String
-    let currency: String
-    let paymentMethod: String
-    let commit: Bool?
-    let quote: Bool?
+// MARK: - CoinbasePlaceOrderParams
 
+public struct CoinbasePlaceBuyOrderRequest: Codable {
+    var clientOrderId: UUID
+    var productId: String
+    var side: String
+    var orderConfiguration: OrderConfiguration
+    
     enum CodingKeys: String, CodingKey {
-        case amount
-        case currency
-        case paymentMethod = "payment_method"
-        case commit, quote
+        case clientOrderId = "client_order_id"
+        case productId = "product_id"
+        case side
+        case orderConfiguration = "order_configuration"
+    }
+}
+
+public struct OrderConfiguration: Codable {
+    var marketMarketIoc: MarketMarketIoc
+    
+    enum CodingKeys: String, CodingKey {
+        case marketMarketIoc = "market_market_ioc"
+    }
+}
+
+public struct MarketMarketIoc: Codable {
+    var quoteSize: String
+    
+    enum CodingKeys: String, CodingKey {
+        case quoteSize = "quote_size"
     }
 }

@@ -330,9 +330,6 @@
 "Confirm & Pay" = "Підтвердити & сплатити";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"Confirm (%@)" = "Підтвердження (%@)";
-
-/* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "Підтвердження (%1$d%2$@)";
 
 /* No comment provided by engineer. */
@@ -393,6 +390,9 @@
 
 /* No comment provided by engineer. */
 "Could not connect to the Dash network, please check that you are connected to the internet." = "Не вдалося підключитися до мережі Dash. Будь ласка, перевірте, чи ви підключені до Інтернету.";
+
+/* No comment provided by engineer. */
+"Could not find exchange rate." = "Could not find exchange rate.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Не вдалося здійснити платіж";
@@ -591,6 +591,9 @@
 
 /* No comment provided by engineer. */
 "Face ID limit" = "Ліміт Face ID";
+
+/* Coinbase */
+"Failed to make a deposit." = "Failed to make a deposit.";
 
 /* Coinbase */
 "Failed to start auth session" = "Не вдалося розпочати сеанс авторизації";
@@ -1009,6 +1012,9 @@
 
 /* Coinbase */
 "No active user" = "Немає активного користувача";
+
+/* Coinbase */
+"No cash account found" = "No cash account found";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "Немає способів оплати";
@@ -1821,6 +1827,9 @@
 /* CrowdNode */
 "Withdrawal requested" = "Запит на вивід коштів відправлено";
 
+/* Coinbase */
+"Would you like to make a deposit for your purchase using a linked bank account?" = "Would you like to make a deposit for your purchase using a linked bank account?";
+
 /* No comment provided by engineer. */
 "Yes" = "Так";
 
@@ -1838,6 +1847,9 @@
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "Ви можете пройти автентифікацію за допомогою Touch ID для платежів нижче";
+
+/* Coinbase */
+"You don’t have enough balance" = "You don’t have enough balance";
 
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "Ви перевищили ліміт авторизації на Coinbase.";

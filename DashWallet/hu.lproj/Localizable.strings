@@ -330,9 +330,6 @@
 "Confirm & Pay" = "Confirm & Pay";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"Confirm (%@)" = "Confirm (%@)";
-
-/* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "Confirm (%1$d%2$@)";
 
 /* No comment provided by engineer. */
@@ -393,6 +390,9 @@
 
 /* No comment provided by engineer. */
 "Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+
+/* No comment provided by engineer. */
+"Could not find exchange rate." = "Could not find exchange rate.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Couldn't make payment";
@@ -591,6 +591,9 @@
 
 /* No comment provided by engineer. */
 "Face ID limit" = "Face ID összehatár";
+
+/* Coinbase */
+"Failed to make a deposit." = "Failed to make a deposit.";
 
 /* Coinbase */
 "Failed to start auth session" = "Failed to start auth session";
@@ -1009,6 +1012,9 @@
 
 /* Coinbase */
 "No active user" = "No active user";
+
+/* Coinbase */
+"No cash account found" = "No cash account found";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "No payment methods";
@@ -1821,6 +1827,9 @@
 /* CrowdNode */
 "Withdrawal requested" = "Withdrawal requested";
 
+/* Coinbase */
+"Would you like to make a deposit for your purchase using a linked bank account?" = "Would you like to make a deposit for your purchase using a linked bank account?";
+
 /* No comment provided by engineer. */
 "Yes" = "Yes";
 
@@ -1838,6 +1847,9 @@
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "You can authenticate with Touch ID for payments below";
+
+/* Coinbase */
+"You don’t have enough balance" = "You don’t have enough balance";
 
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "You exceeded the authorization limit on Coinbase.";

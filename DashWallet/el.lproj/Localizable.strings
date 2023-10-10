@@ -330,9 +330,6 @@
 "Confirm & Pay" = "Επιβεβαίωση και Πληρωμή";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"Confirm (%@)" = "Επιβεβαιώστε (%@)";
-
-/* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "Επιβεβαιώστε (%1$d%2$@)";
 
 /* No comment provided by engineer. */
@@ -393,6 +390,9 @@
 
 /* No comment provided by engineer. */
 "Could not connect to the Dash network, please check that you are connected to the internet." = "Δεν ήταν δυνατή η σύνδεση στο δίκτυο Dash, ελέγξτε ότι είστε συνδεδεμένοι στο Διαδίκτυο.";
+
+/* No comment provided by engineer. */
+"Could not find exchange rate." = "Could not find exchange rate.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Δεν ήταν δυνατή η πληρωμή";
@@ -591,6 +591,9 @@
 
 /* No comment provided by engineer. */
 "Face ID limit" = "όριο Face ID ";
+
+/* Coinbase */
+"Failed to make a deposit." = "Failed to make a deposit.";
 
 /* Coinbase */
 "Failed to start auth session" = "Αποτυχία εκκίνησης περιόδου λειτουργίας εξουσιοδότησης";
@@ -1009,6 +1012,9 @@
 
 /* Coinbase */
 "No active user" = "Δεν υπάρχει ενεργός χρήστης";
+
+/* Coinbase */
+"No cash account found" = "No cash account found";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "Δεν υπάρχουν τρόποι πληρωμής";
@@ -1821,6 +1827,9 @@
 /* CrowdNode */
 "Withdrawal requested" = "Ζητήθηκε απόσυρση";
 
+/* Coinbase */
+"Would you like to make a deposit for your purchase using a linked bank account?" = "Would you like to make a deposit for your purchase using a linked bank account?";
+
 /* No comment provided by engineer. */
 "Yes" = "Ναι";
 
@@ -1838,6 +1847,9 @@
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "Μπορείτε να επαληθεύσετε το Touch ID για πληρωμές παρακάτω";
+
+/* Coinbase */
+"You don’t have enough balance" = "You don’t have enough balance";
 
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "Υπερβήκατε το όριο εξουσιοδότησης στην Coinbase.";

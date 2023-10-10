@@ -151,9 +151,7 @@ extension CBAuth {
             URLQueryItem(name: "account", value: Coinbase.account),
         ]
 
-        if let clientID = Coinbase.clientID as? String {
-            queryItems.append(URLQueryItem(name: "client_id", value: clientID))
-        }
+        queryItems.append(URLQueryItem(name: "client_id", value: Coinbase.clientID))
 
         var urlComponents = URLComponents()
         urlComponents.scheme = "https"

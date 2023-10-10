@@ -27,6 +27,9 @@ extension Coinbase {
             case noActiveUser
             case revokedToken
             case noPaymentMethods
+            case noCashAccount
+            case rateNotFound
+            case depositFailed
 
             var errorDescription: String? {
                 switch self {
@@ -36,6 +39,12 @@ extension Coinbase {
                     return NSLocalizedString("For your security, you have been signed out.", comment: "Coinbase")
                 case .noPaymentMethods:
                     return NSLocalizedString("Please add a payment method on Coinbase", comment: "Coinbase/Buy Dash")
+                case .noCashAccount:
+                    return NSLocalizedString("No cash account found", comment: "Coinbase")
+                case .rateNotFound:
+                    return NSLocalizedString("Could not find exchange rate.", comment: "")
+                case .depositFailed:
+                    return NSLocalizedString("Failed to make a deposit.", comment: "Coinbase")
                 }
             }
             

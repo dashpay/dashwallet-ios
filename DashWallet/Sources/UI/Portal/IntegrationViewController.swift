@@ -62,8 +62,6 @@ final class IntegrationViewController: BaseViewController, NetworkReachabilityHa
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        configureModel()
         configureHierarchy()
 
         networkStatusDidChange = { [weak self] _ in
@@ -74,6 +72,7 @@ final class IntegrationViewController: BaseViewController, NetworkReachabilityHa
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        configureModel()
         model.refresh()
     }
     
@@ -217,10 +216,13 @@ extension IntegrationViewController {
         let title = error.failureReason
         let message = error.localizedDescription
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let confirmAction = UIAlertAction(title: error.recoverySuggestion, style: .default) { [weak self] _ in
-            self?.model.handle(error: error)
+        
+        if let action = error.recoverySuggestion {
+            let confirmAction = UIAlertAction(title: action, style: .default) { [weak self] _ in
+                self?.model.handle(error: error)
+            }
+            alert.addAction(confirmAction)
         }
-        alert.addAction(confirmAction)
 
         let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel)
         alert.addAction(cancelAction)

@@ -330,9 +330,6 @@
 "Confirm & Pay" = "konfirmasi & bayar";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"Confirm (%@)" = "Konfirmasi (%@)";
-
-/* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "konfirmasi (%1$d%2$@)";
 
 /* No comment provided by engineer. */
@@ -393,6 +390,9 @@
 
 /* No comment provided by engineer. */
 "Could not connect to the Dash network, please check that you are connected to the internet." = "Tidak dapat terhubung ke jaringan Dash, harap periksa apakah Anda terhubung ke internet.";
+
+/* No comment provided by engineer. */
+"Could not find exchange rate." = "Could not find exchange rate.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Tidak dapat melakukan pembayaran";
@@ -591,6 +591,9 @@
 
 /* No comment provided by engineer. */
 "Face ID limit" = "Identitas wajah terbatas";
+
+/* Coinbase */
+"Failed to make a deposit." = "Failed to make a deposit.";
 
 /* Coinbase */
 "Failed to start auth session" = "Gagal memulai sesi autentikasi";
@@ -1009,6 +1012,9 @@
 
 /* Coinbase */
 "No active user" = "Tidak ada pengguna aktif";
+
+/* Coinbase */
+"No cash account found" = "No cash account found";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "Tidak ada metode pembayaran";
@@ -1821,6 +1827,9 @@
 /* CrowdNode */
 "Withdrawal requested" = "Penarikan diminta";
 
+/* Coinbase */
+"Would you like to make a deposit for your purchase using a linked bank account?" = "Would you like to make a deposit for your purchase using a linked bank account?";
+
 /* No comment provided by engineer. */
 "Yes" = "Ya";
 
@@ -1838,6 +1847,9 @@
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "Anda dapat mengautentikasi dengan Touch ID untuk pembayaran di bawah ini";
+
+/* Coinbase */
+"You don’t have enough balance" = "You don’t have enough balance";
 
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "Anda melampaui batas otorisasi di Coinbase.";
