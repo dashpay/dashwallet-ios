@@ -67,9 +67,14 @@ extension CrowdNodeService {
         }
     }
 
-    func sendSignedMessage(address: String, message: String, signature: String) async throws -> MessageStatus {
+    func registerEmail(address: String, email: String, signature: String) async throws -> MessageStatus {
         let encodedSignature = signature.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
-        return try await httpClient.request(.sendSignedMessage(address: address, message: message, signature: encodedSignature!))
+        return try await httpClient.request(.sendSignedMessage(address: address, message: email, signature: encodedSignature!, messagetype: MessageType.registerEmail))
+    }
+    
+    func requestWithdrawal(address: String, amount: UInt64, signature: String) async throws -> MessageStatus {
+        let encodedSignature = signature.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+        return try await httpClient.request(.sendSignedMessage(address: address, message: amount.value, signature: encodedSignature!, messagetype: MessageType.withdrawal))
     }
 
     func isDefaultEmail(address: String) async -> Bool {

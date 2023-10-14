@@ -17,6 +17,10 @@
 
 import Moya
 
+public enum MessageType: Int {
+    case registerEmail = 1
+    case withdrawal = 4
+}
 
 // MARK: - CrowdNodeEndpoint
 
@@ -27,7 +31,7 @@ public enum CrowdNodeEndpoint {
     case isAddressInUse(String)
     case addressStatus(String)
     case hasDefaultEmail(String)
-    case sendSignedMessage(address: String, message: String, signature: String)
+    case sendSignedMessage(address: String, message: String, signature: String, messagetype: MessageType)
     case getMessages(String)
 }
 
@@ -47,8 +51,7 @@ extension CrowdNodeEndpoint: TargetType {
         case .isAddressInUse(let address): return "odata/apiaddresses/IsApiAddressInUse(address='\(address)')"
         case .addressStatus(let address): return "odata/apiaddresses/AddressStatus(address='\(address)')"
         case .hasDefaultEmail(let address): return "odata/apiaddresses/UsingDefaultApiEmail(address='\(address)')"
-        case .sendSignedMessage(let address, let message,
-                                let signature): return "odata/apimessages/SendMessage(address='\(address)',message='\(message)',signature='\(signature)',messagetype=1)"
+        case .sendSignedMessage(let address, let message, let signature, let messagetype): return "odata/apimessages/SendMessage(address='\(address)',message='\(message)',signature='\(signature)',messagetype=\(messagetype.rawValue))"
         case .getMessages(let address): return "odata/apimessages/GetMessages(address='\(address)')"
         }
     }
