@@ -20,9 +20,25 @@ import Foundation
 final class StakingInfoDialogController: UIViewController {
     private let viewModel = CrowdNode.shared
 
-    @IBOutlet var masternodeApyLabel: UILabel!
+    @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var subtitleLabel: UILabel!
+    @IBOutlet var benefitsLabel: UILabel!
+    @IBOutlet var poolTitle: UILabel!
+    @IBOutlet var poolDescription: UILabel!
+    @IBOutlet var minimumDepositTitle: UILabel!
+    @IBOutlet var rewardsTitle: UILabel!
+    @IBOutlet var rewardsDescription: UILabel!
+    @IBOutlet var leavingTitle: UILabel!
+    @IBOutlet var leavingDescription: UILabel!
+    @IBOutlet var leavingDescription2: UILabel!
     @IBOutlet var crowdnodeApyLabel: UILabel!
+    @IBOutlet var apyDescription: UILabel!
+    @IBOutlet var addressTitle: UILabel!
+    @IBOutlet var addressDescription: UILabel!
+    
+    @IBOutlet var masternodeApyLabel: UILabel!
     @IBOutlet var minimumDepositLabel: UILabel!
+    @IBOutlet var addressLabelTitle: UILabel!
     @IBOutlet var addressLabel: UILabel!
 
     static func controller() -> StakingInfoDialogController {
@@ -48,6 +64,27 @@ final class StakingInfoDialogController: UIViewController {
     private func configureHierarchy() {
         view.backgroundColor = .dw_secondaryBackground()
 
+        titleLabel.text = NSLocalizedString("How CrowdNode staking works", comment: "CrowdNode")
+        subtitleLabel.text = NSLocalizedString("The Dash Network is driven by a number of Masternodes which is an essential part of facilitating payments.", comment: "CrowdNode")
+        benefitsLabel.text = NSLocalizedString("CrowdNode benefits", comment: "CrowdNode")
+        poolTitle.text = NSLocalizedString("Joining the pool", comment: "CrowdNode")
+        poolDescription.text = NSLocalizedString("As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode.", comment: "CrowdNode")
+        minimumDepositTitle.text = NSLocalizedString("First minimum deposit", comment: "CrowdNode")
+        
+        rewardsTitle.text = NSLocalizedString("Receiving rewards", comment: "CrowdNode")
+        rewardsDescription.text = NSLocalizedString("You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts.", comment: "CrowdNode")
+        
+        leavingTitle.text = NSLocalizedString("Leaving the pool", comment: "CrowdNode")
+        leavingDescription.text = NSLocalizedString("Members are free to leave the pool and can most often leave immediately.", comment: "CrowdNode")
+        leavingDescription2.text = NSLocalizedString("In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster.", comment: "CrowdNode")
+        
+        apyDescription.text = NSLocalizedString("This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price.", comment: "CrowdNode")
+        
+        addressTitle.text = NSLocalizedString("Connected Dash address", comment: "CrowdNode")
+        addressDescription.text = NSLocalizedString("Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device", comment: "CrowdNode")
+        
+        addressLabelTitle.text = NSLocalizedString("Dash address", comment: "")
+        
         addressLabel.text = viewModel.accountAddress
         let minimumDeposit = CrowdNode.minimumDeposit.formattedDashAmount
         minimumDepositLabel.text = String.localizedStringWithFormat(NSLocalizedString("You only need %@ to join the pool.", comment: "CrowdNode"), minimumDeposit)
@@ -57,6 +94,7 @@ final class StakingInfoDialogController: UIViewController {
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = 2
         formatter.multiplier = 1
+        
         masternodeApyLabel.text = String
             .localizedStringWithFormat(NSLocalizedString("A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year.",
                                                          comment: "CrowdNode"),

@@ -28,6 +28,7 @@ final class NewAccountViewController: UIViewController, UITextViewDelegate {
     @IBOutlet var explainerLabel1: UILabel!
     @IBOutlet var explainerLabel2: UILabel!
     @IBOutlet var actionButton: ActionButton!
+    @IBOutlet var addressTitleLabel: UILabel!
     @IBOutlet var addressLabel: UILabel!
     @IBOutlet var acceptTermsCheckBox: DWCheckbox!
     @IBOutlet var acceptTermsText: UITextView!
@@ -81,12 +82,14 @@ extension NewAccountViewController {
     private func configureHierarchy() {
         definesPresentationContext = true
         view.backgroundColor = .dw_secondaryBackground()
+        addressTitleLabel.text = NSLocalizedString("Dash address", comment: "")
 
         configureTermsCheckBox()
 
         if isLinkingOnlineAccount {
             configureForLinkingOnlineAccount()
         } else {
+            configureForNewAccount()
             configureActionButton()
         }
     }
@@ -129,12 +132,18 @@ extension NewAccountViewController {
         UIApplication.shared.open(URL)
         return false
     }
+    
+    private func configureForNewAccount() {
+        titleLabel.text = NSLocalizedString("New CrowdNode Account", comment: "CrowdNode")
+        actionButton.setTitle("Create Account", for: .normal)
+        explainerLabel1.text = NSLocalizedString("CrowdNode uses this address as your account ID. You will lose access to your funds within this wallet and your CrowdNode account if you lose the passphrase associated to this address.", comment: "CrowdNode")
+        explainerLabel2.text = NSLocalizedString("Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address.", comment: "CrowdNode")
+    }
 
     private func configureForLinkingOnlineAccount() {
         titleLabel.text = NSLocalizedString("Link Existing CrowdNode Account", comment: "CrowdNode")
-        actionButton.setTitle("Log in to CrowdNode", for: .normal)
-        explainerLabel1.text = NSLocalizedString("All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device.",
-                                                 comment: "CrowdNode")
+        actionButton.setTitle(NSLocalizedString("Log in to CrowdNode", comment: "CrowdNode"), for: .normal)
+        explainerLabel1.text = NSLocalizedString("All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device.", comment: "CrowdNode")
         explainerLabel2.isHidden = true
         explainerLabel2.heightAnchor.constraint(equalToConstant: 0).isActive = true
     }
