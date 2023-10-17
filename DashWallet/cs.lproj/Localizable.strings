@@ -323,6 +323,9 @@
 /* No comment provided by engineer. */
 "Close" = "Zavřít";
 
+/* CrowdNode */
+"Close and notify when it’s done" = "Close and notify when it’s done";
+
 /* No comment provided by engineer. */
 "Close App" = "Zavřít aplikaci";
 
@@ -410,7 +413,7 @@
 "Could not connect to the Dash network, please check that you are connected to the internet." = "Nelze se připojit k síti Dash, zkontrolujte prosím, zda jste připojeni k internetu.";
 
 /* No comment provided by engineer. */
-"Could not find exchange rate." = "Could not find exchange rate.";
+"Could not find exchange rate." = "Nelze najít směnný kurz.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Platbu nelze provést";
@@ -477,7 +480,7 @@
 "Dash" = "Dash";
 
 /* No comment provided by engineer. */
-"Dash address" = "Dash address";
+"Dash address" = "Dash adresa";
 
 /* CrowdNode */
 "Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Dash address designated for your CrowdNode account in the Dash Wallet on this device ";
@@ -734,7 +737,7 @@
 "Get Started" = "Jdu na to";
 
 /* CrowdNode */
-"Getting started with CrowdNode" = "Getting started with CrowdNode";
+"Getting started with CrowdNode" = "Začínáme s CrowdNode";
 
 /* Explore Dash: Filters */
 "Gift Card" = "Gift Card";
@@ -936,7 +939,7 @@
 "Link Coinbase Account" = "Link Coinbase Account";
 
 /* CrowdNode */
-"Link Existing Account" = "Link Existing Account";
+"Link Existing Account" = "Připojit existující účet";
 
 /* CrowdNode */
 "Link Existing CrowdNode Account" = "Link Existing CrowdNode Account";
@@ -1077,7 +1080,7 @@
 "New" = "Nový";
 
 /* CrowdNode */
-"New CrowdNode Account" = "New CrowdNode Account";
+"New CrowdNode Account" = "Nový CrowdNode Účet";
 
 /* No comment provided by engineer. */
 "NFC device" = "NFC zařízení";
@@ -1549,7 +1552,7 @@
 "Setup Wallet" = "Vytvořit peněženku";
 
 /* CrowdNode */
-"Share" = "Share";
+"Share" = "Sdílet";
 
 /* Receive screen */
 "Share address" = "Share address";
@@ -1729,7 +1732,7 @@
 "to Dash Wallet on this device" = "to Dash Wallet on this device";
 
 /* CrowdNode */
-"To start staking, create an account on CrowdNode or connect to an existing one." = "To start staking, create an account on CrowdNode or connect to an existing one.";
+"To start staking, create an account on CrowdNode or connect to an existing one." = "Abyste mohli začít službu používat, vytvořte si účet CrowdNode nebo připojte již existující.";
 
 /* CrowdNode */
 "to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "to the Dash address designated for your CrowdNode account in the Dash Wallet on this device";

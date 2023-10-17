@@ -107,7 +107,7 @@
 "Accepts DASH directly" = "Accepts DASH directly";
 
 /* CrowdNode */
-"Account Recovery" = "Account Recovery";
+"Account Recovery" = "بازیابی حساب";
 
 /* No comment provided by engineer. */
 "Activity" = "Activity";
@@ -182,7 +182,7 @@
 "Are you sure?" = "Are you sure?";
 
 /* CrowdNode */
-"As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode." = "As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode.";
+"As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode." = "از آنجا که بیشتر کاربران هزار دش در اختیار ندارند، کراودنود این خدمت را فراهم کرده تا با در کنار هم قرار گرفتن موجودی‌ کاربران مختلف، همه آنها بنوانند از مزایای در اختیار داشتن یک مسترنود بهره‌مند شوند. ";
 
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "ATM search works better with Location Services turned on";
@@ -236,7 +236,7 @@
 "Bank Wire" = "Bank Wire";
 
 /* CrowdNode */
-"Become part of a Dash Masternode with CrowdNode" = "Become part of a Dash Masternode with CrowdNode";
+"Become part of a Dash Masternode with CrowdNode" = "از طریق کراودنود یکی از مسترنودهای دش بشوید.";
 
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase" = "بین دش والت و کوینبیس";
@@ -323,6 +323,9 @@
 /* No comment provided by engineer. */
 "Close" = "بستن";
 
+/* CrowdNode */
+"Close and notify when it’s done" = "ببند و وقتی آماده شد، مرا مطلع کن. ";
+
 /* No comment provided by engineer. */
 "Close App" = "Close App";
 
@@ -361,7 +364,7 @@
 "Connected" = "متصل";
 
 /* CrowdNode */
-"Connected Dash address" = "Connected Dash address";
+"Connected Dash address" = "اتصال به نشانی دش برقرار است";
 
 /* No comment provided by engineer. */
 "Connected peers: %d" = "Connected peers: %d";
@@ -410,7 +413,7 @@
 "Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
 
 /* No comment provided by engineer. */
-"Could not find exchange rate." = "Could not find exchange rate.";
+"Could not find exchange rate." = " نرخ‌های تبدیل پیدا نشد.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Couldn't make payment";
@@ -428,7 +431,7 @@
 "Create Account" = "ایجاد حساب";
 
 /* CrowdNode */
-"Create an online CrowdNode account" = "Create an online CrowdNode account";
+"Create an online CrowdNode account" = "یک حساب آنلاین کراودنود ایجاد کنید";
 
 /* CrowdNode
    CrowdNode Portal */
@@ -441,13 +444,13 @@
 "CrowdNode Account" = "حساب کراودنود";
 
 /* CrowdNode */
-"CrowdNode benefits" = "CrowdNode benefits";
+"CrowdNode benefits" = "مزایای کراودنود";
 
 /* CrowdNode Portal */
 "CrowdNode Support" = "پشتیبانی کراودنود";
 
 /* CrowdNode */
-"CrowdNode uses this address as your account ID. You will lose access to your funds within this wallet and your CrowdNode account if you lose the passphrase associated to this address." = "CrowdNode uses this address as your account ID. You will lose access to your funds within this wallet and your CrowdNode account if you lose the passphrase associated to this address.";
+"CrowdNode uses this address as your account ID. You will lose access to your funds within this wallet and your CrowdNode account if you lose the passphrase associated to this address." = "کراودنود از این نشانی به عنوان شناسه حساب شما استفاده می‌کند. اگر این عبارت ورودی مربوط به این نشانی را گم کنید، دیگر نمی‌توانید به موجودی کیف پول و نیز حساب‌تان در کراودنود دسترسی داشته باشید. ";
 
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "سقف برداشت کراودنود";
@@ -716,7 +719,7 @@
 "from your Coinbase account" = "from your Coinbase account";
 
 /* CrowdNode */
-"Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash.";
+"Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "با سپرده‌گذاری در مسترنودهای دش، حتی به میزان ۰.۵ دش، پاداش دریافت کنید. ";
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Generate extended public keys?";
@@ -728,13 +731,13 @@
 "Get Quote" = "دریافت قیمت تخمینی";
 
 /* CrowdNode */
-"Get Rewards Instantly" = "Get Rewards Instantly";
+"Get Rewards Instantly" = "دریافت آنی پاداش";
 
 /* No comment provided by engineer. */
 "Get Started" = "شروع";
 
 /* CrowdNode */
-"Getting started with CrowdNode" = "Getting started with CrowdNode";
+"Getting started with CrowdNode" = "آغاز کار با کراودنود";
 
 /* Explore Dash: Filters */
 "Gift Card" = "Gift Card";
@@ -776,10 +779,10 @@
 "History" = "سابقه";
 
 /* CrowdNode */
-"How CrowdNode staking works" = "How CrowdNode staking works";
+"How CrowdNode staking works" = "عملکرد استیکینگ کراونود";
 
 /* CrowdNode */
-"How to confirm your API Dash address" = "How to confirm your API Dash address";
+"How to confirm your API Dash address" = "چطور نشانی ای‌پی‌آی دش‌تان را تائید کنید";
 
 /* No comment provided by engineer. */
 "How to Use a Gift Card" = "چطور از کارت هدیه استفاده کنیم";
@@ -800,7 +803,7 @@
 "I wrote it down" = "عبارت بازیابی را نوشتم";
 
 /* CrowdNode */
-"If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds.";
+"If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "اگر عبارت ورودی‌تان را گم کنید، می‌توانید با استفاده از روش‌های دیگر احراز هویت شوید تا بتوانید به موجودی کراودنود دسترسی یابید. ";
 
 /* No comment provided by engineer. */
 "If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "اگر عبارت ورودی‌تان برای این کیف پول را گم کنید و این دستگاه مفقود شود و یا دش والت از روی آن حذف شود، دیگر نمی‌توانید به موجودی‌تان در کراودنود و موجودی داخل کیف پول دسترسی داشته باشید. ";
@@ -836,7 +839,7 @@
 "Income" = "درآمد";
 
 /* CrowdNode */
-"Information about your online account" = "Information about your online account";
+"Information about your online account" = "اطلاعات درباره حساب آنلاین شما";
 
 /* Buy Sell Portal */
 "Initializing" = "Initializing";
@@ -854,7 +857,7 @@
 "Internally moved to" = "به صورت داخلی منتقل شد به";
 
 /* CrowdNode */
-"Introducing Staking" = "Introducing Staking";
+"Introducing Staking" = "آشنایی با سپرده‌گذاری";
 
 /* Invalid transaction */
 "Invalid" = "نامعتبر";
@@ -899,7 +902,7 @@
 "Join Evolution" = "Join Evolution";
 
 /* CrowdNode */
-"Joining the pool" = "Joining the pool";
+"Joining the pool" = "پیوستن به مجموعه";
 
 /* No comment provided by engineer. */
 "Key Id" = "کلید شناسه";
@@ -936,7 +939,7 @@
 "Link Coinbase Account" = "حساب کوین‌بیس‌ را متصل کنید";
 
 /* CrowdNode */
-"Link Existing Account" = "Link Existing Account";
+"Link Existing Account" = "اتصال به حساب موجود ";
 
 /* CrowdNode */
 "Link Existing CrowdNode Account" = "اتصال به یک حساب موجود در کراودنود";
@@ -1026,7 +1029,7 @@
 "Medium" = "متوسط";
 
 /* CrowdNode */
-"Members are free to leave the pool and can most often leave immediately." = "Members are free to leave the pool and can most often leave immediately.";
+"Members are free to leave the pool and can most often leave immediately." = "اعضا می‌توانند هر وقت که بخواهند این مجموعه را ترک کنند و در اکثر مواقع می‌توانند بلافاصله آن را ترک کنند. ";
 
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "پس از روشن کردن موقعیت مکانی دستگاه، جستجوی فروشندگان بهتر عمل می‌کند. ";
@@ -1077,7 +1080,7 @@
 "New" = "New";
 
 /* CrowdNode */
-"New CrowdNode Account" = "New CrowdNode Account";
+"New CrowdNode Account" = "ایجاد حساب جدید کراودنود";
 
 /* No comment provided by engineer. */
 "NFC device" = "NFC device";
@@ -1203,7 +1206,7 @@
 "Payment Type" = "Payment Type";
 
 /* CrowdNode */
-"Payout Options" = "Payout Options";
+"Payout Options" = "گزینه‌های پاداش";
 
 /* Coinbase/Payment Methods */
 "PayPal" = "PayPal";
@@ -1233,7 +1236,7 @@
 "Please enter PIN to upgrade wallet" = "Please enter PIN to upgrade wallet";
 
 /* CrowdNode */
-"Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode";
+"Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "دقت داشته باشید که ایمیل توسط دش والت ذخیره نمی‌شود و فقط برای کراودنود ارسال می‌شود";
 
 /* Leftover balance warning */
 "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash.";
@@ -1317,7 +1320,7 @@
 "Receive directly into Dash Wallet" = "مستقیما روی دش والت دریافت کنید";
 
 /* CrowdNode */
-"Receive your share of rewards daily." = "Receive your share of rewards daily.";
+"Receive your share of rewards daily." = "سهم‌تان از پاداش روزانه را دریافت کنید. ";
 
 /* Received transaction */
 "Received" = "دریافتی";
@@ -1332,7 +1335,7 @@
 "Received from" = "Received from";
 
 /* CrowdNode */
-"Receiving rewards" = "Receiving rewards";
+"Receiving rewards" = "دریافت پاداش";
 
 /* No comment provided by engineer. */
 "Recover" = "Recover";
@@ -1413,7 +1416,7 @@
 "Scan Private Key" = "اسکن کلید خصوصی";
 
 /* No comment provided by engineer. */
-"Scan QR" = "Scan QR";
+"Scan QR" = "اسکن کیوآر کد";
 
 /* No comment provided by engineer. */
 "Scan QR Code" = "Scan QR Code";
@@ -1549,7 +1552,7 @@
 "Setup Wallet" = "Setup Wallet";
 
 /* CrowdNode */
-"Share" = "Share";
+"Share" = "به اشتراک گذاری";
 
 /* Receive screen */
 "Share address" = "Share address";
@@ -1564,7 +1567,7 @@
 "Show Masternode Keys" = "Show Masternode Keys";
 
 /* CrowdNode */
-"Show QR" = "Show QR";
+"Show QR" = "نمایش کیوآر کد";
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "نشان دادن عبارت بازیابی";
@@ -1669,7 +1672,7 @@
 "The code is incorrect. Please check and try again!" = "کد وارد شده درست نیست. لطفا دوباره آن را بررسی کرده و وارد کنید! ";
 
 /* CrowdNode */
-"The Dash Network is driven by a number of Masternodes which is an essential part of facilitating payments." = "The Dash Network is driven by a number of Masternodes which is an essential part of facilitating payments.";
+"The Dash Network is driven by a number of Masternodes which is an essential part of facilitating payments." = "شبکه دش توسط تعدادی مسترنود اداره می‌شود که بخشی اساسی در تسهیل پرداخت‌ها هستند. ";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device.";
@@ -1714,7 +1717,7 @@
 "This QR already contains the payment request for %@" = "This QR already contains the payment request for %@";
 
 /* CrowdNode */
-"This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price.";
+"This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "این رقم نشانگر درصد بازدهی سالانه یک مسترنود منهای کارمزد ۱۵ درصدی کراودنود است. این نرخ بازگشت سرمایه تضمینی نیست و ممکن است بر اساس تعداد حاضران در کراودنود و قیمت دش پائین و بالا رود. ";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase";
@@ -1729,10 +1732,10 @@
 "to Dash Wallet on this device" = "to Dash Wallet on this device";
 
 /* CrowdNode */
-"To start staking, create an account on CrowdNode or connect to an existing one." = "To start staking, create an account on CrowdNode or connect to an existing one.";
+"To start staking, create an account on CrowdNode or connect to an existing one." = "برای آغاز سپرده‌گذاری، ابتدا یک حساب در کراودنود ایجاد کنید و یا به یک حساب موجود در آن متصل شوید. ";
 
 /* CrowdNode */
-"to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "to the Dash address designated for your CrowdNode account in the Dash Wallet on this device";
+"to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "به نشانی دشی که برای حساب کراودنود در دش والت روی این دستگاه در نظر گرفته‌اید";
 
 /* No comment provided by engineer. */
 "Tools" = "ابزارها";
@@ -1747,7 +1750,7 @@
 "Touch ID limit" = "Touch ID limit";
 
 /* CrowdNode */
-"Transaction History" = "Transaction History";
+"Transaction History" = "سابقه تراکنش‌ها";
 
 /* No comment provided by engineer. */
 "Transaction id" = "Transaction id";
@@ -1854,13 +1857,13 @@
 "Verify" = "تائید";
 
 /* CrowdNode */
-"Verify your API Dash address" = "Verify your API Dash address";
+"Verify your API Dash address" = "نشانی ای‌پی‌آی دش‌تان را تائید کنید. ";
 
 /* adjective, security level */
 "Very High" = "بسیار بالا";
 
 /* CrowdNode */
-"Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." = "Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address.";
+"Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." = "یک مبلغ جزئی دش از کراودنود به این حساب فرستاده می‌شود تا از اینکه شما صاحب این نشانی هستید اطمینان حاصل شود. ";
 
 /* No comment provided by engineer. */
 "View All" = "View All";
@@ -1920,7 +1923,7 @@
 "We Upgraded" = "ما ارتقاء دادیم";
 
 /* CrowdNode */
-"We will automatically detect this transaction and transfer the same amount to your CrowdNode account. After that you will be able to make deposits and withdrawals in Dash Wallet on this device." = "We will automatically detect this transaction and transfer the same amount to your CrowdNode account. After that you will be able to make deposits and withdrawals in Dash Wallet on this device.";
+"We will automatically detect this transaction and transfer the same amount to your CrowdNode account. After that you will be able to make deposits and withdrawals in Dash Wallet on this device." = "ما به صورت خودکار به بررسی تراکنش پرداخته و همان مقدار را به حساب کراودنود شما برمی‌گردانیم. پس از آن، می‌توانید در دش والت روی این دستگاه اقدام به واریز و برداشت کنید. ";
 
 /* Website */
 "Website" = "Website";
@@ -1941,7 +1944,7 @@
 "Why do I see all these transactions?" = "چرا همه این تراکنش‌ها را می‌بینم؟ ";
 
 /* CrowdNode */
-"Why do you need an online account?" = "Why do you need an online account?";
+"Why do you need an online account?" = "چرا نیاز به یک حساب آنلاین دارید؟ ";
 
 /* CrowdNode */
 "Why does the entered amount differ from what I see on this screen?" = "Why does the entered amount differ from what I see on this screen?";
@@ -1993,13 +1996,13 @@
 "You can authenticate with Touch ID for payments below" = "You can authenticate with Touch ID for payments below";
 
 /* CrowdNode */
-"You can change how / when your reward earnings are paid to you." = "You can change how / when your reward earnings are paid to you.";
+"You can change how / when your reward earnings are paid to you." = "می‌توانید نحوه برداشت/زمان برداشت پاداشی که به شما داده می‌شود را تغییر دهید. ";
 
 /* CrowdNode */
-"You can see detailed information about your deposits, withdrawals and reward earnings." = "You can see detailed information about your deposits, withdrawals and reward earnings.";
+"You can see detailed information about your deposits, withdrawals and reward earnings." = "جزئیات مربوط به واریزها، برداشت‌ها و پاداش‌ها را می‌توانید ببینید. ";
 
 /* Coinbase */
-"You don’t have enough balance" = "You don’t have enough balance";
+"You don’t have enough balance" = "موجودی کافی ندارید";
 
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "از حد تعریف‌شده در کوین‌بیس فراتر رفتید.";
@@ -2011,7 +2014,7 @@
 "You have insufficient funds to proceed" = "You have insufficient funds to proceed";
 
 /* CrowdNode */
-"You have to backup your passphrase in Dash Wallet" = "You have to backup your passphrase in Dash Wallet";
+"You have to backup your passphrase in Dash Wallet" = "باید از عبارت ورودی‌تان در دش والت یک نسخه پشتیبان تهیه کنید. ";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "You must enter your PIN in order to enter Dash Wallet";
@@ -2050,7 +2053,7 @@
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.";
 
 /* CrowdNode */
-"You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts.";
+"You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "مبلغی جزئی را به صورت خودکار دریافت خواهید کرد و به صورت خودکار دوباره سرمایه‌گذاری می‌شود. با این وجود، امکان تنظیم برداشت خودکار برای دریافت پرداخت‌های مکرر به سادگی امکان‌پذیر است. ";
 
 /* CrowdNode */
 "Your CrowdNode account is creating…" = "حساب کراودنود شما در حال ایجاد شدن است...";
@@ -2080,7 +2083,7 @@
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";
 
 /* CrowdNode */
-"Your primary Dash address that you currently use for your CrowdNode account" = "Your primary Dash address that you currently use for your CrowdNode account";
+"Your primary Dash address that you currently use for your CrowdNode account" = "نشانی اصلی دش شما که از آن در حال حاضر برای حساب کراودنود  استفاده می‌کنید. ";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";

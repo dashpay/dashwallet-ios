@@ -323,6 +323,9 @@
 /* No comment provided by engineer. */
 "Close" = "Close";
 
+/* CrowdNode */
+"Close and notify when it’s done" = "Close and notify when it’s done";
+
 /* No comment provided by engineer. */
 "Close App" = "Close App";
 
@@ -410,7 +413,7 @@
 "Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
 
 /* No comment provided by engineer. */
-"Could not find exchange rate." = "Could not find exchange rate.";
+"Could not find exchange rate." = "Rahanvaihtokurssia ei löytynyt.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Couldn't make payment";
@@ -1549,7 +1552,7 @@
 "Setup Wallet" = "Setup Wallet";
 
 /* CrowdNode */
-"Share" = "Share";
+"Share" = "Jaa";
 
 /* Receive screen */
 "Share address" = "Share address";

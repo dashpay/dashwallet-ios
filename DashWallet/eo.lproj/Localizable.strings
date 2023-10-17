@@ -323,6 +323,9 @@
 /* No comment provided by engineer. */
 "Close" = "Close";
 
+/* CrowdNode */
+"Close and notify when it’s done" = "Close and notify when it’s done";
+
 /* No comment provided by engineer. */
 "Close App" = "Close App";
 
@@ -1549,7 +1552,7 @@
 "Setup Wallet" = "Setup Wallet";
 
 /* CrowdNode */
-"Share" = "Share";
+"Share" = "Kunhavigi";
 
 /* Receive screen */
 "Share address" = "Share address";
