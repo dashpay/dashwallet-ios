@@ -27,7 +27,6 @@
 #import "DWSecurityMenuViewController.h"
 #import "DWSettingsMenuViewController.h"
 #import "DWToolsMenuViewController.h"
-#import "DWUpholdViewController.h"
 #import "SFSafariViewController+DashWallet.h"
 #import "dashwallet-Swift.h"
 #import "DWRootEditProfileViewController.h"

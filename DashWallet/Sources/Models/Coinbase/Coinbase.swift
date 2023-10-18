@@ -109,6 +109,14 @@ extension Coinbase {
     var dashAccount: CBAccount? {
         accountService.dashAccount
     }
+    
+    public func getUsdAccount() async -> CBAccount? {
+        do {
+            return try await accountService.account(by: Coinbase.defaultFiat)
+        } catch {
+            return nil
+        }
+    }
 }
 
 extension Coinbase {
@@ -168,35 +176,29 @@ extension Coinbase {
     ///
     /// - Throws: Coinbase.Error
     ///
-    func placeCoinbaseBuyOrder(amount: UInt64,
-                               paymentMethod: CoinbasePaymentMethod) async throws -> CoinbasePlaceBuyOrder {
+    func placeCoinbaseBuyOrder(amount: UInt64) async throws -> CoinbasePlaceBuyOrder {
         do {
-            return try await accountService.placeBuyOrder(for: kDashAccount, amount: amount, paymentMethod: paymentMethod)
+            return try await accountService.placeBuyOrder(for: kDashAccount, amount: amount)
         } catch Coinbase.Error.userSessionRevoked {
             try await auth.signOut()
             throw Coinbase.Error.userSessionRevoked
-        } catch {
-            throw error
         }
     }
-
-    /// Commit Buy Order
+    
+    /// Deposit to the fiat account
     ///
     /// - Parameters:
-    ///   - orderID: Order id from `CoinbasePlaceBuyOrder` you receive by calling `placeCoinbaseBuyOrder`
-    ///
-    /// - Returns: CoinbasePlaceBuyOrder
+    ///   - paymentMethodId: Id of the payment method with which to make the deposit
+    ///   - amount: Plain amount in Dash
     ///
     /// - Throws: Coinbase.Error
     ///
-    func commitCoinbaseBuyOrder(orderID: String) async throws -> CoinbasePlaceBuyOrder {
+    func depositToFiatAccount(from paymentMethodId: String, amount: UInt64) async throws {
         do {
-            return try await accountService.commitBuyOrder(accountName: kDashAccount, orderID: orderID)
+            try await accountService.deposit(to: Coinbase.defaultFiat, from: paymentMethodId, amount: amount)
         } catch Coinbase.Error.userSessionRevoked {
             try await auth.signOut()
             throw Coinbase.Error.userSessionRevoked
-        } catch {
-            throw error
         }
     }
 

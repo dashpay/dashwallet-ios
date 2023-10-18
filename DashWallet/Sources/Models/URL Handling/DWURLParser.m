@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (nullable DWURLAction *)actionForURL:(NSURL *)url {
     if ([url.absoluteString containsString:@"uphold"]) {
-        DWURLUpholdAction *action = [[DWURLUpholdAction alloc] init];
+        DWURLIntegrationAction *action = [[DWURLIntegrationAction alloc] init];
         action.url = url;
 
         return action;

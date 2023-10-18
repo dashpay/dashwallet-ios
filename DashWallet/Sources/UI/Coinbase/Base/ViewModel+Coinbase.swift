@@ -21,7 +21,7 @@ import Foundation
 
 protocol CoinbaseTransactionDelegate: AnyObject {
     func transferFromCoinbaseToWalletDidSucceed()
-    func transferFromCoinbaseToWalletDidFail(with error: Coinbase.Error)
+    func transferFromCoinbaseToWalletDidFail(with error: Error)
     func transferFromCoinbaseToWalletDidCancel()
 }
 

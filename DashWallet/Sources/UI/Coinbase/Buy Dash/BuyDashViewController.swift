@@ -29,7 +29,6 @@ final class BuyDashViewController: CoinbaseAmountViewController {
         model as! BuyDashModel
     }
 
-    private var activePaymentMethodView: ActivePaymentMethodView!
     internal var cancellables = Set<AnyCancellable>()
 
     override var isMaxButtonHidden: Bool { true }
@@ -45,31 +44,7 @@ final class BuyDashViewController: CoinbaseAmountViewController {
 
     // MARK: Actions
     override func actionButtonAction(sender: UIView) {
-        showActivityIndicator()
-        buyDashModel.buy()
-    }
-
-    @objc
-    func payWithTapGestureRecognizerAction() {
-        let vc = PaymentMethodsController.controller()
-        vc.paymentMethods = buyDashModel.paymentMethods
-        vc.selectedPaymentMethod = buyDashModel.activePaymentMethod
-        vc.selectPaymentMethodAction = { [weak self] method in
-            self?.buyDashModel.select(paymentMethod: method)
-            self?.activePaymentMethodView.update(with: method)
-        }
-        present(vc, animated: true)
-    }
-
-    // MARK: Life cycle
-    override func configureModel() {
-        super.configureModel()
-
-        buyDashModel.delegate = self
-
-        buyDashModel.$paymentMethods.sink { [weak self] items in
-            self?.activePaymentMethodView?.update(with: items.first)
-        }.store(in: &cancellables)
+        handleBuy(retryWithDeposit: false)
     }
 
     override func configureHierarchy() {
@@ -98,29 +73,15 @@ final class BuyDashViewController: CoinbaseAmountViewController {
         amountView.removeFromSuperview()
         contentView.addSubview(amountView)
 
-        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(payWithTapGestureRecognizerAction))
-
-        activePaymentMethodView = ActivePaymentMethodView(frame: .zero)
-        activePaymentMethodView.update(with: buyDashModel.activePaymentMethod)
-        activePaymentMethodView.setChevronButtonHidden(buyDashModel.paymentMethods.count <= 1)
-        activePaymentMethodView.translatesAutoresizingMaskIntoConstraints = false
-        activePaymentMethodView.addGestureRecognizer(tapGestureRecognizer)
-        contentView.addSubview(activePaymentMethodView)
-
         let sendingToView = SendingToView(frame: .zero)
         sendingToView.translatesAutoresizingMaskIntoConstraints = false
 
         topKeyboardView = sendingToView
 
         NSLayoutConstraint.activate([
-            activePaymentMethodView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 15),
-            activePaymentMethodView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
-            activePaymentMethodView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
-            activePaymentMethodView.heightAnchor.constraint(equalToConstant: 46),
-
             amountView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             amountView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-            amountView.topAnchor.constraint(equalTo: activePaymentMethodView.bottomAnchor, constant: 30),
+            NSLayoutConstraint(item: amountView!, attribute: .top, relatedBy: .equal, toItem: contentView, attribute: .centerY, multiplier: 0.35, constant: 0),
         ])
     }
 
@@ -134,22 +95,25 @@ final class BuyDashViewController: CoinbaseAmountViewController {
     }
 }
 
-// MARK: BuyDashModelDelegate
+extension BuyDashViewController {
+    private func handleBuy(retryWithDeposit: Bool) {
+        showActivityIndicator()
+        
+        Task {
+            let error = await buyDashModel.validateBuyDash(retryWithDeposit: retryWithDeposit)
+            hideActivityIndicator()
+            
+            switch error {
+            case .unknownError:
+                guard let paymentMethod = buyDashModel.activePaymentMethod else { return }
 
-extension BuyDashViewController: BuyDashModelDelegate {
-    func buyDashModelDidPlace(order: CoinbasePlaceBuyOrder) {
-        guard let paymentMethod = buyDashModel.activePaymentMethod else { return }
-
-        let vc = ConfirmOrderController(order: order, paymentMethod: paymentMethod, plainAmount: UInt64(buyDashModel.amount.plainAmount))
-        vc.hidesBottomBarWhenPushed = true
-        navigationController?.pushViewController(vc, animated: true)
-        hideActivityIndicator()
-    }
-
-    func buyDashModelFailedToPlaceOrder(with error: Coinbase.Error) {
-        hideActivityIndicator()
-
-        showAlert(with: "Error", message: error.localizedDescription)
+                let vc = ConfirmOrderController(paymentMethod: paymentMethod, plainAmount: UInt64(buyDashModel.amount.plainAmount))
+                vc.hidesBottomBarWhenPushed = true
+                navigationController?.pushViewController(vc, animated: true)
+            default:
+                showError(error)
+            }
+        }
     }
 }
 
@@ -169,3 +133,42 @@ extension BuyDashViewController {
     }
 }
 
+extension BuyDashViewController {
+    private func showError(_ error: Coinbase.Error) {
+        let title: String
+        let message: String
+        let action: UIAlertAction?
+        
+        switch error {
+        case .general(.noCashAccount), .general(.noPaymentMethods):
+            title = error.failureReason ?? NSLocalizedString("Error", comment: "")
+            message = error.localizedDescription
+            action = UIAlertAction(title: NSLocalizedString("Add", comment: "Coinbase"), style: .default) { [weak self] _ in
+                self?.addPaymentMethod()
+            }
+        case .transactionFailed(.notEnoughFunds):
+            title = NSLocalizedString("You don’t have enough balance", comment: "Coinbase")
+            message = NSLocalizedString("Would you like to make a deposit for your purchase using a linked bank account?", comment: "Coinbase")
+            action = UIAlertAction(title: NSLocalizedString("Confirm", comment: "Coinbase"), style: .default) { [weak self] _ in
+                self?.handleBuy(retryWithDeposit: true)
+            }
+        default:
+            title = error.failureReason ?? NSLocalizedString("Error", comment: "")
+            message = error.localizedDescription
+            action = nil
+        }
+        
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        if let action = action {
+            alert.addAction(action)
+        }
+
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel)
+        alert.addAction(cancelAction)
+        present(alert, animated: true)
+    }
+    
+    private func addPaymentMethod() {
+        UIApplication.shared.open(kCoinbaseAddPaymentMethodsURL)
+    }
+}

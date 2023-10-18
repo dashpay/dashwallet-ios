@@ -242,7 +242,7 @@
 "Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "Between Dash Wallet and Coinbase.";
+"Between Dash Wallet and Coinbase" = "Between Dash Wallet and Coinbase";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Between Dash Wallet and your Coinbase account";
@@ -277,9 +277,6 @@
 
 /* Dash Service Overview */
 "Buy Dash with fiat" = "Buy Dash with fiat";
-
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Buy Dash with Uphold account";
 
 /* Dash Portal */
 "Buy Dash · No account needed" = "Buy Dash · No account needed";
@@ -354,9 +351,6 @@
 "Confirm" = "確認:";
 
 /* Coinbase/Buy Dash/Confirm Order */
-"Confirm (%@)" = "Confirm (%@)";
-
-/* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "Confirm (%1$d%2$@)";
 
 /* No comment provided by engineer. */
@@ -420,6 +414,9 @@
 
 /* No comment provided by engineer. */
 "Could not connect to the Dash network, please check that you are connected to the internet." = "Could not connect to the Dash network, please check that you are connected to the internet.";
+
+/* No comment provided by engineer. */
+"Could not find exchange rate." = "Could not find exchange rate.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Couldn't make payment";
@@ -494,6 +491,9 @@
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "Dash balance on Coinbase";
 
+/* Uphold Entry Point */
+"Dash balance on Uphold" = "Dash balance on Uphold";
+
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";
 
@@ -548,6 +548,9 @@
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Disconnect Coinbase Account";
+
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "Disconnect Uphold Account";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -650,6 +653,9 @@
 "Face ID limit" = "Face ID 解鎖的限制";
 
 /* Coinbase */
+"Failed to make a deposit." = "Failed to make a deposit.";
+
+/* Coinbase */
 "Failed to start auth session" = "Failed to start auth session";
 
 /* Buy Sell Portal */
@@ -729,6 +735,9 @@
 
 /* from Dash Wallet */
 "from Dash Wallet" = "from Dash Wallet";
+
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "From Uphold to Dash Wallet";
 
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "From Uphold to your Dash Wallet";
@@ -1035,9 +1044,6 @@
 "Log in to CrowdNode" = "Log in to CrowdNode";
 
 /* No comment provided by engineer. */
-"Log Out" = "Log Out";
-
-/* No comment provided by engineer. */
 "Log out from Uphold" = "Log out from Uphold";
 
 /* No comment provided by engineer. */
@@ -1162,6 +1168,9 @@
 
 /* Coinbase */
 "No active user" = "No active user";
+
+/* Coinbase */
+"No cash account found" = "No cash account found";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "No payment methods";
@@ -1862,9 +1871,6 @@
    Dash Service Overview */
 "Transfer Dash" = "Transfer Dash";
 
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash from your Uphold account to this wallet";
-
 /* CrowdNode */
 "Transfer Error" = "Transfer Error";
 
@@ -2115,6 +2121,9 @@
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "Would you like to accept the invitation?";
 
+/* Coinbase */
+"Would you like to make a deposit for your purchase using a linked bank account?" = "Would you like to make a deposit for your purchase using a linked bank account?";
+
 /* No comment provided by engineer. */
 "Would you like to save the changes you made to your profile?" = "Would you like to save the changes you made to your profile?";
 
@@ -2147,6 +2156,9 @@
 
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "You do not have any contacts at the moment";
+
+/* Coinbase */
+"You don’t have enough balance" = "You don’t have enough balance";
 
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "You exceeded the authorization limit on Coinbase.";
@@ -2240,9 +2252,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
-
-/* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Your username %@ has been successfully created on the Dash Network";

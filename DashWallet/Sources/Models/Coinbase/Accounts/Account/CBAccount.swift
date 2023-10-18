@@ -132,7 +132,7 @@ extension CBAccount {
 
             let result: BaseDataResponse<CoinbaseTransaction> = try await httpClient
                 .request(.sendCoinsToWallet(accountId: accountId, verificationCode: verificationCode, dto: dto))
-            try? await refreshAccount() // Ignore if fails
+            let _ = try? await refreshAccount() // Ignore if fails
 
             return result.data
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 402 {
@@ -164,46 +164,30 @@ extension CBAccount {
 
 // MARK: Buy
 extension CBAccount {
-    public func placeCoinbaseBuyOrder(amount: UInt64, paymentMethod: CoinbasePaymentMethod) async throws -> CoinbasePlaceBuyOrder {
-        let fiatCurrency = Coinbase.sendLimitCurrency
-        if let localNumber = try? Coinbase.shared.currencyExchanger.convertDash(amount: amount.dashAmount, to: fiatCurrency) {
-            if localNumber < kMinUSDAmountOrder {
-                let min = NSDecimalNumber(decimal: kMinUSDAmountOrder)
-                let localFormatter = NumberFormatter.fiatFormatter(currencyCode: fiatCurrency)
-                let str = localFormatter.string(from: min) ?? "$1.99"
-                throw Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: str))
-            } else if localNumber > Coinbase.shared.sendLimit {
-                throw Coinbase.Error.transactionFailed(.limitExceded)
-            }
+    public func placeCoinbaseBuyOrder(amount: UInt64) async throws -> CoinbasePlaceBuyOrder {
+        let fiatCurrency = Coinbase.defaultFiat
+        
+        guard let localNumber = try? Coinbase.shared.currencyExchanger.convertDash(amount: amount.dashAmount, to: fiatCurrency) else {
+            throw Coinbase.Error.general(.rateNotFound)
+        }
+        
+        if localNumber < kMinUSDAmountOrder {
+            let min = NSDecimalNumber(decimal: kMinUSDAmountOrder)
+            let localFormatter = NumberFormatter.fiatFormatter(currencyCode: fiatCurrency)
+            let str = localFormatter.string(from: min) ?? "$1.99"
+            throw Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: str))
+        } else if localNumber > Coinbase.shared.sendLimit {
+            throw Coinbase.Error.transactionFailed(.limitExceded)
         }
 
-        // NOTE: Make sure we format the amount back into coinbase format (en_US)
-        let amount = amount.formattedDashAmountWithoutCurrencySymbol.coinbaseAmount()
-
-        let request = CoinbasePlaceBuyOrderRequest(amount: amount, currency: kDashCurrency, paymentMethod: paymentMethod.id, commit: false, quote: nil)
+        let formatter = NumberFormatter.decimalFormatter
+        formatter.maximumFractionDigits = 2
+        let amountStr = formatter.string(from: NSDecimalNumber(decimal: localNumber))!.coinbaseAmount()
+        let request = CoinbasePlaceBuyOrderRequest(clientOrderId: UUID(), productId: Coinbase.dashUSDPair, side: Coinbase.transactionTypeBuy, orderConfiguration: OrderConfiguration(marketMarketIoc: MarketMarketIoc(quoteSize: amountStr)))
 
         do {
             try await authInterop.refreshTokenIfNeeded()
-            let result: BaseDataResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.placeBuyOrder(accountId, request))
-            return result.data
-        } catch HTTPClientError.statusCode(let r) {
-            if let error = r.error?.errors.first {
-                throw Coinbase.Error.transactionFailed(.message(error.message))
-            }
-
-            throw Coinbase.Error.unknownError
-        } catch {
-            throw error
-        }
-    }
-
-    public func commitCoinbaseBuyOrder(orderID: String) async throws -> CoinbasePlaceBuyOrder {
-        do {
-            try await authInterop.refreshTokenIfNeeded()
-            let result: BaseDataResponse<CoinbasePlaceBuyOrder> = try await httpClient.request(.commitBuyOrder(accountId, orderID))
-            try? await refreshAccount() // Ignore if fails
-
-            return result.data
+            return try await httpClient.request<CoinbasePlaceBuyOrder>(.placeBuyOrder(request))
         } catch HTTPClientError.statusCode(let r) {
             if let error = r.error?.errors.first {
                 throw Coinbase.Error.transactionFailed(.message(error.message))
@@ -265,7 +249,7 @@ extension CBAccount {
         do {
             try await authInterop.refreshTokenIfNeeded()
             let result: BaseDataResponse<CoinbaseSwapeTrade> = try await httpClient.request(.swapTradeCommit(orderID))
-            try? await refreshAccount() // Ignore if fails
+            let _ = try? await refreshAccount() // Ignore if fails
 
             return result.data
         } catch HTTPClientError.statusCode(let r) {
@@ -277,6 +261,25 @@ extension CBAccount {
         } catch {
             throw error
         }
+    }
+}
+
+// MARK: Deposit
+
+extension CBAccount {
+    public func deposit(from paymentMethodId: String, amount: UInt64) async throws -> CoinbaseDepositResponse {
+        guard let localNumber = try? Coinbase.shared.currencyExchanger.convertDash(amount: amount.dashAmount, to: Coinbase.defaultFiat) else {
+            throw Coinbase.Error.general(.rateNotFound)
+        }
+        
+        let formatter = NumberFormatter.decimalFormatter
+        formatter.maximumFractionDigits = 2
+        let amountStr = formatter.string(from: NSDecimalNumber(decimal: localNumber))!.coinbaseAmount()
+        try await authInterop.refreshTokenIfNeeded()
+        let request = CoinbaseDepositRequest(amount: amountStr, currency: Coinbase.defaultFiat, paymentMethod: paymentMethodId)
+        let result: BaseDataResponse<CoinbaseDepositResponse> = try await httpClient.request(.deposit(accountId: info.id, dto: request))
+        
+        return result.data
     }
 }
 
