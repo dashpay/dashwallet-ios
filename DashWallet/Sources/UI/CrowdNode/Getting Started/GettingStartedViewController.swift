@@ -23,14 +23,18 @@ final class GettingStartedViewController: BaseViewController {
     private let viewModel = CrowdNodeModel.shared
     private var cancellableBag = Set<AnyCancellable>()
 
+    @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var subtitleLabel: UILabel!
     @IBOutlet var logoWrapper: UIView!
     @IBOutlet var newAccountButton: UIControl!
     @IBOutlet var newAccountTitle: UILabel!
     @IBOutlet var newAccountIcon: UIImageView!
     @IBOutlet var balanceHint: UIView!
+    @IBOutlet var passphraseLabel: UILabel!
     @IBOutlet var passphraseHint: UIView!
     @IBOutlet var linkAccountButton: UIControl!
-    @IBOutlet var minimumBalanceLable: UILabel!
+    @IBOutlet var minimumBalanceLabel: UILabel!
+    @IBOutlet var linkAccountLabel: UILabel!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -105,13 +109,17 @@ extension GettingStartedViewController {
     private func configureHierarchy() {
         view.backgroundColor = UIColor.dw_secondaryBackground()
 
-
         logoWrapper.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.05, x: 0, y: 0, blur: 10)
         newAccountButton.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
         linkAccountButton.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.1, x: 0, y: 0, blur: 10)
 
         let minimumDash = CrowdNode.minimumRequiredDash.formattedDashAmount
-        minimumBalanceLable.text = String.localizedStringWithFormat(NSLocalizedString("You need at least %@ on your Dash Wallet", comment: "CrowdNode"), minimumDash)
+        minimumBalanceLabel.text = String.localizedStringWithFormat(NSLocalizedString("You need at least %@ on your Dash Wallet", comment: "CrowdNode"), minimumDash)
+        titleLabel.text = NSLocalizedString("Getting started with CrowdNode", comment: "CrowdNode")
+        subtitleLabel.text = NSLocalizedString("To start staking, create an account on CrowdNode or connect to an existing one.", comment: "CrowdNode")
+        newAccountTitle.text = NSLocalizedString("New CrowdNode Account", comment: "CrowdNode")
+        passphraseLabel.text = NSLocalizedString("You have to backup your passphrase in Dash Wallet", comment: "CrowdNode")
+        linkAccountLabel.text = NSLocalizedString("Link Existing Account", comment: "CrowdNode")
 
         refreshCreateAccountButton()
     }

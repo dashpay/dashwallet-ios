@@ -23,6 +23,7 @@ final class ConfirmationTransactionQRController: UIViewController {
     private var cancellableBag = Set<AnyCancellable>()
 
     @IBOutlet var qrImage: UIImageView!
+    @IBOutlet var titleLabel: UILabel!
     @IBOutlet var messageLabel: UILabel!
     private var paymentRequest: DSPaymentRequest!
 
@@ -54,6 +55,7 @@ extension ConfirmationTransactionQRController {
     private func configureHierarchy() {
         view.backgroundColor = .dw_secondaryBackground()
 
+        titleLabel.text = NSLocalizedString("Scan QR", comment: "")
         let confirmationAmount = CrowdNode.apiConfirmationDashAmount.formattedDashAmount
         messageLabel.text = String.localizedStringWithFormat(NSLocalizedString("This QR already contains the payment request for %@", comment: "CrowdNode Confirm"),
                                                              confirmationAmount)

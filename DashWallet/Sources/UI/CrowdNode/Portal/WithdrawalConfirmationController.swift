@@ -26,15 +26,19 @@ final class WithdrawalConfirmationController: UIViewController {
     @IBOutlet var balanceView: BalanceView!
     @IBOutlet var adjustedTopLabel: UILabel!
     @IBOutlet var adjustedBottomLabel: UILabel!
+    @IBOutlet var titleLabel: UILabel!
 
     private static let smallSheetHeight: CGFloat = 230
     private static let fitSheetHeight: CGFloat = 310
+    
     @IBOutlet var moreInfoView: UIView!
     @IBOutlet var moreInfoButton: UIButton!
     @IBOutlet var moreInfoFirstRow: UILabel!
     @IBOutlet var moreInfoSecondRow: UILabel!
     @IBOutlet var moreInfoThirdRow: UILabel!
     @IBOutlet var showMoreHeightConstraint: NSLayoutConstraint!
+    @IBOutlet var cancelButton: UIButton!
+    @IBOutlet var confirmButton: UIButton!
 
     private var requestedAmount: UInt64!
     private var currencyCode: String!
@@ -149,6 +153,15 @@ extension WithdrawalConfirmationController {
     }
 
     private func configureHierarchy() {
+        titleLabel.text = NSLocalizedString("Confirm Withdrawal", comment: "CrowdNode")
+        moreInfoButton.setTitle(NSLocalizedString("See why it happened", comment: "CrowdNode"), for: .normal)
+        adjustedTopLabel.text = NSLocalizedString("The withdrawal amount has been adjusted by", comment: "CrowdNode")
+        confirmButton.setTitle(NSLocalizedString("Confirm", comment: ""), for: .normal)
+        cancelButton.setTitle(NSLocalizedString("Cancel", comment: ""), for: .normal)
+        moreInfoFirstRow.text = NSLocalizedString("Why does the entered amount differ from what I see on this screen?", comment: "CrowdNode")
+        moreInfoSecondRow.text = NSLocalizedString("The blockchain API for mobile processes withdrawals based on a % of your balance so that all transaction activity can be transparently recorded on the blockchain.", comment: "CrowdNode")
+        moreInfoThirdRow.text = NSLocalizedString("The amount that you entered will be adjusted to the closest level of precision that is possible.", comment: "CrowdNode")
+        
         adjustedAmount = viewModel.adjustedWithdrawalAmount(requestedAmount: requestedAmount)
         balanceView.dataSource = self
 
