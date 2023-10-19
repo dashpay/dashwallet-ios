@@ -553,6 +553,8 @@
 		751B61C42ADFF9D000D1C2EF /* CoinbaseDepositRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CED09D2ACFD0ED0095F10C /* CoinbaseDepositRequest.swift */; };
 		751B61C52ADFFD0700D1C2EF /* IntegrationViewController+Uphold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */; };
 		751B61C62ADFFD0A00D1C2EF /* IntegrationViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */; };
+		751B61C82AE0EDD000D1C2EF /* CoinJoinLevelsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751B61C72AE0EDD000D1C2EF /* CoinJoinLevelsViewController.swift */; };
+		751B61C92AE0EDD000D1C2EF /* CoinJoinLevelsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751B61C72AE0EDD000D1C2EF /* CoinJoinLevelsViewController.swift */; };
 		7527720D2AA9B2630066557E /* SupportedTopperAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */; };
 		7527720F2AA9F58E0066557E /* TopperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720E2AA9F58E0066557E /* TopperViewModel.swift */; };
 		752772122AAA1CE30066557E /* Coinbase-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752772112AAA1CE30066557E /* Coinbase-Info.plist */; };
@@ -2370,6 +2372,7 @@
 		7511E8EB1AE600220025F1B3 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		7513DA8B2AB9643F005D55F6 /* BaseIntegrationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseIntegrationModel.swift; sourceTree = "<group>"; };
 		751B61BE2ADFF49800D1C2EF /* CrowdNode.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = CrowdNode.storyboard; sourceTree = "<group>"; };
+		751B61C72AE0EDD000D1C2EF /* CoinJoinLevelsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinLevelsViewController.swift; sourceTree = "<group>"; };
 		7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedTopperAssets.swift; sourceTree = "<group>"; };
 		7527720E2AA9F58E0066557E /* TopperViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopperViewModel.swift; sourceTree = "<group>"; };
 		752772112AAA1CE30066557E /* Coinbase-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Coinbase-Info.plist"; sourceTree = "<group>"; };
@@ -5904,6 +5907,7 @@
 			isa = PBXGroup;
 			children = (
 				75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */,
+				751B61C72AE0EDD000D1C2EF /* CoinJoinLevelsViewController.swift */,
 				75889B812AD2D7F800C17F5D /* CoinJoin.storyboard */,
 			);
 			path = CoinJoin;
@@ -8200,6 +8204,7 @@
 				47AE8BB228BFF61A00490F5E /* FileManager+DashWallet.swift in Sources */,
 				47AE8BF228C1306000490F5E /* PointOfUseItemCell.swift in Sources */,
 				47083B3229892D770010AF71 /* DSTransaction+DashWallet.swift in Sources */,
+				751B61C82AE0EDD000D1C2EF /* CoinJoinLevelsViewController.swift in Sources */,
 				C9F42F9F29DA82E5001BC549 /* PayableViewController.swift in Sources */,
 				47AE8C1528C6378E00490F5E /* HairlineView.swift in Sources */,
 				2A913E9523A3F75F006A2A59 /* DWInitialViewController.m in Sources */,
@@ -9469,6 +9474,7 @@
 				C9D2C8E32A320AA000D15901 /* DWVerifySeedPhraseViewController.m in Sources */,
 				C9D2C8E42A320AA000D15901 /* DerivationPathKeysCell.swift in Sources */,
 				C9D2C8E52A320AA000D15901 /* Cells.swift in Sources */,
+				751B61C92AE0EDD000D1C2EF /* CoinJoinLevelsViewController.swift in Sources */,
 				C9D2C8E62A320AA000D15901 /* DWContainerViewController.m in Sources */,
 				C9D2C8E72A320AA000D15901 /* DashTextAttachment.swift in Sources */,
 				C943B5432A40AFD100AF23C5 /* DWTxDetailPopupViewController.m in Sources */,

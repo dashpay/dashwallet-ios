@@ -35,7 +35,7 @@ class CoinJoinInfoViewController: UIViewController {
 
     @IBAction
     func continueButtonAction() {
-        
+        self.navigationController?.pushViewController(CoinJoinLevelsViewController.controller(), animated:true)
     }
 }
 
