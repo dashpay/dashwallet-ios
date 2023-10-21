@@ -559,12 +559,12 @@
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
 		75889B762AD296E700C17F5D /* CoinJoinInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */; };
 		75889B792AD2A04900C17F5D /* CoinJoinInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */; };
-		75889B7A2AD2D78A00C17F5D /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75889B7D2AD2D78A00C17F5D /* CrowdNode.storyboard */; };
-		75889B7B2AD2D78A00C17F5D /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75889B7D2AD2D78A00C17F5D /* CrowdNode.storyboard */; };
 		75889B7F2AD2D7F800C17F5D /* CoinJoin.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75889B812AD2D7F800C17F5D /* CoinJoin.storyboard */; };
 		75889B892AD2DF0200C17F5D /* CoinJoin.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75889B812AD2D7F800C17F5D /* CoinJoin.storyboard */; };
 		75AE5A7F2A87C363006CD4BA /* DWConfirmUsernameContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C943B5712A40ED4200AF23C5 /* DWConfirmUsernameContentView.xib */; };
 		75D5F3CE191EC270004AB296 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3CD191EC270004AB296 /* main.m */; };
+		75E093F92AE3DE1300B82E1F /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75E093F82AE3DE1300B82E1F /* CrowdNode.storyboard */; };
+		75E093FA2AE3DE1300B82E1F /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75E093F82AE3DE1300B82E1F /* CrowdNode.storyboard */; };
 		75E2F3C82AA4CF1900C3B458 /* Topper-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75E2F3C72AA4CF1900C3B458 /* Topper-Info.plist */; };
 		75E2F3CA2AA4D1B900C3B458 /* Topper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E2F3C92AA4D1B900C3B458 /* Topper.swift */; };
 		75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 75E83CF51B5F997A0038FB70 /* coinflip.aiff */; };
@@ -2389,7 +2389,6 @@
 		756A8F131CE566F6007893E2 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Interface.strings; sourceTree = "<group>"; };
 		757E09981ADB8EEB006FD352 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinInfoViewController.swift; sourceTree = "<group>"; };
-		75889B7C2AD2D78A00C17F5D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/CrowdNode.storyboard; sourceTree = "<group>"; };
 		75889B802AD2D7F800C17F5D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/CoinJoin.storyboard; sourceTree = "<group>"; };
 		759816E519357D6F005060EA /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
 		759816E619357D6F005060EA /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
@@ -2404,6 +2403,7 @@
 		75DE02491B0EB7C80027FF08 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75DE024D1B0EB7FC0027FF08 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75DE02511B0EB8030027FF08 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; lineEnding = 0; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		75E093F82AE3DE1300B82E1F /* CrowdNode.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = CrowdNode.storyboard; sourceTree = "<group>"; };
 		75E2F3C72AA4CF1900C3B458 /* Topper-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Topper-Info.plist"; sourceTree = "<group>"; };
 		75E2F3C92AA4D1B900C3B458 /* Topper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Topper.swift; sourceTree = "<group>"; };
 		75E83CF51B5F997A0038FB70 /* coinflip.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = coinflip.aiff; sourceTree = "<group>"; };
@@ -3347,8 +3347,8 @@
 				1141E4C3291FDC3B00ACDA9E /* Getting Started */,
 				1141E4C0291BB0FC00ACDA9E /* Portal */,
 				11BD737A28E6BCD400A34022 /* New Account */,
-				75889B7D2AD2D78A00C17F5D /* CrowdNode.storyboard */,
 				11E47BA728EAE7AD0097CFA0 /* CrowdNodeModel.swift */,
+				75E093F82AE3DE1300B82E1F /* CrowdNode.storyboard */,
 			);
 			path = CrowdNode;
 			sourceTree = "<group>";
@@ -7700,11 +7700,11 @@
 				1193FF3E2962F1BE004EA8D7 /* OperationStatus.storyboard in Resources */,
 				2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
 				2A9FFE8F2230FF4700956D5F /* UpholdAuthStoryboard.storyboard in Resources */,
-				75889B7A2AD2D78A00C17F5D /* CrowdNode.storyboard in Resources */,
 				2AFF01E6243F8626003718DC /* DWDPRegistrationDoneTableViewCell.xib in Resources */,
 				2A10EB412358D2A900C38B61 /* ResetWalletInfo.storyboard in Resources */,
 				FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */,
 				2A8B9E5C22FF6FE500FF8653 /* Pay.storyboard in Resources */,
+				75E093F92AE3DE1300B82E1F /* CrowdNode.storyboard in Resources */,
 				2A8C24B6233370A600000D43 /* QuickReceive.storyboard in Resources */,
 				47A514622848FEAD005A8E3E /* Tx.storyboard in Resources */,
 				2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */,
@@ -7776,6 +7776,7 @@
 				C9D2C9182A320AA000D15901 /* LockScreen.storyboard in Resources */,
 				C9D2C9192A320AA000D15901 /* UpholdMainStoryboard.storyboard in Resources */,
 				C9D2C91A2A320AA000D15901 /* Migrations.bundle in Resources */,
+				75E093FA2AE3DE1300B82E1F /* CrowdNode.storyboard in Resources */,
 				C9D2C91B2A320AA000D15901 /* TxDetailTaxCategoryCell.xib in Resources */,
 				C9D2C91C2A320AA000D15901 /* Localizable.stringsdict in Resources */,
 				C943B4C12A40A54600AF23C5 /* DWTitleActionHeaderView.xib in Resources */,
@@ -7807,7 +7808,6 @@
 				C9D2C9362A320AA000D15901 /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
 				C943B5542A40C23500AF23C5 /* DWFilterHeaderView.xib in Resources */,
 				C9D2C9372A320AA000D15901 /* UpholdAuthStoryboard.storyboard in Resources */,
-				75889B7B2AD2D78A00C17F5D /* CrowdNode.storyboard in Resources */,
 				C9D2C9392A320AA000D15901 /* DWDPRegistrationDoneTableViewCell.xib in Resources */,
 				C9D2C93A2A320AA000D15901 /* ResetWalletInfo.storyboard in Resources */,
 				C9D2C93B2A320AA000D15901 /* LaunchScreen.storyboard in Resources */,
@@ -9596,14 +9596,6 @@
 				47CDEED0294B8230008AE06D /* sk */,
 			);
 			name = Localizable.strings;
-			sourceTree = "<group>";
-		};
-		75889B7D2AD2D78A00C17F5D /* CrowdNode.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				75889B7C2AD2D78A00C17F5D /* Base */,
-			);
-			name = CrowdNode.storyboard;
 			sourceTree = "<group>";
 		};
 		75889B812AD2D7F800C17F5D /* CoinJoin.storyboard */ = {
