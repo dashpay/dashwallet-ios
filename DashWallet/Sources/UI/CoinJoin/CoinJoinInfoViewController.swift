@@ -16,6 +16,8 @@
 //
 
 class CoinJoinInfoViewController: UIViewController {
+    private let viewModel = CoinJoinViewModel.shared
+    
     @IBOutlet private var titleLabel: UILabel!
     @IBOutlet private var subtitleLabel: UILabel!
     @IBOutlet private var description1: UILabel!
@@ -30,12 +32,13 @@ class CoinJoinInfoViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        viewModel.infoShown = true
         configureHierarchy()
     }
 
     @IBAction
     func continueButtonAction() {
-        self.navigationController?.pushViewController(CoinJoinLevelsViewController.controller(), animated:true)
+        self.navigationController?.replaceLast(with: CoinJoinLevelsViewController.controller())
     }
 }
 

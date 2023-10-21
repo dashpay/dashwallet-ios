@@ -233,8 +233,15 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showCoinJoinController {
-    CoinJoinInfoViewController *coinJoinViewController = [CoinJoinInfoViewController controller];
-    [self.navigationController pushViewController:coinJoinViewController animated:YES];
+    UIViewController *vc;
+    
+    if (CoinJoinObjcWrapper.infoShown) {
+        vc = [CoinJoinLevelsViewController controller];
+    } else {
+        vc = [CoinJoinInfoViewController controller];
+    }
+    
+    [self.navigationController pushViewController:vc animated:YES];
 }
 
 - (void)showChangeNetworkFromSourceView:(UIView *)sourceView sourceRect:(CGRect)sourceRect {

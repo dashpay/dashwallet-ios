@@ -218,6 +218,13 @@ extension UINavigationController {
     func controller<T>(by type: T.Type) -> UIViewController? {
         viewControllers.first(where: { $0 is T })
     }
+    
+    func replaceLast(_ n: Int = 1, with controller: UIViewController, animated: Bool = true) {
+        var viewControllers = viewControllers
+        viewControllers.removeLast(n)
+        viewControllers.append(controller)
+        setViewControllers(viewControllers, animated: animated)
+    }
 }
 
 extension UIViewController {

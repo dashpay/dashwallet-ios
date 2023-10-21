@@ -212,7 +212,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="rPD-OO-IDb">
-                                <rect key="frame" x="15" y="103" width="337" height="1347.3333333333333"/>
+                                <rect key="frame" x="15" y="103" width="337" height="1810.3333333333333"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Select mixing level" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6rg-5k-ZuM">
                                         <rect key="frame" x="0.0" y="0.0" width="337" height="28.666666666666668"/>
@@ -221,11 +221,11 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <view contentMode="scaleToFill" id="Nzy-EI-xav" userLabel="View">
-                                        <rect key="frame" x="0.0" y="43.666666666666629" width="337" height="1134.3333333333335"/>
+                                        <rect key="frame" x="0.0" y="43.666666666666629" width="337" height="1597.3333333333335"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.locked" translatesAutoresizingMaskIntoConstraints="NO" id="Ty1-5x-poG">
-                                                <rect key="frame" x="291" y="553.33333333333337" width="26" height="26"/>
+                                                <rect key="frame" x="291" y="785" width="26" height="26"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="26" id="1eh-9W-Hw4"/>
                                                     <constraint firstAttribute="height" constant="26" id="Sdp-pd-fnb"/>
@@ -238,7 +238,7 @@
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Pfh-r0-EG2">
-                                                <rect key="frame" x="20" y="38.333333333333371" width="256" height="1056"/>
+                                                <rect key="frame" x="20" y="38.333333333333371" width="256" height="1519"/>
                                                 <attributedString key="attributedText">
                                                     <fragment content="It would be very difficult for advanced users with any level of technical expertise to determine your transaction history">
                                                         <attributes>
@@ -251,7 +251,7 @@
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="clock" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="dLd-2N-nyO">
-                                                <rect key="frame" x="20" y="1105.3333333333333" width="15" height="13.666666666666742"/>
+                                                <rect key="frame" x="20" y="1568.3333333333333" width="15" height="13.666666666666742"/>
                                                 <color key="tintColor" name="Label"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="15" id="4YV-uy-c27"/>
@@ -259,7 +259,7 @@
                                                 </constraints>
                                             </imageView>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Multiple hours" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tIq-J8-e4X">
-                                                <rect key="frame" x="38.999999999999993" y="1104.6666666666665" width="80.333333333333314" height="14.333333333333258"/>
+                                                <rect key="frame" x="38.999999999999993" y="1567.6666666666665" width="80.333333333333314" height="14.333333333333258"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                 <color key="textColor" name="Label"/>
                                                 <nil key="highlightedColor"/>
@@ -284,7 +284,7 @@
                                         </constraints>
                                     </view>
                                     <view contentMode="scaleToFill" id="S21-70-4Cp" userLabel="View">
-                                        <rect key="frame" x="0.0" y="1193" width="337" height="0.0"/>
+                                        <rect key="frame" x="0.0" y="1656" width="337" height="0.0"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image.protected" translatesAutoresizingMaskIntoConstraints="NO" id="yvO-3s-Zt1">
@@ -349,13 +349,13 @@
                                 </subviews>
                             </stackView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Bmb-TV-25i" userLabel="Continue Button" customClass="DWActionButton">
-                                <rect key="frame" x="15" y="744" width="96.666666666666671" height="54"/>
+                                <rect key="frame" x="14.999999999999993" y="744" width="120.33333333333331" height="54"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="54" id="2ef-MQ-tpv"/>
                                 </constraints>
                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                 <state key="normal" title="Skip"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Continue">
+                                <buttonConfiguration key="configuration" style="plain" title="Start Mixing">
                                     <fontDescription key="titleFontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="18"/>
                                     <color key="baseForegroundColor" name="DashBlueColor"/>
                                 </buttonConfiguration>
@@ -406,7 +406,7 @@
             <color red="0.0" green="0.55294117647058827" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="Label">
-            <color red="0.097999997437000275" green="0.10999999940395355" blue="0.12200000137090683" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.094117647058823528" green="0.10980392156862745" blue="0.12156862745098039" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="SecondaryBackgroundColor">
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
