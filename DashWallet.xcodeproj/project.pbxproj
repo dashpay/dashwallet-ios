@@ -548,6 +548,8 @@
 		47F4B6CD29485A8B00AED4C9 /* ConfirmOrderCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F4B6CC29485A8B00AED4C9 /* ConfirmOrderCells.swift */; };
 		47FA3AFF29350929008D58DC /* SyncingActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3AFE29350929008D58DC /* SyncingActivityMonitor.swift */; };
 		47FA3B0229364991008D58DC /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3B0129364991008D58DC /* HTTPClient.swift */; };
+		7502A4872AE401EF00ACDDD3 /* UsernameVotingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7502A4862AE401EF00ACDDD3 /* UsernameVotingViewController.swift */; };
+		7502A4892AE4024000ACDDD3 /* UsernameVoting.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7502A4882AE4024000ACDDD3 /* UsernameVoting.storyboard */; };
 		7513DA882AB175E0005D55F6 /* TopperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720E2AA9F58E0066557E /* TopperViewModel.swift */; };
 		7513DA892AB17606005D55F6 /* Topper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E2F3C92AA4D1B900C3B458 /* Topper.swift */; };
 		7513DA8A2AB17666005D55F6 /* SupportedTopperAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */; };
@@ -2373,6 +2375,8 @@
 		556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
 		5FD4C91FB8EAB529E8E41227 /* Pods-dashwallet no watch.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.testnet.xcconfig"; sourceTree = "<group>"; };
 		6FBBFC90577C940D8C04E0B1 /* Pods-DashWalletScreenshotsUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		7502A4862AE401EF00ACDDD3 /* UsernameVotingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameVotingViewController.swift; sourceTree = "<group>"; };
+		7502A4882AE4024000ACDDD3 /* UsernameVoting.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = UsernameVoting.storyboard; sourceTree = "<group>"; };
 		7509C10E1AF3076100D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		7509C1121AF3720100D03FD5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		750C6CC01B5C8EB60038AAE9 /* el */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = el; path = el.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -3794,6 +3798,7 @@
 		2A44313C22CF631E009BAF7F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				7502A4852AE401DA00ACDDD3 /* Voting */,
 				75889B742AD296D500C17F5D /* CoinJoin */,
 				C943B34F2A40A54500AF23C5 /* DashPay */,
 				4751137228DAF27300223B77 /* Assembly */,
@@ -5945,6 +5950,15 @@
 			path = Networking;
 			sourceTree = "<group>";
 		};
+		7502A4852AE401DA00ACDDD3 /* Voting */ = {
+			isa = PBXGroup;
+			children = (
+				7502A4862AE401EF00ACDDD3 /* UsernameVotingViewController.swift */,
+				7502A4882AE4024000ACDDD3 /* UsernameVoting.storyboard */,
+			);
+			path = Voting;
+			sourceTree = "<group>";
+		};
 		75889B742AD296D500C17F5D /* CoinJoin */ = {
 			isa = PBXGroup;
 			children = (
@@ -7815,6 +7829,7 @@
 				C9D2C93D2A320AA000D15901 /* QuickReceive.storyboard in Resources */,
 				C9D2C93E2A320AA000D15901 /* Tx.storyboard in Resources */,
 				C9D2C93F2A320AA000D15901 /* DashSyncCurrentCommit in Resources */,
+				7502A4892AE4024000ACDDD3 /* UsernameVoting.storyboard in Resources */,
 				C9D2C9402A320AA000D15901 /* DWMainMenuTableViewCell.xib in Resources */,
 				C9D2C9412A320AA000D15901 /* VerifiedSuccessfully.storyboard in Resources */,
 				C9D2C9422A320AA000D15901 /* Setup.storyboard in Resources */,
@@ -9356,6 +9371,7 @@
 				C9D2C8642A320AA000D15901 /* AppliedFiltersView.swift in Sources */,
 				C9D2C8652A320AA000D15901 /* DWCaptureSessionManager.m in Sources */,
 				C9D2C8662A320AA000D15901 /* DWDataMigrationManager.m in Sources */,
+				7502A4872AE401EF00ACDDD3 /* UsernameVotingViewController.swift in Sources */,
 				C9D2C86A2A320AA000D15901 /* (null) in Sources */,
 				C943B51F2A40A54600AF23C5 /* DWSuccessInvitationView.m in Sources */,
 				C9D2C86B2A320AA000D15901 /* AmountPreviewView.swift in Sources */,
@@ -10257,7 +10273,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 148;
+				CURRENT_PROJECT_VERSION = 150;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -10288,6 +10304,87 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 6.1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-l\"Alamofire\"",
+					"-l\"BlueCryptor\"",
+					"-l\"BlueECC\"",
+					"-l\"BlueRSA\"",
+					"-l\"BoringSSL-GRPC\"",
+					"-l\"CloudInAppMessaging\"",
+					"-l\"CocoaImageHashing\"",
+					"-l\"CocoaLumberjack\"",
+					"-l\"DAPI-GRPC\"",
+					"-l\"DSDynamicOptions-iOS14.0\"",
+					"-l\"DWAlertController\"",
+					"-l\"DashSync\"",
+					"-l\"FirebaseCore\"",
+					"-l\"FirebaseCoreDiagnostics\"",
+					"-l\"FirebaseDynamicLinks\"",
+					"-l\"FirebaseStorage\"",
+					"-l\"GTMSessionFetcher\"",
+					"-l\"GoogleDataTransport\"",
+					"-l\"GoogleUtilities\"",
+					"-l\"KVO-MVVM\"",
+					"-l\"KituraContracts\"",
+					"-l\"LoggerAPI\"",
+					"-l\"Logging\"",
+					"-l\"MBProgressHUD\"",
+					"-l\"MMSegmentSlider\"",
+					"-l\"Moya\"",
+					"-l\"PromisesObjC\"",
+					"-l\"Protobuf\"",
+					"-l\"SDWebImage\"",
+					"-l\"SQLite.swift\"",
+					"-l\"SQLiteMigrationManager.swift\"",
+					"-l\"SSZipArchive\"",
+					"-l\"SwiftJWT\"",
+					"-l\"TOCropViewController\"",
+					"-l\"TinyCborObjc\"",
+					"-l\"UIViewController-KeyboardAdditions\"",
+					"-l\"abseil\"",
+					"-l\"bz2\"",
+					"-l\"c++\"",
+					"-l\"dash_shared_core_ios\"",
+					"-l\"gRPC\"",
+					"-l\"gRPC-Core\"",
+					"-l\"gRPC-ProtoRPC\"",
+					"-l\"gRPC-RxLibrary\"",
+					"-l\"iconv\"",
+					"-l\"nanopb\"",
+					"-l\"resolv\"",
+					"-l\"sqlite3\"",
+					"-l\"tinycbor\"",
+					"-l\"z\"",
+					"-framework",
+					"\"BackgroundTasks\"",
+					"-framework",
+					"\"CFNetwork\"",
+					"-framework",
+					"\"CloudKit\"",
+					"-framework",
+					"\"CoreData\"",
+					"-framework",
+					"\"CoreGraphics\"",
+					"-framework",
+					"\"CoreTelephony\"",
+					"-framework",
+					"\"Foundation\"",
+					"-framework",
+					"\"ImageIO\"",
+					"-framework",
+					"\"QuartzCore\"",
+					"-framework",
+					"\"Security\"",
+					"-framework",
+					"\"SystemConfiguration\"",
+					"-framework",
+					"\"UIKit\"",
+					"-weak_framework",
+					"\"WebKit\"",
+					"-ld64",
+				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Moya/Moya.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLiteMigrationManager.swift/SQLiteMigrationManager.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/FBLPromises/PromisesObjC.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/SSZipArchive/SSZipArchive.modulemap\" -DDASHPAY";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashpaytnt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -10312,7 +10409,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 148;
+				CURRENT_PROJECT_VERSION = 150;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -10342,6 +10439,87 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 6.1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-l\"Alamofire\"",
+					"-l\"BlueCryptor\"",
+					"-l\"BlueECC\"",
+					"-l\"BlueRSA\"",
+					"-l\"BoringSSL-GRPC\"",
+					"-l\"CloudInAppMessaging\"",
+					"-l\"CocoaImageHashing\"",
+					"-l\"CocoaLumberjack\"",
+					"-l\"DAPI-GRPC\"",
+					"-l\"DSDynamicOptions-iOS14.0\"",
+					"-l\"DWAlertController\"",
+					"-l\"DashSync\"",
+					"-l\"FirebaseCore\"",
+					"-l\"FirebaseCoreDiagnostics\"",
+					"-l\"FirebaseDynamicLinks\"",
+					"-l\"FirebaseStorage\"",
+					"-l\"GTMSessionFetcher\"",
+					"-l\"GoogleDataTransport\"",
+					"-l\"GoogleUtilities\"",
+					"-l\"KVO-MVVM\"",
+					"-l\"KituraContracts\"",
+					"-l\"LoggerAPI\"",
+					"-l\"Logging\"",
+					"-l\"MBProgressHUD\"",
+					"-l\"MMSegmentSlider\"",
+					"-l\"Moya\"",
+					"-l\"PromisesObjC\"",
+					"-l\"Protobuf\"",
+					"-l\"SDWebImage\"",
+					"-l\"SQLite.swift\"",
+					"-l\"SQLiteMigrationManager.swift\"",
+					"-l\"SSZipArchive\"",
+					"-l\"SwiftJWT\"",
+					"-l\"TOCropViewController\"",
+					"-l\"TinyCborObjc\"",
+					"-l\"UIViewController-KeyboardAdditions\"",
+					"-l\"abseil\"",
+					"-l\"bz2\"",
+					"-l\"c++\"",
+					"-l\"dash_shared_core_ios\"",
+					"-l\"gRPC\"",
+					"-l\"gRPC-Core\"",
+					"-l\"gRPC-ProtoRPC\"",
+					"-l\"gRPC-RxLibrary\"",
+					"-l\"iconv\"",
+					"-l\"nanopb\"",
+					"-l\"resolv\"",
+					"-l\"sqlite3\"",
+					"-l\"tinycbor\"",
+					"-l\"z\"",
+					"-framework",
+					"\"BackgroundTasks\"",
+					"-framework",
+					"\"CFNetwork\"",
+					"-framework",
+					"\"CloudKit\"",
+					"-framework",
+					"\"CoreData\"",
+					"-framework",
+					"\"CoreGraphics\"",
+					"-framework",
+					"\"CoreTelephony\"",
+					"-framework",
+					"\"Foundation\"",
+					"-framework",
+					"\"ImageIO\"",
+					"-framework",
+					"\"QuartzCore\"",
+					"-framework",
+					"\"Security\"",
+					"-framework",
+					"\"SystemConfiguration\"",
+					"-framework",
+					"\"UIKit\"",
+					"-weak_framework",
+					"\"WebKit\"",
+					"-ld64",
+				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Moya/Moya.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLiteMigrationManager.swift/SQLiteMigrationManager.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/FBLPromises/PromisesObjC.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/SSZipArchive/SSZipArchive.modulemap\"";
 				"OTHER_SWIFT_FLAGS[arch=*]" = "-DDebug -DDASH_TESTNET -DDASHPAY";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashpaytnt;
@@ -10366,7 +10544,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 148;
+				CURRENT_PROJECT_VERSION = 150;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -10407,6 +10585,87 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 6.1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-l\"Alamofire\"",
+					"-l\"BlueCryptor\"",
+					"-l\"BlueECC\"",
+					"-l\"BlueRSA\"",
+					"-l\"BoringSSL-GRPC\"",
+					"-l\"CloudInAppMessaging\"",
+					"-l\"CocoaImageHashing\"",
+					"-l\"CocoaLumberjack\"",
+					"-l\"DAPI-GRPC\"",
+					"-l\"DSDynamicOptions-iOS14.0\"",
+					"-l\"DWAlertController\"",
+					"-l\"DashSync\"",
+					"-l\"FirebaseCore\"",
+					"-l\"FirebaseCoreDiagnostics\"",
+					"-l\"FirebaseDynamicLinks\"",
+					"-l\"FirebaseStorage\"",
+					"-l\"GTMSessionFetcher\"",
+					"-l\"GoogleDataTransport\"",
+					"-l\"GoogleUtilities\"",
+					"-l\"KVO-MVVM\"",
+					"-l\"KituraContracts\"",
+					"-l\"LoggerAPI\"",
+					"-l\"Logging\"",
+					"-l\"MBProgressHUD\"",
+					"-l\"MMSegmentSlider\"",
+					"-l\"Moya\"",
+					"-l\"PromisesObjC\"",
+					"-l\"Protobuf\"",
+					"-l\"SDWebImage\"",
+					"-l\"SQLite.swift\"",
+					"-l\"SQLiteMigrationManager.swift\"",
+					"-l\"SSZipArchive\"",
+					"-l\"SwiftJWT\"",
+					"-l\"TOCropViewController\"",
+					"-l\"TinyCborObjc\"",
+					"-l\"UIViewController-KeyboardAdditions\"",
+					"-l\"abseil\"",
+					"-l\"bz2\"",
+					"-l\"c++\"",
+					"-l\"dash_shared_core_ios\"",
+					"-l\"gRPC\"",
+					"-l\"gRPC-Core\"",
+					"-l\"gRPC-ProtoRPC\"",
+					"-l\"gRPC-RxLibrary\"",
+					"-l\"iconv\"",
+					"-l\"nanopb\"",
+					"-l\"resolv\"",
+					"-l\"sqlite3\"",
+					"-l\"tinycbor\"",
+					"-l\"z\"",
+					"-framework",
+					"\"BackgroundTasks\"",
+					"-framework",
+					"\"CFNetwork\"",
+					"-framework",
+					"\"CloudKit\"",
+					"-framework",
+					"\"CoreData\"",
+					"-framework",
+					"\"CoreGraphics\"",
+					"-framework",
+					"\"CoreTelephony\"",
+					"-framework",
+					"\"Foundation\"",
+					"-framework",
+					"\"ImageIO\"",
+					"-framework",
+					"\"QuartzCore\"",
+					"-framework",
+					"\"Security\"",
+					"-framework",
+					"\"SystemConfiguration\"",
+					"-framework",
+					"\"UIKit\"",
+					"-weak_framework",
+					"\"WebKit\"",
+					"-ld64",
+				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Moya/Moya.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLiteMigrationManager.swift/SQLiteMigrationManager.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/FBLPromises/PromisesObjC.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/SSZipArchive/SSZipArchive.modulemap\" -DDASHPAY";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashpaytnt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -10430,7 +10689,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 148;
+				CURRENT_PROJECT_VERSION = 150;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -10470,6 +10729,87 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 6.1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-l\"Alamofire\"",
+					"-l\"BlueCryptor\"",
+					"-l\"BlueECC\"",
+					"-l\"BlueRSA\"",
+					"-l\"BoringSSL-GRPC\"",
+					"-l\"CloudInAppMessaging\"",
+					"-l\"CocoaImageHashing\"",
+					"-l\"CocoaLumberjack\"",
+					"-l\"DAPI-GRPC\"",
+					"-l\"DSDynamicOptions-iOS14.0\"",
+					"-l\"DWAlertController\"",
+					"-l\"DashSync\"",
+					"-l\"FirebaseCore\"",
+					"-l\"FirebaseCoreDiagnostics\"",
+					"-l\"FirebaseDynamicLinks\"",
+					"-l\"FirebaseStorage\"",
+					"-l\"GTMSessionFetcher\"",
+					"-l\"GoogleDataTransport\"",
+					"-l\"GoogleUtilities\"",
+					"-l\"KVO-MVVM\"",
+					"-l\"KituraContracts\"",
+					"-l\"LoggerAPI\"",
+					"-l\"Logging\"",
+					"-l\"MBProgressHUD\"",
+					"-l\"MMSegmentSlider\"",
+					"-l\"Moya\"",
+					"-l\"PromisesObjC\"",
+					"-l\"Protobuf\"",
+					"-l\"SDWebImage\"",
+					"-l\"SQLite.swift\"",
+					"-l\"SQLiteMigrationManager.swift\"",
+					"-l\"SSZipArchive\"",
+					"-l\"SwiftJWT\"",
+					"-l\"TOCropViewController\"",
+					"-l\"TinyCborObjc\"",
+					"-l\"UIViewController-KeyboardAdditions\"",
+					"-l\"abseil\"",
+					"-l\"bz2\"",
+					"-l\"c++\"",
+					"-l\"dash_shared_core_ios\"",
+					"-l\"gRPC\"",
+					"-l\"gRPC-Core\"",
+					"-l\"gRPC-ProtoRPC\"",
+					"-l\"gRPC-RxLibrary\"",
+					"-l\"iconv\"",
+					"-l\"nanopb\"",
+					"-l\"resolv\"",
+					"-l\"sqlite3\"",
+					"-l\"tinycbor\"",
+					"-l\"z\"",
+					"-framework",
+					"\"BackgroundTasks\"",
+					"-framework",
+					"\"CFNetwork\"",
+					"-framework",
+					"\"CloudKit\"",
+					"-framework",
+					"\"CoreData\"",
+					"-framework",
+					"\"CoreGraphics\"",
+					"-framework",
+					"\"CoreTelephony\"",
+					"-framework",
+					"\"Foundation\"",
+					"-framework",
+					"\"ImageIO\"",
+					"-framework",
+					"\"QuartzCore\"",
+					"-framework",
+					"\"Security\"",
+					"-framework",
+					"\"SystemConfiguration\"",
+					"-framework",
+					"\"UIKit\"",
+					"-weak_framework",
+					"\"WebKit\"",
+					"-ld64",
+				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Moya/Moya.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLiteMigrationManager.swift/SQLiteMigrationManager.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/FBLPromises/PromisesObjC.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/SSZipArchive/SSZipArchive.modulemap\"";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashpaytnt;
 				PRODUCT_NAME = "$(TARGET_NAME)";

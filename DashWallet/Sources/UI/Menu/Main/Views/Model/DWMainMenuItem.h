@@ -27,6 +27,7 @@ typedef NS_ENUM(NSUInteger, DWMainMenuItemType) {
     DWMainMenuItemType_Tools,
     DWMainMenuItemType_Support,
     DWMainMenuItemType_Invite,
+    DWMainMenuItemType_Voting
 };
 
 @protocol DWMainMenuItem <NSObject>

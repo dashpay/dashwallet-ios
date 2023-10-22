@@ -73,6 +73,9 @@ NS_ASSUME_NONNULL_BEGIN
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Security],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Settings],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Tools],
+#if DASHPAY
+            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Voting],
+#endif
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Support],
         ];
     });
@@ -88,6 +91,9 @@ NS_ASSUME_NONNULL_BEGIN
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Security],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Settings],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Tools],
+#if DASHPAY
+            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Voting],
+#endif
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Support],
         ];
     });
