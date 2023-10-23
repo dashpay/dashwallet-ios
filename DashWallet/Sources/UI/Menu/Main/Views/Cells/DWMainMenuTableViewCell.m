@@ -80,7 +80,7 @@ static NSString *DescriptionByType(DWMainMenuItemType type) {
         case DWMainMenuItemType_Invite:
             return NSLocalizedString(@"Let your friends and family to join Dash", nil);
         case DWMainMenuItemType_Voting:
-            return NSLocalizedString(@"", nil); // TODO: nil?
+            return NSLocalizedString(@"", nil);
     }
 }
 
