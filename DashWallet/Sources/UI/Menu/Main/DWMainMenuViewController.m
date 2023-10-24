@@ -189,6 +189,12 @@ NS_ASSUME_NONNULL_BEGIN
             [self.navigationController pushViewController:controller animated:YES];
             break;
         }
+        case DWMainMenuItemType_Voting: {
+            UsernameVotingViewController *controller = [UsernameVotingViewController controller];
+            controller.hidesBottomBarWhenPushed = YES;
+            [self.navigationController pushViewController:controller animated:YES];
+            break;
+        }
 #endif
     }
 }
