@@ -52,20 +52,19 @@ class UpholdDataSource: ServiceDataSource {
         if DWUpholdClient.sharedInstance().isAuthorized {
             item = ServiceItem(status: .syncing, service: .uphold)
 
-            if let balance: NSDecimalNumber = DWUpholdClient.sharedInstance().lastKnownBalance {
-                item = .init(status: .authorized, service: .uphold, dashBalance: balance.uint64Value)
+            if let balance = DWUpholdClient.sharedInstance().lastKnownBalance as? Decimal {
+                item = .init(status: .authorized, service: .uphold, dashBalance: balance.plainDashAmount)
             } else {
                 DWUpholdClient.sharedInstance().getCards { [weak self] dashCard, _ in
                     self?.dashCard = dashCard
 
-                    if let available: NSDecimalNumber = dashCard?.available {
-                        self?.item = .init(status: .authorized, service: .uphold, dashBalance: available.uint64Value)
+                    if let available = dashCard?.available as? Decimal {
+                        self?.item = .init(status: .authorized, service: .uphold, dashBalance: available.plainDashAmount)
                     } else {
                         self?.item = .init(status: .failed, service: .uphold)
                     }
                 }
             }
-
         } else {
             item = ServiceItem(status: .idle, service: .uphold)
         }

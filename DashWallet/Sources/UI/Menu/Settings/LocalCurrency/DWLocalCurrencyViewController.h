@@ -21,6 +21,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DWCurrencyPickerPresentationMode) {
+    DWCurrencyPickerPresentationMode_Dialog,
+    DWCurrencyPickerPresentationMode_Screen,
+};
+
 @class DWLocalCurrencyViewController;
 
 @protocol DWLocalCurrencyViewControllerDelegate <NSObject>
@@ -37,6 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL isGlobal;
 
 - (instancetype)initWithNavigationAppearance:(DWNavigationAppearance)navigationAppearance
+                                presentationMode:(DWCurrencyPickerPresentationMode)mode
                                 currencyCode:(nullable NSString *)currencyCode;
 
 @end

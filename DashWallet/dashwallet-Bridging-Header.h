@@ -80,12 +80,12 @@ static const bool _SNAPSHOT = 0;
 //MARK: Uphold
 #import "DWUpholdTransactionObject.h"
 #import "DWUpholdTransactionObject+DWView.h"
-#import "DWUpholdViewController.h"
 #import "DWUpholdClient.h"
 #import "DWUpholdCardObject.h"
 #import "DWUpholdOTPViewController.h"
 #import "DWUpholdOTPProvider.h"
 #import "DWUpholdClientCancellationToken.h"
+#import "DWUpholdLogoutTutorialViewController.h"
 
 //MARK: 3rd Party
 #import <SDWebImage/SDWebImage.h>

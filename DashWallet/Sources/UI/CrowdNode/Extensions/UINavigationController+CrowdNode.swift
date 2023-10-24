@@ -16,13 +16,6 @@
 //
 
 extension UINavigationController {
-    func replaceLast(_ n: Int = 1, with controller: UIViewController, animated: Bool = true) {
-        var viewControllers = viewControllers
-        viewControllers.removeLast(n)
-        viewControllers.append(controller)
-        setViewControllers(viewControllers, animated: animated)
-    }
-
     func toErrorScreen(error: CrowdNode.Error) {
         var headerText = ""
 

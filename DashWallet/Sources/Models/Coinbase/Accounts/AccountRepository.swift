@@ -26,6 +26,10 @@ class AccountRepository {
     var dashAccount: CBAccount? {
         cachedAccounts[kDashAccount]
     }
+    
+    var usdAccount: CBAccount? {
+        cachedAccounts[Coinbase.dashUSDPair]
+    }
 
     init(authInterop: CBAuthInterop) {
         self.authInterop = authInterop

@@ -221,6 +221,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)showCurrencySelector {
     DWLocalCurrencyViewController *controller =
         [[DWLocalCurrencyViewController alloc] initWithNavigationAppearance:DWNavigationAppearance_Default
+                                                           presentationMode:DWCurrencyPickerPresentationMode_Screen
                                                                currencyCode:nil];
     controller.delegate = self;
     [self.navigationController pushViewController:controller animated:YES];
@@ -232,8 +233,15 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showCoinJoinController {
-    CoinJoinInfoViewController *coinJoinViewController = [CoinJoinInfoViewController controller];
-    [self.navigationController pushViewController:coinJoinViewController animated:YES];
+    UIViewController *vc;
+    
+    if (CoinJoinObjcWrapper.infoShown) {
+        vc = [CoinJoinLevelsViewController controller];
+    } else {
+        vc = [CoinJoinInfoViewController controller];
+    }
+    
+    [self.navigationController pushViewController:vc animated:YES];
 }
 
 - (void)showChangeNetworkFromSourceView:(UIView *)sourceView sourceRect:(CGRect)sourceRect {

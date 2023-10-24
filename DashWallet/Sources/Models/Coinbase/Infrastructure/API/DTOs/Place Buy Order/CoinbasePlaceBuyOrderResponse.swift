@@ -10,59 +10,47 @@ import Foundation
 // MARK: - CoinbasePlaceBuyOrder
 
 struct CoinbasePlaceBuyOrder: Codable {
-    let id: String? // TODO: Use just String and handle error
-    let status: String?
-    let userReference, transaction, createdAt, updatedAt: String?
-    let resource: String?
-    let resourcePath: String?
-    let paymentMethod: PaymentMethod?
-    let holdUntil: String?
-    let holdDays: Int?
-    let isFirstBuy: Bool?
-    let fee: Amount
-    let amount: Amount
-    let total: Amount
-    let subtotal: Amount
-    let unitPrice: UnitPrice?
-    let requiresCompletionStep: Bool?
-    let committed: Bool?
-
+    let success: Bool
+    let failureReason: String
+    let orderId: String
+    let errorResponse: ErrorResponse?
+    let successResponse: SuccessResponse?
+    let orderConfiguration: OrderConfiguration?
+    
     enum CodingKeys: String, CodingKey {
-        case id
-        case fee
-        case status
-        case userReference = "user_reference"
-        case transaction
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
-        case resource
-        case resourcePath = "resource_path"
-        case paymentMethod = "payment_method"
-        case holdUntil = "hold_until"
-        case holdDays = "hold_days"
-        case isFirstBuy = "is_first_buy"
-        case amount, total, subtotal
-        case unitPrice = "unit_price"
-        case requiresCompletionStep = "requires_completion_step"
-        case committed
+        case success
+        case failureReason = "failure_reason"
+        case orderId = "order_id"
+        case errorResponse = "error_response"
+        case successResponse = "success_response"
+        case orderConfiguration = "order_configuration"
     }
 }
 
-// MARK: - PaymentMethod
-
-struct PaymentMethod: Codable {
-    let id, resource, resourcePath: String?
-
+struct SuccessResponse: Codable {
+    let orderId: String
+    let productId: String
+    let side: String
+    let clientOrderId: String
+    
     enum CodingKeys: String, CodingKey {
-        case id
-        case resource
-        case resourcePath = "resource_path"
+        case orderId = "order_id"
+        case productId = "product_id"
+        case side
+        case clientOrderId = "client_order_id"
     }
 }
 
-// MARK: - UnitPrice
-
-struct UnitPrice: Codable {
-    let amount, currency: String?
-    let scale: Int?
+struct ErrorResponse: Codable {
+    let error: String
+    let message: String
+    let errorDetails: String
+    let previewFailureReason: String
+    
+    enum CodingKeys: String, CodingKey {
+        case error
+        case message
+        case errorDetails = "error_details"
+        case previewFailureReason = "preview_failure_reason"
+    }
 }
