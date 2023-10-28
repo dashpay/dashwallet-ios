@@ -22,6 +22,9 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ не е разрешен достъпа до Touch ID";
 
+/* Voting */
+"%ld requests" = "%ld requests";
+
 /* 10/20 Characters */
 "%ld/%ld Characters" = "%1$ld/%2$ld Characters";
 
@@ -1562,6 +1565,9 @@
 /* Coinbase */
 "Select the coin" = "Select the coin";
 
+/* No comment provided by engineer. */
+"Selected row with \(request.votes) votes" = "Selected row with \(request.votes) votes";
+
 /* Sell */
 "Sell" = "Sell";
 
@@ -1985,6 +1991,9 @@
 /* No comment provided by engineer. */
 "Username taken" = "Username taken";
 
+/* Voting */
+"Username voting" = "Username voting";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
 
@@ -2023,6 +2032,9 @@
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "Виж фразата за възстановяване";
+
+/* Voting */
+"Vote only on duplicates" = "Vote only on duplicates";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Адрес за гласуване";
@@ -2138,6 +2150,9 @@
 
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "Можете да се удостоверите с Touch ID за плащания по-долу";
+
+/* Voting */
+"You can review all requests but you only need to vote on duplicates" = "You can review all requests but you only need to vote on duplicates";
 
 /* No comment provided by engineer. */
 "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";

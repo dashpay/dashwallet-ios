@@ -91,6 +91,9 @@ final class App {
     func cleanUp() {
         TxUserInfoDAOImpl.shared.deleteAll()
         AddressUserInfoDAOImpl.shared.deleteAll()
+    #if DASHPAY
+        UsernameRequestsDAOImpl.shared.deleteAll()
+    #endif
         Coinbase.shared.reset()
     }
 }
