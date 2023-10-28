@@ -106,6 +106,9 @@
 /* No comment provided by engineer. */
 "Accepts DASH directly" = "Direktang tumatanggap ng DASH";
 
+/* CrowdNode */
+"Account Recovery" = "Pagbawi ng Account";
+
 /* No comment provided by engineer. */
 "Activity" = "Aktibidad";
 
@@ -178,6 +181,9 @@
 /* No comment provided by engineer. */
 "Are you sure?" = "Sigurado ka ba?";
 
+/* CrowdNode */
+"As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode." = "Dahil karamihan sa mga tao ay walang eksaktong 1000 Dash sa kamay, ang CrowdNode ay gumawa ng isang serbisyo kung saan sa pamamagitan ng pagsasama-sama ng mga deposito mula sa mga miyembro ay makakamit ang mga benepisyo ng pagmamay-ari ng Masternode.";
+
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "Mas gumagana ang paghahanap sa ATM kapag naka-on ang Mga Serbisyo sa Lokasyon.";
 
@@ -218,6 +224,9 @@
 "Balance" = "Balanse";
 
 /* CrowdNode */
+"Balance On CrowdNode" = "Balance On CrowdNode";
+
+/* CrowdNode */
 "Balance: " = "Balanse:";
 
 /* Coinbase/Payment Methods */
@@ -225,6 +234,9 @@
 
 /* Coinbase/Payment Methods */
 "Bank Wire" = "Bank Wire";
+
+/* CrowdNode */
+"Become part of a Dash Masternode with CrowdNode" = "Maging bahagi ng isang Dash Masternode na may CrowdNode";
 
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase" = "Sa pagitan ng Dash Wallet at Coinbase";
@@ -311,6 +323,9 @@
 /* No comment provided by engineer. */
 "Close" = "Sarado";
 
+/* CrowdNode */
+"Close and notify when it’s done" = "Isara at ipaalam kapag tapos na ito";
+
 /* No comment provided by engineer. */
 "Close App" = "Isara ang app";
 
@@ -335,6 +350,9 @@
 /* No comment provided by engineer. */
 "Confirm PIN" = "Kumpirmahin ang PIN";
 
+/* CrowdNode */
+"Confirm Withdrawal" = "Confirm Withdrawal";
+
 /* No comment provided by engineer. */
 "Confirming" = "Kinukumpirma";
 
@@ -344,6 +362,9 @@
 /* Buy Sell Portal
    Coinbase Entry Point */
 "Connected" = "Konektado";
+
+/* CrowdNode */
+"Connected Dash address" = "Nakakonektang Dash address";
 
 /* No comment provided by engineer. */
 "Connected peers: %d" = "Nakakonektang kaibigan: %d";
@@ -392,7 +413,7 @@
 "Could not connect to the Dash network, please check that you are connected to the internet." = "Hindi makakonekta sa network ng Dash, mangyaring suriin kung nakakonekta ka sa internet.";
 
 /* No comment provided by engineer. */
-"Could not find exchange rate." = "Could not find exchange rate.";
+"Could not find exchange rate." = "Hindi makita ang halaga ng palitan";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Hindi makagawa ng ipambabayad";
@@ -409,6 +430,9 @@
 /* CrowdNode */
 "Create Account" = "Lumikha ng Account";
 
+/* CrowdNode */
+"Create an online CrowdNode account" = "Lumikha ng online na CrowdNode account";
+
 /* CrowdNode
    CrowdNode Portal */
 "Create Online Account" = "Lumikha ng Online na Account";
@@ -419,8 +443,14 @@
 /* Crowdnode */
 "CrowdNode Account" = "CrowdNode Account";
 
+/* CrowdNode */
+"CrowdNode benefits" = "Mga benepisyo ng CrowdNode";
+
 /* CrowdNode Portal */
 "CrowdNode Support" = "Suporta sa CrowdNode";
+
+/* CrowdNode */
+"CrowdNode uses this address as your account ID. You will lose access to your funds within this wallet and your CrowdNode account if you lose the passphrase associated to this address." = "Ginagamit ng CrowdNode ang address na ito bilang iyong account ID. Mawawalan ka ng access sa iyong mga pondo sa loob ng wallet na ito at sa iyong CrowdNode account kung mawala mo ang passphrase na nauugnay sa address na ito.";
 
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "Mga limitasyon sa pag-withdraw sa CrowdNode";
@@ -448,6 +478,12 @@
 
 /* Explore Dash: Filters */
 "Dash" = "Dash";
+
+/* No comment provided by engineer. */
+"Dash address" = "Address ng Dash";
+
+/* CrowdNode */
+"Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Dash address designated for your CrowdNode account in the Dash Wallet on this device ";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "Dash balanse sa Coinbase";
@@ -593,9 +629,6 @@
 "Face ID limit" = "Face ID limit";
 
 /* Coinbase */
-"Failed to make a deposit." = "Failed to make a deposit.";
-
-/* Coinbase */
 "Failed to start auth session" = "Nabigong simulan ang auth session";
 
 /* Buy Sell Portal */
@@ -641,7 +674,7 @@
 "Find a user on the Dash Network" = "Maghanap ng gumagamit sa Network ng Dash";
 
 /* No comment provided by engineer. */
-"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Find merchants that accept Dash, where to buy it and how to earn income with it.";
+"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Maghanap ng mga merchant na tumatanggap ng Dash, kung saan ito bibilhin at kung paano kumita gamit ito.";
 
 /* No comment provided by engineer. */
 "Find merchants who accept Dash as payment." = "Maghanap ng mga merchant na tumatanggap ng Dash bilang bayad.";
@@ -651,6 +684,9 @@
 
 /* CrowdNode */
 "First deposit should be more than %@" = "Ang unang deposito ay dapat na higit sa %@";
+
+/* CrowdNode */
+"First minimum deposit" = "First minimum deposit";
 
 /* Coinbase */
 "For your security, you have been signed out." = "Para sa iyong seguridad, na-sign out ka.";
@@ -682,6 +718,9 @@
 /* Coinbase */
 "from your Coinbase account" = "mula sa iyong Coinbase account";
 
+/* CrowdNode */
+"Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "Makakuha ng mga reward mula sa mga deposito sa Dash Masternodes na may kasing liit na 0.5 Dash.";
+
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Bumuo ng pinalawig na mga public keys?";
 
@@ -691,8 +730,14 @@
 /* Coinbase/Convert Crypto */
 "Get Quote" = "Kumuha ng Quote";
 
+/* CrowdNode */
+"Get Rewards Instantly" = "Makakuha kaagad ng Mga Gantimpala";
+
 /* No comment provided by engineer. */
 "Get Started" = "Magsimula";
+
+/* CrowdNode */
+"Getting started with CrowdNode" = "Pagsisimula sa CrowdNode";
 
 /* Explore Dash: Filters */
 "Gift Card" = "Gift card";
@@ -724,17 +769,26 @@
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Tulungan kaming mapabuti ang iyong karanasan";
 
+/* CrowdNode */
+"Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device";
+
 /* adjective, security level */
 "High" = "Mataas";
 
 /* No comment provided by engineer. */
 "History" = "Kasaysayan";
 
+/* CrowdNode */
+"How CrowdNode staking works" = "Paano gumagana ang CrowdNode staking";
+
+/* CrowdNode */
+"How to confirm your API Dash address" = "Paano kumpirmahin ang iyong API Dash address";
+
 /* No comment provided by engineer. */
 "How to Use a Gift Card" = "Paano Gumamit ng Gift Card";
 
 /* No comment provided by engineer. */
-"HPMN Operator Keys" = "Evolution Node ID Keys";
+"HPMN Operator Keys" = "Mga key ng Evolution Node ID";
 
 /* No comment provided by engineer. */
 "I Accept" = "Tinatanggap Ko";
@@ -747,6 +801,9 @@
 
 /* No comment provided by engineer. */
 "I wrote it down" = "Naisulat ko na ito";
+
+/* CrowdNode */
+"If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "Kung sakaling mawala mo ang iyong passphrase, maaari mong i-verify ang iyong sarili sa ibang paraan upang mabawi ang access sa iyong mga pondo ng CrowdNode.";
 
 /* No comment provided by engineer. */
 "If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "Kung mawala mo ang iyong passphrase para sa wallet na ito at mawala ang device na ito o i-uninstall ang Dash Wallet, mawawalan ka ng access sa iyong mga pondo sa CrowdNode at ang mga pondo sa loob ng wallet na ito.";
@@ -772,11 +829,17 @@
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Bilang karagdagan sa ipinapakitang bayad sa Coinbase, nagsasama kami ng spread sa presyo. Kapag gumagamit ng Advanced Trade, walang spread na kasama dahil direktang nakikipag-ugnayan ka sa order book.\n\nAng mga merkado ng Cryptocurrency ay pabagu-bago, at nagbibigay-daan ito sa amin na pansamantalang i-lock ang isang presyo para sa pagpapatupad ng kalakalan.";
 
+/* CrowdNode */
+"In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster.";
+
 /* CrowdNode Portal */
 "In process…" = "Pinoproseso…";
 
 /* No comment provided by engineer. */
 "Income" = "Kita";
+
+/* CrowdNode */
+"Information about your online account" = "Impormasyon tungkol sa iyong online na account";
 
 /* Buy Sell Portal */
 "Initializing" = "Nagsisimula";
@@ -792,6 +855,9 @@
 
 /* No comment provided by engineer. */
 "Internally moved to" = "Internally ilipat sa";
+
+/* CrowdNode */
+"Introducing Staking" = "Ipinapakilala ang Staking";
 
 /* Invalid transaction */
 "Invalid" = "Hindi wasto";
@@ -835,6 +901,9 @@
 /* No comment provided by engineer. */
 "Join Evolution" = "Sumali sa Ebolusyon";
 
+/* CrowdNode */
+"Joining the pool" = "Sumasali sa pool";
+
 /* No comment provided by engineer. */
 "Key Id" = "Key Id";
 
@@ -857,6 +926,9 @@
 /* Info Screen */
 "Learn More..." = "Matuto pa...";
 
+/* CrowdNode */
+"Leaving the pool" = "Leaving the pool";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Ipaalam sa akin kung kailan ito tapos";
 
@@ -865,6 +937,9 @@
 
 /* Dash Service Overview */
 "Link Coinbase Account" = "I-link ang Coinbase account";
+
+/* CrowdNode */
+"Link Existing Account" = "I-link ang Umiiral na Account";
 
 /* CrowdNode */
 "Link Existing CrowdNode Account" = "I-link ang Umiiral na CrowdNode Account";
@@ -953,6 +1028,9 @@
 /* adjective, security level */
 "Medium" = "Katamtaman";
 
+/* CrowdNode */
+"Members are free to leave the pool and can most often leave immediately." = "Ang mga miyembro ay malayang umalis sa pool at kadalasan ay maaaring umalis kaagad.";
+
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "Mas mahusay na gumagana ang paghahanap ng merchant kapag naka-on ang Mga Serbisyo sa Lokasyon.";
 
@@ -1000,6 +1078,9 @@
 
 /* (List of) New (notifications) */
 "New" = "Bago";
+
+/* CrowdNode */
+"New CrowdNode Account" = "Bagong CrowdNode Account";
 
 /* No comment provided by engineer. */
 "NFC device" = "NFC device";
@@ -1124,6 +1205,9 @@
 /* Explore Dash/Merchants/Filters */
 "Payment Type" = "Uri ng Pagbabayad";
 
+/* CrowdNode */
+"Payout Options" = "Mga Pagpipilian sa Pagbabayad";
+
 /* Coinbase/Payment Methods */
 "PayPal" = "PayPal";
 
@@ -1150,6 +1234,9 @@
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Paki-enter ang PIN para ma-upgrade ang pitaka";
+
+/* CrowdNode */
+"Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Pakitandaan na ang email ay hindi nai-save ng Dash Wallet at ipinapadala lamang sa Crowdnode";
 
 /* Leftover balance warning */
 "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "Pakitandaan, hindi mo mai-withdraw ang iyong mga pondo mula sa CrowdNode patungo sa wallet na ito hanggang sa mapataas mo ang iyong balanse sa %@ Dash.";
@@ -1180,6 +1267,9 @@
 
 /* No comment provided by engineer. */
 "Previously used at: " = "Ginamit dati sa:";
+
+/* CrowdNode */
+"Primary Dash address" = "Primary Dash address";
 
 /* No comment provided by engineer. */
 "Private / Public Keys (base64)" = "Pribado / Pampublikong Susi (base64)";
@@ -1229,6 +1319,9 @@
 /* Coinbase Entry Point */
 "Receive directly into Dash Wallet" = "Direktang tumanggap sa Dash Wallet.";
 
+/* CrowdNode */
+"Receive your share of rewards daily." = "Tanggapin ang iyong bahagi ng mga reward araw-araw.";
+
 /* Received transaction */
 "Received" = "Natanggap";
 
@@ -1240,6 +1333,9 @@
 
 /* No comment provided by engineer. */
 "Received from" = "Natanggap mula";
+
+/* CrowdNode */
+"Receiving rewards" = "Pagtanggap ng mga gantimpala";
 
 /* No comment provided by engineer. */
 "Recover" = "Bawiin";
@@ -1320,6 +1416,9 @@
 "Scan Private Key" = "I-scan ang Pribadong Susi";
 
 /* No comment provided by engineer. */
+"Scan QR" = "I-scan ang QR";
+
+/* No comment provided by engineer. */
 "Scan QR Code" = "I-scan ang QR Code";
 
 /* (Send by) Scanning QR code */
@@ -1363,6 +1462,9 @@
 
 /* No comment provided by engineer. */
 "See on Uphold" = "Tingnan sa Uphold";
+
+/* CrowdNode */
+"See why it happened" = "See why it happened";
 
 /* Coinbase */
 "Select a coin" = "Pumili ng barya";
@@ -1449,6 +1551,9 @@
 /* No comment provided by engineer. */
 "Setup Wallet" = "Magset up ng wallet";
 
+/* CrowdNode */
+"Share" = "Ipamahagi";
+
 /* Receive screen */
 "Share address" = "Ibahagi ang address";
 
@@ -1460,6 +1565,9 @@
 
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Ipakita ang susi ng masternode";
+
+/* CrowdNode */
+"Show QR" = "Ipakita ang QR";
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Ipakita ang recovery phrase";
@@ -1551,17 +1659,29 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Kategorya ng Buwis";
 
+/* CrowdNode */
+"The amount that you entered will be adjusted to the closest level of precision that is possible." = "The amount that you entered will be adjusted to the closest level of precision that is possible.";
+
+/* CrowdNode */
+"The blockchain API for mobile processes withdrawals based on a % of your balance so that all transaction activity can be transparently recorded on the blockchain." = "The blockchain API for mobile processes withdrawals based on a % of your balance so that all transaction activity can be transparently recorded on the blockchain.";
+
 /* No comment provided by engineer. */
 "The chain is syncing…" = "Nagsi-sync ang chain…";
 
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "Mali ang code. Pakisuri at subukang muli!";
 
+/* CrowdNode */
+"The Dash Network is driven by a number of Masternodes which is an essential part of facilitating payments." = "Ang Dash Network ay hinihimok ng isang bilang ng mga Masternode na isang mahalagang bahagi ng pagpapadali sa mga pagbabayad.";
+
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Ang Dash ay matagumpay na nadeposito sa iyong Coinbase account. Ngunit nagkaroon ng problema sa paglilipat nito sa Dash Wallet sa device na ito.";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "Ang pinakamababang halaga na maaari mong ipadala ay %@";
+
+/* CrowdNode */
+"The withdrawal amount has been adjusted by" = "The withdrawal amount has been adjusted by";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "Walang mga bagong notipikasyon";
@@ -1596,6 +1716,9 @@
 /* CrowdNode Confirm */
 "This QR already contains the payment request for %@" = "Ang QR na ito ay naglalaman na ng kahilingan sa pagbabayad para sa %@";
 
+/* CrowdNode */
+"This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "Kinakatawan nito ang kasalukuyang Annual Percentage Yield ng isang buong Masternode na mas mababa sa 15% na bayad sa CrowdNode. Ito ay hindi isang garantisadong rate ng pagbabalik at maaaring tumaas o bumaba batay sa laki ng mga pool ng CrowdNode at ang presyo ng Dash.";
+
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Ang pitaka na ito ay may laman o ang pag-sync ay hindi pa tapos, maaari hindi mo ma-wipe ito ng walang recovery phrase";
 
@@ -1608,6 +1731,12 @@
 /* Coinbase */
 "to Dash Wallet on this device" = "Sa Dash wallet sa device na ito";
 
+/* CrowdNode */
+"To start staking, create an account on CrowdNode or connect to an existing one." = "Para simulan ang staking, gumawa ng account sa CrowdNode o kumonekta sa mayroon na.";
+
+/* CrowdNode */
+"to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "Para sa Dash address na itinalaga para sa iyong CrowdNode account sa Dash Wallet sa device na ito";
+
 /* No comment provided by engineer. */
 "Tools" = "Kagamitan";
 
@@ -1619,6 +1748,9 @@
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Touch ID limit";
+
+/* CrowdNode */
+"Transaction History" = "Kasaysayan ng Transaksyon";
 
 /* No comment provided by engineer. */
 "Transaction id" = "Transaction id";
@@ -1724,8 +1856,14 @@
 /* No comment provided by engineer. */
 "Verify" = "Kumpirmahin";
 
+/* CrowdNode */
+"Verify your API Dash address" = "I-verify ang iyong API Dash address";
+
 /* adjective, security level */
 "Very High" = "Napakataas";
+
+/* CrowdNode */
+"Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." = "Ang napakaliit na halaga ng Dash ay ipapadala sa at mula sa CrowdNode upang i-verify na ikaw ang may-ari ng address ng wallet na ito.";
 
 /* No comment provided by engineer. */
 "View All" = "Tingnan lahat";
@@ -1784,6 +1922,9 @@
 /* No comment provided by engineer. */
 "We Upgraded" = "Kami ay nag-upgrade";
 
+/* CrowdNode */
+"We will automatically detect this transaction and transfer the same amount to your CrowdNode account. After that you will be able to make deposits and withdrawals in Dash Wallet on this device." = "Awtomatiko naming matutukoy ang transaksyong ito at ilipat ang parehong halaga sa iyong CrowdNode account. Pagkatapos nito, makakagawa ka na ng mga deposito at pag-withdraw sa Dash Wallet sa device na ito.";
+
 /* Website */
 "Website" = "Website";
 
@@ -1801,6 +1942,12 @@
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "Bakit ko nakikita ang lahat ng mga transaksyong ito?";
+
+/* CrowdNode */
+"Why do you need an online account?" = "Bakit kailangan mo ng online na account?";
+
+/* CrowdNode */
+"Why does the entered amount differ from what I see on this screen?" = "Why does the entered amount differ from what I see on this screen?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Bakit hindi ako dapat kumuha ng screenshot?";
@@ -1848,8 +1995,14 @@
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "Maaari kang magkumpirma gamit ang iyong Touch ID sa mga bayarin sa ibaba";
 
+/* CrowdNode */
+"You can change how / when your reward earnings are paid to you." = "Maaari mong baguhin kung paano / kailan binabayaran sa iyo ang iyong mga kita sa reward.";
+
+/* CrowdNode */
+"You can see detailed information about your deposits, withdrawals and reward earnings." = "Maaari mong makita ang detalyadong impormasyon tungkol sa iyong mga deposito, pag-withdraw at mga kita ng reward.";
+
 /* Coinbase */
-"You don’t have enough balance" = "You don’t have enough balance";
+"You don’t have enough balance" = "Wala kang sapat na balanse";
 
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "Lumampas ka sa limitasyon ng awtorisasyon sa Coinbase.";
@@ -1859,6 +2012,9 @@
 
 /* No comment provided by engineer. */
 "You have insufficient funds to proceed" = "Wala kang sapat na pondo para magpatuloy.";
+
+/* CrowdNode */
+"You have to backup your passphrase in Dash Wallet" = "Kailangan mong i-backup ang iyong passphrase sa Dash Wallet";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Kailangan ilagay ang iyong PIN upang mabuksan ang Dash Wallet";
@@ -1897,6 +2053,9 @@
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "Makakatanggap ka ng %@ Dash sa iyong Dash Wallet sa device na ito. Pakitandaan na maaaring tumagal ng hanggang 2-3 minuto upang makumpleto ang isang paglipat.";
 
 /* CrowdNode */
+"You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "Awtomatiko kang makakatanggap ng mga fractional na pagbabayad at bilang default, ire-invest ang mga ito, gayunpaman, madali ring mag-set up ng mga awtomatikong withdrawal upang makatanggap ng mga umuulit na payout.";
+
+/* CrowdNode */
 "Your CrowdNode account is creating…" = "Linilikha na ang iyong CrowdNode account...";
 
 /* CrowdNode */
@@ -1922,6 +2081,9 @@
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Ginagamit ang iyong lokasyon upang ipakita ang iyong posisyon sa mapa, mga mangangalakal sa napiling redius at pagbutihin ang mga resulta ng paghahanap.";
+
+/* CrowdNode */
+"Your primary Dash address that you currently use for your CrowdNode account" = "Ang iyong pangunahing Dash address na kasalukuyan mong ginagamit para sa iyong CrowdNode account";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Ang iyong transaksyon ay naipadala at ang halaga ay dapat makita sa iyong pitaka sa loob ng ilang minuto.";

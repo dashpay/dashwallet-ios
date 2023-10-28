@@ -24,6 +24,8 @@ final class OnlineAccountEmailController: UIViewController {
     private let viewModel = CrowdNodeModel.shared
 
     @IBOutlet var input: DashInputField!
+    @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var subtitleLabel: UILabel!
     @IBOutlet var continueButton: ActionButton!
     @IBOutlet var actionButtonBottomConstraint: NSLayoutConstraint!
 
@@ -64,6 +66,10 @@ final class OnlineAccountEmailController: UIViewController {
 
     private func configureHierarchy() {
         configureEmailInput()
+        
+        titleLabel.text = NSLocalizedString("Create an online CrowdNode account", comment: "CrowdNode")
+        subtitleLabel.text = NSLocalizedString("Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode", comment: "CrowdNode")
+        continueButton.setTitle(NSLocalizedString("Continue", comment: ""), for: .normal)
 
         NotificationCenter.default.addObserver(self, selector: #selector(onKeyboardShown(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
 

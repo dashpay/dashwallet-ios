@@ -90,7 +90,9 @@ extension UpholdConfirmViewController: ConfirmPaymentViewControllerDelegate {
     }
 
     func confirmPaymentViewControllerDidConfirm(_ controller: ConfirmPaymentViewController) {
-        upholdModel.confirm(withOTPToken: nil)
+        controller.dismiss(animated: true) { [weak self] in
+            self?.upholdModel.confirm(withOTPToken: nil)
+        }
     }
 }
 

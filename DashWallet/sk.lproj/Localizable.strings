@@ -106,6 +106,9 @@
 /* No comment provided by engineer. */
 "Accepts DASH directly" = "Prijíma priamo DASH";
 
+/* CrowdNode */
+"Account Recovery" = "Obnovenie účtu";
+
 /* No comment provided by engineer. */
 "Activity" = "Aktivita";
 
@@ -178,6 +181,9 @@
 /* No comment provided by engineer. */
 "Are you sure?" = "Ste si istý?";
 
+/* CrowdNode */
+"As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode." = "Keďže väčšina ľudí nemá po ruke presne 1000 Dash, CrowdNode vytvoril službu, kde môžete združovaním vkladov od členov dosiahnuť výhody vlastníctva Masternódu.";
+
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "Vyhľadávanie bankomatov funguje lepšie so zapnutými službami určovania polohy";
 
@@ -218,6 +224,9 @@
 "Balance" = "Zostatok";
 
 /* CrowdNode */
+"Balance On CrowdNode" = "Balance On CrowdNode";
+
+/* CrowdNode */
 "Balance: " = "Zostatok: ";
 
 /* Coinbase/Payment Methods */
@@ -225,6 +234,9 @@
 
 /* Coinbase/Payment Methods */
 "Bank Wire" = "Bankový prevod";
+
+/* CrowdNode */
+"Become part of a Dash Masternode with CrowdNode" = "Staňte sa súčasťou Dash Masternode s CrowdNode";
 
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase" = "Medzi Dash peňaženkou a Coinbase";
@@ -311,6 +323,9 @@
 /* No comment provided by engineer. */
 "Close" = "Zatvoriť";
 
+/* CrowdNode */
+"Close and notify when it’s done" = "Zatvoriť a upozorniť, keď to bude hotové";
+
 /* No comment provided by engineer. */
 "Close App" = "Zatvoriť Aplikáciu";
 
@@ -335,6 +350,9 @@
 /* No comment provided by engineer. */
 "Confirm PIN" = "Potvrdiť PIN";
 
+/* CrowdNode */
+"Confirm Withdrawal" = "Confirm Withdrawal";
+
 /* No comment provided by engineer. */
 "Confirming" = "Potvrdzuje sa";
 
@@ -344,6 +362,9 @@
 /* Buy Sell Portal
    Coinbase Entry Point */
 "Connected" = "Pripojené";
+
+/* CrowdNode */
+"Connected Dash address" = "Pripojená Dash adresa";
 
 /* No comment provided by engineer. */
 "Connected peers: %d" = "Pripojené uzle: %d";
@@ -392,7 +413,7 @@
 "Could not connect to the Dash network, please check that you are connected to the internet." = "Nepodarilo sa pripojiť k sieti Dash. Skontrolujte, či ste pripojení k internetu.";
 
 /* No comment provided by engineer. */
-"Could not find exchange rate." = "Could not find exchange rate.";
+"Could not find exchange rate." = "Nepodarilo sa nájsť výmenný kurz.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Platba sa nedá uskutočniť ";
@@ -409,6 +430,9 @@
 /* CrowdNode */
 "Create Account" = "Vytvoriť účet";
 
+/* CrowdNode */
+"Create an online CrowdNode account" = "Vytvorte si online CrowdNode účet";
+
 /* CrowdNode
    CrowdNode Portal */
 "Create Online Account" = "Vytvoriť online účet";
@@ -419,8 +443,14 @@
 /* Crowdnode */
 "CrowdNode Account" = "Účet CrowdNode";
 
+/* CrowdNode */
+"CrowdNode benefits" = "Výhody CrowdNode";
+
 /* CrowdNode Portal */
 "CrowdNode Support" = "Podpora CrowdNode";
+
+/* CrowdNode */
+"CrowdNode uses this address as your account ID. You will lose access to your funds within this wallet and your CrowdNode account if you lose the passphrase associated to this address." = "CrowdNode používa túto adresu ako ID vášho účtu. Ak stratíte prístupovú frázu priradenú k tejto adrese, stratíte prístup k svojim finančným prostriedkom v tejto peňaženke a k účtu CrowdNode.";
 
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "Limity výberu CrowdNode";
@@ -448,6 +478,12 @@
 
 /* Explore Dash: Filters */
 "Dash" = "Dash";
+
+/* No comment provided by engineer. */
+"Dash address" = "Dash adresa";
+
+/* CrowdNode */
+"Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Dash address designated for your CrowdNode account in the Dash Wallet on this device ";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "Zostatok Dash na Coinbase";
@@ -593,9 +629,6 @@
 "Face ID limit" = "Limit pre Face ID";
 
 /* Coinbase */
-"Failed to make a deposit." = "Failed to make a deposit.";
-
-/* Coinbase */
 "Failed to start auth session" = "Nepodarilo sa spustiť autorizáciu";
 
 /* Buy Sell Portal */
@@ -641,7 +674,7 @@
 "Find a user on the Dash Network" = "Nájsť používateľa v sieti Dash";
 
 /* No comment provided by engineer. */
-"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Find merchants that accept Dash, where to buy it and how to earn income with it.";
+"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Nájdite obchodníkov, ktorí akceptujú Dash, kde ho kúpiť a ako s ním zarobiť.";
 
 /* No comment provided by engineer. */
 "Find merchants who accept Dash as payment." = "Nájsť obchodníkov, ktorí akceptujú Dash ako platbu.";
@@ -651,6 +684,9 @@
 
 /* CrowdNode */
 "First deposit should be more than %@" = "Prvý vklad by mal byť vyšší ako %@";
+
+/* CrowdNode */
+"First minimum deposit" = "First minimum deposit";
 
 /* Coinbase */
 "For your security, you have been signed out." = "Pre vašu bezpečnosť ste boli odhlásení.";
@@ -682,6 +718,9 @@
 /* Coinbase */
 "from your Coinbase account" = "z vášho Coinbase účtu";
 
+/* CrowdNode */
+"Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "Získajte odmeny z vkladov v Dash Masternodes už za 0,5 Dash.";
+
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Generovať rozšírené verejné kľúče?";
 
@@ -691,8 +730,14 @@
 /* Coinbase/Convert Crypto */
 "Get Quote" = "Získajte ponuku";
 
+/* CrowdNode */
+"Get Rewards Instantly" = "Získajte odmeny okamžite";
+
 /* No comment provided by engineer. */
 "Get Started" = "Začať";
+
+/* CrowdNode */
+"Getting started with CrowdNode" = "Začíname s CrowdNode";
 
 /* Explore Dash: Filters */
 "Gift Card" = "Darčeková karta";
@@ -724,17 +769,26 @@
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Pomôžte nám vylepšiť váš zážitok";
 
+/* CrowdNode */
+"Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device";
+
 /* adjective, security level */
 "High" = "Vysoké";
 
 /* No comment provided by engineer. */
 "History" = "História";
 
+/* CrowdNode */
+"How CrowdNode staking works" = "Ako funguje stávkovanie na CrowdNode";
+
+/* CrowdNode */
+"How to confirm your API Dash address" = "Ako potvrdiť svoju API Dash adresu ";
+
 /* No comment provided by engineer. */
 "How to Use a Gift Card" = "Ako používať darčekovú poukážku";
 
 /* No comment provided by engineer. */
-"HPMN Operator Keys" = "Evolution Node ID Keys";
+"HPMN Operator Keys" = "Identifikačné kľúče uzla Evolution";
 
 /* No comment provided by engineer. */
 "I Accept" = "Súhlasím";
@@ -747,6 +801,9 @@
 
 /* No comment provided by engineer. */
 "I wrote it down" = "Zapísal som si ju";
+
+/* CrowdNode */
+"If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "Ak niekedy stratíte svoju prístupovú frázu, môžete sa overiť inými spôsobmi, aby ste znova získali prístup k svojim prostriedkom na CrowdNode.";
 
 /* No comment provided by engineer. */
 "If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "Ak stratíte prístupovú frázu pre túto peňaženku a stratíte toto zariadenie alebo odinštalujete Dash peňaženku, stratíte prístup k svojim finančným prostriedkom v CrowdNode a k prostriedkom v tejto peňaženke.";
@@ -772,11 +829,17 @@
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Okrem zobrazeného Coinbase poplatku, sa do ceny započítavame aj rozptyl. Pri používaní pokročilého obchodovania nie je zahrnutý žiadny rozptyl, pretože interagujete priamo s knihou objednávok.\n\nTrhy s kryptomenami sú volatilné, čo nám umožňuje dočasne uzamknúť cenu na vykonanie obchodu.";
 
+/* CrowdNode */
+"In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster.";
+
 /* CrowdNode Portal */
 "In process…" = "V procese…";
 
 /* No comment provided by engineer. */
 "Income" = "Príjem";
+
+/* CrowdNode */
+"Information about your online account" = "Informácie o vašom online účte";
 
 /* Buy Sell Portal */
 "Initializing" = "Inicializuje sa";
@@ -792,6 +855,9 @@
 
 /* No comment provided by engineer. */
 "Internally moved to" = "Interne presunuté do";
+
+/* CrowdNode */
+"Introducing Staking" = "Predstavujeme stávkovanie";
 
 /* Invalid transaction */
 "Invalid" = "Neplatná";
@@ -835,6 +901,9 @@
 /* No comment provided by engineer. */
 "Join Evolution" = "Pridajte sa k evolúcii";
 
+/* CrowdNode */
+"Joining the pool" = "Pripojenie k členstvu";
+
 /* No comment provided by engineer. */
 "Key Id" = "Id kľúča";
 
@@ -857,6 +926,9 @@
 /* Info Screen */
 "Learn More..." = "Ďalšie informácie...";
 
+/* CrowdNode */
+"Leaving the pool" = "Leaving the pool";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Informovať ma keď bude hotovo";
 
@@ -865,6 +937,9 @@
 
 /* Dash Service Overview */
 "Link Coinbase Account" = "Prepojiť účet na Coinbase";
+
+/* CrowdNode */
+"Link Existing Account" = "Prepojiť existujúci účet";
 
 /* CrowdNode */
 "Link Existing CrowdNode Account" = "Prepojiť existujúci CrowdNode účet";
@@ -953,6 +1028,9 @@
 /* adjective, security level */
 "Medium" = "Stredné";
 
+/* CrowdNode */
+"Members are free to leave the pool and can most often leave immediately." = "Členovia môžu voľne ukončiť členstvo, a zvyčajne môžu odísť okamžite.";
+
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "Vyhľadávanie obchodníkov funguje lepšie so zapnutými službami určovania polohy.";
 
@@ -1000,6 +1078,9 @@
 
 /* (List of) New (notifications) */
 "New" = "nových";
+
+/* CrowdNode */
+"New CrowdNode Account" = "Nový CrowdNode účet";
 
 /* No comment provided by engineer. */
 "NFC device" = "NFC zariadenie";
@@ -1124,6 +1205,9 @@
 /* Explore Dash/Merchants/Filters */
 "Payment Type" = "Typ platby";
 
+/* CrowdNode */
+"Payout Options" = "Možnosti výplaty";
+
 /* Coinbase/Payment Methods */
 "PayPal" = "PayPal";
 
@@ -1150,6 +1234,9 @@
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Pre inováciu peňaženky zadajte PIN";
+
+/* CrowdNode */
+"Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Upozorňujeme, že e-mail nie je uložený v Dash peňaženke a je odoslaný iba do CrowdNode";
 
 /* Leftover balance warning */
 "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "Upozorňujeme, že nebudete môcť vybrať svoje prostriedky z CrowdNode do tejto peňaženky, kým nezvýšite svoj zostatok na %@ Dash.";
@@ -1180,6 +1267,9 @@
 
 /* No comment provided by engineer. */
 "Previously used at: " = "Predtým použité na:";
+
+/* CrowdNode */
+"Primary Dash address" = "Primary Dash address";
 
 /* No comment provided by engineer. */
 "Private / Public Keys (base64)" = "Súkromné / Verejné kľúče (base64)";
@@ -1229,6 +1319,9 @@
 /* Coinbase Entry Point */
 "Receive directly into Dash Wallet" = "Obdržať priamo do Dash peňaženky";
 
+/* CrowdNode */
+"Receive your share of rewards daily." = "Denne získajte svoj podiel na odmenách.";
+
 /* Received transaction */
 "Received" = "Prijté";
 
@@ -1240,6 +1333,9 @@
 
 /* No comment provided by engineer. */
 "Received from" = "Prijaté od";
+
+/* CrowdNode */
+"Receiving rewards" = "Prijímané odmeny";
 
 /* No comment provided by engineer. */
 "Recover" = "Obnoviť";
@@ -1320,6 +1416,9 @@
 "Scan Private Key" = "Skenovať privátny kľúč";
 
 /* No comment provided by engineer. */
+"Scan QR" = "Skenovať QR kód";
+
+/* No comment provided by engineer. */
 "Scan QR Code" = "Skenovať QR kód";
 
 /* (Send by) Scanning QR code */
@@ -1363,6 +1462,9 @@
 
 /* No comment provided by engineer. */
 "See on Uphold" = "Ukázať na Upholde";
+
+/* CrowdNode */
+"See why it happened" = "See why it happened";
 
 /* Coinbase */
 "Select a coin" = "Vyberte mincu";
@@ -1449,6 +1551,9 @@
 /* No comment provided by engineer. */
 "Setup Wallet" = "Nastaviť peňaženku";
 
+/* CrowdNode */
+"Share" = "Zdieľať";
+
 /* Receive screen */
 "Share address" = "Zdieľať adresu";
 
@@ -1460,6 +1565,9 @@
 
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Zobraziť kľúče masternódu";
+
+/* CrowdNode */
+"Show QR" = "Zobraziť QR kód";
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Zobraziť frázu obnovenia";
@@ -1551,17 +1659,29 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Daňová kategória";
 
+/* CrowdNode */
+"The amount that you entered will be adjusted to the closest level of precision that is possible." = "The amount that you entered will be adjusted to the closest level of precision that is possible.";
+
+/* CrowdNode */
+"The blockchain API for mobile processes withdrawals based on a % of your balance so that all transaction activity can be transparently recorded on the blockchain." = "The blockchain API for mobile processes withdrawals based on a % of your balance so that all transaction activity can be transparently recorded on the blockchain.";
+
 /* No comment provided by engineer. */
 "The chain is syncing…" = "Reťazec sa synchronizuje...";
 
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "Kód je nesprávny. Skontrolujte a skúste to znova!";
 
+/* CrowdNode */
+"The Dash Network is driven by a number of Masternodes which is an essential part of facilitating payments." = "Sieť Dash je riadená množstvom Masternódov, čo je nevyhnutná súčasť pre uskutočnenie platieb.";
+
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Dash bol úspešne vložený na váš Coinbase účet. Pri prenose do Dash peňaženky na tomto zariadení sa však vyskytol problém.";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "Minimálna suma, ktorú môžete poslať, je %@";
+
+/* CrowdNode */
+"The withdrawal amount has been adjusted by" = "The withdrawal amount has been adjusted by";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "Nie sú k dispozícii žiadne nové upozornenia";
@@ -1596,6 +1716,9 @@
 /* CrowdNode Confirm */
 "This QR already contains the payment request for %@" = "Tento QR kód už obsahuje žiadosť k platbe pre %@";
 
+/* CrowdNode */
+"This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "To predstavuje to aktuálny ročný percentuálny výnos celého Masternódu mínus 15 % poplatok CrowdNode. Nie je to zaručená miera návratnosti a môže stúpať alebo klesať v závislosti od veľkosti fondov CrowdNode a ceny Dash.";
+
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Táto peňaženka nie je prázdna, alebo synchronizácia nie je dokončená. Nemali by ste ju vymazať bez frázy na obnovenie";
 
@@ -1608,6 +1731,12 @@
 /* Coinbase */
 "to Dash Wallet on this device" = "do Dash peňaženky na tomto zariadení";
 
+/* CrowdNode */
+"To start staking, create an account on CrowdNode or connect to an existing one." = "Ak chcete začať stávkovať, vytvorte si účet na CrowdNode alebo sa pripojte k existujúcemu účtu.";
+
+/* CrowdNode */
+"to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "na Dash adresu určenú pre váš účet CrowdNode v Dash peňaženke na tomto zariadení";
+
 /* No comment provided by engineer. */
 "Tools" = "Nástroje";
 
@@ -1619,6 +1748,9 @@
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Limit pre Touch ID";
+
+/* CrowdNode */
+"Transaction History" = "História transakcií";
 
 /* No comment provided by engineer. */
 "Transaction id" = "Id transakcie";
@@ -1724,8 +1856,14 @@
 /* No comment provided by engineer. */
 "Verify" = "Overiť";
 
+/* CrowdNode */
+"Verify your API Dash address" = "Overte svoju API Dash adresu";
+
 /* adjective, security level */
 "Very High" = "Veľmi vysoké";
+
+/* CrowdNode */
+"Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." = "Do a z CrowdNode budú odoslané veľmi malé množstvá Dash, aby sme overili, že ste vlastníkom tejto adresy peňaženky.";
 
 /* No comment provided by engineer. */
 "View All" = "Zobraziť všetko";
@@ -1784,6 +1922,9 @@
 /* No comment provided by engineer. */
 "We Upgraded" = "Aktualizovali sme";
 
+/* CrowdNode */
+"We will automatically detect this transaction and transfer the same amount to your CrowdNode account. After that you will be able to make deposits and withdrawals in Dash Wallet on this device." = "Túto transakciu automaticky zistíme a prevedieme rovnakú sumu na váš účet CrowdNode. Potom budete môcť na tomto zariadení vykonávať vklady a výbery v Dash peňaženke.";
+
 /* Website */
 "Website" = "Webová stránka";
 
@@ -1801,6 +1942,12 @@
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "Prečo sa mi zobrazujú všetky tieto transakcie?";
+
+/* CrowdNode */
+"Why do you need an online account?" = "Prečo potrebujete online účet?";
+
+/* CrowdNode */
+"Why does the entered amount differ from what I see on this screen?" = "Why does the entered amount differ from what I see on this screen?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Prečo by som nemal robiť snímku obrazovky?";
@@ -1848,8 +1995,14 @@
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "Platby nižšie môžete overiť pomocou Touch ID";
 
+/* CrowdNode */
+"You can change how / when your reward earnings are paid to you." = "Môžete zmeniť spôsob alebo kedy sa vám budú vyplácať vaše zárobky.";
+
+/* CrowdNode */
+"You can see detailed information about your deposits, withdrawals and reward earnings." = "Môžete vidieť podrobné informácie o svojich vkladoch, výberoch a zárobkoch z odmien.";
+
 /* Coinbase */
-"You don’t have enough balance" = "You don’t have enough balance";
+"You don’t have enough balance" = "Váš zostatok je nedostatočný";
 
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "Prekročili ste autorizačný limit na Coinbase.";
@@ -1859,6 +2012,9 @@
 
 /* No comment provided by engineer. */
 "You have insufficient funds to proceed" = "Na pokračovanie nemáte dostatok finančných prostriedkov";
+
+/* CrowdNode */
+"You have to backup your passphrase in Dash Wallet" = "V Dash peňaženke si musíte zálohovať svoju prístupovú frázu ";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Aby ste sprístupnili Dash Wallet, musíte zadať PIN";
@@ -1897,6 +2053,9 @@
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "Na tomto zariadení dostanete %@ Dash do svojej Dash peňaženky . Upozorňujeme, že dokončenie prevodu môže trvať 2 až 3 minúty.";
 
 /* CrowdNode */
+"You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "Čiastkové platby budete dostávať automaticky a štandardne budú reinvestované, ale je tiež jednoduché nastaviť automatické výbery pre prijímanie opakujúcich sa platieb.";
+
+/* CrowdNode */
 "Your CrowdNode account is creating…" = "Váš CrowdNode účet sa vytvára…";
 
 /* CrowdNode */
@@ -1922,6 +2081,9 @@
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Vaša poloha sa používa na zobrazenie vašej pozície na mape, obchodníkov vo vybranom okolí a k zlepšeniu výsledkov vyhľadávania.";
+
+/* CrowdNode */
+"Your primary Dash address that you currently use for your CrowdNode account" = "Vaša primárna Dash adresa, ktorú momentálne používate pre váš CrowdNode účet";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Vaša transakcia bola odoslaná a čiastka by sa mala objaviť vo vašej peňaženke v priebehu niekoľkých minút.";

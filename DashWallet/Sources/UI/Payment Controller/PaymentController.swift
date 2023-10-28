@@ -105,8 +105,10 @@ extension PaymentController {
 
 extension PaymentController: ConfirmPaymentViewControllerDelegate {
     func confirmPaymentViewControllerDidConfirm(_ controller: ConfirmPaymentViewController) {
-        if let output = paymentOutput {
-            paymentProcessor.confirmPaymentOutput(output)
+        controller.dismiss(animated: true) { [weak self] in
+            if let output = self?.paymentOutput {
+                self?.paymentProcessor.confirmPaymentOutput(output)
+            }
         }
     }
 
@@ -180,6 +182,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
     func paymentProcessorDidCancelTransactionSigning(_ processor: DWPaymentProcessor) {
         provideAmountViewController?.hideActivityIndicator()
+        delegate?.paymentControllerDidCancelTransaction(self)
         confirmViewController?.isSendingEnabled = true
     }
 
