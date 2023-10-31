@@ -20,7 +20,10 @@
 #import "DWDPBasicCell.h"
 #import "DWDPTxItem.h"
 #import "DWFilterHeaderView.h"
+#import "DWInfoPopupViewController.h"
+#import "DWNetworkErrorViewController.h"
 #import "DWStretchyHeaderListCollectionLayout.h"
+#import "DWTxDetailPopupViewController.h"
 #import "DWUIKit.h"
 #import "DWUserProfileContactActionsCell.h"
 #import "DWUserProfileHeaderView.h"
@@ -29,7 +32,6 @@
 #import "DWUserProfileSendRequestCell.h"
 #import "UICollectionView+DWDPItemDequeue.h"
 #import "UIViewController+DWTxFilter.h"
-#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -46,11 +48,16 @@ static CGFloat const FILTER_PADDING = 15.0; // same as horizontal padding for it
 
 @property (readonly, nonatomic, strong) DWUserProfileModel *model;
 
+@property (readonly, nonatomic, strong) UIView *topOverscrollView;
 @property (null_resettable, nonatomic, strong) UICollectionView *collectionView;
 @property (nullable, nonatomic, weak) DWUserProfileHeaderView *headerView;
 
 @property (null_resettable, nonatomic, strong) DWFilterHeaderView *measuringFilterHeaderView;
 @property (null_resettable, nonatomic, strong) DWUserProfileHeaderView *measuringProfileHeaderView;
+
+@property (null_resettable, nonatomic, strong) DWUserProfileSendRequestCell *measuringSendCell;
+@property (null_resettable, nonatomic, strong) DWUserProfileContactActionsCell *measuringActionsCell;
+@property (null_resettable, nonatomic, strong) DWDPBasicCell *measuringBasicCell;
 
 @end
 
@@ -61,17 +68,21 @@ NS_ASSUME_NONNULL_END
 - (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
                     payModel:(id<DWPayModelProtocol>)payModel
                 dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
-    return [self initWithItem:item payModel:payModel dataProvider:dataProvider shouldSkipUpdating:NO];
+    return [self initWithItem:item payModel:payModel dataProvider:dataProvider shouldSkipUpdating:NO shownAfterPayment:NO];
 }
 
 - (instancetype)initWithItem:(id<DWDPBasicUserItem>)item
                     payModel:(id<DWPayModelProtocol>)payModel
                 dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider
-          shouldSkipUpdating:(BOOL)shouldSkipUpdating {
+          shouldSkipUpdating:(BOOL)shouldSkipUpdating
+           shownAfterPayment:(BOOL)shownAfterPayment {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
-        _model = [[DWUserProfileModel alloc] initWithItem:item txDataProvider:dataProvider];
+        _model = [[DWUserProfileModel alloc] initWithItem:item
+                                           txDataProvider:dataProvider];
+        _model.context = self;
         _model.delegate = self;
+        _model.shownAfterPayment = shownAfterPayment;
         if (shouldSkipUpdating) {
             [_model skipUpdating];
         }
@@ -93,12 +104,32 @@ NS_ASSUME_NONNULL_END
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
     DWUserProfileNavigationTitleView *titleView = [[DWUserProfileNavigationTitleView alloc] initWithFrame:CGRectZero];
-    [titleView updateWithUsername:self.model.username];
+    [titleView updateWithBlockchainIdentity:self.model.item.blockchainIdentity];
     CGSize titleSize = [titleView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
     titleView.frame = CGRectMake(0, 0, titleSize.width, titleSize.height);
     self.navigationItem.titleView = titleView;
 
     [self.view addSubview:self.collectionView];
+    [NSLayoutConstraint activateConstraints:@[
+        [self.collectionView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+        [self.collectionView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [self.view.trailingAnchor constraintEqualToAnchor:self.collectionView.trailingAnchor],
+        [self.view.safeAreaLayoutGuide.bottomAnchor constraintEqualToAnchor:self.collectionView.bottomAnchor],
+    ]];
+}
+
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+
+    CGSize size = self.view.bounds.size;
+    self.topOverscrollView.frame = CGRectMake(0.0, -size.height, size.width, size.height);
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    [self.collectionView setNeedsLayout];
+    [self.collectionView layoutIfNeeded];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -119,7 +150,7 @@ NS_ASSUME_NONNULL_END
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     if (section == 0) {
-        const BOOL shouldDisplayActions = [self shouldShowActions];
+        const BOOL shouldDisplayActions = [self.model shouldShowActions];
         return shouldDisplayActions ? 1 : 0;
     }
     else {
@@ -144,6 +175,7 @@ NS_ASSUME_NONNULL_END
                                withReuseIdentifier:DWFilterHeaderView.dw_reuseIdentifier
                                       forIndexPath:indexPath];
         headerView.padding = FILTER_PADDING;
+        headerView.infoButton.hidden = (self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Friends);
         headerView.titleLabel.text = NSLocalizedString(@"Activity", nil);
         headerView.delegate = self;
         [headerView.filterButton setTitle:[self titleForFilterButton] forState:UIControlStateNormal];
@@ -157,7 +189,7 @@ NS_ASSUME_NONNULL_END
     const CGFloat contentWidth = layout.contentWidth;
 
     if (indexPath.section == 0) {
-        if ([self shouldShowSendRequestAction]) {
+        if ([self.model shouldShowSendRequestAction]) {
             DWUserProfileSendRequestCell *cell = [collectionView
                 dequeueReusableCellWithReuseIdentifier:DWUserProfileSendRequestCell.dw_reuseIdentifier
                                           forIndexPath:indexPath];
@@ -180,7 +212,7 @@ NS_ASSUME_NONNULL_END
         DWDPBasicCell *cell = [collectionView dw_dequeueReusableCellForItem:item atIndexPath:indexPath];
         cell.contentWidth = contentWidth;
         cell.itemView.avatarHidden = YES;
-        cell.displayItemBackgroundView = NO;
+        cell.backgroundStyle = DWDPBasicCellBackgroundStyle_GrayOnGray;
         cell.item = item;
         return cell;
     }
@@ -206,6 +238,43 @@ NS_ASSUME_NONNULL_END
     return size;
 }
 
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    DWListCollectionLayout *layout = (DWListCollectionLayout *)collectionView.collectionViewLayout;
+    NSAssert([layout isKindOfClass:DWListCollectionLayout.class], @"Invalid layout");
+    const CGFloat contentWidth = layout.contentWidth;
+
+    UICollectionViewCell *measuringCell = nil;
+    if (indexPath.section == 0) {
+        if ([self.model shouldShowSendRequestAction]) {
+            DWUserProfileSendRequestCell *cell = self.measuringSendCell;
+            cell.contentWidth = contentWidth;
+            cell.model = self.model;
+            measuringCell = cell;
+        }
+        DWUserProfileContactActionsCell *cell = self.measuringActionsCell;
+        cell.contentWidth = contentWidth;
+        cell.model = self.model;
+        measuringCell = cell;
+    }
+    else {
+        id<DWDPBasicItem> item = [self itemAtIndexPath:indexPath];
+
+        DWDPBasicCell *cell = self.measuringBasicCell;
+        cell.contentWidth = contentWidth;
+        cell.itemView.avatarHidden = YES;
+        cell.backgroundStyle = DWDPBasicCellBackgroundStyle_GrayOnGray;
+        cell.item = item;
+        measuringCell = cell;
+    }
+
+    measuringCell.frame = CGRectMake(0, 0, contentWidth, 300);
+    CGSize size = [measuringCell systemLayoutSizeFittingSize:CGSizeMake(contentWidth, UILayoutFittingCompressedSize.height)
+                               withHorizontalFittingPriority:UILayoutPriorityRequired
+                                     verticalFittingPriority:UILayoutPriorityFittingSizeLevel];
+
+    return size;
+}
+
 #pragma mark - UICollectionViewDelegate
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -221,12 +290,11 @@ NS_ASSUME_NONNULL_END
     }
 
     DSTransaction *transaction = ((id<DWDPTxItem>)item).transaction;
-
-    TxDetailModel *model = [[TxDetailModel alloc] initWithTransaction:transaction];
-    TXDetailViewController *controller = [[TXDetailViewController alloc] initWithModel:model];
-
-    DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];
-    [self presentViewController:nvc animated:YES completion:nil];
+    id<DWTransactionListDataProviderProtocol> dataProvider = self.dataProvider;
+    DWTxDetailPopupViewController *controller =
+        [[DWTxDetailPopupViewController alloc] initWithTransaction:transaction
+                                                      dataProvider:dataProvider];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -247,11 +315,21 @@ NS_ASSUME_NONNULL_END
 
 - (void)userProfileModelDidUpdate:(DWUserProfileModel *)model {
     [self.collectionView reloadData];
+
+    if (model.state == DWUserProfileModelState_Error) {
+        DWNetworkErrorViewController *controller = [[DWNetworkErrorViewController alloc] initWithType:DWErrorDescriptionType_Profile];
+        [self presentViewController:controller animated:YES completion:nil];
+    }
 }
 
 #pragma mark - DWUserProfileHeaderViewDelegate
 
 - (void)userProfileHeaderView:(DWUserProfileHeaderView *)view actionButtonAction:(UIButton *)sender {
+    if ([self.model shouldShowSendRequestAction]) {
+        [self sendContactRequest];
+        return;
+    }
+
     const BOOL canPay = self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Incoming ||
                         self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Friends;
     NSParameterAssert(canPay);
@@ -263,11 +341,7 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWUserProfileSendRequestCellDelegate
 
 - (void)userProfileSendRequestCell:(DWUserProfileSendRequestCell *)cell sendRequestButtonAction:(UIButton *)sender {
-    const BOOL canSendRequest = self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_None;
-    NSParameterAssert(canSendRequest);
-    if (canSendRequest) {
-        [self.model sendContactRequest];
-    }
+    [self sendContactRequest];
 }
 
 #pragma mark - DWUserProfileContactActionsCellDelegate
@@ -290,32 +364,39 @@ NS_ASSUME_NONNULL_END
     [self showTxFilterWithSender:sender displayModeProvider:self.model shouldShowRewards:NO];
 }
 
+- (void)filterHeaderView:(DWFilterHeaderView *)view infoButtonAction:(UIView *)sender {
+    CGPoint offset = [self.view.window convertRect:sender.frame fromView:sender.superview].origin;
+    DWInfoPopupViewController *controller =
+        [[DWInfoPopupViewController alloc] initWithText:NSLocalizedString(@"Payments made directly to addresses won’t be retained in activity.", nil)
+                                                 offset:offset];
+    controller.modalPresentationStyle = UIModalPresentationOverCurrentContext;
+    controller.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+    [self presentViewController:controller animated:YES completion:nil];
+}
+
+#pragma mark - DWTxDetailFullscreenViewControllerDelegate
+
+//TODO: DashPay
+//- (void)detailFullscreenViewControllerDidFinish:(DWTxDetailsViewController *)controller {
+//    if (self.model.shouldAcceptIncomingAfterPayment) {
+//        [self.model acceptContactRequest];
+//    }
+//
+//    [super detailFullscreenViewControllerDidFinish:controller];
+//}
+
 #pragma mark - Private
 
-- (BOOL)shouldShowActions {
-    if (self.model.state != DWUserProfileModelState_Done) {
-        return NO;
+- (void)sendContactRequest {
+    const BOOL canSendRequest = self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_None;
+    if (canSendRequest) {
+        [self.model sendContactRequest:^(BOOL success) {
+            if (!success) {
+                DWNetworkErrorViewController *controller = [[DWNetworkErrorViewController alloc] initWithType:DWErrorDescriptionType_SendContactRequest];
+                [self presentViewController:controller animated:YES completion:nil];
+            }
+        }];
     }
-
-    const DSBlockchainIdentityFriendshipStatus status = self.model.friendshipStatus;
-    return (status == DSBlockchainIdentityFriendshipStatus_Incoming ||
-            status == DSBlockchainIdentityFriendshipStatus_None ||
-            status == DSBlockchainIdentityFriendshipStatus_Outgoing);
-}
-
-- (BOOL)shouldShowSendRequestAction {
-    NSParameterAssert(self.model.state == DWUserProfileModelState_Done);
-
-    const DSBlockchainIdentityFriendshipStatus status = self.model.friendshipStatus;
-    return (status == DSBlockchainIdentityFriendshipStatus_None ||
-            status == DSBlockchainIdentityFriendshipStatus_Outgoing);
-}
-
-- (BOOL)shouldShowAcceptDeclineRequestAction {
-    NSParameterAssert(self.model.state == DWUserProfileModelState_Done);
-
-    const DSBlockchainIdentityFriendshipStatus status = self.model.friendshipStatus;
-    return status == DSBlockchainIdentityFriendshipStatus_Incoming;
 }
 
 - (id<DWDPBasicItem>)itemAtIndexPath:(NSIndexPath *)indexPath {
@@ -327,11 +408,15 @@ NS_ASSUME_NONNULL_END
 
 - (UICollectionView *)collectionView {
     if (_collectionView == nil) {
+        UIView *topOverscrollView = [[UIView alloc] initWithFrame:CGRectZero];
+        topOverscrollView.backgroundColor = [UIColor dw_backgroundColor];
+        _topOverscrollView = topOverscrollView;
+
         DWStretchyHeaderListCollectionLayout *layout = [[DWStretchyHeaderListCollectionLayout alloc] init];
 
         UICollectionView *collectionView = [[UICollectionView alloc] initWithFrame:UIScreen.mainScreen.bounds
                                                               collectionViewLayout:layout];
-        collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        collectionView.translatesAutoresizingMaskIntoConstraints = NO;
         collectionView.dataSource = self;
         collectionView.delegate = self;
         collectionView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
@@ -351,6 +436,7 @@ NS_ASSUME_NONNULL_END
             forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
                    withReuseIdentifier:DWFilterHeaderView.dw_reuseIdentifier];
 
+        [collectionView addSubview:topOverscrollView];
         _collectionView = collectionView;
     }
     return _collectionView;
@@ -370,9 +456,29 @@ NS_ASSUME_NONNULL_END
         _measuringFilterHeaderView.padding = FILTER_PADDING;
         _measuringFilterHeaderView.titleLabel.text = NSLocalizedString(@"Activity", nil);
     }
-    [_measuringFilterHeaderView.filterButton setTitle:[self titleForFilterButton]
-                                             forState:UIControlStateNormal];
+    [_measuringFilterHeaderView.filterButton setTitle:[self titleForFilterButton] forState:UIControlStateNormal];
     return _measuringFilterHeaderView;
+}
+
+- (DWUserProfileSendRequestCell *)measuringSendCell {
+    if (_measuringSendCell == nil) {
+        _measuringSendCell = [[DWUserProfileSendRequestCell alloc] initWithFrame:CGRectZero];
+    }
+    return _measuringSendCell;
+}
+
+- (DWUserProfileContactActionsCell *)measuringActionsCell {
+    if (_measuringActionsCell == nil) {
+        _measuringActionsCell = [[DWUserProfileContactActionsCell alloc] initWithFrame:CGRectZero];
+    }
+    return _measuringActionsCell;
+}
+
+- (DWDPBasicCell *)measuringBasicCell {
+    if (_measuringBasicCell == nil) {
+        _measuringBasicCell = [[DWDPBasicCell alloc] initWithFrame:CGRectZero];
+    }
+    return _measuringBasicCell;
 }
 
 - (NSString *)titleForFilterButton {

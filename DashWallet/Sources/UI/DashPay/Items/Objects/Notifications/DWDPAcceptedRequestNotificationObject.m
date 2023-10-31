@@ -50,7 +50,7 @@ NS_ASSUME_NONNULL_END
 
 - (NSAttributedString *)title {
     if (_title == nil) {
-        NSString *name = self.displayName ?: self.username;
+        NSString *name = self.displayName ?: (self.username ?: NSLocalizedString(@"User (Fetching Info)", nil));
         NSString *format = self.isInitiatedByThem
                                ? NSLocalizedString(@"%@ has sent you a contact request", nil)
                                : NSLocalizedString(@"%@ has accepted your contact request", nil);

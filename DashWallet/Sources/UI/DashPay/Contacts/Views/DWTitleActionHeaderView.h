@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "BaseCollectionReusableView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface DWTitleActionHeaderView : UICollectionReusableView
+@interface DWTitleActionHeaderView : BaseCollectionReusableView
 
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UIButton *actionButton;

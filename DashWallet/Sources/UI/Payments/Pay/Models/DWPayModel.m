@@ -22,6 +22,12 @@
 #import "DWPasteboardAddressExtractor.h"
 #import "DWPayOptionModel.h"
 #import "DWPaymentInputBuilder.h"
+
+#if DASHPAY
+#import "DWEnvironment.h"
+#import "DWDashPayConstants.h"
+#endif
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWPayModel () <NFCNDEFReaderSessionDelegate>
@@ -55,6 +61,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)refreshOptions {
     NSMutableArray<DWPayOptionModel *> *options = [NSMutableArray array];
+    
+#if DASHPAY
+    DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+    if (blockchainIdentity.currentDashpayUsername != nil || MOCK_DASHPAY) {
+        DWPayOptionModel *option = [[DWPayOptionModel alloc] initWithType:DWPayOptionModelType_DashPayUser];
+        [options addObject:option];
+    }
+#endif
 
     DWPayOptionModel *scanQROption = [[DWPayOptionModel alloc]
         initWithType:DWPayOptionModelType_ScanQR];
@@ -120,9 +134,11 @@ NS_ASSUME_NONNULL_BEGIN
     return [self.inputBuilder paymentInputWithURL:url];
 }
 
+#if DASHPAY
 - (DWPaymentInput *)paymentInputWithUser:(id<DWDPBasicUserItem>)userItem {
     return [self.inputBuilder paymentInputWithUserItem:userItem];
 }
+#endif
 
 #pragma mark - NFCNDEFReaderSessionDelegate
 

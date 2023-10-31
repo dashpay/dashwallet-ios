@@ -37,6 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, copy) NSString *trimmedQuery;
 @property (nullable, nonatomic, weak) id<DWUserSearchModelDelegate> delegate;
 
+@property (nullable, nonatomic, weak) UIViewController *context;
+
 - (void)searchWithQuery:(NSString *)searchQuery;
 - (void)willDisplayItemAtIndex:(NSInteger)index;
 

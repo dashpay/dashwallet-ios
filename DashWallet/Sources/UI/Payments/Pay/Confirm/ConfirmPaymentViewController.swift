@@ -43,6 +43,7 @@ class ConfirmPaymentViewController: SheetViewController {
     private var balanceView: BalanceView!
     private var tableView: UITableView!
     private var confirmButton: ActionButton!
+    // TODO: setIsAcceptContactRequestCheckboxOn
 
     internal let model: ConfirmPaymentModel
 

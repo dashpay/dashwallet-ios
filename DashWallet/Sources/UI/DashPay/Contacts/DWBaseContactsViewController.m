@@ -17,6 +17,11 @@
 
 #import "DWBaseContactsViewController+DWProtected.h"
 
+#import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
+
+#import "DWSendInviteFlowController.h"
+#import "DWUIKit.h"
+#import "DWUserProfileViewController.h"
 #import "DWUserSearchViewController.h"
 #import "UIView+DWFindConstraints.h"
 #import "UIViewController+DWEmbedding.h"
@@ -68,22 +73,37 @@ NS_ASSUME_NONNULL_END
 
 - (void)contactsModelDidUpdate:(DWBaseContactsModel *)model {
     self.searchBar.hidden = NO;
+    [self.localNoContactsController dw_detachFromParent];
+
     id<DWContactsDataSource> dataSource = model.dataSource;
     if (dataSource.isEmpty) {
         if (dataSource.isSearching) {
-            [self.stateController setNoResultsLocalStateWithQuery:dataSource.trimmedQuery];
+            if (self.disableSearchPlaceholder) {
+                self.contentController.dataSource = dataSource;
+
+                if (self.contentController.parentViewController == nil) {
+                    [self dw_embedChild:self.contentController inContainer:self.contentView];
+                    [self updateContentKeyboardConstraintsIfNeeded];
+                }
+            }
+            else {
+                [self dw_embedChild:self.stateController inContainer:self.contentView];
+                [self.stateController setNoResultsLocalStateWithQuery:dataSource.trimmedQuery];
+                [self.contentController dw_detachFromParent];
+            }
         }
         else {
             self.searchBar.hidden = YES;
-            [self.stateController setPlaceholderLocalState];
+            [self dw_embedChild:self.localNoContactsController inContainer:self.contentView];
+            [self.contentController dw_detachFromParent];
         }
-        [self.contentController dw_detachFromParent];
     }
     else {
         self.contentController.dataSource = dataSource;
 
         if (self.contentController.parentViewController == nil) {
             [self dw_embedChild:self.contentController inContainer:self.contentView];
+            [self updateContentKeyboardConstraintsIfNeeded];
         }
     }
 }
@@ -105,6 +125,24 @@ NS_ASSUME_NONNULL_END
     [self addContactButtonAction];
 }
 
+- (void)searchStateViewController:(DWSearchStateViewController *)controller inviteButtonAction:(UIButton *)sender {
+    [self inviteButtonAction];
+}
+
+#pragma mark - DWBaseContactsContentViewController
+
+- (void)baseContactsContentViewController:(DWBaseContactsContentViewController *)controller
+                                didSelect:(id<DWDPBasicUserItem>)item
+                                indexPath:(NSIndexPath *)indexPath {
+    DWUserProfileViewController *profileController =
+        [[DWUserProfileViewController alloc] initWithItem:item
+                                                 payModel:self.payModel
+                                             dataProvider:self.dataProvider
+                                       shouldSkipUpdating:YES
+                                        shownAfterPayment:NO];
+    [self.navigationController pushViewController:profileController animated:YES];
+}
+
 #pragma mark - DWDPNewIncomingRequestItemDelegate
 
 - (void)acceptIncomingRequest:(id<DWDPBasicUserItem>)item {
@@ -122,7 +160,18 @@ NS_ASSUME_NONNULL_END
                                   animationCurve:(UIViewAnimationCurve)animationCurve {
     NSLayoutConstraint *constraint = [self.stateController.view dw_findConstraintWithAttribute:NSLayoutAttributeBottom];
     constraint.constant = height;
+    [self updateContentKeyboardConstraintsIfNeeded];
     [self.view layoutIfNeeded];
+}
+
+- (void)updateContentKeyboardConstraintsIfNeeded {
+    NSLayoutConstraint *constraint = [self.contentController.view dw_findConstraintWithAttribute:NSLayoutAttributeBottom];
+    if (self.ka_keyboardHeight > 0) {
+        constraint.constant = self.ka_keyboardHeight; //TODO: DashPay - DW_TABBAR_HEIGHT;
+    }
+    else {
+        constraint.constant = 0;
+    }
 }
 
 #pragma mark - Actions
@@ -135,7 +184,21 @@ NS_ASSUME_NONNULL_END
     DWUserSearchViewController *controller =
         [[DWUserSearchViewController alloc] initWithPayModel:self.payModel
                                                 dataProvider:self.dataProvider];
+    controller.stateController.delegate = self;
     [self.navigationController pushViewController:controller animated:YES];
 }
+
+- (void)inviteButtonAction {
+    DWSendInviteFlowController *controller = [[DWSendInviteFlowController alloc] init];
+    controller.delegate = self;
+    [self presentViewController:controller animated:YES completion:nil];
+}
+
+#pragma mark - DWSendInviteFlowControllerDelegate
+
+- (void)sendInviteFlowControllerDidFinish:(DWSendInviteFlowController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
 
 @end

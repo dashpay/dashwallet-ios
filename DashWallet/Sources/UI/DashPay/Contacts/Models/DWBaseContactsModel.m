@@ -23,6 +23,7 @@
 #import "DWDashPayContactsActions.h"
 #import "DWDashPayContactsUpdater.h"
 #import "DWEnvironment.h"
+#import "DWDashPayConstants.h"
 
 @implementation DWBaseContactsModel
 
@@ -32,11 +33,20 @@
     self = [super init];
     if (self) {
         _itemsFactory = [[DWDPContactsItemsFactory alloc] init];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(didUpdateContacts)
+                                                     name:DWDashPayContactsDidUpdateNotification
+                                                   object:nil];
     }
     return self;
 }
 
 - (BOOL)hasBlockchainIdentity {
+    if (MOCK_DASHPAY) {
+        return YES;
+    }
+    
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
     return myBlockchainIdentity != nil;
@@ -56,6 +66,8 @@
 }
 
 - (void)start {
+    self.active = YES;
+
     if ([self shouldFetchData]) {
         [[DWDashPayContactsUpdater sharedInstance] fetch];
     }
@@ -71,16 +83,18 @@
 }
 
 - (void)stop {
+    self.active = NO;
+
     [self.requestsDataSource stop];
     [self.contactsDataSource stop];
 }
 
 - (void)acceptContactRequest:(id<DWDPBasicUserItem>)item {
-    [DWDashPayContactsActions acceptContactRequest:item completion:nil];
+    [DWDashPayContactsActions acceptContactRequest:item context:self.context completion:nil];
 }
 
 - (void)declineContactRequest:(id<DWDPBasicUserItem>)item {
-    [DWDashPayContactsActions declineContactRequest:item completion:nil];
+    [DWDashPayContactsActions declineContactRequest:item context:self.context completion:nil];
 }
 
 - (void)searchWithQuery:(NSString *)searchQuery {
@@ -142,6 +156,13 @@
 
 - (BOOL)isSearching {
     return self.trimmedQuery.length > 0;
+}
+
+- (void)didUpdateContacts {
+    if (self.isActive) {
+        [self stop];
+        [self start];
+    }
 }
 
 @end

@@ -23,18 +23,33 @@
 #import "DWHomeViewController+DWBackupReminder.h"
 #import "DWHomeViewController+DWJailbreakCheck.h"
 #import "DWHomeViewController+DWShortcuts.h"
-#import "DWModalUserProfileViewController.h"
-#import "DWNotificationsViewController.h"
+#import "DWRootEditProfileViewController.h"
 #import "DWWindow.h"
 #import "UIViewController+DWTxFilter.h"
 #import "UIWindow+DSUtils.h"
 #import "dashwallet-Swift.h"
 
+#if DASHPAY
+#import "DWNotificationsViewController.h"
+#import "DWModalUserProfileViewController.h"
+#import "DPAlertViewController.h"
+#import "DWInvitationSetupState.h"
+#import "DWDashPaySetupFlowController.h"
+#endif
+
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeViewController () <DWHomeViewDelegate, DWShortcutsActionDelegate, TxReclassifyTransactionsInfoViewControllerDelegate>
+@interface DWHomeViewController () <DWHomeViewDelegate,
+                                    DWShortcutsActionDelegate,
+                                    TxReclassifyTransactionsInfoViewControllerDelegate,
+                                    SyncingActivityMonitorObserver,
+                                    DWRootEditProfileViewControllerDelegate>
 
 @property (strong, nonatomic) DWHomeView *view;
+#if DASHPAY
+@property (strong, nonatomic) DWInvitationSetupState *invitationSetup;
+@property (strong, nonatomic) DWDPAvatarView *avatarView;
+#endif
 
 @end
 
@@ -94,6 +109,51 @@ NS_ASSUME_NONNULL_BEGIN
     [self.view hideBalanceIfNeeded];
 }
 
+#if DASHPAY
+- (void)handleDeeplink:(NSURL *)url definedUsername:(nullable NSString *)definedUsername {
+    if (self.model.dashPayModel.blockchainIdentity != nil) {
+        NSString *title = NSLocalizedString(@"Username already found", nil);
+        NSString *message = NSLocalizedString(@"You cannot claim this invite since you already have a Dash username", nil);
+        DPAlertViewController *alert =
+            [[DPAlertViewController alloc] initWithIcon:[UIImage imageNamed:@"icon_invitation_error"]
+                                                  title:title
+                                            description:message];
+        [self presentViewController:alert animated:YES completion:nil];
+
+        return;
+    }
+
+    if (SyncingActivityMonitor.shared.state != SyncingActivityMonitorStateSyncDone) {
+        DWInvitationSetupState *state = [[DWInvitationSetupState alloc] init];
+        state.invitation = url;
+        state.chosenUsername = definedUsername;
+        _invitationSetup = state;
+        [SyncingActivityMonitor.shared addObserver:self];
+        
+        return;
+    }
+    
+    __weak typeof(self) weakSelf = self;
+    [self.model handleDeeplink:url completion:^(BOOL success, NSString *_Nullable errorTitle, NSString *_Nullable errorMessage) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        if (success) {
+            [strongSelf showCreateUsernameWithInvitation:url definedUsername:definedUsername];
+        }
+        else {
+            DPAlertViewController *alert =
+                [[DPAlertViewController alloc] initWithIcon:[UIImage imageNamed:@"icon_invitation_error"]
+                                                       title:errorTitle
+                                                 description:errorMessage];
+                [strongSelf presentViewController:alert animated:YES completion:nil];
+            }
+        }];
+}
+#endif
+
 #pragma mark - DWHomeViewDelegate
 
 - (void)homeView:(DWHomeView *)homeView showTxFilter:(UIView *)sender {
@@ -105,10 +165,17 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentViewController:controller animated:YES completion:nil];
 }
 
-- (void)homeView:(DWHomeView *)homeView profileButtonAction:(UIControl *)sender {
-    DWNotificationsViewController *controller = [[DWNotificationsViewController alloc] init];
-    [self.navigationController pushViewController:controller animated:YES];
+#if DASHPAY
+- (void)homeView:(DWHomeView * _Nonnull)homeView didUpdateProfile:(DSBlockchainIdentity * _Nullable)identity unreadNotifications:(NSUInteger)unreadNotifications {
+    
+    self.avatarView.blockchainIdentity = identity;
+    BOOL hasIdentity = identity != nil;
+    BOOL hasNotifications = unreadNotifications > 0;
+    self.avatarView.hidden = !hasIdentity;
+    [self refreshNotificationBell:hasIdentity hasNotifications:hasNotifications];
 }
+
+#endif
 
 - (void)homeView:(DWHomeView *)homeView didSelectTransaction:(DSTransaction *)transaction {
     [self presentTransactionDetails:transaction];
@@ -141,8 +208,45 @@ NS_ASSUME_NONNULL_BEGIN
     [self performActionForShortcut:action sender:sender];
 }
 
+#pragma mark - SyncingActivityMonitorObserver
+
+- (void)syncingActivityMonitorProgressDidChange:(double)progress {
+    // pass
+}
+
+- (void)syncingActivityMonitorStateDidChangeWithPreviousState:(SyncingActivityMonitorState)previousState state:(SyncingActivityMonitorState)state {
+    
+#if DASHPAY
+    if (state == SyncingActivityMonitorStateSyncDone) {
+        if (_invitationSetup != nil) {
+            [self handleDeeplink:_invitationSetup.invitation definedUsername:_invitationSetup.chosenUsername];
+            _invitationSetup = nil;
+        }
+        
+        [SyncingActivityMonitor.shared removeObserver:self];
+    }
+#endif
+}
+
+#pragma mark - DWRootEditProfileViewControllerDelegate
+
+#if DASHPAY
+- (void)editProfileViewController:(DWRootEditProfileViewController *)controller
+                updateDisplayName:(NSString *)rawDisplayName
+                          aboutMe:(NSString *)rawAboutMe
+                  avatarURLString:(nullable NSString *)avatarURLString {
+    [self.model.dashPayModel.userProfile.updateModel updateWithDisplayName:rawDisplayName aboutMe:rawAboutMe avatarURLString:avatarURLString];
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)editProfileViewControllerDidCancel:(DWRootEditProfileViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+#endif
+
 #pragma mark - Private
 
+#if DASHPAY
 - (void)payViewControllerDidHidePaymentResultToContact:(nullable id<DWDPBasicUserItem>)contact {
     if (!contact) {
         return;
@@ -154,6 +258,39 @@ NS_ASSUME_NONNULL_BEGIN
                                                   dataProvider:self.dataProvider];
     [self presentViewController:profile animated:YES completion:nil];
 }
+
+- (void)refreshNotificationBell:(BOOL)hasIdentity hasNotifications:(BOOL)hasNotifications {
+    if (!hasIdentity) {
+        self.navigationItem.rightBarButtonItem = nil;
+        return;
+    }
+    
+    UIImage *notificationsImage;
+    
+    if (hasNotifications) {
+        notificationsImage = [UIImage imageNamed:@"icon_bell_active"];
+    } else {
+        notificationsImage = [UIImage imageNamed:@"icon_bell"];
+    }
+    
+    notificationsImage = [notificationsImage imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    UIBarButtonItem *notificationButton = [[UIBarButtonItem alloc] initWithImage:notificationsImage style:UIBarButtonItemStylePlain target:self action:@selector(notificationAction)];
+    self.navigationItem.rightBarButtonItem = notificationButton;
+}
+
+- (void)notificationAction {
+    DWNotificationsViewController *controller = [[DWNotificationsViewController alloc] initWithPayModel:self.payModel dataProvider:self.dataProvider];
+    [self.navigationController pushViewController:controller animated:YES];
+}
+
+- (void)profileAction {
+    DWRootEditProfileViewController *controller = [[DWRootEditProfileViewController alloc] init];
+    controller.delegate = self;
+    DWNavigationController *navigation = [[DWNavigationController alloc] initWithRootViewController:controller];
+    navigation.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:navigation animated:YES completion:nil];
+}
+#endif
 
 - (id<DWPayModelProtocol>)payModel {
     return self.model.payModel;
@@ -185,6 +322,18 @@ NS_ASSUME_NONNULL_BEGIN
     [contentView addSubview:imageView];
 
     self.navigationItem.titleView = contentView;
+    
+#if DASHPAY
+    DWDPAvatarView *avatarView = [[DWDPAvatarView alloc] initWithFrame:(CGRect){{0.0, 0.0}, CGSizeMake(30.0, 30.0)}];
+    avatarView.small = YES;
+    avatarView.hidden = YES;
+    avatarView.backgroundMode = DWDPAvatarBackgroundMode_Random;
+    UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(profileAction)];
+    [avatarView addGestureRecognizer:tapRecognizer];
+    _avatarView = avatarView;
+    UIBarButtonItem *avatarButton = [[UIBarButtonItem alloc] initWithCustomView:avatarView];
+    self.navigationItem.leftBarButtonItem = avatarButton;
+#endif
 
     self.view.model = self.model;
 }
@@ -206,14 +355,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)presentTransactionDetails:(DSTransaction *)transaction {
-    TxDetailModel *model = [[TxDetailModel alloc] initWithTransaction:transaction];
-    TXDetailViewController *controller = [[TXDetailViewController alloc] initWithModel:model];
+    DWTxDetailModel *model = [[DWTxDetailModel alloc] initWithTransaction:transaction];
+    DWTxDetailViewController *controller = [[DWTxDetailViewController alloc] initWithModel:model];
 
     DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];
     [self presentViewController:nvc animated:YES completion:nil];
 }
-
-
 
 @end
 

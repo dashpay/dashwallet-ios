@@ -18,13 +18,16 @@
 #import "DWPaymentProcessor.h"
 
 #import "CurrencyExchanger_Objc.h"
-#import "DWDPUserObject.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWPaymentInput+Private.h"
 #import "DWPaymentInput.h"
 #import "DWPaymentInputBuilder.h"
 #import "DWPaymentOutput+Private.h"
+
+#if DASHPAY
+#import "DWDPUserObject.h"
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -134,9 +137,11 @@ static NSString *sanitizeString(NSString *s) {
                 }
             }
 
+#if DASHPAY
             if (requestIdentity) {
                 paymentInput.userItem = [[DWDPUserObject alloc] initWithBlockchainIdentity:requestIdentity];
             }
+#endif
         }
     }
 

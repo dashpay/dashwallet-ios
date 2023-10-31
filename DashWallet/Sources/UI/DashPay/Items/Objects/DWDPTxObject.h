@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithTransaction:(DSTransaction *)tx
                        dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider
-                           username:(NSString *)username NS_DESIGNATED_INITIALIZER;
+                 blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

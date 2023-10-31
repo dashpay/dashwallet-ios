@@ -34,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, copy) DWNotificationsData *data;
 
 @property (nullable, nonatomic, weak) id<DWNotificationsModelDelegate> delegate;
+@property (nullable, nonatomic, weak) UIViewController *context;
 
 - (void)acceptContactRequest:(id<DWDPBasicUserItem>)item;
 - (void)declineContactRequest:(id<DWDPBasicUserItem>)item;

@@ -42,15 +42,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWMainMenuModel
 
-- (instancetype)init {
+- (instancetype)initWithInvitesEnabled:(BOOL)enabled {
     self = [super init];
     if (self) {
+        NSMutableArray<id<DWMainMenuItem>> *items = [NSMutableArray array];
+        
+        if (enabled) {
+            [items addObject:[[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Invite]];
+        }
+        
         if ([[DWEnvironment sharedInstance].currentChain isMainnet]) {
-            _items = [DWMainMenuModel allItems];
+            [items addObjectsFromArray:[DWMainMenuModel allItems]];
         }
         else {
-            _items = [DWMainMenuModel testnetItems];
+            [items addObjectsFromArray:[DWMainMenuModel testnetItems]];
         }
+        
+        _items = items;
     }
     return self;
 }
@@ -65,6 +73,9 @@ NS_ASSUME_NONNULL_BEGIN
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Security],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Settings],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Tools],
+#if DASHPAY
+            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Voting],
+#endif
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Support],
         ];
     });
@@ -80,6 +91,9 @@ NS_ASSUME_NONNULL_BEGIN
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Security],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Settings],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Tools],
+#if DASHPAY
+            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Voting],
+#endif
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Support],
         ];
     });

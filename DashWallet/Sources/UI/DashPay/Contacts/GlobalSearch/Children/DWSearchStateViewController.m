@@ -19,6 +19,7 @@
 
 #import "dashwallet-Swift.h"
 #import "DWUIKit.h"
+#import "DWInvitationSuggestionView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -37,6 +38,7 @@ typedef NS_ENUM(NSUInteger, DWUserSearchState) {
 @property (null_resettable, nonatomic, strong) UIImageView *iconImageView;
 @property (null_resettable, nonatomic, strong) UILabel *descriptionLabel;
 @property (null_resettable, nonatomic, strong) UIButton *actionButton;
+@property (null_resettable, nonatomic, strong) DWInvitationSuggestionView *invitationView;
 
 @property (nonatomic, assign) DWUserSearchState state;
 @property (nullable, copy, nonatomic) NSString *searchQuery;
@@ -96,6 +98,13 @@ NS_ASSUME_NONNULL_END
     [self reloadData];
 }
 
+- (void)setErrorState {
+    self.searchQuery = nil;
+    self.state = DWUserSearchState_Error;
+
+    [self reloadData];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 
@@ -115,6 +124,8 @@ NS_ASSUME_NONNULL_END
     [self.view addSubview:horizontalStackView];
 
     UILayoutGuide *guide = self.view.layoutMarginsGuide;
+    
+    [self.view addSubview:self.invitationView];
 
     [NSLayoutConstraint activateConstraints:@[
         [horizontalStackView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
@@ -122,6 +133,10 @@ NS_ASSUME_NONNULL_END
         [guide.trailingAnchor constraintEqualToAnchor:horizontalStackView.trailingAnchor],
         [self.view.bottomAnchor constraintEqualToAnchor:horizontalStackView.bottomAnchor],
         [self.actionButton.heightAnchor constraintEqualToConstant:44.0],
+        
+        [self.invitationView.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor],
+        [guide.trailingAnchor constraintEqualToAnchor:self.invitationView.trailingAnchor],
+        [guide.bottomAnchor constraintEqualToAnchor:self.invitationView.bottomAnchor],
     ]];
 
     [self reloadData];
@@ -162,6 +177,18 @@ NS_ASSUME_NONNULL_END
         _actionButton = button;
     }
     return _actionButton;
+}
+
+- (DWInvitationSuggestionView *)invitationView {
+    if (!_invitationView) {
+        _invitationView = [[DWInvitationSuggestionView alloc] init];
+        _invitationView.translatesAutoresizingMaskIntoConstraints = NO;
+        [_invitationView.inviteButton addTarget:self
+                                         action:@selector(inviteButtonAction:)
+                               forControlEvents:UIControlEventTouchUpInside];
+        _invitationView.alpha = [DWGlobalOptions sharedInstance].dpInvitationFlowEnabled ? 1.0 : 0.0;
+    }
+    return _invitationView;
 }
 
 - (void)reloadData {
@@ -205,7 +232,12 @@ NS_ASSUME_NONNULL_END
     [self.delegate searchStateViewController:self buttonAction:sender];
 }
 
+- (void)inviteButtonAction:(UIButton *)sender {
+    [self.delegate searchStateViewController:self inviteButtonAction:sender];
+}
+
 - (void)configurePlaceholderState {
+    self.invitationView.hidden = NO;
     self.actionButton.hidden = YES;
 
     [self.iconImageView stopAnimating];
@@ -235,6 +267,7 @@ NS_ASSUME_NONNULL_END
 - (void)configureSearchingAnimationState {
     NSParameterAssert(self.searchQuery);
 
+    self.invitationView.hidden = YES;
     self.actionButton.hidden = YES;
 
     if (self.iconImageView.animationImages == nil) {
@@ -276,6 +309,7 @@ NS_ASSUME_NONNULL_END
 - (void)configureNoResultsGlobalState {
     NSParameterAssert(self.searchQuery);
 
+    self.invitationView.hidden = NO;
     self.actionButton.hidden = YES;
 
     [self.iconImageView stopAnimating];
@@ -308,6 +342,7 @@ NS_ASSUME_NONNULL_END
 - (void)configureNoResultsLocalState {
     NSParameterAssert(self.searchQuery);
 
+    self.invitationView.hidden = YES;
     self.actionButton.hidden = YES;
 
     [self.iconImageView stopAnimating];
@@ -338,6 +373,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)configureSearchErrorState {
+    self.invitationView.hidden = YES;
     self.actionButton.hidden = YES;
 
     [self.iconImageView stopAnimating];
@@ -367,6 +403,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)configureActionButtonForSearchUsers {
+    self.invitationView.hidden = YES;
     self.actionButton.hidden = NO;
     self.actionButton.imageEdgeInsets = UIEdgeInsetsMake(0.0, -8.0, 0.0, 0.0);
     [self.actionButton setImage:[UIImage imageNamed:@"dp_search_add_contact"] forState:UIControlStateNormal];

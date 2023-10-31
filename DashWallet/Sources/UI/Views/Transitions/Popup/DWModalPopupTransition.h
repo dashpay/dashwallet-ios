@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) DWModalPopupAppearanceStyle appearanceStyle;
 
+- (instancetype)initWithInteractiveTransitionAllowed:(BOOL)interactiveTransitionAllowed;
+
 @end
 
 NS_ASSUME_NONNULL_END

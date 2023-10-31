@@ -87,6 +87,12 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_subheaderTextColor {
+    UIColor *color = [UIColor colorNamed:@"SubheaderTextColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 + (UIColor *)dw_redColor {
     UIColor *color = [UIColor colorNamed:@"RedColor"];
     NSParameterAssert(color);
@@ -215,6 +221,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UIColor *)dw_blueGradientStartColor {
     UIColor *color = [UIColor colorNamed:@"BlueGradientStartColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
++ (UIColor *)dw_lightBlueColor {
+    UIColor *color = [UIColor colorNamed:@"LightBlueColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
++ (UIColor *)dw_buttonBlackColor {
+    UIColor *color = [UIColor colorNamed:@"ButtonBlackColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
++ (UIColor *)dw_buttonBlackTitleColor {
+    UIColor *color = [UIColor colorNamed:@"ButtonBlackTitleColor"];
     NSParameterAssert(color);
     return color;
 }
