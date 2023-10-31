@@ -371,9 +371,6 @@
 /* No comment provided by engineer. */
 "Confirm PIN" = "Confirm PIN";
 
-/* CrowdNode */
-"Confirm Withdrawal" = "Confirm Withdrawal";
-
 /* No comment provided by engineer. */
 "Confirming" = "Confirming";
 
@@ -1884,12 +1881,6 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Tax Category";
 
-/* CrowdNode */
-"The amount that you entered will be adjusted to the closest level of precision that is possible." = "The amount that you entered will be adjusted to the closest level of precision that is possible.";
-
-/* CrowdNode */
-"The blockchain API for mobile processes withdrawals based on a % of your balance so that all transaction activity can be transparently recorded on the blockchain." = "The blockchain API for mobile processes withdrawals based on a % of your balance so that all transaction activity can be transparently recorded on the blockchain.";
-
 /* No comment provided by engineer. */
 "Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users.";
 
@@ -1913,9 +1904,6 @@
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "The minimum amount you can send is %@";
-
-/* CrowdNode */
-"The withdrawal amount has been adjusted by" = "The withdrawal amount has been adjusted by";
 
 /* No comment provided by engineer. */
 "them (Fetching Info)" = "them (Fetching Info)";
@@ -2233,9 +2221,6 @@
 
 /* CrowdNode */
 "Why do you need an online account?" = "Why do you need an online account?";
-
-/* CrowdNode */
-"Why does the entered amount differ from what I see on this screen?" = "Why does the entered amount differ from what I see on this screen?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Why I should not take a screenshot?";

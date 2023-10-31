@@ -350,9 +350,6 @@
 /* No comment provided by engineer. */
 "Confirm PIN" = "Pastikan PIN";
 
-/* CrowdNode */
-"Confirm Withdrawal" = "Confirm Withdrawal";
-
 /* No comment provided by engineer. */
 "Confirming" = "Mengkonfirmasikan";
 
@@ -1463,9 +1460,6 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "Lihat di Uphold";
 
-/* CrowdNode */
-"See why it happened" = "See why it happened";
-
 /* Coinbase */
 "Select a coin" = "Pilih koin";
 
@@ -1659,12 +1653,6 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Kategori Pajak";
 
-/* CrowdNode */
-"The amount that you entered will be adjusted to the closest level of precision that is possible." = "The amount that you entered will be adjusted to the closest level of precision that is possible.";
-
-/* CrowdNode */
-"The blockchain API for mobile processes withdrawals based on a % of your balance so that all transaction activity can be transparently recorded on the blockchain." = "The blockchain API for mobile processes withdrawals based on a % of your balance so that all transaction activity can be transparently recorded on the blockchain.";
-
 /* No comment provided by engineer. */
 "The chain is syncing…" = "Rantai sedang menyinkronkan…";
 
@@ -1679,9 +1667,6 @@
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "Jumlah minimum yang dapat Anda kirim adalah %@";
-
-/* CrowdNode */
-"The withdrawal amount has been adjusted by" = "The withdrawal amount has been adjusted by";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "Tidak ada pemberitahuan baru";
@@ -1945,9 +1930,6 @@
 
 /* CrowdNode */
 "Why do you need an online account?" = "Mengapa Anda membutuhkan akun online?";
-
-/* CrowdNode */
-"Why does the entered amount differ from what I see on this screen?" = "Why does the entered amount differ from what I see on this screen?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Mengapa saya harus tidak mengambil tangkapan layar?";

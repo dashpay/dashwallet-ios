@@ -350,9 +350,6 @@
 /* No comment provided by engineer. */
 "Confirm PIN" = "PIN 확인";
 
-/* CrowdNode */
-"Confirm Withdrawal" = "Confirm Withdrawal";
-
 /* No comment provided by engineer. */
 "Confirming" = "확인 중";
 
@@ -1463,9 +1460,6 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "업홀드에서 확인";
 
-/* CrowdNode */
-"See why it happened" = "See why it happened";
-
 /* Coinbase */
 "Select a coin" = "코인 선택";
 
@@ -1659,12 +1653,6 @@
 /* No comment provided by engineer. */
 "Tax Category" = "세금 카테고리";
 
-/* CrowdNode */
-"The amount that you entered will be adjusted to the closest level of precision that is possible." = "The amount that you entered will be adjusted to the closest level of precision that is possible.";
-
-/* CrowdNode */
-"The blockchain API for mobile processes withdrawals based on a % of your balance so that all transaction activity can be transparently recorded on the blockchain." = "The blockchain API for mobile processes withdrawals based on a % of your balance so that all transaction activity can be transparently recorded on the blockchain.";
-
 /* No comment provided by engineer. */
 "The chain is syncing…" = "체인 동기화 중...";
 
@@ -1679,9 +1667,6 @@
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "송금 가능한 최소 금액은 %@ 입니다";
-
-/* CrowdNode */
-"The withdrawal amount has been adjusted by" = "The withdrawal amount has been adjusted by";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "새로운 알림이 없습니다";
@@ -1945,9 +1930,6 @@
 
 /* CrowdNode */
 "Why do you need an online account?" = "왜 온라인 계정이 필요한가요?";
-
-/* CrowdNode */
-"Why does the entered amount differ from what I see on this screen?" = "Why does the entered amount differ from what I see on this screen?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "왜 스크린샷을 찍으면 안되나요?";
