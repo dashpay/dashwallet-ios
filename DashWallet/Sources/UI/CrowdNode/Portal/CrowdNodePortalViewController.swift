@@ -81,6 +81,7 @@ extension CrowdNodePortalController {
     private func configureHierarchy() {
         view.backgroundColor = .dw_secondaryBackground()
 
+        balanceLabel.text = NSLocalizedString("Balance On CrowdNode", comment: "CrowdNode")
         balanceView.tint = .white
         balanceView.dataSource = self
 
