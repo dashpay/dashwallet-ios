@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22154" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_0" orientation="portrait" appearance="dark"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22130"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -159,6 +159,7 @@
                         <outlet property="acceptTermsText" destination="HH4-Qf-Qjr" id="kcs-4n-iid"/>
                         <outlet property="actionButton" destination="4DJ-bK-bvd" id="IDa-uT-0D5"/>
                         <outlet property="addressLabel" destination="lPE-iA-urR" id="u8P-2J-yE7"/>
+                        <outlet property="addressTitleLabel" destination="C7C-3J-thP" id="tOE-LD-Bc1"/>
                         <outlet property="explainerLabel1" destination="UxQ-U0-ggd" id="ZKS-Ye-DQm"/>
                         <outlet property="explainerLabel2" destination="1dX-4E-qVf" id="FCT-UF-HAr"/>
                         <outlet property="titleLabel" destination="JGO-bv-xnp" id="rEL-iZ-XYc"/>
@@ -230,6 +231,7 @@
                     <connections>
                         <outlet property="actionButton" destination="DgD-Ua-Noy" id="idV-Jc-Nkt"/>
                         <outlet property="statusLabel" destination="FLC-dP-GHT" id="kCn-LQ-r36"/>
+                        <outlet property="titleLabel" destination="Jw3-MX-5Jw" id="XQD-N7-I4O"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="pKH-2R-Tyc" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -408,7 +410,13 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="continueButton" destination="pOX-4p-mjM" id="8sh-NV-LQN"/>
                         <outlet property="logoWrapper" destination="g40-Eq-Qi9" id="BVV-xa-3Rb"/>
+                        <outlet property="rewardsLabel" destination="F8l-Gy-j7h" id="u1K-pz-vZf"/>
+                        <outlet property="rewardsSubtitleLabel" destination="uke-QE-Eh2" id="JZm-5i-hLt"/>
+                        <outlet property="stakingLabel" destination="kyx-hu-8tt" id="dgG-79-u2w"/>
+                        <outlet property="stakingSubtitleLabel" destination="DGO-br-FKt" id="Ci1-gZ-dkh"/>
+                        <outlet property="titleLabel" destination="4LF-hx-9fT" id="tzd-bn-aaH"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="s3V-TP-mQ0" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -708,12 +716,16 @@
                     <connections>
                         <outlet property="balanceHint" destination="9fz-1h-ZDN" id="qD9-LA-KSj"/>
                         <outlet property="linkAccountButton" destination="ZQI-dO-W89" id="BKk-OO-zZn"/>
+                        <outlet property="linkAccountLabel" destination="9NV-tw-AIG" id="uX4-4Z-z1n"/>
                         <outlet property="logoWrapper" destination="oVM-g2-5mk" id="hvQ-Zk-CdC"/>
-                        <outlet property="minimumBalanceLable" destination="MMc-Tm-3cd" id="Wfg-Se-gnI"/>
+                        <outlet property="minimumBalanceLabel" destination="MMc-Tm-3cd" id="Wfg-Se-gnI"/>
                         <outlet property="newAccountButton" destination="RrR-Ij-X7B" id="9MN-XO-6xg"/>
                         <outlet property="newAccountIcon" destination="oqB-km-Cfg" id="zB4-ew-ag0"/>
                         <outlet property="newAccountTitle" destination="xjO-zE-GIY" id="u0h-gv-Wd8"/>
                         <outlet property="passphraseHint" destination="QwV-IR-wos" id="fo3-r4-iLk"/>
+                        <outlet property="passphraseLabel" destination="rhi-9U-vRq" id="xPC-VT-M8R"/>
+                        <outlet property="subtitleLabel" destination="mnD-eQ-zxd" id="DQ2-yU-PBG"/>
+                        <outlet property="titleLabel" destination="tIu-1S-SsA" id="eRS-gz-NTP"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="cRT-Qk-Hk5" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1403,10 +1415,25 @@
                     </view>
                     <size key="freeformSize" width="390" height="1844"/>
                     <connections>
+                        <outlet property="addressDescription" destination="C1C-q3-3v1" id="a6w-Hf-Epl"/>
                         <outlet property="addressLabel" destination="sVZ-aB-1rg" id="XA6-3M-wgl"/>
+                        <outlet property="addressLabelTitle" destination="nVx-b6-kCA" id="nqP-mH-cfp"/>
+                        <outlet property="addressTitle" destination="LSv-O0-DKY" id="rPn-cR-sGn"/>
+                        <outlet property="apyDescription" destination="RuC-FM-0Jy" id="jTQ-GG-Q4l"/>
+                        <outlet property="benefitsLabel" destination="cb1-td-uoa" id="c0o-fV-FM0"/>
                         <outlet property="crowdnodeApyLabel" destination="Xt1-ez-god" id="XGF-X2-9qd"/>
+                        <outlet property="leavingDescription" destination="9EG-fn-Xy0" id="t7g-eT-xQK"/>
+                        <outlet property="leavingDescription2" destination="I0y-j0-Qc5" id="6YI-5y-KvF"/>
+                        <outlet property="leavingTitle" destination="Z7b-xS-axf" id="tfU-iF-PtK"/>
                         <outlet property="masternodeApyLabel" destination="GNw-9x-IA6" id="7GU-nY-Zfg"/>
                         <outlet property="minimumDepositLabel" destination="L9H-Wm-Kbc" id="znl-lc-IV1"/>
+                        <outlet property="minimumDepositTitle" destination="ctX-pF-BtX" id="ULN-Da-pz0"/>
+                        <outlet property="poolDescription" destination="Oe7-NZ-W4z" id="rTr-07-gK6"/>
+                        <outlet property="poolTitle" destination="Gre-qi-lTd" id="k71-Rr-tJB"/>
+                        <outlet property="rewardsDescription" destination="dOx-EI-xlS" id="AVy-TO-e0g"/>
+                        <outlet property="rewardsTitle" destination="mFQ-0P-0bY" id="gsd-52-yyO"/>
+                        <outlet property="subtitleLabel" destination="wQO-R7-BpZ" id="nf3-2W-MXP"/>
+                        <outlet property="titleLabel" destination="hWf-mu-AOq" id="gx8-19-TAA"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="hpH-Q5-8DC" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1581,7 +1608,12 @@
                     </view>
                     <connections>
                         <outlet property="addressLabel" destination="3Ps-s9-WFJ" id="Ibj-bo-egr"/>
+                        <outlet property="addressTitle" destination="yp0-cN-bvz" id="xpu-DW-YAK"/>
                         <outlet property="primaryAddressLabel" destination="SjH-ef-F2Y" id="RSO-Ux-fuc"/>
+                        <outlet property="primaryAddressTitle" destination="euk-KI-SlX" id="lHR-Io-GRb"/>
+                        <outlet property="subtitle2Label" destination="MZa-OL-kHx" id="oCK-Z3-98w"/>
+                        <outlet property="subtitleLabel" destination="okJ-rm-yKa" id="0b0-7u-xtY"/>
+                        <outlet property="titleLabel" destination="Bzd-lt-ImN" id="E1V-sd-rnN"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="GnX-id-d4o" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1897,12 +1929,18 @@
                     </view>
                     <connections>
                         <outlet property="addressLabel" destination="rfl-yd-KCc" id="9zR-f6-V5m"/>
+                        <outlet property="addressTitle" destination="Q1l-Wa-lWT" id="2HD-Rv-vWa"/>
                         <outlet property="attentionBox" destination="VvX-rd-Sbh" id="Ng5-GE-rIa"/>
+                        <outlet property="attentionLabel" destination="rqC-E0-qZ5" id="mm7-zM-I36"/>
                         <outlet property="documentationLinkButton" destination="cbx-CH-WkP" id="elh-g6-noi"/>
+                        <outlet property="howToConfirmLabel" destination="zZf-Ji-wAS" id="aZT-nt-l3x"/>
+                        <outlet property="info2Label" destination="JgE-B8-yVL" id="zUK-WD-Zod"/>
                         <outlet property="infoLabel" destination="mXh-pq-RhA" id="Nbh-Ao-2gE"/>
                         <outlet property="primaryAddressLabel" destination="kMH-4N-PIl" id="CPY-Qx-ixK"/>
+                        <outlet property="primaryAddressTitle" destination="lRM-Zd-c7j" id="Yxc-iP-SGL"/>
                         <outlet property="qrButton" destination="GfR-gG-hfH" id="b2W-mQ-hcp"/>
                         <outlet property="shareButton" destination="Mf5-xo-b4B" id="IN1-Af-bRp"/>
+                        <outlet property="titleLabel" destination="P9u-K0-14B" id="YTA-gh-Gzx"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="PLd-aY-rae" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1963,6 +2001,7 @@
                     <connections>
                         <outlet property="messageLabel" destination="ICh-Mv-acJ" id="ElL-98-WqD"/>
                         <outlet property="qrImage" destination="ps8-mI-AaA" id="q4g-Qt-jFU"/>
+                        <outlet property="titleLabel" destination="NgJ-ic-mLy" id="bWO-CM-IOT"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="TiY-5g-nb9" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -2152,6 +2191,16 @@
                             <constraint firstItem="a4t-Xp-CZ6" firstAttribute="leading" secondItem="Qhp-jq-i6L" secondAttribute="leading" constant="20" id="zQA-6z-Fva"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="continueButton" destination="a4t-Xp-CZ6" id="icu-Ny-3CA"/>
+                        <outlet property="historyDescription" destination="vtj-B5-Qps" id="uGR-gH-jLh"/>
+                        <outlet property="historyTitle" destination="kCy-67-FOy" id="GDI-wU-RGQ"/>
+                        <outlet property="payoutDescription" destination="nVg-5K-fmZ" id="bUn-Zr-JC3"/>
+                        <outlet property="payoutTitle" destination="4yW-I5-pFH" id="k1T-IE-MhD"/>
+                        <outlet property="recoveryDescription" destination="P3R-Q5-rl1" id="hp3-Tb-JMA"/>
+                        <outlet property="recoveryTitle" destination="qYK-iJ-e1O" id="WdG-Tq-i9t"/>
+                        <outlet property="titleLabel" destination="hii-xx-hwk" id="mTM-nr-JF4"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="t08-VZ-25Y" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -2220,6 +2269,8 @@
                         <outlet property="actionButtonBottomConstraint" destination="HTz-tV-DIr" id="JCZ-bj-pcV"/>
                         <outlet property="continueButton" destination="6Wq-XN-Ocw" id="SeA-c1-OWj"/>
                         <outlet property="input" destination="VOf-bx-F8y" id="Sa5-bL-MQX"/>
+                        <outlet property="subtitleLabel" destination="jxB-3c-ktx" id="8tO-rB-bJC"/>
+                        <outlet property="titleLabel" destination="lAI-2X-dMo" id="0Z8-8y-gfh"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="nfg-dp-elL" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -2401,12 +2452,15 @@
                         <outlet property="adjustedBottomLabel" destination="3wb-Aq-wtT" id="J6k-Xj-QmH"/>
                         <outlet property="adjustedTopLabel" destination="R4T-Iq-SXC" id="bPb-pt-pKH"/>
                         <outlet property="balanceView" destination="CwU-nM-aq3" id="b3L-Jc-1D8"/>
+                        <outlet property="cancelButton" destination="XbJ-72-r6V" id="flT-VN-MhS"/>
+                        <outlet property="confirmButton" destination="3Zh-D0-o2I" id="amk-8D-sd9"/>
                         <outlet property="moreInfoButton" destination="zWW-bR-xMz" id="yVi-WR-xgl"/>
                         <outlet property="moreInfoFirstRow" destination="Qne-Vx-uHR" id="Lys-RO-ReM"/>
                         <outlet property="moreInfoSecondRow" destination="cVP-Q1-jgp" id="QO7-ee-kI4"/>
                         <outlet property="moreInfoThirdRow" destination="ruk-XV-XlP" id="Q00-9K-l20"/>
                         <outlet property="moreInfoView" destination="SH3-uT-8wK" id="abI-Vh-shK"/>
                         <outlet property="showMoreHeightConstraint" destination="KH8-fu-FOf" id="P1Z-p0-Yss"/>
+                        <outlet property="titleLabel" destination="mVm-e1-qb2" id="1yt-YF-btF"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KZY-Sd-JQA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -2437,7 +2491,7 @@
         <image name="image.crowdnode.warning" width="22" height="22"/>
         <image name="info.circle" catalog="system" width="128" height="123"/>
         <image name="qrcode" catalog="system" width="128" height="114"/>
-        <image name="square.and.arrow.up" catalog="system" width="115" height="128"/>
+        <image name="square.and.arrow.up" catalog="system" width="108" height="128"/>
         <image name="wand.and.stars" catalog="system" width="128" height="115"/>
         <image name="xmark" catalog="system" width="128" height="113"/>
         <namedColor name="BackgroundColor">
@@ -2459,7 +2513,7 @@
             <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="Label">
-            <color red="0.097999997437000275" green="0.10999999940395355" blue="0.12200000137090683" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.094117647058823528" green="0.10980392156862745" blue="0.12156862745098039" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="QuaternaryFillColor">
             <color red="0.4392156862745098" green="0.4392156862745098" blue="0.44705882352941179" alpha="0.070000000298023224" colorSpace="custom" customColorSpace="sRGB"/>
@@ -2474,7 +2528,7 @@
             <color red="0.45882352941176469" green="0.50196078431372548" blue="0.54117647058823526" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <systemColor name="labelColor">
-            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

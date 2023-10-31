@@ -31,7 +31,6 @@
 #import "DWPayModelProtocol.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSettingsMenuModel.h"
-#import "DWUpholdViewController.h"
 #import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -159,6 +158,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)showLocalCurrencyAction {
     DWLocalCurrencyViewController *controller =
         [[DWLocalCurrencyViewController alloc] initWithNavigationAppearance:DWNavigationAppearance_White
+                                                           presentationMode:DWCurrencyPickerPresentationMode_Dialog
                                                                currencyCode:nil];
     controller.delegate = self;
     [self presentControllerModallyInNavigationController:controller];

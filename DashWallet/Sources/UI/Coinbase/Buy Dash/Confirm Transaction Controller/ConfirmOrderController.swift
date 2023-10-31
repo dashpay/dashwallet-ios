@@ -96,10 +96,10 @@ final class ConfirmOrderController: OrderPreviewViewController {
         model as! ConfirmOrderModel
     }
 
-    init(order: CoinbasePlaceBuyOrder, paymentMethod: CoinbasePaymentMethod, plainAmount: UInt64) {
+    init(paymentMethod: CoinbasePaymentMethod, plainAmount: UInt64) {
         super.init(nibName: nil, bundle: nil)
 
-        model = ConfirmOrderModel(order: order, paymentMethod: paymentMethod, plainAmount: plainAmount)
+        model = ConfirmOrderModel(paymentMethod: paymentMethod, plainAmount: plainAmount)
         model.transactionDelegate = self
         configureModel()
     }

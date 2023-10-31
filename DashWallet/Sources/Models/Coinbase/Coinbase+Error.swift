@@ -26,6 +26,10 @@ extension Coinbase {
         enum GeneralFailureReason: LocalizedError {
             case noActiveUser
             case revokedToken
+            case noPaymentMethods
+            case noCashAccount
+            case rateNotFound
+            case depositFailed
 
             var errorDescription: String? {
                 switch self {
@@ -33,6 +37,32 @@ extension Coinbase {
                     return NSLocalizedString("No active user", comment: "Coinbase")
                 case .revokedToken:
                     return NSLocalizedString("For your security, you have been signed out.", comment: "Coinbase")
+                case .noPaymentMethods:
+                    return NSLocalizedString("Please add a payment method on Coinbase", comment: "Coinbase/Buy Dash")
+                case .noCashAccount:
+                    return NSLocalizedString("No cash account found", comment: "Coinbase")
+                case .rateNotFound:
+                    return NSLocalizedString("Could not find exchange rate.", comment: "")
+                case .depositFailed:
+                    return NSLocalizedString("We couldn’t make a deposit to your CrowdNode account.", comment: "Coinbase")
+                }
+            }
+            
+            var failureReason: String? {
+                switch self {
+                case .noPaymentMethods:
+                    return NSLocalizedString("No payment methods found", comment: "Coinbase/Buy Dash")
+                default:
+                    return ""
+                }
+            }
+            
+            var recoverySuggestion: String? {
+                switch self {
+                case .noPaymentMethods:
+                    return NSLocalizedString("Add", comment: "Coinbase/Buy Dash")
+                default:
+                    return ""
                 }
             }
         }

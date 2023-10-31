@@ -24,6 +24,7 @@ final class AccountCreatingController: UIViewController {
     private var cancellableBag = Set<AnyCancellable>()
 
     @IBOutlet var actionButton: UIButton!
+    @IBOutlet var titleLabel: UILabel!
     @IBOutlet var statusLabel: UILabel!
 
     override func viewDidLoad() {
@@ -54,6 +55,8 @@ final class AccountCreatingController: UIViewController {
 extension AccountCreatingController {
     private func configureHierarchy() {
         view.backgroundColor = .dw_secondaryBackground()
+        titleLabel.text = NSLocalizedString("Please wait", comment: "")
+        actionButton.setTitle(NSLocalizedString("Close and notify when it’s done", comment: "CrowdNode"), for: .normal)
     }
 
     private func configureObservers() {

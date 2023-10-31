@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) DWAlertAction *preferredAction;
 @property (nullable, weak, nonatomic) id<DWUpholdLogoutTutorialViewControllerDelegate> delegate;
 
-+ (instancetype)controller;
++ (instancetype)controller NS_SWIFT_NAME(controller());
 
 @end
 

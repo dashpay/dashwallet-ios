@@ -52,13 +52,18 @@ class OrderPreviewViewController: BaseViewController, NetworkReachabilityHandlin
         actionButton.showActivityIndicator()
         actionButton.isEnabled = false
 
-        model.placeOrder()
+        Task {
+            do {
+                try await model.placeOrder()
+            } catch {
+                transferFromCoinbaseToWalletDidFail(with: error)
+            }
+        }
     }
 
     @objc
     func cancelAction() {
-        let alert = UIAlertController(title: nil, message: NSLocalizedString("Are you sure you want to cancel this order?", comment: "Coinbase/Buy Dash/Cancel Order    "),
-                                      preferredStyle: .alert)
+        let alert = UIAlertController(title: nil, message: NSLocalizedString("Are you sure you want to cancel this order?", comment: "Coinbase/Buy Dash/Cancel Order"), preferredStyle: .alert)
         let noAction = UIAlertAction(title: NSLocalizedString("No", comment: ""), style: .cancel)
         alert.addAction(noAction)
         let yesAction = UIAlertAction(title: NSLocalizedString("Yes", comment: ""), style: .default) { [weak self] _ in
@@ -95,7 +100,10 @@ class OrderPreviewViewController: BaseViewController, NetworkReachabilityHandlin
         super.viewDidLoad()
 
         configureHierarchy()
-        startCounting()
+        
+        if model.showCountdown {
+            startCounting()
+        }
 
         networkStatusDidChange = { [weak self] _ in
             self?.reloadView()
@@ -162,9 +170,12 @@ extension OrderPreviewViewController {
 
         model.orderChangeHandle = { [weak self] in
             self?.tableView.reloadData()
-            self?.retryButton.hideActivityIndicator()
-            self?.retryButton.isEnabled = true
-            self?.startCounting()
+            
+            if self?.model.showCountdown == true {
+                self?.retryButton.hideActivityIndicator()
+                self?.retryButton.isEnabled = true
+                self?.startCounting()
+            }
         }
 
         model.failureHandle = { [weak self] _ in
@@ -208,9 +219,9 @@ extension OrderPreviewViewController {
 
         actionButton = ActionButton()
         actionButton.translatesAutoresizingMaskIntoConstraints = false
-        actionButton.setTitle(NSLocalizedString("Confirm (%@)", comment: "Coinbase/Buy Dash/Confirm Order"), for: .normal)
+        actionButton.setTitle(NSLocalizedString("Confirm", comment: "Coinbase/Buy Dash/Confirm Order"), for: .normal)
         actionButton.addTarget(self, action: #selector(confirmAction), for: .touchUpInside)
-        actionButton.isHidden = true
+        actionButton.isHidden = model.showCountdown
         buttonsStackView.addArrangedSubview(actionButton)
 
         retryButton = TintedButton()
@@ -218,7 +229,7 @@ extension OrderPreviewViewController {
         retryButton.addTarget(self, action: #selector(retryAction), for: .touchUpInside)
         retryButton.setImage(UIImage(systemName: "arrow.clockwise"), for: .normal)
         retryButton.setTitle(NSLocalizedString("Retry", comment: "Coinbase"), for: .normal)
-        retryButton.isHidden = false
+        retryButton.isHidden = !model.showCountdown
         buttonsStackView.addArrangedSubview(retryButton)
 
         networkUnavailableView = NetworkUnavailableView(frame: .init(x: 0, y: 0, width: view.bounds.width, height: 200))

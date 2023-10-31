@@ -27,6 +27,7 @@ final class ConvertCryptoOrderPreviewModel: OrderPreviewModel {
     var completionHandle: (() -> Void)?
     var failureHandle: ((ConfirmOrderError) -> Void)?
     var orderChangeHandle: (() -> Void)?
+    var showCountdown: Bool = true
 
     /// Selected account, origin
     let selectedAccount: CBAccount
@@ -46,7 +47,7 @@ final class ConvertCryptoOrderPreviewModel: OrderPreviewModel {
         amountToTransfer = order.outputAmount.amount.plainDashAmount()!
     }
 
-    func placeOrder() {
+    func placeOrder() async throws {
         guard let orderId = order.id else {
             failureHandle?(.error)
             return

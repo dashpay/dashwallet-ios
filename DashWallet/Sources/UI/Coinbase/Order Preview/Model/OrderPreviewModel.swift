@@ -24,8 +24,9 @@ protocol OrderPreviewModel: CoinbaseTransactionSendable {
     var completionHandle: (() -> Void)? { set get }
     var failureHandle: ((ConfirmOrderError) -> Void)? { set get }
     var orderChangeHandle: (() -> Void)? { set get }
+    var showCountdown: Bool { get }
 
-    func placeOrder()
+    func placeOrder() async throws
     func retry()
 }
 

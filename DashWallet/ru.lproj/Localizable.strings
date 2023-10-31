@@ -115,6 +115,9 @@
 /* No comment provided by engineer. */
 "Accepts DASH directly" = "Принять DASH напрямую";
 
+/* CrowdNode */
+"Account Recovery" = "Восстановление аккаунта";
+
 /* No comment provided by engineer. */
 "Activity" = "Активность";
 
@@ -133,8 +136,14 @@
 /* No comment provided by engineer. */
 "Address" = "Адрес";
 
+/* CoinJoin */
+"Advanced" = "Advanced";
+
 /* No comment provided by engineer. */
 "Advanced Security" = "Настройки безопасности";
+
+/* Coinbase */
+"Advanced users who have a very high level of technical expertise can determine your transaction history" = "Advanced users who have a very high level of technical expertise can determine your transaction history";
 
 /* No comment provided by engineer. */
 "Agree" = "Agree";
@@ -172,6 +181,9 @@
 /* CrowdNode */
 "and" = " и ";
 
+/* CoinJoin */
+"Any funds that have been mixed will be combined with your un mixed funds" = "Any funds that have been mixed will be combined with your un mixed funds";
+
 /* Coinbase/Payment Methods */
 "Apple Pay" = "Apple Pay";
 
@@ -190,8 +202,17 @@
 /* Coinbase/Buy Dash/Cancel Order */
 "Are you sure you want to cancel this transaction?" = "Вы уверены, что хотите отменить транзакцию?";
 
+/* CoinJoin */
+"Are you sure you want to change the privacy level?" = "Are you sure you want to change the privacy level?";
+
+/* CoinJoin */
+"Are you sure you want to stop mixing?" = "Are you sure you want to stop mixing?";
+
 /* No comment provided by engineer. */
 "Are you sure?" = "Вы уверены?";
+
+/* CrowdNode */
+"As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode." = "Часто у людей нет на руках суммы в 1000 Dash, и CrowdNode создал сервис, где можно получить преимущества владения мастернодой за счёт вкладов участников в общий пул.";
 
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "Поиск банкоматов работает лучше всего с включенными службами геолокации.";
@@ -233,6 +254,9 @@
 "Balance" = "Баланс";
 
 /* CrowdNode */
+"Balance On CrowdNode" = "Баланс CrowdNode";
+
+/* CrowdNode */
 "Balance: " = "Баланс:";
 
 /* Coinbase/Payment Methods */
@@ -241,11 +265,14 @@
 /* Coinbase/Payment Methods */
 "Bank Wire" = "Банковский перевод";
 
+/* CrowdNode */
+"Become part of a Dash Masternode with CrowdNode" = "Станьте частью мастерноды Dash вместе с CrowdNode";
+
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "Между Dash Wallet и Coinbase.";
+"Between Dash Wallet and Coinbase" = "Между Dash Wallet и Coinbase";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Между Dash Wallet и вашим аккаунтом Coinbase";
@@ -281,11 +308,8 @@
 /* Dash Service Overview */
 "Buy Dash with fiat" = "Купить Dash за фиат";
 
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Купить Dash с помощью Uphold";
-
 /* Dash Portal */
-"Buy Dash · No account needed" = "Buy Dash · No account needed";
+"Buy Dash · No account needed" = "Купить Dash · Без учётной записи";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "Покупайте подарочные карты с помощью Dash";
@@ -317,6 +341,12 @@
 /* No comment provided by engineer. */
 "Change PIN" = "Изменить PIN";
 
+/* CoinJoin */
+"Change to Advanced" = "Change to Advanced";
+
+/* CoinJoin */
+"Change to Intermediate" = "Change to Intermediate";
+
 /* No comment provided by engineer. */
 "Check your connection" = "Проверьте ваше интернет-соединение";
 
@@ -338,6 +368,9 @@
 /* No comment provided by engineer. */
 "Close" = "Закрыть";
 
+/* CrowdNode */
+"Close and notify when it’s done" = "Закрыть и уведомить о завершении";
+
 /* No comment provided by engineer. */
 "Close App" = "Закрыть приложение";
 
@@ -350,14 +383,11 @@
 /* Coinbase/Buy Dash */
 "Coinbase Fee" = "Комиссия Coinbase";
 
-/* No comment provided by engineer. */
+/* CoinJoin */
 "CoinJoin" = "CoinJoin";
 
 /* No comment provided by engineer. */
 "Confirm" = "Подтвердить";
-
-/* Coinbase/Buy Dash/Confirm Order */
-"Confirm (%@)" = "Подтвердить (%@)";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "Подтвердить (%1$d%2$@)";
@@ -374,6 +404,9 @@
 /* Buy Sell Portal
    Coinbase Entry Point */
 "Connected" = "Подключено";
+
+/* CrowdNode */
+"Connected Dash address" = "Связанный адрес Dash ";
 
 /* No comment provided by engineer. */
 "Connected peers: %d" = "Подключенные узлы: %d";
@@ -425,6 +458,9 @@
 "Could not connect to the Dash network, please check that you are connected to the internet." = "Невозможно подключиться к сети Dash. Пожалуйста, проверьте подключены ли вы к Интернету. ";
 
 /* No comment provided by engineer. */
+"Could not find exchange rate." = "Не удалось найти обменный курс.";
+
+/* No comment provided by engineer. */
 "Couldn't make payment" = "Не удалось совершить платёж";
 
 /* No comment provided by engineer. */
@@ -448,6 +484,9 @@
 /* CrowdNode */
 "Create Account" = "Создать аккаунт";
 
+/* CrowdNode */
+"Create an online CrowdNode account" = "Создать онлайн-аккаунт CrowdNode";
+
 /* No comment provided by engineer. */
 "Create invitation" = "Create invitation";
 
@@ -464,8 +503,14 @@
 /* Crowdnode */
 "CrowdNode Account" = "Аккаунт CrowdNode";
 
+/* CrowdNode */
+"CrowdNode benefits" = "Как присоединиться к пулу";
+
 /* CrowdNode Portal */
 "CrowdNode Support" = "Поддержка CrowdNode";
+
+/* CrowdNode */
+"CrowdNode uses this address as your account ID. You will lose access to your funds within this wallet and your CrowdNode account if you lose the passphrase associated to this address." = "Этот адрес используется в CrowdNode как ваш ID. Если вы потеряете кодовую фразу, связанную с этим аккаунтом, то вы потеряете доступ к средствам внутри этого кошелька и этот аккаунт на CrowdNode.";
 
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "Лимит CrowdNode на вывод";
@@ -494,8 +539,17 @@
 /* Explore Dash: Filters */
 "Dash" = "Dash";
 
+/* No comment provided by engineer. */
+"Dash address" = "Адрес Dash";
+
+/* CrowdNode */
+"Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Dash адрес, созданный для вашего аккаунта CrowdNode в Dash Wallet на этом устройстве";
+
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "Баланс Dash на Coinbase";
+
+/* Uphold Entry Point */
+"Dash balance on Uphold" = "Баланс Dash на Uphold";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Платежи Dash не могут быть меньше, чем %@";
@@ -551,6 +605,9 @@
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Отключить аккаунт Coinbase";
+
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "Отключить аккаунт Uphold";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -701,7 +758,7 @@
 "Find a user on the Dash Network" = "Найти пользователя в сети Dash";
 
 /* No comment provided by engineer. */
-"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Find merchants that accept Dash, where to buy it and how to earn income with it.";
+"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Узнайте, где принимают Dash, где можно купить монеты и как получить доход с их помощью. ";
 
 /* No comment provided by engineer. */
 "Find merchants who accept Dash as payment." = "Найдите места где принимают DASH в качестве оплаты.";
@@ -711,6 +768,9 @@
 
 /* CrowdNode */
 "First deposit should be more than %@" = "Первый депозит должен быть не менее %@";
+
+/* CrowdNode */
+"First minimum deposit" = "Первый минимальный депозит";
 
 /* Coinbase */
 "For your security, you have been signed out." = "В целях безопасности был совершён выход из учётной записи.";
@@ -733,11 +793,17 @@
 /* from Dash Wallet */
 "from Dash Wallet" = "из Dash Wallet";
 
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "С Uphold на Dash Wallet";
+
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "С Uphold на ваш кошелёк Dash Wallet";
 
 /* Coinbase */
 "from your Coinbase account" = "с аккаунта Coinbase";
+
+/* CrowdNode */
+"Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "Получайте вознаграждение за инвестирование в мастерноды Dash, начиная с 0.5 Dash.";
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Создать расширенный публичный ключ?";
@@ -748,6 +814,9 @@
 /* Coinbase/Convert Crypto */
 "Get Quote" = "Получить Quote";
 
+/* CrowdNode */
+"Get Rewards Instantly" = "Получайте мгновенные вознаграждения";
+
 /* No comment provided by engineer. */
 "Get Started" = "Начать";
 
@@ -756,6 +825,9 @@
 
 /* No comment provided by engineer. */
 "Get your Username" = "Get your Username";
+
+/* CrowdNode */
+"Getting started with CrowdNode" = "Начало работы с CrowdNode";
 
 /* Explore Dash: Filters */
 "Gift Card" = "Подарочный сертификат";
@@ -787,20 +859,29 @@
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Помогите нам стать лучше";
 
+/* CrowdNode */
+"Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "Это Dash адрес, созданный для вашего аккаунта CrowdNode в Dash Wallet на этом устройстве";
+
 /* adjective, security level */
 "High" = "Высокий";
 
 /* No comment provided by engineer. */
 "History" = "История";
 
+/* CrowdNode */
+"How CrowdNode staking works" = "Как работает стейкинг CrowdNode ";
+
 /* No comment provided by engineer. */
 "How do I get Test Dash?" = "How do I get Test Dash?";
+
+/* CrowdNode */
+"How to confirm your API Dash address" = "Как подтвердить свой API Dash адрес";
 
 /* No comment provided by engineer. */
 "How to Use a Gift Card" = "Как использовать подарочную карту";
 
 /* No comment provided by engineer. */
-"HPMN Operator Keys" = "Evolution Node ID Keys";
+"HPMN Operator Keys" = "Ключи идентификаторов Evolution нод";
 
 /* No comment provided by engineer. */
 "I Accept" = "Принимаю";
@@ -809,10 +890,13 @@
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Я понимаю, что потеряю свои средства, если у меня не будет фразы восстановления";
 
 /* CrowdNode */
-"I agree to CrowdNode" = "Согласен на CrowdNode";
+"I agree to CrowdNode" = "Согласен на CrowdNode ";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "Я записал";
+
+/* CrowdNode */
+"If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "В случае, если вы потеряете кодовую фразу, для восстановления доступа к средствам на CrowdNode можно воспользоваться другими методами.";
 
 /* No comment provided by engineer. */
 "If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "В случае, если вы потеряете кодовую фразу от этого кошелька, потеряете устройство или удалите Dash Wallet, вы потеряете доступ к средствам на CrowdNode и средствам внутри этого кошелька.";
@@ -847,11 +931,17 @@
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Помимо отображённой комиссии Coinbase, мы учитываем небольшой разброс цены. При работе в режиме Продвинутой Торговли разброс цены не учитывается, потому что вы работаете напрямую с портфелем заказов. \n\nКриптовалютным рынкам свойственна волатильность, и таким образом мы временно замораживаем цену для совершения сделки. ";
 
+/* CrowdNode */
+"In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "В случае вывода крупных сумм, CrowdNode выплатит эти суммы в течение двух недель. Это зависит от их протоколов безопасности, но часто платежи проводятся намного быстрее.";
+
 /* CrowdNode Portal */
 "In process…" = "В процессе...";
 
 /* No comment provided by engineer. */
 "Income" = "Доходы";
+
+/* CrowdNode */
+"Information about your online account" = "Информация о вашем онлайн аккаунте";
 
 /* Buy Sell Portal */
 "Initializing" = "Инициализация";
@@ -865,11 +955,17 @@
 /* Coinbase/Payment Methods */
 "Interac" = "Interac";
 
+/* CoinJoin */
+"Intermediate" = "Intermediate";
+
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "Внутренний перевод";
 
 /* No comment provided by engineer. */
 "Internally moved to" = "Внутренний перевод на";
+
+/* CrowdNode */
+"Introducing Staking" = "Введение в стейкинг";
 
 /* Invalid transaction */
 "Invalid" = "Некорректная";
@@ -878,7 +974,7 @@
 "Invalid amount" = "Некорректная сумма";
 
 /* No comment provided by engineer. */
-"Invalid Dash address" = "Invalid Dash address";
+"Invalid Dash address" = "Некорректный адрес Dash";
 
 /* CrowdNode Online */
 "Invalid Email" = "Неверный Email";
@@ -946,6 +1042,9 @@
 /* Coinbase */
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "Перевод Dash с Coinbase на Dash Wallet на этом устройстве может занять до 10 минут.";
 
+/* Coinbase */
+"It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history";
+
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Кажется, вы пытаетесь восстановить свой кошелёк с помощью фразы восстановления из 12 слов. Однако, вы ввели только 10 слов. Хотите автоматически восстановить пропущенные слова? Это займёт примерно час. Рекомендуем подключить ваш гаджет к зарядному устройству.";
 
@@ -963,6 +1062,9 @@
 
 /* No comment provided by engineer. */
 "Join Now" = "Join Now";
+
+/* CrowdNode */
+"Joining the pool" = "Как присоединиться к пулу";
 
 /* No comment provided by engineer. */
 "Key Id" = "Ключ Id";
@@ -986,6 +1088,9 @@
 /* Info Screen */
 "Learn More..." = "Узнать больше";
 
+/* CrowdNode */
+"Leaving the pool" = "Выход из пула";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Сообщить, когда будет готово";
 
@@ -1003,6 +1108,9 @@
 
 /* Dash Service Overview */
 "Link Coinbase Account" = "Привязать аккаунт Coinbase";
+
+/* CrowdNode */
+"Link Existing Account" = "Привязать уже существующий аккаунт";
 
 /* CrowdNode */
 "Link Existing CrowdNode Account" = "Привязать уже существующий аккаунт CrowdNode";
@@ -1036,9 +1144,6 @@
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Войти в CrowdNode";
-
-/* No comment provided by engineer. */
-"Log Out" = "Выйти";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Выйти из Uphold";
@@ -1094,6 +1199,9 @@
 /* adjective, security level */
 "Medium" = "Средний";
 
+/* CrowdNode */
+"Members are free to leave the pool and can most often leave immediately." = "Участники могут свободно выходить из пула и чаще всего могут сделать это мгновенно.";
+
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "Поиск продавцов работает лучше всего с включенными службами геолокации.";
 
@@ -1117,6 +1225,9 @@
 
 /* No comment provided by engineer. */
 "Moved to Address" = "Перемещно на адрес";
+
+/* CoinJoin */
+"Multiple hours" = "Multiple hours";
 
 /* Validation rule */
 "Must start and end with a letter or number" = "Must start and end with a letter or number";
@@ -1151,6 +1262,9 @@
 /* (List of) New (notifications) */
 "New" = "Новые";
 
+/* CrowdNode */
+"New CrowdNode Account" = "Новый аккаунт CrowdNode";
+
 /* Coinbase */
 "Newly received Dash will be automatically mixed when the wallet is opened" = "Newly received Dash will be automatically mixed when the wallet is opened";
 
@@ -1165,6 +1279,9 @@
 
 /* Coinbase */
 "No active user" = "Отсутствует активный пользователь";
+
+/* Coinbase */
+"No cash account found" = "No cash account found";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "Отсутствуют способы оплаты";
@@ -1286,6 +1403,9 @@
 /* No comment provided by engineer. */
 "Payments made directly to addresses won’t be retained in activity." = "Payments made directly to addresses won’t be retained in activity.";
 
+/* CrowdNode */
+"Payout Options" = "Варианты выплат";
+
 /* Coinbase/Payment Methods */
 "PayPal" = "PayPal";
 
@@ -1322,6 +1442,9 @@
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Пожалуйста, введите PIN для обновления кошелька";
 
+/* CrowdNode */
+"Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Обратите внимание! Этот email не сохраняется в Dash Wallet, он всего лишь пересылается в Crowdnode";
+
 /* Leftover balance warning */
 "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "Помните, что вы не сможете вывести средства из CrowdNode на этот кошелёк, пока на балансе не будет хотя бы %@ Dash.";
 
@@ -1355,6 +1478,9 @@
 /* No comment provided by engineer. */
 "Previously used at: " = "Ранее использовалось с:";
 
+/* CrowdNode */
+"Primary Dash address" = "Основной адрес Dash";
+
 /* No comment provided by engineer. */
 "Private / Public Keys (base64)" = "Приватные / Публичные ключи (base64)";
 
@@ -1374,7 +1500,7 @@
 "Public key" = "Публичный ключ";
 
 /* No comment provided by engineer. */
-"Public key (legacy)" = "Public key (legacy)";
+"Public key (legacy)" = "Публичный ключ (legacy)";
 
 /* No comment provided by engineer. */
 "Public URL" = "Public URL";
@@ -1406,6 +1532,9 @@
 /* Coinbase Entry Point */
 "Receive directly into Dash Wallet" = "Получать напрямую на Dash Wallet.";
 
+/* CrowdNode */
+"Receive your share of rewards daily." = "Получайте свою долю вознаграждения ежедневно.";
+
 /* Received transaction */
 "Received" = "Получено";
 
@@ -1417,6 +1546,9 @@
 
 /* No comment provided by engineer. */
 "Received from" = "Получено от";
+
+/* CrowdNode */
+"Receiving rewards" = "Получение вознаграждений";
 
 /* No comment provided by engineer. */
 "Recover" = "Восстановить";
@@ -1503,6 +1635,9 @@
 "Scan Private Key" = "Сканировать приватный ключ";
 
 /* No comment provided by engineer. */
+"Scan QR" = "Сканировать QR";
+
+/* No comment provided by engineer. */
 "Scan QR Code" = "Сканировать QR-код";
 
 /* (Send by) Scanning QR code */
@@ -1561,6 +1696,9 @@
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "Select from Gallery";
+
+/* CoinJoin */
+"Select mixing level" = "Select mixing level";
 
 /* Coinbase */
 "Select the coin" = "Выбрать монету";
@@ -1662,8 +1800,8 @@
 /* No comment provided by engineer. */
 "Setup Wallet" = "Настроить кошелек";
 
-/* No comment provided by engineer. */
-"Share" = "Share";
+/* CrowdNode */
+"Share" = "Поделиться";
 
 /* Receive screen */
 "Share address" = "Поделиться адресом";
@@ -1677,6 +1815,9 @@
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Показать masternode ключи";
 
+/* CrowdNode */
+"Show QR" = "Показать QR";
+
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Показать фразу восстановления";
 
@@ -1687,7 +1828,7 @@
 "Sign up error" = "Ошибка при регистрации";
 
 /* CrowdNode */
-"Sign up to CrowdNode" = "Подписаться на новости CrowdNode";
+"Sign up to CrowdNode" = "Создать CrowdNode аккаунт";
 
 /* CrowdNode Portal */
 "Sign up to finish setting up account" = "Зарегистрируйтесь, чтобы завершить настройку аккаунта";
@@ -1725,8 +1866,14 @@
 /* No comment provided by engineer. */
 "Staking" = "Стейкинг";
 
+/* CoinJoin */
+"Start Mixing" = "Start Mixing";
+
 /* Step 1 */
 "Step %ld" = "Step %ld";
+
+/* CoinJoin */
+"Stop Mixing" = "Stop Mixing";
 
 /* No comment provided by engineer. */
 "Support" = "Поддержка";
@@ -1788,6 +1935,9 @@
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "Неверный код. Попробуйте ещё раз!";
 
+/* CrowdNode */
+"The Dash Network is driven by a number of Masternodes which is an essential part of facilitating payments." = "Сеть Dash работает на основе мастернод, которые играют важную роль в проведении платежей";
+
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Dash был успешно зачислен на ваш аккаунт Coinbase. Но при переводе его на Dash Wallet на этом устройстве произошла проблема.";
 
@@ -1833,6 +1983,9 @@
 /* CrowdNode Confirm */
 "This QR already contains the payment request for %@" = "Этот QR уже содержит запрос на оплату в размере %@Dash";
 
+/* CrowdNode */
+"This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "Это текущая годовая процентная доходность полной мастерноды за минусом 15% комиссии CrowdNode. Эта сумма не является точной и может колебаться в зависимости от размера пулов CrowdNode и курса Dash.";
+
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "В кошельке есть средства или синхронизация не была завершена. Вы не сможете удалить его без фразы восстановления.";
 
@@ -1844,6 +1997,12 @@
 
 /* Coinbase */
 "to Dash Wallet on this device" = "на Dash Wallet на этом устройстве";
+
+/* CrowdNode */
+"To start staking, create an account on CrowdNode or connect to an existing one." = "Чтобы приступить к стейкингу, создайте аккаунт на CrowdNode или подключитесь к уже существующему";
+
+/* CrowdNode */
+"to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "на адрес Dash, созданный для вашего CrowdNode аккаунта в Dash Wallet на этом устройстве";
 
 /* No comment provided by engineer. */
 "Tools" = "Инструменты";
@@ -1857,6 +2016,9 @@
 /* No comment provided by engineer. */
 "Touch ID limit" = "Лимит Touch ID";
 
+/* CrowdNode */
+"Transaction History" = "История транзакций";
+
 /* No comment provided by engineer. */
 "Transaction id" = "ID транзакции";
 
@@ -1867,9 +2029,6 @@
    Coinbase Entry Point
    Dash Service Overview */
 "Transfer Dash" = "Перевести Dash";
-
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Перевести Dash из Вашей учётной записи Uphold на этот кошелёк";
 
 /* CrowdNode */
 "Transfer Error" = "Ошибка при переводе";
@@ -1939,6 +2098,9 @@
 
 /* No comment provided by engineer. */
 "Unsupported URL" = "Неподдерживаемый URL-адрес";
+
+/* CoinJoin */
+"up to 30 minutes" = "up to 30 minutes";
 
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Обновлено: %@";
@@ -2015,8 +2177,14 @@
 /* No comment provided by engineer. */
 "Verify" = "Подтвердить";
 
+/* CrowdNode */
+"Verify your API Dash address" = "Подтвердить свой API Dash адрес";
+
 /* adjective, security level */
 "Very High" = "Очень высокий";
+
+/* CrowdNode */
+"Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." = "Чтобы удостовериться, что вы действительно являетесь владельцем этого кошелька, на счёт CrowdNode будут зачислены и списаны небольшие суммы Dash.";
 
 /* No comment provided by engineer. */
 "View All" = "Посмотреть все";
@@ -2078,6 +2246,9 @@
 /* No comment provided by engineer. */
 "We Upgraded" = "Мы обновились";
 
+/* CrowdNode */
+"We will automatically detect this transaction and transfer the same amount to your CrowdNode account. After that you will be able to make deposits and withdrawals in Dash Wallet on this device." = "Мы автоматически увидим эту транзакцию и переведём ту же сумму на ваш аккаунт на CrowdNode. После этого вы сможете вносить и выводить средства в Dash Wallet на этом устройстве.";
+
 /* Website */
 "Website" = "Вебсайт";
 
@@ -2098,6 +2269,9 @@
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "Почему я вижу все эти транзакции?";
+
+/* CrowdNode */
+"Why do you need an online account?" = "Зачем нужен онлайн аккаунт?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Почему я не могу сделать скриншот?";
@@ -2127,6 +2301,9 @@
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "Would you like to accept the invitation?";
 
+/* Coinbase */
+"Would you like to make a deposit for your purchase using a linked bank account?" = "Would you like to make a deposit for your purchase using a linked bank account?";
+
 /* No comment provided by engineer. */
 "Would you like to save the changes you made to your profile?" = "Would you like to save the changes you made to your profile?";
 
@@ -2151,8 +2328,14 @@
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "В дальнейшем Вам будут доступны платежи через Touch ID";
 
+/* CrowdNode */
+"You can change how / when your reward earnings are paid to you." = "Вы можете настроить, когда и каким образом получите своё вознаграждение.";
+
 /* Voting */
 "You can review all requests but you only need to vote on duplicates" = "You can review all requests but you only need to vote on duplicates";
+
+/* CrowdNode */
+"You can see detailed information about your deposits, withdrawals and reward earnings." = "Здесь можно найти подробную информацию о внесении и выводе средств, а также о вознаграждениях.";
 
 /* No comment provided by engineer. */
 "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
@@ -2162,6 +2345,9 @@
 
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "You do not have any contacts at the moment";
+
+/* Coinbase */
+"You don’t have enough balance" = "Средств на балансе недостаточно";
 
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "Превышен лимит авторизаций на Coinbase.";
@@ -2174,6 +2360,9 @@
 
 /* No comment provided by engineer. */
 "You have insufficient funds to proceed" = "Недостаточно средств для продолжения.";
+
+/* CrowdNode */
+"You have to backup your passphrase in Dash Wallet" = "Необходимо создать резервную копию кодовой фразы Dash Wallet";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Вы должны ввести PIN для входа в Dash Wallet";
@@ -2218,6 +2407,9 @@
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "Вы получите %@Dash на Dash Wallet на этом устройстве. Пожалуйста, обратите внимание, что перевод займёт 2-3 минуты.";
 
 /* CrowdNode */
+"You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "Вы будете автоматически получать свою долю выплат, и они по умолчанию будут реинвестированы. Однако, для повторяющихся выплат можно легко настроить автоматический вывод средств.";
+
+/* CrowdNode */
 "Your CrowdNode account is creating…" = "Создаётся аккаунт на CrowdNode...";
 
 /* CrowdNode */
@@ -2253,11 +2445,11 @@
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Ваше местоположение используется для отображения вашего положения на карте, продавцов в выбранном радиусе и улучшения результатов поиска.";
 
-/* No comment provided by engineer. */
-"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Ваша транзакция была отправлена и её сумма отобразится в вашем кошельке через несколько минут.";
+/* CrowdNode */
+"Your primary Dash address that you currently use for your CrowdNode account" = "Основной адрес Dash, который сейчас используется для аккаунта CrowdNode";
 
 /* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Баланс Dash на вашей учётной записи Uphold составляет";
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Ваша транзакция была отправлена и её сумма отобразится в вашем кошельке через несколько минут.";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Ваше имя пользователя %@ успешно создано в сети Dash";

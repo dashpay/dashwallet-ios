@@ -83,7 +83,7 @@ extension BalanceView {
         let balanceString = mainAmountString.attributedAmountStringWithDashSymbol(tintColor: tint ?? balanceColor)
         dashBalanceLabel.attributedText = balanceString
         fiatBalanceLabel.text = supplementaryAmountString
-        fiatBalanceLabel.textColor = tint ?? balanceColor
+        fiatBalanceLabel.textColor = tint ?? UIColor.dw_secondaryText()
     }
 
     private func configureHierarchy() {

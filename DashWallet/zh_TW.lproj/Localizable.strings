@@ -115,6 +115,9 @@
 /* No comment provided by engineer. */
 "Accepts DASH directly" = "直接接受達世幣";
 
+/* CrowdNode */
+"Account Recovery" = "恢復帳戶";
+
 /* No comment provided by engineer. */
 "Activity" = "活動";
 
@@ -133,8 +136,14 @@
 /* No comment provided by engineer. */
 "Address" = "位址";
 
+/* CoinJoin */
+"Advanced" = "Advanced";
+
 /* No comment provided by engineer. */
 "Advanced Security" = "進階的安全性";
+
+/* Coinbase */
+"Advanced users who have a very high level of technical expertise can determine your transaction history" = "Advanced users who have a very high level of technical expertise can determine your transaction history";
 
 /* No comment provided by engineer. */
 "Agree" = "Agree";
@@ -172,6 +181,9 @@
 /* CrowdNode */
 "and" = "和";
 
+/* CoinJoin */
+"Any funds that have been mixed will be combined with your un mixed funds" = "Any funds that have been mixed will be combined with your un mixed funds";
+
 /* Coinbase/Payment Methods */
 "Apple Pay" = "Apple Pay";
 
@@ -190,8 +202,17 @@
 /* Coinbase/Buy Dash/Cancel Order */
 "Are you sure you want to cancel this transaction?" = "您確定要取消此交易嗎?";
 
+/* CoinJoin */
+"Are you sure you want to change the privacy level?" = "Are you sure you want to change the privacy level?";
+
+/* CoinJoin */
+"Are you sure you want to stop mixing?" = "Are you sure you want to stop mixing?";
+
 /* No comment provided by engineer. */
 "Are you sure?" = "你確定嗎?";
+
+/* CrowdNode */
+"As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode." = "由於大多數人手頭上沒有 1000 達世幣，CrowdNode 提供了一項服務，他們通過匯集成員的存款來獲得擁有主節點的好處。";
 
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "ATM 搜索在打開定位服務的情況下效果更好";
@@ -233,6 +254,9 @@
 "Balance" = "餘額";
 
 /* CrowdNode */
+"Balance On CrowdNode" = "Balance On CrowdNode";
+
+/* CrowdNode */
 "Balance: " = "結餘: ";
 
 /* Coinbase/Payment Methods */
@@ -241,11 +265,14 @@
 /* Coinbase/Payment Methods */
 "Bank Wire" = "電匯";
 
+/* CrowdNode */
+"Become part of a Dash Masternode with CrowdNode" = "通過 CrowdNode 成為達世幣主節點的一部分";
+
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
 
 /* Coinbase Entry Point */
-"Between Dash Wallet and Coinbase." = "在達世幣錢包和 Coinbase 之間。";
+"Between Dash Wallet and Coinbase" = "在達世幣錢包和 Coinbase 之間。";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "在達世幣錢包和您的 Coinbase 帳戶之間";
@@ -281,11 +308,8 @@
 /* Dash Service Overview */
 "Buy Dash with fiat" = "用法定貨幣來購買達世幣";
 
-/* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "用Uphold 帳戶來購買達世幣";
-
 /* Dash Portal */
-"Buy Dash · No account needed" = "Buy Dash · No account needed";
+"Buy Dash · No account needed" = "購買達世幣 · 無需賬戶";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "使用達世幣購買禮品卡";
@@ -317,6 +341,12 @@
 /* No comment provided by engineer. */
 "Change PIN" = "更改密碼";
 
+/* CoinJoin */
+"Change to Advanced" = "Change to Advanced";
+
+/* CoinJoin */
+"Change to Intermediate" = "Change to Intermediate";
+
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
 
@@ -338,6 +368,9 @@
 /* No comment provided by engineer. */
 "Close" = "關閉";
 
+/* CrowdNode */
+"Close and notify when it’s done" = "完成後關閉並發送通知";
+
 /* No comment provided by engineer. */
 "Close App" = "關閉程序";
 
@@ -350,14 +383,11 @@
 /* Coinbase/Buy Dash */
 "Coinbase Fee" = "Coinbase 費用";
 
-/* No comment provided by engineer. */
+/* CoinJoin */
 "CoinJoin" = "CoinJoin";
 
 /* No comment provided by engineer. */
 "Confirm" = "確認:";
-
-/* Coinbase/Buy Dash/Confirm Order */
-"Confirm (%@)" = "確認 (%@)";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "確認 (%1$d%2$@)";
@@ -374,6 +404,9 @@
 /* Buy Sell Portal
    Coinbase Entry Point */
 "Connected" = "已連接";
+
+/* CrowdNode */
+"Connected Dash address" = "連接的達世幣位址";
 
 /* No comment provided by engineer. */
 "Connected peers: %d" = "連接的節點: %d";
@@ -425,6 +458,9 @@
 "Could not connect to the Dash network, please check that you are connected to the internet." = "無法連接到達世幣網絡，請檢查您是否已連接到互聯";
 
 /* No comment provided by engineer. */
+"Could not find exchange rate." = "無法找到匯率";
+
+/* No comment provided by engineer. */
 "Couldn't make payment" = "無法進行支付";
 
 /* No comment provided by engineer. */
@@ -448,6 +484,9 @@
 /* CrowdNode */
 "Create Account" = "創建帳號";
 
+/* CrowdNode */
+"Create an online CrowdNode account" = "創建一個在線 CrowdNode 帳戶";
+
 /* No comment provided by engineer. */
 "Create invitation" = "Create invitation";
 
@@ -464,8 +503,14 @@
 /* Crowdnode */
 "CrowdNode Account" = "CrowdNode 帳戶";
 
+/* CrowdNode */
+"CrowdNode benefits" = "CrowdNode 的好處";
+
 /* CrowdNode Portal */
 "CrowdNode Support" = "CrowdNode 支援";
+
+/* CrowdNode */
+"CrowdNode uses this address as your account ID. You will lose access to your funds within this wallet and your CrowdNode account if you lose the passphrase associated to this address." = "CrowdNode 使用此位址作為您的帳戶 ID。如果您丟失了與此位址關聯的密碼，您將無法訪問此錢包和您的 CrowdNode 帳戶中的資金。";
 
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "CrowdNode 提款限額";
@@ -494,8 +539,17 @@
 /* Explore Dash: Filters */
 "Dash" = "達世幣";
 
+/* No comment provided by engineer. */
+"Dash address" = "達世幣位址";
+
+/* CrowdNode */
+"Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Dash address designated for your CrowdNode account in the Dash Wallet on this device ";
+
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "Coinbase 上的達世幣結餘";
+
+/* Uphold Entry Point */
+"Dash balance on Uphold" = "Uphold 上的達世幣結餘";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "達世幣付款不能低於 %@";
@@ -551,6 +605,9 @@
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "斷開 Coinbase 帳戶的連接";
+
+/* Uphold Entry Point */
+"Disconnect Uphold Account" = "斷開 Uphold 帳戶的連接";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -701,7 +758,7 @@
 "Find a user on the Dash Network" = "在達世幣網絡上查找用戶";
 
 /* No comment provided by engineer. */
-"Find merchants that accept Dash, where to buy it and how to earn income with it." = "Find merchants that accept Dash, where to buy it and how to earn income with it.";
+"Find merchants that accept Dash, where to buy it and how to earn income with it." = "尋找接受達世幣的商家、可以在哪裡購買以及如何透過它賺取收入。";
 
 /* No comment provided by engineer. */
 "Find merchants who accept Dash as payment." = "查找接受達世幣作為付款的商家。";
@@ -711,6 +768,9 @@
 
 /* CrowdNode */
 "First deposit should be more than %@" = "首次存款應超過 %@";
+
+/* CrowdNode */
+"First minimum deposit" = "First minimum deposit";
 
 /* Coinbase */
 "For your security, you have been signed out." = "基於您的帳戶安全考量，您已被登出。";
@@ -733,11 +793,17 @@
 /* from Dash Wallet */
 "from Dash Wallet" = "來自達世幣錢包";
 
+/* Uphold Entry Point */
+"From Uphold to Dash Wallet" = "從 Uphold 轉到你的達世幣錢包";
+
 /* Dash Service Overview */
 "From Uphold to your Dash Wallet" = "從 Uphold 轉到你的達世幣錢包";
 
 /* Coinbase */
 "from your Coinbase account" = "從你的 Coinbase 帳戶";
+
+/* CrowdNode */
+"Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "只需 0.5 Dash，即可從達世幣主節點中的存款中獲得獎勵。";
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "要生成擴展的公共密鑰嗎?";
@@ -748,6 +814,9 @@
 /* Coinbase/Convert Crypto */
 "Get Quote" = "獲得報價";
 
+/* CrowdNode */
+"Get Rewards Instantly" = "立即獲得獎勵";
+
 /* No comment provided by engineer. */
 "Get Started" = "開始使用";
 
@@ -756,6 +825,9 @@
 
 /* No comment provided by engineer. */
 "Get your Username" = "Get your Username";
+
+/* CrowdNode */
+"Getting started with CrowdNode" = "開始使用 CrowdNode";
 
 /* Explore Dash: Filters */
 "Gift Card" = "禮物卡";
@@ -787,20 +859,29 @@
 /* No comment provided by engineer. */
 "Help us improve your experience" = "幫助我們改善您的體驗";
 
+/* CrowdNode */
+"Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device";
+
 /* adjective, security level */
 "High" = "高";
 
 /* No comment provided by engineer. */
 "History" = "歷史";
 
+/* CrowdNode */
+"How CrowdNode staking works" = "CrowdNode 質押的運作原理";
+
 /* No comment provided by engineer. */
 "How do I get Test Dash?" = "How do I get Test Dash?";
+
+/* CrowdNode */
+"How to confirm your API Dash address" = "如何確認您的 API 達世幣位址";
 
 /* No comment provided by engineer. */
 "How to Use a Gift Card" = "如何使用禮品卡";
 
 /* No comment provided by engineer. */
-"HPMN Operator Keys" = "Evolution Node ID Keys";
+"HPMN Operator Keys" = "Evolution 節點 ID 金鑰";
 
 /* No comment provided by engineer. */
 "I Accept" = "我接受";
@@ -813,6 +894,9 @@
 
 /* No comment provided by engineer. */
 "I wrote it down" = "我寫下來";
+
+/* CrowdNode */
+"If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "如果您丟失了密碼，您可以通過其他方式驗證自己以重新獲得對您的 CrowdNode 資金的訪問權限。";
 
 /* No comment provided by engineer. */
 "If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "如果您丟失此錢包的恢復詞組並丟失此設備或卸載達世幣錢包，您將無法訪問 CrowdNode 上的資金和此錢包中的資金。";
@@ -847,11 +931,17 @@
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "除了顯示的 Coinbase 費用外，我們還在價格中包含了價差。使用 Advanced Trade 時，不包括點差，因為您直接在訂單簿上進行交易。\n\n加密貨幣市場波動較大，這使我們能夠暫時鎖定交易執行的價格。";
 
+/* CrowdNode */
+"In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster.";
+
 /* CrowdNode Portal */
 "In process…" = "進行中…";
 
 /* No comment provided by engineer. */
 "Income" = "收入";
+
+/* CrowdNode */
+"Information about your online account" = "有關您的在線帳戶的信息";
 
 /* Buy Sell Portal */
 "Initializing" = "正在初始化";
@@ -865,11 +955,17 @@
 /* Coinbase/Payment Methods */
 "Interac" = "互動";
 
+/* CoinJoin */
+"Intermediate" = "Intermediate";
+
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "內部轉移";
 
 /* No comment provided by engineer. */
 "Internally moved to" = "內部移至";
+
+/* CrowdNode */
+"Introducing Staking" = "介紹質押";
 
 /* Invalid transaction */
 "Invalid" = "無效";
@@ -878,7 +974,7 @@
 "Invalid amount" = "金額無效";
 
 /* No comment provided by engineer. */
-"Invalid Dash address" = "Invalid Dash address";
+"Invalid Dash address" = "無效的達世幣位址";
 
 /* CrowdNode Online */
 "Invalid Email" = "無效的電郵";
@@ -946,6 +1042,9 @@
 /* Coinbase */
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "將達世幣從 Coinbase 轉帳到此設備上的達世幣錢包最多可能需要 10 分鐘";
 
+/* Coinbase */
+"It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history";
+
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "似乎您正在嘗試使用12個單詞的恢復詞組來恢復您的錢包，但是您只輸入了10個單詞，是否要自動恢復丟失的單詞? 這可能需要一個小時左右。 我們建議您插入設備。";
 
@@ -963,6 +1062,9 @@
 
 /* No comment provided by engineer. */
 "Join Now" = "Join Now";
+
+/* CrowdNode */
+"Joining the pool" = "加入資金池";
 
 /* No comment provided by engineer. */
 "Key Id" = "密鑰 Id";
@@ -986,6 +1088,9 @@
 /* Info Screen */
 "Learn More..." = "了解更多...";
 
+/* CrowdNode */
+"Leaving the pool" = "Leaving the pool";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "完成時通知我";
 
@@ -1003,6 +1108,9 @@
 
 /* Dash Service Overview */
 "Link Coinbase Account" = "鏈接 Coinbase 帳戶";
+
+/* CrowdNode */
+"Link Existing Account" = "鏈接現有帳戶";
 
 /* CrowdNode */
 "Link Existing CrowdNode Account" = "鏈接現有的 CrowdNode 帳戶";
@@ -1036,9 +1144,6 @@
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "登入到 CrowdNode";
-
-/* No comment provided by engineer. */
-"Log Out" = "登出";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "從Uphold登出";
@@ -1094,6 +1199,9 @@
 /* adjective, security level */
 "Medium" = "中位數";
 
+/* CrowdNode */
+"Members are free to leave the pool and can most often leave immediately." = "會員可以自由離開資金池，並且通常可以立即離開。";
+
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "開啟位置服務後，商家搜索效果會更好。";
 
@@ -1117,6 +1225,9 @@
 
 /* No comment provided by engineer. */
 "Moved to Address" = "移至位址";
+
+/* CoinJoin */
+"Multiple hours" = "Multiple hours";
 
 /* Validation rule */
 "Must start and end with a letter or number" = "Must start and end with a letter or number";
@@ -1151,6 +1262,9 @@
 /* (List of) New (notifications) */
 "New" = "新的";
 
+/* CrowdNode */
+"New CrowdNode Account" = "新建 CrowdNode 帳戶";
+
 /* Coinbase */
 "Newly received Dash will be automatically mixed when the wallet is opened" = "Newly received Dash will be automatically mixed when the wallet is opened";
 
@@ -1165,6 +1279,9 @@
 
 /* Coinbase */
 "No active user" = "沒有活躍用戶";
+
+/* Coinbase */
+"No cash account found" = "No cash account found";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "沒有付款方式";
@@ -1286,6 +1403,9 @@
 /* No comment provided by engineer. */
 "Payments made directly to addresses won’t be retained in activity." = "Payments made directly to addresses won’t be retained in activity.";
 
+/* CrowdNode */
+"Payout Options" = "支付選項";
+
 /* Coinbase/Payment Methods */
 "PayPal" = "PayPal";
 
@@ -1322,6 +1442,9 @@
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "請輸入密碼以升級錢包";
 
+/* CrowdNode */
+"Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "請注意，達世幣錢包不保存電子郵件，僅發送至 CrowdNode";
+
 /* Leftover balance warning */
 "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "請注意，在您的餘額增加到 %@ Dash之前，您將無法將資金從 CrowdNode 提款到此錢包。";
 
@@ -1355,6 +1478,9 @@
 /* No comment provided by engineer. */
 "Previously used at: " = "以前用於: ";
 
+/* CrowdNode */
+"Primary Dash address" = "Primary Dash address";
+
 /* No comment provided by engineer. */
 "Private / Public Keys (base64)" = "私鑰 / 公鑰 (base64)";
 
@@ -1374,7 +1500,7 @@
 "Public key" = "公鑰";
 
 /* No comment provided by engineer. */
-"Public key (legacy)" = "Public key (legacy)";
+"Public key (legacy)" = "公鑰 (舊版) ";
 
 /* No comment provided by engineer. */
 "Public URL" = "Public URL";
@@ -1406,6 +1532,9 @@
 /* Coinbase Entry Point */
 "Receive directly into Dash Wallet" = "直接在達世幣錢包上收款";
 
+/* CrowdNode */
+"Receive your share of rewards daily." = "每天收到屬於您的獎勵金額。";
+
 /* Received transaction */
 "Received" = "己收到";
 
@@ -1417,6 +1546,9 @@
 
 /* No comment provided by engineer. */
 "Received from" = "從......收到";
+
+/* CrowdNode */
+"Receiving rewards" = "領取獎勵";
 
 /* No comment provided by engineer. */
 "Recover" = "恢復";
@@ -1503,6 +1635,9 @@
 "Scan Private Key" = "掃描私鑰";
 
 /* No comment provided by engineer. */
+"Scan QR" = "掃描二維碼";
+
+/* No comment provided by engineer. */
 "Scan QR Code" = "掃瞄二維碼";
 
 /* (Send by) Scanning QR code */
@@ -1561,6 +1696,9 @@
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "Select from Gallery";
+
+/* CoinJoin */
+"Select mixing level" = "Select mixing level";
 
 /* Coinbase */
 "Select the coin" = "選擇幣種";
@@ -1662,8 +1800,8 @@
 /* No comment provided by engineer. */
 "Setup Wallet" = "設置錢包";
 
-/* No comment provided by engineer. */
-"Share" = "Share";
+/* CrowdNode */
+"Share" = "分享";
 
 /* Receive screen */
 "Share address" = "分享位址";
@@ -1676,6 +1814,9 @@
 
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "顯示主節點公鑰";
+
+/* CrowdNode */
+"Show QR" = "顯示二維碼";
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "顯示恢復詞組";
@@ -1725,8 +1866,14 @@
 /* No comment provided by engineer. */
 "Staking" = "質押";
 
+/* CoinJoin */
+"Start Mixing" = "Start Mixing";
+
 /* Step 1 */
 "Step %ld" = "Step %ld";
+
+/* CoinJoin */
+"Stop Mixing" = "Stop Mixing";
 
 /* No comment provided by engineer. */
 "Support" = "支援";
@@ -1788,6 +1935,9 @@
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "代碼不正確。請檢查並重試!";
 
+/* CrowdNode */
+"The Dash Network is driven by a number of Masternodes which is an essential part of facilitating payments." = "達世幣網絡由許多主節點驅動，這是令支付更便捷的重要組成部分。";
+
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Dash 已成功存入您的 Coinbase 帳戶。但是將它轉移到此設備上的達世幣錢包時出現問題。";
 
@@ -1833,6 +1983,9 @@
 /* CrowdNode Confirm */
 "This QR already contains the payment request for %@" = "此二維碼已包含 %@ 的付款請求";
 
+/* CrowdNode */
+"This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "這代表完整主節點的當前年度百分比收益率減去 15% 的 CrowdNode 費用。這不是保證回報率，可能會根據 CrowdNode 資金池的大小和達世幣價格而上升或下降。";
+
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "此錢包不是空的或同步尚未完成，如果沒有恢復詞組請不要進行擦除";
 
@@ -1844,6 +1997,12 @@
 
 /* Coinbase */
 "to Dash Wallet on this device" = "到此設備上的 達世幣錢包";
+
+/* CrowdNode */
+"To start staking, create an account on CrowdNode or connect to an existing one." = "要開始質押，請在 CrowdNode 上創建一個帳戶或連接到現有帳戶。";
+
+/* CrowdNode */
+"to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "到此設備上達世幣錢包中為您的 CrowdNode 帳戶指定的達世幣位址";
 
 /* No comment provided by engineer. */
 "Tools" = "工具";
@@ -1857,6 +2016,9 @@
 /* No comment provided by engineer. */
 "Touch ID limit" = "指紋辨識解鎖的限制";
 
+/* CrowdNode */
+"Transaction History" = "交易記錄";
+
 /* No comment provided by engineer. */
 "Transaction id" = "交易ID";
 
@@ -1867,9 +2029,6 @@
    Coinbase Entry Point
    Dash Service Overview */
 "Transfer Dash" = "轉賬達世幣";
-
-/* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "將達世幣從您的Uphold帳戶轉移到此錢包";
 
 /* CrowdNode */
 "Transfer Error" = "轉賬發生錯誤";
@@ -1939,6 +2098,9 @@
 
 /* No comment provided by engineer. */
 "Unsupported URL" = "不支援的URL";
+
+/* CoinJoin */
+"up to 30 minutes" = "up to 30 minutes";
 
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "更新: %@";
@@ -2015,8 +2177,14 @@
 /* No comment provided by engineer. */
 "Verify" = "檢查";
 
+/* CrowdNode */
+"Verify your API Dash address" = "驗證您的 API 達世幣位址";
+
 /* adjective, security level */
 "Very High" = "非常高";
+
+/* CrowdNode */
+"Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." = "將會向 CrowdNode 發送非常少量的達世幣，以驗證您是該錢包位址的所有者。";
 
 /* No comment provided by engineer. */
 "View All" = "查看全部";
@@ -2078,6 +2246,9 @@
 /* No comment provided by engineer. */
 "We Upgraded" = "我們升級了";
 
+/* CrowdNode */
+"We will automatically detect this transaction and transfer the same amount to your CrowdNode account. After that you will be able to make deposits and withdrawals in Dash Wallet on this device." = "我們將自動檢測此交易並將相同的金額轉移到您的 CrowdNode 帳戶。之後，您將能夠在此設備上的達世幣錢包中進行存款和提款。";
+
 /* Website */
 "Website" = "網站";
 
@@ -2098,6 +2269,9 @@
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "為什麼我會看到所有這些交易？";
+
+/* CrowdNode */
+"Why do you need an online account?" = "為什麼需要在線帳戶?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "為什麼我不應該截圖?";
@@ -2127,6 +2301,9 @@
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "Would you like to accept the invitation?";
 
+/* Coinbase */
+"Would you like to make a deposit for your purchase using a linked bank account?" = "Would you like to make a deposit for your purchase using a linked bank account?";
+
 /* No comment provided by engineer. */
 "Would you like to save the changes you made to your profile?" = "Would you like to save the changes you made to your profile?";
 
@@ -2151,8 +2328,14 @@
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "您可以使用Touch ID進行以下付款的驗證";
 
+/* CrowdNode */
+"You can change how / when your reward earnings are paid to you." = "您可以更改向您支付獎勵收入的方式/時間。";
+
 /* Voting */
 "You can review all requests but you only need to vote on duplicates" = "You can review all requests but you only need to vote on duplicates";
+
+/* CrowdNode */
+"You can see detailed information about your deposits, withdrawals and reward earnings." = "您可以查看有關您的存款、提款和獎勵收入的詳細信息。";
 
 /* No comment provided by engineer. */
 "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
@@ -2162,6 +2345,9 @@
 
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "You do not have any contacts at the moment";
+
+/* Coinbase */
+"You don’t have enough balance" = "你沒有足夠的餘額";
 
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "你超出了 Coinbase 的授權限制。";
@@ -2174,6 +2360,9 @@
 
 /* No comment provided by engineer. */
 "You have insufficient funds to proceed" = "您沒有足夠的資金來繼續進行";
+
+/* CrowdNode */
+"You have to backup your passphrase in Dash Wallet" = "您必須在達世幣錢包中備份您的恢復詞組";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "您必須輸入密碼才能進入達世幣錢包";
@@ -2218,6 +2407,9 @@
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "您將在此設備上的 達世幣錢包中收到 %@ Dash 。請注意，完成交易最多可能需要 2-3 分鐘。";
 
 /* CrowdNode */
+"You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "您將自動收到小額付款，預設情況下它們將被再投資，但是，設置自動提款以接收定期付款也很容易。";
+
+/* CrowdNode */
 "Your CrowdNode account is creating…" = "正在創建您的 CrowdNode 帳戶…";
 
 /* CrowdNode */
@@ -2253,11 +2445,11 @@
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "您的位置用於顯示您在地圖上的位置、所選區域中的商家以及改進搜索結果。";
 
-/* No comment provided by engineer. */
-"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "您的交易已發送，金額應在幾分鐘內顯示在您的錢包中。";
+/* CrowdNode */
+"Your primary Dash address that you currently use for your CrowdNode account" = "您當前用於 CrowdNode 帳戶的主要達世幣位址";
 
 /* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "您的Uphold帳戶中的達世幣結餘是";
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "您的交易已發送，金額應在幾分鐘內顯示在您的錢包中。";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "您的用戶名 %@ 已在達世幣網絡上成功創建";

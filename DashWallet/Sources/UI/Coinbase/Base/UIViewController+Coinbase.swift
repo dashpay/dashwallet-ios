@@ -22,7 +22,7 @@ extension BaseViewController {
         let vc = SuccessfulOperationStatusViewController.initiate(from: sb("OperationStatus"))
         vc.closeHandler = { [weak self] in
             guard let wSelf = self else { return }
-            guard let rootController = wSelf.navigationController?.controller(by: CoinbaseEntryPointViewController.self) else {
+            guard let rootController = wSelf.navigationController?.controller(by: IntegrationViewController.self) else {
                 wSelf.navigationController?.popToRootViewController(animated: true)
                 return
             }
@@ -92,7 +92,7 @@ extension CoinbaseCodeConfirmationPreviewing where Self: BaseViewController {
 protocol CoinbaseTransactionHandling: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionDelegate, ErrorPresentable { }
 
 extension CoinbaseTransactionHandling where Self: BaseViewController {
-    func transferFromCoinbaseToWalletDidFail(with error: Coinbase.Error) {
+    func transferFromCoinbaseToWalletDidFail(with error: Error) {
         if case Coinbase.Error.transactionFailed(let r) = error {
             switch r {
             case .twoFactorRequired:
