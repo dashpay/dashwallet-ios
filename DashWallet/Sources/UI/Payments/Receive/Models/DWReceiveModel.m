@@ -31,6 +31,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, strong) UIImage *qrCodeImage;
 @property (nullable, nonatomic, copy) NSString *paymentAddress;
+#if DASHPAY
+@property (nullable, nonatomic, copy) NSString *username;
+#endif
 @property (nullable, nonatomic, strong) DSPaymentRequest *paymentRequest;
 @property (nonatomic, strong) dispatch_queue_t updateQueue;
 
@@ -76,6 +79,19 @@ NS_ASSUME_NONNULL_BEGIN
     UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
     pasteboard.string = paymentAddress;
 }
+
+#if DASHPAY
+- (void)copyUsernameToPasteboard {
+    NSString *username = self.paymentRequest.dashpayUsername;
+
+    if (!username) {
+        return;
+    }
+    
+    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+    pasteboard.string = username;
+}
+#endif
 
 - (void)copyQRImageToPasteboard {
     UIImage *qrImage = self.qrCodeImage;
@@ -161,9 +177,10 @@ NS_ASSUME_NONNULL_BEGIN
             }
             paymentRequest.requestedFiatCurrencyCode = CurrencyExchangerObjcWrapper.localCurrencyCode;
         }
-
+#if DASHPAY
         paymentRequest.dashpayUsername = [DWGlobalOptions sharedInstance].dashpayUsername;
-
+#endif
+        
         UIImage *rawQRImage = nil;
         if (!hasAmount && [paymentRequest.data isEqual:appGroupOptions.receiveRequestData]) {
             NSData *qrImageData = appGroupOptions.receiveQRImageData;
@@ -202,6 +219,9 @@ NS_ASSUME_NONNULL_BEGIN
             self.paymentRequest = paymentRequest;
             self.qrCodeImage = qrCodeImage;
             self.paymentAddress = paymentAddress;
+#if DASHPAY
+            self.username = paymentRequest.dashpayUsername;
+#endif
             [self.delegate receivingInfoDidUpdate];
         });
     });

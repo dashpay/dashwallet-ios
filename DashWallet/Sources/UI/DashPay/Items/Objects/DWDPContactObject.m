@@ -44,14 +44,15 @@
 
 - (NSString *)displayName {
     if (_displayName == nil) {
-        _displayName = [self.userEntity.displayName copy];
+        NSString *userName = [self.userEntity.displayName copy];
+        _displayName = [userName isEqualToString:@""] ? nil : userName;
     }
     return _displayName;
 }
 
 - (NSAttributedString *)title {
     NSDictionary<NSAttributedStringKey, id> *attributes = @{NSFontAttributeName : [UIFont dw_itemTitleFont]};
-    return [[NSAttributedString alloc] initWithString:self.displayName ?: self.username attributes:attributes];
+    return [[NSAttributedString alloc] initWithString:(self.displayName ?: self.username) ?: @"<Fetching Contact>" attributes:attributes];
 }
 
 - (NSString *)subtitle {

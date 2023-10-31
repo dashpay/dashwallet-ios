@@ -52,6 +52,10 @@ NS_ASSUME_NONNULL_END
     return [NSPredicate predicateWithValue:YES];
 }
 
+- (NSString *)sectionNameKeyPath {
+    return nil;
+}
+
 - (NSPredicate *)invertedPredicate {
     return nil;
 }
@@ -107,7 +111,7 @@ NS_ASSUME_NONNULL_END
     NSFetchedResultsController *fetchedResultsController =
         [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
                                             managedObjectContext:context
-                                              sectionNameKeyPath:nil
+                                              sectionNameKeyPath:self.sectionNameKeyPath
                                                        cacheName:nil];
     _fetchedResultsController = fetchedResultsController;
     NSError *error = nil;

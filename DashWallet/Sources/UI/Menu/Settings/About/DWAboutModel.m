@@ -159,11 +159,14 @@ NS_ASSUME_NONNULL_BEGIN
                                                          (int)[currentMasternodeList quorumsCountOfType:LLMQType_Llmqtype50_60]];
 
     NSString *usernameString = @"";
+    
+#if DASHPAY
     if ([DWGlobalOptions sharedInstance].dashpayUsername) {
         usernameString = [NSString stringWithFormat:NSLocalizedString(@"Current user: %@", nil),
                                                     [DWGlobalOptions sharedInstance].dashpayUsername];
     }
-
+#endif
+    
     NSArray<NSString *> *statusLines = @[ rateString, updatedString, blockString, peersString, dlPeerString, quorumsString, usernameString ];
 
     return [statusLines componentsJoinedByString:@"\n"];
@@ -203,7 +206,7 @@ NS_ASSUME_NONNULL_BEGIN
                 host = @(inet_ntop(AF_INET6, &addr, s, sizeof(s)));
             }
             [[DWEnvironment sharedInstance].currentChainManager.peerManager setTrustedPeerHost:[NSString stringWithFormat:@"%@:%d", host, port]];
-            [[DWEnvironment sharedInstance].currentChainManager.peerManager disconnect];
+            [[DWEnvironment sharedInstance].currentChainManager.peerManager disconnect:DSDisconnectReason_TrustedPeerSet];
             [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
             break;
         }

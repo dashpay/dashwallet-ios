@@ -116,7 +116,12 @@ static BOOL ShouldResizeLogoToSmall(BOOL hasAmount) {
     NSParameterAssert(overlayImage);
 
     CGSize size = overlayImage.size;
-    NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
+    NSString *username;
+    
+#if DASHPAY
+    username = [DWGlobalOptions sharedInstance].dashpayUsername;
+#endif
+    
     const BOOL shouldDrawUser = username != nil;
 
     if (ShouldResizeLogoToSmall(hasAmount)) {

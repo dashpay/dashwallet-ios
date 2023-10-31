@@ -35,6 +35,10 @@ static UIImage *ImageByType(DWMainMenuItemType type) {
             return [UIImage imageNamed:@"menu_tools"];
         case DWMainMenuItemType_Support:
             return [UIImage imageNamed:@"menu_support"];
+        case DWMainMenuItemType_Invite:
+            return [UIImage imageNamed:@"menu_invite"];
+        case DWMainMenuItemType_Voting:
+            return [UIImage imageNamed:@"menu_voting"];
     }
 }
 
@@ -52,6 +56,10 @@ static NSString *TitleByType(DWMainMenuItemType type) {
             return NSLocalizedString(@"Tools", nil);
         case DWMainMenuItemType_Support:
             return NSLocalizedString(@"Support", nil);
+        case DWMainMenuItemType_Invite:
+            return NSLocalizedString(@"Invite", nil);
+        case DWMainMenuItemType_Voting:
+            return NSLocalizedString(@"Username voting", nil);
     }
 }
 
@@ -69,6 +77,10 @@ static NSString *DescriptionByType(DWMainMenuItemType type) {
             return NSLocalizedString(@"Import private key, Export CSV…", nil);
         case DWMainMenuItemType_Support:
             return NSLocalizedString(@"Report an Issue", nil);
+        case DWMainMenuItemType_Invite:
+            return NSLocalizedString(@"Let your friends and family to join Dash", nil);
+        case DWMainMenuItemType_Voting:
+            return NSLocalizedString(@"", nil);
     }
 }
 

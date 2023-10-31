@@ -55,12 +55,17 @@
 }
 
 - (NSString *)displayName {
-    return nil;
+    if (_username == nil) {
+        BOOL hasDisplayName = _blockchainIdentity.displayName.length > 0;
+        _username = hasDisplayName ? [_blockchainIdentity.displayName copy] : nil;
+    }
+    
+    return _username;
 }
 
 - (NSAttributedString *)title {
     NSDictionary<NSAttributedStringKey, id> *attributes = @{NSFontAttributeName : [UIFont dw_itemTitleFont]};
-    return [[NSAttributedString alloc] initWithString:self.displayName ?: self.username attributes:attributes];
+    return [[NSAttributedString alloc] initWithString:(self.displayName ?: self.username) ?: @"<Fetching Contact>" attributes:attributes];
 }
 
 - (NSString *)subtitle {

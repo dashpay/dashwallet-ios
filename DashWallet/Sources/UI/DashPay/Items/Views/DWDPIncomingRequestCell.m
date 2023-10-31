@@ -72,4 +72,7 @@ NS_ASSUME_NONNULL_END
     self.itemView.requestState = requestItem.requestState;
 }
 
+- (void)dealloc {
+    [self mvvm_unobserveAll];
+}
 @end

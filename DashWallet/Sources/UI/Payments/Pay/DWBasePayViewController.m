@@ -97,10 +97,12 @@ NS_ASSUME_NONNULL_BEGIN
     [self processPaymentInput:paymentInput];
 }
 
+#if DASHPAY
 - (void)performPayToUser:(id<DWDPBasicUserItem>)userItem {
     DWPaymentInput *paymentInput = [self.payModel paymentInputWithUser:userItem];
     [self processPaymentInput:paymentInput];
 }
+#endif
 
 - (void)handleFile:(NSData *)file {
     [self.paymentController performPaymentWithFile:file];
@@ -151,7 +153,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)paymentControllerDidFinishTransaction:(PaymentController *_Nonnull)controller transaction:(DSTransaction *_Nonnull)transaction {
     [self dismissViewControllerAnimated:true completion:^{
-        TxDetailModel *model = [[TxDetailModel alloc] initWithTransaction:transaction];
+        DWTxDetailModel *model = [[DWTxDetailModel alloc] initWithTransaction:transaction];
         SuccessTxDetailViewController *vc = [[SuccessTxDetailViewController alloc] initWithModel:model];
         vc.contactItem = self->_paymentController.contactItem;
         vc.delegate = self;
@@ -159,7 +161,6 @@ NS_ASSUME_NONNULL_BEGIN
                            animated:YES
                          completion:nil];
     }];
-
 }
 
 - (UIViewController *_Nonnull)presentationAnchorForPaymentController:(PaymentController *_Nonnull)controller {

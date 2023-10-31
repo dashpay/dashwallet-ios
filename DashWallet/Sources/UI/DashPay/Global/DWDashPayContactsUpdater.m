@@ -32,6 +32,8 @@ static NSTimeInterval const UPDATE_INTERVAL = 30;
 
 @property (nullable, nonatomic, copy) void (^fetchCompletion)(BOOL success, NSArray<NSError *> *errors);
 
+@property (nonatomic, strong) NSDate *lastFetch;
+
 @end
 
 NS_ASSUME_NONNULL_END
@@ -52,7 +54,7 @@ NS_ASSUME_NONNULL_END
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    if (myBlockchainIdentity == nil) {
+    if (myBlockchainIdentity == nil || myBlockchainIdentity.registered == NO) {
         return;
     }
 
@@ -92,9 +94,17 @@ NS_ASSUME_NONNULL_END
 - (void)fetchIntiatedInternally:(BOOL)initiatedInternally completion:(void (^_Nullable)(BOOL success, NSArray<NSError *> *errors))completion {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(fetchInternal) object:nil];
+
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    if (myBlockchainIdentity == nil) {
+    if (myBlockchainIdentity == nil || myBlockchainIdentity.registered == NO) {
+        if (completion) {
+            completion(YES, nil);
+        }
+
+        [self performSelector:@selector(fetchInternal) withObject:nil afterDelay:UPDATE_INTERVAL];
+
         return;
     }
 
@@ -102,13 +112,22 @@ NS_ASSUME_NONNULL_END
         self.fetchCompletion = completion;
     }
 
+    if (self.lastFetch && [[NSDate date] timeIntervalSinceDate:self.lastFetch] < UPDATE_INTERVAL) {
+        if (completion) {
+            completion(YES, nil);
+        }
+
+        [self performSelector:@selector(fetchInternal) withObject:nil afterDelay:UPDATE_INTERVAL];
+
+        return;
+    }
+
     if (self.isFetching) {
         return;
     }
     self.fetching = YES;
 
-    // Cancel any scheduled calls if fetch is called manually
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(fetchInternal) object:nil];
+    self.lastFetch = [NSDate date];
 
     __weak typeof(self) weakSelf = self;
     [myBlockchainIdentity fetchContactRequests:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
@@ -119,6 +138,10 @@ NS_ASSUME_NONNULL_END
 
         strongSelf.fetching = NO;
 
+        if (strongSelf.isUpdating == NO) {
+            return;
+        }
+
         DSLog(@"DWDP: Fetch contact requests %@: %@",
               success ? @"Succeeded" : @"Failed",
               errors.count == 0 ? @"" : errors);
@@ -128,8 +151,7 @@ NS_ASSUME_NONNULL_END
             strongSelf.fetchCompletion = nil;
         }
 
-        [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayContactsDidUpdateNotification
-                                                            object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayContactsDidUpdateNotification object:nil];
 
         [strongSelf performSelector:@selector(fetchInternal) withObject:nil afterDelay:UPDATE_INTERVAL];
     }];

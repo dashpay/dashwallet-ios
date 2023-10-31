@@ -19,9 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSBlockchainIdentity;
+
 @interface DWUserProfileNavigationTitleView : UIView
 
-- (void)updateWithUsername:(NSString *)username;
+- (void)updateWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 - (void)setScrollingPercent:(float)percent;
 
 - (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;

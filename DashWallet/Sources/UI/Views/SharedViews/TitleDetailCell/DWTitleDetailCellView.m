@@ -17,7 +17,10 @@
 
 #import "DWTitleDetailCellView.h"
 
+#if DASHPAY
 #import "DWDPSmallContactView.h"
+#endif
+
 #import "DWUIKit.h"
 #import <DashSync/UIView+DSFindConstraint.h>
 
@@ -31,7 +34,9 @@ static CGFloat const SMALL_PADDING = 12.0;
 
 @property (readonly, nonatomic, strong) UILabel *titleLabel;
 @property (readonly, nonatomic, strong) UILabel *detailLabel;
+#if DASHPAY
 @property (readonly, nonatomic, strong) DWDPSmallContactView *contactView;
+#endif
 @property (readonly, nonatomic, strong) UIStackView *stackView;
 @property (readonly, nonatomic, strong) CALayer *separatorLayer;
 
@@ -84,11 +89,14 @@ static CGFloat const SMALL_PADDING = 12.0;
     detailLabel.textColor = [UIColor dw_secondaryTextColor];
     _detailLabel = detailLabel;
 
+#if DASHPAY
     DWDPSmallContactView *contactView = [[DWDPSmallContactView alloc] initWithFrame:CGRectZero];
     contactView.translatesAutoresizingMaskIntoConstraints = NO;
     _contactView = contactView;
-
     UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[ titleLabel, detailLabel, contactView ]];
+#else
+    UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[ titleLabel, detailLabel ]];
+#endif
     stackView.translatesAutoresizingMaskIntoConstraints = NO;
     stackView.axis = UILayoutConstraintAxisHorizontal;
     stackView.alignment = UIStackViewAlignmentCenter;
@@ -169,6 +177,7 @@ static CGFloat const SMALL_PADDING = 12.0;
         self.detailLabel.hidden = YES;
     }
 
+#if DASHPAY
     if (model.userItem) {
         self.contactView.hidden = NO;
         self.contactView.item = model.userItem;
@@ -176,7 +185,8 @@ static CGFloat const SMALL_PADDING = 12.0;
     else {
         self.contactView.hidden = YES;
     }
-
+#endif
+    
     self.detailLabel.textAlignment = model.detailAlignment;
 }
 

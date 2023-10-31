@@ -15,10 +15,11 @@
 //  limitations under the License.
 //
 
-#import "dashwallet-Swift.h"
-#import <UIKit/UIKit.h>
+@import UIKit;
 
 NS_ASSUME_NONNULL_BEGIN
+
+@protocol DWNavigationFullscreenable;
 
 @interface DWSearchViewController : UIViewController <DWNavigationFullscreenable, UISearchBarDelegate>
 

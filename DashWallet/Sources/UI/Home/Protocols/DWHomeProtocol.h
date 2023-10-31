@@ -19,6 +19,7 @@
 
 #import "DWDashPayProtocol.h"
 #import "DWTxDisplayModeProtocol.h"
+#import "DWDashPayReadyProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -42,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)homeModelWantToReloadShortcuts:(id<DWHomeProtocol>)model;
 @end
 
-@protocol DWHomeProtocol <DWTxDisplayModeProtocol>
+@protocol DWHomeProtocol <DWTxDisplayModeProtocol, DWDashPayReadyProtocol>
 
 @property (nullable, nonatomic, weak) id<DWHomeModelUpdatesObserver> updatesObserver;
 
@@ -70,6 +71,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)retrySyncing;
 - (void)checkCrowdNodeState;
+
+#if DASHPAY
+- (void)handleDeeplink:(NSURL *)url
+            completion:(void (^)(BOOL success,
+                                 NSString *_Nullable errorTitle,
+                                 NSString *_Nullable errorMessage))completion;
+#endif
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -21,6 +21,8 @@
 #import "UIColor+DWStyle.h"
 #import "UIFont+DWDPItem.h"
 
+#import <DashSync/DashSync.h>
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDPTxObject ()
@@ -38,16 +40,21 @@ NS_ASSUME_NONNULL_END
 @synthesize subtitle = _subtitle;
 @synthesize username = _username;
 @synthesize transaction = _transaction;
+@synthesize blockchainIdentity = _blockchainIdentity;
 
 - (instancetype)initWithTransaction:(DSTransaction *)tx
                        dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider
-                           username:(NSString *)username {
+                 blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     self = [super init];
     if (self) {
         _transaction = tx;
         _dataProvider = dataProvider;
-        _username = username;
-        // TODO: DP provide Display Name
+        _blockchainIdentity = blockchainIdentity;
+        _username = blockchainIdentity.currentDashpayUsername;
+       
+        BOOL hasDisplayName = blockchainIdentity.displayName.length > 0;
+        _displayName = hasDisplayName ? blockchainIdentity.displayName : nil;
+        
         _subtitle = [dataProvider shortDateStringForTransaction:tx];
         _dataItem = [dataProvider transactionDataForTransaction:tx];
     }

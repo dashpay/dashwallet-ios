@@ -55,6 +55,9 @@
 #error "Debug flag FRESH_INSTALL is active during Release build. Comment this out to continue."
 #endif /* (FRESH_INSTALL && !DEBUG) */
 
+#if DASHPAY
+//NSNotificationName const DWDashPayAvailabilityStatusUpdatedNotification = @"DWDashPayAvailabilityStatusUpdatedNotification"; // TODO: check if needed
+#endif
 NS_ASSUME_NONNULL_BEGIN
 
 @interface AppDelegate () <DWStartViewControllerDelegate, UNUserNotificationCenterDelegate>
@@ -90,6 +93,10 @@ NS_ASSUME_NONNULL_BEGIN
         SecItemDelete((__bridge CFDictionaryRef)spec);
     }
 #endif /* FRESH_INSTALL */
+    
+#if DASHPAY
+    [DWGlobalOptions sharedInstance].dpInvitationFlowEnabled = YES;
+#endif
     
     [DSLogger sharedInstance];
     [FIRApp configure];
@@ -176,6 +183,28 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     [[DashSync sharedSyncController] performFetchWithCompletionHandler:completionHandler];
 }
 
+#if DASHPAY
+- (BOOL)application:(UIApplication *)application continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> *_Nullable))restorationHandler {
+    __weak typeof(self) weakSelf = self;
+    BOOL handled = [[FIRDynamicLinks dynamicLinks] handleUniversalLink:userActivity.webpageURL
+                                                            completion:^(FIRDynamicLink * _Nullable dynamicLink,
+                                                                         NSError * _Nullable error) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        if (dynamicLink.url) {
+            DWInitialViewController *controller = (DWInitialViewController *)strongSelf.window.rootViewController;
+            if ([controller isKindOfClass:DWInitialViewController.class]) {
+                [controller handleDeeplink:dynamicLink.url];
+            }
+        }
+    }];
+    return handled;
+}
+#endif
+
 - (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
@@ -184,6 +213,21 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         startController.deferredURLToProcess = url;
         return NO;
     }
+    
+#if DASHPAY
+    FIRDynamicLink *dynamicLink = [[FIRDynamicLinks dynamicLinks] dynamicLinkFromCustomSchemeURL:url];
+    if (dynamicLink) {
+        if (dynamicLink.url) {
+            DWInitialViewController *controller = (DWInitialViewController *)self.window.rootViewController;
+            if ([controller isKindOfClass:DWInitialViewController.class]) {
+                [controller handleDeeplink:dynamicLink.url];
+            }
+        }
+        return YES;
+    }
+    
+    // Handle URL Scheme instead
+#endif
     
     if (![DWURLParser allowsURLHandling]) {
         return NO;

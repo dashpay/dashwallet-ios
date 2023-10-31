@@ -15,11 +15,11 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "BaseCollectionReusableView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWContactsSearchInfoHeaderView : UICollectionReusableView
+@interface DWContactsSearchInfoHeaderView : BaseCollectionReusableView
 
 @property (readonly, nonatomic, strong) UILabel *titleLabel;
 

@@ -25,12 +25,29 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWBaseContactsContentViewController;
+
+@protocol DWBaseContactsContentViewControllerDelegate <NSObject>
+
+- (void)baseContactsContentViewController:(DWBaseContactsContentViewController *)controller
+                                didSelect:(id<DWDPBasicUserItem>)item
+                                indexPath:(NSIndexPath *)indexPath;
+
+@end
+
 @interface DWBaseContactsContentViewController : UIViewController
 
+@property (readonly, null_resettable, nonatomic, strong) UICollectionView *collectionView;
+
+@property (nonatomic, assign, getter=isContactsScreen) BOOL contactsScreen;
 @property (readonly, nonatomic, assign) NSUInteger maxVisibleContactRequestsCount;
 
+@property (nullable, nonatomic, weak) id<DWBaseContactsContentViewControllerDelegate> delegate;
 @property (nullable, nonatomic, weak) id<DWDPNewIncomingRequestItemDelegate> itemsDelegate;
 @property (nonatomic, strong) id<DWContactsDataSource> dataSource;
+
+@property (nullable, nonatomic, copy) NSArray<id<DWDPBasicUserItem>> *matchedItems;
+@property (nonatomic, assign) BOOL matchFailed;
 
 - (instancetype)initWithPayModel:(id<DWPayModelProtocol>)payModel
                     dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider NS_DESIGNATED_INITIALIZER;

@@ -101,6 +101,14 @@ static const bool _SNAPSHOT = 0;
 #import "DWDPRegistrationErrorRetryDelegate.h"
 #import "DWDPUserObject.h"
 #import "DWModalUserProfileViewController.h"
+#import "DWDPWelcomeView.h"
+#import "DWInvitationActionsView.h"
+#import "DWInvitationPreviewViewController.h"
+#import "DWInvitationLinkBuilder.h"
+#import "DWSuccessInvitationView.h"
+#import "DWInvitationMessageView.h"
+#import "DWScrollingViewController.h"
+#import "UIView+DWEmbedding.h"
 
 //MARK: CrowdNode
 #import "DWCheckbox.h"
@@ -116,3 +124,11 @@ static const bool _SNAPSHOT = 0;
 #import "DWPayModel.h"
 #import "DWHomeViewControllerDelegate.h"
 #import "DWMainMenuViewControllerDelegate.h"
+#import "DWExploreTestnetViewController.h"
+
+#if DASHPAY
+#import "DWDashPayConstants.h"
+#import "DWRootContactsViewController.h"
+#import "DWNotificationsProvider.h"
+#import "DWContactsViewController.h"
+#endif

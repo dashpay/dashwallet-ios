@@ -23,11 +23,14 @@ import UIKit
 protocol HomeViewDelegate: AnyObject {
     func homeView(_ homeView: HomeView, showTxFilter sender: UIView)
     func homeView(_ homeView: HomeView, showSyncingStatus sender: UIView)
-    func homeView(_ homeView: HomeView, profileButtonAction sender: UIControl)
     func homeView(_ homeView: HomeView, didSelectTransaction transaction: DSTransaction)
     func homeViewShowDashPayRegistrationFlow(_ homeView: HomeView)
     func homeView(_ homeView: HomeView, showReclassifyYourTransactionsFlowWithTransaction transaction: DSTransaction)
     func homeView(_ homeView: HomeView, showCrowdNodeTxs transactions: [DSTransaction])
+    
+#if DASHPAY
+    func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt)
+#endif
 }
 
 // MARK: - HomeView
@@ -51,6 +54,9 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
     var model: DWHomeProtocol? {
         didSet {
             model?.updatesObserver = self
+            #if DASHPAY
+            updateHeaderView()
+            #endif
         }
     }
 
@@ -133,6 +139,18 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
                                                selector: #selector(setNeedsLayout),
                                                name: UIContentSizeCategory.didChangeNotification,
                                                object: nil)
+        
+        #if DASHPAY
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(updateHeaderView),
+                                               name:NSNotification.Name.DWDashPayRegistrationStatusUpdated,
+                                               object: nil)
+        
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(updateHeaderView),
+                                               name:NSNotification.Name.DWNotificationsProviderDidUpdate,
+                                               object:nil);
+        #endif
     }
 
     // MARK: - DWHomeModelUpdatesObserver
@@ -163,24 +181,51 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
 
     func homeModelWant(toReloadShortcuts model: DWHomeProtocol) {
         reloadShortcuts()
+        #if DASHPAY
+        updateHeaderView()
+        #endif
     }
 
 
     // MARK: - DWDPRegistrationErrorRetryDelegate
 
     func registrationErrorRetryAction() {
-        // TODO: Platform
-//        if model?.dashPayModel.canRetry ?? false {
-//            model?.dashPayModel.retry()
-//        } else {
-//            delegate?.homeViewShowDashPayRegistrationFlow(self)
-//        }
+        if model?.dashPayModel.canRetry() ?? false {
+            model?.dashPayModel.retry()
+        } else {
+            delegate?.homeViewShowDashPayRegistrationFlow(self)
+        }
     }
 
     @objc
     func reloadShortcuts() {
         headerView?.reloadShortcuts()
     }
+    
+    // MARK: DWDashPayRegistrationStatusUpdated
+    
+    #if DASHPAY
+    @objc
+    func updateHeaderView() {
+        if let model = self.model {
+            headerView.welcomeView?.isHidden = DWGlobalOptions.sharedInstance().dashPayRegistrationOpenedOnce || model.shouldShowCreateUserNameButton() != true
+            
+            let status = model.dashPayModel.registrationStatus
+            let completed = model.dashPayModel.registrationCompleted
+            
+            if status?.state == .done || completed {
+                let identity = model.dashPayModel.blockchainIdentity
+                let notificaitonAmount = model.dashPayModel.unreadNotificationsCount
+                
+                delegate?.homeView(self, didUpdateProfile: identity, unreadNotifications: notificaitonAmount)
+            } else {
+                delegate?.homeView(self, didUpdateProfile: nil, unreadNotifications: 0)
+            }
+            
+            setNeedsLayout()
+        }
+    }
+    #endif
 }
 
 // MARK: HomeHeaderViewDelegate
@@ -193,10 +238,12 @@ extension HomeView: HomeHeaderViewDelegate {
     func homeHeaderViewDidUpdateContents(_ view: HomeHeaderView) {
         setNeedsLayout()
     }
-
-    func homeHeaderView(_ view: HomeHeaderView, profileButtonAction sender: UIControl) {
-        delegate?.homeView(self, profileButtonAction: sender)
+    
+    #if DASHPAY
+    func homeHeaderViewJoinDashPayAction(_ headerView: HomeHeaderView) {
+        delegate?.homeViewShowDashPayRegistrationFlow(self)
     }
+    #endif
 }
 
 // MARK: SyncingHeaderViewDelegate
