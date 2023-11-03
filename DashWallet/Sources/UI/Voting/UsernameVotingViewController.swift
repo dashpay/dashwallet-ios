@@ -44,6 +44,16 @@ class UsernameVotingViewController: UIViewController {
             present(alert, animated: true)
         }
     }
+    
+    @IBAction
+    func showFilters() {
+        let vc = VotingFiltersViewController.controller()
+        vc.delegate = self
+        vc.filters = viewModel.filters
+        
+        let nvc = UINavigationController(rootViewController: vc)
+        present(nvc, animated: true)
+    }
 }
 
 extension UsernameVotingViewController {
@@ -63,8 +73,11 @@ extension UsernameVotingViewController {
         
         let headerNib = UINib(nibName: "VotingHeaderView", bundle: nil)
         
-        if let customHeaderView = headerNib.instantiate(withOwner: nil, options: nil).first as? UIView {
-            tableView.tableHeaderView = customHeaderView
+        if let headerView = headerNib.instantiate(withOwner: nil, options: nil).first as? VotingHeaderView {
+            tableView.tableHeaderView = headerView
+            headerView.filterButtonHandler = { [weak self] in
+                self?.showFilters()
+            }
         }
     }
     
@@ -110,5 +123,12 @@ extension UITableView {
         didSet {
             invalidateIntrinsicContentSize()
         }
+    }
+}
+
+extension UsernameVotingViewController: VotingFiltersViewControllerDelegate {
+    func apply(filters: VotingFilters) {
+        viewModel.apply(filters: filters)
+        tableView.reloadData()
     }
 }

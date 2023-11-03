@@ -22,6 +22,7 @@ class VotingViewModel {
     private var nameCount = 1
     private var dao: UsernameRequestsDAO = UsernameRequestsDAOImpl.shared
     private var fullData: Dictionary<String, [UsernameRequest]> = [:]
+    private(set) var filters = VotingFilters.defaultFilters
     
     public static let shared: VotingViewModel = .init()
     public var duplicates: [String] = []
@@ -56,8 +57,13 @@ class VotingViewModel {
         refresh()
     }
     
+    func apply(filters: VotingFilters) {
+        self.filters = filters
+        refresh()
+    }
+    
     private func refresh() {
-        let requests = dao.all()
+        let requests = dao.all(onlyWithLinks: filters.onlyWithLinks ?? false)
         fullData = Dictionary(grouping: requests) { $0.username }
         duplicates = fullData.keys.sorted()
     }

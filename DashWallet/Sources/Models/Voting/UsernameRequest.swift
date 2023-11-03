@@ -20,7 +20,7 @@ import SQLite
 
 // MARK: - UsernameRequest
 
-struct UsernameRequest {
+struct UsernameRequest: RowDecodable {
     var requestId: String
     var username: String
     var createdAt: Int64

@@ -22,7 +22,7 @@ import SQLite
 
 protocol UsernameRequestsDAO {
     func create(dto: UsernameRequest)
-    func all() -> [UsernameRequest]
+    func all(onlyWithLinks: Bool) -> [UsernameRequest]
     func get(by requestId: String) -> UsernameRequest?
     func update(dto: UsernameRequest)
     func delete(dto: UsernameRequest)
@@ -126,13 +126,30 @@ class UsernameRequestsDAOImpl: NSObject, UsernameRequestsDAO {
             print(error)
         }
     }
+    
+    func dictionaryOfAllItems() -> [String: UsernameRequest] {
+        _ = all()
+        return cache
+    }
 
     static let shared = UsernameRequestsDAOImpl()
 }
 
 extension UsernameRequestsDAOImpl {
-    func dictionaryOfAllItems() -> [String: UsernameRequest] {
-        _ = all()
-        return cache
+    func all(onlyWithLinks: Bool) -> [UsernameRequest] {
+        let linksParam = onlyWithLinks ? 1 : 0
+        let query = "SELECT * FROM username_requests WHERE (\(linksParam) = 0) OR (\(linksParam) = 1 AND link IS NOT NULL) ORDER BY username COLLATE NOCASE ASC"
+        
+        do {
+            return try self.execute(query: query)
+        } catch {
+            print(error)
+        }
+        
+        return []
+    }
+    
+    private func execute<Item: RowDecodable>(query: String) throws -> [Item] {
+        try db.prepare(query).prepareRowIterator().map { Item(row: $0) }
     }
 }
