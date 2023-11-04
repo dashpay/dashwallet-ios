@@ -20,8 +20,21 @@ import Foundation
 class VotingHeaderView: UIView {
     var filterButtonHandler: (() -> ())?
     
+    @IBOutlet private var subtitleLabel: UILabel!
+    @IBOutlet private var filterLabel: UILabel!
+    @IBOutlet private var amountLabel: UILabel!
+    @IBOutlet private var filterButton: UIButton!
+    @IBOutlet private var searchBar: UISearchBar!
+    
     @IBAction
     private func onFilterButtonTap() {
         filterButtonHandler?()
+    }
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        
+        subtitleLabel.text = NSLocalizedString("As a masternode owner you can vote to approve requested usernames before users will be able to create it.", comment: "Voting")
+        searchBar.searchTextField.font = .dw_regularFont(ofSize: 15)
     }
 }

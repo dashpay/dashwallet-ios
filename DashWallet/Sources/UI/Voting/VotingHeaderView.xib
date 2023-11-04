@@ -53,11 +53,8 @@
                         <action selector="onFilterButtonTap" destination="CnO-Ai-9Ti" eventType="touchUpInside" id="Ps5-ej-WJP"/>
                     </connections>
                 </button>
-                <searchBar contentMode="redraw" searchBarStyle="minimal" placeholder="Search by username" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VEc-ve-pA6">
-                    <rect key="frame" x="12" y="116" width="369" height="56"/>
-                    <constraints>
-                        <constraint firstAttribute="height" constant="56" id="I3M-nx-skS"/>
-                    </constraints>
+                <searchBar contentMode="redraw" searchBarStyle="minimal" text="" placeholder="Search by username" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VEc-ve-pA6">
+                    <rect key="frame" x="12" y="120" width="369" height="56"/>
                     <color key="barTintColor" name="SecondaryBackgroundColor"/>
                     <textInputTraits key="textInputTraits"/>
                 </searchBar>
@@ -76,13 +73,17 @@
                 <constraint firstItem="Fiv-Fv-87I" firstAttribute="top" secondItem="TSE-6A-6Oz" secondAttribute="top" id="Oo9-Nz-V6X"/>
                 <constraint firstItem="4fH-JV-vis" firstAttribute="trailing" secondItem="VEc-ve-pA6" secondAttribute="trailing" constant="12" id="Tk5-gu-Kh7"/>
                 <constraint firstItem="4fH-JV-vis" firstAttribute="trailing" secondItem="FTp-4g-lBL" secondAttribute="trailing" constant="20" id="VoY-lA-fZV"/>
-                <constraint firstItem="VEc-ve-pA6" firstAttribute="top" secondItem="mJf-UV-hWU" secondAttribute="bottom" id="Xc8-YV-7EV"/>
+                <constraint firstItem="VEc-ve-pA6" firstAttribute="top" secondItem="mJf-UV-hWU" secondAttribute="bottom" constant="4" id="Xc8-YV-7EV"/>
                 <constraint firstItem="Fiv-Fv-87I" firstAttribute="bottom" secondItem="mJf-UV-hWU" secondAttribute="bottom" id="biW-zB-5Ap"/>
                 <constraint firstItem="VEc-ve-pA6" firstAttribute="leading" secondItem="4fH-JV-vis" secondAttribute="leading" constant="12" id="gby-ne-eWB"/>
                 <constraint firstItem="4fH-JV-vis" firstAttribute="trailing" secondItem="Fiv-Fv-87I" secondAttribute="trailing" constant="20" id="k7w-QO-3S6"/>
             </constraints>
             <nil key="simulatedTopBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <connections>
+                <outlet property="searchBar" destination="VEc-ve-pA6" id="b2l-G2-h4M"/>
+                <outlet property="subtitleLabel" destination="FTp-4g-lBL" id="CZV-Nb-hi9"/>
+            </connections>
             <point key="canvasLocation" x="526" y="-13"/>
         </view>
     </objects>

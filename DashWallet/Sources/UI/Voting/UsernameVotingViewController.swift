@@ -19,11 +19,13 @@ import Foundation
 import Combine
 
 class UsernameVotingViewController: UIViewController {
-    private var disposableBag = Set<AnyCancellable>()
+    private var cancellableBag = Set<AnyCancellable>()
     private var viewModel: VotingViewModel = VotingViewModel.shared
     
     @IBOutlet private var titleLabel: UILabel!
     @IBOutlet private var tableView: UITableView!
+    
+    private var dataSource: DataSource! = nil
     
     @objc
     static func controller() -> UsernameVotingViewController {
@@ -31,7 +33,11 @@ class UsernameVotingViewController: UIViewController {
     }
     
     override func viewDidLoad() {
+        super.viewDidLoad()
+        
         configureLayout()
+        configureDataSource()
+        configureObservers()
     }
     
     override func viewDidLayoutSubviews() {
@@ -68,8 +74,6 @@ extension UsernameVotingViewController {
         tableView.separatorStyle = .none
         tableView.allowsSelection = false
         tableView.register(GroupedRequestCell.self, forCellReuseIdentifier: GroupedRequestCell.description())
-        tableView.dataSource = self
-        tableView.delegate = self
         
         let headerNib = UINib(nibName: "VotingHeaderView", bundle: nil)
         
@@ -81,29 +85,19 @@ extension UsernameVotingViewController {
         }
     }
     
+    private func configureObservers() {
+        viewModel.$groupedRequests
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] data in
+                self?.reloadDataSource(data: data)
+            }
+            .store(in: &cancellableBag)
+    }
+    
     @objc func mockData() {
         viewModel.addMockRequest()
         tableView.reloadData()
-    }
-}
-
-//MARK: UITableViewDelegate, UITableViewDataSource
-
-extension UsernameVotingViewController: UITableViewDelegate, UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        viewModel.duplicates.count
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: GroupedRequestCell.description(), for: indexPath)
-        guard let cell = cell as? GroupedRequestCell else { return UITableViewCell() }
-        
-        let username = viewModel.duplicates[indexPath.row]
-        let requests = viewModel.getAllRequests(for: username)
-        cell.configure(withModel: requests)
-        cell.heightDelegate = self
-        
-        return cell
     }
 }
 
@@ -130,5 +124,37 @@ extension UsernameVotingViewController: VotingFiltersViewControllerDelegate {
     func apply(filters: VotingFilters) {
         viewModel.apply(filters: filters)
         tableView.reloadData()
+    }
+}
+
+extension UsernameVotingViewController {
+    enum Section: CaseIterable {
+        case main
+    }
+    
+    class DataSource: UITableViewDiffableDataSource<Section, GroupedUsernames> { }
+    
+    private func configureDataSource() {
+        dataSource = DataSource(tableView: tableView) { [weak self]
+            (tableView: UITableView, indexPath: IndexPath, item: GroupedUsernames) -> UITableViewCell? in
+
+            guard self != nil else { return UITableViewCell() }
+            let cell = tableView.dequeueReusableCell(withIdentifier: GroupedRequestCell.description(), for: indexPath)
+
+            if let groupedCell = cell as? GroupedRequestCell {
+                groupedCell.configure(withModel: item.requests)
+                groupedCell.heightDelegate = self
+            }
+
+            return cell
+        }
+    }
+    
+    private func reloadDataSource(data: [GroupedUsernames]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, GroupedUsernames>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(data)
+        dataSource.apply(snapshot, animatingDifferences: false)
+        dataSource.defaultRowAnimation = .none
     }
 }

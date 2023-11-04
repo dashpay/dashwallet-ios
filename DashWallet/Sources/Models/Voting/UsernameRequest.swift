@@ -18,9 +18,16 @@
 import Foundation
 import SQLite
 
+// MARK: - GroupedUsernames
+
+struct GroupedUsernames: Hashable {
+    var username: String
+    var requests: [UsernameRequest]
+}
+
 // MARK: - UsernameRequest
 
-struct UsernameRequest: RowDecodable {
+struct UsernameRequest: RowDecodable, Hashable {
     var requestId: String
     var username: String
     var createdAt: Int64

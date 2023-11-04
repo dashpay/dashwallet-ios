@@ -21,11 +21,10 @@ class VotingViewModel {
     private let prefs = VotingPrefs.shared
     private var nameCount = 1
     private var dao: UsernameRequestsDAO = UsernameRequestsDAOImpl.shared
-    private var fullData: Dictionary<String, [UsernameRequest]> = [:]
+    @Published private(set) var groupedRequests: [GroupedUsernames] = []
     private(set) var filters = VotingFilters.defaultFilters
     
     public static let shared: VotingViewModel = .init()
-    public var duplicates: [String] = []
     
     var shouldShowFirstTimeInfo: Bool {
         get { return !prefs.infoShown }
@@ -34,10 +33,6 @@ class VotingViewModel {
     
     init() {
         refresh()
-    }
-    
-    func getAllRequests(for username: String) -> [UsernameRequest] {
-        return fullData[username] ?? []
     }
     
     func addMockRequest() {
@@ -52,7 +47,9 @@ class VotingViewModel {
         let link = nameCount % 2 == 0 ? "https://example.com" : nil
         let isApproved = Bool.random()
         
-        dao.create(dto: UsernameRequest(requestId: UUID().uuidString, username: randomName, createdAt: Int64(randomValue), identity: identity, link: link, votes: Int.random(in: 0..<15), isApproved: isApproved))
+        let dto = UsernameRequest(requestId: UUID().uuidString, username: randomName, createdAt: Int64(randomValue), identity: identity, link: link, votes: Int.random(in: 0..<15), isApproved: isApproved)
+        print(dto)
+        dao.create(dto: dto)
         
         refresh()
     }
@@ -63,8 +60,16 @@ class VotingViewModel {
     }
     
     private func refresh() {
-        let requests = dao.all(onlyWithLinks: filters.onlyWithLinks ?? false)
-        fullData = Dictionary(grouping: requests) { $0.username }
-        duplicates = fullData.keys.sorted()
+        let requests: [UsernameRequest]
+        
+        if filters.onlyDuplicates ?? false {
+            requests = dao.duplicates(onlyWithLinks: filters.onlyWithLinks ?? false)
+        } else {
+            requests = dao.all(onlyWithLinks: filters.onlyWithLinks ?? false)
+        }
+        
+        self.groupedRequests = Dictionary(grouping: requests, by: { $0.username })
+            .map { GroupedUsernames(username: $0.key, requests: $0.value) }
+            .sorted { $0.username < $1.username }
     }
 }

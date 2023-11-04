@@ -124,6 +124,14 @@ extension VotingFilters {
             }
         }
         
+        if onlyDuplicates == true {
+            set.insert(.onlyDuplicates)
+        }
+        
+        if onlyWithLinks == true {
+            set.insert(.onlyRequestsWithLinks)
+        }
+        
         return set
     }
 }
@@ -207,7 +215,6 @@ final class VotingFiltersModel {
     var initialFilters: Set<VotingFilterItem>!
 
     var canApply: Bool {
-        // TODO: Optimize
         selected != initialFilters
     }
 

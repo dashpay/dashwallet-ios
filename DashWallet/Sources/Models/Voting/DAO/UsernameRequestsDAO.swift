@@ -23,6 +23,7 @@ import SQLite
 protocol UsernameRequestsDAO {
     func create(dto: UsernameRequest)
     func all(onlyWithLinks: Bool) -> [UsernameRequest]
+    func duplicates(onlyWithLinks: Bool) -> [UsernameRequest]
     func get(by requestId: String) -> UsernameRequest?
     func update(dto: UsernameRequest)
     func delete(dto: UsernameRequest)
@@ -56,22 +57,6 @@ class UsernameRequestsDAOImpl: NSObject, UsernameRequestsDAO {
         queue.async(flags: .barrier) { [weak self] in
             self?.cache[dto.requestId] = dto
         }
-    }
-
-    func all() -> [UsernameRequest] {
-        let statement = UsernameRequest.table
-        var userInfos: [UsernameRequest] = []
-
-        do {
-            for requestRow in try db.prepare(statement) {
-                let userInfo = UsernameRequest(row: requestRow)
-                userInfos.append(userInfo)
-            }
-        } catch {
-            print(error)
-        }
-
-        return userInfos
     }
 
     func get(by requestId: String) -> UsernameRequest? {
@@ -126,11 +111,6 @@ class UsernameRequestsDAOImpl: NSObject, UsernameRequestsDAO {
             print(error)
         }
     }
-    
-    func dictionaryOfAllItems() -> [String: UsernameRequest] {
-        _ = all()
-        return cache
-    }
 
     static let shared = UsernameRequestsDAOImpl()
 }
@@ -138,7 +118,32 @@ class UsernameRequestsDAOImpl: NSObject, UsernameRequestsDAO {
 extension UsernameRequestsDAOImpl {
     func all(onlyWithLinks: Bool) -> [UsernameRequest] {
         let linksParam = onlyWithLinks ? 1 : 0
-        let query = "SELECT * FROM username_requests WHERE (\(linksParam) = 0) OR (\(linksParam) = 1 AND link IS NOT NULL) ORDER BY username COLLATE NOCASE ASC"
+        let query = """
+            SELECT * FROM username_requests 
+                WHERE (\(linksParam) = 0) OR (\(linksParam) = 1 AND link IS NOT NULL)
+            ORDER BY username
+            COLLATE NOCASE ASC
+        """
+        
+        do {
+            return try self.execute(query: query)
+        } catch {
+            print(error)
+        }
+        
+        return []
+    }
+    
+    func duplicates(onlyWithLinks: Bool) -> [UsernameRequest] {
+        let linksParam = onlyWithLinks ? 1 : 0
+        let query = """
+            SELECT * FROM username_requests
+                WHERE username IN 
+                    (SELECT username FROM username_requests GROUP BY username HAVING COUNT(username) > 1)
+                AND ((\(linksParam) = 0) OR (\(linksParam) = 1 AND link IS NOT NULL))
+            ORDER BY username
+            COLLATE NOCASE ASC
+        """
         
         do {
             return try self.execute(query: query)

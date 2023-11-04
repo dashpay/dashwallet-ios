@@ -29,12 +29,7 @@ protocol VotingFiltersViewControllerDelegate: AnyObject {
 class VotingFiltersViewController: UIViewController {
     class DataSource: UITableViewDiffableDataSource<Section, VotingFilterItem> {
         override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-            if #available(iOS 15.0, *) {
-                if let identifier = sectionIdentifier(for: section) {
-                    return identifier.title
-                }
-            } else {
-                let identifier = snapshot().sectionIdentifiers[section]
+            if let identifier = sectionIdentifier(for: section) {
                 return identifier.title
             }
 
