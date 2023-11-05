@@ -24,7 +24,6 @@ protocol HeightChangedDelegate {
 }
 
 final class GroupedRequestCell: UITableViewCell {
-
     var heightDelegate: HeightChangedDelegate?
     var model: [UsernameRequest] = []
     private var dataSource: DataSource! = nil

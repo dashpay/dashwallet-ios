@@ -33,8 +33,28 @@ class VotingHeaderView: UIView {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        
+        configureLayout()
+    }
+    
+    func set(filterLabel: String) {
+        self.filterLabel.text = filterLabel
+    }
+    
+    func set(duplicateAmount: Int) {
+        self.amountLabel.text = String.localizedStringWithFormat(NSLocalizedString("%ld duplicates", comment: "Voting"), duplicateAmount)
+    }
+    
+    private func configureLayout() {
         subtitleLabel.text = NSLocalizedString("As a masternode owner you can vote to approve requested usernames before users will be able to create it.", comment: "Voting")
+        searchBar.placeholder = NSLocalizedString("Search by username", comment: "Voting")
         searchBar.searchTextField.font = .dw_regularFont(ofSize: 15)
+        filterLabel.text = VotingFilters.defaultFilters.filterBy?.localizedString ?? ""
+
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.dw_mediumFont(ofSize: 13),
+            .foregroundColor: UIColor.dw_dashBlue()
+        ]
+        let attributedTitle = NSAttributedString(string: NSLocalizedString("Filter", comment: ""), attributes: attributes)
+        filterButton.setAttributedTitle(attributedTitle, for: .normal)
     }
 }

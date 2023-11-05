@@ -81,6 +81,9 @@
             <nil key="simulatedTopBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <connections>
+                <outlet property="amountLabel" destination="mJf-UV-hWU" id="iDZ-Ds-5JG"/>
+                <outlet property="filterButton" destination="Fiv-Fv-87I" id="Weg-g2-svb"/>
+                <outlet property="filterLabel" destination="TSE-6A-6Oz" id="xzB-rG-451"/>
                 <outlet property="searchBar" destination="VEc-ve-pA6" id="b2l-G2-h4M"/>
                 <outlet property="subtitleLabel" destination="FTp-4g-lBL" id="CZV-Nb-hi9"/>
             </connections>

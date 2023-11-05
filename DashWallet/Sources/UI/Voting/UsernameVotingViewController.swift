@@ -24,8 +24,15 @@ class UsernameVotingViewController: UIViewController {
     
     @IBOutlet private var titleLabel: UILabel!
     @IBOutlet private var tableView: UITableView!
+    @IBOutlet private var filterView: UIView!
+    @IBOutlet private var filterViewTitle: UILabel!
+    @IBOutlet private var filterViewSubtitle: UILabel!
     
     private var dataSource: DataSource! = nil
+    
+    var headerView: VotingHeaderView? {
+        tableView.tableHeaderView as? VotingHeaderView
+    }
     
     @objc
     static func controller() -> UsernameVotingViewController {
@@ -83,6 +90,9 @@ extension UsernameVotingViewController {
                 self?.showFilters()
             }
         }
+        
+        filterView.addTopBorder(with: UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1), andWidth: 1)
+        filterViewTitle.text = NSLocalizedString("Filtered by", comment: "")
     }
     
     private func configureObservers() {
@@ -90,6 +100,7 @@ extension UsernameVotingViewController {
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] data in
+                self?.headerView?.set(duplicateAmount: data.count)
                 self?.reloadDataSource(data: data)
             }
             .store(in: &cancellableBag)
@@ -122,6 +133,8 @@ extension UITableView {
 extension UsernameVotingViewController: VotingFiltersViewControllerDelegate {
     func apply(filters: VotingFilters) {
         viewModel.apply(filters: filters)
+        headerView?.set(filterLabel: filters.filterBy?.localizedString ?? "")
+        filterViewSubtitle.text = filters.localizedDescription
     }
 }
 
@@ -154,5 +167,14 @@ extension UsernameVotingViewController {
         snapshot.appendItems(data)
         dataSource.apply(snapshot, animatingDifferences: false)
         dataSource.defaultRowAnimation = .none
+    }
+}
+
+extension UIView {
+    func addTopBorder(with color: UIColor, andWidth borderWidth: CGFloat) {
+        let border = CALayer()
+        border.backgroundColor = color.cgColor
+        border.frame = CGRect(x: 0, y: 0, width: self.frame.size.width, height: borderWidth)
+        self.layer.addSublayer(border)
     }
 }

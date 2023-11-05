@@ -17,42 +17,6 @@
 
 import Foundation
 
-
-//extension VotingFilters.SortBy {
-//    var filterLocalizedString: String {
-//        switch self {
-//        case .date:
-//            return NSLocalizedString("Sorted date", comment: "Voting")
-//        case .votes:
-//            return NSLocalizedString("Sorted votes", comment: "Voting")
-//        }
-//    }
-//}
-//
-//extension VotingFilters.SortDirection {
-//    var filterLocalizedString: String {
-//        switch self {
-//        case .ascending:
-//            return NSLocalizedString("Ascending", comment: "Voting")
-//        case .descending:
-//            return NSLocalizedString("Descending", comment: "Voting")
-//        }
-//    }
-//}
-
-//extension VotingFilters.FilterBy {
-//    var filterLocalizedString: String {
-//        switch self {
-//        case .all:
-//            return NSLocalizedString("All", comment: "Voting")
-//        case .approved:
-//            return NSLocalizedString("I have approved", comment: "Voting")
-//        case .notApproved:
-//            return NSLocalizedString("I have not approved", comment: "Voting")
-//        }
-//    }
-//}
-
 // MARK: - VotingFilters
 
 struct VotingFilters: Equatable {
@@ -62,12 +26,36 @@ struct VotingFilters: Equatable {
         case datesDesc
         case votesDesc
         case votesAsc
+        
+        var localizedString: String {
+            switch self {
+            case .dateAsc:
+                return NSLocalizedString("Old to new", comment: "Voting")
+            case .datesDesc:
+                return NSLocalizedString("New to old", comment: "Voting")
+            case .votesDesc:
+                return NSLocalizedString("High to low", comment: "Voting")
+            case .votesAsc:
+                return NSLocalizedString("Low to high", comment: "Voting")
+            }
+        }
     }
     
     enum FilterBy {
         case all
         case approved
         case notApproved
+        
+        var localizedString: String {
+            switch self {
+            case .all:
+                return NSLocalizedString("All", comment: "Voting")
+            case .approved:
+                return NSLocalizedString("I have approved", comment: "Voting")
+            case .notApproved:
+                return NSLocalizedString("I have not approved", comment: "Voting")
+            }
+        }
     }
 
     var sortBy: SortBy?
@@ -77,23 +65,23 @@ struct VotingFilters: Equatable {
 
     static let defaultFilters = VotingFilters(sortBy: .datesDesc, filterBy: .notApproved, onlyDuplicates: true, onlyWithLinks: false)
     
-//    var appliedFiltersLocalizedString: String? {
-//        var string: [String] = []
-//
-//        if let value = filterBy {
-//            string.append(value.filterLocalizedString)
-//        }
-//
-//        if let value = sortBy {
-//            string.append(value.filterLocalizedString)
-//        }
-//
-//        if let value = sortDirection {
-//            string.append(value.filterLocalizedString)
-//        }
-//
-//        return string.isEmpty ? nil : string.joined(separator: ", ")
-//    }
+    var localizedDescription: String? {
+        var string: [String] = []
+
+        if let value = sortBy {
+            string.append(value.localizedString)
+        }
+
+        if onlyDuplicates == true {
+            string.append(NSLocalizedString("Only duplicates", comment: "Voting"))
+        }
+        
+        if onlyWithLinks == true {
+            string.append(NSLocalizedString("Only with links", comment: "Voting"))
+        }
+
+        return string.isEmpty ? nil : string.joined(separator: ", ")
+    }
 }
 
 extension VotingFilters {
