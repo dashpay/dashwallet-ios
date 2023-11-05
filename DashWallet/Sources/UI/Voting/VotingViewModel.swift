@@ -69,7 +69,61 @@ class VotingViewModel {
         }
         
         self.groupedRequests = Dictionary(grouping: requests, by: { $0.username })
-            .map { GroupedUsernames(username: $0.key, requests: $0.value) }
+            .map { GroupedUsernames(username: $0.key, requests: $0.value.sortAndFilter(by: filters)) }
+            .filter { !$0.requests.isEmpty }
             .sorted { $0.username < $1.username }
     }
+}
+
+extension [UsernameRequest] {
+    func sortAndFilter(by filters: VotingFilters) -> [UsernameRequest] {
+        let sortByOption = filters.sortBy
+        let sorted: [UsernameRequest]
+        
+        switch sortByOption {
+        case .dateAsc:
+            sorted = self.sorted { $0.createdAt < $1.createdAt }
+        case .datesDesc:
+            sorted = self.sorted { $0.createdAt > $1.createdAt }
+        case .votesAsc:
+            sorted = self.sorted { $0.votes < $1.votes }
+        case .votesDesc:
+            sorted = self.sorted { $0.votes > $1.votes }
+        default:
+            sorted = self
+        }
+        
+        let filterOption = filters.filterBy
+        let result: [UsernameRequest]
+        
+        switch filterOption {
+        case .approved:
+            result = sorted.filter { $0.isApproved }
+        case .notApproved:
+            result = sorted.filter { !$0.isApproved }
+        default:
+            result = sorted
+        }
+        
+        return result
+    }
+    
+    
+//    private fun List<UsernameRequest>.sortAndFilter(): List<UsernameRequest> {
+//            val sortByOption = _filterState.value.sortByOption
+//            val sorted = this.sortedWith(
+//                when (sortByOption) {
+//                    UsernameSortOption.DateAscending -> compareBy { it.createdAt }
+//                    UsernameSortOption.DateDescending -> compareByDescending { it.createdAt }
+//                    UsernameSortOption.VotesAscending -> compareBy { it.votes }
+//                    UsernameSortOption.VotesDescending -> compareByDescending { it.votes }
+//                }
+//            )
+//
+//            return when (_filterState.value.typeOption) {
+//                UsernameTypeOption.All -> sorted
+//                UsernameTypeOption.Approved -> sorted.filter { it.isApproved }
+//                UsernameTypeOption.NotApproved -> sorted.filter { !it.isApproved }
+//            }
+//        }
 }

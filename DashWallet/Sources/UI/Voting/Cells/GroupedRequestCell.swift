@@ -17,6 +17,8 @@
 
 import UIKit
 
+let kToogleAreaHeight = CGFloat(50)
+
 protocol HeightChangedDelegate {
     func heightChanged()
 }
@@ -26,6 +28,7 @@ final class GroupedRequestCell: UITableViewCell {
     var heightDelegate: HeightChangedDelegate?
     var model: [UsernameRequest] = []
     private var dataSource: DataSource! = nil
+    private var containerHeightConstraint: NSLayoutConstraint!
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -96,6 +99,7 @@ private extension GroupedRequestCell {
         toggleArea.addSubview(chevron)
         toggleArea.addSubview(requestsAmount)
         container.addArrangedSubview(toggleArea)
+        containerHeightConstraint = container.heightAnchor.constraint(equalToConstant: kToogleAreaHeight)
         
         tableView.isHidden = true
         tableView.delegate = self
@@ -105,7 +109,7 @@ private extension GroupedRequestCell {
         contentView.backgroundColor = .dw_secondaryBackground()
         
         NSLayoutConstraint.activate([
-            toggleArea.heightAnchor.constraint(equalToConstant: 50),
+            toggleArea.heightAnchor.constraint(equalToConstant: kToogleAreaHeight),
 
             tableView.topAnchor.constraint(equalTo: toggleArea.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
@@ -125,6 +129,7 @@ private extension GroupedRequestCell {
             chevron.trailingAnchor.constraint(equalTo: toggleArea.trailingAnchor, constant: -15),
             chevron.bottomAnchor.constraint(equalTo: username.bottomAnchor),
             
+            containerHeightConstraint,
             container.topAnchor.constraint(equalTo: contentView.topAnchor),
             container.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             container.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
@@ -133,20 +138,23 @@ private extension GroupedRequestCell {
     }
     
     @objc func expandOrCollapse() {
-        let shouldHide = !self.tableView.isHidden
-        
-        if !shouldHide {
+        let shouldExpand = self.tableView.isHidden
+        toggleCell(expand: shouldExpand)
+    }
+    
+    private func toggleCell(expand: Bool) {
+        if expand {
             updateInnerTableViewHeight()
         }
         
-        self.tableView.isHidden = shouldHide
+        self.tableView.isHidden = !expand
         self.container.setNeedsLayout()
         self.heightDelegate?.heightChanged()
         
         UIView.transition(with: container,
                           duration: 0.3,
                           options: .curveEaseInOut) { [weak self] in
-            let transform = shouldHide ? CGAffineTransform.identity : CGAffineTransform(rotationAngle: CGFloat.pi)
+            let transform = expand ? CGAffineTransform(rotationAngle: CGFloat.pi) :  CGAffineTransform.identity
             self?.chevron.transform = transform
         }
     }
@@ -154,6 +162,8 @@ private extension GroupedRequestCell {
 
 extension GroupedRequestCell {
     func configure(withModel model: [UsernameRequest]) {
+        toggleCell(expand: false)
+        
         self.model = model
         self.username.text = model.first?.username
         self.requestsAmount.text = String.localizedStringWithFormat(NSLocalizedString("%ld requests", comment: "Voting"), model.count)
@@ -163,7 +173,7 @@ extension GroupedRequestCell {
     
     func updateInnerTableViewHeight() {
         let contentHeight = tableView.contentSize.height
-        tableView.heightAnchor.constraint(equalToConstant: contentHeight).isActive = true
+        containerHeightConstraint.constant = contentHeight + kToogleAreaHeight
         self.layoutIfNeeded()
     }
 }

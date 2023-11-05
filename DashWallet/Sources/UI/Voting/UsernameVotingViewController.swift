@@ -97,7 +97,6 @@ extension UsernameVotingViewController {
     
     @objc func mockData() {
         viewModel.addMockRequest()
-        tableView.reloadData()
     }
 }
 
@@ -123,7 +122,6 @@ extension UITableView {
 extension UsernameVotingViewController: VotingFiltersViewControllerDelegate {
     func apply(filters: VotingFilters) {
         viewModel.apply(filters: filters)
-        tableView.reloadData()
     }
 }
 
