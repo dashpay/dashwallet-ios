@@ -15,14 +15,18 @@
 //  limitations under the License.
 //
 
-import Foundation
+import Combine
 
 class VotingViewModel {
     private let prefs = VotingPrefs.shared
     private var nameCount = 1
     private var dao: UsernameRequestsDAO = UsernameRequestsDAOImpl.shared
-    @Published private(set) var groupedRequests: [GroupedUsernames] = []
+    private var cancellableBag = Set<AnyCancellable>()
+    private var groupedRequests: [GroupedUsernames] = []
+    
     private(set) var filters = VotingFilters.defaultFilters
+    @Published private(set) var filteredRequests: [GroupedUsernames] = []
+    @Published var searchQuery: String = ""
     
     public static let shared: VotingViewModel = .init()
     
@@ -33,25 +37,13 @@ class VotingViewModel {
     
     init() {
         refresh()
-    }
-    
-    func addMockRequest() {
-        nameCount += 1
-        let now = Date().timeIntervalSince1970
-        let from: TimeInterval = 1658290321
-        let randomValue = Double.random(in: from..<now)
-        let identityData = withUnsafeBytes(of: UUID().uuid) { Data($0) }
-        let names = ["John", "Doe", "Sarah", "Jane", "Jack", "Jill", "Bob"]
-        let identity = (identityData as NSData).base58String()
-        let randomName = names[Int.random(in: 0..<min(names.count, nameCount))]
-        let link = nameCount % 2 == 0 ? "https://example.com" : nil
-        let isApproved = Bool.random()
-        
-        let dto = UsernameRequest(requestId: UUID().uuidString, username: randomName, createdAt: Int64(randomValue), identity: identity, link: link, votes: Int.random(in: 0..<15), isApproved: isApproved)
-        print(dto)
-        dao.create(dto: dto)
-        
-        refresh()
+        $searchQuery
+            .throttle(for: .milliseconds(500), scheduler: RunLoop.main, latest: true)
+            .removeDuplicates()
+            .sink { [weak self] text in
+                self?.performSearch(text: text)
+            }
+            .store(in: &cancellableBag)
     }
     
     func apply(filters: VotingFilters) {
@@ -72,8 +64,19 @@ class VotingViewModel {
             .map { GroupedUsernames(username: $0.key, requests: $0.value.sortAndFilter(by: filters)) }
             .filter { !$0.requests.isEmpty }
             .sorted { $0.username < $1.username }
+        self.filteredRequests = self.groupedRequests.filter { $0.username.starts(with: searchQuery) }
     }
 }
+
+// MARK: - Search
+
+extension VotingViewModel {
+    private func performSearch(text: String) {
+        self.filteredRequests = self.groupedRequests.filter { $0.username.starts(with: searchQuery) }
+    }
+}
+
+// MARK: - Sorting and filtering
 
 extension [UsernameRequest] {
     func sortAndFilter(by filters: VotingFilters) -> [UsernameRequest] {
@@ -107,23 +110,27 @@ extension [UsernameRequest] {
         
         return result
     }
-    
-    
-//    private fun List<UsernameRequest>.sortAndFilter(): List<UsernameRequest> {
-//            val sortByOption = _filterState.value.sortByOption
-//            val sorted = this.sortedWith(
-//                when (sortByOption) {
-//                    UsernameSortOption.DateAscending -> compareBy { it.createdAt }
-//                    UsernameSortOption.DateDescending -> compareByDescending { it.createdAt }
-//                    UsernameSortOption.VotesAscending -> compareBy { it.votes }
-//                    UsernameSortOption.VotesDescending -> compareByDescending { it.votes }
-//                }
-//            )
-//
-//            return when (_filterState.value.typeOption) {
-//                UsernameTypeOption.All -> sorted
-//                UsernameTypeOption.Approved -> sorted.filter { it.isApproved }
-//                UsernameTypeOption.NotApproved -> sorted.filter { !it.isApproved }
-//            }
-//        }
+}
+
+// TODO: remove when not needed
+
+extension VotingViewModel {
+    func addMockRequest() {
+        nameCount += 1
+        let now = Date().timeIntervalSince1970
+        let from: TimeInterval = 1658290321
+        let randomValue = Double.random(in: from..<now)
+        let identityData = withUnsafeBytes(of: UUID().uuid) { Data($0) }
+        let names = ["John", "Doe", "Sarah", "Jane", "Jack", "Jill", "Bob"]
+        let identity = (identityData as NSData).base58String()
+        let randomName = names[Int.random(in: 0..<min(names.count, nameCount))]
+        let link = nameCount % 2 == 0 ? "https://example.com" : nil
+        let isApproved = Bool.random()
+        
+        let dto = UsernameRequest(requestId: UUID().uuidString, username: randomName, createdAt: Int64(randomValue), identity: identity, link: link, votes: Int.random(in: 0..<15), isApproved: isApproved)
+        print(dto)
+        dao.create(dto: dto)
+        
+        refresh()
+    }
 }

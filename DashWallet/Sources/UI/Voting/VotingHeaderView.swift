@@ -44,6 +44,10 @@ class VotingHeaderView: UIView {
         self.amountLabel.text = String.localizedStringWithFormat(NSLocalizedString("%ld duplicates", comment: "Voting"), duplicateAmount)
     }
     
+    func set(searchQuerytChangedHandler: UISearchBarDelegate) {
+        searchBar.delegate = searchQuerytChangedHandler
+    }
+    
     private func configureLayout() {
         subtitleLabel.text = NSLocalizedString("As a masternode owner you can vote to approve requested usernames before users will be able to create it.", comment: "Voting")
         searchBar.placeholder = NSLocalizedString("Search by username", comment: "Voting")

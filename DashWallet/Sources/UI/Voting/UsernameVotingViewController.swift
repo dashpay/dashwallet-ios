@@ -89,6 +89,7 @@ extension UsernameVotingViewController {
             headerView.filterButtonHandler = { [weak self] in
                 self?.showFilters()
             }
+            headerView.set(searchQuerytChangedHandler: self)
         }
         
         filterView.addTopBorder(with: UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1), andWidth: 1)
@@ -96,7 +97,7 @@ extension UsernameVotingViewController {
     }
     
     private func configureObservers() {
-        viewModel.$groupedRequests
+        viewModel.$filteredRequests
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] data in
@@ -114,19 +115,6 @@ extension UsernameVotingViewController {
 extension UsernameVotingViewController: HeightChangedDelegate {
     func heightChanged() {
         tableView.performBatchUpdates(nil)
-    }
-}
-
-extension UITableView {
-    public override var intrinsicContentSize: CGSize {
-        layoutIfNeeded()
-        return contentSize
-    }
-
-    public override var contentSize: CGSize {
-        didSet {
-            invalidateIntrinsicContentSize()
-        }
     }
 }
 
@@ -167,6 +155,25 @@ extension UsernameVotingViewController {
         snapshot.appendItems(data)
         dataSource.apply(snapshot, animatingDifferences: false)
         dataSource.defaultRowAnimation = .none
+    }
+}
+
+extension UsernameVotingViewController: UISearchBarDelegate {
+    public func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        viewModel.searchQuery = searchText
+    }
+}
+
+extension UITableView {
+    public override var intrinsicContentSize: CGSize {
+        layoutIfNeeded()
+        return contentSize
+    }
+
+    public override var contentSize: CGSize {
+        didSet {
+            invalidateIntrinsicContentSize()
+        }
     }
 }
 
