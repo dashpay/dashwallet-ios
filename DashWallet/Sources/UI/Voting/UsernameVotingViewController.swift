@@ -60,6 +60,8 @@ class UsernameVotingViewController: UIViewController {
     
     @IBAction
     func showFilters() {
+        view.endEditing(true)
+        
         let vc = VotingFiltersViewController.controller()
         vc.delegate = self
         vc.filters = viewModel.filters
@@ -80,6 +82,7 @@ extension UsernameVotingViewController {
         tableView.rowHeight = UITableView.automaticDimension
         tableView.separatorStyle = .none
         tableView.allowsSelection = false
+        tableView.keyboardDismissMode = .onDrag
         tableView.register(GroupedRequestCell.self, forCellReuseIdentifier: GroupedRequestCell.description())
         
         let headerNib = UINib(nibName: "VotingHeaderView", bundle: nil)
@@ -93,6 +96,8 @@ extension UsernameVotingViewController {
         }
         
         filterView.addTopBorder(with: UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1), andWidth: 1)
+        let filterViewTap = UITapGestureRecognizer(target: self, action: #selector(showFilters))
+        filterView.addGestureRecognizer(filterViewTap)
         filterViewTitle.text = NSLocalizedString("Filtered by", comment: "")
     }
     
@@ -161,6 +166,10 @@ extension UsernameVotingViewController {
 extension UsernameVotingViewController: UISearchBarDelegate {
     public func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         viewModel.searchQuery = searchText
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
     }
 }
 

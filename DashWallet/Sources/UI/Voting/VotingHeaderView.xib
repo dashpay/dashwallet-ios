@@ -56,7 +56,7 @@
                 <searchBar contentMode="redraw" searchBarStyle="minimal" text="" placeholder="Search by username" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VEc-ve-pA6">
                     <rect key="frame" x="12" y="120" width="369" height="56"/>
                     <color key="barTintColor" name="SecondaryBackgroundColor"/>
-                    <textInputTraits key="textInputTraits"/>
+                    <textInputTraits key="textInputTraits" autocorrectionType="no" returnKeyType="done"/>
                 </searchBar>
             </subviews>
             <viewLayoutGuide key="safeArea" id="4fH-JV-vis"/>
