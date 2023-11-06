@@ -23,6 +23,9 @@
 "%@ is not allowed to access Touch ID" = "%@ ay hindi pinahihintulutang i-access ang Touch ID";
 
 /* Voting */
+"%ld duplicates" = "%ld duplicates";
+
+/* Voting */
 "%ld requests" = "%ld requests";
 
 /* 10/20 Characters */
@@ -210,6 +213,9 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Sigurado ka ba?";
+
+/* Voting */
+"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
 
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode." = "Dahil karamihan sa mga tao ay walang eksaktong 1000 Dash sa kamay, ang CrowdNode ay gumawa ng isang serbisyo kung saan sa pamamagitan ng pagsasama-sama ng mga deposito mula sa mga miyembro ay makakamit ang mga benepisyo ng pagmamay-ari ng Masternode.";
@@ -572,6 +578,12 @@
 /* No comment provided by engineer. */
 "Date" = "Petsa";
 
+/* Voting */
+"Date: New to old" = "Date: New to old";
+
+/* Voting */
+"Date: Old to new" = "Date: Old to new";
+
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Default na pananalapi, shortcuts, about...";
 
@@ -743,7 +755,13 @@
 "Fiat Account" = "Fiat Account";
 
 /* No comment provided by engineer. */
+"Filter" = "Filter";
+
+/* No comment provided by engineer. */
 "Filter Transactions" = "Salain ang transaksyon";
+
+/* No comment provided by engineer. */
+"Filtered by" = "Filtered by";
 
 /* Explore Dash/Merchants/Filters */
 "Filtered by:" = "Na-filter ni:";
@@ -756,6 +774,9 @@
 
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Maghanap ng gumagamit sa Network ng Dash";
+
+/* No comment provided by engineer. */
+"Find merchants that accept DASH" = "Find merchants that accept DASH";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "Maghanap ng mga merchant na tumatanggap ng Dash, kung saan ito bibilhin at kung paano kumita gamit ito.";
@@ -865,6 +886,9 @@
 /* adjective, security level */
 "High" = "Mataas";
 
+/* Voting */
+"High to low" = "High to low";
+
 /* No comment provided by engineer. */
 "History" = "Kasaysayan";
 
@@ -891,6 +915,12 @@
 
 /* CrowdNode */
 "I agree to CrowdNode" = "Sumasang ayon ako sa CrowdNode";
+
+/* Voting */
+"I have approved" = "I have approved";
+
+/* Voting */
+"I have not approved" = "I have not approved";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "Naisulat ko na ito";
@@ -1166,6 +1196,9 @@
 /* adjective, security level */
 "Low" = "Mababa";
 
+/* Voting */
+"Low to high" = "Low to high";
+
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "Pamahalaan ang Pahintulot sa GPS";
 
@@ -1265,6 +1298,9 @@
 /* CrowdNode */
 "New CrowdNode Account" = "Bagong CrowdNode Account";
 
+/* Voting */
+"New to old" = "New to old";
+
 /* Coinbase */
 "Newly received Dash will be automatically mixed when the wallet is opened" = "Newly received Dash will be automatically mixed when the wallet is opened";
 
@@ -1328,6 +1364,9 @@
 /* No comment provided by engineer. */
 "OK" = "OK";
 
+/* Voting */
+"Old to new" = "Old to new";
+
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Kapag tinanggap ng %@ ang iyong kahilingan maaari kang Magbayad Direkta sa Username";
 
@@ -1339,6 +1378,15 @@
 
 /* Online Merchant */
 "Online Merchant" = "Online Merchant";
+
+/* Voting */
+"Only duplicates" = "Only duplicates";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "Only requests with links";
+
+/* Voting */
+"Only with links" = "Only with links";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Operator na mga Susi";
@@ -1655,6 +1703,9 @@
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Ang mga screenshot ay kita sa ibang apps o device. Lumikha ng bagong recovery phrase at panatilihin itong sikreto.                                  ";
 
+/* Voting */
+"Search by username" = "Search by username";
+
 /* No comment provided by engineer. */
 "Search for a contact" = "Maghanap para sa isang contact";
 
@@ -1805,9 +1856,6 @@
 
 /* Receive screen */
 "Share address" = "Ibahagi ang address";
-
-/* No comment provided by engineer. */
-"Shop with DASH at over 150k merchants" = "Mamili gamit ang DASH sa mahigit 150k na merchant";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "Ipakita ang nilalaman sa clipboard";
@@ -2060,6 +2108,9 @@
 /* Coinbase */
 "Two factor auth required" = "Kinakailangan ang two-factor na auth";
 
+/* Voting */
+"Type" = "Type";
+
 /* No comment provided by engineer. */
 "Unable to accept contact request" = "Unable to accept contact request";
 
@@ -2203,6 +2254,12 @@
 
 /* Voting */
 "Vote only on duplicates" = "Vote only on duplicates";
+
+/* Voting */
+"Votes: High to low" = "Votes: High to low";
+
+/* Voting */
+"Votes: Low to high" = "Votes: Low to high";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Address ng pagboto";
