@@ -23,6 +23,9 @@
 "%@ is not allowed to access Touch ID" = "%@ запрещен доступ к Touch ID";
 
 /* Voting */
+"%ld duplicates" = "%ld duplicates";
+
+/* Voting */
 "%ld requests" = "%ld requests";
 
 /* 10/20 Characters */
@@ -210,6 +213,9 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Вы уверены?";
+
+/* Voting */
+"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
 
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode." = "Часто у людей нет на руках суммы в 1000 Dash, и CrowdNode создал сервис, где можно получить преимущества владения мастернодой за счёт вкладов участников в общий пул.";
@@ -572,6 +578,12 @@
 /* No comment provided by engineer. */
 "Date" = "Дата";
 
+/* Voting */
+"Date: New to old" = "Date: New to old";
+
+/* Voting */
+"Date: Old to new" = "Date: Old to new";
+
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Валюта по умолчанию, ссылки, о программе…";
 
@@ -743,7 +755,13 @@
 "Fiat Account" = "Фиатный счёт";
 
 /* No comment provided by engineer. */
+"Filter" = "Filter";
+
+/* No comment provided by engineer. */
 "Filter Transactions" = "Показать транзакции";
+
+/* No comment provided by engineer. */
+"Filtered by" = "Filtered by";
 
 /* Explore Dash/Merchants/Filters */
 "Filtered by:" = "Отфильтровано по:";
@@ -756,6 +774,9 @@
 
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Найти пользователя в сети Dash";
+
+/* No comment provided by engineer. */
+"Find merchants that accept DASH" = "Find merchants that accept DASH";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "Узнайте, где принимают Dash, где можно купить монеты и как получить доход с их помощью. ";
@@ -865,6 +886,9 @@
 /* adjective, security level */
 "High" = "Высокий";
 
+/* Voting */
+"High to low" = "High to low";
+
 /* No comment provided by engineer. */
 "History" = "История";
 
@@ -891,6 +915,12 @@
 
 /* CrowdNode */
 "I agree to CrowdNode" = "Согласен на CrowdNode ";
+
+/* Voting */
+"I have approved" = "I have approved";
+
+/* Voting */
+"I have not approved" = "I have not approved";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "Я записал";
@@ -1166,6 +1196,9 @@
 /* adjective, security level */
 "Low" = "Низкий";
 
+/* Voting */
+"Low to high" = "Low to high";
+
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "Изменить разрешения GPS";
 
@@ -1265,6 +1298,9 @@
 /* CrowdNode */
 "New CrowdNode Account" = "Новый аккаунт CrowdNode";
 
+/* Voting */
+"New to old" = "New to old";
+
 /* Coinbase */
 "Newly received Dash will be automatically mixed when the wallet is opened" = "Newly received Dash will be automatically mixed when the wallet is opened";
 
@@ -1328,6 +1364,9 @@
 /* No comment provided by engineer. */
 "OK" = "ОК";
 
+/* Voting */
+"Old to new" = "Old to new";
+
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Когда %@ примет ваш запрос, вы сможете оплатить напрямую по Имени пользователя";
 
@@ -1339,6 +1378,15 @@
 
 /* Online Merchant */
 "Online Merchant" = "Интернет-магазин";
+
+/* Voting */
+"Only duplicates" = "Only duplicates";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "Only requests with links";
+
+/* Voting */
+"Only with links" = "Only with links";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Ключи оператора";
@@ -1655,6 +1703,9 @@
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Скриншоты видимы другими приложениями и устройствами. Создайте новую фразу восстановления и держите её в секрете.";
 
+/* Voting */
+"Search by username" = "Search by username";
+
 /* No comment provided by engineer. */
 "Search for a contact" = "Поиск контакта";
 
@@ -1805,9 +1856,6 @@
 
 /* Receive screen */
 "Share address" = "Поделиться адресом";
-
-/* No comment provided by engineer. */
-"Shop with DASH at over 150k merchants" = "Покупайте за DASH в более чем 150 000 магазинах";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "Показать содержимое буфера обмена";
@@ -2060,6 +2108,9 @@
 /* Coinbase */
 "Two factor auth required" = "Необходима двухфакторная аутентификация";
 
+/* Voting */
+"Type" = "Type";
+
 /* No comment provided by engineer. */
 "Unable to accept contact request" = "Unable to accept contact request";
 
@@ -2203,6 +2254,12 @@
 
 /* Voting */
 "Vote only on duplicates" = "Vote only on duplicates";
+
+/* Voting */
+"Votes: High to low" = "Votes: High to low";
+
+/* Voting */
+"Votes: Low to high" = "Votes: Low to high";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Адрес голосования";

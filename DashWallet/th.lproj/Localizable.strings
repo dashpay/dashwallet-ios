@@ -23,6 +23,9 @@
 "%@ is not allowed to access Touch ID" = "%@ ไม่สามารถเข้าถึง Touch ID";
 
 /* Voting */
+"%ld duplicates" = "%ld duplicates";
+
+/* Voting */
 "%ld requests" = "%ld requests";
 
 /* 10/20 Characters */
@@ -210,6 +213,9 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "คุณแน่ใจหรือไม่?";
+
+/* Voting */
+"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
 
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode." = "เนื่องจากคนส่วนใหญ่ไม่ได้มี 1000 Dash ในมือ CrowdNode ได้ให้บริการที่พวกเขามีการรวมเงินฝากจากสมาชิกสามารถได้รับประโยชน์จากการเป็นเจ้าของมาสเตอร์โหนด";
@@ -572,6 +578,12 @@
 /* No comment provided by engineer. */
 "Date" = "วันที่";
 
+/* Voting */
+"Date: New to old" = "Date: New to old";
+
+/* Voting */
+"Date: Old to new" = "Date: Old to new";
+
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "สกุลเงินเริ่มต้น, ทางลัด, เกี่ยวกับ...";
 
@@ -743,7 +755,13 @@
 "Fiat Account" = "บัญชีเงินสด";
 
 /* No comment provided by engineer. */
+"Filter" = "Filter";
+
+/* No comment provided by engineer. */
 "Filter Transactions" = "กรองธุรกรรม";
+
+/* No comment provided by engineer. */
+"Filtered by" = "Filtered by";
 
 /* Explore Dash/Merchants/Filters */
 "Filtered by:" = "กรองโดย:";
@@ -756,6 +774,9 @@
 
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "ค้นหาผู้ใช้บนเครือข่าย Dash";
+
+/* No comment provided by engineer. */
+"Find merchants that accept DASH" = "Find merchants that accept DASH";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "ค้นหาร้านค้าที่รับ Dash ซื้อได้ที่ไหนและวิธีสร้างรายได้จาก Dash";
@@ -865,6 +886,9 @@
 /* adjective, security level */
 "High" = "สูง";
 
+/* Voting */
+"High to low" = "High to low";
+
 /* No comment provided by engineer. */
 "History" = "ประวัติ";
 
@@ -891,6 +915,12 @@
 
 /* CrowdNode */
 "I agree to CrowdNode" = "ฉันเห็นด้วยกับ CrowdNode";
+
+/* Voting */
+"I have approved" = "I have approved";
+
+/* Voting */
+"I have not approved" = "I have not approved";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "ฉันได้เขียนลงไปแล้ว";
@@ -1166,6 +1196,9 @@
 /* adjective, security level */
 "Low" = "ต่ำ";
 
+/* Voting */
+"Low to high" = "Low to high";
+
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "การอนุญาต GPS";
 
@@ -1265,6 +1298,9 @@
 /* CrowdNode */
 "New CrowdNode Account" = "บัญชี CrowdNode ใหม่";
 
+/* Voting */
+"New to old" = "New to old";
+
 /* Coinbase */
 "Newly received Dash will be automatically mixed when the wallet is opened" = "Newly received Dash will be automatically mixed when the wallet is opened";
 
@@ -1328,6 +1364,9 @@
 /* No comment provided by engineer. */
 "OK" = "ตกลง";
 
+/* Voting */
+"Old to new" = "Old to new";
+
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "เมื่อ %@ ยอมรับคำขอของคุณคุณสามารถชำระเงินโดยตรงกับชื่อผู้ใช้";
 
@@ -1339,6 +1378,15 @@
 
 /* Online Merchant */
 "Online Merchant" = "ร้านค้าออนไลน์";
+
+/* Voting */
+"Only duplicates" = "Only duplicates";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "Only requests with links";
+
+/* Voting */
+"Only with links" = "Only with links";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "ตัวดำเนินการกุญแจ";
@@ -1655,6 +1703,9 @@
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "การบันทึกภาพจะปรากฏแก่แอพพลิเคชันและอุปกรณ์อื่น ๆ สร้างวลีกู้คืนใหม่และเก็บไว้เป็นความลับ";
 
+/* Voting */
+"Search by username" = "Search by username";
+
 /* No comment provided by engineer. */
 "Search for a contact" = "ค้นหารายชื่อผู้ติดต่อ";
 
@@ -1805,9 +1856,6 @@
 
 /* Receive screen */
 "Share address" = "แบ่งปันที่อยู่";
-
-/* No comment provided by engineer. */
-"Shop with DASH at over 150k merchants" = "ซื้อสินค้าด้วย DASH ที่มีร้านค้ามากกว่า 150k ร้าน";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "แสดงเนื้อหาในคลิปบอร์ด";
@@ -2060,6 +2108,9 @@
 /* Coinbase */
 "Two factor auth required" = "ต้องการการรับรองความถูกต้องแบบ Two factor auth";
 
+/* Voting */
+"Type" = "Type";
+
 /* No comment provided by engineer. */
 "Unable to accept contact request" = "Unable to accept contact request";
 
@@ -2203,6 +2254,12 @@
 
 /* Voting */
 "Vote only on duplicates" = "Vote only on duplicates";
+
+/* Voting */
+"Votes: High to low" = "Votes: High to low";
+
+/* Voting */
+"Votes: Low to high" = "Votes: Low to high";
 
 /* No comment provided by engineer. */
 "Voting Address" = "ที่อยู่ซึ่งใช้ในการออกเสียงลงคะแนน";

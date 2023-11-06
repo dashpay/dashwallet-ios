@@ -23,6 +23,9 @@
 "%@ is not allowed to access Touch ID" = "%@ darf nicht auf die Touch ID zugreifen";
 
 /* Voting */
+"%ld duplicates" = "%ld duplicates";
+
+/* Voting */
 "%ld requests" = "%ld requests";
 
 /* 10/20 Characters */
@@ -210,6 +213,9 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Sind Sie sicher?";
+
+/* Voting */
+"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
 
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode." = "Da die meisten Menschen nicht über 1000 Dash verfügen, hat CrowdNode einen Service erstellt der die Einzahlungen von Teilnehmer zusammenfügt um einen ganzen Masternode zu betreiben.";
@@ -572,6 +578,12 @@
 /* No comment provided by engineer. */
 "Date" = "Datum";
 
+/* Voting */
+"Date: New to old" = "Date: New to old";
+
+/* Voting */
+"Date: Old to new" = "Date: Old to new";
+
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Standardwährung, Shortcuts, über...";
 
@@ -743,7 +755,13 @@
 "Fiat Account" = "Fiat Konto";
 
 /* No comment provided by engineer. */
+"Filter" = "Filter";
+
+/* No comment provided by engineer. */
 "Filter Transactions" = "Transaktionen filtern";
+
+/* No comment provided by engineer. */
+"Filtered by" = "Filtered by";
 
 /* Explore Dash/Merchants/Filters */
 "Filtered by:" = "Gefiltert nach:";
@@ -756,6 +774,9 @@
 
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Finde einen Benutzer des Dash-Netzwerks";
+
+/* No comment provided by engineer. */
+"Find merchants that accept DASH" = "Find merchants that accept DASH";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "Finde Händler die Dash akzeptieren, Orte wo du Dash kaufen kannst und Wege wie du Einkommen damit erzielen kannst.";
@@ -865,6 +886,9 @@
 /* adjective, security level */
 "High" = "Hoch";
 
+/* Voting */
+"High to low" = "High to low";
+
 /* No comment provided by engineer. */
 "History" = "Verlauf";
 
@@ -891,6 +915,12 @@
 
 /* CrowdNode */
 "I agree to CrowdNode" = "Ich stimme CrowdNode zu.";
+
+/* Voting */
+"I have approved" = "I have approved";
+
+/* Voting */
+"I have not approved" = "I have not approved";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "Ich habe es aufgeschrieben";
@@ -1166,6 +1196,9 @@
 /* adjective, security level */
 "Low" = "Niedrig";
 
+/* Voting */
+"Low to high" = "Low to high";
+
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "GPS-Erlaubnis verwalten";
 
@@ -1265,6 +1298,9 @@
 /* CrowdNode */
 "New CrowdNode Account" = "Neues Crowdnode Konto";
 
+/* Voting */
+"New to old" = "New to old";
+
 /* Coinbase */
 "Newly received Dash will be automatically mixed when the wallet is opened" = "Newly received Dash will be automatically mixed when the wallet is opened";
 
@@ -1328,6 +1364,9 @@
 /* No comment provided by engineer. */
 "OK" = "OK";
 
+/* Voting */
+"Old to new" = "Old to new";
+
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Sobald %@ deine Anfrage angenommen hat, kannst du Zahlungen direkt an seinen Benutzernamen senden";
 
@@ -1339,6 +1378,15 @@
 
 /* Online Merchant */
 "Online Merchant" = "Online Händler";
+
+/* Voting */
+"Only duplicates" = "Only duplicates";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "Only requests with links";
+
+/* Voting */
+"Only with links" = "Only with links";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Betreiber-Schlüssel";
@@ -1655,6 +1703,9 @@
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Screenshots sind sichtbar für andere Apps und Geräte. Generieren Sie eine neue Wiederherstellungs-Wortfolge und halten Sie diese geheim.";
 
+/* Voting */
+"Search by username" = "Search by username";
+
 /* No comment provided by engineer. */
 "Search for a contact" = "Kontakt suchen";
 
@@ -1805,9 +1856,6 @@
 
 /* Receive screen */
 "Share address" = "Adresse teilen";
-
-/* No comment provided by engineer. */
-"Shop with DASH at over 150k merchants" = "Bezahle mit DASH bei über 150.000 Händlern";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "Inhalt der Zwischenablage anzeigen";
@@ -2060,6 +2108,9 @@
 /* Coinbase */
 "Two factor auth required" = "Zwei-Faktor-Authentifizierung erforderlich";
 
+/* Voting */
+"Type" = "Type";
+
 /* No comment provided by engineer. */
 "Unable to accept contact request" = "Unable to accept contact request";
 
@@ -2203,6 +2254,12 @@
 
 /* Voting */
 "Vote only on duplicates" = "Vote only on duplicates";
+
+/* Voting */
+"Votes: High to low" = "Votes: High to low";
+
+/* Voting */
+"Votes: Low to high" = "Votes: Low to high";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Abstimmungs-Adresse";

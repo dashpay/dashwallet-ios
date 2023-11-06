@@ -23,6 +23,9 @@
 "%@ is not allowed to access Touch ID" = "%@ Dokunmatik Kimliğe erişim izni verilmiyor";
 
 /* Voting */
+"%ld duplicates" = "%ld duplicates";
+
+/* Voting */
 "%ld requests" = "%ld requests";
 
 /* 10/20 Characters */
@@ -210,6 +213,9 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Emin misiniz?";
+
+/* Voting */
+"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
 
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode." = "Çoğu insanın elinde tam olarak 1000 Dash bulunmadığından, CrowdNode, üyelerden gelen mevduatları bir araya getirerek bir Ana Düğüm sahibi olmanın avantajlarını elde edebilecekleri bir hizmet yaptı.";
@@ -572,6 +578,12 @@
 /* No comment provided by engineer. */
 "Date" = "Tarih";
 
+/* Voting */
+"Date: New to old" = "Date: New to old";
+
+/* Voting */
+"Date: Old to new" = "Date: Old to new";
+
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Varsayılan para birimi, kısayollar, hakkında…";
 
@@ -743,7 +755,13 @@
 "Fiat Account" = "Fiat Hesabı";
 
 /* No comment provided by engineer. */
+"Filter" = "Filter";
+
+/* No comment provided by engineer. */
 "Filter Transactions" = "İşlemleri Filtrele";
+
+/* No comment provided by engineer. */
+"Filtered by" = "Filtered by";
 
 /* Explore Dash/Merchants/Filters */
 "Filtered by:" = "Şuna göre filtrelendi:";
@@ -756,6 +774,9 @@
 
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Dash Ağında bir kullanıcı bulun";
+
+/* No comment provided by engineer. */
+"Find merchants that accept DASH" = "Find merchants that accept DASH";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "Dash'i kabul eden satıcıları bulun. Nereden satın alınır ve onunla nasıl gelir elde edilir.";
@@ -865,6 +886,9 @@
 /* adjective, security level */
 "High" = "Yüksek";
 
+/* Voting */
+"High to low" = "High to low";
+
 /* No comment provided by engineer. */
 "History" = "Geçmiş";
 
@@ -891,6 +915,12 @@
 
 /* CrowdNode */
 "I agree to CrowdNode" = "CrowdNode'u kabul ediyorum";
+
+/* Voting */
+"I have approved" = "I have approved";
+
+/* Voting */
+"I have not approved" = "I have not approved";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "Not aldım";
@@ -1166,6 +1196,9 @@
 /* adjective, security level */
 "Low" = "Düşük";
 
+/* Voting */
+"Low to high" = "Low to high";
+
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "GPS İznini Yönet";
 
@@ -1265,6 +1298,9 @@
 /* CrowdNode */
 "New CrowdNode Account" = "Yeni CrowdNode Hesabı";
 
+/* Voting */
+"New to old" = "New to old";
+
 /* Coinbase */
 "Newly received Dash will be automatically mixed when the wallet is opened" = "Newly received Dash will be automatically mixed when the wallet is opened";
 
@@ -1328,6 +1364,9 @@
 /* No comment provided by engineer. */
 "OK" = "Tamam";
 
+/* Voting */
+"Old to new" = "Old to new";
+
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "%@ isteğinizi kabul ettiğinizde Kullanıcı Adına Doğrudan Ödeme yapabilirsiniz";
 
@@ -1339,6 +1378,15 @@
 
 /* Online Merchant */
 "Online Merchant" = "Çevrimiçi Tüccar";
+
+/* Voting */
+"Only duplicates" = "Only duplicates";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "Only requests with links";
+
+/* Voting */
+"Only with links" = "Only with links";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Operatör Anahtarları";
@@ -1655,6 +1703,9 @@
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Ekran görüntüleri diğer uygulamalar ve cihazlar tarafından görülebilir. Yeni bir kurtarma metni oluşturun ve gizli tutun.";
 
+/* Voting */
+"Search by username" = "Search by username";
+
 /* No comment provided by engineer. */
 "Search for a contact" = "Kişi arayın";
 
@@ -1805,9 +1856,6 @@
 
 /* Receive screen */
 "Share address" = "Adresi paylaş";
-
-/* No comment provided by engineer. */
-"Shop with DASH at over 150k merchants" = "150 binden fazla satıcıda DASH ile alışveriş yapın";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "İçeriği panoda göster";
@@ -2060,6 +2108,9 @@
 /* Coinbase */
 "Two factor auth required" = "İki faktörlü kimlik doğrulaması gerekli";
 
+/* Voting */
+"Type" = "Type";
+
 /* No comment provided by engineer. */
 "Unable to accept contact request" = "Unable to accept contact request";
 
@@ -2203,6 +2254,12 @@
 
 /* Voting */
 "Vote only on duplicates" = "Vote only on duplicates";
+
+/* Voting */
+"Votes: High to low" = "Votes: High to low";
+
+/* Voting */
+"Votes: Low to high" = "Votes: Low to high";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Oy Verme Adresi";

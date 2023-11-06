@@ -19,11 +19,20 @@ import Foundation
 import Combine
 
 class UsernameVotingViewController: UIViewController {
-    private var disposableBag = Set<AnyCancellable>()
+    private var cancellableBag = Set<AnyCancellable>()
     private var viewModel: VotingViewModel = VotingViewModel.shared
     
     @IBOutlet private var titleLabel: UILabel!
     @IBOutlet private var tableView: UITableView!
+    @IBOutlet private var filterView: UIView!
+    @IBOutlet private var filterViewTitle: UILabel!
+    @IBOutlet private var filterViewSubtitle: UILabel!
+    
+    private var dataSource: DataSource! = nil
+    
+    var headerView: VotingHeaderView? {
+        tableView.tableHeaderView as? VotingHeaderView
+    }
     
     @objc
     static func controller() -> UsernameVotingViewController {
@@ -31,7 +40,11 @@ class UsernameVotingViewController: UIViewController {
     }
     
     override func viewDidLoad() {
+        super.viewDidLoad()
+        
         configureLayout()
+        configureDataSource()
+        configureObservers()
     }
     
     override func viewDidLayoutSubviews() {
@@ -43,6 +56,18 @@ class UsernameVotingViewController: UIViewController {
             alert.addAction(okAction)
             present(alert, animated: true)
         }
+    }
+    
+    @IBAction
+    func showFilters() {
+        view.endEditing(true)
+        
+        let vc = VotingFiltersViewController.controller()
+        vc.delegate = self
+        vc.filters = viewModel.filters
+        
+        let nvc = UINavigationController(rootViewController: vc)
+        present(nvc, animated: true)
     }
 }
 
@@ -57,46 +82,94 @@ extension UsernameVotingViewController {
         tableView.rowHeight = UITableView.automaticDimension
         tableView.separatorStyle = .none
         tableView.allowsSelection = false
+        tableView.keyboardDismissMode = .onDrag
         tableView.register(GroupedRequestCell.self, forCellReuseIdentifier: GroupedRequestCell.description())
-        tableView.dataSource = self
-        tableView.delegate = self
         
         let headerNib = UINib(nibName: "VotingHeaderView", bundle: nil)
         
-        if let customHeaderView = headerNib.instantiate(withOwner: nil, options: nil).first as? UIView {
-            tableView.tableHeaderView = customHeaderView
+        if let headerView = headerNib.instantiate(withOwner: nil, options: nil).first as? VotingHeaderView {
+            tableView.tableHeaderView = headerView
+            headerView.filterButtonHandler = { [weak self] in
+                self?.showFilters()
+            }
+            headerView.set(searchQuerytChangedHandler: self)
         }
+        
+        filterView.addTopBorder(with: UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1), andWidth: 1)
+        let filterViewTap = UITapGestureRecognizer(target: self, action: #selector(showFilters))
+        filterView.addGestureRecognizer(filterViewTap)
+        filterViewTitle.text = NSLocalizedString("Filtered by", comment: "")
+    }
+    
+    private func configureObservers() {
+        viewModel.$filteredRequests
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] data in
+                self?.headerView?.set(duplicateAmount: data.count)
+                self?.reloadDataSource(data: data)
+            }
+            .store(in: &cancellableBag)
     }
     
     @objc func mockData() {
         viewModel.addMockRequest()
-        tableView.reloadData()
-    }
-}
-
-//MARK: UITableViewDelegate, UITableViewDataSource
-
-extension UsernameVotingViewController: UITableViewDelegate, UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        viewModel.duplicates.count
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: GroupedRequestCell.description(), for: indexPath)
-        guard let cell = cell as? GroupedRequestCell else { return UITableViewCell() }
-        
-        let username = viewModel.duplicates[indexPath.row]
-        let requests = viewModel.getAllRequests(for: username)
-        cell.configure(withModel: requests)
-        cell.heightDelegate = self
-        
-        return cell
     }
 }
 
 extension UsernameVotingViewController: HeightChangedDelegate {
     func heightChanged() {
         tableView.performBatchUpdates(nil)
+    }
+}
+
+extension UsernameVotingViewController: VotingFiltersViewControllerDelegate {
+    func apply(filters: VotingFilters) {
+        viewModel.apply(filters: filters)
+        headerView?.set(filterLabel: filters.filterBy?.localizedString ?? "")
+        filterViewSubtitle.text = filters.localizedDescription
+    }
+}
+
+extension UsernameVotingViewController {
+    enum Section: CaseIterable {
+        case main
+    }
+    
+    class DataSource: UITableViewDiffableDataSource<Section, GroupedUsernames> { }
+    
+    private func configureDataSource() {
+        dataSource = DataSource(tableView: tableView) { [weak self]
+            (tableView: UITableView, indexPath: IndexPath, item: GroupedUsernames) -> UITableViewCell? in
+
+            guard self != nil else { return UITableViewCell() }
+            let cell = tableView.dequeueReusableCell(withIdentifier: GroupedRequestCell.description(), for: indexPath)
+
+            if let groupedCell = cell as? GroupedRequestCell {
+                groupedCell.configure(withModel: item.requests)
+                groupedCell.heightDelegate = self
+            }
+
+            return cell
+        }
+    }
+    
+    private func reloadDataSource(data: [GroupedUsernames]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, GroupedUsernames>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(data)
+        dataSource.apply(snapshot, animatingDifferences: false)
+        dataSource.defaultRowAnimation = .none
+    }
+}
+
+extension UsernameVotingViewController: UISearchBarDelegate {
+    public func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        viewModel.searchQuery = searchText
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
     }
 }
 
@@ -110,5 +183,14 @@ extension UITableView {
         didSet {
             invalidateIntrinsicContentSize()
         }
+    }
+}
+
+extension UIView {
+    func addTopBorder(with color: UIColor, andWidth borderWidth: CGFloat) {
+        let border = CALayer()
+        border.backgroundColor = color.cgColor
+        border.frame = CGRect(x: 0, y: 0, width: self.frame.size.width, height: borderWidth)
+        self.layer.addSublayer(border)
     }
 }

@@ -17,14 +17,17 @@
 
 import UIKit
 
+let kToogleAreaHeight = CGFloat(50)
+
 protocol HeightChangedDelegate {
     func heightChanged()
 }
 
 final class GroupedRequestCell: UITableViewCell {
-
     var heightDelegate: HeightChangedDelegate?
     var model: [UsernameRequest] = []
+    private var dataSource: DataSource! = nil
+    private var containerHeightConstraint: NSLayoutConstraint!
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -60,7 +63,7 @@ final class GroupedRequestCell: UITableViewCell {
     
     private let chevron: UIImageView = {
         let image = UIImageView(image: UIImage(systemName: "chevron.down"))
-        image.contentMode = .scaleAspectFit
+        image.contentMode = .scaleAspectFill
         image.tintColor = .dw_label()
         image.translatesAutoresizingMaskIntoConstraints = false
         return image
@@ -95,36 +98,37 @@ private extension GroupedRequestCell {
         toggleArea.addSubview(chevron)
         toggleArea.addSubview(requestsAmount)
         container.addArrangedSubview(toggleArea)
+        containerHeightConstraint = container.heightAnchor.constraint(equalToConstant: kToogleAreaHeight)
         
         tableView.isHidden = true
         tableView.delegate = self
-        tableView.dataSource = self
         container.addArrangedSubview(tableView)
         
         contentView.addSubview(container)
         contentView.backgroundColor = .dw_secondaryBackground()
         
         NSLayoutConstraint.activate([
-            toggleArea.heightAnchor.constraint(equalToConstant: 50),
+            toggleArea.heightAnchor.constraint(equalToConstant: kToogleAreaHeight),
 
             tableView.topAnchor.constraint(equalTo: toggleArea.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
             
-            username.topAnchor.constraint(equalTo: toggleArea.topAnchor),
+            username.topAnchor.constraint(equalTo: toggleArea.topAnchor, constant: 18),
             username.leadingAnchor.constraint(equalTo: toggleArea.leadingAnchor, constant: 15),
-            username.bottomAnchor.constraint(equalTo: toggleArea.bottomAnchor),
             
-            requestsAmount.centerYAnchor.constraint(equalTo: toggleArea.centerYAnchor),
+            requestsAmount.topAnchor.constraint(equalTo: username.topAnchor),
             requestsAmount.trailingAnchor.constraint(equalTo: chevron.leadingAnchor, constant: -10),
+            requestsAmount.bottomAnchor.constraint(equalTo: username.bottomAnchor),
             
             chevron.heightAnchor.constraint(equalToConstant: 14),
             chevron.widthAnchor.constraint(equalToConstant: 14),
-            chevron.topAnchor.constraint(equalTo: toggleArea.topAnchor),
+            chevron.topAnchor.constraint(equalTo: username.topAnchor),
             chevron.trailingAnchor.constraint(equalTo: toggleArea.trailingAnchor, constant: -15),
-            chevron.bottomAnchor.constraint(equalTo: toggleArea.bottomAnchor),
+            chevron.bottomAnchor.constraint(equalTo: username.bottomAnchor),
             
+            containerHeightConstraint,
             container.topAnchor.constraint(equalTo: contentView.topAnchor),
             container.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             container.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
@@ -133,48 +137,79 @@ private extension GroupedRequestCell {
     }
     
     @objc func expandOrCollapse() {
-        let shouldHide = !self.tableView.isHidden
-        self.tableView.isHidden = shouldHide
-        
-        if !shouldHide {
-            self.tableView.reloadData()
+        let shouldExpand = self.tableView.isHidden
+        toggleCell(expand: shouldExpand)
+    }
+    
+    private func toggleCell(expand: Bool) {
+        if expand {
+            updateInnerTableViewHeight()
         }
+        
+        self.tableView.isHidden = !expand
+        self.container.setNeedsLayout()
+        self.heightDelegate?.heightChanged()
         
         UIView.transition(with: container,
                           duration: 0.3,
                           options: .curveEaseInOut) { [weak self] in
-            let transform = shouldHide ? CGAffineTransform.identity : CGAffineTransform(rotationAngle: CGFloat.pi)
+            let transform = expand ? CGAffineTransform(rotationAngle: CGFloat.pi) :  CGAffineTransform.identity
             self?.chevron.transform = transform
-            self?.container.setNeedsLayout()
-            self?.heightDelegate?.heightChanged()
         }
     }
 }
 
 extension GroupedRequestCell {
     func configure(withModel model: [UsernameRequest]) {
+        toggleCell(expand: false)
+        
         self.model = model
         self.username.text = model.first?.username
         self.requestsAmount.text = String.localizedStringWithFormat(NSLocalizedString("%ld requests", comment: "Voting"), model.count)
+        self.configureDataSource()
+        self.reloadDataSource(data: model)
+    }
+    
+    func updateInnerTableViewHeight() {
+        let contentHeight = tableView.contentSize.height
+        containerHeightConstraint.constant = contentHeight + kToogleAreaHeight
+        self.layoutIfNeeded()
     }
 }
 
-extension GroupedRequestCell: UITableViewDelegate, UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        model.count
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: UsernameRequestCell.description(),
-                                                 for: indexPath) as? UsernameRequestCell
-        guard let cell = cell else { return UITableViewCell() }
-        
-        let request = model[indexPath.row]
-        cell.configure(withModel: request)
-        
-        return cell
+extension GroupedRequestCell {
+    enum Section: CaseIterable {
+        case main
     }
     
+    class DataSource: UITableViewDiffableDataSource<Section, UsernameRequest> { }
+    
+    private func configureDataSource() {
+        dataSource = DataSource(tableView: tableView) { [weak self]
+            (tableView: UITableView, indexPath: IndexPath, item: UsernameRequest) -> UITableViewCell? in
+
+            guard self != nil else { return UITableViewCell() }
+            let cell = tableView.dequeueReusableCell(withIdentifier: UsernameRequestCell.description(), for: indexPath)
+
+            if let requestCell = cell as? UsernameRequestCell {
+                requestCell.configure(withModel: item)
+            }
+
+            return cell
+        }
+    }
+    
+    private func reloadDataSource(data: [UsernameRequest]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, UsernameRequest>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(data)
+        dataSource.apply(snapshot, animatingDifferences: false)
+        dataSource.defaultRowAnimation = .none
+    }
+}
+
+
+extension GroupedRequestCell: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false)
         let request = model[indexPath.row]
