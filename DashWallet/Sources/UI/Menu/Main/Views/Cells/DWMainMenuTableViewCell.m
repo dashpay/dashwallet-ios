@@ -68,7 +68,7 @@ static NSString *DescriptionByType(DWMainMenuItemType type) {
         case DWMainMenuItemType_BuySellDash:
             return NSLocalizedString(@"Connect with third party exchanges", nil);
         case DWMainMenuItemType_Explore:
-            return NSLocalizedString(@"Shop with DASH at over 150k merchants", nil);
+            return NSLocalizedString(@"Find merchants that accept DASH", nil);
         case DWMainMenuItemType_Security:
             return NSLocalizedString(@"View passphrase, backup wallet…", nil);
         case DWMainMenuItemType_Settings:
