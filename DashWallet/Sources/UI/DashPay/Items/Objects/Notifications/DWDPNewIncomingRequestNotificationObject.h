@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDPNewIncomingRequestNotificationObject : DWDPNewIncomingRequestObject <DWDPNotificationItem>
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_UNAVAILABLE;
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity; // if !MOCK_DASHPAY NS_UNAVAILABLE;
 
 @end
 

@@ -143,13 +143,13 @@ extension DerivationPathKeysModel {
             return NSLocalizedString("Not yet used", comment: "")
         }
     }
-    
+
     func privateKeyAtIndex(index: UInt32, forWallet wallet: DSWallet) -> UnsafeMutablePointer<OpaqueKey>? {
         guard let phrase = wallet.seedPhraseIfAuthenticated() else {
             return nil
         }
         let seed = DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
-        let opaqueKey = self.derivationPath.privateKey(at: index, fromSeed: seed)!
+        let opaqueKey = derivationPath.privateKey(at: index, fromSeed: seed)!
         return opaqueKey
     }
 
@@ -190,7 +190,7 @@ extension DerivationPathKeysModel {
                 var bytes = pubKeyData.sha256()
                 let hexString = NSData(bytes: &bytes, length: MemoryLayout<UInt160>.size).hexString()
                 return DerivationPathKeysItem(info: info, value: hexString.lowercased())
-                
+
             case .privatePublicKeysBase64:
                 guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
                     return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))

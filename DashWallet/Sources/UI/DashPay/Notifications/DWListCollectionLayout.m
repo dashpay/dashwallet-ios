@@ -17,17 +17,19 @@
 
 #import "DWListCollectionLayout.h"
 
-static UIEdgeInsets const INSETS = {0.0, 10.0, 0.0, 10.0};
-
 @implementation DWListCollectionLayout
 
 - (instancetype)init {
     self = [super init];
     if (self) {
         self.scrollDirection = UICollectionViewScrollDirectionVertical;
-        self.estimatedItemSize = UICollectionViewFlowLayoutAutomaticSize;
-        self.sectionInset = INSETS;
-        self.sectionHeadersPinToVisibleBounds = YES;
+        // Using UICollectionViewFlowLayoutAutomaticSize leads to layout issues on reloadData
+        self.estimatedItemSize = CGSizeMake(320, 150);
+        self.sectionInset = UIEdgeInsetsZero;
+        self.minimumInteritemSpacing = 0;
+        self.minimumLineSpacing = 0;
+        // disabled due to scrolling issues. needs further investigation
+        //        self.sectionHeadersPinToVisibleBounds = YES;
     }
     return self;
 }

@@ -34,6 +34,7 @@
     if (self) {
         _model = model;
         _model.delegate = self;
+        _model.context = self;
     }
     return self;
 }
@@ -61,6 +62,7 @@
             [[DWRequestsContentViewController alloc] initWithPayModel:self.payModel
                                                          dataProvider:self.dataProvider];
         controller.itemsDelegate = self;
+        controller.delegate = self.contentDelegate ?: self;
         controller.dataSource = self.model.dataSource;
         _contentController = controller;
     }

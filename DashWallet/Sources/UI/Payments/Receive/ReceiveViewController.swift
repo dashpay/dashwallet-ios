@@ -105,15 +105,13 @@ extension ReceiveViewController {
         mainStackView.addArrangedSubview(importPrivateKeyButton)
 
         mainStackView.addArrangedSubview(EmptyView())
-
+        
         NSLayoutConstraint.activate([
             mainStackView.topAnchor.constraint(equalTo: view.topAnchor),
             mainStackView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             mainStackView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             mainStackView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-
-            receiveContentView.heightAnchor.constraint(equalToConstant: 373),
-            importPrivateKeyButton.heightAnchor.constraint(equalToConstant: 64),
+            importPrivateKeyButton.heightAnchor.constraint(equalToConstant: 64)
         ])
     }
 }

@@ -23,6 +23,7 @@ typedef NS_ENUM(NSUInteger, DWPayOptionModelType) {
     DWPayOptionModelType_ScanQR,
     DWPayOptionModelType_Pasteboard,
     DWPayOptionModelType_NFC,
+    DWPayOptionModelType_DashPayUser,
 };
 
 @interface DWPayOptionModel : NSObject

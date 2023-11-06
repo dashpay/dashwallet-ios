@@ -23,10 +23,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWMainMenuViewController;
 @protocol DWMainMenuViewControllerDelegate;
+@protocol DWReceiveModelProtocol;
+@class DWCurrentUserProfileModel;
+@protocol DWDashPayReadyProtocol;
+@protocol DWDashPayProtocol;
 
 @interface DWMainMenuViewController : UIViewController
 
 @property (nullable, nonatomic, weak) id<DWWipeDelegate, DWMainMenuViewControllerDelegate> delegate;
+
+- (instancetype)initWithDashPayModel:(id<DWDashPayProtocol>)dashPayModel
+                        receiveModel:(id<DWReceiveModelProtocol>)receiveModel
+                        dashPayReady:(id<DWDashPayReadyProtocol>)dashPayReady
+                    userProfileModel:(DWCurrentUserProfileModel *)userProfileModel;
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 - (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;

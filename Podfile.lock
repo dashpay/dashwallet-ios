@@ -728,6 +728,7 @@ PODS:
   - tinycbor (0.5.4-alpha1)
   - TinyCborObjc (0.4.6):
     - tinycbor (= 0.5.4-alpha1)
+  - TOCropViewController (2.6.1)
   - UIViewController-KeyboardAdditions (1.2.1)
 
 DEPENDENCIES:
@@ -746,6 +747,7 @@ DEPENDENCIES:
   - SQLiteMigrationManager.swift
   - SSZipArchive
   - SwiftJWT (= 3.6.200)
+  - TOCropViewController (= 2.6.1)
   - UIViewController-KeyboardAdditions (= 1.2.1)
 
 SPEC REPOS:
@@ -792,6 +794,7 @@ SPEC REPOS:
     - SwiftJWT
     - tinycbor
     - TinyCborObjc
+    - TOCropViewController
     - UIViewController-KeyboardAdditions
 
 EXTERNAL SOURCES:
@@ -858,8 +861,9 @@ SPEC CHECKSUMS:
   SwiftJWT: 88c412708f58c169d431d344c87bc79a87c830ae
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
   TinyCborObjc: 5204540fb90ff0c40fb22d408fa51bab79d78a80
+  TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: 86f7c1859012e78be2771e55412e950bdacfc209
+PODFILE CHECKSUM: 8dff55782a9c478127464baadc00c6fc85af48ba
 
 COCOAPODS: 1.12.1

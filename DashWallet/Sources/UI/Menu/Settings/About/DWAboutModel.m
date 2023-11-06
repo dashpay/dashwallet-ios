@@ -159,11 +159,14 @@ NS_ASSUME_NONNULL_BEGIN
                                                          (int)[currentMasternodeList quorumsCountOfType:LLMQType_Llmqtype50_60]];
 
     NSString *usernameString = @"";
+    
+#if DASHPAY
     if ([DWGlobalOptions sharedInstance].dashpayUsername) {
         usernameString = [NSString stringWithFormat:NSLocalizedString(@"Current user: %@", nil),
                                                     [DWGlobalOptions sharedInstance].dashpayUsername];
     }
-
+#endif
+    
     NSArray<NSString *> *statusLines = @[ rateString, updatedString, blockString, peersString, dlPeerString, quorumsString, usernameString ];
 
     return [statusLines componentsJoinedByString:@"\n"];

@@ -68,7 +68,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         viewModel.showNotificationOnResult = false
-        
+
         if mode == .deposit && viewModel.shouldShowWithdrawalLimitsDialog {
             showWithdrawalLimitsInfo()
             viewModel.shouldShowWithdrawalLimitsDialog = false
@@ -128,27 +128,21 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     }
 
     private func handleWithdraw(amount: UInt64) {
-        let vc = WithdrawalConfirmationController.controller(amount: amount, currency: model.localCurrencyCode)
-        vc.confirmedHandler = { [weak self] in
-            guard let wSelf = self else { return }
-
-            Task {
-                wSelf.showActivityIndicator()
-
-                do {
-                    if try await wSelf.viewModel.withdraw(amount: amount) {
-                        wSelf.showSuccessfulStatus()
-                    }
-                } catch CrowdNode.Error.withdrawLimit(_, let period) {
-                    wSelf.showWithdrawalLimitsError(period: period)
-                } catch {
-                    wSelf.showErrorStatus(err: error)
+        showActivityIndicator()
+        
+        Task {
+            do {
+                if try await viewModel.withdraw(amount: amount) {
+                    showSuccessfulStatus()
                 }
-
-                wSelf.hideActivityIndicator()
+            } catch CrowdNode.Error.withdrawLimit(_, let period) {
+                showWithdrawalLimitsError(period: period)
+            } catch {
+                showErrorStatus(err: error)
             }
+
+            hideActivityIndicator()
         }
-        present(vc, animated: true, completion: nil)
     }
 
     deinit {

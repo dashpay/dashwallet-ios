@@ -70,8 +70,10 @@ NS_ASSUME_NONNULL_END
 
     const CGFloat avatarSize = 30.0;
 
+    [titleLabel setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
+
     [NSLayoutConstraint activateConstraints:@[
-        [avatarView.leadingAnchor constraintGreaterThanOrEqualToAnchor:self.leadingAnchor],
+        [avatarView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
         [avatarView.topAnchor constraintGreaterThanOrEqualToAnchor:self.topAnchor],
         [self.bottomAnchor constraintGreaterThanOrEqualToAnchor:avatarView.bottomAnchor],
         [avatarView.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
@@ -89,7 +91,7 @@ NS_ASSUME_NONNULL_END
 - (void)setItem:(id<DWDPBasicUserItem>)item {
     _item = item;
 
-    self.avatarView.username = item.username;
+    self.avatarView.blockchainIdentity = item.blockchainIdentity;
     self.titleLabel.text = item.displayName ?: item.username;
 }
 

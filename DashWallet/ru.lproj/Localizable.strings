@@ -350,9 +350,6 @@
 /* No comment provided by engineer. */
 "Confirm PIN" = "Подтвердите PIN";
 
-/* CrowdNode */
-"Confirm Withdrawal" = "Подтвердите вывод";
-
 /* No comment provided by engineer. */
 "Confirming" = "Подтверждается";
 
@@ -1463,9 +1460,6 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "Посмотреть на Uphold";
 
-/* CrowdNode */
-"See why it happened" = "Почему это произошло?";
-
 /* Coinbase */
 "Select a coin" = "Выбрать монету";
 
@@ -1659,12 +1653,6 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Категория";
 
-/* CrowdNode */
-"The amount that you entered will be adjusted to the closest level of precision that is possible." = "Введенная вами сумма будет скорректирована с максимально возможной точностью.";
-
-/* CrowdNode */
-"The blockchain API for mobile processes withdrawals based on a % of your balance so that all transaction activity can be transparently recorded on the blockchain." = "API-интерфейс обрабатывает снятие средств на основе процента от вашего баланса чтобы все транзакции были прозрачно записаны в блокчейне.";
-
 /* No comment provided by engineer. */
 "The chain is syncing…" = "Блокчейн синхронизируется...";
 
@@ -1679,9 +1667,6 @@
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "Минимальная сумма для отправки составляет %@";
-
-/* CrowdNode */
-"The withdrawal amount has been adjusted by" = "Сумма вывода была скорректирована на";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "У вас нет новых уведомлений";
@@ -1945,9 +1930,6 @@
 
 /* CrowdNode */
 "Why do you need an online account?" = "Зачем нужен онлайн аккаунт?";
-
-/* CrowdNode */
-"Why does the entered amount differ from what I see on this screen?" = "Почему введенная сумма отличается от той, что я вижу здесь?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Почему я не могу сделать скриншот?";

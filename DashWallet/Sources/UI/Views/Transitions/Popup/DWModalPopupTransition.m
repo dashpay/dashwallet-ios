@@ -33,9 +33,14 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWModalPopupTransition
 
 - (instancetype)init {
+    return [self initWithInteractiveTransitionAllowed:YES];
+}
+
+- (instancetype)initWithInteractiveTransitionAllowed:(BOOL)interactiveTransitionAllowed {
     self = [super init];
     if (self) {
         _interactiveTransition = [[DWModalInteractiveTransition alloc] init];
+        _interactiveTransition.interactiveTransitionAllowed = interactiveTransitionAllowed;
     }
     return self;
 }

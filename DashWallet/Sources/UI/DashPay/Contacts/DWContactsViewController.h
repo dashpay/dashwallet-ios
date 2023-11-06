@@ -21,9 +21,24 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DWContactsControllerIntent) {
+    DWContactsControllerIntent_Default,
+    DWContactsControllerIntent_PayToSelector,
+};
+
+@class DWContactsViewController;
+
+@protocol DWContactsViewControllerPayDelegate <NSObject>
+
+- (void)contactsViewController:(DWContactsViewController *)controller payToItem:(id<DWDPBasicUserItem>)item;
+
+@end
+
 @interface DWContactsViewController : DWBaseContactsViewController
 
 @property (nonatomic, strong) DWContactsModel *model;
+@property (nonatomic, assign) DWContactsControllerIntent intent;
+@property (nullable, nonatomic, weak) id<DWContactsViewControllerPayDelegate> payDelegate;
 
 @end
 

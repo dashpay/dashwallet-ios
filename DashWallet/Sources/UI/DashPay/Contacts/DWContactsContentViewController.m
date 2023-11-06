@@ -23,8 +23,16 @@
 
 @implementation DWContactsContentViewController
 
+@dynamic delegate;
+
 - (NSUInteger)maxVisibleContactRequestsCount {
     return 3;
+}
+
+#pragma mark - DWContactsSearchPlaceholderViewDelegate
+
+- (void)contactsSearchPlaceholderView:(DWContactsSearchPlaceholderView *)view searchAction:(UIButton *)sender {
+    [self.delegate contactsContentController:self globalSearchButtonAction:sender];
 }
 
 #pragma mark - DWFilterHeaderViewDelegate

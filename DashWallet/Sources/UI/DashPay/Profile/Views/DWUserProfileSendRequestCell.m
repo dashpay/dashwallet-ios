@@ -75,7 +75,7 @@ NS_ASSUME_NONNULL_END
         _sendRequestButton = sendRequestButton;
 
         // fire up activity indicator in advance to fix reuse issue
-        UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
+        UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
         activityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
         activityIndicatorView.color = [UIColor dw_dashBlueColor];
         [activityIndicatorView startAnimating];
@@ -104,8 +104,10 @@ NS_ASSUME_NONNULL_END
         [NSLayoutConstraint activateConstraints:@[
             [shadowView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor
                                                  constant:verticalPadding],
-            [shadowView.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor],
-            [guide.trailingAnchor constraintEqualToAnchor:shadowView.trailingAnchor],
+            [shadowView.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor
+                                                     constant:8.0],
+            [guide.trailingAnchor constraintEqualToAnchor:shadowView.trailingAnchor
+                                                 constant:8.0],
 
             [separatorView.topAnchor constraintEqualToAnchor:shadowView.bottomAnchor
                                                     constant:separatorTopPadding],
@@ -184,7 +186,7 @@ NS_ASSUME_NONNULL_END
 #pragma mark - Private
 
 - (void)reloadAttributedData {
-    [self updateState:self.model.requestState];
+    [self updateState:self.model.sendRequestState];
 }
 
 - (void)sendRequestButtonAction:(UIButton *)sender {
@@ -195,25 +197,29 @@ NS_ASSUME_NONNULL_END
 - (void)updateState:(DWUserProfileModelState)state {
     [self updateActions];
 
-    switch (state) {
-        case DWUserProfileModelState_None:
-            self.activityIndicatorView.hidden = YES;
+    // Redesigned. Action button is not used.
+    self.activityIndicatorView.hidden = YES;
+    self.sendRequestButton.hidden = YES;
 
-            break;
-        case DWUserProfileModelState_Error:
-            self.activityIndicatorView.hidden = YES;
-
-            break;
-        case DWUserProfileModelState_Loading:
-            self.sendRequestButton.hidden = YES;
-            self.activityIndicatorView.hidden = NO;
-
-            break;
-        case DWUserProfileModelState_Done:
-            self.activityIndicatorView.hidden = YES;
-
-            break;
-    }
+    //    switch (state) {
+    //        case DWUserProfileModelState_None:
+    //            self.activityIndicatorView.hidden = YES;
+    //
+    //            break;
+    //        case DWUserProfileModelState_Error:
+    //            self.activityIndicatorView.hidden = YES;
+    //
+    //            break;
+    //        case DWUserProfileModelState_Loading:
+    //            self.sendRequestButton.hidden = YES;
+    //            self.activityIndicatorView.hidden = NO;
+    //
+    //            break;
+    //        case DWUserProfileModelState_Done:
+    //            self.activityIndicatorView.hidden = YES;
+    //
+    //            break;
+    //    }
 }
 
 - (void)updateActions {
