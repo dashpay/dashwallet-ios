@@ -175,7 +175,7 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
         return ret;
     }
     
-    if (height >= [self v20BlockHeight]) {
+    if (height >= chain_core20_activation_height(self.chainType)) {
         // Once MNRewardReallocated activates, block reward is 80% of block subsidy (+ tx fees) since treasury is 20%
         // Since the MN reward needs to be equal to 60% of the block subsidy (according to the proposal), MN reward is set to 75% of the block reward.
         // Previous reallocation periods are dropped.
@@ -318,18 +318,6 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
             return 4100;
     }
 }
-
-- (uint64_t)v20BlockHeight {
-    switch (self.chainType.tag) {
-        case ChainType_MainNet:
-            return LLONG_MAX;
-        case ChainType_TestNet:
-            return 900700;
-        case ChainType_DevNet:
-            return LLONG_MAX;
-    }
-}
-
 
 @end
 
