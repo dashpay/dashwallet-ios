@@ -117,12 +117,6 @@ extension UsernameVotingViewController {
     }
 }
 
-extension UsernameVotingViewController: HeightChangedDelegate {
-    func heightChanged() {
-        tableView.performBatchUpdates(nil)
-    }
-}
-
 extension UsernameVotingViewController: VotingFiltersViewControllerDelegate {
     func apply(filters: VotingFilters) {
         viewModel.apply(filters: filters)
@@ -147,7 +141,12 @@ extension UsernameVotingViewController {
 
             if let groupedCell = cell as? GroupedRequestCell {
                 groupedCell.configure(withModel: item.requests)
-                groupedCell.heightDelegate = self
+                groupedCell.onHeightChanged = {
+                    tableView.performBatchUpdates(nil)
+                }
+                groupedCell.onRequestSelected = { [weak self] request in
+                    self?.openDetails(for: request)
+                }
             }
 
             return cell
@@ -160,6 +159,11 @@ extension UsernameVotingViewController {
         snapshot.appendItems(data)
         dataSource.apply(snapshot, animatingDifferences: false)
         dataSource.defaultRowAnimation = .none
+    }
+    
+    private func openDetails(for request: UsernameRequest) {
+        let vc = UsernameRequestDetailsViewController.controller(with: request)
+        self.navigationController?.pushViewController(vc, animated: true)
     }
 }
 

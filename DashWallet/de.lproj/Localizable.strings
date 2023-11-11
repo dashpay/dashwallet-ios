@@ -1754,9 +1754,6 @@
 /* Coinbase */
 "Select the coin" = "Wähle einen Coin aus";
 
-/* No comment provided by engineer. */
-"Selected row with \(request.votes) votes" = "Selected row with \(request.votes) votes";
-
 /* Sell */
 "Sell" = "Verkaufen";
 

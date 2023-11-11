@@ -19,15 +19,13 @@ import UIKit
 
 let kToogleAreaHeight = CGFloat(50)
 
-protocol HeightChangedDelegate {
-    func heightChanged()
-}
-
 final class GroupedRequestCell: UITableViewCell {
-    var heightDelegate: HeightChangedDelegate?
-    var model: [UsernameRequest] = []
+    private var model: [UsernameRequest] = []
     private var dataSource: DataSource! = nil
     private var containerHeightConstraint: NSLayoutConstraint!
+    
+    var onHeightChanged: (() -> ())?
+    var onRequestSelected: ((UsernameRequest) -> ())?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -148,7 +146,7 @@ private extension GroupedRequestCell {
         
         self.tableView.isHidden = !expand
         self.container.setNeedsLayout()
-        self.heightDelegate?.heightChanged()
+        self.onHeightChanged?()
         
         UIView.transition(with: container,
                           duration: 0.3,
@@ -170,7 +168,7 @@ extension GroupedRequestCell {
         self.reloadDataSource(data: model)
     }
     
-    func updateInnerTableViewHeight() {
+    private func updateInnerTableViewHeight() {
         let contentHeight = tableView.contentSize.height
         containerHeightConstraint.constant = contentHeight + kToogleAreaHeight
         self.layoutIfNeeded()
@@ -213,7 +211,7 @@ extension GroupedRequestCell: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false)
         let request = model[indexPath.row]
-        contentView.dw_showInfoHUD(withText: NSLocalizedString("Selected row with \(request.votes) votes", comment: ""))
+        onRequestSelected?(request)
     }
 }
 
