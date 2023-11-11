@@ -47,7 +47,8 @@ class UsernameRequestDetailsViewController: UIViewController {
     
     @IBAction
     func voteAction() {
-        print("vote")
+        let vc = EnterVotingKeyViewController.controller()
+        self.navigationController?.pushViewController(vc, animated: true)
     }
 }
 
