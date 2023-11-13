@@ -47,7 +47,14 @@ class UsernameRequestDetailsViewController: UIViewController {
     
     @IBAction
     func voteAction() {
-        let vc = EnterVotingKeyViewController.controller()
+        let vc: UIViewController
+        
+        if viewModel.masternodeKeys.isEmpty {
+            vc = EnterVotingKeyViewController.controller()
+        } else {
+            vc = CastVoteViewController.controller()
+        }
+        
         self.navigationController?.pushViewController(vc, animated: true)
     }
 }

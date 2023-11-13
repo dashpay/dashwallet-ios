@@ -22,12 +22,13 @@ import UIKit
 final class EnterVotingKeyViewController: UIViewController {
     private var votingKeyField: DashInputField!
     private var continueButton: ActionButton!
+    private var viewModel: VotingViewModel = VotingViewModel.shared
 
-//    override func viewWillDisappear(_ animated: Bool) {
-//        addressField.resignFirstResponder()
-//
-//        super.viewWillDisappear(animated)
-//    }
+    override func viewWillDisappear(_ animated: Bool) {
+        votingKeyField.resignFirstResponder()
+
+        super.viewWillDisappear(animated)
+    }
     
     
     static func controller() -> EnterVotingKeyViewController {
@@ -39,6 +40,11 @@ final class EnterVotingKeyViewController: UIViewController {
         
         configureHierarchy()
         updateView()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        votingKeyField.becomeFirstResponder()
     }
 }
 
@@ -102,9 +108,20 @@ extension EnterVotingKeyViewController {
 
     private func updateView() {
         continueButton.isEnabled = !votingKeyField.text.isEmpty
+        votingKeyField.errorMessage = nil
     }
     
     private func continueButtonAction() {
-        print("Voting: add key")
+        if viewModel.addMasternodeKey(key: votingKeyField.text) {
+            let vc = CastVoteViewController.controller()
+            
+            if self.navigationController?.previousController is CastVoteViewController {
+                self.navigationController?.popViewController(animated: true)
+            } else {
+                self.navigationController?.replaceLast(with: vc, animated: true)
+            }
+        } else {
+            votingKeyField.errorMessage = NSLocalizedString("You have entered an invalid key", comment: "Voting")
+        }
     }
 }

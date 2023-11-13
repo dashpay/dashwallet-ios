@@ -23,8 +23,14 @@ class VotingViewModel {
     private var dao: UsernameRequestsDAO = UsernameRequestsDAOImpl.shared
     private var cancellableBag = Set<AnyCancellable>()
     private var groupedRequests: [GroupedUsernames] = []
+    private var validKeys: [String] = [ // TODO: temp
+        "kn2GwaSZkoY8qg6i2dPCpDtDoBCftJWMzZXtHDDJ1w7PjFYfq",
+        "n6YtJ7pdDYPTa57imEHEp8zinq1oNGUdwZQdnGk1MMpCWBHEq",
+        "maEiRZeKXNLZovNqoS3HkmZJGmACbro7s3eC8GenExLF7QMQs"
+    ]
     
     private(set) var filters = VotingFilters.defaultFilters
+    @Published private(set) var masternodeKeys: [MasternodeKey] = []
     @Published private(set) var filteredRequests: [GroupedUsernames] = []
     @Published var searchQuery: String = ""
     
@@ -49,6 +55,15 @@ class VotingViewModel {
     func apply(filters: VotingFilters) {
         self.filters = filters
         refresh()
+    }
+    
+    func addMasternodeKey(key: String) -> Bool {
+        if validKeys.contains(key) {
+            masternodeKeys.append(MasternodeKey(key: key, ip: "182.151.12.\(masternodeKeys.count)"))
+            return true
+        }
+        
+        return false
     }
     
     private func refresh() {
@@ -127,7 +142,7 @@ extension VotingViewModel {
         let link = nameCount % 2 == 0 ? "https://example.com" : nil
         let isApproved = Bool.random()
         
-        let dto = UsernameRequest(requestId: UUID().uuidString, username: randomName, createdAt: Int64(randomValue), identity: identity, link: link, votes: Int.random(in: 0..<15), isApproved: isApproved)
+        let dto = UsernameRequest(requestId: UUID().uuidString, username: randomName, createdAt: Int64(randomValue), identity: "\(identity)\(identity)\(identity)", link: link, votes: Int.random(in: 0..<15), isApproved: isApproved)
         print(dto)
         dao.create(dto: dto)
         
