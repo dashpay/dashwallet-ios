@@ -22,6 +22,12 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ is not allowed to access Touch ID";
 
+/* Voting */
+"%ld duplicates" = "%ld duplicates";
+
+/* Voting */
+"%ld requests" = "%ld requests";
+
 /* 10/20 Characters */
 "%ld/%ld Characters" = "%1$ld/%2$ld Characters";
 
@@ -133,8 +139,14 @@
 /* No comment provided by engineer. */
 "Address" = "Address";
 
+/* CoinJoin */
+"Advanced" = "Advanced";
+
 /* No comment provided by engineer. */
 "Advanced Security" = "Advanced Security";
+
+/* Coinbase */
+"Advanced users who have a very high level of technical expertise can determine your transaction history" = "Advanced users who have a very high level of technical expertise can determine your transaction history";
 
 /* No comment provided by engineer. */
 "Agree" = "Agree";
@@ -172,6 +184,9 @@
 /* CrowdNode */
 "and" = "and";
 
+/* CoinJoin */
+"Any funds that have been mixed will be combined with your un mixed funds" = "Any funds that have been mixed will be combined with your un mixed funds";
+
 /* Coinbase/Payment Methods */
 "Apple Pay" = "Apple Pay";
 
@@ -190,8 +205,17 @@
 /* Coinbase/Buy Dash/Cancel Order */
 "Are you sure you want to cancel this transaction?" = "Are you sure you want to cancel this transaction?";
 
+/* CoinJoin */
+"Are you sure you want to change the privacy level?" = "Are you sure you want to change the privacy level?";
+
+/* CoinJoin */
+"Are you sure you want to stop mixing?" = "Are you sure you want to stop mixing?";
+
 /* No comment provided by engineer. */
 "Are you sure?" = "你確定嗎?";
+
+/* Voting */
+"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
 
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode." = "As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode.";
@@ -247,11 +271,11 @@
 /* Coinbase/Payment Methods */
 "Bank Wire" = "Bank Wire";
 
-/* Validation rule: Between 3 and 24 characters */
-"Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
-
 /* CrowdNode */
 "Become part of a Dash Masternode with CrowdNode" = "Become part of a Dash Masternode with CrowdNode";
+
+/* Validation rule: Between 3 and 24 characters */
+"Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
 
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase" = "Between Dash Wallet and Coinbase";
@@ -322,6 +346,12 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
+
+/* CoinJoin */
+"Change to Advanced" = "Change to Advanced";
+
+/* CoinJoin */
+"Change to Intermediate" = "Change to Intermediate";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
@@ -460,11 +490,11 @@
 /* CrowdNode */
 "Create Account" = "Create Account";
 
-/* No comment provided by engineer. */
-"Create invitation" = "Create invitation";
-
 /* CrowdNode */
 "Create an online CrowdNode account" = "Create an online CrowdNode account";
+
+/* No comment provided by engineer. */
+"Create invitation" = "Create invitation";
 
 /* CrowdNode
    CrowdNode Portal */
@@ -547,6 +577,12 @@
 
 /* No comment provided by engineer. */
 "Date" = "Date";
+
+/* Voting */
+"Date: New to old" = "Date: New to old";
+
+/* Voting */
+"Date: Old to new" = "Date: Old to new";
 
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Default currency, shortcuts, about…";
@@ -719,7 +755,13 @@
 "Fiat Account" = "Fiat Account";
 
 /* No comment provided by engineer. */
+"Filter" = "Filter";
+
+/* No comment provided by engineer. */
 "Filter Transactions" = "Filter Transactions";
+
+/* No comment provided by engineer. */
+"Filtered by" = "Filtered by";
 
 /* Explore Dash/Merchants/Filters */
 "Filtered by:" = "Filtered by:";
@@ -732,6 +774,9 @@
 
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Find a user on the Dash Network";
+
+/* No comment provided by engineer. */
+"Find merchants that accept DASH" = "Find merchants that accept DASH";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "Find merchants that accept Dash, where to buy it and how to earn income with it.";
@@ -841,17 +886,20 @@
 /* adjective, security level */
 "High" = "High";
 
+/* Voting */
+"High to low" = "High to low";
+
 /* No comment provided by engineer. */
 "History" = "History";
 
 /* CrowdNode */
 "How CrowdNode staking works" = "How CrowdNode staking works";
 
-/* CrowdNode */
-"How to confirm your API Dash address" = "How to confirm your API Dash address";
-
 /* No comment provided by engineer. */
 "How do I get Test Dash?" = "How do I get Test Dash?";
+
+/* CrowdNode */
+"How to confirm your API Dash address" = "How to confirm your API Dash address";
 
 /* No comment provided by engineer. */
 "How to Use a Gift Card" = "How to Use a Gift Card";
@@ -867,6 +915,12 @@
 
 /* CrowdNode */
 "I agree to CrowdNode" = "I agree to CrowdNode";
+
+/* Voting */
+"I have approved" = "I have approved";
+
+/* Voting */
+"I have not approved" = "I have not approved";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "I wrote it down";
@@ -930,6 +984,9 @@
 
 /* Coinbase/Payment Methods */
 "Interac" = "Interac";
+
+/* CoinJoin */
+"Intermediate" = "Intermediate";
 
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "Internal Transfer";
@@ -1015,6 +1072,9 @@
 /* Coinbase */
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device";
 
+/* Coinbase */
+"It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history";
+
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device.";
 
@@ -1030,11 +1090,11 @@
 /* No comment provided by engineer. */
 "Join Evolution" = "Join Evolution";
 
-/* CrowdNode */
-"Joining the pool" = "Joining the pool";
-
 /* No comment provided by engineer. */
 "Join Now" = "Join Now";
+
+/* CrowdNode */
+"Joining the pool" = "Joining the pool";
 
 /* No comment provided by engineer. */
 "Key Id" = "Key Id";
@@ -1136,6 +1196,9 @@
 /* adjective, security level */
 "Low" = "Low";
 
+/* Voting */
+"Low to high" = "Low to high";
+
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "Manage GPS Permission";
 
@@ -1196,6 +1259,9 @@
 /* No comment provided by engineer. */
 "Moved to Address" = "Moved to Address";
 
+/* CoinJoin */
+"Multiple hours" = "Multiple hours";
+
 /* Validation rule */
 "Must start and end with a letter or number" = "Must start and end with a letter or number";
 
@@ -1229,11 +1295,14 @@
 /* (List of) New (notifications) */
 "New" = "New";
 
-/* Coinbase */
-"Newly received Dash will be automatically mixed when the wallet is opened" = "Newly received Dash will be automatically mixed when the wallet is opened";
-
 /* CrowdNode */
 "New CrowdNode Account" = "New CrowdNode Account";
+
+/* Voting */
+"New to old" = "New to old";
+
+/* Coinbase */
+"Newly received Dash will be automatically mixed when the wallet is opened" = "Newly received Dash will be automatically mixed when the wallet is opened";
 
 /* No comment provided by engineer. */
 "NFC device" = "NFC device";
@@ -1295,6 +1364,9 @@
 /* No comment provided by engineer. */
 "OK" = "好";
 
+/* Voting */
+"Old to new" = "Old to new";
+
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Once %@ accepts your request you can Pay Directly to Username";
 
@@ -1306,6 +1378,15 @@
 
 /* Online Merchant */
 "Online Merchant" = "Online Merchant";
+
+/* Voting */
+"Only duplicates" = "Only duplicates";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "Only requests with links";
+
+/* Voting */
+"Only with links" = "Only with links";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Operator Keys";
@@ -1622,6 +1703,9 @@
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "屏幕截圖可以被其他程序或者設備獲得。請生成一個新的恢復詞組並妥善保管。";
 
+/* Voting */
+"Search by username" = "Search by username";
+
 /* No comment provided by engineer. */
 "Search for a contact" = "Search for a contact";
 
@@ -1655,9 +1739,6 @@
 /* No comment provided by engineer. */
 "Select" = "Select";
 
-/* CrowdNode */
-"See why it happened" = "See why it happened";
-
 /* Coinbase */
 "Select a coin" = "Select a coin";
 
@@ -1667,8 +1748,14 @@
 /* No comment provided by engineer. */
 "Select from Gallery" = "Select from Gallery";
 
+/* CoinJoin */
+"Select mixing level" = "Select mixing level";
+
 /* Coinbase */
 "Select the coin" = "Select the coin";
+
+/* No comment provided by engineer. */
+"Selected row with \(request.votes) votes" = "Selected row with \(request.votes) votes";
 
 /* Sell */
 "Sell" = "Sell";
@@ -1770,9 +1857,6 @@
 /* Receive screen */
 "Share address" = "Share address";
 
-/* No comment provided by engineer. */
-"Shop with DASH at over 150k merchants" = "Shop with DASH at over 150k merchants";
-
 /* Enter Address Screen */
 "Show content in the clipboard" = "Show content in the clipboard";
 
@@ -1830,8 +1914,14 @@
 /* No comment provided by engineer. */
 "Staking" = "Staking";
 
+/* CoinJoin */
+"Start Mixing" = "Start Mixing";
+
 /* Step 1 */
 "Step %ld" = "Step %ld";
+
+/* CoinJoin */
+"Stop Mixing" = "Stop Mixing";
 
 /* No comment provided by engineer. */
 "Support" = "Support";
@@ -2018,6 +2108,9 @@
 /* Coinbase */
 "Two factor auth required" = "Two factor auth required";
 
+/* Voting */
+"Type" = "Type";
+
 /* No comment provided by engineer. */
 "Unable to accept contact request" = "Unable to accept contact request";
 
@@ -2056,6 +2149,9 @@
 
 /* No comment provided by engineer. */
 "Unsupported URL" = "Unsupported URL";
+
+/* CoinJoin */
+"up to 30 minutes" = "up to 30 minutes";
 
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Updated: %@";
@@ -2108,6 +2204,9 @@
 /* No comment provided by engineer. */
 "Username taken" = "Username taken";
 
+/* Voting */
+"Username voting" = "Username voting";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
 
@@ -2152,6 +2251,15 @@
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "View Recovery Phrase";
+
+/* Voting */
+"Vote only on duplicates" = "Vote only on duplicates";
+
+/* Voting */
+"Votes: High to low" = "Votes: High to low";
+
+/* Voting */
+"Votes: Low to high" = "Votes: Low to high";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Voting Address";
@@ -2277,6 +2385,15 @@
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "You can authenticate with Touch ID for payments below";
 
+/* CrowdNode */
+"You can change how / when your reward earnings are paid to you." = "You can change how / when your reward earnings are paid to you.";
+
+/* Voting */
+"You can review all requests but you only need to vote on duplicates" = "You can review all requests but you only need to vote on duplicates";
+
+/* CrowdNode */
+"You can see detailed information about your deposits, withdrawals and reward earnings." = "You can see detailed information about your deposits, withdrawals and reward earnings.";
+
 /* No comment provided by engineer. */
 "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
 
@@ -2285,12 +2402,6 @@
 
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "You do not have any contacts at the moment";
-
-/* CrowdNode */
-"You can change how / when your reward earnings are paid to you." = "You can change how / when your reward earnings are paid to you.";
-
-/* CrowdNode */
-"You can see detailed information about your deposits, withdrawals and reward earnings." = "You can see detailed information about your deposits, withdrawals and reward earnings.";
 
 /* Coinbase */
 "You don’t have enough balance" = "You don’t have enough balance";
