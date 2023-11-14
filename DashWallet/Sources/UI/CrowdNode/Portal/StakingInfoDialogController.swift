@@ -65,7 +65,7 @@ final class StakingInfoDialogController: UIViewController {
         view.backgroundColor = .dw_secondaryBackground()
 
         titleLabel.text = NSLocalizedString("How CrowdNode staking works", comment: "CrowdNode")
-        subtitleLabel.text = NSLocalizedString("TThe Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments.", comment: "CrowdNode")
+        subtitleLabel.text = NSLocalizedString("The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments.", comment: "CrowdNode")
         benefitsLabel.text = NSLocalizedString("CrowdNode benefits", comment: "CrowdNode")
         poolTitle.text = NSLocalizedString("Joining the pool", comment: "CrowdNode")
         poolDescription.text = NSLocalizedString("As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode.", comment: "CrowdNode")
