@@ -21,6 +21,7 @@
 #import <objc/runtime.h>
 
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -44,13 +45,24 @@ NSTimeInterval const DW_INFO_HUD_DISPLAY_TIME = 3.5;
 }
 
 - (void)dw_showInfoHUDWithText:(NSString *)text {
-    MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self];
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self animated:YES];
     hud.removeFromSuperViewOnHide = YES;
-    hud.mode = MBProgressHUDModeText;
-    hud.label.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
-    hud.label.adjustsFontForContentSizeCategory = YES;
-    hud.label.numberOfLines = 0;
-    hud.label.text = text;
+    hud.mode = MBProgressHUDModeCustomView;
+    
+    DWCustomHUDView *customView = [[DWCustomHUDView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.frame), 28)];
+    [customView setText:text];
+    [customView setIconImage:[UIImage imageNamed:@"checkmark.circle.white"]];
+        
+    hud.customView = customView;
+    hud.bezelView.layer.cornerRadius = 8.0f;
+    hud.bezelView.clipsToBounds = YES;
+    hud.bezelView.color = [UIColor colorWithWhite:0.0f alpha:0.9f];
+    hud.bezelView.style = MBProgressHUDBackgroundStyleSolidColor;
+
+    CGFloat yOffset = CGRectGetHeight(self.bounds) / 2 - CGRectGetHeight(customView.bounds) - 35;
+    hud.offset = CGPointMake(0.0f, yOffset);
+    hud.userInteractionEnabled = NO;
+    
     __weak typeof(self) weakSelf = self;
     hud.completionBlock = ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
