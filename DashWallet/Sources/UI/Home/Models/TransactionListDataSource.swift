@@ -142,7 +142,7 @@ final class TransactionListDataSource: NSObject, UITableViewDataSource {
             let tx = _items[indexPath.row]
             switch tx {
             case .crowdnode(let txs):
-                let cellId = CNCreateAccountCell.dw_reuseIdentifier
+                let cellId = "CNCreateAccountCell"
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! CNCreateAccountCell
                 cell.update(with: txs)
                 return cell
