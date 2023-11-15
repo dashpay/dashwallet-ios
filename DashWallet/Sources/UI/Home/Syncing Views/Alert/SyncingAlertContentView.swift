@@ -113,9 +113,8 @@ final class SyncingAlertContentView: UIView {
             let atTheEndOfSyncBlocksAndSyncingMasternodeList = chain.lastSyncBlockHeight >= chain.estimatedBlockHeight - 6 && chainManager.masternodeManager
                 .masternodeListRetrievalQueueCount > 0 && chainManager.syncPhase == .synced
             if atTheEndOfInitialTerminalBlocksAndSyncingMasternodeList || atTheEndOfSyncBlocksAndSyncingMasternodeList {
-                subtitleLabel.text = String(format: NSLocalizedString("masternode list #%d of %d", comment: ""),
-                                            chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount - chainManager.masternodeManager.masternodeListRetrievalQueueCount,
-                                            chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount)
+                let remaining = max(0, chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount - chainManager.masternodeManager.masternodeListRetrievalQueueCount)
+                subtitleLabel.text = String(format: NSLocalizedString("masternode list #%d of %d", comment: ""), remaining, chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount)
             } else {
                 if chainManager.syncPhase == .initialTerminalBlocks {
                     subtitleLabel.text = String(format: NSLocalizedString("header #%d of %d", comment: ""), chain.lastTerminalBlockHeight, chain.estimatedBlockHeight)
@@ -141,7 +140,7 @@ final class SyncingAlertContentView: UIView {
     }
 
     func update(with progress: Double) {
-        titleLabel.text = String(format: "%@ %.1f%%", NSLocalizedString("Syncing", comment: ""), progress * 100.0)
+        titleLabel.text = String(format: "%@ %.1f%%", NSLocalizedString("Syncing", comment: ""), min(max(progress, 0), 1) * 100.0)
     }
 
     func showAnimation() {
