@@ -133,7 +133,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         }
 
         let nib = UINib(nibName: "CNCreateAccountCell", bundle: nil)
-        tableView.register(nib, forCellReuseIdentifier: CNCreateAccountCell.dw_reuseIdentifier)
+        tableView.register(nib, forCellReuseIdentifier: "CNCreateAccountCell")
         tableView.registerClassforHeaderFooterView(for: SyncingHeaderView.self)
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(setNeedsLayout),
