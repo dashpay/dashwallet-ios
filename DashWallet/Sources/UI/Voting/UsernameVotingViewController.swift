@@ -110,6 +110,24 @@ extension UsernameVotingViewController {
                 self?.reloadDataSource(data: data)
             }
             .store(in: &cancellableBag)
+        
+        viewModel.$lastVoteAction
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] action in
+                switch action {
+                case .approved:
+                    self?.view.dw_showInfoHUD(withText: NSLocalizedString("Your vote was submitted", comment: "Voting"))
+                case .revoked:
+                    self?.view.dw_showInfoHUD(withText: NSLocalizedString("Your vote was cancelled", comment: ""))
+                default:
+                    break
+                }
+                self?.viewModel.onVoteActionHandled()
+            }
+            .store(in: &cancellableBag)
+        
+        
     }
     
     @objc func mockData() {

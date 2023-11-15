@@ -20,7 +20,6 @@ import Combine
 class UsernameRequestDetailsViewController: UIViewController {
     private var cancellableBag = Set<AnyCancellable>()
     private var viewModel: VotingViewModel = VotingViewModel.shared
-    private var request: UsernameRequest!
     
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var subtitleLabel: UILabel!
@@ -35,7 +34,7 @@ class UsernameRequestDetailsViewController: UIViewController {
     
     static func controller(with request: UsernameRequest) -> UsernameRequestDetailsViewController {
         let vc = vc(UsernameRequestDetailsViewController.self, from: sb("UsernameVoting"))
-        vc.request = request
+        vc.setRequest(request)
         
         return vc
     }
@@ -49,13 +48,21 @@ class UsernameRequestDetailsViewController: UIViewController {
     func voteAction() {
         let vc: UIViewController
         
-        if viewModel.masternodeKeys.isEmpty {
+        if viewModel.selectedRequest?.isApproved == true {
+            viewModel.revokeVote(of: viewModel.selectedRequest!.requestId)
+            self.navigationController?.popViewController(animated: true)
+            return
+        } else if viewModel.masternodeKeys.isEmpty {
             vc = EnterVotingKeyViewController.controller()
         } else {
             vc = CastVoteViewController.controller()
         }
         
         self.navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    private func setRequest(_ request: UsernameRequest) {
+        viewModel.selectedRequest = request
     }
 }
 
@@ -67,22 +74,31 @@ extension UsernameRequestDetailsViewController {
         usernameLabel.text = NSLocalizedString("Username", comment: "Voting")
         linkLabel.text = NSLocalizedString("Link", comment: "Voting")
         identityLabel.text = NSLocalizedString("Identity", comment: "Voting")
-        voteButton.setTitle(NSLocalizedString("Vote to Approve", comment: "Voting"), for: .normal)
         
-        username.text = request.username
-        identity.text = request.identity
-        
-        if let url = request.link {
-            link.text = url
-            linkPanel.isHidden = false
-            let linkTap = UITapGestureRecognizer(target: self, action: #selector(openLink))
-            linkPanel.addGestureRecognizer(linkTap)
+        if let request = viewModel.selectedRequest {
+            username.text = request.username
+            identity.text = request.identity
+            
+            if let url = request.link {
+                link.text = url
+                linkPanel.isHidden = false
+                let linkTap = UITapGestureRecognizer(target: self, action: #selector(openLink))
+                linkPanel.addGestureRecognizer(linkTap)
+            }
+            
+            if request.isApproved {
+                voteButton.accentColor = .dw_red()
+                voteButton.setTitle(NSLocalizedString("Cancel Approval", comment: "Voting"), for: .normal)
+            } else {
+                voteButton.accentColor = .dw_dashBlue()
+                voteButton.setTitle(NSLocalizedString("Vote to Approve", comment: "Voting"), for: .normal)
+            }
         }
     }
     
     @objc
     private func openLink() {
-        if let url = request.link {
+        if let url = viewModel.selectedRequest?.link {
             UIApplication.shared.open(URL(string: url)!)
         }
     }

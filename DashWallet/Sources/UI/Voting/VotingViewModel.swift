@@ -17,6 +17,12 @@
 
 import Combine
 
+enum VoteAction {
+    case none
+    case approved
+    case revoked
+}
+
 class VotingViewModel {
     private let prefs = VotingPrefs.shared
     private var nameCount = 1
@@ -33,6 +39,8 @@ class VotingViewModel {
     @Published private(set) var masternodeKeys: [MasternodeKey] = []
     @Published private(set) var filteredRequests: [GroupedUsernames] = []
     @Published var searchQuery: String = ""
+    @Published var lastVoteAction: VoteAction = .none
+    var selectedRequest: UsernameRequest? = nil
     
     public static let shared: VotingViewModel = .init()
     
@@ -67,19 +75,21 @@ class VotingViewModel {
     }
     
     private func refresh() {
-        let requests: [UsernameRequest]
-        
-        if filters.onlyDuplicates ?? false {
-            requests = dao.duplicates(onlyWithLinks: filters.onlyWithLinks ?? false)
-        } else {
-            requests = dao.all(onlyWithLinks: filters.onlyWithLinks ?? false)
+        Task {
+            let requests: [UsernameRequest]
+            
+            if filters.onlyDuplicates ?? false {
+                requests = await dao.duplicates(onlyWithLinks: filters.onlyWithLinks ?? false)
+            } else {
+                requests = await dao.all(onlyWithLinks: filters.onlyWithLinks ?? false)
+            }
+            
+            self.groupedRequests = Dictionary(grouping: requests, by: { $0.username })
+                .map { GroupedUsernames(username: $0.key, requests: $0.value.sortAndFilter(by: filters)) }
+                .filter { !$0.requests.isEmpty }
+                .sorted { $0.username < $1.username }
+            self.filteredRequests = self.groupedRequests.filter { $0.username.starts(with: searchQuery) }
         }
-        
-        self.groupedRequests = Dictionary(grouping: requests, by: { $0.username })
-            .map { GroupedUsernames(username: $0.key, requests: $0.value.sortAndFilter(by: filters)) }
-            .filter { !$0.requests.isEmpty }
-            .sorted { $0.username < $1.username }
-        self.filteredRequests = self.groupedRequests.filter { $0.username.starts(with: searchQuery) }
     }
 }
 
@@ -127,25 +137,60 @@ extension [UsernameRequest] {
     }
 }
 
+// MARK: - Voting
+
+extension VotingViewModel {
+    func vote(for requestId: String) {
+        Task {
+            if var copy = dao.get(by: requestId) {
+                copy.votes += masternodeKeys.count
+                copy.isApproved = true
+                await dao.update(dto: copy)
+                lastVoteAction = .approved
+                refresh()
+            }
+        }
+    }
+    
+    func revokeVote(of requestId: String) {
+        Task {
+            if var copy = dao.get(by: requestId) {
+                copy.votes = max(copy.votes - masternodeKeys.count, 0)
+                copy.isApproved = false
+                await dao.update(dto: copy)
+                lastVoteAction = .revoked
+                refresh()
+            }
+        }
+    }
+    
+    func onVoteActionHandled() {
+        lastVoteAction = .none
+    }
+}
+
+
 // TODO: remove when not needed
 
 extension VotingViewModel {
     func addMockRequest() {
-        nameCount += 1
-        let now = Date().timeIntervalSince1970
-        let from: TimeInterval = 1658290321
-        let randomValue = Double.random(in: from..<now)
-        let identityData = withUnsafeBytes(of: UUID().uuid) { Data($0) }
-        let names = ["John", "Doe", "Sarah", "Jane", "Jack", "Jill", "Bob"]
-        let identity = (identityData as NSData).base58String()
-        let randomName = names[Int.random(in: 0..<min(names.count, nameCount))]
-        let link = nameCount % 2 == 0 ? "https://example.com" : nil
-        let isApproved = Bool.random()
-        
-        let dto = UsernameRequest(requestId: UUID().uuidString, username: randomName, createdAt: Int64(randomValue), identity: "\(identity)\(identity)\(identity)", link: link, votes: Int.random(in: 0..<15), isApproved: isApproved)
-        print(dto)
-        dao.create(dto: dto)
-        
-        refresh()
+        Task {
+            nameCount += 1
+            let now = Date().timeIntervalSince1970
+            let from: TimeInterval = 1658290321
+            let randomValue = Double.random(in: from..<now)
+            let identityData = withUnsafeBytes(of: UUID().uuid) { Data($0) }
+            let names = ["John", "Doe", "Sarah", "Jane", "Jack", "Jill", "Bob"]
+            let identity = (identityData as NSData).base58String()
+            let randomName = names[Int.random(in: 0..<min(names.count, nameCount))]
+            let link = nameCount % 2 == 0 ? "https://example.com" : nil
+            let isApproved = Bool.random()
+            
+            let dto = UsernameRequest(requestId: UUID().uuidString, username: randomName, createdAt: Int64(randomValue), identity: "\(identity)\(identity)\(identity)", link: link, votes: Int.random(in: 0..<15), isApproved: isApproved)
+            print(dto)
+            await dao.create(dto: dto)
+            
+            refresh()
+        }
     }
 }

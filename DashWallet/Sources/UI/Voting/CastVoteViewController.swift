@@ -65,7 +65,10 @@ extension CastVoteViewController {
     
     @IBAction
     func submit() {
-        
+        if let id = viewModel.selectedRequest?.requestId {
+            viewModel.vote(for: id)
+            self.navigationController?.popToViewController(ofType: UsernameVotingViewController.self, animated: true)
+        }
     }
 }
 

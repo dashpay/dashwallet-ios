@@ -225,6 +225,12 @@ extension UINavigationController {
         viewControllers.append(controller)
         setViewControllers(viewControllers, animated: animated)
     }
+    
+    func popToViewController<T>(ofType type: T.Type, animated: Bool) {
+        if let controller = controller(by: type) {
+            popToViewController(controller, animated: animated)
+        }
+    }
 }
 
 extension UIViewController {

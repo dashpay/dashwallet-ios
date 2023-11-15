@@ -590,6 +590,8 @@
 		75E2F3C82AA4CF1900C3B458 /* Topper-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75E2F3C72AA4CF1900C3B458 /* Topper-Info.plist */; };
 		75E2F3CA2AA4D1B900C3B458 /* Topper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E2F3C92AA4D1B900C3B458 /* Topper.swift */; };
 		75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 75E83CF51B5F997A0038FB70 /* coinflip.aiff */; };
+		75EAFBB12B04C057005ABC6A /* CustomHUDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EAFBB02B04C057005ABC6A /* CustomHUDView.swift */; };
+		75EAFBB22B04C057005ABC6A /* CustomHUDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EAFBB02B04C057005ABC6A /* CustomHUDView.swift */; };
 		75F51AAD2ABD8C800057B499 /* IntegrationViewController+Uphold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */; };
 		75F51AAF2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */; };
 		75F990822AFD1065006759AB /* UsernameRequestDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F990812AFD1065006759AB /* UsernameRequestDetailsViewController.swift */; };
@@ -2436,6 +2438,7 @@
 		75E2F3C72AA4CF1900C3B458 /* Topper-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Topper-Info.plist"; sourceTree = "<group>"; };
 		75E2F3C92AA4D1B900C3B458 /* Topper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Topper.swift; sourceTree = "<group>"; };
 		75E83CF51B5F997A0038FB70 /* coinflip.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = coinflip.aiff; sourceTree = "<group>"; };
+		75EAFBB02B04C057005ABC6A /* CustomHUDView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomHUDView.swift; sourceTree = "<group>"; };
 		75EDC78DE1686E55AE12233C /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; sourceTree = "<group>"; };
 		75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Uphold.swift"; sourceTree = "<group>"; };
@@ -3726,6 +3729,7 @@
 				C9829CE12A562CEE007132E4 /* TappableTextView.swift */,
 				C9829CDD2A562822007132E4 /* TappableLabel.swift */,
 				C956AF2C2A5CEA1F002FAB75 /* SheetViewController.swift */,
+				75EAFBB02B04C057005ABC6A /* CustomHUDView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -8462,6 +8466,7 @@
 				119E8D0429051F9900D406C1 /* CrowdNodeRequest.swift in Sources */,
 				0F6EDFD228C896BD000427E7 /* CoinbaseExchangeRateResponse.swift in Sources */,
 				117728A3297A7D24006F1553 /* CrowdNodePortalItem.swift in Sources */,
+				75EAFBB12B04C057005ABC6A /* CustomHUDView.swift in Sources */,
 				47C661B628FE75A700028A8D /* BaseViewController.swift in Sources */,
 				4751CAC0296EFD2900F63AC4 /* AccountListController.swift in Sources */,
 				2A9FFE032230FF2B00956D5F /* DWUpholdTransactionObject.m in Sources */,
@@ -9542,6 +9547,7 @@
 				C943B50D2A40A54600AF23C5 /* DWConfirmInvitationViewController.m in Sources */,
 				C943B4F62A40A54600AF23C5 /* DWDPContactObject.m in Sources */,
 				C9D2C8C42A320AA000D15901 /* ColorizedText.swift in Sources */,
+				75EAFBB22B04C057005ABC6A /* CustomHUDView.swift in Sources */,
 				C9D2C8C72A320AA000D15901 /* PaymentsViewController.swift in Sources */,
 				C9D2C8C92A320AA000D15901 /* ServiceDataSource.swift in Sources */,
 				C9D2C8CA2A320AA000D15901 /* ConverterView.swift in Sources */,
