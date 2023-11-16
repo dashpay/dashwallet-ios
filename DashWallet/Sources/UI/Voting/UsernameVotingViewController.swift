@@ -27,6 +27,11 @@ class UsernameVotingViewController: UIViewController {
     @IBOutlet private var filterView: UIView!
     @IBOutlet private var filterViewTitle: UILabel!
     @IBOutlet private var filterViewSubtitle: UILabel!
+    private var quickVotingButton: UIBarButtonItem!
+    
+    @objc func quickVoteActions() {
+        present(QuickVoteViewController.controller(viewModel.filteredRequests.count), animated: true)
+    }
     
     private var dataSource: DataSource! = nil
     
@@ -100,15 +105,14 @@ extension UsernameVotingViewController {
         filterView.addGestureRecognizer(filterViewTap)
         filterViewTitle.text = NSLocalizedString("Filtered by", comment: "")
         
-        let rightButton = UIBarButtonItem(title: NSLocalizedString("Quick Voting", comment: "Voting"), style: .plain, target: self, action: #selector(quickVoteActions))
+        let button = UIBarButtonItem(title: NSLocalizedString("Quick Voting", comment: "Voting"), style: .plain, target: self, action: #selector(quickVoteActions))
         let attributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.dw_mediumFont(ofSize: 13),
             .foregroundColor: UIColor.dw_dashBlue()
         ]
-        rightButton.setTitleTextAttributes(attributes, for: .normal)
-        rightButton.setTitleTextAttributes(attributes, for: .highlighted)
-        
-        navigationItem.rightBarButtonItem = rightButton
+        button.setTitleTextAttributes(attributes, for: .normal)
+        button.setTitleTextAttributes(attributes, for: .highlighted)
+        self.quickVotingButton = button
     }
     
     private func configureObservers() {
@@ -116,6 +120,7 @@ extension UsernameVotingViewController {
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] data in
+                self?.updateQuickVoteButton()
                 self?.headerView?.set(duplicateAmount: data.count)
                 self?.reloadDataSource(data: data)
             }
@@ -137,15 +142,24 @@ extension UsernameVotingViewController {
             }
             .store(in: &cancellableBag)
         
-        
+        viewModel.$masternodeKeys
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.updateQuickVoteButton()
+            }
+            .store(in: &cancellableBag)
     }
     
     @objc func mockData() {
         viewModel.addMockRequest()
     }
     
-    @objc func quickVoteActions() {
-        present(QuickVoteViewController.controller(viewModel.filteredRequests.count), animated: true)
+    private func updateQuickVoteButton() {
+        let requests = viewModel.filteredRequests
+        let keys = viewModel.masternodeKeys
+        self.navigationItem.rightBarButtonItem = requests.isEmpty || keys.isEmpty ?
+            nil : self.quickVotingButton
     }
 }
 
