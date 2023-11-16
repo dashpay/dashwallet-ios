@@ -175,7 +175,7 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
         return ret;
     }
     
-    if (height >= chain_core20_activation_height(self.chainType)) {
+    if ([self isCore20ActiveAtHeight:height]) {
         // Once MNRewardReallocated activates, block reward is 80% of block subsidy (+ tx fees) since treasury is 20%
         // Since the MN reward needs to be equal to 60% of the block subsidy (according to the proposal), MN reward is set to 75% of the block reward.
         // Previous reallocation periods are dropped.
