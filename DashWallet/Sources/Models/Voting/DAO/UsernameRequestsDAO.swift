@@ -27,6 +27,7 @@ protocol UsernameRequestsDAO {
     func get(by requestId: String) -> UsernameRequest?
     func update(dto: UsernameRequest) async
     func delete(dto: UsernameRequest)
+    func vote(for requestIds: [String], voteIncrement: Int) async
     func deleteAll()
 }
 
@@ -152,18 +153,35 @@ extension UsernameRequestsDAOImpl {
         
         return []
     }
+    
+    func vote(for requestIds: [String], voteIncrement: Int) async {
+        let idsPlaceholder = requestIds.map { _ in "?" }.joined(separator: ", ")
+        let query = """
+            UPDATE username_requests
+            SET isApproved = 1, votes = votes + ?
+                WHERE requestId IN (\(idsPlaceholder))
+        """
+
+        do {
+            let binding: [Binding?] = [voteIncrement] + requestIds
+            let _: [UsernameRequest] = try await self.execute(query: query, bindings: binding)
+        } catch {
+            print(error)
+        }
+    }
+
 }
 
 // MARK: - async / await
 
 extension UsernameRequestsDAOImpl {
-    private func execute<Item: RowDecodable>(query: String) async throws -> [Item] {
+    private func execute<Item: RowDecodable>(query: String, bindings: [Binding?] = []) async throws -> [Item] {
         return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.global(qos: .utility).async { [weak self] in
                 guard let self = self else { return continuation.resume(returning: []) }
                     
                 do {
-                    let results = try self.db.prepare(query).prepareRowIterator().map { Item(row: $0) }
+                    let results = try self.db.prepare(query, bindings).prepareRowIterator().map { Item(row: $0) }
                     continuation.resume(returning: results)
                 } catch {
                     continuation.resume(throwing: error)

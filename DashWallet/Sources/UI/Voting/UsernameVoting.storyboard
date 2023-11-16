@@ -86,7 +86,7 @@
                                         </constraints>
                                     </view>
                                 </subviews>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <color key="backgroundColor" name="BackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="trailing" secondItem="Ymj-W5-adl" secondAttribute="trailing" id="3W2-xD-A30"/>
                                     <constraint firstAttribute="height" constant="74" id="AUB-GY-4g3"/>
@@ -414,14 +414,14 @@
                                     <constraint firstAttribute="trailing" secondItem="cnA-jS-ylf" secondAttribute="trailing" id="z8B-sa-p35"/>
                                 </constraints>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fPb-H6-kmV" customClass="DWActionButton">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fPb-H6-kmV">
                                 <rect key="frame" x="15" y="757" width="363" height="46"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="46" id="SXz-zH-lfg"/>
                                 </constraints>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="Vote to Approve">
-                                    <fontDescription key="titleFontDescription" type="system" weight="medium" pointSize="0.0"/>
+                                    <fontDescription key="titleFontDescription" type="system" weight="medium" pointSize="15"/>
                                 </buttonConfiguration>
                                 <connections>
                                     <action selector="voteAction" destination="JE6-GX-8Xl" eventType="touchUpInside" id="2LS-xa-wJl"/>

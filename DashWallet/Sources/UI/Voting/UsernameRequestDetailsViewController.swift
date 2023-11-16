@@ -30,7 +30,7 @@ class UsernameRequestDetailsViewController: UIViewController {
     @IBOutlet var linkPanel: UIView!
     @IBOutlet var identityLabel: UILabel!
     @IBOutlet var identity: UILabel!
-    @IBOutlet var voteButton: ActionButton!
+    @IBOutlet var voteButton: UIButton!
     
     static func controller(with request: UsernameRequest) -> UsernameRequestDetailsViewController {
         let vc = vc(UsernameRequestDetailsViewController.self, from: sb("UsernameVoting"))
@@ -86,12 +86,21 @@ extension UsernameRequestDetailsViewController {
                 linkPanel.addGestureRecognizer(linkTap)
             }
             
+            voteButton.layer.cornerRadius = 8
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.dw_mediumFont(ofSize: 15)
+            ]
+            
             if request.isApproved {
-                voteButton.accentColor = .dw_red()
-                voteButton.setTitle(NSLocalizedString("Cancel Approval", comment: "Voting"), for: .normal)
+                voteButton.backgroundColor = .dw_red().withAlphaComponent(0.1)
+                voteButton.tintColor = .dw_red()
+                let attributedTitle = NSAttributedString(string: NSLocalizedString("Cancel Approval", comment: "Voting"), attributes: attributes)
+                voteButton.setAttributedTitle(attributedTitle, for: .normal)
             } else {
-                voteButton.accentColor = .dw_dashBlue()
-                voteButton.setTitle(NSLocalizedString("Vote to Approve", comment: "Voting"), for: .normal)
+                voteButton.backgroundColor = .dw_dashBlue()
+                voteButton.tintColor = .white
+                let attributedTitle = NSAttributedString(string: NSLocalizedString("Vote to Approve", comment: "Voting"), attributes: attributes)
+                voteButton.setAttributedTitle(attributedTitle, for: .normal)
             }
         }
     }

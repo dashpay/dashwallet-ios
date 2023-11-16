@@ -99,6 +99,16 @@ extension UsernameVotingViewController {
         let filterViewTap = UITapGestureRecognizer(target: self, action: #selector(showFilters))
         filterView.addGestureRecognizer(filterViewTap)
         filterViewTitle.text = NSLocalizedString("Filtered by", comment: "")
+        
+        let rightButton = UIBarButtonItem(title: NSLocalizedString("Quick Voting", comment: "Voting"), style: .plain, target: self, action: #selector(quickVoteActions))
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.dw_mediumFont(ofSize: 13),
+            .foregroundColor: UIColor.dw_dashBlue()
+        ]
+        rightButton.setTitleTextAttributes(attributes, for: .normal)
+        rightButton.setTitleTextAttributes(attributes, for: .highlighted)
+        
+        navigationItem.rightBarButtonItem = rightButton
     }
     
     private func configureObservers() {
@@ -132,6 +142,10 @@ extension UsernameVotingViewController {
     
     @objc func mockData() {
         viewModel.addMockRequest()
+    }
+    
+    @objc func quickVoteActions() {
+        present(QuickVoteViewController.controller(viewModel.filteredRequests.count), animated: true)
     }
 }
 

@@ -164,6 +164,19 @@ extension VotingViewModel {
         }
     }
     
+    func voteForAllFirstSubmitted() {
+        Task {
+            let submittedFirst = filteredRequests.compactMap { group in
+                group.requests
+                    .sorted { $0.createdAt < $1.createdAt }
+                    .first?.requestId
+            }
+            await dao.vote(for: submittedFirst, voteIncrement: masternodeKeys.count)
+            lastVoteAction = .approved
+            refresh()
+        }
+    }
+    
     func onVoteActionHandled() {
         lastVoteAction = .none
     }
