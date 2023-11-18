@@ -15,9 +15,12 @@
 //  limitations under the License.
 //
 
-import Foundation
+import Combine
 
 class UsernameInfoViewController: UIViewController {
+    private var cancellableBag = Set<AnyCancellable>()
+    private let viewModel = RequestUsernameViewModel.shared
+    
     @IBOutlet private var titleLabel: UILabel!
     @IBOutlet private var createUsernameTitle: UILabel!
     @IBOutlet private var createUsernameSubtitle: UILabel!
@@ -25,6 +28,7 @@ class UsernameInfoViewController: UIViewController {
     @IBOutlet private var addFriendsSubtitle: UILabel!
     @IBOutlet private var profileTitle: UILabel!
     @IBOutlet private var profileSubtitle: UILabel!
+    @IBOutlet private var minimumBalanceLabel: UILabel!
     @IBOutlet private var continueButton: UIButton!
     
     @objc
@@ -35,11 +39,17 @@ class UsernameInfoViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configureLayout()
+        configureObservers()
+    }
+    
+    @IBAction
+    func continueAction() {
+        
     }
 }
 
 extension UsernameInfoViewController {
-    func configureLayout() {
+    private func configureLayout() {
         titleLabel.text = NSLocalizedString("Welcome to Dash Pay", comment: "Usernames")
         createUsernameTitle.text = NSLocalizedString("Create a username", comment: "Usernames")
         createUsernameSubtitle.text = NSLocalizedString("Pay to usernames. No more alphanumeric addresses.", comment: "Usernames")
@@ -48,5 +58,22 @@ extension UsernameInfoViewController {
         profileTitle.text = NSLocalizedString("Personalise profile", comment: "Usernames")
         profileSubtitle.text = NSLocalizedString("Upload your picture, personalize your identity.", comment: "Usernames")
         continueButton.setTitle(NSLocalizedString("Continue", comment: "Usernames"), for: .normal)
+    }
+    
+    func configureObservers() {
+        viewModel.$hasEnoughBalance
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] hasEnough in
+                guard let self = self else { return }
+                self.refreshBalanceWarning(enoughBalance: hasEnough)
+            })
+            .store(in: &cancellableBag)
+    }
+    
+    private func refreshBalanceWarning(enoughBalance: Bool) {
+        continueButton.isEnabled = enoughBalance
+        minimumBalanceLabel.isHidden = enoughBalance
+        minimumBalanceLabel.text = String.localizedStringWithFormat(NSLocalizedString("You should have more than %@ Dash to create a username", comment: "Usernames"), viewModel.minimumRequiredBalance)
     }
 }

@@ -199,6 +199,12 @@
                                     <constraint firstAttribute="height" constant="93" id="udS-0j-uhq"/>
                                 </constraints>
                             </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You should have more than 0.1 Dash to create a username" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Dyj-1O-83W" userLabel="MinimumBalance">
+                                <rect key="frame" x="40" y="708.33333333333337" width="313" height="28.666666666666629"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <color key="textColor" name="SecondaryTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6dP-Qm-5Vp" customClass="DWActionButton">
                                 <rect key="frame" x="20" y="752" width="353" height="46"/>
                                 <constraints>
@@ -215,6 +221,7 @@
                             <constraint firstItem="42l-li-thP" firstAttribute="leading" secondItem="Npl-Bc-cOc" secondAttribute="leading" constant="40" id="9IZ-ab-8zB"/>
                             <constraint firstItem="Npl-Bc-cOc" firstAttribute="trailing" secondItem="6dP-Qm-5Vp" secondAttribute="trailing" constant="20" id="AJR-Oy-tYa"/>
                             <constraint firstItem="i3z-AM-Pe9" firstAttribute="trailing" secondItem="Npl-Bc-cOc" secondAttribute="trailing" constant="-20" id="CoA-rX-v69"/>
+                            <constraint firstItem="Dyj-1O-83W" firstAttribute="bottom" secondItem="6dP-Qm-5Vp" secondAttribute="top" constant="-15" id="E4M-5U-Dpm"/>
                             <constraint firstItem="Npl-Bc-cOc" firstAttribute="trailing" secondItem="42l-li-thP" secondAttribute="trailing" constant="40" id="GxX-wY-X5p"/>
                             <constraint firstItem="Npl-Bc-cOc" firstAttribute="bottom" secondItem="6dP-Qm-5Vp" secondAttribute="bottom" constant="20" id="Js0-b1-kDr"/>
                             <constraint firstItem="i3z-AM-Pe9" firstAttribute="top" secondItem="yCZ-h6-C1J" secondAttribute="bottom" id="X64-eE-OzY"/>
@@ -222,11 +229,13 @@
                             <constraint firstItem="i3z-AM-Pe9" firstAttribute="leading" secondItem="Npl-Bc-cOc" secondAttribute="leading" constant="20" id="aQN-wO-31r"/>
                             <constraint firstItem="424-xj-9iE" firstAttribute="leading" secondItem="Npl-Bc-cOc" secondAttribute="leading" constant="20" id="em7-Oh-Kdz"/>
                             <constraint firstItem="6dP-Qm-5Vp" firstAttribute="leading" secondItem="Npl-Bc-cOc" secondAttribute="leading" constant="20" id="f3a-9W-kbK"/>
+                            <constraint firstItem="Npl-Bc-cOc" firstAttribute="trailing" secondItem="Dyj-1O-83W" secondAttribute="trailing" constant="40" id="gOP-0q-CEA"/>
                             <constraint firstItem="yCZ-h6-C1J" firstAttribute="centerY" secondItem="Npl-Bc-cOc" secondAttribute="centerY" constant="-80" id="i5p-NH-6kP"/>
                             <constraint firstItem="Of6-PQ-ug3" firstAttribute="centerX" secondItem="Npl-Bc-cOc" secondAttribute="centerX" id="k9E-cT-kwR"/>
                             <constraint firstItem="424-xj-9iE" firstAttribute="top" secondItem="i3z-AM-Pe9" secondAttribute="bottom" id="ogm-5k-Os5"/>
                             <constraint firstItem="yCZ-h6-C1J" firstAttribute="trailing" secondItem="Npl-Bc-cOc" secondAttribute="trailing" constant="-16" id="pL4-Dd-a0v"/>
                             <constraint firstItem="Npl-Bc-cOc" firstAttribute="leading" secondItem="yCZ-h6-C1J" secondAttribute="leading" constant="-20" id="pQ4-aD-Ta9"/>
+                            <constraint firstItem="Dyj-1O-83W" firstAttribute="leading" secondItem="Npl-Bc-cOc" secondAttribute="leading" constant="40" id="rlT-1b-VXF"/>
                             <constraint firstItem="42l-li-thP" firstAttribute="top" secondItem="Of6-PQ-ug3" secondAttribute="bottom" constant="15" id="stC-Ll-JwI"/>
                         </constraints>
                     </view>
@@ -236,6 +245,7 @@
                         <outlet property="continueButton" destination="6dP-Qm-5Vp" id="eCv-iY-syo"/>
                         <outlet property="createUsernameSubtitle" destination="Jgh-tt-fHP" id="8d9-2B-3m2"/>
                         <outlet property="createUsernameTitle" destination="z2j-Ge-6Pl" id="eAT-bl-8XQ"/>
+                        <outlet property="minimumBalanceLabel" destination="Dyj-1O-83W" id="vsH-xF-5OW"/>
                         <outlet property="profileSubtitle" destination="b1D-aK-DYx" id="we3-vB-08s"/>
                         <outlet property="profileTitle" destination="y0b-PE-Jmt" id="GUS-DZ-Mto"/>
                         <outlet property="titleLabel" destination="42l-li-thP" id="3jX-O3-4mS"/>
