@@ -213,13 +213,15 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)mainMenuContentView:(DWMainMenuContentView *)view joinDashPayAction:(UIButton *)sender {
-    DWDashPaySetupFlowController *controller =
-        [[DWDashPaySetupFlowController alloc]
-            initWithDashPayModel:self.dashPayModel
-                      invitation:nil
-                 definedUsername:nil];
-    controller.modalPresentationStyle = UIModalPresentationFullScreen;
-    [self presentViewController:controller animated:YES completion:nil];
+    UsernameInfoViewController *controller = [UsernameInfoViewController controller];
+    // TODO: voting switch ?
+//    DWDashPaySetupFlowController *controller =
+//        [[DWDashPaySetupFlowController alloc]
+//            initWithDashPayModel:self.dashPayModel
+//                      invitation:nil
+//                 definedUsername:nil];
+    controller.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:controller animated:YES];
 }
 #endif
 
