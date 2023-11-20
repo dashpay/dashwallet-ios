@@ -119,7 +119,7 @@ static NSString *sanitizeString(NSString *s) {
 - (void)processPaymentInput:(DWPaymentInput *)paymentInput {
     NSParameterAssert(self.delegate);
 
-
+#if DASHPAY
     // re-build input if it's DashPay-compatible
     NSString *requestUsername = paymentInput.request.dashpayUsername;
     if (requestUsername) {
@@ -137,19 +137,25 @@ static NSString *sanitizeString(NSString *s) {
                 }
             }
 
-#if DASHPAY
+
             if (requestIdentity) {
                 paymentInput.userItem = [[DWDPUserObject alloc] initWithBlockchainIdentity:requestIdentity];
             }
-#endif
         }
     }
+#endif
 
     self.paymentInput = paymentInput;
 
     if (paymentInput.request) {
-        self.canChangeAmount = paymentInput.canChangeAmount;
-        [self confirmRequest:paymentInput.request];
+        if (paymentInput.source == DWPaymentInputSource_ScanQR && paymentInput.request.isValidAsNonDashpayPaymentRequest) {
+            DSPaymentProtocolRequest *protocolRequest = [self protocolRequestFromPaymentRequest:self.paymentInput.request];
+            [self txManagerRequestingAdditionalInfo:DSRequestingAdditionalInfo_Amount
+                                    protocolRequest:protocolRequest];
+        } else {
+            self.canChangeAmount = paymentInput.canChangeAmount;
+            [self confirmRequest:paymentInput.request];
+        }
     }
     else if (paymentInput.protocolRequest) {
         self.canChangeAmount = paymentInput.canChangeAmount;
@@ -279,20 +285,22 @@ static NSString *sanitizeString(NSString *s) {
                             }];
     }
     else {
-        // `request.protocolRequest` is a legacy method and shouldn't be used directly.
-        // `myBlockchainIdentity` can be nil.
-
-        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-        DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-        DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-        NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
-        DSPaymentProtocolRequest *protocolRequest =
-            [self.paymentInput.request protocolRequestForBlockchainIdentity:myBlockchainIdentity
-                                                                  onAccount:account
-                                                                  inContext:context];
-
+        DSPaymentProtocolRequest *protocolRequest = [self protocolRequestFromPaymentRequest:self.paymentInput.request];
         [self confirmProtocolRequest:protocolRequest];
     }
+}
+
+- (DSPaymentProtocolRequest*)protocolRequestFromPaymentRequest:(DSPaymentRequest *)request {
+    // `request.protocolRequest` is a legacy method and shouldn't be used directly.
+    // `myBlockchainIdentity` can be nil.
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+    NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
+    
+    return [request protocolRequestForBlockchainIdentity:myBlockchainIdentity
+                                               onAccount:account
+                                               inContext:context];
 }
 
 - (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protocolRequest {

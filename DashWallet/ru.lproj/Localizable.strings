@@ -29,7 +29,7 @@
 "%ld requests" = "%ld requests";
 
 /* 10/20 Characters */
-"%ld/%ld Characters" = "%1$ld/%2$ld Characters";
+"%ld/%ld Characters" = "%1$ld/%2$ld символов";
 
 /* No comment provided by engineer. */
 "(1/3) Processing Payment" = "(1/3) Обработка платежа ";
@@ -104,7 +104,7 @@
 "About" = "О программе";
 
 /* No comment provided by engineer. */
-"About me" = "About me";
+"About me" = "Обо мне";
 
 /* No comment provided by engineer. */
 "Accept" = "Подтвердить";
@@ -134,7 +134,7 @@
 "Add a New Contact" = "Добавить новый контакт";
 
 /* No comment provided by engineer. */
-"Add your Friends & Family" = "Add your Friends & Family";
+"Add your Friends & Family" = "Добавить друзей и членов семьи";
 
 /* No comment provided by engineer. */
 "Address" = "Адрес";
@@ -149,7 +149,7 @@
 "Advanced users who have a very high level of technical expertise can determine your transaction history" = "Advanced users who have a very high level of technical expertise can determine your transaction history";
 
 /* No comment provided by engineer. */
-"Agree" = "Agree";
+"Agree" = "Согласиться";
 
 /* No comment provided by engineer. */
 "All" = "Все";
@@ -218,7 +218,7 @@
 "As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
 
 /* CrowdNode */
-"As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode." = "Часто у людей нет на руках суммы в 1000 Dash, и CrowdNode создал сервис, где можно получить преимущества владения мастернодой за счёт вкладов участников в общий пул.";
+"As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "Часто у людей нет на руках суммы в 1000 Dash, и CrowdNode создал сервис, где можно получить преимущества владения мастернодой за счёт вкладов участников в общий пул.";
 
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "Поиск банкоматов работает лучше всего с включенными службами геолокации.";
@@ -275,7 +275,7 @@
 "Become part of a Dash Masternode with CrowdNode" = "Станьте частью мастерноды Dash вместе с CrowdNode";
 
 /* Validation rule: Between 3 and 24 characters */
-"Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
+"Between %ld and %ld characters" = "От %1$ld до %2$ld символов";
 
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase" = "Между Dash Wallet и Coinbase";
@@ -360,10 +360,10 @@
 "Choose your" = "Выберите ваше";
 
 /* No comment provided by engineer. */
-"Choose Your Username" = "Choose Your Username";
+"Choose Your Username" = "Выберите имя пользователя";
 
 /* No comment provided by engineer. */
-"Claimed" = "Claimed";
+"Claimed" = "Уже занято";
 
 /* No comment provided by engineer. */
 "Clear" = "Удалить";
@@ -449,7 +449,7 @@
 "Copy" = "Копировать";
 
 /* No comment provided by engineer. */
-"Copy Invitation Link" = "Copy Invitation Link";
+"Copy Invitation Link" = "Скопировать ссылку-приглашение";
 
 /* No comment provided by engineer. */
 "Copy Logs" = "Копировать логи";
@@ -476,16 +476,16 @@
 "Couldn't transmit payment to Dash network" = "Не удалось передать платёж в сеть Dash";
 
 /* No comment provided by engineer. */
-"Create a new Invitation" = "Create a new Invitation";
+"Create a new Invitation" = "Создать новое Приглашение";
 
 /* No comment provided by engineer. */
-"Create a new invitation" = "Create a new invitation";
+"Create a new invitation" = "Создать новое приглашение";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Создать новый кошелек";
 
 /* No comment provided by engineer. */
-"Create a username, add your friends." = "Create a username, add your friends.";
+"Create a username, add your friends." = "Создайте имя пользователя, добавьте друзей.";
 
 /* CrowdNode */
 "Create Account" = "Создать аккаунт";
@@ -494,14 +494,14 @@
 "Create an online CrowdNode account" = "Создать онлайн-аккаунт CrowdNode";
 
 /* No comment provided by engineer. */
-"Create invitation" = "Create invitation";
+"Create invitation" = "Создать приглашение";
 
 /* CrowdNode
    CrowdNode Portal */
 "Create Online Account" = "Создать онлайн аккаунт";
 
 /* No comment provided by engineer. */
-"Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
+"Create your Username, find friends & family with their usernames and add them to your contacts" = "Создайте имя пользователя, найдите членов семьи и друзей по именам пользователей и добавьте их в список контактов";
 
 /* Coinbase/Payment Methods */
 "Credit Card" = "Кредитная карта";
@@ -567,7 +567,7 @@
 "Dash Wallet on this device" = "Dash Wallet на этом устройстве";
 
 /* No comment provided by engineer. */
-"DashPay Invitation" = "DashPay Invitation";
+"DashPay Invitation" = "Приглашение DashPay";
 
 /* No comment provided by engineer. */
 "DashPay Upgrade Fee" = "Комиссия за обновление DashPay";
@@ -626,7 +626,7 @@
 "Disconnected" = "Подключение отсутствует";
 
 /* No comment provided by engineer. */
-"Display Name" = "Display Name";
+"Display Name" = "Отображаемое имя";
 
 /* Explore Dash: Filters */
 "Distance" = "Расстояние";
@@ -647,7 +647,7 @@
 "e.g. johndoe@mail.com" = "например, johndoe@mail.com";
 
 /* No comment provided by engineer. */
-"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Каждое приглашение сопровождается этой суммой, чтобы получатель мог тут же создать своё имя пользователя в сети Dash";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Ранее";
@@ -656,10 +656,10 @@
 "Easily stake Dash and earn passive income with a few simple clicks." = "Отправьте Dash в стейкинг и получите пассивный доход всего за несколько кликов.";
 
 /* No comment provided by engineer. */
-"Edit Profile" = "Edit Profile";
+"Edit Profile" = "Редактировать профиль";
 
 /* Invitation tag placeholder */
-"eg: Dad" = "eg: Dad";
+"eg: Dad" = "напр.: Папа";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "напр.: ИванИванов";
@@ -692,13 +692,13 @@
 "Enter your 2FA code below" = "Введите код 2FA ниже";
 
 /* No comment provided by engineer. */
-"Enter your Gravatar Email ID" = "Enter your Gravatar Email ID";
+"Enter your Gravatar Email ID" = "Введите Gravatar Email ID";
 
 /* No comment provided by engineer. */
 "Error" = "Ошибка";
 
 /* No comment provided by engineer. */
-"Error updating your profile" = "Error updating your profile";
+"Error updating your profile" = "Ошибка при обновлении профиля";
 
 /* No comment provided by engineer. */
 "Error Upgrading" = "Ошибка при обновлении";
@@ -746,7 +746,7 @@
 "Fees in crypto purchases" = "Комиссия при покупке криптовалюты";
 
 /* No comment provided by engineer. */
-"Fetching Image" = "Fetching Image";
+"Fetching Image" = "Загружается изображение";
 
 /* Explore Dash */
 "Fetching Info" = "Получение данных";
@@ -755,7 +755,7 @@
 "Fiat Account" = "Фиатный счёт";
 
 /* No comment provided by engineer. */
-"Filter" = "Filter";
+"Filter" = "Фильтр";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Показать транзакции";
@@ -776,7 +776,7 @@
 "Find a user on the Dash Network" = "Найти пользователя в сети Dash";
 
 /* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Find merchants that accept DASH";
+"Find merchants that accept DASH" = "Найти магазины, где принимают DASH";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "Узнайте, где принимают Dash, где можно купить монеты и как получить доход с их помощью. ";
@@ -845,7 +845,7 @@
 "Get Test Dash" = "Get Test Dash";
 
 /* No comment provided by engineer. */
-"Get your Username" = "Get your Username";
+"Get your Username" = "Получить имя пользователя";
 
 /* CrowdNode */
 "Getting started with CrowdNode" = "Начало работы с CrowdNode";
@@ -941,13 +941,13 @@
 "Ignore" = "Игнорировать";
 
 /* No comment provided by engineer. */
-"Image uploaded can be viewed publicly by anyone." = "Image uploaded can be viewed publicly by anyone.";
+"Image uploaded can be viewed publicly by anyone." = "Загруженное изображение будет доступно всем.";
 
 /* No comment provided by engineer. */
-"Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
+"Image URL can't be longer than %ld characters." = "Ссылка на изображение не может быть длиннее %ld символов.";
 
 /* No comment provided by engineer. */
-"Images Privacy Policy" = "Images Privacy Policy";
+"Images Privacy Policy" = "Политика конфиденциальности для изображений";
 
 /* No comment provided by engineer. */
 "Immediately" = "Немедленно";
@@ -980,7 +980,7 @@
 "Insufficient funds" = "Недостаточно средств";
 
 /* No comment provided by engineer. */
-"Insufficient Wallet Balance" = "Insufficient Wallet Balance";
+"Insufficient Wallet Balance" = "Недостаточно средств на балансе кошелька";
 
 /* Coinbase/Payment Methods */
 "Interac" = "Interac";
@@ -1013,7 +1013,7 @@
 "Invalid Input" = "Ошибка ввода";
 
 /* No comment provided by engineer. */
-"Invalid Inviation" = "Invalid Inviation";
+"Invalid Inviation" = "Ссылка-приглашение недействительно";
 
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Некорректный платёжный запрос";
@@ -1022,43 +1022,43 @@
 "Invalid QR Code" = "Некорректный QR-код";
 
 /* No comment provided by engineer. */
-"Invitation" = "Invitation";
+"Invitation" = "Приглашение";
 
 /* Invitation #3 */
-"Invitation %ld" = "Invitation %ld";
+"Invitation %ld" = "Приглашение %ld";
 
 /* No comment provided by engineer. */
-"Invitation already claimed" = "Invitation already claimed";
+"Invitation already claimed" = "Приглашение уже подтверждено";
 
 /* No comment provided by engineer. */
-"Invitation Created Successfully" = "Invitation Created Successfully";
+"Invitation Created Successfully" = "Приглашение успешно создано";
 
 /* No comment provided by engineer. */
-"Invitation Fee" = "Invitation Fee";
+"Invitation Fee" = "Комиссия за приглашение";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "Invitation used by";
 
 /* No comment provided by engineer. */
-"Invitations History" = "Invitations History";
+"Invitations History" = "История приглашений";
 
 /* No comment provided by engineer. */
-"Invite" = "Invite";
+"Invite" = "Пригласить";
 
 /* No comment provided by engineer. */
-"Invite Someone to join the Dash Network" = "Invite Someone to join the Dash Network";
+"Invite Someone to join the Dash Network" = "Пригласите кого-то присоединиться к сети Dash";
 
 /* No comment provided by engineer. */
-"Invite your family, find your friends by searching their usernames" = "Invite your family, find your friends by searching their usernames";
+"Invite your family, find your friends by searching their usernames" = "Пригласите членов семьи, найдите друзей по имени пользователя";
 
 /* No comment provided by engineer. */
-"Invite your friends & family" = "Invite your friends & family";
+"Invite your friends & family" = "Пригласить членов семьи и друзей";
 
 /* No comment provided by engineer. */
-"Invite your friends and family to join the Dash Network." = "Invite your friends and family to join the Dash Network.";
+"Invite your friends and family to join the Dash Network." = "Пригласите друзей и членов семьи присоединиться к сети Dash.";
 
 /* No comment provided by engineer. */
-"Invite your friends and family to the Dash Network" = "Invite your friends and family to the Dash Network";
+"Invite your friends and family to the Dash Network" = "Пригласите друзей и членов семьи в сеть Dash.";
 
 /* CrowdNode */
 "It can take a minute for your balance to be updated." = "Баланс обновляется в течение минуты.";
@@ -1082,16 +1082,16 @@
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "Кажется, вы пытаетесь восстановить свой кошелёк с помощью фразы восстановления из 12 слов. Однако, вы ввели только 11 слов. Хотите автоматически восстановить пропущенное слово? ";
 
 /* No comment provided by engineer. */
-"Join" = "Join";
+"Join" = "Войти";
 
 /* No comment provided by engineer. */
-"Join DashPay" = "Join DashPay";
+"Join DashPay" = "Войти в DashPay";
 
 /* No comment provided by engineer. */
 "Join Evolution" = "Присоединиться к Evolution";
 
 /* No comment provided by engineer. */
-"Join Now" = "Join Now";
+"Join Now" = "Войти сейчас";
 
 /* CrowdNode */
 "Joining the pool" = "Как присоединиться к пулу";
@@ -1125,16 +1125,16 @@
 "Let me know when it’s done" = "Сообщить, когда будет готово";
 
 /* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Let your friends and family to join Dash";
+"Let your friends and family to join Dash" = "Пусть ваши друзья и семья присоединятся к Dash.";
 
 /* No comment provided by engineer. */
-"Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Let your friends and family to join the Dash Network. Invite them to the world of social banking.";
+"Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Пусть ваши друзья и семья присоединятся к сети Dash. Пригласите их в мир социального банкинга.";
 
 /* Validation rule */
-"Letters, numbers and hyphens only" = "Letters, numbers and hyphens only";
+"Letters, numbers and hyphens only" = "Только буквы, цифры и дефисы";
 
 /* No comment provided by engineer. */
-"Let’s Get Started" = "Let’s Get Started";
+"Let’s Get Started" = "Давайте начнём";
 
 /* Dash Service Overview */
 "Link Coinbase Account" = "Привязать аккаунт Coinbase";
@@ -1227,7 +1227,7 @@
 "Max" = "Макс";
 
 /* No comment provided by engineer. */
-"Maybe later" = "Maybe later";
+"Maybe later" = "Может, чуть позже";
 
 /* adjective, security level */
 "Medium" = "Средний";
@@ -1248,10 +1248,10 @@
 "More Control" = "Больше контроля";
 
 /* No comment provided by engineer. */
-"More Suggestions" = "More Suggestions";
+"More Suggestions" = "Больше предложений";
 
 /* No comment provided by engineer. */
-"Move and Zoom your photo to find the perfect fit" = "Move and Zoom your photo to find the perfect fit";
+"Move and Zoom your photo to find the perfect fit" = "Подвигайте и увеличьте фото, чтобы найти идеальный вариант";
 
 /* No comment provided by engineer. */
 "Moved from" = "Перемещено из";
@@ -1263,7 +1263,7 @@
 "Multiple hours" = "Multiple hours";
 
 /* Validation rule */
-"Must start and end with a letter or number" = "Must start and end with a letter or number";
+"Must start and end with a letter or number" = "Должно начинаться и заканчиваться на цифру или букву";
 
 /* No comment provided by engineer. */
 "My Contacts" = "Мои контакты";
@@ -1317,7 +1317,7 @@
 "No active user" = "Отсутствует активный пользователь";
 
 /* Coinbase */
-"No cash account found" = "No cash account found";
+"No cash account found" = " Денежный счет не найден";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "Отсутствуют способы оплаты";
@@ -1392,7 +1392,7 @@
 "Operator Keys" = "Ключи оператора";
 
 /* No comment provided by engineer. */
-"or" = "or";
+"or" = "или";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "Просмотр заказа";
@@ -1404,7 +1404,7 @@
 "Owner Keys" = "Ключи владельца";
 
 /* No comment provided by engineer. */
-"Paste your image URL" = "Paste your image URL";
+"Paste your image URL" = "Вставьте ссылку на изображение";
 
 /* No comment provided by engineer. */
 "Pay" = "Оплатить";
@@ -1416,7 +1416,7 @@
 "Pay Directly to Username" = "Оплатить напрямую по Имени пользователя";
 
 /* No comment provided by engineer. */
-"Pay to usernames. No more alphanumeric addresses" = "Pay to usernames. No more alphanumeric addresses";
+"Pay to usernames. No more alphanumeric addresses" = "Оплата по имени пользователя. Больше никаких цифробуквенных адресов";
 
 /* Coinbase/Buy Dash */
 "Pay with" = "Оплатить с помощью";
@@ -1449,7 +1449,7 @@
 "Payment Type" = "Способ оплаты";
 
 /* No comment provided by engineer. */
-"Payments made directly to addresses won’t be retained in activity." = "Payments made directly to addresses won’t be retained in activity.";
+"Payments made directly to addresses won’t be retained in activity." = "Платежи напрямую по адресу будут работать как раньше. ";
 
 /* CrowdNode */
 "Payout Options" = "Варианты выплат";
@@ -1470,7 +1470,7 @@
 "per transaction" = "за транзакцию";
 
 /* No comment provided by engineer. */
-"Personalize" = "Personalize";
+"Personalize" = "Персонализировать";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Всегда требовать PIN для совершения платежа";
@@ -1482,10 +1482,10 @@
 "Please check your network connection" = "Пожалуйста, проверьте ваше подключение к сети";
 
 /* No comment provided by engineer. */
-"Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
+"Please enter a valid gravatar email ID." = "Пожалуйста, введите правильный gravatar email ID.";
 
 /* No comment provided by engineer. */
-"Please enter a valid image URL." = "Please enter a valid image URL.";
+"Please enter a valid image URL." = "Пожалуйста, введите правильную ссылку на изображение.";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Пожалуйста, введите PIN для обновления кошелька";
@@ -1521,7 +1521,7 @@
 "Please write it down" = "Пожалуйста, запишите её";
 
 /* No comment provided by engineer. */
-"Preview Invitation" = "Preview Invitation";
+"Preview Invitation" = "Предпросмотр приглашения";
 
 /* No comment provided by engineer. */
 "Previously used at: " = "Ранее использовалось с:";
@@ -1551,7 +1551,7 @@
 "Public key (legacy)" = "Публичный ключ (legacy)";
 
 /* No comment provided by engineer. */
-"Public URL" = "Public URL";
+"Public URL" = "Публичная ссылка";
 
 /* Coinbase/Buy Dash */
 "Purchase" = "Купить";
@@ -1671,10 +1671,10 @@
 "Rewards" = "Вознаграждения";
 
 /* No comment provided by engineer. */
-"Save" = "Save";
+"Save" = "Сохранить";
 
 /* No comment provided by engineer. */
-"Save Changes" = "Save Changes";
+"Save Changes" = "Сохранить изменения";
 
 /* No comment provided by engineer. */
 "Scan" = "Скан.";
@@ -1725,7 +1725,7 @@
 "Searching for username %@ on the Dash Network" = "Поиск имени пользователя %@ в сети Dash";
 
 /* No comment provided by engineer. */
-"Secure Your Wallet" = "Secure Your Wallet";
+"Secure Your Wallet" = "Сохранить кошелёк";
 
 /* No comment provided by engineer. */
 "Security" = "Безопасность";
@@ -1737,7 +1737,7 @@
 "See on Uphold" = "Посмотреть на Uphold";
 
 /* No comment provided by engineer. */
-"Select" = "Select";
+"Select" = "Выбрать";
 
 /* Coinbase */
 "Select a coin" = "Выбрать монету";
@@ -1746,7 +1746,7 @@
 "Select a service" = "Выбрать сервис";
 
 /* No comment provided by engineer. */
-"Select from Gallery" = "Select from Gallery";
+"Select from Gallery" = "Выбрать из галереи";
 
 /* CoinJoin */
 "Select mixing level" = "Select mixing level";
@@ -1770,13 +1770,13 @@
 "Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "Отправьте %@ Dash с основного Dash адреса, который вы сейчас используете с аккаунтом CrowdNode";
 
 /* No comment provided by engineer. */
-"Send again" = "Send again";
+"Send again" = "Отправить ещё раз";
 
 /* No comment provided by engineer. */
 "Send Contact Request" = "Отправить запрос на добавление в контакты";
 
 /* No comment provided by engineer. */
-"Send Invitation" = "Send Invitation";
+"Send Invitation" = "Отправить приглашение";
 
 /* Coinbase
    CrowdNode */
@@ -1786,7 +1786,7 @@
 "Send to" = "Отправить";
 
 /* No comment provided by engineer. */
-"Send to a Contact" = "Send to a Contact";
+"Send to a Contact" = "Отправить человеку в списке контактов";
 
 /* No comment provided by engineer. */
 "Send to contact" = "Send to contact";
@@ -1801,7 +1801,7 @@
 "Sending" = "Отправка";
 
 /* No comment provided by engineer. */
-"Sending Contact Request" = "Sending Contact Request";
+"Sending Contact Request" = "Отправляется запрос на добавление в контакты";
 
 /* No comment provided by engineer. */
 "Sending to" = "Отправка";
@@ -1840,7 +1840,7 @@
 "Set PIN" = "Установить PIN";
 
 /* No comment provided by engineer. */
-"Set Your PIN" = "Set Your PIN";
+"Set Your PIN" = "Установите PIN";
 
 /* No comment provided by engineer. */
 "Settings" = "Настройки";
@@ -1915,7 +1915,7 @@
 "Start Mixing" = "Start Mixing";
 
 /* Step 1 */
-"Step %ld" = "Step %ld";
+"Step %ld" = "Шаг %ld";
 
 /* CoinJoin */
 "Stop Mixing" = "Stop Mixing";
@@ -1954,10 +1954,10 @@
 "Syncing…" = "Синхронизация...";
 
 /* No comment provided by engineer. */
-"Tag for your reference" = "Tag for your reference";
+"Tag for your reference" = "Примечание";
 
 /* No comment provided by engineer. */
-"Take a Photo from Camera" = "Take a Photo from Camera";
+"Take a Photo from Camera" = "Сделать фото с камеры";
 
 /* Enter Address Screen */
 "Tap the address from the clipboard to paste it" = "Чтобы вставить адрес из буфера обмена, нажмите на него";
@@ -1981,19 +1981,19 @@
 "The code is incorrect. Please check and try again!" = "Неверный код. Попробуйте ещё раз!";
 
 /* CrowdNode */
-"The Dash Network is driven by a number of Masternodes which is an essential part of facilitating payments." = "Сеть Dash работает на основе мастернод, которые играют важную роль в проведении платежей";
+"The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "Сеть Dash работает на основе мастернод, которые играют важную роль в проведении платежей";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Dash был успешно зачислен на ваш аккаунт Coinbase. Но при переводе его на Dash Wallet на этом устройстве произошла проблема.";
 
 /* Don't translate 'Imgur' */
-"The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
+"The image you select will be uploaded to Imgur anonymously." = "Выбранное изображение будет загружено на Imgur анонимно.";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "Минимальная сумма для отправки составляет %@";
 
 /* No comment provided by engineer. */
-"them (Fetching Info)" = "them (Fetching Info)";
+"them (Fetching Info)" = "их (Получение информации)";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "У вас нет новых уведомлений";
@@ -2109,31 +2109,31 @@
 "Type" = "Type";
 
 /* No comment provided by engineer. */
-"Unable to accept contact request" = "Unable to accept contact request";
+"Unable to accept contact request" = "Не удалось принять запрос на добавление в контакты";
 
 /* No comment provided by engineer. */
 "Unable to connect" = "Не удалось подключиться";
 
 /* No comment provided by engineer. */
-"Unable to fetch contact details" = "Unable to fetch contact details";
+"Unable to fetch contact details" = "Не удалось получить контактные данные";
 
 /* No comment provided by engineer. */
-"Unable to fetch image. Please enter a valid image URL or check your connection." = "Unable to fetch image. Please enter a valid image URL or check your connection.";
+"Unable to fetch image. Please enter a valid image URL or check your connection." = "Не удалось загрузить изображение. Пожалуйста, введите правильную ссылку на изображение или проверьте подключение к сети";
 
 /* No comment provided by engineer. */
-"Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.";
+"Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Не удалось загрузить Gravatar. Пожалуйста, введите правильный адрес электронной почты в gravatar.";
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Не удалось получить новый QR-код";
 
 /* No comment provided by engineer. */
-"Unable to provide suggestions" = "Unable to provide suggestions";
+"Unable to provide suggestions" = "Не удалось представить рекомендации";
 
 /* No comment provided by engineer. */
-"Unable to send contact request" = "Unable to send contact request";
+"Unable to send contact request" = "Не удалось отправить запрос на добавление в контакты";
 
 /* No comment provided by engineer. */
-"Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";
+"Unable to upload your picture. Please try again." = "Не удалось загрузить изображение. Пожалуйста, попробуйте ещё раз.";
 
 /* No comment provided by engineer. */
 "Unknown" = "Неизвестный";
@@ -2157,13 +2157,13 @@
 "Updating Price" = "Обновление цен";
 
 /* No comment provided by engineer. */
-"Updating Profile on Dash Network" = "Updating Profile on Dash Network";
+"Updating Profile on Dash Network" = "Обновление профиля в сети Dash";
 
 /* No comment provided by engineer. */
-"Upgrade" = "Upgrade";
+"Upgrade" = "Обновление";
 
 /* No comment provided by engineer. */
-"Upgrade to Evolution" = "Upgrade to Evolution";
+"Upgrade to Evolution" = "Обновиться до Evolution";
 
 /* No comment provided by engineer. */
 "Upgrading to DashPay" = "Обновление до DashPay";
@@ -2172,13 +2172,13 @@
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
-"Upload Error" = "Upload Error";
+"Upload Error" = "Ошибка при обновлении";
 
 /* No comment provided by engineer. */
-"Upload your picture, personalize your identity" = "Upload your picture, personalize your identity";
+"Upload your picture, personalize your identity" = "Загрузите своё изображение, персонализируйте свой ID";
 
 /* No comment provided by engineer. */
-"Uploading your picture to the network" = "Uploading your picture to the network";
+"Uploading your picture to the network" = "Изображение загружается в сеть";
 
 /* Explore Dash/Filters */
 "Use gift card" = "Применить подарочный сертификат";
@@ -2190,13 +2190,13 @@
 "Used at: " = "Использовалось с:";
 
 /* No comment provided by engineer. */
-"User (Fetching Info)" = "User (Fetching Info)";
+"User (Fetching Info)" = "Пользователь (Получение информации)";
 
 /* No comment provided by engineer. */
-"Username already found" = "Username already found";
+"Username already found" = "Имя пользователя уже найдено";
 
 /* No comment provided by engineer. */
-"Username available" = "Username available";
+"Username available" = "Имя пользователя доступно";
 
 /* No comment provided by engineer. */
 "Username taken" = "Имя пользователя уже занято";
@@ -2205,7 +2205,7 @@
 "Username voting" = "Username voting";
 
 /* No comment provided by engineer. */
-"Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
+"Users that matches %@ who are currently not in your contacts" = "Пользователи, похожие на %@, которых ещё нет в вашем списке контактов";
 
 /* CrowdNode Portal */
 "Validating address…" = "Подтверждение адреса...";
@@ -2310,7 +2310,7 @@
 "Welcome" = "Добро пожаловать";
 
 /* No comment provided by engineer. */
-"Welcome to DashPay" = "Welcome to DashPay";
+"Welcome to DashPay" = "Добро пожаловать в DashPay";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = " Когда эта транзакция будет подтверждена, другой кошелёк будет бесполезен и не должен быть повторно использован в целях безопасности.";
@@ -2353,13 +2353,13 @@
 "Withdrawal requested" = "Запрос на вывод средств отправлен";
 
 /* No comment provided by engineer. */
-"Would you like to accept the invitation?" = "Would you like to accept the invitation?";
+"Would you like to accept the invitation?" = "Хотите принять приглашение?";
 
 /* Coinbase */
-"Would you like to make a deposit for your purchase using a linked bank account?" = "Would you like to make a deposit for your purchase using a linked bank account?";
+"Would you like to make a deposit for your purchase using a linked bank account?" = "Хотите внести депозит за покупку, используя привязанный банковский счет?";
 
 /* No comment provided by engineer. */
-"Would you like to save the changes you made to your profile?" = "Would you like to save the changes you made to your profile?";
+"Would you like to save the changes you made to your profile?" = "Хотите сохранить изменения, которые вы внесли в профиль?";
 
 /* No comment provided by engineer. */
 "Yes" = "Да";
@@ -2374,7 +2374,7 @@
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Вы собираетесь удалить кошелек с этого устройства. Средства на этом кошельке смогут быть доступны, только если у Вас есть фраза восстановления.";
 
 /* No comment provided by engineer. */
-"You can always delete the image uploaded, as long as you have access to this wallet." = "You can always delete the image uploaded, as long as you have access to this wallet.";
+"You can always delete the image uploaded, as long as you have access to this wallet." = "Пока у вас есть доступ к этому кошельку, вы всегда можете удалить загруженное изображение.";
 
 /* No comment provided by engineer. */
 "You can authenticate with Face ID for payments below" = "В дальнейшем Вам будут доступны платежи через Face ID";
@@ -2392,13 +2392,13 @@
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "Здесь можно найти подробную информацию о внесении и выводе средств, а также о вознаграждениях.";
 
 /* No comment provided by engineer. */
-"You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
+"You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "Можно задать любую публично доступную ссылку, чтобы её смогли видеть другие пользователи сети Dash";
 
 /* No comment provided by engineer. */
-"You cannot claim this invite since you already have a Dash username" = "You cannot claim this invite since you already have a Dash username";
+"You cannot claim this invite since you already have a Dash username" = "Нельзя откликнуться на это приглашение, потому что у вас уже есть имя пользователя Dash";
 
 /* No comment provided by engineer. */
-"You do not have any contacts at the moment" = "You do not have any contacts at the moment";
+"You do not have any contacts at the moment" = "Сейчас в вашем списке контактов никого нет";
 
 /* Coinbase */
 "You don’t have enough balance" = "Средств на балансе недостаточно";
@@ -2407,10 +2407,10 @@
 "You exceeded the authorization limit on Coinbase." = "Превышен лимит авторизаций на Coinbase.";
 
 /* No comment provided by engineer. */
-"You have been invited by %@. Start using Dash cryptocurrency." = "You have been invited by %@. Start using Dash cryptocurrency.";
+"You have been invited by %@. Start using Dash cryptocurrency." = "Вас пригласил %@. Начните пользоваться криптовалютой Dash.";
 
 /* No comment provided by engineer. */
-"You have chose \"%@\" as your username. Username cannot be changed once it is registered." = "You have chose \"%@\" as your username. Username cannot be changed once it is registered.";
+"You have chose \"%@\" as your username. Username cannot be changed once it is registered." = "Вы выбрали \"%@\" в качестве имени пользователя. После регистрации смена имени пользователя будет невозможна.";
 
 /* No comment provided by engineer. */
 "You have insufficient funds to proceed" = "Недостаточно средств для продолжения.";
@@ -2422,7 +2422,7 @@
 "You must enter your PIN in order to enter Dash Wallet" = "Вы должны ввести PIN для входа в Dash Wallet";
 
 /* No comment provided by engineer. */
-"You need at least %@ Dash to create an invitation" = "You need at least %@ Dash to create an invitation";
+"You need at least %@ Dash to create an invitation" = "Чтобы создать приглашение, у вас должно быть не менее %@Dash";
 
 /* CrowdNode */
 "You need at least %@ on your Dash Wallet" = "В вашем Dash Wallet должно быть не менее %@ Dash";
@@ -2485,13 +2485,13 @@
 "Your deposit to CrowdNode is received." = "Ваши средства зачислены на CrowdNode.";
 
 /* No comment provided by engineer. */
-"Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded.";
+"Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Введёный адрес электронной почты нигде не сохраняется - ни в кошельке DashPay, ни на серверах. Он нужен лишь единожды для получения информации с Gravatar.";
 
 /* No comment provided by engineer. */
-"Your invitation from %@ has been already claimed" = "Your invitation from %@ has been already claimed";
+"Your invitation from %@ has been already claimed" = "Приглашение от %@уже подтверждено. ";
 
 /* No comment provided by engineer. */
-"Your invitation from %@ is not valid" = "Your invitation from %@ is not valid";
+"Your invitation from %@ is not valid" = "Приглашение от %@имеет недопустимый формат.";
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Ваше местоположение используется для отображения его на карте, показа банкоматов в выбранном радиусе и улучшения результатов поиска.";

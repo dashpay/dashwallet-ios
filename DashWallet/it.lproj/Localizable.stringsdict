@@ -35,7 +35,7 @@
 			<key>many</key>
 			<string>%d mercanti in %@</string>
 			<key>other</key>
-			<string>%d merchanti in %@</string>
+			<string>%d commercianti in %@</string>
 		</dict>
 	</dict>
 	<key>%d merchant(s)</key>
@@ -53,7 +53,7 @@
 			<key>many</key>
 			<string>%d mercanti</string>
 			<key>other</key>
-			<string>%d mercanti</string>
+			<string>%d commercianti</string>
 		</dict>
 	</dict>
 	<key>%d transaction(s)</key>
