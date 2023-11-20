@@ -27,6 +27,11 @@ class UsernameVotingViewController: UIViewController {
     @IBOutlet private var filterView: UIView!
     @IBOutlet private var filterViewTitle: UILabel!
     @IBOutlet private var filterViewSubtitle: UILabel!
+    private var quickVotingButton: UIBarButtonItem!
+    
+    @objc func quickVoteActions() {
+        present(QuickVoteViewController.controller(viewModel.filteredRequests.count), animated: true)
+    }
     
     private var dataSource: DataSource! = nil
     
@@ -99,6 +104,15 @@ extension UsernameVotingViewController {
         let filterViewTap = UITapGestureRecognizer(target: self, action: #selector(showFilters))
         filterView.addGestureRecognizer(filterViewTap)
         filterViewTitle.text = NSLocalizedString("Filtered by", comment: "")
+        
+        let button = UIBarButtonItem(title: NSLocalizedString("Quick Voting", comment: "Voting"), style: .plain, target: self, action: #selector(quickVoteActions))
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.dw_mediumFont(ofSize: 13),
+            .foregroundColor: UIColor.dw_dashBlue()
+        ]
+        button.setTitleTextAttributes(attributes, for: .normal)
+        button.setTitleTextAttributes(attributes, for: .highlighted)
+        self.quickVotingButton = button
     }
     
     private func configureObservers() {
@@ -106,14 +120,46 @@ extension UsernameVotingViewController {
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] data in
+                self?.updateQuickVoteButton()
                 self?.headerView?.set(duplicateAmount: data.count)
                 self?.reloadDataSource(data: data)
+            }
+            .store(in: &cancellableBag)
+        
+        viewModel.$lastVoteAction
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] action in
+                switch action {
+                case .approved:
+                    self?.view.dw_showInfoHUD(withText: NSLocalizedString("Your vote was submitted", comment: "Voting"))
+                case .revoked:
+                    self?.view.dw_showInfoHUD(withText: NSLocalizedString("Your vote was cancelled", comment: ""))
+                default:
+                    break
+                }
+                self?.viewModel.onVoteActionHandled()
+            }
+            .store(in: &cancellableBag)
+        
+        viewModel.$masternodeKeys
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.updateQuickVoteButton()
             }
             .store(in: &cancellableBag)
     }
     
     @objc func mockData() {
         viewModel.addMockRequest()
+    }
+    
+    private func updateQuickVoteButton() {
+        let requests = viewModel.filteredRequests
+        let keys = viewModel.masternodeKeys
+        self.navigationItem.rightBarButtonItem = requests.isEmpty || keys.isEmpty ?
+            nil : self.quickVotingButton
     }
 }
 

@@ -70,7 +70,7 @@ final class GroupedRequestCell: UITableViewCell {
     private let container: UIStackView = {
         let stackView = UIStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.backgroundColor = .systemBackground
+        stackView.backgroundColor = .dw_background()
         stackView.layer.cornerRadius = 10
         stackView.axis = .vertical
         return stackView
