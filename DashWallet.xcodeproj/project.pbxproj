@@ -574,6 +574,7 @@
 		75889B792AD2A04900C17F5D /* CoinJoinInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */; };
 		75889B7F2AD2D7F800C17F5D /* CoinJoin.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75889B812AD2D7F800C17F5D /* CoinJoin.storyboard */; };
 		75889B892AD2DF0200C17F5D /* CoinJoin.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75889B812AD2D7F800C17F5D /* CoinJoin.storyboard */; };
+		75A664D82B09F1EA007EFD16 /* VotingInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A664D72B09F1EA007EFD16 /* VotingInfoViewController.swift */; };
 		75A8C1652AE5726B0042256E /* UsernameRequestsDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1632AE5725C0042256E /* UsernameRequestsDAO.swift */; };
 		75A8C1672AE5734A0042256E /* UsernameRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1662AE5734A0042256E /* UsernameRequest.swift */; };
 		75A8C1692AE6A1AC0042256E /* VotingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1682AE6A1AC0042256E /* VotingViewModel.swift */; };
@@ -583,7 +584,7 @@
 		75CED09E2ACFD0ED0095F10C /* CoinbaseDepositRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CED09D2ACFD0ED0095F10C /* CoinbaseDepositRequest.swift */; };
 		75CED0A02ACFED200095F10C /* CoinbaseDepositResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CED09F2ACFED200095F10C /* CoinbaseDepositResponse.swift */; };
 		75D5F3CE191EC270004AB296 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3CD191EC270004AB296 /* main.m */; };
-		75D6561C2B07935000D1A902 /* UsernameInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D6561B2B07935000D1A902 /* UsernameInfoViewController.swift */; };
+		75D6561C2B07935000D1A902 /* WelcomeToDashpayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D6561B2B07935000D1A902 /* WelcomeToDashpayViewController.swift */; };
 		75D6561D2B07936100D1A902 /* UsernameRequests.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75D656192B0792F500D1A902 /* UsernameRequests.storyboard */; };
 		75E2F3C82AA4CF1900C3B458 /* Topper-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75E2F3C72AA4CF1900C3B458 /* Topper-Info.plist */; };
 		75E2F3CA2AA4D1B900C3B458 /* Topper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E2F3C92AA4D1B900C3B458 /* Topper.swift */; };
@@ -2410,6 +2411,7 @@
 		75889B802AD2D7F800C17F5D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/CoinJoin.storyboard; sourceTree = "<group>"; };
 		759816E519357D6F005060EA /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
 		759816E619357D6F005060EA /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
+		75A664D72B09F1EA007EFD16 /* VotingInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingInfoViewController.swift; sourceTree = "<group>"; };
 		75A8C1632AE5725C0042256E /* UsernameRequestsDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequestsDAO.swift; sourceTree = "<group>"; };
 		75A8C1662AE5734A0042256E /* UsernameRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequest.swift; sourceTree = "<group>"; };
 		75A8C1682AE6A1AC0042256E /* VotingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingViewModel.swift; sourceTree = "<group>"; };
@@ -2424,7 +2426,7 @@
 		75D5F3CF191EC270004AB296 /* DashWallet-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DashWallet-Prefix.pch"; sourceTree = "<group>"; };
 		75D5F3E5191EC270004AB296 /* DashWalletTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashWalletTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D656192B0792F500D1A902 /* UsernameRequests.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = UsernameRequests.storyboard; sourceTree = "<group>"; };
-		75D6561B2B07935000D1A902 /* UsernameInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameInfoViewController.swift; sourceTree = "<group>"; };
+		75D6561B2B07935000D1A902 /* WelcomeToDashpayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeToDashpayViewController.swift; sourceTree = "<group>"; };
 		75DE02411B0EB79A0027FF08 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75DE02491B0EB7C80027FF08 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75DE024D1B0EB7FC0027FF08 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -6117,7 +6119,8 @@
 		75D656182B0792AB00D1A902 /* Usernames */ = {
 			isa = PBXGroup;
 			children = (
-				75D6561B2B07935000D1A902 /* UsernameInfoViewController.swift */,
+				75D6561B2B07935000D1A902 /* WelcomeToDashpayViewController.swift */,
+				75A664D72B09F1EA007EFD16 /* VotingInfoViewController.swift */,
 				7565D5942B08B35F0092C9BA /* RequestUsernameViewModel.swift */,
 				75D656192B0792F500D1A902 /* UsernameRequests.storyboard */,
 			);
@@ -9404,6 +9407,7 @@
 				C9D2C8462A320AA000D15901 /* DWDPAmountContactView.m in Sources */,
 				C9D2C8472A320AA000D15901 /* DWBaseTransactionListDataProvider.m in Sources */,
 				C9D2C8482A320AA000D15901 /* CoinbaseTransactionsRequest.swift in Sources */,
+				75A664D82B09F1EA007EFD16 /* VotingInfoViewController.swift in Sources */,
 				C943B3372A408CED00AF23C5 /* DWEditProfileTextFieldCell.m in Sources */,
 				C9D2C8492A320AA000D15901 /* DWAppRootViewController.m in Sources */,
 				C9D2C84A2A320AA000D15901 /* (null) in Sources */,
@@ -9552,7 +9556,7 @@
 				C9D2C8CD2A320AA000D15901 /* StakingInfoDialogController.swift in Sources */,
 				C9D2C8CF2A320AA000D15901 /* TwoFactorAuthViewController.swift in Sources */,
 				C9D2C8D02A320AA000D15901 /* Taxes.swift in Sources */,
-				75D6561C2B07935000D1A902 /* UsernameInfoViewController.swift in Sources */,
+				75D6561C2B07935000D1A902 /* WelcomeToDashpayViewController.swift in Sources */,
 				C9D2C8D12A320AA000D15901 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
 				C9D2C8D22A320AA000D15901 /* CoinbaseAPIClient.swift in Sources */,
 				C943B4ED2A40A54600AF23C5 /* DWPendingContactInfoView.m in Sources */,
@@ -10501,7 +10505,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 153;
+				CURRENT_PROJECT_VERSION = 156;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -10637,7 +10641,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 153;
+				CURRENT_PROJECT_VERSION = 156;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -10772,7 +10776,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 153;
+				CURRENT_PROJECT_VERSION = 156;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -10917,7 +10921,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 153;
+				CURRENT_PROJECT_VERSION = 156;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;

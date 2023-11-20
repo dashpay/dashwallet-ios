@@ -17,7 +17,7 @@
 
 import Combine
 
-class UsernameInfoViewController: UIViewController {
+class WelcomeToDashPayViewController: UIViewController {
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel = RequestUsernameViewModel.shared
     
@@ -32,8 +32,8 @@ class UsernameInfoViewController: UIViewController {
     @IBOutlet private var continueButton: UIButton!
     
     @objc
-    static func controller() -> UsernameInfoViewController {
-        vc(UsernameInfoViewController.self, from: sb("UsernameRequests"))
+    static func controller() -> WelcomeToDashPayViewController {
+        vc(WelcomeToDashPayViewController.self, from: sb("UsernameRequests"))
     }
     
     override func viewDidLoad() {
@@ -44,11 +44,11 @@ class UsernameInfoViewController: UIViewController {
     
     @IBAction
     func continueAction() {
-        
+        self.navigationController?.pushViewController(VotingInfoViewController.controller(), animated: true)
     }
 }
 
-extension UsernameInfoViewController {
+extension WelcomeToDashPayViewController {
     private func configureLayout() {
         titleLabel.text = NSLocalizedString("Welcome to Dash Pay", comment: "Usernames")
         createUsernameTitle.text = NSLocalizedString("Create a username", comment: "Usernames")
