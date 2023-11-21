@@ -46,12 +46,14 @@ final class ReceiveContentView: UIStackView {
     func addressButtonAction() {
         feedbackGenerator.notificationOccurred(.success)
         model.copyAddressToPasteboard()
+        dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
     }
 
     @IBAction
     func qrButtonAction() {
         feedbackGenerator.notificationOccurred(.success)
         model.copyQRImageToPasteboard()
+        dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
     }
     
 #if DASHPAY
@@ -59,6 +61,7 @@ final class ReceiveContentView: UIStackView {
     private func copyUsernameAction() {
         feedbackGenerator.notificationOccurred(.success)
         model.copyUsernameToPasteboard()
+        dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
     }
 #endif
 
