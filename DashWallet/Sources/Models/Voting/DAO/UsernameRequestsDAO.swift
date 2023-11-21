@@ -21,12 +21,13 @@ import SQLite
 // MARK: - UsernameRequestsDAO
 
 protocol UsernameRequestsDAO {
-    func create(dto: UsernameRequest)
-    func all(onlyWithLinks: Bool) -> [UsernameRequest]
-    func duplicates(onlyWithLinks: Bool) -> [UsernameRequest]
+    func create(dto: UsernameRequest) async
+    func all(onlyWithLinks: Bool) async -> [UsernameRequest]
+    func duplicates(onlyWithLinks: Bool) async -> [UsernameRequest]
     func get(by requestId: String) -> UsernameRequest?
-    func update(dto: UsernameRequest)
+    func update(dto: UsernameRequest) async
     func delete(dto: UsernameRequest)
+    func vote(for requestIds: [String], voteIncrement: Int) async
     func deleteAll()
 }
 
@@ -38,7 +39,8 @@ class UsernameRequestsDAOImpl: NSObject, UsernameRequestsDAO {
 
     private let queue = DispatchQueue(label: "org.dash.infrastructure.queue.username-requests-dao", attributes: .concurrent)
 
-    func create(dto: UsernameRequest) {
+    func create(dto: UsernameRequest) async {
+        
         do {
             let usernameRequest = UsernameRequest.table.insert(or: .replace,
                                                           UsernameRequest.requestId <- dto.requestId,
@@ -48,14 +50,10 @@ class UsernameRequestsDAOImpl: NSObject, UsernameRequestsDAO {
                                                           UsernameRequest.link <- dto.link,
                                                           UsernameRequest.votes <- dto.votes,
                                                           UsernameRequest.isApproved <- dto.isApproved)
-            try db.run(usernameRequest)
-
+            try await execute(usernameRequest)
+            self.cache[dto.requestId] = dto
         } catch {
             print(error)
-        }
-
-        queue.async(flags: .barrier) { [weak self] in
-            self?.cache[dto.requestId] = dto
         }
     }
 
@@ -91,8 +89,8 @@ class UsernameRequestsDAOImpl: NSObject, UsernameRequestsDAO {
         return v
     }
 
-    func update(dto: UsernameRequest) {
-        create(dto: dto)
+    func update(dto: UsernameRequest) async {
+        await create(dto: dto)
     }
 
     func delete(dto: UsernameRequest) {
@@ -115,8 +113,10 @@ class UsernameRequestsDAOImpl: NSObject, UsernameRequestsDAO {
     static let shared = UsernameRequestsDAOImpl()
 }
 
+// MARK: - Queries
+
 extension UsernameRequestsDAOImpl {
-    func all(onlyWithLinks: Bool) -> [UsernameRequest] {
+    func all(onlyWithLinks: Bool) async -> [UsernameRequest] {
         let linksParam = onlyWithLinks ? 1 : 0
         let query = """
             SELECT * FROM username_requests 
@@ -126,7 +126,7 @@ extension UsernameRequestsDAOImpl {
         """
         
         do {
-            return try self.execute(query: query)
+            return try await self.execute(query: query)
         } catch {
             print(error)
         }
@@ -134,7 +134,7 @@ extension UsernameRequestsDAOImpl {
         return []
     }
     
-    func duplicates(onlyWithLinks: Bool) -> [UsernameRequest] {
+    func duplicates(onlyWithLinks: Bool) async -> [UsernameRequest] {
         let linksParam = onlyWithLinks ? 1 : 0
         let query = """
             SELECT * FROM username_requests
@@ -146,7 +146,7 @@ extension UsernameRequestsDAOImpl {
         """
         
         do {
-            return try self.execute(query: query)
+            return try await self.execute(query: query)
         } catch {
             print(error)
         }
@@ -154,7 +154,54 @@ extension UsernameRequestsDAOImpl {
         return []
     }
     
-    private func execute<Item: RowDecodable>(query: String) throws -> [Item] {
-        try db.prepare(query).prepareRowIterator().map { Item(row: $0) }
+    func vote(for requestIds: [String], voteIncrement: Int) async {
+        let idsPlaceholder = requestIds.map { _ in "?" }.joined(separator: ", ")
+        let query = """
+            UPDATE username_requests
+            SET isApproved = 1, votes = votes + ?
+                WHERE requestId IN (\(idsPlaceholder))
+        """
+
+        do {
+            let binding: [Binding?] = [voteIncrement] + requestIds
+            let _: [UsernameRequest] = try await self.execute(query: query, bindings: binding)
+        } catch {
+            print(error)
+        }
+    }
+
+}
+
+// MARK: - async / await
+
+extension UsernameRequestsDAOImpl {
+    private func execute<Item: RowDecodable>(query: String, bindings: [Binding?] = []) async throws -> [Item] {
+        return try await withCheckedThrowingContinuation { continuation in
+            DispatchQueue.global(qos: .utility).async { [weak self] in
+                guard let self = self else { return continuation.resume(returning: []) }
+                    
+                do {
+                    let results = try self.db.prepare(query, bindings).prepareRowIterator().map { Item(row: $0) }
+                    continuation.resume(returning: results)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
+    private func execute(_ query: Insert) async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            DispatchQueue.global(qos: .utility).async { [weak self] in
+                guard let self = self else { return continuation.resume() }
+                
+                do {
+                    try db.run(query)
+                    continuation.resume()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 }

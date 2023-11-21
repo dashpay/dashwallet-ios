@@ -113,7 +113,7 @@ class VotingFiltersViewController: UIViewController {
     }
 
     class func controller() -> VotingFiltersViewController {
-        return VotingFiltersViewController.initiate(from: sb("UsernameVoting"))
+        VotingFiltersViewController.initiate(from: sb("UsernameVoting"))
     }
 }
 
@@ -290,34 +290,6 @@ extension VotingFiltersViewController {
 
     private func updateResetButton() {
         resetCell?.isEnabled = model.canReset
-    }
-}
-
-
-// MARK: - VotingFilterItemSelectableCell
-
-class VotingFilterItemSelectableCell: VotingItemCell {
-    @IBOutlet var checkboxButton: UIButton!
-
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-        checkboxButton.isSelected = selected
-    }
-
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        checkboxButton.isUserInteractionEnabled = false
-    }
-}
-
-
-// MARK: - VotingItemCell
-
-class VotingItemCell: UITableViewCell {
-    @IBOutlet var nameLabel: UILabel!
-
-    func update(with item: VotingFilterItem) {
-        nameLabel.text = item.title
     }
 }
 
