@@ -17,8 +17,8 @@
 
 #import "DWInvitationHistoryModel.h"
 
-#import "DWDateFormatter.h"
 #import "DWEnvironment.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

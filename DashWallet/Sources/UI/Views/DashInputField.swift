@@ -192,7 +192,7 @@ class DashInputField: UIView {
         addSubview(borderView)
 
         backgroundView = UIView()
-        backgroundView.backgroundColor = .clear
+        backgroundView.backgroundColor = .dw_background()
         backgroundView.layer.cornerRadius = 10
         backgroundView.borderWidth = 1
         addSubview(backgroundView)
@@ -268,7 +268,7 @@ class DashInputField: UIView {
                 backgroundView.backgroundColor = .systemRed.withAlphaComponent(0.1)
             } else {
                 backgroundView.borderColor = isEditing ? .dw_dashBlue() : .darkGray.withAlphaComponent(0.5)
-                backgroundView.backgroundColor = .clear
+                backgroundView.backgroundColor = .dw_background()
             }
         } else {
             borderView.isHidden = true

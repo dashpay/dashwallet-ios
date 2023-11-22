@@ -24,7 +24,8 @@ protocol UsernameRequestsDAO {
     func create(dto: UsernameRequest) async
     func all(onlyWithLinks: Bool) async -> [UsernameRequest]
     func duplicates(onlyWithLinks: Bool) async -> [UsernameRequest]
-    func get(by requestId: String) -> UsernameRequest?
+    func get(byRequestId id: String) async -> UsernameRequest?
+    func get(byUsername name: String) async -> UsernameRequest?
     func update(dto: UsernameRequest) async
     func delete(dto: UsernameRequest)
     func vote(for requestIds: [String], voteIncrement: Int) async
@@ -57,21 +58,35 @@ class UsernameRequestsDAOImpl: NSObject, UsernameRequestsDAO {
         }
     }
 
-    func get(by requestId: String) -> UsernameRequest? {
-        if let cached = cachedValue(by: requestId) {
+    func get(byRequestId id: String) async -> UsernameRequest? {
+        if let cached = cachedValue(by: id) {
             return cached
         }
 
-        let statement = UsernameRequest.table.filter(UsernameRequest.requestId == requestId)
+        let statement = UsernameRequest.table.filter(UsernameRequest.requestId == id)
 
         do {
-            for row in try db.prepare(statement) {
-                let userInfo = UsernameRequest(row: row)
-                queue.async(flags: .barrier) { [weak self] in
-                    self?.cache[requestId] = userInfo
-                }
-                return userInfo
+            let results: [UsernameRequest] = try await prepare(statement)
+            self.cache[id] = results.first
+            return results.first
+        } catch {
+            print(error)
+        }
+
+        return nil
+    }
+    
+    func get(byUsername name: String) async -> UsernameRequest? {
+        let statement = UsernameRequest.table.filter(UsernameRequest.username == name)
+
+        do {
+            let results: [UsernameRequest] = try await prepare(statement)
+            
+            if let request = results.first {
+                self.cache[request.requestId] = request
             }
+            
+            return results.first
         } catch {
             print(error)
         }
@@ -201,6 +216,29 @@ extension UsernameRequestsDAOImpl {
                 } catch {
                     continuation.resume(throwing: error)
                 }
+            }
+        }
+    }
+    
+    private func prepare<T: RowDecodable>(_ statement: QueryType) async throws -> [T] {
+        return try await withCheckedThrowingContinuation { continuation in
+            DispatchQueue.global(qos: .utility).async { [weak self] in
+                guard let self = self else { return continuation.resume(returning: []) }
+                
+                var result: [T] = []
+                
+                do {
+                    for row in try db.prepare(statement) {
+                        let rowItem = T(row: row)
+                        result.append(rowItem)
+                    }
+                    
+                    continuation.resume(returning: result)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+                
+                
             }
         }
     }

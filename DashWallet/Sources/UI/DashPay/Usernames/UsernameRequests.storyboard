@@ -462,6 +462,9 @@
                                 <state key="normal" title="OK">
                                     <color key="titleColor" name="DashBlueColor"/>
                                 </state>
+                                <connections>
+                                    <action selector="continueAction" destination="Ajr-lL-eBh" eventType="touchUpInside" id="wwb-54-SUS"/>
+                                </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="o4j-2u-Igg"/>

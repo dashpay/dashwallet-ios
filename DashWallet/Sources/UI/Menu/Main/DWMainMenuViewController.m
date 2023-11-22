@@ -213,7 +213,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)mainMenuContentView:(DWMainMenuContentView *)view joinDashPayAction:(UIButton *)sender {
-    WelcomeToDashPayViewController *controller = [WelcomeToDashPayViewController controller];
+    UIViewController *controller = [RequestUsernameVMObjcWrapper getRootVC];
     // TODO: voting switch ?
 //    DWDashPaySetupFlowController *controller =
 //        [[DWDashPaySetupFlowController alloc]

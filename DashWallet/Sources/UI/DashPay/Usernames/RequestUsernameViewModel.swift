@@ -17,17 +17,43 @@
 
 import Combine
 
+@objc
+public class RequestUsernameVMObjcWrapper: NSObject {
+    @objc
+    public class func getRootVC() -> UIViewController {
+        let vm = RequestUsernameViewModel.shared
+        
+        if vm.shouldShowFirstTimeInfo {
+            return WelcomeToDashPayViewController.controller()
+        } else {
+            return RequestUsernameViewController.controller()
+        }
+    }
+}
+
 class RequestUsernameViewModel {
     private var cancellableBag = Set<AnyCancellable>()
+    private let dao: UsernameRequestsDAO = UsernameRequestsDAOImpl.shared
+    private let prefs = VotingPrefs.shared
+    
     @Published private(set) var hasEnoughBalance = false
     var minimumRequiredBalance: String {
         return DWDP_MIN_BALANCE_TO_CREATE_USERNAME.formattedDashAmount
+    }
+    
+    var shouldShowFirstTimeInfo: Bool {
+        get { !prefs.requestInfoShown }
+        set { prefs.requestInfoShown = !newValue }
     }
     
     public static let shared: RequestUsernameViewModel = .init()
     
     init() {
         observeBalance()
+    }
+    
+    func hasRequests(for username: String) async -> Bool {
+        return await dao.get(byUsername: username) != nil
     }
     
     private func observeBalance() {
