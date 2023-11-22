@@ -146,11 +146,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)updateHeader {
-    UIView *header = nil;
-    if ([self.dashPayReady shouldShowCreateUserNameButton]) {
-        header = self.joinHeaderView;
-    }
-    else if (self.userModel.blockchainIdentity != nil) {
+    UIView *header = self.joinHeaderView;
+    
+    if (self.userModel.blockchainIdentity != nil) {
         [self.headerView update];
         header = self.headerView;
     }

@@ -136,6 +136,9 @@
 /* No comment provided by engineer. */
 "Add your Friends & Family" = "Add your Friends & Family";
 
+/* Usernames */
+"Add your friends & family" = "Add your friends & family";
+
 /* No comment provided by engineer. */
 "Address" = "地址";
 
@@ -147,6 +150,9 @@
 
 /* Coinbase */
 "Advanced users who have a very high level of technical expertise can determine your transaction history" = "Advanced users who have a very high level of technical expertise can determine your transaction history";
+
+/* Usernames */
+"After voting is completed on %@ you can create any username that has not already been created" = "After voting is completed on %@ you can create any username that has not already been created";
 
 /* No comment provided by engineer. */
 "Agree" = "Agree";
@@ -218,7 +224,7 @@
 "As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
 
 /* CrowdNode */
-"As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode." = "由于大多数人手中没有 1000个 Dash, CrowdNode提供了一项服务, 他们通过汇集成员的存款来帮助成员获得主节点的收益.";
+"As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode.";
 
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "开启位置服务能获得更好的ATM搜索效果";
@@ -326,6 +332,9 @@
 /* Buy/Sell */
 "Buy/Sell" = "购买/出售";
 
+/* Voting */
+"By tapping the \"Vote for All\" button, you will automatically vote for all of the filtered usernames (%ld) that were submitted first" = "By tapping the \"Vote for All\" button, you will automatically vote for all of the filtered usernames (%ld) that were submitted first";
+
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "通过清除此设备, 您将无法在此设备上使用您的资金. 只有当您无法访问密码并忘记PIN时才应当这样做.";
 
@@ -334,6 +343,9 @@
 
 /* No comment provided by engineer. */
 "Cancel" = "取消";
+
+/* Voting */
+"Cancel Approval" = "Cancel Approval";
 
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "取消此交易无法撤销这笔交易订单. 您的Coinbase账户不久会将收到Dash.";
@@ -483,6 +495,9 @@
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "创建新钱包";
+
+/* Usernames */
+"Create a username" = "Create a username";
 
 /* No comment provided by engineer. */
 "Create a username, add your friends." = "Create a username, add your friends.";
@@ -693,6 +708,9 @@
 
 /* No comment provided by engineer. */
 "Enter your Gravatar Email ID" = "Enter your Gravatar Email ID";
+
+/* Voting */
+"Enter your voting key" = "Enter your voting key";
 
 /* No comment provided by engineer. */
 "Error" = "错误";
@@ -925,6 +943,9 @@
 /* No comment provided by engineer. */
 "I wrote it down" = "我已将它写下来";
 
+/* Voting */
+"Identity" = "Identity";
+
 /* CrowdNode */
 "If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "如果您丢失了密码, 您可以通过其他方式验证自己以重新获得对您CrowdNode资金的访问权限.";
 
@@ -963,6 +984,12 @@
 
 /* CrowdNode */
 "In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster.";
+
+/* Usernames */
+"In case you lose your passphrase you will lose your right to your requested username." = "In case you lose your passphrase you will lose your right to your requested username.";
+
+/* Usernames */
+"In case your request is not approved" = "In case your request is not approved";
 
 /* CrowdNode Portal */
 "In process…" = "正在进行...";
@@ -1051,6 +1078,9 @@
 /* No comment provided by engineer. */
 "Invite your family, find your friends by searching their usernames" = "Invite your family, find your friends by searching their usernames";
 
+/* Usernames */
+"Invite your family, find your friends by searching their usernames." = "Invite your family, find your friends by searching their usernames.";
+
 /* No comment provided by engineer. */
 "Invite your friends & family" = "Invite your friends & family";
 
@@ -1096,6 +1126,9 @@
 /* CrowdNode */
 "Joining the pool" = "加入资金池";
 
+/* Usernames */
+"Keep your passphrase safe" = "Keep your passphrase safe";
+
 /* No comment provided by engineer. */
 "Key Id" = "密钥 Id";
 
@@ -1135,6 +1168,9 @@
 
 /* No comment provided by engineer. */
 "Let’s Get Started" = "Let’s Get Started";
+
+/* Voting */
+"Link" = "Link";
 
 /* Dash Service Overview */
 "Link Coinbase Account" = "关联Coinbase账户";
@@ -1208,6 +1244,9 @@
 /* Map */
 "Map" = "地图";
 
+/* Voting */
+"Masternode IP address" = "Masternode IP address";
+
 /* No comment provided by engineer. */
 "Masternode Keys" = "主节点密钥";
 
@@ -1222,6 +1261,9 @@
 
 /* No comment provided by engineer. */
 "Masternode Update" = "主节点升级";
+
+/* Voting */
+"Masternode Voting Key" = "Masternode Voting Key";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "最大";
@@ -1415,8 +1457,14 @@
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "直接付款给用户名";
 
+/* Usernames */
+"Pay now and if not approved, you can create a different name without paying again" = "Pay now and if not approved, you can create a different name without paying again";
+
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "Pay to usernames. No more alphanumeric addresses";
+
+/* Usernames */
+"Pay to usernames. No more alphanumeric addresses." = "Pay to usernames. No more alphanumeric addresses.";
 
 /* Coinbase/Buy Dash */
 "Pay with" = "使用...来支付";
@@ -1468,6 +1516,9 @@
 
 /* CrowdNode */
 "per transaction" = "每笔交易";
+
+/* Usernames */
+"Personalise profile" = "Personalise profile";
 
 /* No comment provided by engineer. */
 "Personalize" = "Personalize";
@@ -1559,6 +1610,9 @@
 /* No comment provided by engineer. */
 "Quick Receive" = "快速接收";
 
+/* Voting */
+"Quick Voting" = "Quick Voting";
+
 /* No comment provided by engineer. */
 "Quorums validated: %d/%d" = "经仲裁链验证: %1$d/%2$d";
 
@@ -1634,6 +1688,9 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "报告问题";
 
+/* Voting */
+"Request details" = "Request details";
+
 /* An action */
 "Rescan" = "重新扫描";
 
@@ -1663,6 +1720,9 @@
 
 /* No comment provided by engineer. */
 "Review & Rate the app" = "对app进行评论和评分";
+
+/* Voting */
+"Review the posting below to verify the ownership of this username" = "Review the posting below to verify the ownership of this username";
 
 /* No comment provided by engineer. */
 "Reward" = "奖励";
@@ -1981,7 +2041,10 @@
 "The code is incorrect. Please check and try again!" = "验证码不正确. 请检查并重试!";
 
 /* CrowdNode */
-"The Dash Network is driven by a number of Masternodes which is an essential part of facilitating payments." = "Dash网络由众多主节点驱动, 这是令支付更便捷的重要组成部分.";
+"The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments.";
+
+/* Usernames */
+"The Dash network must vote to approve your username before it is created." = "The Dash network must vote to approve your username before it is created.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Dash已成功存入您的 Coinbase账户. 但是把 Dash转账到此设备上的 Dash钱包时出错.";
@@ -2177,6 +2240,9 @@
 /* No comment provided by engineer. */
 "Upload your picture, personalize your identity" = "Upload your picture, personalize your identity";
 
+/* Usernames */
+"Upload your picture, personalize your identity." = "Upload your picture, personalize your identity.";
+
 /* No comment provided by engineer. */
 "Uploading your picture to the network" = "Uploading your picture to the network";
 
@@ -2191,6 +2257,9 @@
 
 /* No comment provided by engineer. */
 "User (Fetching Info)" = "User (Fetching Info)";
+
+/* Voting */
+"Username" = "Username";
 
 /* No comment provided by engineer. */
 "Username already found" = "Username already found";
@@ -2250,7 +2319,13 @@
 "View Recovery Phrase" = "查看助记词";
 
 /* Voting */
+"Vote for All" = "Vote for All";
+
+/* Voting */
 "Vote only on duplicates" = "Vote only on duplicates";
+
+/* Voting */
+"Vote to Approve" = "Vote to Approve";
 
 /* Voting */
 "Votes: High to low" = "Votes: High to low";
@@ -2263,6 +2338,9 @@
 
 /* No comment provided by engineer. */
 "Voting Keys" = "投票者密钥";
+
+/* Usernames */
+"Voting will not be required forever" = "Voting will not be required forever";
 
 /* No comment provided by engineer. */
 "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "等待区块链完全同步后, 我们才能查看您的交易记录. 访问CrowdNode网站登录或注册.";
@@ -2309,8 +2387,14 @@
 /* No comment provided by engineer. */
 "Welcome" = "欢迎";
 
+/* Usernames */
+"Welcome to Dash Pay" = "Welcome to Dash Pay";
+
 /* No comment provided by engineer. */
 "Welcome to DashPay" = "Welcome to DashPay";
+
+/* Usernames */
+"What is username voting?" = "What is username voting?";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "当交易被确认后, 另一个钱包将会分文不值, 并且出于安全原因不应当再被使用.";
@@ -2386,6 +2470,9 @@
 "You can change how / when your reward earnings are paid to you." = "您可以更改向您支付奖励收入的方式 / 时间.";
 
 /* Voting */
+"You can enter your key in any of the following formats: WIF/base58/base64/hex" = "You can enter your key in any of the following formats: WIF/base58/base64/hex";
+
+/* Voting */
 "You can review all requests but you only need to vote on duplicates" = "You can review all requests but you only need to vote on duplicates";
 
 /* CrowdNode */
@@ -2411,6 +2498,9 @@
 
 /* No comment provided by engineer. */
 "You have chose \"%@\" as your username. Username cannot be changed once it is registered." = "You have chose \"%@\" as your username. Username cannot be changed once it is registered.";
+
+/* Voting */
+"You have entered an invalid key" = "You have entered an invalid key";
 
 /* No comment provided by engineer. */
 "You have insufficient funds to proceed" = "您没有足够的资金来继续操作";
@@ -2444,6 +2534,9 @@
 
 /* No comment provided by engineer. */
 "You should have at least %@ to proceed with the CrowdNode verification." = "您至少需要有%@才能进行CrowdNode验证.";
+
+/* Usernames */
+"You should have more than %@ Dash to create a username" = "You should have more than %@ Dash to create a username";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "您同样需要使用浏览器从Uphold网站退出";
@@ -2510,6 +2603,12 @@
 
 /* No comment provided by engineer. */
 "Your username %@ is being created on the Dash Network" = "您的用户名 %@ 正在Dash网络上创建中";
+
+/* No comment provided by engineer. */
+"Your vote was cancelled" = "Your vote was cancelled";
+
+/* Voting */
+"Your vote was submitted" = "Your vote was submitted";
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "您的钱包现已安全. 您可以随时在其他设备通过您的助记词找回您的账户.";

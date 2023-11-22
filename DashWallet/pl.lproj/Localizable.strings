@@ -136,6 +136,9 @@
 /* No comment provided by engineer. */
 "Add your Friends & Family" = "Dodaj Przyjaciół i Rodzinę";
 
+/* Usernames */
+"Add your friends & family" = "Add your friends & family";
+
 /* No comment provided by engineer. */
 "Address" = "Adres";
 
@@ -147,6 +150,9 @@
 
 /* Coinbase */
 "Advanced users who have a very high level of technical expertise can determine your transaction history" = "Advanced users who have a very high level of technical expertise can determine your transaction history";
+
+/* Usernames */
+"After voting is completed on %@ you can create any username that has not already been created" = "After voting is completed on %@ you can create any username that has not already been created";
 
 /* No comment provided by engineer. */
 "Agree" = "Zgadzam się";
@@ -326,6 +332,9 @@
 /* Buy/Sell */
 "Buy/Sell" = "Kupuj/Sprzedawaj";
 
+/* Voting */
+"By tapping the \"Vote for All\" button, you will automatically vote for all of the filtered usernames (%ld) that were submitted first" = "By tapping the \"Vote for All\" button, you will automatically vote for all of the filtered usernames (%ld) that were submitted first";
+
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Jeśli wyczyścisz to urządzenie, stracisz dostęp do funduszy na tym urządzeniu. Tę czynność możesz rozważyć jedynie, gdy nie masz dostępu do frazy odzyskiwania portfela oraz pinu. ";
 
@@ -334,6 +343,9 @@
 
 /* No comment provided by engineer. */
 "Cancel" = "Anuluj";
+
+/* Voting */
+"Cancel Approval" = "Cancel Approval";
 
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Anulowanie tej transakcji nie anuluje zlecenia. Wkrótce otrzymasz DASH na swoje konto na Coinbase.";
@@ -483,6 +495,9 @@
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Stwórz Nowy Portfel";
+
+/* Usernames */
+"Create a username" = "Create a username";
 
 /* No comment provided by engineer. */
 "Create a username, add your friends." = "Stwórz nazwę użytkownika, oraz dodaj przyjaciół.";
@@ -693,6 +708,9 @@
 
 /* No comment provided by engineer. */
 "Enter your Gravatar Email ID" = "Wprowadź swój Gravatar email";
+
+/* Voting */
+"Enter your voting key" = "Enter your voting key";
 
 /* No comment provided by engineer. */
 "Error" = "Błąd";
@@ -925,6 +943,9 @@
 /* No comment provided by engineer. */
 "I wrote it down" = "Zapisałem to";
 
+/* Voting */
+"Identity" = "Identity";
+
 /* CrowdNode */
 "If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "W przypadku utraty hasła, możesz zweryfikować się za pomocą innych metod aby odzyskać dostęp do funduszy na CrowdNode.";
 
@@ -963,6 +984,12 @@
 
 /* CrowdNode */
 "In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "W przypadku zlecenia większych wypłat, CrowdNode dokona wypłaty w ciągu dwóch tygodni. Wynika to z ich protokołów bezpieczeństwa, ale prawdpodobnie środki będą wypłacone znacznie szybciej.";
+
+/* Usernames */
+"In case you lose your passphrase you will lose your right to your requested username." = "In case you lose your passphrase you will lose your right to your requested username.";
+
+/* Usernames */
+"In case your request is not approved" = "In case your request is not approved";
 
 /* CrowdNode Portal */
 "In process…" = "W trakcie...";
@@ -1051,6 +1078,9 @@
 /* No comment provided by engineer. */
 "Invite your family, find your friends by searching their usernames" = "Zaproś rodzię i znajdź przyjaciół zapomocą wyszukiwarki nazw użytkowników";
 
+/* Usernames */
+"Invite your family, find your friends by searching their usernames." = "Invite your family, find your friends by searching their usernames.";
+
 /* No comment provided by engineer. */
 "Invite your friends & family" = "Zaproś przyjaciół i rodzię";
 
@@ -1096,6 +1126,9 @@
 /* CrowdNode */
 "Joining the pool" = "Dołączanie do Puli CrowdNode";
 
+/* Usernames */
+"Keep your passphrase safe" = "Keep your passphrase safe";
+
 /* No comment provided by engineer. */
 "Key Id" = "Identyfikator Klucza";
 
@@ -1135,6 +1168,9 @@
 
 /* No comment provided by engineer. */
 "Let’s Get Started" = "Zacznijmy";
+
+/* Voting */
+"Link" = "Link";
 
 /* Dash Service Overview */
 "Link Coinbase Account" = "Połącz Konto Coinbase";
@@ -1208,6 +1244,9 @@
 /* Map */
 "Map" = "Mapa";
 
+/* Voting */
+"Masternode IP address" = "Masternode IP address";
+
 /* No comment provided by engineer. */
 "Masternode Keys" = "Klucze do Masternoda";
 
@@ -1222,6 +1261,9 @@
 
 /* No comment provided by engineer. */
 "Masternode Update" = "Aktualizacji Masternoda";
+
+/* Voting */
+"Masternode Voting Key" = "Masternode Voting Key";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
@@ -1415,8 +1457,14 @@
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "Płać Użytkownikowi ";
 
+/* Usernames */
+"Pay now and if not approved, you can create a different name without paying again" = "Pay now and if not approved, you can create a different name without paying again";
+
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "Użwaj normalnych nazw do wysyłania funduszy. Nie musisz się męczyć z długimi losowymi adresami. ";
+
+/* Usernames */
+"Pay to usernames. No more alphanumeric addresses." = "Pay to usernames. No more alphanumeric addresses.";
 
 /* Coinbase/Buy Dash */
 "Pay with" = "Zapłać za pomocą";
@@ -1468,6 +1516,9 @@
 
 /* CrowdNode */
 "per transaction" = "w jednej transakcji";
+
+/* Usernames */
+"Personalise profile" = "Personalise profile";
 
 /* No comment provided by engineer. */
 "Personalize" = "Spersonalizuj";
@@ -1559,6 +1610,9 @@
 /* No comment provided by engineer. */
 "Quick Receive" = "Szybki Odbierz";
 
+/* Voting */
+"Quick Voting" = "Quick Voting";
+
 /* No comment provided by engineer. */
 "Quorums validated: %d/%d" = "Zweryfikowane przez Kworum %1$d/%2$d";
 
@@ -1634,6 +1688,9 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "Zgłoś problem";
 
+/* Voting */
+"Request details" = "Request details";
+
 /* An action */
 "Rescan" = "Ponownie zeskanuj";
 
@@ -1663,6 +1720,9 @@
 
 /* No comment provided by engineer. */
 "Review & Rate the app" = "Oceń i zostaw recenzje o aplikacji";
+
+/* Voting */
+"Review the posting below to verify the ownership of this username" = "Review the posting below to verify the ownership of this username";
 
 /* No comment provided by engineer. */
 "Reward" = "Nagroda";
@@ -1983,6 +2043,9 @@
 /* CrowdNode */
 "The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "Sieć Dash jest kierowana przez Masternody które są niezbędną częscią infrastruktury przeznaczonej do dokonywania transakcji. ";
 
+/* Usernames */
+"The Dash network must vote to approve your username before it is created." = "The Dash network must vote to approve your username before it is created.";
+
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Dash został pomyślnie przelany na twoje konto Coinbase, ale wystąpił błąd podczas transferu monet do twojego portfela Dash.";
 
@@ -2177,6 +2240,9 @@
 /* No comment provided by engineer. */
 "Upload your picture, personalize your identity" = "Wrzuć swoją fotkę aby spersonolizwać swój profil. ";
 
+/* Usernames */
+"Upload your picture, personalize your identity." = "Upload your picture, personalize your identity.";
+
 /* No comment provided by engineer. */
 "Uploading your picture to the network" = "Trwa wysyłanie twojego zdjęcia do sieci";
 
@@ -2191,6 +2257,9 @@
 
 /* No comment provided by engineer. */
 "User (Fetching Info)" = "Użytkownik (pobierz informacje)";
+
+/* Voting */
+"Username" = "Username";
 
 /* No comment provided by engineer. */
 "Username already found" = "Użytkownik został już znaleziony";
@@ -2250,7 +2319,13 @@
 "View Recovery Phrase" = "Pokaż Frazę Odzyskiwania Portfela";
 
 /* Voting */
+"Vote for All" = "Vote for All";
+
+/* Voting */
 "Vote only on duplicates" = "Vote only on duplicates";
+
+/* Voting */
+"Vote to Approve" = "Vote to Approve";
 
 /* Voting */
 "Votes: High to low" = "Votes: High to low";
@@ -2263,6 +2338,9 @@
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Klucze głosujące";
+
+/* Usernames */
+"Voting will not be required forever" = "Voting will not be required forever";
 
 /* No comment provided by engineer. */
 "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Poczekaj aż łańcuch będzie w pełni zsynchronizowany abyśmy mogli przejrzeć Twoją historię transakcji. Odwiedź stronę CrowdNode aby się zalogować lub zarejestrować.";
@@ -2309,8 +2387,14 @@
 /* No comment provided by engineer. */
 "Welcome" = "Witaj";
 
+/* Usernames */
+"Welcome to Dash Pay" = "Welcome to Dash Pay";
+
 /* No comment provided by engineer. */
 "Welcome to DashPay" = "Witaj w DashPay";
+
+/* Usernames */
+"What is username voting?" = "What is username voting?";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Po potwierdzeniu transakcji, drugi portfel będzie bezwartościowy i nie powinien być ponownie wykorzystywany ze względów bezpieczeństwa.";
@@ -2386,6 +2470,9 @@
 "You can change how / when your reward earnings are paid to you." = "Możesz zmienić sposób, w jaki lub kiedy twoje zarobki są wypłacane.";
 
 /* Voting */
+"You can enter your key in any of the following formats: WIF/base58/base64/hex" = "You can enter your key in any of the following formats: WIF/base58/base64/hex";
+
+/* Voting */
 "You can review all requests but you only need to vote on duplicates" = "You can review all requests but you only need to vote on duplicates";
 
 /* CrowdNode */
@@ -2411,6 +2498,9 @@
 
 /* No comment provided by engineer. */
 "You have chose \"%@\" as your username. Username cannot be changed once it is registered." = "Wybrałeś \"%@\" jako swoją nazwę użytkownika. Jeśli zostanie ona zarejerstrowana, to nie może zostać zmieniona później. ";
+
+/* Voting */
+"You have entered an invalid key" = "You have entered an invalid key";
 
 /* No comment provided by engineer. */
 "You have insufficient funds to proceed" = "Nie masz wystarczających środków aby kontynować";
@@ -2444,6 +2534,9 @@
 
 /* No comment provided by engineer. */
 "You should have at least %@ to proceed with the CrowdNode verification." = "Musisz mieć co najmniej %@ aby kontynuować weryfikację z CrowdNode.";
+
+/* Usernames */
+"You should have more than %@ Dash to create a username" = "You should have more than %@ Dash to create a username";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Potrzebujesz także wylogować się z przeglądarki na swoim koncie Uphold ";
@@ -2510,6 +2603,12 @@
 
 /* No comment provided by engineer. */
 "Your username %@ is being created on the Dash Network" = "Twoja nazwa użytkownika %@ jest tworzona na Sieci Dash";
+
+/* No comment provided by engineer. */
+"Your vote was cancelled" = "Your vote was cancelled";
+
+/* Voting */
+"Your vote was submitted" = "Your vote was submitted";
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Twój portfel jest teraz zabezpieczony. Możesz użyć swojej frazy odzyskiwania w dowolnym momencie, aby odzyskać konto na innym urządzeniu.";
