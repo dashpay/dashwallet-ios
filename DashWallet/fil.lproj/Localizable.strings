@@ -1565,6 +1565,9 @@
 /* No comment provided by engineer. */
 "Please wait" = "Mangyaring maghintay";
 
+/* CrowdNode */
+"Please wait before initiating the next withdrawal" = "Please wait before initiating the next withdrawal";
+
 /* No comment provided by engineer. */
 "Please wait until the wallet is fully synced before exporting your transaction history" = "Mangyaring maghintay hanggang ang wallet ay ganap na ma-sync bago i-export ang iyong kasaysayan ng transaksyon.";
 
@@ -2516,6 +2519,9 @@
 
 /* CrowdNode */
 "You need at least %@ on your Dash Wallet" = "Kailangan mo ng kahit man lang %@ sa iyong Dash Wallet";
+
+/* CrowdNode */
+"You need to wait 5 minutes before initiating another withdrawal" = "You need to wait 5 minutes before initiating another withdrawal";
 
 /* CrowdNode */
 "You only need %@ to join the pool." = "Kailangan mo lang ng %@ para sumali sa pool.";

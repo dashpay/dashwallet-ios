@@ -1565,6 +1565,9 @@
 /* No comment provided by engineer. */
 "Please wait" = "Silahkan tunggu";
 
+/* CrowdNode */
+"Please wait before initiating the next withdrawal" = "Please wait before initiating the next withdrawal";
+
 /* No comment provided by engineer. */
 "Please wait until the wallet is fully synced before exporting your transaction history" = "Harap tunggu hingga dompet sepenuhnya disinkronkan sebelum mengekspor riwayat transaksi Anda";
 
@@ -2516,6 +2519,9 @@
 
 /* CrowdNode */
 "You need at least %@ on your Dash Wallet" = "Anda membutuhkan setidaknya %@ dash di  Wallet Anda";
+
+/* CrowdNode */
+"You need to wait 5 minutes before initiating another withdrawal" = "You need to wait 5 minutes before initiating another withdrawal";
 
 /* CrowdNode */
 "You only need %@ to join the pool." = "Anda hanya perlu %@ bergabung dengan pool.";
