@@ -136,6 +136,9 @@
 /* No comment provided by engineer. */
 "Add your Friends & Family" = "Add your Friends & Family";
 
+/* Usernames */
+"Add your friends & family" = "Add your friends & family";
+
 /* No comment provided by engineer. */
 "Address" = "Alamat";
 
@@ -147,6 +150,9 @@
 
 /* Coinbase */
 "Advanced users who have a very high level of technical expertise can determine your transaction history" = "Advanced users who have a very high level of technical expertise can determine your transaction history";
+
+/* Usernames */
+"After voting is completed on %@ you can create any username that has not already been created" = "After voting is completed on %@ you can create any username that has not already been created";
 
 /* No comment provided by engineer. */
 "Agree" = "Agree";
@@ -218,7 +224,7 @@
 "As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
 
 /* CrowdNode */
-"As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode." = "Karena kebanyakan orang tidak memiliki 1000 Dash, CrowdNode telah membuat layanan di mana mereka dengan mengumpulkan deposit dari anggota sehingga dapat mencapai manfaat memiliki Masternode.";
+"As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode.";
 
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "Pencarian ATM berfungsi lebih baik dengan Layanan Lokasi diaktifkan";
@@ -326,6 +332,9 @@
 /* Buy/Sell */
 "Buy/Sell" = "Beli/Jual";
 
+/* Voting */
+"By tapping the \"Vote for All\" button, you will automatically vote for all of the filtered usernames (%ld) that were submitted first" = "By tapping the \"Vote for All\" button, you will automatically vote for all of the filtered usernames (%ld) that were submitted first";
+
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Dengan menghapus perangkat ini, Anda tidak lagi memiliki akses ke dana di perangkat ini. Ini hanya boleh dilakukan jika Anda tidak lagi memiliki akses ke kata sandi Anda dan lupa kode PIN Anda.";
 
@@ -334,6 +343,9 @@
 
 /* No comment provided by engineer. */
 "Cancel" = "Batalkan";
+
+/* Voting */
+"Cancel Approval" = "Cancel Approval";
 
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Membatalkan transaksi ini tidak membatalkan pesanan perdagangan. Anda akan segera menerima DASH di akun Coinbase Anda.";
@@ -483,6 +495,9 @@
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Buat Dompet Baru";
+
+/* Usernames */
+"Create a username" = "Create a username";
 
 /* No comment provided by engineer. */
 "Create a username, add your friends." = "Create a username, add your friends.";
@@ -693,6 +708,9 @@
 
 /* No comment provided by engineer. */
 "Enter your Gravatar Email ID" = "Enter your Gravatar Email ID";
+
+/* Voting */
+"Enter your voting key" = "Enter your voting key";
 
 /* No comment provided by engineer. */
 "Error" = "Kesalahan";
@@ -925,6 +943,9 @@
 /* No comment provided by engineer. */
 "I wrote it down" = "Saya telah mencatat";
 
+/* Voting */
+"Identity" = "Identity";
+
 /* CrowdNode */
 "If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "Jika Anda kehilangan frasa sandi, Anda dapat memverifikasi diri dengan cara lain untuk mendapatkan kembali akses ke dana CrowdNode Anda.";
 
@@ -963,6 +984,12 @@
 
 /* CrowdNode */
 "In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster.";
+
+/* Usernames */
+"In case you lose your passphrase you will lose your right to your requested username." = "In case you lose your passphrase you will lose your right to your requested username.";
+
+/* Usernames */
+"In case your request is not approved" = "In case your request is not approved";
 
 /* CrowdNode Portal */
 "In process…" = "Dalam proses…";
@@ -1051,6 +1078,9 @@
 /* No comment provided by engineer. */
 "Invite your family, find your friends by searching their usernames" = "Invite your family, find your friends by searching their usernames";
 
+/* Usernames */
+"Invite your family, find your friends by searching their usernames." = "Invite your family, find your friends by searching their usernames.";
+
 /* No comment provided by engineer. */
 "Invite your friends & family" = "Invite your friends & family";
 
@@ -1096,6 +1126,9 @@
 /* CrowdNode */
 "Joining the pool" = "Bergabung ke pool";
 
+/* Usernames */
+"Keep your passphrase safe" = "Keep your passphrase safe";
+
 /* No comment provided by engineer. */
 "Key Id" = "Key Id";
 
@@ -1135,6 +1168,9 @@
 
 /* No comment provided by engineer. */
 "Let’s Get Started" = "Let’s Get Started";
+
+/* Voting */
+"Link" = "Link";
 
 /* Dash Service Overview */
 "Link Coinbase Account" = "Tautkan akun Coinbase";
@@ -1208,6 +1244,9 @@
 /* Map */
 "Map" = "Peta";
 
+/* Voting */
+"Masternode IP address" = "Masternode IP address";
+
 /* No comment provided by engineer. */
 "Masternode Keys" = "Masternode Keys";
 
@@ -1222,6 +1261,9 @@
 
 /* No comment provided by engineer. */
 "Masternode Update" = "Pembaruan Masternode";
+
+/* Voting */
+"Masternode Voting Key" = "Masternode Voting Key";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
@@ -1415,8 +1457,14 @@
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "Bayar Langsung ke Nama Pengguna";
 
+/* Usernames */
+"Pay now and if not approved, you can create a different name without paying again" = "Pay now and if not approved, you can create a different name without paying again";
+
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "Pay to usernames. No more alphanumeric addresses";
+
+/* Usernames */
+"Pay to usernames. No more alphanumeric addresses." = "Pay to usernames. No more alphanumeric addresses.";
 
 /* Coinbase/Buy Dash */
 "Pay with" = "Bayar dengan";
@@ -1468,6 +1516,9 @@
 
 /* CrowdNode */
 "per transaction" = "per transaksi";
+
+/* Usernames */
+"Personalise profile" = "Personalise profile";
 
 /* No comment provided by engineer. */
 "Personalize" = "Personalize";
@@ -1559,6 +1610,9 @@
 /* No comment provided by engineer. */
 "Quick Receive" = "Terima Cepat";
 
+/* Voting */
+"Quick Voting" = "Quick Voting";
+
 /* No comment provided by engineer. */
 "Quorums validated: %d/%d" = "Kuorum divalidasi: %1$d/%2$d";
 
@@ -1634,6 +1688,9 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "Laporkan masalah";
 
+/* Voting */
+"Request details" = "Request details";
+
 /* An action */
 "Rescan" = "Pindai ulang";
 
@@ -1663,6 +1720,9 @@
 
 /* No comment provided by engineer. */
 "Review & Rate the app" = "Ulas & beri nilai aplikasi";
+
+/* Voting */
+"Review the posting below to verify the ownership of this username" = "Review the posting below to verify the ownership of this username";
 
 /* No comment provided by engineer. */
 "Reward" = "Hadiah";
@@ -1981,7 +2041,10 @@
 "The code is incorrect. Please check and try again!" = "Kode tidak benar. Silakan periksa dan coba lagi!";
 
 /* CrowdNode */
-"The Dash Network is driven by a number of Masternodes which is an essential part of facilitating payments." = "Dash Network digerakkan oleh sejumlah Masternode yang merupakan bagian penting dalam memfasilitasi pembayaran.";
+"The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments.";
+
+/* Usernames */
+"The Dash network must vote to approve your username before it is created." = "The Dash network must vote to approve your username before it is created.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Dash berhasil disimpan ke akun Coinbase Anda. Namun terjadi masalah saat mentransfernya ke Dash Wallet di perangkat ini.";
@@ -2177,6 +2240,9 @@
 /* No comment provided by engineer. */
 "Upload your picture, personalize your identity" = "Upload your picture, personalize your identity";
 
+/* Usernames */
+"Upload your picture, personalize your identity." = "Upload your picture, personalize your identity.";
+
 /* No comment provided by engineer. */
 "Uploading your picture to the network" = "Uploading your picture to the network";
 
@@ -2191,6 +2257,9 @@
 
 /* No comment provided by engineer. */
 "User (Fetching Info)" = "User (Fetching Info)";
+
+/* Voting */
+"Username" = "Username";
 
 /* No comment provided by engineer. */
 "Username already found" = "Username already found";
@@ -2250,7 +2319,13 @@
 "View Recovery Phrase" = "Lihat frasa pemulihan";
 
 /* Voting */
+"Vote for All" = "Vote for All";
+
+/* Voting */
 "Vote only on duplicates" = "Vote only on duplicates";
+
+/* Voting */
+"Vote to Approve" = "Vote to Approve";
 
 /* Voting */
 "Votes: High to low" = "Votes: High to low";
@@ -2263,6 +2338,9 @@
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Kunci pemungutan suara";
+
+/* Usernames */
+"Voting will not be required forever" = "Voting will not be required forever";
 
 /* No comment provided by engineer. */
 "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Tunggu hingga rantai disinkronkan sepenuhnya, sehingga kami dapat meninjau riwayat transaksi Anda. Kunjungi situs web CrowdNode untuk masuk atau mendaftar.";
@@ -2309,8 +2387,14 @@
 /* No comment provided by engineer. */
 "Welcome" = "Selamat Datang";
 
+/* Usernames */
+"Welcome to Dash Pay" = "Welcome to Dash Pay";
+
 /* No comment provided by engineer. */
 "Welcome to DashPay" = "Welcome to DashPay";
+
+/* Usernames */
+"What is username voting?" = "What is username voting?";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Ketika transaksi dikonfirmasi, dompet lainnya tidak akan berharga dan tidak boleh digunakan kembali untuk alasan keamanan.";
@@ -2386,6 +2470,9 @@
 "You can change how / when your reward earnings are paid to you." = "Anda dapat mengubah bagaimana / kapan penghasilan hadiah Anda dibayarkan kepada Anda.";
 
 /* Voting */
+"You can enter your key in any of the following formats: WIF/base58/base64/hex" = "You can enter your key in any of the following formats: WIF/base58/base64/hex";
+
+/* Voting */
 "You can review all requests but you only need to vote on duplicates" = "You can review all requests but you only need to vote on duplicates";
 
 /* CrowdNode */
@@ -2411,6 +2498,9 @@
 
 /* No comment provided by engineer. */
 "You have chose \"%@\" as your username. Username cannot be changed once it is registered." = "You have chose \"%@\" as your username. Username cannot be changed once it is registered.";
+
+/* Voting */
+"You have entered an invalid key" = "You have entered an invalid key";
 
 /* No comment provided by engineer. */
 "You have insufficient funds to proceed" = "Anda tidak memiliki cukup dana untuk melanjutkan";
@@ -2444,6 +2534,9 @@
 
 /* No comment provided by engineer. */
 "You should have at least %@ to proceed with the CrowdNode verification." = "Anda setidaknya harus %@ untuk melanjutkan verifikasi CrowdNode.";
+
+/* Usernames */
+"You should have more than %@ Dash to create a username" = "You should have more than %@ Dash to create a username";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Anda juga harus keluar dari situs web Uphold menggunakan browser Anda";
@@ -2510,6 +2603,12 @@
 
 /* No comment provided by engineer. */
 "Your username %@ is being created on the Dash Network" = "Nama pengguna anda %@ sedang dibuat di Dash Network";
+
+/* No comment provided by engineer. */
+"Your vote was cancelled" = "Your vote was cancelled";
+
+/* Voting */
+"Your vote was submitted" = "Your vote was submitted";
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Dompet Anda aman sekarang. Anda dapat menggunakan frasa pemulihan kapan saja untuk memulihkan akun di perangkat lain.";
