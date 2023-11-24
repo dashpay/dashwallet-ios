@@ -35,6 +35,7 @@ class RequestUsernameViewModel {
     private var cancellableBag = Set<AnyCancellable>()
     private let dao: UsernameRequestsDAO = UsernameRequestsDAOImpl.shared
     private let prefs = VotingPrefs.shared
+    var enteredUsername: String = ""
     
     @Published private(set) var hasEnoughBalance = false
     var minimumRequiredBalance: String {

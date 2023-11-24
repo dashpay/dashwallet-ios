@@ -219,7 +219,8 @@ extension RequestUsernameViewController {
     private func continueButtonAction() {
         let alert = UIAlertController(title: NSLocalizedString("Verify your identity to enhance your chances of getting your requested username", comment: "Usernames"), message: NSLocalizedString("If somebody else requests the same username as you, we will let the network decide whom to give this username", comment: "Usernames"), preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: NSLocalizedString("Verify", comment: "Usernames"), style: .default, handler: { [weak self] _ in
-            // TODO
+            self?.viewModel.enteredUsername = self?.usernameField.text ?? ""
+            self?.navigationController?.pushViewController(VerifyIdenityViewController.controller(), animated: true)
         }))
         let cancelAction = UIAlertAction(title: NSLocalizedString("Skip", comment: ""), style: .cancel)
         alert.addAction(cancelAction)
