@@ -32,7 +32,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWGlobalOptions.h"
 #import "DWUIKit.h"
 #import "DWAboutModel.h"
-#import "DWDateFormatter.h"
 #import "DWBaseActionButtonViewController.h"
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
 #import "DWInputValidator.h"

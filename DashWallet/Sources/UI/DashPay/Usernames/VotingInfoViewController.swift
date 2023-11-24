@@ -18,6 +18,8 @@
 import Foundation
 
 class VotingInfoViewController: UIViewController {
+    private let viewModel = RequestUsernameViewModel.shared
+    
     @IBOutlet private var titleLabel: UILabel!
     @IBOutlet private var subtitleLabel: UILabel!
     @IBOutlet private var timelineTitle: UILabel!
@@ -37,6 +39,14 @@ class VotingInfoViewController: UIViewController {
         super.viewDidLoad()
         configureLayout()
     }
+    
+    @IBAction
+    func continueAction() {
+        viewModel.shouldShowFirstTimeInfo = false
+        let vc = RequestUsernameViewController.controller()
+        vc.hidesBottomBarWhenPushed = true
+        self.navigationController?.replaceLast(2, with: vc, animated: true)
+    }
 }
 
 extension VotingInfoViewController {
@@ -46,7 +56,7 @@ extension VotingInfoViewController {
         
         timelineTitle.text = NSLocalizedString("Voting will not be required forever", comment: "Usernames")
         let endDate = Date(timeIntervalSince1970: 1700391858)
-        timelineSubtitle.text = String.localizedStringWithFormat(NSLocalizedString("After voting is completed on %@ you can create any username that has not already been created", comment: "Usernames"), DWDateFormatter.sharedInstance().shortString(from: endDate))
+        timelineSubtitle.text = String.localizedStringWithFormat(NSLocalizedString("After voting is completed on %@ you can create any username that has not already been created", comment: "Usernames"), DWDateFormatter.sharedInstance.shortString(from: endDate))
         
         notApprovedTitle.text = NSLocalizedString("In case your request is not approved", comment: "Usernames")
         notApprovedSubtitle.text = NSLocalizedString("Pay now and if not approved, you can create a different name without paying again", comment: "Usernames")
