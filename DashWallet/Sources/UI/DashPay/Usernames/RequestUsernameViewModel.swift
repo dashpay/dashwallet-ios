@@ -20,8 +20,9 @@ import Combine
 @objc
 public class RequestUsernameVMObjcWrapper: NSObject {
     @objc
-    public class func getRootVC() -> UIViewController {
+    public class func getRootVC(with completionHandler: ((Bool) -> ())?) -> UIViewController {
         let vm = RequestUsernameViewModel.shared
+        vm.completionHandler = completionHandler
         
         if vm.shouldShowFirstTimeInfo {
             return WelcomeToDashPayViewController.controller()
@@ -35,11 +36,25 @@ class RequestUsernameViewModel {
     private var cancellableBag = Set<AnyCancellable>()
     private let dao: UsernameRequestsDAO = UsernameRequestsDAOImpl.shared
     private let prefs = VotingPrefs.shared
+    
     var enteredUsername: String = ""
+    var completionHandler: ((Bool) -> ())?
     
     @Published private(set) var hasEnoughBalance = false
     var minimumRequiredBalance: String {
         return DWDP_MIN_BALANCE_TO_CREATE_USERNAME.formattedDashAmount
+    }
+    
+    var minimumRequiredBalanceFiat: String {
+        let fiat: String
+
+        if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: DWDP_MIN_BALANCE_TO_CREATE_USERNAME.dashAmount, to: App.fiatCurrency) {
+            fiat = NumberFormatter.fiatFormatter.string(from: fiatAmount as NSNumber)!
+        } else {
+            fiat = NSLocalizedString("Syncing…", comment: "Balance")
+        }
+
+        return fiat
     }
     
     var shouldShowFirstTimeInfo: Bool {
@@ -55,6 +70,31 @@ class RequestUsernameViewModel {
     
     func hasRequests(for username: String) async -> Bool {
         return await dao.get(byUsername: username) != nil
+    }
+    
+    func submitUsernameRequest(withProve link: URL?) async -> Bool {
+        do {
+            // TODO: simulation of a request. Remove when not needed
+            
+            let now = Date().timeIntervalSince1970
+            let identityData = withUnsafeBytes(of: UUID().uuid) { Data($0) }
+            let identity = (identityData as NSData).base58String()
+            let usernameRequest = UsernameRequest(requestId: UUID().uuidString, username: enteredUsername, createdAt: Int64(now), identity: "\(identity)\(identity)\(identity)", link: link?.absoluteString, votes: 0, isApproved: false)
+            
+            await dao.create(dto: usernameRequest)
+            
+            let oneSecond = TimeInterval(1_000_000_000)
+            let delay = UInt64(oneSecond * 2)
+            try await Task.sleep(nanoseconds: delay)
+            
+            return true
+        } catch {
+            return false
+        }
+    }
+    
+    func onFlowComplete(withResult: Bool) {
+        completionHandler?(withResult)
     }
     
     private func observeBalance() {

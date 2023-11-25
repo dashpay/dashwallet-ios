@@ -50,7 +50,6 @@ class VotingViewModel {
     }
     
     init() {
-        refresh()
         $searchQuery
             .throttle(for: .milliseconds(500), scheduler: RunLoop.main, latest: true)
             .removeDuplicates()
@@ -74,7 +73,7 @@ class VotingViewModel {
         return false
     }
     
-    private func refresh() {
+    func refresh() {
         Task {
             let requests: [UsernameRequest]
             

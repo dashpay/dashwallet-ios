@@ -40,12 +40,26 @@ class VerifyIdenityViewController: UIViewController {
     
     @IBAction
     func continueAction() {
-        
+        if let url = URL(string: linkField.text), url.scheme != nil {
+            let vc = ConfirmRequestViewController.controller(withProve: url)
+            vc.onResult = { result in
+                if result {
+                    self.navigationController?.popToRootViewController(animated: true)
+                }
+            }
+            present(vc, animated: true)
+        } else {
+            linkField.errorMessage = NSLocalizedString("Not a valid URL", comment: "Usernames")
+        }
     }
     
     @IBAction
     func sharePost() {
-        
+        if let text = copyBoxText.text {
+            let activityViewController = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+            activityViewController.excludedActivityTypes = [UIActivity.ActivityType.airDrop]
+            present(activityViewController, animated: true, completion: nil)
+        }
     }
 }
 
@@ -64,12 +78,17 @@ extension VerifyIdenityViewController {
         linkField.spellCheckingType = .no
         linkField.autocapitalizationType = .none
         linkField.textDidChange = { [weak self] text in
-//            self?.updateView()
+            self?.updateView()
         }
         linkField.isEnabled = true
         linkField.placeholder = NSLocalizedString("Paste the link", comment: "Usernames")
         linkField.translatesAutoresizingMaskIntoConstraints = false
         
         continueButton.setTitle(NSLocalizedString("Verify", comment: ""), for: .normal)
+    }
+    
+    private func updateView() {
+        continueButton.isEnabled = !linkField.text.isEmpty
+        linkField.errorMessage = nil
     }
 }

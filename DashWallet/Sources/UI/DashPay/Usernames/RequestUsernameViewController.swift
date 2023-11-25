@@ -222,7 +222,15 @@ extension RequestUsernameViewController {
             self?.viewModel.enteredUsername = self?.usernameField.text ?? ""
             self?.navigationController?.pushViewController(VerifyIdenityViewController.controller(), animated: true)
         }))
-        let cancelAction = UIAlertAction(title: NSLocalizedString("Skip", comment: ""), style: .cancel)
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Skip", comment: ""), style: .cancel) { [weak self] _ in
+            let vc = ConfirmRequestViewController.controller(withProve: nil)
+            vc.onResult = { result in
+                if result {
+                    self?.navigationController?.popToRootViewController(animated: true)
+                }
+            }
+            self?.present(vc, animated: true)
+        }
         alert.addAction(cancelAction)
         present(alert, animated: true)
     }
