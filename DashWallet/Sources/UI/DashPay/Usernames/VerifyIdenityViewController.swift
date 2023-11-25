@@ -40,6 +40,11 @@ class VerifyIdenityViewController: UIViewController {
     
     @IBAction
     func continueAction() {
+        if linkField.text.count > 75 {
+            linkField.errorMessage = NSLocalizedString("Maximum 75 characters", comment: "Usernames")
+            return
+        }
+        
         if let url = URL(string: linkField.text), url.scheme != nil {
             let vc = ConfirmRequestViewController.controller(withProve: url)
             vc.onResult = { result in
