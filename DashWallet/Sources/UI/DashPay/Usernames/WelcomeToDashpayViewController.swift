@@ -44,7 +44,7 @@ class WelcomeToDashPayViewController: UIViewController {
     
     @IBAction
     func continueAction() {
-        self.navigationController?.pushViewController(VotingInfoViewController.controller(), animated: true)
+        self.navigationController?.pushViewController(VotingInfoViewController.controller(goBackOnClose: false), animated: true)
     }
 }
 

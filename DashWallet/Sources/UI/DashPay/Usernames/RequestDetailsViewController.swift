@@ -58,6 +58,11 @@ class RequestDetailsViewController: UIViewController {
 
 extension RequestDetailsViewController {
     private func configureLayout() {
+        let buttonImage = UIImage(systemName: "info.circle")
+        let button = UIBarButtonItem(image: buttonImage, style: UIBarButtonItem.Style.plain, target: self, action: #selector(infoButtonAction))
+        button.tintColor = .dw_dashBlue()
+        navigationItem.rightBarButtonItem = button
+        
         titleLabel.text = NSLocalizedString("Request details", comment: "Usernames")
         subtitleLabel.text = NSLocalizedString("After the voting ends we will notify you about its results", comment: "Usernames")
         
@@ -140,5 +145,10 @@ extension RequestDetailsViewController {
         } else {
             self.navigationController?.pushViewController(VerifyIdenityViewController.controller(), animated: true)
         }
+    }
+    
+    @objc
+    private func infoButtonAction() {
+        self.navigationController?.pushViewController(VotingInfoViewController.controller(goBackOnClose: true), animated: true)
     }
 }
