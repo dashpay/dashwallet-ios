@@ -102,7 +102,6 @@ extension ConfirmRequestViewController {
             self?.continueAction()
         }))
         let cancelAction = UIAlertAction(title: NSLocalizedString("Close", comment: ""), style: .cancel, handler: { [weak self] _ in
-            self?.viewModel.onFlowComplete(withResult: false)
             self?.onResult?(false)
             self?.dismiss(animated: true)
         })

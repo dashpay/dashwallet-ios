@@ -46,13 +46,12 @@ class VerifyIdenityViewController: UIViewController {
         }
         
         if let url = URL(string: linkField.text), url.scheme != nil {
-            let vc = ConfirmRequestViewController.controller(withProve: url)
-            vc.onResult = { result in
-                if result {
-                    self.navigationController?.popToRootViewController(animated: true)
-                }
+            if viewModel.currentUsernameRequest == nil {
+                confirmUsernameRequest(link: url)
+            } else {
+                viewModel.updateRequest(with: url)
+                self.navigationController?.popViewController(animated: true)
             }
-            present(vc, animated: true)
         } else {
             linkField.errorMessage = NSLocalizedString("Not a valid URL", comment: "Usernames")
         }
@@ -95,5 +94,17 @@ extension VerifyIdenityViewController {
     private func updateView() {
         continueButton.isEnabled = !linkField.text.isEmpty
         linkField.errorMessage = nil
+    }
+}
+
+extension VerifyIdenityViewController {
+    func confirmUsernameRequest(link: URL) {
+        let vc = ConfirmRequestViewController.controller(withProve: link)
+        vc.onResult = { result in
+            if result {
+                self.navigationController?.popToRootViewController(animated: true)
+            }
+        }
+        present(vc, animated: true)
     }
 }

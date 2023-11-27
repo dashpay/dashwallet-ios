@@ -215,6 +215,8 @@ NS_ASSUME_NONNULL_BEGIN
     UIViewController *controller = [RequestUsernameVMObjcWrapper getRootVCWith:^(BOOL result) {
         if (result) {
             [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Username was successfully requested", @"Usernames") offsetForNavBar:YES];
+        } else {
+            [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Your request was cancelled", @"Usernames") offsetForNavBar:YES];
         }
     }];
     

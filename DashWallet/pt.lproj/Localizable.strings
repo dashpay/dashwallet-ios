@@ -152,6 +152,9 @@
 "Advanced users who have a very high level of technical expertise can determine your transaction history" = "Advanced users who have a very high level of technical expertise can determine your transaction history";
 
 /* Usernames */
+"After the voting ends we will notify you about its results" = "After the voting ends we will notify you about its results";
+
+/* Usernames */
 "After voting is completed on %@ you can create any username that has not already been created" = "After voting is completed on %@ you can create any username that has not already been created";
 
 /* No comment provided by engineer. */
@@ -347,6 +350,9 @@
 /* Voting */
 "Cancel Approval" = "Cancel Approval";
 
+/* No comment provided by engineer. */
+"Cancel Request" = "Cancel Request";
+
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Cancelar esta transação não cancela a ordem de negociação. Você receberá DASH em sua conta Coinbase em breve.";
 
@@ -412,6 +418,9 @@
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Confirmar PIN";
+
+/* Voting */
+"Confirm Username Request" = "Confirm Username Request";
 
 /* No comment provided by engineer. */
 "Confirming" = "Confirmando";
@@ -720,6 +729,9 @@
 
 /* No comment provided by engineer. */
 "Error Upgrading" = "Erro no Upgrade";
+
+/* Usernames */
+"Example post" = "Example post";
 
 /* No comment provided by engineer. */
 "Exit" = "Sair";
@@ -1238,6 +1250,9 @@
 /* Voting */
 "Low to high" = "Low to high";
 
+/* Usernames */
+"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow";
+
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "Gerenciar permissão de GPS";
 
@@ -1270,6 +1285,9 @@
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Máximo";
+
+/* Usernames */
+"Maximum 75 characters" = "Maximum 75 characters";
 
 /* No comment provided by engineer. */
 "Maybe later" = "Maybe later";
@@ -1388,6 +1406,9 @@
 /* No comment provided by engineer. */
 "Not a valid Dash address" = "Não é um endereço Dash válido";
 
+/* Usernames */
+"Not a valid URL" = "Not a valid URL";
+
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Nem todas as lojas aceitam DASH diretamente, mas você pode comprar um cartão presente com seu Dash.";
 
@@ -1450,6 +1471,9 @@
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Chaves do Proprietário";
+
+/* Usernames */
+"Paste the link" = "Paste the link";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "Paste your image URL";
@@ -1565,6 +1589,9 @@
 /* No comment provided by engineer. */
 "Please try scanning again" = "Por favor, tente escanear novamente";
 
+/* Usernames */
+"Please vote to approve my requested Dash username - %@" = "Please vote to approve my requested Dash username - %@";
+
 /* No comment provided by engineer. */
 "Please Wait" = "Por favor, aguarde";
 
@@ -1597,6 +1624,9 @@
 
 /* CrowdNode Portal */
 "Protect your savings" = "Proteja suas economias";
+
+/* Usernames */
+"Prove your identity" = "Prove your identity";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Endereço do Provedor";
@@ -2064,6 +2094,9 @@
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
 
+/* Usernames */
+"The link you send will be visible to all of the Dash network." = "The link you send will be visible to all of the Dash network.";
+
 /* Coinbase */
 "The minimum amount you can send is %@" = "A quantidade mínima que você pode enviar é %@";
 
@@ -2081,6 +2114,9 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "Não há usuários que correspondam ao nome %@ nos seus contatos";
+
+/* Usernames */
+"There was a network error, you can try again at no extra cost" = "There was a network error, you can try again at no extra cost";
 
 /* Coinbase */
 "There was an error while obtaining new address" = "Ocorreu um erro ao obter o novo endereço";
@@ -2176,6 +2212,9 @@
 
 /* An action */
 "Try again" = "Tentar de novo";
+
+/* No comment provided by engineer. */
+"Try Again" = "Try Again";
 
 /* Alert title */
 "Turn device passcode on" = "Habilite a senha de dispositivo";
@@ -2291,6 +2330,9 @@
 /* Voting */
 "Username voting" = "Username voting";
 
+/* Usernames */
+"Username was successfully requested" = "Username was successfully requested";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
 
@@ -2314,6 +2356,9 @@
 
 /* CrowdNode */
 "Verify your API Dash address" = "Verifique seu endereço de API Dash";
+
+/* Usernames */
+"Verify your identity" = "Verify your identity";
 
 /* Usernames */
 "Verify your identity to enhance your chances of getting your requested username" = "Verify your identity to enhance your chances of getting your requested username";
