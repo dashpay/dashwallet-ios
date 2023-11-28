@@ -18,7 +18,6 @@
 #import "DWDPWelcomeMenuView.h"
 
 #import "dashwallet-Swift.h"
-#import "DWShadowView.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN

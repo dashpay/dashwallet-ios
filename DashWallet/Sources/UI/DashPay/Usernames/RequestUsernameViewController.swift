@@ -106,8 +106,8 @@ extension RequestUsernameViewController {
         
         let iconImage = UIImage(systemName: "calendar")!
         let labelText = NSLocalizedString("Voting:", comment: "Voting")
-        let startDate = Date(timeIntervalSince1970: 1696091858)
-        let endDate = Date(timeIntervalSince1970: 1700391858) // TODO replace
+        let startDate = Date(timeIntervalSince1970: VotingConstants.votingStartTime)
+        let endDate = Date(timeIntervalSince1970: VotingConstants.votingEndTime)
         let startDateStr = DWDateFormatter.sharedInstance.dateOnly(from: startDate)
         let endDateStr = DWDateFormatter.sharedInstance.dateOnly(from: endDate)
         let regularText = "\(startDateStr) - \(endDateStr)"

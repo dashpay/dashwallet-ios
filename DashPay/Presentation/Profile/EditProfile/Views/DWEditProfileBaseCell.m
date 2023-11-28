@@ -19,6 +19,7 @@
 
 #import "DWShadowView.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 
 NS_ASSUME_NONNULL_BEGIN

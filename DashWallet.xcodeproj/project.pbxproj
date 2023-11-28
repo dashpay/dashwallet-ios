@@ -128,7 +128,6 @@
 		2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */; };
 		2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6ED22F48159008C7BC9 /* UIDevice+DashWallet.m */; };
 		2A2CD71322F97B65008C7BC9 /* CALayer+DWShadow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD71222F97B65008C7BC9 /* CALayer+DWShadow.m */; };
-		2A2CD71622F98FEA008C7BC9 /* DWShadowView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD71522F98FEA008C7BC9 /* DWShadowView.m */; };
 		2A2CD71822F99CAE008C7BC9 /* ShortcutsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A2CD71722F99CAE008C7BC9 /* ShortcutsView.xib */; };
 		2A2CD72222F9B571008C7BC9 /* DWIntrinsicCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD72122F9B571008C7BC9 /* DWIntrinsicCollectionView.m */; };
 		2A36A88B2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A36A88A2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m */; };
@@ -561,7 +560,7 @@
 		752772122AAA1CE30066557E /* Coinbase-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752772112AAA1CE30066557E /* Coinbase-Info.plist */; };
 		75303FE52AE7B70500870D8B /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75303FE42AE7B70500870D8B /* CrowdNode.storyboard */; };
 		75303FE62AE7B70500870D8B /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75303FE42AE7B70500870D8B /* CrowdNode.storyboard */; };
-		753FDBEA2AEA422F0005EEC3 /* Voting+UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753FDBE92AEA422F0005EEC3 /* Voting+UserDefaults.swift */; };
+		753FDBEA2AEA422F0005EEC3 /* VotingPrefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753FDBE92AEA422F0005EEC3 /* VotingPrefs.swift */; };
 		753FDBEC2AECF4CC0005EEC3 /* VotingHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 753FDBEB2AECF4CC0005EEC3 /* VotingHeaderView.xib */; };
 		753FDBEE2AECF52B0005EEC3 /* UsernameVoting.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 753FDBED2AECF52B0005EEC3 /* UsernameVoting.storyboard */; };
 		754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
@@ -577,6 +576,9 @@
 		7573C2E12B01103900F4C347 /* VotingFilterItemSelectableCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7573C2E02B01103900F4C347 /* VotingFilterItemSelectableCell.swift */; };
 		7573C2E32B01105F00F4C347 /* MasternodeIPCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7573C2E22B01105F00F4C347 /* MasternodeIPCell.swift */; };
 		7573C2E52B01120B00F4C347 /* MasternodeKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7573C2E42B01120B00F4C347 /* MasternodeKey.swift */; };
+		757514E02B15D8DE0026AD8E /* VotingConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757514DF2B15D8DE0026AD8E /* VotingConstants.swift */; };
+		757514E22B15DB510026AD8E /* ShadowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757514E12B15DB510026AD8E /* ShadowView.swift */; };
+		757514E32B15DF7C0026AD8E /* ShadowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757514E12B15DB510026AD8E /* ShadowView.swift */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
 		75889B762AD296E700C17F5D /* CoinJoinInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */; };
 		75889B792AD2A04900C17F5D /* CoinJoinInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */; };
@@ -1142,7 +1144,6 @@
 		C9D2C7D12A320AA000D15901 /* DWMainMenuContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BB5234792A600451078 /* DWMainMenuContentView.m */; };
 		C9D2C7D32A320AA000D15901 /* CrowdNodeAPIConfirmationTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1186092429759C4B00279FCC /* CrowdNodeAPIConfirmationTx.swift */; };
 		C9D2C7D42A320AA000D15901 /* UIViewController+DWEmbedding.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8F23A31713006A2A59 /* UIViewController+DWEmbedding.m */; };
-		C9D2C7D52A320AA000D15901 /* DWShadowView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD71522F98FEA008C7BC9 /* DWShadowView.m */; };
 		C9D2C7D62A320AA000D15901 /* CALayer+DWShadow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD71222F97B65008C7BC9 /* CALayer+DWShadow.m */; };
 		C9D2C7D72A320AA000D15901 /* MerchantDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BA328BFADD800490F5E /* MerchantDAO.swift */; };
 		C9D2C7D82A320AA000D15901 /* ExploreDatabaseSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BA828BFAE5800490F5E /* ExploreDatabaseSyncManager.swift */; };
@@ -1749,8 +1750,6 @@
 		2A2CD6ED22F48159008C7BC9 /* UIDevice+DashWallet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIDevice+DashWallet.m"; sourceTree = "<group>"; };
 		2A2CD71122F97B65008C7BC9 /* CALayer+DWShadow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CALayer+DWShadow.h"; sourceTree = "<group>"; };
 		2A2CD71222F97B65008C7BC9 /* CALayer+DWShadow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "CALayer+DWShadow.m"; sourceTree = "<group>"; };
-		2A2CD71422F98FEA008C7BC9 /* DWShadowView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWShadowView.h; sourceTree = "<group>"; };
-		2A2CD71522F98FEA008C7BC9 /* DWShadowView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWShadowView.m; sourceTree = "<group>"; };
 		2A2CD71722F99CAE008C7BC9 /* ShortcutsView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ShortcutsView.xib; sourceTree = "<group>"; };
 		2A2CD72022F9B571008C7BC9 /* DWIntrinsicCollectionView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWIntrinsicCollectionView.h; sourceTree = "<group>"; };
 		2A2CD72122F9B571008C7BC9 /* DWIntrinsicCollectionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWIntrinsicCollectionView.m; sourceTree = "<group>"; };
@@ -2409,7 +2408,7 @@
 		7527720E2AA9F58E0066557E /* TopperViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopperViewModel.swift; sourceTree = "<group>"; };
 		752772112AAA1CE30066557E /* Coinbase-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Coinbase-Info.plist"; sourceTree = "<group>"; };
 		75303FE42AE7B70500870D8B /* CrowdNode.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = CrowdNode.storyboard; sourceTree = "<group>"; };
-		753FDBE92AEA422F0005EEC3 /* Voting+UserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Voting+UserDefaults.swift"; sourceTree = "<group>"; };
+		753FDBE92AEA422F0005EEC3 /* VotingPrefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingPrefs.swift; sourceTree = "<group>"; };
 		753FDBEB2AECF4CC0005EEC3 /* VotingHeaderView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = VotingHeaderView.xib; sourceTree = "<group>"; };
 		753FDBED2AECF52B0005EEC3 /* UsernameVoting.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UsernameVoting.storyboard; sourceTree = "<group>"; };
 		754495DC2AE91B6300492817 /* GroupedRequestCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupedRequestCell.swift; sourceTree = "<group>"; };
@@ -2425,6 +2424,8 @@
 		7573C2E02B01103900F4C347 /* VotingFilterItemSelectableCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingFilterItemSelectableCell.swift; sourceTree = "<group>"; };
 		7573C2E22B01105F00F4C347 /* MasternodeIPCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasternodeIPCell.swift; sourceTree = "<group>"; };
 		7573C2E42B01120B00F4C347 /* MasternodeKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasternodeKey.swift; sourceTree = "<group>"; };
+		757514DF2B15D8DE0026AD8E /* VotingConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingConstants.swift; sourceTree = "<group>"; };
+		757514E12B15DB510026AD8E /* ShadowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowView.swift; sourceTree = "<group>"; };
 		757E09981ADB8EEB006FD352 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinInfoViewController.swift; sourceTree = "<group>"; };
 		75889B802AD2D7F800C17F5D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/CoinJoin.storyboard; sourceTree = "<group>"; };
@@ -3809,12 +3810,11 @@
 				2A4431C722D4D92A009BAF7F /* DWCenteredTableView.m */,
 				2A4E531B22EA49FE00E5168A /* DWProgressView.h */,
 				2A4E531C22EA49FE00E5168A /* DWProgressView.m */,
-				2A2CD71422F98FEA008C7BC9 /* DWShadowView.h */,
-				2A2CD71522F98FEA008C7BC9 /* DWShadowView.m */,
 				2A74EFF623053ECE00C475EB /* DWIntrinsicTextView.h */,
 				2A74EFF723053ECE00C475EB /* DWIntrinsicTextView.m */,
 				2A0C69B12312E8A0001B8C90 /* DWWindow.h */,
 				2A0C69B22312E8A0001B8C90 /* DWWindow.m */,
+				757514E12B15DB510026AD8E /* ShadowView.swift */,
 			);
 			path = SharedViews;
 			sourceTree = "<group>";
@@ -3850,7 +3850,6 @@
 		2A44313C22CF631E009BAF7F /* UI */ = {
 			isa = PBXGroup;
 			children = (
-				75889B742AD296D500C17F5D /* CoinJoin */,
 				C943B34F2A40A54500AF23C5 /* DashPay */,
 				4751137228DAF27300223B77 /* Assembly */,
 				C9F42FA729DC09C6001BC549 /* Style */,
@@ -6007,9 +6006,10 @@
 			children = (
 				75A8C1622AE571E90042256E /* DAO */,
 				75A8C1662AE5734A0042256E /* UsernameRequest.swift */,
-				753FDBE92AEA422F0005EEC3 /* Voting+UserDefaults.swift */,
+				753FDBE92AEA422F0005EEC3 /* VotingPrefs.swift */,
 				7514E4E92AF2351F00A0466F /* VotingFiltersModel.swift */,
 				7573C2E42B01120B00F4C347 /* MasternodeKey.swift */,
+				757514DF2B15D8DE0026AD8E /* VotingConstants.swift */,
 			);
 			path = Voting;
 			sourceTree = "<group>";
@@ -6485,6 +6485,7 @@
 				C943B44B2A40A54600AF23C5 /* Invites */,
 				7502A4852AE401DA00ACDDD3 /* Voting */,
 				75D656182B0792AB00D1A902 /* Usernames */,
+				75889B742AD296D500C17F5D /* CoinJoin */,
 				C943B47F2A40A54600AF23C5 /* Views */,
 				C943B48D2A40A54600AF23C5 /* DWDashPayConstants.m */,
 				C943B48E2A40A54600AF23C5 /* Global */,
@@ -8446,6 +8447,7 @@
 				110D1781298BA9AF005BEB30 /* WKWebView+CrowdNode.swift in Sources */,
 				47FA3AFF29350929008D58DC /* SyncingActivityMonitor.swift in Sources */,
 				C9F42FB029DC27F4001BC549 /* EmptyView.swift in Sources */,
+				757514E32B15DF7C0026AD8E /* ShadowView.swift in Sources */,
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanModel.m in Sources */,
 				2A3DC87123972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m in Sources */,
 				C9F451F72A0CAE1300825057 /* SyncView.swift in Sources */,
@@ -8594,7 +8596,6 @@
 				2A7A7BB6234792A600451078 /* DWMainMenuContentView.m in Sources */,
 				1186092529759C4B00279FCC /* CrowdNodeAPIConfirmationTx.swift in Sources */,
 				2A913E9023A31713006A2A59 /* UIViewController+DWEmbedding.m in Sources */,
-				2A2CD71622F98FEA008C7BC9 /* DWShadowView.m in Sources */,
 				2A2CD71322F97B65008C7BC9 /* CALayer+DWShadow.m in Sources */,
 				47AE8BA528BFADD900490F5E /* MerchantDAO.swift in Sources */,
 				47AE8BAA28BFAE5800490F5E /* ExploreDatabaseSyncManager.swift in Sources */,
@@ -8957,7 +8958,7 @@
 				C943B3232A408CED00AF23C5 /* DWFaceDetector.m in Sources */,
 				C9D2C6C12A320AA000D15901 /* AllMerchantLocationsViewController.swift in Sources */,
 				C9D2C6C22A320AA000D15901 /* DWPaymentOutput.m in Sources */,
-				753FDBEA2AEA422F0005EEC3 /* Voting+UserDefaults.swift in Sources */,
+				753FDBEA2AEA422F0005EEC3 /* VotingPrefs.swift in Sources */,
 				C9D2C6C32A320AA000D15901 /* DWPayModelStub.m in Sources */,
 				C9D2C6C42A320AA000D15901 /* DWRecoverContentView.m in Sources */,
 				C9D2C6C52A320AA000D15901 /* DWSeedPhraseViewLayout.m in Sources */,
@@ -9022,6 +9023,7 @@
 				C9D2C6F52A320AA000D15901 /* CoinbaseTransactionResponse.swift in Sources */,
 				C943B52F2A40A54600AF23C5 /* DWNotificationsData.m in Sources */,
 				C9D2C6F72A320AA000D15901 /* TxDetailModel.swift in Sources */,
+				757514E22B15DB510026AD8E /* ShadowView.swift in Sources */,
 				C9D2C6F82A320AA000D15901 /* NewAccountViewController.swift in Sources */,
 				C9D2C6F92A320AA000D15901 /* PointOfUseListModel.swift in Sources */,
 				C9D2C6FA2A320AA000D15901 /* NSPredicate+DWFullTextSearch.m in Sources */,
@@ -9306,7 +9308,6 @@
 				C9D2C7D12A320AA000D15901 /* DWMainMenuContentView.m in Sources */,
 				C9D2C7D32A320AA000D15901 /* CrowdNodeAPIConfirmationTx.swift in Sources */,
 				C9D2C7D42A320AA000D15901 /* UIViewController+DWEmbedding.m in Sources */,
-				C9D2C7D52A320AA000D15901 /* DWShadowView.m in Sources */,
 				C9D2C7D62A320AA000D15901 /* CALayer+DWShadow.m in Sources */,
 				C9D2C7D72A320AA000D15901 /* MerchantDAO.swift in Sources */,
 				C9D2C7D82A320AA000D15901 /* ExploreDatabaseSyncManager.swift in Sources */,
@@ -9606,6 +9607,7 @@
 				C9D2C8D22A320AA000D15901 /* CoinbaseAPIClient.swift in Sources */,
 				C943B4ED2A40A54600AF23C5 /* DWPendingContactInfoView.m in Sources */,
 				C9D2C8D32A320AA000D15901 /* SendAmountViewController.swift in Sources */,
+				757514E02B15D8DE0026AD8E /* VotingConstants.swift in Sources */,
 				C9D2C8D42A320AA000D15901 /* DWAboutViewController.m in Sources */,
 				C943B51E2A40A54600AF23C5 /* InvitationTopView.swift in Sources */,
 				C9D2C8D52A320AA000D15901 /* AccountService.swift in Sources */,
@@ -10057,7 +10059,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -10187,7 +10189,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -10393,7 +10395,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -10415,7 +10417,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -10435,7 +10437,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -10462,7 +10464,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -10553,7 +10555,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 159;
+				CURRENT_PROJECT_VERSION = 160;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -10689,7 +10691,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 159;
+				CURRENT_PROJECT_VERSION = 160;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -10824,7 +10826,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 159;
+				CURRENT_PROJECT_VERSION = 160;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -10969,7 +10971,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 159;
+				CURRENT_PROJECT_VERSION = 160;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11174,7 +11176,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11375,7 +11377,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -11395,7 +11397,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -11494,7 +11496,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11683,7 +11685,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -11703,7 +11705,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 29B232FD70BA2EDF87F86A56 /* Pods-WatchApp Extension.testnet.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
