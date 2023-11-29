@@ -658,6 +658,9 @@
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "Do not take a screenshot";
 
+/* Usernames */
+"Do you really want to cancel the username request?" = "Do you really want to cancel the username request?";
+
 /* No comment provided by engineer. */
 "Done" = "Kész";
 
@@ -969,6 +972,9 @@
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "If you still would like to wipe it please input: \"%@\"";
+
+/* Usernames */
+"If you tap “Cancel Request”, you will still have a chance to request another username without paying again" = "If you tap “Cancel Request”, you will still have a chance to request another username without paying again";
 
 /* No comment provided by engineer. */
 "If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "If you would like to save manually reclassified types for transactions you should export a CSV transaction file.";
@@ -2394,6 +2400,9 @@
 "Vote to Approve" = "Vote to Approve";
 
 /* Voting */
+"Votes:" = "Votes:";
+
+/* Voting */
 "Votes: High to low" = "Votes: High to low";
 
 /* Voting */
@@ -2663,6 +2672,9 @@
 
 /* CrowdNode */
 "Your primary Dash address that you currently use for your CrowdNode account" = "Your primary Dash address that you currently use for your CrowdNode account";
+
+/* Usernames */
+"Your request was cancelled" = "Your request was cancelled";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";

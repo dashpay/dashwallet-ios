@@ -658,6 +658,9 @@
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "No tome una captura de pantalla";
 
+/* Usernames */
+"Do you really want to cancel the username request?" = "Do you really want to cancel the username request?";
+
 /* No comment provided by engineer. */
 "Done" = "Hecho";
 
@@ -969,6 +972,9 @@
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "Si aún deseas limpiar por favor introduce: \"%@\"";
+
+/* Usernames */
+"If you tap “Cancel Request”, you will still have a chance to request another username without paying again" = "If you tap “Cancel Request”, you will still have a chance to request another username without paying again";
 
 /* No comment provided by engineer. */
 "If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "Si deseas guardar tipos reclasificados manualmente para transacciones, debes exportar un archivo de transacción CSV.";
@@ -2394,6 +2400,9 @@
 "Vote to Approve" = "Vote to Approve";
 
 /* Voting */
+"Votes:" = "Votes:";
+
+/* Voting */
 "Votes: High to low" = "Votes: High to low";
 
 /* Voting */
@@ -2663,6 +2672,9 @@
 
 /* CrowdNode */
 "Your primary Dash address that you currently use for your CrowdNode account" = "Tu dirección principal de Dash que usas actualmente para tu cuenta de CrowdNode";
+
+/* Usernames */
+"Your request was cancelled" = "Your request was cancelled";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Tu transacción se envió y la cantidad debería aparecer en tu billetera en unos minutos.";

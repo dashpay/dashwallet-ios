@@ -38,6 +38,16 @@ class VerifyIdenityViewController: UIViewController {
         configureLayout()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        ka_startObservingKeyboardNotifications()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        ka_stopObservingKeyboardNotifications()
+    }
+    
     @IBAction
     func continueAction() {
         if linkField.text.count > 75 {
@@ -89,6 +99,8 @@ extension VerifyIdenityViewController {
         linkField.translatesAutoresizingMaskIntoConstraints = false
         
         continueButton.setTitle(NSLocalizedString("Verify", comment: ""), for: .normal)
+        
+        view.keyboardLayoutGuide.topAnchor.constraint(equalToSystemSpacingBelow: continueButton.bottomAnchor, multiplier: 1.0).isActive = true
     }
     
     private func updateView() {
@@ -106,5 +118,19 @@ extension VerifyIdenityViewController {
             }
         }
         present(vc, animated: true)
+    }
+}
+
+extension VerifyIdenityViewController {
+    override func ka_keyboardShowOrHideAnimation(withHeight height: CGFloat, animationDuration: TimeInterval,
+                                                 animationCurve: UIView.AnimationCurve) {
+        if height == 0 {
+            // Keyboard hidden, lower layout
+            view.frame.origin.y = 0
+        } else {
+            let diff = height - view.frame.height + linkField.frame.maxY + continueButton.frame.height
+            // Raise keyboard a bit. Accounts for not enough space on small screens
+            view.frame.origin.y = view.frame.origin.y - 50 - max(diff, 0)
+        }
     }
 }

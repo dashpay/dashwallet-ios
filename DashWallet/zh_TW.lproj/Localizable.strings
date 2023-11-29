@@ -658,6 +658,9 @@
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "不要截圖";
 
+/* Usernames */
+"Do you really want to cancel the username request?" = "Do you really want to cancel the username request?";
+
 /* No comment provided by engineer. */
 "Done" = "完成";
 
@@ -969,6 +972,9 @@
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "如果你仍然想擦拭它，請輸入： \"%@\"";
+
+/* Usernames */
+"If you tap “Cancel Request”, you will still have a chance to request another username without paying again" = "If you tap “Cancel Request”, you will still have a chance to request another username without paying again";
 
 /* No comment provided by engineer. */
 "If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "如果您想要保存手動重新分類的交易類型，您應該導出 CSV 交易文件。";
@@ -2394,6 +2400,9 @@
 "Vote to Approve" = "Vote to Approve";
 
 /* Voting */
+"Votes:" = "Votes:";
+
+/* Voting */
 "Votes: High to low" = "Votes: High to low";
 
 /* Voting */
@@ -2663,6 +2672,9 @@
 
 /* CrowdNode */
 "Your primary Dash address that you currently use for your CrowdNode account" = "您當前用於 CrowdNode 帳戶的主要達世幣位址";
+
+/* Usernames */
+"Your request was cancelled" = "Your request was cancelled";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "您的交易已發送，金額應在幾分鐘內顯示在您的錢包中。";

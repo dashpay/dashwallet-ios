@@ -658,6 +658,9 @@
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "스크린샷을 찍지 마세요";
 
+/* Usernames */
+"Do you really want to cancel the username request?" = "Do you really want to cancel the username request?";
+
 /* No comment provided by engineer. */
 "Done" = "완료";
 
@@ -969,6 +972,9 @@
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "그래도 삭제하려면 다음과 같이 입력하십시오: \"%@\"";
+
+/* Usernames */
+"If you tap “Cancel Request”, you will still have a chance to request another username without paying again" = "If you tap “Cancel Request”, you will still have a chance to request another username without paying again";
 
 /* No comment provided by engineer. */
 "If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "수동으로 재분류한 거래 유형을 저장하고자 하는 경우 CSV 거래 파일을 내보내야 합니다.";
@@ -2394,6 +2400,9 @@
 "Vote to Approve" = "Vote to Approve";
 
 /* Voting */
+"Votes:" = "Votes:";
+
+/* Voting */
 "Votes: High to low" = "Votes: High to low";
 
 /* Voting */
@@ -2663,6 +2672,9 @@
 
 /* CrowdNode */
 "Your primary Dash address that you currently use for your CrowdNode account" = "당신이 현재 크라우드노드 계정을 위해 사용하고 있는 주요 대시 주소";
+
+/* Usernames */
+"Your request was cancelled" = "Your request was cancelled";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "당신의 거래가 완료되었으며 수 분 이내에 당신의 지갑에 잔액이 표시될 예정입니다.";
