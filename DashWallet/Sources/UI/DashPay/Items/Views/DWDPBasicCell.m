@@ -17,7 +17,6 @@
 
 #import "DWDPBasicCell.h"
 
-#import "DWShadowView.h"
 #import "DWUIKit.h"
 #import "NSAttributedString+DWHighlightText.h"
 #import "UIFont+DWDPItem.h"

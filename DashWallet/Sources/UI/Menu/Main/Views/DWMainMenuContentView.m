@@ -22,6 +22,7 @@
 #import "DWSharedUIConstants.h"
 #import "DWUIKit.h"
 #import "DWUserProfileContainerView.h"
+#import "dashwallet-Swift.h"
 
 #if DASHPAY
 #import "DWDPWelcomeMenuView.h"

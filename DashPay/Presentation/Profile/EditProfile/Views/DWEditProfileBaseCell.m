@@ -17,7 +17,6 @@
 
 #import "DWEditProfileBaseCell.h"
 
-#import "DWShadowView.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
 
