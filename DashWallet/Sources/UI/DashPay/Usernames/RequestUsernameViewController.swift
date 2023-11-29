@@ -49,11 +49,6 @@ final class RequestUsernameViewController: UIViewController {
         
         return label
     }()
-
-    override func viewWillDisappear(_ animated: Bool) {
-        usernameField.resignFirstResponder()
-        super.viewWillDisappear(animated)
-    }
     
     static func controller() -> RequestUsernameViewController {
         RequestUsernameViewController()
@@ -104,7 +99,7 @@ extension RequestUsernameViewController {
         votingTimeline.textColor = .dw_label()
         votingTimeline.numberOfLines = 0
         
-        let iconImage = UIImage(systemName: "calendar")!
+        let iconImage = UIImage(systemName: "calendar")!.withTintColor(.dw_label())
         let labelText = NSLocalizedString("Voting:", comment: "Voting")
         let startDate = Date(timeIntervalSince1970: VotingConstants.votingStartTime)
         let endDate = Date(timeIntervalSince1970: VotingConstants.votingEndTime)
