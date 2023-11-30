@@ -97,6 +97,7 @@ extension VerifyIdenityViewController {
         linkField.isEnabled = true
         linkField.placeholder = NSLocalizedString("Paste the link", comment: "Usernames")
         linkField.translatesAutoresizingMaskIntoConstraints = false
+        linkField.keyboardType = .URL
         
         continueButton.setTitle(NSLocalizedString("Verify", comment: ""), for: .normal)
         
@@ -155,7 +156,7 @@ extension VerifyIdenityViewController {
         } else {
             let diff = height - view.frame.height + linkField.frame.maxY + continueButton.frame.height
             // Raise keyboard a bit. Accounts for not enough space on small screens
-            view.frame.origin.y = view.frame.origin.y - 50 - max(diff, 0)
+            view.frame.origin.y = -(60 + max(diff, 0))
         }
     }
 }
