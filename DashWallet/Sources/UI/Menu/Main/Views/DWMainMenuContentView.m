@@ -97,6 +97,7 @@ NS_ASSUME_NONNULL_BEGIN
             self.tableView.tableHeaderView = tableHeaderView;
         }
     }
+    [_joinHeaderView refreshState];
 #endif
 }
 

@@ -24,6 +24,8 @@ enum DPWelcomState {
 
 @objc(DWDPWelcomeMenuView)
 class DPWelcomeMenuView: UIView {
+    private let prefs = VotingPrefs.shared
+    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -57,21 +59,10 @@ class DPWelcomeMenuView: UIView {
         super.init(coder: coder)
         setupView()
     }
-    
-    func changeState(state: DPWelcomState, username: String?) {
-        switch state {
-        case .none:
-            titleLabel.text = NSLocalizedString("Join DashPay", comment: "")
-            subtitleLabel.text = NSLocalizedString("Request your username", comment: "")
-        case .voting:
-            titleLabel.text = username ?? ""
-            let startDate = Date(timeIntervalSince1970: VotingConstants.votingStartTime)
-            let endDate = Date(timeIntervalSince1970: VotingConstants.votingEndTime)
-            let startDateStr = DWDateFormatter.sharedInstance.dateOnly(from: startDate)
-            let endDateStr = DWDateFormatter.sharedInstance.dateOnly(from: endDate)
-            let votingPeriod = "\(startDateStr) - \(endDateStr)"
-            subtitleLabel.text = String.localizedStringWithFormat(NSLocalizedString("Requested · Voting: %@", comment: ""), votingPeriod)
-        }
+
+    @objc
+    func refreshState() {
+        changeState(state: prefs.requestedUsernameId != nil ? .voting : .none, username: prefs.requestedUsername)
     }
 
     private func setupView() {
@@ -116,8 +107,10 @@ class DPWelcomeMenuView: UIView {
             contentView.trailingAnchor.constraint(equalTo: shadowView.trailingAnchor),
             bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 12),
             
+            imageView.heightAnchor.constraint(equalToConstant: 34),
+            imageView.widthAnchor.constraint(equalToConstant: 34),
             imageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
-            imageView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            imageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
 
             titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
             titleLabel.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: horizontalPadding),
@@ -129,9 +122,27 @@ class DPWelcomeMenuView: UIView {
             
             chevronView.heightAnchor.constraint(equalToConstant: 16),
             chevronView.widthAnchor.constraint(equalToConstant: 9),
-            chevronView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
+            chevronView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -25),
             chevronView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
         ])
+        
+        refreshState()
+    }
+    
+    private func changeState(state: DPWelcomState, username: String?) {
+        switch state {
+        case .none:
+            titleLabel.text = NSLocalizedString("Join DashPay", comment: "")
+            subtitleLabel.text = NSLocalizedString("Request your username", comment: "")
+        case .voting:
+            titleLabel.text = username ?? ""
+            let startDate = Date(timeIntervalSince1970: VotingConstants.votingStartTime)
+            let endDate = Date(timeIntervalSince1970: VotingConstants.votingEndTime)
+            let startDateStr = DWDateFormatter.sharedInstance.dateOnly(from: startDate)
+            let endDateStr = DWDateFormatter.sharedInstance.dateOnly(from: endDate)
+            let votingPeriod = "\(startDateStr) - \(endDateStr)"
+            subtitleLabel.text = String.localizedStringWithFormat(NSLocalizedString("Requested · Voting: %@", comment: ""), votingPeriod)
+        }
     }
 }
 

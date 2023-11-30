@@ -116,6 +116,7 @@ extension ConfirmRequestViewController {
             continueButton.hideActivityIndicator()
             
             if result {
+                viewModel.shouldRequestPayment = false
                 self.dismiss(animated: true) {
                     self.onResult?(true)
                     self.viewModel.onFlowComplete(withResult: true)
