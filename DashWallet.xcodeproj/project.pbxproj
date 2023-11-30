@@ -651,7 +651,6 @@
 		C943B3192A408CED00AF23C5 /* DWDPUpdateProfileModel.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2C32A408CEC00AF23C5 /* DWDPUpdateProfileModel.m */; };
 		C943B31A2A408CED00AF23C5 /* DWCurrentUserProfileView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2C52A408CEC00AF23C5 /* DWCurrentUserProfileView.m */; };
 		C943B31B2A408CED00AF23C5 /* DWUpdatingUserProfileView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2C62A408CEC00AF23C5 /* DWUpdatingUserProfileView.m */; };
-		C943B31C2A408CED00AF23C5 /* DWDPWelcomeMenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2C72A408CEC00AF23C5 /* DWDPWelcomeMenuView.m */; };
 		C943B31D2A408CED00AF23C5 /* DWUserProfileContainerView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2C82A408CEC00AF23C5 /* DWUserProfileContainerView.m */; };
 		C943B31E2A408CED00AF23C5 /* DWUserProfileModalQRContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2CD2A408CEC00AF23C5 /* DWUserProfileModalQRContentView.m */; };
 		C943B31F2A408CED00AF23C5 /* DWUserProfileModalQRViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2CE2A408CEC00AF23C5 /* DWUserProfileModalQRViewController.m */; };
@@ -2520,7 +2519,6 @@
 		C943B2BA2A408CEC00AF23C5 /* DWUpdatingUserProfileView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpdatingUserProfileView.h; sourceTree = "<group>"; };
 		C943B2BB2A408CEC00AF23C5 /* DWCurrentUserProfileView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWCurrentUserProfileView.h; sourceTree = "<group>"; };
 		C943B2BC2A408CEC00AF23C5 /* DWErrorUpdatingUserProfileView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWErrorUpdatingUserProfileView.m; sourceTree = "<group>"; };
-		C943B2BD2A408CEC00AF23C5 /* DWDPWelcomeMenuView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPWelcomeMenuView.h; sourceTree = "<group>"; };
 		C943B2BE2A408CEC00AF23C5 /* DWUserProfileContainerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUserProfileContainerView.h; sourceTree = "<group>"; };
 		C943B2C02A408CEC00AF23C5 /* DSBlockchainIdentity+DWDisplayTitleSubtitle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DSBlockchainIdentity+DWDisplayTitleSubtitle.h"; sourceTree = "<group>"; };
 		C943B2C12A408CEC00AF23C5 /* DWDPUpdateProfileModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPUpdateProfileModel.h; sourceTree = "<group>"; };
@@ -2529,7 +2527,6 @@
 		C943B2C42A408CEC00AF23C5 /* DWErrorUpdatingUserProfileView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWErrorUpdatingUserProfileView.h; sourceTree = "<group>"; };
 		C943B2C52A408CEC00AF23C5 /* DWCurrentUserProfileView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWCurrentUserProfileView.m; sourceTree = "<group>"; };
 		C943B2C62A408CEC00AF23C5 /* DWUpdatingUserProfileView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpdatingUserProfileView.m; sourceTree = "<group>"; };
-		C943B2C72A408CEC00AF23C5 /* DWDPWelcomeMenuView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPWelcomeMenuView.m; sourceTree = "<group>"; };
 		C943B2C82A408CEC00AF23C5 /* DWUserProfileContainerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileContainerView.m; sourceTree = "<group>"; };
 		C943B2CA2A408CEC00AF23C5 /* DWUserProfileModalQRContentView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUserProfileModalQRContentView.h; sourceTree = "<group>"; };
 		C943B2CB2A408CEC00AF23C5 /* DWDWUserProfileModalQRContentView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDWUserProfileModalQRContentView.h; sourceTree = "<group>"; };
@@ -6259,13 +6256,11 @@
 				C943B2BA2A408CEC00AF23C5 /* DWUpdatingUserProfileView.h */,
 				C943B2BB2A408CEC00AF23C5 /* DWCurrentUserProfileView.h */,
 				C943B2BC2A408CEC00AF23C5 /* DWErrorUpdatingUserProfileView.m */,
-				C943B2BD2A408CEC00AF23C5 /* DWDPWelcomeMenuView.h */,
 				C943B2BE2A408CEC00AF23C5 /* DWUserProfileContainerView.h */,
 				C943B2BF2A408CEC00AF23C5 /* Models */,
 				C943B2C42A408CEC00AF23C5 /* DWErrorUpdatingUserProfileView.h */,
 				C943B2C52A408CEC00AF23C5 /* DWCurrentUserProfileView.m */,
 				C943B2C62A408CEC00AF23C5 /* DWUpdatingUserProfileView.m */,
-				C943B2C72A408CEC00AF23C5 /* DWDPWelcomeMenuView.m */,
 				C943B2C82A408CEC00AF23C5 /* DWUserProfileContainerView.m */,
 				757514E42B1735370026AD8E /* DPWelcomeMenuView.swift */,
 			);
@@ -9405,7 +9400,6 @@
 				C9D2C81D2A320AA000D15901 /* MessageStatus.swift in Sources */,
 				7514E4E82AF233CF00A0466F /* VotingFiltersViewController.swift in Sources */,
 				C9D2C81E2A320AA000D15901 /* DWGlobalOptions.m in Sources */,
-				C943B31C2A408CED00AF23C5 /* DWDPWelcomeMenuView.m in Sources */,
 				C9D2C81F2A320AA000D15901 /* AppDelegate.m in Sources */,
 				C9D2C8202A320AA000D15901 /* SendReceivePageController.swift in Sources */,
 				C9D2C8212A320AA000D15901 /* DWSettingsMenuModel.m in Sources */,

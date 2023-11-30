@@ -64,7 +64,7 @@ extension VotingInfoViewController {
         subtitleLabel.text = NSLocalizedString("The Dash network must vote to approve your username before it is created.", comment: "Usernames")
         
         timelineTitle.text = NSLocalizedString("Voting will not be required forever", comment: "Usernames")
-        let endDate = Date(timeIntervalSince1970: 1700391858)
+        let endDate = Date(timeIntervalSince1970: VotingConstants.votingEndTime)
         timelineSubtitle.text = String.localizedStringWithFormat(NSLocalizedString("After voting is completed on %@ you can create any username that has not already been created", comment: "Usernames"), DWDateFormatter.sharedInstance.shortString(from: endDate))
         
         notApprovedTitle.text = NSLocalizedString("In case your request is not approved", comment: "Usernames")
