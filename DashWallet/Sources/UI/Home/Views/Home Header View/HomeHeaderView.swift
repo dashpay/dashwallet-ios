@@ -44,7 +44,7 @@ final class HomeHeaderView: UIView {
 
     // Available only in DashPay
     #if DASHPAY
-    private(set) var welcomeView: DWDPWelcomeView?
+    private(set) var welcomeView: DPWelcomeView?
     #endif
 
     weak var shortcutsDelegate: ShortcutsActionDelegate? {
@@ -73,7 +73,7 @@ final class HomeHeaderView: UIView {
         shortcutsView.translatesAutoresizingMaskIntoConstraints = false
 
     #if DASHPAY
-        welcomeView = DWDPWelcomeView(frame: .zero)
+        welcomeView = DPWelcomeView(frame: .zero)
         welcomeView!.translatesAutoresizingMaskIntoConstraints = false
         welcomeView!.addTarget(self, action: #selector(joinDashPayAction), for: .touchUpInside)
         welcomeView!.isHidden = true
