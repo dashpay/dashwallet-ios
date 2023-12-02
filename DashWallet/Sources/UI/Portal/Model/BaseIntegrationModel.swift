@@ -23,7 +23,7 @@ import Combine
 enum IntegrationItemType: CaseIterable {
     case buyDash
     case sellDash
-    case convertCrypto
+//    case convertCrypto // disabled per MO-103
     case transferDash
 }
 
@@ -34,8 +34,8 @@ extension IntegrationItemType {
             return NSLocalizedString("Buy Dash", comment: "Integration Entry Point")
         case .sellDash:
             return NSLocalizedString("Sell Dash", comment: "Integration Entry Point")
-        case .convertCrypto:
-            return NSLocalizedString("Convert Crypto", comment: "Integration Entry Point")
+//        case .convertCrypto:
+//            return NSLocalizedString("Convert Crypto", comment: "Integration Entry Point")
         case .transferDash:
             return NSLocalizedString("Transfer Dash", comment: "Integration Entry Point")
         }
@@ -47,8 +47,8 @@ extension IntegrationItemType {
             return "integration.buy"
         case .sellDash:
             return "integration.sell"
-        case .convertCrypto:
-            return "integration.convert"
+//        case .convertCrypto:
+//            return "integration.convert"
         case .transferDash:
             return "integration.transfer"
         }

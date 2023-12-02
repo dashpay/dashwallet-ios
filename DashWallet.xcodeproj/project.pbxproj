@@ -558,6 +558,7 @@
 		7527720D2AA9B2630066557E /* SupportedTopperAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */; };
 		7527720F2AA9F58E0066557E /* TopperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720E2AA9F58E0066557E /* TopperViewModel.swift */; };
 		752772122AAA1CE30066557E /* Coinbase-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752772112AAA1CE30066557E /* Coinbase-Info.plist */; };
+		752C3ED22B1AF19C00F46CD3 /* BuySellPortal.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C9FAABB42AB793CE00878224 /* BuySellPortal.storyboard */; };
 		75303FE52AE7B70500870D8B /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75303FE42AE7B70500870D8B /* CrowdNode.storyboard */; };
 		75303FE62AE7B70500870D8B /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75303FE42AE7B70500870D8B /* CrowdNode.storyboard */; };
 		753FDBEA2AEA422F0005EEC3 /* Voting+UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753FDBE92AEA422F0005EEC3 /* Voting+UserDefaults.swift */; };
@@ -7856,6 +7857,7 @@
 				C9D2C90C2A320AA000D15901 /* DWDPRegistrationErrorTableViewCell.xib in Resources */,
 				C9D2C90D2A320AA000D15901 /* ExploreDash.storyboard in Resources */,
 				C9D2C90E2A320AA000D15901 /* TxDetailHeaderCell.xib in Resources */,
+				752C3ED22B1AF19C00F46CD3 /* BuySellPortal.storyboard in Resources */,
 				C9D2C9652A38733B00D15901 /* DPAssets.xcassets in Resources */,
 				C9D2C90F2A320AA000D15901 /* StartStoryboard.storyboard in Resources */,
 				C9D2C9112A320AA000D15901 /* DWShortcutCollectionViewCell~iphone.xib in Resources */,
@@ -10041,7 +10043,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -10171,7 +10173,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -10377,7 +10379,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -10399,7 +10401,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -10419,7 +10421,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -10446,7 +10448,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -11158,7 +11160,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11359,7 +11361,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -11379,7 +11381,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -11478,7 +11480,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11667,7 +11669,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -11687,7 +11689,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 29B232FD70BA2EDF87F86A56 /* Pods-WatchApp Extension.testnet.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
