@@ -1604,6 +1604,9 @@
 /* No comment provided by engineer. */
 "Please wait" = "기다려주십시오";
 
+/* CrowdNode */
+"Please wait before initiating the next withdrawal" = "Please wait before initiating the next withdrawal";
+
 /* No comment provided by engineer. */
 "Please wait until the wallet is fully synced before exporting your transaction history" = "당신의 거래 내역을 내보내기 전 지갑이 완전히 동기화될 때까지 기다려주세요";
 
@@ -2594,6 +2597,9 @@
 
 /* CrowdNode */
 "You need at least %@ on your Dash Wallet" = "당신의 대시 지갑에 최소 %@ 가 필요합니다";
+
+/* CrowdNode */
+"You need to wait 5 minutes before initiating another withdrawal" = "You need to wait 5 minutes before initiating another withdrawal";
 
 /* CrowdNode */
 "You only need %@ to join the pool." = "%@만 있으면 풀에 가입할 수 있습니다.";

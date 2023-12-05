@@ -1604,6 +1604,9 @@
 /* No comment provided by engineer. */
 "Please wait" = "Veuillez patienter";
 
+/* CrowdNode */
+"Please wait before initiating the next withdrawal" = "Please wait before initiating the next withdrawal";
+
 /* No comment provided by engineer. */
 "Please wait until the wallet is fully synced before exporting your transaction history" = "Veuillez attendre que ce portefeuille soit entièrement synchronisé avant d'exporter votre historique de transactions";
 
@@ -2594,6 +2597,9 @@
 
 /* CrowdNode */
 "You need at least %@ on your Dash Wallet" = "Vous avez besoin d'au moins %@ dans votre Dash Wallet";
+
+/* CrowdNode */
+"You need to wait 5 minutes before initiating another withdrawal" = "You need to wait 5 minutes before initiating another withdrawal";
 
 /* CrowdNode */
 "You only need %@ to join the pool." = "Vous avez seulement besoin de %@ pour rejoindre le groupe.";
