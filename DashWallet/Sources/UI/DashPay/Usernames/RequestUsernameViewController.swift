@@ -101,8 +101,8 @@ extension RequestUsernameViewController {
         
         let iconImage = UIImage(systemName: "calendar")!.withTintColor(.dw_label())
         let labelText = NSLocalizedString("Voting:", comment: "Voting")
-        let startDate = Date(timeIntervalSince1970: 1696091858)
-        let endDate = Date(timeIntervalSince1970: 1700391858) // TODO replace
+        let startDate = Date(timeIntervalSince1970: VotingConstants.votingStartTime)
+        let endDate = Date(timeIntervalSince1970: VotingConstants.votingEndTime)
         let startDateStr = DWDateFormatter.sharedInstance.dateOnly(from: startDate)
         let endDateStr = DWDateFormatter.sharedInstance.dateOnly(from: endDate)
         let regularText = "\(startDateStr) - \(endDateStr)"
@@ -196,14 +196,43 @@ extension RequestUsernameViewController {
             self?.navigationController?.pushViewController(VerifyIdenityViewController.controller(), animated: true)
         }))
         let cancelAction = UIAlertAction(title: NSLocalizedString("Skip", comment: ""), style: .cancel) { [weak self] _ in
+            self?.submitOrConfirm()
+        }
+        alert.addAction(cancelAction)
+        present(alert, animated: true)
+    }
+    
+    private func submitOrConfirm() {
+        if viewModel.shouldRequestPayment {
             let vc = ConfirmRequestViewController.controller(withProve: nil)
             vc.onResult = { result in
                 if result {
-                    self?.navigationController?.popToRootViewController(animated: true)
+                    self.navigationController?.popToRootViewController(animated: true)
                 }
             }
-            self?.present(vc, animated: true)
+            self.present(vc, animated: true)
+        } else {
+            Task {
+                continueButton.showActivityIndicator()
+                let result = await self.viewModel.submitUsernameRequest(withProve: nil)
+                continueButton.hideActivityIndicator()
+                
+                if result {
+                    self.viewModel.onFlowComplete(withResult: true)
+                    self.navigationController?.popToRootViewController(animated: true)
+                } else {
+                    self.showError()
+                }
+            }
         }
+    }
+    
+    private func showError() {
+        let alert = UIAlertController(title: NSLocalizedString("Something went wrong", comment: ""), message: NSLocalizedString("There was a network error, you can try again at no extra cost", comment: "Usernames"), preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Try Again", comment: ""), style: .default, handler: { [weak self] _ in
+            self?.submitOrConfirm()
+        }))
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Close", comment: ""), style: .cancel)
         alert.addAction(cancelAction)
         present(alert, animated: true)
     }

@@ -1,6 +1,6 @@
-//
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  
+//  Created by Andrei Ashikhmin
+//  Copyright © 2023 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,14 +15,8 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DWShadowView : UIView
-
-@property (nonatomic, assign) IBInspectable CGFloat spread;
-
-@end
-
-NS_ASSUME_NONNULL_END
+class VotingConstants {
+    // TODO: replace
+    static let votingStartTime = TimeInterval(1696091858)
+    static let votingEndTime = TimeInterval(1700391858)
+}

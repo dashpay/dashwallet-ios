@@ -26,7 +26,7 @@ class VerifyIdenityViewController: UIViewController {
     @IBOutlet private var proveTitle: UILabel!
     @IBOutlet private var proveDescription: UILabel!
     @IBOutlet private var linkField: DashInputField!
-    @IBOutlet private var continueButton: UIButton!
+    @IBOutlet private var continueButton: ActionButton!
     
     @objc
     static func controller() -> VerifyIdenityViewController {
@@ -111,14 +111,39 @@ extension VerifyIdenityViewController {
 }
 
 extension VerifyIdenityViewController {
-    func confirmUsernameRequest(link: URL) {
-        let vc = ConfirmRequestViewController.controller(withProve: link)
-        vc.onResult = { result in
-            if result {
-                self.navigationController?.popToRootViewController(animated: true)
+    func confirmUsernameRequest(link: URL?) {
+        if viewModel.shouldRequestPayment {
+            let vc = ConfirmRequestViewController.controller(withProve: link)
+            vc.onResult = { result in
+                if result {
+                    self.navigationController?.popToRootViewController(animated: true)
+                }
+            }
+            present(vc, animated: true)
+        } else {
+            Task {
+                continueButton.showActivityIndicator()
+                let result = await self.viewModel.submitUsernameRequest(withProve: nil)
+                continueButton.hideActivityIndicator()
+                
+                if result {
+                    self.viewModel.onFlowComplete(withResult: true)
+                    self.navigationController?.popToRootViewController(animated: true)
+                } else {
+                    self.showError()
+                }
             }
         }
-        present(vc, animated: true)
+    }
+    
+    private func showError() {
+        let alert = UIAlertController(title: NSLocalizedString("Something went wrong", comment: ""), message: NSLocalizedString("There was a network error, you can try again at no extra cost", comment: "Usernames"), preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Try Again", comment: ""), style: .default, handler: { [weak self] _ in
+            self?.confirmUsernameRequest(link: URL(string: self?.linkField.text ?? ""))
+        }))
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Close", comment: ""), style: .cancel)
+        alert.addAction(cancelAction)
+        present(alert, animated: true)
     }
 }
 

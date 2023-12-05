@@ -22,9 +22,9 @@
 #import "DWSharedUIConstants.h"
 #import "DWUIKit.h"
 #import "DWUserProfileContainerView.h"
+#import "dashwallet-Swift.h"
 
 #if DASHPAY
-#import "DWDPWelcomeMenuView.h"
 #import "DWDashPayReadyProtocol.h"
 #endif
 
@@ -66,9 +66,8 @@ NS_ASSUME_NONNULL_BEGIN
         _headerView = headerView;
         
         DWDPWelcomeMenuView *joinHeaderView = [[DWDPWelcomeMenuView alloc] initWithFrame:CGRectZero];
-        [joinHeaderView.joinButton addTarget:self
-                                      action:@selector(joinButtonAction:)
-                            forControlEvents:UIControlEventTouchUpInside];
+        UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(joinButtonAction:)];
+        [joinHeaderView addGestureRecognizer:tapRecognizer];
         _joinHeaderView = joinHeaderView;
 #endif
         
@@ -98,6 +97,7 @@ NS_ASSUME_NONNULL_BEGIN
             self.tableView.tableHeaderView = tableHeaderView;
         }
     }
+    [_joinHeaderView refreshState];
 #endif
 }
 

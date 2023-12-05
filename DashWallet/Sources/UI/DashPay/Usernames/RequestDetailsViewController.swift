@@ -66,8 +66,8 @@ extension RequestDetailsViewController {
         titleLabel.text = NSLocalizedString("Request details", comment: "Usernames")
         subtitleLabel.text = NSLocalizedString("After the voting ends we will notify you about its results", comment: "Usernames")
         
-        let startDate = Date(timeIntervalSince1970: 1696091858)
-        let endDate = Date(timeIntervalSince1970: 1700391858) // TODO replace
+        let startDate = Date(timeIntervalSince1970: VotingConstants.votingStartTime)
+        let endDate = Date(timeIntervalSince1970: VotingConstants.votingEndTime) // TODO replace
         let startDateStr = DWDateFormatter.sharedInstance.dateOnly(from: startDate)
         let endDateStr = DWDateFormatter.sharedInstance.dateOnly(from: endDate)
         let regularText = "\(startDateStr) - \(endDateStr)"

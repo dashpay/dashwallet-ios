@@ -69,6 +69,11 @@ class RequestUsernameViewModel {
         prefs.requestedUsernameId != nil
     }
     
+    var shouldRequestPayment: Bool {
+        get { !prefs.alreadyPaid }
+        set { prefs.alreadyPaid = !newValue }
+    }
+    
     public static let shared: RequestUsernameViewModel = .init()
     
     init() {
@@ -90,6 +95,7 @@ class RequestUsernameViewModel {
             
             await dao.create(dto: usernameRequest)
             prefs.requestedUsernameId = usernameRequest.requestId
+            prefs.requestedUsername = usernameRequest.username
             
             let oneSecond = TimeInterval(1_000_000_000)
             let delay = UInt64(oneSecond * 2)
@@ -117,6 +123,7 @@ class RequestUsernameViewModel {
                 enteredUsername = ""
                 await dao.delete(by: requestId)
                 prefs.requestedUsernameId = nil
+                prefs.requestedUsername = nil
             }
         }
     }
