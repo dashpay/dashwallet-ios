@@ -18,6 +18,8 @@
 import Foundation
 
 class VotingInfoViewController: UIViewController {
+    private let viewModel = RequestUsernameViewModel.shared
+    
     @IBOutlet private var titleLabel: UILabel!
     @IBOutlet private var subtitleLabel: UILabel!
     @IBOutlet private var timelineTitle: UILabel!
@@ -28,14 +30,31 @@ class VotingInfoViewController: UIViewController {
     @IBOutlet private var passphraseSubtitle: UILabel!
     @IBOutlet private var continueButton: UIButton!
     
+    private var goBackOnClose: Bool!
+    
     @objc
-    static func controller() -> VotingInfoViewController {
-        vc(VotingInfoViewController.self, from: sb("UsernameRequests"))
+    static func controller(goBackOnClose: Bool) -> VotingInfoViewController {
+        let vc = vc(VotingInfoViewController.self, from: sb("UsernameRequests"))
+        vc.goBackOnClose = goBackOnClose
+        return vc
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         configureLayout()
+    }
+    
+    @IBAction
+    func continueAction() {
+        viewModel.shouldShowFirstTimeInfo = false
+        
+        if goBackOnClose {
+            self.navigationController?.popViewController(animated: true)
+        } else {
+            let vc = RequestUsernameViewController.controller()
+            vc.hidesBottomBarWhenPushed = true
+            self.navigationController?.replaceLast(2, with: vc, animated: true)
+        }
     }
 }
 
@@ -45,8 +64,8 @@ extension VotingInfoViewController {
         subtitleLabel.text = NSLocalizedString("The Dash network must vote to approve your username before it is created.", comment: "Usernames")
         
         timelineTitle.text = NSLocalizedString("Voting will not be required forever", comment: "Usernames")
-        let endDate = Date(timeIntervalSince1970: 1700391858)
-        timelineSubtitle.text = String.localizedStringWithFormat(NSLocalizedString("After voting is completed on %@ you can create any username that has not already been created", comment: "Usernames"), DWDateFormatter.sharedInstance().shortString(from: endDate))
+        let endDate = Date(timeIntervalSince1970: VotingConstants.votingEndTime)
+        timelineSubtitle.text = String.localizedStringWithFormat(NSLocalizedString("After voting is completed on %@ you can create any username that has not already been created", comment: "Usernames"), DWDateFormatter.sharedInstance.shortString(from: endDate))
         
         notApprovedTitle.text = NSLocalizedString("In case your request is not approved", comment: "Usernames")
         notApprovedSubtitle.text = NSLocalizedString("Pay now and if not approved, you can create a different name without paying again", comment: "Usernames")

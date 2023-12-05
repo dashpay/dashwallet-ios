@@ -51,40 +51,9 @@ static CGSize QRCodeSizeRequestAmount(void) {
     }
 }
 
-static CGSize HoleSize(BOOL hasAmount) {
-    if (IS_IPAD) {
-        return CGSizeMake(84.0, 84.0); // 2 + 80(logo size) + 2
-    }
-    else if (IS_IPHONE_5_OR_LESS) {
-        return CGSizeMake(48.0, 48.0);
-    }
-    else {
-        if (hasAmount) {
-            return CGSizeMake(58.0, 58.0);
-        }
-        else {
-            return CGSizeMake(84.0, 84.0);
-        }
-    }
-}
-
-static CGSize const LOGO_SMALL_SIZE = {54.0, 54.0};
-
-static BOOL ShouldResizeLogoToSmall(BOOL hasAmount) {
-    if (IS_IPAD) {
-        return NO;
-    }
-    if (IS_IPHONE_5_OR_LESS) {
-        return YES;
-    }
-    else {
-        return hasAmount;
-    }
-}
-
 @interface DWBaseReceiveModel ()
 
-@property (readonly, nonatomic, assign) CGSize holeSize;
+@property (readonly, nonatomic, assign) CGSize logoSize;
 
 @end
 
@@ -106,7 +75,9 @@ static BOOL ShouldResizeLogoToSmall(BOOL hasAmount) {
         else {
             _qrCodeSize = QRCodeSizeBasic();
         }
-        _holeSize = HoleSize(hasAmount);
+        
+        CGFloat logoSize = _qrCodeSize.height * 0.22;
+        _logoSize = CGSizeMake(logoSize, logoSize);
     }
     return self;
 }
@@ -123,15 +94,13 @@ static BOOL ShouldResizeLogoToSmall(BOOL hasAmount) {
 #endif
     
     const BOOL shouldDrawUser = username != nil;
-
-    if (ShouldResizeLogoToSmall(hasAmount)) {
-        if (shouldDrawUser) {
-            size = LOGO_SMALL_SIZE;
-        }
-        else {
-            overlayImage = [overlayImage dw_resize:LOGO_SMALL_SIZE
-                          withInterpolationQuality:kCGInterpolationHigh];
-        }
+    
+    if (shouldDrawUser) {
+        size = _logoSize;
+    }
+    else {
+        overlayImage = [overlayImage dw_resize:_logoSize
+                        withInterpolationQuality:kCGInterpolationHigh];
     }
 
     if (shouldDrawUser) {
@@ -181,7 +150,7 @@ static BOOL ShouldResizeLogoToSmall(BOOL hasAmount) {
     }
 
     UIImage *resizedImage = [rawQRImage dw_resize:self.qrCodeSize withInterpolationQuality:kCGInterpolationNone];
-    resizedImage = [resizedImage dw_imageByCuttingHoleInCenterWithSize:self.holeSize];
+    resizedImage = [resizedImage dw_imageByCuttingHoleInCenterWithSize:self.logoSize];
 
     UIImage *qrCodeImage = [resizedImage dw_imageByMergingWithImage:overlayImage];
 

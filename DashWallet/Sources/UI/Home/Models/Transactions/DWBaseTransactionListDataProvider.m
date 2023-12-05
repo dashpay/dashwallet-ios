@@ -17,7 +17,6 @@
 
 #import "DWBaseTransactionListDataProvider.h"
 
-#import "DWDateFormatter.h"
 #import "DWEnvironment.h"
 #import "DWTransactionListDataItem.h"
 #import "dashwallet-Swift.h"

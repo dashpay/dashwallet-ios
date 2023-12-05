@@ -45,12 +45,11 @@ class VotingViewModel {
     public static let shared: VotingViewModel = .init()
     
     var shouldShowFirstTimeInfo: Bool {
-        get { return !prefs.infoShown }
-        set { prefs.infoShown = !newValue }
+        get { return !prefs.votingInfoShown }
+        set { prefs.votingInfoShown = !newValue }
     }
     
     init() {
-        refresh()
         $searchQuery
             .throttle(for: .milliseconds(500), scheduler: RunLoop.main, latest: true)
             .removeDuplicates()
@@ -74,7 +73,7 @@ class VotingViewModel {
         return false
     }
     
-    private func refresh() {
+    func refresh() {
         Task {
             let requests: [UsernameRequest]
             
@@ -142,7 +141,7 @@ extension [UsernameRequest] {
 extension VotingViewModel {
     func vote(for requestId: String) {
         Task {
-            if var copy = dao.get(by: requestId) {
+            if var copy = await dao.get(byRequestId: requestId) {
                 copy.votes += masternodeKeys.count
                 copy.isApproved = true
                 await dao.update(dto: copy)
@@ -154,7 +153,7 @@ extension VotingViewModel {
     
     func revokeVote(of requestId: String) {
         Task {
-            if var copy = dao.get(by: requestId) {
+            if var copy = await dao.get(byRequestId: requestId) {
                 copy.votes = max(copy.votes - masternodeKeys.count, 0)
                 copy.isApproved = false
                 await dao.update(dto: copy)
