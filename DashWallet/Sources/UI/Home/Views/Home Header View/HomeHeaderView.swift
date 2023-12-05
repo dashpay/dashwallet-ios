@@ -44,7 +44,19 @@ final class HomeHeaderView: UIView {
 
     // Available only in DashPay
     #if DASHPAY
-    private(set) var welcomeView: DPWelcomeView?
+    private let welcomeView: DPWelcomeView = DPWelcomeView(frame: .zero)
+    var isDPWelcomeViewHidden = true {
+        didSet {
+            welcomeView.isHidden = isDPWelcomeViewHidden
+        }
+    }
+    
+    private let votingView: DPVotingResultView = DPVotingResultView(frame: .zero)
+    var isVotingViewHidden = true {
+        didSet {
+            votingView.isHidden = isVotingViewHidden
+        }
+    }
     #endif
 
     weak var shortcutsDelegate: ShortcutsActionDelegate? {
@@ -73,12 +85,21 @@ final class HomeHeaderView: UIView {
         shortcutsView.translatesAutoresizingMaskIntoConstraints = false
 
     #if DASHPAY
-        welcomeView = DPWelcomeView(frame: .zero)
-        welcomeView!.translatesAutoresizingMaskIntoConstraints = false
-        welcomeView!.addTarget(self, action: #selector(joinDashPayAction), for: .touchUpInside)
-        welcomeView!.isHidden = true
+        welcomeView.translatesAutoresizingMaskIntoConstraints = false
+        welcomeView.addTarget(self, action: #selector(joinDashPayAction), for: .touchUpInside)
+        welcomeView.isHidden = true
+        votingView.translatesAutoresizingMaskIntoConstraints = false
+        votingView.isHidden = true
+        votingView.onAction = {
+            // TODO: aa
+        }
+        votingView.onClose = { [weak self] in
+            guard let self = self else { return }
+            self.votingView.isHidden = true
+            self.delegate?.homeHeaderViewDidUpdateContents(self)
+        }
 
-        let views: [UIView] = [balanceView, shortcutsView, syncView, welcomeView!]
+        let views: [UIView] = [balanceView, shortcutsView, syncView, welcomeView, votingView]
     #else
         let views: [UIView] = [balanceView, shortcutsView, syncView]
     #endif

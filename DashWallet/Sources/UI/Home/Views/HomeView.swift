@@ -208,21 +208,33 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
     @objc
     func updateHeaderView() {
         if let model = self.model {
-            headerView.welcomeView?.isHidden = DWGlobalOptions.sharedInstance().dashPayRegistrationOpenedOnce || model.shouldShowCreateUserNameButton() != true
+            let isDPInfoHidden = DWGlobalOptions.sharedInstance().dashPayRegistrationOpenedOnce || model.shouldShowCreateUserNameButton() != true
             
-            let status = model.dashPayModel.registrationStatus
-            let completed = model.dashPayModel.registrationCompleted
-            
-            if status?.state == .done || completed {
-                let identity = model.dashPayModel.blockchainIdentity
-                let notificaitonAmount = model.dashPayModel.unreadNotificationsCount
-                
-                delegate?.homeView(self, didUpdateProfile: identity, unreadNotifications: notificaitonAmount)
+            if let usernameId = VotingPrefs.shared.requestedUsernameId {
+                let now = Date().timeIntervalSince1970
+                headerView.isVotingViewHidden = isDPInfoHidden || now < VotingConstants.votingEndTime
+                headerView.isDPWelcomeViewHidden = true
             } else {
-                delegate?.homeView(self, didUpdateProfile: nil, unreadNotifications: 0)
+                headerView.isDPWelcomeViewHidden = isDPInfoHidden
+                headerView.isVotingViewHidden = true
+                setIdentity(model: model)
             }
             
             setNeedsLayout()
+        }
+    }
+    
+    private func setIdentity(model: DWHomeProtocol) {
+        let status = model.dashPayModel.registrationStatus
+        let completed = model.dashPayModel.registrationCompleted
+        
+        if status?.state == .done || completed {
+            let identity = model.dashPayModel.blockchainIdentity
+            let notificaitonAmount = model.dashPayModel.unreadNotificationsCount
+            
+            delegate?.homeView(self, didUpdateProfile: identity, unreadNotifications: notificaitonAmount)
+        } else {
+            delegate?.homeView(self, didUpdateProfile: nil, unreadNotifications: 0)
         }
     }
     #endif
