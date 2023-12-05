@@ -152,6 +152,9 @@
 "Advanced users who have a very high level of technical expertise can determine your transaction history" = "Advanced users who have a very high level of technical expertise can determine your transaction history";
 
 /* Usernames */
+"After the voting ends we will notify you about its results" = "After the voting ends we will notify you about its results";
+
+/* Usernames */
 "After voting is completed on %@ you can create any username that has not already been created" = "After voting is completed on %@ you can create any username that has not already been created";
 
 /* No comment provided by engineer. */
@@ -347,6 +350,9 @@
 /* Voting */
 "Cancel Approval" = "Cancel Approval";
 
+/* No comment provided by engineer. */
+"Cancel Request" = "Cancel Request";
+
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "การยกเลิกธุรกรรมนี้ไม่ได้ยกเลิกคำสั่งซื้อขาย คุณจะได้รับ Dash ในบัญชี Coinbase ของคุณในไม่ช้า";
 
@@ -412,6 +418,9 @@
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "ยืนยัน PIN";
+
+/* Voting */
+"Confirm Username Request" = "Confirm Username Request";
 
 /* No comment provided by engineer. */
 "Confirming" = "กำลังยืนยัน";
@@ -649,6 +658,9 @@
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "อย่าใช้วิธีการบันทึกภาพหน้าจอ";
 
+/* Usernames */
+"Do you really want to cancel the username request?" = "Do you really want to cancel the username request?";
+
 /* No comment provided by engineer. */
 "Done" = "เสร็จแล้ว";
 
@@ -720,6 +732,9 @@
 
 /* No comment provided by engineer. */
 "Error Upgrading" = "อัพเกรดข้อผิดพลาด";
+
+/* Usernames */
+"Example post" = "Example post";
 
 /* No comment provided by engineer. */
 "Exit" = "ออก";
@@ -946,6 +961,9 @@
 /* Voting */
 "Identity" = "Identity";
 
+/* Usernames */
+"If somebody else requests the same username as you, we will let the network decide whom to give this username" = "If somebody else requests the same username as you, we will let the network decide whom to give this username";
+
 /* CrowdNode */
 "If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "หากคุณสูญเสียวลีรหัสผ่านคุณสามารถยืยยันตัวตนด้วยวิธีอื่นเพื่อให้สามารถเข้าถึงเงินทุน CrowdNode ของคุณได้";
 
@@ -954,6 +972,9 @@
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "ถ้าคุณยังต้องการกำจัด กรุณาใส่: \"%@\"";
+
+/* Usernames */
+"If you tap “Cancel Request”, you will still have a chance to request another username without paying again" = "If you tap “Cancel Request”, you will still have a chance to request another username without paying again";
 
 /* No comment provided by engineer. */
 "If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "หากคุณต้องการบันทึกประเภทการจัดประเภทใหม่ด้วยตนเองสำหรับการทำธุรกรรมคุณควรส่งออกไฟล์ธุรกรรม CSV";
@@ -1235,6 +1256,9 @@
 /* Voting */
 "Low to high" = "Low to high";
 
+/* Usernames */
+"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow";
+
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "การอนุญาต GPS";
 
@@ -1267,6 +1291,9 @@
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "สูงสุด";
+
+/* Usernames */
+"Maximum 75 characters" = "Maximum 75 characters";
 
 /* No comment provided by engineer. */
 "Maybe later" = "Maybe later";
@@ -1385,6 +1412,9 @@
 /* No comment provided by engineer. */
 "Not a valid Dash address" = "ไม่ใช่ที่อยู่ dash ที่ถูกต้อง";
 
+/* Usernames */
+"Not a valid URL" = "Not a valid URL";
+
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "ไม่ใช่ร้านค้าทั้งหมดที่ยอมรับ Dash โดยตรง แต่คุณสามารถซื้อบัตรของขวัญด้วย Dash ของคุณ";
 
@@ -1411,6 +1441,9 @@
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "เมื่อ %@ ยอมรับคำขอของคุณคุณสามารถชำระเงินโดยตรงกับชื่อผู้ใช้";
+
+/* Voting */
+"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "Once the voting ends you can create any username you want as long as it hasn’t already been created";
 
 /* Online */
 "Online" = "ออนไลน์";
@@ -1444,6 +1477,9 @@
 
 /* No comment provided by engineer. */
 "Owner Keys" = "เจ้าของกุญแจ";
+
+/* Usernames */
+"Paste the link" = "Paste the link";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "Paste your image URL";
@@ -1559,6 +1595,9 @@
 /* No comment provided by engineer. */
 "Please try scanning again" = "โปรดลองสแกนใหม่อีกครั้ง";
 
+/* Usernames */
+"Please vote to approve my requested Dash username - %@" = "Please vote to approve my requested Dash username - %@";
+
 /* No comment provided by engineer. */
 "Please Wait" = "กรุณารอสักครู่";
 
@@ -1591,6 +1630,9 @@
 
 /* CrowdNode Portal */
 "Protect your savings" = "ปกป้องเงินทุนของคุณ";
+
+/* Usernames */
+"Prove your identity" = "Prove your identity";
 
 /* No comment provided by engineer. */
 "Provider Address" = "ที่อยู่ผู้จัดหา";
@@ -1690,6 +1732,12 @@
 
 /* Voting */
 "Request details" = "Request details";
+
+/* Voting */
+"Request Username" = "Request Username";
+
+/* Voting */
+"Request your username" = "Request your username";
 
 /* An action */
 "Rescan" = "สแกนอีกครั้ง";
@@ -2052,6 +2100,9 @@
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
 
+/* Usernames */
+"The link you send will be visible to all of the Dash network." = "The link you send will be visible to all of the Dash network.";
+
 /* Coinbase */
 "The minimum amount you can send is %@" = "จำนวนเงินขั้นต่ำที่คุณสามารถส่งได้คือ %@";
 
@@ -2069,6 +2120,9 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "ไม่มีผู้ใช้ที่ตรงกับชื่อ %@ ในรายชื่อผู้ติดต่อของคุณ";
+
+/* Usernames */
+"There was a network error, you can try again at no extra cost" = "There was a network error, you can try again at no extra cost";
 
 /* Coinbase */
 "There was an error while obtaining new address" = "มีข้อผิดพลาดในขณะที่ได้รับที่อยู่ใหม่";
@@ -2094,6 +2148,9 @@
 /* CrowdNode */
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "สิ่งนี้แสดงถึงอัตราผลตอบแทนร้อยละต่อปีปัจจุบันของมาสเตอรืโหนด เต็มน้อยกว่าค่าธรรมเนียม CrowdNode 15% แต่มันไม่ได้เป็นอัตราผลตอบแทนที่รับประกันได้และอาจเพิ่มขึ้นหรือลงตามขนาดของกลุ่ม CrowdNode และราคา Dash";
 
+/* Voting */
+"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "This username has already been requested, but you can request it too and let the network vote to decide if you can have it";
+
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Wallet นี้ยังมีข้อมูลหรือการซิงค์ที่ยังไม่เสร็จสิ้น คุณไม่สามารถลบข้อมูลได้โดยไม่ใช้วลีกู้คืน";
 
@@ -2105,6 +2162,9 @@
 
 /* Coinbase */
 "to Dash Wallet on this device" = "เพื่อกระเป๋า Dash บนอุปกรณ์นี้";
+
+/* Usernames */
+"To request a username on the Dash Network, you need to have more than %@ Dash" = "To request a username on the Dash Network, you need to have more than %@ Dash";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "ในการเริ่มการ stakingให้สร้างบัญชีบน CrowdNode หรือเชื่อมต่อกับบัญชีที่มีอยู่";
@@ -2158,6 +2218,9 @@
 
 /* An action */
 "Try again" = "ลองอีกครั้ง";
+
+/* No comment provided by engineer. */
+"Try Again" = "Try Again";
 
 /* Alert title */
 "Turn device passcode on" = "เปิดรหัสผ่านของอุปกรณ์";
@@ -2273,6 +2336,9 @@
 /* Voting */
 "Username voting" = "Username voting";
 
+/* Usernames */
+"Username was successfully requested" = "Username was successfully requested";
+
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
 
@@ -2296,6 +2362,12 @@
 
 /* CrowdNode */
 "Verify your API Dash address" = "ตรวจสอบที่อยู่ API Dash ของคุณ";
+
+/* Usernames */
+"Verify your identity" = "Verify your identity";
+
+/* Usernames */
+"Verify your identity to enhance your chances of getting your requested username" = "Verify your identity to enhance your chances of getting your requested username";
 
 /* adjective, security level */
 "Very High" = "สูงมาก";
@@ -2328,6 +2400,9 @@
 "Vote to Approve" = "Vote to Approve";
 
 /* Voting */
+"Votes:" = "Votes:";
+
+/* Voting */
 "Votes: High to low" = "Votes: High to low";
 
 /* Voting */
@@ -2341,6 +2416,9 @@
 
 /* Usernames */
 "Voting will not be required forever" = "Voting will not be required forever";
+
+/* Voting */
+"Voting:" = "Voting:";
 
 /* No comment provided by engineer. */
 "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "รอจนกว่าบล็อกเชนจะถูกซิงค์อย่างเต็มที่ดังนั้นเราสามารถตรวจสอบประวัติการทำธุรกรรมของคุณ เยี่ยมชมเว็บไซต์ CrowdNode เพื่อเข้าสู่ระบบหรือลงทะเบียน";
@@ -2594,6 +2672,9 @@
 
 /* CrowdNode */
 "Your primary Dash address that you currently use for your CrowdNode account" = "ที่อยู่หลัก Dash ของคุณที่คุณใช้สำหรับบัญชี CrowdNode ของคุณในปัจจุบัน";
+
+/* Usernames */
+"Your request was cancelled" = "Your request was cancelled";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "ธุรกรรมของคุณถูกส่งแล้วและจำนวนเงินจะปรากฏใน wallet ของคุณในอีกไม่กี่นาที";

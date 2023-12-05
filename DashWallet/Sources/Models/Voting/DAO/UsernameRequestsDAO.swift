@@ -27,7 +27,7 @@ protocol UsernameRequestsDAO {
     func get(byRequestId id: String) async -> UsernameRequest?
     func get(byUsername name: String) async -> UsernameRequest?
     func update(dto: UsernameRequest) async
-    func delete(dto: UsernameRequest)
+    func delete(by requestId: String) async
     func vote(for requestIds: [String], voteIncrement: Int) async
     func deleteAll()
 }
@@ -37,8 +37,6 @@ protocol UsernameRequestsDAO {
 class UsernameRequestsDAOImpl: NSObject, UsernameRequestsDAO {
     private var db: Connection { DatabaseConnection.shared.db }
     private var cache: [String: UsernameRequest] = [:]
-
-    private let queue = DispatchQueue(label: "org.dash.infrastructure.queue.username-requests-dao", attributes: .concurrent)
 
     func create(dto: UsernameRequest) async {
         
@@ -59,10 +57,6 @@ class UsernameRequestsDAOImpl: NSObject, UsernameRequestsDAO {
     }
 
     func get(byRequestId id: String) async -> UsernameRequest? {
-        if let cached = cachedValue(by: id) {
-            return cached
-        }
-
         let statement = UsernameRequest.table.filter(UsernameRequest.requestId == id)
 
         do {
@@ -93,33 +87,14 @@ class UsernameRequestsDAOImpl: NSObject, UsernameRequestsDAO {
 
         return nil
     }
-
-    private func cachedValue(by key: String) -> UsernameRequest? {
-        var v: UsernameRequest?
-
-        queue.sync {
-            v = cache[key]
-        }
-
-        return v
-    }
-
+    
     func update(dto: UsernameRequest) async {
         await create(dto: dto)
-    }
-
-    func delete(dto: UsernameRequest) {
-        queue.async(flags: .barrier) { [weak self] in
-            self?.cache[dto.requestId] = nil
-        }
     }
 
     func deleteAll() {
         do {
             try db.run(UsernameRequest.table.delete())
-            queue.async(flags: .barrier) { [weak self] in
-                self?.cache = [:]
-            }
         } catch {
             print(error)
         }
@@ -185,6 +160,16 @@ extension UsernameRequestsDAOImpl {
         }
     }
 
+    func delete(by requestId: String) async {
+        self.cache[requestId] = nil
+        
+        do {
+            let deleteQuery = UsernameRequest.table.filter(UsernameRequest.requestId == requestId).delete()
+            try await self.execute(deleteQuery)
+        } catch {
+            print(error)
+        }
+    }
 }
 
 // MARK: - async / await
@@ -220,6 +205,21 @@ extension UsernameRequestsDAOImpl {
         }
     }
     
+    private func execute(_ query: Delete) async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            DispatchQueue.global(qos: .utility).async { [weak self] in
+                guard let self = self else { return continuation.resume() }
+                
+                do {
+                    try db.run(query)
+                    continuation.resume()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
     private func prepare<T: RowDecodable>(_ statement: QueryType) async throws -> [T] {
         return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.global(qos: .utility).async { [weak self] in
@@ -237,8 +237,6 @@ extension UsernameRequestsDAOImpl {
                 } catch {
                     continuation.resume(throwing: error)
                 }
-                
-                
             }
         }
     }

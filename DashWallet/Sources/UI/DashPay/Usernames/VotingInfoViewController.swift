@@ -30,9 +30,13 @@ class VotingInfoViewController: UIViewController {
     @IBOutlet private var passphraseSubtitle: UILabel!
     @IBOutlet private var continueButton: UIButton!
     
+    private var goBackOnClose: Bool!
+    
     @objc
-    static func controller() -> VotingInfoViewController {
-        vc(VotingInfoViewController.self, from: sb("UsernameRequests"))
+    static func controller(goBackOnClose: Bool) -> VotingInfoViewController {
+        let vc = vc(VotingInfoViewController.self, from: sb("UsernameRequests"))
+        vc.goBackOnClose = goBackOnClose
+        return vc
     }
     
     override func viewDidLoad() {
@@ -43,9 +47,14 @@ class VotingInfoViewController: UIViewController {
     @IBAction
     func continueAction() {
         viewModel.shouldShowFirstTimeInfo = false
-        let vc = RequestUsernameViewController.controller()
-        vc.hidesBottomBarWhenPushed = true
-        self.navigationController?.replaceLast(2, with: vc, animated: true)
+        
+        if goBackOnClose {
+            self.navigationController?.popViewController(animated: true)
+        } else {
+            let vc = RequestUsernameViewController.controller()
+            vc.hidesBottomBarWhenPushed = true
+            self.navigationController?.replaceLast(2, with: vc, animated: true)
+        }
     }
 }
 

@@ -49,11 +49,6 @@ final class RequestUsernameViewController: UIViewController {
         
         return label
     }()
-
-    override func viewWillDisappear(_ animated: Bool) {
-        usernameField.resignFirstResponder()
-        super.viewWillDisappear(animated)
-    }
     
     static func controller() -> RequestUsernameViewController {
         RequestUsernameViewController()
@@ -103,9 +98,15 @@ extension RequestUsernameViewController {
         votingTimeline.translatesAutoresizingMaskIntoConstraints = false
         votingTimeline.textColor = .dw_label()
         votingTimeline.numberOfLines = 0
-        let iconImage = UIImage(systemName: "calendar")!
+        
+        let iconImage = UIImage(systemName: "calendar")!.withTintColor(.dw_label())
         let labelText = NSLocalizedString("Voting:", comment: "Voting")
-        votingTimeline.attributedText = getTimelineTextWith(icon: iconImage, text: labelText, iconSize: CGSize(width: 16, height: 15), iconOffsetY: -3)
+        let startDate = Date(timeIntervalSince1970: 1696091858)
+        let endDate = Date(timeIntervalSince1970: 1700391858) // TODO replace
+        let startDateStr = DWDateFormatter.sharedInstance.dateOnly(from: startDate)
+        let endDateStr = DWDateFormatter.sharedInstance.dateOnly(from: endDate)
+        let regularText = "\(startDateStr) - \(endDateStr)"
+        votingTimeline.attributedText = getAttributedTextWith(icon: iconImage, boldText: labelText, regularText: regularText, iconSize: CGSize(width: 16, height: 15), iconOffsetY: -3)
         
         stackView.addArrangedSubview(votingTimeline)
         
@@ -167,35 +168,6 @@ extension RequestUsernameViewController {
         }
     }
     
-    func getTimelineTextWith(icon: UIImage, text: String, iconSize: CGSize, iconOffsetY: CGFloat) -> NSAttributedString {
-        let attachment = NSTextAttachment()
-        attachment.image = icon
-        attachment.bounds = CGRect(x: 0, y: iconOffsetY, width: iconSize.width, height: iconSize.height)
-
-        let attachmentStr = NSAttributedString(attachment: attachment)
-        let mediumFontAttribute: [NSAttributedString.Key: Any] = [
-            .font: UIFont.dw_mediumFont(ofSize: 13)
-        ]
-        let textStr = NSAttributedString(string: " \(text) ", attributes: mediumFontAttribute)
-        
-        let startDate = Date(timeIntervalSince1970: 1696091858)
-        let endDate = Date(timeIntervalSince1970: 1700391858) // TODO replace
-        let startDateStr = DWDateFormatter.sharedInstance.dateOnly(from: startDate)
-        let endDateStr = DWDateFormatter.sharedInstance.dateOnly(from: endDate)
-        
-        let regFontAttribute: [NSAttributedString.Key: Any] = [
-            .font: UIFont.dw_regularFont(ofSize: 13)
-        ]
-        let timelineStr = NSAttributedString(string: "\(startDateStr) - \(endDateStr)", attributes: regFontAttribute)
-
-        let combinedStr = NSMutableAttributedString()
-        combinedStr.append(attachmentStr)
-        combinedStr.append(textStr)
-        combinedStr.append(timelineStr)
-
-        return combinedStr
-    }
-    
     func configureObservers() {
         viewModel.$hasEnoughBalance
             .removeDuplicates()
@@ -217,11 +189,21 @@ extension RequestUsernameViewController {
 
 extension RequestUsernameViewController {
     private func continueButtonAction() {
+        self.viewModel.enteredUsername = self.usernameField.text
+        
         let alert = UIAlertController(title: NSLocalizedString("Verify your identity to enhance your chances of getting your requested username", comment: "Usernames"), message: NSLocalizedString("If somebody else requests the same username as you, we will let the network decide whom to give this username", comment: "Usernames"), preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: NSLocalizedString("Verify", comment: "Usernames"), style: .default, handler: { [weak self] _ in
-            // TODO
+            self?.navigationController?.pushViewController(VerifyIdenityViewController.controller(), animated: true)
         }))
-        let cancelAction = UIAlertAction(title: NSLocalizedString("Skip", comment: ""), style: .cancel)
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Skip", comment: ""), style: .cancel) { [weak self] _ in
+            let vc = ConfirmRequestViewController.controller(withProve: nil)
+            vc.onResult = { result in
+                if result {
+                    self?.navigationController?.popToRootViewController(animated: true)
+                }
+            }
+            self?.present(vc, animated: true)
+        }
         alert.addAction(cancelAction)
         present(alert, animated: true)
     }

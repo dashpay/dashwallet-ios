@@ -47,6 +47,7 @@ class UsernameVotingViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        viewModel.refresh()
         configureLayout()
         configureDataSource()
         configureObservers()

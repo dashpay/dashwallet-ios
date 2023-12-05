@@ -105,7 +105,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
-    
     self.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeNever;
     
 #ifdef DASHPAY
@@ -213,7 +212,14 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)mainMenuContentView:(DWMainMenuContentView *)view joinDashPayAction:(UIButton *)sender {
-    UIViewController *controller = [RequestUsernameVMObjcWrapper getRootVC];
+    UIViewController *controller = [RequestUsernameVMObjcWrapper getRootVCWith:^(BOOL result) {
+        if (result) {
+            [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Username was successfully requested", @"Usernames") offsetForNavBar:YES];
+        } else {
+            [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Your request was cancelled", @"Usernames") offsetForNavBar:YES];
+        }
+    }];
+    
     // TODO: voting switch ?
 //    DWDashPaySetupFlowController *controller =
 //        [[DWDashPaySetupFlowController alloc]

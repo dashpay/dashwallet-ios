@@ -45,6 +45,10 @@ NSTimeInterval const DW_INFO_HUD_DISPLAY_TIME = 3.5;
 }
 
 - (void)dw_showInfoHUDWithText:(NSString *)text {
+    [self dw_showInfoHUDWithText:text offsetForNavBar:NO];
+}
+
+- (void)dw_showInfoHUDWithText:(NSString *)text offsetForNavBar:(BOOL)shouldOffset {
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self animated:YES];
     hud.removeFromSuperViewOnHide = YES;
     hud.mode = MBProgressHUDModeCustomView;
@@ -59,7 +63,7 @@ NSTimeInterval const DW_INFO_HUD_DISPLAY_TIME = 3.5;
     hud.bezelView.color = [UIColor colorWithWhite:0.0f alpha:0.9f];
     hud.bezelView.style = MBProgressHUDBackgroundStyleSolidColor;
 
-    CGFloat yOffset = CGRectGetHeight(self.bounds) / 2 - CGRectGetHeight(customView.bounds) - 35;
+    CGFloat yOffset = CGRectGetHeight(self.bounds) / 2 - CGRectGetHeight(customView.bounds) - (shouldOffset ? 85 : 35);
     hud.offset = CGPointMake(0.0f, yOffset);
     hud.userInteractionEnabled = NO;
     

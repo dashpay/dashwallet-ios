@@ -19,6 +19,7 @@ import Foundation
 
 private let kIsVotingInfoShown = "votingInfoShownKey"
 private let kIsRequestInfoShown = "requestUsernameInfoShownKey"
+private let kRequestedUsernameInfo = "requestedUsernameInfoKey"
 
 // MARK: - VotingPrefs
 
@@ -40,6 +41,15 @@ class VotingPrefs {
         set(value) {
             _requestInfoShown = value
             UserDefaults.standard.set(value, forKey: kIsRequestInfoShown)
+        }
+    }
+    
+    private var _requestedUsernameId: String? = nil
+    var requestedUsernameId: String? {
+        get { _requestedUsernameId ?? UserDefaults.standard.string(forKey: kRequestedUsernameInfo) }
+        set(value) {
+            _requestedUsernameId = value
+            UserDefaults.standard.set(value, forKey: kRequestedUsernameInfo)
         }
     }
 }
