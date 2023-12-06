@@ -57,6 +57,10 @@ final class HomeHeaderView: UIView {
             votingView.isHidden = isVotingViewHidden
         }
     }
+    var votingState: DPVotingState {
+        get { return votingView.state }
+        set { votingView.state = newValue }
+    }
     #endif
 
     weak var shortcutsDelegate: ShortcutsActionDelegate? {
@@ -90,11 +94,19 @@ final class HomeHeaderView: UIView {
         welcomeView.isHidden = true
         votingView.translatesAutoresizingMaskIntoConstraints = false
         votingView.isHidden = true
-        votingView.onAction = {
-            // TODO: aa
+        votingView.onAction = { [weak self] in
+            self?.joinDashPayAction()
         }
         votingView.onClose = { [weak self] in
             guard let self = self else { return }
+            
+            VotingPrefs.shared.votingPanelClosed = true
+            VotingPrefs.shared.requestedUsernameId = nil
+            
+            if (MOCK_DASHPAY.boolValue) {
+                DWGlobalOptions.sharedInstance().dashpayUsername = VotingPrefs.shared.requestedUsername
+            }
+            
             self.votingView.isHidden = true
             self.delegate?.homeHeaderViewDidUpdateContents(self)
         }

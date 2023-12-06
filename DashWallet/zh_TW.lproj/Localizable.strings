@@ -525,6 +525,9 @@
 "Create Online Account" = "創建在線帳戶";
 
 /* No comment provided by engineer. */
+"Create Username" = "Create Username";
+
+/* No comment provided by engineer. */
 "Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
 
 /* Coinbase/Payment Methods */
@@ -1133,9 +1136,6 @@
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "似乎您正在嘗試使用12個單詞的恢復詞組來恢復您的錢包，但是您只輸入了11個單詞，是否要自動恢復丟失的單詞?";
 
 /* No comment provided by engineer. */
-"Join" = "Join";
-
-/* No comment provided by engineer. */
 "Join DashPay" = "Join DashPay";
 
 /* No comment provided by engineer. */
@@ -1739,6 +1739,12 @@
 /* Voting */
 "Request your username" = "Request your username";
 
+/* No comment provided by engineer. */
+"Requested username was not approved" = "Requested username was not approved";
+
+/* No comment provided by engineer. */
+"Requested · Voting: %@" = "Requested · Voting: %@";
+
 /* An action */
 "Rescan" = "重新掃瞄";
 
@@ -2276,6 +2282,9 @@
 /* CoinJoin */
 "up to 30 minutes" = "up to 30 minutes";
 
+/* No comment provided by engineer. */
+"Update your profile and start adding contacts" = "Update your profile and start adding contacts";
+
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "更新: %@";
 
@@ -2547,6 +2556,9 @@
 /* CrowdNode */
 "You can change how / when your reward earnings are paid to you." = "您可以更改向您支付獎勵收入的方式/時間。";
 
+/* No comment provided by engineer. */
+"You can create a different username without paying again" = "You can create a different username without paying again";
+
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "You can enter your key in any of the following formats: WIF/base58/base64/hex";
 
@@ -2684,6 +2696,9 @@
 
 /* No comment provided by engineer. */
 "Your username %@ is being created on the Dash Network" = "您的用戶名 %@ 已經在達世幣綱絡中創建了";
+
+/* No comment provided by engineer. */
+"Your username was approved" = "Your username was approved";
 
 /* No comment provided by engineer. */
 "Your vote was cancelled" = "Your vote was cancelled";

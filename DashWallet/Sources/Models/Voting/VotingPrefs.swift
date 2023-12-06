@@ -22,6 +22,7 @@ private let kIsRequestInfoShown = "requestUsernameInfoShownKey"
 private let kRequestedUsernameId = "requestedUsernameIdKey"
 private let kRequestedUsername = "requestedUsernameKey"
 private let kAlreadyPaid = "alreadyPaidForUsernameKey"
+private let kVotingPanelClosed = "votingPanelWasClosedKey"
 
 // MARK: - VotingPrefs
 
@@ -70,6 +71,15 @@ class VotingPrefs {
         set(value) {
             _alreadyPaid = value
             UserDefaults.standard.set(value, forKey: kAlreadyPaid)
+        }
+    }
+    
+    private var _votingPanelClosed: Bool? = nil
+    var votingPanelClosed: Bool {
+        get { _votingPanelClosed ?? UserDefaults.standard.bool(forKey: kVotingPanelClosed) }
+        set(value) {
+            _votingPanelClosed = value
+            UserDefaults.standard.set(value, forKey: kVotingPanelClosed)
         }
     }
 }

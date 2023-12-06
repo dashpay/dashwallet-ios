@@ -17,14 +17,14 @@
 
 import Foundation
 
-enum DPWelcomeState {
+enum DPVotingState {
     case approved
     case notApproved
 }
 
 @objc
 class DPVotingResultView: UIView {
-    var state: DPWelcomeState = .approved {
+    var state: DPVotingState = .approved {
         didSet {
             change(state: self.state)
         }
@@ -47,7 +47,7 @@ class DPVotingResultView: UIView {
     private let actionButton: UIButton = {
         let button = ActionButton()
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.dw_mediumFont(ofSize: 15)
+            .font: UIFont.dw_mediumFont(ofSize: 13)
         ]
         button.setAttributedTitle(NSAttributedString(string: NSLocalizedString("Create Username", comment: ""), attributes: attributes), for: .normal)
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -95,6 +95,9 @@ class DPVotingResultView: UIView {
         return label
     }()
     
+    private var actionButtonHeightConstraint: NSLayoutConstraint!
+    private var actionButtonMarginConstraint: NSLayoutConstraint!
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -128,6 +131,9 @@ class DPVotingResultView: UIView {
         titleLabel.setContentCompressionResistancePriority(.required - 1, for: .vertical)
         subtitleLabel.setContentCompressionResistancePriority(.required - 2, for: .vertical)
         
+        actionButtonHeightConstraint = actionButton.heightAnchor.constraint(equalToConstant: 30)
+        actionButtonMarginConstraint = contentView.bottomAnchor.constraint(equalTo: actionButton.bottomAnchor, constant: 15)
+        
         NSLayoutConstraint.activate([
             shadowView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
             shadowView.topAnchor.constraint(equalTo: topAnchor),
@@ -159,16 +165,17 @@ class DPVotingResultView: UIView {
             closeButton.topAnchor.constraint(equalTo: topAnchor),
             closeButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -15),
             
-            actionButton.heightAnchor.constraint(equalToConstant: 30),
+            actionButtonHeightConstraint,
             actionButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
             actionButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
             actionButton.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 15),
+            actionButtonMarginConstraint
         ])
         
         change(state: self.state)
     }
     
-    private func change(state: DPWelcomeState) {
+    private func change(state: DPVotingState) {
         actionButton.isHidden = state != .notApproved
         
         
@@ -176,15 +183,14 @@ class DPVotingResultView: UIView {
             image.image = UIImage(named: "dashpay.welcome.disabled")
             titleLabel.text = NSLocalizedString("Requested username was not approved", comment: "")
             subtitleLabel.text = NSLocalizedString("You can create a different username without paying again", comment: "")
-            contentView.bottomAnchor.constraint(equalTo: actionButton.bottomAnchor, constant: 15).isActive = true
+            actionButtonHeightConstraint.constant = 30
+            actionButtonMarginConstraint.constant = 15
         } else {
             image.image = UIImage(named: "dashpay.welcome")
             titleLabel.text = NSLocalizedString("Your username was approved", comment: "")
             subtitleLabel.text = NSLocalizedString("Update your profile and start adding contacts", comment: "")
-            contentView.bottomAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 16).isActive = true
+            actionButtonHeightConstraint.constant = 0
+            actionButtonMarginConstraint.constant = 0
         }
-        
-//        setNeedsLayout()
-//        layoutIfNeeded()
     }
 }

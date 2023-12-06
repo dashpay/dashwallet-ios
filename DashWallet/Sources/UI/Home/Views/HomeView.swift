@@ -185,6 +185,12 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         updateHeaderView()
         #endif
     }
+    
+    func homeModelWant(toReloadVoting model: DWHomeProtocol) {
+        #if DASHPAY
+        updateHeaderView()
+        #endif
+    }
 
 
     // MARK: - DWDPRegistrationErrorRetryDelegate
@@ -210,21 +216,17 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         if let model = self.model {
             let isDPInfoHidden = DWGlobalOptions.sharedInstance().dashPayRegistrationOpenedOnce || model.shouldShowCreateUserNameButton() != true
             
-            if let usernameId = VotingPrefs.shared.requestedUsernameId {
-                let now = Date().timeIntervalSince1970
-                headerView.isVotingViewHidden = isDPInfoHidden || now < VotingConstants.votingEndTime
-                headerView.isDPWelcomeViewHidden = true
+            if let usernameRequestId = VotingPrefs.shared.requestedUsernameId {
+                setVotingState(dpInfoHidden: isDPInfoHidden, requestId: usernameRequestId)
             } else {
-                headerView.isDPWelcomeViewHidden = isDPInfoHidden
-                headerView.isVotingViewHidden = true
-                setIdentity(model: model)
+                setIdentity(dpInfoHidden: isDPInfoHidden, model: model)
             }
-            
-            setNeedsLayout()
         }
     }
     
-    private func setIdentity(model: DWHomeProtocol) {
+    private func setIdentity(dpInfoHidden: Bool, model: DWHomeProtocol) {
+        headerView.isDPWelcomeViewHidden = dpInfoHidden
+        headerView.isVotingViewHidden = true
         let status = model.dashPayModel.registrationStatus
         let completed = model.dashPayModel.registrationCompleted
         
@@ -235,6 +237,24 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
             delegate?.homeView(self, didUpdateProfile: identity, unreadNotifications: notificaitonAmount)
         } else {
             delegate?.homeView(self, didUpdateProfile: nil, unreadNotifications: 0)
+        }
+        
+        setNeedsLayout()
+    }
+    
+    private func setVotingState(dpInfoHidden: Bool, requestId: String) {
+//        let wasClosed = VotingPrefs.shared.votingPanelClosed TODO: dd
+        let wasClosed = false
+        let now = Date().timeIntervalSince1970
+        headerView.isVotingViewHidden = dpInfoHidden || wasClosed || now < VotingConstants.votingEndTime
+        headerView.isDPWelcomeViewHidden = true
+        let dao = UsernameRequestsDAOImpl.shared
+        
+        Task {
+            let request = await dao.get(byRequestId: requestId)
+            // TODO: change this logic
+            self.headerView.votingState = (request?.isApproved ?? false) ? .approved : .notApproved
+            setNeedsLayout()
         }
     }
     #endif
@@ -319,8 +339,4 @@ extension HomeView: UITableViewDataSource, UITableViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         headerView.parentScrollViewDidScroll(scrollView)
     }
-
-
-
 }
-
