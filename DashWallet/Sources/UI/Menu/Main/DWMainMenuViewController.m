@@ -109,7 +109,10 @@ NS_ASSUME_NONNULL_BEGIN
     
 #ifdef DASHPAY
     BOOL invitationsEnabled = ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled && (self.userProfileModel.blockchainIdentity != nil));
-    self.view.model = [[DWMainMenuModel alloc] initWithInvitesEnabled:invitationsEnabled votingEnabled:[VotingPrefsWrapper getIsEnabled]];
+    
+    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+    BOOL isVotingEnabled = [VotingPrefsWrapper getIsEnabled] && now < VotingConstants.votingEndTime;
+    self.view.model = [[DWMainMenuModel alloc] initWithInvitesEnabled:invitationsEnabled votingEnabled:isVotingEnabled];
     [self.view updateUserHeader];
 #else
     self.view.model = [[DWMainMenuModel alloc] initWithInvitesEnabled:NO votingEnabled:NO];
@@ -212,7 +215,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)mainMenuContentView:(DWMainMenuContentView *)view joinDashPayAction:(UIButton *)sender {
-    if ([VotingPrefsWrapper getIsEnabled]) {
+    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+    BOOL isVotingEnabled = [VotingPrefsWrapper getIsEnabled] && now < VotingConstants.votingEndTime;
+    
+    if (isVotingEnabled) {
         UIViewController *controller = [RequestUsernameVMObjcWrapper getRootVCWith:^(BOOL result) {
             if (result) {
                 [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Username was successfully requested", @"Usernames") offsetForNavBar:YES];

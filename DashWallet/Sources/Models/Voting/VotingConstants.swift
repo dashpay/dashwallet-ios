@@ -15,7 +15,8 @@
 //  limitations under the License.
 //
 
-class VotingConstants {
+@objcMembers
+class VotingConstants: NSObject {
     // TODO: replace
     static let votingStartTime = TimeInterval(1696091858)
     static let votingEndTime = TimeInterval(1702695521)
