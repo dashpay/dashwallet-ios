@@ -17,6 +17,7 @@
 
 import Foundation
 
+private let kVotingEnabled = "votingEnabledKey"
 private let kIsVotingInfoShown = "votingInfoShownKey"
 private let kIsRequestInfoShown = "requestUsernameInfoShownKey"
 private let kRequestedUsernameId = "requestedUsernameIdKey"
@@ -24,10 +25,38 @@ private let kRequestedUsername = "requestedUsernameKey"
 private let kAlreadyPaid = "alreadyPaidForUsernameKey"
 private let kVotingPanelClosed = "votingPanelWasClosedKey"
 
+// MARK: - ObjcWrapper
+
+@objc
+class VotingPrefsWrapper: NSObject {
+    @objc
+    class func getIsEnabled() -> Bool {
+        VotingPrefs.shared.votingEnabled
+    }
+    
+    @objc
+    class func setIsEnabled(value: Bool) {
+        VotingPrefs.shared.votingEnabled = value
+    }
+}
+
 // MARK: - VotingPrefs
 
 class VotingPrefs {
     public static let shared: VotingPrefs = .init()
+    
+    init() {
+        UserDefaults.standard.register(defaults: [kVotingEnabled : true])
+    }
+    
+    private var _votingEnabled: Bool? = nil
+    var votingEnabled: Bool {
+        get { _votingEnabled ?? UserDefaults.standard.bool(forKey: kVotingEnabled) }
+        set(value) {
+            _votingEnabled = value
+            UserDefaults.standard.set(value, forKey: kVotingEnabled)
+        }
+    }
     
     private var _votingInfoShown: Bool? = nil
     var votingInfoShown: Bool {

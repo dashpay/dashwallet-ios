@@ -215,8 +215,9 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
     func updateHeaderView() {
         if let model = self.model {
             let isDPInfoHidden = DWGlobalOptions.sharedInstance().dashPayRegistrationOpenedOnce || model.shouldShowCreateUserNameButton() != true
+            let isVotingEnabled = VotingPrefs.shared.votingEnabled
             
-            if let usernameRequestId = VotingPrefs.shared.requestedUsernameId {
+            if let usernameRequestId = VotingPrefs.shared.requestedUsernameId, isVotingEnabled {
                 setVotingState(dpInfoHidden: isDPInfoHidden, requestId: usernameRequestId)
             } else {
                 setIdentity(dpInfoHidden: isDPInfoHidden, model: model)
@@ -243,8 +244,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
     }
     
     private func setVotingState(dpInfoHidden: Bool, requestId: String) {
-//        let wasClosed = VotingPrefs.shared.votingPanelClosed TODO: dd
-        let wasClosed = false
+        let wasClosed = VotingPrefs.shared.votingPanelClosed
         let now = Date().timeIntervalSince1970
         headerView.isVotingViewHidden = dpInfoHidden || wasClosed || now < VotingConstants.votingEndTime
         headerView.isDPWelcomeViewHidden = true
