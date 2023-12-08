@@ -158,7 +158,6 @@ extension BaseNavigationController: UINavigationControllerDelegate {
         if let viewController = viewController as? NavigationBarDisplayable {
             hideBackButton = viewController.isBackButtonHidden
             hideNavigationBar = viewController.isNavigationBarHidden
-
         } else if let vc = viewController as? NavigationFullscreenable {
             hideNavigationBar = vc.requiresNoNavigationBar
         }
@@ -197,6 +196,18 @@ extension BaseNavigationController: UINavigationControllerDelegate {
     }
 
     func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
+        
+        // Recheck the back button since navigationController.viewControllers might have changed
+        var hideBackButton = viewController == navigationController.viewControllers.first
+        
+        if let viewController = viewController as? NavigationBarDisplayable {
+            hideBackButton = viewController.isBackButtonHidden
+        }
+        
+        if hideBackButton {
+            viewController.navigationItem.leftBarButtonItem = nil
+        }
+        
         isPushAnimationInProgress = false
 
         if let vc = viewController as? NavigationBarAppearanceCustomizable {
