@@ -38,7 +38,7 @@
              *filter = colorFilter;
 
     [qrFilter setValue:data forKey:@"inputMessage"];
-    [qrFilter setValue:@"M" forKey:@"inputCorrectionLevel"];
+    [qrFilter setValue:@"Q" forKey:@"inputCorrectionLevel"];
 
     if (color.alpha > DBL_EPSILON) {
         [invertFilter setValue:qrFilter.outputImage forKey:@"inputImage"];

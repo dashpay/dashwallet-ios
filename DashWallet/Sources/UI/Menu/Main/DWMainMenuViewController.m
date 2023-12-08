@@ -105,7 +105,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
-    
     self.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeNever;
     
 #ifdef DASHPAY
@@ -213,13 +212,22 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)mainMenuContentView:(DWMainMenuContentView *)view joinDashPayAction:(UIButton *)sender {
-    DWDashPaySetupFlowController *controller =
-        [[DWDashPaySetupFlowController alloc]
-            initWithDashPayModel:self.dashPayModel
-                      invitation:nil
-                 definedUsername:nil];
-    controller.modalPresentationStyle = UIModalPresentationFullScreen;
-    [self presentViewController:controller animated:YES completion:nil];
+    UIViewController *controller = [RequestUsernameVMObjcWrapper getRootVCWith:^(BOOL result) {
+        if (result) {
+            [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Username was successfully requested", @"Usernames") offsetForNavBar:YES];
+        } else {
+            [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Your request was cancelled", @"Usernames") offsetForNavBar:YES];
+        }
+    }];
+    
+    // TODO: voting switch ?
+//    DWDashPaySetupFlowController *controller =
+//        [[DWDashPaySetupFlowController alloc]
+//            initWithDashPayModel:self.dashPayModel
+//                      invitation:nil
+//                 definedUsername:nil];
+    controller.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:controller animated:YES];
 }
 #endif
 

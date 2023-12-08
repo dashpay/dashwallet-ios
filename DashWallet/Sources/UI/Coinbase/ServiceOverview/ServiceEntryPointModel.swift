@@ -48,9 +48,10 @@ extension Service {
                 SupportedFeature(serviceName:NSLocalizedString("Buy Dash with fiat", comment: "Dash Service Overview"),
                                  imageName:"service.BuyDashwithfiat"),
 
-                SupportedFeature(serviceName:NSLocalizedString("Buy and convert Dash with another crypto",
-                                                               comment: "Dash Service Overview"),
-                                 imageName:"service.BuyAndConvertDash"),
+// Disable per MO-103
+//                SupportedFeature(serviceName:NSLocalizedString("Buy and convert Dash with another crypto",
+//                                                               comment: "Dash Service Overview"),
+//                                 imageName:"service.BuyAndConvertDash"),
 
                 SupportedFeature(serviceName:NSLocalizedString("Transfer Dash", comment: "Dash Service Overview"),
                                  imageName:"service.TransferDash",

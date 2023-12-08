@@ -430,6 +430,7 @@ extension CrowdNode {
         if result.messageStatus.lowercased() == kMessageReceivedStatus {
             DSLogger.log("CrowdNode: withdrawal request sent successfully")
             refreshBalance(afterWithdrawal: true)
+            updateLastWithdrawalBlock()
         } else {
             DSLogger.log("CrowdNode: sendMessage not received, status: \(String(describing: result.messageStatus)). Result: \(String(describing: result.result))")
             
@@ -465,6 +466,12 @@ extension CrowdNode {
     }
 
     private func checkWithdrawalLimits(_ amount: UInt64) throws {
+        let lastSyncBlockHeight = DWEnvironment.sharedInstance().currentChain.lastSyncBlockHeight
+        
+        if lastSyncBlockHeight <= prefs.lastWithdrawalBlock {
+            throw CrowdNode.Error.withdrawLimit(amount: 0, period: .perBlock)
+        }
+        
         let perTransactionLimit = getWithdrawalLimit(.perTransaction)
 
         if amount > perTransactionLimit {
@@ -497,6 +504,11 @@ extension CrowdNode {
         let chain = DWEnvironment.sharedInstance().currentChain
 
         return withdrawals.compactMap { tx in chain.amountReceived(from: tx) }.reduce(0, +)
+    }
+    
+    private func updateLastWithdrawalBlock() {
+        let lastSyncBlockHeight = DWEnvironment.sharedInstance().currentChain.lastSyncBlockHeight
+        prefs.lastWithdrawalBlock = lastSyncBlockHeight
     }
 }
 
@@ -597,6 +609,8 @@ extension CrowdNode {
             return prefs.crowdNodeWithdrawalLimitPerHour
         case .perDay:
             return prefs.crowdNodeWithdrawalLimitPerDay
+        case .perBlock:
+            return 0
         }
     }
 }

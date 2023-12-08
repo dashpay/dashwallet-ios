@@ -136,6 +136,9 @@
 /* No comment provided by engineer. */
 "Add your Friends & Family" = "Add your Friends & Family";
 
+/* Usernames */
+"Add your friends & family" = "Add your friends & family";
+
 /* No comment provided by engineer. */
 "Address" = "نشانی";
 
@@ -147,6 +150,12 @@
 
 /* Coinbase */
 "Advanced users who have a very high level of technical expertise can determine your transaction history" = "Advanced users who have a very high level of technical expertise can determine your transaction history";
+
+/* Usernames */
+"After the voting ends we will notify you about its results" = "After the voting ends we will notify you about its results";
+
+/* Usernames */
+"After voting is completed on %@ you can create any username that has not already been created" = "After voting is completed on %@ you can create any username that has not already been created";
 
 /* No comment provided by engineer. */
 "Agree" = "Agree";
@@ -218,7 +227,7 @@
 "As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
 
 /* CrowdNode */
-"As most people do not have exactly 1000 Dash at hand, CrowdNode has made a service where they by pooling deposits from members can achieve the benefits of owning a Masternode." = "از آنجا که بیشتر کاربران هزار دش در اختیار ندارند، کراودنود این خدمت را فراهم کرده تا با در کنار هم قرار گرفتن موجودی‌ کاربران مختلف، همه آنها بنوانند از مزایای در اختیار داشتن یک مسترنود بهره‌مند شوند. ";
+"As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode.";
 
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "ATM search works better with Location Services turned on";
@@ -326,6 +335,9 @@
 /* Buy/Sell */
 "Buy/Sell" = "خرید/فروش";
 
+/* Voting */
+"By tapping the \"Vote for All\" button, you will automatically vote for all of the filtered usernames (%ld) that were submitted first" = "By tapping the \"Vote for All\" button, you will automatically vote for all of the filtered usernames (%ld) that were submitted first";
+
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code.";
 
@@ -334,6 +346,12 @@
 
 /* No comment provided by engineer. */
 "Cancel" = "لغو";
+
+/* Voting */
+"Cancel Approval" = "Cancel Approval";
+
+/* No comment provided by engineer. */
+"Cancel Request" = "Cancel Request";
 
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly.";
@@ -400,6 +418,9 @@
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "پین کد را تائید کنید";
+
+/* Voting */
+"Confirm Username Request" = "Confirm Username Request";
 
 /* No comment provided by engineer. */
 "Confirming" = "در حال تائید";
@@ -483,6 +504,9 @@
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "ایجاد یک کیف پول جدید";
+
+/* Usernames */
+"Create a username" = "Create a username";
 
 /* No comment provided by engineer. */
 "Create a username, add your friends." = "Create a username, add your friends.";
@@ -634,6 +658,9 @@
 /* No comment provided by engineer. */
 "Do not take a screenshot" = "اسکرین‌شات نگیرید";
 
+/* Usernames */
+"Do you really want to cancel the username request?" = "Do you really want to cancel the username request?";
+
 /* No comment provided by engineer. */
 "Done" = "انجام شد";
 
@@ -694,6 +721,9 @@
 /* No comment provided by engineer. */
 "Enter your Gravatar Email ID" = "Enter your Gravatar Email ID";
 
+/* Voting */
+"Enter your voting key" = "Enter your voting key";
+
 /* No comment provided by engineer. */
 "Error" = "خطا";
 
@@ -702,6 +732,9 @@
 
 /* No comment provided by engineer. */
 "Error Upgrading" = "Error Upgrading";
+
+/* Usernames */
+"Example post" = "Example post";
 
 /* No comment provided by engineer. */
 "Exit" = "Exit";
@@ -925,6 +958,12 @@
 /* No comment provided by engineer. */
 "I wrote it down" = "عبارت بازیابی را نوشتم";
 
+/* Voting */
+"Identity" = "Identity";
+
+/* Usernames */
+"If somebody else requests the same username as you, we will let the network decide whom to give this username" = "If somebody else requests the same username as you, we will let the network decide whom to give this username";
+
 /* CrowdNode */
 "If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "اگر عبارت ورودی‌تان را گم کنید، می‌توانید با استفاده از روش‌های دیگر احراز هویت شوید تا بتوانید به موجودی کراودنود دسترسی یابید. ";
 
@@ -933,6 +972,9 @@
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "If you still would like to wipe it please input: \"%@\"";
+
+/* Usernames */
+"If you tap “Cancel Request”, you will still have a chance to request another username without paying again" = "If you tap “Cancel Request”, you will still have a chance to request another username without paying again";
 
 /* No comment provided by engineer. */
 "If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "If you would like to save manually reclassified types for transactions you should export a CSV transaction file.";
@@ -963,6 +1005,12 @@
 
 /* CrowdNode */
 "In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster.";
+
+/* Usernames */
+"In case you lose your passphrase you will lose your right to your requested username." = "In case you lose your passphrase you will lose your right to your requested username.";
+
+/* Usernames */
+"In case your request is not approved" = "In case your request is not approved";
 
 /* CrowdNode Portal */
 "In process…" = "اجرای فرآیند...";
@@ -1051,6 +1099,9 @@
 /* No comment provided by engineer. */
 "Invite your family, find your friends by searching their usernames" = "Invite your family, find your friends by searching their usernames";
 
+/* Usernames */
+"Invite your family, find your friends by searching their usernames." = "Invite your family, find your friends by searching their usernames.";
+
 /* No comment provided by engineer. */
 "Invite your friends & family" = "Invite your friends & family";
 
@@ -1096,6 +1147,9 @@
 /* CrowdNode */
 "Joining the pool" = "پیوستن به مجموعه";
 
+/* Usernames */
+"Keep your passphrase safe" = "Keep your passphrase safe";
+
 /* No comment provided by engineer. */
 "Key Id" = "کلید شناسه";
 
@@ -1135,6 +1189,9 @@
 
 /* No comment provided by engineer. */
 "Let’s Get Started" = "Let’s Get Started";
+
+/* Voting */
+"Link" = "Link";
 
 /* Dash Service Overview */
 "Link Coinbase Account" = "حساب کوین‌بیس‌ را متصل کنید";
@@ -1199,6 +1256,9 @@
 /* Voting */
 "Low to high" = "Low to high";
 
+/* Usernames */
+"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow";
+
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "اجازه استفاده از جی‌پی‌اس";
 
@@ -1207,6 +1267,9 @@
 
 /* Map */
 "Map" = "Map";
+
+/* Voting */
+"Masternode IP address" = "Masternode IP address";
 
 /* No comment provided by engineer. */
 "Masternode Keys" = "کلید مسترنود";
@@ -1223,8 +1286,14 @@
 /* No comment provided by engineer. */
 "Masternode Update" = "به‌روزرسانی مسترند";
 
+/* Voting */
+"Masternode Voting Key" = "Masternode Voting Key";
+
 /* Contracted variant of 'Maximum' word */
 "Max" = "حداکثر";
+
+/* Usernames */
+"Maximum 75 characters" = "Maximum 75 characters";
 
 /* No comment provided by engineer. */
 "Maybe later" = "Maybe later";
@@ -1343,6 +1412,9 @@
 /* No comment provided by engineer. */
 "Not a valid Dash address" = "Not a valid Dash address";
 
+/* Usernames */
+"Not a valid URL" = "Not a valid URL";
+
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "این طور نیست که همه این فروشندگان، دش را به صورت مستقیم بپذیرند. اما می‌توانید با دش اقدام به خرید کارت هدیه کنید.";
 
@@ -1369,6 +1441,9 @@
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Once %@ accepts your request you can Pay Directly to Username";
+
+/* Voting */
+"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "Once the voting ends you can create any username you want as long as it hasn’t already been created";
 
 /* Online */
 "Online" = "آنلاین";
@@ -1403,6 +1478,9 @@
 /* No comment provided by engineer. */
 "Owner Keys" = "کلیدهای مالک";
 
+/* Usernames */
+"Paste the link" = "Paste the link";
+
 /* No comment provided by engineer. */
 "Paste your image URL" = "Paste your image URL";
 
@@ -1415,8 +1493,14 @@
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "Pay Directly to Username";
 
+/* Usernames */
+"Pay now and if not approved, you can create a different name without paying again" = "Pay now and if not approved, you can create a different name without paying again";
+
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "Pay to usernames. No more alphanumeric addresses";
+
+/* Usernames */
+"Pay to usernames. No more alphanumeric addresses." = "Pay to usernames. No more alphanumeric addresses.";
 
 /* Coinbase/Buy Dash */
 "Pay with" = "پرداخت با";
@@ -1469,6 +1553,9 @@
 /* CrowdNode */
 "per transaction" = "به ازای هر تراکنش";
 
+/* Usernames */
+"Personalise profile" = "Personalise profile";
+
 /* No comment provided by engineer. */
 "Personalize" = "Personalize";
 
@@ -1508,11 +1595,17 @@
 /* No comment provided by engineer. */
 "Please try scanning again" = "Please try scanning again";
 
+/* Usernames */
+"Please vote to approve my requested Dash username - %@" = "Please vote to approve my requested Dash username - %@";
+
 /* No comment provided by engineer. */
 "Please Wait" = "Please Wait";
 
 /* No comment provided by engineer. */
 "Please wait" = "لطفا منتظر بمانید";
+
+/* CrowdNode */
+"Please wait before initiating the next withdrawal" = "Please wait before initiating the next withdrawal";
 
 /* No comment provided by engineer. */
 "Please wait until the wallet is fully synced before exporting your transaction history" = "Please wait until the wallet is fully synced before exporting your transaction history";
@@ -1541,6 +1634,9 @@
 /* CrowdNode Portal */
 "Protect your savings" = " از پس‌اندازهایتان محافظت کنید";
 
+/* Usernames */
+"Prove your identity" = "Prove your identity";
+
 /* No comment provided by engineer. */
 "Provider Address" = "Provider Address";
 
@@ -1558,6 +1654,9 @@
 
 /* No comment provided by engineer. */
 "Quick Receive" = "دریافت سریع";
+
+/* Voting */
+"Quick Voting" = "Quick Voting";
 
 /* No comment provided by engineer. */
 "Quorums validated: %d/%d" = "Quorums validated: %1$d/%2$d";
@@ -1634,6 +1733,15 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "Report an Issue";
 
+/* Voting */
+"Request details" = "Request details";
+
+/* Voting */
+"Request Username" = "Request Username";
+
+/* Voting */
+"Request your username" = "Request your username";
+
 /* An action */
 "Rescan" = "اسکن دوباره";
 
@@ -1663,6 +1771,9 @@
 
 /* No comment provided by engineer. */
 "Review & Rate the app" = "Review & Rate the app";
+
+/* Voting */
+"Review the posting below to verify the ownership of this username" = "Review the posting below to verify the ownership of this username";
 
 /* No comment provided by engineer. */
 "Reward" = "Reward";
@@ -1981,13 +2092,19 @@
 "The code is incorrect. Please check and try again!" = "کد وارد شده درست نیست. لطفا دوباره آن را بررسی کرده و وارد کنید! ";
 
 /* CrowdNode */
-"The Dash Network is driven by a number of Masternodes which is an essential part of facilitating payments." = "شبکه دش توسط تعدادی مسترنود اداره می‌شود که بخشی اساسی در تسهیل پرداخت‌ها هستند. ";
+"The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments.";
+
+/* Usernames */
+"The Dash network must vote to approve your username before it is created." = "The Dash network must vote to approve your username before it is created.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device.";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
+
+/* Usernames */
+"The link you send will be visible to all of the Dash network." = "The link you send will be visible to all of the Dash network.";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "The minimum amount you can send is %@";
@@ -2006,6 +2123,9 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "There are no users that match with the name %@ in your contacts";
+
+/* Usernames */
+"There was a network error, you can try again at no extra cost" = "There was a network error, you can try again at no extra cost";
 
 /* Coinbase */
 "There was an error while obtaining new address" = "There was an error while obtaining new address";
@@ -2031,6 +2151,9 @@
 /* CrowdNode */
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "این رقم نشانگر درصد بازدهی سالانه یک مسترنود منهای کارمزد ۱۵ درصدی کراودنود است. این نرخ بازگشت سرمایه تضمینی نیست و ممکن است بر اساس تعداد حاضران در کراودنود و قیمت دش پائین و بالا رود. ";
 
+/* Voting */
+"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "This username has already been requested, but you can request it too and let the network vote to decide if you can have it";
+
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase";
 
@@ -2042,6 +2165,9 @@
 
 /* Coinbase */
 "to Dash Wallet on this device" = "to Dash Wallet on this device";
+
+/* Usernames */
+"To request a username on the Dash Network, you need to have more than %@ Dash" = "To request a username on the Dash Network, you need to have more than %@ Dash";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "برای آغاز سپرده‌گذاری، ابتدا یک حساب در کراودنود ایجاد کنید و یا به یک حساب موجود در آن متصل شوید. ";
@@ -2095,6 +2221,9 @@
 
 /* An action */
 "Try again" = "Try again";
+
+/* No comment provided by engineer. */
+"Try Again" = "Try Again";
 
 /* Alert title */
 "Turn device passcode on" = "Turn device passcode on";
@@ -2177,6 +2306,9 @@
 /* No comment provided by engineer. */
 "Upload your picture, personalize your identity" = "Upload your picture, personalize your identity";
 
+/* Usernames */
+"Upload your picture, personalize your identity." = "Upload your picture, personalize your identity.";
+
 /* No comment provided by engineer. */
 "Uploading your picture to the network" = "Uploading your picture to the network";
 
@@ -2192,6 +2324,9 @@
 /* No comment provided by engineer. */
 "User (Fetching Info)" = "User (Fetching Info)";
 
+/* Voting */
+"Username" = "Username";
+
 /* No comment provided by engineer. */
 "Username already found" = "Username already found";
 
@@ -2203,6 +2338,9 @@
 
 /* Voting */
 "Username voting" = "Username voting";
+
+/* Usernames */
+"Username was successfully requested" = "Username was successfully requested";
 
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
@@ -2228,6 +2366,12 @@
 /* CrowdNode */
 "Verify your API Dash address" = "نشانی ای‌پی‌آی دش‌تان را تائید کنید. ";
 
+/* Usernames */
+"Verify your identity" = "Verify your identity";
+
+/* Usernames */
+"Verify your identity to enhance your chances of getting your requested username" = "Verify your identity to enhance your chances of getting your requested username";
+
 /* adjective, security level */
 "Very High" = "بسیار بالا";
 
@@ -2250,7 +2394,16 @@
 "View Recovery Phrase" = "مشاهده عبارت بازیابی";
 
 /* Voting */
+"Vote for All" = "Vote for All";
+
+/* Voting */
 "Vote only on duplicates" = "Vote only on duplicates";
+
+/* Voting */
+"Vote to Approve" = "Vote to Approve";
+
+/* Voting */
+"Votes:" = "Votes:";
 
 /* Voting */
 "Votes: High to low" = "Votes: High to low";
@@ -2263,6 +2416,12 @@
 
 /* No comment provided by engineer. */
 "Voting Keys" = "کلیدهای رای‌دهی";
+
+/* Usernames */
+"Voting will not be required forever" = "Voting will not be required forever";
+
+/* Voting */
+"Voting:" = "Voting:";
 
 /* No comment provided by engineer. */
 "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "منتظر بمانید تا بلاکچین کاملا به‌روزرسانی شود تا بتوانید سابقه تراکنش‌هایتان را ببینید. برای ورود به حساب یا ثبت‌نام به وب‌سایت کراودنود بروید. ";
@@ -2309,8 +2468,14 @@
 /* No comment provided by engineer. */
 "Welcome" = "خوش آمدید";
 
+/* Usernames */
+"Welcome to Dash Pay" = "Welcome to Dash Pay";
+
 /* No comment provided by engineer. */
 "Welcome to DashPay" = "Welcome to DashPay";
+
+/* Usernames */
+"What is username voting?" = "What is username voting?";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "وقتی که تراکنش تائید شد، کیف پول کاغذی مذکور دیگر بی‌ارزش خواهد شد و به دلایل امنیتی، بهتر است دیگر از آن استفاده نکنید. ";
@@ -2386,6 +2551,9 @@
 "You can change how / when your reward earnings are paid to you." = "می‌توانید نحوه برداشت/زمان برداشت پاداشی که به شما داده می‌شود را تغییر دهید. ";
 
 /* Voting */
+"You can enter your key in any of the following formats: WIF/base58/base64/hex" = "You can enter your key in any of the following formats: WIF/base58/base64/hex";
+
+/* Voting */
 "You can review all requests but you only need to vote on duplicates" = "You can review all requests but you only need to vote on duplicates";
 
 /* CrowdNode */
@@ -2412,6 +2580,9 @@
 /* No comment provided by engineer. */
 "You have chose \"%@\" as your username. Username cannot be changed once it is registered." = "You have chose \"%@\" as your username. Username cannot be changed once it is registered.";
 
+/* Voting */
+"You have entered an invalid key" = "You have entered an invalid key";
+
 /* No comment provided by engineer. */
 "You have insufficient funds to proceed" = "You have insufficient funds to proceed";
 
@@ -2426,6 +2597,9 @@
 
 /* CrowdNode */
 "You need at least %@ on your Dash Wallet" = "You need at least %@ on your Dash Wallet";
+
+/* CrowdNode */
+"You need to wait 5 minutes before initiating another withdrawal" = "You need to wait 5 minutes before initiating another withdrawal";
 
 /* CrowdNode */
 "You only need %@ to join the pool." = "You only need %@ to join the pool.";
@@ -2444,6 +2618,9 @@
 
 /* No comment provided by engineer. */
 "You should have at least %@ to proceed with the CrowdNode verification." = "You should have at least %@ to proceed with the CrowdNode verification.";
+
+/* Usernames */
+"You should have more than %@ Dash to create a username" = "You should have more than %@ Dash to create a username";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "باید با استفاده از مرورگرتان، از وب‌سایت آپهولد خارج شوید";
@@ -2502,6 +2679,9 @@
 /* CrowdNode */
 "Your primary Dash address that you currently use for your CrowdNode account" = "نشانی اصلی دش شما که از آن در حال حاضر برای حساب کراودنود  استفاده می‌کنید. ";
 
+/* Usernames */
+"Your request was cancelled" = "Your request was cancelled";
+
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
 
@@ -2510,6 +2690,12 @@
 
 /* No comment provided by engineer. */
 "Your username %@ is being created on the Dash Network" = "Your username %@ is being created on the Dash Network";
+
+/* No comment provided by engineer. */
+"Your vote was cancelled" = "Your vote was cancelled";
+
+/* Voting */
+"Your vote was submitted" = "Your vote was submitted";
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "کیف پول‌تان اکنون امن است. هر گاه خواستید می‌توانید از این عبارت بازیابی برای بازگرداندن حساب‌تان روی دستگاهی دیگر استفاده کنید. ";

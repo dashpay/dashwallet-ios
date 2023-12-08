@@ -18,7 +18,6 @@
 #import "DWUserProfileSendRequestCell.h"
 
 #import "dashwallet-Swift.h"
-#import "DWShadowView.h"
 #import "DWUIKit.h"
 #import "DWUserProfileModel.h"
 

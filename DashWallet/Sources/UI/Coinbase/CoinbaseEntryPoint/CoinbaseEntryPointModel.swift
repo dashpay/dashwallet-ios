@@ -21,7 +21,7 @@ import Foundation
 
 struct CoinbaseEntryPointItem: IntegrationEntryPointItem {
     let type: IntegrationItemType
-    static let supportedCases = [.buyDash, .convertCrypto, .transferDash].map { CoinbaseEntryPointItem(type: $0) }
+    static let supportedCases = [.buyDash, /*.convertCrypto,*/ .transferDash].map { CoinbaseEntryPointItem(type: $0) }
 
     var title: String { type.title }
     var icon: String { type.icon }
@@ -34,8 +34,8 @@ struct CoinbaseEntryPointItem: IntegrationEntryPointItem {
             return NSLocalizedString("Receive directly into Dash Wallet", comment: "Coinbase Entry Point")
         case .sellDash:
             return NSLocalizedString("Receive directly into Coinbase", comment: "Coinbase Entry Point")
-        case .convertCrypto:
-            return NSLocalizedString("Between Dash Wallet and Coinbase", comment: "Coinbase Entry Point")
+//        case .convertCrypto:
+//            return NSLocalizedString("Between Dash Wallet and Coinbase", comment: "Coinbase Entry Point")
         case .transferDash:
             return NSLocalizedString("Between Dash Wallet and Coinbase", comment: "Coinbase Entry Point")
         }
