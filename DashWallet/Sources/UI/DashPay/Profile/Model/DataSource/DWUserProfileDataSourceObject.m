@@ -57,6 +57,11 @@ NS_ASSUME_NONNULL_END
         _friendBlockchainIdentity = friendBlockchainIdentity;
         _items = [NSMutableArray array];
         _hasDataToShow = (frc != nil) || (friendToMe != nil) || (meToFriend != nil);
+        
+        if (MOCK_DASHPAY) {
+            _hasDataToShow = YES;
+            _incomingNotification = [[DWDPAcceptedRequestNotificationObject alloc] initWithBlockchainIdentity:friendBlockchainIdentity];
+        }
 
         BOOL isFriendInitiated;
         if (friendToMe && meToFriend) {
@@ -75,7 +80,7 @@ NS_ASSUME_NONNULL_END
                                                                         blockchainIdentity:friendBlockchainIdentity
                                                                          isInitiatedByThem:isFriendInitiated];
         }
-        else {
+        else if (!MOCK_DASHPAY) {
             // mark it as added to the list to skip
             _incomingNotificationAdded = YES;
         }
@@ -83,7 +88,7 @@ NS_ASSUME_NONNULL_END
         if (meToFriend) {
             _outgoingNotification =
                 [[DWDPOutgoingRequestNotificationObject alloc] initWithFriendRequestEntity:meToFriend
-                                                                        blockchainIdentity:myBlockchainIdentity
+                                                                        blockchainIdentity:friendBlockchainIdentity
                                                                            isInitiatedByMe:!isFriendInitiated];
         }
         else {
@@ -138,15 +143,32 @@ NS_ASSUME_NONNULL_END
         NSAssert(item >= 0, @"Inconsistent data source state: item index is out of bounds");
 
         const NSUInteger count = self.frc.sections.firstObject.numberOfObjects;
-        if (item < count) {
+        if (item < count || MOCK_DASHPAY) {
             NSIndexPath *txIndexPath = [NSIndexPath indexPathForItem:item inSection:0];
             DSTxOutputEntity *txOutputEntity = [self.frc objectAtIndexPath:txIndexPath];
             DSTransaction *transaction = [txOutputEntity.transaction transaction];
-            NSDate *txDate = transaction.date;
-
+            
+            if (MOCK_DASHPAY) {
+                DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+                NSString *address = @"yeRZBWYfeNE4yVUHV4ZLs83Ppn9aMRH57A"; // Testnet faucet address, used as a mocked address for a contact
+                
+                for (DSTransaction *tx in wallet.allTransactions) {
+                    if ([tx.outputAddresses containsObject:address]) {
+                        transaction = tx;
+                        break;
+                    }
+                }
+            }
+            
+            NSDate *txDate = [transaction date];
+            
+            if (MOCK_DASHPAY && transaction == nil) {
+                txDate = [NSDate date];
+            }
+            
             DWDPTxObject *txObject = [[DWDPTxObject alloc] initWithTransaction:transaction
                                                                   dataProvider:self.txDataProvider
-                                                                      username:self.friendBlockchainIdentity.currentDashpayUsername];
+                                                            blockchainIdentity:self.friendBlockchainIdentity];
 
             if (self.incomingNotificationAdded == NO && [self isNotificationNewerThan:self.incomingNotification txDate:txDate]) {
                 [self.items addObject:self.incomingNotification];

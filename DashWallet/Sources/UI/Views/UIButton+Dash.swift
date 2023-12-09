@@ -267,7 +267,7 @@ class ActionButton: ActivityIndicatorButton {
 
                 var container = incoming
                 container.foregroundColor = foregroundColor
-                container.font = .title3
+                container.font = .dw_mediumFont(ofSize: 15)
                 return container
             }
         }
@@ -317,7 +317,7 @@ final class GrayButton: ActivityIndicatorButton {
 
                 var container = incoming
                 container.foregroundColor = foregroundColor
-                container.font = .title3
+                container.font = .dw_mediumFont(ofSize: 15)
                 return container
             }
         }

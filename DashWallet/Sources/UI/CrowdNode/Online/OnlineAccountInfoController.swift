@@ -16,6 +16,15 @@
 //
 
 final class OnlineAccountInfoController: UIViewController {
+    @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var recoveryTitle: UILabel!
+    @IBOutlet var recoveryDescription: UILabel!
+    @IBOutlet var historyTitle: UILabel!
+    @IBOutlet var historyDescription: UILabel!
+    @IBOutlet var payoutTitle: UILabel!
+    @IBOutlet var payoutDescription: UILabel!
+    @IBOutlet var continueButton: UIButton!
+    
     @objc
     static func controller() -> OnlineAccountInfoController {
         vc(OnlineAccountInfoController.self, from: sb("CrowdNode"))
@@ -24,5 +33,23 @@ final class OnlineAccountInfoController: UIViewController {
     @IBAction
     func continueAction() {
         navigationController?.replaceLast(1, with: OnlineAccountEmailController.controller())
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        configureHierarchy()
+    }
+}
+
+extension OnlineAccountInfoController {
+    private func configureHierarchy() {
+        titleLabel.text = NSLocalizedString("Why do you need an online account?", comment: "CrowdNode")
+        recoveryTitle.text = NSLocalizedString("Account Recovery", comment: "CrowdNode")
+        recoveryDescription.text = NSLocalizedString("If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds.", comment: "CrowdNode")
+        historyTitle.text = NSLocalizedString("Transaction History", comment: "CrowdNode")
+        historyDescription.text = NSLocalizedString("You can see detailed information about your deposits, withdrawals and reward earnings.", comment: "CrowdNode")
+        payoutTitle.text = NSLocalizedString("Payout Options", comment: "CrowdNode")
+        payoutDescription.text = NSLocalizedString("You can change how / when your reward earnings are paid to you.", comment: "CrowdNode")
+        continueButton.setTitle(NSLocalizedString("Continue", comment: ""), for: .normal)
     }
 }

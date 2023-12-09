@@ -133,3 +133,16 @@ public enum PaymentMethodType: String, Codable {
         }
     }
 }
+
+extension PaymentMethodType {
+    var isBankAccount: Bool {
+        get {
+            switch self {
+            case .achBankAccount, .sepaBankAccount, .idealBankAccount, .eftBankAccount:
+                return true
+            default:
+                return false
+            }
+        }
+    }
+}

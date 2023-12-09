@@ -30,6 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, readonly, nonatomic, strong) UIImage *qrCodeImage;
 @property (nullable, readonly, nonatomic, copy) NSString *paymentAddress;
+#if DASHPAY
+@property (nullable, readonly, nonatomic, copy) NSString *username;
+#endif
 @property (readonly, nonatomic, assign) CGSize qrCodeSize;
 @property (readonly, nonatomic, assign) uint64_t amount;
 @property (nonatomic, weak) id<DWReceiveModelDelegate> delegate;
@@ -38,6 +41,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)copyAddressToPasteboard;
 - (void)copyQRImageToPasteboard;
+#if DASHPAY
+- (void)copyUsernameToPasteboard;
+#endif
 
 - (nullable NSString *)requestAmountReceivedInfoIfReceived;
 

@@ -37,4 +37,5 @@ enum WithdrawalLimitPeriod: Int {
     case perTransaction = 0
     case perHour = 1
     case perDay = 2
+    case perBlock = 3
 }

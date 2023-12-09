@@ -24,6 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWHomeViewController (DWShortcuts)
 
 - (void)performActionForShortcut:(DWShortcutAction *)action sender:(UIView *)sender;
+- (void)showCreateUsernameWithInvitation:(nullable NSURL *)invitationURL
+                         definedUsername:(nullable NSString *)definedUsername;
 
 @end
 

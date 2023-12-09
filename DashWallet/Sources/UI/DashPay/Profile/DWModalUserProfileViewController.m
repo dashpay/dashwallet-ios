@@ -19,7 +19,6 @@
 
 #import "DWUserProfileViewController.h"
 #import "UIViewController+DWEmbedding.h"
-#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -38,10 +37,12 @@ NS_ASSUME_NONNULL_END
                 dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
-        _profileController = [[DWUserProfileViewController alloc] initWithItem:item
-                                                                      payModel:payModel
-                                                                  dataProvider:dataProvider
-                                                            shouldSkipUpdating:YES];
+        _profileController =
+            [[DWUserProfileViewController alloc] initWithItem:item
+                                                     payModel:payModel
+                                                 dataProvider:dataProvider
+                                           shouldSkipUpdating:YES
+                                            shownAfterPayment:YES];
     }
     return self;
 }
@@ -57,6 +58,13 @@ NS_ASSUME_NONNULL_END
 
     UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:self.profileController];
     [self dw_embedChild:navigationController];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    [self.profileController.view setNeedsLayout];
+    [self.profileController.view layoutIfNeeded];
 }
 
 - (void)cancelButtonAction {

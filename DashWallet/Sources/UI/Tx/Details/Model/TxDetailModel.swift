@@ -19,7 +19,7 @@ import Foundation
 
 // MARK: - TxDetailModel
 
-@objc
+@objc(DWTxDetailModel)
 class TxDetailModel: NSObject {
     var transaction: Transaction
     var transactionId: String
@@ -181,9 +181,13 @@ extension TxDetailModel {
             return []
         }
 
+        #if DASHPAY
         let user = DWDPUserObject(blockchainIdentity: blockchainIdentity)
         let model = DWTitleDetailCellModel(title: title, userItem: user, copyableData: nil)
         return [model]
+        #endif
+
+        return []
     }
 
     private func destinationUsers(with title: String, font: UIFont) -> [DWTitleDetailItem] {
@@ -191,10 +195,15 @@ extension TxDetailModel {
             return []
         }
 
+        #if DASHPAY
         let user = DWDPUserObject(blockchainIdentity: blockchainIdentity)
         let model = DWTitleDetailCellModel(title: title, userItem: user, copyableData: nil)
         return [model]
+        #endif
+
+        return []
     }
+
 
     func inputAddresses(with font: UIFont) -> [DWTitleDetailItem] {
         if !shouldDisplayInputAddresses {

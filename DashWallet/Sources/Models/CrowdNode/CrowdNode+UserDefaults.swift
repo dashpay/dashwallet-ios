@@ -31,6 +31,7 @@ private let kConfirmationDialogShown = "crowdNodeConfirmationDialogShownKey"
 private let kOnlineInfoShown = "crowdNodeOnlineInfoShownKey"
 private let kSignedEmailMessageId = "crowdNodeSignedEmailMessageId"
 private let kShouldShowConfirmedNotification = "shouldShowConfirmedNotification"
+private let kLastWithdrawalBlock = "lastWithdrawalBlockKey"
 
 // MARK: - CrowdNodeDefaults
 
@@ -153,6 +154,15 @@ class CrowdNodeDefaults {
             UserDefaults.standard.set(value, forKey: kSignedEmailMessageId)
         }
     }
+    
+    private var _lastWithdrawalBlock: UInt32? = nil
+    var lastWithdrawalBlock: UInt32 {
+        get { _lastWithdrawalBlock ?? UserDefaults.standard.value(forKey: kLastWithdrawalBlock) as? UInt32 ?? 0 }
+        set(value) {
+            _lastWithdrawalBlock = value
+            UserDefaults.standard.set(value, forKey: kLastWithdrawalBlock)
+        }
+    }
 
 
     func resetUserDefaults() {
@@ -165,5 +175,6 @@ class CrowdNodeDefaults {
         confirmationDialogShown = false
         onlineInfoShown = false
         signedEmailMessageId = -1
+        lastWithdrawalBlock = 0
     }
 }

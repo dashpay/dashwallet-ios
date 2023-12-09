@@ -73,6 +73,9 @@ extension BalanceView {
     }
 
     private func reloadView() {
+        guard let dashBalanceLabel,
+              let fiatBalanceLabel else { return }
+        
         let mainAmountString = dataSource?.mainAmountString ?? NumberFormatter.dashFormatter.string(from: 0)!
         let supplementaryAmountString = dataSource?.supplementaryAmountString ?? NumberFormatter.fiatFormatter.string(from: 0)!
 

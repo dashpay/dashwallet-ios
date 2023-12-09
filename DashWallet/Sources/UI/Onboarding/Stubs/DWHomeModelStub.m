@@ -55,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
         _stubTxs = [DWTransactionStub stubs];
 
         _receiveModel = [[DWReceiveModelStub alloc] init];
-#if DASHPAY_ENABLED
+#ifdef DASHPAY
         _dashPayModel = [[DWDashPayModel alloc] init]; // TODO: DP consider using stub
 #endif                                                 /* DASHPAY_ENABLED */
         _payModel = [[DWPayModelStub alloc] init];

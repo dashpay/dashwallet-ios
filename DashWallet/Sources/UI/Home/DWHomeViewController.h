@@ -29,6 +29,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) id<DWHomeProtocol> model;
 @property (nullable, nonatomic, weak) id<DWHomeViewControllerDelegate, DWWipeDelegate> delegate;
 
+#if DASHPAY
+- (void)handleDeeplink:(NSURL *)url definedUsername:(nullable NSString *)definedUsername;
+#endif
+
 @end
 
 NS_ASSUME_NONNULL_END

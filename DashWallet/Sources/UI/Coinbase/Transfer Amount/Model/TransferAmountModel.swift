@@ -103,7 +103,7 @@ final class TransferAmountModel: CoinbaseAmountModel, CoinbaseTransactionSendabl
 
         obtainNewAddress { [weak self] address in
             guard let address else {
-                self?.delegate?.transferFromCoinbaseToWalletDidFail(with: .transactionFailed(.failedToObtainNewAddress))
+                self?.delegate?.transferFromCoinbaseToWalletDidFail(with: Coinbase.Error.transactionFailed(.failedToObtainNewAddress))
                 return
             }
 

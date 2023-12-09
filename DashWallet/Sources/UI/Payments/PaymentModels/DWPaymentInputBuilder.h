@@ -33,7 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DWPaymentInput *)paymentInputWithURL:(NSURL *)url;
 
+#if DASHPAY
 - (DWPaymentInput *)paymentInputWithUserItem:(id<DWDPBasicUserItem>)userItem;
+#endif
 
 @end
 

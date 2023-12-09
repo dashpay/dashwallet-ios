@@ -68,7 +68,7 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         viewModel.showNotificationOnResult = false
-        
+
         if mode == .deposit && viewModel.shouldShowWithdrawalLimitsDialog {
             showWithdrawalLimitsInfo()
             viewModel.shouldShowWithdrawalLimitsDialog = false
@@ -128,27 +128,21 @@ final class CrowdNodeTransferController: SendAmountViewController, NetworkReacha
     }
 
     private func handleWithdraw(amount: UInt64) {
-        let vc = WithdrawalConfirmationController.controller(amount: amount, currency: model.localCurrencyCode)
-        vc.confirmedHandler = { [weak self] in
-            guard let wSelf = self else { return }
-
-            Task {
-                wSelf.showActivityIndicator()
-
-                do {
-                    if try await wSelf.viewModel.withdraw(amount: amount) {
-                        wSelf.showSuccessfulStatus()
-                    }
-                } catch CrowdNode.Error.withdrawLimit(_, let period) {
-                    wSelf.showWithdrawalLimitsError(period: period)
-                } catch {
-                    wSelf.showErrorStatus(err: error)
+        showActivityIndicator()
+        
+        Task {
+            do {
+                if try await viewModel.withdraw(amount: amount) {
+                    showSuccessfulStatus()
                 }
-
-                wSelf.hideActivityIndicator()
+            } catch CrowdNode.Error.withdrawLimit(_, let period) {
+                showWithdrawalLimitsError(period: period)
+            } catch {
+                showErrorStatus(err: error)
             }
+
+            hideActivityIndicator()
         }
-        present(vc, animated: true, completion: nil)
     }
 
     deinit {
@@ -272,6 +266,11 @@ extension CrowdNodeTransferController {
     }
 
     private func showWithdrawalLimitsError(period: WithdrawalLimitPeriod) {
+        if period == .perBlock {
+            showPerBlockLimitWarning()
+            return
+        }
+        
         let vc = WithdrawalLimitsController()
         var buttonText: String? = nil
         let isOnlineAccountDone = viewModel.onlineAccountState == .done
@@ -303,6 +302,21 @@ extension CrowdNodeTransferController {
         vc.model = WithdrawalLimitDialogModel(icon: "image.crowdnode.info", buttonText: nil, limits: viewModel.withdrawalLimits, highlightedLimit: -1)
         let nvc = BaseNavigationController(rootViewController: vc)
         present(nvc, animated: true)
+    }
+    
+    private func showPerBlockLimitWarning() {
+        let title = NSLocalizedString("Please wait before initiating the next withdrawal", comment: "CrowdNode")
+        let message = NSLocalizedString("You need to wait 5 minutes before initiating another withdrawal",
+                                        comment: "CrowdNode")
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        
+        if #available(iOS 16.0, *) {
+            alert.severity = .critical
+        }
+        
+        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default)
+        alert.addAction(okAction)
+        present(alert, animated: true)
     }
 }
 

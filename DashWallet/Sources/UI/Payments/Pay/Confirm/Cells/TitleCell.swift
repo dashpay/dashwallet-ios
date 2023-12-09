@@ -1,4 +1,4 @@
-//  
+//
 //  Created by PT
 //  Copyright © 2023 Dash Core Group. All rights reserved.
 //
@@ -23,32 +23,32 @@ import UIKit
 
 class TitleCell: UITableViewCell {
     let titleLabel: UILabel
-    
+
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         titleLabel = UILabel()
-        
+
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        
+
         configureHierarchy()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     public func update(with title: String) {
         titleLabel.text = title
     }
-    
+
     internal func configureHierarchy() {
         backgroundColor = .dw_background()
         contentView.backgroundColor = .dw_background()
-        
+
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = UIFont.dw_font(forTextStyle: .footnote).withWeight(UIFont.Weight.medium.rawValue)
         titleLabel.textColor = .dw_secondaryText()
         contentView.addSubview(titleLabel)
-        
+
         NSLayoutConstraint.activate([
             titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             titleLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),

@@ -26,6 +26,7 @@
 
 @synthesize blockchainIdentity = _blockchainIdentity;
 @synthesize username = _username;
+@synthesize displayName = _displayName;
 
 - (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     self = [super init];
@@ -47,7 +48,12 @@
 }
 
 - (NSString *)displayName {
-    return nil;
+    if (_displayName == nil) {
+        BOOL hasDisplayName = _blockchainIdentity.displayName.length > 0;
+        _displayName = hasDisplayName ? _blockchainIdentity.displayName : nil;
+    }
+    
+    return _displayName;
 }
 
 - (NSString *)username {
@@ -61,7 +67,7 @@
 
 - (NSAttributedString *)title {
     NSDictionary<NSAttributedStringKey, id> *attributes = @{NSFontAttributeName : [UIFont dw_itemTitleFont]};
-    return [[NSAttributedString alloc] initWithString:self.displayName ?: self.username attributes:attributes];
+    return [[NSAttributedString alloc] initWithString:(self.displayName ?: self.username) ?: @"<Fetching Contact>" attributes:attributes];
 }
 
 - (NSString *)subtitle {
@@ -72,9 +78,9 @@
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
     NSPredicate *predicate = [NSPredicate predicateWithFormat:
-                                              @"sourceContact.associatedBlockchainIdentity.uniqueID == %@",
+                                              @"destinationContact.associatedBlockchainIdentity.uniqueID == %@",
                                               uint256_data(myBlockchainIdentity.uniqueID)];
-    DSFriendRequestEntity *friendRequest = [[self.blockchainIdentity.matchingDashpayUserInViewContext.incomingRequests filteredSetUsingPredicate:predicate] anyObject];
+    DSFriendRequestEntity *friendRequest = [[self.blockchainIdentity.matchingDashpayUserInViewContext.outgoingRequests filteredSetUsingPredicate:predicate] anyObject];
     return friendRequest;
 }
 

@@ -81,6 +81,7 @@ class PaymentsViewController: BaseViewController {
 
     private var receiveModel: DWReceiveModelProtocol!
     private var payModel: DWPayModelProtocol!
+    private var dataProvider: DWTransactionListDataProviderProtocol!
 
     private var payViewController: PayViewController!
     private var receiveViewController: ReceiveViewController!
@@ -129,10 +130,12 @@ class PaymentsViewController: BaseViewController {
 
     @objc
     class func controller(withReceiveModel receiveModel: DWReceiveModelProtocol?,
-                          payModel: DWPayModelProtocol?) -> PaymentsViewController {
+                          payModel: DWPayModelProtocol?,
+                          dataProvider: DWTransactionListDataProviderProtocol?) -> PaymentsViewController {
         let controller = controller()
         controller.receiveModel = receiveModel
         controller.payModel = payModel
+        controller.dataProvider = dataProvider
         return controller
     }
 }
@@ -145,7 +148,7 @@ extension PaymentsViewController {
         segmentedControl.setTitle(NSLocalizedString("Send", comment: "Receive/Send"), forSegmentAt: 1)
         segmentedControl.selectedSegmentIndex = currentState.rawValue
 
-        payViewController = PayViewController.controller(with: payModel)
+        payViewController = PayViewController.controller(with: payModel, dataProvider: dataProvider)
         payViewController.delegate = self
 
         receiveViewController = ReceiveViewController(model: receiveModel)

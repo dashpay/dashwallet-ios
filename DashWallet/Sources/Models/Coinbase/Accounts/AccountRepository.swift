@@ -26,6 +26,10 @@ class AccountRepository {
     var dashAccount: CBAccount? {
         cachedAccounts[kDashAccount]
     }
+    
+    var usdAccount: CBAccount? {
+        cachedAccounts[Coinbase.dashUSDPair]
+    }
 
     init(authInterop: CBAuthInterop) {
         self.authInterop = authInterop
@@ -72,7 +76,7 @@ class AccountRepository {
                 .filter { $0.currency.type == .crypto && $0.balance.amount.decimal()! > 0 }
                 .map { .init(info: $0, authInterop: authInterop) }
 
-            if let nextUri = response.pagination.nextURI {
+            if let nextUri = response.pagination.nextURI, !nextUri.isEmpty {
                 endpoint = .path(nextUri)
             } else {
                 endpoint = nil

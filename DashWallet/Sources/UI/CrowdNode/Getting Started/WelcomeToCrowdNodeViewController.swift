@@ -21,7 +21,13 @@ final class WelcomeToCrowdNodeViewController: BaseViewController {
     private let viewModel = CrowdNodeModel.shared
     private var cancellableBag = Set<AnyCancellable>()
 
+    @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var stakingLabel: UILabel!
+    @IBOutlet var stakingSubtitleLabel: UILabel!
+    @IBOutlet var rewardsLabel: UILabel!
+    @IBOutlet var rewardsSubtitleLabel: UILabel!
     @IBOutlet var logoWrapper: UIView!
+    @IBOutlet var continueButton: UIButton!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,5 +53,12 @@ final class WelcomeToCrowdNodeViewController: BaseViewController {
     private func configureHierarchy() {
         logoWrapper.layer.dw_applyShadow(with: .dw_shadow(), alpha: 0.05, x: 0, y: 0, blur: 10)
         view.backgroundColor = .dw_secondaryBackground()
+        
+        titleLabel.text = NSLocalizedString("Become part of a Dash Masternode with CrowdNode", comment: "CrowdNode")
+        stakingLabel.text = NSLocalizedString("Introducing Staking", comment: "CrowdNode")
+        stakingSubtitleLabel.text = NSLocalizedString("Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash.", comment: "CrowdNode")
+        rewardsLabel.text = NSLocalizedString("Get Rewards Instantly", comment: "CrowdNode")
+        rewardsSubtitleLabel.text = NSLocalizedString("Receive your share of rewards daily.", comment: "CrowdNode")
+        continueButton.setTitle(NSLocalizedString("Continue", comment: ""), for: .normal)
     }
 }

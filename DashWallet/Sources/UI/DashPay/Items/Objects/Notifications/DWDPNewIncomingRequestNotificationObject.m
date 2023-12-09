@@ -19,7 +19,7 @@
 
 #import <DashSync/DashSync.h>
 
-#import "DWDateFormatter.h"
+#import "dashwallet-Swift.h"
 
 @implementation DWDPNewIncomingRequestNotificationObject
 

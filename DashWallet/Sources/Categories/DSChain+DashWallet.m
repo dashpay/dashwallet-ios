@@ -174,6 +174,14 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
         // Activated but we have to wait for the next cycle to start realocation, nothing to do
         return ret;
     }
+    
+    if ([self isCore20ActiveAtHeight:height]) {
+        // Once MNRewardReallocated activates, block reward is 80% of block subsidy (+ tx fees) since treasury is 20%
+        // Since the MN reward needs to be equal to 60% of the block subsidy (according to the proposal), MN reward is set to 75% of the block reward.
+        // Previous reallocation periods are dropped.
+        return blockReward * 3 / 4;
+    }
+    
     NSUInteger reallocCycle = superblockCycle * 3;
     NSUInteger nCurrentPeriod = MIN((height - reallocStart) / reallocCycle, periodsCount - 1);
     return (blockReward * periods[nCurrentPeriod]) / 1000;
@@ -310,7 +318,6 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
             return 4100;
     }
 }
-
 
 @end
 

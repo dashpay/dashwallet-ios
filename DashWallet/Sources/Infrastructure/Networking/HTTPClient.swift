@@ -34,12 +34,13 @@ private func JSONResponseDataFormatter(_ data: Data) -> String {
 
 // MARK: - HTTPClientError
 
-enum HTTPClientError: Error {
+enum HTTPClientError: LocalizedError {
     case statusCode(Moya.Response)
     case mapping(Moya.Response)
     case moya(MoyaError)
+    case decoder(DecodingError)
 
-    var localizedDescription: String {
+    var errorDescription: String? {
         switch self {
         case .statusCode(let response):
             return "\(response.debugDescription)\nError: \(response.errorDescription ?? "")"
@@ -47,6 +48,16 @@ enum HTTPClientError: Error {
             return "\(response.debugDescription)"
         case .moya(let error):
             return "\(String(describing: error.errorDescription))"
+        case .decoder(let error):
+            switch error {
+            case .typeMismatch(_, let context),
+                 .valueNotFound(_, let context),
+                 .keyNotFound(_, let context),
+                 .dataCorrupted(let context):
+                return context.debugDescription
+            @unknown default:
+                return error.localizedDescription
+            }
         }
     }
 }
@@ -216,9 +227,12 @@ extension Swift.Result where Success: Moya.Response, Failure: Error {
             do {
                 let result = try jsonDecoder.decode(T.self, from: r.data)
                 return result
+            } catch let error as DecodingError {
+                throw HTTPClientError.decoder(error)
             } catch {
                 throw HTTPClientError.mapping(r)
             }
+
         case .failure(let error):
             throw error
         }

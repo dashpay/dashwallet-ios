@@ -37,9 +37,6 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic balanceHidden;
 @dynamic shouldDisplayOnboarding;
 @dynamic paymentsScreenCurrentTab;
-@dynamic dashpayUsername;
-@dynamic dashpayRegistrationCompleted;
-@dynamic mostRecentViewedNotificationDate;
 @dynamic resyncingWallet;
 @dynamic selectedPaymentCurrency;
 @dynamic shouldDisplayReclassifyYourTransactionsFlow;
@@ -47,6 +44,16 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic dateHistoricalRatesActivated;
 @dynamic exploreDashMerchantsInfoShown;
 @dynamic coinbaseInfoShown;
+
+#ifdef DASHPAY
+@dynamic dashpayUsername;
+@dynamic dashpayRegistrationCompleted;
+@dynamic mostRecentViewedNotificationDate;
+@dynamic shouldShowInvitationsBadge;
+@dynamic dashPayRegistrationOpenedOnce;
+@dynamic dpInvitationFlowEnabled;
+@dynamic confirmationAcceptContactRequestIsOn;
+#endif
 
 #pragma mark - Init
 
@@ -60,6 +67,9 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
         DW_KEYPATH(self, shouldDisplayOnboarding) : @YES,
         DW_KEYPATH(self, shouldDisplayReclassifyYourTransactionsFlow) : @YES,
         DW_KEYPATH(self, coinbaseInfoShown) : @NO,
+#if DASHPAY
+        DW_KEYPATH(self, confirmationAcceptContactRequestIsOn) : @YES,
+#endif
     };
 
     self = [super initWithUserDefaults:nil defaults:defaults];
@@ -137,9 +147,6 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     self.shortcuts = nil;
     self.localNotificationsEnabled = YES;
     self.balanceHidden = NO;
-    self.dashpayUsername = nil;
-    self.dashpayRegistrationCompleted = NO;
-    self.mostRecentViewedNotificationDate = nil;
     self.resyncingWallet = NO;
     self.selectedPaymentCurrency = DWPaymentCurrencyDash;
     self.shouldDisplayReclassifyYourTransactionsFlow = YES;
@@ -147,6 +154,14 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     self.dateHistoricalRatesActivated = nil;
     self.exploreDashMerchantsInfoShown = NO;
     self.coinbaseInfoShown = NO;
+    
+#ifdef DASHPAY
+    self.dashpayUsername = nil;
+    self.dashpayRegistrationCompleted = NO;
+    self.mostRecentViewedNotificationDate = nil;
+    self.dashPayRegistrationOpenedOnce = NO;
+    self.confirmationAcceptContactRequestIsOn = YES;
+#endif
 }
 
 @end

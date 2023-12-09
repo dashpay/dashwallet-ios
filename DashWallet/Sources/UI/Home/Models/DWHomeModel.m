@@ -23,9 +23,12 @@
 #import <UIKit/UIApplication.h>
 
 #import "AppDelegate.h"
+#if DASHPAY
 #import "DWDashPayConstants.h"
 #import "DWDashPayContactsUpdater.h"
 #import "DWDashPayModel.h"
+#endif
+
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWPayModel.h"
@@ -66,6 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize allDataSource = _allDataSource;
 @synthesize allowedToShowReclassifyYourTransactions = _allowedToShowReclassifyYourTransactions;
 
+
 - (instancetype)init {
     self = [super init];
     if (self) {
@@ -85,7 +89,7 @@ NS_ASSUME_NONNULL_BEGIN
         _dataProvider = [[DWTransactionListDataProvider alloc] init];
 
         
-#if DASHPAY_ENABLED
+#if DASHPAY
         _dashPayModel = [[DWDashPayModel alloc] init];
 #endif /* DASHPAY_ENABLED */
 
@@ -119,10 +123,7 @@ NS_ASSUME_NONNULL_BEGIN
                                selector:@selector(chainWalletsDidChangeNotification:)
                                    name:DSChainWalletsDidChangeNotification
                                  object:nil];
-        [notificationCenter addObserver:self
-                               selector:@selector(dashPayRegistrationStatusUpdatedNotification)
-                                   name:DWDashPayRegistrationStatusUpdatedNotification
-                                 object:nil];
+        
         [notificationCenter addObserver:self
                                selector:@selector(willWipeWalletNotification)
                                    name:DWWillWipeWalletNotification
@@ -132,6 +133,13 @@ NS_ASSUME_NONNULL_BEGIN
                                    name:DWApp.fiatCurrencyDidChangeNotification
                                  object:nil];
 
+#if DASHPAY
+        [notificationCenter addObserver:self
+                               selector:@selector(dashPayRegistrationStatusUpdatedNotification)
+                                   name:DWDashPayRegistrationStatusUpdatedNotification
+                                 object:nil];
+#endif
+        
         [self reloadTxDataSource];
 
         NSDate *date = [NSDate new];
@@ -273,7 +281,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)walletDidWipe {
-#if DASHPAY_ENABLED
+#if DASHPAY
     self.dashPayModel = [[DWDashPayModel alloc] init];
 #endif /* DASHPAY_ENABLED */
 }
@@ -290,15 +298,16 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 
-#pragma mark - DWShortcutsModelDataSource
+#pragma mark - DWDashPayReadyProtocol
 
+#if DASHPAY
 - (BOOL)shouldShowCreateUserNameButton {
     if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) {
         return NO;
     }
 
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    if (chain.isEvolutionEnabled == NO) {
+    if (chain.isEvolutionEnabled == NO && !MOCK_DASHPAY) {
         return NO;
     }
 
@@ -319,6 +328,14 @@ NS_ASSUME_NONNULL_BEGIN
     BOOL isSynced = [SyncingActivityMonitor shared].state == SyncingActivityMonitorStateSyncDone;
     return canRegisterUsername && isSynced && isEnoughBalance;
 }
+
+- (void)handleDeeplink:(NSURL *)url
+            completion:(void (^)(BOOL success,
+                                 NSString *_Nullable errorTitle,
+                                 NSString *_Nullable errorMessage))completion {
+    [self.dashPayModel verifyDeeplink:url completion:completion];
+}
+#endif
 
 #pragma mark - Notifications
 
@@ -361,12 +378,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)dashPayRegistrationStatusUpdatedNotification {
     [self reloadTxDataSource];
-
+#if DASHPAY
     [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
+#endif
 }
 
 - (void)willWipeWalletNotification {
+#if DASHPAY
     [[DWDashPayContactsUpdater sharedInstance] endUpdating];
+#endif
 }
 
 #pragma mark - Private
@@ -540,7 +560,9 @@ NS_ASSUME_NONNULL_BEGIN
 
         if (self.dashPayModel.username != nil) {
             [self.receiveModel updateReceivingInfo];
+#if DASHPAY
             [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
+#endif
         }
         
         [self checkCrowdNodeState];

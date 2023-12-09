@@ -105,8 +105,10 @@ extension PaymentController {
 
 extension PaymentController: ConfirmPaymentViewControllerDelegate {
     func confirmPaymentViewControllerDidConfirm(_ controller: ConfirmPaymentViewController) {
-        if let output = paymentOutput {
-            paymentProcessor.confirmPaymentOutput(output)
+        controller.dismiss(animated: true) { [weak self] in
+            if let output = self?.paymentOutput {
+                self?.paymentProcessor.confirmPaymentOutput(output)
+            }
         }
     }
 
@@ -129,14 +131,12 @@ extension PaymentController: DWPaymentProcessorDelegate {
         }
     }
 
-    func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String,
-                          details: DSPaymentProtocolDetails?, contactItem: DWDPBasicUserItem) {
-        let vc = ProvideAmountViewController(address: sendingDestination)
+    func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, details: DSPaymentProtocolDetails?, contactItem: DWDPBasicUserItem?) {
+        let vc = ProvideAmountViewController(address: sendingDestination, details: details, contact: contactItem)
         vc.locksBalance = locksBalance
         vc.delegate = self
         vc.hidesBottomBarWhenPushed = true
         vc.definesPresentationContext = true
-        // vc.contactItem = nil //TODO: pass contactItem
         // vc.demoMode = self.demoMode; //TODO: demoMode
         presentationAnchor!.navigationController?.pushViewController(vc, animated: true)
         provideAmountViewController = vc
@@ -180,6 +180,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
     func paymentProcessorDidCancelTransactionSigning(_ processor: DWPaymentProcessor) {
         provideAmountViewController?.hideActivityIndicator()
+        delegate?.paymentControllerDidCancelTransaction(self)
         confirmViewController?.isSendingEnabled = true
     }
 

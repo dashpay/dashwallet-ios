@@ -418,52 +418,37 @@ extension CrowdNode {
         }
     }
 
-    func withdraw(amount: UInt64) async throws {
+    func withdraw(amount: UInt64, signature: String) async throws {
         guard !accountAddress.isEmpty else { return }
         guard amount <= balance else { return }
 
         try checkWithdrawalLimits(amount)
 
-        let requestPermil = calculateWithdrawalPermil(forAmount: amount)
-        let requestValue = CrowdNode.apiOffset + UInt64(requestPermil)
-        let requiredTopUp = requestValue + TX_FEE_PER_INPUT
-        let account = DWEnvironment.sharedInstance().currentAccount
-        let finalTopUp = min(account.maxOutputAmount, requiredTopUp)
+        DSLogger.log("CrowdNode: request withdrawal")
+        let result = try await webService.requestWithdrawal(address: accountAddress, amount: amount, signature: signature)
 
-        let topUpTx = try await topUpAccount(accountAddress, finalTopUp)
-        DSLogger.log("CrowdNode withdraw topup tx hash: \(topUpTx.txHashHexString)")
-
-        let withdrawTx = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress,
-                                                              amount: requestValue,
-                                                              inputSelector: SingleInputAddressSelector(candidates: [topUpTx],
-                                                                                                        address: accountAddress))
-        DSLogger.log("CrowdNode withdraw tx hash: \(withdrawTx.txHashHexString)")
-
-        Task {
-            let receivedWithdrawalTx = CrowdNodeWithdrawalReceivedTx()
-            let errorResponse = CrowdNodeErrorResponse(errorValue: requestValue,
-                                                       accountAddress: accountAddress)
-            let withdrawalDeniedResponse = CrowdNodeResponse(responseCode: ApiCode.withdrawalDenied,
-                                                             accountAddress: accountAddress)
-
-            let responseTx = await txObserver.first(filters: errorResponse, withdrawalDeniedResponse, receivedWithdrawalTx)
-            DSLogger.log("CrowdNode withdraw response tx hash: \(responseTx.txHashHexString)")
-
-            if errorResponse.matches(tx: responseTx) || withdrawalDeniedResponse.matches(tx: responseTx) {
-                handleError(error: CrowdNode.Error.withdraw)
+        if result.messageStatus.lowercased() == kMessageReceivedStatus {
+            DSLogger.log("CrowdNode: withdrawal request sent successfully")
+            refreshBalance(afterWithdrawal: true)
+            updateLastWithdrawalBlock()
+        } else {
+            DSLogger.log("CrowdNode: sendMessage not received, status: \(String(describing: result.messageStatus)). Result: \(String(describing: result.result))")
+            
+            if let msg = result.result {
+                handleError(error: CrowdNode.Error.messageStatus(error: msg))
             } else {
-                refreshBalance(afterWithdrawal: true)
+                handleError(error: CrowdNode.Error.withdraw)
             }
         }
     }
 
     func calculateWithdrawalPermil(forAmount: UInt64) -> UInt64 {
         let maxPermil = ApiCode.withdrawAll.rawValue
-        
+
         if balance == 0 {
             return maxPermil
         }
-        
+
         let permil = UInt64(round(Double(forAmount * maxPermil) / Double(balance)))
         let requestPermil = min(permil, maxPermil)
 
@@ -481,6 +466,12 @@ extension CrowdNode {
     }
 
     private func checkWithdrawalLimits(_ amount: UInt64) throws {
+        let lastSyncBlockHeight = DWEnvironment.sharedInstance().currentChain.lastSyncBlockHeight
+        
+        if lastSyncBlockHeight <= prefs.lastWithdrawalBlock {
+            throw CrowdNode.Error.withdrawLimit(amount: 0, period: .perBlock)
+        }
+        
         let perTransactionLimit = getWithdrawalLimit(.perTransaction)
 
         if amount > perTransactionLimit {
@@ -513,6 +504,11 @@ extension CrowdNode {
         let chain = DWEnvironment.sharedInstance().currentChain
 
         return withdrawals.compactMap { tx in chain.amountReceived(from: tx) }.reduce(0, +)
+    }
+    
+    private func updateLastWithdrawalBlock() {
+        let lastSyncBlockHeight = DWEnvironment.sharedInstance().currentChain.lastSyncBlockHeight
+        prefs.lastWithdrawalBlock = lastSyncBlockHeight
     }
 }
 
@@ -613,6 +609,8 @@ extension CrowdNode {
             return prefs.crowdNodeWithdrawalLimitPerHour
         case .perDay:
             return prefs.crowdNodeWithdrawalLimitPerDay
+        case .perBlock:
+            return 0
         }
     }
 }
@@ -644,7 +642,7 @@ extension CrowdNode {
         guard !accountAddress.isEmpty else { return }
 
         DSLogger.log("CrowdNode: sending signed email message")
-        let result = try await webService.sendSignedMessage(address: accountAddress, message: email, signature: signature)
+        let result = try await webService.registerEmail(address: accountAddress, email: email, signature: signature)
 
         if result.messageStatus.lowercased() == kMessageReceivedStatus {
             DSLogger.log("CrowdNode: signed email sent successfully")

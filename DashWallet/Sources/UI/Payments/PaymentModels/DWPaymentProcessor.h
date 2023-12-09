@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
     requestAmountWithDestination:(NSString *)sendingDestination
                          details:(nullable DSPaymentProtocolDetails *)details
-                     contactItem:(id<DWDPBasicUserItem>)contactItem;
+                     contactItem:(nullable id<DWDPBasicUserItem>)contactItem;
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
     requestUserActionTitle:(nullable NSString *)title
