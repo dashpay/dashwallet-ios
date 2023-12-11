@@ -102,7 +102,7 @@ NS_ASSUME_NONNULL_BEGIN
     [FIRApp configure];
     [ExploreDashObjcWrapper configure];
     [CurrencyExchangerObjcWrapper startExchangeRateFetching];
-    [CoinbaseObjcWrapper start];
+//    [CoinbaseObjcWrapper start]; Disabled due to App Store review hold-up
     [CrowdNodeObjcWrapper start];
 
     [[NSNotificationCenter defaultCenter] addObserver:self

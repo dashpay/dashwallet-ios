@@ -107,6 +107,7 @@ class PortalModel: NetworkReachabilityHandling {
             self?.items = items
             self?.delegate?.serviceItemsDidChange()
         }
+        serviceItemDataProvider.initializeDataSources()
 
         networkStatusDidChange = { [weak self] _ in
             self?.refreshData()
