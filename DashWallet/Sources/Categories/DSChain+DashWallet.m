@@ -22,6 +22,8 @@
 #import "DSMasternodeManager.h"
 #import "NSDate+Utils.h"
 #import <objc/runtime.h>
+#import "DSSimplifiedMasternodeEntry.h"
+
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -89,13 +91,25 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
         return nil;
 
     DSMasternodeList *masternodeList = self.chainManager.masternodeManager.currentMasternodeList;
-
+  
     if (masternodeList.validMasternodeCount == 0)
         return nil;
+    
+    NSInteger virtualMNCount = 0;
+
+    for (DSSimplifiedMasternodeEntry *entry in masternodeList.simplifiedMasternodeEntries) {
+        if (entry.isValid) {
+            if (entry.type == 1) { // HPMN
+                virtualMNCount += 4;
+            } else {
+                virtualMNCount += 1;
+            }
+        }
+    }
 
     return [self calculateMasternodeAPYWithHeight:self.lastTerminalBlock.height
                              prevDifficultyTarget:self.lastTerminalBlock.target
-                                  masternodeCount:masternodeList.validMasternodeCount];
+                                  masternodeCount:virtualMNCount];
 }
 
 - (NSNumber *)calculateMasternodeAPYWithHeight:(uint64_t)height prevDifficultyTarget:(uint32_t)difficulty masternodeCount:(uint64_t)mnCount {
