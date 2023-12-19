@@ -123,7 +123,7 @@ extension VerifyIdenityViewController {
         } else {
             Task {
                 continueButton.showActivityIndicator()
-                let result = await self.viewModel.submitUsernameRequest(withProve: nil)
+                let result = await self.viewModel.submitUsernameRequest(withProve: link)
                 continueButton.hideActivityIndicator()
                 
                 if result {

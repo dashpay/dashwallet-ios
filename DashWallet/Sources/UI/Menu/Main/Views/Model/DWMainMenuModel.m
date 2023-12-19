@@ -17,6 +17,7 @@
 
 #import "DWMainMenuModel.h"
 #import "DWEnvironment.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -42,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWMainMenuModel
 
-- (instancetype)initWithInvitesEnabled:(BOOL)enabled {
+- (instancetype)initWithInvitesEnabled:(BOOL)enabled votingEnabled:(BOOL)votingEnabled {
     self = [super init];
     if (self) {
         NSMutableArray<id<DWMainMenuItem>> *items = [NSMutableArray array];
@@ -52,52 +53,24 @@ NS_ASSUME_NONNULL_BEGIN
         }
         
         if ([[DWEnvironment sharedInstance].currentChain isMainnet]) {
-            [items addObjectsFromArray:[DWMainMenuModel allItems]];
-        }
-        else {
-            [items addObjectsFromArray:[DWMainMenuModel testnetItems]];
+            [items addObjectsFromArray:@[[[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_BuySellDash]]];
         }
         
+        [items addObjectsFromArray:@[
+            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Explore],
+            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Security],
+            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Settings],
+            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Tools]
+        ]];
+        
+        if (votingEnabled) {
+            [items addObjectsFromArray:@[[[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Voting]]];
+        }
+        
+        [items addObjectsFromArray:@[[[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Support]]];
         _items = items;
     }
     return self;
-}
-
-+ (NSArray *)allItems {
-    static NSArray *items;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        items = @[
-            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_BuySellDash],
-            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Explore],
-            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Security],
-            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Settings],
-            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Tools],
-#if DASHPAY
-            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Voting],
-#endif
-            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Support],
-        ];
-    });
-    return items;
-}
-
-+ (NSArray *)testnetItems {
-    static NSArray *items;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        items = @[
-            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Explore],
-            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Security],
-            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Settings],
-            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Tools],
-#if DASHPAY
-            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Voting],
-#endif
-            [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Support],
-        ];
-    });
-    return items;
 }
 
 @end

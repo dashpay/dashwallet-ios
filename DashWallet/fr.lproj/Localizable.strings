@@ -525,6 +525,9 @@
 "Create Online Account" = "Créer un compte en ligne";
 
 /* No comment provided by engineer. */
+"Create Username" = "Create Username";
+
+/* No comment provided by engineer. */
 "Create your Username, find friends & family with their usernames and add them to your contacts" = "Créer votre nom d'utilisateur, trouver des amis & membres de famille avec leurs noms d'utilisateur, et les ajouter à vos contacts";
 
 /* Coinbase/Payment Methods */
@@ -1133,9 +1136,6 @@
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "Il semble que vous tentiez de restaurer votre portefeuille avec une phrase de récupération de 12 mots. Cependant vous n'avez indiqué que 11 mots. Voulez-vous retrouver automatiquement le mot manquant ?";
 
 /* No comment provided by engineer. */
-"Join" = "Joindre";
-
-/* No comment provided by engineer. */
 "Join DashPay" = "Rejoindre DashPay";
 
 /* No comment provided by engineer. */
@@ -1742,6 +1742,12 @@
 /* Voting */
 "Request your username" = "Request your username";
 
+/* No comment provided by engineer. */
+"Requested username was not approved" = "Requested username was not approved";
+
+/* No comment provided by engineer. */
+"Requested · Voting: %@" = "Requested · Voting: %@";
+
 /* An action */
 "Rescan" = "Réanalyser";
 
@@ -2279,6 +2285,9 @@
 /* CoinJoin */
 "up to 30 minutes" = "up to 30 minutes";
 
+/* No comment provided by engineer. */
+"Update your profile and start adding contacts" = "Update your profile and start adding contacts";
+
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Mis à jour : %@";
 
@@ -2550,6 +2559,9 @@
 /* CrowdNode */
 "You can change how / when your reward earnings are paid to you." = "Vous pouvez modifier comment et quand vos gains de récompense vous sont payés.";
 
+/* No comment provided by engineer. */
+"You can create a different username without paying again" = "You can create a different username without paying again";
+
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "You can enter your key in any of the following formats: WIF/base58/base64/hex";
 
@@ -2690,6 +2702,9 @@
 
 /* No comment provided by engineer. */
 "Your username %@ is being created on the Dash Network" = "Votre nom d'utilisateur %@ est en cours de création sur le réseau Dash";
+
+/* No comment provided by engineer. */
+"Your username was approved" = "Your username was approved";
 
 /* No comment provided by engineer. */
 "Your vote was cancelled" = "Your vote was cancelled";
