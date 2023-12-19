@@ -100,12 +100,17 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
     for (DSSimplifiedMasternodeEntry *entry in masternodeList.simplifiedMasternodeEntries) {
         if (entry.isValid) {
             if (entry.type == 1) { // HPMN
+                DSLog(@"masternodeList found HPMN: %@", entry.uniqueID);
                 virtualMNCount += 4;
             } else {
                 virtualMNCount += 1;
             }
         }
     }
+    
+    DSLog(@"masternodeList validMasternodeCount: %llu", masternodeList.validMasternodeCount);
+    DSLog(@"masternodeList virtualMNCount: %ld", (long)virtualMNCount);
+    DSLog(@"masternodeList HPMNCount: %llu", masternodeList.hpMasternodeCount);
 
     return [self calculateMasternodeAPYWithHeight:self.lastTerminalBlock.height
                              prevDifficultyTarget:self.lastTerminalBlock.target
