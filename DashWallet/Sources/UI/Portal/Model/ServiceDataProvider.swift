@@ -42,8 +42,8 @@ class MookServiceDataProvider: ServiceDataProvider {
 class ServiceDataProviderImpl: ServiceDataProvider {
     private var handler: (([ServiceItem]) -> Void)?
 
-    private var upholdDataSource: ServiceDataSource = UpholdDataSource()
-    private var coinbaseDataSource: ServiceDataSource = CoinbaseDataSource()
+//    private var upholdDataSource: ServiceDataSource = UpholdDataSource()
+//    private var coinbaseDataSource: ServiceDataSource = CoinbaseDataSource()
 
     private var items: [ServiceItem] = []
 
@@ -52,8 +52,8 @@ class ServiceDataProviderImpl: ServiceDataProvider {
     }
 
     func refresh() {
-        upholdDataSource.refresh()
-        coinbaseDataSource.refresh()
+//        upholdDataSource.refresh()
+//        coinbaseDataSource.refresh()
     }
 
     func initializeDataSources() {
