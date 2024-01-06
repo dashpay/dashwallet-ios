@@ -19,6 +19,9 @@ import Foundation
 import Combine
 import AuthenticationServices
 
+private let kWithdrawalsCapability = "crypto_withdrawals"
+private let kProfileUrl = "https://wallet.uphold.com/dashboard/settings/profile"
+
 // MARK: IntegrationEntryPointItem
 
 struct UpholdEntryPointItem: IntegrationEntryPointItem {
@@ -45,7 +48,9 @@ struct UpholdEntryPointItem: IntegrationEntryPointItem {
 // MARK: - UpholdPortalModel
 
 final class UpholdPortalModel: BaseIntegrationModel {
+    private let upholdClient = UpholdClient()
     private var authenticationSession: Any?
+    private var requirements: [String: [String]] = [:]
     
     override var items: [IntegrationEntryPointItem] {
         UpholdEntryPointItem.supportedCases
@@ -125,6 +130,7 @@ final class UpholdPortalModel: BaseIntegrationModel {
             let success = dashCard != nil
             self.state = success ? .ready : .failed
         }
+        checkCapabilities()
     }
 
     var buyDashURL: URL? {
@@ -155,6 +161,26 @@ final class UpholdPortalModel: BaseIntegrationModel {
     override func isValidCallbackUrl(url: URL) -> Bool {
         url.absoluteString.contains("uphold")
     }
+    
+    override func validate(operation type: IntegrationItemType) -> LocalizedError? {
+        switch type {
+        case .transferDash:
+            let reqs = requirements[kWithdrawalsCapability] ?? []
+            
+            if reqs.isEmpty {
+                return nil
+            }
+            
+            return UpholdError.errorCodeToError(code: reqs[0])
+        default:
+            return super.validate(operation: type)
+        }
+    }
+    
+    override func handle(error: Swift.Error) {
+        super.handle(error: error)
+        UIApplication.shared.open(URL(string: kProfileUrl)!)
+    }
 
     func transactionURL(for transaction: DWUpholdTransactionObject) -> URL? {
         DWUpholdClient.sharedInstance().transactionURL(forTransaction: transaction)
@@ -163,5 +189,21 @@ final class UpholdPortalModel: BaseIntegrationModel {
     func successMessageText(for transaction: DWUpholdTransactionObject) -> String {
         String(format: NSLocalizedString("Your transaction was sent and the amount should appear in your wallet in a few minutes.", comment: ""),
                NSLocalizedString("Transaction id", comment: ""), transaction.identifier)
+    }
+    
+    private func checkCapabilities() {
+        Task {
+            do {
+                guard let capability = try await upholdClient.getCapabilities(capability: kWithdrawalsCapability) else {
+                    return
+                }
+                
+                if (capability.key == kWithdrawalsCapability) {
+                    requirements[capability.key] = capability.requirements
+                }
+            } catch {
+                DSLogger.log("Error obtaining capabilities: \(error)")
+            }
+        }
     }
 }

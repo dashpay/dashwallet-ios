@@ -1568,6 +1568,9 @@
 /* Network Unavailable */
 "Please check your network connection" = "Comprueba tu conexión de red";
 
+/* Uphold */
+"Please contact Uphold to update your proof of address." = "Please contact Uphold to update your proof of address.";
+
 /* No comment provided by engineer. */
 "Please enter a valid gravatar email ID." = "Ingresa una identificación de correo electrónico gravatar válida.";
 
@@ -1576,6 +1579,12 @@
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Por favor ingrese su PIN para actualizar la billetera";
+
+/* Uphold */
+"Please go to your Uphold account to answer some questions about yourself." = "Please go to your Uphold account to answer some questions about yourself.";
+
+/* Uphold */
+"Please go to your Uphold account to verify your identity." = "Please go to your Uphold account to verify your identity.";
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Ten en cuenta que la billetera de Dash no guarda el correo electrónico y solo se envía a CrowdNode";
@@ -2308,6 +2317,9 @@
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
+
+/* Uphold */
+"Uphold error" = "Uphold error";
 
 /* No comment provided by engineer. */
 "Upload Error" = "Error al Subir";
