@@ -154,10 +154,6 @@ final class UpholdPortalModel: BaseIntegrationModel {
         DWUpholdClient.sharedInstance().logOut()
     }
     
-    override func onFinish() {
-        DWUpholdClient.sharedInstance().updateLastAccessDate();
-    }
-    
     override func isValidCallbackUrl(url: URL) -> Bool {
         url.absoluteString.contains("uphold")
     }
