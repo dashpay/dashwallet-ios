@@ -1568,6 +1568,9 @@
 /* Network Unavailable */
 "Please check your network connection" = "Skontrolujte svoje sieťové pripojenie";
 
+/* Uphold */
+"Please contact Uphold to update your proof of address." = "Please contact Uphold to update your proof of address.";
+
 /* No comment provided by engineer. */
 "Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
 
@@ -1576,6 +1579,12 @@
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Pre inováciu peňaženky zadajte PIN";
+
+/* Uphold */
+"Please go to your Uphold account to answer some questions about yourself." = "Please go to your Uphold account to answer some questions about yourself.";
+
+/* Uphold */
+"Please go to your Uphold account to verify your identity." = "Please go to your Uphold account to verify your identity.";
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Upozorňujeme, že e-mail nie je uložený v Dash peňaženke a je odoslaný iba do CrowdNode";
@@ -2308,6 +2317,9 @@
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
+
+/* Uphold */
+"Uphold error" = "Uphold error";
 
 /* No comment provided by engineer. */
 "Upload Error" = "Upload Error";

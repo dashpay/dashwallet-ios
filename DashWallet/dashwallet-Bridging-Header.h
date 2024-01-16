@@ -85,6 +85,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWUpholdOTPProvider.h"
 #import "DWUpholdClientCancellationToken.h"
 #import "DWUpholdLogoutTutorialViewController.h"
+#import "DWUpholdConstants.h"
 
 //MARK: 3rd Party
 #import <SDWebImage/SDWebImage.h>
