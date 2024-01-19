@@ -26,7 +26,6 @@ public enum PointOfUseListFiltersGroup {
     case paymentType
     case sortByDistanceOrName
 
-    case sortByName
     case territory
     case radius
     case locationService
@@ -35,7 +34,7 @@ public enum PointOfUseListFiltersGroup {
         switch self {
         case .paymentType:
             return .paymentType
-        case .sortByName, .sortByDistanceOrName:
+        case .sortByDistanceOrName:
             return .sortBy
         case .territory:
             return .location
@@ -50,8 +49,6 @@ public enum PointOfUseListFiltersGroup {
         switch self {
         case .paymentType:
             return [.paymentTypeDash, .paymentTypeGiftCard]
-        case .sortByName:
-            return [.sortAZ, .sortZA]
         case .sortByDistanceOrName:
             return [.sortDistance, .sortName]
         case .territory:

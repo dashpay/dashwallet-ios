@@ -1340,12 +1340,6 @@
 /* No comment provided by engineer. */
 "Name" = "名稱";
 
-/* Explore Dash: Filters */
-"Name: from A to Z" = "名稱: 從 A 到 Z";
-
-/* Explore Dash: Filters */
-"Name: from Z to A" = "名稱: 從 Z 到 A";
-
 /* Nearby */
 "Nearby" = "附近的";
 
@@ -2012,12 +2006,6 @@
 
 /* Explore Dash/Filters */
 "Sorted by name" = "按名稱排序";
-
-/* Explore Dash/Filters */
-"Sorting: A to Z" = "排序: A 到 Z";
-
-/* Explore Dash/Filters */
-"Sorting: Z to A" = "排序: Z 到 A";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "指定金額";

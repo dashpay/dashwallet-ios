@@ -44,7 +44,6 @@ enum MerchantsListSegment: Int {
         defaultFilters.merchantPaymentTypes = [.dash, .giftCard]
         defaultFilters.radius = .twenty
         defaultFilters.sortBy = .distance
-        defaultFilters.sortNameDirection = .ascending
 
         switch self {
         case .online:
@@ -91,7 +90,7 @@ extension MerchantsListSegment {
         case .nearby:
             return [.sortByDistanceOrName, .radius]
         case .all:
-            return [.sortByName, .territory, .radius]
+            return [.sortByDistanceOrName, .territory, .radius]
         }
     }
 

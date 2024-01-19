@@ -1340,12 +1340,6 @@
 /* No comment provided by engineer. */
 "Name" = "Nome";
 
-/* Explore Dash: Filters */
-"Name: from A to Z" = "Nome: de A a Z";
-
-/* Explore Dash: Filters */
-"Name: from Z to A" = "Nome: de Z a A";
-
 /* Nearby */
 "Nearby" = "Próximo";
 
@@ -2012,12 +2006,6 @@
 
 /* Explore Dash/Filters */
 "Sorted by name" = "Ordenado por nome";
-
-/* Explore Dash/Filters */
-"Sorting: A to Z" = "Ordenando: de A a Z";
-
-/* Explore Dash/Filters */
-"Sorting: Z to A" = "Ordenando: de Z a A";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "Especificar Valor";

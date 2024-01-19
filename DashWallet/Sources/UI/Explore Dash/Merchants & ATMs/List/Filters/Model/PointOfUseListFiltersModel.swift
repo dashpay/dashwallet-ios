@@ -39,17 +39,6 @@ extension PointOfUseListFilters.SortBy {
     }
 }
 
-extension PointOfUseListFilters.SortDirection {
-    var filterLocalizedString: String {
-        switch self {
-        case .ascending:
-            return NSLocalizedString("Sorting: A to Z", comment: "Explore Dash/Filters")
-        case .descending:
-            return NSLocalizedString("Sorting: Z to A", comment: "Explore Dash/Filters")
-        }
-    }
-}
-
 // MARK: - PointOfUseListFilters
 
 struct PointOfUseListFilters: Equatable {
@@ -57,11 +46,6 @@ struct PointOfUseListFilters: Equatable {
     enum SortBy {
         case distance
         case name
-    }
-
-    enum SortDirection {
-        case ascending
-        case descending
     }
 
     enum Radius: Int {
@@ -98,7 +82,6 @@ struct PointOfUseListFilters: Equatable {
     }
 
     var sortBy: SortBy?
-    var sortNameDirection: SortDirection?
     var merchantPaymentTypes: [ExplorePointOfUse.Merchant.PaymentMethod]?
     var radius: Radius?
     var territory: Territory?
@@ -138,10 +121,6 @@ struct PointOfUseListFilters: Equatable {
             string.append(value.filterLocalizedString)
         }
 
-        if let value = sortNameDirection {
-            string.append(value.filterLocalizedString)
-        }
-
         return string.isEmpty ? nil : string.joined(separator: ", ")
     }
 }
@@ -152,10 +131,6 @@ extension PointOfUseListFilters {
 
         if let value = sortBy {
             set.insert(value == .name ? .sortName : .sortDistance)
-        }
-
-        if let value = sortNameDirection {
-            set.insert(value == .ascending ? .sortAZ : .sortZA)
         }
 
         if let value = merchantPaymentTypes {
@@ -176,8 +151,6 @@ extension PointOfUseListFilters {
 // MARK: - PointOfUseListFilterItem
 
 enum PointOfUseListFilterItem: String {
-    case sortAZ
-    case sortZA
     case sortDistance
     case sortName
     case paymentTypeDash
@@ -192,10 +165,6 @@ enum PointOfUseListFilterItem: String {
 
     var otherItems: [PointOfUseListFilterItem] {
         switch self {
-        case .sortAZ:
-            return [.sortZA]
-        case .sortZA:
-            return [.sortAZ]
         case .sortDistance:
             return [.sortName]
         case .sortName:
@@ -219,10 +188,6 @@ enum PointOfUseListFilterItem: String {
 
     var itemsToUnselect: [PointOfUseListFilterItem] {
         switch self {
-        case .sortAZ:
-            return [.sortZA]
-        case .sortZA:
-            return [.sortAZ]
         case .sortDistance:
             return [.sortName]
         case .sortName:
@@ -260,10 +225,6 @@ enum PointOfUseListFilterItem: String {
 
     var title: String {
         switch self {
-        case .sortAZ:
-            return NSLocalizedString("Name: from A to Z", comment: "Explore Dash: Filters")
-        case .sortZA:
-            return NSLocalizedString("Name: from Z to A", comment: "Explore Dash: Filters")
         case .paymentTypeDash:
             return NSLocalizedString("Dash", comment: "Explore Dash: Filters")
         case .paymentTypeGiftCard:
@@ -382,14 +343,6 @@ extension PointOfUseListFiltersModel {
 
         if selected.contains(.sortDistance) {
             filters.sortBy = .distance
-        }
-
-        if selected.contains(.sortAZ) {
-            filters.sortNameDirection = .ascending
-        }
-
-        if selected.contains(.sortZA) {
-            filters.sortNameDirection = .descending
         }
 
         if selected.contains(.radius1) {
