@@ -125,8 +125,8 @@ public final class CrowdNode {
     private(set) var isOnlineStateRestored = false
     var showNotificationOnResult = false
 
-    let masternodeAPY: Double
-    let crowdnodeAPY: Double
+    var masternodeAPY: Double
+    var crowdnodeAPY: Double
 
     public static let shared: CrowdNode = .init()
 
@@ -188,6 +188,7 @@ extension CrowdNode {
         }
 
         DSLogger.log("restoring CrowdNode state")
+        checkAPY()
         signUpState = SignUpState.notStarted
         validatePrefs()
 
@@ -297,6 +298,16 @@ extension CrowdNode {
         apiError = nil
         balance = 0
         prefs.resetUserDefaults()
+    }
+    
+    private func checkAPY() {
+        let chain = DWEnvironment.sharedInstance().currentChain
+    
+        if let apy = chain.calculateMasternodeAPY()?.doubleValue {
+            masternodeAPY = apy
+            crowdnodeAPY = masternodeAPY * 0.85
+            chain.apy = NSNumber(value: apy)
+        }
     }
 }
 

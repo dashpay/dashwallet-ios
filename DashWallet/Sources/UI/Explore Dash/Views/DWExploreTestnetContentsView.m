@@ -19,10 +19,8 @@
 
 #import "DWEnvironment.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
-@interface DWCrowdNodeAPYView : UIView
-
-@end
 
 @interface DWExploreTestnetContentsView ()
 @end
@@ -272,67 +270,4 @@
     [_contentStack setCustomSpacing:10 afterView:last];
     [_contentStack addArrangedSubview:view];
 }
-@end
-
-
-@implementation DWCrowdNodeAPYView
-
-- (instancetype)initWithFrame:(CGRect)frame {
-    self = [super initWithFrame:frame];
-    if (self) {
-        [self addCrowdNodeAPYLabel];
-    }
-
-    return self;
-}
-
-- (CGSize)intrinsicContentSize {
-    return CGSizeMake(UIViewNoIntrinsicMetric, 24.0f);
-}
-
-- (void)addCrowdNodeAPYLabel {
-    UIColor *systemGreen = [UIColor colorWithRed:98.0 / 255.0 green:182.0 / 255.0 blue:125.0 / 255.0 alpha:1.0];
-
-    UIStackView *apyStackView = [UIStackView new];
-    apyStackView.translatesAutoresizingMaskIntoConstraints = NO;
-    apyStackView.axis = UILayoutConstraintAxisHorizontal;
-    apyStackView.spacing = 4;
-    apyStackView.backgroundColor = [systemGreen colorWithAlphaComponent:0.1];
-    apyStackView.layer.cornerRadius = 6.0;
-    apyStackView.layer.masksToBounds = YES;
-    apyStackView.layoutMargins = UIEdgeInsetsMake(0, 8, 0, 8);
-    apyStackView.layoutMarginsRelativeArrangement = YES;
-    [self addSubview:apyStackView];
-
-    UIImageView *iconImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 14, 14)];
-    iconImageView.contentMode = UIViewContentModeCenter;
-    [iconImageView setImage:[UIImage imageNamed:@"image.crowdnode.apy"]];
-    [apyStackView addArrangedSubview:iconImageView];
-
-    UILabel *apiLabel = [[UILabel alloc] init];
-    apiLabel.textColor = systemGreen;
-    apiLabel.font = [UIFont systemFontOfSize:11 weight:UIFontWeightSemibold];
-    apiLabel.text = [NSString stringWithFormat:NSLocalizedString(@"Current APY = %@", @"Crowdnode"), [self apy]];
-    [apyStackView addArrangedSubview:apiLabel];
-
-    [NSLayoutConstraint activateConstraints:@[
-        [apyStackView.topAnchor constraintEqualToAnchor:self.topAnchor],
-        [apyStackView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-        [apyStackView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-        [apyStackView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-        [apyStackView.heightAnchor constraintEqualToConstant:24.0f],
-    ]];
-}
-
-- (NSString *)apy {
-    double apyValue = [DWEnvironment sharedInstance].apy.doubleValue * 0.85;
-
-    NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
-    numberFormatter.numberStyle = NSNumberFormatterPercentStyle;
-    numberFormatter.minimumFractionDigits = 0;
-    numberFormatter.maximumFractionDigits = 2;
-    numberFormatter.multiplier = @(1);
-    return [numberFormatter stringFromNumber:@(apyValue)];
-}
-
 @end

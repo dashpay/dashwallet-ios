@@ -100,17 +100,12 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
     for (DSSimplifiedMasternodeEntry *entry in masternodeList.simplifiedMasternodeEntries) {
         if (entry.isValid) {
             if (entry.type == 1) { // HPMN
-                DSLog(@"masternodeList found HPMN: %@", entry.uniqueID);
                 virtualMNCount += 4;
             } else {
                 virtualMNCount += 1;
             }
         }
     }
-    
-    DSLog(@"masternodeList validMasternodeCount: %llu", masternodeList.validMasternodeCount);
-    DSLog(@"masternodeList virtualMNCount: %ld", (long)virtualMNCount);
-    DSLog(@"masternodeList HPMNCount: %llu", masternodeList.hpMasternodeCount);
 
     return [self calculateMasternodeAPYWithHeight:self.lastTerminalBlock.height
                              prevDifficultyTarget:self.lastTerminalBlock.target
@@ -256,7 +251,8 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
     }
 
     // Hard fork to reduce the block reward by 10 extra percent (allowing budget/superblocks)
-    uint64_t nSuperblockPart = (nPrevHeight > [self budgetPaymentsStartBlock]) ? nSubsidy / 10 : 0;
+    uint64_t treasuryPart = [self isCore20ActiveAtHeight:nPrevHeight] ? 20 : 10; // parts per 100, 20 is 20%
+    uint64_t nSuperblockPart = (nPrevHeight > [self budgetPaymentsStartBlock]) ? (nSubsidy * treasuryPart) / 100 : 0;
 
     return fSuperblockPartOnly ? nSuperblockPart : nSubsidy - nSuperblockPart;
 }
