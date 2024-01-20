@@ -109,9 +109,9 @@ struct PointOfUseListFilters: Equatable {
             string.append(stringValue)
         }
 
-        if let value = merchantPaymentTypes {
-            string += value.map { $0.filterLocalizedString }
-        }
+//        if let value = merchantPaymentTypes { TODO: gift cards are temporary disabled, not showing filters
+//            string += value.map { $0.filterLocalizedString }
+//        }
 
         if let value = territory {
             string.append(value)
