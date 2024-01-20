@@ -185,12 +185,22 @@ class PointOfUseListFiltersViewController: UIViewController {
         configureHierarchy()
         configureDataSource()
         reloadDataSource()
+        
+        NotificationCenter.default.addObserver(self, 
+                                               selector: #selector(enteredBackround),
+                                               name: UIApplication.didEnterBackgroundNotification,
+                                               object: nil)
     }
 
     class func controller() -> PointOfUseListFiltersViewController {
         let storyboard = UIStoryboard(name: "ExploreDash", bundle: nil)
         return storyboard
             .instantiateViewController(withIdentifier: "PointOfUseListFiltersViewController") as! PointOfUseListFiltersViewController
+    }
+    
+    @objc
+    func enteredBackround() {
+        dismiss(animated: false)
     }
 }
 
