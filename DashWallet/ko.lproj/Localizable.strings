@@ -1562,6 +1562,9 @@
 /* Network Unavailable */
 "Please check your network connection" = "네트워크 연결을 확인하세요";
 
+/* Uphold */
+"Please contact Uphold to update your proof of address." = "Please contact Uphold to update your proof of address.";
+
 /* No comment provided by engineer. */
 "Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
 
@@ -1570,6 +1573,12 @@
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "지갑을 업그레이드하시려면 PIN을 입력하십시오";
+
+/* Uphold */
+"Please go to your Uphold account to answer some questions about yourself." = "Please go to your Uphold account to answer some questions about yourself.";
+
+/* Uphold */
+"Please go to your Uphold account to verify your identity." = "Please go to your Uphold account to verify your identity.";
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "이 이메일은 대시 지갑에 의해 저장되지 않으며 크라우드노드로만 보내진다는 점에 주의하십시오";
@@ -2296,6 +2305,9 @@
 
 /* No comment provided by engineer. */
 "Uphold" = "업홀드";
+
+/* Uphold */
+"Uphold error" = "Uphold error";
 
 /* No comment provided by engineer. */
 "Upload Error" = "Upload Error";
