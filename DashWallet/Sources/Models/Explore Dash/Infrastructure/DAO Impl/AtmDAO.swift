@@ -66,9 +66,7 @@ class AtmDAO: PointOfUseDAO {
                 .filter(queryFilter)
 
 
-            if let sortDirection = filters[.sortDirection] as? PointOfUseListFilters.SortDirection {
-                query = query.order(sortDirection == .ascending ? name.collate(.nocase).asc : name.collate(.nocase).desc)
-            } else if let userLocation = filters[.userLocation] as? CLLocationCoordinate2D {
+            if let userLocation = filters[.userLocation] as? CLLocationCoordinate2D {
                 let anchorLatitude = userLocation.latitude
                 let anchorLongitude = userLocation.longitude
 
