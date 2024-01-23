@@ -20,7 +20,6 @@ import Foundation
 // MARK: - ServiceDataProvider
 
 protocol ServiceDataProvider {
-    func initializeDataSources()
     func listenForData(handler: @escaping (([ServiceItem]) -> Void))
     func refresh()
 }
@@ -28,8 +27,6 @@ protocol ServiceDataProvider {
 // MARK: - MookServiceDataProvider
 
 class MookServiceDataProvider: ServiceDataProvider {
-    func initializeDataSources() { }
-    
     func listenForData(handler: @escaping (([ServiceItem]) -> Void)) {
         handler([.init(status: .authorized, service: .uphold), .init(status: .idle, service: .coinbase)])
     }
@@ -45,7 +42,13 @@ class ServiceDataProviderImpl: ServiceDataProvider {
     private var upholdDataSource: ServiceDataSource = UpholdDataSource()
     private var coinbaseDataSource: ServiceDataSource = CoinbaseDataSource()
 
-    private var items: [ServiceItem] = []
+    private var items: [ServiceItem] = [
+        .init(status: .idle, service: .topper) // Topper item doesn't need a data source
+    ]
+
+    init() {
+        initializeDataSources()
+    }
 
     func listenForData(handler: @escaping (([ServiceItem]) -> Void)) {
         self.handler = handler
@@ -56,17 +59,14 @@ class ServiceDataProviderImpl: ServiceDataProvider {
         coinbaseDataSource.refresh()
     }
 
-    func initializeDataSources() {
-        updateService(with: .init(status: .idle, service: .topper)) // Topper item doesn't need a data source)
-        
-        // Disabled due to App Store review hold-up
-//        upholdDataSource.serviceDidUpdate = { [weak self] item in
-//            self?.updateService(with: item)
-//        }
-//
-//        coinbaseDataSource.serviceDidUpdate = { [weak self] item in
-//            self?.updateService(with: item)
-//        }
+    private func initializeDataSources() {
+        upholdDataSource.serviceDidUpdate = { [weak self] item in
+            self?.updateService(with: item)
+        }
+
+        coinbaseDataSource.serviceDidUpdate = { [weak self] item in
+            self?.updateService(with: item)
+        }
     }
 
     private func updateService(with item: ServiceItem) {
