@@ -1340,12 +1340,6 @@
 /* No comment provided by engineer. */
 "Name" = "Meno";
 
-/* Explore Dash: Filters */
-"Name: from A to Z" = "Názov: od A po Z";
-
-/* Explore Dash: Filters */
-"Name: from Z to A" = "Názov: from Z to A";
-
 /* Nearby */
 "Nearby" = "V blízkosti";
 
@@ -2021,12 +2015,6 @@
 
 /* Explore Dash/Filters */
 "Sorted by name" = "Zoradené podľa názvu";
-
-/* Explore Dash/Filters */
-"Sorting: A to Z" = "Radenie: od A po Z";
-
-/* Explore Dash/Filters */
-"Sorting: Z to A" = "Radenie: od Z po A";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "Zadať množstvo";
