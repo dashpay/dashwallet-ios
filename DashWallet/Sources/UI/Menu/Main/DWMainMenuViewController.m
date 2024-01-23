@@ -109,10 +109,13 @@ NS_ASSUME_NONNULL_BEGIN
     
 #ifdef DASHPAY
     BOOL invitationsEnabled = ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled && (self.userProfileModel.blockchainIdentity != nil));
-    self.view.model = [[DWMainMenuModel alloc] initWithInvitesEnabled:invitationsEnabled];
+    
+    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+    BOOL isVotingEnabled = [VotingPrefsWrapper getIsEnabled] && now < VotingConstants.votingEndTime;
+    self.view.model = [[DWMainMenuModel alloc] initWithInvitesEnabled:invitationsEnabled votingEnabled:isVotingEnabled];
     [self.view updateUserHeader];
 #else
-    self.view.model = [[DWMainMenuModel alloc] initWithInvitesEnabled:NO];
+    self.view.model = [[DWMainMenuModel alloc] initWithInvitesEnabled:NO votingEnabled:NO];
 #endif
     
 }
@@ -212,22 +215,29 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)mainMenuContentView:(DWMainMenuContentView *)view joinDashPayAction:(UIButton *)sender {
-    UIViewController *controller = [RequestUsernameVMObjcWrapper getRootVCWith:^(BOOL result) {
-        if (result) {
-            [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Username was successfully requested", @"Usernames") offsetForNavBar:YES];
-        } else {
-            [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Your request was cancelled", @"Usernames") offsetForNavBar:YES];
-        }
-    }];
+    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+    BOOL isVotingEnabled = [VotingPrefsWrapper getIsEnabled] && now < VotingConstants.votingEndTime;
     
-    // TODO: voting switch ?
-//    DWDashPaySetupFlowController *controller =
-//        [[DWDashPaySetupFlowController alloc]
-//            initWithDashPayModel:self.dashPayModel
-//                      invitation:nil
-//                 definedUsername:nil];
-    controller.hidesBottomBarWhenPushed = YES;
-    [self.navigationController pushViewController:controller animated:YES];
+    if (isVotingEnabled) {
+        UIViewController *controller = [RequestUsernameVMObjcWrapper getRootVCWith:^(BOOL result) {
+            if (result) {
+                [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Username was successfully requested", @"Usernames") offsetForNavBar:YES];
+            } else {
+                [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Your request was cancelled", @"Usernames") offsetForNavBar:YES];
+            }
+        }];
+        
+        controller.hidesBottomBarWhenPushed = YES;
+        [self.navigationController pushViewController:controller animated:YES];
+    } else {
+        DWDashPaySetupFlowController *controller =
+            [[DWDashPaySetupFlowController alloc]
+                initWithDashPayModel:self.dashPayModel
+                          invitation:nil
+                     definedUsername:nil];
+        controller.modalPresentationStyle = UIModalPresentationFullScreen;
+        [self presentViewController:controller animated:YES completion:nil];
+    }
 }
 #endif
 

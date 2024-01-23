@@ -29,7 +29,7 @@
                                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                             </tableView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="CV2-aR-pZw" userLabel="BottomPanel">
-                                <rect key="frame" x="0.0" y="778" width="393" height="74"/>
+                                <rect key="frame" x="0.0" y="774" width="393" height="78"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ymj-W5-adl" userLabel="FilterPanel">
                                         <rect key="frame" x="0.0" y="0.0" width="393" height="44"/>
@@ -72,7 +72,6 @@
                                                 <nil key="highlightedColor"/>
                                             </label>
                                         </subviews>
-                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="44" id="1lD-6P-jXS"/>
                                             <constraint firstItem="5ou-8Y-Qo6" firstAttribute="centerX" secondItem="Ymj-W5-adl" secondAttribute="centerX" id="A3K-Zf-CuZ"/>
@@ -89,7 +88,6 @@
                                 <color key="backgroundColor" name="BackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="trailing" secondItem="Ymj-W5-adl" secondAttribute="trailing" id="3W2-xD-A30"/>
-                                    <constraint firstAttribute="height" constant="74" id="AUB-GY-4g3"/>
                                     <constraint firstItem="Ymj-W5-adl" firstAttribute="top" secondItem="CV2-aR-pZw" secondAttribute="top" id="WGo-P3-XdC"/>
                                     <constraint firstItem="Ymj-W5-adl" firstAttribute="leading" secondItem="CV2-aR-pZw" secondAttribute="leading" id="kN3-H3-PBf"/>
                                 </constraints>
@@ -106,6 +104,7 @@
                             <constraint firstItem="1o6-Ts-FHf" firstAttribute="top" secondItem="nnJ-mk-g7D" secondAttribute="bottom" constant="5" id="JnS-YK-R1z"/>
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="1o6-Ts-FHf" secondAttribute="trailing" id="WAK-m9-dSf"/>
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="bottom" secondItem="1o6-Ts-FHf" secondAttribute="bottom" id="bb7-7B-uiv"/>
+                            <constraint firstItem="Ymj-W5-adl" firstAttribute="bottom" secondItem="vDu-zF-Fre" secondAttribute="bottom" id="doY-b7-J7D"/>
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="CV2-aR-pZw" secondAttribute="trailing" id="h7t-Gd-4z8"/>
                             <constraint firstItem="nnJ-mk-g7D" firstAttribute="top" secondItem="vDu-zF-Fre" secondAttribute="top" id="vf0-2z-EmD"/>
                         </constraints>
@@ -630,9 +629,6 @@
         <namedColor name="TertiaryTextColor">
             <color red="0.45882352941176469" green="0.50196078431372548" blue="0.54117647058823526" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <systemColor name="systemBackgroundColor">
-            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </systemColor>
         <systemColor name="systemPinkColor">
             <color red="1" green="0.17647058823529413" blue="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>

@@ -85,6 +85,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWUpholdOTPProvider.h"
 #import "DWUpholdClientCancellationToken.h"
 #import "DWUpholdLogoutTutorialViewController.h"
+#import "DWUpholdConstants.h"
 
 //MARK: 3rd Party
 #import <SDWebImage/SDWebImage.h>
@@ -100,7 +101,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWDPRegistrationErrorRetryDelegate.h"
 #import "DWDPUserObject.h"
 #import "DWModalUserProfileViewController.h"
-#import "DWDPWelcomeView.h"
 #import "DWInvitationActionsView.h"
 #import "DWInvitationPreviewViewController.h"
 #import "DWInvitationLinkBuilder.h"
@@ -108,6 +108,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWInvitationMessageView.h"
 #import "DWScrollingViewController.h"
 #import "UIView+DWEmbedding.h"
+#import "DWBasePressableControl.h"
 
 //MARK: CrowdNode
 #import "DWCheckbox.h"

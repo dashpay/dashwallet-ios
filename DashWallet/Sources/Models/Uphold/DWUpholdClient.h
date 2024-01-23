@@ -27,6 +27,7 @@ extern NSString *const DWUpholdClientUserDidLogoutNotification;
 @class DWUpholdTransactionObject;
 @class DWUpholdAccountObject;
 
+// TODO: move methods to UpholdClient.swift
 @interface DWUpholdClient : NSObject
 
 @property (readonly, assign, nonatomic, getter=isAuthorized) BOOL authorized;
@@ -37,7 +38,6 @@ extern NSString *const DWUpholdClientUserDidLogoutNotification;
 - (NSURL *)startAuthRoutineByURL;
 - (void)completeAuthRoutineWithURL:(NSURL *)url completion:(void (^)(BOOL success))completion;
 
-- (void)getAccounts:(void (^)(NSArray<DWUpholdAccountObject *> *_Nullable accounts))completion;
 - (void)getCards:(void (^)(DWUpholdCardObject *_Nullable dashCard, NSArray<DWUpholdCardObject *> *fiatCards))completion;
 
 - (DWUpholdCancellationToken)createTransactionForDashCard:(DWUpholdCardObject *)card
@@ -61,7 +61,6 @@ extern NSString *const DWUpholdClientUserDidLogoutNotification;
 - (nullable NSURL *)buyDashURLForCard:(DWUpholdCardObject *)card;
 - (nullable NSURL *)transactionURLForTransaction:(DWUpholdTransactionObject *)transaction;
 
-- (void)updateLastAccessDate;
 - (void)logOut;
 
 @end

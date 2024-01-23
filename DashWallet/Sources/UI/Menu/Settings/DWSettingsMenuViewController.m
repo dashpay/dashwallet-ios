@@ -152,6 +152,20 @@ NS_ASSUME_NONNULL_BEGIN
         };
         [items addObject:cellModel];
     }
+    
+    {
+        DWSwitcherFormCellModel *cellModel = [[DWSwitcherFormCellModel alloc] initWithTitle:@"Enable Voting"];
+        cellModel.on = [VotingPrefsWrapper getIsEnabled];
+        cellModel.didChangeValueBlock = ^(DWSwitcherFormCellModel *_Nonnull cellModel) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [VotingPrefsWrapper setIsEnabledWithValue:cellModel.on];
+        };
+        [items addObject:cellModel];
+    }
 #endif
 
     return [items copy];
