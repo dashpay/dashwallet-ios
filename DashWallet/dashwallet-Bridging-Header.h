@@ -116,6 +116,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWSeedPhraseModel.h"
 #import "UIImage+Utils.h"
 #import "NSData+Dash.h"
+#import "DSChain+DashWallet.h"
 
 //MARK: Tabbar
 #import "DWHomeViewController.h"
