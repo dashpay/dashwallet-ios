@@ -44,7 +44,23 @@ final class HomeHeaderView: UIView {
 
     // Available only in DashPay
     #if DASHPAY
-    private(set) var welcomeView: DWDPWelcomeView?
+    private let welcomeView: DPWelcomeView = DPWelcomeView(frame: .zero)
+    var isDPWelcomeViewHidden = true {
+        didSet {
+            welcomeView.isHidden = isDPWelcomeViewHidden
+        }
+    }
+    
+    private let votingView: DPVotingResultView = DPVotingResultView(frame: .zero)
+    var isVotingViewHidden = true {
+        didSet {
+            votingView.isHidden = isVotingViewHidden
+        }
+    }
+    var votingState: DPVotingState {
+        get { return votingView.state }
+        set { votingView.state = newValue }
+    }
     #endif
 
     weak var shortcutsDelegate: ShortcutsActionDelegate? {
@@ -73,12 +89,29 @@ final class HomeHeaderView: UIView {
         shortcutsView.translatesAutoresizingMaskIntoConstraints = false
 
     #if DASHPAY
-        welcomeView = DWDPWelcomeView(frame: .zero)
-        welcomeView!.translatesAutoresizingMaskIntoConstraints = false
-        welcomeView!.addTarget(self, action: #selector(joinDashPayAction), for: .touchUpInside)
-        welcomeView!.isHidden = true
+        welcomeView.translatesAutoresizingMaskIntoConstraints = false
+        welcomeView.addTarget(self, action: #selector(joinDashPayAction), for: .touchUpInside)
+        welcomeView.isHidden = true
+        votingView.translatesAutoresizingMaskIntoConstraints = false
+        votingView.isHidden = true
+        votingView.onAction = { [weak self] in
+            self?.joinDashPayAction()
+        }
+        votingView.onClose = { [weak self] in
+            guard let self = self else { return }
+            
+            VotingPrefs.shared.votingPanelClosed = true
+            VotingPrefs.shared.requestedUsernameId = nil
+            
+            if (MOCK_DASHPAY.boolValue) {
+                DWGlobalOptions.sharedInstance().dashpayUsername = VotingPrefs.shared.requestedUsername
+            }
+            
+            self.votingView.isHidden = true
+            self.delegate?.homeHeaderViewDidUpdateContents(self)
+        }
 
-        let views: [UIView] = [balanceView, shortcutsView, syncView, welcomeView!]
+        let views: [UIView] = [balanceView, shortcutsView, syncView, welcomeView, votingView]
     #else
         let views: [UIView] = [balanceView, shortcutsView, syncView]
     #endif

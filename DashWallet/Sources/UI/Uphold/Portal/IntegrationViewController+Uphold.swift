@@ -17,7 +17,7 @@
 
 import Foundation
 
-extension IntegrationViewController: DWUpholdLogoutTutorialViewControllerDelegate, UpholdTransferViewControllerDelegate {
+extension IntegrationViewController: DWUpholdLogoutTutorialViewControllerDelegate {
     
     internal func getUpholdVcFor(operation: IntegrationItemType) -> UIViewController? {
         switch operation {
@@ -69,7 +69,9 @@ extension IntegrationViewController: DWUpholdLogoutTutorialViewControllerDelegat
         
         return controller
     }
-    
+}
+
+extension IntegrationViewController: UpholdTransferViewControllerDelegate {
     func upholdTransferViewController(_ vc: UpholdTransferViewController, didSend transaction: DWUpholdTransactionObject) {
         navigationController?.popViewController(animated: true)
 

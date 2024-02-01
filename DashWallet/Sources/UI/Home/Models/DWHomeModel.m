@@ -297,6 +297,9 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
+- (void)checkVotingState {
+    [self.updatesObserver homeModelWantToReloadVoting:self];
+}
 
 #pragma mark - DWDashPayReadyProtocol
 

@@ -27,10 +27,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
-static NSString *const UPHOLD_LAST_ACCESS = @"DW_UPHOLD_LAST_ACCESS";
 static NSString *const UPHOLD_LAST_KNOWN_BALANCE = @"UPHOLD_LAST_KNOWN_BALANCE";
-
-static NSTimeInterval const UPHOLD_KEEP_ALIVE_INTERVAL = 60.0 * 10.0; // 10 min
 
 NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDidLogoutNotification";
 
@@ -65,14 +62,6 @@ NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDi
     if (!self.accessToken) {
         return NO;
     }
-
-    NSTimeInterval timeInterval = -[self.lastAccessDate timeIntervalSinceNow];
-    if (timeInterval > UPHOLD_KEEP_ALIVE_INTERVAL) {
-        [self performLogOutShouldNotifyObservers:NO];
-        return NO;
-    }
-
-    [self updateLastAccessDate];
 
     return YES;
 }
@@ -130,38 +119,6 @@ NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDi
                                             completion(!!accessToken);
                                         }
                                     }];
-}
-
-- (void)getAccounts:(void (^)(NSArray<DWUpholdAccountObject *> *_Nullable accounts))completion {
-    NSParameterAssert(self.accessToken);
-
-    __weak typeof(self) weakSelf = self;
-    [DWUpholdAPIProvider getUserAccountsAccessToken:self.accessToken
-                                         completion:^(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, NSArray<DWUpholdAccountObject *> *_Nullable accounts) {
-                                             __strong typeof(weakSelf) strongSelf = weakSelf;
-                                             if (!strongSelf) {
-                                                 return;
-                                             }
-
-                                             NSAssert(statusCode != DWUpholdAPIProviderResponseStatusCodeOTPRequired, @"OTP shouldn't be required here");
-
-                                             // We support funding only by `card` accounts
-                                             // (and seems there is no other way to fund your Uphold account via API using other types)
-                                             NSArray<DWUpholdAccountObject *> *cardAccounts = nil;
-                                             if (success) {
-                                                 NSPredicate *predicate = [NSPredicate predicateWithFormat:@"type == %@",
-                                                                                                           @(DWUpholdAccountObjectTypeCard)];
-                                                 cardAccounts = [accounts filteredArrayUsingPredicate:predicate];
-                                             }
-
-                                             if (completion) {
-                                                 completion(cardAccounts);
-                                             }
-
-                                             if (statusCode == DWUpholdAPIProviderResponseStatusCodeUnauthorized) {
-                                                 [strongSelf performLogOutShouldNotifyObservers:YES];
-                                             }
-                                         }];
 }
 
 - (void)getCards:(void (^)(DWUpholdCardObject *_Nullable dashCard, NSArray<DWUpholdCardObject *> *fiatCards))completion {
@@ -366,12 +323,6 @@ NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDi
     return url;
 }
 
-- (void)updateLastAccessDate {
-    if (self.accessToken) {
-        self.lastAccessDate = [NSDate date];
-    }
-}
-
 - (void)logOut {
     [self performLogOutShouldNotifyObservers:YES];
 }
@@ -430,14 +381,6 @@ NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDi
                                                [strongSelf performLogOutShouldNotifyObservers:YES];
                                            }
                                        }];
-}
-
-- (nullable NSDate *)lastAccessDate {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:UPHOLD_LAST_ACCESS];
-}
-
-- (void)setLastAccessDate:(nullable NSDate *)lastAccessDate {
-    [[NSUserDefaults standardUserDefaults] setObject:lastAccessDate forKey:UPHOLD_LAST_ACCESS];
 }
 
 - (nullable NSDecimalNumber *)lastKnownBalance {

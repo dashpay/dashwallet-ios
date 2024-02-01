@@ -101,6 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self.model registerForPushNotifications];
     [self showReclassifyYourTransactionsIfPossibleWithTransaction:self.model.allDataSource.items.firstObject];
     [self.model checkCrowdNodeState];
+    [self.model checkVotingState];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {

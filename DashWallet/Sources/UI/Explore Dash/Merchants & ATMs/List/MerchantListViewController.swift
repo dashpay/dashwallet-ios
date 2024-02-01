@@ -44,7 +44,6 @@ enum MerchantsListSegment: Int {
         defaultFilters.merchantPaymentTypes = [.dash, .giftCard]
         defaultFilters.radius = .twenty
         defaultFilters.sortBy = .distance
-        defaultFilters.sortNameDirection = .ascending
 
         switch self {
         case .online:
@@ -53,6 +52,7 @@ enum MerchantsListSegment: Int {
             showMap = false
             dataProvider = OnlineMerchantsDataProvider()
             showsFilters = false
+            
         case .nearby:
             showLocationServiceSettings = true
             showReversedLocation = true
@@ -66,9 +66,7 @@ enum MerchantsListSegment: Int {
             dataProvider = AllMerchantsDataProvider()
         }
 
-        return .init(tag: rawValue, title: title, showMap: showMap, showLocationServiceSettings: showLocationServiceSettings,
-                     showReversedLocation: showReversedLocation, dataProvider: dataProvider, filterGroups: filterGroups,
-                     defaultFilters: defaultFilters, territoriesDataSource: territories, showsFilters: showsFilters)
+        return .init(tag: rawValue, title: title, showMap: showMap, showLocationServiceSettings: showLocationServiceSettings, showReversedLocation: showReversedLocation, dataProvider: dataProvider, filterGroups: filterGroups, defaultFilters: defaultFilters, territoriesDataSource: territories, showsFilters: showsFilters)
     }
 }
 
@@ -89,9 +87,9 @@ extension MerchantsListSegment {
         case .online:
             return []
         case .nearby:
-            return [.sortByDistanceOrName, .radius]
+            return [.sortByDistanceOrName, .radius, .locationService]
         case .all:
-            return [.sortByName, .territory, .radius]
+            return [.sortByDistanceOrName, .territory, .radius, .locationService]
         }
     }
 

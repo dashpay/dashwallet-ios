@@ -44,7 +44,6 @@ class MerchantDAO: PointOfUseDAO {
                types: [ExplorePointOfUse.Merchant.`Type`],
                paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?,
                sortBy: PointOfUseListFilters.SortBy?,
-               sortDirection: PointOfUseListFilters.SortDirection?,
                territory: Territory?,
                offset: Int,
                completion: @escaping (Swift.Result<PaginationResult<Item>, Error>) -> Void) {
@@ -109,7 +108,7 @@ class MerchantDAO: PointOfUseDAO {
                     Expression<Bool>(literal: "((latitude-\(anchorLatitude))*(latitude-\(anchorLatitude))) + ((longitude - \(anchorLongitude))*(longitude - \(anchorLongitude))) ASC")
             }
 
-            let nameOrdering = sortDirection == .descending ? name.collate(.nocase).desc : name.collate(.nocase).asc
+            let nameOrdering = name.collate(.nocase).asc
 
             if let sortBy, sortBy == .name {
                 query = query.order(nameOrdering)
@@ -145,29 +144,23 @@ class MerchantDAO: PointOfUseDAO {
 
 extension MerchantDAO {
     func onlineMerchants(query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?,
-                         paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?,
-                         sortDirection: PointOfUseListFilters.SortDirection?, offset: Int = 0,
+                         paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, offset: Int = 0,
                          completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         items(query: query, bounds: nil, userLocation: userPoint, types: [.online, .onlineAndPhysical],
-              paymentMethods: paymentMethods, sortBy: nil, sortDirection: sortDirection, territory: nil, offset: offset,
-              completion: completion)
+              paymentMethods: paymentMethods, sortBy: nil, territory: nil, offset: offset, completion: completion)
     }
 
     func nearbyMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
-                         paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?,
-                         sortDirection: PointOfUseListFilters.SortDirection?, territory: Territory?, offset: Int = 0,
+                         paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, offset: Int = 0,
                          completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         items(query: query, bounds: bounds, userLocation: userPoint, types: [.physical, .onlineAndPhysical],
-              paymentMethods: paymentMethods, sortBy: sortBy, sortDirection: sortDirection, territory: territory, offset: offset,
-              completion: completion)
+              paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, offset: offset, completion: completion)
     }
 
     func allMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
-                      paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?,
-                      sortDirection: PointOfUseListFilters.SortDirection?, territory: Territory?, offset: Int = 0,
+                      paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, offset: Int = 0,
                       completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        items(query: query, bounds: bounds, userLocation: userPoint, types: [.online, .onlineAndPhysical, .physical],
-              paymentMethods: paymentMethods, sortBy: sortBy, sortDirection: sortDirection, territory: territory, offset: offset,
+        items(query: query, bounds: bounds, userLocation: userPoint, types: [.online, .onlineAndPhysical, .physical], paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, offset: offset,
               completion: completion)
     }
 

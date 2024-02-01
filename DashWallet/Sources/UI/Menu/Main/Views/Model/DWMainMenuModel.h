@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, copy) NSArray<id<DWMainMenuItem>> *items;
 
-- (instancetype)initWithInvitesEnabled:(BOOL)enabled;
+- (instancetype)initWithInvitesEnabled:(BOOL)enabled votingEnabled:(BOOL)votingEnabled;
 
 @end
 

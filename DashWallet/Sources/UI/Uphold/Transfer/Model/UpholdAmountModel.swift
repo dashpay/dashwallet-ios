@@ -91,7 +91,6 @@ final class UpholdAmountModel: BaseAmountModel {
         createTransactionCancellationToken?.cancel()
 
         let client = DWUpholdClient.sharedInstance()
-
         createTransactionCancellationToken = client.createTransaction(forDashCard: card,
                                                                       amount: amount,
                                                                       address: receiveAddress,
