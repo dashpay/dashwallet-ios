@@ -20,16 +20,22 @@ import Foundation
 
 let kServiceUsageCount = "kServiceUsageCount"
 
+enum Status: Int {
+    case unknown
+    case idle
+    case initializing
+    case syncing
+    case authorized
+    case failed
+}
+
 // MARK: - ServiceDataSource
 
 class ServiceDataSource {
-    var serviceDidUpdate: ((ServiceItem) -> Void)!
+    var serviceDidUpdate: (() -> Void)!
 
-    var item: ServiceItem! {
-        didSet {
-            serviceDidUpdate?(item)
-        }
-    }
+    var status: Status = .initializing
+    var dashBalance: UInt64 = 0
 
     func refresh() {
         assertionFailure("Override it")
@@ -42,32 +48,28 @@ class UpholdDataSource: ServiceDataSource {
     private var dashCard: DWUpholdCardObject!
     private var isAuthorized: Bool { DWUpholdClient.sharedInstance().isAuthorized }
 
-    override init() {
-        super.init()
-
-        item = .init(status: .initializing, service: .uphold)
-    }
-
     override func refresh() {
         if DWUpholdClient.sharedInstance().isAuthorized {
-            item = ServiceItem(status: .syncing, service: .uphold)
-
             if let balance = DWUpholdClient.sharedInstance().lastKnownBalance as? Decimal {
-                item = .init(status: .authorized, service: .uphold, dashBalance: balance.plainDashAmount)
+                self.status = .authorized
+                self.dashBalance = balance.plainDashAmount
             } else {
                 DWUpholdClient.sharedInstance().getCards { [weak self] dashCard, _ in
                     self?.dashCard = dashCard
 
                     if let available = dashCard?.available as? Decimal {
-                        self?.item = .init(status: .authorized, service: .uphold, dashBalance: available.plainDashAmount)
+                        self?.status = .authorized
+                        self?.dashBalance = available.plainDashAmount
                     } else {
-                        self?.item = .init(status: .failed, service: .uphold)
+                        self?.status = .failed
                     }
                 }
             }
         } else {
-            item = ServiceItem(status: .idle, service: .uphold)
+            status = .idle
         }
+        
+        serviceDidUpdate?()
     }
 }
 
@@ -86,8 +88,6 @@ class CoinbaseDataSource: ServiceDataSource {
     override init() {
         super.init()
 
-        item = .init(status: .initializing, service: .coinbase)
-
         userDidChangeListenerHandle = Coinbase.shared.addUserDidChangeListener { [weak self] _ in
             self?.refresh()
         }
@@ -100,13 +100,16 @@ class CoinbaseDataSource: ServiceDataSource {
     override func refresh() {
         if isAuthorized {
             if let balance = coinbase.lastKnownBalance {
-                item = ServiceItem(status: .authorized, service: .coinbase, dashBalance: balance)
+                status = .authorized
+                dashBalance = balance
             } else {
-                item = ServiceItem(status: .syncing, service: .coinbase)
+                status = .syncing
             }
         } else {
-            item = .init(status: .idle, service: .coinbase)
+            status = .idle
         }
+        
+        serviceDidUpdate?()
     }
 
     deinit {
