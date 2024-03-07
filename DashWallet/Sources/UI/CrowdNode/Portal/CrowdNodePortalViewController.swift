@@ -283,7 +283,7 @@ extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource
         vc.mainAction = {
             Task {
                 if await self.viewModel.authenticate() {
-                    let controller = PortalViewController.controller()
+                    let controller = BuySellPortalViewController.controller()
                     nvc.pushViewController(controller, animated: true)
                 }
             }

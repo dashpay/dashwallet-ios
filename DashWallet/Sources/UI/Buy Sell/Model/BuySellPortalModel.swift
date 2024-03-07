@@ -26,9 +26,9 @@ enum Service: CaseIterable {
     case topper
 }
 
-// MARK: - PortalModel.Section
+// MARK: - BuySellPortalModel.Section
 
-extension PortalModel {
+extension BuySellPortalModel {
     enum Section: Int {
         case main
     }
@@ -76,19 +76,19 @@ extension Service {
     }
 }
 
-// MARK: - PortalModelDelegate
+// MARK: - BuySellPortalModelDelegate
 
-protocol PortalModelDelegate: AnyObject {
+protocol BuySellPortalModelDelegate: AnyObject {
     func serviceItemsDidChange();
 }
 
-// MARK: - PortalModel
+// MARK: - BuySellPortalModel
 
-class PortalModel: NetworkReachabilityHandling {
+class BuySellPortalModel: NetworkReachabilityHandling {
     var networkStatusDidChange: ((NetworkStatus) -> ())?
     internal var reachabilityObserver: Any!
 
-    weak var delegate: PortalModelDelegate?
+    weak var delegate: BuySellPortalModelDelegate?
 
     var items: [ServiceItem] = [] {
         didSet {
