@@ -17,6 +17,7 @@
 
 import Combine
 import Foundation
+import StoreKit
 
 let kServiceUsageCount = "kServiceUsageCount"
 
@@ -84,6 +85,14 @@ class CoinbaseDataSource: ServiceDataSource {
     private var userDidChangeListenerHandle: UserDidChangeListenerHandle!
 
     private var accountDidChangeHandle: AnyObject?
+    
+    static func shouldShow() -> Bool {
+        if let storefront = SKPaymentQueue.default().storefront {
+            return storefront.countryCode != "GB"
+        } else {
+            return true
+        }
+    }
 
     override init() {
         super.init()

@@ -57,7 +57,7 @@ public final class SendCoinsService {
             }
         }
 
-        account.sign(transaction)
+        await account.sign(transaction)
         account.register(transaction, saveImmediately: false)
         try await transactionManager.publishTransaction(transaction)
 

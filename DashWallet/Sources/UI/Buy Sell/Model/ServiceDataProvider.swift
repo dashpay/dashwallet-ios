@@ -32,10 +32,13 @@ class ServiceDataProviderImpl: ServiceDataProvider {
 
     init() {
         items = [
-            .init(service: .coinbase, dataProvider: CoinbaseDataSource()),
             .init(service: .uphold, dataProvider: UpholdDataSource()),
             .init(service: .topper, dataProvider: nil)
         ]
+        
+        if CoinbaseDataSource.shouldShow() {
+            items.insert(.init(service: .coinbase, dataProvider: CoinbaseDataSource()), at: 0)
+        }
         
         for item in items {
             item.didUpdate = { [weak self] in
