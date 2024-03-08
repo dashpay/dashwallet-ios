@@ -33,6 +33,7 @@ final class PortalViewController: UIViewController {
 
     private var model = PortalModel()
     private var hasNetwork: Bool { model.networkStatus == .online }
+    private let topperViewModel = TopperViewModel.shared
 
     @objc var showCloseButton = false
 
@@ -76,7 +77,7 @@ final class PortalViewController: UIViewController {
     
     @objc
     func topperAction() {
-        let urlString = TopperViewModel.shared.topperBuyUrl(walletName: Bundle.main.infoDictionary!["CFBundleDisplayName"] as! String)
+        let urlString = topperViewModel.topperBuyUrl(walletName: Bundle.main.infoDictionary!["CFBundleDisplayName"] as! String)
         if let url = URL(string: urlString) {
             let safariViewController = SFSafariViewController.dw_controller(with: url)
             present(safariViewController, animated: true)

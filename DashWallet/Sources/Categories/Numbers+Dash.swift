@@ -122,6 +122,26 @@ extension Decimal {
             return "\(self)"
         }
     }
+    
+    /// Rounds the Decimal to a specified number of significant digits.
+    ///
+    /// - Parameters:
+    ///   - significantDigits: The number of significant digits to round to.
+    ///   - roundingMode: The rounding mode to use.
+    /// - Returns: The rounded Decimal.
+    func rounded(toSignificantDigits significantDigits: Int, roundingMode: NSDecimalNumber.RoundingMode) -> Decimal {
+        let nsDecimal = NSDecimalNumber(decimal: self)
+        guard nsDecimal != NSDecimalNumber.zero else { return self }
+            
+        let exponent = max(floor(log10(abs(nsDecimal.doubleValue))), 0)
+        let scale = significantDigits - Int(exponent) - 1
+            
+        var result = Decimal()
+        var selfCopy = self
+        NSDecimalRound(&result, &selfCopy, scale, roundingMode)
+
+        return result
+    }
 }
 
 extension NSDecimalNumber {

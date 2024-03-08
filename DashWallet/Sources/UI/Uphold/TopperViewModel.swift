@@ -37,6 +37,7 @@ class TopperViewModel {
         
         topper = Topper(keyId: keyId, widgetId: widgetId, privateKey: privateKey, isSandbox: isSandbox)
         topper.refreshSupportedAssets()
+        topper.refreshPaymentMethods()
     }
     
     func topperBuyUrl(walletName: String) -> String {
