@@ -135,7 +135,7 @@ NS_ASSUME_NONNULL_BEGIN
                               alertIfLockout:YES
                                   completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
                                       if (authenticated) {
-                                          PortalViewController *controller = [PortalViewController controller];
+                                          BuySellPortalViewController *controller = [BuySellPortalViewController controller];
                                           controller.hidesBottomBarWhenPushed = true;
                                           [self.navigationController pushViewController:controller animated:YES];
                                       }

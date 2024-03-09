@@ -17,7 +17,7 @@
 
 import UIKit
 
-class PortalServiceItemCell: UICollectionViewCell {
+class BuySellServiceItemCell: UICollectionViewCell {
     @IBOutlet var iconView: UIImageView!
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var subtitleLabel: UILabel!
