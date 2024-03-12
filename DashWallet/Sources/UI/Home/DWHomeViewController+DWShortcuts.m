@@ -147,7 +147,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)buySellDashActionAuthenticated {
-    PortalViewController *controller = [PortalViewController controller];
+    BuySellPortalViewController *controller = [BuySellPortalViewController controller];
     controller.showCloseButton = true;
 
     DWNavigationController *navigationController =

@@ -43,15 +43,9 @@ class ServiceItem: Hashable {
     static func == (lhs: ServiceItem, rhs: ServiceItem) -> Bool {
         lhs.hashValue == rhs.hashValue
     }
-
-    enum Status: Int {
-        case unknown
-        case idle
-        case initializing
-        case syncing
-        case authorized
-        case failed
-    }
+    
+    private var dataProvider: ServiceDataSource?
+    var didUpdate: (() -> Void)?
 
     var name: String { service.title }
     var subtitle: String { service.subtitle }
@@ -69,16 +63,23 @@ class ServiceItem: Hashable {
 
     var isInUse: Bool { status == .syncing || status == .authorized || service == .topper }
 
-    init(status: Status, service: Service, dashBalance: UInt64? = nil) {
-        self.status = status
+    init(service: Service, dataProvider: ServiceDataSource?) {
         self.service = service
-        self.dashBalance = dashBalance
-        usageCount = service.usageCount
-
-        guard let dashBalance else { return }
-
-        dashBalanceFormatted = dashBalance.formattedDashAmountWithoutCurrencySymbol
-        fiatBalanceFormatted = Coinbase.shared.currencyExchanger.fiatAmountString(in: App.fiatCurrency, for: dashBalance.dashAmount)
+        self.status = .idle
+        self.dashBalance = nil
+        self.usageCount = service.usageCount
+        self.dataProvider = dataProvider
+        self.dataProvider?.serviceDidUpdate = { [weak self] in
+            self?.status = dataProvider?.status ?? .initializing
+            self?.dashBalance = dataProvider?.dashBalance ?? 0
+            self?.dashBalanceFormatted = self?.dashBalance?.formattedDashAmountWithoutCurrencySymbol
+            self?.fiatBalanceFormatted = Coinbase.shared.currencyExchanger.fiatAmountString(in: App.fiatCurrency, for: self?.dashBalance?.dashAmount ?? 0)
+            self?.didUpdate?()
+        }
+    }
+    
+    func refresh() {
+        dataProvider?.refresh()
     }
 
     func hash(into hasher: inout Hasher) {
@@ -88,7 +89,7 @@ class ServiceItem: Hashable {
     }
 }
 
-extension ServiceItem.Status {
+extension Status {
     var iconColor: UIColor {
         switch self {
         case .initializing: return .label

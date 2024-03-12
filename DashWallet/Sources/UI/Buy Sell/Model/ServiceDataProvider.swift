@@ -24,30 +24,27 @@ protocol ServiceDataProvider {
     func refresh()
 }
 
-// MARK: - MookServiceDataProvider
-
-class MookServiceDataProvider: ServiceDataProvider {
-    func listenForData(handler: @escaping (([ServiceItem]) -> Void)) {
-        handler([.init(status: .authorized, service: .uphold), .init(status: .idle, service: .coinbase)])
-    }
-
-    func refresh() { }
-}
-
 // MARK: - ServiceDataProviderImpl
 
 class ServiceDataProviderImpl: ServiceDataProvider {
     private var handler: (([ServiceItem]) -> Void)?
-
-    private var upholdDataSource: ServiceDataSource = UpholdDataSource()
-    private var coinbaseDataSource: ServiceDataSource = CoinbaseDataSource()
-
-    private var items: [ServiceItem] = [
-        .init(status: .idle, service: .topper) // Topper item doesn't need a data source
-    ]
+    private var items: [ServiceItem]
 
     init() {
-        initializeDataSources()
+        items = [
+            .init(service: .uphold, dataProvider: UpholdDataSource()),
+            .init(service: .topper, dataProvider: nil)
+        ]
+        
+        if CoinbaseDataSource.shouldShow() {
+            items.insert(.init(service: .coinbase, dataProvider: CoinbaseDataSource()), at: 0)
+        }
+        
+        for item in items {
+            item.didUpdate = { [weak self] in
+                self?.updateServices()
+            }
+        }
     }
 
     func listenForData(handler: @escaping (([ServiceItem]) -> Void)) {
@@ -55,27 +52,12 @@ class ServiceDataProviderImpl: ServiceDataProvider {
     }
 
     func refresh() {
-        upholdDataSource.refresh()
-        coinbaseDataSource.refresh()
-    }
-
-    private func initializeDataSources() {
-        upholdDataSource.serviceDidUpdate = { [weak self] item in
-            self?.updateService(with: item)
-        }
-
-        coinbaseDataSource.serviceDidUpdate = { [weak self] item in
-            self?.updateService(with: item)
+        for item in items {
+            item.refresh()
         }
     }
 
-    private func updateService(with item: ServiceItem) {
-        if let idx = items.firstIndex(where: { $0.service == item.service }) {
-            items[idx] = item
-        } else {
-            items.append(item)
-        }
-
+    private func updateServices() {
         let sortedItems = items
             .sorted(by: { $0.usageCount > $1.usageCount })
             .sorted(by: { $0.isInUse && !$1.isInUse })

@@ -19,19 +19,19 @@ import AuthenticationServices
 import SwiftUI
 import UIKit
 
-// MARK: - PortalViewController
+// MARK: - BuySellPortalViewController
 
 @objc
-final class PortalViewController: UIViewController {
+final class BuySellPortalViewController: UIViewController {
     @IBOutlet var subtitleLabel: UILabel!
     @IBOutlet var collectionView: UICollectionView!
     @IBOutlet var networkStatusView: UIView!
     @IBOutlet var closeButton: UIBarButtonItem!
 
-    private var dataSource: UICollectionViewDiffableDataSource<PortalModel.Section, ServiceItem>!
-    private var currentSnapshot: NSDiffableDataSourceSnapshot<PortalModel.Section, ServiceItem>!
+    private var dataSource: UICollectionViewDiffableDataSource<BuySellPortalModel.Section, ServiceItem>!
+    private var currentSnapshot: NSDiffableDataSourceSnapshot<BuySellPortalModel.Section, ServiceItem>!
 
-    private var model = PortalModel()
+    private var model = BuySellPortalModel()
     private var hasNetwork: Bool { model.networkStatus == .online }
     private let topperViewModel = TopperViewModel.shared
 
@@ -111,20 +111,20 @@ final class PortalViewController: UIViewController {
     }
 
     @objc
-    class func controller() -> PortalViewController {
-        vc(PortalViewController.self, from: sb("BuySellPortal"))
+    class func controller() -> BuySellPortalViewController {
+        vc(BuySellPortalViewController.self, from: sb("BuySellPortal"))
     }
 }
 
 // MARK: PortalModelDelegate
 
-extension PortalViewController: PortalModelDelegate {
+extension BuySellPortalViewController: BuySellPortalModelDelegate {
     func serviceItemsDidChange() {
         collectionView.reloadSections([0])
     }
 }
 
-extension PortalViewController {
+extension BuySellPortalViewController {
     private func createLayout() -> UICollectionViewLayout {
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(64))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
@@ -155,7 +155,7 @@ extension PortalViewController {
 
 // MARK: UICollectionViewDelegate, UICollectionViewDataSource
 
-extension PortalViewController: UICollectionViewDelegate, UICollectionViewDataSource {
+extension BuySellPortalViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         model.items.count
     }
@@ -163,7 +163,7 @@ extension PortalViewController: UICollectionViewDelegate, UICollectionViewDataSo
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let item = model.items[indexPath.item]
 
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ItemCell", for: indexPath) as! PortalServiceItemCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ItemCell", for: indexPath) as! BuySellServiceItemCell
         cell.update(with: item, isEnabled: hasNetwork)
         return cell
     }
