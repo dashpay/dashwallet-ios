@@ -593,6 +593,8 @@
 		75889B792AD2A04900C17F5D /* CoinJoinInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */; };
 		75889B7F2AD2D7F800C17F5D /* CoinJoin.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75889B812AD2D7F800C17F5D /* CoinJoin.storyboard */; };
 		75889B892AD2DF0200C17F5D /* CoinJoin.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75889B812AD2D7F800C17F5D /* CoinJoin.storyboard */; };
+		7592AA7C2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */; };
+		7592AA7D2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */; };
 		759C8F9F2B593589004B1305 /* CrowdNodeAPYView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */; };
 		759C8FA02B593589004B1305 /* CrowdNodeAPYView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */; };
 		75A664D82B09F1EA007EFD16 /* VotingInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A664D72B09F1EA007EFD16 /* VotingInfoViewController.swift */; };
@@ -2444,6 +2446,7 @@
 		757E09981ADB8EEB006FD352 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinInfoViewController.swift; sourceTree = "<group>"; };
 		75889B802AD2D7F800C17F5D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/CoinJoin.storyboard; sourceTree = "<group>"; };
+		7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedTopperPaymentMethods.swift; sourceTree = "<group>"; };
 		759816E519357D6F005060EA /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
 		759816E619357D6F005060EA /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
 		759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeAPYView.swift; sourceTree = "<group>"; };
@@ -6000,6 +6003,7 @@
 			children = (
 				753130902B47EE920069C9B7 /* UpholdCapability.swift */,
 				753130962B4944130069C9B7 /* UpholdError.swift */,
+				7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -8709,6 +8713,7 @@
 				2A0C69B32312E8A0001B8C90 /* DWWindow.m in Sources */,
 				472D13E3299E23B7006903F1 /* BalanceNotifier.swift in Sources */,
 				2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */,
+				7592AA7C2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */,
 				2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */,
 				47C661AF28FDAA3400028A8D /* BaseAmountViewController.swift in Sources */,
 				478C982C2942F03500FAA0F0 /* SendingToView.swift in Sources */,
@@ -9314,6 +9319,7 @@
 				C943B4FE2A40A54600AF23C5 /* DWDPTextStatusCell.m in Sources */,
 				C9D2C7BC2A320AA000D15901 /* AccountRepository.swift in Sources */,
 				C9D2C7BD2A320AA000D15901 /* DWSharedUIConstants.m in Sources */,
+				7592AA7D2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */,
 				C9D2C7BE2A320AA000D15901 /* BRAppleWatchTransactionData.m in Sources */,
 				C956AF212A5C33E5002FAB75 /* DWButton.m in Sources */,
 				C9D2C7BF2A320AA000D15901 /* TerritoriesListViewController.swift in Sources */,
