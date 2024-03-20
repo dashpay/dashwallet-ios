@@ -28,8 +28,8 @@ actor PaymentMethods {
 
     public func fetchPaymentMethods() async throws -> [CoinbasePaymentMethod] {
         guard let methods, !methods.isEmpty else {
-            let result: BaseDataCollectionResponse<CoinbasePaymentMethod> = try await CoinbaseAPI.shared.request(.activePaymentMethods)
-            methods = result.data
+            let result: CoinbasePaymentMethodsResponse = try await CoinbaseAPI.shared.request(.activePaymentMethods)
+            methods = result.paymentMethods
             return methods!
         }
 

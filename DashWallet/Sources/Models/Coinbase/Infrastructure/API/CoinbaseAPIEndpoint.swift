@@ -180,7 +180,7 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
         case .deposit(let accountId, _): return "v2/accounts/\(accountId)/deposits"
         case .userAuthInformation: return "/v2/user/auth"
         case .exchangeRates: return "/v2/exchange-rates"
-        case .activePaymentMethods: return "/v2/payment-methods"
+        case .activePaymentMethods: return "api/v3/brokerage/payment_methods"
         case .placeBuyOrder: return "api/v3/brokerage/orders"
         case .sendCoinsToWallet(let accountId, _, _): return "/v2/accounts/\(accountId)/transactions"
         case .getBaseIdForUSDModel: return "/v2/assets/prices"
