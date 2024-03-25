@@ -182,13 +182,14 @@ public final class CrowdNode {
 // MARK: Restoring state
 extension CrowdNode {
     func restoreState() {
+        checkAPY()
+        
         if signUpState > SignUpState.notStarted {
             // Already started/restored
             return
         }
 
         DSLogger.log("restoring CrowdNode state")
-        checkAPY()
         signUpState = SignUpState.notStarted
         validatePrefs()
 
