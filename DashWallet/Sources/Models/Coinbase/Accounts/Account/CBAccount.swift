@@ -104,11 +104,12 @@ extension CBAccount {
             fatalError("No wallet")
         }
 
-        let fiatCurrency = Coinbase.sendLimitCurrency
-        if let localNumber = try? Coinbase.shared.currencyExchanger.convertDash(amount: amount.dashAmount, to: fiatCurrency),
-           localNumber > Coinbase.shared.sendLimit {
-            throw Coinbase.Error.transactionFailed(.limitExceded)
-        }
+        // TODO: disabled until Coinbase changes are clear
+//        let fiatCurrency = Coinbase.sendLimitCurrency
+//        if let localNumber = try? Coinbase.shared.currencyExchanger.convertDash(amount: amount.dashAmount, to: fiatCurrency),
+//           localNumber > Coinbase.shared.sendLimit {
+//            throw Coinbase.Error.transactionFailed(.limitExceded)
+//        }
 
         guard amount >= DSTransaction.txMinOutputAmount() else {
             throw Coinbase.Error.transactionFailed(.invalidAmount)
@@ -176,9 +177,11 @@ extension CBAccount {
             let localFormatter = NumberFormatter.fiatFormatter(currencyCode: fiatCurrency)
             let str = localFormatter.string(from: min) ?? "$1.99"
             throw Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: str))
-        } else if localNumber > Coinbase.shared.sendLimit {
-            throw Coinbase.Error.transactionFailed(.limitExceded)
-        }
+        } 
+        // TODO: disabled until Coinbase changes are clear
+//        else if localNumber > Coinbase.shared.sendLimit {
+//            throw Coinbase.Error.transactionFailed(.limitExceded)
+//        }
 
         let formatter = NumberFormatter.decimalFormatter
         formatter.maximumFractionDigits = 2
@@ -212,9 +215,12 @@ extension CBAccount {
                 let localFormatter = NumberFormatter.fiatFormatter(currencyCode: fiatCurrency)
                 let str = localFormatter.string(from: min) ?? "$1.99"
                 throw Coinbase.Error.transactionFailed(.enteredAmountTooLow(minimumAmount: str))
-            } else if amountInUSD > Coinbase.shared.sendLimit {
-                throw Coinbase.Error.transactionFailed(.limitExceded)
-            }
+            } 
+            
+            // TODO: disabled until Coinbase changes are clear
+//            else if amountInUSD > Coinbase.shared.sendLimit {
+//                throw Coinbase.Error.transactionFailed(.limitExceded)
+//            }
         }
 
         let baseIds: BaseDataCollectionResponse<CoinbaseBaseIDForCurrency> = try await CoinbaseAPI.shared.request(.getBaseIdForUSDModel("USD"))

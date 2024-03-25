@@ -7,6 +7,15 @@
 
 import Foundation
 
+// MARK: - CoinbasePaymentMethodsResponse
+
+struct CoinbasePaymentMethodsResponse: Codable {
+    let paymentMethods: [CoinbasePaymentMethod]
+    
+    enum CodingKeys: String, CodingKey {
+        case paymentMethods = "payment_methods"
+    }
+}
 
 // MARK: - CoinbasePaymentMethod + Equatable
 
@@ -27,31 +36,22 @@ struct CoinbasePaymentMethod: Codable {
     let allowDeposit: Bool
     let allowWithdraw: Bool
     let currency: String?
-    let primaryBuy: Bool
-    let primarySell: Bool
-    let instantBuy: Bool
-    let instantSell: Bool
-
-    let fiatAccount: FiatAccount?
+    let updatedAt: String?
+    let createdAt: String?
     let verified: Bool
-    let minimumPurchaseAmount: MinimumPurchaseAmount?
 
     enum CodingKeys: String, CodingKey {
         case id
         case type
         case name
         case currency
-        case primaryBuy = "primary_buy"
-        case primarySell = "primary_sell"
-        case instantBuy = "instant_buy"
-        case instantSell = "instant_sell"
+        case updatedAt = "updated_at"
+        case createdAt = "created_at"
         case allowBuy = "allow_buy"
         case allowSell = "allow_sell"
         case allowDeposit = "allow_deposit"
         case allowWithdraw = "allow_withdraw"
-        case fiatAccount = "fiat_account"
         case verified
-        case minimumPurchaseAmount = "minimum_purchase_amount"
     }
 }
 
@@ -78,18 +78,18 @@ struct MinimumPurchaseAmount: Codable {
 // MARK: - PaymentMethodType
 
 public enum PaymentMethodType: String, Codable {
-    case achBankAccount = "ach_bank_account"
-    case sepaBankAccount = "sepa_bank_account"
-    case idealBankAccount = "ideal_bank_account"
-    case fiatAccount = "fiat_account"
-    case bankWire = "bank_wire"
-    case creditCard = "credit_card"
-    case secure3dCard = "secure3d_card"
-    case eftBankAccount = "eft_bank_account"
-    case interac
-    case applePay = "apple_pay"
-    case googlePay = "google_pay"
-    case payPal = "paypal"
+    case achBankAccount = "ACH"
+    case sepaBankAccount = "SEPA"
+    case idealBankAccount = "IDEAL"
+    case fiatAccount = "COINBASE_FIAT_ACCOUNT"
+    case bankWire = "BANK_WIRE"
+    case creditCard = "CREDIT_CARD"
+    case secure3dCard = "SECURE3D_CARD"
+    case eftBankAccount = "EFT"
+    case interac = "INTERAC"
+    case applePay = "APPLE_PAY"
+    case googlePay = "GOOGLE_PAY"
+    case payPal = "PAYPAL"
 
     var displayString: String {
         switch self {
