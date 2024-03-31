@@ -1,6 +1,6 @@
 //
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Created by Andrei Ashikhmin
+//  Copyright © 2024 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 @objc(DWToolsMenuViewControllerDelegate)
 protocol ToolsMenuViewControllerDelegate: AnyObject {
@@ -26,7 +27,6 @@ protocol ToolsMenuViewControllerDelegate: AnyObject {
 class ToolsMenuViewController: UIViewController, DWImportWalletInfoViewControllerDelegate {
     
     @objc weak var delegate: ToolsMenuViewControllerDelegate?
-    private var formController: DWFormTableViewController!
     
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
@@ -38,58 +38,61 @@ class ToolsMenuViewController: UIViewController, DWImportWalletInfoViewControlle
         fatalError("init(coder:) has not been implemented")
     }
     
-    private var items: [DWBaseFormCellModel] {
-        var items = [DWBaseFormCellModel]()
-        
-        let importPrivateKeyModel = DWSelectorFormCellModel(title: NSLocalizedString("Import Private Key", comment: ""))
-        importPrivateKeyModel.accessoryType = .disclosureIndicator
-        importPrivateKeyModel.didSelectBlock = { [weak self] _, _ in
-            self?.showImportPrivateKey()
-        }
-        items.append(importPrivateKeyModel)
-        
-        let extendedPublicKeysModel = DWSelectorFormCellModel(title: NSLocalizedString("Extended Public Keys", comment: ""))
-        extendedPublicKeysModel.accessoryType = .disclosureIndicator
-        extendedPublicKeysModel.didSelectBlock = { [weak self] _, _ in
-            self?.showExtendedPublicKeys()
-        }
-        items.append(extendedPublicKeysModel)
-        
-        let showMasternodeKeysModel = DWSelectorFormCellModel(title: NSLocalizedString("Show Masternode Keys", comment: ""))
-        showMasternodeKeysModel.accessoryType = .disclosureIndicator
-        showMasternodeKeysModel.didSelectBlock = { [weak self] _, _ in
-            self?.showMasternodeKeys()
-        }
-        items.append(showMasternodeKeysModel)
-        
-        let csvExportModel = DWSelectorFormCellModel(title: NSLocalizedString("CSV Export", comment: ""))
-        csvExportModel.accessoryType = .disclosureIndicator
-        csvExportModel.didSelectBlock = { [weak self] _, _ in
-            self?.askToExportTransactionsInCSV()
-        }
-        items.append(csvExportModel)
-        
-        return items
-    }
-    
-    private var sections: [DWFormSectionModel] {
-        return items.map { item in
-            let section = DWFormSectionModel()
-            section.items = [item]
-            return section
-        }
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         self.view.backgroundColor = UIColor.dw_secondaryBackground()
         
-        let formController = DWFormTableViewController(style: .plain)
-        formController.setSections(sections, placeholderText: nil)
+        let items = [
+            MenuItemModel(
+                title: NSLocalizedString("Import Private Key", comment: ""),
+                showChevron: true,
+                action: { [weak self] in
+                    self?.showImportPrivateKey()
+                }
+            ),
+            MenuItemModel(
+                title: NSLocalizedString("Extended Public Keys", comment: ""),
+                showChevron: true,
+                action: { [weak self] in
+                    self?.showExtendedPublicKeys()
+                }
+            ),
+            MenuItemModel(
+                title: NSLocalizedString("Show Masternode Keys", comment: ""),
+                showChevron: true,
+                action: { [weak self] in
+                    self?.showMasternodeKeys()
+                }
+            ),
+            MenuItemModel(
+                title: NSLocalizedString("CSV Export", comment: ""),
+                showChevron: true,
+                action: { [weak self] in
+                    self?.askToExportTransactionsInCSV()
+                }
+            ),
+            MenuItemModel(
+                title: NSLocalizedString("ZenLedger", comment: ""),
+                subtitle: NSLocalizedString("Simplify your crypto taxes", comment: ""),
+                icon: .custom(name: "zenledger"),
+                action: { [weak self] in
+                    print("zenledger clicked")
+                }
+            )
+        ]
         
-        self.dw_embedChild(formController)
-        self.formController = formController
+        let list = List(items) {
+            MenuItem(model: $0)
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+        }
+        .listStyle(.plain)
+        .background(Color.clear)
+        
+        let swiftUIController = UIHostingController(rootView: list)
+        swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
+        self.dw_embedChild(swiftUIController)
     }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {

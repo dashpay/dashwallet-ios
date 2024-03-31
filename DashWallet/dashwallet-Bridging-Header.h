@@ -135,7 +135,5 @@ static const bool _SNAPSHOT = 0;
 #endif
 
 //MARK: Tools menu
-#import "DWFormTableViewController.h"
-#import "DWImportWalletInfoViewController.h"
 #import "UIViewController+DWDisplayError.h"
 
