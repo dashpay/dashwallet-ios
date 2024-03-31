@@ -30,6 +30,10 @@ extension Color {
         Color("TertiaryTextColor")
     }
     
+    static var dashBlue: Color {
+        Color("DashBlueColor")
+    }
+    
     static var gray300: Color {
         Color("Gray300")
     }

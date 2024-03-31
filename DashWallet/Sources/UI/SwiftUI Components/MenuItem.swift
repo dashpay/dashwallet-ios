@@ -23,16 +23,11 @@ struct MenuItemModel: Identifiable {
     var title: String
     var subtitle: String? = nil
     var details: String? = nil
-    var icon: Icon? = nil
+    var icon: IconName? = nil
     var showInfo: Bool = false
     var showChevron: Bool = false
     var isToggled: Binding<Bool>? = nil
-    var action: (() -> Void)?
-}
-
-enum Icon {
-    case system(name: String)
-    case custom(name: String)
+    var action: (() -> Void)? = nil
 }
 
 struct MenuItem: View {
@@ -41,21 +36,15 @@ struct MenuItem: View {
     var body: some View {
         HStack(spacing: 4) {
             if let icon = model.icon {
-                ZStack {
-                    switch icon {
-                    case .system(let name):
-                        Image(systemName: name).imageScale(.large)
-                    case .custom(let name):
-                        Image(name).imageScale(.large)
-                    }
-                }
-                .frame(width: 36, height: 36)
+                Icon(name: icon)
+                    .frame(width: 36, height: 36)
             }
             
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 6) {
                     Text(model.title)
                         .font(Font.system(size: 14).weight(.medium))
+                        .lineSpacing(3)
                         .foregroundColor(.primaryText)
                     
                     if model.showInfo {
@@ -70,6 +59,7 @@ struct MenuItem: View {
             if let subtitle = model.subtitle {
                 Text(subtitle)
                     .font(Font.system(size: 12))
+                    .lineSpacing(3)
                     .foregroundColor(.tertiaryText)
                     .padding(.leading, 8)
                     .padding(.top, 2)
@@ -78,6 +68,7 @@ struct MenuItem: View {
             if let details = model.details {
                 Text(details)
                     .font(Font.system(size: 12))
+                    .lineSpacing(3)
                     .foregroundColor(.tertiaryText)
                     .padding(.leading, 8)
                     .padding(.top, 2)
@@ -115,7 +106,7 @@ struct MenuItem_Previews: PreviewProvider {
             model: MenuItemModel(
                 title: "Title",
                 subtitle: "Easily stake Dash and earn passive income with a few simple steps",
-                icon: .system(name: "faceid"),
+                icon: .system("faceid"),
                 showInfo: true,
                 isToggled: .constant(true)
             )

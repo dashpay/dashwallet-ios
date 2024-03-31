@@ -25,7 +25,6 @@ protocol ToolsMenuViewControllerDelegate: AnyObject {
 
 @objc(DWToolsMenuViewController)
 class ToolsMenuViewController: UIViewController, DWImportWalletInfoViewControllerDelegate {
-    
     @objc weak var delegate: ToolsMenuViewControllerDelegate?
     
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
@@ -75,22 +74,14 @@ class ToolsMenuViewController: UIViewController, DWImportWalletInfoViewControlle
             MenuItemModel(
                 title: NSLocalizedString("ZenLedger", comment: ""),
                 subtitle: NSLocalizedString("Simplify your crypto taxes", comment: ""),
-                icon: .custom(name: "zenledger"),
+                icon: .custom("zenledger"),
                 action: { [weak self] in
-                    print("zenledger clicked")
+//                    showZL.wrappedValue = true
                 }
             )
         ]
         
-        let list = List(items) {
-            MenuItem(model: $0)
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
-        }
-        .listStyle(.plain)
-        .background(Color.clear)
-        
-        let swiftUIController = UIHostingController(rootView: list)
+        let swiftUIController = UIHostingController(rootView: ContentView(items: items))
         swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
         self.dw_embedChild(swiftUIController)
     }
@@ -171,5 +162,58 @@ extension DWImportWalletInfoViewController {
         let controller = storyboard.instantiateInitialViewController() as! DWImportWalletInfoViewController
         controller.hidesBottomBarWhenPushed = true
         return controller
+    }
+}
+
+struct ContentView: View {
+    let items: [MenuItemModel]
+    @State private var showingZenLedgerSheet: Bool = false
+
+    var body: some View {
+        VStack {
+            List(items) {
+                MenuItem(model: $0)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+            }
+            .listStyle(.plain)
+            .background(Color.clear)
+            .sheet(isPresented: $showingZenLedgerSheet) {
+                if #available(iOS 16.0, *) {
+                    bottomSheet
+                        .presentationDetents([.height(430)])
+                } else {
+                    bottomSheet
+                }
+            }
+            
+            Button(action: {
+                showingZenLedgerSheet = true
+            }, label: { Text("hello") })
+        }
+    }
+    
+    var bottomSheet: some View {
+        BottomSheet {
+            TextIntro(
+                icon: .custom("zenledger_large"),
+                buttonLabel: NSLocalizedString("Export all transactions", comment: "ZenLedger"),
+                action: {
+                    print("hello")
+                }
+            ) {
+                FeatureTopText(
+                    model: FeatureTopModel(
+                        title: NSLocalizedString("Simplify your crypto taxes", comment: "ZenLedger"),
+                        text: NSLocalizedString("Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.", comment: "ZenLedger"),
+                        label: "zenledger.io",
+                        labelIcon: .custom("external.link"),
+                        linkAction: {
+                            print("link action")
+                        }
+                    )
+                )
+            }
+        }
     }
 }
