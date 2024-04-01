@@ -17,28 +17,22 @@
 
 import SwiftUI
 
-struct FeatureTopModel: Identifiable {
-    let id = UUID()
-    
+struct FeatureTopText: View {
     var title: String
     var text: String
     var label: String? = nil
     var labelIcon: IconName? = nil
     var linkAction: (() -> Void)? = nil
-}
-
-struct FeatureTopText: View {
-    var model: FeatureTopModel
     
     var body: some View {
         VStack(spacing: 6) {
-            Text(model.title)
+            Text(title)
                 .font(Font.system(size: 24).weight(.bold))
                 .multilineTextAlignment(.center)
                 .lineSpacing(3)
                 .foregroundColor(.primaryText)
           
-            Text(model.text)
+            Text(text)
                 .font(Font.system(size: 14))
                 .multilineTextAlignment(.center)
                 .lineSpacing(3)
@@ -46,9 +40,9 @@ struct FeatureTopText: View {
             
             // TODO: features
             
-            if let label = model.label {
+            if let label = label {
                 Button(action: {
-                    model.linkAction?()
+                    linkAction?()
                 }) {
                     HStack(spacing: 6) {
                         Text(label)
@@ -56,7 +50,7 @@ struct FeatureTopText: View {
                             .lineSpacing(3)
                             .foregroundColor(.dashBlue)
                         
-                        if let icon = model.labelIcon {
+                        if let icon = labelIcon {
                             Icon(name: icon)
                                 .foregroundColor(.dashBlue)
                         }
@@ -72,11 +66,9 @@ struct FeatureTopText: View {
 
 #Preview {
     FeatureTopText(
-        model: FeatureTopModel(
-            title: "Simplify your crypto taxes",
-            text: "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.",
-            label: "zenledger.io",
-            labelIcon: .custom("external.link")
-        )
+        title: "Simplify your crypto taxes",
+        text: "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.",
+        label: "zenledger.io",
+        labelIcon: .custom("external.link")
     )
 }

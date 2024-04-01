@@ -631,6 +631,7 @@
 		75EBAA102BB99036004488E3 /* TextIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA0E2BB99036004488E3 /* TextIntro.swift */; };
 		75EBAA122BB99B6B004488E3 /* BottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA112BB99B6B004488E3 /* BottomSheet.swift */; };
 		75EBAA132BB99B6B004488E3 /* BottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA112BB99B6B004488E3 /* BottomSheet.swift */; };
+		75EBAA1D2BBA71D9004488E3 /* ZenLedgerInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA1C2BBA71D9004488E3 /* ZenLedgerInfoSheet.swift */; };
 		75F51AAD2ABD8C800057B499 /* IntegrationViewController+Uphold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */; };
 		75F51AAF2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */; };
 		75F990822AFD1065006759AB /* UsernameRequestDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F990812AFD1065006759AB /* UsernameRequestDetailsViewController.swift */; };
@@ -2492,6 +2493,7 @@
 		75EBAA0B2BB9792F004488E3 /* FeatureTopText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureTopText.swift; sourceTree = "<group>"; };
 		75EBAA0E2BB99036004488E3 /* TextIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextIntro.swift; sourceTree = "<group>"; };
 		75EBAA112BB99B6B004488E3 /* BottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheet.swift; sourceTree = "<group>"; };
+		75EBAA1C2BBA71D9004488E3 /* ZenLedgerInfoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenLedgerInfoSheet.swift; sourceTree = "<group>"; };
 		75EDC78DE1686E55AE12233C /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; sourceTree = "<group>"; };
 		75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Uphold.swift"; sourceTree = "<group>"; };
@@ -4182,6 +4184,7 @@
 		2A7A7BDA2348DBE700451078 /* Tools */ = {
 			isa = PBXGroup;
 			children = (
+				75EBAA1B2BBA71CD004488E3 /* ZenLedger */,
 				2A8DBA772630A6BE009094BD /* ExtendedKeys */,
 				2A10EB322358994400C38B61 /* ImportWallet */,
 				FB3FF0B0222641210059A9A5 /* Masternode Keys */,
@@ -6213,6 +6216,14 @@
 				75D656192B0792F500D1A902 /* UsernameRequests.storyboard */,
 			);
 			path = Usernames;
+			sourceTree = "<group>";
+		};
+		75EBAA1B2BBA71CD004488E3 /* ZenLedger */ = {
+			isa = PBXGroup;
+			children = (
+				75EBAA1C2BBA71D9004488E3 /* ZenLedgerInfoSheet.swift */,
+			);
+			path = ZenLedger;
 			sourceTree = "<group>";
 		};
 		BA913BDF1BD57E4D005A7C0E /* WatchApp */ = {
@@ -8371,6 +8382,7 @@
 				2AD1CE6E22DA357D00C99324 /* DWBaseViewController.m in Sources */,
 				2A44314722CF82D9009BAF7F /* DWBiometricAuthViewController.m in Sources */,
 				11517C87294B0FED004FC7BF /* CrowdNodeWebService.swift in Sources */,
+				75EBAA1D2BBA71D9004488E3 /* ZenLedgerInfoSheet.swift in Sources */,
 				2A4E531422E9F0A200E5168A /* DWStartViewController.m in Sources */,
 				11517C832949E6A3004FC7BF /* CrowdNodeAPI.swift in Sources */,
 				2A4E531522E9F0A200E5168A /* DWStartModel.m in Sources */,

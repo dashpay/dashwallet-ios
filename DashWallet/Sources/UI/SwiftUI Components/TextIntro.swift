@@ -61,12 +61,10 @@ struct TextIntro: View {
         }
     ) {
         FeatureTopText(
-            model: FeatureTopModel(
-                title: "Simplify your crypto taxes",
-                text: "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.",
-                label: "zenledger.io",
-                labelIcon: .custom("external.link")
-            )
+            title: "Simplify your crypto taxes",
+            text: "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.",
+            label: "zenledger.io",
+            labelIcon: .custom("external.link")
         )
     }
 }

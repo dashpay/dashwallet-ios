@@ -17,9 +17,7 @@
 
 import SwiftUI
 
-struct MenuItemModel: Identifiable {
-    let id = UUID()
-    
+struct MenuItem: View {
     var title: String
     var subtitle: String? = nil
     var details: String? = nil
@@ -28,26 +26,22 @@ struct MenuItemModel: Identifiable {
     var showChevron: Bool = false
     var isToggled: Binding<Bool>? = nil
     var action: (() -> Void)? = nil
-}
-
-struct MenuItem: View {
-    var model: MenuItemModel
     
     var body: some View {
         HStack(spacing: 4) {
-            if let icon = model.icon {
+            if let icon = icon {
                 Icon(name: icon)
                     .frame(width: 36, height: 36)
             }
             
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 6) {
-                    Text(model.title)
+                    Text(title)
                         .font(Font.system(size: 14).weight(.medium))
                         .lineSpacing(3)
                         .foregroundColor(.primaryText)
                     
-                    if model.showInfo {
+                    if showInfo {
                         Image(systemName: "info.circle.fill")
                             .foregroundColor(.gray300)
                             .imageScale(.small)
@@ -56,7 +50,7 @@ struct MenuItem: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.leading, 8)
                 
-            if let subtitle = model.subtitle {
+            if let subtitle = subtitle {
                 Text(subtitle)
                     .font(Font.system(size: 12))
                     .lineSpacing(3)
@@ -65,7 +59,7 @@ struct MenuItem: View {
                     .padding(.top, 2)
             }
                     
-            if let details = model.details {
+            if let details = details {
                 Text(details)
                     .font(Font.system(size: 12))
                     .lineSpacing(3)
@@ -76,12 +70,12 @@ struct MenuItem: View {
             }
             .frame(maxWidth: .infinity)
 
-            if let isToggled = model.isToggled {
+            if let isToggled = isToggled {
                 Toggle(isOn: isToggled) { }
                     .frame(maxWidth: 60)
             }
             
-            if model.showChevron {
+            if showChevron {
                 Image(systemName: "chevron.right")
                     .imageScale(.small)
                     .foregroundColor(Color.gray)
@@ -94,22 +88,18 @@ struct MenuItem: View {
         .cornerRadius(8)
         .shadow(color: .shadow, radius: 10, x: 0, y: 5)
         .onTapGesture {
-            model.action?()
+            action?()
         }
     }
 }
 
 
-struct MenuItem_Previews: PreviewProvider {
-    static var previews: some View {
-        MenuItem(
-            model: MenuItemModel(
-                title: "Title",
-                subtitle: "Easily stake Dash and earn passive income with a few simple steps",
-                icon: .system("faceid"),
-                showInfo: true,
-                isToggled: .constant(true)
-            )
-        )
-    }
+#Preview {
+    MenuItem(
+        title: "Title",
+        subtitle: "Easily stake Dash and earn passive income with a few simple steps",
+        icon: .system("faceid"),
+        showInfo: true,
+        isToggled: .constant(true)
+    )
 }

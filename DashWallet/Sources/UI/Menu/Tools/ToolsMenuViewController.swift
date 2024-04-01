@@ -75,13 +75,11 @@ class ToolsMenuViewController: UIViewController, DWImportWalletInfoViewControlle
                 title: NSLocalizedString("ZenLedger", comment: ""),
                 subtitle: NSLocalizedString("Simplify your crypto taxes", comment: ""),
                 icon: .custom("zenledger"),
-                action: { [weak self] in
-//                    showZL.wrappedValue = true
-                }
+                showChevron: true
             )
         ]
         
-        let swiftUIController = UIHostingController(rootView: ContentView(items: items))
+        let swiftUIController = UIHostingController(rootView: ToolsMenuContent(items: items))
         swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
         self.dw_embedChild(swiftUIController)
     }
@@ -165,54 +163,58 @@ extension DWImportWalletInfoViewController {
     }
 }
 
-struct ContentView: View {
-    let items: [MenuItemModel]
-    @State private var showingZenLedgerSheet: Bool = false
+struct MenuItemModel: Identifiable, Equatable {
+    let id = UUID()
+    
+    var title: String
+    var subtitle: String? = nil
+    var details: String? = nil
+    var icon: IconName? = nil
+    var showInfo: Bool = false
+    var showChevron: Bool = false
+    var isToggled: Binding<Bool>? = nil
+    var action: (() -> Void)? = nil
+    
+    static func == (lhs: MenuItemModel, rhs: MenuItemModel) -> Bool {
+        lhs.id == rhs.id
+    }
+}
+
+struct ToolsMenuContent: View {
+    var items: [MenuItemModel]
+    @State private var showZenLedgerSheet: Bool = false
 
     var body: some View {
         VStack {
-            List(items) {
-                MenuItem(model: $0)
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
+            List(items) { item in
+                MenuItem(
+                    title: item.title,
+                    subtitle: item.subtitle,
+                    details: item.details,
+                    icon: item.icon,
+                    showInfo: item.showInfo,
+                    showChevron: item.showChevron,
+                    isToggled: item.isToggled,
+                    action: {
+                        if item == items.last {
+                            showZenLedgerSheet = true
+                        } else {
+                            item.action?()
+                        }
+                    }
+                )
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
             }
             .listStyle(.plain)
             .background(Color.clear)
-            .sheet(isPresented: $showingZenLedgerSheet) {
+            .sheet(isPresented: $showZenLedgerSheet) {
                 if #available(iOS 16.0, *) {
-                    bottomSheet
+                    ZenLedgerInfoSheet()
                         .presentationDetents([.height(430)])
                 } else {
-                    bottomSheet
+                    ZenLedgerInfoSheet()
                 }
-            }
-            
-            Button(action: {
-                showingZenLedgerSheet = true
-            }, label: { Text("hello") })
-        }
-    }
-    
-    var bottomSheet: some View {
-        BottomSheet {
-            TextIntro(
-                icon: .custom("zenledger_large"),
-                buttonLabel: NSLocalizedString("Export all transactions", comment: "ZenLedger"),
-                action: {
-                    print("hello")
-                }
-            ) {
-                FeatureTopText(
-                    model: FeatureTopModel(
-                        title: NSLocalizedString("Simplify your crypto taxes", comment: "ZenLedger"),
-                        text: NSLocalizedString("Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.", comment: "ZenLedger"),
-                        label: "zenledger.io",
-                        labelIcon: .custom("external.link"),
-                        linkAction: {
-                            print("link action")
-                        }
-                    )
-                )
             }
         }
     }
