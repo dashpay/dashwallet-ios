@@ -165,7 +165,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showImportPrivateKey {
-    DWImportWalletInfoViewController *controller = [DWImportWalletInfoViewController init];
+    DWImportWalletInfoViewController *controller = [DWImportWalletInfoViewController controller];
     controller.delegate = self;
     [self presentControllerModallyInNavigationController:controller];
 }
