@@ -185,36 +185,34 @@ struct ToolsMenuContent: View {
     @State private var showZenLedgerSheet: Bool = false
 
     var body: some View {
-        VStack {
-            List(items) { item in
-                MenuItem(
-                    title: item.title,
-                    subtitle: item.subtitle,
-                    details: item.details,
-                    icon: item.icon,
-                    showInfo: item.showInfo,
-                    showChevron: item.showChevron,
-                    isToggled: item.isToggled,
-                    action: {
-                        if item == items.last {
-                            showZenLedgerSheet = true
-                        } else {
-                            item.action?()
-                        }
+        List(items) { item in
+            MenuItem(
+                title: item.title,
+                subtitle: item.subtitle,
+                details: item.details,
+                icon: item.icon,
+                showInfo: item.showInfo,
+                showChevron: item.showChevron,
+                isToggled: item.isToggled,
+                action: {
+                    if item == items.last {
+                        showZenLedgerSheet = true
+                    } else {
+                        item.action?()
                     }
-                )
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
-            }
-            .listStyle(.plain)
-            .background(Color.clear)
-            .sheet(isPresented: $showZenLedgerSheet) {
-                if #available(iOS 16.0, *) {
-                    ZenLedgerInfoSheet()
-                        .presentationDetents([.height(430)])
-                } else {
-                    ZenLedgerInfoSheet()
                 }
+            )
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+        }
+        .listStyle(.plain)
+        .background(Color.clear)
+        .sheet(isPresented: $showZenLedgerSheet) {
+            if #available(iOS 16.0, *) {
+                ZenLedgerInfoSheet()
+                    .presentationDetents([.height(430)])
+            } else {
+                ZenLedgerInfoSheet()
             }
         }
     }
