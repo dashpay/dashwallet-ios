@@ -632,6 +632,10 @@
 		75EBAA122BB99B6B004488E3 /* BottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA112BB99B6B004488E3 /* BottomSheet.swift */; };
 		75EBAA132BB99B6B004488E3 /* BottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA112BB99B6B004488E3 /* BottomSheet.swift */; };
 		75EBAA1D2BBA71D9004488E3 /* ZenLedgerInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA1C2BBA71D9004488E3 /* ZenLedgerInfoSheet.swift */; };
+		75EBAA222BBA9D3C004488E3 /* ZenLedger-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75EBAA212BBA9D3C004488E3 /* ZenLedger-Info.plist */; };
+		75EBAA232BBA9D3C004488E3 /* ZenLedger-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75EBAA212BBA9D3C004488E3 /* ZenLedger-Info.plist */; };
+		75EBAA252BBA9DC2004488E3 /* ZenLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA242BBA9DC2004488E3 /* ZenLedger.swift */; };
+		75EBAA262BBA9DC2004488E3 /* ZenLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA242BBA9DC2004488E3 /* ZenLedger.swift */; };
 		75F51AAD2ABD8C800057B499 /* IntegrationViewController+Uphold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */; };
 		75F51AAF2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */; };
 		75F990822AFD1065006759AB /* UsernameRequestDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F990812AFD1065006759AB /* UsernameRequestDetailsViewController.swift */; };
@@ -2494,6 +2498,8 @@
 		75EBAA0E2BB99036004488E3 /* TextIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextIntro.swift; sourceTree = "<group>"; };
 		75EBAA112BB99B6B004488E3 /* BottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheet.swift; sourceTree = "<group>"; };
 		75EBAA1C2BBA71D9004488E3 /* ZenLedgerInfoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenLedgerInfoSheet.swift; sourceTree = "<group>"; };
+		75EBAA212BBA9D3C004488E3 /* ZenLedger-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ZenLedger-Info.plist"; sourceTree = "<group>"; };
+		75EBAA242BBA9DC2004488E3 /* ZenLedger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenLedger.swift; sourceTree = "<group>"; };
 		75EDC78DE1686E55AE12233C /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; sourceTree = "<group>"; };
 		75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Uphold.swift"; sourceTree = "<group>"; };
@@ -5151,6 +5157,7 @@
 				471A2603289ACCDD0056B7B2 /* Address */,
 				4709C313287EA10600B4BD48 /* Tx */,
 				471A2609289ACDF70056B7B2 /* Taxes.swift */,
+				75EBAA242BBA9DC2004488E3 /* ZenLedger.swift */,
 			);
 			path = Taxes;
 			sourceTree = "<group>";
@@ -6177,6 +6184,7 @@
 				752772112AAA1CE30066557E /* Coinbase-Info.plist */,
 				C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */,
 				75E2F3C72AA4CF1900C3B458 /* Topper-Info.plist */,
+				75EBAA212BBA9D3C004488E3 /* ZenLedger-Info.plist */,
 				47AE8BAF28BFF28400490F5E /* explore.db */,
 				47A5145E2848F75A005A8E3E /* dashwallet-Bridging-Header.h */,
 				2A8F420821BED16300858B91 /* DashSyncCurrentCommit */,
@@ -7830,6 +7838,7 @@
 				474C720D298A19D100475CA6 /* TxDetailHeaderCell.xib in Resources */,
 				75303FE52AE7B70500870D8B /* CrowdNode.storyboard in Resources */,
 				2AB231D42196E27300A6E7E6 /* StartStoryboard.storyboard in Resources */,
+				75EBAA222BBA9D3C004488E3 /* ZenLedger-Info.plist in Resources */,
 				C9FAABB52AB793CE00878224 /* BuySellPortal.storyboard in Resources */,
 				2A1AF6DF23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib in Resources */,
 				2A4431D622D52F67009BAF7F /* DWInfoTextCell.xib in Resources */,
@@ -7938,6 +7947,7 @@
 				C9D2C9112A320AA000D15901 /* DWShortcutCollectionViewCell~iphone.xib in Resources */,
 				C9D2C9122A320AA000D15901 /* DWInfoTextCell.xib in Resources */,
 				C9D2C9132A320AA000D15901 /* BiometricAuth.storyboard in Resources */,
+				75EBAA232BBA9D3C004488E3 /* ZenLedger-Info.plist in Resources */,
 				C9D2C9142A320AA000D15901 /* TxListEmptyTableViewCell.xib in Resources */,
 				C9D2C9152A320AA000D15901 /* Payments.storyboard in Resources */,
 				C9D2C9172A320AA000D15901 /* Localizable.strings in Resources */,
@@ -8527,6 +8537,7 @@
 				0F6EDFCA28C896BD000427E7 /* CoinbasePlaceBuyOrderRequest.swift in Sources */,
 				0F6EDFD328C896BD000427E7 /* CoinbaseAmount.swift in Sources */,
 				2AFF01DF243F74BE003718DC /* DWDPRegistrationErrorTableViewCell.m in Sources */,
+				75EBAA252BBA9DC2004488E3 /* ZenLedger.swift in Sources */,
 				47B30D7E29102F6E0080C326 /* SendAmountModel.swift in Sources */,
 				2A9FFF272233E5D000956D5F /* DWDecimalInputValidator.m in Sources */,
 				47CF46A829655E8E0067B6EE /* PaymentMethods.swift in Sources */,
@@ -8968,6 +8979,7 @@
 			files = (
 				C9D2C6942A320AA000D15901 /* DWReceiveModelStub.m in Sources */,
 				C9D2C6952A320AA000D15901 /* DWBaseAdvancedSecurityModel.m in Sources */,
+				75EBAA262BBA9DC2004488E3 /* ZenLedger.swift in Sources */,
 				C9D2C6962A320AA000D15901 /* DWBaseViewController.m in Sources */,
 				755A22BD2B1385FD001F170D /* IconAttributedText.swift in Sources */,
 				C9D2C6972A320AA000D15901 /* DWBiometricAuthViewController.m in Sources */,

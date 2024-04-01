@@ -18,18 +18,15 @@
 import SwiftUI
 
 struct ZenLedgerInfoSheet: View {
-    @State var showingZenLedgerSheet: Bool = false
-    @State private var showingSafari: Bool = false
-    @Environment(\.openURL) var openURL
+    @State private var showAlert: Bool = false
+    @Environment(\.openURL) private var openURL
     
     var body: some View {
         BottomSheet {
             TextIntro(
                 icon: .custom("zenledger_large"),
                 buttonLabel: NSLocalizedString("Export all transactions", comment: "ZenLedger"),
-                action: {
-                    print("submit button tapped")
-                }
+                action: { showAlert = true }
             ) {
                 FeatureTopText(
                     title: NSLocalizedString("Simplify your crypto taxes", comment: "ZenLedger"),
@@ -41,6 +38,27 @@ struct ZenLedgerInfoSheet: View {
                     }
                 )
             }
+        }
+        .alert(isPresented: $showAlert) {
+            resolveAlert()
+        }
+    }
+    
+    private func resolveAlert() -> Alert {
+        if SyncingActivityMonitor.shared.state != .syncDone {
+            Alert(
+                title: Text(NSLocalizedString("The chain is syncing…", comment: "ZenLedger")),
+                message: Text(NSLocalizedString("Wait until the chain is fully synced, so we can review your transaction history.", comment: "ZenLedger")),
+                dismissButton: .cancel(Text(NSLocalizedString("Close", comment: "ZenLedger")))
+            )
+        } else {
+            Alert(
+                title: Text(NSLocalizedString("Allow send all transactions from Dash Wallet to ZenLedger?", comment: "ZenLedger")),
+                primaryButton: .default(Text(NSLocalizedString("Allow", comment: "ZenLedger"))) {
+                    print("export")
+                },
+                secondaryButton: .cancel()
+            )
         }
     }
 }

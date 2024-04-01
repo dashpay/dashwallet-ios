@@ -147,6 +147,6 @@ extension CustodialSwapsModel: ConverterViewDataSource {
     }
 
     var toItem: SourceViewDataProvider? {
-        ConverterViewSourceItem.dash(subtitle: "Dash Wallet")
+        ConverterViewSourceItem.dash(subtitle: kWalletName)
     }
 }
