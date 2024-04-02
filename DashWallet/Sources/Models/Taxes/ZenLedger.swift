@@ -104,8 +104,8 @@ extension ZenLedgerEndpoint: TargetType {
         switch self {
         case let .getAccessToken(clientId, clientSecret):
             return .requestParameters(parameters: ["client_id": clientId, "client_secret": clientSecret, "grant_type": "client_credentials"], encoding: URLEncoding.httpBody)
-        case let .createPortfolio(authToken, request):
-            return .requestCompositeParameters(bodyParameters: ["portfolio": request.portfolio], bodyEncoding: JSONEncoding.default, urlParameters: [:])
+        case let .createPortfolio(_, request):
+            return .requestJSONEncodable(request)
         }
     }
 

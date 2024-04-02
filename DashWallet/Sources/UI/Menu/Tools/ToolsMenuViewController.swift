@@ -79,7 +79,11 @@ class ToolsMenuViewController: UIViewController, DWImportWalletInfoViewControlle
             )
         ]
         
-        let swiftUIController = UIHostingController(rootView: ToolsMenuContent(items: items))
+        let content = ToolsMenuContent(items: items, onOpenSafari: { link in
+            let controller = SFSafariViewController(url: URL(string: link)!)
+            self.present(controller, animated: true, completion: nil)
+        })
+        let swiftUIController = UIHostingController(rootView: content)
         swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
         self.dw_embedChild(swiftUIController)
     }
@@ -183,6 +187,9 @@ struct MenuItemModel: Identifiable, Equatable {
 struct ToolsMenuContent: View {
     var items: [MenuItemModel]
     @State private var showZenLedgerSheet: Bool = false
+    @State private var safariLink: String? = nil
+    
+    var onOpenSafari: (String) -> Void
 
     var body: some View {
         List(items) { item in
@@ -207,12 +214,17 @@ struct ToolsMenuContent: View {
         }
         .listStyle(.plain)
         .background(Color.clear)
-        .sheet(isPresented: $showZenLedgerSheet) {
+        .sheet(isPresented: $showZenLedgerSheet, onDismiss: {
+            if let link = safariLink {
+                safariLink = nil
+                onOpenSafari(link)
+            }
+        }) {
             if #available(iOS 16.0, *) {
-                ZenLedgerInfoSheet()
+                ZenLedgerInfoSheet(safariLink: $safariLink)
                     .presentationDetents([.height(430)])
             } else {
-                ZenLedgerInfoSheet()
+                ZenLedgerInfoSheet(safariLink: $safariLink)
             }
         }
     }
