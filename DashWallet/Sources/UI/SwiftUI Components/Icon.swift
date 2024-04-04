@@ -1,6 +1,6 @@
-//
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  
+//  Created by Andrei Ashikhmin
+//  Copyright © 2024 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,22 +15,22 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+import SwiftUI
 
-NS_ASSUME_NONNULL_BEGIN
+enum IconName {
+    case system(_ name: String)
+    case custom(_ name: String)
+}
 
-@class DWToolsMenuViewController;
-
-@protocol DWToolsMenuViewControllerDelegate <NSObject>
-
-- (void)toolsMenuViewControllerImportPrivateKey:(DWToolsMenuViewController *)controller;
-
-@end
-
-@interface DWToolsMenuViewController : UIViewController
-
-@property (nullable, nonatomic, weak) id<DWToolsMenuViewControllerDelegate> delegate;
-
-@end
-
-NS_ASSUME_NONNULL_END
+struct Icon: View {
+    let name: IconName
+    
+    var body: some View {
+        switch name {
+        case .system(let name):
+            Image(systemName: name).imageScale(.large)
+        case .custom(let name):
+            Image(name).imageScale(.large)
+        }
+    }
+}

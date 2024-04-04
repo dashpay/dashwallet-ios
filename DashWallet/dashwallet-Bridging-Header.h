@@ -133,3 +133,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWNotificationsProvider.h"
 #import "DWContactsViewController.h"
 #endif
+
+//MARK: Tools menu
+#import "UIViewController+DWDisplayError.h"
+
