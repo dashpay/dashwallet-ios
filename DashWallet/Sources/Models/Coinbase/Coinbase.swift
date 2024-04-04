@@ -20,7 +20,6 @@ import AuthenticationServices
 import Combine
 import Foundation
 
-let kDashCurrency = "DASH"
 let kDashAccount = "DASH"
 
 let kCoinbaseContactURL = URL(string: "https://help.coinbase.com/en/contact-us")!

@@ -40,7 +40,7 @@ struct BottomSheet<Content: View>: View {
                     presentationMode.wrappedValue.dismiss()
                 } label: {
                     Image(systemName: "xmark")
-                        .foregroundColor(.black)
+                        .foregroundColor(Color.primaryText)
                         .imageScale(.large)
                         .font(Font.system(size: 14).weight(.semibold))
                 }

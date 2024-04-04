@@ -21,6 +21,7 @@ struct TextIntro: View {
     let icon: IconName
     var buttonLabel: String? = nil
     var action: (() -> Void)? = nil
+    var inProgress: Binding<Bool>? = nil
     @ViewBuilder var topText: () -> FeatureTopText
     
     var body: some View {
@@ -34,11 +35,18 @@ struct TextIntro: View {
           
                 if let label = buttonLabel {
                     Button(action:{
-                        action?()
+                        if inProgress == nil || inProgress!.wrappedValue == false {
+                            action?()
+                        }
                     }, label: {
-                        Text(label)
-                            .font(.system(size: 16)).fontWeight(.semibold)
-                            .foregroundColor(.white)
+                        if inProgress == nil || inProgress!.wrappedValue == false {
+                            Text(label)
+                                .font(.system(size: 16)).fontWeight(.semibold)
+                                .foregroundColor(.white)
+                        } else {
+                            SwiftUI.ProgressView()
+                                .tint(.white)
+                        }
                     })
                     .frame(maxWidth: .infinity, maxHeight: 46)
                     .alignmentGuide(.bottom) { d in d[.bottom] }
@@ -58,7 +66,8 @@ struct TextIntro: View {
         buttonLabel: NSLocalizedString("Export all transactions", comment: "ZenLedger"),
         action: {
             print("hello")
-        }
+        },
+        inProgress: .constant(false)
     ) {
         FeatureTopText(
             title: "Simplify your crypto taxes",
