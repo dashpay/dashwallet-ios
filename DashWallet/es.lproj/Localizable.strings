@@ -169,11 +169,17 @@
 /* CrowdNode */
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "Todas las transferencias hacia y desde CrowdNode desde este dispositivo se realizarán con la siguiente dirección Dash desde este dispositivo.";
 
+/* ZenLedger */
+"Allow" = "Allow";
+
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Permite acceso a cámara en las Configuraciones";
 
 /* No comment provided by engineer. */
 "Allow Face ID access in Settings" = "Permite acceso al Face ID en Configuraciones";
+
+/* ZenLedger */
+"Allow sending all transactions from Dash Wallet to Zenledger?" = "Allow sending all transactions from Dash Wallet to Zenledger?";
 
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Permite acceso al Touch ID en Configuraciones";
@@ -427,6 +433,9 @@
 
 /* No comment provided by engineer. */
 "Connect with third party exchanges" = "Conectar con exchanges de terceros";
+
+/* ZenLedger */
+"Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -750,6 +759,9 @@
 
 /* No comment provided by engineer. */
 "Explore Dash" = "Explora Dash";
+
+/* ZenLedger */
+"Export all transactions" = "Export all transactions";
 
 /* No comment provided by engineer. */
 "Extended Public Keys" = "Llaves públicas extendidas";
@@ -1998,6 +2010,9 @@
 /* CrowdNode Portal */
 "Sign up to finish setting up account" = "Regístrate para terminar de configurar la cuenta";
 
+/* ZenLedger */
+"Simplify your crypto taxes" = "Simplify your crypto taxes";
+
 /* No comment provided by engineer. */
 "Skip" = "Salta";
 
@@ -2129,6 +2144,9 @@
 
 /* Usernames */
 "There was a network error, you can try again at no extra cost" = "There was a network error, you can try again at no extra cost";
+
+/* ZenLedger */
+"There was an error when exporting your transaction history to ZenLedger" = "There was an error when exporting your transaction history to ZenLedger";
 
 /* Coinbase */
 "There was an error while obtaining new address" = "Hubo un error al obtener la nueva dirección";
@@ -2432,6 +2450,9 @@
 /* Voting */
 "Voting:" = "Voting:";
 
+/* ZenLedger */
+"Wait until the chain is fully synced, so we can review your transaction history." = "Wait until the chain is fully synced, so we can review your transaction history.";
+
 /* No comment provided by engineer. */
 "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Espera hasta que la cadena esté completamente sincronizada, para que podamos revisar tu historial de transacciones. Visita el sitio web de CrowdNode para iniciar sesión o registrarte.";
 
@@ -2714,3 +2735,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Tu billetera está segura ahora. Podrás utilizar tu frase de recuperación en cualquier momento para recuperar tu cuenta en otro dispositivo.";
+
+/* No comment provided by engineer. */
+"ZenLedger" = "ZenLedger";

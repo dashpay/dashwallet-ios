@@ -169,11 +169,17 @@
 /* CrowdNode */
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "Ang lahat ng paglilipat papunta at mula sa CrowdNode mula sa device na ito ay isasagawa gamit ang ibaba ng Dash address mula sa device na ito.";
 
+/* ZenLedger */
+"Allow" = "Allow";
+
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Payagang i-access ang camera sa Settings";
 
 /* No comment provided by engineer. */
 "Allow Face ID access in Settings" = "Payagang i-access ang Face ID sa Settings";
+
+/* ZenLedger */
+"Allow sending all transactions from Dash Wallet to Zenledger?" = "Allow sending all transactions from Dash Wallet to Zenledger?";
 
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Payagang i-access ang Touch ID sa Settings";
@@ -427,6 +433,9 @@
 
 /* No comment provided by engineer. */
 "Connect with third party exchanges" = "Ikonekta sa mga third party na palitan";
+
+/* ZenLedger */
+"Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -750,6 +759,9 @@
 
 /* No comment provided by engineer. */
 "Explore Dash" = "Galugarin ang Dash";
+
+/* ZenLedger */
+"Export all transactions" = "Export all transactions";
 
 /* No comment provided by engineer. */
 "Extended Public Keys" = "Pinalawak na Public Key";
@@ -1998,6 +2010,9 @@
 /* CrowdNode Portal */
 "Sign up to finish setting up account" = "Mag-sign up para tapusin ang pag-set up ng account";
 
+/* ZenLedger */
+"Simplify your crypto taxes" = "Simplify your crypto taxes";
+
 /* No comment provided by engineer. */
 "Skip" = "Laktawan";
 
@@ -2129,6 +2144,9 @@
 
 /* Usernames */
 "There was a network error, you can try again at no extra cost" = "There was a network error, you can try again at no extra cost";
+
+/* ZenLedger */
+"There was an error when exporting your transaction history to ZenLedger" = "There was an error when exporting your transaction history to ZenLedger";
 
 /* Coinbase */
 "There was an error while obtaining new address" = "Nagkaroon ng error habang kumukuha ng bagong address";
@@ -2432,6 +2450,9 @@
 /* Voting */
 "Voting:" = "Voting:";
 
+/* ZenLedger */
+"Wait until the chain is fully synced, so we can review your transaction history." = "Wait until the chain is fully synced, so we can review your transaction history.";
+
 /* No comment provided by engineer. */
 "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Maghintay hanggang sa ganap na ma-sync ang chain, para masuri namin ang iyong history ng transaksyon. Bisitahin ang website ng CrowdNode upang mag-log in o mag-sign up.";
 
@@ -2714,3 +2735,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Ang iyong pitaka ay ligtas na. Maari mong magamit ang recovery phrase kahit kailan upanh marekober ang account sa ibang device.";
+
+/* No comment provided by engineer. */
+"ZenLedger" = "ZenLedger";
