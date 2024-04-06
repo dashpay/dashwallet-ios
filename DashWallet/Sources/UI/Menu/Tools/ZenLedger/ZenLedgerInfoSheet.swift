@@ -69,7 +69,7 @@ struct ZenLedgerInfoSheet: View {
             )
         } else {
             Alert(
-                title: Text(NSLocalizedString("Allow send all transactions from Dash Wallet to ZenLedger?", comment: "ZenLedger")),
+                title: Text(NSLocalizedString("Allow sending all transactions from Dash Wallet to Zenledger?", comment: "ZenLedger")),
                 primaryButton: .default(Text(NSLocalizedString("Allow", comment: "ZenLedger"))) {
                     export()
                 },
