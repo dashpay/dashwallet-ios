@@ -595,6 +595,9 @@
 		75889B792AD2A04900C17F5D /* CoinJoinInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */; };
 		75889B7F2AD2D7F800C17F5D /* CoinJoin.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75889B812AD2D7F800C17F5D /* CoinJoin.storyboard */; };
 		75889B892AD2DF0200C17F5D /* CoinJoin.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75889B812AD2D7F800C17F5D /* CoinJoin.storyboard */; };
+		758CE59C2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 758CE59B2BC566DE0062AF53 /* PrivacyInfo.xcprivacy */; };
+		758CE59D2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 758CE59B2BC566DE0062AF53 /* PrivacyInfo.xcprivacy */; };
+		758CE59E2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 758CE59B2BC566DE0062AF53 /* PrivacyInfo.xcprivacy */; };
 		7592AA7C2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */; };
 		7592AA7D2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */; };
 		759C8F9F2B593589004B1305 /* CrowdNodeAPYView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */; };
@@ -2461,6 +2464,7 @@
 		757E09981ADB8EEB006FD352 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinInfoViewController.swift; sourceTree = "<group>"; };
 		75889B802AD2D7F800C17F5D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/CoinJoin.storyboard; sourceTree = "<group>"; };
+		758CE59B2BC566DE0062AF53 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedTopperPaymentMethods.swift; sourceTree = "<group>"; };
 		759816E519357D6F005060EA /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
 		759816E619357D6F005060EA /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
@@ -6196,6 +6200,7 @@
 				2ADC722723B5547000D9DD37 /* Localizable.stringsdict */,
 				75D5F3CD191EC270004AB296 /* main.m */,
 				75D5F3CF191EC270004AB296 /* DashWallet-Prefix.pch */,
+				758CE59B2BC566DE0062AF53 /* PrivacyInfo.xcprivacy */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -7872,6 +7877,7 @@
 				C9F42FB629DD8702001BC549 /* BackupInfoItemView.xib in Resources */,
 				47AE8BB028BFF28700490F5E /* explore.db in Resources */,
 				0F36937F2919A70B007F4E91 /* Coinbase.storyboard in Resources */,
+				758CE59C2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */,
 				2A10EB3E2358BDA500C38B61 /* ImportWalletInfo.storyboard in Resources */,
 				C9F42FAD29DC115A001BC549 /* ReceiveContentView.xib in Resources */,
 				2AD1CE8622DC9B7300C99324 /* VerifySeedPhrase.storyboard in Resources */,
@@ -7932,6 +7938,7 @@
 				2A741DC223639A9700840ADF /* TodayExtension.storyboard in Resources */,
 				BA54D3CE1B2EA74000C9CB28 /* TodayExtensionAssets.xcassets in Resources */,
 				2A741DC323639C7E00840ADF /* Localizable.strings in Resources */,
+				758CE59E2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */,
 				2ADF840023633121008459A7 /* SharedAssets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -7982,6 +7989,7 @@
 				C9D2C92E2A320AA000D15901 /* ImportWalletInfo.storyboard in Resources */,
 				C9D2C92F2A320AA000D15901 /* ReceiveContentView.xib in Resources */,
 				C9D2C9302A320AA000D15901 /* VerifySeedPhrase.storyboard in Resources */,
+				758CE59D2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */,
 				753FDBEC2AECF4CC0005EEC3 /* VotingHeaderView.xib in Resources */,
 				C9D2C9312A320AA000D15901 /* DWSecurityStatusView.xib in Resources */,
 				C9D2C9322A320AA000D15901 /* About.storyboard in Resources */,
