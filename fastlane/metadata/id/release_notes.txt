@@ -1,7 +1,7 @@
-# Minor Update:
+# Pembaruan Minor
 
-The latest version contains stability and performance improvements.
+Versi terkini mengandung stabilitas dan peningkatan performa.
 
-# Major release:
+# Rilis Major
 
-Version <RELEASE_VERSION> brings the introduction of <FEATURE> on iOS. <CONCISE_DESC>
+Versi <RELEASE_VERSION> membawa pengenalan dari <FEATURE> pada iOS. <CONCISE_DESC>

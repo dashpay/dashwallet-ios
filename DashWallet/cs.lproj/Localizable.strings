@@ -29,7 +29,7 @@
 "%ld requests" = "%ld requests";
 
 /* 10/20 Characters */
-"%ld/%ld Characters" = "%1$ld/%2$ld Characters";
+"%ld/%ld Characters" = "%1$ld/%2$ld Znaků";
 
 /* No comment provided by engineer. */
 "(1/3) Processing Payment" = "(1/3) Platba se zpracovává";
@@ -104,7 +104,7 @@
 "About" = "O aplikaci";
 
 /* No comment provided by engineer. */
-"About me" = "About me";
+"About me" = "O mně";
 
 /* No comment provided by engineer. */
 "Accept" = "Přijmout";
@@ -134,7 +134,7 @@
 "Add a New Contact" = "Přidat nový kontakt";
 
 /* No comment provided by engineer. */
-"Add your Friends & Family" = "Add your Friends & Family";
+"Add your Friends & Family" = "Přidejte si přátele a nejbližší";
 
 /* Usernames */
 "Add your friends & family" = "Add your friends & family";
@@ -158,7 +158,7 @@
 "After voting is completed on %@ you can create any username that has not already been created" = "After voting is completed on %@ you can create any username that has not already been created";
 
 /* No comment provided by engineer. */
-"Agree" = "Agree";
+"Agree" = "Souhlasím";
 
 /* No comment provided by engineer. */
 "All" = "Vše";
@@ -170,7 +170,7 @@
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device.";
 
 /* ZenLedger */
-"Allow" = "Allow";
+"Allow" = "Povolit";
 
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Povolte přístup k fotoaparátu v nastavení";
@@ -290,7 +290,7 @@
 "Become part of a Dash Masternode with CrowdNode" = "Become part of a Dash Masternode with CrowdNode";
 
 /* Validation rule: Between 3 and 24 characters */
-"Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
+"Between %ld and %ld characters" = "Od %1$ld do %2$ld znaků";
 
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase" = "Between Dash Wallet and Coinbase";
@@ -384,10 +384,10 @@
 "Choose your" = "Vyberte váš";
 
 /* No comment provided by engineer. */
-"Choose Your Username" = "Choose Your Username";
+"Choose Your Username" = "Zvolte si uživatelské jméno";
 
 /* No comment provided by engineer. */
-"Claimed" = "Claimed";
+"Claimed" = "Získáno";
 
 /* No comment provided by engineer. */
 "Clear" = "Odstranit";
@@ -479,7 +479,7 @@
 "Copy" = "Kopírovat";
 
 /* No comment provided by engineer. */
-"Copy Invitation Link" = "Copy Invitation Link";
+"Copy Invitation Link" = "Zkopírovat odkaz na pozvánku";
 
 /* No comment provided by engineer. */
 "Copy Logs" = "Kopírovat logy";
@@ -506,10 +506,10 @@
 "Couldn't transmit payment to Dash network" = "Platbu nelze odeslat do sítě Dash";
 
 /* No comment provided by engineer. */
-"Create a new Invitation" = "Create a new Invitation";
+"Create a new Invitation" = "Vytvořit novou pozvánku";
 
 /* No comment provided by engineer. */
-"Create a new invitation" = "Create a new invitation";
+"Create a new invitation" = "Vytvořit novou pozvánku";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Vytvořit novou peněženku";
@@ -518,7 +518,7 @@
 "Create a username" = "Create a username";
 
 /* No comment provided by engineer. */
-"Create a username, add your friends." = "Create a username, add your friends.";
+"Create a username, add your friends." = "Vytvořte si uživatelské jméno, přidejte své přátele.";
 
 /* CrowdNode */
 "Create Account" = "Vytvořit účet";
@@ -527,7 +527,7 @@
 "Create an online CrowdNode account" = "Create an online CrowdNode account";
 
 /* No comment provided by engineer. */
-"Create invitation" = "Create invitation";
+"Create invitation" = "Vytvořit pozvánku";
 
 /* CrowdNode
    CrowdNode Portal */
@@ -537,7 +537,7 @@
 "Create Username" = "Create Username";
 
 /* No comment provided by engineer. */
-"Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
+"Create your Username, find friends & family with their usernames and add them to your contacts" = "Vytvořte si své uživatelské jméno, najděte přátele a nejbližší pomocí uživatelských jmén a přidejte si je mezi kontakty";
 
 /* Coinbase/Payment Methods */
 "Credit Card" = "Kreditní karta";
@@ -603,7 +603,7 @@
 "Dash Wallet on this device" = "Dash Wallet on this device";
 
 /* No comment provided by engineer. */
-"DashPay Invitation" = "DashPay Invitation";
+"DashPay Invitation" = "DashPay pozvánka";
 
 /* No comment provided by engineer. */
 "DashPay Upgrade Fee" = "DashPay Upgrade poplatek";
@@ -662,7 +662,7 @@
 "Disconnected" = "Odpojeno";
 
 /* No comment provided by engineer. */
-"Display Name" = "Display Name";
+"Display Name" = "Zobrazované jméno";
 
 /* Explore Dash: Filters */
 "Distance" = "Vzdálenost";
@@ -686,7 +686,7 @@
 "e.g. johndoe@mail.com" = "e.g. johndoe@mail.com";
 
 /* No comment provided by engineer. */
-"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Každá pozvánka bude financována touto částkou, aby si příjemce mohl rychle vytvořit uživatelské jméno na Dash Network";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Dřívější";
@@ -695,10 +695,10 @@
 "Easily stake Dash and earn passive income with a few simple clicks." = "Jednoduše Dash úročte a získejte pasivní příjem pomocí několika kliknutí.";
 
 /* No comment provided by engineer. */
-"Edit Profile" = "Edit Profile";
+"Edit Profile" = "Upravit profil";
 
 /* Invitation tag placeholder */
-"eg: Dad" = "eg: Dad";
+"eg: Dad" = "např.: táta";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "např.: johndoe";
@@ -731,7 +731,7 @@
 "Enter your 2FA code below" = "Vložte váš 2FA kód níže";
 
 /* No comment provided by engineer. */
-"Enter your Gravatar Email ID" = "Enter your Gravatar Email ID";
+"Enter your Gravatar Email ID" = "Zadejte e-mailové ID služby Gravatar";
 
 /* Voting */
 "Enter your voting key" = "Enter your voting key";
@@ -740,7 +740,7 @@
 "Error" = "Chyba";
 
 /* No comment provided by engineer. */
-"Error updating your profile" = "Error updating your profile";
+"Error updating your profile" = "Při aktualizaci profilu se stala chyba";
 
 /* No comment provided by engineer. */
 "Error Upgrading" = "Chyba při aktualizaci";
@@ -794,7 +794,7 @@
 "Fees in crypto purchases" = "Fees in crypto purchases";
 
 /* No comment provided by engineer. */
-"Fetching Image" = "Fetching Image";
+"Fetching Image" = "Načítání obrázku";
 
 /* Explore Dash */
 "Fetching Info" = "Fetching Info";
@@ -803,7 +803,7 @@
 "Fiat Account" = "Fiat Account";
 
 /* No comment provided by engineer. */
-"Filter" = "Filter";
+"Filter" = "Filtr";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filtrovat transakce";
@@ -893,7 +893,7 @@
 "Get Test Dash" = "Get Test Dash";
 
 /* No comment provided by engineer. */
-"Get your Username" = "Get your Username";
+"Get your Username" = "Získejte uživatelské jméno";
 
 /* CrowdNode */
 "Getting started with CrowdNode" = "Začínáme s CrowdNode";
@@ -998,13 +998,13 @@
 "Ignore" = "Ignorovat";
 
 /* No comment provided by engineer. */
-"Image uploaded can be viewed publicly by anyone." = "Image uploaded can be viewed publicly by anyone.";
+"Image uploaded can be viewed publicly by anyone." = "Nahraný obrázek je komukoliv veřejně dostupný.";
 
 /* No comment provided by engineer. */
-"Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
+"Image URL can't be longer than %ld characters." = "Adresa URL obrázku nesmí být delší než %ld znaků.";
 
 /* No comment provided by engineer. */
-"Images Privacy Policy" = "Images Privacy Policy";
+"Images Privacy Policy" = "Zásady ochrany osobních údajů obrázků";
 
 /* No comment provided by engineer. */
 "Immediately" = "Okamžitě";
@@ -1043,7 +1043,7 @@
 "Insufficient funds" = "Nedostatečný zůstatek";
 
 /* No comment provided by engineer. */
-"Insufficient Wallet Balance" = "Insufficient Wallet Balance";
+"Insufficient Wallet Balance" = "Nedostatečný zůstatek";
 
 /* Coinbase/Payment Methods */
 "Interac" = "Interac";
@@ -1076,7 +1076,7 @@
 "Invalid Input" = "Invalid Input";
 
 /* No comment provided by engineer. */
-"Invalid Inviation" = "Invalid Inviation";
+"Invalid Inviation" = "Neplatná pozvánka";
 
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Neplatný platební požadavek";
@@ -1085,46 +1085,46 @@
 "Invalid QR Code" = "Neplatný QR kód";
 
 /* No comment provided by engineer. */
-"Invitation" = "Invitation";
+"Invitation" = "Pozvání";
 
 /* Invitation #3 */
-"Invitation %ld" = "Invitation %ld";
+"Invitation %ld" = "Pozvánka %ld";
 
 /* No comment provided by engineer. */
-"Invitation already claimed" = "Invitation already claimed";
+"Invitation already claimed" = "Pozvánka byla už přijata.";
 
 /* No comment provided by engineer. */
-"Invitation Created Successfully" = "Invitation Created Successfully";
+"Invitation Created Successfully" = "Pozvánka byla úspěšně vytvořena";
 
 /* No comment provided by engineer. */
-"Invitation Fee" = "Invitation Fee";
+"Invitation Fee" = "Poplatek za pozvánku";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "Invitation used by";
 
 /* No comment provided by engineer. */
-"Invitations History" = "Invitations History";
+"Invitations History" = "Historie pozvánek";
 
 /* No comment provided by engineer. */
-"Invite" = "Invite";
+"Invite" = "Pozvat";
 
 /* No comment provided by engineer. */
-"Invite Someone to join the Dash Network" = "Invite Someone to join the Dash Network";
+"Invite Someone to join the Dash Network" = "Pozvěte někoho, aby se připojil k Dash Network";
 
 /* No comment provided by engineer. */
-"Invite your family, find your friends by searching their usernames" = "Invite your family, find your friends by searching their usernames";
+"Invite your family, find your friends by searching their usernames" = "Pozvěte nejbližší, najděte své přátele vyhledáním jejich uživatelských jmen";
 
 /* Usernames */
 "Invite your family, find your friends by searching their usernames." = "Invite your family, find your friends by searching their usernames.";
 
 /* No comment provided by engineer. */
-"Invite your friends & family" = "Invite your friends & family";
+"Invite your friends & family" = "Pozvěte přátele a nejbližší";
 
 /* No comment provided by engineer. */
-"Invite your friends and family to join the Dash Network." = "Invite your friends and family to join the Dash Network.";
+"Invite your friends and family to join the Dash Network." = "Pozvěte přátele a nejbližší, aby se připojili k Dash Network.";
 
 /* No comment provided by engineer. */
-"Invite your friends and family to the Dash Network" = "Invite your friends and family to the Dash Network";
+"Invite your friends and family to the Dash Network" = "Pozvěte přátele a nejbližší do Dash Network";
 
 /* CrowdNode */
 "It can take a minute for your balance to be updated." = "It can take a minute for your balance to be updated.";
@@ -1148,13 +1148,13 @@
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "Pokoušíte se obnovit peněženku pomocí 12 slovní fráze pro obnovení, ale zadali jste pouze 11 slov, chcete automaticky obnovit chybějící slova?";
 
 /* No comment provided by engineer. */
-"Join DashPay" = "Join DashPay";
+"Join DashPay" = "Připojit k DashPay";
 
 /* No comment provided by engineer. */
 "Join Evolution" = "Připojte se k Evolution";
 
 /* No comment provided by engineer. */
-"Join Now" = "Join Now";
+"Join Now" = "Připoj se nyní";
 
 /* CrowdNode */
 "Joining the pool" = "Joining the pool";
@@ -1191,16 +1191,16 @@
 "Let me know when it’s done" = "Dejte mi vědět, až to bude hotové";
 
 /* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Let your friends and family to join Dash";
+"Let your friends and family to join Dash" = "Nechte přátele a nejbližší, aby se připojili k Dash";
 
 /* No comment provided by engineer. */
-"Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Let your friends and family to join the Dash Network. Invite them to the world of social banking.";
+"Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Nechte přátele a nejbližší připojit se k Dash Network. Pozvěte je do světa sociálního bankingu.";
 
 /* Validation rule */
-"Letters, numbers and hyphens only" = "Letters, numbers and hyphens only";
+"Letters, numbers and hyphens only" = "Pouze písmena, čísla a pomlčky";
 
 /* No comment provided by engineer. */
-"Let’s Get Started" = "Let’s Get Started";
+"Let’s Get Started" = "Pojďme na to";
 
 /* Voting */
 "Link" = "Link";
@@ -1308,7 +1308,7 @@
 "Maximum 75 characters" = "Maximum 75 characters";
 
 /* No comment provided by engineer. */
-"Maybe later" = "Maybe later";
+"Maybe later" = "Možná později";
 
 /* adjective, security level */
 "Medium" = "Střední";
@@ -1329,10 +1329,10 @@
 "More Control" = "Lepší správa";
 
 /* No comment provided by engineer. */
-"More Suggestions" = "More Suggestions";
+"More Suggestions" = "Více návrhů";
 
 /* No comment provided by engineer. */
-"Move and Zoom your photo to find the perfect fit" = "Move and Zoom your photo to find the perfect fit";
+"Move and Zoom your photo to find the perfect fit" = "Posuňte a přibližte svou fotografii tak, aby vám dokonale seděla";
 
 /* No comment provided by engineer. */
 "Moved from" = "Přesunuto z";
@@ -1344,7 +1344,7 @@
 "Multiple hours" = "Multiple hours";
 
 /* Validation rule */
-"Must start and end with a letter or number" = "Must start and end with a letter or number";
+"Must start and end with a letter or number" = "Musí začínat a končit písmenem nebo číslem";
 
 /* No comment provided by engineer. */
 "My Contacts" = "Moje kontakty";
@@ -1473,7 +1473,7 @@
 "Operator Keys" = "Klíče operátora";
 
 /* No comment provided by engineer. */
-"or" = "or";
+"or" = "nebo";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "Order Preview";
@@ -1488,7 +1488,7 @@
 "Paste the link" = "Paste the link";
 
 /* No comment provided by engineer. */
-"Paste your image URL" = "Paste your image URL";
+"Paste your image URL" = "Vložte adresu URL obrázku";
 
 /* No comment provided by engineer. */
 "Pay" = "Platit";
@@ -1503,7 +1503,7 @@
 "Pay now and if not approved, you can create a different name without paying again" = "Pay now and if not approved, you can create a different name without paying again";
 
 /* No comment provided by engineer. */
-"Pay to usernames. No more alphanumeric addresses" = "Pay to usernames. No more alphanumeric addresses";
+"Pay to usernames. No more alphanumeric addresses" = "Platby pomocí uživatelských jmén. Už žádné alfanumerické adresy";
 
 /* Usernames */
 "Pay to usernames. No more alphanumeric addresses." = "Pay to usernames. No more alphanumeric addresses.";
@@ -1539,7 +1539,7 @@
 "Payment Type" = "Payment Type";
 
 /* No comment provided by engineer. */
-"Payments made directly to addresses won’t be retained in activity." = "Payments made directly to addresses won’t be retained in activity.";
+"Payments made directly to addresses won’t be retained in activity." = "Platby provedené přímo na adresy nebudou uchovávány v aktivitě.";
 
 /* CrowdNode */
 "Payout Options" = "Payout Options";
@@ -1563,7 +1563,7 @@
 "Personalise profile" = "Personalise profile";
 
 /* No comment provided by engineer. */
-"Personalize" = "Personalize";
+"Personalize" = "Přizpůsobit";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Pro platby je vždy vyžadován PIN";
@@ -1575,22 +1575,22 @@
 "Please check your network connection" = "Zkontrolujte připojení k síti";
 
 /* Uphold */
-"Please contact Uphold to update your proof of address." = "Please contact Uphold to update your proof of address.";
+"Please contact Uphold to update your proof of address." = "Kontaktujte prosím Uphold pro aktualizaci dokladu vaší adresy.";
 
 /* No comment provided by engineer. */
-"Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
+"Please enter a valid gravatar email ID." = "Zadejte platné ID e-mailu Gravatar.";
 
 /* No comment provided by engineer. */
-"Please enter a valid image URL." = "Please enter a valid image URL.";
+"Please enter a valid image URL." = "Zadejte platnou URL adresu obrázku.";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Pro aktualizaci peněženky zadejte PIN kód";
 
 /* Uphold */
-"Please go to your Uphold account to answer some questions about yourself." = "Please go to your Uphold account to answer some questions about yourself.";
+"Please go to your Uphold account to answer some questions about yourself." = "Přejděte prosím do Uphold účtu a zodpovězte otázky o vás.";
 
 /* Uphold */
-"Please go to your Uphold account to verify your identity." = "Please go to your Uphold account to verify your identity.";
+"Please go to your Uphold account to verify your identity." = "Přejděte prosím do Uphold účtu a ověřte vaší identitu.";
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode";
@@ -1629,7 +1629,7 @@
 "Please write it down" = "Poznamenejte si ji";
 
 /* No comment provided by engineer. */
-"Preview Invitation" = "Preview Invitation";
+"Preview Invitation" = "Náhled pozvánky";
 
 /* No comment provided by engineer. */
 "Previously used at: " = "Previously used at: ";
@@ -1662,7 +1662,7 @@
 "Public key (legacy)" = "Public key (legacy)";
 
 /* No comment provided by engineer. */
-"Public URL" = "Public URL";
+"Public URL" = "Veřejná URL";
 
 /* Coinbase/Buy Dash */
 "Purchase" = "Purchase";
@@ -1803,10 +1803,10 @@
 "Rewards" = "Odměny";
 
 /* No comment provided by engineer. */
-"Save" = "Save";
+"Save" = "Uložit";
 
 /* No comment provided by engineer. */
-"Save Changes" = "Save Changes";
+"Save Changes" = "Uložit změny";
 
 /* No comment provided by engineer. */
 "Scan" = "Skenovat";
@@ -1857,7 +1857,7 @@
 "Searching for username %@ on the Dash Network" = "Hledání uživatele %@ na Dash Network";
 
 /* No comment provided by engineer. */
-"Secure Your Wallet" = "Secure Your Wallet";
+"Secure Your Wallet" = "Zabezpečte svou peněženku";
 
 /* No comment provided by engineer. */
 "Security" = "Zabezpečení";
@@ -1869,7 +1869,7 @@
 "See on Uphold" = "Prohlédnout na Uphold";
 
 /* No comment provided by engineer. */
-"Select" = "Select";
+"Select" = "Zvolit";
 
 /* Coinbase */
 "Select a coin" = "Select a coin";
@@ -1878,7 +1878,7 @@
 "Select a service" = "Select a service";
 
 /* No comment provided by engineer. */
-"Select from Gallery" = "Select from Gallery";
+"Select from Gallery" = "Vybrat z galerie";
 
 /* CoinJoin */
 "Select mixing level" = "Select mixing level";
@@ -1902,13 +1902,13 @@
 "Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "Send %@ from your primary Dash address that you currently use for your CrowdNode account";
 
 /* No comment provided by engineer. */
-"Send again" = "Send again";
+"Send again" = "Odeslat znovu";
 
 /* No comment provided by engineer. */
 "Send Contact Request" = "Odeslat žádost o přidání mezi kontakty";
 
 /* No comment provided by engineer. */
-"Send Invitation" = "Send Invitation";
+"Send Invitation" = "Odeslat pozvánku";
 
 /* Coinbase
    CrowdNode */
@@ -1918,7 +1918,7 @@
 "Send to" = "Odeslat prostřednictvím";
 
 /* No comment provided by engineer. */
-"Send to a Contact" = "Send to a Contact";
+"Send to a Contact" = "Odeslat kontaktu";
 
 /* No comment provided by engineer. */
 "Send to contact" = "Send to contact";
@@ -1933,7 +1933,7 @@
 "Sending" = "Odesílání";
 
 /* No comment provided by engineer. */
-"Sending Contact Request" = "Sending Contact Request";
+"Sending Contact Request" = "Odesílání žádosti o přidání";
 
 /* No comment provided by engineer. */
 "Sending to" = "Odesílání";
@@ -1972,7 +1972,7 @@
 "Set PIN" = "Nastavit PIN";
 
 /* No comment provided by engineer. */
-"Set Your PIN" = "Set Your PIN";
+"Set Your PIN" = "Nastavte svůj PIN";
 
 /* No comment provided by engineer. */
 "Settings" = "Nastavení";
@@ -2044,7 +2044,7 @@
 "Start Mixing" = "Start Mixing";
 
 /* Step 1 */
-"Step %ld" = "Step %ld";
+"Step %ld" = "Krok %ld";
 
 /* CoinJoin */
 "Stop Mixing" = "Stop Mixing";
@@ -2083,10 +2083,10 @@
 "Syncing…" = "Syncing…";
 
 /* No comment provided by engineer. */
-"Tag for your reference" = "Tag for your reference";
+"Tag for your reference" = "Tag pro vaši referenci";
 
 /* No comment provided by engineer. */
-"Take a Photo from Camera" = "Take a Photo from Camera";
+"Take a Photo from Camera" = "Vyfotit z fotoaparátu";
 
 /* Enter Address Screen */
 "Tap the address from the clipboard to paste it" = "Tap the address from the clipboard to paste it";
@@ -2119,7 +2119,7 @@
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device.";
 
 /* Don't translate 'Imgur' */
-"The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
+"The image you select will be uploaded to Imgur anonymously." = "Obrázek, který vyberete, bude anonymně nahrán na Imgur.";
 
 /* Usernames */
 "The link you send will be visible to all of the Dash network." = "The link you send will be visible to all of the Dash network.";
@@ -2128,7 +2128,7 @@
 "The minimum amount you can send is %@" = "The minimum amount you can send is %@";
 
 /* No comment provided by engineer. */
-"them (Fetching Info)" = "them (Fetching Info)";
+"them (Fetching Info)" = "(načítání informací)";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "Žádná nová oznámení";
@@ -2244,7 +2244,7 @@
 "Try again" = "Zkusit to znovu";
 
 /* No comment provided by engineer. */
-"Try Again" = "Try Again";
+"Try Again" = "Zkusit znovu";
 
 /* Alert title */
 "Turn device passcode on" = "Zapněte bezpečnostní kód zařízení";
@@ -2259,31 +2259,31 @@
 "Type" = "Type";
 
 /* No comment provided by engineer. */
-"Unable to accept contact request" = "Unable to accept contact request";
+"Unable to accept contact request" = "Žádost o přidání nelze přijmout";
 
 /* No comment provided by engineer. */
 "Unable to connect" = "Nelze se připojit";
 
 /* No comment provided by engineer. */
-"Unable to fetch contact details" = "Unable to fetch contact details";
+"Unable to fetch contact details" = "Nelze načíst kontaktní údaje";
 
 /* No comment provided by engineer. */
-"Unable to fetch image. Please enter a valid image URL or check your connection." = "Unable to fetch image. Please enter a valid image URL or check your connection.";
+"Unable to fetch image. Please enter a valid image URL or check your connection." = "Obrázek nelze načíst. Zadejte prosím platnou adresu URL obrázku nebo zkontrolujte připojení.";
 
 /* No comment provided by engineer. */
-"Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.";
+"Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Nelze načíst váš Gravatar. Zadejte prosím platné e-mailové ID Gravatar.";
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Nelze získat nový QR kód";
 
 /* No comment provided by engineer. */
-"Unable to provide suggestions" = "Unable to provide suggestions";
+"Unable to provide suggestions" = "Nelze poskytnout návrhy";
 
 /* No comment provided by engineer. */
-"Unable to send contact request" = "Unable to send contact request";
+"Unable to send contact request" = "Nelze odeslat požadavek o přidání";
 
 /* No comment provided by engineer. */
-"Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";
+"Unable to upload your picture. Please try again." = "Obrázek nelze nahrát. Prosím zkuste to znovu.";
 
 /* No comment provided by engineer. */
 "Unknown" = "Neznámý";
@@ -2310,13 +2310,13 @@
 "Updating Price" = "Aktualizace ceny";
 
 /* No comment provided by engineer. */
-"Updating Profile on Dash Network" = "Updating Profile on Dash Network";
+"Updating Profile on Dash Network" = "Aktualizace profilu na Dash Network";
 
 /* No comment provided by engineer. */
-"Upgrade" = "Upgrade";
+"Upgrade" = "Aktualizace";
 
 /* No comment provided by engineer. */
-"Upgrade to Evolution" = "Upgrade to Evolution";
+"Upgrade to Evolution" = "Upgradovat na Evolution";
 
 /* No comment provided by engineer. */
 "Upgrading to DashPay" = "Upgraduji na DashPay";
@@ -2325,19 +2325,19 @@
 "Uphold" = "Uphold";
 
 /* Uphold */
-"Uphold error" = "Uphold error";
+"Uphold error" = "Chyba služby Uphold";
 
 /* No comment provided by engineer. */
-"Upload Error" = "Upload Error";
+"Upload Error" = "Chyba nahrávání";
 
 /* No comment provided by engineer. */
-"Upload your picture, personalize your identity" = "Upload your picture, personalize your identity";
+"Upload your picture, personalize your identity" = "Nahrajte si obrázek, přizpůsobte svou identitu";
 
 /* Usernames */
 "Upload your picture, personalize your identity." = "Upload your picture, personalize your identity.";
 
 /* No comment provided by engineer. */
-"Uploading your picture to the network" = "Uploading your picture to the network";
+"Uploading your picture to the network" = "Nahrávání obrázku do sítě";
 
 /* Explore Dash/Filters */
 "Use gift card" = "Use gift card";
@@ -2349,16 +2349,16 @@
 "Used at: " = "Used at: ";
 
 /* No comment provided by engineer. */
-"User (Fetching Info)" = "User (Fetching Info)";
+"User (Fetching Info)" = "Uživatel (načítání informací)";
 
 /* Voting */
 "Username" = "Username";
 
 /* No comment provided by engineer. */
-"Username already found" = "Username already found";
+"Username already found" = "Uživatelské jméno bylo nalezeno";
 
 /* No comment provided by engineer. */
-"Username available" = "Username available";
+"Username available" = "Volné uživatelské jméno";
 
 /* No comment provided by engineer. */
 "Username taken" = "Uživatelské jméno už není dostupné";
