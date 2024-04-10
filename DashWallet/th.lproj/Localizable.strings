@@ -169,11 +169,17 @@
 /* CrowdNode */
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "การถ่ายโอนทั้งหมดไปและกลับจาก CrowdNode จากอุปกรณ์นี้จะดำเนินการด้วยที่อยู่ DASH ด้านล่างจากอุปกรณ์นี้";
 
+/* ZenLedger */
+"Allow" = "Allow";
+
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "อนุญาตให้เข้าถึงกล้องถ่ายรูปในการตั้งค่า";
 
 /* No comment provided by engineer. */
 "Allow Face ID access in Settings" = "อนุญาตให้เข้าถึง Face ID ในการตั้งค่า";
+
+/* ZenLedger */
+"Allow sending all transactions from Dash Wallet to Zenledger?" = "Allow sending all transactions from Dash Wallet to Zenledger?";
 
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "อนุญาตให้เข้าถึง Touch ID ในการตั้งค่า";
@@ -427,6 +433,9 @@
 
 /* No comment provided by engineer. */
 "Connect with third party exchanges" = "เชื่อมต่อกับการแลกเปลี่ยนของบุคคลที่สาม";
+
+/* ZenLedger */
+"Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -750,6 +759,9 @@
 
 /* No comment provided by engineer. */
 "Explore Dash" = "สำรวจ Dash";
+
+/* ZenLedger */
+"Export all transactions" = "Export all transactions";
 
 /* No comment provided by engineer. */
 "Extended Public Keys" = "ขยายกุญแจสาธารณะ";
@@ -1998,6 +2010,9 @@
 /* CrowdNode Portal */
 "Sign up to finish setting up account" = "ลงทะเบียนเพื่อเสร็จสิ้นการตั้งค่าบัญชี";
 
+/* ZenLedger */
+"Simplify your crypto taxes" = "Simplify your crypto taxes";
+
 /* No comment provided by engineer. */
 "Skip" = "ข้าม";
 
@@ -2129,6 +2144,9 @@
 
 /* Usernames */
 "There was a network error, you can try again at no extra cost" = "There was a network error, you can try again at no extra cost";
+
+/* ZenLedger */
+"There was an error when exporting your transaction history to ZenLedger" = "There was an error when exporting your transaction history to ZenLedger";
 
 /* Coinbase */
 "There was an error while obtaining new address" = "มีข้อผิดพลาดในขณะที่ได้รับที่อยู่ใหม่";
@@ -2432,6 +2450,9 @@
 /* Voting */
 "Voting:" = "Voting:";
 
+/* ZenLedger */
+"Wait until the chain is fully synced, so we can review your transaction history." = "Wait until the chain is fully synced, so we can review your transaction history.";
+
 /* No comment provided by engineer. */
 "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "รอจนกว่าบล็อกเชนจะถูกซิงค์อย่างเต็มที่ดังนั้นเราสามารถตรวจสอบประวัติการทำธุรกรรมของคุณ เยี่ยมชมเว็บไซต์ CrowdNode เพื่อเข้าสู่ระบบหรือลงทะเบียน";
 
@@ -2714,3 +2735,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "กระเป๋าเงินของคุณปลอดภัยแล้ว คุณสามารถใช้วลีกู้คืนได้ทุกเวลาเพื่อกู้คืนบัญชีของคุณบนอุปกรณ์อื่น";
+
+/* No comment provided by engineer. */
+"ZenLedger" = "ZenLedger";
