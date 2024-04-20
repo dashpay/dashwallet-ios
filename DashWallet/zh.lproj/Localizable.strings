@@ -799,6 +799,9 @@
 /* Explore Dash */
 "Fetching Info" = "正在获取信息";
 
+/* Balance */
+"Fetching rates…" = "Fetching rates…";
+
 /* Coinbase/Payment Methods */
 "Fiat Account" = "法币账户";
 
