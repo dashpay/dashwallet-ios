@@ -170,7 +170,7 @@
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "همه تراکنش‌ها از و به کراودنود از این دستگاه از طریق نشانی زیر از این دستگاه صورت می‌گیرد. ";
 
 /* ZenLedger */
-"Allow" = "Allow";
+"Allow" = "اجازه می‌دهم";
 
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Allow camera access in Settings";
@@ -179,7 +179,7 @@
 "Allow Face ID access in Settings" = "Allow Face ID access in Settings";
 
 /* ZenLedger */
-"Allow sending all transactions from Dash Wallet to Zenledger?" = "Allow sending all transactions from Dash Wallet to Zenledger?";
+"Allow sending all transactions from Dash Wallet to Zenledger?" = "اجازه ارسال همه تراکنش‌‌ها از دش والت به ذن‌لجر را می‌دهید؟ ";
 
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Allow Touch ID access in Settings";
@@ -435,7 +435,7 @@
 "Connect with third party exchanges" = "ارتباط با صرافی‌های طرف سوم";
 
 /* ZenLedger */
-"Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.";
+"Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "کیف‌های پول‌تان را به پلتفرم ذن‌لجر متصل کنید. اطلاعات بیشتر و آغاز به کار با تراکنش‌هایتان در دش والت";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -761,7 +761,7 @@
 "Explore Dash" = "کاوش در دش";
 
 /* ZenLedger */
-"Export all transactions" = "Export all transactions";
+"Export all transactions" = "خروجی گرفتن از همه تراکنش‌ها";
 
 /* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
@@ -803,7 +803,7 @@
 "Fiat Account" = "Fiat Account";
 
 /* No comment provided by engineer. */
-"Filter" = "Filter";
+"Filter" = "فیلتر";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "فیلتر تراکنش‌ها";
@@ -824,7 +824,7 @@
 "Find a user on the Dash Network" = "Find a user on the Dash Network";
 
 /* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Find merchants that accept DASH";
+"Find merchants that accept DASH" = "فروشنده‌ای بیابید که دش می‌پذیرد";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "پدیرندگانی را بیابید که دش قبول می‌کنند، محل خرید و نیز کسب درآمد با دش";
@@ -1473,7 +1473,7 @@
 "Operator Keys" = "کلیدهای اپراتور";
 
 /* No comment provided by engineer. */
-"or" = "or";
+"or" = "یا";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "پیش‌نمایش سفارش";
@@ -1575,7 +1575,7 @@
 "Please check your network connection" = "لطفا اتصال شبکه‌تان را بررسی کنید";
 
 /* Uphold */
-"Please contact Uphold to update your proof of address." = "Please contact Uphold to update your proof of address.";
+"Please contact Uphold to update your proof of address." = "لطفا برای به‌روزرسانی گواهی نشانی‌تان با آپهولد تماس بگیرید. ";
 
 /* No comment provided by engineer. */
 "Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
@@ -1587,10 +1587,10 @@
 "Please enter PIN to upgrade wallet" = "Please enter PIN to upgrade wallet";
 
 /* Uphold */
-"Please go to your Uphold account to answer some questions about yourself." = "Please go to your Uphold account to answer some questions about yourself.";
+"Please go to your Uphold account to answer some questions about yourself." = "لطفا به حساب آپهلودتان بروید و به چند پرسش درباره خودتان پاسخ دهید. ";
 
 /* Uphold */
-"Please go to your Uphold account to verify your identity." = "Please go to your Uphold account to verify your identity.";
+"Please go to your Uphold account to verify your identity." = "لطفا به حساب آپهولد خودتان بروید و هویت‌تان را تائید کنید. ";
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "دقت داشته باشید که ایمیل توسط دش والت ذخیره نمی‌شود و فقط برای کراودنود ارسال می‌شود";
@@ -1803,7 +1803,7 @@
 "Rewards" = "Rewards";
 
 /* No comment provided by engineer. */
-"Save" = "Save";
+"Save" = "ذخیره";
 
 /* No comment provided by engineer. */
 "Save Changes" = "Save Changes";
@@ -2011,7 +2011,7 @@
 "Sign up to finish setting up account" = "برای تکمیل حساب‌تان ثبت‌نام کنید";
 
 /* ZenLedger */
-"Simplify your crypto taxes" = "Simplify your crypto taxes";
+"Simplify your crypto taxes" = "فرآیند مالیاتی رمزارزی خود را ساده‌ کنید";
 
 /* No comment provided by engineer. */
 "Skip" = "رد کردن";
@@ -2110,7 +2110,7 @@
 "The code is incorrect. Please check and try again!" = "کد وارد شده درست نیست. لطفا دوباره آن را بررسی کرده و وارد کنید! ";
 
 /* CrowdNode */
-"The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments.";
+"The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "شبکه دش توسط تعدادی مسترنود اداره می‌شود که بخشی اساسی در تسهیل پرداخت‌ها هستند. ";
 
 /* Usernames */
 "The Dash network must vote to approve your username before it is created." = "The Dash network must vote to approve your username before it is created.";
@@ -2244,7 +2244,7 @@
 "Try again" = "Try again";
 
 /* No comment provided by engineer. */
-"Try Again" = "Try Again";
+"Try Again" = "دوباره امتحان کنید";
 
 /* Alert title */
 "Turn device passcode on" = "Turn device passcode on";
@@ -2313,7 +2313,7 @@
 "Updating Profile on Dash Network" = "Updating Profile on Dash Network";
 
 /* No comment provided by engineer. */
-"Upgrade" = "Upgrade";
+"Upgrade" = "به‌روزرسانی";
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "Upgrade to Evolution";
@@ -2325,7 +2325,7 @@
 "Uphold" = "آپهولد";
 
 /* Uphold */
-"Uphold error" = "Uphold error";
+"Uphold error" = "خطای آپهولد";
 
 /* No comment provided by engineer. */
 "Upload Error" = "Upload Error";
@@ -2451,7 +2451,7 @@
 "Voting:" = "Voting:";
 
 /* ZenLedger */
-"Wait until the chain is fully synced, so we can review your transaction history." = "Wait until the chain is fully synced, so we can review your transaction history.";
+"Wait until the chain is fully synced, so we can review your transaction history." = "منتظر بمانید تا بلاکچین کاملا به‌روزرسانی شود تا بتوانید سابقه تراکنش‌هایتان را ببینید. ";
 
 /* No comment provided by engineer. */
 "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "منتظر بمانید تا بلاکچین کاملا به‌روزرسانی شود تا بتوانید سابقه تراکنش‌هایتان را ببینید. برای ورود به حساب یا ثبت‌نام به وب‌سایت کراودنود بروید. ";
@@ -2551,7 +2551,7 @@
 "Would you like to accept the invitation?" = "Would you like to accept the invitation?";
 
 /* Coinbase */
-"Would you like to make a deposit for your purchase using a linked bank account?" = "Would you like to make a deposit for your purchase using a linked bank account?";
+"Would you like to make a deposit for your purchase using a linked bank account?" = "آیا مایلید مقداری موجودی برای خریدتان با استفاده از حساب بانکی متصل‌شده تهیه کنید؟ ";
 
 /* No comment provided by engineer. */
 "Would you like to save the changes you made to your profile?" = "Would you like to save the changes you made to your profile?";
@@ -2737,4 +2737,4 @@
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "کیف پول‌تان اکنون امن است. هر گاه خواستید می‌توانید از این عبارت بازیابی برای بازگرداندن حساب‌تان روی دستگاهی دیگر استفاده کنید. ";
 
 /* No comment provided by engineer. */
-"ZenLedger" = "ZenLedger";
+"ZenLedger" = "ذن‌لجر";

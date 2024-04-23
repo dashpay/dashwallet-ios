@@ -803,7 +803,7 @@
 "Fiat Account" = "Fiat Account";
 
 /* No comment provided by engineer. */
-"Filter" = "Filter";
+"Filter" = "Filtriraj";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filter Transactions";
@@ -1803,7 +1803,7 @@
 "Rewards" = "Rewards";
 
 /* No comment provided by engineer. */
-"Save" = "Save";
+"Save" = "Sačuvaj";
 
 /* No comment provided by engineer. */
 "Save Changes" = "Save Changes";
@@ -2313,7 +2313,7 @@
 "Updating Profile on Dash Network" = "Updating Profile on Dash Network";
 
 /* No comment provided by engineer. */
-"Upgrade" = "Upgrade";
+"Upgrade" = "Nadogradnja";
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "Upgrade to Evolution";

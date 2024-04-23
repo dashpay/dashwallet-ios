@@ -803,7 +803,7 @@
 "Fiat Account" = "Fiat Account";
 
 /* No comment provided by engineer. */
-"Filter" = "Filter";
+"Filter" = "Lọc";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Lọc các giao dịch";
@@ -1803,7 +1803,7 @@
 "Rewards" = "Phần thưởng";
 
 /* No comment provided by engineer. */
-"Save" = "Save";
+"Save" = "Lưu";
 
 /* No comment provided by engineer. */
 "Save Changes" = "Save Changes";
@@ -2244,7 +2244,7 @@
 "Try again" = "Thử lại";
 
 /* No comment provided by engineer. */
-"Try Again" = "Try Again";
+"Try Again" = "Hãy thử lại";
 
 /* Alert title */
 "Turn device passcode on" = "Hãy bật chế độ mật khẩu cho thiết bị";
@@ -2313,7 +2313,7 @@
 "Updating Profile on Dash Network" = "Updating Profile on Dash Network";
 
 /* No comment provided by engineer. */
-"Upgrade" = "Upgrade";
+"Upgrade" = "Nâng cấp";
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "Upgrade to Evolution";
@@ -2325,7 +2325,7 @@
 "Uphold" = "Uphold";
 
 /* Uphold */
-"Uphold error" = "Uphold error";
+"Uphold error" = "Lỗi Uphold";
 
 /* No comment provided by engineer. */
 "Upload Error" = "Upload Error";

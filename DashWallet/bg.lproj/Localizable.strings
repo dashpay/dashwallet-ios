@@ -803,7 +803,7 @@
 "Fiat Account" = "Fiat Account";
 
 /* No comment provided by engineer. */
-"Filter" = "Filter";
+"Filter" = "Филтър";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Филтър на транзакциите ";
@@ -1302,7 +1302,7 @@
 "Masternode Voting Key" = "Masternode Voting Key";
 
 /* Contracted variant of 'Maximum' word */
-"Max" = "Максимум";
+"Max" = "Макс";
 
 /* Usernames */
 "Maximum 75 characters" = "Maximum 75 characters";
@@ -1803,7 +1803,7 @@
 "Rewards" = "Възнаграждения";
 
 /* No comment provided by engineer. */
-"Save" = "Save";
+"Save" = "Съхрани";
 
 /* No comment provided by engineer. */
 "Save Changes" = "Save Changes";
@@ -2244,7 +2244,7 @@
 "Try again" = "Опитай отново";
 
 /* No comment provided by engineer. */
-"Try Again" = "Try Again";
+"Try Again" = "Опитай отново";
 
 /* Alert title */
 "Turn device passcode on" = "Включи парола за устройството";
@@ -2313,7 +2313,7 @@
 "Updating Profile on Dash Network" = "Updating Profile on Dash Network";
 
 /* No comment provided by engineer. */
-"Upgrade" = "Upgrade";
+"Upgrade" = "Надграждане";
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "Upgrade to Evolution";

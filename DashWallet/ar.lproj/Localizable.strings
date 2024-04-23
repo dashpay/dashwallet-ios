@@ -170,7 +170,7 @@
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "سيتم إجراء جميع عمليات النقل من وإلى CrowdNode من هذا الجهاز باستخدام عنوان Dash أدناه من هذا الجهاز.";
 
 /* ZenLedger */
-"Allow" = "Allow";
+"Allow" = "السماح";
 
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Allow camera access in Settings";
@@ -803,7 +803,7 @@
 "Fiat Account" = "Fiat Account";
 
 /* No comment provided by engineer. */
-"Filter" = "Filter";
+"Filter" = "منقي";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "تصفية المعاملات";
@@ -1473,7 +1473,7 @@
 "Operator Keys" = "مفاتيح المشغل";
 
 /* No comment provided by engineer. */
-"or" = "or";
+"or" = "او";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "معاينة الطلب";
@@ -1575,7 +1575,7 @@
 "Please check your network connection" = "يرجى التحقق من اتصال الشبكة الخاص بك";
 
 /* Uphold */
-"Please contact Uphold to update your proof of address." = "Please contact Uphold to update your proof of address.";
+"Please contact Uphold to update your proof of address." = "يرجى الاتصال Uphold لتحديث إثبات العنوان الخاص بك.";
 
 /* No comment provided by engineer. */
 "Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
@@ -1587,10 +1587,10 @@
 "Please enter PIN to upgrade wallet" = "Please enter PIN to upgrade wallet";
 
 /* Uphold */
-"Please go to your Uphold account to answer some questions about yourself." = "Please go to your Uphold account to answer some questions about yourself.";
+"Please go to your Uphold account to answer some questions about yourself." = "الرجاء الانتقال إلى حساب Uphold الخاص بك للإجابة على بعض الأسئلة المتعلقة بك.";
 
 /* Uphold */
-"Please go to your Uphold account to verify your identity." = "Please go to your Uphold account to verify your identity.";
+"Please go to your Uphold account to verify your identity." = "يرجى الذهاب إلى حساب Uphold الخاص بك للتحقق من هويتك.";
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "يرجى ملاحظة أن البريد الإلكتروني لا يتم حفظه بواسطة محفظة داش ويتم إرساله فقط إلى CrowdNode";
@@ -1803,7 +1803,7 @@
 "Rewards" = "Rewards";
 
 /* No comment provided by engineer. */
-"Save" = "Save";
+"Save" = "حفظ";
 
 /* No comment provided by engineer. */
 "Save Changes" = "Save Changes";
@@ -2244,7 +2244,7 @@
 "Try again" = "Try again";
 
 /* No comment provided by engineer. */
-"Try Again" = "Try Again";
+"Try Again" = "حاول ثانية";
 
 /* Alert title */
 "Turn device passcode on" = "Turn device passcode on";
@@ -2313,7 +2313,7 @@
 "Updating Profile on Dash Network" = "Updating Profile on Dash Network";
 
 /* No comment provided by engineer. */
-"Upgrade" = "Upgrade";
+"Upgrade" = "ترقية";
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "Upgrade to Evolution";
@@ -2325,7 +2325,7 @@
 "Uphold" = "دعم";
 
 /* Uphold */
-"Uphold error" = "Uphold error";
+"Uphold error" = "خطأ Uphold";
 
 /* No comment provided by engineer. */
 "Upload Error" = "Upload Error";
