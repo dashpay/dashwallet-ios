@@ -113,7 +113,14 @@ final class SyncingAlertContentView: UIView {
             let atTheEndOfSyncBlocksAndSyncingMasternodeList = chain.lastSyncBlockHeight >= chain.estimatedBlockHeight - 6 && chainManager.masternodeManager
                 .masternodeListRetrievalQueueCount > 0 && chainManager.syncPhase == .synced
             if atTheEndOfInitialTerminalBlocksAndSyncingMasternodeList || atTheEndOfSyncBlocksAndSyncingMasternodeList {
-                let remaining = max(0, chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount - chainManager.masternodeManager.masternodeListRetrievalQueueCount)
+                var remaining: UInt = 0
+                
+                if chainManager.masternodeManager.masternodeListRetrievalQueueCount > chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount {
+                    remaining = 0
+                } else {
+                    remaining = chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount - chainManager.masternodeManager.masternodeListRetrievalQueueCount
+                }
+
                 subtitleLabel.text = String(format: NSLocalizedString("masternode list #%d of %d", comment: ""), remaining, chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount)
             } else {
                 if chainManager.syncPhase == .initialTerminalBlocks {
