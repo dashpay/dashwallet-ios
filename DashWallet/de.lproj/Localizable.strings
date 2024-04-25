@@ -799,6 +799,9 @@
 /* Explore Dash */
 "Fetching Info" = "Informationen abrufen";
 
+/* Balance */
+"Fetching rates…" = "Fetching rates…";
+
 /* Coinbase/Payment Methods */
 "Fiat Account" = "Fiat Konto";
 

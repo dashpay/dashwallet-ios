@@ -799,6 +799,9 @@
 /* Explore Dash */
 "Fetching Info" = "情報の取得";
 
+/* Balance */
+"Fetching rates…" = "Fetching rates…";
+
 /* Coinbase/Payment Methods */
 "Fiat Account" = "フィアットアカウント";
 
