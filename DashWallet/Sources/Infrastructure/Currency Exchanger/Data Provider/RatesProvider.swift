@@ -70,7 +70,14 @@ final class BaseRatesProvider: NSObject, RatesProvider {
     private let kRefreshTimeInterval: TimeInterval = 60
     private let kPriceByCodeKey = "DS_PRICEMANAGER_PRICESBYCODE"
 
-    var updateHandler: (([RateObject]) -> Void)?
+    var updateHandler: (([RateObject]) -> Void)? {
+        didSet {
+            let plainPricesByCode = UserDefaults.standard.object(forKey: kPriceByCodeKey) as! [String : NSNumber]
+            updateHandler?(plainPricesByCode.map { code, rate in
+                RateObject(code: code, name: currencyName(fromCode: code), price: rate.decimalValue)
+            })
+        }
+    }
 
     private var lastPriceSourceInfo: String!
 
@@ -78,7 +85,6 @@ final class BaseRatesProvider: NSObject, RatesProvider {
 
     override init() {
         operationQueue = DSOperationQueue()
-
         super.init()
     }
 
@@ -109,5 +115,12 @@ final class BaseRatesProvider: NSObject, RatesProvider {
         }
 
         operationQueue.addOperation(priceOperation)
+    }
+    
+    func currencyName(fromCode code: String) -> String {
+        let locale = Locale.current
+        let currencyName = locale.localizedString(forCurrencyCode: code)
+        
+        return currencyName ?? code
     }
 }
