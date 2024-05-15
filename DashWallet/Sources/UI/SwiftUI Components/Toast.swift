@@ -25,22 +25,28 @@ struct ToastView: View {
     var action: (() -> Void)? = nil
     var closeButtonIcon: IconName? = nil
     var closeAction: (() -> Void)? = nil
-
+    
     var body: some View {
         HStack(spacing: 0) {
             if let icon = icon {
-                Icon(name: icon)
-                    .font(.system(size: 15))
-                    .padding(.leading, 8)
+                VStack {
+                    Icon(name: icon)
+                        .padding(.leading, 8)
+                        .padding(.top, 12)
+                        .font(.system(size: 15))
+                    Spacer()
+                }
             }
             
             Text(text)
-                .font(.system(size: 13))
+                .font(.system(size: 14))
+                .lineSpacing(3)
                 .padding(.leading, 8)
+                .padding(.vertical, 12)
             Spacer()
             
             if let text = actionText, let action = action {
-                DashButton(text: text, action: action, style: .plain, size: .small)
+                DashButton(text: text, action: action, style: .plain, size: .extraSmall)
                     .overrideForegroundColor(Color.background)
             }
             
@@ -49,8 +55,6 @@ struct ToastView: View {
                     .overrideForegroundColor(Color.background)
             }
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
         .padding(.horizontal, 8)
         .foregroundColor(Color.background)
         .background(Color.primaryText.opacity(0.9))
@@ -61,14 +65,28 @@ struct ToastView: View {
 class ToastHostingView: UIView {
     private var hostingController: UIHostingController<ToastView>?
     
-    init(message: String) {
+    init(text: String,
+         icon: IconName? = nil,
+         actionText: String? = nil,
+         action: (() -> Void)? = nil,
+         closeButtonIcon: IconName? = nil,
+         closeAction: (() -> Void)? = nil
+    ) {
         super.init(frame: .zero)
         
-        let toastView = ToastView(text: message)
+        let toastView = ToastView(
+            text: text,
+            icon: icon,
+            actionText: actionText,
+            action: action,
+            closeButtonIcon: closeButtonIcon,
+            closeAction: closeAction
+        )
         hostingController = UIHostingController(rootView: toastView)
         
         guard let hostingView = hostingController?.view else { return }
         hostingView.translatesAutoresizingMaskIntoConstraints = false
+        hostingView.backgroundColor = UIColor.clear
         addSubview(hostingView)
         
         NSLayoutConstraint.activate([
@@ -77,9 +95,6 @@ class ToastHostingView: UIView {
             hostingView.topAnchor.constraint(equalTo: topAnchor),
             hostingView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
-        
-        layer.cornerRadius = 10
-        layer.masksToBounds = true
     }
     
     required init?(coder: NSCoder) {
@@ -88,27 +103,56 @@ class ToastHostingView: UIView {
 }
 
 extension UIViewController {
-    func showToast(message: String) {
-        let toastView = ToastHostingView(message: message)
-        toastView.translatesAutoresizingMaskIntoConstraints = false
+    func showToast(
+        text: String,
+        icon: IconName? = nil,
+        duration: TimeInterval? = nil,
+        actionText: String? = nil,
+        action: ((ToastHostingView) -> Void)? = nil,
+        closeButtonIcon: IconName? = nil,
+        closeAction: ((ToastHostingView) -> Void)? = nil
+    ) {
+        var toastView: ToastHostingView!
+        let actionClosure: () -> Void = { action?(toastView) }
+        let closeActionClosure: () -> Void = { closeAction?(toastView) }
+            
+        toastView = ToastHostingView(
+            text: text,
+            icon: icon,
+            actionText: actionText,
+            action: actionClosure,
+            closeButtonIcon: closeButtonIcon,
+            closeAction: closeActionClosure
+        )
         
+        toastView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(toastView)
         
         NSLayoutConstraint.activate([
-            toastView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            toastView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            toastView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16)
+            toastView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            toastView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            toastView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10)
         ])
         
         toastView.alpha = 0.0
         UIView.animate(withDuration: 0.5, animations: {
             toastView.alpha = 1.0
         }) { _ in
-            UIView.animate(withDuration: 0.5, delay: 2.0, options: .curveEaseOut, animations: {
-                toastView.alpha = 0.0
-            }) { _ in
-                toastView.removeFromSuperview()
+            if let duration = duration {
+                UIView.animate(withDuration: 0.5, delay: duration, options: .curveEaseOut, animations: {
+                    toastView.alpha = 0.0
+                }) { _ in
+                    toastView.removeFromSuperview()
+                }
             }
+        }
+    }
+    
+    func hideToast(toastView: ToastHostingView) {
+        UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseOut, animations: {
+            toastView.alpha = 0.0
+        }) { _ in
+            toastView.removeFromSuperview()
         }
     }
 }
