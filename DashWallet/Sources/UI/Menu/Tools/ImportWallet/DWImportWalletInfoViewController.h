@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, weak) id<DWImportWalletInfoViewControllerDelegate> delegate;
 
 + (instancetype)controller;
++ (instancetype)swiftInit; // TODO
 
 @end
 

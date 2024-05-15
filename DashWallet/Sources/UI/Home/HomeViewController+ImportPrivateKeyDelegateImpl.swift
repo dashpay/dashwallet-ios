@@ -15,13 +15,12 @@
 //  limitations under the License.
 //
 
-#import "DWHomeViewController.h"
-#import "DWImportWalletInfoViewController.h"
+import UIKit
 
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DWHomeViewController (DWImportPrivateKeyDelegateImpl) <DWImportWalletInfoViewControllerDelegate>
-
-@end
-
-NS_ASSUME_NONNULL_END
+extension HomeViewController: DWImportWalletInfoViewControllerDelegate {
+    func importWalletInfoViewControllerScanPrivateKeyAction(_ controller: DWImportWalletInfoViewController) {
+        dismiss(animated: true) { [weak self] in
+            self?.performScanQRCodeAction()
+        }
+    }
+}

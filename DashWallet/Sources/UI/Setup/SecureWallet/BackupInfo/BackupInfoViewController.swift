@@ -113,12 +113,12 @@ final class BackupInfoViewController: BaseViewController {
 
     @objc
     private func closeAction() {
-        delegate?.secureWalletRoutineDidCanceled(self)
+        delegate?.secureWalletRoutineDidCancel(self)
     }
 
     @IBAction
     func skipButtonAction() {
-        delegate?.secureWalletRoutineDidCanceled(self)
+        delegate?.secureWalletRoutineDidCancel(self)
     }
 
     @IBAction

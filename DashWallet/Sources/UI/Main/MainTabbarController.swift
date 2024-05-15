@@ -77,7 +77,7 @@ extension MainTabbarTabs {
 class MainTabbarController: UITabBarController {
     static let kAnimationDuration: TimeInterval = 0.35
 
-    weak var homeController: DWHomeViewController?
+    weak var homeController: HomeViewController?
     weak var menuNavigationController: DWMainMenuViewController?
     
     #if DASHPAY
@@ -152,9 +152,9 @@ extension MainTabbarController {
         var item = UITabBarItem(title: nil, image: MainTabbarTabs.home.icon, selectedImage: MainTabbarTabs.home.selectedIcon)
         item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
 
-        let homeVC = DWHomeViewController()
+        let homeVC = HomeViewController()
         homeVC.delegate = self
-        homeVC.model = homeModel
+        homeVC.model = homeModel as? DWHomeModel
         homeController = homeVC
 
         var nvc = BaseNavigationController(rootViewController: homeVC)
