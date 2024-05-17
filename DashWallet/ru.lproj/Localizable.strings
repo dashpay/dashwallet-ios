@@ -1637,6 +1637,9 @@
 /* No comment provided by engineer. */
 "Previously used at: " = "Ранее использовалось с:";
 
+/* Stale rates */
+"Prices weren't retrieved. Fiat values may be incorrect." = "Prices weren't retrieved. Fiat values may be incorrect.";
+
 /* CrowdNode */
 "Primary Dash address" = "Основной адрес Dash";
 

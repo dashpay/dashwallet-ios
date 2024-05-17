@@ -23,6 +23,7 @@ final class CoinbaseRatesProvider: RatesProvider {
     private let kRefreshTimeInterval: TimeInterval = 60
 
     var updateHandler: (([RateObject]) -> Void)?
+    let hasFetchError: Bool = false
 
     private var httpClient: CoinbaseAPI { CoinbaseAPI.shared }
 

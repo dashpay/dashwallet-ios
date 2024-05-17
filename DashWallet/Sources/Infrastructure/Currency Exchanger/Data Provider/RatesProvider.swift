@@ -16,6 +16,7 @@
 //
 
 import Foundation
+import Combine
 
 // MARK: - RateObject
 
@@ -54,6 +55,7 @@ extension RateObject: Equatable {
 
 protocol RatesProvider: AnyObject {
     var updateHandler: (([RateObject]) -> Void)? { get set }
+    var hasFetchError: Bool { get }
 
     func startExchangeRateFetching()
 }
@@ -61,24 +63,23 @@ protocol RatesProvider: AnyObject {
 // MARK: - RatesProviderFactory
 
 enum RatesProviderFactory {
-    static var base: RatesProvider { BaseRatesProvider() }
+    static var base: RatesProvider = BaseRatesProvider()
 }
 
 // MARK: - BaseRatesProvider
 
 final class BaseRatesProvider: NSObject, RatesProvider {
+    private var cancellableBag = Set<AnyCancellable>()
     private let kRefreshTimeInterval: TimeInterval = 60
     private let kPriceByCodeKey = "DS_PRICEMANAGER_PRICESBYCODE"
 
     var updateHandler: (([RateObject]) -> Void)? {
         didSet {
-            let plainPricesByCode = UserDefaults.standard.object(forKey: kPriceByCodeKey) as! [String : NSNumber]
-            updateHandler?(plainPricesByCode.map { code, rate in
-                RateObject(code: code, name: currencyName(fromCode: code), price: rate.decimalValue)
-            })
+            self.emitRates()
         }
     }
-
+    
+    @Published private(set) var hasFetchError: Bool = false
     private var lastPriceSourceInfo: String!
 
     private let operationQueue: DSOperationQueue
@@ -89,32 +90,30 @@ final class BaseRatesProvider: NSObject, RatesProvider {
     }
 
     func startExchangeRateFetching() {
-        updatePrices()
-    }
-
-    @objc
-    func updatePrices() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(Int(kRefreshTimeInterval))) { [weak self] in
-            self?.updatePrices()
-        }
-
-        let priceOperation = DSPriceOperationProvider.fetchPrices { [weak self] prices, priceSource in
-            guard let self, let prices else { return }
-
-            // TODO: save prices in different way
-            var plainPricesByCode: [String: NSNumber] = [:]
-
-            for rate in prices {
-                plainPricesByCode[rate.code] = rate.price
+        // TODO: migrate rate fetching from DashSync to here
+        NotificationCenter.default.publisher(for: NSNotification.Name.DSExchangeRatesReported)
+            .sink { [weak self] notification in
+                if let error = notification.userInfo?[DSExchangeRatesErrorKey] as? NSError {
+                    print("RATES: has error")
+                    if error.domain == NSURLErrorDomain {
+                        print("RATES: has fetch error")
+                        self?.hasFetchError = true
+                    }
+                } else {
+                    print("RATES: Emit values")
+                    self?.hasFetchError = false
+                    self?.emitRates()
+                }
             }
-
-            UserDefaults.standard.set(plainPricesByCode, forKey: self.kPriceByCodeKey)
-
-            self.lastPriceSourceInfo = priceSource
-            self.updateHandler?(prices.map { .init(code: $0.code, name: $0.name, price: $0.price.decimalValue) })
+            .store(in: &cancellableBag)
+    }
+    
+    private func emitRates() {
+        let plainPricesByCode = UserDefaults.standard.object(forKey: kPriceByCodeKey) as! [String : NSNumber]
+        let rates = plainPricesByCode.map { code, rate in
+            RateObject(code: code, name: currencyName(fromCode: code), price: rate.decimalValue)
         }
-
-        operationQueue.addOperation(priceOperation)
+        updateHandler?(rates)
     }
     
     func currencyName(fromCode code: String) -> String {

@@ -16,6 +16,7 @@
 //
 
 import UIKit
+import Combine
 
 // MARK: - MainTabbarTabs
 
@@ -75,6 +76,9 @@ extension MainTabbarTabs {
 
 @objc
 class MainTabbarController: UITabBarController {
+    private var cancellableBag = Set<AnyCancellable>()
+    private var ratesFetchErrorShown = false
+    
     static let kAnimationDuration: TimeInterval = 0.35
 
     weak var homeController: HomeViewController?
@@ -133,6 +137,7 @@ class MainTabbarController: UITabBarController {
 
         delegate = self
         configureHierarchy()
+        setupRatesErrorHandling()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -405,4 +410,33 @@ private final class EmptyController: UIViewController { }
 
 extension MainTabbarController: SuccessTxDetailViewControllerDelegate {
     func txDetailViewControllerDidFinish(controller: SuccessTxDetailViewController) { }
+}
+
+// MARK: - Exchange Rates
+
+extension MainTabbarController {
+    private func setupRatesErrorHandling() {
+        (RatesProviderFactory.base as! BaseRatesProvider).$hasFetchError
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] hasError in
+                guard let self = self else { return }
+                
+                if hasError && !self.ratesFetchErrorShown {
+                    self.ratesFetchErrorShown = true
+                    self.showRatesError()
+                }
+            }
+            .store(in: &cancellableBag)
+    }
+    
+    private func showRatesError() {
+        self.showToast(
+            text: NSLocalizedString("Prices weren't retrieved. Fiat values may be incorrect.", comment: "Stale rates"),
+            icon: .system("exclamationmark.triangle.fill"),
+            actionText: NSLocalizedString("OK", comment: "Stale rates"),
+            action: { toastView in
+                self.hideToast(toastView: toastView)
+            }
+        )
+    }
 }
