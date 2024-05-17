@@ -1638,6 +1638,9 @@
 "Previously used at: " = "以前用於: ";
 
 /* Stale rates */
+"Prices are at least 30 minutes old. Fiat values may be incorrect." = "Prices are at least 30 minutes old. Fiat values may be incorrect.";
+
+/* Stale rates */
 "Prices weren't retrieved. Fiat values may be incorrect." = "Prices weren't retrieved. Fiat values may be incorrect.";
 
 /* CrowdNode */

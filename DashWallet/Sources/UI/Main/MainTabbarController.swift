@@ -74,12 +74,12 @@ extension MainTabbarTabs {
 
 // MARK: - MainTabbarController
 
+let kStaleRatesDuration: TimeInterval = 30 * 60 // 30 minutes
+
 @objc
 class MainTabbarController: UITabBarController {
     private var cancellableBag = Set<AnyCancellable>()
     private var ratesFetchErrorShown = false
-    
-    static let kAnimationDuration: TimeInterval = 0.35
 
     weak var homeController: HomeViewController?
     weak var menuNavigationController: DWMainMenuViewController?
@@ -422,16 +422,26 @@ extension MainTabbarController {
                 guard let self = self else { return }
                 
                 if hasError && !self.ratesFetchErrorShown {
-                    self.ratesFetchErrorShown = true
                     self.showRatesError()
+                    self.ratesFetchErrorShown = true
                 }
             }
             .store(in: &cancellableBag)
     }
     
     private func showRatesError() {
+        let lastUpdated = UserDefaults.standard.integer(forKey: LAST_RATES_RETRIEVAL_TIME)
+        let now = Date().timeIntervalSince1970
+        let text: String
+        
+        if lastUpdated != 0 && Double(lastUpdated) + kStaleRatesDuration < now {
+            text = NSLocalizedString("Prices are at least 30 minutes old. Fiat values may be incorrect.", comment: "Stale rates")
+        } else {
+            text = NSLocalizedString("Prices weren't retrieved. Fiat values may be incorrect.", comment: "Stale rates")
+        }
+        
         self.showToast(
-            text: NSLocalizedString("Prices weren't retrieved. Fiat values may be incorrect.", comment: "Stale rates"),
+            text: text,
             icon: .system("exclamationmark.triangle.fill"),
             actionText: NSLocalizedString("OK", comment: "Stale rates"),
             action: { toastView in

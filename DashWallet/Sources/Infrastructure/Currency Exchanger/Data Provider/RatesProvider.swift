@@ -70,8 +70,6 @@ enum RatesProviderFactory {
 
 final class BaseRatesProvider: NSObject, RatesProvider {
     private var cancellableBag = Set<AnyCancellable>()
-    private let kRefreshTimeInterval: TimeInterval = 60
-    private let kPriceByCodeKey = "DS_PRICEMANAGER_PRICESBYCODE"
 
     var updateHandler: (([RateObject]) -> Void)? {
         didSet {
@@ -94,13 +92,10 @@ final class BaseRatesProvider: NSObject, RatesProvider {
         NotificationCenter.default.publisher(for: NSNotification.Name.DSExchangeRatesReported)
             .sink { [weak self] notification in
                 if let error = notification.userInfo?[DSExchangeRatesErrorKey] as? NSError {
-                    print("RATES: has error")
                     if error.domain == NSURLErrorDomain {
-                        print("RATES: has fetch error")
                         self?.hasFetchError = true
                     }
                 } else {
-                    print("RATES: Emit values")
                     self?.hasFetchError = false
                     self?.emitRates()
                 }
@@ -109,7 +104,7 @@ final class BaseRatesProvider: NSObject, RatesProvider {
     }
     
     private func emitRates() {
-        let plainPricesByCode = UserDefaults.standard.object(forKey: kPriceByCodeKey) as! [String : NSNumber]
+        let plainPricesByCode = UserDefaults.standard.object(forKey: PRICESBYCODE_KEY) as! [String : NSNumber]
         let rates = plainPricesByCode.map { code, rate in
             RateObject(code: code, name: currencyName(fromCode: code), price: rate.decimalValue)
         }
