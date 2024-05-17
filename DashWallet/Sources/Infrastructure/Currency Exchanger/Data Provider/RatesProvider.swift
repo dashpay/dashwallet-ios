@@ -63,13 +63,17 @@ protocol RatesProvider: AnyObject {
 // MARK: - RatesProviderFactory
 
 enum RatesProviderFactory {
-    static var base: RatesProvider = BaseRatesProvider()
+    static var base: RatesProvider = BaseRatesProvider.shared
 }
 
 // MARK: - BaseRatesProvider
 
 final class BaseRatesProvider: NSObject, RatesProvider {
     private var cancellableBag = Set<AnyCancellable>()
+    static var shared: BaseRatesProvider = BaseRatesProvider()
+    
+    private var lastPriceSourceInfo: String!
+    private let operationQueue: DSOperationQueue
 
     var updateHandler: (([RateObject]) -> Void)? {
         didSet {
@@ -77,10 +81,12 @@ final class BaseRatesProvider: NSObject, RatesProvider {
         }
     }
     
+    var lastUpdated: Int {
+        get { UserDefaults.standard.integer(forKey: LAST_RATES_RETRIEVAL_TIME) }
+    }
+    
     @Published private(set) var hasFetchError: Bool = false
-    private var lastPriceSourceInfo: String!
-
-    private let operationQueue: DSOperationQueue
+    @Published private(set) var isVolatile: Bool = false
 
     override init() {
         operationQueue = DSOperationQueue()
@@ -98,6 +104,7 @@ final class BaseRatesProvider: NSObject, RatesProvider {
                 } else {
                     self?.hasFetchError = false
                     self?.emitRates()
+                    self?.isVolatile = DSPriceManager.sharedInstance().isVolatile
                 }
             }
             .store(in: &cancellableBag)

@@ -80,6 +80,7 @@ let kStaleRatesDuration: TimeInterval = 30 * 60 // 30 minutes
 class MainTabbarController: UITabBarController {
     private var cancellableBag = Set<AnyCancellable>()
     private var ratesFetchErrorShown = false
+    private var ratesVolatileWarningShown = false
 
     weak var homeController: HomeViewController?
     weak var menuNavigationController: DWMainMenuViewController?
@@ -416,7 +417,7 @@ extension MainTabbarController: SuccessTxDetailViewControllerDelegate {
 
 extension MainTabbarController {
     private func setupRatesErrorHandling() {
-        (RatesProviderFactory.base as! BaseRatesProvider).$hasFetchError
+        BaseRatesProvider.shared.$hasFetchError
             .receive(on: DispatchQueue.main)
             .sink { [weak self] hasError in
                 guard let self = self else { return }
@@ -427,10 +428,22 @@ extension MainTabbarController {
                 }
             }
             .store(in: &cancellableBag)
+        
+        BaseRatesProvider.shared.$isVolatile
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isVolatile in
+                guard let self = self else { return }
+                
+                if isVolatile && !self.ratesVolatileWarningShown {
+                    self.showVolatileWarning()
+                    self.ratesVolatileWarningShown = true
+                }
+            }
+            .store(in: &cancellableBag)
     }
     
     private func showRatesError() {
-        let lastUpdated = UserDefaults.standard.integer(forKey: LAST_RATES_RETRIEVAL_TIME)
+        let lastUpdated = BaseRatesProvider.shared.lastUpdated
         let now = Date().timeIntervalSince1970
         let text: String
         
@@ -442,6 +455,17 @@ extension MainTabbarController {
         
         self.showToast(
             text: text,
+            icon: .system("exclamationmark.triangle.fill"),
+            actionText: NSLocalizedString("OK", comment: "Stale rates"),
+            action: { toastView in
+                self.hideToast(toastView: toastView)
+            }
+        )
+    }
+    
+    private func showVolatileWarning() {
+        self.showToast(
+            text: NSLocalizedString("Prices have fluctuated more than 50% since the last update.", comment: "Stale rates"),
             icon: .system("exclamationmark.triangle.fill"),
             actionText: NSLocalizedString("OK", comment: "Stale rates"),
             action: { toastView in
