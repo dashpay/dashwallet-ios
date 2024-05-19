@@ -55,7 +55,6 @@ extension RateObject: Equatable {
 
 protocol RatesProvider: AnyObject {
     var updateHandler: (([RateObject]) -> Void)? { get set }
-    var hasFetchError: Bool { get }
 
     func startExchangeRateFetching()
 }

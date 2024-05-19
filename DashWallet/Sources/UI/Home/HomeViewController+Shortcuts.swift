@@ -95,7 +95,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, DWExploreTe
     }
 
     private func showImportPrivateKey() {
-        let controller = DWImportWalletInfoViewController.swiftInit()
+        let controller = DWImportWalletInfoViewController.createController()
         controller.delegate = self
         presentControllerModallyInNavigationController(controller)
     }
