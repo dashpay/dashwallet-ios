@@ -222,7 +222,7 @@ struct ToolsMenuContent: View {
         }) {
             if #available(iOS 16.0, *) {
                 ZenLedgerInfoSheet(safariLink: $safariLink)
-                    .presentationDetents([.height(430)])
+                    .presentationDetents([.height(440)])
             } else {
                 ZenLedgerInfoSheet(safariLink: $safariLink)
             }
