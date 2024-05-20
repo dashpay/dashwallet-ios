@@ -41,22 +41,11 @@ struct FeatureTopText: View {
             // TODO: features
             
             if let label = label {
-                Button(action: {
+                DashButton(text: label, trailingIcon: labelIcon, style: .plain, size: .small, stretch: false) {
                     linkAction?()
-                }) {
-                    HStack(spacing: 6) {
-                        Text(label)
-                            .font(Font.system(size: 13).weight(.semibold))
-                            .lineSpacing(3)
-                            .foregroundColor(.dashBlue)
-                        
-                        if let icon = labelIcon {
-                            Icon(name: icon)
-                                .foregroundColor(.dashBlue)
-                        }
-                    }
                 }
-                .padding(EdgeInsets(top: 8, leading: 0, bottom: 0, trailing: 0))
+                .padding(.top, 8)
+                .overrideForegroundColor(.dashBlue)
             }
         }
         .padding(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))

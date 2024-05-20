@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2024 Dash Core Group. All rights reserved.
 //
@@ -32,6 +32,18 @@ extension Color {
     
     static var dashBlue: Color {
         Color("DashBlueColor")
+    }
+    
+    static var buttonRed: Color {
+        Color("ButtonRedColor")
+    }
+    
+    static var systemRed: Color {
+        Color("SystemRedColor")
+    }
+    
+    static var systemYellow: Color {
+        Color("SystemYellowColor")
     }
     
     static var gray300: Color {
