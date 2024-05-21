@@ -174,7 +174,7 @@ extension GettingStartedViewController: BackupInfoViewControllerDelegate {
         dismiss(animated: true)
     }
 
-    internal func secureWalletRoutineDidCanceled(_ controller: UIViewController) { }
+    internal func secureWalletRoutineDidCancel(_ controller: UIViewController) { }
 
     internal func secureWalletRoutineDidVerify(_ controller: UIViewController) {
         refreshCreateAccountButton()

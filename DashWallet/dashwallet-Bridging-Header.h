@@ -110,6 +110,17 @@ static const bool _SNAPSHOT = 0;
 #import "UIView+DWEmbedding.h"
 #import "DWBasePressableControl.h"
 
+
+#if DASHPAY
+#import "DWInvitationSetupState.h"
+#import "DPAlertViewController.h"
+#import "DWNotificationsViewController.h"
+#import "DWDashPayConstants.h"
+#import "DWRootContactsViewController.h"
+#import "DWNotificationsProvider.h"
+#import "DWContactsViewController.h"
+#endif
+
 //MARK: CrowdNode
 #import "DWCheckbox.h"
 #import "DWPreviewSeedPhraseModel.h"
@@ -119,7 +130,6 @@ static const bool _SNAPSHOT = 0;
 #import "DSChain+DashWallet.h"
 
 //MARK: Tabbar
-#import "DWHomeViewController.h"
 #import "DWMainMenuViewController.h"
 #import "DWWipeDelegate.h"
 #import "DWPayModel.h"
@@ -127,13 +137,16 @@ static const bool _SNAPSHOT = 0;
 #import "DWMainMenuViewControllerDelegate.h"
 #import "DWExploreTestnetViewController.h"
 
-#if DASHPAY
-#import "DWDashPayConstants.h"
-#import "DWRootContactsViewController.h"
-#import "DWNotificationsProvider.h"
-#import "DWContactsViewController.h"
-#endif
+//MARK: Home
+#import "DWHomeModel.h"
+#import "DWRootEditProfileViewController.h"
+#import "DWRecoverViewController.h"
+#import "UIViewController+DWTxFilter.h"
+#import "DSAuthenticationManager.h"
+#import "DWSecureWalletDelegate.h"
+#import "DWSettingsMenuModel.h"
+#import "DWBasePayViewController.h"
+#import "DWHomeProtocol.h"
 
 //MARK: Tools menu
 #import "UIViewController+DWDisplayError.h"
-

@@ -1637,6 +1637,15 @@
 /* No comment provided by engineer. */
 "Previously used at: " = "이전에 사용된 곳:";
 
+/* Stale rates */
+"Prices are at least 30 minutes old. Fiat values may be incorrect." = "Prices are at least 30 minutes old. Fiat values may be incorrect.";
+
+/* Stale rates */
+"Prices have fluctuated more than 50% since the last update." = "Prices have fluctuated more than 50% since the last update.";
+
+/* Stale rates */
+"Prices weren't retrieved. Fiat values may be incorrect." = "Prices weren't retrieved. Fiat values may be incorrect.";
+
 /* CrowdNode */
 "Primary Dash address" = "주요 대시 주소";
 

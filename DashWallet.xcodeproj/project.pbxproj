@@ -118,8 +118,6 @@
 		2A1B7D972322D0BC00BA8C6A /* DWTitleDetailCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7D962322D0BC00BA8C6A /* DWTitleDetailCellModel.m */; };
 		2A1B7DA52323AC1F00BA8C6A /* DWModalPopupPresentationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DA42323AC1F00BA8C6A /* DWModalPopupPresentationController.m */; };
 		2A1B7DA82323AF4300BA8C6A /* DWModalPopupTransition.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DA72323AF4300BA8C6A /* DWModalPopupTransition.m */; };
-		2A1B7DC0232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DBF232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m */; };
-		2A1B7DC323266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DC223266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m */; };
 		2A1F640C238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F640B238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m */; };
 		2A1F640F238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F640E238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m */; };
 		2A1F6412238D650200A9B505 /* DWSegmentSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F6411238D650200A9B505 /* DWSegmentSlider.m */; };
@@ -133,7 +131,6 @@
 		2A36A88B2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A36A88A2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m */; };
 		2A392568234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A392567234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m */; };
 		2A3DC86E239717C2004B3DBA /* DWRecoverWalletCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3DC86D239717C2004B3DBA /* DWRecoverWalletCommand.m */; };
-		2A3DC87123972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3DC87023972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m */; };
 		2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4430E622CBB6EC009BAF7F /* AppDelegate.m */; };
 		2A4430EB22CBBA82009BAF7F /* Setup.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A4430EA22CBBA82009BAF7F /* Setup.storyboard */; };
 		2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4430ED22CBBAC9009BAF7F /* DWSetupViewController.m */; };
@@ -187,9 +184,7 @@
 		2A74EFF823053ECE00C475EB /* DWIntrinsicTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFF723053ECE00C475EB /* DWIntrinsicTextView.m */; };
 		2A74EFFB2305464C00C475EB /* DWRecoverTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFFA2305464C00C475EB /* DWRecoverTextView.m */; };
 		2A74EFFE2305763F00C475EB /* DWRecoverModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFFD2305763F00C475EB /* DWRecoverModel.m */; };
-		2A74F0012305C40F00C475EB /* DWHomeViewController+DWShortcuts.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74F0002305C40F00C475EB /* DWHomeViewController+DWShortcuts.m */; };
 		2A74F0042305C59700C475EB /* UIViewController+DWTxFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74F0032305C59700C475EB /* UIViewController+DWTxFilter.m */; };
-		2A74F0072305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74F0062305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m */; };
 		2A7A7BAE234770C900451078 /* DWCaptureSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BAD234770C900451078 /* DWCaptureSessionManager.m */; };
 		2A7A7BB22347927700451078 /* DWMainMenuViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BB12347927700451078 /* DWMainMenuViewController.m */; };
 		2A7A7BB6234792A600451078 /* DWMainMenuContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BB5234792A600451078 /* DWMainMenuContentView.m */; };
@@ -252,7 +247,6 @@
 		2A9172C425233DC50024B4C5 /* DWPhraseRepairViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9172C325233DC50024B4C5 /* DWPhraseRepairViewController.m */; };
 		2A9172D325233F4F0024B4C5 /* DWPhraseRepairChildViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9172D225233F4F0024B4C5 /* DWPhraseRepairChildViewController.m */; };
 		2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */; };
-		2A9CEBB922E1FA1000A50237 /* DWHomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBB822E1FA1000A50237 /* DWHomeViewController.m */; };
 		2A9FFDF42230FF1A00956D5F /* UIView+DWAnimations.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFDEF2230FF1A00956D5F /* UIView+DWAnimations.m */; };
 		2A9FFDF52230FF1A00956D5F /* SFSafariViewController+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFDF22230FF1A00956D5F /* SFSafariViewController+DashWallet.m */; };
 		2A9FFE032230FF2B00956D5F /* DWUpholdTransactionObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFDFD2230FF2B00956D5F /* DWUpholdTransactionObject.m */; };
@@ -600,6 +594,8 @@
 		758CE59E2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 758CE59B2BC566DE0062AF53 /* PrivacyInfo.xcprivacy */; };
 		7592AA7C2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */; };
 		7592AA7D2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */; };
+		759ADD572BF3447400767ACD /* Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759ADD562BF3447400767ACD /* Button.swift */; };
+		759ADD582BF3447400767ACD /* Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759ADD562BF3447400767ACD /* Button.swift */; };
 		759C8F9F2B593589004B1305 /* CrowdNodeAPYView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */; };
 		759C8FA02B593589004B1305 /* CrowdNodeAPYView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */; };
 		75A664D82B09F1EA007EFD16 /* VotingInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A664D72B09F1EA007EFD16 /* VotingInfoViewController.swift */; };
@@ -608,6 +604,8 @@
 		75A8C1692AE6A1AC0042256E /* VotingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1682AE6A1AC0042256E /* VotingViewModel.swift */; };
 		75AE5A7F2A87C363006CD4BA /* DWConfirmUsernameContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C943B5712A40ED4200AF23C5 /* DWConfirmUsernameContentView.xib */; };
 		75B2F45D2B0B1EC1004C071A /* RequestUsernameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B2F45C2B0B1EC1004C071A /* RequestUsernameViewController.swift */; };
+		75BDE7AC2BF3287400556791 /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75BDE7AB2BF3287400556791 /* Toast.swift */; };
+		75BDE7AD2BF3287400556791 /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75BDE7AB2BF3287400556791 /* Toast.swift */; };
 		75C1F0452AE26AC0006929CA /* CoinJoinViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1F0442AE26AC0006929CA /* CoinJoinViewModel.swift */; };
 		75C1F0462AE26AC0006929CA /* CoinJoinViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1F0442AE26AC0006929CA /* CoinJoinViewModel.swift */; };
 		75C1F09E2AFF675400FE675E /* EnterVotingKeyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1F09D2AFF675400FE675E /* EnterVotingKeyViewController.swift */; };
@@ -644,6 +642,18 @@
 		75F51AAD2ABD8C800057B499 /* IntegrationViewController+Uphold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */; };
 		75F51AAF2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */; };
 		75F990822AFD1065006759AB /* UsernameRequestDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F990812AFD1065006759AB /* UsernameRequestDetailsViewController.swift */; };
+		75FFD6B82BF47BA20032879E /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6B72BF47BA20032879E /* HomeViewController.swift */; };
+		75FFD6B92BF47BA20032879E /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6B72BF47BA20032879E /* HomeViewController.swift */; };
+		75FFD6BB2BF48DF80032879E /* HomeViewController+JailbreakCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6BA2BF48DF80032879E /* HomeViewController+JailbreakCheck.swift */; };
+		75FFD6BC2BF48DF80032879E /* HomeViewController+JailbreakCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6BA2BF48DF80032879E /* HomeViewController+JailbreakCheck.swift */; };
+		75FFD6BE2BF491FC0032879E /* HomeViewController+BackupReminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6BD2BF491FC0032879E /* HomeViewController+BackupReminder.swift */; };
+		75FFD6BF2BF491FC0032879E /* HomeViewController+BackupReminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6BD2BF491FC0032879E /* HomeViewController+BackupReminder.swift */; };
+		75FFD6C12BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C02BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift */; };
+		75FFD6C22BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C02BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift */; };
+		75FFD6C42BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C32BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift */; };
+		75FFD6C52BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C32BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift */; };
+		75FFD6C72BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
+		75FFD6C82BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
 		7EE06A55AFE483FA7824B06E /* libPods-DashWalletTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BEAE29AA65F429DD9EF1A1A7 /* libPods-DashWalletTests.a */; };
 		A90D08EA4AA9019A2D806A9C /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17427514C25A58AB4AEDF999 /* libPods-dashwallet.a */; };
 		AEC28D84403A194A6C7D8C5A /* libPods-dashpay.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE89DF632BC53160BB8FBED1 /* libPods-dashpay.a */; };
@@ -934,7 +944,6 @@
 		C9D2C6B22A320AA000D15901 /* UISpringTimingParameters+DWInit.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69D92314727F001B8C90 /* UISpringTimingParameters+DWInit.m */; };
 		C9D2C6B62A320AA000D15901 /* NumberKeyboardButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AC28F972BD00028A8D /* NumberKeyboardButton.swift */; };
 		C9D2C6B72A320AA000D15901 /* IsDefaultEmail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11AE3DD72997C599000856EE /* IsDefaultEmail.swift */; };
-		C9D2C6B82A320AA000D15901 /* DWHomeViewController+DWSecureWalletDelegateImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DC223266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m */; };
 		C9D2C6BA2A320AA000D15901 /* DWUpholdAccountObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF292233E60F00956D5F /* DWUpholdAccountObject.m */; };
 		C9D2C6BB2A320AA000D15901 /* DWFormTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE2E2230FF4600956D5F /* DWFormTableViewController.m */; };
 		C9D2C6BC2A320AA000D15901 /* WalletKeysOverviewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C909614C29EFF7D600002D82 /* WalletKeysOverviewModel.swift */; };
@@ -1033,7 +1042,6 @@
 		C9D2C7262A320AA000D15901 /* EmptyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FAF29DC27F4001BC549 /* EmptyView.swift */; };
 		C9D2C7272A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C7282A320AA000D15901 /* DWQRScanModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C891FEB0B8B008CAEE0 /* DWQRScanModel.m */; };
-		C9D2C7292A320AA000D15901 /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3DC87023972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m */; };
 		C9D2C72A2A320AA000D15901 /* SyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451F62A0CAE1300825057 /* SyncView.swift */; };
 		C9D2C72B2A320AA000D15901 /* SuccessfulOperationStatusViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47522F4F2927CB9000EE143E /* SuccessfulOperationStatusViewController.swift */; };
 		C9D2C72C2A320AA000D15901 /* CustodialSwapsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E94B99296D7F99000FE68E /* CustodialSwapsModel.swift */; };
@@ -1182,7 +1190,6 @@
 		C9D2C7D82A320AA000D15901 /* ExploreDatabaseSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BA828BFAE5800490F5E /* ExploreDatabaseSyncManager.swift */; };
 		C9D2C7D92A320AA000D15901 /* DWOnboardingCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416823A8C479004E37A7 /* DWOnboardingCollectionViewCell.m */; };
 		C9D2C7DA2A320AA000D15901 /* CrowdNodeErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D0F290949B900D406C1 /* CrowdNodeErrorResponse.swift */; };
-		C9D2C7DB2A320AA000D15901 /* DWHomeViewController+DWShortcuts.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74F0002305C40F00C475EB /* DWHomeViewController+DWShortcuts.m */; };
 		C9D2C7DC2A320AA000D15901 /* DWHomeModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8123A30623006A2A59 /* DWHomeModelStub.m */; };
 		C9D2C7DD2A320AA000D15901 /* UISearchBar+DWAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ADC9D1B24603C4F001D7C0D /* UISearchBar+DWAdditions.m */; };
 		C9D2C7DE2A320AA000D15901 /* UIViewController+DWTxFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74F0032305C59700C475EB /* UIViewController+DWTxFilter.m */; };
@@ -1308,7 +1315,6 @@
 		C9D2C8702A320AA000D15901 /* AmountObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471DD1B5290A901200E030C8 /* AmountObject.swift */; };
 		C9D2C8712A320AA000D15901 /* DerivationPathKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C909615029F158D700002D82 /* DerivationPathKeysViewController.swift */; };
 		C9D2C8722A320AA000D15901 /* DSTransaction+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4709C31D2880247C00B4BD48 /* DSTransaction+DashWallet.m */; };
-		C9D2C8732A320AA000D15901 /* DWHomeViewController+DWJailbreakCheck.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74F0062305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m */; };
 		C9D2C8742A320AA000D15901 /* DWLocalCurrencyModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */; };
 		C9D2C8752A320AA000D15901 /* DWMainMenuModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BC2234797FC00451078 /* DWMainMenuModel.m */; };
 		C9D2C8762A320AA000D15901 /* DWUpholdMainnetConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = FB8ACEB522E0502100EE5035 /* DWUpholdMainnetConstants.m */; };
@@ -1326,9 +1332,7 @@
 		C9D2C8862A320AA000D15901 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C983B2945801D00FAA0F0 /* Constants.swift */; };
 		C9D2C8872A320AA000D15901 /* DWBaseFormCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE372230FF4600956D5F /* DWBaseFormCellModel.m */; };
 		C9D2C8882A320AA000D15901 /* ExploreMapAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BDA28C1305E00490F5E /* ExploreMapAnnotationView.swift */; };
-		C9D2C8892A320AA000D15901 /* DWHomeViewController+DWBackupReminder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DBF232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m */; };
 		C9D2C88A2A320AA000D15901 /* DWHomeModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E533722F023AB00E5168A /* DWHomeModel.m */; };
-		C9D2C88C2A320AA000D15901 /* DWHomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBB822E1FA1000A50237 /* DWHomeViewController.m */; };
 		C9D2C88D2A320AA000D15901 /* IsAddressInUse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1186092029758B2F00279FCC /* IsAddressInUse.swift */; };
 		C9D2C88F2A320AA000D15901 /* DWSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3F22FD75C000FF8653 /* DWSegmentedControl.m */; };
 		C9D2C8902A320AA000D15901 /* MerchantItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BCC28C1305E00490F5E /* MerchantItemCell.swift */; };
@@ -1763,10 +1767,6 @@
 		2A1B7DA62323AF4300BA8C6A /* DWModalPopupTransition.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalPopupTransition.h; sourceTree = "<group>"; };
 		2A1B7DA72323AF4300BA8C6A /* DWModalPopupTransition.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalPopupTransition.m; sourceTree = "<group>"; };
 		2A1B7DBD23261F9F00BA8C6A /* DWModalPopupAppearanceStyle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalPopupAppearanceStyle.h; sourceTree = "<group>"; };
-		2A1B7DBE232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "DWHomeViewController+DWBackupReminder.h"; path = "DashWallet/Sources/UI/Home/DWHomeViewController+DWBackupReminder.h"; sourceTree = SOURCE_ROOT; };
-		2A1B7DBF232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "DWHomeViewController+DWBackupReminder.m"; path = "DashWallet/Sources/UI/Home/DWHomeViewController+DWBackupReminder.m"; sourceTree = SOURCE_ROOT; };
-		2A1B7DC123266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWHomeViewController+DWSecureWalletDelegateImpl.h"; sourceTree = "<group>"; };
-		2A1B7DC223266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWHomeViewController+DWSecureWalletDelegateImpl.m"; sourceTree = "<group>"; };
 		2A1F640A238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSegmentSliderFormTableViewCell.h; sourceTree = "<group>"; };
 		2A1F640B238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSegmentSliderFormTableViewCell.m; sourceTree = "<group>"; };
 		2A1F640D238D5C0900A9B505 /* DWSegmentSliderFormCellModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSegmentSliderFormCellModel.h; sourceTree = "<group>"; };
@@ -1793,8 +1793,6 @@
 		2A392567234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSAttributedString+DWHighlightText.m"; sourceTree = "<group>"; };
 		2A3DC86C239717C2004B3DBA /* DWRecoverWalletCommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRecoverWalletCommand.h; sourceTree = "<group>"; };
 		2A3DC86D239717C2004B3DBA /* DWRecoverWalletCommand.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRecoverWalletCommand.m; sourceTree = "<group>"; };
-		2A3DC86F23972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWHomeViewController+DWImportPrivateKeyDelegateImpl.h"; sourceTree = "<group>"; };
-		2A3DC87023972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWHomeViewController+DWImportPrivateKeyDelegateImpl.m"; sourceTree = "<group>"; };
 		2A430F0B26EF5A0F00D8A196 /* DWNavigationAppearance.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNavigationAppearance.h; sourceTree = "<group>"; };
 		2A4430E522CBB6EC009BAF7F /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2A4430E622CBB6EC009BAF7F /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -1890,12 +1888,8 @@
 		2A74EFFA2305464C00C475EB /* DWRecoverTextView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRecoverTextView.m; sourceTree = "<group>"; };
 		2A74EFFC2305763F00C475EB /* DWRecoverModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRecoverModel.h; sourceTree = "<group>"; };
 		2A74EFFD2305763F00C475EB /* DWRecoverModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRecoverModel.m; sourceTree = "<group>"; };
-		2A74EFFF2305C40F00C475EB /* DWHomeViewController+DWShortcuts.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWHomeViewController+DWShortcuts.h"; sourceTree = "<group>"; };
-		2A74F0002305C40F00C475EB /* DWHomeViewController+DWShortcuts.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWHomeViewController+DWShortcuts.m"; sourceTree = "<group>"; };
 		2A74F0022305C59700C475EB /* UIViewController+DWTxFilter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIViewController+DWTxFilter.h"; sourceTree = "<group>"; };
 		2A74F0032305C59700C475EB /* UIViewController+DWTxFilter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+DWTxFilter.m"; sourceTree = "<group>"; };
-		2A74F0052305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWHomeViewController+DWJailbreakCheck.h"; sourceTree = "<group>"; };
-		2A74F0062305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWHomeViewController+DWJailbreakCheck.m"; sourceTree = "<group>"; };
 		2A74F0082305F1C100C475EB /* DWRecoverAction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRecoverAction.h; sourceTree = "<group>"; };
 		2A7A7BAC234770C900451078 /* DWCaptureSessionManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCaptureSessionManager.h; sourceTree = "<group>"; };
 		2A7A7BAD234770C900451078 /* DWCaptureSessionManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCaptureSessionManager.m; sourceTree = "<group>"; };
@@ -2026,8 +2020,6 @@
 		2A9CEBA422E1D26500A50237 /* DWSecureWalletDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecureWalletDelegate.h; sourceTree = "<group>"; };
 		2A9CEBAB22E1DA4000A50237 /* DWAppRootViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAppRootViewController.h; sourceTree = "<group>"; };
 		2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAppRootViewController.m; sourceTree = "<group>"; };
-		2A9CEBB722E1FA1000A50237 /* DWHomeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeViewController.h; sourceTree = "<group>"; };
-		2A9CEBB822E1FA1000A50237 /* DWHomeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeViewController.m; sourceTree = "<group>"; };
 		2A9FFDEE2230FF1A00956D5F /* UIView+DWAnimations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+DWAnimations.h"; sourceTree = "<group>"; };
 		2A9FFDEF2230FF1A00956D5F /* UIView+DWAnimations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWAnimations.m"; sourceTree = "<group>"; };
 		2A9FFDF02230FF1A00956D5F /* SFSafariViewController+DashWallet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SFSafariViewController+DashWallet.h"; sourceTree = "<group>"; };
@@ -2468,12 +2460,14 @@
 		7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedTopperPaymentMethods.swift; sourceTree = "<group>"; };
 		759816E519357D6F005060EA /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
 		759816E619357D6F005060EA /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
+		759ADD562BF3447400767ACD /* Button.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Button.swift; sourceTree = "<group>"; };
 		759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeAPYView.swift; sourceTree = "<group>"; };
 		75A664D72B09F1EA007EFD16 /* VotingInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingInfoViewController.swift; sourceTree = "<group>"; };
 		75A8C1632AE5725C0042256E /* UsernameRequestsDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequestsDAO.swift; sourceTree = "<group>"; };
 		75A8C1662AE5734A0042256E /* UsernameRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequest.swift; sourceTree = "<group>"; };
 		75A8C1682AE6A1AC0042256E /* VotingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingViewModel.swift; sourceTree = "<group>"; };
 		75B2F45C2B0B1EC1004C071A /* RequestUsernameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestUsernameViewController.swift; sourceTree = "<group>"; };
+		75BDE7AB2BF3287400556791 /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toast.swift; sourceTree = "<group>"; };
 		75C1F0442AE26AC0006929CA /* CoinJoinViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinViewModel.swift; sourceTree = "<group>"; };
 		75C1F09D2AFF675400FE675E /* EnterVotingKeyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterVotingKeyViewController.swift; sourceTree = "<group>"; };
 		75C72CDE2B19FB0C00129504 /* DPWelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DPWelcomeView.swift; sourceTree = "<group>"; };
@@ -2512,6 +2506,12 @@
 		75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Uphold.swift"; sourceTree = "<group>"; };
 		75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Coinbase.swift"; sourceTree = "<group>"; };
 		75F990812AFD1065006759AB /* UsernameRequestDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequestDetailsViewController.swift; sourceTree = "<group>"; };
+		75FFD6B72BF47BA20032879E /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
+		75FFD6BA2BF48DF80032879E /* HomeViewController+JailbreakCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeViewController+JailbreakCheck.swift"; sourceTree = "<group>"; };
+		75FFD6BD2BF491FC0032879E /* HomeViewController+BackupReminder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeViewController+BackupReminder.swift"; sourceTree = "<group>"; };
+		75FFD6C02BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeViewController+SecureWalletDelegateImpl.swift"; sourceTree = "<group>"; };
+		75FFD6C32BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeViewController+ImportPrivateKeyDelegateImpl.swift"; sourceTree = "<group>"; };
+		75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeViewController+Shortcuts.swift"; sourceTree = "<group>"; };
 		7EEDF75116E60BB9EE9C80FB /* Pods-WatchApp.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp/Pods-WatchApp.testnet.xcconfig"; sourceTree = "<group>"; };
 		87872BF3D40B38CD0FC246AB /* Pods-DashWalletTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.debug.xcconfig"; sourceTree = "<group>"; };
 		8A9877BEC5093CED81768D3D /* Pods-TodayExtension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-TodayExtension/Pods-TodayExtension.testnet.xcconfig"; sourceTree = "<group>"; };
@@ -4567,21 +4567,15 @@
 				2A913E7223A2EAEF006A2A59 /* Protocols */,
 				2A2CD6E522F46D1A008C7BC9 /* Models */,
 				2A307CB322E6FA7F00A18347 /* Views */,
-				2A9CEBB722E1FA1000A50237 /* DWHomeViewController.h */,
-				2A9CEBB822E1FA1000A50237 /* DWHomeViewController.m */,
-				2A74EFFF2305C40F00C475EB /* DWHomeViewController+DWShortcuts.h */,
-				2A74F0002305C40F00C475EB /* DWHomeViewController+DWShortcuts.m */,
 				2A74F0022305C59700C475EB /* UIViewController+DWTxFilter.h */,
 				2A74F0032305C59700C475EB /* UIViewController+DWTxFilter.m */,
-				2A74F0052305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.h */,
-				2A74F0062305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m */,
-				2A1B7DBE232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.h */,
-				2A1B7DBF232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m */,
-				2A1B7DC123266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.h */,
-				2A1B7DC223266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m */,
-				2A3DC86F23972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.h */,
-				2A3DC87023972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m */,
 				C94946DE2A25EDA8008A678D /* DWHomeViewControllerDelegate.h */,
+				75FFD6B72BF47BA20032879E /* HomeViewController.swift */,
+				75FFD6BA2BF48DF80032879E /* HomeViewController+JailbreakCheck.swift */,
+				75FFD6BD2BF491FC0032879E /* HomeViewController+BackupReminder.swift */,
+				75FFD6C02BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift */,
+				75FFD6C32BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift */,
+				75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -6056,6 +6050,8 @@
 				75EBAA0B2BB9792F004488E3 /* FeatureTopText.swift */,
 				75EBAA0E2BB99036004488E3 /* TextIntro.swift */,
 				75EBAA112BB99B6B004488E3 /* BottomSheet.swift */,
+				75BDE7AB2BF3287400556791 /* Toast.swift */,
+				759ADD562BF3447400767ACD /* Button.swift */,
 			);
 			path = "SwiftUI Components";
 			sourceTree = "<group>";
@@ -8403,6 +8399,7 @@
 				2AB3417F23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m in Sources */,
 				2AD1CE6E22DA357D00C99324 /* DWBaseViewController.m in Sources */,
 				2A44314722CF82D9009BAF7F /* DWBiometricAuthViewController.m in Sources */,
+				75FFD6BE2BF491FC0032879E /* HomeViewController+BackupReminder.swift in Sources */,
 				11517C87294B0FED004FC7BF /* CrowdNodeWebService.swift in Sources */,
 				75EBAA1D2BBA71D9004488E3 /* ZenLedgerInfoSheet.swift in Sources */,
 				2A4E531422E9F0A200E5168A /* DWStartViewController.m in Sources */,
@@ -8424,6 +8421,7 @@
 				47083B3229892D770010AF71 /* DSTransaction+DashWallet.swift in Sources */,
 				751B61C82AE0EDD000D1C2EF /* CoinJoinLevelsViewController.swift in Sources */,
 				C9F42F9F29DA82E5001BC549 /* PayableViewController.swift in Sources */,
+				75FFD6C12BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift in Sources */,
 				47AE8C1528C6378E00490F5E /* HairlineView.swift in Sources */,
 				2A913E9523A3F75F006A2A59 /* DWInitialViewController.m in Sources */,
 				4751136C28D9A3DB00223B77 /* BuySellPortalViewController.swift in Sources */,
@@ -8432,7 +8430,6 @@
 				2A0C69DA2314727F001B8C90 /* UISpringTimingParameters+DWInit.m in Sources */,
 				47C661AD28F972BD00028A8D /* NumberKeyboardButton.swift in Sources */,
 				11AE3DD82997C599000856EE /* IsDefaultEmail.swift in Sources */,
-				2A1B7DC323266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m in Sources */,
 				2A9FFF2A2233E60F00956D5F /* DWUpholdAccountObject.m in Sources */,
 				2A9FFE812230FF4700956D5F /* DWFormTableViewController.m in Sources */,
 				C909614D29EFF7D600002D82 /* WalletKeysOverviewModel.swift in Sources */,
@@ -8445,6 +8442,7 @@
 				2AB3415E23A8133A004E37A7 /* DWPayModelStub.m in Sources */,
 				2A74EFF1230531DA00C475EB /* DWRecoverContentView.m in Sources */,
 				2AD1CE9022DD070000C99324 /* DWSeedPhraseViewLayout.m in Sources */,
+				75FFD6BB2BF48DF80032879E /* HomeViewController+JailbreakCheck.swift in Sources */,
 				477F50102950A55A003C7508 /* Coinbase+Error.swift in Sources */,
 				2A63003F2327B4BB00827825 /* DWPaymentOutput+DWView.m in Sources */,
 				2ACD53EE234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m in Sources */,
@@ -8479,6 +8477,7 @@
 				2A913E9C23A53B8E006A2A59 /* DWExtendedContainerViewController.m in Sources */,
 				11517C852949E6F0004FC7BF /* CrowdNodeEndpoint.swift in Sources */,
 				0F71317528F4365C0072F454 /* ServiceEntryPointModel.swift in Sources */,
+				759ADD572BF3447400767ACD /* Button.swift in Sources */,
 				47AE8B9528BFACA100490F5E /* ExploreDash.swift in Sources */,
 				4789D22F2981067C00BAFEFA /* UpholdAmountModel.swift in Sources */,
 				2A0C69BD23140779001B8C90 /* DWModalInteractiveTransition.m in Sources */,
@@ -8487,6 +8486,7 @@
 				2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */,
 				47AE8BAB28BFAE5800490F5E /* ExploreDatabaseConnection.swift in Sources */,
 				111C3C4C296C51B500788E18 /* WithdrawalLimitsController.swift in Sources */,
+				75FFD6B82BF47BA20032879E /* HomeViewController.swift in Sources */,
 				0F6EDFCD28C896BD000427E7 /* CoinbaseTransactionResponse.swift in Sources */,
 				4709C31F28818BAE00B4BD48 /* TxDetailModel.swift in Sources */,
 				11BD737E28E6BD7400A34022 /* NewAccountViewController.swift in Sources */,
@@ -8534,7 +8534,6 @@
 				C9F42FB029DC27F4001BC549 /* EmptyView.swift in Sources */,
 				757514E32B15DF7C0026AD8E /* ShadowView.swift in Sources */,
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanModel.m in Sources */,
-				2A3DC87123972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m in Sources */,
 				C9F451F72A0CAE1300825057 /* SyncView.swift in Sources */,
 				47522F502927CB9000EE143E /* SuccessfulOperationStatusViewController.swift in Sources */,
 				47E94B9A296D7F99000FE68E /* CustodialSwapsModel.swift in Sources */,
@@ -8561,6 +8560,7 @@
 				2A913E7F23A30609006A2A59 /* DWRootModelStub.m in Sources */,
 				2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */,
 				47CF46AC2965B65B0067B6EE /* CBAccountManager.swift in Sources */,
+				75FFD6C42BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift in Sources */,
 				47522F522927CBEE00EE143E /* FailedOperationStatusViewController.swift in Sources */,
 				2A0C69C32314126D001B8C90 /* UIPanGestureRecognizer+DWProjected.m in Sources */,
 				2AA87CFA26E5681100F0CEA6 /* DWCurrencyObject.m in Sources */,
@@ -8608,6 +8608,7 @@
 				4708119F2990F56F003FCA3D /* TransactionDataItem.swift in Sources */,
 				2A44314322CF80D9009BAF7F /* DWSetPinModel.m in Sources */,
 				2AD1CE8D22DCB3B600C99324 /* DWVerifySeedPhraseModel.m in Sources */,
+				75FFD6C72BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */,
 				C9F42FA629DC092B001BC549 /* ReceiveViewController.swift in Sources */,
 				118B7A3F29865A3A00FBB6CC /* ConfirmationTransactionQRController.swift in Sources */,
 				47E4B7B7292F85E800CE0EB6 /* Numbers+Dash.swift in Sources */,
@@ -8688,7 +8689,6 @@
 				47AE8BAA28BFAE5800490F5E /* ExploreDatabaseSyncManager.swift in Sources */,
 				2AB3416923A8C479004E37A7 /* DWOnboardingCollectionViewCell.m in Sources */,
 				119E8D10290949B900D406C1 /* CrowdNodeErrorResponse.swift in Sources */,
-				2A74F0012305C40F00C475EB /* DWHomeViewController+DWShortcuts.m in Sources */,
 				2A913E8223A30623006A2A59 /* DWHomeModelStub.m in Sources */,
 				2ADC9D1C24603C4F001D7C0D /* UISearchBar+DWAdditions.m in Sources */,
 				2A74F0042305C59700C475EB /* UIViewController+DWTxFilter.m in Sources */,
@@ -8826,7 +8826,6 @@
 				471DD1B6290A901200E030C8 /* AmountObject.swift in Sources */,
 				C909615129F158D700002D82 /* DerivationPathKeysViewController.swift in Sources */,
 				4709C31E2880247C00B4BD48 /* DSTransaction+DashWallet.m in Sources */,
-				2A74F0072305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m in Sources */,
 				2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */,
 				2A7A7BC3234797FC00451078 /* DWMainMenuModel.m in Sources */,
 				FB8ACEB622E0502200EE5035 /* DWUpholdMainnetConstants.m in Sources */,
@@ -8846,9 +8845,7 @@
 				753130912B47EE920069C9B7 /* UpholdCapability.swift in Sources */,
 				2A9FFE852230FF4700956D5F /* DWBaseFormCellModel.m in Sources */,
 				47AE8BFB28C1306000490F5E /* ExploreMapAnnotationView.swift in Sources */,
-				2A1B7DC0232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m in Sources */,
 				2A4E533822F023AB00E5168A /* DWHomeModel.m in Sources */,
-				2A9CEBB922E1FA1000A50237 /* DWHomeViewController.m in Sources */,
 				1186092129758B2F00279FCC /* IsAddressInUse.swift in Sources */,
 				2A8B9E4022FD75C000FF8653 /* DWSegmentedControl.m in Sources */,
 				47AE8BF328C1306000490F5E /* MerchantItemCell.swift in Sources */,
@@ -8928,6 +8925,7 @@
 				753130972B4944130069C9B7 /* UpholdError.swift in Sources */,
 				474C721D298B65C100475CA6 /* Cells.swift in Sources */,
 				2A913E9823A400D3006A2A59 /* DWContainerViewController.m in Sources */,
+				75BDE7AC2BF3287400556791 /* Toast.swift in Sources */,
 				47B30D7A290D035B0080C326 /* DashTextAttachment.swift in Sources */,
 				C9F067F229E4576D0022D958 /* HomeBalanceView.swift in Sources */,
 				47838B82290271170003E8AB /* PointOfUseListFiltersModel.swift in Sources */,
@@ -9035,7 +9033,6 @@
 				C9D2C6B22A320AA000D15901 /* UISpringTimingParameters+DWInit.m in Sources */,
 				C9D2C6B62A320AA000D15901 /* NumberKeyboardButton.swift in Sources */,
 				C9D2C6B72A320AA000D15901 /* IsDefaultEmail.swift in Sources */,
-				C9D2C6B82A320AA000D15901 /* DWHomeViewController+DWSecureWalletDelegateImpl.m in Sources */,
 				C9D2C6BA2A320AA000D15901 /* DWUpholdAccountObject.m in Sources */,
 				C9D2C6BB2A320AA000D15901 /* DWFormTableViewController.m in Sources */,
 				75C83B522B11B62400C33660 /* ConfirmRequestViewController.swift in Sources */,
@@ -9044,6 +9041,7 @@
 				C943B32A2A408CED00AF23C5 /* DWAvatarExternalSourceView.m in Sources */,
 				C9D2C6BC2A320AA000D15901 /* WalletKeysOverviewModel.swift in Sources */,
 				C9D2C6BD2A320AA000D15901 /* UIAssembly.swift in Sources */,
+				75FFD6C52BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift in Sources */,
 				C943B4B32A40A54600AF23C5 /* DWContactsSearchDataSourceObject.m in Sources */,
 				C9D2C6BE2A320AA000D15901 /* DWLocationManager.swift in Sources */,
 				7514E4EC2AF27E5900A0466F /* VotingHeaderView.swift in Sources */,
@@ -9095,11 +9093,13 @@
 				C9D2C6DD2A320AA000D15901 /* NumberKeyboard.swift in Sources */,
 				C9D2C6DE2A320AA000D15901 /* DWSeedPhraseTitledView.m in Sources */,
 				C9D2C6E02A320AA000D15901 /* CrowdNodeTopUpTx.swift in Sources */,
+				759ADD582BF3447400767ACD /* Button.swift in Sources */,
 				C943B3302A408CED00AF23C5 /* DWSaveAlertChildView.m in Sources */,
 				C9D2C6E12A320AA000D15901 /* BackupInfoItemView.swift in Sources */,
 				C9D2C6E32A320AA000D15901 /* AccountCreatingController.swift in Sources */,
 				C9D2C6E42A320AA000D15901 /* UIView+DWReuseHelper.m in Sources */,
 				C9D2C6E52A320AA000D15901 /* DWExtendedContainerViewController.m in Sources */,
+				75FFD6BF2BF491FC0032879E /* HomeViewController+BackupReminder.swift in Sources */,
 				C943B58B2A40ED6F00AF23C5 /* DWInputUsernameViewController.m in Sources */,
 				C9D2C6E62A320AA000D15901 /* CrowdNodeEndpoint.swift in Sources */,
 				C9D2C6E72A320AA000D15901 /* ServiceEntryPointModel.swift in Sources */,
@@ -9143,6 +9143,7 @@
 				C943B4C42A40A54600AF23C5 /* DWSearchViewController.m in Sources */,
 				75EBAA2A2BBBE385004488E3 /* ZenLedgerViewModel.swift in Sources */,
 				C943B58A2A40ED5F00AF23C5 /* DWUsernamePendingViewController.m in Sources */,
+				75FFD6C22BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift in Sources */,
 				C9D2C7062A320AA000D15901 /* DWOnboardingModel.m in Sources */,
 				C9D2C7072A320AA000D15901 /* AmountInputTypeSwitcher.swift in Sources */,
 				C943B4FA2A40A54600AF23C5 /* DWDPOutgoingRequestNotificationObject.m in Sources */,
@@ -9189,7 +9190,6 @@
 				C9D2C7262A320AA000D15901 /* EmptyView.swift in Sources */,
 				C9D2C7272A320AA000D15901 /* (null) in Sources */,
 				C9D2C7282A320AA000D15901 /* DWQRScanModel.m in Sources */,
-				C9D2C7292A320AA000D15901 /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m in Sources */,
 				C943B3292A408CED00AF23C5 /* DWExternalSourceViewController.m in Sources */,
 				C9D2C72A2A320AA000D15901 /* SyncView.swift in Sources */,
 				C9D2C72B2A320AA000D15901 /* SuccessfulOperationStatusViewController.swift in Sources */,
@@ -9360,6 +9360,7 @@
 				C943B4AF2A40A54600AF23C5 /* DWInvitationSuggestionView.m in Sources */,
 				C9D2C7A52A320AA000D15901 /* DWModalPresentationController.m in Sources */,
 				C9D2C7A62A320AA000D15901 /* PointOfUseInfoViewController.swift in Sources */,
+				75BDE7AD2BF3287400556791 /* Toast.swift in Sources */,
 				C9D2C7A72A320AA000D15901 /* ActionButtonViewController.swift in Sources */,
 				C9D2C7A82A320AA000D15901 /* BuySellServiceItemCell.swift in Sources */,
 				C956AF122A5B5949002FAB75 /* PasteboardContentView.swift in Sources */,
@@ -9427,7 +9428,6 @@
 				C943B4B22A40A54600AF23C5 /* DWContactsDataSourceObject.m in Sources */,
 				C9D2C7DA2A320AA000D15901 /* CrowdNodeErrorResponse.swift in Sources */,
 				C943B4F72A40A54600AF23C5 /* DWDPTxObject.m in Sources */,
-				C9D2C7DB2A320AA000D15901 /* DWHomeViewController+DWShortcuts.m in Sources */,
 				C9D2C7DC2A320AA000D15901 /* DWHomeModelStub.m in Sources */,
 				C9D2C7DD2A320AA000D15901 /* UISearchBar+DWAdditions.m in Sources */,
 				C943B5122A40A54600AF23C5 /* DWInvitationHistoryModel.m in Sources */,
@@ -9586,6 +9586,7 @@
 				C943B53F2A40A6BE00AF23C5 /* DPAlertChildContentsView.m in Sources */,
 				C9D2C85B2A320AA000D15901 /* PointOfUseListEmptyResultsView.swift in Sources */,
 				C9D2C85C2A320AA000D15901 /* ShortcutsModel.swift in Sources */,
+				75FFD6C82BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */,
 				C9D2C85D2A320AA000D15901 /* DWLockPinInputView.m in Sources */,
 				C9D2C85E2A320AA000D15901 /* UIView+DWHUD.m in Sources */,
 				C9D2C85F2A320AA000D15901 /* DWPayOptionModel.m in Sources */,
@@ -9598,6 +9599,7 @@
 				C9D2C86A2A320AA000D15901 /* (null) in Sources */,
 				C943B51F2A40A54600AF23C5 /* DWSuccessInvitationView.m in Sources */,
 				C9D2C86B2A320AA000D15901 /* AmountPreviewView.swift in Sources */,
+				75FFD6B92BF47BA20032879E /* HomeViewController.swift in Sources */,
 				C943B5322A40A54600AF23C5 /* DWNotificationsInvitationCell.m in Sources */,
 				C9D2C86C2A320AA000D15901 /* ModalNavigationController.swift in Sources */,
 				C943B5032A40A54600AF23C5 /* DWDPGenericImageItemView.m in Sources */,
@@ -9608,7 +9610,6 @@
 				C9D2C8702A320AA000D15901 /* AmountObject.swift in Sources */,
 				C9D2C8712A320AA000D15901 /* DerivationPathKeysViewController.swift in Sources */,
 				C9D2C8722A320AA000D15901 /* DSTransaction+DashWallet.m in Sources */,
-				C9D2C8732A320AA000D15901 /* DWHomeViewController+DWJailbreakCheck.m in Sources */,
 				C943B58D2A40ED6F00AF23C5 /* DWCreateUsernameViewController.m in Sources */,
 				C943B58E2A40ED6F00AF23C5 /* DWAllowedCharactersUsernameValidationRule.m in Sources */,
 				C9D2C8742A320AA000D15901 /* DWLocalCurrencyModel.m in Sources */,
@@ -9633,10 +9634,8 @@
 				C9D2C8862A320AA000D15901 /* Constants.swift in Sources */,
 				C9D2C8872A320AA000D15901 /* DWBaseFormCellModel.m in Sources */,
 				C9D2C8882A320AA000D15901 /* ExploreMapAnnotationView.swift in Sources */,
-				C9D2C8892A320AA000D15901 /* DWHomeViewController+DWBackupReminder.m in Sources */,
 				C943B51A2A40A54600AF23C5 /* DWInvitationLinkBuilder.m in Sources */,
 				C9D2C88A2A320AA000D15901 /* DWHomeModel.m in Sources */,
-				C9D2C88C2A320AA000D15901 /* DWHomeViewController.m in Sources */,
 				C9D2C88D2A320AA000D15901 /* IsAddressInUse.swift in Sources */,
 				751B61C12ADFF98800D1C2EF /* BaseIntegrationModel.swift in Sources */,
 				C943B3342A408CED00AF23C5 /* DWTextViewFormCellModel.m in Sources */,
@@ -9645,6 +9644,7 @@
 				C9D2C8912A320AA000D15901 /* PaymentMethodCell.swift in Sources */,
 				C9D2C8932A320AA000D15901 /* CBUserManager.swift in Sources */,
 				C943B5082A40A54600AF23C5 /* DWDPTxListCell.m in Sources */,
+				75FFD6BC2BF48DF80032879E /* HomeViewController+JailbreakCheck.swift in Sources */,
 				C9D2C8942A320AA000D15901 /* DerivationPathKeysHeaderView.swift in Sources */,
 				C9D2C8952A320AA000D15901 /* ConvertCryptoOrderPreviewModel.swift in Sources */,
 				C9D2C8972A320AA000D15901 /* RatesProvider.swift in Sources */,

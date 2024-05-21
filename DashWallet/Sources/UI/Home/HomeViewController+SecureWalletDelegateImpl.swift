@@ -15,24 +15,20 @@
 //  limitations under the License.
 //
 
-#import "DWBasePayViewController.h"
-#import "DWHomeProtocol.h"
-#import "DWWipeDelegate.h"
+import UIKit
 
-NS_ASSUME_NONNULL_BEGIN
+extension HomeViewController: DWSecureWalletDelegate {
+    func secureWalletRoutineDidCancel(_ controller: UIViewController) {
+        dismiss(animated: true, completion: nil)
+    }
 
-@class DWHomeViewController;
-@protocol DWHomeViewControllerDelegate;
+    func secureWalletRoutineDidVerify(_ controller: UIViewController) {
+        if let view = self.view as? HomeView {
+            view.reloadShortcuts()
+        }
+    }
 
-@interface DWHomeViewController : DWBasePayViewController
-
-@property (strong, nonatomic) id<DWHomeProtocol> model;
-@property (nullable, nonatomic, weak) id<DWHomeViewControllerDelegate, DWWipeDelegate> delegate;
-
-#if DASHPAY
-- (void)handleDeeplink:(NSURL *)url definedUsername:(nullable NSString *)definedUsername;
-#endif
-
-@end
-
-NS_ASSUME_NONNULL_END
+    func secureWalletRoutineDidFinish(_ controller: VerifiedSuccessfullyViewController) {
+        dismiss(animated: true, completion: nil)
+    }
+}

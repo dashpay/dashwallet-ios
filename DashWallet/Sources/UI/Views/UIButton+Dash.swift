@@ -382,7 +382,7 @@ final class PlainButton: ActivityIndicatorButton {
 
 // MARK: - ActivityIndicatorButton
 
-class ActivityIndicatorButton: DashButton {
+class ActivityIndicatorButton: DWDashButton {
     final class ActivityIndicatorView: UIView {
         var color: UIColor {
             set {
@@ -486,7 +486,7 @@ class ActivityIndicatorButton: DashButton {
 
 // MARK: - DashButton
 
-class DashButton: UIButton {
+class DWDashButton: UIButton {
     @IBInspectable
     public var accentColor: UIColor? {
         didSet {

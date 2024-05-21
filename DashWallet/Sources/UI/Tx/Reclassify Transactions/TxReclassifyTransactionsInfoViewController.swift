@@ -28,7 +28,6 @@ protocol TxReclassifyTransactionsInfoViewControllerDelegate: AnyObject {
 
 // MARK: - TxReclassifyTransactionsInfoViewController
 
-@objc
 class TxReclassifyTransactionsInfoViewController: BasePageSheetViewController {
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var subtitleLabel: UILabel!

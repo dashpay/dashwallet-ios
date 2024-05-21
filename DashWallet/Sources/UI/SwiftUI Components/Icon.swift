@@ -28,9 +28,16 @@ struct Icon: View {
     var body: some View {
         switch name {
         case .system(let name):
-            Image(systemName: name).imageScale(.large)
+            if #available(iOS 16.0, *) {
+                Image(systemName: name)
+                    .imageScale(.medium)
+                    .fontWeight(.semibold)
+            } else {
+                Image(systemName: name)
+                    .imageScale(.medium)
+            }
         case .custom(let name):
-            Image(name).imageScale(.large)
+            Image(name).imageScale(.medium)
         }
     }
 }

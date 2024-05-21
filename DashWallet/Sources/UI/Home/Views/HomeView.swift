@@ -35,7 +35,6 @@ protocol HomeViewDelegate: AnyObject {
 
 // MARK: - HomeView
 
-@objc(DWHomeView)
 final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorRetryDelegate {
 
     @objc

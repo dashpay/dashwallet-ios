@@ -35,7 +35,7 @@ static CGFloat const PHRASE_WARNING_PADDING = 36.0;
 @property (nonatomic, strong) DWSeedPhraseTitledView *seedPhraseView;
 @property (nonatomic, strong) DWCheckbox *confirmationCheckbox;
 @property (nonatomic, strong) UIStackView *screenshotWarningStackView;
-@property (nonatomic, strong) DashButton *screenshotDescriptionButton;
+@property (nonatomic, strong) DWDashButton *screenshotDescriptionButton;
 
 @property (nonatomic, strong) NSLayoutConstraint *seedPhraseTopConstraint;
 
