@@ -47,7 +47,6 @@ struct ButtonsGroup: View {
         if let text = negativeButtonText {
             return DashButton(
                 text: text,
-                trailingIcon: .system("trash.fill"),
                 style: .plain,
                 size: .medium,
                 action: { negativeButtonAction?() }
