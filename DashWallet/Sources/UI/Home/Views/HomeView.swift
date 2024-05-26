@@ -19,7 +19,6 @@ import UIKit
 
 // MARK: - HomeViewDelegate
 
-@objc(DWHomeViewDelegate)
 protocol HomeViewDelegate: AnyObject {
     func homeView(_ homeView: HomeView, showTxFilter sender: UIView)
     func homeView(_ homeView: HomeView, showSyncingStatus sender: UIView)
@@ -37,7 +36,6 @@ protocol HomeViewDelegate: AnyObject {
 
 final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorRetryDelegate {
 
-    @objc
     weak var delegate: HomeViewDelegate?
 
     private(set) var headerView: HomeHeaderView!

@@ -16,6 +16,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 class HomeViewController: DWBasePayViewController {
     var model: DWHomeModel!
@@ -240,7 +241,7 @@ extension HomeViewController: DWRootEditProfileViewControllerDelegate {
 }
 #endif
 
-// MARK: - DWHomeViewDelegate
+// MARK: - HomeViewDelegate
 
 extension HomeViewController: HomeViewDelegate {
     func homeView(_ homeView: HomeView, showTxFilter sender: UIView) {
@@ -257,8 +258,12 @@ extension HomeViewController: HomeViewDelegate {
     }
 
     func homeView(_ homeView: HomeView, showCrowdNodeTxs transactions: [DSTransaction]) {
-        let controller = CNCreateAccountTxDetailsViewController(transactions: transactions)
-        let nvc = BaseNavigationController(rootViewController: controller)
+        let model = CNCreateAccountTxDetailsModel(transactions: transactions.map { Transaction(transaction: $0) })
+        let swiftUIView = CrowdNodeGroupedTransactionsScreen(model: model)
+        let hostingController = UIHostingController(rootView: swiftUIView)
+        hostingController.view.backgroundColor = .clear
+        let nvc = BaseNavigationController(rootViewController: hostingController)
+        
         present(nvc, animated: true, completion: nil)
     }
 

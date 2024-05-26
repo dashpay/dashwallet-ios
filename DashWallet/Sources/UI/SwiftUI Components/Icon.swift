@@ -37,7 +37,9 @@ struct Icon: View {
                     .imageScale(.medium)
             }
         case .custom(let name):
-            Image(name).imageScale(.medium)
+            Image(name)
+                .resizable()
+                .scaledToFit()
         }
     }
 }

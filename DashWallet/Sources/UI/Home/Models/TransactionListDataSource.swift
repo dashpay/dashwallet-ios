@@ -87,7 +87,7 @@ final class TransactionListDataSource: NSObject, UITableViewDataSource {
     }
 
     @objc
-    @available(*, deprecated, message: "We try to don't use DSTransaction in UI")
+    @available(*, deprecated, message: "We try not to use DSTransaction in UI")
     func transactionForIndexPath(_ indexPath: IndexPath) -> DSTransaction? {
         let index: Int
         if showsRegistrationStatus {

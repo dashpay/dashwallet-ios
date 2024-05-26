@@ -187,3 +187,18 @@ extension Transaction {
         tx is DSCoinbaseTransaction
     }
 }
+
+extension Transaction: Hashable {
+    // MARK: - Equatable
+    static func == (lhs: Transaction, rhs: Transaction) -> Bool {
+        return lhs.tx.txHashData == rhs.tx.txHashData
+    }
+
+    // MARK: - Hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(dashAmount)
+        hasher.combine(direction)
+        hasher.combine(transactionType)
+        hasher.combine(date)
+    }
+}

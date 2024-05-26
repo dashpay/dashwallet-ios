@@ -209,6 +209,9 @@ struct ToolsMenuContent: View {
                     }
                 }
             )
+            .background(Color.secondaryBackground)
+            .cornerRadius(8)
+            .shadow(color: .shadow, radius: 10, x: 0, y: 5)
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
         }

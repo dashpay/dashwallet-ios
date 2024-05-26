@@ -22,14 +22,18 @@ final class CNCreateAccountTxDetailsModel: TxDetailHeaderCellDataProvider {
     var icon: UIImage { UIImage(named: "tx.item.cn.icon")! }
     var tintColor: UIColor { .dw_label() }
 
+    var dashAmountString: String {
+        let sign: String = netAmount < 0 ? "-" : "+"
+        return sign + dashAmount.formattedDashAmount
+    }
+    
     var fiatAmount: String {
         (try? CurrencyExchanger.shared.convertDash(amount: dashAmount.dashAmount, to: App.fiatCurrency).formattedFiatAmount) ??
             NSLocalizedString("Updating Price", comment: "Updating Price")
     }
 
     func dashAmountString(with font: UIFont) -> NSAttributedString {
-        let sign: String = netAmount < 0 ? "-" : "+"
-        return (sign + dashAmount.formattedDashAmount).attributedAmountStringWithDashSymbol(tintColor: .dw_label(), font: .dw_font(forTextStyle: .largeTitle))
+        return dashAmountString.attributedAmountStringWithDashSymbol(tintColor: .dw_label(), font: .dw_font(forTextStyle: .largeTitle))
     }
 
     var transactions: [Transaction]

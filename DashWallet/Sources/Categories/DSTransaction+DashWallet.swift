@@ -151,7 +151,7 @@ extension DSTransaction {
     }
 
     func attributedDashAmount(with font: UIFont, color: UIColor = .dw_label()) -> NSAttributedString {
-        var formatted = formattedDashAmountWithDirectionalSymbol
+        let formatted = formattedDashAmountWithDirectionalSymbol
         return formatted.attributedAmountStringWithDashSymbol(tintColor: color, dashSymbolColor: color, font: font)
     }
 }
@@ -186,20 +186,24 @@ extension DSTransactionDirection {
             return .dw_label()
         }
     }
-
-    var icon: UIImage {
+    
+    var iconName: String {
         switch self {
         case .moved:
-            return UIImage(named: "tx.item.internal.icon")!
+            return "tx.item.internal.icon"
         case .sent:
-            return systemImage("arrow.up.circle.fill")
+            return "tx.item.sent.icon"
         case .received:
-            return systemImage("arrow.down.circle.fill")
+            return "tx.item.received.icon"
         case .notAccountFunds:
-            return systemImage("arrow.down.circle.fill")
+            return "tx.item.received.icon"
         @unknown default:
             fatalError()
         }
+    }
+
+    var icon: UIImage {
+        return UIImage(named: iconName)!
     }
 
     private func systemImage(_ name: String) -> UIImage {
@@ -209,8 +213,6 @@ extension DSTransactionDirection {
 
     var directionSymbol: String {
         switch self {
-        case .moved:
-            return "⟲"
         case .received:
             return "+";
         case .sent:

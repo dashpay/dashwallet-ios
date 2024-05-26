@@ -38,12 +38,16 @@ extension Color {
         Color("Gray300")
     }
     
-    static var background: Color {
-        Color("BackgroundColor")
+    // Background and secondary background are mismatched in the assests.
+    // The correct values per the design:
+    // Primary background: #F7F7F7
+    // Secondary background: #FFFFFF
+    static var primaryBackground: Color {
+        Color("SecondaryBackgroundColor")
     }
     
     static var secondaryBackground: Color {
-        Color("SecondaryBackgroundColor")
+        Color("BackgroundColor")
     }
     
     static var shadow: Color {

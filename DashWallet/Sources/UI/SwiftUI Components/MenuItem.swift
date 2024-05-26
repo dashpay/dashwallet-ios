@@ -17,27 +17,45 @@
 
 import SwiftUI
 
+typealias TransactionPreview = MenuItem
+
 struct MenuItem: View {
     var title: String
     var subtitle: String? = nil
     var details: String? = nil
     var icon: IconName? = nil
+    var secondaryIcon: IconName? = nil
     var showInfo: Bool = false
     var showChevron: Bool = false
+    var dashAmount: String? = nil
+    var fiatAmount: String? = nil
     var isToggled: Binding<Bool>? = nil
     var action: (() -> Void)? = nil
     
     var body: some View {
         HStack(spacing: 4) {
             if let icon = icon {
-                Icon(name: icon)
-                    .frame(width: 36, height: 36)
+                ZStack {
+                    Icon(name: icon)
+                        .frame(width: 26, height: 26)
+                        .alignmentGuide(.leading) { _ in 0 }
+                        .alignmentGuide(.top) { d in d[.top] }
+                    
+                    if let secondaryIcon = secondaryIcon {
+                        Icon(name: secondaryIcon)
+                            .frame(width: 15, height: 15)
+                            .alignmentGuide(.trailing) { _ in 0 }
+                            .alignmentGuide(.bottom) { _ in 0 }
+                    }
+                }
+                .frame(width: 42, height: 42)
             }
             
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 6) {
                     Text(title)
-                        .font(Font.system(size: 14).weight(.medium))
+                        .font(.subheadline)
+                        .fontWeight(.medium)
                         .lineSpacing(3)
                         .foregroundColor(.primaryText)
                     
@@ -48,20 +66,20 @@ struct MenuItem: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 8)
+            .padding(.leading, 2)
                 
             if let subtitle = subtitle {
                 Text(subtitle)
-                    .font(Font.system(size: 12))
+                    .font(.caption)
                     .lineSpacing(3)
                     .foregroundColor(.tertiaryText)
-                    .padding(.leading, 8)
+                    .padding(.leading, 2)
                     .padding(.top, 2)
             }
                     
             if let details = details {
                 Text(details)
-                    .font(Font.system(size: 12))
+                    .font(.caption)
                     .lineSpacing(3)
                     .foregroundColor(.tertiaryText)
                     .padding(.leading, 8)
@@ -80,13 +98,25 @@ struct MenuItem: View {
                     .imageScale(.small)
                     .foregroundColor(Color.gray)
                     .padding(.trailing, 10)
+            } else {
+                VStack {
+                    if let dashAmount = dashAmount {
+                        Text(dashAmount)
+                            .font(.footnote)
+                            .fontWeight(.medium)
+                            .foregroundColor(.primaryText)
+                    }
+                    
+                    if let fiatAmount = fiatAmount {
+                        Text(fiatAmount)
+                            .font(.caption)
+                            .foregroundColor(.secondaryText)
+                    }
+                }
             }
         }
         .padding(10)
         .frame(maxWidth: .infinity, minHeight: 66)
-        .background(Color.background)
-        .cornerRadius(8)
-        .shadow(color: .shadow, radius: 10, x: 0, y: 5)
         .onTapGesture {
             action?()
         }
