@@ -38,7 +38,7 @@ extension TransactionListDataItem {
 // MARK: - TransactionListDataSource
 
 @objc(DWTransactionListDataSource)
-final class TransactionListDataSource: NSObject, UITableViewDataSource {
+final class TransactionListDataSource: NSObject, UITableViewDataSource, ObservableObject {
     @objc
     var items: [DSTransaction]
 

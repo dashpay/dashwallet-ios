@@ -19,7 +19,7 @@ import Foundation
 
 // MARK: - Transaction
 
-class Transaction: TransactionDataItem {
+class Transaction: TransactionDataItem, Identifiable {
     enum State {
         case ok
         case invalid
@@ -35,6 +35,10 @@ class Transaction: TransactionDataItem {
         case masternodeUpdate
         case masternodeRevoke
         case blockchainIdentityRegistration
+    }
+    
+    var id: String {
+        tx.txHashHexString
     }
 
     let tx: DSTransaction

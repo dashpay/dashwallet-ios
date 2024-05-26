@@ -16,6 +16,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 // MARK: - HomeViewDelegate
 
@@ -32,6 +33,14 @@ protocol HomeViewDelegate: AnyObject {
 #endif
 }
 
+class HomeViewModel: ObservableObject {
+    @Published var txItems: [Transaction] = []
+    
+    func updateItems(items: [Transaction]) {
+        self.txItems = items
+    }
+}
+
 // MARK: - HomeView
 
 final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorRetryDelegate {
@@ -39,13 +48,11 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
     weak var delegate: HomeViewDelegate?
 
     private(set) var headerView: HomeHeaderView!
-    private(set) var topOverscrollView: UIView!
-    private(set) var tableView: UITableView!
-
-    weak var syncingHeaderView: SyncingHeaderView?
+    private(set) var syncingHeaderView: SyncingHeaderView!
 
     // Strong ref to current dataSource to make sure it always exists while tableView uses it
     var currentDataSource: TransactionListDataSource?
+    var viewModel: HomeViewModel = HomeViewModel()
 
     @objc
     var model: DWHomeProtocol? {
@@ -82,15 +89,14 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         super.layoutSubviews()
 
         let size = bounds.size
-        topOverscrollView.frame = CGRect(x: 0.0, y: -size.height, width: size.width, height: size.height)
 
-        if let tableHeaderView = tableView.tableHeaderView {
-            let headerSize = tableHeaderView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
-            if tableHeaderView.frame.height != headerSize.height {
-                tableHeaderView.frame = CGRect(x: 0.0, y: 0.0, width: headerSize.width, height: headerSize.height)
-                tableView.tableHeaderView = tableHeaderView
-            }
-        }
+//        if let tableHeaderView = tableView.tableHeaderView {
+//            let headerSize = tableHeaderView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
+//            if tableHeaderView.frame.height != headerSize.height {
+//                tableHeaderView.frame = CGRect(x: 0.0, y: 0.0, width: headerSize.width, height: headerSize.height)
+//                tableView.tableHeaderView = tableHeaderView
+//            }
+//        }
     }
 
     private func setupView() {
@@ -98,40 +104,61 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
 
         headerView = HomeHeaderView(frame: CGRect.zero)
         headerView.delegate = self
+        
+        syncingHeaderView = SyncingHeaderView(frame: CGRect.zero)
+        syncingHeaderView.delegate = self
+        
+        let content = TransactionList(
+            viewModel: self.viewModel,
+            balanceHeader: { UIViewWrapper(uiView: self.headerView) },
+            syncingHeader: { UIViewWrapper(uiView: self.syncingHeaderView) }
+        )
+        let swiftUIController = UIHostingController(rootView: content)
+        swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
+        
+        self.addSubview(swiftUIController.view)
+        swiftUIController.view.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            swiftUIController.view.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            swiftUIController.view.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            swiftUIController.view.topAnchor.constraint(equalTo: self.topAnchor),
+            swiftUIController.view.bottomAnchor.constraint(equalTo: self.bottomAnchor)
+        ])
+                
+        swiftUIController.didMove(toParent: nil)
+        
 
-        topOverscrollView = UIView(frame: CGRect.zero)
-        topOverscrollView.backgroundColor = UIColor.dw_dashNavigationBlue()
+//        tableView = UITableView(frame: bounds, style: .plain)
+//        tableView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+//        tableView.tableHeaderView = headerView
+//        tableView.backgroundColor = UIColor.dw_secondaryBackground()
+//        tableView.dataSource = self
+//        tableView.delegate = self
+//        tableView.rowHeight = UITableView.automaticDimension
+//        tableView.estimatedRowHeight = 74.0
+//        tableView.sectionHeaderHeight = UITableView.automaticDimension
+//        tableView.estimatedSectionHeaderHeight = 64.0
+//        tableView.separatorStyle = .none
+//        // NOTE: tableView.contentInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: DW_TABBAR_NOTCH, right: 0.0)
+//        tableView.addSubview(topOverscrollView)
+//        addSubview(tableView)
 
-        tableView = UITableView(frame: bounds, style: .plain)
-        tableView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        tableView.tableHeaderView = headerView
-        tableView.backgroundColor = UIColor.dw_secondaryBackground()
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 74.0
-        tableView.sectionHeaderHeight = UITableView.automaticDimension
-        tableView.estimatedSectionHeaderHeight = 64.0
-        tableView.separatorStyle = .none
-        // NOTE: tableView.contentInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: DW_TABBAR_NOTCH, right: 0.0)
-        tableView.addSubview(topOverscrollView)
-        addSubview(tableView)
+//        let cellIds = [
+//            TxListEmptyTableViewCell.reuseIdentifier,
+//            TxListTableViewCell.reuseIdentifier,
+//            DWDPRegistrationStatusTableViewCell.dw_reuseIdentifier,
+//            DWDPRegistrationErrorTableViewCell.dw_reuseIdentifier,
+//            DWDPRegistrationDoneTableViewCell.dw_reuseIdentifier,
+//        ]
+//        for cellId in cellIds {
+//            let nib = UINib(nibName: cellId, bundle: nil)
+//            tableView.register(nib, forCellReuseIdentifier: cellId)
+//        }
 
-        let cellIds = [
-            TxListEmptyTableViewCell.reuseIdentifier,
-            TxListTableViewCell.reuseIdentifier,
-            DWDPRegistrationStatusTableViewCell.dw_reuseIdentifier,
-            DWDPRegistrationErrorTableViewCell.dw_reuseIdentifier,
-            DWDPRegistrationDoneTableViewCell.dw_reuseIdentifier,
-        ]
-        for cellId in cellIds {
-            let nib = UINib(nibName: cellId, bundle: nil)
-            tableView.register(nib, forCellReuseIdentifier: cellId)
-        }
-
-        let nib = UINib(nibName: "CNCreateAccountCell", bundle: nil)
-        tableView.register(nib, forCellReuseIdentifier: "CNCreateAccountCell")
-        tableView.registerClassforHeaderFooterView(for: SyncingHeaderView.self)
+//        let nib = UINib(nibName: "CNCreateAccountCell", bundle: nil)
+//        tableView.register(nib, forCellReuseIdentifier: "CNCreateAccountCell")
+//        tableView.registerClassforHeaderFooterView(for: SyncingHeaderView.self)
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(setNeedsLayout),
                                                name: UIContentSizeCategory.didChangeNotification,
@@ -155,13 +182,24 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
     func homeModel(_ model: DWHomeProtocol, didUpdate dataSource: TransactionListDataSource, shouldAnimate: Bool) {
         currentDataSource = dataSource
         dataSource.retryDelegate = self
-
-        if dataSource.isEmpty {
-            tableView.dataSource = self
-        } else {
-            tableView.dataSource = dataSource
+        
+        let its = dataSource._items.map { it in
+            switch it {
+            case .crowdnode(let txs):
+                txs[0]
+            case .tx(let tx):
+                tx
+            }
         }
-        tableView.reloadData()
+        
+        self.viewModel.updateItems(items: its)
+
+//        if dataSource.isEmpty {
+//            tableView.dataSource = self
+//        } else {
+//            tableView.dataSource = dataSource
+//        }
+//        tableView.reloadData()
 
         headerView.reloadBalance()
         reloadShortcuts()
@@ -287,53 +325,117 @@ extension HomeView: SyncingHeaderViewDelegate {
     }
 }
 
-// MARK: UITableViewDataSource, UITableViewDelegate
+struct TransactionList<Content: View>: View {
+    @StateObject var viewModel: HomeViewModel
+    @State private var showZenLedgerSheet: Bool = false
+    @State private var safariLink: String? = nil
+    @State private var currentTag: String?
+    
+    @ViewBuilder var balanceHeader: () -> Content
+    @ViewBuilder var syncingHeader: () -> Content
 
-extension HomeView: UITableViewDataSource, UITableViewDelegate {
-    // MARK: - UITableViewDataSource
-
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        1
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cellId = TxListEmptyTableViewCell.reuseIdentifier
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
-        return cell
-    }
-
-    // MARK: - UITableViewDelegate
-
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let headerView = tableView.dequeueReusableHeaderFooterView(type: SyncingHeaderView.self)
-        headerView.delegate = self
-        syncingHeaderView = headerView
-        return headerView
-    }
-
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-
-        guard let currentDataSource,
-              !currentDataSource.isEmpty else { return }
-
-        let type = currentDataSource.itemType(by: indexPath)
-
-        if type == .crowdnode {
-            delegate?.homeView(self, showCrowdNodeTxs: currentDataSource.crowdnodeTxs())
-            return
+    var body: some View {
+        List {
+            Section {
+                balanceHeader()
+                    .frame(height: 210)
+            }
+            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+            .listRowBackground(Color.clear)
+            .listSectionSeparator(.hidden)
+            
+            Section {
+                syncingHeader()
+                    .frame(height: 50)
+            }
+            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+            .listRowBackground(Color.primaryBackground)
+            .listSectionSeparator(.hidden)
+            
+            Section {
+                ForEach(viewModel.txItems, id: \.txHashHexString) { tx in
+                    ZStack {
+                        NavigationLink(destination: TXDetailVCWrapper(tx: tx), tag: tx.txHashHexString, selection: self.$currentTag) {
+                            SwiftUI.EmptyView()
+                        }
+                        .opacity(0)
+                        
+                        TransactionPreview(
+                            title: tx.stateTitle,
+                            subtitle: tx.shortDateString,
+                            icon: .custom(tx.direction.iconName),
+                            dashAmount: tx.formattedDashAmountWithDirectionalSymbol,
+                            fiatAmount: tx.fiatAmount
+                        ) {
+                            self.currentTag = tx.txHashHexString
+                        }
+                    }
+                }
+            }
         }
-
-        if let transaction = currentDataSource.transactionForIndexPath(indexPath) {
-            delegate?.homeView(self, didSelectTransaction: transaction)
-        } else { // registration status cell
-            delegate?.homeViewShowDashPayRegistrationFlow(self)
-        }
-    }
-
-    // MARK: - UIScrollViewDelegate
-
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        headerView.parentScrollViewDidScroll(scrollView)
+        .listStyle(.plain)
+        .background(Color.dashBlue)
     }
 }
+
+struct UIViewWrapper: UIViewRepresentable {
+    let uiView: UIView!
+    
+    func makeUIView(context: Context) -> UIView {
+        return uiView
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) { }
+}
+
+
+// MARK: UITableViewDataSource, UITableViewDelegate
+
+//extension HomeView: UITableViewDataSource, UITableViewDelegate {
+//    // MARK: - UITableViewDataSource
+//
+//    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+//        1
+//    }
+//
+//    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+//        let cellId = TxListEmptyTableViewCell.reuseIdentifier
+//        let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
+//        return cell
+//    }
+//
+//    // MARK: - UITableViewDelegate
+//
+//    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+//        let headerView = tableView.dequeueReusableHeaderFooterView(type: SyncingHeaderView.self)
+//        headerView.delegate = self
+//        syncingHeaderView = headerView
+//        return headerView
+//    }
+//
+//    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+//        tableView.deselectRow(at: indexPath, animated: true)
+//
+//        guard let currentDataSource,
+//              !currentDataSource.isEmpty else { return }
+//
+//        let type = currentDataSource.itemType(by: indexPath)
+//
+//        if type == .crowdnode {
+//            delegate?.homeView(self, showCrowdNodeTxs: currentDataSource.crowdnodeTxs())
+//            return
+//        }
+//
+//        if let transaction = currentDataSource.transactionForIndexPath(indexPath) {
+//            delegate?.homeView(self, didSelectTransaction: transaction)
+//        } else { // registration status cell
+//            delegate?.homeViewShowDashPayRegistrationFlow(self)
+//        }
+//    }
+//
+//    // MARK: - UIScrollViewDelegate
+//
+//    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+//        headerView.parentScrollViewDidScroll(scrollView)
+//    }
+//}
