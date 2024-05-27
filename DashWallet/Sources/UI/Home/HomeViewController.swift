@@ -19,7 +19,7 @@ import UIKit
 import SwiftUI
 
 class HomeViewController: DWBasePayViewController {
-    var model: DWHomeModel!
+    var model: DWHomeProtocol!
     private var homeView: HomeView!
     weak var delegate: (DWHomeViewControllerDelegate & DWWipeDelegate)?
 

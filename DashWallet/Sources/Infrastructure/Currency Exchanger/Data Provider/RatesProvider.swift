@@ -110,11 +110,12 @@ final class BaseRatesProvider: NSObject, RatesProvider {
     }
     
     private func emitRates() {
-        let plainPricesByCode = UserDefaults.standard.object(forKey: PRICESBYCODE_KEY) as! [String : NSNumber]
-        let rates = plainPricesByCode.map { code, rate in
-            RateObject(code: code, name: currencyName(fromCode: code), price: rate.decimalValue)
+        if let plainPricesByCode = UserDefaults.standard.object(forKey: PRICESBYCODE_KEY) as? [String : NSNumber] {
+            let rates = plainPricesByCode.map { code, rate in
+                RateObject(code: code, name: currencyName(fromCode: code), price: rate.decimalValue)
+            }
+            updateHandler?(rates)
         }
-        updateHandler?(rates)
     }
     
     func currencyName(fromCode code: String) -> String {
