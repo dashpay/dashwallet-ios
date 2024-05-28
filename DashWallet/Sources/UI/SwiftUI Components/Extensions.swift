@@ -17,30 +17,14 @@
 
 import SwiftUI
 
-enum IconName {
-    case system(_ name: String)
-    case custom(_ name: String)
-}
-
-struct Icon: View {
-    let name: IconName
-    
-    var body: some View {
-        switch name {
-        case .system(let name):
-            if #available(iOS 16.0, *) {
-                Image(systemName: name)
-                    .imageScale(.medium)
-                    .fontWeight(.semibold)
+extension View {
+    func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+        Group {
+            if condition {
+                transform(self)
             } else {
-                Image(systemName: name)
-                    .imageScale(.medium)
+                self
             }
-        case .custom(let name):
-            Image(name)
-                .resizable()
-                .scaledToFit()
-                .imageScale(.medium)
         }
     }
 }

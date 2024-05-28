@@ -239,11 +239,7 @@ extension ExploreMapView: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, didAdd views: [MKAnnotationView]) {
         guard let view = views.first(where: { $0.annotation is MKUserLocation }) else { return }
         DispatchQueue.main.async {
-            if #available(iOS 14.0, *) {
-                view.zPriority = .max
-            } else {
-                view.layer.zPosition = CGFloat.greatestFiniteMagnitude
-            }
+            view.zPriority = .max
         }
     }
 

@@ -64,9 +64,9 @@ class PointOfUseLocationServicePopup: UIView {
         iconView.translatesAutoresizingMaskIntoConstraints = false
         iconView.layer.cornerRadius = 25.0
         iconView.layer.masksToBounds = true
-        iconView.backgroundColor = UIColor.dw_dashBlue().withAlphaComponent(0.2)
+        iconView.backgroundColor = UIColor.dw_dashBlue()
         iconView.contentMode = .center
-        iconView.tintColor = .dw_dashBlue()
+        iconView.tintColor = .white
         stackView.addArrangedSubview(iconView)
 
         let textStackView = UIStackView()

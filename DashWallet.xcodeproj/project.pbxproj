@@ -602,6 +602,16 @@
 		75A8C1652AE5726B0042256E /* UsernameRequestsDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1632AE5725C0042256E /* UsernameRequestsDAO.swift */; };
 		75A8C1672AE5734A0042256E /* UsernameRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1662AE5734A0042256E /* UsernameRequest.swift */; };
 		75A8C1692AE6A1AC0042256E /* VotingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1682AE6A1AC0042256E /* VotingViewModel.swift */; };
+		75AA33CC2BF9C82700F12465 /* ModalDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75AA33CB2BF9C82700F12465 /* ModalDialog.swift */; };
+		75AA33CD2BF9C82700F12465 /* ModalDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75AA33CB2BF9C82700F12465 /* ModalDialog.swift */; };
+		75AA33CF2BF9D44A00F12465 /* ButtonsGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75AA33CE2BF9D44A00F12465 /* ButtonsGroup.swift */; };
+		75AA33D02BF9D44A00F12465 /* ButtonsGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75AA33CE2BF9D44A00F12465 /* ButtonsGroup.swift */; };
+		75AA33D22BF9E18E00F12465 /* Color+DWStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75AA33D12BF9E18E00F12465 /* Color+DWStyle.swift */; };
+		75AA33D32BF9E18E00F12465 /* Color+DWStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75AA33D12BF9E18E00F12465 /* Color+DWStyle.swift */; };
+		75AA33D52BF9E1D400F12465 /* Font+DWStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75AA33D42BF9E1D400F12465 /* Font+DWStyle.swift */; };
+		75AA33D62BF9E1D400F12465 /* Font+DWStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75AA33D42BF9E1D400F12465 /* Font+DWStyle.swift */; };
+		75AA33D82BFB4A5A00F12465 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75AA33D72BFB4A5A00F12465 /* Extensions.swift */; };
+		75AA33D92BFB4A5A00F12465 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75AA33D72BFB4A5A00F12465 /* Extensions.swift */; };
 		75AE5A7F2A87C363006CD4BA /* DWConfirmUsernameContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C943B5712A40ED4200AF23C5 /* DWConfirmUsernameContentView.xib */; };
 		75B2F45D2B0B1EC1004C071A /* RequestUsernameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B2F45C2B0B1EC1004C071A /* RequestUsernameViewController.swift */; };
 		75BDE7AC2BF3287400556791 /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75BDE7AB2BF3287400556791 /* Toast.swift */; };
@@ -622,8 +632,6 @@
 		75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 75E83CF51B5F997A0038FB70 /* coinflip.aiff */; };
 		75EAFBB12B04C057005ABC6A /* CustomHUDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EAFBB02B04C057005ABC6A /* CustomHUDView.swift */; };
 		75EAFBB22B04C057005ABC6A /* CustomHUDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EAFBB02B04C057005ABC6A /* CustomHUDView.swift */; };
-		75EBAA062BB933A6004488E3 /* Color+DWStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA052BB933A6004488E3 /* Color+DWStyle.swift */; };
-		75EBAA072BB933A6004488E3 /* Color+DWStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA052BB933A6004488E3 /* Color+DWStyle.swift */; };
 		75EBAA092BB9791B004488E3 /* Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA082BB9791B004488E3 /* Icon.swift */; };
 		75EBAA0A2BB9791B004488E3 /* Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA082BB9791B004488E3 /* Icon.swift */; };
 		75EBAA0C2BB9792F004488E3 /* FeatureTopText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA0B2BB9792F004488E3 /* FeatureTopText.swift */; };
@@ -2466,6 +2474,11 @@
 		75A8C1632AE5725C0042256E /* UsernameRequestsDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequestsDAO.swift; sourceTree = "<group>"; };
 		75A8C1662AE5734A0042256E /* UsernameRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequest.swift; sourceTree = "<group>"; };
 		75A8C1682AE6A1AC0042256E /* VotingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingViewModel.swift; sourceTree = "<group>"; };
+		75AA33CB2BF9C82700F12465 /* ModalDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalDialog.swift; sourceTree = "<group>"; };
+		75AA33CE2BF9D44A00F12465 /* ButtonsGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonsGroup.swift; sourceTree = "<group>"; };
+		75AA33D12BF9E18E00F12465 /* Color+DWStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+DWStyle.swift"; sourceTree = "<group>"; };
+		75AA33D42BF9E1D400F12465 /* Font+DWStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Font+DWStyle.swift"; sourceTree = "<group>"; };
+		75AA33D72BFB4A5A00F12465 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		75B2F45C2B0B1EC1004C071A /* RequestUsernameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestUsernameViewController.swift; sourceTree = "<group>"; };
 		75BDE7AB2BF3287400556791 /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toast.swift; sourceTree = "<group>"; };
 		75C1F0442AE26AC0006929CA /* CoinJoinViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinViewModel.swift; sourceTree = "<group>"; };
@@ -2492,7 +2505,6 @@
 		75E2F3C92AA4D1B900C3B458 /* Topper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Topper.swift; sourceTree = "<group>"; };
 		75E83CF51B5F997A0038FB70 /* coinflip.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = coinflip.aiff; sourceTree = "<group>"; };
 		75EAFBB02B04C057005ABC6A /* CustomHUDView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomHUDView.swift; sourceTree = "<group>"; };
-		75EBAA052BB933A6004488E3 /* Color+DWStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+DWStyle.swift"; sourceTree = "<group>"; };
 		75EBAA082BB9791B004488E3 /* Icon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Icon.swift; sourceTree = "<group>"; };
 		75EBAA0B2BB9792F004488E3 /* FeatureTopText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureTopText.swift; sourceTree = "<group>"; };
 		75EBAA0E2BB99036004488E3 /* TextIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextIntro.swift; sourceTree = "<group>"; };
@@ -3794,7 +3806,6 @@
 				C9829CDD2A562822007132E4 /* TappableLabel.swift */,
 				C956AF2C2A5CEA1F002FAB75 /* SheetViewController.swift */,
 				75EAFBB02B04C057005ABC6A /* CustomHUDView.swift */,
-				75EBAA052BB933A6004488E3 /* Color+DWStyle.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -6052,6 +6063,11 @@
 				75EBAA112BB99B6B004488E3 /* BottomSheet.swift */,
 				75BDE7AB2BF3287400556791 /* Toast.swift */,
 				759ADD562BF3447400767ACD /* Button.swift */,
+				75AA33CB2BF9C82700F12465 /* ModalDialog.swift */,
+				75AA33CE2BF9D44A00F12465 /* ButtonsGroup.swift */,
+				75AA33D12BF9E18E00F12465 /* Color+DWStyle.swift */,
+				75AA33D42BF9E1D400F12465 /* Font+DWStyle.swift */,
+				75AA33D72BFB4A5A00F12465 /* Extensions.swift */,
 			);
 			path = "SwiftUI Components";
 			sourceTree = "<group>";
@@ -8442,6 +8458,7 @@
 				2AB3415E23A8133A004E37A7 /* DWPayModelStub.m in Sources */,
 				2A74EFF1230531DA00C475EB /* DWRecoverContentView.m in Sources */,
 				2AD1CE9022DD070000C99324 /* DWSeedPhraseViewLayout.m in Sources */,
+				75AA33D52BF9E1D400F12465 /* Font+DWStyle.swift in Sources */,
 				75FFD6BB2BF48DF80032879E /* HomeViewController+JailbreakCheck.swift in Sources */,
 				477F50102950A55A003C7508 /* Coinbase+Error.swift in Sources */,
 				2A63003F2327B4BB00827825 /* DWPaymentOutput+DWView.m in Sources */,
@@ -8625,7 +8642,7 @@
 				2A1B7DA52323AC1F00BA8C6A /* DWModalPopupPresentationController.m in Sources */,
 				11517C8A294B11DD004FC7BF /* CrowdNodeBalance.swift in Sources */,
 				471DD1BA290A962B00E030C8 /* String+DashWallet.swift in Sources */,
-				75EBAA062BB933A6004488E3 /* Color+DWStyle.swift in Sources */,
+				75AA33CF2BF9D44A00F12465 /* ButtonsGroup.swift in Sources */,
 				2A0C69D723143B2F001B8C90 /* DWBaseModalViewController.m in Sources */,
 				C956AF2D2A5CEA1F002FAB75 /* SheetViewController.swift in Sources */,
 				C9C1335A2A561FFA00B66651 /* PasteboardContentView.swift in Sources */,
@@ -8674,6 +8691,7 @@
 				471DD1B8290A92CD00E030C8 /* Tools.swift in Sources */,
 				478A2C7128DC554200AD1420 /* BuySellPortalModel.swift in Sources */,
 				75F51AAF2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift in Sources */,
+				75AA33D22BF9E18E00F12465 /* Color+DWStyle.swift in Sources */,
 				75C1F0452AE26AC0006929CA /* CoinJoinViewModel.swift in Sources */,
 				478C98262942DC2700FAA0F0 /* BuyDashViewController.swift in Sources */,
 				2A0C69D023143435001B8C90 /* DWModalDismissalAnimation.m in Sources */,
@@ -8773,6 +8791,7 @@
 				472D13E3299E23B7006903F1 /* BalanceNotifier.swift in Sources */,
 				2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */,
 				7592AA7C2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */,
+				75AA33CC2BF9C82700F12465 /* ModalDialog.swift in Sources */,
 				2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */,
 				47C661AF28FDAA3400028A8D /* BaseAmountViewController.swift in Sources */,
 				478C982C2942F03500FAA0F0 /* SendingToView.swift in Sources */,
@@ -8843,6 +8862,7 @@
 				2A4431E922D738C0009BAF7F /* DWSeedPhraseModel.m in Sources */,
 				478C983C2945801D00FAA0F0 /* Constants.swift in Sources */,
 				753130912B47EE920069C9B7 /* UpholdCapability.swift in Sources */,
+				75AA33D82BFB4A5A00F12465 /* Extensions.swift in Sources */,
 				2A9FFE852230FF4700956D5F /* DWBaseFormCellModel.m in Sources */,
 				47AE8BFB28C1306000490F5E /* ExploreMapAnnotationView.swift in Sources */,
 				2A4E533822F023AB00E5168A /* DWHomeModel.m in Sources */,
@@ -9294,6 +9314,7 @@
 				C9D2C76E2A320AA000D15901 /* DWBaseSeedViewController.m in Sources */,
 				C943B51D2A40A54600AF23C5 /* InvitationBottomView.swift in Sources */,
 				C943B32D2A408CED00AF23C5 /* DWAvatarPublicURLViewController.m in Sources */,
+				75AA33D32BF9E18E00F12465 /* Color+DWStyle.swift in Sources */,
 				C9D2C76F2A320AA000D15901 /* DWProgressAnimator.mm in Sources */,
 				C943B3192A408CED00AF23C5 /* DWDPUpdateProfileModel.m in Sources */,
 				C9D2C7702A320AA000D15901 /* CrowdNodeModel.swift in Sources */,
@@ -9310,6 +9331,7 @@
 				C9D2C77B2A320AA000D15901 /* DWSetPinModel.m in Sources */,
 				C9D2C77C2A320AA000D15901 /* DWVerifySeedPhraseModel.m in Sources */,
 				C9D2C77D2A320AA000D15901 /* ReceiveViewController.swift in Sources */,
+				75AA33D62BF9E1D400F12465 /* Font+DWStyle.swift in Sources */,
 				C9D2C77E2A320AA000D15901 /* ConfirmationTransactionQRController.swift in Sources */,
 				C9D2C7812A320AA000D15901 /* Numbers+Dash.swift in Sources */,
 				C9D2C7822A320AA000D15901 /* PaymentMethodsController.swift in Sources */,
@@ -9481,6 +9503,7 @@
 				7565D5952B08B35F0092C9BA /* RequestUsernameViewModel.swift in Sources */,
 				C9D2C80A2A320AA000D15901 /* DWMainMenuViewController.m in Sources */,
 				C9D2C80B2A320AA000D15901 /* PointOfUseListFiltersViewController.swift in Sources */,
+				75AA33D02BF9D44A00F12465 /* ButtonsGroup.swift in Sources */,
 				C9D2C80C2A320AA000D15901 /* AllMerchantLocationsDataProvider.swift in Sources */,
 				C9D2C80D2A320AA000D15901 /* MainTabbarController.swift in Sources */,
 				C9D2C80E2A320AA000D15901 /* NumberFormatter+DashWallet.swift in Sources */,
@@ -9493,6 +9516,7 @@
 				C943B59C2A40EE5300AF23C5 /* DWNetworkErrorViewController.m in Sources */,
 				C9D2C8142A320AA000D15901 /* DWCenteredScrollView.m in Sources */,
 				C9D2C8162A320AA000D15901 /* DWPhraseRepairViewController.m in Sources */,
+				75AA33CD2BF9C82700F12465 /* ModalDialog.swift in Sources */,
 				C9D2C8172A320AA000D15901 /* DWBiometricAuthModel.m in Sources */,
 				C943B52A2A40A54600AF23C5 /* UIImageView+DWDPAvatar.m in Sources */,
 				C9D2C8182A320AA000D15901 /* DWNumberKeyboardInputViewAudioFeedback.m in Sources */,
@@ -9522,7 +9546,6 @@
 				C9D2C8282A320AA000D15901 /* CoinbaseUserAuthInformation.swift in Sources */,
 				C943B5982A40EDEF00AF23C5 /* DWConfirmUsernameContentView.m in Sources */,
 				C943B58C2A40ED6F00AF23C5 /* DWUsernameValidationRule.m in Sources */,
-				75EBAA072BB933A6004488E3 /* Color+DWStyle.swift in Sources */,
 				C9D2C8292A320AA000D15901 /* DWTransactionStub.m in Sources */,
 				C9D2C82A2A320AA000D15901 /* OnlineAccountEmailController.swift in Sources */,
 				C9D2C82B2A320AA000D15901 /* DWBaseActionButtonViewController.m in Sources */,
@@ -9560,6 +9583,7 @@
 				C9D2C8452A320AA000D15901 /* DWRecoverViewController.m in Sources */,
 				C9D2C8462A320AA000D15901 /* DWDPAmountContactView.m in Sources */,
 				C9D2C8472A320AA000D15901 /* DWBaseTransactionListDataProvider.m in Sources */,
+				75AA33D92BFB4A5A00F12465 /* Extensions.swift in Sources */,
 				C9D2C8482A320AA000D15901 /* CoinbaseTransactionsRequest.swift in Sources */,
 				75A664D82B09F1EA007EFD16 /* VotingInfoViewController.swift in Sources */,
 				C943B3372A408CED00AF23C5 /* DWEditProfileTextFieldCell.m in Sources */,

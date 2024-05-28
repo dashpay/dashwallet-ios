@@ -66,7 +66,7 @@ extension TerritoriesListViewController {
     }
 
     private func configureHierarchy() {
-        title = NSLocalizedString("Location", comment: "Explore Dash/Merchants/Filters/Location")
+        title = NSLocalizedString("Location", comment: "")
 
         let standardAppearance = UINavigationBarAppearance()
         standardAppearance.configureWithOpaqueBackground()

@@ -682,6 +682,12 @@
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "A causa dei termini di servizio di CrowdNode, gli utenti possono recedere non più di:";
 
+/* Geoblock */
+"Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features.";
+
+/* Geoblock */
+"Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK";
+
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "esempio: johndoe@mail.com";
 
@@ -981,6 +987,9 @@
 
 /* Usernames */
 "If somebody else requests the same username as you, we will let the network decide whom to give this username" = "Se qualcun altro richiede il tuo stesso nome utente, lasceremo che sia la rete a decidere a chi assegnare questo nome utente";
+
+/* Geoblock */
+"If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase";
 
 /* CrowdNode */
 "If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "Se dovessi perdere la passphrase, puoi verificarti con altri mezzi per riottenere l'accesso ai tuoi fondi CrowdNode.";
