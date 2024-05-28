@@ -34,9 +34,9 @@ protocol HomeViewDelegate: AnyObject {
 }
 
 class HomeViewModel: ObservableObject {
-    @Published var txItems: [Transaction] = []
+    @Published var txItems: [String: [TransactionListDataItem]] = [:]
     
-    func updateItems(items: [Transaction]) {
+    func updateItems(items: [String: [TransactionListDataItem]]) {
         self.txItems = items
     }
 }
@@ -183,16 +183,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         currentDataSource = dataSource
         dataSource.retryDelegate = self
         
-        let its = dataSource._items.map { it in
-            switch it {
-            case .crowdnode(let txs):
-                txs[0]
-            case .tx(let tx):
-                tx
-            }
-        }
-        
-        self.viewModel.updateItems(items: its)
+        self.viewModel.updateItems(items: dataSource._items)
 
 //        if dataSource.isEmpty {
 //            tableView.dataSource = self
@@ -325,56 +316,128 @@ extension HomeView: SyncingHeaderViewDelegate {
     }
 }
 
+struct TxPreviewModel: Identifiable, Equatable {
+    var id: String
+    var title: String
+    var timeFormatted: String
+    var dateFormatted: String
+    var details: String?
+    var icon: IconName
+    var dashAmount: String
+    var fiatAmount: String
+    var date: Date
+    
+    static func == (lhs: TxPreviewModel, rhs: TxPreviewModel) -> Bool {
+        return lhs.id == rhs.id
+    }
+}
+
 struct TransactionList<Content: View>: View {
     @StateObject var viewModel: HomeViewModel
-    @State private var showZenLedgerSheet: Bool = false
-    @State private var safariLink: String? = nil
-    @State private var currentTag: String?
+//    @State private var currentTag: String?
     
     @ViewBuilder var balanceHeader: () -> Content
     @ViewBuilder var syncingHeader: () -> Content
 
     var body: some View {
-        List {
-            Section {
-                balanceHeader()
-                    .frame(height: 210)
-            }
-            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-            .listRowBackground(Color.clear)
-            .listSectionSeparator(.hidden)
+        GeometryReader { geometry in
+            let topOverscrollSize = geometry.size.height * 1.5
             
-            Section {
-                syncingHeader()
-                    .frame(height: 50)
-            }
-            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-            .listRowBackground(Color.primaryBackground)
-            .listSectionSeparator(.hidden)
-            
-            Section {
-                ForEach(viewModel.txItems, id: \.txHashHexString) { tx in
-                    ZStack {
-                        NavigationLink(destination: TXDetailVCWrapper(tx: tx), tag: tx.txHashHexString, selection: self.$currentTag) {
-                            SwiftUI.EmptyView()
-                        }
-                        .opacity(0)
-                        
-                        TransactionPreview(
-                            title: tx.stateTitle,
-                            subtitle: tx.shortDateString,
-                            icon: .custom(tx.direction.iconName),
-                            dashAmount: tx.formattedDashAmountWithDirectionalSymbol,
-                            fiatAmount: tx.fiatAmount
+            ScrollView {
+                ZStack {
+                    Color.dashBlue // Top overscroll area
+                }
+                .frame(height: topOverscrollSize)
+                .padding(EdgeInsets(top: -topOverscrollSize, leading: 0, bottom: 0, trailing: 0))
+                
+                LazyVStack(pinnedViews: [.sectionHeaders]) {
+                    balanceHeader()
+                        .frame(height: 210)
+                    
+                    VStack {
+                        syncingHeader()
+                            .frame(height: 50)
+                    }
+                    
+                    ForEach(viewModel.txItems.keys.sorted(by: { key1, key2 in
+                        viewModel.txItems[key1]![0].date > viewModel.txItems[key2]![0].date
+                    }), id: \.self) { key in
+                        Section(header: Text(key)
+                            .font(.headline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         ) {
-                            self.currentTag = tx.txHashHexString
+                            ForEach(viewModel.txItems[key]!, id: \.id) { txItem in
+                                ZStack {
+                                    //                        NavigationLink(destination: TXDetailVCWrapper(tx: tx), tag: tx.txHashHexString, selection: self.$currentTag) {
+                                    //                            SwiftUI.EmptyView()
+                                    //                        }
+                                    //                        .opacity(0)
+                                    
+                                    TransactionPreviewFrom(txItem: txItem)
+                                }
+                            }
                         }
                     }
                 }
+                .padding(EdgeInsets(top: -20, leading: 0, bottom: 0, trailing: 0))
             }
         }
-        .listStyle(.plain)
-        .background(Color.dashBlue)
+    }
+    
+    @ViewBuilder
+    private func TransactionPreviewFrom(txItem txDataItem: TransactionListDataItem) -> some View {
+        switch txDataItem {
+        case .crowdnode(let txItems):
+            let amount = self.crowdNodeAmount(txItems)
+            let sign: String = amount < 0 ? "-" : "+"
+            let dashAmount = UInt64(abs(amount))
+            let dashAmountStr = sign + abs(self.crowdNodeAmount(txItems)).formattedDashAmount
+                            
+            TransactionPreview(
+                title: NSLocalizedString("CrowdNode Account", comment: "Crowdnode"),
+                subtitle: txItems.last?.tx.formattedShortTxTime ?? "",
+                details: String(format: NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), txItems.count),
+                icon: .custom("tx.item.cn.icon"),
+                dashAmount: dashAmountStr,
+                fiatAmount: self.fiatCrowdNodeAmount(dashAmount: dashAmount)
+            ) {
+                //                            self.currentTag = tx.txHashHexString
+            }
+            
+        case .tx(let txItem):
+            TransactionPreview(
+                title: txItem.stateTitle,
+                subtitle: txItem.tx.formattedShortTxTime,
+                icon: .custom(txItem.direction.iconName),
+                dashAmount: txItem.formattedDashAmountWithDirectionalSymbol,
+                fiatAmount: txItem.fiatAmount
+            ) {
+                //                            self.currentTag = tx.txHashHexString
+            }
+        }
+    }
+    
+    private func crowdNodeAmount(_ transactions: [Transaction]) -> Int64 {
+        return transactions.reduce(0) { partialResult, tx in
+            var r = partialResult
+            let direction = tx.direction
+
+            switch direction {
+            case .sent:
+                r -= Int64(tx.dashAmount)
+            case .received:
+                r += Int64(tx.dashAmount)
+            default:
+                break
+            }
+
+            return r
+        }
+    }
+    
+    private func fiatCrowdNodeAmount(dashAmount: UInt64) -> String {
+        (try? CurrencyExchanger.shared.convertDash(amount: dashAmount.dashAmount, to: App.fiatCurrency).formattedFiatAmount) ??
+                    NSLocalizedString("Updating Price", comment: "Updating Price")
     }
 }
 
@@ -387,55 +450,3 @@ struct UIViewWrapper: UIViewRepresentable {
 
     func updateUIView(_ uiView: UIView, context: Context) { }
 }
-
-
-// MARK: UITableViewDataSource, UITableViewDelegate
-
-//extension HomeView: UITableViewDataSource, UITableViewDelegate {
-//    // MARK: - UITableViewDataSource
-//
-//    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-//        1
-//    }
-//
-//    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//        let cellId = TxListEmptyTableViewCell.reuseIdentifier
-//        let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
-//        return cell
-//    }
-//
-//    // MARK: - UITableViewDelegate
-//
-//    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-//        let headerView = tableView.dequeueReusableHeaderFooterView(type: SyncingHeaderView.self)
-//        headerView.delegate = self
-//        syncingHeaderView = headerView
-//        return headerView
-//    }
-//
-//    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        tableView.deselectRow(at: indexPath, animated: true)
-//
-//        guard let currentDataSource,
-//              !currentDataSource.isEmpty else { return }
-//
-//        let type = currentDataSource.itemType(by: indexPath)
-//
-//        if type == .crowdnode {
-//            delegate?.homeView(self, showCrowdNodeTxs: currentDataSource.crowdnodeTxs())
-//            return
-//        }
-//
-//        if let transaction = currentDataSource.transactionForIndexPath(indexPath) {
-//            delegate?.homeView(self, didSelectTransaction: transaction)
-//        } else { // registration status cell
-//            delegate?.homeViewShowDashPayRegistrationFlow(self)
-//        }
-//    }
-//
-//    // MARK: - UIScrollViewDelegate
-//
-//    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-//        headerView.parentScrollViewDidScroll(scrollView)
-//    }
-//}

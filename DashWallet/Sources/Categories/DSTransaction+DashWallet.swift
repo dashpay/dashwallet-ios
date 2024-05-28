@@ -129,7 +129,7 @@ extension DSTransaction {
 @objc
 extension DSTransaction {
     var formattedShortTxDate: String {
-        DWDateFormatter.sharedInstance.shortString(from: date)
+        DWDateFormatter.sharedInstance.dateOnly(from: date)
     }
 
     var formattedLongTxDate: String {
@@ -138,6 +138,10 @@ extension DSTransaction {
 
     var formattedISO8601TxDate: String {
         DWDateFormatter.sharedInstance.iso8601String(from: date)
+    }
+    
+    var formattedShortTxTime: String {
+        DWDateFormatter.sharedInstance.timeOnly(from: date)
     }
 
     var formattedDashAmountWithDirectionalSymbol: String {
