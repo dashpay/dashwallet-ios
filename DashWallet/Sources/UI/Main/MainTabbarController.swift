@@ -160,7 +160,7 @@ extension MainTabbarController {
 
         let homeVC = HomeViewController()
         homeVC.delegate = self
-        homeVC.model = homeModel as? DWHomeModel
+        homeVC.model = homeModel
         homeController = homeVC
 
         var nvc = BaseNavigationController(rootViewController: homeVC)
