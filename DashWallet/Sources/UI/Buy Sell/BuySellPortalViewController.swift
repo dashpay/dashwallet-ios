@@ -18,6 +18,8 @@
 import AuthenticationServices
 import SwiftUI
 import UIKit
+import CoreLocation
+import Combine
 
 // MARK: - BuySellPortalViewController
 
@@ -34,6 +36,7 @@ final class BuySellPortalViewController: UIViewController {
     private var model = BuySellPortalModel()
     private var hasNetwork: Bool { model.networkStatus == .online }
     private let topperViewModel = TopperViewModel.shared
+    private var locationRequested = false
 
     @objc var showCloseButton = false
 
@@ -51,6 +54,28 @@ final class BuySellPortalViewController: UIViewController {
 
     @objc
     func coinbaseAction() {
+        Task {
+            if !DWLocationManager.shared.isAuthorized {
+                requestLocation()
+                return
+            }
+            
+            if DWLocationManager.shared.currentLocation == nil {
+                // Wait for location (see locationManagerDidChangeCurrentLocation)
+                self.locationRequested = true
+                return
+            }
+            
+            if await isGeoblocked() {
+                informGeoblocked()
+                return
+            }
+    
+            navigateToCoinbase()
+        }
+    }
+    
+    func navigateToCoinbase() {
         if Coinbase.shared.isAuthorized {
             let vc = IntegrationViewController.controller(model: CoinbaseEntryPointModel())
             vc.userSignedOutBlock = { [weak self] isNeedToShowSignOutError in
@@ -113,6 +138,14 @@ final class BuySellPortalViewController: UIViewController {
     @objc
     class func controller() -> BuySellPortalViewController {
         vc(BuySellPortalViewController.self, from: sb("BuySellPortal"))
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        DWLocationManager.shared.add(observer: self)
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        DWLocationManager.shared.remove(observer: self)
     }
 }
 
@@ -183,3 +216,103 @@ extension BuySellPortalViewController: UICollectionViewDelegate, UICollectionVie
     }
 }
 
+// MARK: Geoblock
+
+private let geoblockedCountries = [ "GB" ]
+
+extension BuySellPortalViewController: DWLocationObserver {
+    func locationManagerDidChangeCurrentReversedLocation(_ manager: DWLocationManager) { }
+    
+    func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation) {
+        if self.locationRequested {
+            self.locationRequested = false
+            
+            Task {
+                if await isGeoblocked() {
+                    informGeoblocked()
+                } else {
+                    navigateToCoinbase()
+                }
+            }
+        }
+    }
+    
+    func locationManagerDidChangeServiceAvailability(_ manager: DWLocationManager) {
+        let status = DWLocationManager.shared.authorizationStatus
+        
+        if status == .denied && self.locationRequested {
+            informGeoblocked()
+        }
+    }
+    
+    private func requestLocation() {
+        showModalDialog(
+            style: .regular,
+            icon: .system("location.fill"),
+            heading: NSLocalizedString("Location", comment: ""),
+            textBlock1: NSLocalizedString("Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features.", comment: "Geoblock"),
+            positiveButtonText: NSLocalizedString("Continue", comment: ""),
+            positiveButtonAction: { [weak self] in
+                self?.locationRequested = true
+                
+                if DWLocationManager.shared.isPermissionDenied {
+                    let settingsUrl = URL(string: UIApplication.openSettingsURLString)!
+                    
+                    if UIApplication.shared.canOpenURL(settingsUrl) {
+                        UIApplication.shared.open(settingsUrl, options: [:], completionHandler: nil)
+                    }
+                } else {
+                    DWLocationManager.shared.requestAuthorization()
+                }
+            },
+            negativeButtonText: NSLocalizedString("Cancel", comment: ""),
+            buttonsOrientation: .horizontal
+        )
+    }
+    
+    private func informGeoblocked() {
+        let title = NSLocalizedString("Location", comment: "")
+        
+        if DWLocationManager.shared.authorizationStatus == .denied {
+            showModalDialog(
+                style: .regular,
+                icon: .system("location.fill"),
+                heading: title,
+                textBlock1: NSLocalizedString("If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase", comment: "Geoblock"),
+                positiveButtonText: NSLocalizedString("OK", comment: "")
+            )
+        } else {
+            showModalDialog(
+                style: .warning,
+                icon: .system("exclamationmark.triangle.fill"),
+                heading: NSLocalizedString("Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK", comment: "Geoblock"),
+                positiveButtonText: NSLocalizedString("OK", comment: "")
+            )
+        }
+    }
+    
+    private func isGeoblocked() async -> Bool {
+        let locationManager = DWLocationManager.shared
+        
+        if let placemark = locationManager.currentPlacemark {
+            return geoblockedCountries.contains(placemark.isoCountryCode ?? "")
+        } else if locationManager.currentLocation != nil {
+            let placemark = await nextEmittedPlacemark()
+            return geoblockedCountries.contains(placemark.isoCountryCode ?? "")
+        } else {
+            return true
+        }
+    }
+    
+    private func nextEmittedPlacemark() async -> CLPlacemark {
+        return await withCheckedContinuation { continuation in
+            var cancellable: AnyCancellable?
+            cancellable = DWLocationManager.shared.$currentPlacemark
+                .compactMap { $0 }
+                .sink { placemark in
+                    continuation.resume(returning: placemark)
+                    cancellable?.cancel()
+                }
+        }
+    }
+}

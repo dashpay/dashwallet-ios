@@ -97,7 +97,7 @@ class PointOfUseListFiltersViewController: UIViewController {
             switch self {
             case .paymentType: return NSLocalizedString("Payment Type", comment: "Explore Dash/Merchants/Filters")
             case .sortBy: return NSLocalizedString("Sort by", comment: "Explore Dash/Merchants/Filters")
-            case .location: return NSLocalizedString("Location", comment: "Explore Dash/Merchants/Filters")
+            case .location: return NSLocalizedString("Location", comment: "")
             case .radius: return NSLocalizedString("Radius", comment: "Explore Dash/Merchants/Filters")
             case .locationService: return NSLocalizedString("Current Location Settings",
                                                             comment: "Explore Dash/Merchants/Filters")

@@ -17,24 +17,15 @@
 
 import SwiftUI
 
-private struct OverrideForegroundColorKey: EnvironmentKey {
-    static let defaultValue: Color? = nil
-}
-
-extension EnvironmentValues {
-    var overrideForegroundColor: Color? {
-        get { self[OverrideForegroundColorKey.self] }
-        set { self[OverrideForegroundColorKey.self] = newValue }
-    }
-}
-
-extension View {
-    func overrideForegroundColor(_ color: Color?) -> some View {
-        environment(\.overrideForegroundColor, color)
-    }
-}
-
 struct DashButton: View {
+    var text: String? = nil
+    var leadingIcon: IconName? = nil
+    var trailingIcon: IconName? = nil
+    var style: Style = .filled
+    var size: Size = .large
+    var stretch: Bool = true
+    var action: () -> Void
+    
     enum Style {
         case plain
         case outlined
@@ -47,15 +38,9 @@ struct DashButton: View {
         case small
         case extraSmall
     }
-
-    var text: String? = nil
-    var leadingIcon: IconName? = nil
-    var trailingIcon: IconName? = nil
-    var action: () -> Void
-    var style: Style = .filled
-    var size: Size = .large
     
     @Environment(\.overrideForegroundColor) var overridenForegroundColor
+    @Environment(\.overrideBackgroundColor) var overridenBackgroundColor
 
     var body: some View {
         Button(action: {
@@ -64,6 +49,7 @@ struct DashButton: View {
             HStack {
                 if let icon = leadingIcon {
                     Icon(name: icon)
+                        .frame(width: iconSize, height: iconSize)
                         .font(.system(size: iconSize))
                 }
                 
@@ -71,29 +57,40 @@ struct DashButton: View {
                     Text(text)
                         .font(.system(size: fontSize))
                         .fontWeight(.semibold)
+                        .padding(.vertical, 2)
                 }
                 
                 if let icon = trailingIcon {
                     Icon(name: icon)
+                        .frame(width: iconSize, height: iconSize)
                         .font(.system(size: iconSize))
                 }
             }
             .padding(.horizontal, paddingHorizontal)
             .padding(.vertical, paddingVertical)
-            .background(backgroundColor)
             .foregroundColor(overridenForegroundColor ?? foregroundColor)
+            .if(stretch) { view in
+                view.frame(maxWidth: .infinity)
+            }
+            .background(backgroundColor)
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .stroke(borderColor, lineWidth: 2)
             )
             .cornerRadius(cornerRadius)
-        }
+        }.background(GeometryReader { geometry in
+            Color.clear
+                .onAppear {
+                    let size = geometry.size
+                    print("CustomView size: \(size)")
+                }
+        })
     }
 
     private var backgroundColor: Color {
         switch style {
         case .filled:
-            return Color.dashBlue
+            return overridenBackgroundColor ?? Color.dashBlue
         default:
             return Color.clear
         }
@@ -180,5 +177,35 @@ struct DashButton: View {
         case .extraSmall:
             return 6
         }
+    }
+}
+
+private struct OverrideForegroundColorKey: EnvironmentKey {
+    static let defaultValue: Color? = nil
+}
+
+private struct OverrideBackgroundColorKey: EnvironmentKey {
+    static let defaultValue: Color? = nil
+}
+
+extension EnvironmentValues {
+    var overrideForegroundColor: Color? {
+        get { self[OverrideForegroundColorKey.self] }
+        set { self[OverrideForegroundColorKey.self] = newValue }
+    }
+    
+    var overrideBackgroundColor: Color? {
+        get { self[OverrideBackgroundColorKey.self] }
+        set { self[OverrideBackgroundColorKey.self] = newValue }
+    }
+}
+
+extension View {
+    func overrideForegroundColor(_ color: Color?) -> some View {
+        environment(\.overrideForegroundColor, color)
+    }
+    
+    func overrideBackgroundColor(_ color: Color?) -> some View {
+        environment(\.overrideBackgroundColor, color)
     }
 }
