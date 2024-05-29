@@ -239,7 +239,7 @@ extension ExplorePointOfUseListViewController {
         if DWLocationManager.shared.isAuthorized && currentSegment.showReversedLocation {
             DWLocationManager.shared
                 .reverseGeocodeLocation(CLLocation(latitude: mapView.centerCoordinate.latitude,
-                                                   longitude: mapView.centerCoordinate.longitude)) { [weak self] location in
+                                                   longitude: mapView.centerCoordinate.longitude)) { [weak self] (location, _) in
                     if self?.model.showMap ?? false {
                         self?.filterCell?.title = location
                     }
