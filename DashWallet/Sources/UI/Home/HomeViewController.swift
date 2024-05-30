@@ -232,11 +232,11 @@ class HomeViewController: DWBasePayViewController {
 extension HomeViewController: DWRootEditProfileViewControllerDelegate {
     func editProfileViewController(_ controller: DWRootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?) {
         model.dashPayModel.userProfile.updateModel.update(withDisplayName: rawDisplayName, aboutMe: rawAboutMe, avatarURLString: avatarURLString)
-        controller.dismiss(animated: true, completion: nil)
+        controller.navigateBack(animated: true, completion: nil)
     }
 
     func editProfileViewControllerDidCancel(_ controller: DWRootEditProfileViewController) {
-        controller.dismiss(animated: true, completion: nil)
+        controller.navigateBack(animated: true, completion: nil)
     }
 }
 #endif
@@ -256,17 +256,7 @@ extension HomeViewController: HomeViewDelegate {
     func homeView(_ homeView: HomeView, didSelectTransaction transaction: DSTransaction) {
         presentTransactionDetails(transaction)
     }
-
-    func homeView(_ homeView: HomeView, showCrowdNodeTxs transactions: [DSTransaction]) {
-        let model = CNCreateAccountTxDetailsModel(transactions: transactions.map { Transaction(transaction: $0) })
-        let swiftUIView = CrowdNodeGroupedTransactionsScreen(model: model)
-        let hostingController = UIHostingController(rootView: swiftUIView)
-        hostingController.view.backgroundColor = .clear
-        let nvc = BaseNavigationController(rootViewController: hostingController)
-        
-        present(nvc, animated: true, completion: nil)
-    }
-
+    
     func homeViewShowDashPayRegistrationFlow(_ homeView: HomeView) {
         let action = ShortcutAction(type: .createUsername)
         performAction(for: action, sender: homeView)

@@ -225,7 +225,7 @@ struct ToolsMenuContent: View {
         }) {
             if #available(iOS 16.0, *) {
                 ZenLedgerInfoSheet(safariLink: $safariLink)
-                    .presentationDetents([.height(440)])
+                    .presentationDetents([.height(450)])
             } else {
                 ZenLedgerInfoSheet(safariLink: $safariLink)
             }

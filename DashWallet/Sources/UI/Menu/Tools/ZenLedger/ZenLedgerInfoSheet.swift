@@ -28,7 +28,7 @@ struct ZenLedgerInfoSheet: View {
     @Binding var safariLink: String?
     
     var body: some View {
-        BottomSheet {
+        BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
             TextIntro(
                 icon: .custom("zenledger_large"),
                 buttonLabel: NSLocalizedString("Export all transactions", comment: "ZenLedger"),

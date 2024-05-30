@@ -177,7 +177,7 @@ extension PayViewController: EnterAddressViewControllerDelegate {
 // MARK: DWContactsViewControllerPayDelegate
 extension PayViewController: DWContactsViewControllerPayDelegate {
     func contactsViewController(_ controller: DWContactsViewController, payTo item: DWDPBasicUserItem) {
-        dismiss(animated: true) { [weak self] in
+        navigateBack(animated: true) { [weak self] in
             self?.performPayToUser(userItem: item)
         }
     }

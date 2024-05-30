@@ -24,6 +24,7 @@ class DWDateFormatter: NSObject {
     private let longDateFormatter: DateFormatter
     private let iso8601DateFormatter: DateFormatter
     private let timeOnlyFormatter: DateFormatter
+    private let dayOfWeekFormatter: DateFormatter
 
     private override init() {
         let locale = Locale.current
@@ -44,10 +45,24 @@ class DWDateFormatter: NSObject {
         timeOnlyFormatter.timeStyle = .short
         timeOnlyFormatter.dateStyle = .none
         timeOnlyFormatter.locale = Locale.current
+        
+        dayOfWeekFormatter = DateFormatter()
+        dayOfWeekFormatter.dateFormat = "EEEE"
     }
 
-    func dateOnly(from date: Date) -> String {
+    func dateOnly(from date: Date, useRelative: Bool = true) -> String {
         let calendar = Calendar.current
+        
+        if useRelative {
+            if calendar.isDateInToday(date) {
+                return NSLocalizedString("Today", comment: "")
+            }
+            
+            if calendar.isDateInYesterday(date) {
+                return NSLocalizedString("Yesterday", comment: "")
+            }
+        }
+        
         let nowYear = calendar.component(.year, from: Date())
         let dateYear = calendar.component(.year, from: date)
 
@@ -65,6 +80,10 @@ class DWDateFormatter: NSObject {
     
     func timeOnly(from dateTime: Date) -> String {
         return timeOnlyFormatter.string(from: dateTime)
+    }
+    
+    func dayOfWeek(from date: Date) -> String {
+        return dayOfWeekFormatter.string(from: date).capitalized
     }
 }
 

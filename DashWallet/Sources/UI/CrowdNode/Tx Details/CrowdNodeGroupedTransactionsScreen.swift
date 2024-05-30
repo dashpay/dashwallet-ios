@@ -18,12 +18,14 @@
 import SwiftUI
 
 struct CrowdNodeGroupedTransactionsScreen: View {
-    let model: CNCreateAccountTxDetailsModel!
+    @State private var currentTag: String?
     
-    @State var currentTag: String?
+    let model: CNCreateAccountTxDetailsModel!
+    @Binding var backNavigationRequested: Bool
+    var onShowBackButton: (Bool) -> Void
     
     var body: some View {
-        List {
+        LazyVStack {
             Section() {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(model.title)
@@ -59,26 +61,64 @@ struct CrowdNodeGroupedTransactionsScreen: View {
             }
             .listRowBackground(Color.clear)
             .listSectionSeparator(.hidden)
+            
+//            ForEach(viewModel.txItems.keys.sorted(by: { key1, key2 in
+//                key1.date > key2.date
+//            }), id: \.self) { key in
+//                Section(header: SectionHeader(key)
+//                    .padding(.bottom, -24)
+//                ) {
+//                    VStack(spacing: 0) {
+//                        ForEach(viewModel.txItems[key]!, id: \.id) { txItem in
+//                            TransactionPreviewFrom(txItem: txItem)
+//                                .padding(.horizontal, 5)
+//                        }
+//                    }
+//                    .padding(.bottom, 4)
+//                    .background(Color.secondaryBackground)
+//                    .clipShape(RoundedShape(corners: [.bottomLeft, .bottomRight], radii: 10))
+//                    .padding(15)
+//                    .shadow(color: .shadow, radius: 10, x: 0, y: 5)
+//                }
 
             Section() {
-                ForEach(model.transactions, id: \.self) { tx in
-                    ZStack {
-                        NavigationLink(destination: TXDetailVCWrapper(tx: tx), tag: tx.txHashHexString, selection: self.$currentTag) {
-                            SwiftUI.EmptyView()
-                        }
-                        .opacity(0)
-                        
-                        TransactionPreview(
-                            title: tx.stateTitle,
-                            subtitle: tx.shortDateString,
-                            icon: .custom(tx.direction.iconName),
-                            dashAmount: tx.formattedDashAmountWithDirectionalSymbol,
-                            fiatAmount: tx.fiatAmount
-                        ) {
-                            self.currentTag = tx.txHashHexString
-                        }
-                    }
-                }
+                                    VStack(spacing: 0) {
+                                        ForEach(model.transactions, id: \.self) { txItem in
+                                            ZStack {
+                                                NavigationLink(
+                                                    destination: TXDetailVCWrapper(
+                                                                    tx: txItem,
+                                                                    navigateBack: $backNavigationRequested,
+                                                                    onDismissed: {
+                                                                        onShowBackButton(false)
+                                                                    }
+                                                                 ).navigationBarHidden(true),
+                                                    tag: txItem.txHashHexString,
+                                                    selection: self.$currentTag
+                                                ) {
+                                                    SwiftUI.EmptyView()
+                                                }
+                                                .opacity(0)
+                                                
+                                                TransactionPreview(
+                                                    title: txItem.stateTitle,
+                                                    subtitle: txItem.shortDateString,
+                                                    icon: .custom(txItem.direction.iconName),
+                                                    dashAmount: txItem.direction == .sent ? -Int64(txItem.dashAmount) : Int64(txItem.dashAmount)
+                                                ) {
+                                                    self.currentTag = txItem.txHashHexString
+                                                    onShowBackButton(true)
+                                                }
+                                            }
+                                        }
+                                    }
+                                    .padding(.bottom, 4)
+                                    .background(Color.secondaryBackground)
+                                    .clipShape(RoundedShape(corners: [.bottomLeft, .bottomRight], radii: 10))
+                                    .padding(15)
+                                    .shadow(color: .shadow, radius: 10, x: 0, y: 5)
+                
+                
             }
 //            .frame(maxWidth: .infinity)
 //            .background(Color.secondaryBackground)
@@ -90,17 +130,3 @@ struct CrowdNodeGroupedTransactionsScreen: View {
     }
 }
 
-struct TXDetailVCWrapper: UIViewControllerRepresentable {
-    let tx: Transaction
-    
-    init(tx: Transaction) {
-        self.tx = tx
-    }
-    
-    func makeUIViewController(context: Context) -> some UIViewController {
-        let vc = TXDetailViewController(model: .init(transaction: tx))
-        return vc
-    }
-
-    func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) { }
-}

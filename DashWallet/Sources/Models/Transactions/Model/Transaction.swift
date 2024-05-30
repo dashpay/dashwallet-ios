@@ -60,8 +60,16 @@ class Transaction: TransactionDataItem, Identifiable {
 
     var specialInfoAddresses: [String: Int]?
 
-    var dashAmount: UInt64 { _dashAmount }
     private lazy var _dashAmount: UInt64 = tx.dashAmount
+    
+    var dashAmount: UInt64 { _dashAmount }
+    var signedDashAmount: Int64 {
+        if tx.dashAmount == UInt64.max {
+            return Int64.max
+        }
+        
+        return tx.direction == .sent ? -Int64(tx.dashAmount) : Int64(tx.dashAmount)
+    }
 
     var fiatAmount: String {
         storedFiatAmount

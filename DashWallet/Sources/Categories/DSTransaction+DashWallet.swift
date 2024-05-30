@@ -41,7 +41,7 @@ extension DSTransaction {
 
         switch direction {
         case .moved:
-            amount = account!.amountReceivedFromTransaction(onExternalAddresses: self)
+            amount = 0
         case .sent:
             let amountSent = chain.amountSent(by: self)
             let amountReceived = chain.amountReceived(from: self)

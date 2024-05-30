@@ -23,35 +23,51 @@ struct MenuItem: View {
     var title: String
     var subtitle: String? = nil
     var details: String? = nil
+    var topText: String? = nil
     var icon: IconName? = nil
     var secondaryIcon: IconName? = nil
     var showInfo: Bool = false
     var showChevron: Bool = false
-    var dashAmount: String? = nil
-    var fiatAmount: String? = nil
+    var dashAmount: Int64? = nil
     var isToggled: Binding<Bool>? = nil
     var action: (() -> Void)? = nil
     
     var body: some View {
         HStack(spacing: 4) {
             if let icon = icon {
-                ZStack {
+                ZStack(alignment: .leading) {
                     Icon(name: icon)
-                        .frame(width: 26, height: 26)
-                        .alignmentGuide(.leading) { _ in 0 }
-                        .alignmentGuide(.top) { d in d[.top] }
+                        .frame(width: 28, height: 28)
+                        .padding(0)
                     
                     if let secondaryIcon = secondaryIcon {
-                        Icon(name: secondaryIcon)
-                            .frame(width: 15, height: 15)
-                            .alignmentGuide(.trailing) { _ in 0 }
-                            .alignmentGuide(.bottom) { _ in 0 }
+                        VStack {
+                            Spacer()
+                            HStack {
+                                Spacer()
+                                Icon(name: secondaryIcon)
+                                    .padding(2)
+                                    .frame(width: 18, height: 18)
+                                    .background(Color.secondaryBackground)
+                                    .clipShape(.circle)
+                                    .offset(x: 2, y: 2)
+                            }
+                        }
                     }
                 }
-                .frame(width: 42, height: 42)
+                .frame(width: 36, height: 36)
             }
             
             VStack(alignment: .leading, spacing: 0) {
+                if let topText = topText {
+                    Text(topText)
+                        .font(.caption)
+                        .lineSpacing(3)
+                        .foregroundColor(.tertiaryText)
+                        .padding(.leading, 4)
+                        .padding(.bottom, 2)
+                }
+                
                 HStack(spacing: 6) {
                     Text(title)
                         .font(.subheadline)
@@ -63,27 +79,27 @@ struct MenuItem: View {
                         Image(systemName: "info.circle.fill")
                             .foregroundColor(.gray300)
                             .imageScale(.small)
+                    }
                 }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 4)
                 
-            if let subtitle = subtitle {
-                Text(subtitle)
-                    .font(.caption)
-                    .lineSpacing(3)
-                    .foregroundColor(.tertiaryText)
-                    .padding(.leading, 2)
-                    .padding(.top, 2)
-            }
+                if let subtitle = subtitle {
+                    Text(subtitle)
+                        .font(.caption)
+                        .lineSpacing(3)
+                        .foregroundColor(.tertiaryText)
+                        .padding(.leading, 4)
+                        .padding(.top, 2)
+                }
                     
-            if let details = details {
-                Text(details)
-                    .font(.caption)
-                    .lineSpacing(3)
-                    .foregroundColor(.tertiaryText)
-                    .padding(.leading, 8)
-                    .padding(.top, 2)
+                if let details = details {
+                    Text(details)
+                        .font(.caption)
+                        .lineSpacing(3)
+                        .foregroundColor(.tertiaryText)
+                        .padding(.leading, 4)
+                        .padding(.top, 2)
                 }
             }
             .frame(maxWidth: .infinity)
@@ -99,27 +115,96 @@ struct MenuItem: View {
                     .foregroundColor(Color.gray)
                     .padding(.trailing, 10)
             } else {
-                VStack {
+                VStack(alignment: .trailing) {
                     if let dashAmount = dashAmount {
-                        Text(dashAmount)
-                            .font(.footnote)
-                            .fontWeight(.medium)
-                            .foregroundColor(.primaryText)
-                    }
-                    
-                    if let fiatAmount = fiatAmount {
-                        Text(fiatAmount)
-                            .font(.caption)
-                            .foregroundColor(.secondaryText)
+                        FormattedDashText(from: dashAmount)
+                        
+                        if dashAmount != 0 {
+                            FormattedFiatText(from: dashAmount)
+                        }
                     }
                 }
             }
         }
+        .contentShape(Rectangle())
         .padding(10)
         .frame(maxWidth: .infinity, minHeight: 66)
         .onTapGesture {
             action?()
         }
+    }
+    
+    @ViewBuilder
+    private func FormattedDashText(from dashAmount: Int64) -> some View {
+        if dashAmount == Int64.max || dashAmount == Int64.min {
+            Text(NSLocalizedString("Not available", comment: ""))
+                .font(.footnote)
+                .fontWeight(.medium)
+                .foregroundColor(.primaryText)
+        } else {
+            let formattedAbsAmount = abs(dashAmount).formattedDashAmount
+            let dashSymbolLast = formattedAbsAmount.first!.isNumber
+            let directionSymbol = directionSymbol(of: dashAmount)
+            let cleanedAbsAmount = cleanAmount(formattedAbsAmount)
+            
+            HStack(spacing: 0) {
+                Text(directionSymbol)
+                    .fontWeight(.medium)
+                
+                if !dashSymbolLast {
+                    DashSymbol()
+                        .padding(.leading, 2)
+                }
+                
+                Text(cleanedAbsAmount)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+                    .padding(.leading, 2)
+                
+                if dashSymbolLast {
+                    DashSymbol()
+                }
+            }
+            .font(.footnote)
+            .foregroundColor(.primaryText)
+        }
+    }
+    
+    @ViewBuilder
+    private func FormattedFiatText(from dashAmount: Int64) -> some View {
+        let text = (try? CurrencyExchanger.shared.convertDash(amount: abs(dashAmount.dashAmount), to: App.fiatCurrency).formattedFiatAmount) ?? NSLocalizedString("Not available", comment: "")
+        
+        Text(text)
+            .font(.caption)
+            .foregroundColor(.secondaryText)
+    }
+    
+    @ViewBuilder
+    private func DashSymbol() -> some View {
+        Image("icon_dash_currency")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: UIFont.preferredFont(forTextStyle: .footnote).pointSize, height: UIFont.preferredFont(forTextStyle: .footnote).pointSize)
+    }
+    
+    private func directionSymbol(of dashAmount: Int64) -> String {
+        if dashAmount > 0 {
+            return "+"
+        } else if dashAmount < 0 {
+            return "-"
+        } else {
+            return ""
+        }
+    }
+    
+    private func cleanAmount(_ amount: String) -> String {
+        var result = amount
+        
+        if let dashSymbolRange = result.range(of: DASH) {
+            result.removeSubrange(dashSymbolRange)
+        }
+        
+        return result
     }
 }
 

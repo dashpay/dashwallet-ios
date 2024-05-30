@@ -24,7 +24,16 @@ enum TransactionListDataItem {
     case crowdnode([Transaction])
 }
 
-extension TransactionListDataItem {
+extension TransactionListDataItem: Identifiable {
+    var tx: Transaction {
+        switch self {
+        case .crowdnode(let txs):
+            return txs.first!
+        case .tx(let tx):
+            return tx
+        }
+    }
+    
     var id: String {
         switch self {
         case .crowdnode(let txs):
@@ -44,6 +53,19 @@ extension TransactionListDataItem {
     }
 }
 
+struct DateKey: Hashable {
+    let key: String
+    let date: Date
+    
+    static func == (lhs: DateKey, rhs: DateKey) -> Bool {
+        return lhs.key == rhs.key
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(key)
+    }
+}
+
 // MARK: - TransactionListDataSource
 
 @objc(DWTransactionListDataSource)
@@ -51,7 +73,7 @@ final class TransactionListDataSource: NSObject, ObservableObject {
     @objc
     var items: [DSTransaction]
     
-    var _items: [String: [TransactionListDataItem]] = [:]
+    var _items: [DateKey: [TransactionListDataItem]] = [:]
     
     var registrationStatus: DWDPRegistrationStatus?
     
@@ -89,7 +111,10 @@ final class TransactionListDataSource: NSObject, ObservableObject {
             items.sort(by: { $0.date > $1.date })
         }
 
-        _items = Dictionary(grouping: items.sorted(by: { $0.date > $1.date }), by: { DWDateFormatter.sharedInstance.dateOnly(from: $0.date) })
+        _items = Dictionary(
+            grouping: items.sorted(by: { $0.date > $1.date }),
+            by: { DateKey(key: DWDateFormatter.sharedInstance.dateOnly(from: $0.date), date: $0.date) }
+        )
         
         self.crowdNodeTxSet = crowdNodeTxSet
         self.registrationStatus = registrationStatus
