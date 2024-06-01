@@ -542,9 +542,6 @@
 /* Coinbase/Payment Methods */
 "Credit Card" = "Кредитна картка";
 
-/* Crowdnode */
-"CrowdNode Account" = "Акаунт CrowdNode";
-
 /* CrowdNode */
 "CrowdNode benefits" = "Переваги CrowdNode";
 

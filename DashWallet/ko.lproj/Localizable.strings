@@ -542,9 +542,6 @@
 /* Coinbase/Payment Methods */
 "Credit Card" = "신용카드";
 
-/* Crowdnode */
-"CrowdNode Account" = "크라우드노드 계정";
-
 /* CrowdNode */
 "CrowdNode benefits" = "크라우드노드의 이점";
 

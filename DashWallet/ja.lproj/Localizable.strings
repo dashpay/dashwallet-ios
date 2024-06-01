@@ -542,9 +542,6 @@
 /* Coinbase/Payment Methods */
 "Credit Card" = "クレジットカード";
 
-/* Crowdnode */
-"CrowdNode Account" = "CrowdNodeアカウント";
-
 /* CrowdNode */
 "CrowdNode benefits" = "CrowdNodeの特典";
 

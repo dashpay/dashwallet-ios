@@ -542,9 +542,6 @@
 /* Coinbase/Payment Methods */
 "Credit Card" = "信用卡";
 
-/* Crowdnode */
-"CrowdNode Account" = "CrowdNode 帳戶";
-
 /* CrowdNode */
 "CrowdNode benefits" = "CrowdNode 的好處";
 

@@ -542,9 +542,6 @@
 /* Coinbase/Payment Methods */
 "Credit Card" = "Πιστωτική Κάρτα";
 
-/* Crowdnode */
-"CrowdNode Account" = "Λογαριασμός CrowdNode";
-
 /* CrowdNode */
 "CrowdNode benefits" = "Πλεονεκτήματα του CrowdNode";
 

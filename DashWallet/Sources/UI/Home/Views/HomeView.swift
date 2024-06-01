@@ -128,7 +128,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         currentDataSource = dataSource
         dataSource.retryDelegate = self
         
-        self.viewModel.updateItems(items: dataSource.groupedItems)
+        self.viewModel.updateItems(transactions: dataSource.items)
 
         headerView.reloadBalance()
         reloadShortcuts()
@@ -301,14 +301,12 @@ struct TransactionList<Content: View>: View {
                             .foregroundStyle(Color.primaryText.opacity(0.5))
                             .padding(.top, 20)
                     } else {
-                        ForEach(viewModel.txItems.keys.sorted(by: { key1, key2 in
-                            key1.date > key2.date
-                        }), id: \.self) { key in
+                        ForEach(viewModel.txItems, id: \.0.key) { key, value in
                             Section(header: SectionHeader(key)
                                 .padding(.bottom, -24)
                             ) {
                                 VStack(spacing: 0) {
-                                    ForEach(viewModel.txItems[key]!, id: \.id) { txItem in
+                                    ForEach(value, id: \.id) { txItem in
                                         TransactionPreviewFrom(txItem: txItem)
                                             .padding(.horizontal, 5)
                                     }
@@ -364,7 +362,7 @@ struct TransactionList<Content: View>: View {
         switch txDataItem {
         case .crowdnode(let txItems):
             TransactionPreview(
-                title: NSLocalizedString("CrowdNode Account", comment: "Crowdnode"),
+                title: NSLocalizedString("CrowdNode · Account", comment: "Crowdnode"),
                 subtitle: txItems.last?.tx.formattedShortTxTime ?? "",
                 topText: String(format: NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), txItems.count),
                 icon: .custom("tx.item.cn.icon"),
