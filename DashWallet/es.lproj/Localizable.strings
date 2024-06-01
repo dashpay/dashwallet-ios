@@ -557,6 +557,9 @@
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "Límites de retiro de CrowdNode";
 
+/* No comment provided by engineer. */
+"CrowdNode · Account" = "CrowdNode · Account";
+
 /* CrowdNode Portal */
 "CrowdNode ➝ DashWallet" = "CrowdNode ➝ Billetera de Dash";
 

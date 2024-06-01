@@ -23,21 +23,12 @@ import SwiftUI
 protocol HomeViewDelegate: AnyObject {
     func homeView(_ homeView: HomeView, showTxFilter sender: UIView)
     func homeView(_ homeView: HomeView, showSyncingStatus sender: UIView)
-    func homeView(_ homeView: HomeView, didSelectTransaction transaction: DSTransaction)
     func homeViewShowDashPayRegistrationFlow(_ homeView: HomeView)
     func homeView(_ homeView: HomeView, showReclassifyYourTransactionsFlowWithTransaction transaction: DSTransaction)
     
 #if DASHPAY
     func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt)
 #endif
-}
-
-class HomeViewModel: ObservableObject {
-    @Published var txItems: [DateKey: [TransactionListDataItem]] = [:]
-    
-    func updateItems(items: [DateKey: [TransactionListDataItem]]) {
-        self.txItems = items
-    }
 }
 
 // MARK: - HomeView
@@ -137,14 +128,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         currentDataSource = dataSource
         dataSource.retryDelegate = self
         
-        self.viewModel.updateItems(items: dataSource._items)
-
-//        if dataSource.isEmpty {
-//            tableView.dataSource = self
-//        } else {
-//            tableView.dataSource = dataSource
-//        }
-//        tableView.reloadData()
+        self.viewModel.updateItems(items: dataSource.groupedItems)
 
         headerView.reloadBalance()
         reloadShortcuts()

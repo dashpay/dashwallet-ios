@@ -557,6 +557,9 @@
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "CrowdNode 提款限额";
 
+/* No comment provided by engineer. */
+"CrowdNode · Account" = "CrowdNode · Account";
+
 /* CrowdNode Portal */
 "CrowdNode ➝ DashWallet" = "CrowdNode ➝ Dash钱包";
 

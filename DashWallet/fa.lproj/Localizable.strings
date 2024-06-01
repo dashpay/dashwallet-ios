@@ -557,6 +557,9 @@
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "سقف برداشت کراودنود";
 
+/* No comment provided by engineer. */
+"CrowdNode · Account" = "CrowdNode · Account";
+
 /* CrowdNode Portal */
 "CrowdNode ➝ DashWallet" = "دش‌والت ➝ کراودنود";
 

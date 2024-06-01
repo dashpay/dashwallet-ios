@@ -557,6 +557,9 @@
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "Лимит CrowdNode на вывод";
 
+/* No comment provided by engineer. */
+"CrowdNode · Account" = "CrowdNode · Account";
+
 /* CrowdNode Portal */
 "CrowdNode ➝ DashWallet" = "CrowdNode ➝ DashWallet";
 

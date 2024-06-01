@@ -73,7 +73,7 @@ final class TransactionListDataSource: NSObject, ObservableObject {
     @objc
     var items: [DSTransaction]
     
-    var _items: [DateKey: [TransactionListDataItem]] = [:]
+    var groupedItems: [DateKey: [TransactionListDataItem]] = [:]
     
     var registrationStatus: DWDPRegistrationStatus?
     
@@ -82,7 +82,7 @@ final class TransactionListDataSource: NSObject, ObservableObject {
     
     @objc
     var isEmpty: Bool {
-        _items.isEmpty
+        groupedItems.isEmpty
     }
     
     var showsRegistrationStatus: Bool {
@@ -111,7 +111,7 @@ final class TransactionListDataSource: NSObject, ObservableObject {
             items.sort(by: { $0.date > $1.date })
         }
 
-        _items = Dictionary(
+        groupedItems = Dictionary(
             grouping: items.sorted(by: { $0.date > $1.date }),
             by: { DateKey(key: DWDateFormatter.sharedInstance.dateOnly(from: $0.date), date: $0.date) }
         )

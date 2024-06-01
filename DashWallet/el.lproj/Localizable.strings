@@ -557,6 +557,9 @@
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "Όρια ανάληψης στην CrowdNode";
 
+/* No comment provided by engineer. */
+"CrowdNode · Account" = "CrowdNode · Account";
+
 /* CrowdNode Portal */
 "CrowdNode ➝ DashWallet" = "CrowdNode ➝ DashWallet";
 

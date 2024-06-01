@@ -25,108 +25,98 @@ struct CrowdNodeGroupedTransactionsScreen: View {
     var onShowBackButton: (Bool) -> Void
     
     var body: some View {
-        LazyVStack {
-            Section() {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(model.title)
-                        .font(.subheadline)
-//                            .fontWeight(.medium)
-                    
-                    Text(model.dashAmountString)
-                        .font(.largeTitle)
-//                            .fontWeight(.medium)
-                    
-                    Text(model.fiatAmount)
-                        .font(.caption)
-                        .foregroundColor(.tertiaryText)
-                }
-            }
-            .listRowBackground(Color.clear)
-            .listSectionSeparator(.hidden)
-                
-            Section() {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(NSLocalizedString("Why do I see all these transactions?", comment: "Crowdnode"))
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
+        ScrollView {
+            LazyVStack(spacing: 0) {
+                Section {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(model.title)
+                                .font(.subheadline)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            DashAmount(amount: model.netAmount, font: .largeTitle, dashSymbolFactor: 0.7)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Text(model.fiatAmount)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .font(.caption)
+                                .foregroundColor(.tertiaryText)
+                        }
+                        .frame(maxWidth: .infinity)
                         
-                    Text(NSLocalizedString("Your CrowdNode account was created using these transactions. ", comment: "Crowdnode"))
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
+                        Spacer()
+                        
+                        Icon(name: .custom(model.iconName))
+                            .padding(10)
+                            .frame(width: 50, height: 50)
+                            .background(Color.secondaryBackground)
+                            .clipShape(.circle)
+                    }
+                    .padding(.horizontal, 25)
+                    .padding(.bottom, 5)
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.secondaryBackground)
-                .cornerRadius(10)
-            }
-            .listRowBackground(Color.clear)
-            .listSectionSeparator(.hidden)
-            
-//            ForEach(viewModel.txItems.keys.sorted(by: { key1, key2 in
-//                key1.date > key2.date
-//            }), id: \.self) { key in
-//                Section(header: SectionHeader(key)
-//                    .padding(.bottom, -24)
-//                ) {
-//                    VStack(spacing: 0) {
-//                        ForEach(viewModel.txItems[key]!, id: \.id) { txItem in
-//                            TransactionPreviewFrom(txItem: txItem)
-//                                .padding(.horizontal, 5)
-//                        }
-//                    }
-//                    .padding(.bottom, 4)
-//                    .background(Color.secondaryBackground)
-//                    .clipShape(RoundedShape(corners: [.bottomLeft, .bottomRight], radii: 10))
-//                    .padding(15)
-//                    .shadow(color: .shadow, radius: 10, x: 0, y: 5)
-//                }
-
-            Section() {
-                                    VStack(spacing: 0) {
-                                        ForEach(model.transactions, id: \.self) { txItem in
-                                            ZStack {
-                                                NavigationLink(
-                                                    destination: TXDetailVCWrapper(
-                                                                    tx: txItem,
-                                                                    navigateBack: $backNavigationRequested,
-                                                                    onDismissed: {
-                                                                        onShowBackButton(false)
-                                                                    }
-                                                                 ).navigationBarHidden(true),
-                                                    tag: txItem.txHashHexString,
-                                                    selection: self.$currentTag
-                                                ) {
-                                                    SwiftUI.EmptyView()
-                                                }
-                                                .opacity(0)
-                                                
-                                                TransactionPreview(
-                                                    title: txItem.stateTitle,
-                                                    subtitle: txItem.shortDateString,
-                                                    icon: .custom(txItem.direction.iconName),
-                                                    dashAmount: txItem.direction == .sent ? -Int64(txItem.dashAmount) : Int64(txItem.dashAmount)
-                                                ) {
-                                                    self.currentTag = txItem.txHashHexString
-                                                    onShowBackButton(true)
-                                                }
-                                            }
-                                        }
-                                    }
-                                    .padding(.bottom, 4)
-                                    .background(Color.secondaryBackground)
-                                    .clipShape(RoundedShape(corners: [.bottomLeft, .bottomRight], radii: 10))
-                                    .padding(15)
-                                    .shadow(color: .shadow, radius: 10, x: 0, y: 5)
+                    
+                Section {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(NSLocalizedString("Why do I see all these transactions?", comment: "Crowdnode"))
+                            .font(.footnote)
+                            .fontWeight(.medium)
+                            .foregroundStyle(Color.tertiaryText)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                        Text(NSLocalizedString("Your CrowdNode account was created using these transactions. ", comment: "Crowdnode"))
+                            .font(.subheadline)
+                            .foregroundColor(Color.primaryText)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(15)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.secondaryBackground)
+                    .cornerRadius(10)
+                    .padding()
+                }
                 
-                
+    
+                Section {
+                    VStack(spacing: 0) {
+                        ForEach(model.transactions, id: \.self) { txItem in
+                            ZStack {
+                                NavigationLink(
+                                    destination: TXDetailVCWrapper(
+                                                    tx: txItem,
+                                                    navigateBack: $backNavigationRequested,
+                                                    onDismissed: {
+                                                        onShowBackButton(false)
+                                                    }
+                                                 ).navigationBarHidden(true),
+                                    tag: txItem.txHashHexString,
+                                    selection: self.$currentTag
+                                ) {
+                                    SwiftUI.EmptyView()
+                                }.opacity(0)
+                                                    
+                                TransactionPreview(
+                                    title: txItem.stateTitle,
+                                    subtitle: txItem.shortDateString,
+                                    icon: .custom(txItem.direction.iconName),
+                                    dashAmount: txItem.direction == .sent ? -Int64(txItem.dashAmount) : Int64(txItem.dashAmount)
+                                ) {
+                                    self.currentTag = txItem.txHashHexString
+                                    onShowBackButton(true)
+                                }
+                            }
+                        }
+                    }
+                    .padding(5)
+                    .background(Color.secondaryBackground)
+                    .cornerRadius(10)
+                    .padding(.horizontal, 15)
+                    .shadow(color: .shadow, radius: 10, x: 0, y: 5)
+                }
             }
-//            .frame(maxWidth: .infinity)
-//            .background(Color.secondaryBackground)
-//            .cornerRadius(10)
-            .listRowBackground(Color.clear)
-            .listSectionSeparator(.hidden)
         }
-        .listStyle(.plain)
+        .frame(maxHeight: .infinity)
+        .background(Color.primaryBackground)
     }
 }
 

@@ -17,15 +17,9 @@
 
 import Foundation
 
-final class CNCreateAccountTxDetailsModel: TxDetailHeaderCellDataProvider {
-    var title: String { NSLocalizedString("CrowdNode Account", comment: "") }
-    var icon: UIImage { UIImage(named: "tx.item.cn.icon")! }
-    var tintColor: UIColor { .dw_label() }
-
-    var dashAmountString: String {
-        let sign: String = netAmount < 0 ? "-" : "+"
-        return sign + dashAmount.formattedDashAmount
-    }
+final class CNCreateAccountTxDetailsModel {
+    var title: String { NSLocalizedString("CrowdNode · Account", comment: "") }
+    var iconName = "tx.item.cn.icon"
     
     var fiatAmount: String {
         (try? CurrencyExchanger.shared.convertDash(amount: dashAmount.dashAmount, to: App.fiatCurrency).formattedFiatAmount) ??
@@ -33,13 +27,12 @@ final class CNCreateAccountTxDetailsModel: TxDetailHeaderCellDataProvider {
     }
 
     func dashAmountString(with font: UIFont) -> NSAttributedString {
-        return dashAmountString.attributedAmountStringWithDashSymbol(tintColor: .dw_label(), font: .dw_font(forTextStyle: .largeTitle))
+        return NSAttributedString("")
     }
 
     var transactions: [Transaction]
-
-    private var dashAmount: UInt64
-    private var netAmount: Int64
+    private(set) var dashAmount: UInt64
+    private(set) var netAmount: Int64
 
     init(transactions: [Transaction]) {
         self.transactions = transactions

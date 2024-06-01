@@ -117,7 +117,7 @@ struct MenuItem: View {
             } else {
                 VStack(alignment: .trailing) {
                     if let dashAmount = dashAmount {
-                        FormattedDashText(from: dashAmount)
+                        DashAmount(amount: dashAmount)
                         
                         if dashAmount != 0 {
                             FormattedFiatText(from: dashAmount)
@@ -135,76 +135,12 @@ struct MenuItem: View {
     }
     
     @ViewBuilder
-    private func FormattedDashText(from dashAmount: Int64) -> some View {
-        if dashAmount == Int64.max || dashAmount == Int64.min {
-            Text(NSLocalizedString("Not available", comment: ""))
-                .font(.footnote)
-                .fontWeight(.medium)
-                .foregroundColor(.primaryText)
-        } else {
-            let formattedAbsAmount = abs(dashAmount).formattedDashAmount
-            let dashSymbolLast = formattedAbsAmount.first!.isNumber
-            let directionSymbol = directionSymbol(of: dashAmount)
-            let cleanedAbsAmount = cleanAmount(formattedAbsAmount)
-            
-            HStack(spacing: 0) {
-                Text(directionSymbol)
-                    .fontWeight(.medium)
-                
-                if !dashSymbolLast {
-                    DashSymbol()
-                        .padding(.leading, 2)
-                }
-                
-                Text(cleanedAbsAmount)
-                    .fontWeight(.medium)
-                    .lineLimit(1)
-                    .padding(.leading, 2)
-                
-                if dashSymbolLast {
-                    DashSymbol()
-                }
-            }
-            .font(.footnote)
-            .foregroundColor(.primaryText)
-        }
-    }
-    
-    @ViewBuilder
     private func FormattedFiatText(from dashAmount: Int64) -> some View {
         let text = (try? CurrencyExchanger.shared.convertDash(amount: abs(dashAmount.dashAmount), to: App.fiatCurrency).formattedFiatAmount) ?? NSLocalizedString("Not available", comment: "")
         
         Text(text)
             .font(.caption)
             .foregroundColor(.secondaryText)
-    }
-    
-    @ViewBuilder
-    private func DashSymbol() -> some View {
-        Image("icon_dash_currency")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: UIFont.preferredFont(forTextStyle: .footnote).pointSize, height: UIFont.preferredFont(forTextStyle: .footnote).pointSize)
-    }
-    
-    private func directionSymbol(of dashAmount: Int64) -> String {
-        if dashAmount > 0 {
-            return "+"
-        } else if dashAmount < 0 {
-            return "-"
-        } else {
-            return ""
-        }
-    }
-    
-    private func cleanAmount(_ amount: String) -> String {
-        var result = amount
-        
-        if let dashSymbolRange = result.range(of: DASH) {
-            result.removeSubrange(dashSymbolRange)
-        }
-        
-        return result
     }
 }
 

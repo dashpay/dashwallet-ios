@@ -168,11 +168,8 @@ class TXDetailViewController: BaseTxDetailsViewController {
     override func configureHierarchy() {
         super.configureHierarchy()
 
-//        let item = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeAction))
-//        navigationItem.rightBarButtonItem = item
-        UINavigationBar().isHidden = true
-        navigationController?.navigationBar.isHidden = true
-        navigationController?.isNavigationBarHidden = true
+        let item = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeAction))
+        navigationItem.rightBarButtonItem = item
     }
 
     override func viewDidLoad() {
