@@ -578,8 +578,6 @@
 		757514E22B15DB510026AD8E /* ShadowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757514E12B15DB510026AD8E /* ShadowView.swift */; };
 		757514E32B15DF7C0026AD8E /* ShadowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757514E12B15DB510026AD8E /* ShadowView.swift */; };
 		757514E52B1735370026AD8E /* DPWelcomeMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757514E42B1735370026AD8E /* DPWelcomeMenuView.swift */; };
-		757B937A2BFF3ED4002046A5 /* Temp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757B93792BFF3ED4002046A5 /* Temp.swift */; };
-		757B937B2BFF3ED4002046A5 /* Temp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757B93792BFF3ED4002046A5 /* Temp.swift */; };
 		757B937D2BFF4F93002046A5 /* CrowdNodeGroupedTransactionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757B937C2BFF4F93002046A5 /* CrowdNodeGroupedTransactionsScreen.swift */; };
 		757B937E2BFF4F93002046A5 /* CrowdNodeGroupedTransactionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757B937C2BFF4F93002046A5 /* CrowdNodeGroupedTransactionsScreen.swift */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
@@ -2450,7 +2448,6 @@
 		757514DF2B15D8DE0026AD8E /* VotingConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingConstants.swift; sourceTree = "<group>"; };
 		757514E12B15DB510026AD8E /* ShadowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowView.swift; sourceTree = "<group>"; };
 		757514E42B1735370026AD8E /* DPWelcomeMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DPWelcomeMenuView.swift; sourceTree = "<group>"; };
-		757B93792BFF3ED4002046A5 /* Temp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Temp.swift; sourceTree = "<group>"; };
 		757B937C2BFF4F93002046A5 /* CrowdNodeGroupedTransactionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeGroupedTransactionsScreen.swift; sourceTree = "<group>"; };
 		757E09981ADB8EEB006FD352 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinInfoViewController.swift; sourceTree = "<group>"; };
@@ -6027,7 +6024,6 @@
 				75EBAA112BB99B6B004488E3 /* BottomSheet.swift */,
 				75BDE7AB2BF3287400556791 /* Toast.swift */,
 				759ADD562BF3447400767ACD /* Button.swift */,
-				757B93792BFF3ED4002046A5 /* Temp.swift */,
 				75AA33CB2BF9C82700F12465 /* ModalDialog.swift */,
 				75AA33CE2BF9D44A00F12465 /* ButtonsGroup.swift */,
 				75AA33D12BF9E18E00F12465 /* Color+DWStyle.swift */,
@@ -8798,7 +8794,6 @@
 				75E7CA092C076D8900C77368 /* CNCreateAccountTxDetailsModel.swift in Sources */,
 				2A0C69AC23125074001B8C90 /* UIView+DWHUD.m in Sources */,
 				75EBAA122BB99B6B004488E3 /* BottomSheet.swift in Sources */,
-				757B937A2BFF3ED4002046A5 /* Temp.swift in Sources */,
 				75CED09E2ACFD0ED0095F10C /* CoinbaseDepositRequest.swift in Sources */,
 				C94D98212A4CC78F00F3BEE1 /* DashInputField.swift in Sources */,
 				2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */,
@@ -9673,7 +9668,6 @@
 				C943B5302A40A54600AF23C5 /* DWNotificationsFetchedDataSource.m in Sources */,
 				C9D2C8AA2A320AA000D15901 /* DWPayModel.m in Sources */,
 				C943B54B2A40B52F00AF23C5 /* UIView+DWAutolayout.m in Sources */,
-				757B937B2BFF3ED4002046A5 /* Temp.swift in Sources */,
 				C943B3332A408CED00AF23C5 /* DWTextFieldFormCellModel.m in Sources */,
 				C9D2C8AD2A320AA000D15901 /* PointOfUseDetailsView.swift in Sources */,
 				C9D2C8AE2A320AA000D15901 /* DSChain+DashWallet.m in Sources */,

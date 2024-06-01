@@ -252,10 +252,6 @@ extension HomeViewController: HomeViewDelegate {
         let controller = SyncingAlertViewController()
         present(controller, animated: true, completion: nil)
     }
-
-//    func homeView(_ homeView: HomeView, didSelectTransaction transaction: DSTransaction) {
-//        presentTransactionDetails(transaction)
-//    }
     
     func homeViewShowDashPayRegistrationFlow(_ homeView: HomeView) {
         let action = ShortcutAction(type: .createUsername)

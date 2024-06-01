@@ -292,7 +292,7 @@ extension MainTabbarController {
     #if DASHPAY
     @objc
     public func handleDeeplink(_ url: URL, definedUsername: String?) {
-        navigateBack(animated: false, completion: nil)
+        dismiss(animated: false, completion: nil)
         selectedIndex = MainTabbarTabs.home.rawValue
         homeController?.handleDeeplink(url, definedUsername: definedUsername)
     }
