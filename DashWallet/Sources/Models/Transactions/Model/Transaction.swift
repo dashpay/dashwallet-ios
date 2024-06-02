@@ -64,11 +64,11 @@ class Transaction: TransactionDataItem, Identifiable {
     
     var dashAmount: UInt64 { _dashAmount }
     var signedDashAmount: Int64 {
-        if tx.dashAmount == UInt64.max {
+        if dashAmount == UInt64.max {
             return Int64.max
         }
         
-        return tx.direction == .sent ? -Int64(tx.dashAmount) : Int64(tx.dashAmount)
+        return direction == .sent ? -Int64(dashAmount) : Int64(dashAmount)
     }
 
     var fiatAmount: String {
@@ -128,13 +128,17 @@ class Transaction: TransactionDataItem, Identifiable {
         return .ok
     }()
 
+    private lazy var _shortDateString: String = tx.formattedShortTxDate
     var date: Date
     var shortDateString: String {
         _shortDateString
     }
-
-    private lazy var _shortDateString: String = tx.formattedShortTxDate
-
+    
+    private lazy var _shortTimeString: String = tx.formattedShortTxTime
+    var shortTimeString: String {
+        _shortTimeString
+    }
+    
     var stateTitle: String {
         switch transactionType {
         case .classic:
@@ -165,7 +169,7 @@ class Transaction: TransactionDataItem, Identifiable {
             return NSLocalizedString("DashPay Upgrade Fee", comment: "")
         }
     }
-
+    
     init(transaction: DSTransaction) {
         tx = transaction
         date = transaction.date

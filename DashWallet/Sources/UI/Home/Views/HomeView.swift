@@ -363,7 +363,7 @@ struct TransactionList<Content: View>: View {
         case .crowdnode(let txItems):
             TransactionPreview(
                 title: NSLocalizedString("CrowdNode · Account", comment: "Crowdnode"),
-                subtitle: txItems.last?.tx.formattedShortTxTime ?? "",
+                subtitle: txItems.last?.shortTimeString ?? "",
                 topText: String(format: NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), txItems.count),
                 icon: .custom("tx.item.cn.icon"),
                 dashAmount: self.crowdNodeAmount(txItems)
@@ -375,7 +375,7 @@ struct TransactionList<Content: View>: View {
         case .tx(let txItem):
             TransactionPreview(
                 title: txItem.stateTitle,
-                subtitle: txItem.tx.formattedShortTxTime,
+                subtitle: txItem.shortTimeString,
                 icon: .custom(txItem.direction.iconName),
                 dashAmount: txItem.signedDashAmount
             ) {
