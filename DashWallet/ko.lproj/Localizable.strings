@@ -542,9 +542,6 @@
 /* Coinbase/Payment Methods */
 "Credit Card" = "신용카드";
 
-/* Crowdnode */
-"CrowdNode Account" = "크라우드노드 계정";
-
 /* CrowdNode */
 "CrowdNode benefits" = "크라우드노드의 이점";
 
@@ -556,6 +553,9 @@
 
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "크라우드노드 출금 한도";
+
+/* No comment provided by engineer. */
+"CrowdNode · Account" = "CrowdNode · Account";
 
 /* CrowdNode Portal */
 "CrowdNode ➝ DashWallet" = "크라우드노드 ➝ 대시지갑";
@@ -2218,6 +2218,9 @@
 "to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "이 기기의 대시 지갑 내 크라우드노드 계정에 지정한 대시 주소로 송금합니다.";
 
 /* No comment provided by engineer. */
+"Today" = "Today";
+
+/* No comment provided by engineer. */
 "Tools" = "도구";
 
 /* Dash Portal */
@@ -2579,6 +2582,9 @@
 
 /* No comment provided by engineer. */
 "Yes" = "예";
+
+/* No comment provided by engineer. */
+"Yesterday" = "Yesterday";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "%@ 님으로부터의 연락처 요청을 수락하였습니다";

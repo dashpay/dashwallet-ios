@@ -32,7 +32,6 @@ protocol HomeHeaderViewDelegate: AnyObject {
 
 // MARK: - HomeHeaderView
 
-@objc(DWHomeHeaderView)
 final class HomeHeaderView: UIView {
 
     public weak var delegate: HomeHeaderViewDelegate?

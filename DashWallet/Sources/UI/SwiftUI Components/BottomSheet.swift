@@ -19,12 +19,25 @@ import SwiftUI
 
 struct BottomSheet<Content: View>: View {
     @Environment(\.presentationMode) private var presentationMode
+    
+    @Binding var showBackButton: Bool
+    var onBackButtonPressed: (() -> Void)? = nil
     @ViewBuilder var content: () -> Content
     
     var body: some View {
         VStack {
             HStack(alignment: .top) {
-                ZStack { }.frame(maxWidth: 50)
+                if showBackButton {
+                    Button {
+                        onBackButtonPressed?()
+                    } label: {
+                        Image("backarrow")
+                            .offset(x: -5, y: 5)
+                    }
+                    .frame(maxWidth: 50, maxHeight: .infinity)
+                } else {
+                    ZStack { }.frame(maxWidth: 50)
+                }
                 
                 Spacer()
                            
@@ -49,7 +62,11 @@ struct BottomSheet<Content: View>: View {
             .frame(height: 50)
             .padding(.horizontal, 10)
             
-            content().padding(.top, 4)
+            NavigationView {
+                content()
+                    .navigationBarHidden(true)
+            }
+            .padding(.top, 4)
         }
     }
 }

@@ -23,16 +23,17 @@ class DWDateFormatter: NSObject {
     private let shortDateFormatter: DateFormatter
     private let longDateFormatter: DateFormatter
     private let iso8601DateFormatter: DateFormatter
-    private let dateOnlyFormatter: DateFormatter
+    private let timeOnlyFormatter: DateFormatter
+    private let dayOfWeekFormatter: DateFormatter
 
     private override init() {
         let locale = Locale.current
 
         shortDateFormatter = DateFormatter()
-        shortDateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "MMMdjmma", options: 0, locale: locale)
+        shortDateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd MMMM", options: 0, locale: locale)
 
         longDateFormatter = DateFormatter()
-        longDateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "yyyyMMMdjmma", options: 0, locale: locale)
+        longDateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "dd MMMM, yyyy", options: 0, locale: locale)
 
         iso8601DateFormatter = DateFormatter()
         let enUSPOSIXLocale = Locale(identifier: "en_US_POSIX")
@@ -40,12 +41,28 @@ class DWDateFormatter: NSObject {
         iso8601DateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
         iso8601DateFormatter.calendar = Calendar(identifier: .gregorian)
         
-        dateOnlyFormatter = DateFormatter()
-        shortDateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "MMMd", options: 0, locale: locale)
+        timeOnlyFormatter = DateFormatter()
+        timeOnlyFormatter.timeStyle = .short
+        timeOnlyFormatter.dateStyle = .none
+        timeOnlyFormatter.locale = Locale.current
+        
+        dayOfWeekFormatter = DateFormatter()
+        dayOfWeekFormatter.dateFormat = "EEEE"
     }
 
-    func shortString(from date: Date) -> String {
+    func dateOnly(from date: Date, useRelative: Bool = true) -> String {
         let calendar = Calendar.current
+        
+        if useRelative {
+            if calendar.isDateInToday(date) {
+                return NSLocalizedString("Today", comment: "")
+            }
+            
+            if calendar.isDateInYesterday(date) {
+                return NSLocalizedString("Yesterday", comment: "")
+            }
+        }
+        
         let nowYear = calendar.component(.year, from: Date())
         let dateYear = calendar.component(.year, from: date)
 
@@ -56,18 +73,22 @@ class DWDateFormatter: NSObject {
     func longString(from date: Date) -> String {
         return longDateFormatter.string(from: date)
     }
-    
-    func dateOnly(from date: Date) -> String {
-        return shortDateFormatter.string(from: date)
-    }
 
     func iso8601String(from date: Date) -> String {
         return iso8601DateFormatter.string(from: date)
+    }
+    
+    func timeOnly(from dateTime: Date) -> String {
+        return timeOnlyFormatter.string(from: dateTime)
+    }
+    
+    func dayOfWeek(from date: Date) -> String {
+        return dayOfWeekFormatter.string(from: date).capitalized
     }
 }
 
 @objc extension DWDateFormatter {
     @objc func shortStringFromDate(_ date: Date) -> String {
-        return shortString(from: date)
+        return dateOnly(from: date)
     }
 }

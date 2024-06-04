@@ -542,9 +542,6 @@
 /* Coinbase/Payment Methods */
 "Credit Card" = "Kredi Kartı";
 
-/* Crowdnode */
-"CrowdNode Account" = "CrowdNode Hesabı";
-
 /* CrowdNode */
 "CrowdNode benefits" = "CrowdNode avantajları";
 
@@ -556,6 +553,9 @@
 
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "CrowdNode para çekme limitleri";
+
+/* No comment provided by engineer. */
+"CrowdNode · Account" = "CrowdNode · Account";
 
 /* CrowdNode Portal */
 "CrowdNode ➝ DashWallet" = "CrowdNode ➝ DashWallet";
@@ -2218,6 +2218,9 @@
 "to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "bu cihazdaki Dash Cüzdanından CrowdNode hesabınız için belirlenen Dash adresine";
 
 /* No comment provided by engineer. */
+"Today" = "Today";
+
+/* No comment provided by engineer. */
 "Tools" = "Araçlar";
 
 /* Dash Portal */
@@ -2579,6 +2582,9 @@
 
 /* No comment provided by engineer. */
 "Yes" = "Evet";
+
+/* No comment provided by engineer. */
+"Yesterday" = "Yesterday";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "%@'den gelen kişi talebini kabul ettiniz.";

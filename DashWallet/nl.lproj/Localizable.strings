@@ -542,9 +542,6 @@
 /* Coinbase/Payment Methods */
 "Credit Card" = "Credticard";
 
-/* Crowdnode */
-"CrowdNode Account" = "CrowdNode account ";
-
 /* CrowdNode */
 "CrowdNode benefits" = "CrowdNode voordelen";
 
@@ -556,6 +553,9 @@
 
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "CrowdNode opname limiet";
+
+/* No comment provided by engineer. */
+"CrowdNode · Account" = "CrowdNode · Account";
 
 /* CrowdNode Portal */
 "CrowdNode ➝ DashWallet" = "CrowdNode ➝ DashWallet";
@@ -2218,6 +2218,9 @@
 "to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "naar het Dash adres dat is toegewezen aan je CrowdNode account in de Dash portemonnee op dit apparaat";
 
 /* No comment provided by engineer. */
+"Today" = "Today";
+
+/* No comment provided by engineer. */
 "Tools" = "Gereedschap";
 
 /* Dash Portal */
@@ -2579,6 +2582,9 @@
 
 /* No comment provided by engineer. */
 "Yes" = "Ja";
+
+/* No comment provided by engineer. */
+"Yesterday" = "Yesterday";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "U heeft het contactverzoek van %@ geaccepteerd";

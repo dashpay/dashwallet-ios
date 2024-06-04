@@ -542,9 +542,6 @@
 /* Coinbase/Payment Methods */
 "Credit Card" = "บัตรเครดิต";
 
-/* Crowdnode */
-"CrowdNode Account" = "บัญชี CrowdNode ";
-
 /* CrowdNode */
 "CrowdNode benefits" = "ผลประโยชน์ของ CrowdNode";
 
@@ -556,6 +553,9 @@
 
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "ข้อจำกัดการถอน CrowdNode ";
+
+/* No comment provided by engineer. */
+"CrowdNode · Account" = "CrowdNode · Account";
 
 /* CrowdNode Portal */
 "CrowdNode ➝ DashWallet" = "CrowdNode ➝ DashWallet";
@@ -2218,6 +2218,9 @@
 "to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "ไปยังที่อยู่ Dash ที่กำหนดไว้สำหรับบัญชี CrowdNode ของคุณในกระเป๋าเงิน Dash บนอุปกรณ์นี้";
 
 /* No comment provided by engineer. */
+"Today" = "Today";
+
+/* No comment provided by engineer. */
 "Tools" = "เครื่องมือ";
 
 /* Dash Portal */
@@ -2579,6 +2582,9 @@
 
 /* No comment provided by engineer. */
 "Yes" = "ใช่";
+
+/* No comment provided by engineer. */
+"Yesterday" = "Yesterday";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "คุณได้รับการยอมรับคำขอการติดต่อจาก %@";

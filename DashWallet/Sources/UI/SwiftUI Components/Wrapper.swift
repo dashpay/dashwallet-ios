@@ -1,6 +1,6 @@
-//
-//  Created by tkhp
-//  Copyright © 2023 Dash Core Group. All rights reserved.
+//  
+//  Created by Andrei Ashikhmin
+//  Copyright © 2024 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,18 +15,14 @@
 //  limitations under the License.
 //
 
-import UIKit
+import SwiftUI
 
-final class TxListTableViewCell: UITableViewCell {
-    @IBOutlet var txItemView: TransactionItemView!
-
-    func update(with transaction: TransactionDataItem) {
-        txItemView.update(with: transaction)
+struct UIViewWrapper: UIViewRepresentable {
+    let uiView: UIView!
+    
+    func makeUIView(context: Context) -> UIView {
+        return uiView
     }
 
-    override func setHighlighted(_ highlighted: Bool, animated: Bool) {
-        super.setHighlighted(highlighted, animated: animated)
-
-        dw_pressedAnimation(.light, pressed: highlighted)
-    }
+    func updateUIView(_ uiView: UIView, context: Context) { }
 }
