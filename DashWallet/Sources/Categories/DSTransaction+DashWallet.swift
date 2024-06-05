@@ -85,10 +85,7 @@ extension DSTransaction {
     }
 
     var direction: DSTransactionDirection {
-        let currentAccount = DWEnvironment.sharedInstance().currentAccount
-        let account = accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
-
-        return account != nil ? chain.direction(of: self) : .notAccountFunds
+        return chain.direction(of: self)
     }
 
     var outputReceiveAddresses: [String] {
