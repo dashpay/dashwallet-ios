@@ -134,6 +134,7 @@ enum TaxReportGenerator {
             return taxCategoryString
         case .sentQuantity:
             let fee = transactionDirection == .sent ? transaction.feeUsed : 0
+            guard transaction.dashAmount != UInt64.max else { return "" }
             let dashAmount = transaction.dashAmount + fee
             let formattedNumber = NumberFormatter.csvDashFormatter.string(from: dashAmount.dashAmount as NSDecimalNumber) ?? ""
             return isOutcoming ? formattedNumber : ""
@@ -143,6 +144,7 @@ enum TaxReportGenerator {
             return isOutcoming ? kSource : ""
         case .receivedQuantity:
             let fee = transactionDirection == .sent ? transaction.feeUsed : 0
+            guard transaction.dashAmount != UInt64.max else { return "" }
             let dashAmount = transaction.dashAmount + fee
             let formattedNumber = NumberFormatter.csvDashFormatter.string(from: dashAmount.dashAmount as NSDecimalNumber) ?? ""
             return isOutcoming ? "" : formattedNumber
