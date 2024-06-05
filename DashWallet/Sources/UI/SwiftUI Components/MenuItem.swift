@@ -29,6 +29,7 @@ struct MenuItem: View {
     var showInfo: Bool = false
     var showChevron: Bool = false
     var dashAmount: Int64? = nil
+    var overrideFiatAmount: String? = nil
     var isToggled: Binding<Bool>? = nil
     var action: (() -> Void)? = nil
     
@@ -119,8 +120,14 @@ struct MenuItem: View {
                     if let dashAmount = dashAmount {
                         DashAmount(amount: dashAmount)
                         
-                        if dashAmount != 0 {
-                            FormattedFiatText(from: dashAmount)
+                        if dashAmount != 0 && dashAmount != Int64.max && dashAmount != Int64.min {
+                            if let overriden = overrideFiatAmount {
+                                Text(overriden)
+                                    .font(.caption)
+                                    .foregroundColor(.secondaryText)
+                            } else {
+                                FormattedFiatText(from: dashAmount)
+                            }
                         }
                     }
                 }
@@ -137,13 +144,12 @@ struct MenuItem: View {
     @ViewBuilder
     private func FormattedFiatText(from dashAmount: Int64) -> some View {
         let text = (try? CurrencyExchanger.shared.convertDash(amount: abs(dashAmount.dashAmount), to: App.fiatCurrency).formattedFiatAmount) ?? NSLocalizedString("Not available", comment: "")
-        
+            
         Text(text)
             .font(.caption)
             .foregroundColor(.secondaryText)
     }
 }
-
 
 #Preview {
     MenuItem(
