@@ -99,7 +99,8 @@ struct CrowdNodeGroupedTransactionsScreen: View {
                                     title: txItem.stateTitle,
                                     subtitle: txItem.shortDateString,
                                     icon: .custom(txItem.direction.iconName),
-                                    dashAmount: txItem.direction == .sent ? -Int64(txItem.dashAmount) : Int64(txItem.dashAmount)
+                                    dashAmount: txItem.signedDashAmount,
+                                    overrideFiatAmount: txItem.fiatAmount
                                 ) {
                                     self.currentTag = txItem.txHashHexString
                                     onShowBackButton(true)

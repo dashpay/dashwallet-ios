@@ -46,12 +46,12 @@ struct ToastView: View {
             Spacer()
             
             if let text = actionText, let action = action {
-                DashButton(text: text, style: .plain, size: .extraSmall, action: action)
+                DashButton(text: text, style: .plain, size: .extraSmall, stretch: false, action: action)
                     .overrideForegroundColor(Color.primaryBackground)
             }
             
             if let icon = closeButtonIcon, let action = closeAction {
-                DashButton(leadingIcon: icon, style: .plain, size: .small, action: action)
+                DashButton(leadingIcon: icon, style: .plain, size: .small, stretch: false, action: action)
                     .overrideForegroundColor(Color.primaryBackground)
             }
         }

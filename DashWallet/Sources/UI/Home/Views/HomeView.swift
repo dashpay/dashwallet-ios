@@ -377,7 +377,8 @@ struct TransactionList<Content: View>: View {
                 title: txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
                 icon: .custom(txItem.direction.iconName),
-                dashAmount: txItem.signedDashAmount
+                dashAmount: txItem.signedDashAmount,
+                overrideFiatAmount: txItem.fiatAmount
             ) {
                 self.selectedTxDataItem = txDataItem
             }
