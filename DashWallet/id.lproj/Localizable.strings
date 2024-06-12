@@ -152,7 +152,7 @@
 "Advanced users who have a very high level of technical expertise can determine your transaction history" = "Pengguna tingkat lanjut yang memiliki tingkat keahlian teknis sangat tinggi dapat mengetahui riwayat transaksi Anda";
 
 /* Usernames */
-"After the voting ends we will notify you about its results" = "After the voting ends we will notify you about its results";
+"After the voting ends we will notify you about its results" = "Setelah voting berakhir kami akan memberitahu anda hasilnya";
 
 /* Usernames */
 "After voting is completed on %@ you can create any username that has not already been created" = "Setelah pemungutan suara selesai pada %@ Anda dapat membuat nama pengguna apa pun yang belum dibuat";
@@ -179,7 +179,7 @@
 "Allow Face ID access in Settings" = "Izinkan akses Pengenal Wajah di Pengaturan";
 
 /* ZenLedger */
-"Allow sending all transactions from Dash Wallet to Zenledger?" = "Allow sending all transactions from Dash Wallet to Zenledger?";
+"Allow sending all transactions from Dash Wallet to Zenledger?" = "Izinkan mengirim semua transaksi dari dompet Dash ke Zenledger?";
 
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Izinkan akses Pengenal Sentuh di Pengaturan";
@@ -357,7 +357,7 @@
 "Cancel Approval" = "Batalkan Persetujuan";
 
 /* No comment provided by engineer. */
-"Cancel Request" = "Cancel Request";
+"Cancel Request" = "Batalkan Permintaan";
 
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Membatalkan transaksi ini tidak membatalkan pesanan perdagangan. Anda akan segera menerima DASH di akun Coinbase Anda.";
@@ -426,7 +426,7 @@
 "Confirm PIN" = "Pastikan PIN";
 
 /* Voting */
-"Confirm Username Request" = "Confirm Username Request";
+"Confirm Username Request" = "Konfirmasi permintaan Nama pengguna";
 
 /* No comment provided by engineer. */
 "Confirming" = "Mengkonfirmasikan";
@@ -435,7 +435,7 @@
 "Connect with third party exchanges" = "Terhubung dengan pertukaran pihak ketiga";
 
 /* ZenLedger */
-"Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.";
+"Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Hubungkan dompet crypto anda ke platform Zenledger. Pelajari lebih lanjut dan mulai dengan transaksi Domept Dash.";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -534,7 +534,7 @@
 "Create Online Account" = "Buat Akun Online";
 
 /* No comment provided by engineer. */
-"Create Username" = "Create Username";
+"Create Username" = "Buat Nama pengguna";
 
 /* No comment provided by engineer. */
 "Create your Username, find friends & family with their usernames and add them to your contacts" = "Buat Nama Pengguna Anda, temukan teman & keluarga dengan nama pengguna mereka dan tambahkan ke kontak Anda";
@@ -671,7 +671,7 @@
 "Do not take a screenshot" = "Jangan mengambil tangkapan layar";
 
 /* Usernames */
-"Do you really want to cancel the username request?" = "Do you really want to cancel the username request?";
+"Do you really want to cancel the username request?" = "Apakah Anda benar-benar ingin membatalkan permintaan nama pengguna?";
 
 /* No comment provided by engineer. */
 "Done" = "Selesai";
@@ -683,10 +683,10 @@
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Karena persyaratan layanan CrowdNode, pengguna dapat menarik tidak lebih dari:";
 
 /* Geoblock */
-"Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features.";
+"Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "Karena kendala peraturan, kami perlu memverifikasi bahwa Anda tidak berada di Inggris. Kami hanya memeriksa lokasi Anda ketika Anda memasuki fitur Coinbase.";
 
 /* Geoblock */
-"Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK";
+"Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "Karena kendala peraturan, Anda tidak dapat menggunakan fitur Coinbase saat Anda berada di Inggris";
 
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "misalnya johndoe@mail.com";
@@ -752,7 +752,7 @@
 "Error Upgrading" = "Kesalahan Mengupgrade";
 
 /* Usernames */
-"Example post" = "Example post";
+"Example post" = "Contoh postingan";
 
 /* No comment provided by engineer. */
 "Exit" = "Keluar";
@@ -767,7 +767,7 @@
 "Explore Dash" = "Jelajahi Dash";
 
 /* ZenLedger */
-"Export all transactions" = "Export all transactions";
+"Export all transactions" = "Ekspor semua transaksi";
 
 /* No comment provided by engineer. */
 "Extended Public Keys" = "Kunci Publik Diperpanjang";
@@ -806,7 +806,7 @@
 "Fetching Info" = "Mengambil info";
 
 /* Balance */
-"Fetching rates…" = "Fetching rates…";
+"Fetching rates…" = "Mengambil tarif…";
 
 /* Coinbase/Payment Methods */
 "Fiat Account" = "Akun Fiat";
@@ -986,10 +986,10 @@
 "Identity" = "Identitas";
 
 /* Usernames */
-"If somebody else requests the same username as you, we will let the network decide whom to give this username" = "If somebody else requests the same username as you, we will let the network decide whom to give this username";
+"If somebody else requests the same username as you, we will let the network decide whom to give this username" = "Jika orang lain meminta nama pengguna yang sama dengan Anda, kami akan membiarkan jaringan memutuskan siapa yang akan memberikan nama pengguna tersebut";
 
 /* Geoblock */
-"If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase";
+"If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "Jika Anda memilih untuk memberikan izin di lain waktu dan Anda tidak berada di Inggris, Anda dapat menggunakan Coinbase";
 
 /* CrowdNode */
 "If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "Jika Anda kehilangan frasa sandi, Anda dapat memverifikasi diri dengan cara lain untuk mendapatkan kembali akses ke dana CrowdNode Anda.";
@@ -1001,7 +1001,7 @@
 "If you still would like to wipe it please input: \"%@\"" = "Jika Anda masih ingin menghapusnya, silakan masukkan: \"%@\"";
 
 /* Usernames */
-"If you tap “Cancel Request”, you will still have a chance to request another username without paying again" = "If you tap “Cancel Request”, you will still have a chance to request another username without paying again";
+"If you tap “Cancel Request”, you will still have a chance to request another username without paying again" = "Jika Anda mengetuk “Batalkan Permintaan”, Anda masih memiliki kesempatan untuk meminta nama pengguna lain tanpa membayar lagi";
 
 /* No comment provided by engineer. */
 "If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "Jika Anda ingin menyimpan jenis transaksi yang diklasifikasikan ulang secara manual, Anda harus mengekspor file transaksi CSV.";
@@ -1281,7 +1281,7 @@
 "Low to high" = "Rendah ke tinggi";
 
 /* Usernames */
-"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow";
+"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "Buat postingan dengan teks di atas (atau yang serupa) di media sosial atau platform perpesanan terkenal untuk memverifikasi bahwa Anda adalah pemilik asli nama pengguna yang diminta dan tempelkan link ke postingan di bawah";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "Kelola Izin GPS";
@@ -1317,7 +1317,7 @@
 "Max" = "Max";
 
 /* Usernames */
-"Maximum 75 characters" = "Maximum 75 characters";
+"Maximum 75 characters" = "Maksimum 75 karakter";
 
 /* No comment provided by engineer. */
 "Maybe later" = "Mungkin nanti";
@@ -1431,7 +1431,7 @@
 "Not a valid Dash address" = "bukan alamat dash yang valid";
 
 /* Usernames */
-"Not a valid URL" = "Not a valid URL";
+"Not a valid URL" = "Bukan URL yang valid";
 
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Tidak semua toko menerima DASH secara langsung, tetapi Anda dapat membeli kartu hadiah dengan Dash.";
@@ -1461,7 +1461,7 @@
 "Once %@ accepts your request you can Pay Directly to Username" = "Setelah %@ menerima permintaan Anda, Anda dapat Membayar Langsung ke Nama Pengguna";
 
 /* Voting */
-"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "Once the voting ends you can create any username you want as long as it hasn’t already been created";
+"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "Setelah pemungutan suara berakhir, Anda dapat membuat nama pengguna apa pun yang Anda inginkan selama nama pengguna tersebut belum dibuat";
 
 /* Online */
 "Online" = "Online";
@@ -1497,7 +1497,7 @@
 "Owner Keys" = "Kunci Pemilik";
 
 /* Usernames */
-"Paste the link" = "Paste the link";
+"Paste the link" = "Tempel tautannya";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "Tempel URL gambar Anda";
@@ -1623,7 +1623,7 @@
 "Please try scanning again" = "Silakan coba pindai ulang";
 
 /* Usernames */
-"Please vote to approve my requested Dash username - %@" = "Please vote to approve my requested Dash username - %@";
+"Please vote to approve my requested Dash username - %@" = "Silakan pilih untuk menyetujui nama pengguna Dash yang saya minta - %@";
 
 /* No comment provided by engineer. */
 "Please Wait" = "Silahkan tunggu";
@@ -1647,13 +1647,13 @@
 "Previously used at: " = "Sebelumnya digunakan pada:";
 
 /* Stale rates */
-"Prices are at least 30 minutes old. Fiat values may be incorrect." = "Prices are at least 30 minutes old. Fiat values may be incorrect.";
+"Prices are at least 30 minutes old. Fiat values may be incorrect." = "Harga setidaknya berumur 30 menit. Nilai Fiat mungkin salah.";
 
 /* Stale rates */
-"Prices have fluctuated more than 50% since the last update." = "Prices have fluctuated more than 50% since the last update.";
+"Prices have fluctuated more than 50% since the last update." = "Harga telah berfluktuasi lebih dari 50% sejak pembaruan terakhir.";
 
 /* Stale rates */
-"Prices weren't retrieved. Fiat values may be incorrect." = "Prices weren't retrieved. Fiat values may be incorrect.";
+"Prices weren't retrieved. Fiat values may be incorrect." = "Harga tidak diambil. Nilai Fiat mungkin salah.";
 
 /* CrowdNode */
 "Primary Dash address" = "Alamat Dash utama";
@@ -1671,7 +1671,7 @@
 "Protect your savings" = "Lindungi tabungan Anda";
 
 /* Usernames */
-"Prove your identity" = "Prove your identity";
+"Prove your identity" = "Buktikan identitas anda";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Alamat Penyedia";
@@ -1773,16 +1773,16 @@
 "Request details" = "Detail Permintaan";
 
 /* Voting */
-"Request Username" = "Request Username";
+"Request Username" = "Minta Nama Pengguna";
 
 /* Voting */
-"Request your username" = "Request your username";
+"Request your username" = "Minta Nama Pengguna anda";
 
 /* No comment provided by engineer. */
-"Requested username was not approved" = "Requested username was not approved";
+"Requested username was not approved" = "Nama pengguna yang diminta tidak disetujui";
 
 /* No comment provided by engineer. */
-"Requested · Voting: %@" = "Requested · Voting: %@";
+"Requested · Voting: %@" = "Diminta · Voting: %@";
 
 /* An action */
 "Rescan" = "Pindai ulang";
@@ -2032,7 +2032,7 @@
 "Sign up to finish setting up account" = "Daftar untuk menyelesaikan penyiapan akun";
 
 /* ZenLedger */
-"Simplify your crypto taxes" = "Simplify your crypto taxes";
+"Simplify your crypto taxes" = "Sederhanakan pajak kripto Anda";
 
 /* No comment provided by engineer. */
 "Skip" = "Lewati";
@@ -2143,7 +2143,7 @@
 "The image you select will be uploaded to Imgur anonymously." = "Gambar yang Anda pilih akan diunggah ke Imgur secara anonim.";
 
 /* Usernames */
-"The link you send will be visible to all of the Dash network." = "The link you send will be visible to all of the Dash network.";
+"The link you send will be visible to all of the Dash network." = "Tautan yang Anda kirim akan terlihat oleh seluruh jaringan Dash.";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "Jumlah minimum yang dapat Anda kirim adalah %@";
@@ -2164,10 +2164,10 @@
 "There are no users that match with the name %@ in your contacts" = "Tidak ada pengguna yang cocok dengan nama %@ di kontak Anda";
 
 /* Usernames */
-"There was a network error, you can try again at no extra cost" = "There was a network error, you can try again at no extra cost";
+"There was a network error, you can try again at no extra cost" = "Ada kendala jaringan, anda dapat mencoba kembali tanpa biaya tambahan";
 
 /* ZenLedger */
-"There was an error when exporting your transaction history to ZenLedger" = "There was an error when exporting your transaction history to ZenLedger";
+"There was an error when exporting your transaction history to ZenLedger" = "Terjadi kesalahan saat mengekspor riwayat transaksi Anda ke ZenLedger";
 
 /* Coinbase */
 "There was an error while obtaining new address" = "Terjadi kesalahan saat mendapatkan alamat baru";
@@ -2194,7 +2194,7 @@
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "Ini mewakili Persentase Hasil Tahunan saat ini dari Masternode penuh dikurangi biaya CrowdNode 15%. Ini bukan tingkat pengembalian yang dijamin dan dapat naik atau turun berdasarkan ukuran  CrowdNode pool dan harga Dash.";
 
 /* Voting */
-"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "This username has already been requested, but you can request it too and let the network vote to decide if you can have it";
+"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "Nama pengguna ini telah diminta, namun Anda juga dapat memintanya dan membiarkan jaringan memberikan suara untuk memutuskan apakah Anda dapat memilikinya";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Dompet ini tidak kosong atau sinkronisasi belum selesai, Anda tidak dapat menghapusnya tanpa frasa pemulihan";
@@ -2209,7 +2209,7 @@
 "to Dash Wallet on this device" = "ke Dash Wallet di perangkat ini";
 
 /* Usernames */
-"To request a username on the Dash Network, you need to have more than %@ Dash" = "To request a username on the Dash Network, you need to have more than %@ Dash";
+"To request a username on the Dash Network, you need to have more than %@ Dash" = "Untuk meminta nama pengguna di jaringan Dash, anda harus memiliki lebih dari %@ Dash";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "Untuk memulai staking, buat akun di CrowdNode atau hubungkan ke akun yang sudah ada.";
@@ -2322,7 +2322,7 @@
 "up to 30 minutes" = "sampai 30 menit";
 
 /* No comment provided by engineer. */
-"Update your profile and start adding contacts" = "Update your profile and start adding contacts";
+"Update your profile and start adding contacts" = "Perbarui profil anda dan mulai menambahkan kontak";
 
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Diperbarui: %@";
@@ -2388,7 +2388,7 @@
 "Username voting" = "Voting nama pengguna";
 
 /* Usernames */
-"Username was successfully requested" = "Username was successfully requested";
+"Username was successfully requested" = "Nama pengguna berhasil diminta";
 
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Pengguna yang cocok %@ yang saat ini tidak ada di kontak Anda";
@@ -2415,10 +2415,10 @@
 "Verify your API Dash address" = "Verifikasi alamat API Dash Anda";
 
 /* Usernames */
-"Verify your identity" = "Verify your identity";
+"Verify your identity" = "Verifikasi identitas Anda";
 
 /* Usernames */
-"Verify your identity to enhance your chances of getting your requested username" = "Verify your identity to enhance your chances of getting your requested username";
+"Verify your identity to enhance your chances of getting your requested username" = "Verifikasi identitas Anda untuk memperbesar peluang mendapatkan nama pengguna yamg diminta";
 
 /* adjective, security level */
 "Very High" = "Sangat tinggi";
@@ -2472,7 +2472,7 @@
 "Voting:" = "Voting:";
 
 /* ZenLedger */
-"Wait until the chain is fully synced, so we can review your transaction history." = "Wait until the chain is fully synced, so we can review your transaction history.";
+"Wait until the chain is fully synced, so we can review your transaction history." = "Tunggu hingga rantai disinkronkan sepenuhnya, sehingga kami bisa mengulas riwayat transaksi anda.";
 
 /* No comment provided by engineer. */
 "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Tunggu hingga rantai disinkronkan sepenuhnya, sehingga kami dapat meninjau riwayat transaksi Anda. Kunjungi situs web CrowdNode untuk masuk atau mendaftar.";
@@ -2602,7 +2602,7 @@
 "You can change how / when your reward earnings are paid to you." = "Anda dapat mengubah bagaimana / kapan penghasilan hadiah Anda dibayarkan kepada Anda.";
 
 /* No comment provided by engineer. */
-"You can create a different username without paying again" = "You can create a different username without paying again";
+"You can create a different username without paying again" = "Anda dapat membuat nama pengguna yang berbeda tanpa membayar lagi";
 
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "Anda dapat memasukkan kunci Anda dalam salah satu format berikut: WIF/base58/base64/hex";
@@ -2734,7 +2734,7 @@
 "Your primary Dash address that you currently use for your CrowdNode account" = "Alamat Dash utama Anda yang saat ini  digunakan untuk akun CrowdNode Anda";
 
 /* Usernames */
-"Your request was cancelled" = "Your request was cancelled";
+"Your request was cancelled" = "Permintaan anda telah dibatalkan";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Transaksi Anda telah dikirim dan jumlahnya akan muncul di dompet Anda dalam beberapa menit.";
@@ -2746,7 +2746,7 @@
 "Your username %@ is being created on the Dash Network" = "Nama pengguna anda %@ sedang dibuat di Dash Network";
 
 /* No comment provided by engineer. */
-"Your username was approved" = "Your username was approved";
+"Your username was approved" = "Nama pengguna anda telah diterima";
 
 /* No comment provided by engineer. */
 "Your vote was cancelled" = "Pilihan anda telah dibatalkan";

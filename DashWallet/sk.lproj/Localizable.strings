@@ -683,10 +683,10 @@
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Vzhľadom na zmluvné podmienky CrowdNode môžu používatelia vybrať maximálne:";
 
 /* Geoblock */
-"Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features.";
+"Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "Kvôli regulačným obmedzeniam musíme overiť, že sa nenachádzate v Spojenom kráľovstve. Vašu polohu skontrolujeme iba vtedy, keď použijete funkcie Coinbase.";
 
 /* Geoblock */
-"Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK";
+"Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "Z dôvodu regulačných obmedzení funkcie Coinbase nemôžete používať, keď ste v Spojenom kráľovstve";
 
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "napr. johndoe@mail.com";
@@ -806,7 +806,7 @@
 "Fetching Info" = "Načítavanie informácií";
 
 /* Balance */
-"Fetching rates…" = "Fetching rates…";
+"Fetching rates…" = "Načítavam kurzy…";
 
 /* Coinbase/Payment Methods */
 "Fiat Account" = "Hotovostný účet";
@@ -989,7 +989,7 @@
 "If somebody else requests the same username as you, we will let the network decide whom to give this username" = "Ak niekto iný požaduje rovnaké používateľské meno ako vy, necháme sieť rozhodnúť, komu toto používateľské meno pridelí";
 
 /* Geoblock */
-"If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase";
+"If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "Ak sa rozhodnete udeliť povolenia neskôr a nie ste v Spojenom kráľovstve, môžete použiť Coinbase";
 
 /* CrowdNode */
 "If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "Ak niekedy stratíte svoju prístupovú frázu, môžete sa overiť inými spôsobmi, aby ste znova získali prístup k svojim prostriedkom na CrowdNode.";
@@ -1647,13 +1647,13 @@
 "Previously used at: " = "Predtým použité na:";
 
 /* Stale rates */
-"Prices are at least 30 minutes old. Fiat values may be incorrect." = "Prices are at least 30 minutes old. Fiat values may be incorrect.";
+"Prices are at least 30 minutes old. Fiat values may be incorrect." = "Ceny sú staré minimálne 30 minút. Hotovostné ceny môžu byť nesprávne.";
 
 /* Stale rates */
-"Prices have fluctuated more than 50% since the last update." = "Prices have fluctuated more than 50% since the last update.";
+"Prices have fluctuated more than 50% since the last update." = "Ceny sa od poslednej aktualizácie zmenili o viac ako 50 %.";
 
 /* Stale rates */
-"Prices weren't retrieved. Fiat values may be incorrect." = "Prices weren't retrieved. Fiat values may be incorrect.";
+"Prices weren't retrieved. Fiat values may be incorrect." = "Nepodarilo sa získať ceny. Hotovostné ceny môžu byť nesprávne.";
 
 /* CrowdNode */
 "Primary Dash address" = "Primárna Dash adresa";
@@ -2092,13 +2092,13 @@
 "Synced with current Dash Wallet" = "Synchronizované s aktuálnou Dash peňaženkou ";
 
 /* No comment provided by engineer. */
-"Syncing" = "Synchronizuje sa";
+"Syncing" = "Synchronizácia";
 
 /* No comment provided by engineer. */
 "Syncing Balance" = "Synchronizuje sa zostatok";
 
 /* Explore Dash */
-"Syncing..." = "Synchronizuje sa...";
+"Syncing..." = "Synchronizácia...";
 
 /* Balance */
 "Syncing…" = "Synchronizácia...";
