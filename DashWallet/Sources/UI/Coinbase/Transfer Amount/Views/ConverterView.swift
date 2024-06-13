@@ -221,7 +221,7 @@ private enum Source {
 
     var title: String {
         switch self {
-        case .dash: return "Dash Wallet"
+        case .dash: return kWalletName
         case .coinbase: return "Coinbase"
         }
     }

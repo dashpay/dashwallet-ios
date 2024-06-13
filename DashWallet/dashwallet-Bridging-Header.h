@@ -85,6 +85,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWUpholdOTPProvider.h"
 #import "DWUpholdClientCancellationToken.h"
 #import "DWUpholdLogoutTutorialViewController.h"
+#import "DWUpholdConstants.h"
 
 //MARK: 3rd Party
 #import <SDWebImage/SDWebImage.h>
@@ -100,7 +101,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWDPRegistrationErrorRetryDelegate.h"
 #import "DWDPUserObject.h"
 #import "DWModalUserProfileViewController.h"
-#import "DWDPWelcomeView.h"
 #import "DWInvitationActionsView.h"
 #import "DWInvitationPreviewViewController.h"
 #import "DWInvitationLinkBuilder.h"
@@ -108,6 +108,18 @@ static const bool _SNAPSHOT = 0;
 #import "DWInvitationMessageView.h"
 #import "DWScrollingViewController.h"
 #import "UIView+DWEmbedding.h"
+#import "DWBasePressableControl.h"
+
+
+#if DASHPAY
+#import "DWInvitationSetupState.h"
+#import "DPAlertViewController.h"
+#import "DWNotificationsViewController.h"
+#import "DWDashPayConstants.h"
+#import "DWRootContactsViewController.h"
+#import "DWNotificationsProvider.h"
+#import "DWContactsViewController.h"
+#endif
 
 //MARK: CrowdNode
 #import "DWCheckbox.h"
@@ -115,9 +127,9 @@ static const bool _SNAPSHOT = 0;
 #import "DWSeedPhraseModel.h"
 #import "UIImage+Utils.h"
 #import "NSData+Dash.h"
+#import "DSChain+DashWallet.h"
 
 //MARK: Tabbar
-#import "DWHomeViewController.h"
 #import "DWMainMenuViewController.h"
 #import "DWWipeDelegate.h"
 #import "DWPayModel.h"
@@ -125,9 +137,16 @@ static const bool _SNAPSHOT = 0;
 #import "DWMainMenuViewControllerDelegate.h"
 #import "DWExploreTestnetViewController.h"
 
-#if DASHPAY
-#import "DWDashPayConstants.h"
-#import "DWRootContactsViewController.h"
-#import "DWNotificationsProvider.h"
-#import "DWContactsViewController.h"
-#endif
+//MARK: Home
+#import "DWHomeModel.h"
+#import "DWRootEditProfileViewController.h"
+#import "DWRecoverViewController.h"
+#import "UIViewController+DWTxFilter.h"
+#import "DSAuthenticationManager.h"
+#import "DWSecureWalletDelegate.h"
+#import "DWSettingsMenuModel.h"
+#import "DWBasePayViewController.h"
+#import "DWHomeProtocol.h"
+
+//MARK: Tools menu
+#import "UIViewController+DWDisplayError.h"

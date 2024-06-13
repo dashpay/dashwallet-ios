@@ -26,7 +26,6 @@ public enum PointOfUseListFiltersGroup {
     case paymentType
     case sortByDistanceOrName
 
-    case sortByName
     case territory
     case radius
     case locationService
@@ -35,7 +34,7 @@ public enum PointOfUseListFiltersGroup {
         switch self {
         case .paymentType:
             return .paymentType
-        case .sortByName, .sortByDistanceOrName:
+        case .sortByDistanceOrName:
             return .sortBy
         case .territory:
             return .location
@@ -50,8 +49,6 @@ public enum PointOfUseListFiltersGroup {
         switch self {
         case .paymentType:
             return [.paymentTypeDash, .paymentTypeGiftCard]
-        case .sortByName:
-            return [.sortAZ, .sortZA]
         case .sortByDistanceOrName:
             return [.sortDistance, .sortName]
         case .territory:
@@ -100,7 +97,7 @@ class PointOfUseListFiltersViewController: UIViewController {
             switch self {
             case .paymentType: return NSLocalizedString("Payment Type", comment: "Explore Dash/Merchants/Filters")
             case .sortBy: return NSLocalizedString("Sort by", comment: "Explore Dash/Merchants/Filters")
-            case .location: return NSLocalizedString("Location", comment: "Explore Dash/Merchants/Filters")
+            case .location: return NSLocalizedString("Location", comment: "")
             case .radius: return NSLocalizedString("Radius", comment: "Explore Dash/Merchants/Filters")
             case .locationService: return NSLocalizedString("Current Location Settings",
                                                             comment: "Explore Dash/Merchants/Filters")
@@ -188,12 +185,22 @@ class PointOfUseListFiltersViewController: UIViewController {
         configureHierarchy()
         configureDataSource()
         reloadDataSource()
+        
+        NotificationCenter.default.addObserver(self, 
+                                               selector: #selector(enteredBackround),
+                                               name: UIApplication.didEnterBackgroundNotification,
+                                               object: nil)
     }
 
     class func controller() -> PointOfUseListFiltersViewController {
         let storyboard = UIStoryboard(name: "ExploreDash", bundle: nil)
         return storyboard
             .instantiateViewController(withIdentifier: "PointOfUseListFiltersViewController") as! PointOfUseListFiltersViewController
+    }
+    
+    @objc
+    func enteredBackround() {
+        dismiss(animated: false)
     }
 }
 

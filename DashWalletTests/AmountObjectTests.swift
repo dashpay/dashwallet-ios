@@ -21,7 +21,7 @@ import XCTest
 // MARK: - MockRatesProvider
 
 class MockRatesProvider: RatesProvider {
-    var updateHandler: (([DSCurrencyPriceObject]) -> Void)?
+    var updateHandler: (([RateObject]) -> Void)?
 
     func startExchangeRateFetching() {
         if let path = Bundle(for: Self.self).path(forResource: "rates", ofType: "json") {
@@ -29,13 +29,13 @@ class MockRatesProvider: RatesProvider {
                 let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
                 let rates = try JSONDecoder().decode(BaseDataResponse<CoinbaseExchangeRate>.self, from: data).data.rates!
 
-                var array: [DSCurrencyPriceObject] = []
+                var array: [RateObject] = []
                 array.reserveCapacity(rates.count)
 
                 for rate in rates {
                     let key = rate.key
                     let price = Decimal(string: rate.value)! as NSNumber
-                    array.append(DSCurrencyPriceObject(code: key, name: key, price: price)!)
+                    array.append(RateObject(code: key, name: key, price: price.decimalValue))
                 }
 
                 updateHandler?(array)

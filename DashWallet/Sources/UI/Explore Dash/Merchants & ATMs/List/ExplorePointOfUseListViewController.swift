@@ -239,7 +239,7 @@ extension ExplorePointOfUseListViewController {
         if DWLocationManager.shared.isAuthorized && currentSegment.showReversedLocation {
             DWLocationManager.shared
                 .reverseGeocodeLocation(CLLocation(latitude: mapView.centerCoordinate.latitude,
-                                                   longitude: mapView.centerCoordinate.longitude)) { [weak self] location in
+                                                   longitude: mapView.centerCoordinate.longitude)) { [weak self] (location, _) in
                     if self?.model.showMap ?? false {
                         self?.filterCell?.title = location
                     }
@@ -394,7 +394,9 @@ extension ExplorePointOfUseListViewController {
 extension ExplorePointOfUseListViewController {
     private func showFilters() {
         let vc = PointOfUseListFiltersViewController.controller()
-        vc.filtersToUse = currentSegment.filterGroups
+        vc.filtersToUse = currentSegment.filterGroups.filter { filter in
+            DWLocationManager.shared.currentLocation != nil || (filter != .sortByDistanceOrName && filter != .radius)
+        }
         vc.territoriesDataSource = currentSegment.territoriesDataSource
         vc.delegate = self
         vc.defaultFilters = model.initialFilters

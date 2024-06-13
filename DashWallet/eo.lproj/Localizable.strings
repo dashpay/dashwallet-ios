@@ -169,11 +169,17 @@
 /* CrowdNode */
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device.";
 
+/* ZenLedger */
+"Allow" = "Allow";
+
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Allow camera access in Settings";
 
 /* No comment provided by engineer. */
 "Allow Face ID access in Settings" = "Allow Face ID access in Settings";
+
+/* ZenLedger */
+"Allow sending all transactions from Dash Wallet to Zenledger?" = "Allow sending all transactions from Dash Wallet to Zenledger?";
 
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Allow Touch ID access in Settings";
@@ -428,6 +434,9 @@
 /* No comment provided by engineer. */
 "Connect with third party exchanges" = "Connect with third party exchanges";
 
+/* ZenLedger */
+"Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.";
+
 /* Buy Sell Portal
    Coinbase Entry Point */
 "Connected" = "Connected";
@@ -523,6 +532,9 @@
 /* CrowdNode
    CrowdNode Portal */
 "Create Online Account" = "Create Online Account";
+
+/* No comment provided by engineer. */
+"Create Username" = "Create Username";
 
 /* No comment provided by engineer. */
 "Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
@@ -670,6 +682,12 @@
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Due to CrowdNode’s terms of service users can withdraw no more than:";
 
+/* Geoblock */
+"Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features.";
+
+/* Geoblock */
+"Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK";
+
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "e.g. johndoe@mail.com";
 
@@ -748,6 +766,9 @@
 /* No comment provided by engineer. */
 "Explore Dash" = "Explore Dash";
 
+/* ZenLedger */
+"Export all transactions" = "Export all transactions";
+
 /* No comment provided by engineer. */
 "Extended Public Keys" = "Extended Public Keys";
 
@@ -783,6 +804,9 @@
 
 /* Explore Dash */
 "Fetching Info" = "Fetching Info";
+
+/* Balance */
+"Fetching rates…" = "Fetching rates…";
 
 /* Coinbase/Payment Methods */
 "Fiat Account" = "Fiat Account";
@@ -964,6 +988,9 @@
 /* Usernames */
 "If somebody else requests the same username as you, we will let the network decide whom to give this username" = "If somebody else requests the same username as you, we will let the network decide whom to give this username";
 
+/* Geoblock */
+"If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase";
+
 /* CrowdNode */
 "If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds.";
 
@@ -1131,9 +1158,6 @@
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?";
-
-/* No comment provided by engineer. */
-"Join" = "Join";
 
 /* No comment provided by engineer. */
 "Join DashPay" = "Join DashPay";
@@ -1339,12 +1363,6 @@
 
 /* No comment provided by engineer. */
 "Name" = "Name";
-
-/* Explore Dash: Filters */
-"Name: from A to Z" = "Name: from A to Z";
-
-/* Explore Dash: Filters */
-"Name: from Z to A" = "Name: from Z to A";
 
 /* Nearby */
 "Nearby" = "Nearby";
@@ -1568,6 +1586,9 @@
 /* Network Unavailable */
 "Please check your network connection" = "Please check your network connection";
 
+/* Uphold */
+"Please contact Uphold to update your proof of address." = "Please contact Uphold to update your proof of address.";
+
 /* No comment provided by engineer. */
 "Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
 
@@ -1576,6 +1597,12 @@
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Please enter PIN to upgrade wallet";
+
+/* Uphold */
+"Please go to your Uphold account to answer some questions about yourself." = "Please go to your Uphold account to answer some questions about yourself.";
+
+/* Uphold */
+"Please go to your Uphold account to verify your identity." = "Please go to your Uphold account to verify your identity.";
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode";
@@ -1618,6 +1645,15 @@
 
 /* No comment provided by engineer. */
 "Previously used at: " = "Previously used at: ";
+
+/* Stale rates */
+"Prices are at least 30 minutes old. Fiat values may be incorrect." = "Prices are at least 30 minutes old. Fiat values may be incorrect.";
+
+/* Stale rates */
+"Prices have fluctuated more than 50% since the last update." = "Prices have fluctuated more than 50% since the last update.";
+
+/* Stale rates */
+"Prices weren't retrieved. Fiat values may be incorrect." = "Prices weren't retrieved. Fiat values may be incorrect.";
 
 /* CrowdNode */
 "Primary Dash address" = "Primary Dash address";
@@ -1742,6 +1778,12 @@
 /* Voting */
 "Request your username" = "Request your username";
 
+/* No comment provided by engineer. */
+"Requested username was not approved" = "Requested username was not approved";
+
+/* No comment provided by engineer. */
+"Requested · Voting: %@" = "Requested · Voting: %@";
+
 /* An action */
 "Rescan" = "Rescan";
 
@@ -1782,7 +1824,7 @@
 "Rewards" = "Rewards";
 
 /* No comment provided by engineer. */
-"Save" = "Save";
+"Save" = "Savi";
 
 /* No comment provided by engineer. */
 "Save Changes" = "Save Changes";
@@ -1989,6 +2031,9 @@
 /* CrowdNode Portal */
 "Sign up to finish setting up account" = "Sign up to finish setting up account";
 
+/* ZenLedger */
+"Simplify your crypto taxes" = "Simplify your crypto taxes";
+
 /* No comment provided by engineer. */
 "Skip" = "Skip";
 
@@ -2006,12 +2051,6 @@
 
 /* Explore Dash/Filters */
 "Sorted by name" = "Sorted by name";
-
-/* Explore Dash/Filters */
-"Sorting: A to Z" = "Sorting: A to Z";
-
-/* Explore Dash/Filters */
-"Sorting: Z to A" = "Sorting: Z to A";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "Specify Amount";
@@ -2126,6 +2165,9 @@
 
 /* Usernames */
 "There was a network error, you can try again at no extra cost" = "There was a network error, you can try again at no extra cost";
+
+/* ZenLedger */
+"There was an error when exporting your transaction history to ZenLedger" = "There was an error when exporting your transaction history to ZenLedger";
 
 /* Coinbase */
 "There was an error while obtaining new address" = "There was an error while obtaining new address";
@@ -2279,6 +2321,9 @@
 /* CoinJoin */
 "up to 30 minutes" = "up to 30 minutes";
 
+/* No comment provided by engineer. */
+"Update your profile and start adding contacts" = "Update your profile and start adding contacts";
+
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Updated: %@";
 
@@ -2299,6 +2344,9 @@
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
+
+/* Uphold */
+"Uphold error" = "Uphold error";
 
 /* No comment provided by engineer. */
 "Upload Error" = "Upload Error";
@@ -2422,6 +2470,9 @@
 
 /* Voting */
 "Voting:" = "Voting:";
+
+/* ZenLedger */
+"Wait until the chain is fully synced, so we can review your transaction history." = "Wait until the chain is fully synced, so we can review your transaction history.";
 
 /* No comment provided by engineer. */
 "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up.";
@@ -2549,6 +2600,9 @@
 
 /* CrowdNode */
 "You can change how / when your reward earnings are paid to you." = "You can change how / when your reward earnings are paid to you.";
+
+/* No comment provided by engineer. */
+"You can create a different username without paying again" = "You can create a different username without paying again";
 
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "You can enter your key in any of the following formats: WIF/base58/base64/hex";
@@ -2692,6 +2746,9 @@
 "Your username %@ is being created on the Dash Network" = "Your username %@ is being created on the Dash Network";
 
 /* No comment provided by engineer. */
+"Your username was approved" = "Your username was approved";
+
+/* No comment provided by engineer. */
 "Your vote was cancelled" = "Your vote was cancelled";
 
 /* Voting */
@@ -2699,3 +2756,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device.";
+
+/* No comment provided by engineer. */
+"ZenLedger" = "ZenLedger";

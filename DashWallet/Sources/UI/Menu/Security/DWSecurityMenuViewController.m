@@ -198,7 +198,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWSecureWalletDelegate
 
-- (void)secureWalletRoutineDidCanceled:(UIViewController *)controller {
+- (void)secureWalletRoutineDidCancel:(UIViewController *)controller {
     [self.navigationController popViewControllerAnimated:YES];
 }
 

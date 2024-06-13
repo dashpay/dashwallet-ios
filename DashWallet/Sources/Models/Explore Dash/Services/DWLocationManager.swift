@@ -17,6 +17,7 @@
 
 import CoreLocation
 import Foundation
+import Combine
 
 // MARK: - DWLocationObserver
 
@@ -34,6 +35,8 @@ protocol DWLocationObserver: AnyObject {
 
 @objc
 class DWLocationManager: NSObject {
+    @objc static let shared = DWLocationManager()
+    
     private var locationManager: CLLocationManager
     private var geocoder: CLGeocoder
     private var observers: [DWLocationObserver] = []
@@ -56,11 +59,7 @@ class DWLocationManager: NSObject {
     }
 
     @objc var authorizationStatus: CLAuthorizationStatus {
-        if #available(iOS 14.0, *) {
-            return locationManager.authorizationStatus
-        } else {
-            return CLLocationManager.authorizationStatus()
-        }
+        return locationManager.authorizationStatus
     }
 
     @objc var isAuthorized: Bool {
@@ -74,6 +73,8 @@ class DWLocationManager: NSObject {
     @objc var isPermissionDenied: Bool {
         authorizationStatus == .denied
     }
+    
+    @Published private(set) var currentPlacemark: CLPlacemark? = nil
 
     override init() {
         locationManager = CLLocationManager()
@@ -106,24 +107,23 @@ class DWLocationManager: NSObject {
 
     private func reverseCurrentLocation() {
         guard let loc = currentLocation else { return }
-        reverseGeocodeLocation(loc) { [weak self] loc in
+        reverseGeocodeLocation(loc) { [weak self] loc, placemark in
             self?.currentReversedLocation = loc
+            self?.currentPlacemark = placemark
         }
     }
 
-    public func reverseGeocodeLocation(_ location: CLLocation, completion: @escaping ((String) -> Void)) {
+    public func reverseGeocodeLocation(_ location: CLLocation, completion: @escaping ((String, CLPlacemark?) -> Void)) {
         geocoder.reverseGeocodeLocation(location, preferredLocale: Locale.current) { placemarks, error in
             if let placemark = placemarks?.last {
                 let loc = [placemark.country, placemark.administrativeArea, placemark.locality].compactMap { $0 }
                     .joined(separator: ", ")
-                completion(loc)
+                completion(loc, placemark)
             } else if error != nil {
-                completion("Location couldn't determined")
+                completion("Location couldn't determined", nil)
             }
         }
     }
-
-    @objc static let shared = DWLocationManager()
 }
 
 // MARK: CLLocationManagerDelegate
@@ -137,20 +137,6 @@ extension DWLocationManager: CLLocationManagerDelegate {
         manager.stopUpdatingLocation()
     }
 
-    @available(iOS, deprecated: 14.0,
-               message: "Use locationManagerDidChangeAuthorization")
-    func locationManager(_ manager: CLLocationManager,
-                         didChangeAuthorization status: CLAuthorizationStatus) {
-        if status == .authorizedAlways || status == .authorizedWhenInUse {
-            startMonitoring(manager)
-        } else {
-            stopMonitoring(manager)
-        }
-
-        observers.forEach { $0.locationManagerDidChangeServiceAvailability(self) }
-    }
-
-    @available(iOS 14.0, *)
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         if manager.authorizationStatus == .authorizedAlways || manager.authorizationStatus == .authorizedWhenInUse {
             startMonitoring(manager)

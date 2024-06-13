@@ -19,7 +19,6 @@ import UIKit
 
 // MARK: - SyncingAlertViewController
 
-@objc(DWSyncingAlertViewController)
 final class SyncingAlertViewController: BaseViewController, SyncingAlertContentViewDelegate {
 
     var modalTransition = DWModalPopupTransition()

@@ -23,13 +23,13 @@
 "%@ is not allowed to access Touch ID" = "%@ ay hindi pinahihintulutang i-access ang Touch ID";
 
 /* Voting */
-"%ld duplicates" = "%ld duplicates";
+"%ld duplicates" = "%ld duplicate";
 
 /* Voting */
-"%ld requests" = "%ld requests";
+"%ld requests" = "%ld mga kahilingan";
 
 /* 10/20 Characters */
-"%ld/%ld Characters" = "%1$ld/%2$ld Characters";
+"%ld/%ld Characters" = "%1$ld/%2$ld Mga Karakter";
 
 /* No comment provided by engineer. */
 "(1/3) Processing Payment" = "(1/3) Pagproseso ng Bayad";
@@ -104,7 +104,7 @@
 "About" = "Tungkol sa";
 
 /* No comment provided by engineer. */
-"About me" = "About me";
+"About me" = "Tungkol sa Akin";
 
 /* No comment provided by engineer. */
 "Accept" = "Tanggapin";
@@ -134,10 +134,10 @@
 "Add a New Contact" = "Magdagdag ng Bagong Contact";
 
 /* No comment provided by engineer. */
-"Add your Friends & Family" = "Add your Friends & Family";
+"Add your Friends & Family" = "Idagdag ang iyong Mga Kaibigan at Pamilya";
 
 /* Usernames */
-"Add your friends & family" = "Add your friends & family";
+"Add your friends & family" = "Idagdag ang iyong Mga Kaibigan at Pamilya";
 
 /* No comment provided by engineer. */
 "Address" = "Address";
@@ -149,16 +149,16 @@
 "Advanced Security" = "Masusing seguridad";
 
 /* Coinbase */
-"Advanced users who have a very high level of technical expertise can determine your transaction history" = "Advanced users who have a very high level of technical expertise can determine your transaction history";
+"Advanced users who have a very high level of technical expertise can determine your transaction history" = "Maaaring matukoy ng mga advanced na user na may napakataas na antas ng teknikal na kadalubhasaan ang iyong history ng transaksyon";
 
 /* Usernames */
-"After the voting ends we will notify you about its results" = "After the voting ends we will notify you about its results";
+"After the voting ends we will notify you about its results" = "Pagkatapos ng pagboto ay aabisuhan ka namin tungkol sa mga resulta nito";
 
 /* Usernames */
-"After voting is completed on %@ you can create any username that has not already been created" = "After voting is completed on %@ you can create any username that has not already been created";
+"After voting is completed on %@ you can create any username that has not already been created" = "Pagkatapos makumpleto ang pagboto sa %@ maaari kang lumikha ng anumang username na hindi pa nagagawa";
 
 /* No comment provided by engineer. */
-"Agree" = "Agree";
+"Agree" = "Sumang-ayon";
 
 /* No comment provided by engineer. */
 "All" = "Lahat";
@@ -169,11 +169,17 @@
 /* CrowdNode */
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "Ang lahat ng paglilipat papunta at mula sa CrowdNode mula sa device na ito ay isasagawa gamit ang ibaba ng Dash address mula sa device na ito.";
 
+/* ZenLedger */
+"Allow" = "Payagan";
+
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Payagang i-access ang camera sa Settings";
 
 /* No comment provided by engineer. */
 "Allow Face ID access in Settings" = "Payagang i-access ang Face ID sa Settings";
+
+/* ZenLedger */
+"Allow sending all transactions from Dash Wallet to Zenledger?" = "Payagan ang pagpapadala ng lahat ng mga transaksyon mula sa Dash Wallet sa Zenledger?";
 
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Payagang i-access ang Touch ID sa Settings";
@@ -194,7 +200,7 @@
 "and" = "at";
 
 /* CoinJoin */
-"Any funds that have been mixed will be combined with your un mixed funds" = "Any funds that have been mixed will be combined with your un mixed funds";
+"Any funds that have been mixed will be combined with your un mixed funds" = "Ang anumang mga pondo na pinaghalo ay isasama sa iyong mga hindi pinaghalong pondo";
 
 /* Coinbase/Payment Methods */
 "Apple Pay" = "Apple Pay";
@@ -215,19 +221,19 @@
 "Are you sure you want to cancel this transaction?" = "Sigurado ka bang gusto mong kanselahin ang transaksyong ito?";
 
 /* CoinJoin */
-"Are you sure you want to change the privacy level?" = "Are you sure you want to change the privacy level?";
+"Are you sure you want to change the privacy level?" = "Sigurado ka bang gusto mong baguhin ang antas ng privacy?";
 
 /* CoinJoin */
-"Are you sure you want to stop mixing?" = "Are you sure you want to stop mixing?";
+"Are you sure you want to stop mixing?" = "Sigurado ka bang gusto mong ihinto ang paghahalo?";
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Sigurado ka ba?";
 
 /* Voting */
-"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
+"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "Bilang may-ari ng masternode maaari kang bumoto upang aprubahan ang mga hiniling na username bago ito magawa ng mga user.";
 
 /* CrowdNode */
-"As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode.";
+"As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "Dahil karamihan sa mga tao ay walang eksaktong 1000 Dash, gumawa ang Crowdnode ng isang serbisyo kung saan, sa pamamagitan ng pagsasama-sama ng mga deposito mula sa mga miyembro, makakamit nila ang mga benepisyo ng pagmamay-ari ng Masternode.";
 
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "Mas gumagana ang paghahanap sa ATM kapag naka-on ang Mga Serbisyo sa Lokasyon.";
@@ -269,7 +275,7 @@
 "Balance" = "Balanse";
 
 /* CrowdNode */
-"Balance On CrowdNode" = "Balance On CrowdNode";
+"Balance On CrowdNode" = "Balanse sa CrowdNode";
 
 /* CrowdNode */
 "Balance: " = "Balanse:";
@@ -284,7 +290,7 @@
 "Become part of a Dash Masternode with CrowdNode" = "Maging bahagi ng isang Dash Masternode na may CrowdNode";
 
 /* Validation rule: Between 3 and 24 characters */
-"Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
+"Between %ld and %ld characters" = "Sa pagitan ng %1$ld at %2$ld karakter";
 
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase" = "Sa pagitan ng Dash Wallet at Coinbase";
@@ -336,7 +342,7 @@
 "Buy/Sell" = "Bili/Benta";
 
 /* Voting */
-"By tapping the \"Vote for All\" button, you will automatically vote for all of the filtered usernames (%ld) that were submitted first" = "By tapping the \"Vote for All\" button, you will automatically vote for all of the filtered usernames (%ld) that were submitted first";
+"By tapping the \"Vote for All\" button, you will automatically vote for all of the filtered usernames (%ld) that were submitted first" = "Sa pamamagitan ng pag-tap sa \"Vote for All\" na button, awtomatiko kang bumoto para sa lahat ng na-filter na username (%ld) na unang isinumite";
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Sa pag-wipe nitong device hindi mo na maaaring ma-access ang iyong pondo sa device na ito. Ito ay maaari mo lamang gawin kung wala ka na talagang access sa iyong passphrase at nakalimutan mo na rin ang iyong PIN code.";
@@ -348,10 +354,10 @@
 "Cancel" = "I-cancel";
 
 /* Voting */
-"Cancel Approval" = "Cancel Approval";
+"Cancel Approval" = "Kanselahin ang Pag-apruba";
 
 /* No comment provided by engineer. */
-"Cancel Request" = "Cancel Request";
+"Cancel Request" = "Kanselahin ang Kahilingan";
 
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Ang pagkansela sa transaksyong ito ay hindi makakansela sa trade order. Makakatanggap ka ng DASH sa iyong Coinbase account sa ilang sandali.";
@@ -366,10 +372,10 @@
 "Change PIN" = "Baguhin ang PIN";
 
 /* CoinJoin */
-"Change to Advanced" = "Change to Advanced";
+"Change to Advanced" = "Baguhin sa Advanced";
 
 /* CoinJoin */
-"Change to Intermediate" = "Change to Intermediate";
+"Change to Intermediate" = "Baguhin sa Intermediate";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Suriin ang koneksyon";
@@ -378,10 +384,10 @@
 "Choose your" = "Pumili ng iyong";
 
 /* No comment provided by engineer. */
-"Choose Your Username" = "Choose Your Username";
+"Choose Your Username" = "Piliin ang Iyong Username";
 
 /* No comment provided by engineer. */
-"Claimed" = "Claimed";
+"Claimed" = "Inangkin";
 
 /* No comment provided by engineer. */
 "Clear" = "Burahin";
@@ -420,13 +426,16 @@
 "Confirm PIN" = "Kumpirmahin ang PIN";
 
 /* Voting */
-"Confirm Username Request" = "Confirm Username Request";
+"Confirm Username Request" = "Kumpirmahin ang Kahilingan ng Username";
 
 /* No comment provided by engineer. */
 "Confirming" = "Kinukumpirma";
 
 /* No comment provided by engineer. */
 "Connect with third party exchanges" = "Ikonekta sa mga third party na palitan";
+
+/* ZenLedger */
+"Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Ikonekta ang iyong mga crypto wallet sa platform ng ZenLedger. Matuto pa at magsimula sa iyong mga transaksyon sa Dash Wallet.";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -470,7 +479,7 @@
 "Copy" = "Kopyahin";
 
 /* No comment provided by engineer. */
-"Copy Invitation Link" = "Copy Invitation Link";
+"Copy Invitation Link" = "Kopyahin ang Link ng Imbitasyon";
 
 /* No comment provided by engineer. */
 "Copy Logs" = "Kopyahin ang logs";
@@ -497,19 +506,19 @@
 "Couldn't transmit payment to Dash network" = "Hindi naipahatid ang bayad sa dash network";
 
 /* No comment provided by engineer. */
-"Create a new Invitation" = "Create a new Invitation";
+"Create a new Invitation" = "Gumawa ng bagong Imbitasyon";
 
 /* No comment provided by engineer. */
-"Create a new invitation" = "Create a new invitation";
+"Create a new invitation" = "Gumawa ng bagong Imbitasyon";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Gumawa ng bagong pitaka";
 
 /* Usernames */
-"Create a username" = "Create a username";
+"Create a username" = "Gumawa ng username";
 
 /* No comment provided by engineer. */
-"Create a username, add your friends." = "Create a username, add your friends.";
+"Create a username, add your friends." = "Lumikha ng isang username, idagdag ang iyong mga kaibigan.";
 
 /* CrowdNode */
 "Create Account" = "Lumikha ng Account";
@@ -518,14 +527,17 @@
 "Create an online CrowdNode account" = "Lumikha ng online na CrowdNode account";
 
 /* No comment provided by engineer. */
-"Create invitation" = "Create invitation";
+"Create invitation" = "Gumawa ng imbitasyon";
 
 /* CrowdNode
    CrowdNode Portal */
 "Create Online Account" = "Lumikha ng Online na Account";
 
 /* No comment provided by engineer. */
-"Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
+"Create Username" = "Gumawa ng username";
+
+/* No comment provided by engineer. */
+"Create your Username, find friends & family with their usernames and add them to your contacts" = "Lumikha ng iyong Username, maghanap ng mga kaibigan at pamilya gamit ang kanilang mga username at idagdag sila sa iyong mga contact";
 
 /* Coinbase/Payment Methods */
 "Credit Card" = "Credit Card";
@@ -573,7 +585,7 @@
 "Dash address" = "Address ng Dash";
 
 /* CrowdNode */
-"Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Dash address designated for your CrowdNode account in the Dash Wallet on this device ";
+"Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Dash address na itinalaga para sa iyong CrowdNode account sa Dash Wallet sa device na ito";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "Dash balanse sa Coinbase";
@@ -591,7 +603,7 @@
 "Dash Wallet on this device" = "Dash Wallet sa device na ito";
 
 /* No comment provided by engineer. */
-"DashPay Invitation" = "DashPay Invitation";
+"DashPay Invitation" = "Imbitasyon sa DashPay";
 
 /* No comment provided by engineer. */
 "DashPay Upgrade Fee" = "Bayad sa Pag-upgrade ng DashPay";
@@ -603,10 +615,10 @@
 "Date" = "Petsa";
 
 /* Voting */
-"Date: New to old" = "Date: New to old";
+"Date: New to old" = "Petsa: Bago sa luma";
 
 /* Voting */
-"Date: Old to new" = "Date: Old to new";
+"Date: Old to new" = "Petsa: Luma sa bago";
 
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Default na pananalapi, shortcuts, about...";
@@ -650,7 +662,7 @@
 "Disconnected" = "Idiskonekta";
 
 /* No comment provided by engineer. */
-"Display Name" = "Display Name";
+"Display Name" = "I-display ang pangalan";
 
 /* Explore Dash: Filters */
 "Distance" = "Distansya";
@@ -659,7 +671,7 @@
 "Do not take a screenshot" = "Huwag kumuha ng screenshot";
 
 /* Usernames */
-"Do you really want to cancel the username request?" = "Do you really want to cancel the username request?";
+"Do you really want to cancel the username request?" = "Gusto mo ba talagang kanselahin ang kahilingan sa username?";
 
 /* No comment provided by engineer. */
 "Done" = "Tapos";
@@ -670,11 +682,17 @@
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Dahil sa mga tuntunin ng serbisyo ng CrowdNode, ang mga user ay maaaring mag-withdraw ng hindi hihigit sa:";
 
+/* Geoblock */
+"Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "Dahil sa mga hadlang sa regulasyon, kailangan naming i-verify na wala ka sa UK. Tinitingnan lang namin ang iyong lokasyon kapag ipinasok mo ang mga feature ng Coinbase.";
+
+/* Geoblock */
+"Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "Dahil sa mga hadlang sa regulasyon, hindi mo magagamit ang mga feature ng Coinbase habang ikaw ay nasa UK";
+
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "hal. juandelacruz@gmail.com";
 
 /* No comment provided by engineer. */
-"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Ang bawat imbitasyon ay popondohan ng halagang ito upang mabilis na magawa ng tatanggap ang kanilang username sa Dash Network";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Mas maaga";
@@ -683,10 +701,10 @@
 "Easily stake Dash and earn passive income with a few simple clicks." = "Madaling i-stake ang Dash at kumita ng passive income sa ilang simpleng pag-click.";
 
 /* No comment provided by engineer. */
-"Edit Profile" = "Edit Profile";
+"Edit Profile" = "I-edit ang profile";
 
 /* Invitation tag placeholder */
-"eg: Dad" = "eg: Dad";
+"eg: Dad" = "hal: Tatay";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "hal: juandelacruz";
@@ -719,22 +737,22 @@
 "Enter your 2FA code below" = "Ilagay ang iyong 2FA code sa ibaba";
 
 /* No comment provided by engineer. */
-"Enter your Gravatar Email ID" = "Enter your Gravatar Email ID";
+"Enter your Gravatar Email ID" = "Ilagay ang iyong Gravatar Email ID";
 
 /* Voting */
-"Enter your voting key" = "Enter your voting key";
+"Enter your voting key" = "Ilagay ang iyong voting key";
 
 /* No comment provided by engineer. */
 "Error" = "Mali";
 
 /* No comment provided by engineer. */
-"Error updating your profile" = "Error updating your profile";
+"Error updating your profile" = "Error sa pag-update ng iyong profile";
 
 /* No comment provided by engineer. */
 "Error Upgrading" = "Kamalian sa Pag-upgrade";
 
 /* Usernames */
-"Example post" = "Example post";
+"Example post" = "Halimbawang post";
 
 /* No comment provided by engineer. */
 "Exit" = "Lumabas";
@@ -747,6 +765,9 @@
 
 /* No comment provided by engineer. */
 "Explore Dash" = "Galugarin ang Dash";
+
+/* ZenLedger */
+"Export all transactions" = "I-export ang lahat ng transaksyon";
 
 /* No comment provided by engineer. */
 "Extended Public Keys" = "Pinalawak na Public Key";
@@ -779,22 +800,25 @@
 "Fees in crypto purchases" = "Mga bayarin sa mga pagbili ng crypto";
 
 /* No comment provided by engineer. */
-"Fetching Image" = "Fetching Image";
+"Fetching Image" = "Kinukuha ang Larawan";
 
 /* Explore Dash */
 "Fetching Info" = "Kinukuha ang Impormasyon";
+
+/* Balance */
+"Fetching rates…" = "Kinukuha ang mga rate...";
 
 /* Coinbase/Payment Methods */
 "Fiat Account" = "Fiat Account";
 
 /* No comment provided by engineer. */
-"Filter" = "Filter";
+"Filter" = "Salain";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Salain ang transaksyon";
 
 /* No comment provided by engineer. */
-"Filtered by" = "Filtered by";
+"Filtered by" = "Na-filter ng";
 
 /* Explore Dash/Merchants/Filters */
 "Filtered by:" = "Na-filter ni:";
@@ -809,7 +833,7 @@
 "Find a user on the Dash Network" = "Maghanap ng gumagamit sa Network ng Dash";
 
 /* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Find merchants that accept DASH";
+"Find merchants that accept DASH" = "Maghanap ng mga merchant na tumatanggap ng DASH";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "Maghanap ng mga merchant na tumatanggap ng Dash, kung saan ito bibilhin at kung paano kumita gamit ito.";
@@ -824,7 +848,7 @@
 "First deposit should be more than %@" = "Ang unang deposito ay dapat na higit sa %@";
 
 /* CrowdNode */
-"First minimum deposit" = "First minimum deposit";
+"First minimum deposit" = "Unang Minimum na Deposito";
 
 /* Coinbase */
 "For your security, you have been signed out." = "Para sa iyong seguridad, na-sign out ka.";
@@ -875,10 +899,10 @@
 "Get Started" = "Magsimula";
 
 /* No comment provided by engineer. */
-"Get Test Dash" = "Get Test Dash";
+"Get Test Dash" = "Kunin ang Test Dash";
 
 /* No comment provided by engineer. */
-"Get your Username" = "Get your Username";
+"Get your Username" = "Kunin ang iyong Username";
 
 /* CrowdNode */
 "Getting started with CrowdNode" = "Pagsisimula sa CrowdNode";
@@ -914,13 +938,13 @@
 "Help us improve your experience" = "Tulungan kaming mapabuti ang iyong karanasan";
 
 /* CrowdNode */
-"Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device";
+"Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "Narito ang isang Dash address na itinalaga para sa iyong CrowdNode account sa Dash Wallet sa device na ito.";
 
 /* adjective, security level */
 "High" = "Mataas";
 
 /* Voting */
-"High to low" = "High to low";
+"High to low" = "Mataas hanggang mababa";
 
 /* No comment provided by engineer. */
 "History" = "Kasaysayan";
@@ -929,7 +953,7 @@
 "How CrowdNode staking works" = "Paano gumagana ang CrowdNode staking";
 
 /* No comment provided by engineer. */
-"How do I get Test Dash?" = "How do I get Test Dash?";
+"How do I get Test Dash?" = "Paano ako makakakuha ng Test Dash?";
 
 /* CrowdNode */
 "How to confirm your API Dash address" = "Paano kumpirmahin ang iyong API Dash address";
@@ -950,19 +974,22 @@
 "I agree to CrowdNode" = "Sumasang ayon ako sa CrowdNode";
 
 /* Voting */
-"I have approved" = "I have approved";
+"I have approved" = "Naaprubahan ko na";
 
 /* Voting */
-"I have not approved" = "I have not approved";
+"I have not approved" = "hindi ko na inaprubahan";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "Naisulat ko na ito";
 
 /* Voting */
-"Identity" = "Identity";
+"Identity" = "Pagkakakilanlan";
 
 /* Usernames */
-"If somebody else requests the same username as you, we will let the network decide whom to give this username" = "If somebody else requests the same username as you, we will let the network decide whom to give this username";
+"If somebody else requests the same username as you, we will let the network decide whom to give this username" = "Kung may ibang humiling ng parehong username gaya mo, hahayaan namin ang network na magpasya kung kanino ibibigay ang username na ito";
+
+/* Geoblock */
+"If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "Kung pipiliin mong magbigay ng mga pahintulot sa ibang pagkakataon at wala ka sa UK, maaari mong gamitin ang Coinbase";
 
 /* CrowdNode */
 "If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "Kung sakaling mawala mo ang iyong passphrase, maaari mong i-verify ang iyong sarili sa ibang paraan upang mabawi ang access sa iyong mga pondo ng CrowdNode.";
@@ -974,7 +1001,7 @@
 "If you still would like to wipe it please input: \"%@\"" = "Kung gusto mo paring i-wipe ito paki-input: \"%@\"";
 
 /* Usernames */
-"If you tap “Cancel Request”, you will still have a chance to request another username without paying again" = "If you tap “Cancel Request”, you will still have a chance to request another username without paying again";
+"If you tap “Cancel Request”, you will still have a chance to request another username without paying again" = "Kung tapikin mo ang \"Kanselahin ang Kahilingan\", magkakaroon ka pa rin ng pagkakataong humiling ng isa pang username nang hindi nagbabayad muli";
 
 /* No comment provided by engineer. */
 "If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "Kung gusto mong mag-save ng mga manu-manong na-reclassify na uri para sa mga transaksyon dapat kang mag-export ng CSV transaction file.";
@@ -983,13 +1010,13 @@
 "Ignore" = "Huwag pansinin";
 
 /* No comment provided by engineer. */
-"Image uploaded can be viewed publicly by anyone." = "Image uploaded can be viewed publicly by anyone.";
+"Image uploaded can be viewed publicly by anyone." = "Ang larawang na-upload ay maaaring matingnan sa publiko ng sinuman.";
 
 /* No comment provided by engineer. */
-"Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
+"Image URL can't be longer than %ld characters." = "Ang URL ng larawan ay hindi maaaring mas mahaba sa %ld character.";
 
 /* No comment provided by engineer. */
-"Images Privacy Policy" = "Images Privacy Policy";
+"Images Privacy Policy" = "Patakaran sa Privacy ng Mga Larawan";
 
 /* No comment provided by engineer. */
 "Immediately" = "Kaagad";
@@ -1004,13 +1031,13 @@
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Bilang karagdagan sa ipinapakitang bayad sa Coinbase, nagsasama kami ng spread sa presyo. Kapag gumagamit ng Advanced Trade, walang spread na kasama dahil direktang nakikipag-ugnayan ka sa order book.\n\nAng mga merkado ng Cryptocurrency ay pabagu-bago, at nagbibigay-daan ito sa amin na pansamantalang i-lock ang isang presyo para sa pagpapatupad ng kalakalan.";
 
 /* CrowdNode */
-"In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster.";
+"In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "Sa kaso ng mas malalaking withdrawal, magbabayad ang CrowdNode ng mga withdrawal sa loob ng dalawang linggo. Ito ay dahil sa kanilang mga protocol sa seguridad at kadalasan ay mas mabilis na hahawakan.";
 
 /* Usernames */
-"In case you lose your passphrase you will lose your right to your requested username." = "In case you lose your passphrase you will lose your right to your requested username.";
+"In case you lose your passphrase you will lose your right to your requested username." = "Kung sakaling mawala mo ang iyong passphrase mawawala ang iyong karapatan sa iyong hiniling na username.";
 
 /* Usernames */
-"In case your request is not approved" = "In case your request is not approved";
+"In case your request is not approved" = "Kung sakaling hindi maaprubahan ang iyong kahilingan";
 
 /* CrowdNode Portal */
 "In process…" = "Pinoproseso…";
@@ -1028,7 +1055,7 @@
 "Insufficient funds" = "Hindi sapat na pondo";
 
 /* No comment provided by engineer. */
-"Insufficient Wallet Balance" = "Insufficient Wallet Balance";
+"Insufficient Wallet Balance" = "Hindi sapat na Balanse sa Wallet";
 
 /* Coinbase/Payment Methods */
 "Interac" = "Interac";
@@ -1061,7 +1088,7 @@
 "Invalid Input" = "Di-wastong Input";
 
 /* No comment provided by engineer. */
-"Invalid Inviation" = "Invalid Inviation";
+"Invalid Inviation" = "Di-wastong Imbitasyon";
 
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Invalid ang hiniling na bayad";
@@ -1070,46 +1097,46 @@
 "Invalid QR Code" = "Hindi wasto ang QR Code";
 
 /* No comment provided by engineer. */
-"Invitation" = "Invitation";
+"Invitation" = "Imbitasyon";
 
 /* Invitation #3 */
-"Invitation %ld" = "Invitation %ld";
+"Invitation %ld" = "Imbitasyon %ld";
 
 /* No comment provided by engineer. */
-"Invitation already claimed" = "Invitation already claimed";
+"Invitation already claimed" = "Na-claim na ang imbitasyon";
 
 /* No comment provided by engineer. */
-"Invitation Created Successfully" = "Invitation Created Successfully";
+"Invitation Created Successfully" = "Matagumpay na Nagawa ang Imbitasyon";
 
 /* No comment provided by engineer. */
-"Invitation Fee" = "Invitation Fee";
+"Invitation Fee" = "Bayad sa Imbitasyon";
 
 /* No comment provided by engineer. */
-"Invitation used by" = "Invitation used by";
+"Invitation used by" = "Imbitasyon na ginamit ni";
 
 /* No comment provided by engineer. */
-"Invitations History" = "Invitations History";
+"Invitations History" = "Kasaysayan ng mga Imbitasyon";
 
 /* No comment provided by engineer. */
-"Invite" = "Invite";
+"Invite" = "Mag-imbita";
 
 /* No comment provided by engineer. */
-"Invite Someone to join the Dash Network" = "Invite Someone to join the Dash Network";
+"Invite Someone to join the Dash Network" = "Mag-imbita ng isang tao na sumali sa Dash Network";
 
 /* No comment provided by engineer. */
-"Invite your family, find your friends by searching their usernames" = "Invite your family, find your friends by searching their usernames";
+"Invite your family, find your friends by searching their usernames" = "Imbitahin ang iyong pamilya, hanapin ang iyong mga kaibigan sa pamamagitan ng paghahanap sa kanilang mga username";
 
 /* Usernames */
-"Invite your family, find your friends by searching their usernames." = "Invite your family, find your friends by searching their usernames.";
+"Invite your family, find your friends by searching their usernames." = "Imbitahin ang iyong pamilya, hanapin ang iyong mga kaibigan sa pamamagitan ng paghahanap sa kanilang mga username";
 
 /* No comment provided by engineer. */
-"Invite your friends & family" = "Invite your friends & family";
+"Invite your friends & family" = "Imbitahin ang iyong mga kaibigan at pamilya";
 
 /* No comment provided by engineer. */
-"Invite your friends and family to join the Dash Network." = "Invite your friends and family to join the Dash Network.";
+"Invite your friends and family to join the Dash Network." = "Imbitahin ang iyong mga kaibigan at pamilya na sumali sa Dash Network.";
 
 /* No comment provided by engineer. */
-"Invite your friends and family to the Dash Network" = "Invite your friends and family to the Dash Network";
+"Invite your friends and family to the Dash Network" = "Imbitahin ang iyong mga kaibigan at pamilya na sumali sa Dash Network.";
 
 /* CrowdNode */
 "It can take a minute for your balance to be updated." = "Maaaring tumagal ng isang minuto bago ma-update ang iyong balanse.";
@@ -1124,7 +1151,7 @@
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "Maaaring tumagal ng hanggang 10 minuto upang ilipat ang Dash mula sa Coinbase patungo sa Dash Wallet sa device na ito";
 
 /* Coinbase */
-"It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history";
+"It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "Napakahirap para sa mga advanced na user na may anumang antas ng teknikal na kadalubhasaan na matukoy ang iyong kasaysayan ng transaksyon";
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Mukhang sinusubukan mong ibalik ang iyong pitaka gamit ang isang 12 na recovery phrase, subalit nakapaglagay ka lamang ng 10 salita, nais mo bang awtomatikong mabawi ang mga nawawalang salita? Maaari itong tumagal ng halos isang oras. Inirerekumenda namin ang pag-plug sa iyong aparato.";
@@ -1133,22 +1160,19 @@
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "Mukhang sinusubukan mong ibalik ang iyong pitaka gamit ang isang 12 na recovery phrase, subalit nakapaglagay ka lamang ng 11 salita, nais mo bang awtomatikong mabawi ang nawawalang salita?";
 
 /* No comment provided by engineer. */
-"Join" = "Join";
-
-/* No comment provided by engineer. */
-"Join DashPay" = "Join DashPay";
+"Join DashPay" = "Sumali sa DashPay";
 
 /* No comment provided by engineer. */
 "Join Evolution" = "Sumali sa Ebolusyon";
 
 /* No comment provided by engineer. */
-"Join Now" = "Join Now";
+"Join Now" = "Sumali ka na";
 
 /* CrowdNode */
 "Joining the pool" = "Sumasali sa pool";
 
 /* Usernames */
-"Keep your passphrase safe" = "Keep your passphrase safe";
+"Keep your passphrase safe" = "Panatilihing ligtas ang iyong passphrase";
 
 /* No comment provided by engineer. */
 "Key Id" = "Key Id";
@@ -1173,22 +1197,22 @@
 "Learn More..." = "Matuto pa...";
 
 /* CrowdNode */
-"Leaving the pool" = "Leaving the pool";
+"Leaving the pool" = "Umalis sa Pool";
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Ipaalam sa akin kung kailan ito tapos";
 
 /* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Let your friends and family to join Dash";
+"Let your friends and family to join Dash" = "Hayaan ang iyong mga kaibigan at pamilya na sumali sa Dash";
 
 /* No comment provided by engineer. */
-"Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Let your friends and family to join the Dash Network. Invite them to the world of social banking.";
+"Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Hayaan ang iyong mga kaibigan at pamilya na sumali sa Dash Network. Anyayahan sila sa mundo ng social banking.";
 
 /* Validation rule */
-"Letters, numbers and hyphens only" = "Letters, numbers and hyphens only";
+"Letters, numbers and hyphens only" = "Mga titik, numero at gitling lamang";
 
 /* No comment provided by engineer. */
-"Let’s Get Started" = "Let’s Get Started";
+"Let’s Get Started" = "Magsimula na tayo";
 
 /* Voting */
 "Link" = "Link";
@@ -1254,10 +1278,10 @@
 "Low" = "Mababa";
 
 /* Voting */
-"Low to high" = "Low to high";
+"Low to high" = "Mababa hanggang mataas";
 
 /* Usernames */
-"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow";
+"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "Gumawa ng post gamit ang text sa itaas (o katulad nito) sa isang kilalang social media o messaging platform para i-verify na ikaw ang orihinal na may-ari ng hiniling na username at mag-paste ng link sa post sa ibaba";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "Pamahalaan ang Pahintulot sa GPS";
@@ -1293,10 +1317,10 @@
 "Max" = "Max";
 
 /* Usernames */
-"Maximum 75 characters" = "Maximum 75 characters";
+"Maximum 75 characters" = "Maximum na 75 character";
 
 /* No comment provided by engineer. */
-"Maybe later" = "Maybe later";
+"Maybe later" = "Baka mamaya";
 
 /* adjective, security level */
 "Medium" = "Katamtaman";
@@ -1308,7 +1332,7 @@
 "Merchant search works better with Location Services turned on." = "Mas mahusay na gumagana ang paghahanap ng merchant kapag naka-on ang Mga Serbisyo sa Lokasyon.";
 
 /* CoinJoin */
-"Mixing your Dash coins will make your transactions more private" = "Mixing your Dash coins will make your transactions more private";
+"Mixing your Dash coins will make your transactions more private" = "Ang paghahalo ng iyong mga Dash coins ay gagawing mas pribado ang iyong mga transaksyon";
 
 /* No comment provided by engineer. */
 "More" = "Marami";
@@ -1317,10 +1341,10 @@
 "More Control" = "Mas marami pang kontrol";
 
 /* No comment provided by engineer. */
-"More Suggestions" = "More Suggestions";
+"More Suggestions" = "Higit pang mga Mungkahi";
 
 /* No comment provided by engineer. */
-"Move and Zoom your photo to find the perfect fit" = "Move and Zoom your photo to find the perfect fit";
+"Move and Zoom your photo to find the perfect fit" = "Ilipat at I-zoom ang iyong larawan upang mahanap ang perpektong akma";
 
 /* No comment provided by engineer. */
 "Moved from" = "Ilipat mula";
@@ -1329,22 +1353,16 @@
 "Moved to Address" = "Ilipat sa address";
 
 /* CoinJoin */
-"Multiple hours" = "Multiple hours";
+"Multiple hours" = "Maramihang oras";
 
 /* Validation rule */
-"Must start and end with a letter or number" = "Must start and end with a letter or number";
+"Must start and end with a letter or number" = "Dapat magsimula at magtapos sa isang titik o numero";
 
 /* No comment provided by engineer. */
 "My Contacts" = "Ang Aking mga Contacts";
 
 /* No comment provided by engineer. */
 "Name" = "Pangalan";
-
-/* Explore Dash: Filters */
-"Name: from A to Z" = "Pangalan: mula A hanggang Z";
-
-/* Explore Dash: Filters */
-"Name: from Z to A" = "Pangalan: mula Z hanggang A";
 
 /* Nearby */
 "Nearby" = "Sa malapit";
@@ -1368,10 +1386,10 @@
 "New CrowdNode Account" = "Bagong CrowdNode Account";
 
 /* Voting */
-"New to old" = "New to old";
+"New to old" = "Bago sa luma";
 
 /* Coinbase */
-"Newly received Dash will be automatically mixed when the wallet is opened" = "Newly received Dash will be automatically mixed when the wallet is opened";
+"Newly received Dash will be automatically mixed when the wallet is opened" = "Awtomatikong ihahalo ang bagong natanggap na Dash kapag binuksan ang wallet";
 
 /* No comment provided by engineer. */
 "NFC device" = "NFC device";
@@ -1386,7 +1404,7 @@
 "No active user" = "Walang aktibong user";
 
 /* Coinbase */
-"No cash account found" = "No cash account found";
+"No cash account found" = "Walang nakitang cash sa account";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "Walang paraan ng pagbabayad";
@@ -1413,7 +1431,7 @@
 "Not a valid Dash address" = "Hindi wastong address ng Dash";
 
 /* Usernames */
-"Not a valid URL" = "Not a valid URL";
+"Not a valid URL" = "Hindi wastong URL";
 
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Hindi lahat ng tindahan ay direktang tumatanggap ng DASH, ngunit maaari kang bumili ng gift card gamit ang iyong Dash.";
@@ -1437,13 +1455,13 @@
 "OK" = "OK";
 
 /* Voting */
-"Old to new" = "Old to new";
+"Old to new" = "Luma sa bago";
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Kapag tinanggap ng %@ ang iyong kahilingan maaari kang Magbayad Direkta sa Username";
 
 /* Voting */
-"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "Once the voting ends you can create any username you want as long as it hasn’t already been created";
+"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "Kapag natapos na ang pagboto maaari kang lumikha ng anumang username na gusto mo hangga't hindi pa ito nagagawa";
 
 /* Online */
 "Online" = "Online";
@@ -1455,19 +1473,19 @@
 "Online Merchant" = "Online Merchant";
 
 /* Voting */
-"Only duplicates" = "Only duplicates";
+"Only duplicates" = "Mga duplicate lang";
 
 /* No comment provided by engineer. */
-"Only requests with links" = "Only requests with links";
+"Only requests with links" = "Mga kahilingan lamang na may mga link";
 
 /* Voting */
-"Only with links" = "Only with links";
+"Only with links" = "Lamang na may mga link";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Operator na mga Susi";
 
 /* No comment provided by engineer. */
-"or" = "or";
+"or" = "o";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "Preview ng Order";
@@ -1479,10 +1497,10 @@
 "Owner Keys" = "Susi ng may-ari";
 
 /* Usernames */
-"Paste the link" = "Paste the link";
+"Paste the link" = "Idikit ang link";
 
 /* No comment provided by engineer. */
-"Paste your image URL" = "Paste your image URL";
+"Paste your image URL" = "I-paste ang URL ng iyong larawan";
 
 /* No comment provided by engineer. */
 "Pay" = "Magbayad";
@@ -1494,13 +1512,13 @@
 "Pay Directly to Username" = "Magbayad ng Direkta sa Username";
 
 /* Usernames */
-"Pay now and if not approved, you can create a different name without paying again" = "Pay now and if not approved, you can create a different name without paying again";
+"Pay now and if not approved, you can create a different name without paying again" = "Magbayad ngayon at kung hindi naaprubahan, maaari kang lumikha ng ibang pangalan nang hindi nagbabayad muli";
 
 /* No comment provided by engineer. */
-"Pay to usernames. No more alphanumeric addresses" = "Pay to usernames. No more alphanumeric addresses";
+"Pay to usernames. No more alphanumeric addresses" = "Magbayad sa mga username. Wala nang mga alphanumeric na address";
 
 /* Usernames */
-"Pay to usernames. No more alphanumeric addresses." = "Pay to usernames. No more alphanumeric addresses.";
+"Pay to usernames. No more alphanumeric addresses." = "Magbayad sa mga username. Wala nang mga alphanumeric na address.";
 
 /* Coinbase/Buy Dash */
 "Pay with" = "Magbayad gamit ang";
@@ -1533,7 +1551,7 @@
 "Payment Type" = "Uri ng Pagbabayad";
 
 /* No comment provided by engineer. */
-"Payments made directly to addresses won’t be retained in activity." = "Payments made directly to addresses won’t be retained in activity.";
+"Payments made directly to addresses won’t be retained in activity." = "Ang mga pagbabayad na direktang ginawa sa mga address ay hindi pananatilihin sa aktibidad.";
 
 /* CrowdNode */
 "Payout Options" = "Mga Pagpipilian sa Pagbabayad";
@@ -1554,10 +1572,10 @@
 "per transaction" = "bawat transaksyon";
 
 /* Usernames */
-"Personalise profile" = "Personalise profile";
+"Personalise profile" = "I-personalize ang profile";
 
 /* No comment provided by engineer. */
-"Personalize" = "Personalize";
+"Personalize" = "I-personalize";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Ang PIN ay laging kailangan sa pagbabayad.";
@@ -1568,14 +1586,23 @@
 /* Network Unavailable */
 "Please check your network connection" = "Mangyaring suriin ang iyong koneksyon sa network";
 
-/* No comment provided by engineer. */
-"Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
+/* Uphold */
+"Please contact Uphold to update your proof of address." = "Mangyaring makipag-ugnayan sa Uphold upang i-update ang iyong patunay ng address.";
 
 /* No comment provided by engineer. */
-"Please enter a valid image URL." = "Please enter a valid image URL.";
+"Please enter a valid gravatar email ID." = "Mangyaring maglagay ng wastong gravatar email ID.";
+
+/* No comment provided by engineer. */
+"Please enter a valid image URL." = "Mangyaring magpasok ng wastong URL ng larawan.";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Paki-enter ang PIN para ma-upgrade ang pitaka";
+
+/* Uphold */
+"Please go to your Uphold account to answer some questions about yourself." = "Mangyaring pumunta sa iyong Uphold account para sagutin ang ilang katanungan tungkol sa iyong sarili.";
+
+/* Uphold */
+"Please go to your Uphold account to verify your identity." = "Mangyaring pumunta sa iyong Uphold account upang i-verify ang iyong pagkakakilanlan.";
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Pakitandaan na ang email ay hindi nai-save ng Dash Wallet at ipinapadala lamang sa Crowdnode";
@@ -1596,7 +1623,7 @@
 "Please try scanning again" = "Mangyaring subukang i-scan muli";
 
 /* Usernames */
-"Please vote to approve my requested Dash username - %@" = "Please vote to approve my requested Dash username - %@";
+"Please vote to approve my requested Dash username - %@" = "Mangyaring bumoto upang aprubahan ang aking hiniling na username sa Dash - %@";
 
 /* No comment provided by engineer. */
 "Please Wait" = "Mangyaring maghintay";
@@ -1605,7 +1632,7 @@
 "Please wait" = "Mangyaring maghintay";
 
 /* CrowdNode */
-"Please wait before initiating the next withdrawal" = "Please wait before initiating the next withdrawal";
+"Please wait before initiating the next withdrawal" = "Mangyaring maghintay bago simulan ang susunod na withdrawal";
 
 /* No comment provided by engineer. */
 "Please wait until the wallet is fully synced before exporting your transaction history" = "Mangyaring maghintay hanggang ang wallet ay ganap na ma-sync bago i-export ang iyong kasaysayan ng transaksyon.";
@@ -1614,13 +1641,22 @@
 "Please write it down" = "Paki-sulat sa ibaba";
 
 /* No comment provided by engineer. */
-"Preview Invitation" = "Preview Invitation";
+"Preview Invitation" = "I-preview ang Imbitasyon";
 
 /* No comment provided by engineer. */
 "Previously used at: " = "Ginamit dati sa:";
 
+/* Stale rates */
+"Prices are at least 30 minutes old. Fiat values may be incorrect." = "Ang mga presyo ay hindi bababa sa 30 minutong gulang. Maaaring mali ang mga halaga ng Fiat.";
+
+/* Stale rates */
+"Prices have fluctuated more than 50% since the last update." = "Nag-iba-iba ang mga presyo nang higit sa 50% mula noong huling pag-update.";
+
+/* Stale rates */
+"Prices weren't retrieved. Fiat values may be incorrect." = "Hindi nakuha ang mga presyo. Maaaring mali ang mga halaga ng Fiat.";
+
 /* CrowdNode */
-"Primary Dash address" = "Primary Dash address";
+"Primary Dash address" = "Pangunahing Address ng Dash";
 
 /* No comment provided by engineer. */
 "Private / Public Keys (base64)" = "Pribado / Pampublikong Susi (base64)";
@@ -1635,7 +1671,7 @@
 "Protect your savings" = "Protektahan ang iyong mga ipon";
 
 /* Usernames */
-"Prove your identity" = "Prove your identity";
+"Prove your identity" = "Patunayan ang iyong pagkakakilanlan";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Address ng tagapagbigay ng serbisyo";
@@ -1647,7 +1683,7 @@
 "Public key (legacy)" = "Pampublikong Susi (pamana)";
 
 /* No comment provided by engineer. */
-"Public URL" = "Public URL";
+"Public URL" = "Pampublikong URL";
 
 /* Coinbase/Buy Dash */
 "Purchase" = "Bumili";
@@ -1656,7 +1692,7 @@
 "Quick Receive" = "Tanggapin ng mabilis";
 
 /* Voting */
-"Quick Voting" = "Quick Voting";
+"Quick Voting" = "Mabilis na Pagboto";
 
 /* No comment provided by engineer. */
 "Quorums validated: %d/%d" = "Napatunayan sa korums : %1$d/%2$d";
@@ -1734,13 +1770,19 @@
 "Report an Issue" = "I-report ang Isyu";
 
 /* Voting */
-"Request details" = "Request details";
+"Request details" = "Mga detalye ng kahilingan";
 
 /* Voting */
-"Request Username" = "Request Username";
+"Request Username" = "Humiling ng Username";
 
 /* Voting */
-"Request your username" = "Request your username";
+"Request your username" = "Hilingin ang iyong username";
+
+/* No comment provided by engineer. */
+"Requested username was not approved" = "Ang hiniling na username ay hindi naaprubahan";
+
+/* No comment provided by engineer. */
+"Requested · Voting: %@" = "Hiniling · Pagboto: %@";
 
 /* An action */
 "Rescan" = "I-scan muli";
@@ -1773,7 +1815,7 @@
 "Review & Rate the app" = "I-rebyu at bigyang marka ang app";
 
 /* Voting */
-"Review the posting below to verify the ownership of this username" = "Review the posting below to verify the ownership of this username";
+"Review the posting below to verify the ownership of this username" = "Suriin ang pag-post sa ibaba upang i-verify ang pagmamay-ari ng username na ito";
 
 /* No comment provided by engineer. */
 "Reward" = "Gantimpala";
@@ -1782,10 +1824,10 @@
 "Rewards" = "Mga gantimpala";
 
 /* No comment provided by engineer. */
-"Save" = "Save";
+"Save" = "I-save";
 
 /* No comment provided by engineer. */
-"Save Changes" = "Save Changes";
+"Save Changes" = "I-save ang mga pagbabago";
 
 /* No comment provided by engineer. */
 "Scan" = "Scan";
@@ -1815,7 +1857,7 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Ang mga screenshot ay kita sa ibang apps o device. Lumikha ng bagong recovery phrase at panatilihin itong sikreto.                                  ";
 
 /* Voting */
-"Search by username" = "Search by username";
+"Search by username" = "Maghanap sa pamamagitan ng username";
 
 /* No comment provided by engineer. */
 "Search for a contact" = "Maghanap para sa isang contact";
@@ -1836,7 +1878,7 @@
 "Searching for username %@ on the Dash Network" = "Naghahanap ng username %@ sa Network ng Dash";
 
 /* No comment provided by engineer. */
-"Secure Your Wallet" = "Secure Your Wallet";
+"Secure Your Wallet" = "I-secure ang Iyong Wallet";
 
 /* No comment provided by engineer. */
 "Security" = "Seguridad";
@@ -1848,7 +1890,7 @@
 "See on Uphold" = "Tingnan sa Uphold";
 
 /* No comment provided by engineer. */
-"Select" = "Select";
+"Select" = "Pumili";
 
 /* Coinbase */
 "Select a coin" = "Pumili ng barya";
@@ -1857,10 +1899,10 @@
 "Select a service" = "Pumili ng isang Serbisyo";
 
 /* No comment provided by engineer. */
-"Select from Gallery" = "Select from Gallery";
+"Select from Gallery" = "Pumili mula sa Gallery";
 
 /* CoinJoin */
-"Select mixing level" = "Select mixing level";
+"Select mixing level" = "Piliin ang antas ng paghahalo";
 
 /* Coinbase */
 "Select the coin" = "Piliin ang barya";
@@ -1881,13 +1923,13 @@
 "Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "Ipadala ang %@ mula sa iyong pangunahing Dash address na kasalukuyan mong ginagamit para sa iyong CrowdNode account";
 
 /* No comment provided by engineer. */
-"Send again" = "Send again";
+"Send again" = "Magpadala muli";
 
 /* No comment provided by engineer. */
 "Send Contact Request" = "Magpadala ng Kahilingan sa Pakikipag-ugnay";
 
 /* No comment provided by engineer. */
-"Send Invitation" = "Send Invitation";
+"Send Invitation" = "Magpadala ng imbitasyon";
 
 /* Coinbase
    CrowdNode */
@@ -1897,10 +1939,10 @@
 "Send to" = "Pinadala kay";
 
 /* No comment provided by engineer. */
-"Send to a Contact" = "Send to a Contact";
+"Send to a Contact" = "Ipadala sa isang Contact";
 
 /* No comment provided by engineer. */
-"Send to contact" = "Send to contact";
+"Send to contact" = "Ipadala sa Contact";
 
 /* No comment provided by engineer. */
 "Send to copied address or QR code" = "Ipadala sa kinopyang address o QR code";
@@ -1912,7 +1954,7 @@
 "Sending" = "Ipinapadala";
 
 /* No comment provided by engineer. */
-"Sending Contact Request" = "Sending Contact Request";
+"Sending Contact Request" = "Nagpapadala ng Kahilingan sa Pakikipag-ugnayan";
 
 /* No comment provided by engineer. */
 "Sending to" = "Nagpapadala kay";
@@ -1951,7 +1993,7 @@
 "Set PIN" = "Mag-set ng PIN";
 
 /* No comment provided by engineer. */
-"Set Your PIN" = "Set Your PIN";
+"Set Your PIN" = "I-set ang Iyong PIN";
 
 /* No comment provided by engineer. */
 "Settings" = "Settings";
@@ -1989,6 +2031,9 @@
 /* CrowdNode Portal */
 "Sign up to finish setting up account" = "Mag-sign up para tapusin ang pag-set up ng account";
 
+/* ZenLedger */
+"Simplify your crypto taxes" = "Pasimplehin ang iyong mga buwis sa crypto";
+
 /* No comment provided by engineer. */
 "Skip" = "Laktawan";
 
@@ -2007,12 +2052,6 @@
 /* Explore Dash/Filters */
 "Sorted by name" = "Inayos ayon sa pangalan";
 
-/* Explore Dash/Filters */
-"Sorting: A to Z" = "Pag-uuri: A hanggang Z";
-
-/* Explore Dash/Filters */
-"Sorting: Z to A" = "Pag-uuri: Z hanggang A";
-
 /* No comment provided by engineer. */
 "Specify Amount" = "Tukuyin ang halaga";
 
@@ -2023,13 +2062,13 @@
 "Staking" = "Staking";
 
 /* CoinJoin */
-"Start Mixing" = "Start Mixing";
+"Start Mixing" = "Simulan ang Paghahalo";
 
 /* Step 1 */
-"Step %ld" = "Step %ld";
+"Step %ld" = "Hakbang %ld";
 
 /* CoinJoin */
-"Stop Mixing" = "Stop Mixing";
+"Stop Mixing" = "Itigil ang Paghahalo";
 
 /* No comment provided by engineer. */
 "Support" = "Suporta";
@@ -2065,10 +2104,10 @@
 "Syncing…" = "Sini-sync...";
 
 /* No comment provided by engineer. */
-"Tag for your reference" = "Tag for your reference";
+"Tag for your reference" = "I-tag para sa iyong reperensiya";
 
 /* No comment provided by engineer. */
-"Take a Photo from Camera" = "Take a Photo from Camera";
+"Take a Photo from Camera" = "Kumuha ng Larawan mula sa Camera";
 
 /* Enter Address Screen */
 "Tap the address from the clipboard to paste it" = "I-tap ang address mula sa clipboard para i-paste ito";
@@ -2080,10 +2119,10 @@
 "Tax Category" = "Kategorya ng Buwis";
 
 /* No comment provided by engineer. */
-"Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users.";
+"Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Ang Test Dash ay walang anumang halaga sa totoong mundo ngunit maaari mo itong ipadala at tanggapin kasama ng iba pang mga gumagamit ng DashPay Alpha.";
 
 /* No comment provided by engineer. */
-"Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash.";
+"Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "Ang Test Dash ay libre at maaaring makuha mula sa tinatawag na gripo.\nKopyahin ang isang address mula sa Receive screen ng iyong wallet at i-click ang button sa ibaba upang makuha ang iyong Dash.";
 
 /* No comment provided by engineer. */
 "The chain is syncing…" = "Nagsi-sync ang chain…";
@@ -2092,25 +2131,25 @@
 "The code is incorrect. Please check and try again!" = "Mali ang code. Pakisuri at subukang muli!";
 
 /* CrowdNode */
-"The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments.";
+"The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "Ang Dash Network ay hinihimok ng isang bilang ng mga Masternode na isang mahalagang bahagi ng pagpapadali sa mga pagbabayad.";
 
 /* Usernames */
-"The Dash network must vote to approve your username before it is created." = "The Dash network must vote to approve your username before it is created.";
+"The Dash network must vote to approve your username before it is created." = "Dapat bumoto ang Dash network upang aprubahan ang iyong username bago ito malikha.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Ang Dash ay matagumpay na nadeposito sa iyong Coinbase account. Ngunit nagkaroon ng problema sa paglilipat nito sa Dash Wallet sa device na ito.";
 
 /* Don't translate 'Imgur' */
-"The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
+"The image you select will be uploaded to Imgur anonymously." = "Ang larawang pipiliin mo ay ia-upload sa Imgur nang hindi nagpapakilala.";
 
 /* Usernames */
-"The link you send will be visible to all of the Dash network." = "The link you send will be visible to all of the Dash network.";
+"The link you send will be visible to all of the Dash network." = "Ang link na ipapadala mo ay makikita ng lahat ng Dash network.";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "Ang pinakamababang halaga na maaari mong ipadala ay %@";
 
 /* No comment provided by engineer. */
-"them (Fetching Info)" = "them (Fetching Info)";
+"them (Fetching Info)" = "sila (Pagkuha ng Impormasyon)";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "Walang mga bagong notipikasyon";
@@ -2125,7 +2164,10 @@
 "There are no users that match with the name %@ in your contacts" = "Walang mga gumagamit na tumutugma sa pangalang %@ sa iyong contact";
 
 /* Usernames */
-"There was a network error, you can try again at no extra cost" = "There was a network error, you can try again at no extra cost";
+"There was a network error, you can try again at no extra cost" = "Nagkaroon ng error sa network, maaari mong subukang muli nang walang karagdagang gastos";
+
+/* ZenLedger */
+"There was an error when exporting your transaction history to ZenLedger" = "Nagkaroon ng error noong ine-export ang iyong history ng transaksyon sa ZenLedger";
 
 /* Coinbase */
 "There was an error while obtaining new address" = "Nagkaroon ng error habang kumukuha ng bagong address";
@@ -2152,7 +2194,7 @@
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "Kinakatawan nito ang kasalukuyang Annual Percentage Yield ng isang buong Masternode na mas mababa sa 15% na bayad sa CrowdNode. Ito ay hindi isang garantisadong rate ng pagbabalik at maaaring tumaas o bumaba batay sa laki ng mga pool ng CrowdNode at ang presyo ng Dash.";
 
 /* Voting */
-"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "This username has already been requested, but you can request it too and let the network vote to decide if you can have it";
+"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "Ang username na ito ay hiniling na, ngunit maaari mo rin itong hilingin at hayaan ang network na bumoto upang magpasya kung maaari mong makuha ito";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Ang pitaka na ito ay may laman o ang pag-sync ay hindi pa tapos, maaari hindi mo ma-wipe ito ng walang recovery phrase";
@@ -2167,7 +2209,7 @@
 "to Dash Wallet on this device" = "Sa Dash wallet sa device na ito";
 
 /* Usernames */
-"To request a username on the Dash Network, you need to have more than %@ Dash" = "To request a username on the Dash Network, you need to have more than %@ Dash";
+"To request a username on the Dash Network, you need to have more than %@ Dash" = "Upang humiling ng username sa Dash Network, kailangan mong magkaroon ng higit sa %@ Dash";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "Para simulan ang staking, gumawa ng account sa CrowdNode o kumonekta sa mayroon na.";
@@ -2223,46 +2265,46 @@
 "Try again" = "Subukan muli";
 
 /* No comment provided by engineer. */
-"Try Again" = "Try Again";
+"Try Again" = "Subukan muli";
 
 /* Alert title */
 "Turn device passcode on" = "I-turn on ang device passcode";
 
 /* Coinbase */
-"Turning this feature on will result a higher battery usage" = "Turning this feature on will result a higher battery usage";
+"Turning this feature on will result a higher battery usage" = "Ang pag-on sa feature na ito ay magreresulta ng mas mataas na paggamit ng baterya";
 
 /* Coinbase */
 "Two factor auth required" = "Kinakailangan ang two-factor na auth";
 
 /* Voting */
-"Type" = "Type";
+"Type" = "Uri";
 
 /* No comment provided by engineer. */
-"Unable to accept contact request" = "Unable to accept contact request";
+"Unable to accept contact request" = "Hindi matanggap ang kahilingan sa pakikipag-ugnayan";
 
 /* No comment provided by engineer. */
 "Unable to connect" = "Hindi maka-konekta";
 
 /* No comment provided by engineer. */
-"Unable to fetch contact details" = "Unable to fetch contact details";
+"Unable to fetch contact details" = "Hindi makuha ang mga detalye ng contact";
 
 /* No comment provided by engineer. */
-"Unable to fetch image. Please enter a valid image URL or check your connection." = "Unable to fetch image. Please enter a valid image URL or check your connection.";
+"Unable to fetch image. Please enter a valid image URL or check your connection." = "Hindi makuha ang larawan. Mangyaring magpasok ng wastong URL ng larawan o suriin ang iyong koneksyon.";
 
 /* No comment provided by engineer. */
-"Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.";
+"Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Hindi makuha ang iyong Gravatar. Mangyaring maglagay ng wastong gravatar email ID.";
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Hindi makakuha ng bagong QR code";
 
 /* No comment provided by engineer. */
-"Unable to provide suggestions" = "Unable to provide suggestions";
+"Unable to provide suggestions" = "Hindi makapagbigay ng mga mungkahi";
 
 /* No comment provided by engineer. */
-"Unable to send contact request" = "Unable to send contact request";
+"Unable to send contact request" = "Hindi maipadala ang kahilingan sa pakikipag-ugnayan";
 
 /* No comment provided by engineer. */
-"Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";
+"Unable to upload your picture. Please try again." = "Hindi ma-upload ang iyong larawan. Pakisubukang muli.";
 
 /* No comment provided by engineer. */
 "Unknown" = "Hindi kilala";
@@ -2277,7 +2319,10 @@
 "Unsupported URL" = "Hindi suportadong URL";
 
 /* CoinJoin */
-"up to 30 minutes" = "up to 30 minutes";
+"up to 30 minutes" = "hanggang 30 minuto";
+
+/* No comment provided by engineer. */
+"Update your profile and start adding contacts" = "I-update ang iyong profile at magsimulang magdagdag ng mga contact";
 
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Na-update: %@";
@@ -2286,13 +2331,13 @@
 "Updating Price" = "Inuupdate ang Presyo";
 
 /* No comment provided by engineer. */
-"Updating Profile on Dash Network" = "Updating Profile on Dash Network";
+"Updating Profile on Dash Network" = "Pag-update ng Profile sa Dash Network";
 
 /* No comment provided by engineer. */
-"Upgrade" = "Upgrade";
+"Upgrade" = "I-upgrade";
 
 /* No comment provided by engineer. */
-"Upgrade to Evolution" = "Upgrade to Evolution";
+"Upgrade to Evolution" = "Mag-upgrade sa Ebolusyon";
 
 /* No comment provided by engineer. */
 "Upgrading to DashPay" = "Pag-a-upgrade sa DashPay";
@@ -2300,17 +2345,20 @@
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
-/* No comment provided by engineer. */
-"Upload Error" = "Upload Error";
+/* Uphold */
+"Uphold error" = "Uphold Error";
 
 /* No comment provided by engineer. */
-"Upload your picture, personalize your identity" = "Upload your picture, personalize your identity";
+"Upload Error" = "Error sa Pag-upload";
+
+/* No comment provided by engineer. */
+"Upload your picture, personalize your identity" = "I-upload ang iyong larawan, i-personalize ang iyong pagkakakilanlan";
 
 /* Usernames */
-"Upload your picture, personalize your identity." = "Upload your picture, personalize your identity.";
+"Upload your picture, personalize your identity." = "I-upload ang iyong larawan, i-personalize ang iyong pagkakakilanlan.";
 
 /* No comment provided by engineer. */
-"Uploading your picture to the network" = "Uploading your picture to the network";
+"Uploading your picture to the network" = "Pag-upload ng iyong larawan sa network";
 
 /* Explore Dash/Filters */
 "Use gift card" = "Gumamit ng gift card";
@@ -2322,28 +2370,28 @@
 "Used at: " = "ginagamit sa";
 
 /* No comment provided by engineer. */
-"User (Fetching Info)" = "User (Fetching Info)";
+"User (Fetching Info)" = "User (Pagkuha ng Impormasyon)";
 
 /* Voting */
 "Username" = "Username";
 
 /* No comment provided by engineer. */
-"Username already found" = "Username already found";
+"Username already found" = "Nahanap na ang username";
 
 /* No comment provided by engineer. */
-"Username available" = "Username available";
+"Username available" = "Available ang username";
 
 /* No comment provided by engineer. */
 "Username taken" = "Kinuha na Username";
 
 /* Voting */
-"Username voting" = "Username voting";
+"Username voting" = "Pagboto ng username";
 
 /* Usernames */
-"Username was successfully requested" = "Username was successfully requested";
+"Username was successfully requested" = "Matagumpay na hiniling ang username";
 
 /* No comment provided by engineer. */
-"Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
+"Users that matches %@ who are currently not in your contacts" = "Mga user na tumutugma sa %@ kasalukuyang wala sa iyong mga contact";
 
 /* CrowdNode Portal */
 "Validating address…" = "Pinapatunayan ang address...";
@@ -2367,10 +2415,10 @@
 "Verify your API Dash address" = "I-verify ang iyong API Dash address";
 
 /* Usernames */
-"Verify your identity" = "Verify your identity";
+"Verify your identity" = "I-verify ang iyong pagkakakilanlan";
 
 /* Usernames */
-"Verify your identity to enhance your chances of getting your requested username" = "Verify your identity to enhance your chances of getting your requested username";
+"Verify your identity to enhance your chances of getting your requested username" = "I-verify ang iyong pagkakakilanlan upang mapahusay ang iyong mga pagkakataong makuha ang iyong hiniling na username";
 
 /* adjective, security level */
 "Very High" = "Napakataas";
@@ -2394,22 +2442,22 @@
 "View Recovery Phrase" = "Ipakita ang recovery phrase";
 
 /* Voting */
-"Vote for All" = "Vote for All";
+"Vote for All" = "Bumoto para sa Lahat";
 
 /* Voting */
-"Vote only on duplicates" = "Vote only on duplicates";
+"Vote only on duplicates" = "Bumoto lamang sa mga duplicate";
 
 /* Voting */
-"Vote to Approve" = "Vote to Approve";
+"Vote to Approve" = "Bumoto para Aprubahan";
 
 /* Voting */
-"Votes:" = "Votes:";
+"Votes:" = "Mga Boto:";
 
 /* Voting */
-"Votes: High to low" = "Votes: High to low";
+"Votes: High to low" = "Mga Boto: Mataas hanggang mababa";
 
 /* Voting */
-"Votes: Low to high" = "Votes: Low to high";
+"Votes: Low to high" = "Mga Boto: Mababa hanggang mataas";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Address ng pagboto";
@@ -2418,10 +2466,13 @@
 "Voting Keys" = "Mga susi ng pagboto";
 
 /* Usernames */
-"Voting will not be required forever" = "Voting will not be required forever";
+"Voting will not be required forever" = "Ang pagboto ay hindi kinakailangan magpakailanman";
 
 /* Voting */
-"Voting:" = "Voting:";
+"Voting:" = "Pagboto:";
+
+/* ZenLedger */
+"Wait until the chain is fully synced, so we can review your transaction history." = "Maghintay hanggang sa ganap na ma-sync ang chain, para masuri namin ang iyong history ng transaksyon.";
 
 /* No comment provided by engineer. */
 "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Maghintay hanggang sa ganap na ma-sync ang chain, para masuri namin ang iyong history ng transaksyon. Bisitahin ang website ng CrowdNode upang mag-log in o mag-sign up.";
@@ -2469,13 +2520,13 @@
 "Welcome" = "Maligayang pagdating";
 
 /* Usernames */
-"Welcome to Dash Pay" = "Welcome to Dash Pay";
+"Welcome to Dash Pay" = "Maligayang pagdating sa Dash Pay";
 
 /* No comment provided by engineer. */
-"Welcome to DashPay" = "Welcome to DashPay";
+"Welcome to DashPay" = "Maligayang pagdating sa DashPay";
 
 /* Usernames */
-"What is username voting?" = "What is username voting?";
+"What is username voting?" = "Ano ang pagboto ng username?";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Kapag ang transaksyon ay nakumpirma, ang ibang wallet ay mawawalan ng bisa at hindi na pwedeng gamitin ulit para sa panseguridad. ";
@@ -2518,13 +2569,13 @@
 "Withdrawal requested" = "Hiniling ang withdrawal";
 
 /* No comment provided by engineer. */
-"Would you like to accept the invitation?" = "Would you like to accept the invitation?";
+"Would you like to accept the invitation?" = "Gusto mo bang tanggapin ang imbitasyon?";
 
 /* Coinbase */
-"Would you like to make a deposit for your purchase using a linked bank account?" = "Would you like to make a deposit for your purchase using a linked bank account?";
+"Would you like to make a deposit for your purchase using a linked bank account?" = "Gusto mo bang magdeposito para sa iyong pagbili gamit ang isang naka-link na bank account?";
 
 /* No comment provided by engineer. */
-"Would you like to save the changes you made to your profile?" = "Would you like to save the changes you made to your profile?";
+"Would you like to save the changes you made to your profile?" = "Gusto mo bang i-save ang mga pagbabagong ginawa mo sa iyong profile?";
 
 /* No comment provided by engineer. */
 "Yes" = "Oo";
@@ -2539,7 +2590,7 @@
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Ikaw ay magwa-wipe na ng eallet dito sa device. Anumang pondo na kalakip nito ay maaaring lamang maiblik kung mayroon kang recovery phrase.";
 
 /* No comment provided by engineer. */
-"You can always delete the image uploaded, as long as you have access to this wallet." = "You can always delete the image uploaded, as long as you have access to this wallet.";
+"You can always delete the image uploaded, as long as you have access to this wallet." = "Maaari mong i-delete anumang oras ang larawang na-upload, hangga't may access ka sa wallet na ito.";
 
 /* No comment provided by engineer. */
 "You can authenticate with Face ID for payments below" = "Maaari kang magkumpirma gamit ang iyong Face ID sa mga bayarin sa ibaba";
@@ -2550,23 +2601,26 @@
 /* CrowdNode */
 "You can change how / when your reward earnings are paid to you." = "Maaari mong baguhin kung paano / kailan binabayaran sa iyo ang iyong mga kita sa reward.";
 
-/* Voting */
-"You can enter your key in any of the following formats: WIF/base58/base64/hex" = "You can enter your key in any of the following formats: WIF/base58/base64/hex";
+/* No comment provided by engineer. */
+"You can create a different username without paying again" = "Maaari kang lumikha ng ibang username nang hindi nagbabayad muli";
 
 /* Voting */
-"You can review all requests but you only need to vote on duplicates" = "You can review all requests but you only need to vote on duplicates";
+"You can enter your key in any of the following formats: WIF/base58/base64/hex" = "Maaari mong ilagay ang iyong susi sa alinman sa mga sumusunod na format: WIF/base58/base64/hex";
+
+/* Voting */
+"You can review all requests but you only need to vote on duplicates" = "Maaari mong suriin ang lahat ng mga kahilingan ngunit kailangan mo lamang bumoto sa mga duplicate";
 
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "Maaari mong makita ang detalyadong impormasyon tungkol sa iyong mga deposito, pag-withdraw at mga kita ng reward.";
 
 /* No comment provided by engineer. */
-"You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
+"You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "Maaari mong tukuyin ang anumang URL na available sa publiko sa internet para makita ito ng ibang mga user sa Dash network.";
 
 /* No comment provided by engineer. */
-"You cannot claim this invite since you already have a Dash username" = "You cannot claim this invite since you already have a Dash username";
+"You cannot claim this invite since you already have a Dash username" = "Hindi mo ma-claim ang imbitasyong ito dahil mayroon ka nang Dash username";
 
 /* No comment provided by engineer. */
-"You do not have any contacts at the moment" = "You do not have any contacts at the moment";
+"You do not have any contacts at the moment" = "Wala kang anumang mga contact sa ngayon";
 
 /* Coinbase */
 "You don’t have enough balance" = "Wala kang sapat na balanse";
@@ -2575,13 +2629,13 @@
 "You exceeded the authorization limit on Coinbase." = "Lumampas ka sa limitasyon ng awtorisasyon sa Coinbase.";
 
 /* No comment provided by engineer. */
-"You have been invited by %@. Start using Dash cryptocurrency." = "You have been invited by %@. Start using Dash cryptocurrency.";
+"You have been invited by %@. Start using Dash cryptocurrency." = "Inimbitahan ka ni %@. Simulan ang paggamit ng Dash cryptocurrency.";
 
 /* No comment provided by engineer. */
-"You have chose \"%@\" as your username. Username cannot be changed once it is registered." = "You have chose \"%@\" as your username. Username cannot be changed once it is registered.";
+"You have chose \"%@\" as your username. Username cannot be changed once it is registered." = "Pinili mo ang \"%@\" bilang iyong username. Hindi na mababago ang username kapag narehistro na ito.";
 
 /* Voting */
-"You have entered an invalid key" = "You have entered an invalid key";
+"You have entered an invalid key" = "Naglagay ka ng di-wastong key";
 
 /* No comment provided by engineer. */
 "You have insufficient funds to proceed" = "Wala kang sapat na pondo para magpatuloy.";
@@ -2593,13 +2647,13 @@
 "You must enter your PIN in order to enter Dash Wallet" = "Kailangan ilagay ang iyong PIN upang mabuksan ang Dash Wallet";
 
 /* No comment provided by engineer. */
-"You need at least %@ Dash to create an invitation" = "You need at least %@ Dash to create an invitation";
+"You need at least %@ Dash to create an invitation" = "Kailangan mo ng kahit man lang %@ Dash para gumawa ng imbitasyon";
 
 /* CrowdNode */
 "You need at least %@ on your Dash Wallet" = "Kailangan mo ng kahit man lang %@ sa iyong Dash Wallet";
 
 /* CrowdNode */
-"You need to wait 5 minutes before initiating another withdrawal" = "You need to wait 5 minutes before initiating another withdrawal";
+"You need to wait 5 minutes before initiating another withdrawal" = "Kailangan mong maghintay ng 5 minuto bago simulan ang isa pang withdrawal";
 
 /* CrowdNode */
 "You only need %@ to join the pool." = "Kailangan mo lang ng %@ para sumali sa pool.";
@@ -2620,7 +2674,7 @@
 "You should have at least %@ to proceed with the CrowdNode verification." = "Dapat ay mayroon kang hindi bababa sa %@ upang magpatuloy sa pag-verify ng CrowdNode.";
 
 /* Usernames */
-"You should have more than %@ Dash to create a username" = "You should have more than %@ Dash to create a username";
+"You should have more than %@ Dash to create a username" = "Dapat mayroon kang higit sa %@ Dash para gumawa ng username";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Kailangan mo ring mag-log out mula sa Uphold website gamit ang iyong browser.";
@@ -2632,7 +2686,7 @@
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "Kakailanganin mo ang recovery phrase na ito upang ma-access ang iyong mga pondo kung ang device na ito ay nawala, nasira o kung na-uninstall ang Dash Wallet mula sa device na ito.";
 
 /* Coinbase */
-"You will only be able to spend Dash that has been mixed when this is turned on. This can be turned off at any time." = "You will only be able to spend Dash that has been mixed when this is turned on. This can be turned off at any time.";
+"You will only be able to spend Dash that has been mixed when this is turned on. This can be turned off at any time." = "Magagawa mo lang gumastos ng Dash na pinaghalo kapag naka-on ito. Maaari itong i-off anumang oras.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "Makakatanggap ka ng %@ Dash sa iyong Dash Wallet sa device na ito. Pakitandaan na maaaring tumagal ng hanggang 2-3 minuto upang makumpleto ang isang paglipat.";
@@ -2662,13 +2716,13 @@
 "Your deposit to CrowdNode is received." = "Natanggap na ang iyong deposito sa CrowdNode.";
 
 /* No comment provided by engineer. */
-"Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded.";
+"Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Ang iyong Email ay hindi nakaimbak sa DashPay wallet o sa anumang mga server. Ginagamit ito nang isang beses upang makuha ang mga detalye ng iyong Gravatar account at pagkatapos ay itapon.";
 
 /* No comment provided by engineer. */
-"Your invitation from %@ has been already claimed" = "Your invitation from %@ has been already claimed";
+"Your invitation from %@ has been already claimed" = "Na-claim na ang iyong imbitasyon mula sa %@ ";
 
 /* No comment provided by engineer. */
-"Your invitation from %@ is not valid" = "Your invitation from %@ is not valid";
+"Your invitation from %@ is not valid" = "Ang iyong imbitasyon mula sa %@ ay hindi wasto";
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Ginagamit ang iyong lokasyon upang ipakita ang iyong posisyon sa mapa, mga ATM sa napiling radius at pinabubuti ang mga resulta ng paghahanap.";
@@ -2680,7 +2734,7 @@
 "Your primary Dash address that you currently use for your CrowdNode account" = "Ang iyong pangunahing Dash address na kasalukuyan mong ginagamit para sa iyong CrowdNode account";
 
 /* Usernames */
-"Your request was cancelled" = "Your request was cancelled";
+"Your request was cancelled" = "Kinansela ang iyong kahilingan";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Ang iyong transaksyon ay naipadala at ang halaga ay dapat makita sa iyong pitaka sa loob ng ilang minuto.";
@@ -2692,10 +2746,16 @@
 "Your username %@ is being created on the Dash Network" = "Ang iyong username %@ ay nilikha sa Network ng Dash";
 
 /* No comment provided by engineer. */
-"Your vote was cancelled" = "Your vote was cancelled";
+"Your username was approved" = "Naaprubahan ang iyong username";
+
+/* No comment provided by engineer. */
+"Your vote was cancelled" = "Kinansela ang iyong boto";
 
 /* Voting */
-"Your vote was submitted" = "Your vote was submitted";
+"Your vote was submitted" = "Naisumite ang iyong boto";
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Ang iyong pitaka ay ligtas na. Maari mong magamit ang recovery phrase kahit kailan upanh marekober ang account sa ibang device.";
+
+/* No comment provided by engineer. */
+"ZenLedger" = "ZenLedger";

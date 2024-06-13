@@ -23,13 +23,13 @@
 "%@ is not allowed to access Touch ID" = "%@ Dokunmatik Kimliğe erişim izni verilmiyor";
 
 /* Voting */
-"%ld duplicates" = "%ld duplicates";
+"%ld duplicates" = "%ld kopyalar";
 
 /* Voting */
-"%ld requests" = "%ld requests";
+"%ld requests" = "%ld istekler";
 
 /* 10/20 Characters */
-"%ld/%ld Characters" = "%1$ld/%2$ld Characters";
+"%ld/%ld Characters" = "%1$ld/%2$ld Karakterler";
 
 /* No comment provided by engineer. */
 "(1/3) Processing Payment" = "(1/3) Ödeme İşleniyor";
@@ -104,7 +104,7 @@
 "About" = "Hakkında";
 
 /* No comment provided by engineer. */
-"About me" = "About me";
+"About me" = "Hakkımda";
 
 /* No comment provided by engineer. */
 "Accept" = "Kabul et";
@@ -134,31 +134,31 @@
 "Add a New Contact" = "Yeni Kişi Ekle";
 
 /* No comment provided by engineer. */
-"Add your Friends & Family" = "Add your Friends & Family";
+"Add your Friends & Family" = "Arkadaşlarınızı ve Ailenizi ekleyin";
 
 /* Usernames */
-"Add your friends & family" = "Add your friends & family";
+"Add your friends & family" = "Arkadaşlarınızı ve ailenizi ekleyin";
 
 /* No comment provided by engineer. */
 "Address" = "Adres";
 
 /* CoinJoin */
-"Advanced" = "Advanced";
+"Advanced" = "Gelişmiş";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Gelişmiş Güvenlik";
 
 /* Coinbase */
-"Advanced users who have a very high level of technical expertise can determine your transaction history" = "Advanced users who have a very high level of technical expertise can determine your transaction history";
+"Advanced users who have a very high level of technical expertise can determine your transaction history" = "Yüksek düzeyde teknik uzmanlığa sahip ileri düzey kullanıcılar, işlem geçmişinizi belirleyebilir.";
 
 /* Usernames */
-"After the voting ends we will notify you about its results" = "After the voting ends we will notify you about its results";
+"After the voting ends we will notify you about its results" = "Oylama bittikten sonra sonuçları size bildireceğiz";
 
 /* Usernames */
-"After voting is completed on %@ you can create any username that has not already been created" = "After voting is completed on %@ you can create any username that has not already been created";
+"After voting is completed on %@ you can create any username that has not already been created" = "%@‘de oylama tamamlandıktan sonra, daha önce oluşturulmamış herhangi bir kullanıcı adını oluşturabilirsiniz";
 
 /* No comment provided by engineer. */
-"Agree" = "Agree";
+"Agree" = "Kabul etmek";
 
 /* No comment provided by engineer. */
 "All" = "Hepsi";
@@ -169,11 +169,17 @@
 /* CrowdNode */
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "Bu cihazdan CrowdNode'a yapılan tüm gönderiler, aşağıdaki Dash adresi ile gerçekleştirilecektir.";
 
+/* ZenLedger */
+"Allow" = "İzin ver";
+
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Ayarlardan kamera erişimine izin ver";
 
 /* No comment provided by engineer. */
 "Allow Face ID access in Settings" = "Ayarlardan Yüz Kimliğine erişim izni ver";
+
+/* ZenLedger */
+"Allow sending all transactions from Dash Wallet to Zenledger?" = "Tüm işlemlerin Dash Cüzdanından Zenledger'a gönderilmesine izin verilsin mi?";
 
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Ayarlardan Dokunmatik Kimliğe erişim izni ver";
@@ -194,7 +200,7 @@
 "and" = "ve";
 
 /* CoinJoin */
-"Any funds that have been mixed will be combined with your un mixed funds" = "Any funds that have been mixed will be combined with your un mixed funds";
+"Any funds that have been mixed will be combined with your un mixed funds" = "Karıştırılmış fonlarınız, karıştırılmamış fonlarınızla birleştirilecektir.";
 
 /* Coinbase/Payment Methods */
 "Apple Pay" = "Apple Pay";
@@ -215,19 +221,19 @@
 "Are you sure you want to cancel this transaction?" = "Bu işlemi iptal etmek istediğinizden emin misiniz?";
 
 /* CoinJoin */
-"Are you sure you want to change the privacy level?" = "Are you sure you want to change the privacy level?";
+"Are you sure you want to change the privacy level?" = "Gizlilik düzeyini değiştirmek istediğinizden emin misiniz?";
 
 /* CoinJoin */
-"Are you sure you want to stop mixing?" = "Are you sure you want to stop mixing?";
+"Are you sure you want to stop mixing?" = "Karıştırmayı sonlandırmak istediğinizden emin misiniz?";
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Emin misiniz?";
 
 /* Voting */
-"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
+"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "Bir ana düğüm sahibi olarak, diğer kullanıcılar kullanıcı adı oluşturmadan önce istenen kullanıcı adlarını onaylamak için oy kullanabilirsiniz.";
 
 /* CrowdNode */
-"As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode.";
+"As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "Çoğu insanın elinde 1000 Dash bulunmadığından Crowdnode üyelerinden gelen yatırma işlemlerini bir havuzda toplayarak ana düğüm sahibi olmanın avantajlarından yararlanabilecekleri bir hizmet sunmuştur.";
 
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "Konum Servisleri açıkken ATM araması daha iyi çalışır";
@@ -269,7 +275,7 @@
 "Balance" = "Bakiye";
 
 /* CrowdNode */
-"Balance On CrowdNode" = "Balance On CrowdNode";
+"Balance On CrowdNode" = "CrowdNode'daki Bakiye";
 
 /* CrowdNode */
 "Balance: " = "Bakiye:";
@@ -284,7 +290,7 @@
 "Become part of a Dash Masternode with CrowdNode" = "CrowdNode ile Dash Masternode'un parçası olun";
 
 /* Validation rule: Between 3 and 24 characters */
-"Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
+"Between %ld and %ld characters" = "%1$ld ile %2$ld karakter arasında";
 
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase" = "Coinbase ve Dash Cüzdanı arasında";
@@ -336,7 +342,7 @@
 "Buy/Sell" = "Al/Sat";
 
 /* Voting */
-"By tapping the \"Vote for All\" button, you will automatically vote for all of the filtered usernames (%ld) that were submitted first" = "By tapping the \"Vote for All\" button, you will automatically vote for all of the filtered usernames (%ld) that were submitted first";
+"By tapping the \"Vote for All\" button, you will automatically vote for all of the filtered usernames (%ld) that were submitted first" = "\"Herkese Oy Ver\" düğmesi tıklandığında, ilk gönderilen, filtrelenen tüm kullanıcı adlarına (%ld) otomatik olarak oy vereceksiniz";
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Bu cihazı silerseniz bu cihazdaki paraya artık ulaşamazsınız. Bunu sadece parola cümlenize ulaşamıyorsanız ve PİN kodunuzu unuttuysanız yapmalısınız.";
@@ -348,10 +354,10 @@
 "Cancel" = "İptal";
 
 /* Voting */
-"Cancel Approval" = "Cancel Approval";
+"Cancel Approval" = "Onayı İptal Et";
 
 /* No comment provided by engineer. */
-"Cancel Request" = "Cancel Request";
+"Cancel Request" = "İsteği iptal et";
 
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Bu işlemin iptal edilmesi işlem emrini iptal etmez. Kısa bir süre sonra Coinbase hesabınızda DASH alacaksınız.";
@@ -366,10 +372,10 @@
 "Change PIN" = "PİN Değiştir";
 
 /* CoinJoin */
-"Change to Advanced" = "Change to Advanced";
+"Change to Advanced" = "Gelişmiş olarak değiştir";
 
 /* CoinJoin */
-"Change to Intermediate" = "Change to Intermediate";
+"Change to Intermediate" = "Orta Seviyeye Değiştir";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Bağlantınızı kontrol edin";
@@ -378,10 +384,10 @@
 "Choose your" = "Seçin";
 
 /* No comment provided by engineer. */
-"Choose Your Username" = "Choose Your Username";
+"Choose Your Username" = "Kullanıcı adınızı seçin";
 
 /* No comment provided by engineer. */
-"Claimed" = "Claimed";
+"Claimed" = "Talep Edildi";
 
 /* No comment provided by engineer. */
 "Clear" = "Temizle";
@@ -420,13 +426,16 @@
 "Confirm PIN" = "PİN'i Onayla";
 
 /* Voting */
-"Confirm Username Request" = "Confirm Username Request";
+"Confirm Username Request" = "Kullanıcı Adı İsteğini Onayla";
 
 /* No comment provided by engineer. */
 "Confirming" = "Onaylanıyor";
 
 /* No comment provided by engineer. */
 "Connect with third party exchanges" = "Üçüncü parti borsalara bağlanın";
+
+/* ZenLedger */
+"Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Kripto cüzdanlarınızı ZenLedger platformuna bağlayın. Daha fazlasını öğrenin ve Dash Cüzdan işlemlerinize başlayın.";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -470,7 +479,7 @@
 "Copy" = "Kopyala";
 
 /* No comment provided by engineer. */
-"Copy Invitation Link" = "Copy Invitation Link";
+"Copy Invitation Link" = "Davet Linkini Kopyala";
 
 /* No comment provided by engineer. */
 "Copy Logs" = "Kayıtları kopyala";
@@ -497,19 +506,19 @@
 "Couldn't transmit payment to Dash network" = "Ödeme dash ağına iletilemedi";
 
 /* No comment provided by engineer. */
-"Create a new Invitation" = "Create a new Invitation";
+"Create a new Invitation" = "Yeni bir Davetiye oluştur";
 
 /* No comment provided by engineer. */
-"Create a new invitation" = "Create a new invitation";
+"Create a new invitation" = "Yeni bir davetiye oluştur";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Yeni Cüzdan Oluştur";
 
 /* Usernames */
-"Create a username" = "Create a username";
+"Create a username" = "Kullanıcı adı oluştur";
 
 /* No comment provided by engineer. */
-"Create a username, add your friends." = "Create a username, add your friends.";
+"Create a username, add your friends." = "Bir kullanıcı adı oluşturun, arkadaşlarınızı ekleyin.";
 
 /* CrowdNode */
 "Create Account" = "Hesab Oluştur";
@@ -518,14 +527,17 @@
 "Create an online CrowdNode account" = "Çevrimiçi bir CrowdNode hesabı oluşturun";
 
 /* No comment provided by engineer. */
-"Create invitation" = "Create invitation";
+"Create invitation" = "Davetiye oluştur";
 
 /* CrowdNode
    CrowdNode Portal */
 "Create Online Account" = "Çevrimiçi Hesap Oluştur";
 
 /* No comment provided by engineer. */
-"Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
+"Create Username" = "Kullanıcı adı oluşturmak";
+
+/* No comment provided by engineer. */
+"Create your Username, find friends & family with their usernames and add them to your contacts" = "Kullanıcı adınızı oluşturun, kullanıcı adlarıyla arkadaşlarınızı ve ailenizi bulup kişilerinize ekleyin";
 
 /* Coinbase/Payment Methods */
 "Credit Card" = "Kredi Kartı";
@@ -573,7 +585,7 @@
 "Dash address" = "dash adresi";
 
 /* CrowdNode */
-"Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Dash address designated for your CrowdNode account in the Dash Wallet on this device ";
+"Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Bu cihazdaki Dash Cüzdanında CrowdNode hesabınız için belirlenen Dash adresi";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "Coinbase'deki Dash bakiyesi";
@@ -591,7 +603,7 @@
 "Dash Wallet on this device" = "Bu cihazdaki Dash Cüzdanı";
 
 /* No comment provided by engineer. */
-"DashPay Invitation" = "DashPay Invitation";
+"DashPay Invitation" = "DashPay Davetiyesi";
 
 /* No comment provided by engineer. */
 "DashPay Upgrade Fee" = "DashPay Yükseltme Ücreti";
@@ -603,10 +615,10 @@
 "Date" = "Tarih";
 
 /* Voting */
-"Date: New to old" = "Date: New to old";
+"Date: New to old" = "Tarih: Yeniden eskiye";
 
 /* Voting */
-"Date: Old to new" = "Date: Old to new";
+"Date: Old to new" = "Tarih: Eskiden yeniye";
 
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Varsayılan para birimi, kısayollar, hakkında…";
@@ -650,7 +662,7 @@
 "Disconnected" = "Bağlantı kesildi";
 
 /* No comment provided by engineer. */
-"Display Name" = "Display Name";
+"Display Name" = "Ekran adı";
 
 /* Explore Dash: Filters */
 "Distance" = "Mesafe";
@@ -659,7 +671,7 @@
 "Do not take a screenshot" = "Ekran görüntüsü almayın";
 
 /* Usernames */
-"Do you really want to cancel the username request?" = "Do you really want to cancel the username request?";
+"Do you really want to cancel the username request?" = "Kullanıcı adı isteğini gerçekten iptal etmek istiyor musunuz?";
 
 /* No comment provided by engineer. */
 "Done" = "Bitti";
@@ -670,11 +682,17 @@
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "CrowdNode'un hizmet koşulları nedeniyle, kullanıcılar aşağıdakilerden daha fazlasını çekemez:";
 
+/* Geoblock */
+"Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features.";
+
+/* Geoblock */
+"Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK";
+
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "Örneğin. johndoe@mail.com";
 
 /* No comment provided by engineer. */
-"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Her davetiye, alıcının Dash Ağında kullanıcı adını hızlı bir şekilde oluşturabilmesi için bu tutarla finanse edilecektir.";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Önceki";
@@ -683,10 +701,10 @@
 "Easily stake Dash and earn passive income with a few simple clicks." = "Dash'i kolayca stake edin ve birkaç basit tıklamayla pasif gelir elde edin.";
 
 /* No comment provided by engineer. */
-"Edit Profile" = "Edit Profile";
+"Edit Profile" = "Profili Düzenle";
 
 /* Invitation tag placeholder */
-"eg: Dad" = "eg: Dad";
+"eg: Dad" = "örneğin: Baba";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "örneğin: mehmetali";
@@ -719,22 +737,22 @@
 "Enter your 2FA code below" = "2FA kodunu aşağıya girin";
 
 /* No comment provided by engineer. */
-"Enter your Gravatar Email ID" = "Enter your Gravatar Email ID";
+"Enter your Gravatar Email ID" = "Gravatar E-posta Kimliğinizi girin";
 
 /* Voting */
-"Enter your voting key" = "Enter your voting key";
+"Enter your voting key" = "Oylama anahtarınızı girin";
 
 /* No comment provided by engineer. */
 "Error" = "Hata";
 
 /* No comment provided by engineer. */
-"Error updating your profile" = "Error updating your profile";
+"Error updating your profile" = "Profiliniz güncellenirken hata oluştu";
 
 /* No comment provided by engineer. */
 "Error Upgrading" = "Yükseltme Hatası";
 
 /* Usernames */
-"Example post" = "Example post";
+"Example post" = "Örnek gönderi";
 
 /* No comment provided by engineer. */
 "Exit" = "Çıkış";
@@ -747,6 +765,9 @@
 
 /* No comment provided by engineer. */
 "Explore Dash" = "Dash'i Keşfet";
+
+/* ZenLedger */
+"Export all transactions" = "Tüm işlemleri dışa aktar";
 
 /* No comment provided by engineer. */
 "Extended Public Keys" = "Genişletilmiş Genel Anahtar";
@@ -779,22 +800,25 @@
 "Fees in crypto purchases" = "Kripto alımlarında ücretler";
 
 /* No comment provided by engineer. */
-"Fetching Image" = "Fetching Image";
+"Fetching Image" = "Resim getiriliyor";
 
 /* Explore Dash */
 "Fetching Info" = "Bilgi Alınıyor";
+
+/* Balance */
+"Fetching rates…" = "Fetching rates…";
 
 /* Coinbase/Payment Methods */
 "Fiat Account" = "Fiat Hesabı";
 
 /* No comment provided by engineer. */
-"Filter" = "Filter";
+"Filter" = "Filtre";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "İşlemleri Filtrele";
 
 /* No comment provided by engineer. */
-"Filtered by" = "Filtered by";
+"Filtered by" = "Şuna göre filtrelendi:";
 
 /* Explore Dash/Merchants/Filters */
 "Filtered by:" = "Şuna göre filtrelendi:";
@@ -809,7 +833,7 @@
 "Find a user on the Dash Network" = "Dash Ağında bir kullanıcı bulun";
 
 /* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Find merchants that accept DASH";
+"Find merchants that accept DASH" = "DASH'i kabul eden satıcıları bulun";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "Dash'i kabul eden satıcıları bulun. Nereden satın alınır ve onunla nasıl gelir elde edilir.";
@@ -824,7 +848,7 @@
 "First deposit should be more than %@" = "İlk yatırılan para %@ değerinden fazla olmalıdır";
 
 /* CrowdNode */
-"First minimum deposit" = "First minimum deposit";
+"First minimum deposit" = "İlk minimum depozito";
 
 /* Coinbase */
 "For your security, you have been signed out." = "Güvenliğiniz için oturumunuz kapatıldı.";
@@ -875,10 +899,10 @@
 "Get Started" = "Başla";
 
 /* No comment provided by engineer. */
-"Get Test Dash" = "Get Test Dash";
+"Get Test Dash" = "Test Dash'ı edinin";
 
 /* No comment provided by engineer. */
-"Get your Username" = "Get your Username";
+"Get your Username" = "Kullanıcı adınızı alın";
 
 /* CrowdNode */
 "Getting started with CrowdNode" = "CrowdNode'a başlayın";
@@ -914,13 +938,13 @@
 "Help us improve your experience" = "Deneyiminizi geliştirmemize yardımcı olun";
 
 /* CrowdNode */
-"Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device";
+"Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "Bu cihazdaki Dash Cüzdanında CrowdNode hesabınız için belirlenmiş bir Dash adresi";
 
 /* adjective, security level */
 "High" = "Yüksek";
 
 /* Voting */
-"High to low" = "High to low";
+"High to low" = "Yüksekten alçağa";
 
 /* No comment provided by engineer. */
 "History" = "Geçmiş";
@@ -929,7 +953,7 @@
 "How CrowdNode staking works" = "CrowdNode staking nasıl çalışır?";
 
 /* No comment provided by engineer. */
-"How do I get Test Dash?" = "How do I get Test Dash?";
+"How do I get Test Dash?" = "Test Dash'ı nasıl edinebilirim?";
 
 /* CrowdNode */
 "How to confirm your API Dash address" = "API Dash adresinizi nasıl onaylarsınız?";
@@ -950,19 +974,22 @@
 "I agree to CrowdNode" = "CrowdNode'u kabul ediyorum";
 
 /* Voting */
-"I have approved" = "I have approved";
+"I have approved" = "Onayladım";
 
 /* Voting */
-"I have not approved" = "I have not approved";
+"I have not approved" = "Onaylamadım";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "Not aldım";
 
 /* Voting */
-"Identity" = "Identity";
+"Identity" = "Kimlik";
 
 /* Usernames */
-"If somebody else requests the same username as you, we will let the network decide whom to give this username" = "If somebody else requests the same username as you, we will let the network decide whom to give this username";
+"If somebody else requests the same username as you, we will let the network decide whom to give this username" = "Başka biri sizinle aynı kullanıcı adını isterse, bu kullanıcı adını kime vereceğine ağın karar vermesine izin vereceğiz";
+
+/* Geoblock */
+"If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase";
 
 /* CrowdNode */
 "If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "Parolanızı kaybederseniz, CrowdNode fonlarınıza yeniden erişim kazanmak için kimliğinizi çeşitli yollarla doğrulayabilirsiniz.";
@@ -974,7 +1001,7 @@
 "If you still would like to wipe it please input: \"%@\"" = "Eğer hala sıfırlamak istiyorsanız lütfen şu metni girin: \"%@\"";
 
 /* Usernames */
-"If you tap “Cancel Request”, you will still have a chance to request another username without paying again" = "If you tap “Cancel Request”, you will still have a chance to request another username without paying again";
+"If you tap “Cancel Request”, you will still have a chance to request another username without paying again" = "“İsteği İptal Et”e tıklarsanız, tekrar ödeme yapmadan başka bir kullanıcı adı talep etme şansınız devam edecek";
 
 /* No comment provided by engineer. */
 "If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "Manuel olarak yeniden sınıflandırılan işlemleri kaydetmek isterseniz, CSV işlem dosyasını aktarmalısınız.";
@@ -983,13 +1010,13 @@
 "Ignore" = "Yoksay";
 
 /* No comment provided by engineer. */
-"Image uploaded can be viewed publicly by anyone." = "Image uploaded can be viewed publicly by anyone.";
+"Image uploaded can be viewed publicly by anyone." = "Yüklenen resim herkese açık olarak görüntülenebilir.";
 
 /* No comment provided by engineer. */
-"Image URL can't be longer than %ld characters." = "Image URL can't be longer than %ld characters.";
+"Image URL can't be longer than %ld characters." = "Resim URL'si %ld karakterden uzun olamaz.";
 
 /* No comment provided by engineer. */
-"Images Privacy Policy" = "Images Privacy Policy";
+"Images Privacy Policy" = "Görseller Gizlilik Politikası";
 
 /* No comment provided by engineer. */
 "Immediately" = "Derhal";
@@ -1004,13 +1031,13 @@
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Görüntülenen Coinbase ücretine ek olarak, fiyata bir makas dahil ediyoruz. Advanced Trade'i kullanırken, emir defteriyle doğrudan etkileşime girdiğiniz için herhangi bir makas ilave edilmez.\n\nKripto para piyasaları değişkendir ve bu, alım satımın yürütülmesi için geçici olarak bir fiyat belirlememize olanak tanır.";
 
 /* CrowdNode */
-"In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster.";
+"In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "Yüksek miktarlı para çekme işlemlerinde CrowdNode para çekme işlemlerini iki hafta içinde ödeyecektir. Bunun nedeni güvenlik protokolleridir ve çoğu zaman hızlı bir şekilde çözülür.";
 
 /* Usernames */
-"In case you lose your passphrase you will lose your right to your requested username." = "In case you lose your passphrase you will lose your right to your requested username.";
+"In case you lose your passphrase you will lose your right to your requested username." = "Parolanızı kaybetmeniz durumunda, istediğiniz kullanıcı adı hakkını kaybedersiniz.";
 
 /* Usernames */
-"In case your request is not approved" = "In case your request is not approved";
+"In case your request is not approved" = "Talebinizin onaylanmaması durumunda";
 
 /* CrowdNode Portal */
 "In process…" = "İşlemde…";
@@ -1028,13 +1055,13 @@
 "Insufficient funds" = "Yetersiz bakiye";
 
 /* No comment provided by engineer. */
-"Insufficient Wallet Balance" = "Insufficient Wallet Balance";
+"Insufficient Wallet Balance" = "Yetersiz Cüzdan Bakiyesi";
 
 /* Coinbase/Payment Methods */
 "Interac" = "Etkileşim";
 
 /* CoinJoin */
-"Intermediate" = "Intermediate";
+"Intermediate" = "Orta seviye";
 
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "Dahili Transfer";
@@ -1061,7 +1088,7 @@
 "Invalid Input" = "Geçersiz Girdi";
 
 /* No comment provided by engineer. */
-"Invalid Inviation" = "Invalid Inviation";
+"Invalid Inviation" = "Geçersiz Davet";
 
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Geçersiz Ödeme Talebi";
@@ -1070,46 +1097,46 @@
 "Invalid QR Code" = "Geçersiz QR Kodu";
 
 /* No comment provided by engineer. */
-"Invitation" = "Invitation";
+"Invitation" = "Davetiye";
 
 /* Invitation #3 */
-"Invitation %ld" = "Invitation %ld";
+"Invitation %ld" = "Davetiye %ld";
 
 /* No comment provided by engineer. */
-"Invitation already claimed" = "Invitation already claimed";
+"Invitation already claimed" = "Davetiye zaten talep edildi";
 
 /* No comment provided by engineer. */
-"Invitation Created Successfully" = "Invitation Created Successfully";
+"Invitation Created Successfully" = "Davetiye Başarıyla Oluşturuldu";
 
 /* No comment provided by engineer. */
-"Invitation Fee" = "Invitation Fee";
+"Invitation Fee" = "Davet Ücreti";
 
 /* No comment provided by engineer. */
-"Invitation used by" = "Invitation used by";
+"Invitation used by" = "Davetiyeyi kullanan kişi";
 
 /* No comment provided by engineer. */
-"Invitations History" = "Invitations History";
+"Invitations History" = "Davetiye Geçmişi";
 
 /* No comment provided by engineer. */
-"Invite" = "Invite";
+"Invite" = "Davet etmek";
 
 /* No comment provided by engineer. */
-"Invite Someone to join the Dash Network" = "Invite Someone to join the Dash Network";
+"Invite Someone to join the Dash Network" = "Birini Dash Ağına davet edin";
 
 /* No comment provided by engineer. */
-"Invite your family, find your friends by searching their usernames" = "Invite your family, find your friends by searching their usernames";
+"Invite your family, find your friends by searching their usernames" = "Ailenizi davet edin, kullanıcı adlarını aratarak arkadaşlarınızı bulun";
 
 /* Usernames */
-"Invite your family, find your friends by searching their usernames." = "Invite your family, find your friends by searching their usernames.";
+"Invite your family, find your friends by searching their usernames." = "Ailenizi davet edin, arkadaşlarınızı kullanıcı adlarını arayarak bulun.";
 
 /* No comment provided by engineer. */
-"Invite your friends & family" = "Invite your friends & family";
+"Invite your friends & family" = "Arkadaşlarınızı ve ailenizi davet edin";
 
 /* No comment provided by engineer. */
-"Invite your friends and family to join the Dash Network." = "Invite your friends and family to join the Dash Network.";
+"Invite your friends and family to join the Dash Network." = "Arkadaşlarınızı ve ailenizi Dash Ağı'na katılmaya davet edin.";
 
 /* No comment provided by engineer. */
-"Invite your friends and family to the Dash Network" = "Invite your friends and family to the Dash Network";
+"Invite your friends and family to the Dash Network" = "Arkadaşlarınızı ve ailenizi Dash Network'e davet edin";
 
 /* CrowdNode */
 "It can take a minute for your balance to be updated." = "Bakiyenizin güncellenmesi birkaç dakika sürebilir.";
@@ -1124,7 +1151,7 @@
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "Bu cihazdaki Dash Cüzdan'ınıza Dash'in Coinbase'den aktarılması 10 dakika kadar sürebilir.";
 
 /* Coinbase */
-"It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history";
+"It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "Herhangi bir düzeyde teknik uzmanlığa sahip ileri düzey kullanıcıların işlem geçmişinizi belirlemesi çok zor olacaktır.";
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Görünüşe göre cüzdanınızın 12 kelimelik bir kurtarma sözcük grubu kullanarak geri kurtarmaya çalışıyorsunuz, ancak yalnızca 10 kelime girdiniz, eksik kelimeleri otomatik olarak kurtarmak ister misiniz? Bu yaklaşık bir saat sürebilir. Cihazınızı fişe takmanızı öneririz.";
@@ -1133,22 +1160,19 @@
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 11 words, would you like to automatically recover the missing word?" = "Görünüşe göre cüzdanınızın 12 kelimelik bir kurtarma sözcük grubu kullanarak geri kurtarmaya çalışıyorsunuz, ancak yalnızca 11 kelime girdiniz, eksik kelimeyi otomatik olarak kurtarmak ister misiniz?";
 
 /* No comment provided by engineer. */
-"Join" = "Join";
-
-/* No comment provided by engineer. */
-"Join DashPay" = "Join DashPay";
+"Join DashPay" = "DashPay'e Katılın";
 
 /* No comment provided by engineer. */
 "Join Evolution" = "Evolution'a katıl";
 
 /* No comment provided by engineer. */
-"Join Now" = "Join Now";
+"Join Now" = "Şimdi Katıl";
 
 /* CrowdNode */
 "Joining the pool" = "Havuza katılmak";
 
 /* Usernames */
-"Keep your passphrase safe" = "Keep your passphrase safe";
+"Keep your passphrase safe" = "Parolanızı güvende tutun";
 
 /* No comment provided by engineer. */
 "Key Id" = "Anahtar Kimliği";
@@ -1173,25 +1197,25 @@
 "Learn More..." = "Daha fazla bilgi edin...";
 
 /* CrowdNode */
-"Leaving the pool" = "Leaving the pool";
+"Leaving the pool" = "Havuzdan ayrılmak";
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Bittiğinde bana haber ver";
 
 /* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Let your friends and family to join Dash";
+"Let your friends and family to join Dash" = "Arkadaşlarınızın ve ailenizin Dash'e katılmasına izin verin";
 
 /* No comment provided by engineer. */
-"Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Let your friends and family to join the Dash Network. Invite them to the world of social banking.";
+"Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Arkadaşlarınızın ve ailenizin Dash Ağı'na katılmasına izin verin. Onları sosyal bankacılık dünyasına davet edin.";
 
 /* Validation rule */
-"Letters, numbers and hyphens only" = "Letters, numbers and hyphens only";
+"Letters, numbers and hyphens only" = "Yalnızca harfler, sayılar ve kısa çizgiler";
 
 /* No comment provided by engineer. */
-"Let’s Get Started" = "Let’s Get Started";
+"Let’s Get Started" = "Başlayalım";
 
 /* Voting */
-"Link" = "Link";
+"Link" = "Bağlantı";
 
 /* Dash Service Overview */
 "Link Coinbase Account" = "Coinbase Hesabını Bağla";
@@ -1254,10 +1278,10 @@
 "Low" = "Düşük";
 
 /* Voting */
-"Low to high" = "Low to high";
+"Low to high" = "Alçaktan yükseğe";
 
 /* Usernames */
-"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow";
+"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "İstenilen kullanıcı adının asıl sahibi olduğunuzu doğrulamak için iyi bilinen bir sosyal medya veya mesajlaşma platformunda yukarıdaki metni (veya benzerini) içeren bir gönderi oluşturun ve gönderinin bağlantısını aşağıya yapıştırın.";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "GPS İznini Yönet";
@@ -1269,7 +1293,7 @@
 "Map" = "Harita";
 
 /* Voting */
-"Masternode IP address" = "Masternode IP address";
+"Masternode IP address" = "Ana düğüm IP adresi";
 
 /* No comment provided by engineer. */
 "Masternode Keys" = "Ana düğüm Anahtarları";
@@ -1287,16 +1311,16 @@
 "Masternode Update" = "Anadüğüm Güncellemesi";
 
 /* Voting */
-"Masternode Voting Key" = "Masternode Voting Key";
+"Masternode Voting Key" = "Ana düğüm Oylama Anahtarı";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Maksimum";
 
 /* Usernames */
-"Maximum 75 characters" = "Maximum 75 characters";
+"Maximum 75 characters" = "Maksimum 75 karakter";
 
 /* No comment provided by engineer. */
-"Maybe later" = "Maybe later";
+"Maybe later" = "Belki sonra";
 
 /* adjective, security level */
 "Medium" = "Orta";
@@ -1308,7 +1332,7 @@
 "Merchant search works better with Location Services turned on." = "Tüccar araması, Konum Servisleri açıkken daha iyi çalışır.";
 
 /* CoinJoin */
-"Mixing your Dash coins will make your transactions more private" = "Mixing your Dash coins will make your transactions more private";
+"Mixing your Dash coins will make your transactions more private" = "Dash’inizi karıştırmak işlemlerinizi daha özel hale getirir";
 
 /* No comment provided by engineer. */
 "More" = "Daha Fazla";
@@ -1317,10 +1341,10 @@
 "More Control" = "Daha Fazla Kontrol";
 
 /* No comment provided by engineer. */
-"More Suggestions" = "More Suggestions";
+"More Suggestions" = "Daha Fazla Öneri";
 
 /* No comment provided by engineer. */
-"Move and Zoom your photo to find the perfect fit" = "Move and Zoom your photo to find the perfect fit";
+"Move and Zoom your photo to find the perfect fit" = "Mükemmel uyumu bulmak için fotoğrafınızı hareket ettirin ve yakınlaştırın";
 
 /* No comment provided by engineer. */
 "Moved from" = "Taşındı";
@@ -1329,22 +1353,16 @@
 "Moved to Address" = "Adrese Taşındı";
 
 /* CoinJoin */
-"Multiple hours" = "Multiple hours";
+"Multiple hours" = "Birden fazla saat";
 
 /* Validation rule */
-"Must start and end with a letter or number" = "Must start and end with a letter or number";
+"Must start and end with a letter or number" = "Bir harf veya sayı ile başlamalı ve bitmelidir";
 
 /* No comment provided by engineer. */
 "My Contacts" = "Kişilerim";
 
 /* No comment provided by engineer. */
 "Name" = "İsim";
-
-/* Explore Dash: Filters */
-"Name: from A to Z" = "İsim: A'dan Z'ye";
-
-/* Explore Dash: Filters */
-"Name: from Z to A" = "İsim: Z'den A'ya";
 
 /* Nearby */
 "Nearby" = "Yakında";
@@ -1368,10 +1386,10 @@
 "New CrowdNode Account" = "Yeni CrowdNode Hesabı";
 
 /* Voting */
-"New to old" = "New to old";
+"New to old" = "Yeniden eskiye";
 
 /* Coinbase */
-"Newly received Dash will be automatically mixed when the wallet is opened" = "Newly received Dash will be automatically mixed when the wallet is opened";
+"Newly received Dash will be automatically mixed when the wallet is opened" = "Yeni alınan Dash, cüzdan başlatıldığında otomatik olarak karıştırılacaktır.";
 
 /* No comment provided by engineer. */
 "NFC device" = "NFC cihazı";
@@ -1386,7 +1404,7 @@
 "No active user" = "Aktif kullanıcı yok";
 
 /* Coinbase */
-"No cash account found" = "No cash account found";
+"No cash account found" = "Nakit hesap bulunamadı";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "Ödeme yöntemi yok";
@@ -1413,7 +1431,7 @@
 "Not a valid Dash address" = "Geçerli bir Dash adresi değil";
 
 /* Usernames */
-"Not a valid URL" = "Not a valid URL";
+"Not a valid URL" = "Geçerli bir URL değil";
 
 /* No comment provided by engineer. */
 "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Tüm mağazalar DASH'i doğrudan kabul etmez, ancak Dash'inizle bir hediye kartı satın alabilirsiniz.";
@@ -1437,13 +1455,13 @@
 "OK" = "Tamam";
 
 /* Voting */
-"Old to new" = "Old to new";
+"Old to new" = "Eskiden yeniye";
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "%@ isteğinizi kabul ettiğinizde Kullanıcı Adına Doğrudan Ödeme yapabilirsiniz";
 
 /* Voting */
-"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "Once the voting ends you can create any username you want as long as it hasn’t already been created";
+"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "Oylama sona erdiğinde, henüz oluşturulmadığı sürece istediğiniz kullanıcı adını oluşturabilirsiniz.";
 
 /* Online */
 "Online" = "Çevrimiçi";
@@ -1455,19 +1473,19 @@
 "Online Merchant" = "Çevrimiçi Tüccar";
 
 /* Voting */
-"Only duplicates" = "Only duplicates";
+"Only duplicates" = "Yalnızca kopyalar";
 
 /* No comment provided by engineer. */
-"Only requests with links" = "Only requests with links";
+"Only requests with links" = "Yalnızca bağlantı içeren istekler";
 
 /* Voting */
-"Only with links" = "Only with links";
+"Only with links" = "Yalnızca bağlantılarla";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Operatör Anahtarları";
 
 /* No comment provided by engineer. */
-"or" = "or";
+"or" = "veya";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "Sipariş Önizleme";
@@ -1479,10 +1497,10 @@
 "Owner Keys" = "Sahip Anahtarları";
 
 /* Usernames */
-"Paste the link" = "Paste the link";
+"Paste the link" = "Bağlantıyı yapıştırın";
 
 /* No comment provided by engineer. */
-"Paste your image URL" = "Paste your image URL";
+"Paste your image URL" = "Resim URL'nizi yapıştırın";
 
 /* No comment provided by engineer. */
 "Pay" = "Ödeme";
@@ -1494,13 +1512,13 @@
 "Pay Directly to Username" = "Kullanıcı Adına Doğrudan Ödeme Yap";
 
 /* Usernames */
-"Pay now and if not approved, you can create a different name without paying again" = "Pay now and if not approved, you can create a different name without paying again";
+"Pay now and if not approved, you can create a different name without paying again" = "Şimdi ödeyin ve onaylanmazsa tekrar ödeme yapmadan farklı bir isim oluşturabilirsiniz.";
 
 /* No comment provided by engineer. */
-"Pay to usernames. No more alphanumeric addresses" = "Pay to usernames. No more alphanumeric addresses";
+"Pay to usernames. No more alphanumeric addresses" = "Kullanıcı adlarına ödeme yapın. Artık alfanümerik adres yok";
 
 /* Usernames */
-"Pay to usernames. No more alphanumeric addresses." = "Pay to usernames. No more alphanumeric addresses.";
+"Pay to usernames. No more alphanumeric addresses." = "Kullanıcı adlarına ödeme yapın. Artık alfanümerik adres yok.";
 
 /* Coinbase/Buy Dash */
 "Pay with" = "İle öde";
@@ -1533,7 +1551,7 @@
 "Payment Type" = "Ödeme türü";
 
 /* No comment provided by engineer. */
-"Payments made directly to addresses won’t be retained in activity." = "Payments made directly to addresses won’t be retained in activity.";
+"Payments made directly to addresses won’t be retained in activity." = "Doğrudan adreslere yapılan ödemeler etkinlikte tutulmaz.";
 
 /* CrowdNode */
 "Payout Options" = "Ödeme Seçenekleri";
@@ -1554,10 +1572,10 @@
 "per transaction" = "işlem başına";
 
 /* Usernames */
-"Personalise profile" = "Personalise profile";
+"Personalise profile" = "Profili kişiselleştir";
 
 /* No comment provided by engineer. */
-"Personalize" = "Personalize";
+"Personalize" = "Kişiselleştir";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Ödeme yapmak için her zaman PIN gereklidir";
@@ -1568,14 +1586,23 @@
 /* Network Unavailable */
 "Please check your network connection" = "Lütfen ağ bağlantınızı kontrol edin";
 
-/* No comment provided by engineer. */
-"Please enter a valid gravatar email ID." = "Please enter a valid gravatar email ID.";
+/* Uphold */
+"Please contact Uphold to update your proof of address." = "Adres kanıtınızı güncellemek için lütfen Uphold ile iletişime geçin.";
 
 /* No comment provided by engineer. */
-"Please enter a valid image URL." = "Please enter a valid image URL.";
+"Please enter a valid gravatar email ID." = "Lütfen geçerli bir gravatar e-posta kimliği girin.";
+
+/* No comment provided by engineer. */
+"Please enter a valid image URL." = "Lütfen geçerli bir resim URL'si girin.";
 
 /* No comment provided by engineer. */
 "Please enter PIN to upgrade wallet" = "Cüzdanı yükseltmek için lütfen PİN kodunu girin";
+
+/* Uphold */
+"Please go to your Uphold account to answer some questions about yourself." = "Kendinizle ilgili bazı soruları yanıtlamak için lütfen Uphold hesabınıza gidin.";
+
+/* Uphold */
+"Please go to your Uphold account to verify your identity." = "Kimliğinizi doğrulamak için lütfen Uphold hesabınıza gidin.";
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Lütfen e-postanın Dash Cüzdanı tarafından kaydedilmediğini ve yalnızca CrowdNode'a gönderildiğini unutmayın.";
@@ -1596,7 +1623,7 @@
 "Please try scanning again" = "Lütfen tekrar taramayı deneyin";
 
 /* Usernames */
-"Please vote to approve my requested Dash username - %@" = "Please vote to approve my requested Dash username - %@";
+"Please vote to approve my requested Dash username - %@" = "Lütfen talep ettiğim Dash kullanıcı adımı onaylamak için oy verin - %@";
 
 /* No comment provided by engineer. */
 "Please Wait" = "Lütfen Bekleyin";
@@ -1605,7 +1632,7 @@
 "Please wait" = "Lütfen bekleyin";
 
 /* CrowdNode */
-"Please wait before initiating the next withdrawal" = "Please wait before initiating the next withdrawal";
+"Please wait before initiating the next withdrawal" = "Bir sonraki para çekme işlemini başlatmadan önce lütfen bekleyin";
 
 /* No comment provided by engineer. */
 "Please wait until the wallet is fully synced before exporting your transaction history" = "İşlem geçmişinizi dışa aktarmadan önce lütfen cüzdanın tamamen senkronize edilmesini bekleyin.";
@@ -1614,13 +1641,22 @@
 "Please write it down" = "Lütfen bir yere yazın";
 
 /* No comment provided by engineer. */
-"Preview Invitation" = "Preview Invitation";
+"Preview Invitation" = "Önizleme Davetiyesi";
 
 /* No comment provided by engineer. */
 "Previously used at: " = "Daha önce şurada kullanıldı:";
 
+/* Stale rates */
+"Prices are at least 30 minutes old. Fiat values may be incorrect." = "Prices are at least 30 minutes old. Fiat values may be incorrect.";
+
+/* Stale rates */
+"Prices have fluctuated more than 50% since the last update." = "Prices have fluctuated more than 50% since the last update.";
+
+/* Stale rates */
+"Prices weren't retrieved. Fiat values may be incorrect." = "Prices weren't retrieved. Fiat values may be incorrect.";
+
 /* CrowdNode */
-"Primary Dash address" = "Primary Dash address";
+"Primary Dash address" = "Birincil Dash adresi";
 
 /* No comment provided by engineer. */
 "Private / Public Keys (base64)" = "Özel / Genel Anahtarlar (base64)";
@@ -1635,7 +1671,7 @@
 "Protect your savings" = "Birikimlerinizi koruyun";
 
 /* Usernames */
-"Prove your identity" = "Prove your identity";
+"Prove your identity" = "Kimliğinizi kanıtlayın";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Sağlayıcının Adresi";
@@ -1647,7 +1683,7 @@
 "Public key (legacy)" = "Genel Anahtar (legacy)";
 
 /* No comment provided by engineer. */
-"Public URL" = "Public URL";
+"Public URL" = "Genel URL";
 
 /* Coinbase/Buy Dash */
 "Purchase" = "Satın alma";
@@ -1656,7 +1692,7 @@
 "Quick Receive" = "Hızlı Al";
 
 /* Voting */
-"Quick Voting" = "Quick Voting";
+"Quick Voting" = "Hızlı Oylama";
 
 /* No comment provided by engineer. */
 "Quorums validated: %d/%d" = "Doğrulanan nisaplar: %1$d/%2$d";
@@ -1734,13 +1770,19 @@
 "Report an Issue" = "Sorun rapor et";
 
 /* Voting */
-"Request details" = "Request details";
+"Request details" = "İstek detayları";
 
 /* Voting */
-"Request Username" = "Request Username";
+"Request Username" = "Kullanıcı Adı İste";
 
 /* Voting */
-"Request your username" = "Request your username";
+"Request your username" = "Kullanıcı adınızı isteyin";
+
+/* No comment provided by engineer. */
+"Requested username was not approved" = "İstenen kullanıcı adı onaylanmadı";
+
+/* No comment provided by engineer. */
+"Requested · Voting: %@" = "İstendi · Oylama: %@";
 
 /* An action */
 "Rescan" = "Yeniden tara";
@@ -1773,7 +1815,7 @@
 "Review & Rate the app" = "Uygulamamızı değerlendirip puanlayın";
 
 /* Voting */
-"Review the posting below to verify the ownership of this username" = "Review the posting below to verify the ownership of this username";
+"Review the posting below to verify the ownership of this username" = "Bu kullanıcı adının size ait olduğunu doğrulamak için aşağıdaki gönderiyi inceleyin";
 
 /* No comment provided by engineer. */
 "Reward" = "Ödül";
@@ -1782,10 +1824,10 @@
 "Rewards" = "Ödüller";
 
 /* No comment provided by engineer. */
-"Save" = "Save";
+"Save" = "Kaydet";
 
 /* No comment provided by engineer. */
-"Save Changes" = "Save Changes";
+"Save Changes" = "Değişiklikleri Kaydet";
 
 /* No comment provided by engineer. */
 "Scan" = "Tara";
@@ -1815,7 +1857,7 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Ekran görüntüleri diğer uygulamalar ve cihazlar tarafından görülebilir. Yeni bir kurtarma metni oluşturun ve gizli tutun.";
 
 /* Voting */
-"Search by username" = "Search by username";
+"Search by username" = "Kullanıcı adına göre ara";
 
 /* No comment provided by engineer. */
 "Search for a contact" = "Kişi arayın";
@@ -1836,7 +1878,7 @@
 "Searching for username %@ on the Dash Network" = "Dash ağında %@ kullanıcı adı aranıyor";
 
 /* No comment provided by engineer. */
-"Secure Your Wallet" = "Secure Your Wallet";
+"Secure Your Wallet" = "Cüzdanınızı Güvende Tutun";
 
 /* No comment provided by engineer. */
 "Security" = "Güvenlik";
@@ -1848,7 +1890,7 @@
 "See on Uphold" = "Uphold'da Gör";
 
 /* No comment provided by engineer. */
-"Select" = "Select";
+"Select" = "Seç";
 
 /* Coinbase */
 "Select a coin" = "Bir koin seçin";
@@ -1857,10 +1899,10 @@
 "Select a service" = "Bir servis seç";
 
 /* No comment provided by engineer. */
-"Select from Gallery" = "Select from Gallery";
+"Select from Gallery" = "Galeriden seçin";
 
 /* CoinJoin */
-"Select mixing level" = "Select mixing level";
+"Select mixing level" = "Karıştırma seviyesini seçin";
 
 /* Coinbase */
 "Select the coin" = "Koin seçin";
@@ -1881,13 +1923,13 @@
 "Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "Şu anda CrowdNode hesabınız için kullandığınız birincil Dash adresinizden %@ gönderin";
 
 /* No comment provided by engineer. */
-"Send again" = "Send again";
+"Send again" = "Tekrar gönder";
 
 /* No comment provided by engineer. */
 "Send Contact Request" = "İletişim İsteği Gönderin";
 
 /* No comment provided by engineer. */
-"Send Invitation" = "Send Invitation";
+"Send Invitation" = "Davetiye gönder";
 
 /* Coinbase
    CrowdNode */
@@ -1897,10 +1939,10 @@
 "Send to" = "Gönder";
 
 /* No comment provided by engineer. */
-"Send to a Contact" = "Send to a Contact";
+"Send to a Contact" = "Bir Kişiye Gönder";
 
 /* No comment provided by engineer. */
-"Send to contact" = "Send to contact";
+"Send to contact" = "Kişiye gönder";
 
 /* No comment provided by engineer. */
 "Send to copied address or QR code" = "Kopyalanan adrese veya QR koduna gönder";
@@ -1912,7 +1954,7 @@
 "Sending" = "Gönderiliyor";
 
 /* No comment provided by engineer. */
-"Sending Contact Request" = "Sending Contact Request";
+"Sending Contact Request" = "İletişim Talebi Gönderme";
 
 /* No comment provided by engineer. */
 "Sending to" = "Gönderiliyor";
@@ -1951,7 +1993,7 @@
 "Set PIN" = "PİN Oluştur";
 
 /* No comment provided by engineer. */
-"Set Your PIN" = "Set Your PIN";
+"Set Your PIN" = "PIN'inizi Ayarlayın";
 
 /* No comment provided by engineer. */
 "Settings" = "Ayarlar";
@@ -1989,6 +2031,9 @@
 /* CrowdNode Portal */
 "Sign up to finish setting up account" = "Hesap kurulumunu tamamlamak için kaydolun";
 
+/* ZenLedger */
+"Simplify your crypto taxes" = "Kripto vergilerinizi basitleştirin";
+
 /* No comment provided by engineer. */
 "Skip" = "Atla";
 
@@ -2007,12 +2052,6 @@
 /* Explore Dash/Filters */
 "Sorted by name" = "İsme göre sıralanmış";
 
-/* Explore Dash/Filters */
-"Sorting: A to Z" = "Sıralama: A'dan Z'ye";
-
-/* Explore Dash/Filters */
-"Sorting: Z to A" = "Sıralama: Z'den A'ya";
-
 /* No comment provided by engineer. */
 "Specify Amount" = "Tutarı Belirleyin";
 
@@ -2023,13 +2062,13 @@
 "Staking" = "Staking";
 
 /* CoinJoin */
-"Start Mixing" = "Start Mixing";
+"Start Mixing" = "Karıştırmaya Başla";
 
 /* Step 1 */
-"Step %ld" = "Step %ld";
+"Step %ld" = "Adım %ld";
 
 /* CoinJoin */
-"Stop Mixing" = "Stop Mixing";
+"Stop Mixing" = "Karıştırmayı Durdur";
 
 /* No comment provided by engineer. */
 "Support" = "Destek";
@@ -2065,10 +2104,10 @@
 "Syncing…" = "Senkronize ediliyor…";
 
 /* No comment provided by engineer. */
-"Tag for your reference" = "Tag for your reference";
+"Tag for your reference" = "Referansınız için etiketleyin";
 
 /* No comment provided by engineer. */
-"Take a Photo from Camera" = "Take a Photo from Camera";
+"Take a Photo from Camera" = "Kameradan Fotoğraf Çek";
 
 /* Enter Address Screen */
 "Tap the address from the clipboard to paste it" = "Yapıştırmak için panodaki adresi seçin";
@@ -2080,10 +2119,10 @@
 "Tax Category" = "Vergi Kategorisi";
 
 /* No comment provided by engineer. */
-"Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users.";
+"Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Test Dash'in gerçek dünyada hiçbir değeri yoktur ancak onu diğer DashPay Alpha kullanıcılarıyla gönderip alabilirsiniz.";
 
 /* No comment provided by engineer. */
-"Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash.";
+"Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "Test Dash ücretsizdir ve musluk denilen yerden elde edilebilir.\nCüzdanınızın Alma ekranından bir adres kopyalayın ve Dash'ınızı almak için aşağıdaki düğmeye tıklayın.";
 
 /* No comment provided by engineer. */
 "The chain is syncing…" = "Zincir senkronize ediliyor…";
@@ -2092,25 +2131,25 @@
 "The code is incorrect. Please check and try again!" = "Kod yanlış. Lütfen kontrol edip tekrar deneyin!";
 
 /* CrowdNode */
-"The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments.";
+"The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "Dash Ağı, ödemeleri kolaylaştırmanın önemli bir parçası olan bir dizi Ana Düğüm tarafından yönlendirilmektedir.";
 
 /* Usernames */
-"The Dash network must vote to approve your username before it is created." = "The Dash network must vote to approve your username before it is created.";
+"The Dash network must vote to approve your username before it is created." = "Dash ağı, kullanıcı adınızı oluşturmadan önce bu işlemi onaylamak için oy kullanmalıdır.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Dash başarıyla Coinbase hesabınıza yatırıldı. Fakat bu cihazdaki Dash Cüzdan'a aktarılırken bir sorun oluştu.";
 
 /* Don't translate 'Imgur' */
-"The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
+"The image you select will be uploaded to Imgur anonymously." = "Seçtiğiniz resim anonim olarak Imgur'a yüklenecektir.";
 
 /* Usernames */
-"The link you send will be visible to all of the Dash network." = "The link you send will be visible to all of the Dash network.";
+"The link you send will be visible to all of the Dash network." = "Gönderdiğiniz bağlantı tüm Dash ağı tarafından görülebilecektir.";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "Gönderebileceğiniz minimum miktar %@";
 
 /* No comment provided by engineer. */
-"them (Fetching Info)" = "them (Fetching Info)";
+"them (Fetching Info)" = "onları (Bilgi Alma)";
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "Yeni bildirim yok";
@@ -2125,7 +2164,10 @@
 "There are no users that match with the name %@ in your contacts" = "Kişilerinizde %@ adıyla eşleşen kullanıcı yok";
 
 /* Usernames */
-"There was a network error, you can try again at no extra cost" = "There was a network error, you can try again at no extra cost";
+"There was a network error, you can try again at no extra cost" = "Bir ağ hatası oluştu, hiçbir ek ücret ödemeden tekrar deneyebilirsiniz";
+
+/* ZenLedger */
+"There was an error when exporting your transaction history to ZenLedger" = "İşlem geçmişinizi ZenLedger'a aktarırken bir hata oluştu";
 
 /* Coinbase */
 "There was an error while obtaining new address" = "Yeni adres alınırken bir hata oluştu";
@@ -2152,7 +2194,7 @@
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "Bu, tam bir Ana Düğümün mevcut Yıllık Faiz Getirisini CrowdNode ücretinden %15 daha az temsil eder. Garantili bir getiri oranı değildir ve CrowdNode havuzlarının boyutuna ve Dash fiyatına bağlı olarak yukarı veya aşağı yönlü değişebilir.";
 
 /* Voting */
-"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "This username has already been requested, but you can request it too and let the network vote to decide if you can have it";
+"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "Bu kullanıcı adı zaten istendi, ancak siz de talep edebilirsiniz ve ağın sizin adınıza sahip olup olamayacağınıza karar vermesine izin verebilirsiniz.";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Bu cüzdan boş değil veya eşleşme daha bitmedi, kurtarma metni olmadan sıfırlayamazsınız";
@@ -2167,7 +2209,7 @@
 "to Dash Wallet on this device" = "bu cihazdaki Dash Cüzdan'ına";
 
 /* Usernames */
-"To request a username on the Dash Network, you need to have more than %@ Dash" = "To request a username on the Dash Network, you need to have more than %@ Dash";
+"To request a username on the Dash Network, you need to have more than %@ Dash" = "Dash Ağında bir kullanıcı adı istemek için %@ Dash'tan fazlasına sahip olmanız gerekir";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "Stake etmeye başlamak için CrowdNode'da bir hesap oluşturun veya mevcut bir hesaba bağlanın.";
@@ -2223,46 +2265,46 @@
 "Try again" = "Tekrar dene";
 
 /* No comment provided by engineer. */
-"Try Again" = "Try Again";
+"Try Again" = "Tekrar Dene";
 
 /* Alert title */
 "Turn device passcode on" = "Cihaz parolasını aç";
 
 /* Coinbase */
-"Turning this feature on will result a higher battery usage" = "Turning this feature on will result a higher battery usage";
+"Turning this feature on will result a higher battery usage" = "Bu özelliğin açılması daha yüksek pil kullanımına neden olur";
 
 /* Coinbase */
 "Two factor auth required" = "İki faktörlü kimlik doğrulaması gerekli";
 
 /* Voting */
-"Type" = "Type";
+"Type" = "Tip";
 
 /* No comment provided by engineer. */
-"Unable to accept contact request" = "Unable to accept contact request";
+"Unable to accept contact request" = "İletişim isteği kabul edilemiyor";
 
 /* No comment provided by engineer. */
 "Unable to connect" = "Bağlanılamıyor";
 
 /* No comment provided by engineer. */
-"Unable to fetch contact details" = "Unable to fetch contact details";
+"Unable to fetch contact details" = "Kişi ayrıntıları alınamıyor";
 
 /* No comment provided by engineer. */
-"Unable to fetch image. Please enter a valid image URL or check your connection." = "Unable to fetch image. Please enter a valid image URL or check your connection.";
+"Unable to fetch image. Please enter a valid image URL or check your connection." = "Resim getirilemiyor. Lütfen geçerli bir resim URL'si girin veya bağlantınızı kontrol edin.";
 
 /* No comment provided by engineer. */
-"Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.";
+"Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Gravatarınız alınamadı. Lütfen geçerli bir gravatar e-posta kimliği girin.";
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Yeni QR kod alınamıyor";
 
 /* No comment provided by engineer. */
-"Unable to provide suggestions" = "Unable to provide suggestions";
+"Unable to provide suggestions" = "Öneri verilemiyor";
 
 /* No comment provided by engineer. */
-"Unable to send contact request" = "Unable to send contact request";
+"Unable to send contact request" = "İletişim isteği gönderilemiyor";
 
 /* No comment provided by engineer. */
-"Unable to upload your picture. Please try again." = "Unable to upload your picture. Please try again.";
+"Unable to upload your picture. Please try again." = "Resminiz yüklenemedi. Lütfen tekrar deneyin.";
 
 /* No comment provided by engineer. */
 "Unknown" = "Bilinmeyen";
@@ -2277,7 +2319,10 @@
 "Unsupported URL" = "Desteklenmeyen bağlantı";
 
 /* CoinJoin */
-"up to 30 minutes" = "up to 30 minutes";
+"up to 30 minutes" = "30 dakikaya kadar";
+
+/* No comment provided by engineer. */
+"Update your profile and start adding contacts" = "Profilinizi güncelleyin ve kişi eklemeye başlayın";
 
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Güncellendi: %@";
@@ -2286,13 +2331,13 @@
 "Updating Price" = "Fiyat Güncelleniyor";
 
 /* No comment provided by engineer. */
-"Updating Profile on Dash Network" = "Updating Profile on Dash Network";
+"Updating Profile on Dash Network" = "Dash Network'te Profil Güncelleme";
 
 /* No comment provided by engineer. */
-"Upgrade" = "Upgrade";
+"Upgrade" = "Yükselt";
 
 /* No comment provided by engineer. */
-"Upgrade to Evolution" = "Upgrade to Evolution";
+"Upgrade to Evolution" = "Evolution'a Yükselt";
 
 /* No comment provided by engineer. */
 "Upgrading to DashPay" = "DashPay'e yükseltiliyor";
@@ -2300,17 +2345,20 @@
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
-/* No comment provided by engineer. */
-"Upload Error" = "Upload Error";
+/* Uphold */
+"Uphold error" = "Uphold hatası";
 
 /* No comment provided by engineer. */
-"Upload your picture, personalize your identity" = "Upload your picture, personalize your identity";
+"Upload Error" = "Yükleme Hatası";
+
+/* No comment provided by engineer. */
+"Upload your picture, personalize your identity" = "Resminizi yükleyin, kimliğinizi kişiselleştirin";
 
 /* Usernames */
-"Upload your picture, personalize your identity." = "Upload your picture, personalize your identity.";
+"Upload your picture, personalize your identity." = "Resminizi yükleyin, kimliğinizi kişiselleştirin.";
 
 /* No comment provided by engineer. */
-"Uploading your picture to the network" = "Uploading your picture to the network";
+"Uploading your picture to the network" = "Resminizi ağa yükleme";
 
 /* Explore Dash/Filters */
 "Use gift card" = "Hediye kartı kullan";
@@ -2322,28 +2370,28 @@
 "Used at: " = "Şurada kullanılmış:";
 
 /* No comment provided by engineer. */
-"User (Fetching Info)" = "User (Fetching Info)";
+"User (Fetching Info)" = "Kullanıcı (Bilgi Alma)";
 
 /* Voting */
-"Username" = "Username";
+"Username" = "Kullanıcı Adı";
 
 /* No comment provided by engineer. */
-"Username already found" = "Username already found";
+"Username already found" = "Kullanıcı adı zaten bulundu";
 
 /* No comment provided by engineer. */
-"Username available" = "Username available";
+"Username available" = "Kullanıcı adı uygun";
 
 /* No comment provided by engineer. */
 "Username taken" = "Kullanıcı adı alınmış";
 
 /* Voting */
-"Username voting" = "Username voting";
+"Username voting" = "Kullanıcı adı oylaması";
 
 /* Usernames */
-"Username was successfully requested" = "Username was successfully requested";
+"Username was successfully requested" = "Kullanıcı adı başarıyla istendi";
 
 /* No comment provided by engineer. */
-"Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
+"Users that matches %@ who are currently not in your contacts" = "Şu anda kişilerinizde olmayan %@ ile eşleşen kullanıcılar";
 
 /* CrowdNode Portal */
 "Validating address…" = "Adres doğrulanıyor…";
@@ -2367,10 +2415,10 @@
 "Verify your API Dash address" = "API Dash adresinizi doğrulayın";
 
 /* Usernames */
-"Verify your identity" = "Verify your identity";
+"Verify your identity" = "Kimliğinizi doğrulayın";
 
 /* Usernames */
-"Verify your identity to enhance your chances of getting your requested username" = "Verify your identity to enhance your chances of getting your requested username";
+"Verify your identity to enhance your chances of getting your requested username" = "İstediğiniz kullanıcı adını alma şansınızı artırmak için kimliğinizi doğrulayın";
 
 /* adjective, security level */
 "Very High" = "Çok Yüksek";
@@ -2394,22 +2442,22 @@
 "View Recovery Phrase" = "Kurtarma Sözcük Grubunu Göster";
 
 /* Voting */
-"Vote for All" = "Vote for All";
+"Vote for All" = "Herkese Oy Ver";
 
 /* Voting */
-"Vote only on duplicates" = "Vote only on duplicates";
+"Vote only on duplicates" = "Yalnızca kopyalara oy ver";
 
 /* Voting */
-"Vote to Approve" = "Vote to Approve";
+"Vote to Approve" = "Onaylamak için oy verin";
 
 /* Voting */
-"Votes:" = "Votes:";
+"Votes:" = "Oylar:";
 
 /* Voting */
-"Votes: High to low" = "Votes: High to low";
+"Votes: High to low" = "Oylar: Yüksekten düşüğe";
 
 /* Voting */
-"Votes: Low to high" = "Votes: Low to high";
+"Votes: Low to high" = "Oylar: Düşükten yükseğe";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Oy Verme Adresi";
@@ -2418,10 +2466,13 @@
 "Voting Keys" = "Oy Verme Anahtarları";
 
 /* Usernames */
-"Voting will not be required forever" = "Voting will not be required forever";
+"Voting will not be required forever" = "Oy vermek sonsuza kadar gerekli olmayacak";
 
 /* Voting */
-"Voting:" = "Voting:";
+"Voting:" = "Oylama:";
+
+/* ZenLedger */
+"Wait until the chain is fully synced, so we can review your transaction history." = "İşlem geçmişinizi inceleyebilmemiz için zincir tamamen senkronize edilene kadar bekleyin.";
 
 /* No comment provided by engineer. */
 "Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Zincir tamamen senkronize olana kadar bekleyin, böylece işlem geçmişinizi gözden geçirebiliriz. Giriş yapmak veya kaydolmak için CrowdNode web sitesini ziyaret edin.";
@@ -2469,13 +2520,13 @@
 "Welcome" = "Hoşgeldiniz";
 
 /* Usernames */
-"Welcome to Dash Pay" = "Welcome to Dash Pay";
+"Welcome to Dash Pay" = "Dash Pay'e hoş geldiniz";
 
 /* No comment provided by engineer. */
-"Welcome to DashPay" = "Welcome to DashPay";
+"Welcome to DashPay" = "DashPay'e hoş geldiniz";
 
 /* Usernames */
-"What is username voting?" = "What is username voting?";
+"What is username voting?" = "Kullanıcı adı oylaması nedir?";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "İşlem onaylandığında, diğer cüzdan değersiz olacaktır ve güvenlik nedeniyle yeniden kullanılmamalıdır.";
@@ -2518,13 +2569,13 @@
 "Withdrawal requested" = "Para çekme isteği gönderildi";
 
 /* No comment provided by engineer. */
-"Would you like to accept the invitation?" = "Would you like to accept the invitation?";
+"Would you like to accept the invitation?" = "Daveti kabul etmek ister misiniz?";
 
 /* Coinbase */
-"Would you like to make a deposit for your purchase using a linked bank account?" = "Would you like to make a deposit for your purchase using a linked bank account?";
+"Would you like to make a deposit for your purchase using a linked bank account?" = "Bağlı bir banka hesabını kullanarak satın alma işleminiz için para yatırmak ister misiniz?";
 
 /* No comment provided by engineer. */
-"Would you like to save the changes you made to your profile?" = "Would you like to save the changes you made to your profile?";
+"Would you like to save the changes you made to your profile?" = "Profilinizde yaptığınız değişiklikleri kaydetmek ister misiniz?";
 
 /* No comment provided by engineer. */
 "Yes" = "Evet";
@@ -2539,7 +2590,7 @@
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Bu cüzdanı bu cihazdan silmek üzeresiniz. Bu cüzdanla ilişkili fonlar yalnızca kurtarma sözcük grubunuz varsa geri alınabilir.";
 
 /* No comment provided by engineer. */
-"You can always delete the image uploaded, as long as you have access to this wallet." = "You can always delete the image uploaded, as long as you have access to this wallet.";
+"You can always delete the image uploaded, as long as you have access to this wallet." = "Bu cüzdana erişiminiz olduğu sürece, yüklenen görseli her zaman silebilirsiniz.";
 
 /* No comment provided by engineer. */
 "You can authenticate with Face ID for payments below" = "Yüz Kimliği doğrulaması ile aşağıdaki ödemeleri yapabilirsiniz";
@@ -2550,23 +2601,26 @@
 /* CrowdNode */
 "You can change how / when your reward earnings are paid to you." = "Ödüllerinizin nasıl ve ne zaman ödeneceğini değiştirebilirsiniz.";
 
-/* Voting */
-"You can enter your key in any of the following formats: WIF/base58/base64/hex" = "You can enter your key in any of the following formats: WIF/base58/base64/hex";
+/* No comment provided by engineer. */
+"You can create a different username without paying again" = "Tekrar ödeme yapmadan farklı bir kullanıcı adı oluşturabilirsiniz";
 
 /* Voting */
-"You can review all requests but you only need to vote on duplicates" = "You can review all requests but you only need to vote on duplicates";
+"You can enter your key in any of the following formats: WIF/base58/base64/hex" = "Anahtarınızı aşağıdaki formatlardan herhangi birinde girebilirsiniz: WIF/base58/base64/hex";
+
+/* Voting */
+"You can review all requests but you only need to vote on duplicates" = "Tüm istekleri inceleyebilirsiniz ancak yalnızca kopyalara oy vermeniz gerekir";
 
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "Para yatırma, çekme ve ödüllerinizin detaylı bilgileri görebilirsiniz.";
 
 /* No comment provided by engineer. */
-"You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
+"You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "Diğer kullanıcıların Dash ağında görebilmesi için internette herkese açık olan herhangi bir URL'yi belirtebilirsiniz.";
 
 /* No comment provided by engineer. */
-"You cannot claim this invite since you already have a Dash username" = "You cannot claim this invite since you already have a Dash username";
+"You cannot claim this invite since you already have a Dash username" = "Zaten bir Dash kullanıcı adınız olduğundan bu daveti talep edemezsiniz";
 
 /* No comment provided by engineer. */
-"You do not have any contacts at the moment" = "You do not have any contacts at the moment";
+"You do not have any contacts at the moment" = "Şu anda herhangi bir kişiniz yok";
 
 /* Coinbase */
 "You don’t have enough balance" = "Yeterli bakiyeniz yok";
@@ -2575,13 +2629,13 @@
 "You exceeded the authorization limit on Coinbase." = "Coinbase'deki yetki sınırını aştınız.";
 
 /* No comment provided by engineer. */
-"You have been invited by %@. Start using Dash cryptocurrency." = "You have been invited by %@. Start using Dash cryptocurrency.";
+"You have been invited by %@. Start using Dash cryptocurrency." = "%@ tarafından davet edildiniz. Dash kripto para birimini kullanmaya başlayın.";
 
 /* No comment provided by engineer. */
-"You have chose \"%@\" as your username. Username cannot be changed once it is registered." = "You have chose \"%@\" as your username. Username cannot be changed once it is registered.";
+"You have chose \"%@\" as your username. Username cannot be changed once it is registered." = "Kullanıcı adınızı \"%@\" olarak seçtiniz. Kullanıcı adı kaydedildikten sonra değiştirilemez.";
 
 /* Voting */
-"You have entered an invalid key" = "You have entered an invalid key";
+"You have entered an invalid key" = "Geçersiz bir anahtar girdiniz";
 
 /* No comment provided by engineer. */
 "You have insufficient funds to proceed" = "Devam etmek için yeterli bakiyeniz yok";
@@ -2593,13 +2647,13 @@
 "You must enter your PIN in order to enter Dash Wallet" = "Dash Wallet'a girmek için bir PİN kodu girmelisiniz";
 
 /* No comment provided by engineer. */
-"You need at least %@ Dash to create an invitation" = "You need at least %@ Dash to create an invitation";
+"You need at least %@ Dash to create an invitation" = "Davet oluşturmak için en az %@ Dash'e ihtiyacınız var";
 
 /* CrowdNode */
 "You need at least %@ on your Dash Wallet" = "Dash Cüzdan'ınızda en az %@ olması gerekir";
 
 /* CrowdNode */
-"You need to wait 5 minutes before initiating another withdrawal" = "You need to wait 5 minutes before initiating another withdrawal";
+"You need to wait 5 minutes before initiating another withdrawal" = "Başka bir para çekme işlemine başlamadan önce 5 dakika beklemeniz gerekir";
 
 /* CrowdNode */
 "You only need %@ to join the pool." = "Havuza katılmak için yalnızca %@'a ihtiyacınız var.";
@@ -2620,7 +2674,7 @@
 "You should have at least %@ to proceed with the CrowdNode verification." = "CrowdNode doğrulamasına devam etmek için en az %@'a sahip olmalısınız.";
 
 /* Usernames */
-"You should have more than %@ Dash to create a username" = "You should have more than %@ Dash to create a username";
+"You should have more than %@ Dash to create a username" = "Kullanıcı adı oluşturmak için %@ Dash'tan fazlasına sahip olmalısınız";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Aynı zamanda tarayıcınızda Uphold internet sitesinden çıkış yapmanız gerekecek";
@@ -2632,7 +2686,7 @@
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "Bu cihaz kaybolursa, hasar görürse veya Dash Cüzdan'ı bu cihazdan kaldırılırsa paranıza erişmek için bu kurtarma ifadesine ihtiyacınız olacaktır.";
 
 /* Coinbase */
-"You will only be able to spend Dash that has been mixed when this is turned on. This can be turned off at any time." = "You will only be able to spend Dash that has been mixed when this is turned on. This can be turned off at any time.";
+"You will only be able to spend Dash that has been mixed when this is turned on. This can be turned off at any time." = "Bu aktive edildiğinde yalnızca karıştırılmış olan Dash'ı harcayabileceksiniz. İstediğiniz bir zaman bunu kapatabilirsiniz.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "Bu cihazdaki Dash Cüzdan'ınızda %@ Dash alacaksınız. Bir transfer işleminin tamamlanmasının 2-3 dakika kadar sürebileceğini lütfen unutmayın.";
@@ -2662,13 +2716,13 @@
 "Your deposit to CrowdNode is received." = "CrowdNode'a yaptığınız ödeme alındı.";
 
 /* No comment provided by engineer. */
-"Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded.";
+"Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "E-postanız DashPay cüzdanında veya herhangi bir sunucuda saklanmaz. Gravatar hesap ayrıntılarınızı almak için bir kez kullanılır ve ardından yok edilir.";
 
 /* No comment provided by engineer. */
-"Your invitation from %@ has been already claimed" = "Your invitation from %@ has been already claimed";
+"Your invitation from %@ has been already claimed" = "%@ tarafından gönderilen davetiniz zaten talep edildi";
 
 /* No comment provided by engineer. */
-"Your invitation from %@ is not valid" = "Your invitation from %@ is not valid";
+"Your invitation from %@ is not valid" = "%@'dan gelen davetiniz geçerli değil";
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Konumunuz, haritada konumunuzu ve seçilen yarıçaptaki ATMleri gösterip arama sonuçlarını iyileştirmek için kullanılır.";
@@ -2680,7 +2734,7 @@
 "Your primary Dash address that you currently use for your CrowdNode account" = "Şu anda CrowdNode hesabınız için kullandığınız birincil Dash adresiniz";
 
 /* Usernames */
-"Your request was cancelled" = "Your request was cancelled";
+"Your request was cancelled" = "İsteğiniz iptal edildi";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "İşleminiz yapıldı ve birkaç dakika içinde tutar cüzdanınızda görülecek.";
@@ -2692,10 +2746,16 @@
 "Your username %@ is being created on the Dash Network" = "Kullanıcı adınız %@ Dash Ağında oluşturuluyor";
 
 /* No comment provided by engineer. */
-"Your vote was cancelled" = "Your vote was cancelled";
+"Your username was approved" = "Kullanıcı adınız onaylandı";
+
+/* No comment provided by engineer. */
+"Your vote was cancelled" = "Oyunuz iptal edildi";
 
 /* Voting */
-"Your vote was submitted" = "Your vote was submitted";
+"Your vote was submitted" = "Oyunuz gönderildi";
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Cüzdanınız artık güvende. Hesabınızı başka bir cihaza aktarmak için kurtarma sözcük grubunuzu istediğiniz zaman kullanabilirsiniz.";
+
+/* No comment provided by engineer. */
+"ZenLedger" = "ZenLedger";

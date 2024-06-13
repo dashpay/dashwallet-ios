@@ -130,7 +130,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Actions
 
 - (void)actionButtonAction:(id)sender {
-    [self.delegate secureWalletRoutineDidCanceled:self];
+    [self.delegate secureWalletRoutineDidCancel:self];
 }
 
 #if DEBUG

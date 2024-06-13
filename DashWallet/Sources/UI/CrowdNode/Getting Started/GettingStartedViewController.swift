@@ -174,7 +174,7 @@ extension GettingStartedViewController: BackupInfoViewControllerDelegate {
         dismiss(animated: true)
     }
 
-    internal func secureWalletRoutineDidCanceled(_ controller: UIViewController) { }
+    internal func secureWalletRoutineDidCancel(_ controller: UIViewController) { }
 
     internal func secureWalletRoutineDidVerify(_ controller: UIViewController) {
         refreshCreateAccountButton()
@@ -195,7 +195,7 @@ extension GettingStartedViewController {
     }
 
     private func buyDashAuthenticated() {
-        let controller = PortalViewController.controller()
+        let controller = BuySellPortalViewController.controller()
         let navigationController = BaseNavigationController(rootViewController: controller)
         self.navigationController?.present(navigationController, animated: true)
     }
