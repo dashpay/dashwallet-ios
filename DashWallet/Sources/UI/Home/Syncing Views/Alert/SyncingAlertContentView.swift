@@ -108,9 +108,9 @@ final class SyncingAlertContentView: UIView {
             let chain = environment.currentChain
             let chainManager = environment.currentChainManager
             // We give a 6 block window, just in case a new block comes in
-            let atTheEndOfInitialTerminalBlocksAndSyncingMasternodeList = chain.lastTerminalBlockHeight >= chain.estimatedBlockHeight - 6 && chainManager.masternodeManager
+            let atTheEndOfInitialTerminalBlocksAndSyncingMasternodeList = chain.lastTerminalBlockHeight + 6 >= chain.estimatedBlockHeight && chainManager.masternodeManager
                 .masternodeListRetrievalQueueCount > 0 && chainManager.syncPhase == .initialTerminalBlocks
-            let atTheEndOfSyncBlocksAndSyncingMasternodeList = chain.lastSyncBlockHeight >= chain.estimatedBlockHeight - 6 && chainManager.masternodeManager
+            let atTheEndOfSyncBlocksAndSyncingMasternodeList = chain.lastSyncBlockHeight + 6 >= chain.estimatedBlockHeight && chainManager.masternodeManager
                 .masternodeListRetrievalQueueCount > 0 && chainManager.syncPhase == .synced
             if atTheEndOfInitialTerminalBlocksAndSyncingMasternodeList || atTheEndOfSyncBlocksAndSyncingMasternodeList {
                 var remaining: UInt = 0

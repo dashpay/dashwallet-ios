@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+#import "DSChain+Blocks.h"
 #import "DSTransaction+DashWallet.h"
 #import "NSData+Dash.h"
 

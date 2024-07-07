@@ -16,7 +16,9 @@
 //
 
 #import "DSBlock.h"
+#import "DSChain+Checkpoints.h"
 #import "DSChain+DashWallet.h"
+#import "DSChain+Params.h"
 #import "DSChainsManager.h"
 #import "DSCheckpoint.h"
 #import "DSMasternodeManager.h"
@@ -78,16 +80,15 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
     NSTimeInterval timeElapsedSinceCheckpoint = [NSDate timeIntervalSince1970] - checkpoint.timestamp;
     uint64_t estimatedBlockHeight = (timeElapsedSinceCheckpoint / BLOCK_TARGET_SPACING) + checkpoint.height;
 
-    DSMasternodeManager *masternodeManager = self.chainManager.masternodeManager;
-    DSMasternodeList *list = [masternodeManager masternodeListForBlockHash:checkpoint.blockHash];
-
     return [self calculateMasternodeAPYWithHeight:estimatedBlockHeight
                              prevDifficultyTarget:checkpoint.target
                                   masternodeCount:MASTERNODE_COUNT];
 }
 
 - (NSNumber *_Nullable)calculateMasternodeAPY {
-    if (self.lastTerminalBlock.target == 0)
+    DSBlock *lastTerminalBlock = self.lastTerminalBlock;
+    
+    if (lastTerminalBlock.target == 0)
         return nil;
 
     DSMasternodeList *masternodeList = self.chainManager.masternodeManager.currentMasternodeList;
@@ -107,8 +108,8 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
         }
     }
 
-    return [self calculateMasternodeAPYWithHeight:self.lastTerminalBlock.height
-                             prevDifficultyTarget:self.lastTerminalBlock.target
+    return [self calculateMasternodeAPYWithHeight:lastTerminalBlock.height
+                             prevDifficultyTarget:lastTerminalBlock.target
                                   masternodeCount:virtualMNCount];
 }
 

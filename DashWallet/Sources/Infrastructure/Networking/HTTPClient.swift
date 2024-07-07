@@ -85,7 +85,7 @@ public class HTTPClient<Target: TargetType> {
         self.accessTokenProvider = accessTokenProvider
 
         let config: NetworkLoggerPlugin.Configuration = .init(formatter: .init(responseData: JSONResponseDataFormatter),
-                                                              logOptions: .verbose)
+                                                              logOptions: .errorResponseBody)
         var plugins: [PluginType] = [NetworkLoggerPlugin(configuration: config)]
         let accessTokenPlugin = AccessTokenPlugin { [weak self] target in
             guard let self else { return "" }
