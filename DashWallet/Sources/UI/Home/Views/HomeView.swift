@@ -16,17 +16,15 @@
 //
 
 import UIKit
+import SwiftUI
 
 // MARK: - HomeViewDelegate
 
-@objc(DWHomeViewDelegate)
 protocol HomeViewDelegate: AnyObject {
     func homeView(_ homeView: HomeView, showTxFilter sender: UIView)
     func homeView(_ homeView: HomeView, showSyncingStatus sender: UIView)
-    func homeView(_ homeView: HomeView, didSelectTransaction transaction: DSTransaction)
     func homeViewShowDashPayRegistrationFlow(_ homeView: HomeView)
     func homeView(_ homeView: HomeView, showReclassifyYourTransactionsFlowWithTransaction transaction: DSTransaction)
-    func homeView(_ homeView: HomeView, showCrowdNodeTxs transactions: [DSTransaction])
     
 #if DASHPAY
     func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt)
@@ -37,17 +35,14 @@ protocol HomeViewDelegate: AnyObject {
 
 final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorRetryDelegate {
 
-    @objc
     weak var delegate: HomeViewDelegate?
 
     private(set) var headerView: HomeHeaderView!
-    private(set) var topOverscrollView: UIView!
-    private(set) var tableView: UITableView!
-
-    weak var syncingHeaderView: SyncingHeaderView?
+    private(set) var syncingHeaderView: SyncingHeaderView!
 
     // Strong ref to current dataSource to make sure it always exists while tableView uses it
     var currentDataSource: TransactionListDataSource?
+    var viewModel: HomeViewModel = HomeViewModel()
 
     @objc
     var model: DWHomeProtocol? {
@@ -80,60 +75,35 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         headerView?.balanceView.hideBalanceIfNeeded()
     }
 
-    override func layoutSubviews() {
-        super.layoutSubviews()
-
-        let size = bounds.size
-        topOverscrollView.frame = CGRect(x: 0.0, y: -size.height, width: size.width, height: size.height)
-
-        if let tableHeaderView = tableView.tableHeaderView {
-            let headerSize = tableHeaderView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
-            if tableHeaderView.frame.height != headerSize.height {
-                tableHeaderView.frame = CGRect(x: 0.0, y: 0.0, width: headerSize.width, height: headerSize.height)
-                tableView.tableHeaderView = tableHeaderView
-            }
-        }
-    }
-
     private func setupView() {
         backgroundColor = UIColor.dw_secondaryBackground()
 
         headerView = HomeHeaderView(frame: CGRect.zero)
         headerView.delegate = self
-
-        topOverscrollView = UIView(frame: CGRect.zero)
-        topOverscrollView.backgroundColor = UIColor.dw_dashNavigationBlue()
-
-        tableView = UITableView(frame: bounds, style: .plain)
-        tableView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        tableView.tableHeaderView = headerView
-        tableView.backgroundColor = UIColor.dw_secondaryBackground()
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 74.0
-        tableView.sectionHeaderHeight = UITableView.automaticDimension
-        tableView.estimatedSectionHeaderHeight = 64.0
-        tableView.separatorStyle = .none
-        // NOTE: tableView.contentInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: DW_TABBAR_NOTCH, right: 0.0)
-        tableView.addSubview(topOverscrollView)
-        addSubview(tableView)
-
-        let cellIds = [
-            TxListEmptyTableViewCell.reuseIdentifier,
-            TxListTableViewCell.reuseIdentifier,
-            DWDPRegistrationStatusTableViewCell.dw_reuseIdentifier,
-            DWDPRegistrationErrorTableViewCell.dw_reuseIdentifier,
-            DWDPRegistrationDoneTableViewCell.dw_reuseIdentifier,
-        ]
-        for cellId in cellIds {
-            let nib = UINib(nibName: cellId, bundle: nil)
-            tableView.register(nib, forCellReuseIdentifier: cellId)
-        }
-
-        let nib = UINib(nibName: "CNCreateAccountCell", bundle: nil)
-        tableView.register(nib, forCellReuseIdentifier: "CNCreateAccountCell")
-        tableView.registerClassforHeaderFooterView(for: SyncingHeaderView.self)
+        
+        syncingHeaderView = SyncingHeaderView(frame: CGRect.zero)
+        syncingHeaderView.delegate = self
+        
+        let content = TransactionList(
+            viewModel: self.viewModel,
+            balanceHeader: { UIViewWrapper(uiView: self.headerView) },
+            syncingHeader: { UIViewWrapper(uiView: self.syncingHeaderView) }
+        )
+        let swiftUIController = UIHostingController(rootView: content)
+        swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
+        
+        self.addSubview(swiftUIController.view)
+        swiftUIController.view.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            swiftUIController.view.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            swiftUIController.view.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            swiftUIController.view.topAnchor.constraint(equalTo: self.topAnchor),
+            swiftUIController.view.bottomAnchor.constraint(equalTo: self.bottomAnchor)
+        ])
+                
+        swiftUIController.didMove(toParent: nil)
+        
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(setNeedsLayout),
                                                name: UIContentSizeCategory.didChangeNotification,
@@ -157,13 +127,8 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
     func homeModel(_ model: DWHomeProtocol, didUpdate dataSource: TransactionListDataSource, shouldAnimate: Bool) {
         currentDataSource = dataSource
         dataSource.retryDelegate = self
-
-        if dataSource.isEmpty {
-            tableView.dataSource = self
-        } else {
-            tableView.dataSource = dataSource
-        }
-        tableView.reloadData()
+        
+        self.viewModel.updateItems(transactions: dataSource.items)
 
         headerView.reloadBalance()
         reloadShortcuts()
@@ -289,53 +254,186 @@ extension HomeView: SyncingHeaderViewDelegate {
     }
 }
 
-// MARK: UITableViewDataSource, UITableViewDelegate
-
-extension HomeView: UITableViewDataSource, UITableViewDelegate {
-    // MARK: - UITableViewDataSource
-
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        1
+struct TxPreviewModel: Identifiable, Equatable {
+    var id: String
+    var title: String
+    var timeFormatted: String
+    var dateFormatted: String
+    var details: String?
+    var icon: IconName
+    var dashAmount: String
+    var fiatAmount: String
+    var date: Date
+    
+    static func == (lhs: TxPreviewModel, rhs: TxPreviewModel) -> Bool {
+        return lhs.id == rhs.id
     }
+}
 
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cellId = TxListEmptyTableViewCell.reuseIdentifier
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
-        return cell
-    }
+struct TransactionList<Content: View>: View {
+    @State private var selectedTxDataItem: TransactionListDataItem? = nil
+    
+    @StateObject var viewModel: HomeViewModel
 
-    // MARK: - UITableViewDelegate
+    @ViewBuilder var balanceHeader: () -> Content
+    @ViewBuilder var syncingHeader: () -> Content
+    
 
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let headerView = tableView.dequeueReusableHeaderFooterView(type: SyncingHeaderView.self)
-        headerView.delegate = self
-        syncingHeaderView = headerView
-        return headerView
-    }
-
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-
-        guard let currentDataSource,
-              !currentDataSource.isEmpty else { return }
-
-        let type = currentDataSource.itemType(by: indexPath)
-
-        if type == .crowdnode {
-            delegate?.homeView(self, showCrowdNodeTxs: currentDataSource.crowdnodeTxs())
-            return
+    var body: some View {
+        GeometryReader { geometry in
+            let topOverscrollSize = geometry.size.height * 1.5
+            
+            ScrollView {
+                ZStack { Color.dashBlue } // Top overscroll area
+                .frame(height: topOverscrollSize)
+                .padding(EdgeInsets(top: -topOverscrollSize, leading: 0, bottom: 0, trailing: 0))
+                
+                LazyVStack(pinnedViews: [.sectionHeaders]) {
+                    balanceHeader()
+                        .frame(height: 250)
+                    
+                    syncingHeader()
+                        .frame(height: 50)
+                    
+                    if viewModel.txItems.isEmpty {
+                        Text(NSLocalizedString("There are no transactions to display", comment: ""))
+                            .font(.caption)
+                            .foregroundStyle(Color.primaryText.opacity(0.5))
+                            .padding(.top, 20)
+                    } else {
+                        ForEach(viewModel.txItems, id: \.0.key) { key, value in
+                            Section(header: SectionHeader(key)
+                                .padding(.bottom, -24)
+                            ) {
+                                VStack(spacing: 0) {
+                                    ForEach(value, id: \.id) { txItem in
+                                        TransactionPreviewFrom(txItem: txItem)
+                                            .padding(.horizontal, 5)
+                                    }
+                                }
+                                .padding(.bottom, 4)
+                                .background(Color.secondaryBackground)
+                                .clipShape(RoundedShape(corners: [.bottomLeft, .bottomRight], radii: 10))
+                                .padding(15)
+                                .shadow(color: .shadow, radius: 10, x: 0, y: 5)
+                            }
+                        }
+                    }
+                }
+                .padding(EdgeInsets(top: -20, leading: 0, bottom: 0, trailing: 0))
+            }
         }
-
-        if let transaction = currentDataSource.transactionForIndexPath(indexPath) {
-            delegate?.homeView(self, didSelectTransaction: transaction)
-        } else { // registration status cell
-            delegate?.homeViewShowDashPayRegistrationFlow(self)
+        .sheet(item: $selectedTxDataItem) { item in
+            TransactionDetailsSheet(item: item)
         }
     }
+    
+    @ViewBuilder
+    private func SectionHeader(_ dateKey: DateKey) -> some View {
+        VStack {
+            Spacer()
+            
+            HStack {
+                Text(dateKey.key)
+                    .font(.footnote)
+                    .fontWeight(.medium)
+                    .padding(.leading, 15)
+                
+                Spacer()
+                
+                Text(DWDateFormatter.sharedInstance.dayOfWeek(from: dateKey.date))
+                    .font(.footnote)
+                    .foregroundStyle(Color.tertiaryText)
+                    .padding(.trailing, 15)
+            }
+            .padding(.bottom, 6)
+        }
+        .frame(height: 38)
+        .frame(maxWidth: .infinity)
+        .background(Color.secondaryBackground)
+        .clipShape(RoundedShape(corners: [.topLeft, .topRight], radii: 10))
+        .padding(.horizontal, 15)
+    }
+    
+    @ViewBuilder
+    private func TransactionPreviewFrom(
+        txItem txDataItem: TransactionListDataItem
+    ) -> some View {
+        switch txDataItem {
+        case .crowdnode(let txItems):
+            TransactionPreview(
+                title: NSLocalizedString("CrowdNode · Account", comment: "Crowdnode"),
+                subtitle: txItems.last?.shortTimeString ?? "",
+                topText: String(format: NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), txItems.count),
+                icon: .custom("tx.item.cn.icon"),
+                dashAmount: self.crowdNodeAmount(txItems)
+            ) {
+                self.selectedTxDataItem = txDataItem
+            }
+            .frame(height: 80)
+            
+        case .tx(let txItem):
+            TransactionPreview(
+                title: txItem.stateTitle,
+                subtitle: txItem.shortTimeString,
+                icon: .custom(txItem.direction.iconName),
+                dashAmount: txItem.signedDashAmount,
+                overrideFiatAmount: txItem.fiatAmount
+            ) {
+                self.selectedTxDataItem = txDataItem
+            }
+        }
+    }
+    
+    private func crowdNodeAmount(_ transactions: [Transaction]) -> Int64 {
+        return transactions.reduce(0) { partialResult, tx in
+            var r = partialResult
+            let direction = tx.direction
 
-    // MARK: - UIScrollViewDelegate
+            switch direction {
+            case .sent:
+                r -= Int64(tx.dashAmount)
+            case .received:
+                r += Int64(tx.dashAmount)
+            default:
+                break
+            }
 
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        headerView.parentScrollViewDidScroll(scrollView)
+            return r
+        }
+    }
+}
+
+struct TransactionDetailsSheet: View {
+    @State private var showBackButton: Bool = false
+    @State private var backNavigationRequested: Bool = false
+    
+    var item: TransactionListDataItem
+    
+    var body: some View {
+        BottomSheet(showBackButton: $showBackButton, onBackButtonPressed: {
+            backNavigationRequested = true
+        }) {
+            TxDetailsDestination(from: item)
+        }
+        .background(Color.primaryBackground)
+    }
+    
+    @ViewBuilder
+    private func TxDetailsDestination(
+        from txDataItem: TransactionListDataItem
+    ) -> some View {
+        switch txDataItem {
+        case .crowdnode(let txItems):
+            CrowdNodeGroupedTransactionsScreen(
+                model: CNCreateAccountTxDetailsModel(transactions: txItems),
+                backNavigationRequested: $backNavigationRequested,
+                onShowBackButton: { show in
+                    showBackButton = show
+                }
+            )
+        case .tx(let txItem):
+            TXDetailVCWrapper(tx: txItem, navigateBack: $backNavigationRequested)
+        }
     }
 }

@@ -16,6 +16,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 class HomeViewController: DWBasePayViewController {
     var model: DWHomeProtocol!
@@ -231,16 +232,16 @@ class HomeViewController: DWBasePayViewController {
 extension HomeViewController: DWRootEditProfileViewControllerDelegate {
     func editProfileViewController(_ controller: DWRootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?) {
         model.dashPayModel.userProfile.updateModel.update(withDisplayName: rawDisplayName, aboutMe: rawAboutMe, avatarURLString: avatarURLString)
-        controller.dismiss(animated: true, completion: nil)
+        controller.navigateBack(animated: true, completion: nil)
     }
 
     func editProfileViewControllerDidCancel(_ controller: DWRootEditProfileViewController) {
-        controller.dismiss(animated: true, completion: nil)
+        controller.navigateBack(animated: true, completion: nil)
     }
 }
 #endif
 
-// MARK: - DWHomeViewDelegate
+// MARK: - HomeViewDelegate
 
 extension HomeViewController: HomeViewDelegate {
     func homeView(_ homeView: HomeView, showTxFilter sender: UIView) {
@@ -251,17 +252,7 @@ extension HomeViewController: HomeViewDelegate {
         let controller = SyncingAlertViewController()
         present(controller, animated: true, completion: nil)
     }
-
-    func homeView(_ homeView: HomeView, didSelectTransaction transaction: DSTransaction) {
-        presentTransactionDetails(transaction)
-    }
-
-    func homeView(_ homeView: HomeView, showCrowdNodeTxs transactions: [DSTransaction]) {
-        let controller = CNCreateAccountTxDetailsViewController(transactions: transactions)
-        let nvc = BaseNavigationController(rootViewController: controller)
-        present(nvc, animated: true, completion: nil)
-    }
-
+    
     func homeViewShowDashPayRegistrationFlow(_ homeView: HomeView) {
         let action = ShortcutAction(type: .createUsername)
         performAction(for: action, sender: homeView)

@@ -19,7 +19,7 @@ import Foundation
 
 // MARK: - Transaction
 
-class Transaction: TransactionDataItem {
+class Transaction: TransactionDataItem, Identifiable {
     enum State {
         case ok
         case invalid
@@ -35,6 +35,10 @@ class Transaction: TransactionDataItem {
         case masternodeUpdate
         case masternodeRevoke
         case blockchainIdentityRegistration
+    }
+    
+    var id: String {
+        tx.txHashHexString
     }
 
     let tx: DSTransaction
@@ -56,14 +60,22 @@ class Transaction: TransactionDataItem {
 
     var specialInfoAddresses: [String: Int]?
 
-    var dashAmount: UInt64 { _dashAmount }
     private lazy var _dashAmount: UInt64 = tx.dashAmount
+    
+    var dashAmount: UInt64 { _dashAmount }
+    var signedDashAmount: Int64 {
+        if dashAmount == UInt64.max {
+            return Int64.max
+        }
+        
+        return direction == .sent ? -Int64(dashAmount) : Int64(dashAmount)
+    }
 
     var fiatAmount: String {
         storedFiatAmount
     }
 
-    lazy var storedFiatAmount = userInfo?.fiatAmountString(from: _dashAmount) ?? NSLocalizedString("Not available", comment: "");
+    private lazy var storedFiatAmount = userInfo?.fiatAmountString(from: _dashAmount) ?? NSLocalizedString("Not available", comment: "");
 
     lazy var userInfo: TxUserInfo? = TxUserInfoDAOImpl.shared.get(by: tx.txHashData)
 
@@ -116,13 +128,17 @@ class Transaction: TransactionDataItem {
         return .ok
     }()
 
+    private lazy var _shortDateString: String = tx.formattedShortTxDate
     var date: Date
     var shortDateString: String {
         _shortDateString
     }
-
-    private lazy var _shortDateString: String = tx.formattedShortTxDate
-
+    
+    private lazy var _shortTimeString: String = tx.formattedShortTxTime
+    var shortTimeString: String {
+        _shortTimeString
+    }
+    
     var stateTitle: String {
         switch transactionType {
         case .classic:
@@ -153,7 +169,7 @@ class Transaction: TransactionDataItem {
             return NSLocalizedString("DashPay Upgrade Fee", comment: "")
         }
     }
-
+    
     init(transaction: DSTransaction) {
         tx = transaction
         date = transaction.date
@@ -185,5 +201,20 @@ extension Transaction {
 
     var isCoinbaseTransaction: Bool {
         tx is DSCoinbaseTransaction
+    }
+}
+
+extension Transaction: Hashable {
+    // MARK: - Equatable
+    static func == (lhs: Transaction, rhs: Transaction) -> Bool {
+        return lhs.tx.txHashData == rhs.tx.txHashData
+    }
+
+    // MARK: - Hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(dashAmount)
+        hasher.combine(direction)
+        hasher.combine(transactionType)
+        hasher.combine(date)
     }
 }
