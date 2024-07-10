@@ -153,3 +153,6 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: Tools menu
 #import "UIViewController+DWDisplayError.h"
+
+//MARK: Onboarding
+#import "DWTransactionStub.h"
