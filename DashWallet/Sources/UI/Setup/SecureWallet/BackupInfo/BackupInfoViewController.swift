@@ -123,25 +123,29 @@ final class BackupInfoViewController: BaseViewController {
 
     @IBAction
     func backupButtonAction() {
-        if type == .setup {
+        let authManager = DSAuthenticationManager.sharedInstance()
+        
+        if type == .setup && authManager.didAuthenticate {
             showSeedPhraseViewController()
         } else {
-            DSAuthenticationManager.sharedInstance()
-                .authenticate(withPrompt: nil,
-                              usingBiometricAuthentication: false,
-                              alertIfLockout: true) { [weak self] authenticated, _, _ in
-                    guard authenticated else {
-                        return
-                    }
+            authManager.authenticate(withPrompt: nil,
+                   usingBiometricAuthentication: false,
+                   alertIfLockout: true) { [weak self] authenticated, _, _ in
+                guard authenticated else {
+                    return
+                }
 
-                    guard let self else {
-                        return
-                    }
+                guard let self else {
+                    return
+                }
 
+                if type != .setup {
                     self.seedPhraseModel = DWPreviewSeedPhraseModel()
                     self.seedPhraseModel.getOrCreateNewWallet()
-                    self.showSeedPhraseViewController()
                 }
+                
+                self.showSeedPhraseViewController()
+            }
         }
     }
 
@@ -194,7 +198,7 @@ extension BackupInfoViewController {
     }
 
     private func showSeedPhraseViewController() {
-        let controller = DWBackupSeedPhraseViewController(model: seedPhraseModel)
+        let controller = BackupSeedPhraseViewController(model: seedPhraseModel)
         controller.shouldCreateNewWalletOnScreenshot = shouldCreateNewWalletOnScreenshot
         controller.delegate = delegate
         navigationController?.pushViewController(controller, animated: true)
