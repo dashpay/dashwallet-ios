@@ -55,8 +55,11 @@ static const bool _SNAPSHOT = 0;
 #import "DWCenteredTableView.h"
 
 //MARK: Backup Wallet
-#import "DWBackupSeedPhraseViewController.h"
+#import "DWPreviewSeedPhraseViewController.h"
 #import "DWSecureWalletDelegate.h"
+#import "DWPreviewSeedPhraseContentView.h"
+#import "DWPreviewSeedPhraseViewController+DWProtected.h"
+#import "DWVerifySeedPhraseViewController.h"
 
 //MARK: Payment flow
 #import "DWQRScanModel.h"
@@ -150,3 +153,6 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: Tools menu
 #import "UIViewController+DWDisplayError.h"
+
+//MARK: Onboarding
+#import "DWTransactionStub.h"

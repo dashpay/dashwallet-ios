@@ -683,10 +683,10 @@
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "En raison des conditions d'utilisation CrowdNode, les utilisateurs ne peuvent pas retirer plus de :";
 
 /* Geoblock */
-"Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features.";
+"Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "En raison de contraintes légales, nous devons vérifier que vous n'êtes pas au Royaume-Uni. Nous vérifions votre localisation uniquement lorsque vous accédez aux fonctionnalités Coinbase.";
 
 /* Geoblock */
-"Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK";
+"Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "En raison de contraintes légales, vous ne pouvez pas utiliser les fonctionnalités Coinbase lorsque vous êtes au Royaume-Uni";
 
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "par exemple johndoe@mail.com";
@@ -806,7 +806,7 @@
 "Fetching Info" = "Récupération des infos";
 
 /* Balance */
-"Fetching rates…" = "Fetching rates…";
+"Fetching rates…" = "Récupération des cours…";
 
 /* Coinbase/Payment Methods */
 "Fiat Account" = "Compte fiduciaire";
@@ -989,7 +989,7 @@
 "If somebody else requests the same username as you, we will let the network decide whom to give this username" = "Si quelqu'un d'autre demande le même nom d'utilisateur que vous, nous laisserons le réseau décider à qui attribuer ce nom d'utilisateur";
 
 /* Geoblock */
-"If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase";
+"If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "Si vous choisissez d'accorder plus tard les autorisations et que vous n'êtes pas au Royaume-Uni, vous pouvez utiliser Coinbase";
 
 /* CrowdNode */
 "If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "Si vous égarez votre phrase de passe, vous pouvez vous authentifier par d'autres moyens pour regagner l'accès à vos fonds CrowdNode.";
@@ -1647,13 +1647,13 @@
 "Previously used at: " = "Précédemment utilisé à :";
 
 /* Stale rates */
-"Prices are at least 30 minutes old. Fiat values may be incorrect." = "Prices are at least 30 minutes old. Fiat values may be incorrect.";
+"Prices are at least 30 minutes old. Fiat values may be incorrect." = "Les cours ont au minimum 30 minutes d'âge. Les valeurs fiduciaires peuvent être incorrectes.";
 
 /* Stale rates */
-"Prices have fluctuated more than 50% since the last update." = "Prices have fluctuated more than 50% since the last update.";
+"Prices have fluctuated more than 50% since the last update." = "Les cours ont fluctué de plus de 50% depuis la mise à jour précédente.";
 
 /* Stale rates */
-"Prices weren't retrieved. Fiat values may be incorrect." = "Prices weren't retrieved. Fiat values may be incorrect.";
+"Prices weren't retrieved. Fiat values may be incorrect." = "Les cours n'ont pas pu être récupérés. Les valeurs fiduciaires peuvent être incorrectes.";
 
 /* CrowdNode */
 "Primary Dash address" = "Adresse Dash principale";

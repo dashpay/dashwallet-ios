@@ -683,10 +683,10 @@
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Из-за условий использования CrowdNode пользователи не могут вывести больше, чем:";
 
 /* Geoblock */
-"Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features.";
+"Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "Из-за регуляторных ограничений нам необходимо убедиться, что вы сейчас не находитесь на территории Великобритании. Мы проверяем ваше местоположение, только когда вы открываете настройки Coinbase.";
 
 /* Geoblock */
-"Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK";
+"Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "Из-за регуляторных ограничений вы не можете пользоваться функциями Coinbase на территории Великобритании.";
 
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "например, johndoe@mail.com";
@@ -806,7 +806,7 @@
 "Fetching Info" = "Получение данных";
 
 /* Balance */
-"Fetching rates…" = "Fetching rates…";
+"Fetching rates…" = "Обновление курса…";
 
 /* Coinbase/Payment Methods */
 "Fiat Account" = "Фиатный счёт";
@@ -989,7 +989,7 @@
 "If somebody else requests the same username as you, we will let the network decide whom to give this username" = "Если кто-то запросит такое же имя пользователя, то сеть решит, кому его отдать. ";
 
 /* Geoblock */
-"If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase";
+"If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "Если вы выберете \"дать разрешения позже\" и при этом вы не находитесь на территории Великобритании, вы можете пользоваться Coinbase.";
 
 /* CrowdNode */
 "If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "В случае, если вы потеряете кодовую фразу, для восстановления доступа к средствам на CrowdNode можно воспользоваться другими методами.";
@@ -1587,7 +1587,7 @@
 "Please check your network connection" = "Пожалуйста, проверьте ваше подключение к сети";
 
 /* Uphold */
-"Please contact Uphold to update your proof of address." = "Пожалуйста, свяжитесь с Uphold для подтверждения адресных данных.";
+"Please contact Uphold to update your proof of address." = "Пожалуйста, свяжитесь с Uphold для подтверждения адреса проживания.";
 
 /* No comment provided by engineer. */
 "Please enter a valid gravatar email ID." = "Пожалуйста, введите правильный gravatar email ID.";
@@ -1647,13 +1647,13 @@
 "Previously used at: " = "Ранее использовалось с:";
 
 /* Stale rates */
-"Prices are at least 30 minutes old. Fiat values may be incorrect." = "Prices are at least 30 minutes old. Fiat values may be incorrect.";
+"Prices are at least 30 minutes old. Fiat values may be incorrect." = "Данные о курсе были получены не менее 30 минут назад. Курс валют может быть неточным.";
 
 /* Stale rates */
-"Prices have fluctuated more than 50% since the last update." = "Prices have fluctuated more than 50% since the last update.";
+"Prices have fluctuated more than 50% since the last update." = "Курс изменился более чем на 50% с момента последнего обновления.";
 
 /* Stale rates */
-"Prices weren't retrieved. Fiat values may be incorrect." = "Prices weren't retrieved. Fiat values may be incorrect.";
+"Prices weren't retrieved. Fiat values may be incorrect." = "Данные о курсе не были получены. Курс валют может быть неточным.";
 
 /* CrowdNode */
 "Primary Dash address" = "Основной адрес Dash";
@@ -2032,7 +2032,7 @@
 "Sign up to finish setting up account" = "Зарегистрируйтесь, чтобы завершить настройку аккаунта";
 
 /* ZenLedger */
-"Simplify your crypto taxes" = "Упростите уплату налогов на криптовалюту";
+"Simplify your crypto taxes" = "Упростите уплату налогов с криптовалюты";
 
 /* No comment provided by engineer. */
 "Skip" = "Пропустить";

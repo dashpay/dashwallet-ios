@@ -152,7 +152,7 @@
 "Advanced users who have a very high level of technical expertise can determine your transaction history" = "Erfahrene Nutzer, die einen hohen Grad an technischer Expertise haben, können deine Transaktionshistorie bestimmen.";
 
 /* Usernames */
-"After the voting ends we will notify you about its results" = "After the voting ends we will notify you about its results";
+"After the voting ends we will notify you about its results" = "Nachdem die Abstimmung endet, wirst du über das Ergebnis benachrichtigt werden.";
 
 /* Usernames */
 "After voting is completed on %@ you can create any username that has not already been created" = "Nachdem die Abstimmung am %@ durchgeführt worden ist, kannst du jeden Nutzernamen erzeugen, der noch nicht vorher schon angelegt wurde.";
@@ -179,7 +179,7 @@
 "Allow Face ID access in Settings" = "Zugriff auf Face ID in den Einstellungen erlauben";
 
 /* ZenLedger */
-"Allow sending all transactions from Dash Wallet to Zenledger?" = "Allow sending all transactions from Dash Wallet to Zenledger?";
+"Allow sending all transactions from Dash Wallet to Zenledger?" = "Erlaubst du, dass alle Transaktionen von der Dash Wallet an Zenledger gesendet werden?";
 
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Zugriff auf Touch ID in den Einstellungen erlauben";
@@ -435,7 +435,7 @@
 "Connect with third party exchanges" = "Mit Drittanbieter-Börsen verknüpfen";
 
 /* ZenLedger */
-"Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.";
+"Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Verbinde deine Krypto-Wallets mit der Zenledger Plattform. Lerne mehr darüber und beginne mit deinen Transaktionen in der Dash Wallet.";
 
 /* Buy Sell Portal
    Coinbase Entry Point */
@@ -683,10 +683,10 @@
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Aufgrund der CrowdNode AGB können Nutzer nicht mehr als diesen Betrag abheben:";
 
 /* Geoblock */
-"Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features.";
+"Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "Aufgrund von regulatorischen Beschränkungen müssen wir feststellen, dass du dich nicht im Vereinigten Königreich aufhältst. Dein Standort wird lediglich überprüft, wenn du die Coinbase-Funktoin nutzt.";
 
 /* Geoblock */
-"Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK";
+"Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "Aufgrund von regulatorischen Einschränkungen kannst du die Coinbase-Funktionen nicht nutzen, wenn du dich im Vereinigten Königreich aufhältst.";
 
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "z.B. maxmustermann@mail.com";
@@ -806,7 +806,7 @@
 "Fetching Info" = "Informationen abrufen";
 
 /* Balance */
-"Fetching rates…" = "Fetching rates…";
+"Fetching rates…" = "Preise abrufen ...";
 
 /* Coinbase/Payment Methods */
 "Fiat Account" = "Fiat Konto";
@@ -986,10 +986,10 @@
 "Identity" = "Identität";
 
 /* Usernames */
-"If somebody else requests the same username as you, we will let the network decide whom to give this username" = "If somebody else requests the same username as you, we will let the network decide whom to give this username";
+"If somebody else requests the same username as you, we will let the network decide whom to give this username" = "Wenn jemand anderes den gleichen Nutzernamen beantragt wie du, wird das Netzwerk darüber entscheiden, wer den Namen erhält.";
 
 /* Geoblock */
-"If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase";
+"If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "Wenn du die Erlaubnis später erteilen willst und dich nicht im Vereinigten Königreich aufhältst, kannst du Coinbase nutzen.";
 
 /* CrowdNode */
 "If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "Solltest du deine Passphrase verlieren, kannst du dich auf andere Weise verifizieren um den Zugriff auf dein CrowdNode-Guthaben wieder zu erlangen.";
@@ -1001,7 +1001,7 @@
 "If you still would like to wipe it please input: \"%@\"" = "Wenn Sie es immer noch entleeren möchten, geben Sie es bitte ein: \"%@\"";
 
 /* Usernames */
-"If you tap “Cancel Request”, you will still have a chance to request another username without paying again" = "If you tap “Cancel Request”, you will still have a chance to request another username without paying again";
+"If you tap “Cancel Request”, you will still have a chance to request another username without paying again" = "Wenn du \"Anfrage abbrechen\" tippst, kannst du immer noch einen anderen Nutzernamen auswählen, ohne erneut dafür zu zahlen.";
 
 /* No comment provided by engineer. */
 "If you would like to save manually reclassified types for transactions you should export a CSV transaction file." = "Wenn du manuell reklassifizierte Transaktionstypen speichern möchtest, solltest du einen CSV-Datei exportieren.";
@@ -1281,7 +1281,7 @@
 "Low to high" = "Aufsteigend";
 
 /* Usernames */
-"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow";
+"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "Verfasse einen Post mit dem obigen Text (oder etwas ähnliches) auf einer bekannten Social Media oder Messenger Plattform, damit du bestätigen kannst, dass du der Originalbesitzer der Anfrage für den Nutzernamen bist. Füge den Link dann in den unten stehenden Beitrag ein.";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "GPS-Erlaubnis verwalten";
@@ -1461,7 +1461,7 @@
 "Once %@ accepts your request you can Pay Directly to Username" = "Sobald %@ deine Anfrage angenommen hat, kannst du Zahlungen direkt an seinen Benutzernamen senden";
 
 /* Voting */
-"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "Once the voting ends you can create any username you want as long as it hasn’t already been created";
+"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "Sobald die Abstimmung abgeschlossen ist, kannst du jeden Nutzernamen erstellen, sofern er noch nicht existiert.";
 
 /* Online */
 "Online" = "Online";
@@ -1623,7 +1623,7 @@
 "Please try scanning again" = "Bitte versuche erneut zu scannen";
 
 /* Usernames */
-"Please vote to approve my requested Dash username - %@" = "Please vote to approve my requested Dash username - %@";
+"Please vote to approve my requested Dash username - %@" = "Bitte stimme für Bestätigung meines angefragten Dash Nutzernamens ab - %@";
 
 /* No comment provided by engineer. */
 "Please Wait" = "Bitte warten";
@@ -1647,13 +1647,13 @@
 "Previously used at: " = "Vorher benutzt von:";
 
 /* Stale rates */
-"Prices are at least 30 minutes old. Fiat values may be incorrect." = "Prices are at least 30 minutes old. Fiat values may be incorrect.";
+"Prices are at least 30 minutes old. Fiat values may be incorrect." = "Die Preise sind mindestens 30 Minuten alt. Es ist möglich, dass die Fiat-Werte nicht korrekt sind.";
 
 /* Stale rates */
-"Prices have fluctuated more than 50% since the last update." = "Prices have fluctuated more than 50% since the last update.";
+"Prices have fluctuated more than 50% since the last update." = "Die Preise sind seit dem letzten Update um mehr als 50% geschwankt.";
 
 /* Stale rates */
-"Prices weren't retrieved. Fiat values may be incorrect." = "Prices weren't retrieved. Fiat values may be incorrect.";
+"Prices weren't retrieved. Fiat values may be incorrect." = "Die Preise konnten nicht abgerufen werden.  Es ist möglich, dass die Fiat-Werte nicht korrekt sind.";
 
 /* CrowdNode */
 "Primary Dash address" = "Primäre Dash Adresse";
@@ -1782,7 +1782,7 @@
 "Requested username was not approved" = "Der angefragte Nutzername wurde nicht genehmigt.";
 
 /* No comment provided by engineer. */
-"Requested · Voting: %@" = "Requested · Voting: %@";
+"Requested · Voting: %@" = "Angefragter Nutzername · Abstimmung: %@";
 
 /* An action */
 "Rescan" = "Erneut scannen";
@@ -2167,7 +2167,7 @@
 "There was a network error, you can try again at no extra cost" = "Ein Netzwerkfehler ist aufgetreten. Du kannst es ohne zusätzliche Kosten erneut versuchen.";
 
 /* ZenLedger */
-"There was an error when exporting your transaction history to ZenLedger" = "There was an error when exporting your transaction history to ZenLedger";
+"There was an error when exporting your transaction history to ZenLedger" = "Bei dem Exportieren deiner Transaktionshistorie ist ein Fehler aufgetreten.";
 
 /* Coinbase */
 "There was an error while obtaining new address" = "Es ist ein Fehler beim Abrufen der neuen Adresse aufgetreten.";
@@ -2194,7 +2194,7 @@
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "Dies ist die aktuelle jährliche prozentuale Rendite eines ganzen Masternodes abzüglich 15% CrowdNode-Gebühren. Es handelt sich nicht um eine garantierte Rendite, die je nach Größe des CrowdNode Pools und Höhe des Dash Preises nach oben oder unten gehen kann.";
 
 /* Voting */
-"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "This username has already been requested, but you can request it too and let the network vote to decide if you can have it";
+"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "Dieser Nutzername wurde bereits angefragt, aber du kannst ihn auch beantragen. Das Netzwerk wird darüber abstimmen, wer ihn erhält.";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Diese Wallet ist nicht leer oder die Synchronisierung wurde noch nicht abgeschlossen, ohne die Wiederherstellungsphrase können Sie diese nicht löschen.";
@@ -2209,7 +2209,7 @@
 "to Dash Wallet on this device" = "zur Dash Wallet auf diesem Gerät";
 
 /* Usernames */
-"To request a username on the Dash Network, you need to have more than %@ Dash" = "To request a username on the Dash Network, you need to have more than %@ Dash";
+"To request a username on the Dash Network, you need to have more than %@ Dash" = "Um einen Nutzernamen zu beantragen, benötigst du mehr als %@ Dash.";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "Um mit dem Staking zu beginnen, erstelle ein Konto bei CrowdNode oder verbinde ein bereits bestehendes.";
@@ -2418,10 +2418,10 @@
 "Verify your API Dash address" = "API Dash Adresse verifizieren";
 
 /* Usernames */
-"Verify your identity" = "Verify your identity";
+"Verify your identity" = "Überprüfe deine Identität";
 
 /* Usernames */
-"Verify your identity to enhance your chances of getting your requested username" = "Verify your identity to enhance your chances of getting your requested username";
+"Verify your identity to enhance your chances of getting your requested username" = "Überprüfe deine Identität, um die Chancen zu erhöhen, deinen gewünschten Nutzernamen zu erhalten.";
 
 /* adjective, security level */
 "Very High" = "Sehr hoch";

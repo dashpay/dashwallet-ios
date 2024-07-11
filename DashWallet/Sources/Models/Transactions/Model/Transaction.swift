@@ -84,6 +84,10 @@ class Transaction: TransactionDataItem, Identifiable {
 
     var state: State! { _state }
     private lazy var _state: State! = {
+        if tx is DWTransactionStub {
+            return .ok
+        }
+        
         let chain = DWEnvironment.sharedInstance().currentChain
         let currentAccount = DWEnvironment.sharedInstance().currentAccount;
         let account = tx.accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
