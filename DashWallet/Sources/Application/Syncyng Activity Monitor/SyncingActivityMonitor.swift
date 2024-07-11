@@ -18,6 +18,7 @@
 import Foundation
 
 private let kChainManagerNotificationChainKey = "DSChainManagerNotificationChainKey"
+private let kChainManagerNotificationSyncStateKey = "DSChainManagerNotificationSyncStateKey"
 
 private let kSyncingCompleteProgress = 1.0
 private let kMaxProgressDelta = 0.1 // 10%
@@ -53,6 +54,7 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
         case noConnection
         case unknown
     }
+    public lazy var model: DSSyncState = DSSyncState(syncPhase: .offline)
 
     @objc
     public var progress: Double = 0 {
@@ -122,14 +124,6 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
     @objc
     func chainManagerSyncStartedNotification(notification: Notification) {
         guard shouldAcceptSyncNotification(notification) else { return }
-
-        startSyncingActivity()
-    }
-
-    @objc
-    func chainManagerParametersUpdatedNotification(notification: Notification) {
-        guard shouldAcceptSyncNotification(notification) else { return }
-
         startSyncingActivity()
     }
 
@@ -147,20 +141,20 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
 
         stopSyncingActivity(failed: true)
     }
-
+    
     @objc
-    func chainManagerChainBlocksDidChangeNotification(notification: Notification) {
-        guard !isSyncing, chainSyncProgress < kSyncingCompleteProgress else { return }
-
-        startSyncingActivity()
+    func chainManagerSyncStateChangedNotification(notification: Notification) {
+        guard shouldAcceptSyncNotification(notification) else { return }
+        
+        if let model = notification.userInfo?[kChainManagerNotificationSyncStateKey] as? DSSyncState {
+            self.model = model
+        }
     }
-
+    
     @objc
     func peerManagerConnectedPeersDidChangeNotification(notification: Notification) {
-        let isConnected = DWEnvironment.sharedInstance().currentChainManager.peerManager.connected
-
-        if isConnected {
-            NotificationCenter.default.removeObserver(self, name: .peerManagerConnectedPeersDidChange, object: nil)
+       if model.peerManagerConnected {
+            removeChainObserver(.peerManagerConnectedPeersDidChange)
             startSyncingIfNeeded()
         }
     }
@@ -173,14 +167,13 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
     @objc public static let shared = SyncingActivityMonitor()
 }
 
-// MARK: Suncing
+// MARK: Syncing
 
 extension SyncingActivityMonitor {
+    
     private func startSyncingIfNeeded() {
-        guard DWEnvironment.sharedInstance().currentChainManager.peerManager.connected else {
-            NotificationCenter.default.addObserver(self, selector: #selector(peerManagerConnectedPeersDidChangeNotification(notification:)),
-                                                   name: .peerManagerConnectedPeersDidChange, object: nil)
-
+        guard model.peerManagerConnected else {
+            addChainObserver(.peerManagerConnectedPeersDidChange, #selector(peerManagerConnectedPeersDidChangeNotification(notification:)))
             return
         }
 
@@ -190,7 +183,7 @@ extension SyncingActivityMonitor {
     private func startSyncingActivity() {
         guard !isSyncing else { return }
 
-        progress = chainSyncProgress
+        progress = model.combinedSyncProgress
         lastPeakDate = nil
 
         NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(syncLoop), object: nil)
@@ -205,16 +198,18 @@ extension SyncingActivityMonitor {
         isSyncing = false
         state = failed ? .syncFailed : .syncDone
     }
-
+    
     @objc
     private func syncLoop() {
         guard reachability.networkReachabilityStatus != .notReachable else {
             state = .noConnection
             return
         }
+        updateProgress()
+    }
 
-        let progress = chainSyncProgress
-
+    private func updateProgress() {
+        let progress = model.combinedSyncProgress
         if progress < kSyncingCompleteProgress {
             isSyncing = true
 
@@ -261,18 +256,18 @@ extension SyncingActivityMonitor {
         syncLoop()
     }
 
+    private func addChainObserver(_ aName: NSNotification.Name?, _ aSelector: Selector) {
+        NotificationCenter.default.addObserver(self, selector: aSelector, name: aName, object: nil)
+    }
+    private func removeChainObserver(_ aName: NSNotification.Name?) {
+        NotificationCenter.default.removeObserver(self, name: aName, object: nil)
+    }
+
     private func configureObserver() {
-        let notificationCenter = NotificationCenter.default
-        notificationCenter.addObserver(self, selector: #selector(chainManagerSyncStartedNotification(notification:)),
-                                       name: .chainManagerSyncStarted, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(chainManagerParametersUpdatedNotification(notification:)),
-                                       name: .chainManagerParametersUpdated, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(chainManagerSyncFinishedNotification(notification:)),
-                                       name: .chainManagerSyncFinished, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(chainManagerSyncFailedNotification(notification:)),
-                                       name: .chainManagerSyncFailed, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(chainManagerChainBlocksDidChangeNotification(notification:)),
-                                       name: .chainManagerChainSyncBlocksDidChange, object: nil)
+        addChainObserver(.chainManagerSyncStarted, #selector(chainManagerSyncStartedNotification(notification:)))
+        addChainObserver(.chainManagerSyncFinished, #selector(chainManagerSyncFinishedNotification(notification:)))
+        addChainObserver(.chainManagerSyncFailed, #selector(chainManagerSyncFailedNotification(notification:)))
+        addChainObserver(.chainManagerSyncStateChanged, #selector(chainManagerSyncStateChangedNotification(notification:)))
     }
 }
 
@@ -280,7 +275,7 @@ extension SyncingActivityMonitor {
 
 extension SyncingActivityMonitor {
     private var chainSyncProgress: Double {
-        DWEnvironment.sharedInstance().currentChainManager.combinedSyncProgress
+        model.combinedSyncProgress
     }
 
     private var shouldStopSyncing: Bool {
@@ -305,16 +300,12 @@ extension SyncingActivityMonitor {
 }
 
 extension Notification.Name {
+    // TODO: unused?
     static let syncStateChangedNotification: Notification.Name = .init(rawValue: "DWSyncStateChangedNotification")
 
     static let chainManagerSyncStarted: Notification.Name = .init(rawValue: "DSChainManagerSyncWillStartNotification")
-    static let chainManagerParametersUpdated: Notification
-        .Name = .init(rawValue: "DSChainManagerSyncParametersUpdatedNotification")
     static let chainManagerSyncFinished: Notification.Name = .init(rawValue: "DSChainManagerSyncFinishedNotification")
     static let chainManagerSyncFailed: Notification.Name = .init(rawValue: "DSChainManagerSyncFailedNotification")
-    static let chainManagerChainSyncBlocksDidChange: Notification
-        .Name = .init(rawValue: "DSChainChainSyncBlocksDidChangeNotification")
-    static let peerManagerConnectedPeersDidChange: Notification
-        .Name = .init(rawValue: "DSPeerManagerConnectedPeersDidChangeNotification")
-
+    static let peerManagerConnectedPeersDidChange: Notification.Name = .init(rawValue: "DSPeerManagerConnectedPeersDidChangeNotification")
+    static let chainManagerSyncStateChanged: Notification.Name = .init(rawValue: "DSChainManagerSyncStateDidChangeNotification")
 }
