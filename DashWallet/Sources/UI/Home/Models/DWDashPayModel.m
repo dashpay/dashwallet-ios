@@ -119,7 +119,7 @@ NS_ASSUME_NONNULL_END
     return blockchainIdentity == nil;
 }
 
-- (void)createUsername:(NSString *)username invitation:(NSURL *)invitationURL {
+- (void)createUsername:(NSString *)username invitation:(nullable NSURL *)invitationURL {
     self.invitation = invitationURL;
     self.lastRegistrationError = nil;
     [DWGlobalOptions sharedInstance].dashpayUsername = username;

@@ -28,13 +28,24 @@ class DashPaySetupFlowController: UIViewController, NavigationFullscreenable, DW
     private(set) var invitationURL: URL?
     private(set) var definedUsername: String?
     weak var confirmationDelegate: DWDashPaySetupFlowControllerDelegate?
-
-    private var headerView: DWUsernameHeaderView!
-    private var contentView: UIView!
     private var headerHeightConstraint: NSLayoutConstraint!
-
     private var containerController: DWContainerViewController!
     private var createUsernameViewController: DWCreateUsernameViewController!
+
+    private let contentView: UIView = {
+        let view = UIView(frame: .zero)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+
+    private(set) lazy var headerView: DWUsernameHeaderView = {
+        let view = DWUsernameHeaderView(frame: .zero)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.preservesSuperviewLayoutMargins = true
+        view.cancelButton.isHidden = self.confirmationDelegate != nil
+        view.cancelButton.addTarget(self, action: #selector(cancelButtonAction), for: .touchUpInside)
+        return view
+    }()
 
     @objc
     init(dashPayModel: DWDashPayProtocol, invitationURL: URL?, definedUsername: String?) {
@@ -139,23 +150,19 @@ class DashPaySetupFlowController: UIViewController, NavigationFullscreenable, DW
             return
         }
 
-        if dashPayModel.registrationStatus?.state != .done {
-            showPendingController(dashPayModel.username)
+        if dashPayModel.registrationStatus?.state != .done, let username = dashPayModel.username {
+            showPendingController(username)
         } else {
             showRegistrationCompletedController(dashPayModel.username)
         }
     }
 
     private func createUsername(_ username: String) {
-        guard let invitationURL = invitationURL else { return }
-        
         dashPayModel.createUsername(username, invitation: invitationURL)
         showPendingController(username)
     }
 
-    private func showPendingController(_ username: String?) {
-        guard let username = username else { return }
-        
+    private func showPendingController(_ username: String) {
         if MOCK_DASHPAY.boolValue {
             DWGlobalOptions.sharedInstance().dashpayUsername = username
             showRegistrationCompletedController(username)

@@ -41,7 +41,7 @@
     // nop
 }
 
-- (void)createUsername:(nonnull NSString *)username invitation:(nonnull NSURL *)invitation {
+- (void)createUsername:(nonnull NSString *)username invitation:(nullable NSURL *)invitation {
     NSAssert(NO, @"Should not be called");
     // nop
 }

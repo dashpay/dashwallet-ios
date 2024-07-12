@@ -7354,7 +7354,6 @@
 				C943B33D2A408DB900AF23C5 /* Menu */,
 				C943B2B22A408CAF00AF23C5 /* Profile */,
 				C9D2C96D2A38777A00D15901 /* Setup */,
-				759063E72C411029002F2AA9 /* DashPaySetupFlowController.swift */,
 				C9D2C9592A386A6700D15901 /* Home */,
 				C9D2C95A2A386D5200D15901 /* Shared */,
 			);
@@ -7441,6 +7440,7 @@
 				C943B5682A40ED4100AF23C5 /* RegistrationCompleted */,
 				C943B5652A40ED4000AF23C5 /* ConfirmUsername */,
 				C9D2C96E2A38778400D15901 /* Model */,
+				759063E72C411029002F2AA9 /* DashPaySetupFlowController.swift */,
 			);
 			path = Setup;
 			sourceTree = "<group>";

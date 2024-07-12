@@ -18,7 +18,6 @@
 #import "DWContactsPlaceholderViewController.h"
 
 #import "DWDashPayModel.h"
-#import "DWDashPaySetupFlowController.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
 

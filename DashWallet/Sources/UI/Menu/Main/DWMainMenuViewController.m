@@ -33,7 +33,6 @@
 #ifdef DASHPAY
 #import "DWMainMenuViewController+DashPay.h"
 #import "DWUserProfileModalQRViewController.h"
-#import "DWDashPaySetupFlowController.h"
 #import "DWInvitationHistoryViewController.h"
 #endif
 
