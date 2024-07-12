@@ -588,6 +588,8 @@
 		758CE59C2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 758CE59B2BC566DE0062AF53 /* PrivacyInfo.xcprivacy */; };
 		758CE59D2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 758CE59B2BC566DE0062AF53 /* PrivacyInfo.xcprivacy */; };
 		758CE59E2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 758CE59B2BC566DE0062AF53 /* PrivacyInfo.xcprivacy */; };
+		759063E82C411029002F2AA9 /* DashPaySetupFlowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759063E72C411029002F2AA9 /* DashPaySetupFlowController.swift */; };
+		759063E92C411673002F2AA9 /* ZenLedgerInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA1C2BBA71D9004488E3 /* ZenLedgerInfoSheet.swift */; };
 		7592AA7C2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */; };
 		7592AA7D2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */; };
 		759ADD572BF3447400767ACD /* Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759ADD562BF3447400767ACD /* Button.swift */; };
@@ -872,7 +874,6 @@
 		C943B5582A40DA3700AF23C5 /* DWFullScreenModalControllerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5572A40DA3700AF23C5 /* DWFullScreenModalControllerViewController.m */; };
 		C943B55B2A40DD4000AF23C5 /* NSArray+DWFlatten.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B55A2A40DD4000AF23C5 /* NSArray+DWFlatten.m */; };
 		C943B55E2A40E6F200AF23C5 /* DWFilterHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B55C2A40E6F200AF23C5 /* DWFilterHeaderView.m */; };
-		C943B5892A40ED5A00AF23C5 /* DWDashPaySetupFlowController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5612A40ED4000AF23C5 /* DWDashPaySetupFlowController.m */; };
 		C943B58A2A40ED5F00AF23C5 /* DWUsernamePendingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5632A40ED4000AF23C5 /* DWUsernamePendingViewController.m */; };
 		C943B58B2A40ED6F00AF23C5 /* DWInputUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B56F2A40ED4200AF23C5 /* DWInputUsernameViewController.m */; };
 		C943B58C2A40ED6F00AF23C5 /* DWUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5882A40ED4500AF23C5 /* DWUsernameValidationRule.m */; };
@@ -2453,6 +2454,7 @@
 		75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinInfoViewController.swift; sourceTree = "<group>"; };
 		75889B802AD2D7F800C17F5D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/CoinJoin.storyboard; sourceTree = "<group>"; };
 		758CE59B2BC566DE0062AF53 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		759063E72C411029002F2AA9 /* DashPaySetupFlowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashPaySetupFlowController.swift; sourceTree = "<group>"; };
 		7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedTopperPaymentMethods.swift; sourceTree = "<group>"; };
 		759816E519357D6F005060EA /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
 		759816E619357D6F005060EA /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
@@ -2921,8 +2923,6 @@
 		C943B55A2A40DD4000AF23C5 /* NSArray+DWFlatten.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+DWFlatten.m"; sourceTree = "<group>"; };
 		C943B55C2A40E6F200AF23C5 /* DWFilterHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWFilterHeaderView.m; sourceTree = "<group>"; };
 		C943B55D2A40E6F200AF23C5 /* DWFilterHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWFilterHeaderView.h; sourceTree = "<group>"; };
-		C943B5602A40ED4000AF23C5 /* DWDashPaySetupFlowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDashPaySetupFlowController.h; sourceTree = "<group>"; };
-		C943B5612A40ED4000AF23C5 /* DWDashPaySetupFlowController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDashPaySetupFlowController.m; sourceTree = "<group>"; };
 		C943B5632A40ED4000AF23C5 /* DWUsernamePendingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUsernamePendingViewController.m; sourceTree = "<group>"; };
 		C943B5642A40ED4000AF23C5 /* DWUsernamePendingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUsernamePendingViewController.h; sourceTree = "<group>"; };
 		C943B5662A40ED4100AF23C5 /* DWConfirmUsernameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWConfirmUsernameViewController.h; sourceTree = "<group>"; };
@@ -7356,6 +7356,7 @@
 				C943B33D2A408DB900AF23C5 /* Menu */,
 				C943B2B22A408CAF00AF23C5 /* Profile */,
 				C9D2C96D2A38777A00D15901 /* Setup */,
+				759063E72C411029002F2AA9 /* DashPaySetupFlowController.swift */,
 				C9D2C9592A386A6700D15901 /* Home */,
 				C9D2C95A2A386D5200D15901 /* Shared */,
 			);
@@ -7440,8 +7441,6 @@
 				C943B5622A40ED4000AF23C5 /* UsernamePending */,
 				C943B56B2A40ED4100AF23C5 /* CreateUsername */,
 				C943B5682A40ED4100AF23C5 /* RegistrationCompleted */,
-				C943B5612A40ED4000AF23C5 /* DWDashPaySetupFlowController.m */,
-				C943B5602A40ED4000AF23C5 /* DWDashPaySetupFlowController.h */,
 				C943B5652A40ED4000AF23C5 /* ConfirmUsername */,
 				C9D2C96E2A38778400D15901 /* Model */,
 			);
@@ -9286,6 +9285,7 @@
 				C943B3192A408CED00AF23C5 /* DWDPUpdateProfileModel.m in Sources */,
 				C9D2C7702A320AA000D15901 /* CrowdNodeModel.swift in Sources */,
 				75889B792AD2A04900C17F5D /* CoinJoinInfoViewController.swift in Sources */,
+				759063E92C411673002F2AA9 /* ZenLedgerInfoSheet.swift in Sources */,
 				C9D2C7712A320AA000D15901 /* UIDevice+Compatibility.swift in Sources */,
 				C9D2C7722A320AA000D15901 /* DWSeedWordView.m in Sources */,
 				C9D2C7732A320AA000D15901 /* DWSecurityStatusView.m in Sources */,
@@ -9371,7 +9371,6 @@
 				C9D2C7B42A320AA000D15901 /* DWUpholdTransactionObject+DWView.m in Sources */,
 				C9D2C7B52A320AA000D15901 /* DWBackupSeedPhraseViewController.m in Sources */,
 				C943B54A2A40B52F00AF23C5 /* NSLayoutConstraint+DWAutolayout.m in Sources */,
-				C943B5892A40ED5A00AF23C5 /* DWDashPaySetupFlowController.m in Sources */,
 				C9D2C7B62A320AA000D15901 /* CrowdNodeDepositTx.swift in Sources */,
 				C943B5962A40EDC400AF23C5 /* DWRegistrationCompletedViewController.m in Sources */,
 				C9D2C7B92A320AA000D15901 /* DWIntrinsicTableView.m in Sources */,
@@ -9752,6 +9751,7 @@
 				7573C2E52B01120B00F4C347 /* MasternodeKey.swift in Sources */,
 				C9D2C8F02A320AA000D15901 /* DWProgressView.m in Sources */,
 				C9D2C8F12A320AA000D15901 /* TxDetailCells.swift in Sources */,
+				759063E82C411029002F2AA9 /* DashPaySetupFlowController.swift in Sources */,
 				C9D2C8F22A320AA000D15901 /* BaseViewController+NetworkReachability.swift in Sources */,
 				C9D2C8F32A320AA000D15901 /* main.m in Sources */,
 				C9D2C8F42A320AA000D15901 /* DWQuickReceiveViewController.m in Sources */,

@@ -119,6 +119,14 @@ static const bool _SNAPSHOT = 0;
 #import "DWRootContactsViewController.h"
 #import "DWNotificationsProvider.h"
 #import "DWContactsViewController.h"
+#import "DWCreateUsernameViewController.h"
+#import "DWConfirmUsernameViewController.h"
+#import "DWUsernamePendingViewController.h"
+#import "DWRegistrationCompletedViewController.h"
+#import "DWUsernameHeaderView.h"
+#import "DWContainerViewController.h"
+#import "DWDashPaySetupModel.h"
+#import "UIViewController+DWDisplayError.h"
 #endif
 
 //MARK: CrowdNode

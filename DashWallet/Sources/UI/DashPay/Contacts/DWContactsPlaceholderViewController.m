@@ -20,6 +20,7 @@
 #import "DWDashPayModel.h"
 #import "DWDashPaySetupFlowController.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 @interface DWContactsPlaceholderViewController ()
 
@@ -112,7 +113,7 @@
     DWDashPaySetupFlowController *controller =
         [[DWDashPaySetupFlowController alloc]
             initWithDashPayModel:self.dashPayModel
-                      invitation:nil
+                   invitationURL:nil
                  definedUsername:nil];
     controller.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:controller animated:YES completion:nil];

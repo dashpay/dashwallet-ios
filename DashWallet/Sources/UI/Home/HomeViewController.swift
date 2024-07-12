@@ -232,11 +232,11 @@ class HomeViewController: DWBasePayViewController {
 extension HomeViewController: DWRootEditProfileViewControllerDelegate {
     func editProfileViewController(_ controller: DWRootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?) {
         model.dashPayModel.userProfile.updateModel.update(withDisplayName: rawDisplayName, aboutMe: rawAboutMe, avatarURLString: avatarURLString)
-        controller.navigateBack(animated: true, completion: nil)
+        controller.dismiss(animated: true, completion: nil)
     }
 
     func editProfileViewControllerDidCancel(_ controller: DWRootEditProfileViewController) {
-        controller.navigateBack(animated: true, completion: nil)
+        controller.dismiss(animated: true, completion: nil)
     }
 }
 #endif

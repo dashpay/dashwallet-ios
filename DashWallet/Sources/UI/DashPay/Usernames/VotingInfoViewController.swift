@@ -65,7 +65,7 @@ extension VotingInfoViewController {
         
         timelineTitle.text = NSLocalizedString("Voting will not be required forever", comment: "Usernames")
         let endDate = Date(timeIntervalSince1970: VotingConstants.votingEndTime)
-        timelineSubtitle.text = String.localizedStringWithFormat(NSLocalizedString("After voting is completed on %@ you can create any username that has not already been created", comment: "Usernames"), DWDateFormatter.sharedInstance.shortString(from: endDate))
+        timelineSubtitle.text = String.localizedStringWithFormat(NSLocalizedString("After voting is completed on %@ you can create any username that has not already been created", comment: "Usernames"), DWDateFormatter.sharedInstance.dateOnly(from: endDate))
         
         notApprovedTitle.text = NSLocalizedString("In case your request is not approved", comment: "Usernames")
         notApprovedSubtitle.text = NSLocalizedString("Pay now and if not approved, you can create a different name without paying again", comment: "Usernames")

@@ -232,7 +232,7 @@ NS_ASSUME_NONNULL_BEGIN
         DWDashPaySetupFlowController *controller =
             [[DWDashPaySetupFlowController alloc]
                 initWithDashPayModel:self.dashPayModel
-                          invitation:nil
+                       invitationURL:nil
                      definedUsername:nil];
         controller.modalPresentationStyle = UIModalPresentationFullScreen;
         [self presentViewController:controller animated:YES completion:nil];
