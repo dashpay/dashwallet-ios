@@ -279,55 +279,53 @@ struct TransactionList<Content: View>: View {
     @ViewBuilder var syncingHeader: () -> Content
     
 
+    private let topOverscrollSize: CGFloat = 1000 // Fixed value for top overscroll area
+
     var body: some View {
-        GeometryReader { geometry in
-            let topOverscrollSize = geometry.size.height * 1.5
-            
-            ScrollView {
-                ZStack { Color.dashBlue } // Top overscroll area
+        ScrollView {
+            ZStack { Color.dashBlue } // Top overscroll area
                 .frame(height: topOverscrollSize)
                 .padding(EdgeInsets(top: -topOverscrollSize, leading: 0, bottom: 0, trailing: 0))
+            
+            LazyVStack(pinnedViews: [.sectionHeaders]) {
+                balanceHeader()
+                    .frame(height: 250)
                 
-                LazyVStack(pinnedViews: [.sectionHeaders]) {
-                    balanceHeader()
-                        .frame(height: 250)
-                    
-                    syncingHeader()
-                        .frame(height: 50)
-                    
-                    if viewModel.txItems.isEmpty {
-                        Text(NSLocalizedString("There are no transactions to display", comment: ""))
-                            .font(.caption)
-                            .foregroundStyle(Color.primaryText.opacity(0.5))
-                            .padding(.top, 20)
-                    } else {
-                        ForEach(viewModel.txItems, id: \.0.key) { key, value in
-                            Section(header: SectionHeader(key)
-                                .padding(.bottom, -24)
-                            ) {
-                                VStack(spacing: 0) {
-                                    ForEach(value, id: \.id) { txItem in
-                                        TransactionPreviewFrom(txItem: txItem)
-                                            .padding(.horizontal, 5)
-                                    }
+                syncingHeader()
+                    .frame(height: 50)
+                
+                if viewModel.txItems.isEmpty {
+                    Text(NSLocalizedString("There are no transactions to display", comment: ""))
+                        .font(.caption)
+                        .foregroundColor(Color.primary.opacity(0.5))
+                        .padding(.top, 20)
+                } else {
+                    ForEach(viewModel.txItems, id: \.0.key) { key, value in
+                        Section(header: SectionHeader(key)
+                            .padding(.bottom, -24)
+                        ) {
+                            VStack(spacing: 0) {
+                                ForEach(value, id: \.id) { txItem in
+                                    TransactionPreviewFrom(txItem: txItem)
+                                        .padding(.horizontal, 5)
                                 }
-                                .padding(.bottom, 4)
-                                .background(Color.secondaryBackground)
-                                .clipShape(RoundedShape(corners: [.bottomLeft, .bottomRight], radii: 10))
-                                .padding(15)
-                                .shadow(color: .shadow, radius: 10, x: 0, y: 5)
                             }
+                            .padding(.bottom, 4)
+                            .background(Color.secondaryBackground)
+                            .clipShape(RoundedShape(corners: [.bottomLeft, .bottomRight], radii: 10))
+                            .padding(15)
+                            .shadow(color: .shadow, radius: 10, x: 0, y: 5)
                         }
                     }
                 }
-                .padding(EdgeInsets(top: -20, leading: 0, bottom: 0, trailing: 0))
             }
+            .padding(EdgeInsets(top: -20, leading: 0, bottom: 0, trailing: 0))
         }
         .sheet(item: $selectedTxDataItem) { item in
             TransactionDetailsSheet(item: item)
         }
     }
-    
+
     @ViewBuilder
     private func SectionHeader(_ dateKey: DateKey) -> some View {
         VStack {
