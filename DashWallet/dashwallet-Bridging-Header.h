@@ -130,6 +130,9 @@ static const bool _SNAPSHOT = 0;
 #import "DWContainerViewController.h"
 #import "DWDashPaySetupModel.h"
 #import "UIViewController+DWDisplayError.h"
+#import "DWEditProfileViewController.h"
+#import "DWSaveAlertViewController.h"
+#import "DWMainMenuContentView.h"
 #endif
 
 //MARK: CrowdNode
@@ -150,7 +153,6 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: Home
 #import "DWHomeModel.h"
-#import "DWRootEditProfileViewController.h"
 #import "DWRecoverViewController.h"
 #import "UIViewController+DWTxFilter.h"
 #import "DSAuthenticationManager.h"

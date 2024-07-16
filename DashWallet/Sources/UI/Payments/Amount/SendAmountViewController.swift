@@ -64,14 +64,12 @@ class SendAmountViewController: BaseAmountViewController {
                 .localizedStringWithFormat(NSLocalizedString("Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash.",
                                                              comment: "Leftover balance warning"),
                                            CrowdNode.minimumLeftoverBalance.formattedDashAmountWithoutCurrencySymbol)
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: NSLocalizedString("Continue", comment: "Leftover balance warning"), style: .default, handler: { _ in
+            
+            showModalDialog(icon: .system("info"), heading: title, textBlock1: message, positiveButtonText: NSLocalizedString("Continue", comment: "Leftover balance warning"), positiveButtonAction: {
                 completion(true)
-            }))
-            alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "Leftover balance warning"), style: .cancel, handler: { _ in
+            }, negativeButtonText: NSLocalizedString("Cancel", comment: "Leftover balance warning")) {
                 completion(false)
-            }))
-            present(alert, animated: true, completion: nil)
+            }
         } else {
             completion(true)
         }

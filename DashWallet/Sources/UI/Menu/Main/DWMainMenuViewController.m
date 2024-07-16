@@ -28,10 +28,8 @@
 #import "DWSettingsMenuViewController.h"
 #import "SFSafariViewController+DashWallet.h"
 #import "dashwallet-Swift.h"
-#import "DWRootEditProfileViewController.h"
 
 #ifdef DASHPAY
-#import "DWMainMenuViewController+DashPay.h"
 #import "DWUserProfileModalQRViewController.h"
 #import "DWInvitationHistoryViewController.h"
 #endif
@@ -279,6 +277,5 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 
 @end
-
 
 NS_ASSUME_NONNULL_END
