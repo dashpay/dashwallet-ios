@@ -34,6 +34,10 @@ extension Color {
         Color("DashBlueColor")
     }
     
+    static var navigationBarColor: Color {
+        Color("DashNavigationBarBlueColor")
+    }
+    
     static var buttonRed: Color {
         Color("ButtonRedColor")
     }

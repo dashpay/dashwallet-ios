@@ -274,22 +274,20 @@ struct TransactionList<Content: View>: View {
     @State private var selectedTxDataItem: TransactionListDataItem? = nil
     
     @StateObject var viewModel: HomeViewModel
-
     @ViewBuilder var balanceHeader: () -> Content
     @ViewBuilder var syncingHeader: () -> Content
     
-
     private let topOverscrollSize: CGFloat = 1000 // Fixed value for top overscroll area
 
     var body: some View {
         ScrollView {
-            ZStack { Color.dashBlue } // Top overscroll area
+            ZStack { Color.navigationBarColor } // Top overscroll area
                 .frame(height: topOverscrollSize)
                 .padding(EdgeInsets(top: -topOverscrollSize, leading: 0, bottom: 0, trailing: 0))
             
             LazyVStack(pinnedViews: [.sectionHeaders]) {
                 balanceHeader()
-                    .frame(height: 250)
+                    .frame(height: viewModel.hasNetwork ? 250 : 335)
                 
                 syncingHeader()
                     .frame(height: 50)
