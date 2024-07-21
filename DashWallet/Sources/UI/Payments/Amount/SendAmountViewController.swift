@@ -41,10 +41,6 @@ class SendAmountViewController: BaseAmountViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func maxButtonAction() {
-        sendAmountModel.selectAllFunds()
-    }
-
     internal func checkLeftoverBalance(isCrowdNodeTransfer: Bool = false, completion: @escaping ((Bool) -> Void)) {
         if CrowdNodeDefaults.shared.lastKnownBalance <= 0 && !isCrowdNodeTransfer {
             // If CrowdNode balance is 0, then there is no need to check the leftover balance

@@ -129,8 +129,10 @@ extension UIViewController {
         view.addSubview(toastView)
         
         NSLayoutConstraint.activate([
-            toastView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            toastView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            toastView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            toastView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 10).withPriority(.defaultHigh),
+            view.trailingAnchor.constraint(greaterThanOrEqualTo: toastView.trailingAnchor, constant: 10).withPriority(.defaultHigh),
+            toastView.widthAnchor.constraint(lessThanOrEqualTo: view.widthAnchor, constant: -20),
             toastView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10)
         ])
         

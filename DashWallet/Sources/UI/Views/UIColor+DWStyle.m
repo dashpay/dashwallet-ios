@@ -249,6 +249,12 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_gray300Color {
+    UIColor *color = [UIColor colorNamed:@"Gray300"];
+    NSParameterAssert(color);
+    return color;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -17,6 +17,7 @@
 
 import UIKit
 
+#if DASHPAY
 @objc(DWRootEditProfileViewControllerDelegate)
 protocol RootEditProfileViewControllerDelegate: AnyObject {
     func editProfileViewController(_ controller: RootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?)
@@ -25,8 +26,6 @@ protocol RootEditProfileViewControllerDelegate: AnyObject {
 
 @objc(DWRootEditProfileViewController)
 class RootEditProfileViewController: DWBaseActionButtonViewController, DWEditProfileViewControllerDelegate, DWSaveAlertViewControllerDelegate, NavigationBarDisplayable {
-    
-    static var currentCredits: Double = 0.5 // TODO: temp MOCK_DASHPAY
     
     var isBackButtonHidden: Bool = false
     
@@ -110,3 +109,7 @@ class RootEditProfileViewController: DWBaseActionButtonViewController, DWEditPro
         child.didMove(toParent: self)
     }
 }
+#else
+@objc(DWRootEditProfileViewControllerDelegate)
+protocol RootEditProfileViewControllerDelegate: AnyObject { }
+#endif

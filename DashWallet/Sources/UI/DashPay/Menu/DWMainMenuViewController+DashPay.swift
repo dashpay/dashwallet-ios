@@ -24,14 +24,14 @@ extension DWMainMenuViewController: RootEditProfileViewControllerDelegate {
         controller.dismiss(animated: true, completion: nil)
         
         if MOCK_DASHPAY.boolValue {
-            RootEditProfileViewController.currentCredits -= 0.25
+            BuyCreditsModel.currentCredits -= 0.25
             let heading: String
             let message: String
             
-            if RootEditProfileViewController.currentCredits <= 0 {
+            if BuyCreditsModel.currentCredits <= 0 {
                 heading = NSLocalizedString("Your credit balance has been fully depleted", comment: "")
                 message = NSLocalizedString("You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance", comment: "")
-            } else if RootEditProfileViewController.currentCredits <= 0.25 {
+            } else if BuyCreditsModel.currentCredits <= 0.25 {
                 heading = NSLocalizedString("Your credit balance is low", comment: "")
                 message = NSLocalizedString("Top-up your credits to continue making changes to your profile and adding contacts", comment: "")
             } else {
@@ -40,9 +40,10 @@ extension DWMainMenuViewController: RootEditProfileViewControllerDelegate {
             
             showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: heading, textBlock1: message, positiveButtonText: NSLocalizedString("Buy credits", comment: ""), positiveButtonAction: {
 
-                let vc = BuyCreditsViewController.init()
+                let vc = BuyCreditsViewController {
+                    self.showToast(text: "Successful purchase", icon: .system("checkmark.circle.fill"), duration: 2)
+                }
                 let navigationController = BaseNavigationController(rootViewController: vc)
-                navigationController.isModalInPresentation = true
                 self.present(navigationController, animated: true)
             }, negativeButtonText: NSLocalizedString("Maybe later", comment: ""))
         }

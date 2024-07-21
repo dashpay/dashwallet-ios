@@ -54,7 +54,7 @@ final class UpholdAmountModel: BaseAmountModel {
         self.card = card
     }
 
-    func selectAllFunds() {
+    override func selectAllFunds() {
         let allAvailableFunds = card.available.plainDashAmount
 
         if allAvailableFunds > 0 {

@@ -324,6 +324,9 @@
 "Buy and convert Dash with another crypto" = "Beli dan konversikan Dash dengan crypto lain";
 
 /* No comment provided by engineer. */
+"Buy credits" = "Buy credits";
+
+/* No comment provided by engineer. */
 "Buy Dash" = "Beli Dash";
 
 /* Dash Service Overview */
@@ -586,6 +589,9 @@
 
 /* CrowdNode */
 "Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Alamat dash yang ditujukan untuk akun CrowdNode Anda di Dash Wallet pada perangkat ini";
+
+/* No comment provided by engineer. */
+"Dash balance" = "Dash balance";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "Saldo Dash di Coinbase";
@@ -2223,6 +2229,9 @@
 /* No comment provided by engineer. */
 "Tools" = "Alat";
 
+/* No comment provided by engineer. */
+"Top-up your credits to continue making changes to your profile and adding contacts" = "Top-up your credits to continue making changes to your profile and adding contacts";
+
 /* Dash Portal */
 "Topper" = "Topper";
 
@@ -2608,6 +2617,9 @@
 "You can change how / when your reward earnings are paid to you." = "Anda dapat mengubah bagaimana / kapan penghasilan hadiah Anda dibayarkan kepada Anda.";
 
 /* No comment provided by engineer. */
+"You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance";
+
+/* No comment provided by engineer. */
 "You can create a different username without paying again" = "Anda dapat membuat nama pengguna yang berbeda tanpa membayar lagi";
 
 /* Voting */
@@ -2699,6 +2711,12 @@
 
 /* CrowdNode */
 "You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "Anda akan menerima pembayaran pecahan secara otomatis dan secara default akan diinvestasikan kembali, namun,mudah juga untuk mengatur penarikan otomatis untuk menerima pembayaran berulang.";
+
+/* No comment provided by engineer. */
+"Your credit balance has been fully depleted" = "Your credit balance has been fully depleted";
+
+/* No comment provided by engineer. */
+"Your credit balance is low" = "Your credit balance is low";
 
 /* CrowdNode */
 "Your CrowdNode account is creating…" = "Akun CrowdNode Anda sedang membuat…";
