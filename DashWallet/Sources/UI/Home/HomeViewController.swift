@@ -22,11 +22,13 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     var model: DWHomeProtocol!
     private var homeView: HomeView!
     weak var delegate: (DWHomeViewControllerDelegate & DWWipeDelegate)?
-    var isBackButtonHidden: Bool = false
 
     #if DASHPAY
+    var isBackButtonHidden: Bool = false
     private var invitationSetup: DWInvitationSetupState?
     private var avatarView: DWDPAvatarView!
+    #else
+    var isBackButtonHidden: Bool = true
     #endif
     
     override var payModel: any DWPayModelProtocol {

@@ -22,6 +22,9 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ не має доступу до Touch ID";
 
+/* Credits */
+"%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
+
 /* Voting */
 "%ld duplicates" = "%Ід дублікатів";
 

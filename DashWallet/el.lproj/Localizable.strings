@@ -22,6 +22,9 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ δεν επιτρέπεται να έχετε πρόσβαση στο Touch ID";
 
+/* Credits */
+"%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
+
 /* Voting */
 "%ld duplicates" = "%ld διπλότυπα";
 
