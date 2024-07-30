@@ -40,7 +40,7 @@ extension DSTransaction {
         let direction = direction
 
         switch direction {
-        case .moved:
+        case .notAccountFunds, .moved:
             amount = 0
         case .sent:
             let amountSent = chain.amountSent(by: self)
@@ -54,9 +54,7 @@ extension DSTransaction {
             let fee = feeUsed == UInt64.max ? 0 : feeUsed
             amount = amountSent - amountReceived - fee
         case .received:
-            amount = account!.amountReceived(from: self)
-        case .notAccountFunds:
-            amount = 0
+            amount = account?.amountReceived(from: self) ?? 0
         @unknown default:
             fatalError()
         }
@@ -96,7 +94,7 @@ extension DSTransaction {
 
         switch direction {
         case .moved, .sent, .received:
-            outputReceiveAddresses = account!.externalAddresses(of: self)
+            outputReceiveAddresses = account?.externalAddresses(of: self) ?? []
         default:
             break
         }
@@ -229,10 +227,10 @@ extension DSTransactionDirection {
             return .dw_quaternaryText()
         case .sent:
             return .dw_darkTitle()
-        case .received:
+        case .received, .notAccountFunds:
             return .dw_dashBlue()
-        case .notAccountFunds:
-            return .dw_dashBlue()
+        @unknown default:
+            fatalError()
         }
     }
 }

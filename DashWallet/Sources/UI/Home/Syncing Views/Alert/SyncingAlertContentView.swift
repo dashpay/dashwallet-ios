@@ -17,6 +17,9 @@
 
 import UIKit
 
+private let kChainManagerNotificationChainKey = "DSChainManagerNotificationChainKey"
+private let kChainManagerNotificationSyncStateKey = "DSChainManagerNotificationSyncStateKey"
+
 // MARK: - SyncingAlertContentViewDelegate
 
 protocol SyncingAlertContentViewDelegate: AnyObject {
@@ -95,6 +98,10 @@ final class SyncingAlertContentView: UIView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
 
     @objc
     func okButtonAction(sender: UIButton) {
@@ -104,30 +111,25 @@ final class SyncingAlertContentView: UIView {
     func update(with syncState: SyncingActivityMonitor.State) {
         switch syncState {
         case .syncing, .syncDone:
-            let environment = DWEnvironment.sharedInstance()
-            let chain = environment.currentChain
-            let chainManager = environment.currentChainManager
-            // We give a 6 block window, just in case a new block comes in
-            let atTheEndOfInitialTerminalBlocksAndSyncingMasternodeList = chain.lastTerminalBlockHeight >= chain.estimatedBlockHeight - 6 && chainManager.masternodeManager
-                .masternodeListRetrievalQueueCount > 0 && chainManager.syncPhase == .initialTerminalBlocks
-            let atTheEndOfSyncBlocksAndSyncingMasternodeList = chain.lastSyncBlockHeight >= chain.estimatedBlockHeight - 6 && chainManager.masternodeManager
-                .masternodeListRetrievalQueueCount > 0 && chainManager.syncPhase == .synced
-            if atTheEndOfInitialTerminalBlocksAndSyncingMasternodeList || atTheEndOfSyncBlocksAndSyncingMasternodeList {
-                var remaining: UInt = 0
-                
-                if chainManager.masternodeManager.masternodeListRetrievalQueueCount > chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount {
-                    remaining = 0
-                } else {
-                    remaining = chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount - chainManager.masternodeManager.masternodeListRetrievalQueueCount
-                }
-
-                subtitleLabel.text = String(format: NSLocalizedString("masternode list #%d of %d", comment: ""), remaining, chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount)
+            let model = SyncingActivityMonitor.shared.model;
+            let kind = model.kind;
+            if kind == .headers {
+                subtitleLabel.text = localized(
+                    template: "header #%d of %d",
+                    model.lastTerminalBlockHeight,
+                    model.estimatedBlockHeight)
+            } else if kind == .masternodes {
+                let masternodeListsReceived = model.masternodeListSyncInfo.retrievalQueueCount
+                let masternodeListsTotal = model.masternodeListSyncInfo.retrievalQueueMaxAmount
+                subtitleLabel.text = localized(
+                    template: "masternode list #%d of %d",
+                    masternodeListsReceived > masternodeListsTotal ? 0 : masternodeListsTotal - masternodeListsTotal,
+                    masternodeListsTotal)
             } else {
-                if chainManager.syncPhase == .initialTerminalBlocks {
-                    subtitleLabel.text = String(format: NSLocalizedString("header #%d of %d", comment: ""), chain.lastTerminalBlockHeight, chain.estimatedBlockHeight)
-                } else {
-                    subtitleLabel.text = String(format: NSLocalizedString("block #%d of %d", comment: ""), chain.lastSyncBlockHeight, chain.estimatedBlockHeight)
-                }
+                subtitleLabel.text = localized(
+                    template: "block #%d of %d",
+                    model.lastSyncBlockHeight,
+                    model.estimatedBlockHeight)
             }
 
         case .syncFailed:
@@ -166,5 +168,32 @@ final class SyncingAlertContentView: UIView {
     func hideAnimation() {
         syncingImageView.layer.removeAllAnimations()
     }
-}
+    
+    private func localized(
+        template: String,
+        _ arguments: any CVarArg...
+    ) -> String {
+        String(
+            format: NSLocalizedString(
+                template,
+                comment: ""),
+            arguments)
+    }
 
+    private func addChainObserver(_ aName: NSNotification.Name?, _ aSelector: Selector) {
+        NotificationCenter.default.addObserver(self, selector: aSelector, name: aName, object: nil)
+    }
+    
+    private func configureObserver() {
+        addChainObserver(.chainManagerSyncStateChanged, #selector(chainManagerSyncStateChangedNotification(notification:)))
+    }
+    @objc
+    func chainManagerSyncStateChangedNotification(notification: Notification) {
+        guard let chain = notification.userInfo?[kChainManagerNotificationChainKey], DWEnvironment.sharedInstance().currentChain.isEqual(chain),
+            let model = notification.userInfo?[kChainManagerNotificationSyncStateKey] as? DSSyncState else {
+            return
+        }
+        self.update(with: model.combinedSyncProgress)
+    }
+
+}

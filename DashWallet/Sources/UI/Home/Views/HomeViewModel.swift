@@ -19,6 +19,15 @@ import Foundation
 
 class HomeViewModel: ObservableObject {
     @Published var txItems: Array<(DateKey, [TransactionListDataItem])> = []
+    @Published var hasNetwork: Bool = true
+    private var model: SyncModel = SyncModelImpl()
+    
+    init() {
+        model.networkStatusDidChange = { status in
+            self.hasNetwork = status == .online
+        }
+        self.hasNetwork = model.networkStatus == .online
+    }
     
     func updateItems(transactions: [DSTransaction]) {
         Task.detached {

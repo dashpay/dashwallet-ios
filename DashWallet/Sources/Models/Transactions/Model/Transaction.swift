@@ -91,7 +91,9 @@ class Transaction: TransactionDataItem, Identifiable {
         let chain = DWEnvironment.sharedInstance().currentChain
         let currentAccount = DWEnvironment.sharedInstance().currentAccount;
         let account = tx.accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
-
+        if account == nil {
+            return .invalid
+        }
         let blockHeight = chain.lastTerminalBlockHeight
         let instantSendReceived = tx.instantSendReceived
         let processingInstantSend = tx.hasUnverifiedInstantSendLock

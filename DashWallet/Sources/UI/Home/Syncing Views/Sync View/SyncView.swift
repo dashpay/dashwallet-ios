@@ -92,26 +92,22 @@ final class SyncView: UIView {
         // TODO: Don't access DashSync directly
         if syncState == .syncing || syncState == .syncDone {
             if viewStateSeeingBlocks {
-                let environment = DWEnvironment.sharedInstance()
-                let chain = environment.currentChain
-                let chainManager = environment.currentChainManager
-                if chainManager.syncPhase == .initialTerminalBlocks {
-                    if chain.lastTerminalBlockHeight >= chain.estimatedBlockHeight && chainManager.masternodeManager.masternodeListRetrievalQueueCount != 0 {
-                        descriptionLabel.text = String(format: NSLocalizedString("masternode list #%d of %d", comment: ""),
-                                                       chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount - chainManager.masternodeManager
-                                                           .masternodeListRetrievalQueueCount,
-                                                       chainManager.masternodeManager.masternodeListRetrievalQueueMaxAmount)
-                    }
-                    else {
-                        descriptionLabel.text = String(format: NSLocalizedString("header #%d of %d", comment: ""),
-                                                       chain.lastTerminalBlockHeight,
-                                                       chain.estimatedBlockHeight)
-                    }
-                }
-                else {
+                let model = SyncingActivityMonitor.shared.model;
+                let kind = model.kind;
+                if kind == .headers {
+                    descriptionLabel.text = String(format: NSLocalizedString("header #%d of %d", comment: ""),
+                        model.lastTerminalBlockHeight,
+                        model.estimatedBlockHeight)
+                } else if kind == .masternodes {
+                    let masternodeListsReceived = model.masternodeListSyncInfo.retrievalQueueCount
+                    let masternodeListsTotal = model.masternodeListSyncInfo.retrievalQueueMaxAmount
+                    descriptionLabel.text = String(format: NSLocalizedString("masternode list #%d of %d", comment: ""),
+                        masternodeListsReceived > masternodeListsTotal ? 0 : masternodeListsTotal - masternodeListsTotal,
+                        masternodeListsTotal)
+                } else {
                     descriptionLabel.text = String(format: NSLocalizedString("block #%d of %d", comment: ""),
-                                                   chain.lastSyncBlockHeight,
-                                                   chain.estimatedBlockHeight)
+                        model.lastSyncBlockHeight,
+                        model.estimatedBlockHeight)
                 }
             }
             else {
