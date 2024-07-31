@@ -40,7 +40,6 @@ struct Icon: View {
             Image(name)
                 .resizable()
                 .scaledToFit()
-                .imageScale(.medium)
         }
     }
 }

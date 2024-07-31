@@ -98,7 +98,7 @@ NS_ASSUME_NONNULL_BEGIN
                              object:nil];
     [notificationCenter addObserver:self
                            selector:@selector(updateStatusNotification:)
-                               name:DSChainNewChainTipBlockNotification
+                               name:DSChainManagerSyncStateDidChangeNotification
                              object:nil];
     [notificationCenter addObserver:self
                            selector:@selector(updateStatusNotification:)

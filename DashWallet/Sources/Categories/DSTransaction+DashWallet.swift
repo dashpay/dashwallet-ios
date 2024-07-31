@@ -40,8 +40,8 @@ extension DSTransaction {
         let direction = direction
 
         switch direction {
-        case .moved:
-            amount = account!.amountReceivedFromTransaction(onExternalAddresses: self)
+        case .notAccountFunds, .moved:
+            amount = 0
         case .sent:
             let amountSent = chain.amountSent(by: self)
             let amountReceived = chain.amountReceived(from: self)
@@ -54,9 +54,7 @@ extension DSTransaction {
             let fee = feeUsed == UInt64.max ? 0 : feeUsed
             amount = amountSent - amountReceived - fee
         case .received:
-            amount = account!.amountReceived(from: self)
-        case .notAccountFunds:
-            amount = 0
+            amount = account?.amountReceived(from: self) ?? 0
         @unknown default:
             fatalError()
         }
@@ -85,10 +83,7 @@ extension DSTransaction {
     }
 
     var direction: DSTransactionDirection {
-        let currentAccount = DWEnvironment.sharedInstance().currentAccount
-        let account = accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
-
-        return account != nil ? chain.direction(of: self) : .notAccountFunds
+        return chain.direction(of: self)
     }
 
     var outputReceiveAddresses: [String] {
@@ -99,7 +94,7 @@ extension DSTransaction {
 
         switch direction {
         case .moved, .sent, .received:
-            outputReceiveAddresses = account!.externalAddresses(of: self)
+            outputReceiveAddresses = account?.externalAddresses(of: self) ?? []
         default:
             break
         }
@@ -129,7 +124,7 @@ extension DSTransaction {
 @objc
 extension DSTransaction {
     var formattedShortTxDate: String {
-        DWDateFormatter.sharedInstance.shortString(from: date)
+        DWDateFormatter.sharedInstance.dateOnly(from: date)
     }
 
     var formattedLongTxDate: String {
@@ -138,6 +133,10 @@ extension DSTransaction {
 
     var formattedISO8601TxDate: String {
         DWDateFormatter.sharedInstance.iso8601String(from: date)
+    }
+    
+    var formattedShortTxTime: String {
+        DWDateFormatter.sharedInstance.timeOnly(from: date)
     }
 
     var formattedDashAmountWithDirectionalSymbol: String {
@@ -151,7 +150,7 @@ extension DSTransaction {
     }
 
     func attributedDashAmount(with font: UIFont, color: UIColor = .dw_label()) -> NSAttributedString {
-        var formatted = formattedDashAmountWithDirectionalSymbol
+        let formatted = formattedDashAmountWithDirectionalSymbol
         return formatted.attributedAmountStringWithDashSymbol(tintColor: color, dashSymbolColor: color, font: font)
     }
 }
@@ -186,20 +185,24 @@ extension DSTransactionDirection {
             return .dw_label()
         }
     }
-
-    var icon: UIImage {
+    
+    var iconName: String {
         switch self {
         case .moved:
-            return UIImage(named: "tx.item.internal.icon")!
+            return "tx.item.internal.icon"
         case .sent:
-            return systemImage("arrow.up.circle.fill")
+            return "tx.item.sent.icon"
         case .received:
-            return systemImage("arrow.down.circle.fill")
+            return "tx.item.received.icon"
         case .notAccountFunds:
-            return systemImage("arrow.down.circle.fill")
+            return "tx.item.received.icon"
         @unknown default:
             fatalError()
         }
+    }
+
+    var icon: UIImage {
+        return UIImage(named: iconName)!
     }
 
     private func systemImage(_ name: String) -> UIImage {
@@ -209,8 +212,6 @@ extension DSTransactionDirection {
 
     var directionSymbol: String {
         switch self {
-        case .moved:
-            return "⟲"
         case .received:
             return "+";
         case .sent:
@@ -226,10 +227,10 @@ extension DSTransactionDirection {
             return .dw_quaternaryText()
         case .sent:
             return .dw_darkTitle()
-        case .received:
+        case .received, .notAccountFunds:
             return .dw_dashBlue()
-        case .notAccountFunds:
-            return .dw_dashBlue()
+        @unknown default:
+            fatalError()
         }
     }
 }

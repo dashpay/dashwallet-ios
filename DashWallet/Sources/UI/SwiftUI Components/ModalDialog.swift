@@ -108,7 +108,7 @@ struct ModalDialog: View {
             .padding(.top, 24)
         }
         .padding(20)
-        .background(Color.background)
+        .background(Color.secondaryBackground)
         .cornerRadius(16)
         .shadow(radius: 10)
         .frame(maxWidth: 340)

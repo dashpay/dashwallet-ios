@@ -542,9 +542,6 @@
 /* Coinbase/Payment Methods */
 "Credit Card" = "Кредитна картка";
 
-/* Crowdnode */
-"CrowdNode Account" = "Акаунт CrowdNode";
-
 /* CrowdNode */
 "CrowdNode benefits" = "Переваги CrowdNode";
 
@@ -556,6 +553,9 @@
 
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "Ліміти виведення з CrowdNode";
+
+/* No comment provided by engineer. */
+"CrowdNode · Account" = "CrowdNode · Account";
 
 /* CrowdNode Portal */
 "CrowdNode ➝ DashWallet" = "CrowdNode ➝ DashWallet";
@@ -2218,6 +2218,9 @@
 "to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "на адресу Dash, призначену для вашого облікового запису CrowdNode у Dash Wallet на цьому пристрої";
 
 /* No comment provided by engineer. */
+"Today" = "Today";
+
+/* No comment provided by engineer. */
 "Tools" = "Інструменти";
 
 /* Dash Portal */
@@ -2579,6 +2582,9 @@
 
 /* No comment provided by engineer. */
 "Yes" = "Так";
+
+/* No comment provided by engineer. */
+"Yesterday" = "Yesterday";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "Ви прийняли запит на додавання в контакти від %@";

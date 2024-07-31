@@ -542,9 +542,6 @@
 /* Coinbase/Payment Methods */
 "Credit Card" = "کارت اعتباری";
 
-/* Crowdnode */
-"CrowdNode Account" = "حساب کراودنود";
-
 /* CrowdNode */
 "CrowdNode benefits" = "مزایای کراودنود";
 
@@ -556,6 +553,9 @@
 
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "سقف برداشت کراودنود";
+
+/* No comment provided by engineer. */
+"CrowdNode · Account" = "CrowdNode · Account";
 
 /* CrowdNode Portal */
 "CrowdNode ➝ DashWallet" = "دش‌والت ➝ کراودنود";
@@ -2218,6 +2218,9 @@
 "to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "به نشانی دشی که برای حساب کراودنود در دش والت روی این دستگاه در نظر گرفته‌اید";
 
 /* No comment provided by engineer. */
+"Today" = "Today";
+
+/* No comment provided by engineer. */
 "Tools" = "ابزارها";
 
 /* Dash Portal */
@@ -2579,6 +2582,9 @@
 
 /* No comment provided by engineer. */
 "Yes" = "Yes";
+
+/* No comment provided by engineer. */
+"Yesterday" = "Yesterday";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "You accepted the contact request from %@";

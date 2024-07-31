@@ -1,6 +1,6 @@
-//
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  
+//  Created by Andrei Ashikhmin
+//  Copyright © 2024 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,14 +15,18 @@
 //  limitations under the License.
 //
 
-#import "DWPreviewSeedPhraseViewController.h"
+import SwiftUI
 
-NS_ASSUME_NONNULL_BEGIN
+struct RoundedShape: Shape {
+    let corners: UIRectCorner
+    let radii: CGFloat
 
-@interface DWBackupSeedPhraseViewController : DWPreviewSeedPhraseViewController
-
-@property (nonatomic, assign) BOOL shouldCreateNewWalletOnScreenshot;
-
-@end
-
-NS_ASSUME_NONNULL_END
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: corners,
+            cornerRadii: CGSize(width: radii, height: radii)
+        )
+        return Path(path.cgPath)
+    }
+}

@@ -16,6 +16,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 // MARK: - TxDetailDisplayType
 
@@ -353,5 +354,45 @@ class SuccessTxDetailViewController: TXDetailViewController, NavigationBarDispla
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: closeButton.topAnchor, constant: -10),
         ])
+    }
+}
+
+// MARK: - SwiftUI wrapper
+struct TXDetailVCWrapper: UIViewControllerRepresentable {
+    @Environment(\.presentationMode) private var presentationMode
+    
+    let tx: Transaction
+    @Binding var navigateBack: Bool
+    var onDismissed: (() -> Void)? = nil
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    func makeUIViewController(context: Context) -> some UIViewController {
+        let vc = TXDetailViewController(model: .init(transaction: tx))
+        return vc
+    }
+
+    func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+        if navigateBack {
+            context.coordinator.dismissView()
+            navigateBack = false
+            onDismissed?()
+        }
+    }
+    
+    class Coordinator: NSObject {
+        var parent: TXDetailVCWrapper
+        
+        init(_ parent: TXDetailVCWrapper) {
+            self.parent = parent
+        }
+        
+        func dismissView() {
+            DispatchQueue.main.async {
+                self.parent.presentationMode.wrappedValue.dismiss()
+            }
+        }
     }
 }

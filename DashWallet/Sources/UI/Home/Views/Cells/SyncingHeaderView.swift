@@ -19,7 +19,6 @@ import UIKit
 
 // MARK: - SyncingHeaderViewDelegate
 
-@objc(DWSyncingHeaderViewDelegate)
 protocol SyncingHeaderViewDelegate: AnyObject {
     func syncingHeaderView(_ view: SyncingHeaderView, filterButtonAction sender: UIButton)
     func syncingHeaderView(_ view: SyncingHeaderView, syncingButtonAction sender: UIButton)
@@ -27,10 +26,8 @@ protocol SyncingHeaderViewDelegate: AnyObject {
 
 // MARK: - SyncingHeaderView
 
-@objc(DWSyncingHeaderView)
 final class SyncingHeaderView: UITableViewHeaderFooterView {
 
-    @objc
     weak var delegate: SyncingHeaderViewDelegate?
 
     @objc

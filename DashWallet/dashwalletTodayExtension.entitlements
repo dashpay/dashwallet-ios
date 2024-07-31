@@ -6,7 +6,7 @@
 	<string>development</string>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.org.dashfoundation.dash</string>
+		<string>group.M62AAKG43G.org.dashfoundation.dash</string>
 	</array>
 </dict>
 </plist>

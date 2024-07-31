@@ -542,9 +542,6 @@
 /* Coinbase/Payment Methods */
 "Credit Card" = "信用卡";
 
-/* Crowdnode */
-"CrowdNode Account" = "CrowdNode 账户";
-
 /* CrowdNode */
 "CrowdNode benefits" = "CrowdNode 的福利";
 
@@ -556,6 +553,9 @@
 
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "CrowdNode 提款限额";
+
+/* No comment provided by engineer. */
+"CrowdNode · Account" = "CrowdNode · Account";
 
 /* CrowdNode Portal */
 "CrowdNode ➝ DashWallet" = "CrowdNode ➝ Dash钱包";
@@ -2218,6 +2218,9 @@
 "to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "在此设备上的Dash钱包上为您CrowdNode账户指定的Dash地址";
 
 /* No comment provided by engineer. */
+"Today" = "Today";
+
+/* No comment provided by engineer. */
 "Tools" = "工具";
 
 /* Dash Portal */
@@ -2579,6 +2582,9 @@
 
 /* No comment provided by engineer. */
 "Yes" = "是的";
+
+/* No comment provided by engineer. */
+"Yesterday" = "Yesterday";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "您通过了来自 %@ 的朋友申请";

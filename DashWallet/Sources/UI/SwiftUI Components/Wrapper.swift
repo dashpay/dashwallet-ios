@@ -1,6 +1,6 @@
-//
-//  Created by PT
-//  Copyright © 2023 Dash Core Group. All rights reserved.
+//  
+//  Created by Andrei Ashikhmin
+//  Copyright © 2024 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,16 +15,14 @@
 //  limitations under the License.
 //
 
-import UIKit
+import SwiftUI
 
-class TxListEmptyTableViewCell: UITableViewCell {
-
-    @IBOutlet var placeholderLabel: UILabel!
-
-    override func awakeFromNib() {
-        super.awakeFromNib()
-
-        placeholderLabel?.font = UIFont.preferredFont(forTextStyle: .footnote)
-        placeholderLabel?.text = NSLocalizedString("There are no transactions to display", comment: "")
+struct UIViewWrapper: UIViewRepresentable {
+    let uiView: UIView!
+    
+    func makeUIView(context: Context) -> UIView {
+        return uiView
     }
+
+    func updateUIView(_ uiView: UIView, context: Context) { }
 }

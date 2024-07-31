@@ -209,6 +209,9 @@ struct ToolsMenuContent: View {
                     }
                 }
             )
+            .background(Color.secondaryBackground)
+            .cornerRadius(8)
+            .shadow(color: .shadow, radius: 10, x: 0, y: 5)
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
         }
@@ -222,7 +225,7 @@ struct ToolsMenuContent: View {
         }) {
             if #available(iOS 16.0, *) {
                 ZenLedgerInfoSheet(safariLink: $safariLink)
-                    .presentationDetents([.height(440)])
+                    .presentationDetents([.height(450)])
             } else {
                 ZenLedgerInfoSheet(safariLink: $safariLink)
             }

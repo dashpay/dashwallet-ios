@@ -542,9 +542,6 @@
 /* Coinbase/Payment Methods */
 "Credit Card" = "信用卡";
 
-/* Crowdnode */
-"CrowdNode Account" = "CrowdNode 帳戶";
-
 /* CrowdNode */
 "CrowdNode benefits" = "CrowdNode 的好處";
 
@@ -556,6 +553,9 @@
 
 /* CrowdNode */
 "CrowdNode withdrawal limits" = "CrowdNode 提款限額";
+
+/* No comment provided by engineer. */
+"CrowdNode · Account" = "CrowdNode · Account";
 
 /* CrowdNode Portal */
 "CrowdNode ➝ DashWallet" = "CrowdNode ➝ 達世幣錢包";
@@ -2218,6 +2218,9 @@
 "to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "到此設備上達世幣錢包中為您的 CrowdNode 帳戶指定的達世幣位址";
 
 /* No comment provided by engineer. */
+"Today" = "Today";
+
+/* No comment provided by engineer. */
 "Tools" = "工具";
 
 /* Dash Portal */
@@ -2579,6 +2582,9 @@
 
 /* No comment provided by engineer. */
 "Yes" = "是的";
+
+/* No comment provided by engineer. */
+"Yesterday" = "Yesterday";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "您接受了來自 %@ 的聯繫請求";
