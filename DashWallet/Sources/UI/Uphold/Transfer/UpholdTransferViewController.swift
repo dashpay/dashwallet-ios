@@ -122,10 +122,6 @@ final class UpholdTransferViewController: BaseAmountViewController {
         ])
     }
 
-    override func maxButtonAction() {
-        upholdAmountModel.selectAllFunds()
-    }
-
     override func actionButtonAction(sender: UIView) {
         upholdAmountModel.createTransaction(with: nil)
     }

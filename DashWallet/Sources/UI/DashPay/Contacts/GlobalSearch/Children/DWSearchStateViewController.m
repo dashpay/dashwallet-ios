@@ -171,7 +171,7 @@ NS_ASSUME_NONNULL_END
 
 - (UIButton *)actionButton {
     if (_actionButton == nil) {
-        DashButton *button = [[DashButton alloc] init];
+        DWDashButton *button = [[DWDashButton alloc] init];
         button.translatesAutoresizingMaskIntoConstraints = NO;
         [button addTarget:self action:@selector(actionButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         _actionButton = button;

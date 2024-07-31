@@ -16,6 +16,7 @@
 //
 
 import UIKit
+import Combine
 
 private let kKeyboardHeight: CGFloat = 215.0
 private let kDescKeyboardPadding: CGFloat = 8.0
@@ -23,6 +24,7 @@ private let kDescKeyboardPadding: CGFloat = 8.0
 // MARK: - BaseAmountViewController
 
 class BaseAmountViewController: ActionButtonViewController, AmountProviding {
+    internal var cancellableBag = Set<AnyCancellable>()
     public var topKeyboardView: UIView? {
         didSet {
             if let view = oldValue {
@@ -53,7 +55,9 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
 
     internal let model: BaseAmountModel
 
-    func maxButtonAction() { }
+    private func maxButtonAction() {
+        model.selectAllFunds()
+    }
 
     init(model: BaseAmountModel) {
         self.model = model
@@ -66,9 +70,13 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     }
 
     internal func configureModel() {
-        model.amountChangeHandler = { [weak self] _ in
-            self?.amountDidChange()
-        }
+        model.$amount
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] amount in
+                self?.amountDidChange()
+            }
+            .store(in: &cancellableBag)
 
         model.errorHandler = { [weak self] error in
             self?.show(error: error)
@@ -83,7 +91,7 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
         // NOP
     }
 
-    internal func amountDidChange() {
+    private func amountDidChange() {
         actionButton?.isEnabled = model.isAllowedToContinue
         amountView.amountInputControl.reloadData()
         showErrorIfNeeded()

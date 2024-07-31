@@ -36,7 +36,7 @@ class BackupSeedPhraseViewController: DWPreviewSeedPhraseViewController {
         #endif
     }
 
-    var actionButtonTitle: String {
+    override var actionButtonTitle: String {
         return NSLocalizedString("Continue", comment: "")
     }
 

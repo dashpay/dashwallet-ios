@@ -102,7 +102,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, DWExploreTe
 
     func showCreateUsername(withInvitation invitationURL: URL?, definedUsername: String?) {
         #if DASHPAY
-        let controller = DWDashPaySetupFlowController(dashPayModel: model.dashPayModel, invitation: nil, definedUsername: nil)
+        let controller = DashPaySetupFlowController(dashPayModel: model.dashPayModel, invitationURL: nil, definedUsername: nil)
         controller.modalPresentationStyle = .fullScreen
         present(controller, animated: true, completion: nil)
         #endif

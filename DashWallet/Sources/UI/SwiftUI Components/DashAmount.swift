@@ -21,13 +21,13 @@ struct DashAmount: View {
     var amount: Int64
     var font: Font = .footnote
     var dashSymbolFactor: CGFloat = 1
+    var showDirection = true
     
     var body: some View {
         if amount == Int64.max || amount == Int64.min {
             Text(NSLocalizedString("Not available", comment: ""))
-                .font(.footnote)
+                .font(font)
                 .fontWeight(.medium)
-                .foregroundColor(.primaryText)
         } else {
             let formattedAbsAmount = abs(amount).formattedDashAmount
             let dashSymbolLast = formattedAbsAmount.first!.isNumber
@@ -35,8 +35,11 @@ struct DashAmount: View {
             let cleanedAbsAmount = cleanAmount(formattedAbsAmount)
             
             HStack(spacing: 0) {
-                Text(directionSymbol)
-                    .fontWeight(.medium)
+                if showDirection {
+                    Text(directionSymbol)
+                        .font(font)
+                        .fontWeight(.medium)
+                }
                 
                 if !dashSymbolLast {
                     DashSymbol()
@@ -44,6 +47,7 @@ struct DashAmount: View {
                 }
                 
                 Text(cleanedAbsAmount)
+                    .font(font)
                     .fontWeight(.medium)
                     .lineLimit(1)
                     .padding(.leading, 2)
@@ -52,8 +56,6 @@ struct DashAmount: View {
                     DashSymbol()
                 }
             }
-            .font(font)
-            .foregroundColor(.primaryText)
         }
     }
     

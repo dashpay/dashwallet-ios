@@ -155,7 +155,7 @@ NS_ASSUME_NONNULL_END
 
 - (UIButton *)actionButton {
     if (_actionButton == nil) {
-        DashButton *actionButton = [[DashButton alloc] init];
+        DWDashButton *actionButton = [[DWDashButton alloc] init];
         actionButton.translatesAutoresizingMaskIntoConstraints = NO;
         actionButton.layer.cornerRadius = 8;
         actionButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];

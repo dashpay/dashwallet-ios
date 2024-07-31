@@ -1,6 +1,6 @@
 //  
-//  Created by PT
-//  Copyright © 2023 Dash Core Group. All rights reserved.
+//  Created by Andrei Ashikhmin
+//  Copyright © 2024 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,12 +15,9 @@
 //  limitations under the License.
 //
 
-#import "DWMainMenuViewController.h"
-
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DWMainMenuViewController (DashPay)
-
-@end
-
-NS_ASSUME_NONNULL_END
+extension NSLayoutConstraint {
+    func withPriority(_ priority: UILayoutPriority) -> NSLayoutConstraint {
+        self.priority = priority
+        return self
+    }
+}

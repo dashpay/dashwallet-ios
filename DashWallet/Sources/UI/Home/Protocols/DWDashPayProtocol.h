@@ -39,7 +39,7 @@ extern NSNotificationName const DWDashPaySentContactRequestToInviter;
 @property (readonly, nonatomic, assign) NSUInteger unreadNotificationsCount;
 
 - (BOOL)shouldPresentRegistrationPaymentConfirmation;
-- (void)createUsername:(NSString *)username invitation:(NSURL *)invitation;
+- (void)createUsername:(NSString *)username invitation:(nullable NSURL *)invitation;
 - (BOOL)canRetry;
 - (void)retry;
 - (void)completeRegistration;

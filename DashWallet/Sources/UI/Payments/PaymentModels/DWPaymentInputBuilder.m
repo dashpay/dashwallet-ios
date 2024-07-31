@@ -152,6 +152,7 @@ NS_ASSUME_NONNULL_BEGIN
         paymentInput.userItem = userItem;
         paymentInput.canChangeAmount = YES;
         paymentInput.request = paymentRequest;
+        paymentInput.request.dashpayUsername = userItem.username;
         
         return paymentInput;
     }

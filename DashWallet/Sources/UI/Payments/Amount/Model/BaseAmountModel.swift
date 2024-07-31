@@ -16,6 +16,7 @@
 //
 
 import Foundation
+import Combine
 
 // MARK: - AmountType
 
@@ -49,10 +50,8 @@ class BaseAmountModel {
 
     var mainAmount: AmountObject!
     var supplementaryAmount: AmountObject!
-    var amount: AmountObject {
-        activeAmountType == .main ? mainAmount : supplementaryAmount
-    }
-
+    @Published var amount: AmountObject!
+    
     var localCurrency: String {
         let locale = Locale.current as NSLocale
         return locale.displayName(forKey: .currencySymbol, value: localCurrencyCode)!
@@ -79,7 +78,6 @@ class BaseAmountModel {
     }
 
     public var errorHandler: ((Error) -> Void)?
-    public var amountChangeHandler: ((AmountObject) -> Void)?
     public var presentCurrencyPickerHandler: (() -> Void)?
     public var inputsSwappedHandler: ((AmountType) -> Void)?
     public var amountInputItemsChangeHandler: (() -> Void)?
@@ -139,7 +137,7 @@ class BaseAmountModel {
     }
 
     func select(inputItem: AmountInputItem) {
-        let currentAmount = amount
+        let currentAmount = amount!
 
         currentInputItem = inputItem
 
@@ -228,13 +226,14 @@ class BaseAmountModel {
         updateAmountObjects(with: amount)
     }
 
-    internal func amountDidChange() {
+    internal final func amountDidChange() {
+        amount = activeAmountType == .main ? mainAmount : supplementaryAmount
         error = nil
         checkAmountForErrors()
-        amountChangeHandler?(amount)
     }
 
     internal func checkAmountForErrors() { }
+    internal func selectAllFunds() { }
 }
 
 extension BaseAmountModel {

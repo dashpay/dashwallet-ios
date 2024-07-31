@@ -22,6 +22,9 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ Dokunmatik Kimliğe erişim izni verilmiyor";
 
+/* Credits */
+"%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
+
 /* Voting */
 "%ld duplicates" = "%ld kopyalar";
 
@@ -324,6 +327,9 @@
 "Buy and convert Dash with another crypto" = "Başka bir kripto para kullanarak Dash satın alın";
 
 /* No comment provided by engineer. */
+"Buy credits" = "Buy credits";
+
+/* No comment provided by engineer. */
 "Buy Dash" = "Dash Satın Al";
 
 /* Dash Service Overview */
@@ -586,6 +592,9 @@
 
 /* CrowdNode */
 "Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Bu cihazdaki Dash Cüzdanında CrowdNode hesabınız için belirlenen Dash adresi";
+
+/* No comment provided by engineer. */
+"Dash balance" = "Dash balance";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "Coinbase'deki Dash bakiyesi";
@@ -2223,6 +2232,9 @@
 /* No comment provided by engineer. */
 "Tools" = "Araçlar";
 
+/* No comment provided by engineer. */
+"Top-up your credits to continue making changes to your profile and adding contacts" = "Top-up your credits to continue making changes to your profile and adding contacts";
+
 /* Dash Portal */
 "Topper" = "Topper";
 
@@ -2608,6 +2620,9 @@
 "You can change how / when your reward earnings are paid to you." = "Ödüllerinizin nasıl ve ne zaman ödeneceğini değiştirebilirsiniz.";
 
 /* No comment provided by engineer. */
+"You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance";
+
+/* No comment provided by engineer. */
 "You can create a different username without paying again" = "Tekrar ödeme yapmadan farklı bir kullanıcı adı oluşturabilirsiniz";
 
 /* Voting */
@@ -2699,6 +2714,12 @@
 
 /* CrowdNode */
 "You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "Kısmı ödemeleri otomatik olarak alacaksınız ve bunlar yeniden yatırım için kullanılacak. Tekrarlayan ödemeleri almak için otomatik para çekme işlemlerini ayarlamak kolaydır.";
+
+/* No comment provided by engineer. */
+"Your credit balance has been fully depleted" = "Your credit balance has been fully depleted";
+
+/* No comment provided by engineer. */
+"Your credit balance is low" = "Your credit balance is low";
 
 /* CrowdNode */
 "Your CrowdNode account is creating…" = "CrowdNode hesabınız oluşturuyor…";

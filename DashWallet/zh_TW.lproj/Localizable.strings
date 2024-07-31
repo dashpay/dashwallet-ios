@@ -22,6 +22,9 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ 不允許訪問Touch ID";
 
+/* Credits */
+"%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
+
 /* Voting */
 "%ld duplicates" = "%ld 重複項目";
 
@@ -324,6 +327,9 @@
 "Buy and convert Dash with another crypto" = "用另一種加密貨幣購買和兌換達世幣";
 
 /* No comment provided by engineer. */
+"Buy credits" = "Buy credits";
+
+/* No comment provided by engineer. */
 "Buy Dash" = "購買達世幣";
 
 /* Dash Service Overview */
@@ -586,6 +592,9 @@
 
 /* CrowdNode */
 "Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "此設備上達世幣錢包中為您的 CrowdNode 帳戶指定的達世幣位址";
+
+/* No comment provided by engineer. */
+"Dash balance" = "Dash balance";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "Coinbase 上的達世幣結餘";
@@ -2223,6 +2232,9 @@
 /* No comment provided by engineer. */
 "Tools" = "工具";
 
+/* No comment provided by engineer. */
+"Top-up your credits to continue making changes to your profile and adding contacts" = "Top-up your credits to continue making changes to your profile and adding contacts";
+
 /* Dash Portal */
 "Topper" = "Topper";
 
@@ -2608,6 +2620,9 @@
 "You can change how / when your reward earnings are paid to you." = "您可以更改向您支付獎勵收入的方式/時間。";
 
 /* No comment provided by engineer. */
+"You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance";
+
+/* No comment provided by engineer. */
 "You can create a different username without paying again" = "您可以創建不同的用戶名而無需再次付費";
 
 /* Voting */
@@ -2699,6 +2714,12 @@
 
 /* CrowdNode */
 "You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "您將自動收到小額付款，預設情況下它們將被再投資，但是，設置自動提款以接收定期付款也很容易。";
+
+/* No comment provided by engineer. */
+"Your credit balance has been fully depleted" = "Your credit balance has been fully depleted";
+
+/* No comment provided by engineer. */
+"Your credit balance is low" = "Your credit balance is low";
 
 /* CrowdNode */
 "Your CrowdNode account is creating…" = "正在創建您的 CrowdNode 帳戶…";
