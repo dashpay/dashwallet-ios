@@ -710,7 +710,7 @@ PODS:
   - nanopb/decode (2.30908.0)
   - nanopb/encode (2.30908.0)
   - PromisesObjC (2.4.0)
-  - Protobuf (3.27.2)
+  - Protobuf (3.27.3)
   - SDWebImage (5.13.2):
     - SDWebImage/Core (= 5.13.2)
   - SDWebImage/Core (5.13.2)
@@ -856,7 +856,7 @@ SPEC CHECKSUMS:
   Moya: 138f0573e53411fb3dc17016add0b748dfbd78ee
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  Protobuf: fb2c13674723f76ff6eede14f78847a776455fa2
+  Protobuf: c1cbc880ea7c4e9b157e113515c720a22ee7cf50
   SDWebImage: 72f86271a6f3139cc7e4a89220946489d4b9a866
   SQLite.swift: 903bfa3bc9ab06345fdfbb578e34f47cfcf417da
   SQLiteMigrationManager.swift: 5383578f5bc8955c06695e8bf04835ee0e6673a8
