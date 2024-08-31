@@ -4,6 +4,7 @@ target 'dashwallet' do
   platform :ios, '14.0'
   
   pod 'DashSync', :path => '../DashSync/'
+  pod 'DashSharedCore', :path => '../dash-shared-core/'
   pod 'SQLite.swift', '~> 0.13.3'
   pod 'SQLiteMigrationManager.swift'
   pod 'CloudInAppMessaging', '0.1.0'
