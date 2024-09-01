@@ -16,6 +16,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 @objc(DWSettingsMenuViewControllerDelegate)
 protocol SettingsMenuViewControllerDelegate: AnyObject {
@@ -28,9 +29,6 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
     @objc weak var delegate: SettingsMenuViewControllerDelegate?
     
     private lazy var model: DWSettingsMenuModel = DWSettingsMenuModel()
-    private var formController: DWFormTableViewController!
-    private var localCurrencyCellModel: DWSelectorFormCellModel!
-    private var switchNetworkCellModel: DWSelectorFormCellModel!
     
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -47,10 +45,21 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
         
         view.backgroundColor = .dw_secondaryBackground()
         
-        formController = DWFormTableViewController(style: .plain)
-        formController.setSections(sections, placeholderText: nil)
-        
-        dw_embedChild(formController)
+        let content = SettingsMenuContent(
+            items: menuItems(),
+            onLocalCurrencyChange: { [weak self] in
+                self?.showCurrencySelector()
+            },
+            onNetworkChange: { [weak self] in
+                self?.showChangeNetwork()
+            },
+            onRescanBlockchain: { [weak self] in
+                self?.showWarningAboutReclassifiedTransactions()
+            }
+        )
+        let swiftUIController = UIHostingController(rootView: content)
+        swiftUIController.view.backgroundColor = .dw_secondaryBackground()
+        dw_embedChild(swiftUIController)
     }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -60,7 +69,6 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
     // MARK: - LocalCurrencyViewControllerDelegate
     
     func localCurrencyViewController(_ controller: DWLocalCurrencyViewController, didSelectCurrency currencyCode: String) {
-        updateLocalCurrencyCellModel()
         navigationController?.popViewController(animated: true)
     }
     
@@ -70,93 +78,69 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
     
     // MARK: - Private
     
-    private var items: [DWBaseFormCellModel] {
-        var items: [DWBaseFormCellModel] = []
-        
-        let localCurrencyCell = DWSelectorFormCellModel(title: NSLocalizedString("Local Currency", comment: ""))
-        localCurrencyCellModel = localCurrencyCell
-        updateLocalCurrencyCellModel()
-        localCurrencyCell.accessoryType = .disclosureIndicator
-        localCurrencyCell.didSelectBlock = { [weak self] _, _ in
-            self?.showCurrencySelector()
-        }
-        items.append(localCurrencyCell)
-        
-        let notificationsCell = DWSwitcherFormCellModel(title: NSLocalizedString("Enable Receive Notifications", comment: ""))
-        notificationsCell.isOn = model.notificationsEnabled
-        notificationsCell.didChangeValueBlock = { [weak self] cellModel in
-            self?.model.notificationsEnabled = cellModel.isOn
-        }
-        items.append(notificationsCell)
-        
-        let networkCell = DWSelectorFormCellModel(title: NSLocalizedString("Network", comment: ""))
-        switchNetworkCellModel = networkCell
-        updateSwitchNetworkCellModel()
-        networkCell.accessoryType = .disclosureIndicator
-        networkCell.didSelectBlock = { [weak self] _, indexPath in
-            guard let self = self else { return }
-            let tableView = self.formController.tableView!
-            guard let cell = tableView.cellForRow(at: indexPath) else { return }
-            self.showChangeNetwork(from: tableView, sourceRect: cell.frame)
-        }
-        items.append(networkCell)
-        
-        let rescanCell = DWSelectorFormCellModel(title: NSLocalizedString("Rescan Blockchain", comment: ""))
-        rescanCell.didSelectBlock = { [weak self] _, indexPath in
-            guard let self = self else { return }
-            let tableView = self.formController.tableView!
-            guard let cell = tableView.cellForRow(at: indexPath) else { return }
-            self.showWarningAboutReclassifiedTransactions(tableView, sourceRect: cell.frame)
-        }
-        items.append(rescanCell)
-        
-        let aboutCell = DWSelectorFormCellModel(title: NSLocalizedString("About", comment: ""))
-        aboutCell.accessoryType = .disclosureIndicator
-        aboutCell.didSelectBlock = { [weak self] _, _ in
-            self?.showAboutController()
-        }
-        items.append(aboutCell)
+    private func menuItems() -> [MenuItemModel] {
+        var items: [MenuItemModel] = [
+            MenuItemModel(
+                title: NSLocalizedString("Local Currency", comment: ""),
+                subtitle: model.localCurrencyCode,
+                showChevron: true,
+                action: { [weak self] in
+                    self?.showCurrencySelector()
+                }
+            ),
+            MenuItemModel(
+                title: NSLocalizedString("Enable Receive Notifications", comment: ""),
+                showToggle: true, 
+                isToggled: self.model.notificationsEnabled,
+                action: { [weak self] in
+                    self?.model.notificationsEnabled.toggle()
+                }
+            ),
+            MenuItemModel(
+                title: NSLocalizedString("Network", comment: ""),
+                subtitle: model.networkName,
+                showChevron: true,
+                action: { [weak self] in
+                    self?.showChangeNetwork()
+                }
+            ),
+            MenuItemModel(
+                title: NSLocalizedString("Rescan Blockchain", comment: ""),
+                showChevron: true,
+                action: { [weak self] in
+                    self?.showWarningAboutReclassifiedTransactions()
+                }
+            ),
+            MenuItemModel(
+                title: NSLocalizedString("About", comment: ""),
+                showChevron: true,
+                action: { [weak self] in
+                    self?.showAboutController()
+                }
+            )
+        ]
         
         #if DASHPAY
-        let coinJoinCell = DWSelectorFormCellModel(title: NSLocalizedString("CoinJoin", comment: ""))
-        coinJoinCell.didSelectBlock = { [weak self] _, _ in
-            self?.showCoinJoinController()
-        }
-        items.append(coinJoinCell)
-        
-        let votingCell = DWSwitcherFormCellModel(title: "Enable Voting")
-        votingCell.isOn = VotingPrefsWrapper.getIsEnabled()
-        votingCell.didChangeValueBlock = { cellModel in
-            VotingPrefsWrapper.setIsEnabled(value: cellModel.isOn)
-        }
-        items.append(votingCell)
+        items.append(contentsOf: [
+            MenuItemModel(
+                title: NSLocalizedString("CoinJoin", comment: ""),
+                showChevron: true,
+                action: { [weak self] in
+                    self?.showCoinJoinController()
+                }
+            ),
+            MenuItemModel(
+                title: "Enable Voting",
+                showToggle: true,
+                isToggled: VotingPrefs.shared.votingEnabled,
+                action: {
+                    VotingPrefs.shared.votingEnabled.toggle()
+                }
+            )
+        ])
         #endif
         
         return items
-    }
-    
-    private var sections: [DWFormSectionModel] {
-        return items.map { item in
-            let section = DWFormSectionModel()
-            section.items = [item]
-            return section
-        }
-    }
-    
-    private func updateLocalCurrencyCellModel() {
-        localCurrencyCellModel.subTitle = model.localCurrencyCode
-    }
-    
-    private func updateSwitchNetworkCellModel() {
-        switchNetworkCellModel.subTitle = model.networkName
-    }
-    
-    private func rescanBlockchainAction(from sourceView: UIView, sourceRect: CGRect) {
-        DWSettingsMenuModel.rescanBlockchainAction(from: self, sourceView: sourceView, sourceRect: sourceRect) { [weak self] confirmed in
-            if confirmed {
-                self?.delegate?.settingsMenuViewControllerDidRescanBlockchain(self!)
-            }
-        }
     }
     
     private func showCurrencySelector() {
@@ -182,13 +166,13 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
         navigationController?.pushViewController(vc, animated: true)
     }
     
-    private func showChangeNetwork(from sourceView: UIView, sourceRect: CGRect) {
+    private func showChangeNetwork() {
         let actionSheet = UIAlertController(title: NSLocalizedString("Network", comment: ""), message: nil, preferredStyle: .actionSheet)
         
         let mainnetAction = UIAlertAction(title: NSLocalizedString("Mainnet", comment: ""), style: .default) { [weak self] _ in
             DWSettingsMenuModel.switchToMainnet { success in
                 if success {
-                    self?.updateSwitchNetworkCellModel()
+                    self?.updateView()
                 }
             }
         }
@@ -196,7 +180,7 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
         let testnetAction = UIAlertAction(title: NSLocalizedString("Testnet", comment: ""), style: .default) { [weak self] _ in
             DWSettingsMenuModel.switchToTestnet { success in
                 if success {
-                    self?.updateSwitchNetworkCellModel()
+                    self?.updateView()
                 }
             }
         }
@@ -208,21 +192,21 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
         actionSheet.addAction(cancelAction)
         
         if UIDevice.current.userInterfaceIdiom == .pad {
-            actionSheet.popoverPresentationController?.sourceView = sourceView
-            actionSheet.popoverPresentationController?.sourceRect = sourceRect
+            actionSheet.popoverPresentationController?.sourceView = view
+            actionSheet.popoverPresentationController?.sourceRect = view.bounds
         }
         
         present(actionSheet, animated: true, completion: nil)
     }
     
-    private func showWarningAboutReclassifiedTransactions(_ sourceView: UIView, sourceRect: CGRect) {
+    private func showWarningAboutReclassifiedTransactions() {
         let actionSheet = UIAlertController(
             title: NSLocalizedString("You will lose all your manually reclassified transactions types", comment: ""),
             message: NSLocalizedString("If you would like to save manually reclassified types for transactions you should export a CSV transaction file.", comment: ""),
             preferredStyle: .actionSheet)
         
         let continueAction = UIAlertAction(title: NSLocalizedString("Continue", comment: ""), style: .default) { [weak self] _ in
-            self?.rescanBlockchainAction(from: sourceView, sourceRect: sourceRect)
+            self?.rescanBlockchainAction()
         }
         
         let exportAction = UIAlertAction(title: NSLocalizedString("Export CSV", comment: ""), style: .default) { [weak self] _ in
@@ -236,11 +220,19 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
         actionSheet.addAction(cancelAction)
         
         if UIDevice.current.userInterfaceIdiom == .pad {
-            actionSheet.popoverPresentationController?.sourceView = sourceView
-            actionSheet.popoverPresentationController?.sourceRect = sourceRect
+            actionSheet.popoverPresentationController?.sourceView = view
+            actionSheet.popoverPresentationController?.sourceRect = view.bounds
         }
         
         present(actionSheet, animated: true, completion: nil)
+    }
+    
+    private func rescanBlockchainAction() {
+        DWSettingsMenuModel.rescanBlockchainAction(from: self, sourceView: view, sourceRect: view.bounds) { [weak self] confirmed in
+            if confirmed {
+                self?.delegate?.settingsMenuViewControllerDidRescanBlockchain(self!)
+            }
+        }
     }
     
     private func exportTransactionsInCSV() {
@@ -262,5 +254,40 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
             self?.view.dw_hideProgressHUD()
             self?.dw_displayErrorModally(error)
         }
+    }
+    
+    private func updateView() {
+        // Trigger a view update
+        viewDidLoad()
+    }
+}
+
+struct SettingsMenuContent: View {
+    var items: [MenuItemModel]
+    var onLocalCurrencyChange: () -> Void
+    var onNetworkChange: () -> Void
+    var onRescanBlockchain: () -> Void
+
+    var body: some View {
+        List(items) { item in
+            MenuItem(
+                title: item.title,
+                subtitle: item.subtitle,
+                details: item.details,
+                icon: item.icon,
+                showInfo: item.showInfo,
+                showChevron: item.showChevron,
+                showToggle: item.showToggle,
+                isToggled: item.isToggled,
+                action: item.action
+            )
+            .background(Color.secondaryBackground)
+            .cornerRadius(8)
+            .shadow(color: .shadow, radius: 10, x: 0, y: 5)
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+        }
+        .listStyle(.plain)
+        .background(Color.clear)
     }
 }

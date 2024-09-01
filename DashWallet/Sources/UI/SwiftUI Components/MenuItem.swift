@@ -30,7 +30,8 @@ struct MenuItem: View {
     var showChevron: Bool = false
     var dashAmount: Int64? = nil
     var overrideFiatAmount: String? = nil
-    var isToggled: Binding<Bool>? = nil
+    var showToggle: Bool = false
+    @State var isToggled: Bool = false
     var action: (() -> Void)? = nil
 
     init(title: String,
@@ -43,30 +44,33 @@ struct MenuItem: View {
          showChevron: Bool = false,
          dashAmount: Int64? = nil,
          overrideFiatAmount: String? = nil,
-         isToggled: Binding<Bool>? = nil,
+         showToggle: Bool = false,
+         isToggled: Bool = false,
          action: (() -> Void)? = nil
     ) {
-        self.init(title: title,
-                  subtitleView: subtitle.map {
-                      AnyView(
-                        Text($0)
-                            .font(.caption)
-                            .lineSpacing(3)
-                            .foregroundColor(.tertiaryText)
-                            .padding(.leading, 4)
-                            .padding(.top, 2)
-                      )
-                  },
-                  details: details,
-                  topText: topText,
-                  icon: icon,
-                  secondaryIcon: secondaryIcon,
-                  showInfo: showInfo,
-                  showChevron: showChevron,
-                  dashAmount: dashAmount,
-                  overrideFiatAmount: overrideFiatAmount,
-                  isToggled: isToggled,
-                  action: action
+        self.init(
+            title: title,
+            subtitleView: subtitle.map {
+                AnyView(
+                    Text($0)
+                        .font(.caption)
+                        .lineSpacing(3)
+                        .foregroundColor(.tertiaryText)
+                        .padding(.leading, 4)
+                        .padding(.top, 2)
+                )
+            },
+            details: details,
+            topText: topText,
+            icon: icon,
+            secondaryIcon: secondaryIcon,
+            showInfo: showInfo,
+            showChevron: showChevron,
+            dashAmount: dashAmount,
+            overrideFiatAmount: overrideFiatAmount,
+            showToggle: showToggle,
+            isToggled: isToggled,
+            action: action
         )
     }
 
@@ -80,7 +84,8 @@ struct MenuItem: View {
          showChevron: Bool = false,
          dashAmount: Int64? = nil,
          overrideFiatAmount: String? = nil,
-         isToggled: Binding<Bool>? = nil,
+         showToggle: Bool = false,
+         isToggled: Bool = false,
          action: (() -> Void)? = nil
     ) {
         self.title = title
@@ -93,7 +98,8 @@ struct MenuItem: View {
         self.showChevron = showChevron
         self.dashAmount = dashAmount
         self.overrideFiatAmount = overrideFiatAmount
-        self.isToggled = isToggled
+        self._isToggled = State(initialValue: isToggled)
+        self.showToggle = showToggle
         self.action = action
     }
     
@@ -152,7 +158,7 @@ struct MenuItem: View {
                 if let subtitle = subtitleView {
                     subtitle
                 }
-                    
+                
                 if let details = details {
                     Text(details)
                         .font(.caption)
@@ -164,8 +170,10 @@ struct MenuItem: View {
             }
             .frame(maxWidth: .infinity)
 
-            if let isToggled = isToggled {
-                Toggle(isOn: isToggled) { }
+            if showToggle {
+                Toggle(isOn: $isToggled) { }
+                    .tint(Color.dashBlue)
+                    .scaleEffect(0.75)
                     .frame(maxWidth: 60)
             }
             
@@ -196,6 +204,10 @@ struct MenuItem: View {
         .padding(10)
         .frame(maxWidth: .infinity, minHeight: 66)
         .onTapGesture {
+            if showToggle {
+                isToggled.toggle()
+            }
+            
             action?()
         }
     }
@@ -216,6 +228,7 @@ struct MenuItem: View {
         subtitle: "Easily stake Dash and earn passive income with a few simple steps",
         icon: .system("faceid"),
         showInfo: true,
-        isToggled: .constant(true)
+        showToggle: true,
+        isToggled: true
     )
 }

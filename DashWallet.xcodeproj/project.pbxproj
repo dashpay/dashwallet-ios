@@ -558,6 +558,8 @@
 		754BEA132C0B6BD700E8C93C /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */; };
 		755049A92C846299008FA7EB /* DWAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 755049A72C846299008FA7EB /* DWAboutViewController.m */; };
 		755049AA2C846299008FA7EB /* DWAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 755049A72C846299008FA7EB /* DWAboutViewController.m */; };
+		755049AC2C846576008FA7EB /* MenuItemModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755049AB2C846576008FA7EB /* MenuItemModel.swift */; };
+		755049AD2C846576008FA7EB /* MenuItemModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755049AB2C846576008FA7EB /* MenuItemModel.swift */; };
 		755A22BD2B1385FD001F170D /* IconAttributedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755A22BC2B1385FD001F170D /* IconAttributedText.swift */; };
 		755B4B222B0C903500B844F0 /* DWDateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755B4B212B0C903500B844F0 /* DWDateFormatter.swift */; };
 		755B4B232B0C903500B844F0 /* DWDateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755B4B212B0C903500B844F0 /* DWDateFormatter.swift */; };
@@ -2432,6 +2434,7 @@
 		754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		755049A72C846299008FA7EB /* DWAboutViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWAboutViewController.m; sourceTree = "<group>"; };
 		755049A82C846299008FA7EB /* DWAboutViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAboutViewController.h; sourceTree = "<group>"; };
+		755049AB2C846576008FA7EB /* MenuItemModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuItemModel.swift; sourceTree = "<group>"; };
 		755A22BC2B1385FD001F170D /* IconAttributedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconAttributedText.swift; sourceTree = "<group>"; };
 		755B4B212B0C903500B844F0 /* DWDateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWDateFormatter.swift; sourceTree = "<group>"; };
 		755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSeedPhraseViewController.swift; sourceTree = "<group>"; };
@@ -4122,6 +4125,7 @@
 				2A7A7BCA2347EF7A00451078 /* Security */,
 				2A7A7BD32348CB4F00451078 /* Settings */,
 				2A7A7BDA2348DBE700451078 /* Tools */,
+				755049AB2C846576008FA7EB /* MenuItemModel.swift */,
 			);
 			path = Menu;
 			sourceTree = "<group>";
@@ -8943,6 +8947,7 @@
 				C9F42FB829DFC507001BC549 /* SpendableTransaction.swift in Sources */,
 				11ED906B29681773003784F9 /* StakingInfoDialogController.swift in Sources */,
 				0F36937E2919A5DB007F4E91 /* TwoFactorAuthViewController.swift in Sources */,
+				755049AC2C846576008FA7EB /* MenuItemModel.swift in Sources */,
 				75EBAA292BBBE385004488E3 /* ZenLedgerViewModel.swift in Sources */,
 				471A260A289ACDF70056B7B2 /* Taxes.swift in Sources */,
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
@@ -9176,6 +9181,7 @@
 				C9D2C7022A320AA000D15901 /* CrowdNodeWebViewController.swift in Sources */,
 				C9D2C7032A320AA000D15901 /* UIViewController+DWDisplayError.m in Sources */,
 				C9D2C7042A320AA000D15901 /* BRAppleWatchData.m in Sources */,
+				755049AD2C846576008FA7EB /* MenuItemModel.swift in Sources */,
 				C9D2C7052A320AA000D15901 /* DWRequestAmountContentView.m in Sources */,
 				C943B3312A408CED00AF23C5 /* DWProfileAboutCellModel.m in Sources */,
 				C943B4C42A40A54600AF23C5 /* DWSearchViewController.m in Sources */,
