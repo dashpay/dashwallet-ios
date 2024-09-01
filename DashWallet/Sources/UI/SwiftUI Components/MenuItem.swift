@@ -21,7 +21,7 @@ typealias TransactionPreview = MenuItem
 
 struct MenuItem: View {
     var title: String
-    var subtitle: String? = nil
+    var subtitleView: AnyView? = nil
     var details: String? = nil
     var topText: String? = nil
     var icon: IconName? = nil
@@ -32,6 +32,70 @@ struct MenuItem: View {
     var overrideFiatAmount: String? = nil
     var isToggled: Binding<Bool>? = nil
     var action: (() -> Void)? = nil
+
+    init(title: String,
+         subtitle: String? = nil,
+         details: String? = nil,
+         topText: String? = nil,
+         icon: IconName? = nil,
+         secondaryIcon: IconName? = nil,
+         showInfo: Bool = false,
+         showChevron: Bool = false,
+         dashAmount: Int64? = nil,
+         overrideFiatAmount: String? = nil,
+         isToggled: Binding<Bool>? = nil,
+         action: (() -> Void)? = nil
+    ) {
+        self.init(title: title,
+                  subtitleView: subtitle.map {
+                      AnyView(
+                        Text($0)
+                            .font(.caption)
+                            .lineSpacing(3)
+                            .foregroundColor(.tertiaryText)
+                            .padding(.leading, 4)
+                            .padding(.top, 2)
+                      )
+                  },
+                  details: details,
+                  topText: topText,
+                  icon: icon,
+                  secondaryIcon: secondaryIcon,
+                  showInfo: showInfo,
+                  showChevron: showChevron,
+                  dashAmount: dashAmount,
+                  overrideFiatAmount: overrideFiatAmount,
+                  isToggled: isToggled,
+                  action: action
+        )
+    }
+
+    init(title: String,
+         subtitleView: AnyView? = nil,
+         details: String? = nil,
+         topText: String? = nil,
+         icon: IconName? = nil,
+         secondaryIcon: IconName? = nil,
+         showInfo: Bool = false,
+         showChevron: Bool = false,
+         dashAmount: Int64? = nil,
+         overrideFiatAmount: String? = nil,
+         isToggled: Binding<Bool>? = nil,
+         action: (() -> Void)? = nil
+    ) {
+        self.title = title
+        self.subtitleView = subtitleView
+        self.details = details
+        self.topText = topText
+        self.icon = icon
+        self.secondaryIcon = secondaryIcon
+        self.showInfo = showInfo
+        self.showChevron = showChevron
+        self.dashAmount = dashAmount
+        self.overrideFiatAmount = overrideFiatAmount
+        self.isToggled = isToggled
+        self.action = action
+    }
     
     var body: some View {
         HStack(spacing: 4) {
@@ -85,13 +149,8 @@ struct MenuItem: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 4)
                 
-                if let subtitle = subtitle {
-                    Text(subtitle)
-                        .font(.caption)
-                        .lineSpacing(3)
-                        .foregroundColor(.tertiaryText)
-                        .padding(.leading, 4)
-                        .padding(.top, 2)
+                if let subtitle = subtitleView {
+                    subtitle
                 }
                     
                 if let details = details {

@@ -161,8 +161,10 @@ static const bool _SNAPSHOT = 0;
 #import "DWBasePayViewController.h"
 #import "DWHomeProtocol.h"
 
-//MARK: Tools menu
+//MARK: Settings menu
 #import "UIViewController+DWDisplayError.h"
+#import "DWFormTableViewController.h"
+#import "DWAboutViewController.h"
 
 //MARK: Onboarding
 #import "DWTransactionStub.h"

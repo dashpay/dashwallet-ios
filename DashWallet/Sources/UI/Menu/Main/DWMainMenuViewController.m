@@ -25,7 +25,6 @@
 #import "DWMainMenuContentView.h"
 #import "DWMainMenuModel.h"
 #import "DWSecurityMenuViewController.h"
-#import "DWSettingsMenuViewController.h"
 #import "SFSafariViewController+DashWallet.h"
 #import "dashwallet-Swift.h"
 

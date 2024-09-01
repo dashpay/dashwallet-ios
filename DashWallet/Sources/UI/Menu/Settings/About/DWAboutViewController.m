@@ -52,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAboutViewController
 
-+ (instancetype)controller {
++ (instancetype)createController {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"About" bundle:nil];
     DWAboutViewController *controller = [storyboard instantiateInitialViewController];
     controller.hidesBottomBarWhenPushed = YES;
