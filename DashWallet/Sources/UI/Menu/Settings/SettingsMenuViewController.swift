@@ -122,9 +122,10 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
         
         #if DASHPAY
         items.append(contentsOf: [
-            MenuItemModel(
+            CoinJoinMenuItemModel(
                 title: NSLocalizedString("CoinJoin", comment: ""),
-                showChevron: true,
+                mixingPercentage: "70%",
+                dashAmount: "0.085 of 0.199",
                 action: { [weak self] in
                     self?.showCoinJoinController()
                 }
@@ -270,17 +271,28 @@ struct SettingsMenuContent: View {
 
     var body: some View {
         List(items) { item in
-            MenuItem(
-                title: item.title,
-                subtitle: item.subtitle,
-                details: item.details,
-                icon: item.icon,
-                showInfo: item.showInfo,
-                showChevron: item.showChevron,
-                showToggle: item.showToggle,
-                isToggled: item.isToggled,
-                action: item.action
-            )
+            Group {
+                if let cjItem = item as? CoinJoinMenuItemModel {
+                    MenuItem(
+                        title: cjItem.title,
+                        subtitleView: AnyView(CoinJoinSubtitle(cjItem.mixingPercentage, cjItem.dashAmount)),
+                        icon: .custom("image.coinjoin.menu"),
+                        action: cjItem.action
+                    )
+                } else {
+                    MenuItem(
+                        title: item.title,
+                        subtitle: item.subtitle,
+                        details: item.details,
+                        icon: item.icon,
+                        showInfo: item.showInfo,
+                        showChevron: item.showChevron,
+                        showToggle: item.showToggle,
+                        isToggled: item.isToggled,
+                        action: item.action
+                    )
+                }
+            }
             .background(Color.secondaryBackground)
             .cornerRadius(8)
             .shadow(color: .shadow, radius: 10, x: 0, y: 5)
@@ -289,5 +301,32 @@ struct SettingsMenuContent: View {
         }
         .listStyle(.plain)
         .background(Color.clear)
+    }
+    
+    @ViewBuilder
+    private func CoinJoinSubtitle(_ mixingPercentage: String, _ dashAmount: String) -> some View {
+        HStack(spacing: 0) {
+            SwiftUI.ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: .dashBlue))
+                .scaleEffect(0.5)
+            Text(NSLocalizedString("Mixing ·", comment: "CoinJoin"))
+                .font(.caption)
+                .foregroundColor(.tertiaryText)
+                .padding(.leading, 2)
+            Text(mixingPercentage)
+                .font(.caption)
+                .foregroundColor(.tertiaryText)
+                .padding(.leading, 4)
+            Spacer()
+            Text(dashAmount)
+                .font(.caption)
+                .foregroundColor(.tertiaryText)
+            Image("icon_dash_currency")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 12, height: 12)
+                .padding(.leading, 2)
+                .foregroundColor(.tertiaryText)
+        }
     }
 }

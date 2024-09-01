@@ -17,7 +17,7 @@
 
 import SwiftUI
 
-struct MenuItemModel: Identifiable, Equatable {
+class MenuItemModel: Identifiable, Equatable {
     let id = UUID()
     
     var title: String
@@ -30,7 +30,30 @@ struct MenuItemModel: Identifiable, Equatable {
     @State var isToggled: Bool = false
     var action: (() -> Void)? = nil
     
+    init(title: String, subtitle: String? = nil, details: String? = nil, icon: IconName? = nil, showInfo: Bool = false, showChevron: Bool = false, showToggle: Bool = false, isToggled: Bool = false, action: (() -> Void)? = nil) {
+        self.title = title
+        self.subtitle = subtitle
+        self.details = details
+        self.icon = icon
+        self.showInfo = showInfo
+        self.showChevron = showChevron
+        self.showToggle = showToggle
+        self.isToggled = isToggled
+        self.action = action
+    }
+    
     static func == (lhs: MenuItemModel, rhs: MenuItemModel) -> Bool {
         lhs.id == rhs.id
+    }
+}
+
+class CoinJoinMenuItemModel: MenuItemModel {
+    var mixingPercentage: String
+    var dashAmount: String
+
+    init(title: String, mixingPercentage: String, dashAmount: String, action: (() -> Void)? = nil) {
+        self.mixingPercentage = mixingPercentage
+        self.dashAmount = dashAmount
+        super.init(title: title, action: action)
     }
 }
