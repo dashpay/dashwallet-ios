@@ -192,6 +192,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
     private func setIdentity(dpInfoHidden: Bool, model: DWHomeProtocol) {
         headerView.isDPWelcomeViewHidden = dpInfoHidden
         headerView.isVotingViewHidden = true
+        viewModel.showJoinDashpay = !headerView.isDPWelcomeViewHidden
         let status = model.dashPayModel.registrationStatus
         let completed = model.dashPayModel.registrationCompleted
         
@@ -212,6 +213,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         let now = Date().timeIntervalSince1970
         headerView.isVotingViewHidden = dpInfoHidden || wasClosed || now < VotingConstants.votingEndTime
         headerView.isDPWelcomeViewHidden = true
+        viewModel.showJoinDashpay = !headerView.isDPWelcomeViewHidden
         let dao = UsernameRequestsDAOImpl.shared
         
         Task {
@@ -287,7 +289,18 @@ struct TransactionList<Content: View>: View {
             
             LazyVStack(pinnedViews: [.sectionHeaders]) {
                 balanceHeader()
-                    .frame(height: viewModel.hasNetwork ? 250 : 335)
+                    .frame(height: viewModel.balanceHeaderHeight)
+                
+                if viewModel.coinJoinItem.isOn {
+                    CoinJoinProgressView(
+                        state: viewModel.coinJoinItem.state,
+                        progress: viewModel.coinJoinItem.progress,
+                        mixed: viewModel.coinJoinItem.mixed,
+                        total: viewModel.coinJoinItem.total
+                    )
+                    .padding(.horizontal, 15)
+                    .id(viewModel.coinJoinItem.id)
+                }
                 
                 syncingHeader()
                     .frame(height: 50)
@@ -321,6 +334,9 @@ struct TransactionList<Content: View>: View {
         }
         .sheet(item: $selectedTxDataItem) { item in
             TransactionDetailsSheet(item: item)
+        }
+        .onChange(of: viewModel.coinJoinItem) { new in
+            DSLogger.log("[SW] CoinJoin: on change of coinJoinItem: \(viewModel.coinJoinItem.description)")
         }
     }
 

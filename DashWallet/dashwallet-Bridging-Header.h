@@ -113,7 +113,6 @@ static const bool _SNAPSHOT = 0;
 #import "UIView+DWEmbedding.h"
 #import "DWBasePressableControl.h"
 
-
 #if DASHPAY
 #import "DWInvitationSetupState.h"
 #import "DPAlertViewController.h"
@@ -168,3 +167,6 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: Onboarding
 #import "DWTransactionStub.h"
+
+//MARK: CoinJoin
+#import "DSCoinJoinManager.h"

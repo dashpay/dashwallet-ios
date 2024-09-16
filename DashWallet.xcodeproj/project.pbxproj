@@ -520,6 +520,12 @@
 		47FA3AFF29350929008D58DC /* SyncingActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3AFE29350929008D58DC /* SyncingActivityMonitor.swift */; };
 		47FA3B0229364991008D58DC /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3B0129364991008D58DC /* HTTPClient.swift */; };
 		7502A4872AE401EF00ACDDD3 /* UsernameVotingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7502A4862AE401EF00ACDDD3 /* UsernameVotingViewController.swift */; };
+		7503643A2C89CFB70029EC0D /* CoinJoinProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */; };
+		7503643B2C89CFB70029EC0D /* CoinJoinProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */; };
+		7503643E2C89D49A0029EC0D /* CoinJoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7503643D2C89D49A0029EC0D /* CoinJoinService.swift */; };
+		7503643F2C89D49A0029EC0D /* CoinJoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7503643D2C89D49A0029EC0D /* CoinJoinService.swift */; };
+		750CED602C94BFD7000FB837 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750CED5F2C94BFD7000FB837 /* SettingsViewModel.swift */; };
+		750CED612C94BFD7000FB837 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750CED5F2C94BFD7000FB837 /* SettingsViewModel.swift */; };
 		7513DA882AB175E0005D55F6 /* TopperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720E2AA9F58E0066557E /* TopperViewModel.swift */; };
 		7513DA892AB17606005D55F6 /* Topper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E2F3C92AA4D1B900C3B458 /* Topper.swift */; };
 		7513DA8A2AB17666005D55F6 /* SupportedTopperAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */; };
@@ -2405,9 +2411,12 @@
 		5FD4C91FB8EAB529E8E41227 /* Pods-dashwallet no watch.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.testnet.xcconfig"; sourceTree = "<group>"; };
 		6FBBFC90577C940D8C04E0B1 /* Pods-DashWalletScreenshotsUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		7502A4862AE401EF00ACDDD3 /* UsernameVotingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameVotingViewController.swift; sourceTree = "<group>"; };
+		750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinProgressView.swift; sourceTree = "<group>"; };
+		7503643D2C89D49A0029EC0D /* CoinJoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinService.swift; sourceTree = "<group>"; };
 		7509C10E1AF3076100D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		7509C1121AF3720100D03FD5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		750C6CC01B5C8EB60038AAE9 /* el */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = el; path = el.lproj/Localizable.strings; sourceTree = "<group>"; };
+		750CED5F2C94BFD7000FB837 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		7511E8CB1AE5FF240025F1B3 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; lineEnding = 0; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		7511E8CF1AE5FF2D0025F1B3 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
 		7511E8D31AE5FF390025F1B3 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -3933,6 +3942,7 @@
 		2A44313D22CF632F009BAF7F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				7503643C2C89D4890029EC0D /* CoinJoin */,
 				75A8C1612AE571E30042256E /* Voting */,
 				47081194298CF1E3003FCA3D /* Transactions */,
 				11BD737F28E7354200A34022 /* CrowdNode */,
@@ -4033,6 +4043,7 @@
 			isa = PBXGroup;
 			children = (
 				C9F451F22A0C933700825057 /* SyncingHeaderView.swift */,
+				750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -4193,6 +4204,7 @@
 				2A7A7BD52348CB6600451078 /* SettingsMenuViewController.swift */,
 				2A7A7BD72348CB7300451078 /* DWSettingsMenuModel.h */,
 				2A7A7BD82348CB7300451078 /* DWSettingsMenuModel.m */,
+				750CED5F2C94BFD7000FB837 /* SettingsViewModel.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -5995,6 +6007,14 @@
 				753FDBEB2AECF4CC0005EEC3 /* VotingHeaderView.xib */,
 			);
 			path = Voting;
+			sourceTree = "<group>";
+		};
+		7503643C2C89D4890029EC0D /* CoinJoin */ = {
+			isa = PBXGroup;
+			children = (
+				7503643D2C89D49A0029EC0D /* CoinJoinService.swift */,
+			);
+			path = CoinJoin;
 			sourceTree = "<group>";
 		};
 		7531308F2B47EE480069C9B7 /* Model */ = {
@@ -8482,6 +8502,7 @@
 				75FFD6BB2BF48DF80032879E /* HomeViewController+JailbreakCheck.swift in Sources */,
 				477F50102950A55A003C7508 /* Coinbase+Error.swift in Sources */,
 				2A63003F2327B4BB00827825 /* DWPaymentOutput+DWView.m in Sources */,
+				750CED602C94BFD7000FB837 /* SettingsViewModel.swift in Sources */,
 				2ACD53EE234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m in Sources */,
 				11860923297598B400279FCC /* AddressStatus.swift in Sources */,
 				C91E919729FBACE6003E7883 /* ExtendedPublicKeysModel.swift in Sources */,
@@ -8814,6 +8835,7 @@
 				472D13E3299E23B7006903F1 /* BalanceNotifier.swift in Sources */,
 				2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */,
 				7592AA7C2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */,
+				7503643E2C89D49A0029EC0D /* CoinJoinService.swift in Sources */,
 				75AA33CC2BF9C82700F12465 /* ModalDialog.swift in Sources */,
 				2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */,
 				47C661AF28FDAA3400028A8D /* BaseAmountViewController.swift in Sources */,
@@ -8901,6 +8923,7 @@
 				C909615B29F6535300002D82 /* DerivationPathKeysHeaderView.swift in Sources */,
 				4751CAD02970224D00F63AC4 /* ConvertCryptoOrderPreviewModel.swift in Sources */,
 				47A2E3A92972B15F0032A63B /* RatesProvider.swift in Sources */,
+				7503643A2C89CFB70029EC0D /* CoinJoinProgressView.swift in Sources */,
 				47A2A2E9293E612900938DB7 /* CBAuth.swift in Sources */,
 				7566F48A2BB6CAF2005238D2 /* MenuItem.swift in Sources */,
 				0F6EDFD128C896BD000427E7 /* CoinbaseCreateAddressesRequest.swift in Sources */,
@@ -9046,6 +9069,7 @@
 				C9D2C69A2A320AA000D15901 /* CrowdNodeAPI.swift in Sources */,
 				C9D2C69B2A320AA000D15901 /* DWStartModel.m in Sources */,
 				754495DD2AE91B6300492817 /* GroupedRequestCell.swift in Sources */,
+				7503643B2C89CFB70029EC0D /* CoinJoinProgressView.swift in Sources */,
 				C9D2C69C2A320AA000D15901 /* DWAdvancedSecurityModelStub.m in Sources */,
 				C9D2C69D2A320AA000D15901 /* Foundation+Bitcoin.swift in Sources */,
 				C9D2C69E2A320AA000D15901 /* AtmDetailsView.swift in Sources */,
@@ -9213,6 +9237,7 @@
 				C9D2C7152A320AA000D15901 /* DWBasePayViewController.m in Sources */,
 				C943B4AC2A40A54600AF23C5 /* DWContactsViewController.m in Sources */,
 				C9D2C7162A320AA000D15901 /* CrowdNodeTransferModel.swift in Sources */,
+				750CED612C94BFD7000FB837 /* SettingsViewModel.swift in Sources */,
 				C9D2C7172A320AA000D15901 /* DWSetPinViewController.m in Sources */,
 				C943B3322A408CED00AF23C5 /* DWProfileDisplayNameCellModel.m in Sources */,
 				C9D2C7182A320AA000D15901 /* ConfirmOrderController.swift in Sources */,
@@ -9469,6 +9494,7 @@
 				C9D2C7D12A320AA000D15901 /* DWMainMenuContentView.m in Sources */,
 				C9D2C7D32A320AA000D15901 /* CrowdNodeAPIConfirmationTx.swift in Sources */,
 				C9D2C7D42A320AA000D15901 /* UIViewController+DWEmbedding.m in Sources */,
+				7503643F2C89D49A0029EC0D /* CoinJoinService.swift in Sources */,
 				C9D2C7D62A320AA000D15901 /* CALayer+DWShadow.m in Sources */,
 				C9D2C7D72A320AA000D15901 /* MerchantDAO.swift in Sources */,
 				C9D2C7D82A320AA000D15901 /* ExploreDatabaseSyncManager.swift in Sources */,

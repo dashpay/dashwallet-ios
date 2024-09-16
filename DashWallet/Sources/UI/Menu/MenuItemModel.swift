@@ -48,12 +48,22 @@ class MenuItemModel: Identifiable, Equatable {
 }
 
 class CoinJoinMenuItemModel: MenuItemModel {
-    var mixingPercentage: String
-    var dashAmount: String
+    @State var isOn: Bool
+    @State var state: MixingStatus
+    @State var progress: Double
+    @State var mixed: Double
+    @State var total: Double
 
-    init(title: String, mixingPercentage: String, dashAmount: String, action: (() -> Void)? = nil) {
-        self.mixingPercentage = mixingPercentage
-        self.dashAmount = dashAmount
+    init(title: String, isOn: Bool, state: MixingStatus, progress: Double, mixed: Double, total: Double, action: (() -> Void)? = nil) {
+        self.isOn = isOn
+        self.state = state
+        self.progress = progress
+        self.mixed = mixed
+        self.total = total
         super.init(title: title, action: action)
+    }
+
+    var description: String {
+        return "CoinJoinMenuItemModel(title: \(title), isOn: \(isOn), state: \(state), progress: \(progress), mixed: \(mixed), total: \(total))"
     }
 }

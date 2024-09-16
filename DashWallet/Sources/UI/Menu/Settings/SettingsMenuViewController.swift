@@ -17,6 +17,7 @@
 
 import UIKit
 import SwiftUI
+import Combine
 
 @objc(DWSettingsMenuViewControllerDelegate)
 protocol SettingsMenuViewControllerDelegate: AnyObject {
@@ -29,6 +30,8 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
     @objc weak var delegate: SettingsMenuViewControllerDelegate?
     
     private lazy var model: DWSettingsMenuModel = DWSettingsMenuModel()
+    private lazy var viewModel: SettingsViewModel = SettingsViewModel(model: model)
+    private var cancellables = Set<AnyCancellable>()
     
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -46,7 +49,7 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
         view.backgroundColor = .dw_secondaryBackground()
         
         let content = SettingsMenuContent(
-            items: menuItems(),
+            viewModel: self.viewModel,
             onLocalCurrencyChange: { [weak self] in
                 self?.showCurrencySelector()
             },
@@ -60,6 +63,29 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
         let swiftUIController = UIHostingController(rootView: content)
         swiftUIController.view.backgroundColor = .dw_secondaryBackground()
         dw_embedChild(swiftUIController)
+        setupNavigationObserver()
+    }
+    
+    private func setupNavigationObserver() {
+        viewModel.$navigationDestination
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] dest in
+                switch dest {
+                case .coinjoin:
+                    self?.showCoinJoinController()
+                case .currencySelector:
+                    self?.showCurrencySelector()
+                case .network:
+                    self?.showChangeNetwork()
+                case .rescan:
+                    self?.showWarningAboutReclassifiedTransactions()
+                case .about:
+                    self?.showAboutController()
+                default:
+                    break
+                }
+            }
+            .store(in: &cancellables)
     }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -78,72 +104,6 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
     
     // MARK: - Private
     
-    private func menuItems() -> [MenuItemModel] {
-        var items: [MenuItemModel] = [
-            MenuItemModel(
-                title: NSLocalizedString("Local Currency", comment: ""),
-                subtitle: model.localCurrencyCode,
-                showChevron: true,
-                action: { [weak self] in
-                    self?.showCurrencySelector()
-                }
-            ),
-            MenuItemModel(
-                title: NSLocalizedString("Enable Receive Notifications", comment: ""),
-                showToggle: true, 
-                isToggled: self.model.notificationsEnabled,
-                action: { [weak self] in
-                    self?.model.notificationsEnabled.toggle()
-                }
-            ),
-            MenuItemModel(
-                title: NSLocalizedString("Network", comment: ""),
-                subtitle: model.networkName,
-                showChevron: true,
-                action: { [weak self] in
-                    self?.showChangeNetwork()
-                }
-            ),
-            MenuItemModel(
-                title: NSLocalizedString("Rescan Blockchain", comment: ""),
-                showChevron: true,
-                action: { [weak self] in
-                    self?.showWarningAboutReclassifiedTransactions()
-                }
-            ),
-            MenuItemModel(
-                title: NSLocalizedString("About", comment: ""),
-                showChevron: true,
-                action: { [weak self] in
-                    self?.showAboutController()
-                }
-            )
-        ]
-        
-        #if DASHPAY
-        items.append(contentsOf: [
-            CoinJoinMenuItemModel(
-                title: NSLocalizedString("CoinJoin", comment: ""),
-                mixingPercentage: "70%",
-                dashAmount: "0.085 of 0.199",
-                action: { [weak self] in
-                    self?.showCoinJoinController()
-                }
-            ),
-            MenuItemModel(
-                title: "Enable Voting",
-                showToggle: true,
-                isToggled: VotingPrefs.shared.votingEnabled,
-                action: {
-                    VotingPrefs.shared.votingEnabled.toggle()
-                }
-            )
-        ])
-        #endif
-        
-        return items
-    }
-    
     private func showCurrencySelector() {
         let controller = DWLocalCurrencyViewController(navigationAppearance: .default, presentationMode: .screen, currencyCode: nil)
         controller.delegate = self
@@ -153,18 +113,6 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
     private func showAboutController() {
         let aboutViewController = DWAboutViewController.create()
         navigationController?.pushViewController(aboutViewController, animated: true)
-    }
-    
-    private func showCoinJoinController() {
-        let vc: UIViewController
-        
-        if CoinJoinViewModel.shared.infoShown {
-            vc = CoinJoinLevelsViewController.controller()
-        } else {
-            vc = CoinJoinInfoViewController.controller()
-        }
-        
-        navigationController?.pushViewController(vc, animated: true)
     }
     
     private func showChangeNetwork() {
@@ -263,19 +211,35 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
     }
 }
 
+// MARK: - CoinJoin
+
+extension SettingsMenuViewController {
+    private func showCoinJoinController() {
+        let vc: UIViewController
+        
+        if CoinJoinViewModel.shared.infoShown {
+            vc = CoinJoinLevelsViewController.controller()
+        } else {
+            vc = CoinJoinInfoViewController.controller()
+        }
+        
+        navigationController?.pushViewController(vc, animated: true)
+    }
+}
+
 struct SettingsMenuContent: View {
-    var items: [MenuItemModel]
+    @StateObject var viewModel: SettingsViewModel
     var onLocalCurrencyChange: () -> Void
     var onNetworkChange: () -> Void
     var onRescanBlockchain: () -> Void
 
     var body: some View {
-        List(items) { item in
+        List(viewModel.items) { item in
             Group {
                 if let cjItem = item as? CoinJoinMenuItemModel {
                     MenuItem(
                         title: cjItem.title,
-                        subtitleView: AnyView(CoinJoinSubtitle(cjItem.mixingPercentage, cjItem.dashAmount)),
+                        subtitleView: AnyView(CoinJoinSubtitle(cjItem)),
                         icon: .custom("image.coinjoin.menu"),
                         action: cjItem.action
                     )
@@ -304,29 +268,15 @@ struct SettingsMenuContent: View {
     }
     
     @ViewBuilder
-    private func CoinJoinSubtitle(_ mixingPercentage: String, _ dashAmount: String) -> some View {
-        HStack(spacing: 0) {
-            SwiftUI.ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: .dashBlue))
-                .scaleEffect(0.5)
-            Text(NSLocalizedString("Mixing ·", comment: "CoinJoin"))
-                .font(.caption)
-                .foregroundColor(.tertiaryText)
-                .padding(.leading, 2)
-            Text(mixingPercentage)
+    private func CoinJoinSubtitle(_ cjItem: CoinJoinMenuItemModel) -> some View {
+        if cjItem.isOn {
+            CoinJoinProgressInfo(state: cjItem.state, progress: cjItem.progress, mixed: cjItem.mixed, total: cjItem.total, textColor: .tertiaryText, font: .caption)
+        } else {
+            Text(NSLocalizedString("Turned off", comment: "CoinJoin"))
                 .font(.caption)
                 .foregroundColor(.tertiaryText)
                 .padding(.leading, 4)
-            Spacer()
-            Text(dashAmount)
-                .font(.caption)
-                .foregroundColor(.tertiaryText)
-            Image("icon_dash_currency")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 12, height: 12)
-                .padding(.leading, 2)
-                .foregroundColor(.tertiaryText)
+                .padding(.top, 2)
         }
     }
 }
