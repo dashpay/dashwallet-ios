@@ -16,17 +16,31 @@
 //
 
 import Foundation
+import Combine
+
+let kBaseBalanceHeaderHeight: CGFloat = 250
 
 class HomeViewModel: ObservableObject {
+    private var cancellableBag = Set<AnyCancellable>()
+    private let coinJoinService = CoinJoinService.shared
+    
     @Published var txItems: Array<(DateKey, [TransactionListDataItem])> = []
-    @Published var hasNetwork: Bool = true
+    @Published var balanceHeaderHeight: CGFloat = kBaseBalanceHeaderHeight // TDOO: move back to HomeView when fully transitioned to SwiftUI
+    @Published var coinJoinItem = CoinJoinMenuItemModel(title: NSLocalizedString("Mixing", comment: "CoinJoin"), isOn: false, state: .notStarted, progress: 0.0, mixed: 0.0, total: 0.0)
+    
     private var model: SyncModel = SyncModelImpl()
+    var showJoinDashpay: Bool = false {
+        didSet {
+            self.recalculateHeight()
+        }
+    }
     
     init() {
         model.networkStatusDidChange = { status in
-            self.hasNetwork = status == .online
+            self.recalculateHeight()
         }
-        self.hasNetwork = model.networkStatus == .online
+        self.recalculateHeight()
+        self.observeCoinJoin()
     }
     
     func updateItems(transactions: [DSTransaction]) {
@@ -59,6 +73,60 @@ class HomeViewModel: ObservableObject {
                 self.txItems = arary
             }
         }
+    }
+    
+    private func recalculateHeight() {
+        var height = kBaseBalanceHeaderHeight
+        let hasNetwork = model.networkStatus == .online
+        
+        if !hasNetwork {
+            height += 85
+        }
+        
+        if showJoinDashpay {
+            height += 50
+        }
+        
+        self.balanceHeaderHeight = height
+    }
+}
+
+extension HomeViewModel {
+    private func observeCoinJoin() {
+        coinJoinService.$progress
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshCoinJoinItem()
+            }
+            .store(in: &cancellableBag)
+        
+        coinJoinService.$mode
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshCoinJoinItem()
+            }
+            .store(in: &cancellableBag)
+        
+        coinJoinService.$mixingState
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshCoinJoinItem()
+            }
+            .store(in: &cancellableBag)
+    }
+    
+    private func refreshCoinJoinItem() {
+        self.coinJoinItem = CoinJoinMenuItemModel(
+            title: NSLocalizedString("Mixing", comment: "CoinJoin"),
+            isOn: coinJoinService.mixingState.isInProgress,
+            state: coinJoinService.mixingState,
+            progress: coinJoinService.progress,
+            mixed: Double(coinJoinService.coinJoinBalance) / Double(DUFFS),
+            total: Double(coinJoinService.totalBalance) / Double(DUFFS)
+        )
     }
 }
 

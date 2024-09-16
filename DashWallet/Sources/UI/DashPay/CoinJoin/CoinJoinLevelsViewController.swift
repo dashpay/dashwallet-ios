@@ -32,8 +32,6 @@ class CoinJoinLevelsViewController: UIViewController {
     @IBOutlet private var advancedTime: UILabel!
     @IBOutlet private var continueButton: ActionButton!
     
-    @Published private(set) var selectedMode: CoinJoinMode = .none
-    
     @objc
     static func controller() -> CoinJoinLevelsViewController {
         vc(CoinJoinLevelsViewController.self, from: sb("CoinJoin"))
@@ -47,9 +45,9 @@ class CoinJoinLevelsViewController: UIViewController {
 
     @IBAction
     func continueButtonAction() {
-        if viewModel.status == .notStarted {
+        if viewModel.mixingState == .notStarted {
             self.navigationController?.popViewController(animated: true)
-            viewModel.startMixing(mode: selectedMode)
+            viewModel.startMixing()
         } else {
             let alert = UIAlertController(title: NSLocalizedString("Are you sure you want to stop mixing?", comment: "CoinJoin"), message: NSLocalizedString("Any funds that have been mixed will be combined with your un mixed funds", comment: "CoinJoin"), preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: NSLocalizedString("Stop Mixing", comment: "CoinJoin"), style: .destructive, handler: { [weak self] _ in
@@ -64,8 +62,6 @@ class CoinJoinLevelsViewController: UIViewController {
 
 extension CoinJoinLevelsViewController {
     private func configureHierarchy() {
-        selectedMode = viewModel.mode
-        
         titleLabel.text = NSLocalizedString("Select mixing level", comment: "CoinJoin")
         intermediateTitle.text = NSLocalizedString("Intermediate", comment: "CoinJoin")
         intermediateDescription.text = NSLocalizedString("Advanced users who have a very high level of technical expertise can determine your transaction history", comment: "Coinbase")
@@ -92,32 +88,32 @@ extension CoinJoinLevelsViewController {
     
     @objc
     private func selectIntermediate() {
-        if selectedMode == .intermediate {
+        if viewModel.selectedMode == .intermediate {
             return
         }
         
-        if viewModel.status == .mixing {
+        if viewModel.mixingState == .mixing {
             confirmFor(.intermediate)
         } else {
-            selectedMode = .intermediate
+            viewModel.selectedMode = .intermediate
         }
     }
     
     @objc
     private func selectAdvanced() {
-        if selectedMode == .advanced {
+        if viewModel.selectedMode == .advanced {
             return
         }
         
-        if viewModel.status == .mixing {
+        if viewModel.mixingState == .mixing {
             confirmFor(.advanced)
         } else {
-            selectedMode = .advanced
+            viewModel.selectedMode = .advanced
         }
     }
     
     private func configureObservers() {
-        $selectedMode
+        viewModel.$selectedMode
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] mode in
                 guard let self = self else { return }
@@ -135,7 +131,7 @@ extension CoinJoinLevelsViewController {
             })
             .store(in: &cancellableBag)
         
-        viewModel.$status
+        viewModel.$mixingState
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] status in
                 guard let self = self else { return }
@@ -179,7 +175,7 @@ extension CoinJoinLevelsViewController {
         
         let alert = UIAlertController(title: "", message: NSLocalizedString("Are you sure you want to change the privacy level?", comment: "CoinJoin"), preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: title, style: .default, handler: { [weak self] _ in
-            self?.selectedMode = mode
+            self?.viewModel.selectedMode = mode
         }))
         let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel)
         alert.addAction(cancelAction)
