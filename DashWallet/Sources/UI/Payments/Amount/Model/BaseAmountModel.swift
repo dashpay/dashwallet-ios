@@ -45,12 +45,14 @@ struct AmountInputItem: Equatable {
 
 // MARK: - BaseAmountModel
 
-class BaseAmountModel {
+class BaseAmountModel: ObservableObject {
+    var cancellableBag = Set<AnyCancellable>()
     var activeAmountType: AmountType { currentInputItem.isMain ? .main : .supplementary }
 
     var mainAmount: AmountObject!
     var supplementaryAmount: AmountObject!
     @Published var amount: AmountObject!
+    @Published var walletBalance: UInt64 = 0
     
     var localCurrency: String {
         let locale = Locale.current as NSLocale
@@ -134,6 +136,12 @@ class BaseAmountModel {
         supplementaryAmountValidator = DWAmountInputValidator(type: .localCurrency)
 
         updateAmountObjects(with: "0")
+        
+        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+            .sink { [weak self] _ in self?.refreshBalance() }
+            .store(in: &cancellableBag)
+        
+        refreshBalance()
     }
 
     func select(inputItem: AmountInputItem) {
@@ -234,6 +242,10 @@ class BaseAmountModel {
 
     internal func checkAmountForErrors() { }
     internal func selectAllFunds() { }
+    
+    private func refreshBalance() {
+        walletBalance = DWEnvironment.sharedInstance().currentWallet.balance
+    }
 }
 
 extension BaseAmountModel {
@@ -243,10 +255,6 @@ extension BaseAmountModel {
 
     var isSwapToLocalCurrencyAllowed: Bool {
         CurrencyExchanger.shared.hasRate(for: localCurrencyCode)
-    }
-
-    var walletBalance: UInt64 {
-        DWEnvironment.sharedInstance().currentWallet.balance
     }
 
     var fiatWalletBalanceFormatted: String {

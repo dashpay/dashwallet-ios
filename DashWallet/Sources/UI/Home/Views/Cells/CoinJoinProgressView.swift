@@ -77,18 +77,18 @@ struct CoinJoinProgressInfo: View {
                     .foregroundColor(textColor)
                     .font(font)
                     .padding(.leading, 4)
+                
+                Spacer()
+                Text("\(mixed, format: .number.precision(.fractionLength(0...3))) of \(total, format: .number.precision(.fractionLength(0...3)))") // TODO
+                    .foregroundColor(textColor)
+                    .font(font)
+                Image("icon_dash_currency")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: font.pointSize, height: font.pointSize)
+                    .padding(.leading, 2)
+                    .foregroundColor(textColor)
             }
-            
-            Spacer()
-            Text("\(mixed, format: .number.precision(.fractionLength(0...3))) of \(total, format: .number.precision(.fractionLength(0...3)))") // TODO
-                .foregroundColor(textColor)
-                .font(font)
-            Image("icon_dash_currency")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: font.pointSize, height: font.pointSize)
-                .padding(.leading, 2)
-                .foregroundColor(textColor)
         }
     }
 }
