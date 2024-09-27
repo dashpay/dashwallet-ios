@@ -39,6 +39,10 @@ class SettingsViewModel: ObservableObject {
         setupCoinJoinObservers()
     }
     
+    func resetNavigation() {
+        self.navigationDestination = .none
+    }
+    
     private func setupCoinJoinObservers() {
         coinJoinService.$progress
             .removeDuplicates()
@@ -113,9 +117,9 @@ class SettingsViewModel: ObservableObject {
                 title: NSLocalizedString("CoinJoin", comment: "CoinJoin"),
                 isOn: coinJoinService.mode != .none,
                 state: coinJoinService.mixingState,
-                progress: coinJoinService.progress,
-                mixed: Double(coinJoinService.coinJoinBalance) / Double(DUFFS),
-                total: Double(coinJoinService.totalBalance) / Double(DUFFS),
+                progress: coinJoinService.progress.progress,
+                mixed: Double(coinJoinService.progress.coinJoinBalance) / Double(DUFFS),
+                total: Double(coinJoinService.progress.totalBalance) / Double(DUFFS),
                 action: { [weak self] in
                     self?.navigationDestination = .coinjoin
                 }

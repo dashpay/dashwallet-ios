@@ -101,7 +101,7 @@ extension CoinJoinLevelsViewController {
             return
         }
         
-        if viewModel.selectedMode == .none {
+        if viewModel.selectedMode == .none || viewModel.mixingState == .notStarted {
             viewModel.selectedMode = mode
         } else {
             confirmFor(mode)

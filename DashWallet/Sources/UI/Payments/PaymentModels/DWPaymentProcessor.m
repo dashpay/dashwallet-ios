@@ -323,7 +323,7 @@ static NSString *sanitizeString(NSString *s) {
     const BOOL addressIsFromPasteboard = self.paymentInput.source == DWPaymentInputSource_Pasteboard;
 
     self.didSendRequestDelegateNotified = NO;
-
+    
     [chainManager.transactionManager
         confirmProtocolRequest:protocolRequest
         forAmount:self.amount
