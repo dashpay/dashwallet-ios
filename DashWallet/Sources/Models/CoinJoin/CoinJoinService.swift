@@ -95,6 +95,9 @@ class CoinJoinService: NSObject {
         
         if (mode != .none && self.mode == .none) {
             configureMixing(amount: balance)
+            configureObservers()
+        } else if mode == .none {
+            removeObservers()
         }
         
         updateBalance(balance: balance)
@@ -117,9 +120,7 @@ class CoinJoinService: NSObject {
         } else {
             coinJoinManager.refreshUnusedKeys()
             coinJoinManager.initMasternodeGroup()
-            coinJoinManager.doAutomaticDenominating()
-            
-            DSLogger.log("[SW] CoinJoin: Mixing \(coinJoinManager.startMixing() ? "started successfully" : "start failed, will retry")") // TODO: failed statuses: \(coinJoinManager.statuses)
+            coinJoinManager.doAutomaticDenominating(withReport: true)
         }
     }
     
@@ -151,12 +152,6 @@ class CoinJoinService: NSObject {
         self.coinJoinManager = DSCoinJoinManager.sharedInstance(for: DWEnvironment().currentChain)
         coinJoinManager?.managerDelegate = self
         return self.coinJoinManager
-    }
-    
-    private func synchronized(_ lock: NSLock, closure: () -> Void) {
-        lock.lock()
-        defer { lock.unlock() }
-        closure()
     }
     
     private func updateBalance(balance: UInt64) {
@@ -211,7 +206,7 @@ class CoinJoinService: NSObject {
         chain: DSChain
     ) {
         synchronized(self.updateMutex) {
-            DSLogger.log("[SW] CoinJoin: \(mode), \(timeSkew) ms, \(hasAnonymizableBalance), \(networkStatus), synced: \(chain.chainManager!.isSynced)")
+            DSLogger.log("[SW] CoinJoin: \(mode), \(timeSkew) ms, \(hasAnonymizableBalance), \(networkStatus), synced: \(SyncingActivityMonitor.shared.state == .syncDone)")
             
             self.networkStatus = networkStatus
             self.hasAnonymizableBalance = hasAnonymizableBalance
@@ -224,7 +219,7 @@ class CoinJoinService: NSObject {
                 configureMixing(amount: balance)
                 
                 if hasAnonymizableBalance {
-                    if networkStatus == .online && chain.chainManager!.isSynced {
+                    if networkStatus == .online && SyncingActivityMonitor.shared.state == .syncDone {
                         updateMixingState(state: .mixing)
                     } else {
                         updateMixingState(state: .paused)
@@ -258,6 +253,27 @@ class CoinJoinService: NSObject {
                 stopMixing()
             }
         }
+    }
+    
+    private func configureObservers() {
+        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+            .sink { [weak self] _ in
+                self?.updateBalance(balance:  DWEnvironment.sharedInstance().currentAccount.balance)
+            }
+            .store(in: &cancellableBag)
+        
+        SyncingActivityMonitor.shared.add(observer: self)
+    }
+    
+    private func removeObservers() {
+        cancellableBag.removeAll()
+        SyncingActivityMonitor.shared.remove(observer: self)
+    }
+    
+    private func synchronized(_ lock: NSLock, closure: () -> Void) {
+        lock.lock()
+        defer { lock.unlock() }
+        closure()
     }
 }
 
@@ -296,3 +312,18 @@ extension CoinJoinService: DSCoinJoinManagerDelegate {
     }
 }
 
+extension CoinJoinService: SyncingActivityMonitorObserver {
+    func syncingActivityMonitorProgressDidChange(_ progress: Double) { }
+    
+    func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
+        
+        self.updateState(
+            balance: DWEnvironment.sharedInstance().currentAccount.balance,
+            mode: self.mode,
+            timeSkew: TimeInterval(0), // TODO
+            hasAnonymizableBalance: self.hasAnonymizableBalance,
+            networkStatus: self.networkStatus,
+            chain: DWEnvironment.sharedInstance().currentChain
+        )
+    }
+}
