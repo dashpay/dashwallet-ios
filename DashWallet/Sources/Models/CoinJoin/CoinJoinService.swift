@@ -49,15 +49,15 @@ enum MixingStatus: Int {
     }
 }
 
-enum CoinJoinMode {
+enum CoinJoinMode: Int {
     case none
     case intermediate
     case advanced
 }
 
 private let kDefaultMultisession = false // for stability, need to investigate
-private let kDefaultRounds: Int32 = 1 //4 TODO
-private let kDefaultSessions: Int32 = 1 //6 TODO
+private let kDefaultRounds: Int32 = 4
+private let kDefaultSessions: Int32 = 6
 private let kDefaultDenominationGoal: Int32 = 50
 private let kDefaultDenominationHardcap: Int32 = 300
 private let kCoinJoinMode = "coinJoinModeKey"
@@ -74,7 +74,21 @@ class CoinJoinService: NSObject {
     private var hasAnonymizableBalance: Bool = false
     private var networkStatus: NetworkStatus = .online
     
-    @Published private(set) var mode: CoinJoinMode = .none
+    private var _savedMode: Int? = nil
+    private var savedMode: Int {
+        get { _savedMode ?? UserDefaults.standard.integer(forKey: kCoinJoinMode) }
+        set(value) {
+            _savedMode = value
+            UserDefaults.standard.set(value, forKey: kCoinJoinMode)
+        }
+    }
+    
+    @Published private(set) var mode: CoinJoinMode = .none {
+        didSet {
+            savedMode = mode.rawValue
+        }
+    }
+    
     @Published var mixingState: MixingStatus = .notStarted
     @Published private(set) var progress: Double = 0.0
     @Published private(set) var totalBalance: UInt64 = 0
@@ -83,9 +97,16 @@ class CoinJoinService: NSObject {
     
     override init() {
         super.init()
+        
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
             .sink { [weak self] _ in self?.updateBalance(balance:  DWEnvironment.sharedInstance().currentAccount.balance) }
             .store(in: &cancellableBag)
+        
+        let mode = CoinJoinMode(rawValue: savedMode) ?? .none
+        
+        if mode != .none {
+            updateMode(mode: mode)
+        }
     }
     
     func updateMode(mode: CoinJoinMode) {
@@ -140,23 +161,26 @@ class CoinJoinService: NSObject {
     }
     
     private func updateProgress() {
-        guard let coinJoinManager = self.coinJoinManager else { return }
-        self.progress = coinJoinManager.getMixingProgress()
-        let coinJoinBalance = coinJoinManager.getBalance()
-        self.totalBalance = coinJoinBalance.myTrusted
-        self.coinJoinBalance = coinJoinBalance.anonymized
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            guard let self = self, let coinJoinManager = self.coinJoinManager else { return }
+            
+            let progress = coinJoinManager.getMixingProgress()
+            let coinJoinBalance = coinJoinManager.getBalance()
+            let totalBalance = coinJoinBalance.myTrusted
+            let anonymizedBalance = coinJoinBalance.anonymized
+            
+            DispatchQueue.main.async {
+                self.progress = progress
+                self.totalBalance = totalBalance
+                self.coinJoinBalance = anonymizedBalance
+            }
+        }
     }
     
     private func createCoinJoinManager() -> DSCoinJoinManager? {
         self.coinJoinManager = DSCoinJoinManager.sharedInstance(for: DWEnvironment().currentChain)
         coinJoinManager?.managerDelegate = self
         return self.coinJoinManager
-    }
-    
-    private func synchronized(_ lock: NSLock, closure: () -> Void) {
-        lock.lock()
-        defer { lock.unlock() }
-        closure()
     }
     
     private func updateBalance(balance: UInt64) {
@@ -293,6 +317,12 @@ extension CoinJoinService: DSCoinJoinManagerDelegate {
         self.activeSessions = Int(activeSessions)
 
         DSLogger.log("[SW] CoinJoin: Active sessions: \(activeSessions)")
+    }
+    
+    private func synchronized(_ lock: NSLock, closure: () -> Void) {
+        lock.lock()
+        defer { lock.unlock() }
+        closure()
     }
 }
 

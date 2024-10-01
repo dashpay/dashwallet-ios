@@ -49,6 +49,13 @@ class CoinJoinViewModel: ObservableObject {
     }
     
     init() {
+        coinJoinService.$mode
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] mode in
+                self?.selectedMode = mode
+            }
+            .store(in: &cancellableBag)
+        
         coinJoinService.$mixingState
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in

@@ -175,8 +175,9 @@ extension AmountView {
             inputTypeSwitcher.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             inputTypeSwitcher.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
 
-            errorLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-            errorLabel.topAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 10),
+            errorStackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            errorStackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            errorStackView.topAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 10),
         ])
     }
 }
