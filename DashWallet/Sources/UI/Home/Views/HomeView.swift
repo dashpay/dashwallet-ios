@@ -34,7 +34,6 @@ protocol HomeViewDelegate: AnyObject {
 // MARK: - HomeView
 
 final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorRetryDelegate {
-
     weak var delegate: HomeViewDelegate?
 
     private(set) var headerView: HomeHeaderView!
@@ -42,7 +41,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
 
     // Strong ref to current dataSource to make sure it always exists while tableView uses it
     var currentDataSource: TransactionListDataSource?
-    var viewModel: HomeViewModel = HomeViewModel()
+    private let viewModel = HomeViewModel.shared
 
     @objc
     var model: DWHomeProtocol? {
@@ -84,7 +83,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         syncingHeaderView = SyncingHeaderView(frame: CGRect.zero)
         syncingHeaderView.delegate = self
         
-        let content = TransactionList(
+        let content = HomeViewContent(
             viewModel: self.viewModel,
             balanceHeader: { UIViewWrapper(uiView: self.headerView) },
             syncingHeader: { UIViewWrapper(uiView: self.syncingHeaderView) }
@@ -103,7 +102,10 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         ])
                 
         swiftUIController.didMove(toParent: nil)
-        
+        configureObservers()
+    }
+    
+    private func configureObservers() {
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(setNeedsLayout),
                                                name: UIContentSizeCategory.didChangeNotification,
@@ -272,7 +274,7 @@ struct TxPreviewModel: Identifiable, Equatable {
     }
 }
 
-struct TransactionList<Content: View>: View {
+struct HomeViewContent<Content: View>: View {
     @State private var selectedTxDataItem: TransactionListDataItem? = nil
     
     @StateObject var viewModel: HomeViewModel
@@ -282,58 +284,63 @@ struct TransactionList<Content: View>: View {
     private let topOverscrollSize: CGFloat = 1000 // Fixed value for top overscroll area
 
     var body: some View {
-        ScrollView {
-            ZStack { Color.navigationBarColor } // Top overscroll area
-                .frame(height: topOverscrollSize)
-                .padding(EdgeInsets(top: -topOverscrollSize, leading: 0, bottom: 0, trailing: 0))
-            
-            LazyVStack(pinnedViews: [.sectionHeaders]) {
-                balanceHeader()
-                    .frame(height: viewModel.balanceHeaderHeight)
+        ZStack {
+            ScrollView {
+                ZStack { Color.navigationBarColor } // Top overscroll area
+                    .frame(height: topOverscrollSize)
+                    .padding(EdgeInsets(top: -topOverscrollSize, leading: 0, bottom: 0, trailing: 0))
                 
-                if viewModel.coinJoinItem.isOn {
-                    CoinJoinProgressView(
-                        state: viewModel.coinJoinItem.state,
-                        progress: viewModel.coinJoinItem.progress,
-                        mixed: viewModel.coinJoinItem.mixed,
-                        total: viewModel.coinJoinItem.total
-                    )
-                    .padding(.horizontal, 15)
-                    .id(viewModel.coinJoinItem.id)
-                }
-                
-                syncingHeader()
-                    .frame(height: 50)
-                
-                if viewModel.txItems.isEmpty {
-                    Text(NSLocalizedString("There are no transactions to display", comment: ""))
-                        .font(.caption)
-                        .foregroundColor(Color.primary.opacity(0.5))
-                        .padding(.top, 20)
-                } else {
-                    ForEach(viewModel.txItems, id: \.0.key) { key, value in
-                        Section(header: SectionHeader(key)
-                            .padding(.bottom, -24)
-                        ) {
-                            VStack(spacing: 0) {
-                                ForEach(value, id: \.id) { txItem in
-                                    TransactionPreviewFrom(txItem: txItem)
-                                        .padding(.horizontal, 5)
+                LazyVStack(pinnedViews: [.sectionHeaders]) {
+                    balanceHeader()
+                        .frame(height: viewModel.balanceHeaderHeight)
+                    
+                    if viewModel.coinJoinItem.isOn {
+                        CoinJoinProgressView(
+                            state: viewModel.coinJoinItem.state,
+                            progress: viewModel.coinJoinItem.progress,
+                            mixed: viewModel.coinJoinItem.mixed,
+                            total: viewModel.coinJoinItem.total
+                        )
+                        .padding(.horizontal, 15)
+                        .id(viewModel.coinJoinItem.id)
+                    }
+                    
+                    syncingHeader()
+                        .frame(height: 50)
+                    
+                    if viewModel.txItems.isEmpty {
+                        Text(NSLocalizedString("There are no transactions to display", comment: ""))
+                            .font(.caption)
+                            .foregroundColor(Color.primary.opacity(0.5))
+                            .padding(.top, 20)
+                    } else {
+                        ForEach(viewModel.txItems, id: \.0.key) { key, value in
+                            Section(header: SectionHeader(key)
+                                .padding(.bottom, -24)
+                            ) {
+                                VStack(spacing: 0) {
+                                    ForEach(value, id: \.id) { txItem in
+                                        TransactionPreviewFrom(txItem: txItem)
+                                            .padding(.horizontal, 5)
+                                    }
                                 }
+                                .padding(.bottom, 4)
+                                .background(Color.secondaryBackground)
+                                .clipShape(RoundedShape(corners: [.bottomLeft, .bottomRight], radii: 10))
+                                .padding(15)
+                                .shadow(color: .shadow, radius: 10, x: 0, y: 5)
                             }
-                            .padding(.bottom, 4)
-                            .background(Color.secondaryBackground)
-                            .clipShape(RoundedShape(corners: [.bottomLeft, .bottomRight], radii: 10))
-                            .padding(15)
-                            .shadow(color: .shadow, radius: 10, x: 0, y: 5)
                         }
                     }
                 }
+                .padding(EdgeInsets(top: -20, leading: 0, bottom: 0, trailing: 0))
             }
-            .padding(EdgeInsets(top: -20, leading: 0, bottom: 0, trailing: 0))
         }
         .sheet(item: $selectedTxDataItem) { item in
             TransactionDetailsSheet(item: item)
+        }
+        .onAppear {
+            viewModel.checkTimeSkew()
         }
     }
 
@@ -445,4 +452,16 @@ struct TransactionDetailsSheet: View {
             TXDetailVCWrapper(tx: txItem, navigateBack: $backNavigationRequested)
         }
     }
+}
+
+struct BackgroundBlurView: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        let view = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
+        DispatchQueue.main.async {
+            view.superview?.superview?.backgroundColor = .clear
+        }
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {}
 }

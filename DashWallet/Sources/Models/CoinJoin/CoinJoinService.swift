@@ -55,13 +55,15 @@ enum CoinJoinMode: Int {
     case advanced
 }
 
-private let kDefaultMultisession = false // for stability, need to investigate
+private let kDefaultMultisession = false // (android comment) for stability, need to investigate
 private let kDefaultRounds: Int32 = 4
 private let kDefaultSessions: Int32 = 6
 private let kDefaultDenominationGoal: Int32 = 50
 private let kDefaultDenominationHardcap: Int32 = 300
 private let kCoinJoinMainnetMode = "coinJoinModeMainnetKey"
 private let kCoinJoinTestnetMode = "coinJoinModeTestnetKey"
+let kMaxAllowedAheadTimeskew: TimeInterval = 5
+let kMaxAllowedBehindTimeskew: TimeInterval = 20
 
 class CoinJoinService: NSObject {
     static let shared: CoinJoinService = {
@@ -75,6 +77,7 @@ class CoinJoinService: NSObject {
     private var coinJoinManager: DSCoinJoinManager? = nil
     private var hasAnonymizableBalance: Bool = false
     private var networkStatus: NetworkStatus = .online
+    private var timeSkew: TimeInterval = 0
     
     private var chainModeKey: String {
         get {
@@ -113,21 +116,24 @@ class CoinJoinService: NSObject {
         restoreMode()
     }
     
-    func updateMode(mode: CoinJoinMode) {
+    func updateMode(mode: CoinJoinMode) async {
         self.coinJoinManager?.updateOptions(withEnabled: mode != .none)
-        let account = DWEnvironment.sharedInstance().currentAccount
-        let balance = account.balance
         
         if mode != .none && self.mode == .none {
-            configureMixing(amount: balance)
+            configureMixing()
             configureObservers()
         } else if mode == .none {
             removeObservers()
         }
         
-        updateBalance(balance: balance)
-        // TODO: timeskew
-        updateState(balance: balance, mode: mode, timeSkew: TimeInterval(0), hasAnonymizableBalance: self.hasAnonymizableBalance, networkStatus: self.networkStatus, chain: DWEnvironment.sharedInstance().currentChain)
+        let account = DWEnvironment.sharedInstance().currentAccount
+        updateBalance(balance: account.balance)
+        let currentTimeSkew = await getCurrentTimeSkew()
+        updateState(mode: mode, timeSkew: currentTimeSkew, hasAnonymizableBalance: self.hasAnonymizableBalance, networkStatus: self.networkStatus, chain: DWEnvironment.sharedInstance().currentChain)
+    }
+    
+    func updateTimeSkew(timeSkew: TimeInterval) {
+        updateTimeSkewInternal(timeSkew: timeSkew)
     }
     
     private func prepareMixing() {
@@ -142,7 +148,7 @@ class CoinJoinService: NSObject {
         guard let coinJoinManager = self.coinJoinManager else { return }
         
         if !coinJoinManager.startMixing() {
-            print("[SW] CoinJoin: Mixing has been started already.")
+            DSLogger.log("[SW] CoinJoin: Mixing has been started already.")
         } else {
             coinJoinManager.refreshUnusedKeys()
             coinJoinManager.initMasternodeGroup()
@@ -150,9 +156,10 @@ class CoinJoinService: NSObject {
         }
     }
     
-    private func configureMixing(amount: UInt64) {
+    private func configureMixing() {
         guard let coinJoinManager = self.coinJoinManager ?? createCoinJoinManager() else { return }
         
+        let account = DWEnvironment.sharedInstance().currentAccount
         let rounds: Int32
         switch mode {
         case .none:
@@ -163,7 +170,7 @@ class CoinJoinService: NSObject {
             rounds = kDefaultRounds * 2
         }
         
-        coinJoinManager.configureMixing(withAmount: amount, rounds: rounds, sessions: kDefaultSessions, withMultisession: kDefaultMultisession, denominationGoal: kDefaultDenominationGoal, denominationHardCap: kDefaultDenominationHardcap)
+        coinJoinManager.configureMixing(withAmount: account.balance, rounds: rounds, sessions: kDefaultSessions, withMultisession: kDefaultMultisession, denominationGoal: kDefaultDenominationGoal, denominationHardCap: kDefaultDenominationHardcap)
     }
     
     private func updateProgress() {
@@ -216,9 +223,8 @@ class CoinJoinService: NSObject {
         DSLogger.log("[SW] CoinJoin: can mix balance: \(hasBalanceLeftToMix) = balance: (\(anonBalance > smallestDenomination) && canDenominate: \(canDenominate)) || partially-mixed: \(hasPartiallyMixedCoins)")
 
         updateState(
-            balance: balance,
             mode: self.mode,
-            timeSkew: TimeInterval(0), // TODO
+            timeSkew: self.timeSkew,
             hasAnonymizableBalance: hasBalanceLeftToMix,
             networkStatus: self.networkStatus,
             chain: DWEnvironment.sharedInstance().currentChain
@@ -231,7 +237,6 @@ class CoinJoinService: NSObject {
     }
 
     private func updateState(
-        balance: UInt64,
         mode: CoinJoinMode,
         timeSkew: TimeInterval,
         hasAnonymizableBalance: Bool,
@@ -239,17 +244,17 @@ class CoinJoinService: NSObject {
         chain: DSChain
     ) {
         synchronized(self.updateMutex) {
-            DSLogger.log("[SW] CoinJoin: \(mode), \(timeSkew) ms, \(hasAnonymizableBalance), \(networkStatus), synced: \(SyncingActivityMonitor.shared.state == .syncDone)")
+            DSLogger.log("[SW] CoinJoin: \(mode), \(timeSkew) s, \(hasAnonymizableBalance), \(networkStatus), synced: \(SyncingActivityMonitor.shared.state == .syncDone)")
             
             self.networkStatus = networkStatus
             self.hasAnonymizableBalance = hasAnonymizableBalance
             self.mode = mode
-            //        self.timeSkew = timeSkew
+            self.timeSkew = timeSkew
             
-            if mode == .none /*|| !isInsideTimeSkewBounds(timeSkew) || blockchainState.replaying*/ { // TODO
+            if mode == .none || !isInsideTimeSkewBounds(timeSkew: timeSkew) /*|| blockchainState.replaying*/ { // TODO
                 updateMixingState(state: .notStarted)
             } else {
-                configureMixing(amount: balance)
+                configureMixing()
                 
                 if hasAnonymizableBalance {
                     if networkStatus == .online && SyncingActivityMonitor.shared.state == .syncDone {
@@ -268,6 +273,10 @@ class CoinJoinService: NSObject {
     
     private func updateMixingState(state: MixingStatus) {
         synchronized(self.updateMixingStateMutex) {
+            if self.mixingState == state {
+                return
+            }
+            
             let previousMixingStatus = self.mixingState
             DSLogger.log("[SW] CoinJoin: \(previousMixingStatus) -> \(state)")
             
@@ -288,11 +297,39 @@ class CoinJoinService: NSObject {
         }
     }
     
+    private func updateTimeSkewInternal(timeSkew: TimeInterval) {
+        let chain = DWEnvironment.sharedInstance().currentChain
+        updateState(mode: self.mode,
+                    timeSkew: timeSkew,
+                    hasAnonymizableBalance: self.hasAnonymizableBalance,
+                    networkStatus: self.networkStatus,
+                    chain: chain)
+    }
+    
+    private func getCurrentTimeSkew() async -> TimeInterval {
+        do {
+            return await TimeInterval(try TimeUtils.getTimeSkew())
+        } catch {
+            DSLogger.log("[SW] CoinJoin: getTimeSkew problem: \(error)")
+            return 0.0
+        }
+    }
+    
     private func restoreMode() {
-        let mode = CoinJoinMode(rawValue: savedMode) ?? .none
-        
-        if mode != self.mode {
-            updateMode(mode: mode)
+        Task {
+            let mode = CoinJoinMode(rawValue: savedMode) ?? .none
+            
+            if mode != self.mode {
+                await updateMode(mode: mode)
+            }
+        }
+    }
+    
+    private func isInsideTimeSkewBounds(timeSkew: TimeInterval) -> Bool {
+        if timeSkew > 0 {
+            return timeSkew < kMaxAllowedAheadTimeskew
+        } else {
+            return (-timeSkew) < kMaxAllowedBehindTimeskew
         }
     }
     
@@ -303,11 +340,22 @@ class CoinJoinService: NSObject {
             }
             .store(in: &cancellableBag)
         
+        NotificationCenter.default.publisher(for: .NSSystemClockDidChange)
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                // Time has changed, handle the change here
+                DSLogger.log("[SW] CoinJoin: Time or Time Zone changed")
+                Task {
+                    self.updateTimeSkewInternal(timeSkew: await self.getCurrentTimeSkew())
+                }
+            }
+            .store(in: &cancellableBag)
+        
         SyncingActivityMonitor.shared.add(observer: self)
     }
     
     private func removeObservers() {
-        cancellableBag.removeAll()
+        cancellableBag.forEach { $0.cancel() }
         SyncingActivityMonitor.shared.remove(observer: self)
     }
     
@@ -365,9 +413,8 @@ extension CoinJoinService: SyncingActivityMonitorObserver {
     func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
         
         self.updateState(
-            balance: DWEnvironment.sharedInstance().currentAccount.balance,
             mode: self.mode,
-            timeSkew: TimeInterval(0), // TODO
+            timeSkew: self.timeSkew,
             hasAnonymizableBalance: self.hasAnonymizableBalance,
             networkStatus: self.networkStatus,
             chain: DWEnvironment.sharedInstance().currentChain

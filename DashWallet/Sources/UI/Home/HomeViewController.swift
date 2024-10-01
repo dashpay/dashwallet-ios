@@ -17,11 +17,14 @@
 
 import UIKit
 import SwiftUI
+import Combine
 
 class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
+    private var cancellableBag = Set<AnyCancellable>()
     var model: DWHomeProtocol!
     private var homeView: HomeView!
     weak var delegate: (DWHomeViewControllerDelegate & DWWipeDelegate)?
+    private let viewModel = HomeViewModel.shared
 
     #if DASHPAY
     var isBackButtonHidden: Bool = false
@@ -61,6 +64,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
         setupView()
         performJailbreakCheck()
+        configureObservers()
     }
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -219,6 +223,55 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         let controller = TXDetailViewController(model: model)
         let nvc = BaseNavigationController(rootViewController: controller)
         present(nvc, animated: true, completion: nil)
+    }
+    
+    private func configureObservers() {
+        viewModel.$showTimeSkewAlertDialog
+            .sink { [weak self] showTimeSkew in
+                guard let self = self else { return }
+                
+                if showTimeSkew {
+                    let diffSeconds = (viewModel.timeSkew < 0 ? -1 : 1) * Int64(ceil(abs(viewModel.timeSkew)))
+                    let coinJoinOn = viewModel.coinJoinMode != .none
+                    self.showTimeSkewDialog(diffSeconds: diffSeconds, coinjoin: coinJoinOn)
+                }
+            }
+            .store(in: &cancellableBag)
+        
+        NotificationCenter.default.publisher(for: .NSSystemClockDidChange)
+            .sink { [weak self] _ in self?.viewModel.checkTimeSkew(force: true) }
+            .store(in: &cancellableBag)
+    }
+    
+    private func showTimeSkewDialog(diffSeconds: Int64, coinjoin: Bool) {
+        let settingsURL = URL(string: UIApplication.openSettingsURLString)
+        let hasSettings = settingsURL != nil && UIApplication.shared.canOpenURL(settingsURL!)
+        let message: String
+        
+        if coinjoin {
+            let position = diffSeconds > 0 ? NSLocalizedString("ahead", comment: "TimeSkew") : NSLocalizedString("behind", comment: "TimeSkew")
+            message = String(format: NSLocalizedString("Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.", comment: "TimeSkew"), position, abs(diffSeconds))
+        } else {
+            message = String(format: NSLocalizedString("Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings.", comment: "TimeSkew"), abs(diffSeconds / 60))
+        }
+        
+        showModalDialog(
+            style: .warning,
+            icon: .system("exclamationmark.triangle"),
+            heading: NSLocalizedString("Check date & time settings", comment: "TimeSkew"),
+            textBlock1: message,
+            positiveButtonText: NSLocalizedString("Settings", comment: ""),
+            positiveButtonAction: hasSettings ? {
+                self.viewModel.showTimeSkewAlertDialog = false
+                if let url = settingsURL {
+                    UIApplication.shared.open(url)
+                }
+            } : nil,
+            negativeButtonText: NSLocalizedString("Dismiss", comment: ""),
+            negativeButtonAction: {
+                self.viewModel.showTimeSkewAlertDialog = false
+            }
+        )
     }
 }
 
