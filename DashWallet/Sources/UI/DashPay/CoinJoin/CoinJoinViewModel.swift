@@ -35,9 +35,6 @@ class CoinJoinViewModel: ObservableObject {
     
     @Published var selectedMode: CoinJoinMode = .none
     @Published private(set) var mixingState: MixingStatus = .notStarted
-    @Published private(set) var progress: Double = 0.0
-    @Published private(set) var totalBalance: UInt64 = 0
-    @Published private(set) var coinJoinBalance: UInt64 = 0
     
     private var _infoShown: Bool? = nil
     var infoShown: Bool {
@@ -60,16 +57,6 @@ class CoinJoinViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                 self?.mixingState = state
-            }
-            .store(in: &cancellableBag)
-        
-        coinJoinService.$progress
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] progress in
-                guard let self = self else { return }
-                self.progress = progress
-                self.totalBalance = coinJoinService.totalBalance
-                self.coinJoinBalance = coinJoinService.coinJoinBalance
             }
             .store(in: &cancellableBag)
     }

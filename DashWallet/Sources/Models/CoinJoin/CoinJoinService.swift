@@ -60,27 +60,35 @@ private let kDefaultRounds: Int32 = 4
 private let kDefaultSessions: Int32 = 6
 private let kDefaultDenominationGoal: Int32 = 50
 private let kDefaultDenominationHardcap: Int32 = 300
-private let kCoinJoinMode = "coinJoinModeKey"
+private let kCoinJoinMainnetMode = "coinJoinModeMainnetKey"
+private let kCoinJoinTestnetMode = "coinJoinModeTestnetKey"
 
 class CoinJoinService: NSObject {
     static let shared: CoinJoinService = {
         return CoinJoinService()
     }()
     
+    private var permanentBag = Set<AnyCancellable>()
     private var cancellableBag = Set<AnyCancellable>()
     private let updateMutex = NSLock()
     private let updateMixingStateMutex = NSLock()
     private var coinJoinManager: DSCoinJoinManager? = nil
     private var hasAnonymizableBalance: Bool = false
     private var networkStatus: NetworkStatus = .online
-    
-    private var _savedMode: Int? = nil
-    private var savedMode: Int {
-        get { _savedMode ?? UserDefaults.standard.integer(forKey: kCoinJoinMode) }
-        set(value) {
-            _savedMode = value
-            UserDefaults.standard.set(value, forKey: kCoinJoinMode)
+    private var workingChain: ChainType
+
+    private var chainModeKey: String {
+        get {
+            DWEnvironment.sharedInstance().currentChain.isMainnet() ? kCoinJoinMainnetMode : kCoinJoinTestnetMode
         }
+    }
+    
+    private var savedMode: Int {
+        get {
+            let key = chainModeKey
+            return UserDefaults.standard.integer(forKey: key)
+        }
+        set(value) { UserDefaults.standard.set(value, forKey: chainModeKey) }
     }
     
     @Published private(set) var mode: CoinJoinMode = .none {
@@ -90,23 +98,22 @@ class CoinJoinService: NSObject {
     }
     
     @Published var mixingState: MixingStatus = .notStarted
-    @Published private(set) var progress: Double = 0.0
-    @Published private(set) var totalBalance: UInt64 = 0
-    @Published private(set) var coinJoinBalance: UInt64 = 0
+    @Published private(set) var progress = CoinJoinProgress(progress: 0.0, totalBalance: 0, coinJoinBalance: 0)
     @Published private(set) var activeSessions: Int = 0
     
     override init() {
+        workingChain = DWEnvironment.sharedInstance().currentChain.chainType
         super.init()
         
-        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
-            .sink { [weak self] _ in self?.updateBalance(balance:  DWEnvironment.sharedInstance().currentAccount.balance) }
-            .store(in: &cancellableBag)
+        NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
+            .sink { [weak self] _ in
+                DSLogger.log("[SW] CoinJoin: change of network to \(DWEnvironment.sharedInstance().currentChain.chainType.tag), resetting")
+                self?.workingChain = DWEnvironment.sharedInstance().currentChain.chainType
+                self?.restoreMode()
+            }
+            .store(in: &permanentBag)
         
-        let mode = CoinJoinMode(rawValue: savedMode) ?? .none
-        
-        if mode != .none {
-            updateMode(mode: mode)
-        }
+        restoreMode()
     }
     
     func updateMode(mode: CoinJoinMode) {
@@ -114,8 +121,11 @@ class CoinJoinService: NSObject {
         let account = DWEnvironment.sharedInstance().currentAccount
         let balance = account.balance
         
-        if (mode != .none && self.mode == .none) {
+        if mode != .none && self.mode == .none {
             configureMixing(amount: balance)
+            configureObservers()
+        } else if mode == .none {
+            removeObservers()
         }
         
         updateBalance(balance: balance)
@@ -126,6 +136,7 @@ class CoinJoinService: NSObject {
     private func prepareMixing() {
         guard let coinJoinManager = self.coinJoinManager ?? createCoinJoinManager() else { return }
      
+        coinJoinManager.managerDelegate = self
         coinJoinManager.setStopOnNothingToDo(true)
         coinJoinManager.start()
     }
@@ -138,9 +149,7 @@ class CoinJoinService: NSObject {
         } else {
             coinJoinManager.refreshUnusedKeys()
             coinJoinManager.initMasternodeGroup()
-            coinJoinManager.doAutomaticDenominating()
-            
-            DSLogger.log("[SW] CoinJoin: Mixing \(coinJoinManager.startMixing() ? "started successfully" : "start failed, will retry")") // TODO: failed statuses: \(coinJoinManager.statuses)
+            coinJoinManager.doAutomaticDenominating(withReport: true)
         }
     }
     
@@ -170,15 +179,13 @@ class CoinJoinService: NSObject {
             let anonymizedBalance = coinJoinBalance.anonymized
             
             DispatchQueue.main.async {
-                self.progress = progress
-                self.totalBalance = totalBalance
-                self.coinJoinBalance = anonymizedBalance
+                self.progress = CoinJoinProgress(progress: progress, totalBalance: totalBalance, coinJoinBalance: anonymizedBalance)
             }
         }
     }
     
     private func createCoinJoinManager() -> DSCoinJoinManager? {
-        self.coinJoinManager = DSCoinJoinManager.sharedInstance(for: DWEnvironment().currentChain)
+        self.coinJoinManager = DSCoinJoinManager.sharedInstance(for: DWEnvironment.sharedInstance().currentChain)
         coinJoinManager?.managerDelegate = self
         return self.coinJoinManager
     }
@@ -234,8 +241,12 @@ class CoinJoinService: NSObject {
         networkStatus: NetworkStatus,
         chain: DSChain
     ) {
+        if !recheckCurrentChain() {
+            return
+        }
+        
         synchronized(self.updateMutex) {
-            DSLogger.log("[SW] CoinJoin: \(mode), \(timeSkew) ms, \(hasAnonymizableBalance), \(networkStatus), synced: \(chain.chainManager!.isSynced)")
+            DSLogger.log("[SW] CoinJoin: \(mode), \(timeSkew) ms, \(hasAnonymizableBalance), \(networkStatus), synced: \(SyncingActivityMonitor.shared.state == .syncDone)")
             
             self.networkStatus = networkStatus
             self.hasAnonymizableBalance = hasAnonymizableBalance
@@ -248,7 +259,7 @@ class CoinJoinService: NSObject {
                 configureMixing(amount: balance)
                 
                 if hasAnonymizableBalance {
-                    if networkStatus == .online && chain.chainManager!.isSynced {
+                    if networkStatus == .online && SyncingActivityMonitor.shared.state == .syncDone {
                         updateMixingState(state: .mixing)
                     } else {
                         updateMixingState(state: .paused)
@@ -283,6 +294,36 @@ class CoinJoinService: NSObject {
             }
         }
     }
+    
+    private func restoreMode() {
+        self.stopMixing()
+        self.coinJoinManager = nil
+        self.hasAnonymizableBalance = false
+        self.mode = .none
+        let mode = CoinJoinMode(rawValue: savedMode) ?? .none
+        updateMode(mode: mode)
+    }
+    
+    private func configureObservers() {
+        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+            .sink { [weak self] _ in
+                self?.updateBalance(balance:  DWEnvironment.sharedInstance().currentAccount.balance)
+            }
+            .store(in: &cancellableBag)
+        
+        SyncingActivityMonitor.shared.add(observer: self)
+    }
+    
+    private func removeObservers() {
+        cancellableBag.removeAll()
+        SyncingActivityMonitor.shared.remove(observer: self)
+    }
+    
+    private func synchronized(_ lock: NSLock, closure: () -> Void) {
+        lock.lock()
+        defer { lock.unlock() }
+        closure()
+    }
 }
 
 extension CoinJoinService: DSCoinJoinManagerDelegate {
@@ -296,11 +337,17 @@ extension CoinJoinService: DSCoinJoinManagerDelegate {
     
     func mixingStarted() { }
     
-    func mixingComplete(_ withError: Bool) {
+    func mixingComplete(_ withError: Bool, isInterrupted: Bool) {
+        if isInterrupted {
+            DSLogger.log("[SW] CoinJoin: Mixing Interrupted. \(progress)")
+            updateMixingState(state: .notStarted)
+            return
+        }
+        
         if withError {
-            DSLogger.log("[SW] CoinJoin: Mixing Error. \(progress)% mixed")
+            DSLogger.log("[SW] CoinJoin: Mixing Error. \(progress)")
         } else {
-            DSLogger.log("[SW] CoinJoin: Mixing Complete. \(progress)% mixed")
+            DSLogger.log("[SW] CoinJoin: Mixing Complete. \(progress)")
         }
         
         self.updateMixingState(state: withError ? .error : .finished) // TODO: paused?
@@ -319,10 +366,31 @@ extension CoinJoinService: DSCoinJoinManagerDelegate {
         DSLogger.log("[SW] CoinJoin: Active sessions: \(activeSessions)")
     }
     
-    private func synchronized(_ lock: NSLock, closure: () -> Void) {
-        lock.lock()
-        defer { lock.unlock() }
-        closure()
+    private func recheckCurrentChain() -> Bool {
+        let chainType = DWEnvironment.sharedInstance().currentChain.chainType
+        
+        if self.workingChain.tag != chainType.tag {
+            DSLogger.log("[SW] CoinJoin: reset chain after recheck to type \(chainType.tag)")
+            self.workingChain = chainType
+            restoreMode()
+            return false
+        }
+        
+        return true
     }
 }
 
+extension CoinJoinService: SyncingActivityMonitorObserver {
+    func syncingActivityMonitorProgressDidChange(_ progress: Double) { }
+    
+    func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
+        self.updateState(
+            balance: DWEnvironment.sharedInstance().currentAccount.balance,
+            mode: self.mode,
+            timeSkew: TimeInterval(0), // TODO
+            hasAnonymizableBalance: self.hasAnonymizableBalance,
+            networkStatus: self.networkStatus,
+            chain: DWEnvironment.sharedInstance().currentChain
+        )
+    }
+}

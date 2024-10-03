@@ -48,18 +48,7 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
         
         view.backgroundColor = .dw_secondaryBackground()
         
-        let content = SettingsMenuContent(
-            viewModel: self.viewModel,
-            onLocalCurrencyChange: { [weak self] in
-                self?.showCurrencySelector()
-            },
-            onNetworkChange: { [weak self] in
-                self?.showChangeNetwork()
-            },
-            onRescanBlockchain: { [weak self] in
-                self?.showWarningAboutReclassifiedTransactions()
-            }
-        )
+        let content = SettingsMenuContent(viewModel: self.viewModel)
         let swiftUIController = UIHostingController(rootView: content)
         swiftUIController.view.backgroundColor = .dw_secondaryBackground()
         dw_embedChild(swiftUIController)
@@ -206,6 +195,8 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
     }
     
     private func updateView() {
+        cancellables.removeAll()
+        viewModel.resetNavigation()
         // Trigger a view update
         viewDidLoad()
     }
@@ -229,9 +220,6 @@ extension SettingsMenuViewController {
 
 struct SettingsMenuContent: View {
     @StateObject var viewModel: SettingsViewModel
-    var onLocalCurrencyChange: () -> Void
-    var onNetworkChange: () -> Void
-    var onRescanBlockchain: () -> Void
 
     var body: some View {
         List(viewModel.items) { item in

@@ -72,10 +72,10 @@ class SendAmountModel: BaseAmountModel {
         checkAmountForErrors()
         
         if CoinJoinService.shared.mode != .none {
-            CoinJoinService.shared.$coinJoinBalance
+            CoinJoinService.shared.$progress
                 .removeDuplicates()
-                .sink { [weak self] balance in
-                    self?.coinJoinBalance = balance
+                .sink { [weak self] progress in
+                    self?.coinJoinBalance = progress.coinJoinBalance
                 }
                 .store(in: &cancellableBag)
         }

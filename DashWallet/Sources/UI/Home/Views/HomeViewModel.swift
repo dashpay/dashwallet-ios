@@ -123,9 +123,9 @@ extension HomeViewModel {
             title: NSLocalizedString("Mixing", comment: "CoinJoin"),
             isOn: coinJoinService.mixingState.isInProgress,
             state: coinJoinService.mixingState,
-            progress: coinJoinService.progress,
-            mixed: Double(coinJoinService.coinJoinBalance) / Double(DUFFS),
-            total: Double(coinJoinService.totalBalance) / Double(DUFFS)
+            progress: coinJoinService.progress.progress,
+            mixed: Double(coinJoinService.progress.coinJoinBalance) / Double(DUFFS),
+            total: Double(coinJoinService.progress.totalBalance) / Double(DUFFS)
         )
     }
 }
