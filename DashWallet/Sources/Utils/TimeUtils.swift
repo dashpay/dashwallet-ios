@@ -69,15 +69,16 @@ class TimeUtils {
                 networkTimes.append(time)
             }
         }
-        
-        networkTimes.sort()
-        switch networkTimes.count {
-        case 3:
-            networkTime = networkTimes[2]
-        case 2:
-            networkTime = (networkTimes[0] + networkTimes[1]) / 2
-        default:
-            break
+    
+        if networkTimes.count > 1 {
+            let sortedTimes = networkTimes.sorted()
+            let middleIndex = sortedTimes.count / 2
+            
+            if sortedTimes.count % 2 == 0 {
+                networkTime = (sortedTimes[middleIndex - 1] + sortedTimes[middleIndex]) / 2
+            } else {
+                networkTime = sortedTimes[middleIndex]
+            }
         }
         
         // Fallback to HTTP Date headers if NTP fails
