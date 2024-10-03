@@ -163,6 +163,9 @@
 /* No comment provided by engineer. */
 "Agree" = "동의합니다";
 
+/* TimeSkew */
+"ahead" = "ahead";
+
 /* No comment provided by engineer. */
 "All" = "모두";
 
@@ -292,6 +295,9 @@
 /* CrowdNode */
 "Become part of a Dash Masternode with CrowdNode" = "크라우드노드를 통해 대시 마스터노드의 일원이 되세요";
 
+/* TimeSkew */
+"behind" = "behind";
+
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "%1$ld 와 %2$ld 글자 사이";
 
@@ -382,6 +388,9 @@
 
 /* CoinJoin */
 "Change to Intermediate" = "중급으로 변경하기";
+
+/* TimeSkew */
+"Check date & time settings" = "Check date & time settings";
 
 /* No comment provided by engineer. */
 "Check your connection" = "연결을 확인하세요";
@@ -671,6 +680,9 @@
 "Disconnected" = "연결 해제";
 
 /* No comment provided by engineer. */
+"Dismiss" = "Dismiss";
+
+/* No comment provided by engineer. */
 "Display Name" = "이름 표시";
 
 /* Explore Dash: Filters */
@@ -760,6 +772,9 @@
 /* No comment provided by engineer. */
 "Error Upgrading" = "업그레이드 오류";
 
+/* CoinJoin */
+"Error ·" = "Error ·";
+
 /* Usernames */
 "Example post" = "예시 포스트";
 
@@ -777,6 +792,9 @@
 
 /* ZenLedger */
 "Export all transactions" = "모든 거래 내보내기";
+
+/* No comment provided by engineer. */
+"Export CSV" = "Export CSV";
 
 /* No comment provided by engineer. */
 "Extended Public Keys" = "확장된 공개 키";
@@ -888,6 +906,9 @@
 
 /* Coinbase */
 "from your Coinbase account" = "당신의 코인베이스 계좌로부터";
+
+/* CoinJoin */
+"Fully mixed" = "Fully mixed";
 
 /* CrowdNode */
 "Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "대시 마스터노드에 최소 보증금 0.5대시로 리워드를 받아보세요.";
@@ -1062,6 +1083,9 @@
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "잔액 부족";
+
+/* Send screen */
+"Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction." = "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction.";
 
 /* No comment provided by engineer. */
 "Insufficient Wallet Balance" = "지갑 잔고 부족";
@@ -1289,6 +1313,9 @@
 /* Voting */
 "Low to high" = "낮음부터 높음";
 
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
+
 /* Usernames */
 "Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "위의 텍스트를 사용해 잘 알려진 소셜 미디어나 메시징 플랫폼 상에 포스트(혹은 그와 유사한 무언가)를 작성하고, 아래에 해당 포스트의 링크를 붙여넣음으로써 당신이 요청된 사용자 이름의 원래 소유주임을 증명하세요";
 
@@ -1340,8 +1367,23 @@
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "상점 검색은 위치 서비스를 켰을 때 보다 잘 작동합니다.";
 
+/* No comment provided by engineer. */
+"Mixed balance" = "Mixed balance";
+
+/* CoinJoin */
+"Mixing" = "Mixing";
+
+/* CoinJoin */
+"Mixing is only possible with the app open" = "Mixing is only possible with the app open";
+
+/* CoinJoin */
+"Mixing Paused ·" = "Mixing Paused ·";
+
 /* CoinJoin */
 "Mixing your Dash coins will make your transactions more private" = "대시 코인을 믹싱하면 거래 내역이 보다 보호됩니다.";
+
+/* CoinJoin */
+"Mixing ·" = "Mixing ·";
 
 /* No comment provided by engineer. */
 "More" = "더 알아보기";
@@ -1450,6 +1492,9 @@
 
 /* Location Service Status */
 "Not Determined" = "결정되지 않음";
+
+/* CoinJoin */
+"Not started" = "Not started";
 
 /* No comment provided by engineer. */
 "Not yet used" = "아직 사용되지 않음";
@@ -2134,6 +2179,9 @@
 "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "테스트 대시는 무료이며 파셋이라 불리는 곳으로부터 얻을 수 있습니다\n지갑의 받기 화면에서 주소를 복사하고 아래 버튼을 클릭하여 대시를 받으세요.";
 
 /* No comment provided by engineer. */
+"Testnet" = "Testnet";
+
+/* No comment provided by engineer. */
 "The chain is syncing…" = "체인 동기화 중...";
 
 /* Coinbase Two Factor Auth */
@@ -2284,6 +2332,9 @@
 
 /* Alert title */
 "Turn device passcode on" = "비밀번호 켜기";
+
+/* CoinJoin */
+"Turned off" = "Turned off";
 
 /* Coinbase */
 "Turning this feature on will result a higher battery usage" = "이 기능을 켜면 더 많은 배터리를 사용하게 됩니다.";
@@ -2546,6 +2597,9 @@
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "거래가 확인되면 다른 지갑은 가치를 가지지 않게 되며, 보안 관련 사유를 위해서는 이를 다시 사용해서는 안됩니다.";
 
+/* CoinJoin */
+"When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app." = "When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "사용 장소";
 
@@ -2741,6 +2795,15 @@
 
 /* CrowdNode */
 "Your deposit to CrowdNode is received." = "크라우드노드 입금이 완료되었습니다.";
+
+/* TimeSkew */
+"Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin." = "Your device time is %1$@ by %2$d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.";
+
+/* TimeSkew */
+"Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings." = "Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings.";
+
+/* TimeSkew */
+"Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin." = "Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin.";
 
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "당신의 이메일은 대시페이 지갑 혹은 다른 어떤 서버에도 저장되지 ㅇ낳습니다. 이는 Gravatar 계정 상세 정보에 한 번 사용될 뿐이며, 그 이후로는 폐기됩니다.";

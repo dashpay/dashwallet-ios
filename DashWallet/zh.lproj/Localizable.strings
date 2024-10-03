@@ -163,6 +163,9 @@
 /* No comment provided by engineer. */
 "Agree" = "同意";
 
+/* TimeSkew */
+"ahead" = "ahead";
+
 /* No comment provided by engineer. */
 "All" = "所有";
 
@@ -292,6 +295,9 @@
 /* CrowdNode */
 "Become part of a Dash Masternode with CrowdNode" = "通过CrowdNode成为Dash主节点的一部分";
 
+/* TimeSkew */
+"behind" = "behind";
+
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "在 %1$ld 和 %2$ld 个字符之间";
 
@@ -382,6 +388,9 @@
 
 /* CoinJoin */
 "Change to Intermediate" = "改变到常规";
+
+/* TimeSkew */
+"Check date & time settings" = "Check date & time settings";
 
 /* No comment provided by engineer. */
 "Check your connection" = "检查您的连接";
@@ -671,6 +680,9 @@
 "Disconnected" = "连接断开";
 
 /* No comment provided by engineer. */
+"Dismiss" = "Dismiss";
+
+/* No comment provided by engineer. */
 "Display Name" = "显示名称";
 
 /* Explore Dash: Filters */
@@ -760,6 +772,9 @@
 /* No comment provided by engineer. */
 "Error Upgrading" = "错误升级";
 
+/* CoinJoin */
+"Error ·" = "Error ·";
+
 /* Usernames */
 "Example post" = "示例内容";
 
@@ -777,6 +792,9 @@
 
 /* ZenLedger */
 "Export all transactions" = "导出所有交易";
+
+/* No comment provided by engineer. */
+"Export CSV" = "Export CSV";
 
 /* No comment provided by engineer. */
 "Extended Public Keys" = "扩展公钥";
@@ -888,6 +906,9 @@
 
 /* Coinbase */
 "from your Coinbase account" = "从您的 Coinbase 账户";
+
+/* CoinJoin */
+"Fully mixed" = "Fully mixed";
 
 /* CrowdNode */
 "Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "仅需 0.5 Dash的存款即可从Dash主节点中获得奖励.";
@@ -1062,6 +1083,9 @@
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "资金不足";
+
+/* Send screen */
+"Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction." = "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction.";
 
 /* No comment provided by engineer. */
 "Insufficient Wallet Balance" = "钱包余额不足";
@@ -1289,6 +1313,9 @@
 /* Voting */
 "Low to high" = "低到高";
 
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
+
 /* Usernames */
 "Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "在知名社交媒体或信息平台使用上述文本 (或类似内容) 发布一个帖子以证明您是所申请用户名的原始持有者, 并将链接粘贴在下方";
 
@@ -1340,8 +1367,23 @@
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "开启位置服务能获得更好的商户搜索效果.";
 
+/* No comment provided by engineer. */
+"Mixed balance" = "Mixed balance";
+
+/* CoinJoin */
+"Mixing" = "Mixing";
+
+/* CoinJoin */
+"Mixing is only possible with the app open" = "Mixing is only possible with the app open";
+
+/* CoinJoin */
+"Mixing Paused ·" = "Mixing Paused ·";
+
 /* CoinJoin */
 "Mixing your Dash coins will make your transactions more private" = "通过混合您的Dash将使您的交易更具隐私性";
+
+/* CoinJoin */
+"Mixing ·" = "Mixing ·";
 
 /* No comment provided by engineer. */
 "More" = "更多";
@@ -1450,6 +1492,9 @@
 
 /* Location Service Status */
 "Not Determined" = "尚未确定";
+
+/* CoinJoin */
+"Not started" = "Not started";
 
 /* No comment provided by engineer. */
 "Not yet used" = "尚未使用";
@@ -2134,6 +2179,9 @@
 "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "Test Dash 是免费的, 可以通过阀门来获得.\n从您钱包的接收页面复制一个地址并点击下方按钮来获得您的 Dash.";
 
 /* No comment provided by engineer. */
+"Testnet" = "Testnet";
+
+/* No comment provided by engineer. */
 "The chain is syncing…" = "区块链正在同步...";
 
 /* Coinbase Two Factor Auth */
@@ -2284,6 +2332,9 @@
 
 /* Alert title */
 "Turn device passcode on" = "打开设备密码";
+
+/* CoinJoin */
+"Turned off" = "Turned off";
 
 /* Coinbase */
 "Turning this feature on will result a higher battery usage" = "打开这项功能将导致更高的电池使用率";
@@ -2546,6 +2597,9 @@
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "当交易被确认后, 另一个钱包将会分文不值, 并且出于安全原因不应当再被使用.";
 
+/* CoinJoin */
+"When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app." = "When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "在哪里消费";
 
@@ -2741,6 +2795,15 @@
 
 /* CrowdNode */
 "Your deposit to CrowdNode is received." = "您向CrowdNode的存款已收到.";
+
+/* TimeSkew */
+"Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin." = "Your device time is %1$@ by %2$d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.";
+
+/* TimeSkew */
+"Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings." = "Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings.";
+
+/* TimeSkew */
+"Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin." = "Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin.";
 
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "您的电子邮箱不会存储在 DashPay钱包或任何服务器上. 它用于获取您的 Gravatar账户详细信息, 之后会被丢弃.";

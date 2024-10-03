@@ -163,6 +163,9 @@
 /* No comment provided by engineer. */
 "Agree" = "Aceptar";
 
+/* TimeSkew */
+"ahead" = "ahead";
+
 /* No comment provided by engineer. */
 "All" = "Todos";
 
@@ -292,6 +295,9 @@
 /* CrowdNode */
 "Become part of a Dash Masternode with CrowdNode" = "Forma parte de un Masternode de Dash con CrowdNode";
 
+/* TimeSkew */
+"behind" = "behind";
+
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "Entre %1$ld y %2$ld caracteres";
 
@@ -382,6 +388,9 @@
 
 /* CoinJoin */
 "Change to Intermediate" = "Cambiar a Intermedio";
+
+/* TimeSkew */
+"Check date & time settings" = "Check date & time settings";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Verifique tu conección";
@@ -671,6 +680,9 @@
 "Disconnected" = "Desconectado";
 
 /* No comment provided by engineer. */
+"Dismiss" = "Dismiss";
+
+/* No comment provided by engineer. */
 "Display Name" = "Nombre para mostrar";
 
 /* Explore Dash: Filters */
@@ -760,6 +772,9 @@
 /* No comment provided by engineer. */
 "Error Upgrading" = "Error al actualizar";
 
+/* CoinJoin */
+"Error ·" = "Error ·";
+
 /* Usernames */
 "Example post" = "Publicación de ejemplo";
 
@@ -777,6 +792,9 @@
 
 /* ZenLedger */
 "Export all transactions" = "Exportar todas las transacciones";
+
+/* No comment provided by engineer. */
+"Export CSV" = "Export CSV";
 
 /* No comment provided by engineer. */
 "Extended Public Keys" = "Llaves públicas extendidas";
@@ -888,6 +906,9 @@
 
 /* Coinbase */
 "from your Coinbase account" = "desde tu cuenta de Coinbase";
+
+/* CoinJoin */
+"Fully mixed" = "Fully mixed";
 
 /* CrowdNode */
 "Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "Obtén recompensas de depósitos en Masternodes de Dash con tan solo 0.5 Dash.";
@@ -1062,6 +1083,9 @@
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "Fondos insuficientes";
+
+/* Send screen */
+"Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction." = "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction.";
 
 /* No comment provided by engineer. */
 "Insufficient Wallet Balance" = "Saldo de billetera insuficiente";
@@ -1289,6 +1313,9 @@
 /* Voting */
 "Low to high" = "Bajo a alto";
 
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
+
 /* Usernames */
 "Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "Haz una publicación con el texto de arriba (o algo similar) en una red social o plataforma de mensajería conocida para verificar que eres el propietario original del nombre de usuario solicitado y pega un enlace a la publicación a continuación.";
 
@@ -1340,8 +1367,23 @@
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "La búsqueda de comerciantes funciona mejor con los servicios de ubicación activados.";
 
+/* No comment provided by engineer. */
+"Mixed balance" = "Mixed balance";
+
+/* CoinJoin */
+"Mixing" = "Mixing";
+
+/* CoinJoin */
+"Mixing is only possible with the app open" = "Mixing is only possible with the app open";
+
+/* CoinJoin */
+"Mixing Paused ·" = "Mixing Paused ·";
+
 /* CoinJoin */
 "Mixing your Dash coins will make your transactions more private" = "Mezclar tus monedas Dash hará que tus transacciones sean más privadas";
+
+/* CoinJoin */
+"Mixing ·" = "Mixing ·";
 
 /* No comment provided by engineer. */
 "More" = "Más";
@@ -1450,6 +1492,9 @@
 
 /* Location Service Status */
 "Not Determined" = "No determinado";
+
+/* CoinJoin */
+"Not started" = "Not started";
 
 /* No comment provided by engineer. */
 "Not yet used" = "No utilizada aún";
@@ -2134,6 +2179,9 @@
 "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "Los Dash de prueba son gratuitos y se pueden obtener desde lo que se llama faucet.\nCopia una dirección de la pantalla Recibir de tu billetera y haz clic en el botón a continuación para obtener su Dash.";
 
 /* No comment provided by engineer. */
+"Testnet" = "Testnet";
+
+/* No comment provided by engineer. */
 "The chain is syncing…" = "La cadena esta sincronizando...";
 
 /* Coinbase Two Factor Auth */
@@ -2284,6 +2332,9 @@
 
 /* Alert title */
 "Turn device passcode on" = "Habilita la clave de acceso de tu dispositivo";
+
+/* CoinJoin */
+"Turned off" = "Turned off";
 
 /* Coinbase */
 "Turning this feature on will result a higher battery usage" = "Activar esta función resultará en un mayor uso de la batería";
@@ -2546,6 +2597,9 @@
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "Al confirmarse la transacción, la billetera de papel quedará inutilizada y no deberá ser reutilizada por razones de seguridad.";
 
+/* CoinJoin */
+"When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app." = "When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "Donde gastar?";
 
@@ -2741,6 +2795,15 @@
 
 /* CrowdNode */
 "Your deposit to CrowdNode is received." = "Tu depósito en CrowdNode ha sido recibido.";
+
+/* TimeSkew */
+"Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin." = "Your device time is %1$@ by %2$d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.";
+
+/* TimeSkew */
+"Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings." = "Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings.";
+
+/* TimeSkew */
+"Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin." = "Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin.";
 
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Tu correo electrónico no se almacena en la billetera de DashPay ni en ningún servidor. Se usa una vez para obtener los detalles de tu cuenta de Gravatar y luego se descarta.";

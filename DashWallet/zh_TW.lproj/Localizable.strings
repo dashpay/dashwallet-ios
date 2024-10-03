@@ -163,6 +163,9 @@
 /* No comment provided by engineer. */
 "Agree" = "同意";
 
+/* TimeSkew */
+"ahead" = "ahead";
+
 /* No comment provided by engineer. */
 "All" = "所有";
 
@@ -292,6 +295,9 @@
 /* CrowdNode */
 "Become part of a Dash Masternode with CrowdNode" = "通過 CrowdNode 成為達世幣主節點的一部分";
 
+/* TimeSkew */
+"behind" = "behind";
+
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "在 %1$ld 和 %2$ld 個字符之間";
 
@@ -382,6 +388,9 @@
 
 /* CoinJoin */
 "Change to Intermediate" = "更改為中階";
+
+/* TimeSkew */
+"Check date & time settings" = "Check date & time settings";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
@@ -671,6 +680,9 @@
 "Disconnected" = "斷開連接";
 
 /* No comment provided by engineer. */
+"Dismiss" = "Dismiss";
+
+/* No comment provided by engineer. */
 "Display Name" = "顯示名稱";
 
 /* Explore Dash: Filters */
@@ -760,6 +772,9 @@
 /* No comment provided by engineer. */
 "Error Upgrading" = "錯誤升級";
 
+/* CoinJoin */
+"Error ·" = "Error ·";
+
 /* Usernames */
 "Example post" = "範例貼文";
 
@@ -777,6 +792,9 @@
 
 /* ZenLedger */
 "Export all transactions" = "匯出所有交易";
+
+/* No comment provided by engineer. */
+"Export CSV" = "Export CSV";
 
 /* No comment provided by engineer. */
 "Extended Public Keys" = "擴展公鑰";
@@ -888,6 +906,9 @@
 
 /* Coinbase */
 "from your Coinbase account" = "從你的 Coinbase 帳戶";
+
+/* CoinJoin */
+"Fully mixed" = "Fully mixed";
 
 /* CrowdNode */
 "Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "只需 0.5 Dash，即可從達世幣主節點中的存款中獲得獎勵。";
@@ -1062,6 +1083,9 @@
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "餘額不足";
+
+/* Send screen */
+"Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction." = "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction.";
 
 /* No comment provided by engineer. */
 "Insufficient Wallet Balance" = "錢包餘額不足";
@@ -1289,6 +1313,9 @@
 /* Voting */
 "Low to high" = "從低到高";
 
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
+
 /* Usernames */
 "Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "在知名社交媒體或訊息平台上發布包含上述文字（或類似內容）的帖子，以驗證您是所請求用戶名的原始所有者，並將連結貼到下面的帖子";
 
@@ -1340,8 +1367,23 @@
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "開啟位置服務後，商家搜索效果會更好。";
 
+/* No comment provided by engineer. */
+"Mixed balance" = "Mixed balance";
+
+/* CoinJoin */
+"Mixing" = "Mixing";
+
+/* CoinJoin */
+"Mixing is only possible with the app open" = "Mixing is only possible with the app open";
+
+/* CoinJoin */
+"Mixing Paused ·" = "Mixing Paused ·";
+
 /* CoinJoin */
 "Mixing your Dash coins will make your transactions more private" = "混合您的達世幣將使您交易的私隱度更高";
+
+/* CoinJoin */
+"Mixing ·" = "Mixing ·";
 
 /* No comment provided by engineer. */
 "More" = "更多";
@@ -1450,6 +1492,9 @@
 
 /* Location Service Status */
 "Not Determined" = "尚未決定";
+
+/* CoinJoin */
+"Not started" = "Not started";
 
 /* No comment provided by engineer. */
 "Not yet used" = "尚未使用";
@@ -2134,6 +2179,9 @@
 "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "測試用的達世幣是免費的，可以從所謂的水龍頭獲得。\n從錢包的接收畫面複製位址，然後點擊下面的按鈕以獲取您的達世幣。";
 
 /* No comment provided by engineer. */
+"Testnet" = "Testnet";
+
+/* No comment provided by engineer. */
 "The chain is syncing…" = "區塊鏈正在同步…";
 
 /* Coinbase Two Factor Auth */
@@ -2284,6 +2332,9 @@
 
 /* Alert title */
 "Turn device passcode on" = "在設備上開啟驗證碼";
+
+/* CoinJoin */
+"Turned off" = "Turned off";
 
 /* Coinbase */
 "Turning this feature on will result a higher battery usage" = "打開此功能將導致更高的電池使用率";
@@ -2546,6 +2597,9 @@
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "當交易確認後，另一個錢包的結餘將會消失，並且出於安全原因不應重複使用該錢包。";
 
+/* CoinJoin */
+"When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app." = "When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app.";
+
 /* No comment provided by engineer. */
 "Where to Spend" = "在哪裡消費";
 
@@ -2741,6 +2795,15 @@
 
 /* CrowdNode */
 "Your deposit to CrowdNode is received." = "您對 CrowdNode 的存款已收到了。";
+
+/* TimeSkew */
+"Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin." = "Your device time is %1$@ by %2$d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.";
+
+/* TimeSkew */
+"Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings." = "Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings.";
+
+/* TimeSkew */
+"Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin." = "Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin.";
 
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "您的電子郵件不會存儲在 DashPay 錢包或任何服務器上。它用於獲取您的 Gravatar 帳戶詳細信息，然後被丟棄。";
