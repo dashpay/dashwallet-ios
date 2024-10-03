@@ -108,11 +108,7 @@ class SettingsViewModel: ObservableObject {
                 action: { [weak self] in
                     self?.navigationDestination = .about
                 }
-            )
-        ]
-        
-        #if DASHPAY
-        items.append(contentsOf: [
+            ),
             CoinJoinMenuItemModel(
                 title: NSLocalizedString("CoinJoin", comment: "CoinJoin"),
                 isOn: coinJoinService.mode != .none,
@@ -123,7 +119,11 @@ class SettingsViewModel: ObservableObject {
                 action: { [weak self] in
                     self?.navigationDestination = .coinjoin
                 }
-            ),
+            )
+        ]
+        
+        #if DASHPAY
+        items.append(contentsOf: [
             MenuItemModel(
                 title: "Enable Voting",
                 showToggle: true,

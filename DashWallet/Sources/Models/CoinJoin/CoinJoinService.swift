@@ -336,9 +336,12 @@ class CoinJoinService: NSObject {
         self.hasAnonymizableBalance = false
         let savedMode = self.savedMode
         self.mode = .none
-        let mode = CoinJoinMode(rawValue: savedMode) ?? .none
-        Task {
-            await updateMode(mode: mode)
+        let restoredMode = CoinJoinMode(rawValue: savedMode) ?? .none
+        
+        if restoredMode != .none {
+            Task {
+                await updateMode(mode: restoredMode)
+            }
         }
     }
 
