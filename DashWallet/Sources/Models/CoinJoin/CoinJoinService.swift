@@ -49,6 +49,7 @@ enum MixingStatus: Int {
     }
 }
 
+@objc
 enum CoinJoinMode: Int {
     case none
     case intermediate
@@ -64,6 +65,14 @@ private let kCoinJoinMainnetMode = "coinJoinModeMainnetKey"
 private let kCoinJoinTestnetMode = "coinJoinModeTestnetKey"
 let kMaxAllowedAheadTimeskew: TimeInterval = 5
 let kMaxAllowedBehindTimeskew: TimeInterval = 20
+
+
+@objc
+public class CoinJoinServiceWrapper: NSObject {
+    @objc class func mode() -> CoinJoinMode {
+        return CoinJoinService.shared.mode
+    }
+}
 
 class CoinJoinService: NSObject {
     static let shared: CoinJoinService = {
@@ -88,8 +97,7 @@ class CoinJoinService: NSObject {
     
     private var savedMode: Int {
         get {
-            let key = chainModeKey
-            return UserDefaults.standard.integer(forKey: key)
+            return UserDefaults.standard.integer(forKey: chainModeKey)
         }
         set(value) { UserDefaults.standard.set(value, forKey: chainModeKey) }
     }
@@ -258,7 +266,7 @@ class CoinJoinService: NSObject {
             self.mode = mode
             self.timeSkew = timeSkew
             
-            if mode == .none || !isInsideTimeSkewBounds(timeSkew: timeSkew) /*|| blockchainState.replaying*/ { // TODO
+            if mode == .none || !isInsideTimeSkewBounds(timeSkew: timeSkew) || DWGlobalOptions.sharedInstance().isResyncingWallet {
                 updateMixingState(state: .notStarted)
             } else {
                 configureMixing()
@@ -326,6 +334,7 @@ class CoinJoinService: NSObject {
         self.stopMixing()
         self.coinJoinManager = nil
         self.hasAnonymizableBalance = false
+        let savedMode = self.savedMode
         self.mode = .none
         let mode = CoinJoinMode(rawValue: savedMode) ?? .none
         Task {

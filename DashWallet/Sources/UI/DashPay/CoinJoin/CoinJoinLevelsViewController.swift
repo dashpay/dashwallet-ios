@@ -42,6 +42,11 @@ class CoinJoinLevelsViewController: UIViewController {
         configureHierarchy()
         configureObservers()
     }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        viewModel.resetSelectedMode()
+    }
 
     @IBAction
     func continueButtonAction() {

@@ -60,6 +60,10 @@ class CoinJoinLevelViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
     }
+
+    func resetSelectedMode() {
+        self.selectedMode = coinJoinService.mode
+    }
     
     func startMixing() {
         if self.selectedMode != .none {
