@@ -24,6 +24,7 @@
 #import "DWPaymentInput.h"
 #import "DWPaymentInputBuilder.h"
 #import "DWPaymentOutput+Private.h"
+#import "dashwallet-Swift.h"
 
 #if DASHPAY
 #import "DWDPUserObject.h"
@@ -323,6 +324,7 @@ static NSString *sanitizeString(NSString *s) {
     const BOOL addressIsFromPasteboard = self.paymentInput.source == DWPaymentInputSource_Pasteboard;
 
     self.didSendRequestDelegateNotified = NO;
+    BOOL mixedOnly = [CoinJoinServiceWrapper mode] != CoinJoinModeNone;
     
     [chainManager.transactionManager
         confirmProtocolRequest:protocolRequest
@@ -332,6 +334,7 @@ static NSString *sanitizeString(NSString *s) {
         acceptReusingAddress:NO
         addressIsFromPasteboard:addressIsFromPasteboard
         acceptUncertifiedPayee:NO
+        mixedOnly:mixedOnly
         requiresSpendingAuthenticationPrompt:YES
         keepAuthenticatedIfErrorAfterAuthentication:NO
         requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
