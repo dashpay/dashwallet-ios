@@ -87,8 +87,9 @@ final class BuyCreditsViewController: SendAmountViewController, ObservableObject
         
         let intro = SendIntro(
             title: NSLocalizedString("Buy credits", comment: "Credits"),
-            dashBalance: Int64(model.walletBalance),
-            balanceLabel: NSLocalizedString("Dash balance", comment: "") + ":"
+            dashBalance: model.walletBalance,
+            balanceLabel: NSLocalizedString("Dash balance", comment: "") + ":",
+            avatarView: { }
         )
         let swiftUIController = UIHostingController(rootView: intro)
         swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
@@ -131,7 +132,9 @@ final class BuyCreditsViewController: SendAmountViewController, ObservableObject
             rateLabel.topAnchor.constraint(equalTo: rateContainer.topAnchor, constant: 4),
             rateLabel.leadingAnchor.constraint(equalTo: rateContainer.leadingAnchor, constant: 8),
             rateLabel.trailingAnchor.constraint(equalTo: rateContainer.trailingAnchor, constant: -8),
-            rateLabel.bottomAnchor.constraint(equalTo: rateContainer.bottomAnchor, constant: -4)
+            rateLabel.bottomAnchor.constraint(equalTo: rateContainer.bottomAnchor, constant: -4),
+            
+            swiftUIController.view.heightAnchor.constraint(equalToConstant: 100)
         ])
     }
     

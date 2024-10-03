@@ -199,12 +199,6 @@ extension Transaction {
         tx.txHashData
     }
 
-    var currentBlockHeight: UInt64 {
-        let chain = DWEnvironment.sharedInstance().currentChain
-        let lastHeight = chain.lastTerminalBlockHeight
-        return UInt64(lastHeight)
-    }
-
     var isCoinbaseTransaction: Bool {
         tx is DSCoinbaseTransaction
     }

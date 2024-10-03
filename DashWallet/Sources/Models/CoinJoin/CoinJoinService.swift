@@ -49,43 +49,71 @@ enum MixingStatus: Int {
     }
 }
 
-enum CoinJoinMode {
+enum CoinJoinMode: Int {
     case none
     case intermediate
     case advanced
 }
 
 private let kDefaultMultisession = false // for stability, need to investigate
-private let kDefaultRounds: Int32 = 1 //4 TODO
-private let kDefaultSessions: Int32 = 1 //6 TODO
+private let kDefaultRounds: Int32 = 4
+private let kDefaultSessions: Int32 = 6
 private let kDefaultDenominationGoal: Int32 = 50
 private let kDefaultDenominationHardcap: Int32 = 300
-private let kCoinJoinMode = "coinJoinModeKey"
+private let kCoinJoinMainnetMode = "coinJoinModeMainnetKey"
+private let kCoinJoinTestnetMode = "coinJoinModeTestnetKey"
 
 class CoinJoinService: NSObject {
     static let shared: CoinJoinService = {
         return CoinJoinService()
     }()
     
+    private var permanentBag = Set<AnyCancellable>()
     private var cancellableBag = Set<AnyCancellable>()
     private let updateMutex = NSLock()
     private let updateMixingStateMutex = NSLock()
     private var coinJoinManager: DSCoinJoinManager? = nil
     private var hasAnonymizableBalance: Bool = false
     private var networkStatus: NetworkStatus = .online
+    private var workingChain: ChainType
+
+    private var chainModeKey: String {
+        get {
+            DWEnvironment.sharedInstance().currentChain.isMainnet() ? kCoinJoinMainnetMode : kCoinJoinTestnetMode
+        }
+    }
     
-    @Published private(set) var mode: CoinJoinMode = .none
+    private var savedMode: Int {
+        get {
+            let key = chainModeKey
+            return UserDefaults.standard.integer(forKey: key)
+        }
+        set(value) { UserDefaults.standard.set(value, forKey: chainModeKey) }
+    }
+    
+    @Published private(set) var mode: CoinJoinMode = .none {
+        didSet {
+            savedMode = mode.rawValue
+        }
+    }
+    
     @Published var mixingState: MixingStatus = .notStarted
-    @Published private(set) var progress: Double = 0.0
-    @Published private(set) var totalBalance: UInt64 = 0
-    @Published private(set) var coinJoinBalance: UInt64 = 0
+    @Published private(set) var progress = CoinJoinProgress(progress: 0.0, totalBalance: 0, coinJoinBalance: 0)
     @Published private(set) var activeSessions: Int = 0
     
     override init() {
+        workingChain = DWEnvironment.sharedInstance().currentChain.chainType
         super.init()
-        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
-            .sink { [weak self] _ in self?.updateBalance(balance:  DWEnvironment.sharedInstance().currentAccount.balance) }
-            .store(in: &cancellableBag)
+        
+        NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
+            .sink { [weak self] _ in
+                DSLogger.log("[SW] CoinJoin: change of network to \(DWEnvironment.sharedInstance().currentChain.chainType.tag), resetting")
+                self?.workingChain = DWEnvironment.sharedInstance().currentChain.chainType
+                self?.restoreMode()
+            }
+            .store(in: &permanentBag)
+        
+        restoreMode()
     }
     
     func updateMode(mode: CoinJoinMode) {
@@ -93,7 +121,7 @@ class CoinJoinService: NSObject {
         let account = DWEnvironment.sharedInstance().currentAccount
         let balance = account.balance
         
-        if (mode != .none && self.mode == .none) {
+        if mode != .none && self.mode == .none {
             configureMixing(amount: balance)
             configureObservers()
         } else if mode == .none {
@@ -108,6 +136,7 @@ class CoinJoinService: NSObject {
     private func prepareMixing() {
         guard let coinJoinManager = self.coinJoinManager ?? createCoinJoinManager() else { return }
      
+        coinJoinManager.managerDelegate = self
         coinJoinManager.setStopOnNothingToDo(true)
         coinJoinManager.start()
     }
@@ -141,15 +170,22 @@ class CoinJoinService: NSObject {
     }
     
     private func updateProgress() {
-        guard let coinJoinManager = self.coinJoinManager else { return }
-        self.progress = coinJoinManager.getMixingProgress()
-        let coinJoinBalance = coinJoinManager.getBalance()
-        self.totalBalance = coinJoinBalance.myTrusted
-        self.coinJoinBalance = coinJoinBalance.anonymized
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            guard let self = self, let coinJoinManager = self.coinJoinManager else { return }
+            
+            let progress = coinJoinManager.getMixingProgress()
+            let coinJoinBalance = coinJoinManager.getBalance()
+            let totalBalance = coinJoinBalance.myTrusted
+            let anonymizedBalance = coinJoinBalance.anonymized
+            
+            DispatchQueue.main.async {
+                self.progress = CoinJoinProgress(progress: progress, totalBalance: totalBalance, coinJoinBalance: anonymizedBalance)
+            }
+        }
     }
     
     private func createCoinJoinManager() -> DSCoinJoinManager? {
-        self.coinJoinManager = DSCoinJoinManager.sharedInstance(for: DWEnvironment().currentChain)
+        self.coinJoinManager = DSCoinJoinManager.sharedInstance(for: DWEnvironment.sharedInstance().currentChain)
         coinJoinManager?.managerDelegate = self
         return self.coinJoinManager
     }
@@ -205,6 +241,10 @@ class CoinJoinService: NSObject {
         networkStatus: NetworkStatus,
         chain: DSChain
     ) {
+        if !recheckCurrentChain() {
+            return
+        }
+        
         synchronized(self.updateMutex) {
             DSLogger.log("[SW] CoinJoin: \(mode), \(timeSkew) ms, \(hasAnonymizableBalance), \(networkStatus), synced: \(SyncingActivityMonitor.shared.state == .syncDone)")
             
@@ -255,6 +295,15 @@ class CoinJoinService: NSObject {
         }
     }
     
+    private func restoreMode() {
+        self.stopMixing()
+        self.coinJoinManager = nil
+        self.hasAnonymizableBalance = false
+        self.mode = .none
+        let mode = CoinJoinMode(rawValue: savedMode) ?? .none
+        updateMode(mode: mode)
+    }
+    
     private func configureObservers() {
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
             .sink { [weak self] _ in
@@ -288,11 +337,17 @@ extension CoinJoinService: DSCoinJoinManagerDelegate {
     
     func mixingStarted() { }
     
-    func mixingComplete(_ withError: Bool) {
+    func mixingComplete(_ withError: Bool, isInterrupted: Bool) {
+        if isInterrupted {
+            DSLogger.log("[SW] CoinJoin: Mixing Interrupted. \(progress)")
+            updateMixingState(state: .notStarted)
+            return
+        }
+        
         if withError {
-            DSLogger.log("[SW] CoinJoin: Mixing Error. \(progress)% mixed")
+            DSLogger.log("[SW] CoinJoin: Mixing Error. \(progress)")
         } else {
-            DSLogger.log("[SW] CoinJoin: Mixing Complete. \(progress)% mixed")
+            DSLogger.log("[SW] CoinJoin: Mixing Complete. \(progress)")
         }
         
         self.updateMixingState(state: withError ? .error : .finished) // TODO: paused?
@@ -310,13 +365,25 @@ extension CoinJoinService: DSCoinJoinManagerDelegate {
 
         DSLogger.log("[SW] CoinJoin: Active sessions: \(activeSessions)")
     }
+    
+    private func recheckCurrentChain() -> Bool {
+        let chainType = DWEnvironment.sharedInstance().currentChain.chainType
+        
+        if self.workingChain.tag != chainType.tag {
+            DSLogger.log("[SW] CoinJoin: reset chain after recheck to type \(chainType.tag)")
+            self.workingChain = chainType
+            restoreMode()
+            return false
+        }
+        
+        return true
+    }
 }
 
 extension CoinJoinService: SyncingActivityMonitorObserver {
     func syncingActivityMonitorProgressDidChange(_ progress: Double) { }
     
     func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
-        
         self.updateState(
             balance: DWEnvironment.sharedInstance().currentAccount.balance,
             mode: self.mode,

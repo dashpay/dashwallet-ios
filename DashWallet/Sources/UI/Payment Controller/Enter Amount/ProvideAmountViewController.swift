@@ -16,6 +16,8 @@
 //
 
 import UIKit
+import SwiftUI
+import Combine
 
 // MARK: - ProvideAmountViewControllerDelegate
 
@@ -29,7 +31,6 @@ final class ProvideAmountViewController: SendAmountViewController {
     weak var delegate: ProvideAmountViewControllerDelegate?
 
     public var locksBalance = false
-    private var balanceLabel: UILabel!
 
     private let address: String
     private let contact: DWDPBasicUserItem?
@@ -71,151 +72,46 @@ final class ProvideAmountViewController: SendAmountViewController {
         stackView.spacing = 26
         stackView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(stackView)
-
-        let textContainer = UIStackView()
-        textContainer.axis = .vertical
-        textContainer.spacing = 4
-        stackView.addArrangedSubview(textContainer)
-
-        let sendContainer = UIView()
-        textContainer.addArrangedSubview(sendContainer)
-
-        let titleLabel = UILabel()
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.font = .dw_font(forTextStyle: .largeTitle).withWeight(UIFont.Weight.bold.rawValue)
-        titleLabel.text = NSLocalizedString("Send", comment: "Send Screen")
-        sendContainer.addSubview(titleLabel)
-
-        let toLabel = UILabel()
-        toLabel.translatesAutoresizingMaskIntoConstraints = false
-        toLabel.font = .dw_font(forTextStyle: .body)
-        toLabel.textColor = .dw_label()
-        toLabel.text = NSLocalizedString("to", comment: "Send Screen: to address")
-        sendContainer.addSubview(toLabel)
         
-        let destinationLabel = UILabel()
-        destinationLabel.translatesAutoresizingMaskIntoConstraints = false
-        destinationLabel.font = .dw_font(forTextStyle: .body)
-        destinationLabel.textColor = .dw_label()
-        destinationLabel.lineBreakMode = .byTruncatingMiddle
-        sendContainer.addSubview(destinationLabel)
-
-    #if DASHPAY
-        let avatarView = DWDPAvatarView()
+        var destination = address
+        let balanceLabel = CoinJoinService.shared.mode == .none ? NSLocalizedString("Dash balance", comment: "") : NSLocalizedString("Mixed balance", comment: "");
+        var avatarView: DWDPAvatarView? = nil
         
+#if DASHPAY
         if let contact = contact {
-            destinationLabel.text = contact.username
-            avatarView.blockchainIdentity = contact.blockchainIdentity
-            avatarView.translatesAutoresizingMaskIntoConstraints = false
-            avatarView.backgroundMode = .random
-            avatarView.isUserInteractionEnabled = false
-            avatarView.isSmall = true
-            sendContainer.addSubview(avatarView)
-        } else {
-            destinationLabel.text = address
-            avatarView.isHidden = true
+            avatarView = DWDPAvatarView()
+            destination = contact.username
+            avatarView!.blockchainIdentity = contact.blockchainIdentity
+            avatarView!.translatesAutoresizingMaskIntoConstraints = false
+            avatarView!.backgroundMode = .random
+            avatarView!.isUserInteractionEnabled = false
+            avatarView!.isSmall = true
         }
-    #else
-        destinationLabel.text = address
-    #endif
-
-        let balanceStackView = UIStackView()
-        balanceStackView.axis = .horizontal
-        balanceStackView.spacing = 2
-        balanceStackView.alignment = .lastBaseline
-        textContainer.addArrangedSubview(balanceStackView)
-
-        let balanceTitleLabel = UILabel()
-        balanceTitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        balanceTitleLabel.font = .dw_font(forTextStyle: .subheadline)
-        balanceTitleLabel.textColor = .dw_secondaryText()
-        balanceTitleLabel.text = NSLocalizedString("Balance", comment: "Send Screen: to address") + ":"
-        balanceStackView.addArrangedSubview(balanceTitleLabel)
-
-        balanceLabel = UILabel()
-        balanceLabel.translatesAutoresizingMaskIntoConstraints = false
-        balanceLabel.font = .dw_font(forTextStyle: .subheadline)
-        balanceLabel.textColor = .dw_secondaryText()
-        balanceStackView.addArrangedSubview(balanceLabel)
-
-        let spacer = UIView()
-        spacer.translatesAutoresizingMaskIntoConstraints = false
-        spacer.backgroundColor = .clear
-        balanceStackView.addArrangedSubview(spacer)
-
-        let configuration = UIImage.SymbolConfiguration(pointSize: 13, weight: .regular, scale: .small)
-        let showHideBalanceButton = UIButton(type: .custom)
-        showHideBalanceButton.translatesAutoresizingMaskIntoConstraints = false
-        showHideBalanceButton.backgroundColor = UIColor(red: 0.098, green: 0.11, blue: 0.122, alpha: 0.05)
-        showHideBalanceButton.layer.cornerRadius = 12
-        showHideBalanceButton.setImage(UIImage(systemName: "eye.fill", withConfiguration: configuration), for: .normal)
-        showHideBalanceButton.tintColor = .dw_darkTitle()
-        showHideBalanceButton.addTarget(self, action: #selector(toggleBalanceVisibilityAction), for: .touchUpInside)
-        balanceStackView.addArrangedSubview(showHideBalanceButton)
-
-        let extraSpaceView = UIView()
-        extraSpaceView.backgroundColor = .clear
-        balanceStackView.addArrangedSubview(extraSpaceView)
+#endif
+        
+        let intro = ProvideAmountIntro(
+            destination: destination,
+            balanceLabel: balanceLabel,
+            model: self.model as! SendAmountModel,
+            avatarView: { UIViewWrapper(uiView: avatarView ?? EmptyView()) }
+        )
+        let swiftUIController = UIHostingController(rootView: intro)
+        swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
+        
+        addChild(swiftUIController)
+        stackView.addArrangedSubview(swiftUIController.view)
+        swiftUIController.view.translatesAutoresizingMaskIntoConstraints = false
+        swiftUIController.didMove(toParent: self)
 
         amountView.removeFromSuperview()
         stackView.addArrangedSubview(amountView)
-        
-        titleLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-        toLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-        destinationLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        
-        var constraints = [
+
+        NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
             stackView.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
-
-            titleLabel.leadingAnchor.constraint(equalTo: sendContainer.leadingAnchor),
-            titleLabel.topAnchor.constraint(equalTo: sendContainer.topAnchor),
-            titleLabel.bottomAnchor.constraint(equalTo: sendContainer.bottomAnchor),
-
-            toLabel.leadingAnchor.constraint(equalTo: titleLabel.trailingAnchor, constant: 8),
-            toLabel.lastBaselineAnchor.constraint(equalTo: titleLabel.lastBaselineAnchor),
-            
-            destinationLabel.lastBaselineAnchor.constraint(equalTo: titleLabel.lastBaselineAnchor),
-            
-            spacer.widthAnchor.constraint(equalToConstant: 6),
-
-            showHideBalanceButton.widthAnchor.constraint(equalToConstant: 24),
-            showHideBalanceButton.heightAnchor.constraint(equalToConstant: 24),
-        ]
-        
-    #if DASHPAY
-        avatarView.setContentHuggingPriority(.defaultHigh, for: .horizontal)
-        
-        if contact != nil {
-            constraints.append(contentsOf: [
-                avatarView.leadingAnchor.constraint(equalTo: toLabel.trailingAnchor, constant: 6),
-                avatarView.bottomAnchor.constraint(equalTo: sendContainer.bottomAnchor, constant: -2),
-                avatarView.widthAnchor.constraint(equalToConstant: 20),
-                avatarView.heightAnchor.constraint(equalToConstant: 20),
-                
-                destinationLabel.leadingAnchor.constraint(equalTo: avatarView.trailingAnchor, constant: 6),
-                destinationLabel.trailingAnchor.constraint(equalTo: sendContainer.trailingAnchor)
-            ])
-        } else {
-            constraints.append(contentsOf: [
-                destinationLabel.leadingAnchor.constraint(equalTo: toLabel.trailingAnchor, constant: 6),
-                destinationLabel.trailingAnchor.constraint(equalTo: sendContainer.trailingAnchor)
-            ])
-        }
-    #else
-        constraints.append(contentsOf: [
-            destinationLabel.leadingAnchor.constraint(equalTo: toLabel.trailingAnchor, constant: 2),
-            destinationLabel.trailingAnchor.constraint(equalTo: sendContainer.trailingAnchor)
+            swiftUIController.view.heightAnchor.constraint(equalToConstant: 100)
         ])
-    #endif
-
-        NSLayoutConstraint.activate(constraints)
-    }
-
-    @objc
-    func walletBalanceDidChangeNotification(notification: Notification) {
-        updateBalance()
     }
 
     @objc
@@ -224,7 +120,6 @@ final class ProvideAmountViewController: SendAmountViewController {
             guard let self else { return }
 
             self.isBalanceHidden.toggle()
-            self.updateBalance()
         }
 
         if locksBalance && isBalanceHidden {
@@ -260,11 +155,6 @@ final class ProvideAmountViewController: SendAmountViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        NotificationCenter.default.addObserver(self, selector: #selector(walletBalanceDidChangeNotification(notification:)),
-                                               name: .balanceChangeNotification, object: nil)
-
-        updateBalance()
         updateInitialAmount()
     }
 
@@ -274,28 +164,6 @@ final class ProvideAmountViewController: SendAmountViewController {
 }
 
 extension ProvideAmountViewController {
-    private func updateBalance() {
-        let balance = model.walletBalance
-
-        let fiat: String
-
-        if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: balance.dashAmount, to: App.fiatCurrency) {
-            fiat = NumberFormatter.fiatFormatter.string(from: fiatAmount as NSNumber)!
-        } else {
-            fiat = NSLocalizedString("Syncing...", comment: "Balance")
-        }
-
-        let dashStr = balance.formattedDashAmount
-        let fiatStr = " ≈ \(fiat)"
-        let fullStr = "\(dashStr)\(fiatStr)"
-
-        if isBalanceHidden {
-            balanceLabel.text = String(repeating: "*", count: fullStr.count + 4)
-        } else {
-            balanceLabel.text = fullStr
-        }
-    }
-    
     private func updateInitialAmount() {
         if let details = details {
             let totalAmount = details.outputAmounts.reduce(UInt64(0)) { sum, element in
@@ -311,4 +179,21 @@ extension ProvideAmountViewController {
 
 extension Notification.Name {
     static var balanceChangeNotification: NSNotification.Name { .init("DSWalletBalanceChangedNotification") }
+}
+
+struct ProvideAmountIntro<Content: View>: View {
+    var destination: String? = nil
+    var balanceLabel: String
+    @StateObject var model: SendAmountModel
+    @ViewBuilder var avatarView: () -> Content
+    
+    var body: some View {
+        SendIntro(
+            title: NSLocalizedString("Send", comment: "Send Screen"),
+            destination: destination,
+            dashBalance: CoinJoinService.shared.mode == .none ? model.walletBalance : model.coinJoinBalance,
+            balanceLabel: balanceLabel + ":",
+            avatarView: avatarView
+        )
+    }
 }

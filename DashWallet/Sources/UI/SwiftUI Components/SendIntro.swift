@@ -17,12 +17,14 @@
 
 import SwiftUI
 
-struct SendIntro: View {
+struct SendIntro<Content: View>: View {
+    @State private var balanceHidden: Bool = true
+    
     var title: String
     var destination: String? = nil
-    var dashBalance: Int64? = nil
+    var dashBalance: UInt64? = nil
     var balanceLabel: String? = nil
-    @State var balanceHidden: Bool = true
+    @ViewBuilder var avatarView: () -> Content
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -33,9 +35,12 @@ struct SendIntro: View {
             if let destination = destination {
                 HStack(spacing: 2) {
                     Text(NSLocalizedString("to", comment: "Send Screen: to address"))
+                        .font(.subheadline)
                     Text(destination)
                         .font(.subheadline)
-                        .padding(.leading, 4)
+                        .padding(.leading, 2)
+                    avatarView()
+                        .frame(width: 20, height: 20)
                 }
                 .padding(.top, 4)
                 .padding(.bottom, 2)
@@ -52,7 +57,7 @@ struct SendIntro: View {
                     if balanceHidden {
                         Text("***********").font(.subheadline)
                     } else {
-                        DashAmount(amount: dashBalance, font: .subheadline, showDirection: false)
+                        DashAmount(amount: Int64(dashBalance), font: .subheadline, showDirection: false)
                         Text("~").font(.subheadline)
                         FormattedFiatText(from: dashBalance)
                     }
@@ -78,8 +83,8 @@ struct SendIntro: View {
     }
     
     @ViewBuilder
-    private func FormattedFiatText(from dashAmount: Int64) -> some View {
-        let text = (try? CurrencyExchanger.shared.convertDash(amount: abs(dashAmount.dashAmount), to: App.fiatCurrency).formattedFiatAmount) ?? NSLocalizedString("Not available", comment: "")
+    private func FormattedFiatText(from dashAmount: UInt64) -> some View {
+        let text = (try? CurrencyExchanger.shared.convertDash(amount: dashAmount.dashAmount, to: App.fiatCurrency).formattedFiatAmount) ?? NSLocalizedString("Not available", comment: "")
             
         Text(text)
             .font(.subheadline)

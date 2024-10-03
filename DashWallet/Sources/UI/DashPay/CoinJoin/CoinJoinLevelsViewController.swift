@@ -88,27 +88,23 @@ extension CoinJoinLevelsViewController {
     
     @objc
     private func selectIntermediate() {
-        if viewModel.selectedMode == .intermediate {
-            return
-        }
-        
-        if viewModel.mixingState == .mixing {
-            confirmFor(.intermediate)
-        } else {
-            viewModel.selectedMode = .intermediate
-        }
+        selectMode(.intermediate)
     }
     
     @objc
     private func selectAdvanced() {
-        if viewModel.selectedMode == .advanced {
+        selectMode(.advanced)
+    }
+    
+    private func selectMode(_ mode: CoinJoinMode) {
+        if viewModel.selectedMode == mode {
             return
         }
         
-        if viewModel.mixingState == .mixing {
-            confirmFor(.advanced)
+        if viewModel.selectedMode == .none || viewModel.mixingState == .notStarted {
+            viewModel.selectedMode = mode
         } else {
-            viewModel.selectedMode = .advanced
+            confirmFor(mode)
         }
     }
     
@@ -176,6 +172,7 @@ extension CoinJoinLevelsViewController {
         let alert = UIAlertController(title: "", message: NSLocalizedString("Are you sure you want to change the privacy level?", comment: "CoinJoin"), preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: title, style: .default, handler: { [weak self] _ in
             self?.viewModel.selectedMode = mode
+            self?.viewModel.startMixing()
         }))
         let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel)
         alert.addAction(cancelAction)

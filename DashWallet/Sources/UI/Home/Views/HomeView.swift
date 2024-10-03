@@ -335,9 +335,6 @@ struct TransactionList<Content: View>: View {
         .sheet(item: $selectedTxDataItem) { item in
             TransactionDetailsSheet(item: item)
         }
-        .onChange(of: viewModel.coinJoinItem) { new in
-            DSLogger.log("[SW] CoinJoin: on change of coinJoinItem: \(viewModel.coinJoinItem.description)")
-        }
     }
 
     @ViewBuilder
