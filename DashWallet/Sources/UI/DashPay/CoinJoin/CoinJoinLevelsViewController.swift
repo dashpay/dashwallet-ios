@@ -108,6 +108,18 @@ extension CoinJoinLevelsViewController {
         
         if viewModel.selectedMode == .none || viewModel.mixingState == .notStarted {
             Task {
+                if !viewModel.keepOpenInfoShown {
+                    await showModalDialog(
+                        style: .regular,
+                        icon: .system("info"),
+                        heading: NSLocalizedString("Mixing is only possible with the app open", comment: "CoinJoin"),
+                        textBlock1: NSLocalizedString("When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app.", comment: "CoinJoin"),
+                        positiveButtonText: NSLocalizedString("OK", comment: "")
+                    )
+                    
+                    viewModel.keepOpenInfoShown = true
+                }
+                
                 if await viewModel.isTimeSkewedForCoinJoin() {
                     let settingsURL = URL(string: UIApplication.openSettingsURLString)
                     let hasSettings = settingsURL != nil && UIApplication.shared.canOpenURL(settingsURL!)

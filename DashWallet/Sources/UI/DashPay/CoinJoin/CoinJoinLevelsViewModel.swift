@@ -27,6 +27,8 @@ public class CoinJoinObjcWrapper: NSObject {
 }
 
 private let kInfoShown = "coinJoinInfoShownKey"
+private let kKeepOpenShown = "coinJoinKeepOpenShownKey"
+
 
 class CoinJoinLevelViewModel: ObservableObject {
     static let shared = CoinJoinLevelViewModel()
@@ -42,6 +44,15 @@ class CoinJoinLevelViewModel: ObservableObject {
         set(value) {
             _infoShown = value
             UserDefaults.standard.set(value, forKey: kInfoShown)
+        }
+    }
+    
+    private var _keepOpenInfoShown: Bool? = nil
+    var keepOpenInfoShown: Bool {
+        get { _keepOpenInfoShown ?? UserDefaults.standard.bool(forKey: kKeepOpenShown) }
+        set(value) {
+            _keepOpenInfoShown = value
+            UserDefaults.standard.set(value, forKey: kKeepOpenShown)
         }
     }
     
