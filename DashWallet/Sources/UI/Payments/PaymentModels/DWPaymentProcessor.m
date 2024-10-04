@@ -201,8 +201,9 @@ static NSString *sanitizeString(NSString *s) {
     self.didSendRequestDelegateNotified = NO;
 
     const BOOL requiresSpendingAuthenticationPrompt = ![[DWGlobalOptions sharedInstance] spendingConfirmationDisabled];
-
+    BOOL mixedOnly = [CoinJoinServiceWrapper mode] != CoinJoinModeNone;
     DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
+    
     [chainManager.transactionManager
         signAndPublishTransaction:paymentOutput.tx
         createdFromProtocolRequest:protocolRequest
@@ -212,6 +213,7 @@ static NSString *sanitizeString(NSString *s) {
         promptMessage:nil
         forAmount:paymentOutput.amount
         keepAuthenticatedIfErrorAfterAuthentication:NO
+        mixedOnly:mixedOnly
         requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
             [self txManagerRequestingAdditionalInfo:additionalInfoRequestType
                                     protocolRequest:protocolRequest];
