@@ -95,19 +95,23 @@ class CoinJoinService: NSObject {
         }
     }
     
-    private var savedMode: Int {
+    private var currentMode: CoinJoinMode {
         get {
-            return UserDefaults.standard.integer(forKey: chainModeKey)
+            let current = CoinJoinMode(rawValue: UserDefaults.standard.integer(forKey: chainModeKey)) ?? .none
+            
+            if self.mode != current {
+                self.mode = current
+            }
+            
+            return current
         }
-        set(value) { UserDefaults.standard.set(value, forKey: chainModeKey) }
+        set(value) {
+            self.mode = value
+            UserDefaults.standard.set(value.rawValue, forKey: chainModeKey)
+        }
     }
     
-    @Published private(set) var mode: CoinJoinMode = .none {
-        didSet {
-            savedMode = mode.rawValue
-        }
-    }
-    
+    @Published private(set) var mode: CoinJoinMode = .none
     @Published var mixingState: MixingStatus = .notStarted
     @Published private(set) var progress = CoinJoinProgress(progress: 0.0, totalBalance: 0, coinJoinBalance: 0)
     @Published private(set) var activeSessions: Int = 0
@@ -118,7 +122,7 @@ class CoinJoinService: NSObject {
         
         NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
             .sink { [weak self] _ in
-                DSLogger.log("[SW] CoinJoin: change of network to \(DWEnvironment.sharedInstance().currentChain.chainType.tag), resetting")
+                DSLogger.log("CoinJoin: change of network to \(DWEnvironment.sharedInstance().currentChain.chainType.tag), resetting")
                 self?.workingChain = DWEnvironment.sharedInstance().currentChain.chainType
                 self?.restoreMode()
             }
@@ -127,10 +131,10 @@ class CoinJoinService: NSObject {
         restoreMode()
     }
     
-    func updateMode(mode: CoinJoinMode) async {
+    func updateMode(mode: CoinJoinMode, force: Bool = false) async {
         self.coinJoinManager?.updateOptions(withEnabled: mode != .none)
         
-        if mode != .none && self.mode == .none {
+        if mode != .none && (force || self.currentMode == .none) {
             configureMixing()
             configureObservers()
         } else if mode == .none {
@@ -159,7 +163,7 @@ class CoinJoinService: NSObject {
         guard let coinJoinManager = self.coinJoinManager else { return }
         
         if !coinJoinManager.startMixing() {
-            DSLogger.log("[SW] CoinJoin: Mixing has been started already.")
+            DSLogger.log("CoinJoin: Mixing has been started already.")
         } else {
             coinJoinManager.refreshUnusedKeys()
             coinJoinManager.initMasternodeGroup()
@@ -172,7 +176,7 @@ class CoinJoinService: NSObject {
         
         let account = DWEnvironment.sharedInstance().currentAccount
         let rounds: Int32
-        switch mode {
+        switch currentMode {
         case .none:
             return
         case .intermediate:
@@ -209,14 +213,14 @@ class CoinJoinService: NSObject {
         guard let coinJoinManager = self.coinJoinManager else { return }
         
         coinJoinManager.updateOptions(withAmount: balance)
-        DSLogger.log("[SW] CoinJoin: total balance: \(balance)")
+        DSLogger.log("CoinJoin: total balance: \(balance)")
         let canDenominate = coinJoinManager.doAutomaticDenominating(withDryRun: true)
 
         let coinJoinBalance = coinJoinManager.getBalance()
-        DSLogger.log("[SW] CoinJoin: mixed balance: \(coinJoinBalance.anonymized)")
+        DSLogger.log("CoinJoin: mixed balance: \(coinJoinBalance.anonymized)")
 
         let anonBalance = coinJoinManager.getAnonymizableBalance(withSkipDenominated: false, skipUnconfirmed: false)
-        DSLogger.log("[SW] CoinJoin: anonymizable balance \(anonBalance)")
+        DSLogger.log("CoinJoin: anonymizable balance \(anonBalance)")
 
         let smallestDenomination = coinJoinManager.getSmallestDenomination()
         let hasPartiallyMixedCoins = (coinJoinBalance.denominatedTrusted - coinJoinBalance.anonymized) > 0
@@ -231,10 +235,10 @@ class CoinJoinService: NSObject {
             hasBalanceLeftToMix = false
         }
 
-        DSLogger.log("[SW] CoinJoin: can mix balance: \(hasBalanceLeftToMix) = balance: (\(anonBalance > smallestDenomination) && canDenominate: \(canDenominate)) || partially-mixed: \(hasPartiallyMixedCoins)")
+        DSLogger.log("CoinJoin: can mix balance: \(hasBalanceLeftToMix) = balance: (\(anonBalance > smallestDenomination) && canDenominate: \(canDenominate)) || partially-mixed: \(hasPartiallyMixedCoins)")
 
         updateState(
-            mode: self.mode,
+            mode: self.currentMode,
             timeSkew: self.timeSkew,
             hasAnonymizableBalance: hasBalanceLeftToMix,
             networkStatus: self.networkStatus,
@@ -259,11 +263,11 @@ class CoinJoinService: NSObject {
         }
         
         synchronized(self.updateMutex) {
-            DSLogger.log("[SW] CoinJoin: \(mode), \(timeSkew) s, \(hasAnonymizableBalance), \(networkStatus), synced: \(SyncingActivityMonitor.shared.state == .syncDone)")
+            DSLogger.log("CoinJoin: \(mode), \(timeSkew) s, \(hasAnonymizableBalance), \(networkStatus), synced: \(SyncingActivityMonitor.shared.state == .syncDone)")
             
             self.networkStatus = networkStatus
             self.hasAnonymizableBalance = hasAnonymizableBalance
-            self.mode = mode
+            self.currentMode = mode
             self.timeSkew = timeSkew
             
             if mode == .none || !isInsideTimeSkewBounds(timeSkew: timeSkew) || DWGlobalOptions.sharedInstance().isResyncingWallet {
@@ -293,12 +297,7 @@ class CoinJoinService: NSObject {
             }
             
             let previousMixingStatus = self.mixingState
-            DSLogger.log("[SW] CoinJoin: \(previousMixingStatus) -> \(state)")
-            
-            if previousMixingStatus == .paused && state != .paused {
-                DSLogger.log("[SW] CoinJoin: moving from paused to \(state)")
-            }
-            
+            DSLogger.log("CoinJoin: \(previousMixingStatus) -> \(state)")
             self.mixingState = state
 
             if state == .mixing && previousMixingStatus != .mixing {
@@ -314,7 +313,7 @@ class CoinJoinService: NSObject {
     
     private func updateTimeSkewInternal(timeSkew: TimeInterval) {
         let chain = DWEnvironment.sharedInstance().currentChain
-        updateState(mode: self.mode,
+        updateState(mode: self.currentMode,
                     timeSkew: timeSkew,
                     hasAnonymizableBalance: self.hasAnonymizableBalance,
                     networkStatus: self.networkStatus,
@@ -334,14 +333,8 @@ class CoinJoinService: NSObject {
         self.stopMixing()
         self.coinJoinManager = nil
         self.hasAnonymizableBalance = false
-        let savedMode = self.savedMode
-        self.mode = .none
-        let restoredMode = CoinJoinMode(rawValue: savedMode) ?? .none
-        
-        if restoredMode != .none {
-            Task {
-                await updateMode(mode: restoredMode)
-            }
+        Task {
+            await updateMode(mode: self.currentMode, force: true)
         }
     }
 
@@ -445,7 +438,7 @@ extension CoinJoinService: SyncingActivityMonitorObserver {
     
     func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
         self.updateState(
-            mode: self.mode,
+            mode: self.currentMode,
             timeSkew: self.timeSkew,
             hasAnonymizableBalance: self.hasAnonymizableBalance,
             networkStatus: self.networkStatus,

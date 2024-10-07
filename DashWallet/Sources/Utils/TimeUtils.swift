@@ -55,7 +55,7 @@ class TimeUtils {
         
         // Check if we can use the cached skew
         if !force && (lastTimeWhenSkewChecked + 60_000 > currentTimeMillis) {
-            print("[SW] CoinJoin: timeskew: \(lastTimeSkew); using last value")
+            print("CoinJoin: timeskew: \(lastTimeSkew); using last value")
             return lastTimeSkew
         }
         
@@ -96,11 +96,11 @@ class TimeUtils {
                     }
                 } catch {
                     // Log the error and try the next URL
-                    print("[SW] CoinJoin: Error fetching HTTP date from \(url): \(error)")
+                    print("CoinJoin: Error fetching HTTP date from \(url): \(error)")
                 }
             }
             
-            print("[SW] CoinJoin: timeskew: network time is \(String(describing: networkTime))")
+            print("CoinJoin: timeskew: network time is \(String(describing: networkTime))")
             guard networkTime != nil else {
                 throw NSError(domain: "TimeUtils", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to get network time"])
             }
@@ -113,7 +113,7 @@ class TimeUtils {
         lastTimeWhenSkewChecked = currentTimeMillis
         lastTimeSkew = newSkew
         
-        print("[SW] CoinJoin: timeskew: \(currentTimeMillis)-\(networkTime!) = \(newSkew) s; source: \(timeSource)")
+        print("CoinJoin: timeskew: \(currentTimeMillis)-\(networkTime!) = \(newSkew) s; source: \(timeSource)")
         return newSkew
     }
 }
