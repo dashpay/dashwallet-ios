@@ -615,6 +615,8 @@
 		759ADD582BF3447400767ACD /* Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759ADD562BF3447400767ACD /* Button.swift */; };
 		759C8F9F2B593589004B1305 /* CrowdNodeAPYView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */; };
 		759C8FA02B593589004B1305 /* CrowdNodeAPYView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */; };
+		75A0A3F32CA7DBCF003ED48B /* TimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */; };
+		75A0A3F42CA7DBCF003ED48B /* TimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */; };
 		75A664D82B09F1EA007EFD16 /* VotingInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A664D72B09F1EA007EFD16 /* VotingInfoViewController.swift */; };
 		75A8C1652AE5726B0042256E /* UsernameRequestsDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1632AE5725C0042256E /* UsernameRequestsDAO.swift */; };
 		75A8C1672AE5734A0042256E /* UsernameRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1662AE5734A0042256E /* UsernameRequest.swift */; };
@@ -633,8 +635,8 @@
 		75B2F45D2B0B1EC1004C071A /* RequestUsernameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B2F45C2B0B1EC1004C071A /* RequestUsernameViewController.swift */; };
 		75BDE7AC2BF3287400556791 /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75BDE7AB2BF3287400556791 /* Toast.swift */; };
 		75BDE7AD2BF3287400556791 /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75BDE7AB2BF3287400556791 /* Toast.swift */; };
-		75C1F0452AE26AC0006929CA /* CoinJoinViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1F0442AE26AC0006929CA /* CoinJoinViewModel.swift */; };
-		75C1F0462AE26AC0006929CA /* CoinJoinViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1F0442AE26AC0006929CA /* CoinJoinViewModel.swift */; };
+		75C1F0452AE26AC0006929CA /* CoinJoinLevelsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1F0442AE26AC0006929CA /* CoinJoinLevelsViewModel.swift */; };
+		75C1F0462AE26AC0006929CA /* CoinJoinLevelsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1F0442AE26AC0006929CA /* CoinJoinLevelsViewModel.swift */; };
 		75C1F09E2AFF675400FE675E /* EnterVotingKeyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1F09D2AFF675400FE675E /* EnterVotingKeyViewController.swift */; };
 		75C72CDF2B19FB0C00129504 /* DPWelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C72CDE2B19FB0C00129504 /* DPWelcomeView.swift */; };
 		75C83B522B11B62400C33660 /* ConfirmRequestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C83B512B11B62400C33660 /* ConfirmRequestViewController.swift */; };
@@ -2483,6 +2485,7 @@
 		759816E619357D6F005060EA /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
 		759ADD562BF3447400767ACD /* Button.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Button.swift; sourceTree = "<group>"; };
 		759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeAPYView.swift; sourceTree = "<group>"; };
+		75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimeUtils.swift; sourceTree = "<group>"; };
 		75A664D72B09F1EA007EFD16 /* VotingInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingInfoViewController.swift; sourceTree = "<group>"; };
 		75A8C1632AE5725C0042256E /* UsernameRequestsDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequestsDAO.swift; sourceTree = "<group>"; };
 		75A8C1662AE5734A0042256E /* UsernameRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequest.swift; sourceTree = "<group>"; };
@@ -2494,7 +2497,7 @@
 		75AA33D72BFB4A5A00F12465 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		75B2F45C2B0B1EC1004C071A /* RequestUsernameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestUsernameViewController.swift; sourceTree = "<group>"; };
 		75BDE7AB2BF3287400556791 /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toast.swift; sourceTree = "<group>"; };
-		75C1F0442AE26AC0006929CA /* CoinJoinViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinViewModel.swift; sourceTree = "<group>"; };
+		75C1F0442AE26AC0006929CA /* CoinJoinLevelsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinLevelsViewModel.swift; sourceTree = "<group>"; };
 		75C1F09D2AFF675400FE675E /* EnterVotingKeyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterVotingKeyViewController.swift; sourceTree = "<group>"; };
 		75C72CDE2B19FB0C00129504 /* DPWelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DPWelcomeView.swift; sourceTree = "<group>"; };
 		75C83B512B11B62400C33660 /* ConfirmRequestViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmRequestViewController.swift; sourceTree = "<group>"; };
@@ -5892,6 +5895,7 @@
 			isa = PBXGroup;
 			children = (
 				472D13E0299E1F2F006903F1 /* CSVBuilder.swift */,
+				75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -6071,7 +6075,7 @@
 				75889B752AD296E700C17F5D /* CoinJoinInfoViewController.swift */,
 				751B61C72AE0EDD000D1C2EF /* CoinJoinLevelsViewController.swift */,
 				75889B812AD2D7F800C17F5D /* CoinJoin.storyboard */,
-				75C1F0442AE26AC0006929CA /* CoinJoinViewModel.swift */,
+				75C1F0442AE26AC0006929CA /* CoinJoinLevelsViewModel.swift */,
 			);
 			path = CoinJoin;
 			sourceTree = "<group>";
@@ -8738,7 +8742,7 @@
 				478A2C7128DC554200AD1420 /* BuySellPortalModel.swift in Sources */,
 				75F51AAF2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift in Sources */,
 				75AA33D22BF9E18E00F12465 /* Color+DWStyle.swift in Sources */,
-				75C1F0452AE26AC0006929CA /* CoinJoinViewModel.swift in Sources */,
+				75C1F0452AE26AC0006929CA /* CoinJoinLevelsViewModel.swift in Sources */,
 				478C98262942DC2700FAA0F0 /* BuyDashViewController.swift in Sources */,
 				2A0C69D023143435001B8C90 /* DWModalDismissalAnimation.m in Sources */,
 				47CDEECE294A3CF2008AE06D /* UIViewController+DashWallet.swift in Sources */,
@@ -8979,6 +8983,7 @@
 				75EBAA292BBBE385004488E3 /* ZenLedgerViewModel.swift in Sources */,
 				471A260A289ACDF70056B7B2 /* Taxes.swift in Sources */,
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
+				75A0A3F32CA7DBCF003ED48B /* TimeUtils.swift in Sources */,
 				47EEE243293F436200049E0B /* CoinbaseAPIClient.swift in Sources */,
 				47B30D80291123D30080C326 /* SendAmountViewController.swift in Sources */,
 				47CF46A1296540EF0067B6EE /* AccountService.swift in Sources */,
@@ -9634,7 +9639,7 @@
 				C9D2C83F2A320AA000D15901 /* CoinbaseSwapeTradeResponse.swift in Sources */,
 				C943B4FF2A40A54600AF23C5 /* DWDPGenericContactRequestItemView.m in Sources */,
 				C9D2C8402A320AA000D15901 /* DWQRScanView.m in Sources */,
-				75C1F0462AE26AC0006929CA /* CoinJoinViewModel.swift in Sources */,
+				75C1F0462AE26AC0006929CA /* CoinJoinLevelsViewModel.swift in Sources */,
 				C9D2C8412A320AA000D15901 /* ServiceItem.swift in Sources */,
 				C9D2C8422A320AA000D15901 /* ErrorPresentable.swift in Sources */,
 				C9D2C8432A320AA000D15901 /* DWPinInputStepView.m in Sources */,
@@ -9668,6 +9673,7 @@
 				C943B53F2A40A6BE00AF23C5 /* DPAlertChildContentsView.m in Sources */,
 				C9D2C85B2A320AA000D15901 /* PointOfUseListEmptyResultsView.swift in Sources */,
 				C9D2C85C2A320AA000D15901 /* ShortcutsModel.swift in Sources */,
+				75A0A3F42CA7DBCF003ED48B /* TimeUtils.swift in Sources */,
 				75FFD6C82BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */,
 				C9D2C85D2A320AA000D15901 /* DWLockPinInputView.m in Sources */,
 				C9D2C85E2A320AA000D15901 /* UIView+DWHUD.m in Sources */,
@@ -10753,7 +10759,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 170;
+				CURRENT_PROJECT_VERSION = 171;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -10889,7 +10895,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 170;
+				CURRENT_PROJECT_VERSION = 171;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11024,7 +11030,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 170;
+				CURRENT_PROJECT_VERSION = 171;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11169,7 +11175,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 170;
+				CURRENT_PROJECT_VERSION = 171;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;

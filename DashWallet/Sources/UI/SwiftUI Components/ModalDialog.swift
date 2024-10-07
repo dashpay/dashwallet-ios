@@ -147,8 +147,7 @@ extension UIViewController {
         negativeButtonAction: (() -> Void)? = nil,
         buttonsOrientation: Axis = .vertical,
         buttonsStyle: ButtonsGroup.Style = .regular
-    ) {
-        
+    ) { 
         let dialog = ModalDialog(
             style: style,
             icon: icon,
@@ -178,5 +177,56 @@ extension UIViewController {
         hostingController.view.backgroundColor = UIColor.black.withAlphaComponent(0.7)
             
         present(hostingController, animated: true, completion: nil)
+    }
+
+    @MainActor
+    @discardableResult
+    func showModalDialog(
+        style: ModalDialog.Style = .regular,
+        icon: IconName? = nil,
+        heading: String,
+        textBlock1: String? = nil,
+        textBlock2: String? = nil,
+        smallButtonText: String? = nil,
+        smallButtonIcon: IconName? = nil,
+        smallButtonAction: (() -> Void)? = nil,
+        positiveButtonText: String,
+        negativeButtonText: String? = nil,
+        buttonsOrientation: Axis = .vertical,
+        buttonsStyle: ButtonsGroup.Style = .regular
+    ) async -> Bool {
+        await withCheckedContinuation { continuation in
+            let dialog = ModalDialog(
+                style: style,
+                icon: icon,
+                heading: heading,
+                textBlock1: textBlock1,
+                textBlock2: textBlock2,
+                smallButtonText: smallButtonText,
+                smallButtonIcon: smallButtonIcon,
+                smallButtonAction: smallButtonAction,
+                positiveButtonText: positiveButtonText,
+                positiveButtonAction: {
+                    self.dismiss(animated: true) {
+                        continuation.resume(returning: true)
+                    }
+                },
+                negativeButtonText: negativeButtonText,
+                negativeButtonAction: {
+                    self.dismiss(animated: true) {
+                        continuation.resume(returning: false)
+                    }
+                },
+                buttonsOrientation: buttonsOrientation,
+                buttonsStyle: buttonsStyle
+            )
+
+            let hostingController = UIHostingController(rootView: dialog)
+            hostingController.modalPresentationStyle = .overFullScreen
+            hostingController.modalTransitionStyle = .crossDissolve
+            hostingController.view.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+            
+            present(hostingController, animated: true, completion: nil)
+        }
     }
 }

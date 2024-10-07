@@ -22,14 +22,16 @@ import Combine
 public class CoinJoinObjcWrapper: NSObject {
     @objc
     public class func infoShown() -> Bool {
-        CoinJoinViewModel.shared.infoShown
+        CoinJoinLevelViewModel.shared.infoShown
     }
 }
 
 private let kInfoShown = "coinJoinInfoShownKey"
+private let kKeepOpenShown = "coinJoinKeepOpenShownKey"
 
-class CoinJoinViewModel: ObservableObject {
-    static let shared = CoinJoinViewModel()
+
+class CoinJoinLevelViewModel: ObservableObject {
+    static let shared = CoinJoinLevelViewModel()
     private var cancellableBag = Set<AnyCancellable>()
     private let coinJoinService = CoinJoinService.shared
     
@@ -42,6 +44,15 @@ class CoinJoinViewModel: ObservableObject {
         set(value) {
             _infoShown = value
             UserDefaults.standard.set(value, forKey: kInfoShown)
+        }
+    }
+    
+    private var _keepOpenInfoShown: Bool? = nil
+    var keepOpenInfoShown: Bool {
+        get { _keepOpenInfoShown ?? UserDefaults.standard.bool(forKey: kKeepOpenShown) }
+        set(value) {
+            _keepOpenInfoShown = value
+            UserDefaults.standard.set(value, forKey: kKeepOpenShown)
         }
     }
     
@@ -60,15 +71,38 @@ class CoinJoinViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
     }
+
+    func resetSelectedMode() {
+        self.selectedMode = coinJoinService.mode
+    }
     
     func startMixing() {
         if self.selectedMode != .none {
-            coinJoinService.updateMode(mode: self.selectedMode)
+            Task {
+                await coinJoinService.updateMode(mode: self.selectedMode)
+            }
         }
     }
     
     func stopMixing() {
         selectedMode = .none
-        coinJoinService.updateMode(mode: .none)
+        Task {
+            await coinJoinService.updateMode(mode: .none)
+        }
+    }
+
+    func isTimeSkewedForCoinJoin() async -> Bool {
+        do {
+            let timeSkew = try await TimeUtils.getTimeSkew()
+            coinJoinService.updateTimeSkew(timeSkew: timeSkew)
+            
+            if timeSkew > 0 {
+                return timeSkew > kMaxAllowedAheadTimeskew
+            } else {
+                return -timeSkew > kMaxAllowedBehindTimeskew
+            }
+        } catch {
+            return false
+        }
     }
 }

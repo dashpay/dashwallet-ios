@@ -208,7 +208,7 @@ extension SettingsMenuViewController {
     private func showCoinJoinController() {
         let vc: UIViewController
         
-        if CoinJoinViewModel.shared.infoShown {
+        if CoinJoinLevelViewModel.shared.infoShown {
             vc = CoinJoinLevelsViewController.controller()
         } else {
             vc = CoinJoinInfoViewController.controller()

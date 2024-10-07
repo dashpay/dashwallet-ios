@@ -18,7 +18,7 @@
 import Combine
 
 class CoinJoinLevelsViewController: UIViewController {
-    private let viewModel = CoinJoinViewModel.shared
+    private let viewModel = CoinJoinLevelViewModel.shared
     private var cancellableBag = Set<AnyCancellable>()
     
     @IBOutlet private var titleLabel: UILabel!
@@ -41,6 +41,11 @@ class CoinJoinLevelsViewController: UIViewController {
         super.viewDidLoad()
         configureHierarchy()
         configureObservers()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        viewModel.resetSelectedMode()
     }
 
     @IBAction
@@ -102,7 +107,40 @@ extension CoinJoinLevelsViewController {
         }
         
         if viewModel.selectedMode == .none || viewModel.mixingState == .notStarted {
-            viewModel.selectedMode = mode
+            Task {
+                if !viewModel.keepOpenInfoShown {
+                    await showModalDialog(
+                        style: .regular,
+                        icon: .system("info"),
+                        heading: NSLocalizedString("Mixing is only possible with the app open", comment: "CoinJoin"),
+                        textBlock1: NSLocalizedString("When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app.", comment: "CoinJoin"),
+                        positiveButtonText: NSLocalizedString("OK", comment: "")
+                    )
+                    
+                    viewModel.keepOpenInfoShown = true
+                }
+                
+                if await viewModel.isTimeSkewedForCoinJoin() {
+                    let settingsURL = URL(string: UIApplication.openSettingsURLString)
+                    let hasSettings = settingsURL != nil && UIApplication.shared.canOpenURL(settingsURL!)
+                    let message = String(format: NSLocalizedString("Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin.", comment: "TimeSkew"))
+                    
+                    showModalDialog(
+                        icon: .custom("image.coinjoin.menu"),
+                        heading: NSLocalizedString("CoinJoin", comment: "CoinJoin"),
+                        textBlock1: message,
+                        positiveButtonText: NSLocalizedString("Settings", comment: ""),
+                        positiveButtonAction: hasSettings ? {
+                            if let url = settingsURL {
+                                UIApplication.shared.open(url)
+                            }
+                        } : nil,
+                        negativeButtonText: NSLocalizedString("Dismiss", comment: "")
+                    )
+                } else {
+                    viewModel.selectedMode = mode
+                }
+            }
         } else {
             confirmFor(mode)
         }

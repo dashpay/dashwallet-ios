@@ -16,7 +16,7 @@
 //
 
 class CoinJoinInfoViewController: UIViewController {
-    private let viewModel = CoinJoinViewModel.shared
+    private let viewModel = CoinJoinLevelViewModel.shared
     
     @IBOutlet private var titleLabel: UILabel!
     @IBOutlet private var subtitleLabel: UILabel!

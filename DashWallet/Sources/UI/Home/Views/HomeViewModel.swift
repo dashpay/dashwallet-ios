@@ -18,21 +18,34 @@
 import Foundation
 import Combine
 
-let kBaseBalanceHeaderHeight: CGFloat = 250
+private let kBaseBalanceHeaderHeight: CGFloat = 250
+private let kTimeskewTolerance: TimeInterval = 3600 // 1 hour
 
+@MainActor
 class HomeViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     private let coinJoinService = CoinJoinService.shared
+    private var timeSkewDialogShown: Bool = false
     
-    @Published var txItems: Array<(DateKey, [TransactionListDataItem])> = []
-    @Published var balanceHeaderHeight: CGFloat = kBaseBalanceHeaderHeight // TDOO: move back to HomeView when fully transitioned to SwiftUI
-    @Published var coinJoinItem = CoinJoinMenuItemModel(title: NSLocalizedString("Mixing", comment: "CoinJoin"), isOn: false, state: .notStarted, progress: 0.0, mixed: 0.0, total: 0.0)
+    static let shared: HomeViewModel = {
+        return HomeViewModel()
+    }()
+    
+    @Published private(set) var txItems: Array<(DateKey, [TransactionListDataItem])> = []
+    @Published private(set) var balanceHeaderHeight: CGFloat = kBaseBalanceHeaderHeight // TDOO: move back to HomeView when fully transitioned to SwiftUI
+    @Published private(set) var coinJoinItem = CoinJoinMenuItemModel(title: NSLocalizedString("Mixing", comment: "CoinJoin"), isOn: false, state: .notStarted, progress: 0.0, mixed: 0.0, total: 0.0)
+    @Published var showTimeSkewAlertDialog: Bool = false
+    @Published private(set) var timeSkew: TimeInterval = 0
     
     private var model: SyncModel = SyncModelImpl()
     var showJoinDashpay: Bool = false {
         didSet {
             self.recalculateHeight()
         }
+    }
+    
+    var coinJoinMode: CoinJoinMode {
+        get { coinJoinService.mode }
     }
     
     init() {
@@ -75,6 +88,18 @@ class HomeViewModel: ObservableObject {
         }
     }
     
+    func checkTimeSkew(force: Bool = false) {
+        Task {
+            let (isTimeSkewed, timeSkew) = await getDeviceTimeSkew(force: force)
+            self.timeSkew = timeSkew
+            
+            if isTimeSkewed && (!timeSkewDialogShown || force) {
+                timeSkewDialogShown = true
+                showTimeSkewAlertDialog = true
+            }
+        }
+    }
+    
     private func recalculateHeight() {
         var height = kBaseBalanceHeaderHeight
         let hasNetwork = model.networkStatus == .online
@@ -88,6 +113,26 @@ class HomeViewModel: ObservableObject {
         }
         
         self.balanceHeaderHeight = height
+    }
+    
+    private func getDeviceTimeSkew(force: Bool) async -> (Bool, TimeInterval) {
+        do {
+            let timeSkew = try await TimeUtils.getTimeSkew(force: force)
+            let maxAllowedTimeSkew: TimeInterval
+            
+            if coinJoinService.mode == .none {
+                maxAllowedTimeSkew = kTimeskewTolerance
+            } else {
+                maxAllowedTimeSkew = timeSkew > 0 ? kMaxAllowedAheadTimeskew * 3 : kMaxAllowedBehindTimeskew * 2
+            }
+            
+            coinJoinService.updateTimeSkew(timeSkew: timeSkew)
+            print("[SW] CoinJoin: timeskew: \(timeSkew) s")
+            return (abs(timeSkew) > maxAllowedTimeSkew, timeSkew)
+        } catch {
+            // Ignore errors
+            return (false, 0)
+        }
     }
 }
 
