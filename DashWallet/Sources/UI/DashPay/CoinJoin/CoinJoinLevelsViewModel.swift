@@ -56,6 +56,8 @@ class CoinJoinLevelViewModel: ObservableObject {
         }
     }
     
+    var hasWiFi: Bool { coinJoinService.hasWiFi }
+    
     init() {
         coinJoinService.$mode
             .receive(on: DispatchQueue.main)

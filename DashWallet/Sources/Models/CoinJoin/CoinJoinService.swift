@@ -74,7 +74,10 @@ public class CoinJoinServiceWrapper: NSObject {
     }
 }
 
-class CoinJoinService: NSObject {
+class CoinJoinService: NSObject, NetworkReachabilityHandling {
+    var networkStatusDidChange: ((NetworkStatus) -> ())?
+    var reachabilityObserver: Any!
+    
     static let shared: CoinJoinService = {
         return CoinJoinService()
     }()
@@ -85,7 +88,6 @@ class CoinJoinService: NSObject {
     private let updateMixingStateMutex = NSLock()
     private var coinJoinManager: DSCoinJoinManager? = nil
     private var hasAnonymizableBalance: Bool = false
-    private var networkStatus: NetworkStatus = .online
     private var timeSkew: TimeInterval = 0
     private var workingChain: ChainType
 
@@ -115,11 +117,15 @@ class CoinJoinService: NSObject {
     @Published var mixingState: MixingStatus = .notStarted
     @Published private(set) var progress = CoinJoinProgress(progress: 0.0, totalBalance: 0, coinJoinBalance: 0)
     @Published private(set) var activeSessions: Int = 0
+    @Published private(set) var networkStatus: NetworkStatus = .online
     
     override init() {
         workingChain = DWEnvironment.sharedInstance().currentChain.chainType
         super.init()
         
+        networkStatusDidChange = { [weak self] state in
+            self?.updateNetworkState(newState: state)
+        }
         NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
             .sink { [weak self] _ in
                 DSLogger.log("CoinJoin: change of network to \(DWEnvironment.sharedInstance().currentChain.chainType.tag), resetting")
@@ -129,6 +135,7 @@ class CoinJoinService: NSObject {
             .store(in: &permanentBag)
         
         restoreMode()
+        startNetworkMonitoring()
     }
     
     func updateMode(mode: CoinJoinMode, force: Bool = false) async {
@@ -378,6 +385,11 @@ class CoinJoinService: NSObject {
             .store(in: &cancellableBag)
         
         SyncingActivityMonitor.shared.add(observer: self)
+    }
+    
+    private func updateNetworkState(newState: NetworkStatus) {
+        self.networkStatus = newState
+        self.updateState(mode: mode, timeSkew: timeSkew, hasAnonymizableBalance: self.hasAnonymizableBalance, networkStatus: self.networkStatus, chain: DWEnvironment.sharedInstance().currentChain)
     }
     
     private func removeObservers() {

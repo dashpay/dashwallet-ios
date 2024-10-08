@@ -13,9 +13,16 @@ class TimeUtils {
         connection.start(queue: .global())
         
         return await withCheckedContinuation { continuation in
+            let timeout = DispatchTime.now() + .seconds(5)
+            
+            DispatchQueue.global().asyncAfter(deadline: timeout) {
+                connection.cancel()
+            }
+
             connection.send(content: message, completion: .contentProcessed({ error in
                 if let error = error {
                     print("Error sending NTP request: \(error)")
+                    connection.cancel()
                     continuation.resume(returning: nil)
                     return
                 }
