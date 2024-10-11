@@ -150,8 +150,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
         
         let account = DWEnvironment.sharedInstance().currentAccount
         updateBalance(balance: account.balance)
-        let currentTimeSkew = await getCurrentTimeSkew()
-        updateState(mode: mode, timeSkew: currentTimeSkew, hasAnonymizableBalance: self.hasAnonymizableBalance, networkStatus: self.networkStatus, chain: DWEnvironment.sharedInstance().currentChain)
+        updateState(mode: mode, timeSkew: self.timeSkew, hasAnonymizableBalance: self.hasAnonymizableBalance, networkStatus: self.networkStatus, chain: DWEnvironment.sharedInstance().currentChain)
     }
     
     func updateTimeSkew(timeSkew: TimeInterval) {
@@ -329,7 +328,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     
     private func getCurrentTimeSkew() async -> TimeInterval {
         do {
-            return await TimeInterval(try TimeUtils.getTimeSkew())
+            return try await TimeUtils.getTimeSkew()
         } catch {
             DSLogger.log("[SW] CoinJoin: getTimeSkew problem: \(error)")
             return 0.0
@@ -342,6 +341,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
         self.hasAnonymizableBalance = false
         Task {
             await updateMode(mode: self.currentMode, force: true)
+            self.updateTimeSkewInternal(timeSkew: await getCurrentTimeSkew())
         }
     }
 

@@ -127,7 +127,6 @@ class HomeViewModel: ObservableObject {
             }
             
             coinJoinService.updateTimeSkew(timeSkew: timeSkew)
-            print("[SW] CoinJoin: timeskew: \(timeSkew) s")
             return (abs(timeSkew) > maxAllowedTimeSkew, timeSkew)
         } catch {
             // Ignore errors
