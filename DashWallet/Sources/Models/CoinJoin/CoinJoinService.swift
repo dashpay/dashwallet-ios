@@ -116,7 +116,6 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     @Published private(set) var mode: CoinJoinMode = .none
     @Published var mixingState: MixingStatus = .notStarted
     @Published private(set) var progress = CoinJoinProgress(progress: 0.0, totalBalance: 0, coinJoinBalance: 0)
-    @Published private(set) var activeSessions: Int = 0
     @Published private(set) var networkStatus: NetworkStatus = .online
     
     override init() {
@@ -405,13 +404,9 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
 }
 
 extension CoinJoinService: DSCoinJoinManagerDelegate {
-    func sessionStarted(withId baseId: Int32, clientSessionId clientId: UInt256, denomination denom: UInt32, poolState state: PoolState, poolMessage message: PoolMessage, ipAddress address: UInt128, isJoined joined: Bool) {
-        updateActiveSessions()
-    }
+    func sessionStarted(withId baseId: Int32, clientSessionId clientId: UInt256, denomination denom: UInt32, poolState state: PoolState, poolMessage message: PoolMessage, ipAddress address: UInt128, isJoined joined: Bool) { }
     
-    func sessionComplete(withId baseId: Int32, clientSessionId clientId: UInt256, denomination denom: UInt32, poolState state: PoolState, poolMessage message: PoolMessage, ipAddress address: UInt128, isJoined joined: Bool) {
-        updateActiveSessions()
-    }
+    func sessionComplete(withId baseId: Int32, clientSessionId clientId: UInt256, denomination denom: UInt32, poolState state: PoolState, poolMessage message: PoolMessage, ipAddress address: UInt128, isJoined joined: Bool) { }
     
     func mixingStarted() { }
     
@@ -433,15 +428,6 @@ extension CoinJoinService: DSCoinJoinManagerDelegate {
     
     func transactionProcessed(withId txId: UInt256, type: CoinJoinTransactionType) {
         self.updateProgress()
-    }
-    
-    private func updateActiveSessions() {
-        guard let coinJoinManager = self.coinJoinManager else { return }
-        
-        let activeSessions = coinJoinManager.getActiveSessionCount()
-        self.activeSessions = Int(activeSessions)
-
-        DSLogger.log("[SW] CoinJoin: Active sessions: \(activeSessions)")
     }
 }
 
