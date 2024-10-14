@@ -554,6 +554,9 @@
 		753130922B47EE920069C9B7 /* UpholdCapability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753130902B47EE920069C9B7 /* UpholdCapability.swift */; };
 		753130972B4944130069C9B7 /* UpholdError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753130962B4944130069C9B7 /* UpholdError.swift */; };
 		753130982B4944130069C9B7 /* UpholdError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753130962B4944130069C9B7 /* UpholdError.swift */; };
+		753261AE2CBC1040003CDE00 /* InvitationFlowViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261AD2CBC1040003CDE00 /* InvitationFlowViewController.swift */; };
+		753261B02CBC11BF003CDE00 /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261AF2CBC11BF003CDE00 /* WelcomeViewController.swift */; };
+		753261B22CBC157F003CDE00 /* GetStartedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261B12CBC157F003CDE00 /* GetStartedViewController.swift */; };
 		753FD7E22CA44BDD00B7751F /* CoinJoinProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753FD7E12CA44BDD00B7751F /* CoinJoinProgress.swift */; };
 		753FD7E32CA44BDD00B7751F /* CoinJoinProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753FD7E12CA44BDD00B7751F /* CoinJoinProgress.swift */; };
 		753FDBEA2AEA422F0005EEC3 /* VotingPrefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753FDBE92AEA422F0005EEC3 /* VotingPrefs.swift */; };
@@ -798,11 +801,8 @@
 		C943B4C72A40A54600AF23C5 /* DWUserSearchResultViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B39A2A40A54600AF23C5 /* DWUserSearchResultViewController.m */; };
 		C943B4C82A40A54600AF23C5 /* DWSearchStateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B39B2A40A54600AF23C5 /* DWSearchStateViewController.m */; };
 		C943B4DB2A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3CA2A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.m */; };
-		C943B4DC2A40A54600AF23C5 /* DWInvitationFlowViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3CB2A40A54600AF23C5 /* DWInvitationFlowViewController.m */; };
-		C943B4DD2A40A54600AF23C5 /* DWDPWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3CC2A40A54600AF23C5 /* DWDPWelcomeViewController.m */; };
 		C943B4DE2A40A54600AF23C5 /* DWDPWelcomePageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3CD2A40A54600AF23C5 /* DWDPWelcomePageViewController.m */; };
 		C943B4DF2A40A54600AF23C5 /* DWGetStartedContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3CF2A40A54600AF23C5 /* DWGetStartedContentViewController.m */; };
-		C943B4E02A40A54600AF23C5 /* DWGetStartedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3D12A40A54600AF23C5 /* DWGetStartedViewController.m */; };
 		C943B4E12A40A54600AF23C5 /* DWGetStartedItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3D62A40A54600AF23C5 /* DWGetStartedItemView.m */; };
 		C943B4E22A40A54600AF23C5 /* DWPassthroughView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3DD2A40A54600AF23C5 /* DWPassthroughView.m */; };
 		C943B4E32A40A54600AF23C5 /* DWPassthroughStackView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3DE2A40A54600AF23C5 /* DWPassthroughStackView.m */; };
@@ -2439,6 +2439,9 @@
 		7531308C2B47EC910069C9B7 /* UpholdClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpholdClient.swift; sourceTree = "<group>"; };
 		753130902B47EE920069C9B7 /* UpholdCapability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpholdCapability.swift; sourceTree = "<group>"; };
 		753130962B4944130069C9B7 /* UpholdError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpholdError.swift; sourceTree = "<group>"; };
+		753261AD2CBC1040003CDE00 /* InvitationFlowViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationFlowViewController.swift; sourceTree = "<group>"; };
+		753261AF2CBC11BF003CDE00 /* WelcomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
+		753261B12CBC157F003CDE00 /* GetStartedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetStartedViewController.swift; sourceTree = "<group>"; };
 		753FD7E12CA44BDD00B7751F /* CoinJoinProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinProgress.swift; sourceTree = "<group>"; };
 		753FDBE92AEA422F0005EEC3 /* VotingPrefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingPrefs.swift; sourceTree = "<group>"; };
 		753FDBEB2AECF4CC0005EEC3 /* VotingHeaderView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = VotingHeaderView.xib; sourceTree = "<group>"; };
@@ -2743,20 +2746,14 @@
 		C943B39B2A40A54600AF23C5 /* DWSearchStateViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWSearchStateViewController.m; sourceTree = "<group>"; };
 		C943B3C82A40A54600AF23C5 /* DWDashPayConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDashPayConstants.h; sourceTree = "<group>"; };
 		C943B3CA2A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPWelcomeCollectionViewController.m; sourceTree = "<group>"; };
-		C943B3CB2A40A54600AF23C5 /* DWInvitationFlowViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWInvitationFlowViewController.m; sourceTree = "<group>"; };
-		C943B3CC2A40A54600AF23C5 /* DWDPWelcomeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPWelcomeViewController.m; sourceTree = "<group>"; };
 		C943B3CD2A40A54600AF23C5 /* DWDPWelcomePageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPWelcomePageViewController.m; sourceTree = "<group>"; };
 		C943B3CF2A40A54600AF23C5 /* DWGetStartedContentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWGetStartedContentViewController.m; sourceTree = "<group>"; };
 		C943B3D02A40A54600AF23C5 /* DWGetStarted.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWGetStarted.h; sourceTree = "<group>"; };
-		C943B3D12A40A54600AF23C5 /* DWGetStartedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWGetStartedViewController.m; sourceTree = "<group>"; };
 		C943B3D22A40A54600AF23C5 /* DWGetStartedContentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWGetStartedContentViewController.h; sourceTree = "<group>"; };
-		C943B3D32A40A54600AF23C5 /* DWGetStartedViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWGetStartedViewController.h; sourceTree = "<group>"; };
 		C943B3D52A40A54600AF23C5 /* DWGetStartedItemView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWGetStartedItemView.h; sourceTree = "<group>"; };
 		C943B3D62A40A54600AF23C5 /* DWGetStartedItemView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWGetStartedItemView.m; sourceTree = "<group>"; };
 		C943B3D72A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPWelcomeCollectionViewController.h; sourceTree = "<group>"; };
-		C943B3D82A40A54600AF23C5 /* DWInvitationFlowViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInvitationFlowViewController.h; sourceTree = "<group>"; };
 		C943B3D92A40A54600AF23C5 /* DWDPWelcomePageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPWelcomePageViewController.h; sourceTree = "<group>"; };
-		C943B3DA2A40A54600AF23C5 /* DWDPWelcomeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPWelcomeViewController.h; sourceTree = "<group>"; };
 		C943B3DC2A40A54600AF23C5 /* DWPassthroughStackView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPassthroughStackView.h; sourceTree = "<group>"; };
 		C943B3DD2A40A54600AF23C5 /* DWPassthroughView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWPassthroughView.m; sourceTree = "<group>"; };
 		C943B3DE2A40A54600AF23C5 /* DWPassthroughStackView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWPassthroughStackView.m; sourceTree = "<group>"; };
@@ -6794,16 +6791,14 @@
 		C943B3C92A40A54600AF23C5 /* Welcome */ = {
 			isa = PBXGroup;
 			children = (
-				C943B3CA2A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.m */,
-				C943B3CB2A40A54600AF23C5 /* DWInvitationFlowViewController.m */,
-				C943B3CC2A40A54600AF23C5 /* DWDPWelcomeViewController.m */,
-				C943B3CD2A40A54600AF23C5 /* DWDPWelcomePageViewController.m */,
 				C943B3CE2A40A54600AF23C5 /* GetStarted */,
-				C943B3D72A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.h */,
-				C943B3D82A40A54600AF23C5 /* DWInvitationFlowViewController.h */,
-				C943B3D92A40A54600AF23C5 /* DWDPWelcomePageViewController.h */,
-				C943B3DA2A40A54600AF23C5 /* DWDPWelcomeViewController.h */,
 				C943B3DB2A40A54600AF23C5 /* Views */,
+				C943B3CA2A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.m */,
+				C943B3CD2A40A54600AF23C5 /* DWDPWelcomePageViewController.m */,
+				C943B3D72A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.h */,
+				C943B3D92A40A54600AF23C5 /* DWDPWelcomePageViewController.h */,
+				753261AD2CBC1040003CDE00 /* InvitationFlowViewController.swift */,
+				753261AF2CBC11BF003CDE00 /* WelcomeViewController.swift */,
 			);
 			path = Welcome;
 			sourceTree = "<group>";
@@ -6811,11 +6806,10 @@
 		C943B3CE2A40A54600AF23C5 /* GetStarted */ = {
 			isa = PBXGroup;
 			children = (
+				753261B12CBC157F003CDE00 /* GetStartedViewController.swift */,
 				C943B3CF2A40A54600AF23C5 /* DWGetStartedContentViewController.m */,
 				C943B3D02A40A54600AF23C5 /* DWGetStarted.h */,
-				C943B3D12A40A54600AF23C5 /* DWGetStartedViewController.m */,
 				C943B3D22A40A54600AF23C5 /* DWGetStartedContentViewController.h */,
-				C943B3D32A40A54600AF23C5 /* DWGetStartedViewController.h */,
 				C943B3D42A40A54600AF23C5 /* Views */,
 			);
 			path = GetStarted;
@@ -9096,6 +9090,7 @@
 				C9D2C6A72A320AA000D15901 /* CrowdNodeResponse.swift in Sources */,
 				C9D2C6A82A320AA000D15901 /* FileManager+DashWallet.swift in Sources */,
 				C9D2C6A92A320AA000D15901 /* PointOfUseItemCell.swift in Sources */,
+				753261B22CBC157F003CDE00 /* GetStartedViewController.swift in Sources */,
 				C956AF142A5B5949002FAB75 /* EnterAddressViewController.swift in Sources */,
 				C9D2C6AA2A320AA000D15901 /* DSTransaction+DashWallet.swift in Sources */,
 				C943B4C52A40A54600AF23C5 /* DWUserSearchModel.m in Sources */,
@@ -9370,6 +9365,7 @@
 				C943B4C82A40A54600AF23C5 /* DWSearchStateViewController.m in Sources */,
 				C9D2C76B2A320AA000D15901 /* BaseViewController.swift in Sources */,
 				C9D2C76C2A320AA000D15901 /* AccountListController.swift in Sources */,
+				753261B02CBC11BF003CDE00 /* WelcomeViewController.swift in Sources */,
 				C9D2C76D2A320AA000D15901 /* DWUpholdTransactionObject.m in Sources */,
 				C943B5052A40A54600AF23C5 /* DWDPIncomingRequestCell.m in Sources */,
 				C9D2C76E2A320AA000D15901 /* DWBaseSeedViewController.m in Sources */,
@@ -9576,7 +9572,6 @@
 				C9D2C8122A320AA000D15901 /* SeedDB.swift in Sources */,
 				C9D2C8132A320AA000D15901 /* DWPinField.m in Sources */,
 				C943B3252A408CED00AF23C5 /* DWEditProfileViewController.m in Sources */,
-				C943B4DC2A40A54600AF23C5 /* DWInvitationFlowViewController.m in Sources */,
 				C943B59C2A40EE5300AF23C5 /* DWNetworkErrorViewController.m in Sources */,
 				C9D2C8142A320AA000D15901 /* DWCenteredScrollView.m in Sources */,
 				C9D2C8162A320AA000D15901 /* DWPhraseRepairViewController.m in Sources */,
@@ -9661,7 +9656,6 @@
 				C9D2C8502A320AA000D15901 /* DWEnvironment.m in Sources */,
 				C9D2C8512A320AA000D15901 /* AtmItemCell.swift in Sources */,
 				C9D2C8522A320AA000D15901 /* CoinbaseService.swift in Sources */,
-				C943B4E02A40A54600AF23C5 /* DWGetStartedViewController.m in Sources */,
 				C9D2C8532A320AA000D15901 /* DWControllerCollectionView.m in Sources */,
 				C9D2C8542A320AA000D15901 /* SFSafariViewController+DashWallet.m in Sources */,
 				C943B4F82A40A54600AF23C5 /* DWDPPendingRequestObject.m in Sources */,
@@ -9843,10 +9837,10 @@
 				7573C2E32B01105F00F4C347 /* MasternodeIPCell.swift in Sources */,
 				C9D2C8EA2A320AA000D15901 /* ConvertCryptoOrderPreviewViews.swift in Sources */,
 				C9D2C8EB2A320AA000D15901 /* DWAboutModel.m in Sources */,
+				753261AE2CBC1040003CDE00 /* InvitationFlowViewController.swift in Sources */,
 				C943B4B52A40A54600AF23C5 /* DWContactsFetchedDataSource.m in Sources */,
 				C9D2C8EE2A320AA000D15901 /* WelcomeToCrowdNodeViewController.swift in Sources */,
 				C943B3282A408CED00AF23C5 /* DWAvatarEditSelectorContentView.m in Sources */,
-				C943B4DD2A40A54600AF23C5 /* DWDPWelcomeViewController.m in Sources */,
 				C9D2C8EF2A320AA000D15901 /* TerritoriesListCell.swift in Sources */,
 				7573C2E52B01120B00F4C347 /* MasternodeKey.swift in Sources */,
 				C9D2C8F02A320AA000D15901 /* DWProgressView.m in Sources */,
@@ -10261,7 +10255,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -10392,7 +10386,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -10599,7 +10593,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -10621,7 +10615,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -10641,7 +10635,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -10668,7 +10662,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -11380,7 +11374,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11582,7 +11576,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -11602,7 +11596,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -11701,7 +11695,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11891,7 +11885,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -11911,7 +11905,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 29B232FD70BA2EDF87F86A56 /* Pods-WatchApp Extension.testnet.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";

@@ -132,6 +132,9 @@ static const bool _SNAPSHOT = 0;
 #import "DWEditProfileViewController.h"
 #import "DWSaveAlertViewController.h"
 #import "DWMainMenuContentView.h"
+#import "DWDPWelcomeCollectionViewController.h"
+#import "DWGetStarted.h"
+#import "DWGetStartedContentViewController.h"
 #endif
 
 //MARK: CrowdNode
