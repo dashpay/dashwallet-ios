@@ -170,7 +170,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)joinButtonAction:(UIButton *)sender {
     [self.delegate mainMenuContentView:self joinDashPayAction:sender];
 }
+
 #endif
 @end
 
 NS_ASSUME_NONNULL_END
+

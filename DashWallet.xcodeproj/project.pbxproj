@@ -557,6 +557,7 @@
 		753261AE2CBC1040003CDE00 /* InvitationFlowViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261AD2CBC1040003CDE00 /* InvitationFlowViewController.swift */; };
 		753261B02CBC11BF003CDE00 /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261AF2CBC11BF003CDE00 /* WelcomeViewController.swift */; };
 		753261B22CBC157F003CDE00 /* GetStartedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261B12CBC157F003CDE00 /* GetStartedViewController.swift */; };
+		753261B42CBD2761003CDE00 /* JoinDashPayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261B32CBD2761003CDE00 /* JoinDashPayView.swift */; };
 		753FD7E22CA44BDD00B7751F /* CoinJoinProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753FD7E12CA44BDD00B7751F /* CoinJoinProgress.swift */; };
 		753FD7E32CA44BDD00B7751F /* CoinJoinProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753FD7E12CA44BDD00B7751F /* CoinJoinProgress.swift */; };
 		753FDBEA2AEA422F0005EEC3 /* VotingPrefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753FDBE92AEA422F0005EEC3 /* VotingPrefs.swift */; };
@@ -641,7 +642,6 @@
 		75C1F0452AE26AC0006929CA /* CoinJoinLevelsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1F0442AE26AC0006929CA /* CoinJoinLevelsViewModel.swift */; };
 		75C1F0462AE26AC0006929CA /* CoinJoinLevelsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1F0442AE26AC0006929CA /* CoinJoinLevelsViewModel.swift */; };
 		75C1F09E2AFF675400FE675E /* EnterVotingKeyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1F09D2AFF675400FE675E /* EnterVotingKeyViewController.swift */; };
-		75C72CDF2B19FB0C00129504 /* DPWelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C72CDE2B19FB0C00129504 /* DPWelcomeView.swift */; };
 		75C83B522B11B62400C33660 /* ConfirmRequestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C83B512B11B62400C33660 /* ConfirmRequestViewController.swift */; };
 		75CDD7802C0898E400F433D2 /* Shape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CDD77F2C0898E400F433D2 /* Shape.swift */; };
 		75CDD7812C0898E400F433D2 /* Shape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CDD77F2C0898E400F433D2 /* Shape.swift */; };
@@ -2442,6 +2442,7 @@
 		753261AD2CBC1040003CDE00 /* InvitationFlowViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationFlowViewController.swift; sourceTree = "<group>"; };
 		753261AF2CBC11BF003CDE00 /* WelcomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
 		753261B12CBC157F003CDE00 /* GetStartedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetStartedViewController.swift; sourceTree = "<group>"; };
+		753261B32CBD2761003CDE00 /* JoinDashPayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinDashPayView.swift; sourceTree = "<group>"; };
 		753FD7E12CA44BDD00B7751F /* CoinJoinProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinProgress.swift; sourceTree = "<group>"; };
 		753FDBE92AEA422F0005EEC3 /* VotingPrefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingPrefs.swift; sourceTree = "<group>"; };
 		753FDBEB2AECF4CC0005EEC3 /* VotingHeaderView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = VotingHeaderView.xib; sourceTree = "<group>"; };
@@ -2502,7 +2503,6 @@
 		75BDE7AB2BF3287400556791 /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toast.swift; sourceTree = "<group>"; };
 		75C1F0442AE26AC0006929CA /* CoinJoinLevelsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinLevelsViewModel.swift; sourceTree = "<group>"; };
 		75C1F09D2AFF675400FE675E /* EnterVotingKeyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterVotingKeyViewController.swift; sourceTree = "<group>"; };
-		75C72CDE2B19FB0C00129504 /* DPWelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DPWelcomeView.swift; sourceTree = "<group>"; };
 		75C83B512B11B62400C33660 /* ConfirmRequestViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmRequestViewController.swift; sourceTree = "<group>"; };
 		75CDD77F2C0898E400F433D2 /* Shape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shape.swift; sourceTree = "<group>"; };
 		75CDD7822C0898FA00F433D2 /* Wrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wrapper.swift; sourceTree = "<group>"; };
@@ -6799,6 +6799,7 @@
 				C943B3D92A40A54600AF23C5 /* DWDPWelcomePageViewController.h */,
 				753261AD2CBC1040003CDE00 /* InvitationFlowViewController.swift */,
 				753261AF2CBC11BF003CDE00 /* WelcomeViewController.swift */,
+				753261B32CBD2761003CDE00 /* JoinDashPayView.swift */,
 			);
 			path = Welcome;
 			sourceTree = "<group>";
@@ -7480,7 +7481,6 @@
 		C9D2C95F2A386D9700D15901 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				75C72CDE2B19FB0C00129504 /* DPWelcomeView.swift */,
 				756188202B1EE78A00B778E3 /* DPVotingResultView.swift */,
 			);
 			path = Views;
@@ -9318,6 +9318,7 @@
 				C9D2C74A2A320AA000D15901 /* ShortcutsView.swift in Sources */,
 				C9D2C74B2A320AA000D15901 /* DWFormSectionModel.m in Sources */,
 				C9D2C74C2A320AA000D15901 /* (null) in Sources */,
+				753261B42CBD2761003CDE00 /* JoinDashPayView.swift in Sources */,
 				C9D2C74D2A320AA000D15901 /* CoinbasePlaceBuyOrderResponse.swift in Sources */,
 				C9D2C74E2A320AA000D15901 /* ExploreMapView.swift in Sources */,
 				C943B32F2A408CED00AF23C5 /* DWSaveAlertViewController.m in Sources */,
@@ -9831,7 +9832,6 @@
 				C9D2C8E72A320AA000D15901 /* DashTextAttachment.swift in Sources */,
 				C943B5432A40AFD100AF23C5 /* DWTxDetailPopupViewController.m in Sources */,
 				C9D2C8E82A320AA000D15901 /* HomeBalanceView.swift in Sources */,
-				75C72CDF2B19FB0C00129504 /* DPWelcomeView.swift in Sources */,
 				C9D2C8E92A320AA000D15901 /* PointOfUseListFiltersModel.swift in Sources */,
 				C943B3262A408CED00AF23C5 /* DWCropAvatarViewController.m in Sources */,
 				7573C2E32B01105F00F4C347 /* MasternodeIPCell.swift in Sources */,

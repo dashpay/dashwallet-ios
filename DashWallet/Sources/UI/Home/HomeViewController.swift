@@ -50,9 +50,8 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
     override func loadView() {
         let frame = UIScreen.main.bounds
-        homeView = HomeView(frame: frame)
+        homeView = HomeView(frame: frame, delegate: self)
         homeView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        homeView.delegate = self
         homeView.shortcutsDelegate = self
         view = homeView
     }
@@ -294,6 +293,11 @@ extension HomeViewController: RootEditProfileViewControllerDelegate {
 // MARK: - HomeViewDelegate
 
 extension HomeViewController: HomeViewDelegate {
+    func homeViewShowCoinJoin(_ homeView: HomeView?) {
+        let controller = CoinJoinLevelsViewController.controller(isFullScreen: true)
+        present(controller, animated: true, completion: nil)
+    }
+    
     func homeView(_ homeView: HomeView, showTxFilter sender: UIView) {
         showTxFilter(withSender: sender, displayModeProvider: model, shouldShowRewards: true)
     }
@@ -303,7 +307,7 @@ extension HomeViewController: HomeViewDelegate {
         present(controller, animated: true, completion: nil)
     }
     
-    func homeViewShowDashPayRegistrationFlow(_ homeView: HomeView) {
+    func homeViewShowDashPayRegistrationFlow(_ homeView: HomeView?) {
         let action = ShortcutAction(type: .createUsername)
         performAction(for: action, sender: homeView)
     }

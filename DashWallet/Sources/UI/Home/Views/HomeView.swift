@@ -23,7 +23,8 @@ import SwiftUI
 protocol HomeViewDelegate: AnyObject {
     func homeView(_ homeView: HomeView, showTxFilter sender: UIView)
     func homeView(_ homeView: HomeView, showSyncingStatus sender: UIView)
-    func homeViewShowDashPayRegistrationFlow(_ homeView: HomeView)
+    func homeViewShowDashPayRegistrationFlow(_ homeView: HomeView?)
+    func homeViewShowCoinJoin(_ homeView: HomeView?)
     func homeView(_ homeView: HomeView, showReclassifyYourTransactionsFlowWithTransaction transaction: DSTransaction)
     
 #if DASHPAY
@@ -63,6 +64,12 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         super.init(frame: frame)
         setupView()
     }
+    
+    init(frame: CGRect, delegate: HomeViewDelegate?) {
+        super.init(frame: frame)
+        self.delegate = delegate
+        setupView()
+    }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
@@ -85,6 +92,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         
         let content = HomeViewContent(
             viewModel: self.viewModel,
+            delegate: self.delegate,
             balanceHeader: { UIViewWrapper(uiView: self.headerView) },
             syncingHeader: { UIViewWrapper(uiView: self.syncingHeaderView) }
         )
@@ -192,9 +200,8 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
     }
     
     private func setIdentity(dpInfoHidden: Bool, model: DWHomeProtocol) {
-        headerView.isDPWelcomeViewHidden = dpInfoHidden
         headerView.isVotingViewHidden = true
-        viewModel.showJoinDashpay = !headerView.isDPWelcomeViewHidden
+        viewModel.showJoinDashpay = !dpInfoHidden
         let status = model.dashPayModel.registrationStatus
         let completed = model.dashPayModel.registrationCompleted
         
@@ -214,8 +221,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         let wasClosed = VotingPrefs.shared.votingPanelClosed
         let now = Date().timeIntervalSince1970
         headerView.isVotingViewHidden = dpInfoHidden || wasClosed || now < VotingConstants.votingEndTime
-        headerView.isDPWelcomeViewHidden = true
-        viewModel.showJoinDashpay = !headerView.isDPWelcomeViewHidden
+        viewModel.showJoinDashpay = false
         let dao = UsernameRequestsDAOImpl.shared
         
         Task {
@@ -238,7 +244,7 @@ extension HomeView: HomeHeaderViewDelegate {
     func homeHeaderViewDidUpdateContents(_ view: HomeHeaderView) {
         setNeedsLayout()
     }
-    
+
     #if DASHPAY
     func homeHeaderViewJoinDashPayAction(_ headerView: HomeHeaderView) {
         delegate?.homeViewShowDashPayRegistrationFlow(self)
@@ -276,8 +282,12 @@ struct TxPreviewModel: Identifiable, Equatable {
 
 struct HomeViewContent<Content: View>: View {
     @State private var selectedTxDataItem: TransactionListDataItem? = nil
+    @State private var showShouldMixDialog: Bool = false
+    @State private var navigateToDashPayFlow: Bool = false
+    @State private var navigateToCoinJoin: Bool = false
     
     @StateObject var viewModel: HomeViewModel
+    weak var delegate: HomeViewDelegate?
     @ViewBuilder var balanceHeader: () -> Content
     @ViewBuilder var syncingHeader: () -> Content
     
@@ -303,6 +313,19 @@ struct HomeViewContent<Content: View>: View {
                         )
                         .padding(.horizontal, 15)
                         .id(viewModel.coinJoinItem.id)
+                        .onTapGesture { delegate?.homeViewShowCoinJoin(nil) }
+                    }
+
+                    if viewModel.showJoinDashpay {
+                        JoinDashPayView {
+                            if viewModel.shouldShowMixDashDialog {
+                                self.navigateToDashPayFlow = false
+                                self.navigateToCoinJoin = false
+                                showShouldMixDialog = true
+                            } else {
+                                delegate?.homeViewShowDashPayRegistrationFlow(nil)
+                            }
+                        }
                     }
                     
                     syncingHeader()
@@ -338,6 +361,37 @@ struct HomeViewContent<Content: View>: View {
         }
         .sheet(item: $selectedTxDataItem) { item in
             TransactionDetailsSheet(item: item)
+        }
+        .sheet(isPresented: $showShouldMixDialog, onDismiss: {
+            viewModel.shouldShowMixDashDialog = false
+            
+            if navigateToDashPayFlow {
+                navigateToDashPayFlow = false
+                delegate?.homeViewShowDashPayRegistrationFlow(nil)
+            } else if navigateToCoinJoin {
+                navigateToCoinJoin = false
+                delegate?.homeViewShowCoinJoin(nil)
+            }
+        }) {
+            if #available(iOS 16.0, *) {
+                MixDashDialog(
+                    positiveAction: {
+                        self.navigateToCoinJoin = true
+                    },
+                    negativeAction: {
+                        self.navigateToDashPayFlow = true
+                    }
+                ).presentationDetents([.height(250)])
+            } else {
+                MixDashDialog(
+                    positiveAction: {
+                        self.navigateToCoinJoin = true
+                    },
+                    negativeAction: {
+                        self.navigateToDashPayFlow = true
+                    }
+                )
+            }
         }
         .onAppear {
             viewModel.checkTimeSkew()
@@ -464,4 +518,44 @@ struct BackgroundBlurView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: UIView, context: Context) {}
+}
+
+public struct MixDashDialog: View {
+    @Environment(\.presentationMode) private var presentationMode
+    var positiveAction: () -> Void = {}
+    var negativeAction: () -> Void = {}
+    
+    public var body: some View {
+        BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
+            VStack(spacing: 0) {
+                FeatureTopText(
+                    title: NSLocalizedString("Mix your Dash Coins", comment: "CoinJoin"),
+                    text: NSLocalizedString("To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.", comment: "CoinJoin"),
+                    alignment: .leading
+                )
+                
+                Spacer()
+                
+                ButtonsGroup(
+                    orientation: .horizontal,
+                    style: .regular,
+                    size: .large,
+                    positiveButtonText: NSLocalizedString("Mix coins", comment: "CoinJoin"),
+                    positiveButtonAction: {
+                        presentationMode.wrappedValue.dismiss()
+                        positiveAction()
+                    },
+                    negativeButtonText: NSLocalizedString("Skip", comment: ""),
+                    negativeButtonAction: {
+                        presentationMode.wrappedValue.dismiss()
+                        negativeAction()
+                    }
+                )
+                .padding(.top, 20)
+                .padding(.bottom, 10)
+            }
+            .padding(.horizontal, 20)
+            .frame(maxHeight: .infinity)
+        }
+    }
 }
