@@ -148,6 +148,9 @@
 /* CoinJoin */
 "Advanced" = "ระดับสูง";
 
+/* CoinJoin */
+"Advanced privacy level requires a reliable internet connection" = "Advanced privacy level requires a reliable internet connection";
+
 /* No comment provided by engineer. */
 "Advanced Security" = "ความปลอดภัยขั้นสูง";
 
@@ -483,6 +486,9 @@
 
 /* No comment provided by engineer. */
 "Continue" = "ดำเนินการต่อ";
+
+/* No comment provided by engineer. */
+"Continue Anyway" = "Continue Anyway";
 
 /* Coinbase Entry Point */
 "Convert Crypto" = "การแปลงคริปโต";
@@ -1096,6 +1102,9 @@
 /* CoinJoin */
 "Intermediate" = "ระดับกลาง";
 
+/* CoinJoin */
+"Intermediate privacy level requires a reliable internet connection" = "Intermediate privacy level requires a reliable internet connection";
+
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "โอนเงินภายใน";
 
@@ -1182,6 +1191,9 @@
 
 /* Coinbase */
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "อาจใช้เวลานานถึง 10 นาทีในการโอน Dash จาก Coinbase ไปยังกระเป๋าเงิน Dash บนอุปกรณ์นี้";
+
+/* CoinJoin */
+"It is recommended to be on a Wi-Fi network to avoid losing any funds" = "It is recommended to be on a Wi-Fi network to avoid losing any funds";
 
 /* Coinbase */
 "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "เป็นเรื่องยากมากสำหรับผู้ใช้ระดับสูงที่มีความเชี่ยวชาญทางเทคนิคทุกระดับในการพิจารณาประวัติการทำธุรกรรมของคุณ";
@@ -2123,9 +2135,6 @@
 
 /* CoinJoin */
 "Stop Mixing" = "หยุดผสม";
-
-/* No comment provided by engineer. */
-"Support" = "ฝ่ายสนับสนุน";
 
 /* No comment provided by engineer. */
 "Swept!" = "ลบล้าง";

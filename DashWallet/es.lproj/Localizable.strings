@@ -148,6 +148,9 @@
 /* CoinJoin */
 "Advanced" = "Avanzado";
 
+/* CoinJoin */
+"Advanced privacy level requires a reliable internet connection" = "Advanced privacy level requires a reliable internet connection";
+
 /* No comment provided by engineer. */
 "Advanced Security" = "Seguridad Avanzada";
 
@@ -483,6 +486,9 @@
 
 /* No comment provided by engineer. */
 "Continue" = "Continuar";
+
+/* No comment provided by engineer. */
+"Continue Anyway" = "Continue Anyway";
 
 /* Coinbase Entry Point */
 "Convert Crypto" = "Convertir Criptomonedas";
@@ -1096,6 +1102,9 @@
 /* CoinJoin */
 "Intermediate" = "Intermedio";
 
+/* CoinJoin */
+"Intermediate privacy level requires a reliable internet connection" = "Intermediate privacy level requires a reliable internet connection";
+
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "Transferencia interna";
 
@@ -1182,6 +1191,9 @@
 
 /* Coinbase */
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "Podría tomar hasta 10 minutos transferir Dash de Coinbase a la billetera de Dash en este dispositivo";
+
+/* CoinJoin */
+"It is recommended to be on a Wi-Fi network to avoid losing any funds" = "It is recommended to be on a Wi-Fi network to avoid losing any funds";
 
 /* Coinbase */
 "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "Sería muy difícil para usuarios avanzados con cualquier nivel de experiencia técnica determinar tu historial de transacciones.";
@@ -2123,9 +2135,6 @@
 
 /* CoinJoin */
 "Stop Mixing" = "Dejar de mezclar";
-
-/* No comment provided by engineer. */
-"Support" = "Soporte";
 
 /* No comment provided by engineer. */
 "Swept!" = "¡Barrido!";

@@ -148,6 +148,9 @@
 /* CoinJoin */
 "Advanced" = "高度なもの";
 
+/* CoinJoin */
+"Advanced privacy level requires a reliable internet connection" = "Advanced privacy level requires a reliable internet connection";
+
 /* No comment provided by engineer. */
 "Advanced Security" = "高度なセキュリティ";
 
@@ -483,6 +486,9 @@
 
 /* No comment provided by engineer. */
 "Continue" = "続ける";
+
+/* No comment provided by engineer. */
+"Continue Anyway" = "Continue Anyway";
 
 /* Coinbase Entry Point */
 "Convert Crypto" = "仮想通貨を変換";
@@ -1096,6 +1102,9 @@
 /* CoinJoin */
 "Intermediate" = "通常のもの";
 
+/* CoinJoin */
+"Intermediate privacy level requires a reliable internet connection" = "Intermediate privacy level requires a reliable internet connection";
+
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "内部の送金";
 
@@ -1182,6 +1191,9 @@
 
 /* Coinbase */
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "このデバイスでは、CoinbaseからDashウォレットにDashを送金するのに最大10分かかる場合があります。";
+
+/* CoinJoin */
+"It is recommended to be on a Wi-Fi network to avoid losing any funds" = "It is recommended to be on a Wi-Fi network to avoid losing any funds";
 
 /* Coinbase */
 "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "技術的な専門知識を持つ上級ユーザーにとっても、取引履歴を確認することは非常に困難です";
@@ -2123,9 +2135,6 @@
 
 /* CoinJoin */
 "Stop Mixing" = "ミキシングを停止する";
-
-/* No comment provided by engineer. */
-"Support" = "サポート";
 
 /* No comment provided by engineer. */
 "Swept!" = "スイープしました!";

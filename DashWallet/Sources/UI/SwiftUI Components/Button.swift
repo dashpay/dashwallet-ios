@@ -80,10 +80,6 @@ struct DashButton: View {
             .cornerRadius(cornerRadius)
         }.background(GeometryReader { geometry in
             Color.clear
-                .onAppear {
-                    let size = geometry.size
-                    print("CustomView size: \(size)")
-                }
         })
     }
 

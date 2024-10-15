@@ -168,14 +168,10 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWMainMenuItemType_Support: {
-            NSURL *url = [DWAboutModel supportURL];
-            NSParameterAssert(url);
-            if (!url) {
-                return;
-            }
-
-            SFSafariViewController *safariViewController = [SFSafariViewController dw_controllerWithURL:url];
-            [self presentViewController:safariViewController animated:YES completion:nil];
+            NSArray *dataToShare = [[DSLogger sharedInstance] logFiles];
+            UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:dataToShare
+                                                                                                 applicationActivities:nil];
+            [self presentViewController:activityViewController animated:YES completion:nil];
             break;
         }
 #if DASHPAY

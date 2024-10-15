@@ -148,6 +148,9 @@
 /* CoinJoin */
 "Advanced" = "Advanced";
 
+/* CoinJoin */
+"Advanced privacy level requires a reliable internet connection" = "Advanced privacy level requires a reliable internet connection";
+
 /* No comment provided by engineer. */
 "Advanced Security" = "Masusing seguridad";
 
@@ -483,6 +486,9 @@
 
 /* No comment provided by engineer. */
 "Continue" = "Ipagpatuloy";
+
+/* No comment provided by engineer. */
+"Continue Anyway" = "Continue Anyway";
 
 /* Coinbase Entry Point */
 "Convert Crypto" = "I-convert ang Crypto";
@@ -1096,6 +1102,9 @@
 /* CoinJoin */
 "Intermediate" = "Intermediate";
 
+/* CoinJoin */
+"Intermediate privacy level requires a reliable internet connection" = "Intermediate privacy level requires a reliable internet connection";
+
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "Internal na pagpapadala";
 
@@ -1182,6 +1191,9 @@
 
 /* Coinbase */
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "Maaaring tumagal ng hanggang 10 minuto upang ilipat ang Dash mula sa Coinbase patungo sa Dash Wallet sa device na ito";
+
+/* CoinJoin */
+"It is recommended to be on a Wi-Fi network to avoid losing any funds" = "It is recommended to be on a Wi-Fi network to avoid losing any funds";
 
 /* Coinbase */
 "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "Napakahirap para sa mga advanced na user na may anumang antas ng teknikal na kadalubhasaan na matukoy ang iyong kasaysayan ng transaksyon";
@@ -2123,9 +2135,6 @@
 
 /* CoinJoin */
 "Stop Mixing" = "Itigil ang Paghahalo";
-
-/* No comment provided by engineer. */
-"Support" = "Suporta";
 
 /* No comment provided by engineer. */
 "Swept!" = "Tangayin!";

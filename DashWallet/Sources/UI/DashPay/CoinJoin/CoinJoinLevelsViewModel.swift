@@ -56,6 +56,8 @@ class CoinJoinLevelViewModel: ObservableObject {
         }
     }
     
+    var hasWiFi: Bool { coinJoinService.hasWiFi }
+    
     init() {
         coinJoinService.$mode
             .receive(on: DispatchQueue.main)
@@ -70,10 +72,13 @@ class CoinJoinLevelViewModel: ObservableObject {
                 self?.mixingState = state
             }
             .store(in: &cancellableBag)
+        
+        resetSelectedMode()
     }
 
     func resetSelectedMode() {
         self.selectedMode = coinJoinService.mode
+        self.mixingState = coinJoinService.mixingState
     }
     
     func startMixing() {
