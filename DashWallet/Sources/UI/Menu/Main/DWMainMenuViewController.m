@@ -22,7 +22,6 @@
 #import "DWAboutModel.h"
 #import "DWExploreTestnetViewController.h"
 #import "DWGlobalOptions.h"
-#import "DWMainMenuContentView.h"
 #import "DWMainMenuModel.h"
 #import "DWSecurityMenuViewController.h"
 #import "SFSafariViewController+DashWallet.h"
@@ -93,7 +92,6 @@ NS_ASSUME_NONNULL_BEGIN
     
 #if DASHPAY
     self.view.userModel = self.userProfileModel;
-    self.view.dashPayReady = self.dashPayReady;
 #endif
 }
 
