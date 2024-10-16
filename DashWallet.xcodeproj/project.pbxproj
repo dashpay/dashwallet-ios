@@ -678,6 +678,7 @@
 		75EBAA2A2BBBE385004488E3 /* ZenLedgerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA282BBBE385004488E3 /* ZenLedgerViewModel.swift */; };
 		75EE38D32CBE9EFC00845FFF /* MainMenuContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE38D22CBE9EFC00845FFF /* MainMenuContentView.swift */; };
 		75EE38D42CBE9EFC00845FFF /* MainMenuContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE38D22CBE9EFC00845FFF /* MainMenuContentView.swift */; };
+		75EE38D82CBFE52E00845FFF /* ContactsPlaceholderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE38D72CBFE52B00845FFF /* ContactsPlaceholderViewController.swift */; };
 		75F3F00D2C48F819004470EA /* RootEditProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759063EC2C42687F002F2AA9 /* RootEditProfileViewController.swift */; };
 		75F51AAD2ABD8C800057B499 /* IntegrationViewController+Uphold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */; };
 		75F51AAF2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */; };
@@ -771,7 +772,6 @@
 		C943B3462A409FFA00AF23C5 /* DWDPAvatarView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3442A409FFA00AF23C5 /* DWDPAvatarView.m */; };
 		C943B34D2A40A4C500AF23C5 /* DWInfoPopupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B34A2A40A4C500AF23C5 /* DWInfoPopupViewController.m */; };
 		C943B34E2A40A4C500AF23C5 /* DWInfoPopupContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B34B2A40A4C500AF23C5 /* DWInfoPopupContentView.m */; };
-		C943B4AB2A40A54600AF23C5 /* DWContactsPlaceholderViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3522A40A54500AF23C5 /* DWContactsPlaceholderViewController.m */; };
 		C943B4AC2A40A54600AF23C5 /* DWContactsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3542A40A54500AF23C5 /* DWContactsViewController.m */; };
 		C943B4AD2A40A54600AF23C5 /* DWBaseContactsContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3552A40A54500AF23C5 /* DWBaseContactsContentViewController.m */; };
 		C943B4AE2A40A54600AF23C5 /* DWNoContactsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3572A40A54500AF23C5 /* DWNoContactsViewController.m */; };
@@ -2536,6 +2536,7 @@
 		75EBAA282BBBE385004488E3 /* ZenLedgerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenLedgerViewModel.swift; sourceTree = "<group>"; };
 		75EDC78DE1686E55AE12233C /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; sourceTree = "<group>"; };
 		75EE38D22CBE9EFC00845FFF /* MainMenuContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuContentView.swift; sourceTree = "<group>"; };
+		75EE38D72CBFE52B00845FFF /* ContactsPlaceholderViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsPlaceholderViewController.swift; sourceTree = "<group>"; };
 		75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Uphold.swift"; sourceTree = "<group>"; };
 		75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Coinbase.swift"; sourceTree = "<group>"; };
@@ -2680,7 +2681,6 @@
 		C943B34B2A40A4C500AF23C5 /* DWInfoPopupContentView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWInfoPopupContentView.m; sourceTree = "<group>"; };
 		C943B34C2A40A4C500AF23C5 /* DWInfoPopupViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInfoPopupViewController.h; sourceTree = "<group>"; };
 		C943B3512A40A54500AF23C5 /* DWBaseContactsViewController+DWProtected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DWBaseContactsViewController+DWProtected.h"; sourceTree = "<group>"; };
-		C943B3522A40A54500AF23C5 /* DWContactsPlaceholderViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWContactsPlaceholderViewController.m; sourceTree = "<group>"; };
 		C943B3532A40A54500AF23C5 /* DWRootContactsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWRootContactsViewController.h; sourceTree = "<group>"; };
 		C943B3542A40A54500AF23C5 /* DWContactsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWContactsViewController.m; sourceTree = "<group>"; };
 		C943B3552A40A54500AF23C5 /* DWBaseContactsContentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWBaseContactsContentViewController.m; sourceTree = "<group>"; };
@@ -2715,7 +2715,6 @@
 		C943B3782A40A54600AF23C5 /* DWRequestsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWRequestsViewController.m; sourceTree = "<group>"; };
 		C943B3792A40A54600AF23C5 /* DWRootContactsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWRootContactsViewController.m; sourceTree = "<group>"; };
 		C943B37A2A40A54600AF23C5 /* DWBaseContactsContentViewController+DWProtected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DWBaseContactsContentViewController+DWProtected.h"; sourceTree = "<group>"; };
-		C943B37B2A40A54600AF23C5 /* DWContactsPlaceholderViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWContactsPlaceholderViewController.h; sourceTree = "<group>"; };
 		C943B37C2A40A54600AF23C5 /* DWContactsContentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWContactsContentViewController.h; sourceTree = "<group>"; };
 		C943B37D2A40A54600AF23C5 /* DWBaseContactsContentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWBaseContactsContentViewController.h; sourceTree = "<group>"; };
 		C943B37E2A40A54600AF23C5 /* DWContactsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWContactsViewController.h; sourceTree = "<group>"; };
@@ -6171,6 +6170,7 @@
 				EBFC2EA47915CD4F5BA81564 /* Pods */,
 			);
 			sourceTree = "<group>";
+			wrapsLines = 0;
 		};
 		75D5F3BF191EC270004AB296 /* Products */ = {
 			isa = PBXGroup;
@@ -6630,8 +6630,8 @@
 		C943B3502A40A54500AF23C5 /* Contacts */ = {
 			isa = PBXGroup;
 			children = (
+				75EE38D72CBFE52B00845FFF /* ContactsPlaceholderViewController.swift */,
 				C943B3512A40A54500AF23C5 /* DWBaseContactsViewController+DWProtected.h */,
-				C943B3522A40A54500AF23C5 /* DWContactsPlaceholderViewController.m */,
 				C943B3532A40A54500AF23C5 /* DWRootContactsViewController.h */,
 				C943B3542A40A54500AF23C5 /* DWContactsViewController.m */,
 				C943B3552A40A54500AF23C5 /* DWBaseContactsContentViewController.m */,
@@ -6642,7 +6642,6 @@
 				C943B3712A40A54600AF23C5 /* Requests */,
 				C943B3792A40A54600AF23C5 /* DWRootContactsViewController.m */,
 				C943B37A2A40A54600AF23C5 /* DWBaseContactsContentViewController+DWProtected.h */,
-				C943B37B2A40A54600AF23C5 /* DWContactsPlaceholderViewController.h */,
 				C943B37C2A40A54600AF23C5 /* DWContactsContentViewController.h */,
 				C943B37D2A40A54600AF23C5 /* DWBaseContactsContentViewController.h */,
 				C943B37E2A40A54600AF23C5 /* DWContactsViewController.h */,
@@ -9260,6 +9259,7 @@
 				C943B4B02A40A54600AF23C5 /* DWContactsContentViewController.m in Sources */,
 				C9D2C7242A320AA000D15901 /* WKWebView+CrowdNode.swift in Sources */,
 				C9D2C7252A320AA000D15901 /* SyncingActivityMonitor.swift in Sources */,
+				75EE38D82CBFE52E00845FFF /* ContactsPlaceholderViewController.swift in Sources */,
 				C9D2C7262A320AA000D15901 /* EmptyView.swift in Sources */,
 				C9D2C7272A320AA000D15901 /* (null) in Sources */,
 				C9D2C7282A320AA000D15901 /* DWQRScanModel.m in Sources */,
@@ -9322,7 +9322,6 @@
 				C9D2C74E2A320AA000D15901 /* ExploreMapView.swift in Sources */,
 				C943B32F2A408CED00AF23C5 /* DWSaveAlertViewController.m in Sources */,
 				C930784C2A6AD59700906E4B /* TitleValueCell.swift in Sources */,
-				C943B4AB2A40A54600AF23C5 /* DWContactsPlaceholderViewController.m in Sources */,
 				7566F48B2BB6CAF2005238D2 /* MenuItem.swift in Sources */,
 				C9D2C74F2A320AA000D15901 /* DWSeedPhraseRow.m in Sources */,
 				C943B5132A40A54600AF23C5 /* DWHistoryFilterContentView.m in Sources */,
@@ -10751,7 +10750,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 171;
+				CURRENT_PROJECT_VERSION = 173;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -10887,7 +10886,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 171;
+				CURRENT_PROJECT_VERSION = 173;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11022,7 +11021,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 171;
+				CURRENT_PROJECT_VERSION = 173;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11167,7 +11166,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 171;
+				CURRENT_PROJECT_VERSION = 173;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
