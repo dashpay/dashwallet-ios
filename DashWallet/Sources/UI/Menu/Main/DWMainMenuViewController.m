@@ -228,6 +228,12 @@ NS_ASSUME_NONNULL_BEGIN
         [self presentViewController:controller animated:YES completion:nil];
     }
 }
+
+- (void)mainMenuContentView:(DWMainMenuContentView * _Nonnull)view showCoinJoin:(UIButton * _Nonnull)sender {
+    CoinJoinLevelsViewController *controller = [CoinJoinLevelsViewController controllerWithIsFullScreen:NO];
+    controller.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:controller animated:YES];
+}
 #endif
 
 #pragma mark - DWToolsMenuViewControllerDelegate

@@ -36,7 +36,7 @@ class CoinJoinLevelsViewController: UIViewController {
         return true
     }
     
-    @objc
+    @objc(controllerWithIsFullScreen:)
     static func controller(isFullScreen: Bool = false) -> CoinJoinLevelsViewController {
         let vc = vc(CoinJoinLevelsViewController.self, from: sb("CoinJoin"))
         vc.modalPresentationStyle = isFullScreen ? .fullScreen : .formSheet

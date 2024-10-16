@@ -16,6 +16,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 @objc(DWMainMenuContentViewDelegate)
 protocol MainMenuContentViewDelegate: AnyObject {
@@ -25,6 +26,7 @@ protocol MainMenuContentViewDelegate: AnyObject {
     func mainMenuContentView(_ view: MainMenuContentView, joinDashPayAction sender: UIButton)
     func mainMenuContentView(_ view: MainMenuContentView, showQRAction sender: UIButton)
     func mainMenuContentView(_ view: MainMenuContentView, editProfileAction sender: UIButton)
+    func mainMenuContentView(_ view: MainMenuContentView, showCoinJoin sender: UIButton)
     #endif
 }
 
@@ -134,7 +136,30 @@ class MainMenuContentView: UIView {
     }
     
     @objc private func joinButtonAction(_ sender: UIButton) {
-        delegate?.mainMenuContentView(self, joinDashPayAction: sender)
+        let swiftUIView = MixDashDialog(
+            positiveAction: {
+                self.delegate?.mainMenuContentView(self, showCoinJoin: sender)
+            }, negativeAction: {
+                self.delegate?.mainMenuContentView(self, joinDashPayAction: sender)
+            }
+        )
+        let hostingController = UIHostingController(rootView: swiftUIView)
+        
+        if #available(iOS 16.0, *) {
+            if let sheet = hostingController.sheetPresentationController {
+                let fitId = UISheetPresentationController.Detent.Identifier("fit")
+                let fitDetent = UISheetPresentationController.Detent.custom(identifier: fitId) { _ in
+                    250
+                }
+                sheet.detents = [fitDetent]
+            }
+        }
+        
+        if let parentVC = self.parentViewController() {
+            parentVC.present(hostingController, animated: true, completion: nil)
+        } else {
+            delegate?.mainMenuContentView(self, joinDashPayAction: sender)
+        }
     }
     #endif
 }

@@ -510,8 +510,8 @@ struct TransactionDetailsSheet: View {
 
 public struct MixDashDialog: View {
     @Environment(\.presentationMode) private var presentationMode
-    var positiveAction: () -> Void = {}
-    var negativeAction: () -> Void = {}
+    var positiveAction: () -> Void
+    var negativeAction: () -> Void
     
     public var body: some View {
         BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
