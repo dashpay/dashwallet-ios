@@ -17,11 +17,11 @@
 
 #import "DWRootContactsViewController.h"
 
-#import "DWContactsPlaceholderViewController.h"
 #import "DWContactsViewController.h"
 #import "DWDashPayModel.h"
 #import "DWGlobalOptions.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 @interface DWRootContactsViewController ()
 

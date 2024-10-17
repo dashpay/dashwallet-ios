@@ -22,7 +22,6 @@ enum DPWelcomState {
     case voting
 }
 
-@objc(DWDPWelcomeMenuView)
 class DPWelcomeMenuView: UIView {
     private let prefs = VotingPrefs.shared
     

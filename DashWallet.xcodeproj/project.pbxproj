@@ -184,7 +184,6 @@
 		2A74F0042305C59700C475EB /* UIViewController+DWTxFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74F0032305C59700C475EB /* UIViewController+DWTxFilter.m */; };
 		2A7A7BAE234770C900451078 /* DWCaptureSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BAD234770C900451078 /* DWCaptureSessionManager.m */; };
 		2A7A7BB22347927700451078 /* DWMainMenuViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BB12347927700451078 /* DWMainMenuViewController.m */; };
-		2A7A7BB6234792A600451078 /* DWMainMenuContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BB5234792A600451078 /* DWMainMenuContentView.m */; };
 		2A7A7BBE2347950700451078 /* DWMainMenuTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BBC2347950700451078 /* DWMainMenuTableViewCell.m */; };
 		2A7A7BBF2347950700451078 /* DWMainMenuTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A7A7BBD2347950700451078 /* DWMainMenuTableViewCell.xib */; };
 		2A7A7BC3234797FC00451078 /* DWMainMenuModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BC2234797FC00451078 /* DWMainMenuModel.m */; };
@@ -554,6 +553,10 @@
 		753130922B47EE920069C9B7 /* UpholdCapability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753130902B47EE920069C9B7 /* UpholdCapability.swift */; };
 		753130972B4944130069C9B7 /* UpholdError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753130962B4944130069C9B7 /* UpholdError.swift */; };
 		753130982B4944130069C9B7 /* UpholdError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753130962B4944130069C9B7 /* UpholdError.swift */; };
+		753261AE2CBC1040003CDE00 /* InvitationFlowViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261AD2CBC1040003CDE00 /* InvitationFlowViewController.swift */; };
+		753261B02CBC11BF003CDE00 /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261AF2CBC11BF003CDE00 /* WelcomeViewController.swift */; };
+		753261B22CBC157F003CDE00 /* GetStartedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261B12CBC157F003CDE00 /* GetStartedViewController.swift */; };
+		753261B42CBD2761003CDE00 /* JoinDashPayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261B32CBD2761003CDE00 /* JoinDashPayView.swift */; };
 		753FD7E22CA44BDD00B7751F /* CoinJoinProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753FD7E12CA44BDD00B7751F /* CoinJoinProgress.swift */; };
 		753FD7E32CA44BDD00B7751F /* CoinJoinProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753FD7E12CA44BDD00B7751F /* CoinJoinProgress.swift */; };
 		753FDBEA2AEA422F0005EEC3 /* VotingPrefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753FDBE92AEA422F0005EEC3 /* VotingPrefs.swift */; };
@@ -638,7 +641,6 @@
 		75C1F0452AE26AC0006929CA /* CoinJoinLevelsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1F0442AE26AC0006929CA /* CoinJoinLevelsViewModel.swift */; };
 		75C1F0462AE26AC0006929CA /* CoinJoinLevelsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1F0442AE26AC0006929CA /* CoinJoinLevelsViewModel.swift */; };
 		75C1F09E2AFF675400FE675E /* EnterVotingKeyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1F09D2AFF675400FE675E /* EnterVotingKeyViewController.swift */; };
-		75C72CDF2B19FB0C00129504 /* DPWelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C72CDE2B19FB0C00129504 /* DPWelcomeView.swift */; };
 		75C83B522B11B62400C33660 /* ConfirmRequestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C83B512B11B62400C33660 /* ConfirmRequestViewController.swift */; };
 		75CDD7802C0898E400F433D2 /* Shape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CDD77F2C0898E400F433D2 /* Shape.swift */; };
 		75CDD7812C0898E400F433D2 /* Shape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CDD77F2C0898E400F433D2 /* Shape.swift */; };
@@ -674,6 +676,9 @@
 		75EBAA262BBA9DC2004488E3 /* ZenLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA242BBA9DC2004488E3 /* ZenLedger.swift */; };
 		75EBAA292BBBE385004488E3 /* ZenLedgerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA282BBBE385004488E3 /* ZenLedgerViewModel.swift */; };
 		75EBAA2A2BBBE385004488E3 /* ZenLedgerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA282BBBE385004488E3 /* ZenLedgerViewModel.swift */; };
+		75EE38D32CBE9EFC00845FFF /* MainMenuContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE38D22CBE9EFC00845FFF /* MainMenuContentView.swift */; };
+		75EE38D42CBE9EFC00845FFF /* MainMenuContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE38D22CBE9EFC00845FFF /* MainMenuContentView.swift */; };
+		75EE38D82CBFE52E00845FFF /* ContactsPlaceholderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE38D72CBFE52B00845FFF /* ContactsPlaceholderViewController.swift */; };
 		75F3F00D2C48F819004470EA /* RootEditProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759063EC2C42687F002F2AA9 /* RootEditProfileViewController.swift */; };
 		75F51AAD2ABD8C800057B499 /* IntegrationViewController+Uphold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */; };
 		75F51AAF2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */; };
@@ -767,7 +772,6 @@
 		C943B3462A409FFA00AF23C5 /* DWDPAvatarView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3442A409FFA00AF23C5 /* DWDPAvatarView.m */; };
 		C943B34D2A40A4C500AF23C5 /* DWInfoPopupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B34A2A40A4C500AF23C5 /* DWInfoPopupViewController.m */; };
 		C943B34E2A40A4C500AF23C5 /* DWInfoPopupContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B34B2A40A4C500AF23C5 /* DWInfoPopupContentView.m */; };
-		C943B4AB2A40A54600AF23C5 /* DWContactsPlaceholderViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3522A40A54500AF23C5 /* DWContactsPlaceholderViewController.m */; };
 		C943B4AC2A40A54600AF23C5 /* DWContactsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3542A40A54500AF23C5 /* DWContactsViewController.m */; };
 		C943B4AD2A40A54600AF23C5 /* DWBaseContactsContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3552A40A54500AF23C5 /* DWBaseContactsContentViewController.m */; };
 		C943B4AE2A40A54600AF23C5 /* DWNoContactsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3572A40A54500AF23C5 /* DWNoContactsViewController.m */; };
@@ -798,11 +802,8 @@
 		C943B4C72A40A54600AF23C5 /* DWUserSearchResultViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B39A2A40A54600AF23C5 /* DWUserSearchResultViewController.m */; };
 		C943B4C82A40A54600AF23C5 /* DWSearchStateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B39B2A40A54600AF23C5 /* DWSearchStateViewController.m */; };
 		C943B4DB2A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3CA2A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.m */; };
-		C943B4DC2A40A54600AF23C5 /* DWInvitationFlowViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3CB2A40A54600AF23C5 /* DWInvitationFlowViewController.m */; };
-		C943B4DD2A40A54600AF23C5 /* DWDPWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3CC2A40A54600AF23C5 /* DWDPWelcomeViewController.m */; };
 		C943B4DE2A40A54600AF23C5 /* DWDPWelcomePageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3CD2A40A54600AF23C5 /* DWDPWelcomePageViewController.m */; };
 		C943B4DF2A40A54600AF23C5 /* DWGetStartedContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3CF2A40A54600AF23C5 /* DWGetStartedContentViewController.m */; };
-		C943B4E02A40A54600AF23C5 /* DWGetStartedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3D12A40A54600AF23C5 /* DWGetStartedViewController.m */; };
 		C943B4E12A40A54600AF23C5 /* DWGetStartedItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3D62A40A54600AF23C5 /* DWGetStartedItemView.m */; };
 		C943B4E22A40A54600AF23C5 /* DWPassthroughView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3DD2A40A54600AF23C5 /* DWPassthroughView.m */; };
 		C943B4E32A40A54600AF23C5 /* DWPassthroughStackView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3DE2A40A54600AF23C5 /* DWPassthroughStackView.m */; };
@@ -1211,7 +1212,6 @@
 		C9D2C7CE2A320AA000D15901 /* CrowdNodeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470617D5299A671900DCC667 /* CrowdNodeCell.swift */; };
 		C9D2C7CF2A320AA000D15901 /* MerchantListLocationOffCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BD128C1305E00490F5E /* MerchantListLocationOffCell.swift */; };
 		C9D2C7D02A320AA000D15901 /* DWExploreTestnetContentsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BE228C1305E00490F5E /* DWExploreTestnetContentsView.m */; };
-		C9D2C7D12A320AA000D15901 /* DWMainMenuContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BB5234792A600451078 /* DWMainMenuContentView.m */; };
 		C9D2C7D32A320AA000D15901 /* CrowdNodeAPIConfirmationTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1186092429759C4B00279FCC /* CrowdNodeAPIConfirmationTx.swift */; };
 		C9D2C7D42A320AA000D15901 /* UIViewController+DWEmbedding.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8F23A31713006A2A59 /* UIViewController+DWEmbedding.m */; };
 		C9D2C7D62A320AA000D15901 /* CALayer+DWShadow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD71222F97B65008C7BC9 /* CALayer+DWShadow.m */; };
@@ -1910,8 +1910,6 @@
 		2A7A7BAD234770C900451078 /* DWCaptureSessionManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCaptureSessionManager.m; sourceTree = "<group>"; };
 		2A7A7BB02347927700451078 /* DWMainMenuViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMainMenuViewController.h; sourceTree = "<group>"; };
 		2A7A7BB12347927700451078 /* DWMainMenuViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMainMenuViewController.m; sourceTree = "<group>"; };
-		2A7A7BB4234792A600451078 /* DWMainMenuContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMainMenuContentView.h; sourceTree = "<group>"; };
-		2A7A7BB5234792A600451078 /* DWMainMenuContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMainMenuContentView.m; sourceTree = "<group>"; };
 		2A7A7BBB2347950700451078 /* DWMainMenuTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMainMenuTableViewCell.h; sourceTree = "<group>"; };
 		2A7A7BBC2347950700451078 /* DWMainMenuTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMainMenuTableViewCell.m; sourceTree = "<group>"; };
 		2A7A7BBD2347950700451078 /* DWMainMenuTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWMainMenuTableViewCell.xib; sourceTree = "<group>"; };
@@ -2439,6 +2437,10 @@
 		7531308C2B47EC910069C9B7 /* UpholdClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpholdClient.swift; sourceTree = "<group>"; };
 		753130902B47EE920069C9B7 /* UpholdCapability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpholdCapability.swift; sourceTree = "<group>"; };
 		753130962B4944130069C9B7 /* UpholdError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpholdError.swift; sourceTree = "<group>"; };
+		753261AD2CBC1040003CDE00 /* InvitationFlowViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationFlowViewController.swift; sourceTree = "<group>"; };
+		753261AF2CBC11BF003CDE00 /* WelcomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
+		753261B12CBC157F003CDE00 /* GetStartedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetStartedViewController.swift; sourceTree = "<group>"; };
+		753261B32CBD2761003CDE00 /* JoinDashPayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinDashPayView.swift; sourceTree = "<group>"; };
 		753FD7E12CA44BDD00B7751F /* CoinJoinProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinProgress.swift; sourceTree = "<group>"; };
 		753FDBE92AEA422F0005EEC3 /* VotingPrefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingPrefs.swift; sourceTree = "<group>"; };
 		753FDBEB2AECF4CC0005EEC3 /* VotingHeaderView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = VotingHeaderView.xib; sourceTree = "<group>"; };
@@ -2499,7 +2501,6 @@
 		75BDE7AB2BF3287400556791 /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toast.swift; sourceTree = "<group>"; };
 		75C1F0442AE26AC0006929CA /* CoinJoinLevelsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinLevelsViewModel.swift; sourceTree = "<group>"; };
 		75C1F09D2AFF675400FE675E /* EnterVotingKeyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterVotingKeyViewController.swift; sourceTree = "<group>"; };
-		75C72CDE2B19FB0C00129504 /* DPWelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DPWelcomeView.swift; sourceTree = "<group>"; };
 		75C83B512B11B62400C33660 /* ConfirmRequestViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmRequestViewController.swift; sourceTree = "<group>"; };
 		75CDD77F2C0898E400F433D2 /* Shape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shape.swift; sourceTree = "<group>"; };
 		75CDD7822C0898FA00F433D2 /* Wrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wrapper.swift; sourceTree = "<group>"; };
@@ -2534,6 +2535,8 @@
 		75EBAA242BBA9DC2004488E3 /* ZenLedger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenLedger.swift; sourceTree = "<group>"; };
 		75EBAA282BBBE385004488E3 /* ZenLedgerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenLedgerViewModel.swift; sourceTree = "<group>"; };
 		75EDC78DE1686E55AE12233C /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; sourceTree = "<group>"; };
+		75EE38D22CBE9EFC00845FFF /* MainMenuContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuContentView.swift; sourceTree = "<group>"; };
+		75EE38D72CBFE52B00845FFF /* ContactsPlaceholderViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsPlaceholderViewController.swift; sourceTree = "<group>"; };
 		75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Uphold.swift"; sourceTree = "<group>"; };
 		75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Coinbase.swift"; sourceTree = "<group>"; };
@@ -2678,7 +2681,6 @@
 		C943B34B2A40A4C500AF23C5 /* DWInfoPopupContentView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWInfoPopupContentView.m; sourceTree = "<group>"; };
 		C943B34C2A40A4C500AF23C5 /* DWInfoPopupViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInfoPopupViewController.h; sourceTree = "<group>"; };
 		C943B3512A40A54500AF23C5 /* DWBaseContactsViewController+DWProtected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DWBaseContactsViewController+DWProtected.h"; sourceTree = "<group>"; };
-		C943B3522A40A54500AF23C5 /* DWContactsPlaceholderViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWContactsPlaceholderViewController.m; sourceTree = "<group>"; };
 		C943B3532A40A54500AF23C5 /* DWRootContactsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWRootContactsViewController.h; sourceTree = "<group>"; };
 		C943B3542A40A54500AF23C5 /* DWContactsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWContactsViewController.m; sourceTree = "<group>"; };
 		C943B3552A40A54500AF23C5 /* DWBaseContactsContentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWBaseContactsContentViewController.m; sourceTree = "<group>"; };
@@ -2713,7 +2715,6 @@
 		C943B3782A40A54600AF23C5 /* DWRequestsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWRequestsViewController.m; sourceTree = "<group>"; };
 		C943B3792A40A54600AF23C5 /* DWRootContactsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWRootContactsViewController.m; sourceTree = "<group>"; };
 		C943B37A2A40A54600AF23C5 /* DWBaseContactsContentViewController+DWProtected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DWBaseContactsContentViewController+DWProtected.h"; sourceTree = "<group>"; };
-		C943B37B2A40A54600AF23C5 /* DWContactsPlaceholderViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWContactsPlaceholderViewController.h; sourceTree = "<group>"; };
 		C943B37C2A40A54600AF23C5 /* DWContactsContentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWContactsContentViewController.h; sourceTree = "<group>"; };
 		C943B37D2A40A54600AF23C5 /* DWBaseContactsContentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWBaseContactsContentViewController.h; sourceTree = "<group>"; };
 		C943B37E2A40A54600AF23C5 /* DWContactsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWContactsViewController.h; sourceTree = "<group>"; };
@@ -2743,20 +2744,14 @@
 		C943B39B2A40A54600AF23C5 /* DWSearchStateViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWSearchStateViewController.m; sourceTree = "<group>"; };
 		C943B3C82A40A54600AF23C5 /* DWDashPayConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDashPayConstants.h; sourceTree = "<group>"; };
 		C943B3CA2A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPWelcomeCollectionViewController.m; sourceTree = "<group>"; };
-		C943B3CB2A40A54600AF23C5 /* DWInvitationFlowViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWInvitationFlowViewController.m; sourceTree = "<group>"; };
-		C943B3CC2A40A54600AF23C5 /* DWDPWelcomeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPWelcomeViewController.m; sourceTree = "<group>"; };
 		C943B3CD2A40A54600AF23C5 /* DWDPWelcomePageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPWelcomePageViewController.m; sourceTree = "<group>"; };
 		C943B3CF2A40A54600AF23C5 /* DWGetStartedContentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWGetStartedContentViewController.m; sourceTree = "<group>"; };
 		C943B3D02A40A54600AF23C5 /* DWGetStarted.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWGetStarted.h; sourceTree = "<group>"; };
-		C943B3D12A40A54600AF23C5 /* DWGetStartedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWGetStartedViewController.m; sourceTree = "<group>"; };
 		C943B3D22A40A54600AF23C5 /* DWGetStartedContentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWGetStartedContentViewController.h; sourceTree = "<group>"; };
-		C943B3D32A40A54600AF23C5 /* DWGetStartedViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWGetStartedViewController.h; sourceTree = "<group>"; };
 		C943B3D52A40A54600AF23C5 /* DWGetStartedItemView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWGetStartedItemView.h; sourceTree = "<group>"; };
 		C943B3D62A40A54600AF23C5 /* DWGetStartedItemView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWGetStartedItemView.m; sourceTree = "<group>"; };
 		C943B3D72A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPWelcomeCollectionViewController.h; sourceTree = "<group>"; };
-		C943B3D82A40A54600AF23C5 /* DWInvitationFlowViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInvitationFlowViewController.h; sourceTree = "<group>"; };
 		C943B3D92A40A54600AF23C5 /* DWDPWelcomePageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPWelcomePageViewController.h; sourceTree = "<group>"; };
-		C943B3DA2A40A54600AF23C5 /* DWDPWelcomeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPWelcomeViewController.h; sourceTree = "<group>"; };
 		C943B3DC2A40A54600AF23C5 /* DWPassthroughStackView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPassthroughStackView.h; sourceTree = "<group>"; };
 		C943B3DD2A40A54600AF23C5 /* DWPassthroughView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWPassthroughView.m; sourceTree = "<group>"; };
 		C943B3DE2A40A54600AF23C5 /* DWPassthroughStackView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWPassthroughStackView.m; sourceTree = "<group>"; };
@@ -4152,8 +4147,7 @@
 			children = (
 				2A7A7BC0234797E700451078 /* Model */,
 				2A7A7BB72347948F00451078 /* Cells */,
-				2A7A7BB4234792A600451078 /* DWMainMenuContentView.h */,
-				2A7A7BB5234792A600451078 /* DWMainMenuContentView.m */,
+				75EE38D22CBE9EFC00845FFF /* MainMenuContentView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -6176,6 +6170,7 @@
 				EBFC2EA47915CD4F5BA81564 /* Pods */,
 			);
 			sourceTree = "<group>";
+			wrapsLines = 0;
 		};
 		75D5F3BF191EC270004AB296 /* Products */ = {
 			isa = PBXGroup;
@@ -6635,8 +6630,8 @@
 		C943B3502A40A54500AF23C5 /* Contacts */ = {
 			isa = PBXGroup;
 			children = (
+				75EE38D72CBFE52B00845FFF /* ContactsPlaceholderViewController.swift */,
 				C943B3512A40A54500AF23C5 /* DWBaseContactsViewController+DWProtected.h */,
-				C943B3522A40A54500AF23C5 /* DWContactsPlaceholderViewController.m */,
 				C943B3532A40A54500AF23C5 /* DWRootContactsViewController.h */,
 				C943B3542A40A54500AF23C5 /* DWContactsViewController.m */,
 				C943B3552A40A54500AF23C5 /* DWBaseContactsContentViewController.m */,
@@ -6647,7 +6642,6 @@
 				C943B3712A40A54600AF23C5 /* Requests */,
 				C943B3792A40A54600AF23C5 /* DWRootContactsViewController.m */,
 				C943B37A2A40A54600AF23C5 /* DWBaseContactsContentViewController+DWProtected.h */,
-				C943B37B2A40A54600AF23C5 /* DWContactsPlaceholderViewController.h */,
 				C943B37C2A40A54600AF23C5 /* DWContactsContentViewController.h */,
 				C943B37D2A40A54600AF23C5 /* DWBaseContactsContentViewController.h */,
 				C943B37E2A40A54600AF23C5 /* DWContactsViewController.h */,
@@ -6794,16 +6788,15 @@
 		C943B3C92A40A54600AF23C5 /* Welcome */ = {
 			isa = PBXGroup;
 			children = (
-				C943B3CA2A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.m */,
-				C943B3CB2A40A54600AF23C5 /* DWInvitationFlowViewController.m */,
-				C943B3CC2A40A54600AF23C5 /* DWDPWelcomeViewController.m */,
-				C943B3CD2A40A54600AF23C5 /* DWDPWelcomePageViewController.m */,
 				C943B3CE2A40A54600AF23C5 /* GetStarted */,
-				C943B3D72A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.h */,
-				C943B3D82A40A54600AF23C5 /* DWInvitationFlowViewController.h */,
-				C943B3D92A40A54600AF23C5 /* DWDPWelcomePageViewController.h */,
-				C943B3DA2A40A54600AF23C5 /* DWDPWelcomeViewController.h */,
 				C943B3DB2A40A54600AF23C5 /* Views */,
+				C943B3CA2A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.m */,
+				C943B3CD2A40A54600AF23C5 /* DWDPWelcomePageViewController.m */,
+				C943B3D72A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.h */,
+				C943B3D92A40A54600AF23C5 /* DWDPWelcomePageViewController.h */,
+				753261AD2CBC1040003CDE00 /* InvitationFlowViewController.swift */,
+				753261AF2CBC11BF003CDE00 /* WelcomeViewController.swift */,
+				753261B32CBD2761003CDE00 /* JoinDashPayView.swift */,
 			);
 			path = Welcome;
 			sourceTree = "<group>";
@@ -6811,11 +6804,10 @@
 		C943B3CE2A40A54600AF23C5 /* GetStarted */ = {
 			isa = PBXGroup;
 			children = (
+				753261B12CBC157F003CDE00 /* GetStartedViewController.swift */,
 				C943B3CF2A40A54600AF23C5 /* DWGetStartedContentViewController.m */,
 				C943B3D02A40A54600AF23C5 /* DWGetStarted.h */,
-				C943B3D12A40A54600AF23C5 /* DWGetStartedViewController.m */,
 				C943B3D22A40A54600AF23C5 /* DWGetStartedContentViewController.h */,
-				C943B3D32A40A54600AF23C5 /* DWGetStartedViewController.h */,
 				C943B3D42A40A54600AF23C5 /* Views */,
 			);
 			path = GetStarted;
@@ -7486,7 +7478,6 @@
 		C9D2C95F2A386D9700D15901 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				75C72CDE2B19FB0C00129504 /* DPWelcomeView.swift */,
 				756188202B1EE78A00B778E3 /* DPVotingResultView.swift */,
 			);
 			path = Views;
@@ -8516,6 +8507,7 @@
 				C91E919729FBACE6003E7883 /* ExtendedPublicKeysModel.swift in Sources */,
 				C9829CE22A562CEE007132E4 /* TappableTextView.swift in Sources */,
 				4751CAD5297024EA00F63AC4 /* OrderPreviewViewController.swift in Sources */,
+				75EE38D32CBE9EFC00845FFF /* MainMenuContentView.swift in Sources */,
 				478C982F294305D800FAA0F0 /* ActivePaymentMethodView.swift in Sources */,
 				47CDEEC72949DC38008AE06D /* BasicInfoController.swift in Sources */,
 				2AD1CEA822E0C8C900C99324 /* DWPreviewSeedPhraseModel.m in Sources */,
@@ -8749,7 +8741,6 @@
 				470617D6299A671900DCC667 /* CrowdNodeCell.swift in Sources */,
 				47AE8BF528C1306000490F5E /* MerchantListLocationOffCell.swift in Sources */,
 				47AE8C0028C1306000490F5E /* DWExploreTestnetContentsView.m in Sources */,
-				2A7A7BB6234792A600451078 /* DWMainMenuContentView.m in Sources */,
 				1186092529759C4B00279FCC /* CrowdNodeAPIConfirmationTx.swift in Sources */,
 				2A913E9023A31713006A2A59 /* UIViewController+DWEmbedding.m in Sources */,
 				2A2CD71322F97B65008C7BC9 /* CALayer+DWShadow.m in Sources */,
@@ -9085,6 +9076,7 @@
 				C9D2C69E2A320AA000D15901 /* AtmDetailsView.swift in Sources */,
 				C9D2C69F2A320AA000D15901 /* DWPlaceholderFormTableViewCell.m in Sources */,
 				C9D2C6A02A320AA000D15901 /* DWTitleDetailCellView.m in Sources */,
+				75EE38D42CBE9EFC00845FFF /* MainMenuContentView.swift in Sources */,
 				757118DC2B0F189D000AE391 /* VerifyIdenityViewController.swift in Sources */,
 				C9D2C6A12A320AA000D15901 /* AmountInputControl.swift in Sources */,
 				C9D2C6A22A320AA000D15901 /* DWSegmentSliderFormTableViewCell.m in Sources */,
@@ -9096,6 +9088,7 @@
 				C9D2C6A72A320AA000D15901 /* CrowdNodeResponse.swift in Sources */,
 				C9D2C6A82A320AA000D15901 /* FileManager+DashWallet.swift in Sources */,
 				C9D2C6A92A320AA000D15901 /* PointOfUseItemCell.swift in Sources */,
+				753261B22CBC157F003CDE00 /* GetStartedViewController.swift in Sources */,
 				C956AF142A5B5949002FAB75 /* EnterAddressViewController.swift in Sources */,
 				C9D2C6AA2A320AA000D15901 /* DSTransaction+DashWallet.swift in Sources */,
 				C943B4C52A40A54600AF23C5 /* DWUserSearchModel.m in Sources */,
@@ -9266,6 +9259,7 @@
 				C943B4B02A40A54600AF23C5 /* DWContactsContentViewController.m in Sources */,
 				C9D2C7242A320AA000D15901 /* WKWebView+CrowdNode.swift in Sources */,
 				C9D2C7252A320AA000D15901 /* SyncingActivityMonitor.swift in Sources */,
+				75EE38D82CBFE52E00845FFF /* ContactsPlaceholderViewController.swift in Sources */,
 				C9D2C7262A320AA000D15901 /* EmptyView.swift in Sources */,
 				C9D2C7272A320AA000D15901 /* (null) in Sources */,
 				C9D2C7282A320AA000D15901 /* DWQRScanModel.m in Sources */,
@@ -9323,11 +9317,11 @@
 				C9D2C74A2A320AA000D15901 /* ShortcutsView.swift in Sources */,
 				C9D2C74B2A320AA000D15901 /* DWFormSectionModel.m in Sources */,
 				C9D2C74C2A320AA000D15901 /* (null) in Sources */,
+				753261B42CBD2761003CDE00 /* JoinDashPayView.swift in Sources */,
 				C9D2C74D2A320AA000D15901 /* CoinbasePlaceBuyOrderResponse.swift in Sources */,
 				C9D2C74E2A320AA000D15901 /* ExploreMapView.swift in Sources */,
 				C943B32F2A408CED00AF23C5 /* DWSaveAlertViewController.m in Sources */,
 				C930784C2A6AD59700906E4B /* TitleValueCell.swift in Sources */,
-				C943B4AB2A40A54600AF23C5 /* DWContactsPlaceholderViewController.m in Sources */,
 				7566F48B2BB6CAF2005238D2 /* MenuItem.swift in Sources */,
 				C9D2C74F2A320AA000D15901 /* DWSeedPhraseRow.m in Sources */,
 				C943B5132A40A54600AF23C5 /* DWHistoryFilterContentView.m in Sources */,
@@ -9370,6 +9364,7 @@
 				C943B4C82A40A54600AF23C5 /* DWSearchStateViewController.m in Sources */,
 				C9D2C76B2A320AA000D15901 /* BaseViewController.swift in Sources */,
 				C9D2C76C2A320AA000D15901 /* AccountListController.swift in Sources */,
+				753261B02CBC11BF003CDE00 /* WelcomeViewController.swift in Sources */,
 				C9D2C76D2A320AA000D15901 /* DWUpholdTransactionObject.m in Sources */,
 				C943B5052A40A54600AF23C5 /* DWDPIncomingRequestCell.m in Sources */,
 				C9D2C76E2A320AA000D15901 /* DWBaseSeedViewController.m in Sources */,
@@ -9502,7 +9497,6 @@
 				751B61C62ADFFD0A00D1C2EF /* IntegrationViewController+Coinbase.swift in Sources */,
 				C9D2C7CF2A320AA000D15901 /* MerchantListLocationOffCell.swift in Sources */,
 				C9D2C7D02A320AA000D15901 /* DWExploreTestnetContentsView.m in Sources */,
-				C9D2C7D12A320AA000D15901 /* DWMainMenuContentView.m in Sources */,
 				C9D2C7D32A320AA000D15901 /* CrowdNodeAPIConfirmationTx.swift in Sources */,
 				C9D2C7D42A320AA000D15901 /* UIViewController+DWEmbedding.m in Sources */,
 				7503643F2C89D49A0029EC0D /* CoinJoinService.swift in Sources */,
@@ -9576,7 +9570,6 @@
 				C9D2C8122A320AA000D15901 /* SeedDB.swift in Sources */,
 				C9D2C8132A320AA000D15901 /* DWPinField.m in Sources */,
 				C943B3252A408CED00AF23C5 /* DWEditProfileViewController.m in Sources */,
-				C943B4DC2A40A54600AF23C5 /* DWInvitationFlowViewController.m in Sources */,
 				C943B59C2A40EE5300AF23C5 /* DWNetworkErrorViewController.m in Sources */,
 				C9D2C8142A320AA000D15901 /* DWCenteredScrollView.m in Sources */,
 				C9D2C8162A320AA000D15901 /* DWPhraseRepairViewController.m in Sources */,
@@ -9661,7 +9654,6 @@
 				C9D2C8502A320AA000D15901 /* DWEnvironment.m in Sources */,
 				C9D2C8512A320AA000D15901 /* AtmItemCell.swift in Sources */,
 				C9D2C8522A320AA000D15901 /* CoinbaseService.swift in Sources */,
-				C943B4E02A40A54600AF23C5 /* DWGetStartedViewController.m in Sources */,
 				C9D2C8532A320AA000D15901 /* DWControllerCollectionView.m in Sources */,
 				C9D2C8542A320AA000D15901 /* SFSafariViewController+DashWallet.m in Sources */,
 				C943B4F82A40A54600AF23C5 /* DWDPPendingRequestObject.m in Sources */,
@@ -9837,16 +9829,15 @@
 				C9D2C8E72A320AA000D15901 /* DashTextAttachment.swift in Sources */,
 				C943B5432A40AFD100AF23C5 /* DWTxDetailPopupViewController.m in Sources */,
 				C9D2C8E82A320AA000D15901 /* HomeBalanceView.swift in Sources */,
-				75C72CDF2B19FB0C00129504 /* DPWelcomeView.swift in Sources */,
 				C9D2C8E92A320AA000D15901 /* PointOfUseListFiltersModel.swift in Sources */,
 				C943B3262A408CED00AF23C5 /* DWCropAvatarViewController.m in Sources */,
 				7573C2E32B01105F00F4C347 /* MasternodeIPCell.swift in Sources */,
 				C9D2C8EA2A320AA000D15901 /* ConvertCryptoOrderPreviewViews.swift in Sources */,
 				C9D2C8EB2A320AA000D15901 /* DWAboutModel.m in Sources */,
+				753261AE2CBC1040003CDE00 /* InvitationFlowViewController.swift in Sources */,
 				C943B4B52A40A54600AF23C5 /* DWContactsFetchedDataSource.m in Sources */,
 				C9D2C8EE2A320AA000D15901 /* WelcomeToCrowdNodeViewController.swift in Sources */,
 				C943B3282A408CED00AF23C5 /* DWAvatarEditSelectorContentView.m in Sources */,
-				C943B4DD2A40A54600AF23C5 /* DWDPWelcomeViewController.m in Sources */,
 				C9D2C8EF2A320AA000D15901 /* TerritoriesListCell.swift in Sources */,
 				7573C2E52B01120B00F4C347 /* MasternodeKey.swift in Sources */,
 				C9D2C8F02A320AA000D15901 /* DWProgressView.m in Sources */,
@@ -10759,7 +10750,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 171;
+				CURRENT_PROJECT_VERSION = 173;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -10895,7 +10886,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 171;
+				CURRENT_PROJECT_VERSION = 173;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11030,7 +11021,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 171;
+				CURRENT_PROJECT_VERSION = 173;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11175,7 +11166,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 171;
+				CURRENT_PROJECT_VERSION = 173;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;

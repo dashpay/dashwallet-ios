@@ -61,6 +61,7 @@ private let kDefaultRounds: Int32 = 4
 private let kDefaultSessions: Int32 = 6
 private let kDefaultDenominationGoal: Int32 = 50
 private let kDefaultDenominationHardcap: Int32 = 300
+private let kCoinJoinMixDashShown = "coinJoinMixDashShownKey"
 private let kCoinJoinMainnetMode = "coinJoinModeMainnetKey"
 private let kCoinJoinTestnetMode = "coinJoinModeTestnetKey"
 let kMaxAllowedAheadTimeskew: TimeInterval = 5
@@ -110,6 +111,15 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
         set(value) {
             self.mode = value
             UserDefaults.standard.set(value.rawValue, forKey: chainModeKey)
+        }
+    }
+    
+    private var _mixDashShown: Bool? = nil
+    var mixDashShown: Bool {
+        get { _mixDashShown ?? UserDefaults.standard.bool(forKey: kCoinJoinMixDashShown) }
+        set(value) {
+            _mixDashShown = value
+            UserDefaults.standard.set(value, forKey: kCoinJoinMixDashShown)
         }
     }
     

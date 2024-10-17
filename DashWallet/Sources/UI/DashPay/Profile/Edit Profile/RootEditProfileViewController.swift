@@ -25,7 +25,7 @@ protocol RootEditProfileViewControllerDelegate: AnyObject {
 }
 
 @objc(DWRootEditProfileViewController)
-class RootEditProfileViewController: DWBaseActionButtonViewController, DWEditProfileViewControllerDelegate, DWSaveAlertViewControllerDelegate, NavigationBarDisplayable {
+class RootEditProfileViewController: ActionButtonViewController, DWEditProfileViewControllerDelegate, DWSaveAlertViewControllerDelegate, NavigationBarDisplayable {
     
     var isBackButtonHidden: Bool = false
     
@@ -73,7 +73,7 @@ class RootEditProfileViewController: DWBaseActionButtonViewController, DWEditPro
         }
     }
     
-    @objc override func actionButtonAction(_ sender: Any) {
+    @objc override func actionButtonAction(sender: UIView) {
         performSave()
     }
     

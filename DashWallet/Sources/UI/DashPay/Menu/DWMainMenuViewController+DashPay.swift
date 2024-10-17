@@ -19,8 +19,8 @@ import UIKit
 
 extension DWMainMenuViewController: RootEditProfileViewControllerDelegate {
     func editProfileViewController(_ controller: RootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?) {
-        guard let view = self.view as? DWMainMenuContentView else { return }
-        view.userModel.updateModel.update(withDisplayName: rawDisplayName, aboutMe: rawAboutMe, avatarURLString: avatarURLString)
+        guard let view = self.view as? MainMenuContentView else { return }
+        view.userModel?.updateModel.update(withDisplayName: rawDisplayName, aboutMe: rawAboutMe, avatarURLString: avatarURLString)
         controller.dismiss(animated: true, completion: nil)
         
         if MOCK_DASHPAY.boolValue {

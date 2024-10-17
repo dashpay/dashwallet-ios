@@ -25,7 +25,7 @@ struct BottomSheet<Content: View>: View {
     @ViewBuilder var content: () -> Content
     
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             HStack(alignment: .top) {
                 if showBackButton {
                     Button {

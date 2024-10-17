@@ -131,7 +131,9 @@ static const bool _SNAPSHOT = 0;
 #import "UIViewController+DWDisplayError.h"
 #import "DWEditProfileViewController.h"
 #import "DWSaveAlertViewController.h"
-#import "DWMainMenuContentView.h"
+#import "DWDPWelcomeCollectionViewController.h"
+#import "DWGetStarted.h"
+#import "DWGetStartedContentViewController.h"
 #endif
 
 //MARK: CrowdNode
@@ -164,6 +166,12 @@ static const bool _SNAPSHOT = 0;
 #import "UIViewController+DWDisplayError.h"
 #import "DWFormTableViewController.h"
 #import "DWAboutViewController.h"
+#import "DWMainMenuModel.h"
+#import "DWCurrentUserProfileView.h"
+#import "DWMainMenuTableViewCell.h"
+#import "DWSharedUIConstants.h"
+#import "DWUserProfileContainerView.h"
+#import "DWDashPayReadyProtocol.h"
 
 //MARK: Onboarding
 #import "DWTransactionStub.h"
