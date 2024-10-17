@@ -13,9 +13,15 @@ class TimeUtils {
         connection.start(queue: .global())
         
         return await withCheckedContinuation { continuation in
+            let timeout = DispatchTime.now() + .seconds(5)
+            
+            DispatchQueue.global().asyncAfter(deadline: timeout) {
+                connection.cancel()
+            }
+
             connection.send(content: message, completion: .contentProcessed({ error in
                 if let error = error {
-                    print("Error sending NTP request: \(error)")
+                    connection.cancel()
                     continuation.resume(returning: nil)
                     return
                 }
@@ -24,7 +30,6 @@ class TimeUtils {
                     defer { connection.cancel() }
                     
                     if let error = error {
-                        print("Error receiving NTP response: \(error)")
                         continuation.resume(returning: nil)
                         return
                     }
@@ -95,8 +100,7 @@ class TimeUtils {
                         break
                     }
                 } catch {
-                    // Log the error and try the next URL
-                    print("CoinJoin: Error fetching HTTP date from \(url): \(error)")
+                    // ignore
                 }
             }
             

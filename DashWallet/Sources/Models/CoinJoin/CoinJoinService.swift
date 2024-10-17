@@ -74,7 +74,10 @@ public class CoinJoinServiceWrapper: NSObject {
     }
 }
 
-class CoinJoinService: NSObject {
+class CoinJoinService: NSObject, NetworkReachabilityHandling {
+    var networkStatusDidChange: ((NetworkStatus) -> ())?
+    var reachabilityObserver: Any!
+    
     static let shared: CoinJoinService = {
         return CoinJoinService()
     }()
@@ -85,7 +88,6 @@ class CoinJoinService: NSObject {
     private let updateMixingStateMutex = NSLock()
     private var coinJoinManager: DSCoinJoinManager? = nil
     private var hasAnonymizableBalance: Bool = false
-    private var networkStatus: NetworkStatus = .online
     private var timeSkew: TimeInterval = 0
     private var workingChain: ChainType
 
@@ -114,12 +116,15 @@ class CoinJoinService: NSObject {
     @Published private(set) var mode: CoinJoinMode = .none
     @Published var mixingState: MixingStatus = .notStarted
     @Published private(set) var progress = CoinJoinProgress(progress: 0.0, totalBalance: 0, coinJoinBalance: 0)
-    @Published private(set) var activeSessions: Int = 0
+    @Published private(set) var networkStatus: NetworkStatus = .online
     
     override init() {
         workingChain = DWEnvironment.sharedInstance().currentChain.chainType
         super.init()
         
+        networkStatusDidChange = { [weak self] state in
+            self?.updateNetworkState(newState: state)
+        }
         NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
             .sink { [weak self] _ in
                 DSLogger.log("CoinJoin: change of network to \(DWEnvironment.sharedInstance().currentChain.chainType.tag), resetting")
@@ -129,6 +134,7 @@ class CoinJoinService: NSObject {
             .store(in: &permanentBag)
         
         restoreMode()
+        startNetworkMonitoring()
     }
     
     func updateMode(mode: CoinJoinMode, force: Bool = false) async {
@@ -143,8 +149,7 @@ class CoinJoinService: NSObject {
         
         let account = DWEnvironment.sharedInstance().currentAccount
         updateBalance(balance: account.balance)
-        let currentTimeSkew = await getCurrentTimeSkew()
-        updateState(mode: mode, timeSkew: currentTimeSkew, hasAnonymizableBalance: self.hasAnonymizableBalance, networkStatus: self.networkStatus, chain: DWEnvironment.sharedInstance().currentChain)
+        updateState(mode: mode, timeSkew: self.timeSkew, hasAnonymizableBalance: self.hasAnonymizableBalance, networkStatus: self.networkStatus, chain: DWEnvironment.sharedInstance().currentChain)
     }
     
     func updateTimeSkew(timeSkew: TimeInterval) {
@@ -322,7 +327,7 @@ class CoinJoinService: NSObject {
     
     private func getCurrentTimeSkew() async -> TimeInterval {
         do {
-            return await TimeInterval(try TimeUtils.getTimeSkew())
+            return try await TimeUtils.getTimeSkew()
         } catch {
             DSLogger.log("[SW] CoinJoin: getTimeSkew problem: \(error)")
             return 0.0
@@ -335,6 +340,7 @@ class CoinJoinService: NSObject {
         self.hasAnonymizableBalance = false
         Task {
             await updateMode(mode: self.currentMode, force: true)
+            self.updateTimeSkewInternal(timeSkew: await getCurrentTimeSkew())
         }
     }
 
@@ -380,6 +386,11 @@ class CoinJoinService: NSObject {
         SyncingActivityMonitor.shared.add(observer: self)
     }
     
+    private func updateNetworkState(newState: NetworkStatus) {
+        self.networkStatus = newState
+        self.updateState(mode: mode, timeSkew: timeSkew, hasAnonymizableBalance: self.hasAnonymizableBalance, networkStatus: self.networkStatus, chain: DWEnvironment.sharedInstance().currentChain)
+    }
+    
     private func removeObservers() {
         cancellableBag.forEach { $0.cancel() }
         SyncingActivityMonitor.shared.remove(observer: self)
@@ -393,13 +404,9 @@ class CoinJoinService: NSObject {
 }
 
 extension CoinJoinService: DSCoinJoinManagerDelegate {
-    func sessionStarted(withId baseId: Int32, clientSessionId clientId: UInt256, denomination denom: UInt32, poolState state: PoolState, poolMessage message: PoolMessage, ipAddress address: UInt128, isJoined joined: Bool) {
-        updateActiveSessions()
-    }
+    func sessionStarted(withId baseId: Int32, clientSessionId clientId: UInt256, denomination denom: UInt32, poolState state: PoolState, poolMessage message: PoolMessage, ipAddress address: UInt128, isJoined joined: Bool) { }
     
-    func sessionComplete(withId baseId: Int32, clientSessionId clientId: UInt256, denomination denom: UInt32, poolState state: PoolState, poolMessage message: PoolMessage, ipAddress address: UInt128, isJoined joined: Bool) {
-        updateActiveSessions()
-    }
+    func sessionComplete(withId baseId: Int32, clientSessionId clientId: UInt256, denomination denom: UInt32, poolState state: PoolState, poolMessage message: PoolMessage, ipAddress address: UInt128, isJoined joined: Bool) { }
     
     func mixingStarted() { }
     
@@ -421,15 +428,6 @@ extension CoinJoinService: DSCoinJoinManagerDelegate {
     
     func transactionProcessed(withId txId: UInt256, type: CoinJoinTransactionType) {
         self.updateProgress()
-    }
-    
-    private func updateActiveSessions() {
-        guard let coinJoinManager = self.coinJoinManager else { return }
-        
-        let activeSessions = coinJoinManager.getActiveSessionCount()
-        self.activeSessions = Int(activeSessions)
-
-        DSLogger.log("[SW] CoinJoin: Active sessions: \(activeSessions)")
     }
 }
 

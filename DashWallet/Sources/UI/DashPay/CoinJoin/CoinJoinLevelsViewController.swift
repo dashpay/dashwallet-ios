@@ -120,7 +120,21 @@ extension CoinJoinLevelsViewController {
                     viewModel.keepOpenInfoShown = true
                 }
                 
-                if await viewModel.isTimeSkewedForCoinJoin() {
+                if !viewModel.hasWiFi {
+                    let heading = viewModel.selectedMode == .intermediate ? NSLocalizedString("Intermediate privacy level requires a reliable internet connection", comment: "CoinJoin") : NSLocalizedString("Advanced privacy level requires a reliable internet connection", comment: "CoinJoin")
+                    let shouldContinue = await showModalDialog(
+                        style: .warning,
+                        icon: .system("exclamationmark.triangle.fill"),
+                        heading: heading,
+                        textBlock1: NSLocalizedString("It is recommended to be on a Wi-Fi network to avoid losing any funds", comment: "CoinJoin"),
+                        positiveButtonText: NSLocalizedString("Continue Anyway", comment: ""),
+                        negativeButtonText: NSLocalizedString("Cancel", comment: "")
+                    )
+                    
+                    if shouldContinue {
+                        viewModel.selectedMode = mode
+                    }
+                } else if await viewModel.isTimeSkewedForCoinJoin() {
                     let settingsURL = URL(string: UIApplication.openSettingsURLString)
                     let hasSettings = settingsURL != nil && UIApplication.shared.canOpenURL(settingsURL!)
                     let message = String(format: NSLocalizedString("Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin.", comment: "TimeSkew"))

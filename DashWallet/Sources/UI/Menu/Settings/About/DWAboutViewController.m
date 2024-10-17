@@ -136,8 +136,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (IBAction)contactSupportButtonAction:(id)sender {
-    NSURL *url = [DWAboutModel supportURL];
-    [self displaySafariControllerWithURL:url];
+    NSArray *dataToShare = [[DSLogger sharedInstance] logFiles];
+    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:dataToShare
+                                                                                         applicationActivities:nil];
+    [self presentViewController:activityViewController animated:YES completion:nil];
 }
 
 #pragma mark - Notifications

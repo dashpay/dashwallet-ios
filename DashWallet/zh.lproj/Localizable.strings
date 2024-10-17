@@ -148,6 +148,9 @@
 /* CoinJoin */
 "Advanced" = "进阶";
 
+/* CoinJoin */
+"Advanced privacy level requires a reliable internet connection" = "Advanced privacy level requires a reliable internet connection";
+
 /* No comment provided by engineer. */
 "Advanced Security" = "高级安全";
 
@@ -483,6 +486,9 @@
 
 /* No comment provided by engineer. */
 "Continue" = "继续";
+
+/* No comment provided by engineer. */
+"Continue Anyway" = "Continue Anyway";
 
 /* Coinbase Entry Point */
 "Convert Crypto" = "兑换加密货币";
@@ -1096,6 +1102,9 @@
 /* CoinJoin */
 "Intermediate" = "常规";
 
+/* CoinJoin */
+"Intermediate privacy level requires a reliable internet connection" = "Intermediate privacy level requires a reliable internet connection";
+
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "内部转账";
 
@@ -1182,6 +1191,9 @@
 
 /* Coinbase */
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "将 Dash从 Coinbase转账到此设备的 Dash钱包最多可能需要10分钟.";
+
+/* CoinJoin */
+"It is recommended to be on a Wi-Fi network to avoid losing any funds" = "It is recommended to be on a Wi-Fi network to avoid losing any funds";
 
 /* Coinbase */
 "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "具有任何水平技术专长的进阶用户都很难决定您的交易历史记录";
