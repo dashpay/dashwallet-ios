@@ -104,8 +104,6 @@ NS_ASSUME_NONNULL_BEGIN
     [CurrencyExchangerObjcWrapper startExchangeRateFetching];
     [CoinbaseObjcWrapper start];
     [CrowdNodeObjcWrapper start];
-    
-    setenv("RUST_BACKTRACE", "1", 1);
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(dsApplicationTerminationRequestNotification:)
