@@ -48,6 +48,6 @@ extension AddressUserInfo {
 
 extension AddressUserInfo {
     static var table: Table { Table("address_userinfo") }
-    static var txCategoryColumn: Expression<Int> { Expression<Int>("taxCategory") }
-    static var addressColumn: Expression<String> { Expression<String>("address") }
+    static var txCategoryColumn: SQLite.Expression<Int> { SQLite.Expression<Int>("taxCategory") }
+    static var addressColumn: SQLite.Expression<String> { SQLite.Expression<String>("address") }
 }
