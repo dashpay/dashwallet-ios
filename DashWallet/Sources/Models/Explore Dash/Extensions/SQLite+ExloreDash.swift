@@ -32,7 +32,7 @@ protocol RowDecodable {
 // MARK: - String + RowDecodable
 
 extension String: RowDecodable {
-    private static let territory = Expression<String?>("territory")
+    private static let territory = SQLite.Expression<String?>("territory")
 
     init(row: Row) {
         self.init(row[String.territory]!)
