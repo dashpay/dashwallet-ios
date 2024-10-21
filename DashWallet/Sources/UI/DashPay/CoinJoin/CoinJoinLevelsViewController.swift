@@ -32,9 +32,15 @@ class CoinJoinLevelsViewController: UIViewController {
     @IBOutlet private var advancedTime: UILabel!
     @IBOutlet private var continueButton: ActionButton!
     
-    @objc
-    static func controller() -> CoinJoinLevelsViewController {
-        vc(CoinJoinLevelsViewController.self, from: sb("CoinJoin"))
+    var requiresNoNavigationBar: Bool {
+        return true
+    }
+    
+    @objc(controllerWithIsFullScreen:)
+    static func controller(isFullScreen: Bool = false) -> CoinJoinLevelsViewController {
+        let vc = vc(CoinJoinLevelsViewController.self, from: sb("CoinJoin"))
+        vc.modalPresentationStyle = isFullScreen ? .fullScreen : .formSheet
+        return vc
     }
     
     override func viewDidLoad() {
@@ -51,7 +57,11 @@ class CoinJoinLevelsViewController: UIViewController {
     @IBAction
     func continueButtonAction() {
         if viewModel.mixingState == .notStarted {
-            self.navigationController?.popViewController(animated: true)
+            if modalPresentationStyle == .fullScreen {
+                dismiss(animated: true)
+            } else {
+                self.navigationController?.popViewController(animated: true)
+            }
             viewModel.startMixing()
         } else {
             let alert = UIAlertController(title: NSLocalizedString("Are you sure you want to stop mixing?", comment: "CoinJoin"), message: NSLocalizedString("Any funds that have been mixed will be combined with your un mixed funds", comment: "CoinJoin"), preferredStyle: .alert)
@@ -89,6 +99,27 @@ extension CoinJoinLevelsViewController {
         advancedBox.layer.borderColor = UIColor.dw_separatorLine().cgColor
         let advancedTap = UITapGestureRecognizer(target: self, action: #selector(selectAdvanced))
         advancedBox.addGestureRecognizer(advancedTap)
+
+        if modalPresentationStyle == .fullScreen {
+            let backButton = UIButton(type: .system)
+            backButton.setImage(UIImage(systemName: "xmark"), for: .normal)
+            backButton.addTarget(self, action: #selector(closeButtonAction), for: .touchUpInside)
+            backButton.tintColor = .label
+            view.addSubview(backButton)
+            backButton.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 0),
+                backButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+                backButton.widthAnchor.constraint(equalToConstant: 44),
+                backButton.heightAnchor.constraint(equalToConstant: 44),
+                titleLabel.topAnchor.constraint(equalTo: backButton.bottomAnchor, constant: 0)
+            ])
+        }
+    }
+    
+    @objc
+    private func closeButtonAction() {
+        dismiss(animated: true)
     }
     
     @objc

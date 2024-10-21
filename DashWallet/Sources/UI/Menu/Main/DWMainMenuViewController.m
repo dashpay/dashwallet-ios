@@ -22,7 +22,6 @@
 #import "DWAboutModel.h"
 #import "DWExploreTestnetViewController.h"
 #import "DWGlobalOptions.h"
-#import "DWMainMenuContentView.h"
 #import "DWMainMenuModel.h"
 #import "DWSecurityMenuViewController.h"
 #import "SFSafariViewController+DashWallet.h"
@@ -93,7 +92,6 @@ NS_ASSUME_NONNULL_BEGIN
     
 #if DASHPAY
     self.view.userModel = self.userProfileModel;
-    self.view.dashPayReady = self.dashPayReady;
 #endif
 }
 
@@ -229,6 +227,12 @@ NS_ASSUME_NONNULL_BEGIN
         controller.modalPresentationStyle = UIModalPresentationFullScreen;
         [self presentViewController:controller animated:YES completion:nil];
     }
+}
+
+- (void)mainMenuContentView:(DWMainMenuContentView * _Nonnull)view showCoinJoin:(UIButton * _Nonnull)sender {
+    CoinJoinLevelsViewController *controller = [CoinJoinLevelsViewController controllerWithIsFullScreen:NO];
+    controller.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:controller animated:YES];
 }
 #endif
 

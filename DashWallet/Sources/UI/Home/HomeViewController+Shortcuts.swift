@@ -19,7 +19,7 @@ import UIKit
 
 extension HomeViewController: DWLocalCurrencyViewControllerDelegate, DWExploreTestnetViewControllerDelegate {
 
-    func performAction(for action: ShortcutAction, sender: UIView) {
+    func performAction(for action: ShortcutAction, sender: UIView?) {
         switch action.type {
         case .secureWallet:
             secureWalletAction()
@@ -30,7 +30,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, DWExploreTe
         case .buySellDash:
             buySellDashAction()
         case .syncNow:
-            DWSettingsMenuModel.rescanBlockchainAction(from: self, sourceView: sender, sourceRect: sender.bounds, completion: nil)
+            DWSettingsMenuModel.rescanBlockchainAction(from: self, sourceView: sender!, sourceRect: sender!.bounds, completion: nil)
         case .payWithNFC:
             performNFCReadingAction()
         case .localCurrency:

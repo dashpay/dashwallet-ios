@@ -36,16 +36,17 @@ class HomeViewModel: ObservableObject {
     @Published private(set) var coinJoinItem = CoinJoinMenuItemModel(title: NSLocalizedString("Mixing", comment: "CoinJoin"), isOn: false, state: .notStarted, progress: 0.0, mixed: 0.0, total: 0.0)
     @Published var showTimeSkewAlertDialog: Bool = false
     @Published private(set) var timeSkew: TimeInterval = 0
+    @Published var showJoinDashpay: Bool = false
     
     private var model: SyncModel = SyncModelImpl()
-    var showJoinDashpay: Bool = false {
-        didSet {
-            self.recalculateHeight()
-        }
-    }
     
     var coinJoinMode: CoinJoinMode {
         get { coinJoinService.mode }
+    }
+    
+    var shouldShowMixDashDialog: Bool {
+        get { coinJoinService.mode == .none || !coinJoinService.mixDashShown }
+        set(value) { coinJoinService.mixDashShown = !value }
     }
     
     init() {
@@ -106,10 +107,6 @@ class HomeViewModel: ObservableObject {
         
         if !hasNetwork {
             height += 85
-        }
-        
-        if showJoinDashpay {
-            height += 50
         }
         
         self.balanceHeaderHeight = height
