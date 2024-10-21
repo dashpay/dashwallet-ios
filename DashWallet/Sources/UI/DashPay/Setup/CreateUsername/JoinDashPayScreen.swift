@@ -19,26 +19,36 @@ import SwiftUI
 
 public struct JoinDashPayScreen: View {
     @StateObject private var viewModel = RequestUsernameViewModel.shared
+    @State private var navigateToVotingInfo = false
     
     public var body: some View {
-        TextIntro(
-            buttonLabel: NSLocalizedString("Continue", comment: ""),
-            action: { }, // TODO: navlink
-            isActionEnabled: viewModel.hasMinimumRequiredBalance,
-            inProgress: .constant(false),
-            topText: {
-                FeatureTopText(
-                    title: NSLocalizedString("Join DashPay", comment: ""),
-                    text: NSLocalizedString("Forget about long crypto addresses, create the username, find friends and add them to your contacts", comment: "")
-                )
-            },
-            features: {[
-                FeatureSingleItem(iconName: .custom("username.letter"), title: NSLocalizedString("Create a username", comment: ""), description: NSLocalizedString("Pay to usernames. No more alphanumeric addresses.", comment: "")),
-                FeatureSingleItem(iconName: .custom("friends.add"), title: NSLocalizedString("Add your friends & family", comment: ""), description: NSLocalizedString("Invite your family, find your friends by searching their usernames.", comment: "")),
-                FeatureSingleItem(iconName: .custom("profile.personalized"), title: NSLocalizedString("Personalise profile", comment: ""), description: NSLocalizedString("Upload your picture, personalize your identity.", comment: ""))
-            ]},
-            info: getInfo()
-        )
+        ZStack {
+            TextIntro(
+                buttonLabel: NSLocalizedString("Continue", comment: ""),
+                action: { navigateToVotingInfo = true },
+                isActionEnabled: viewModel.hasMinimumRequiredBalance,
+                inProgress: .constant(false),
+                topText: {
+                    FeatureTopText(
+                        title: NSLocalizedString("Join DashPay", comment: ""),
+                        text: NSLocalizedString("Forget about long crypto addresses, create the username, find friends and add them to your contacts", comment: "")
+                    )
+                },
+                features: {[
+                    FeatureSingleItem(iconName: .custom("username.letter"), title: NSLocalizedString("Create a username", comment: ""), description: NSLocalizedString("Pay to usernames. No more alphanumeric addresses.", comment: "")),
+                    FeatureSingleItem(iconName: .custom("friends.add"), title: NSLocalizedString("Add your friends & family", comment: ""), description: NSLocalizedString("Invite your family, find your friends by searching their usernames.", comment: "")),
+                    FeatureSingleItem(iconName: .custom("profile.personalized"), title: NSLocalizedString("Personalise profile", comment: ""), description: NSLocalizedString("Upload your picture, personalize your identity.", comment: ""))
+                ]},
+                info: getInfo()
+            )
+
+            NavigationLink(
+                destination: VotingInfoScreen().navigationBarHidden(true),
+                isActive: $navigateToVotingInfo
+            ) {
+                EmptyView()
+            }
+        }
     }
     
     private func getInfo() -> String? {

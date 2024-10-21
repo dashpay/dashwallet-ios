@@ -93,7 +93,7 @@ final class ProvideAmountViewController: SendAmountViewController {
             destination: destination,
             balanceLabel: balanceLabel,
             model: self.model as! SendAmountModel,
-            avatarView: { UIViewWrapper(uiView: avatarView ?? EmptyView()) }
+            avatarView: { UIViewWrapper(uiView: avatarView ?? EmptyUIView()) }
         )
         let swiftUIController = UIHostingController(rootView: intro)
         swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()

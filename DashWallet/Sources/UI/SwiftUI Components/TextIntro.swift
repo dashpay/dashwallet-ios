@@ -40,15 +40,16 @@ struct TextIntro: View {
                     .frame(maxWidth: .infinity, alignment: .top)
                 
                 if !features().isEmpty {
-                    VStack(spacing: 0) {
-                        ForEach(0..<features().count, id: \.self) { index in
-                            features()[index]
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.top, 16)
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            ForEach(0..<features().count, id: \.self) { index in
+                                features()[index]
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.top, 16)
+                            }
                         }
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .padding(.top, -40)
+                    .padding(.top, 20)
                 }
                 
                 Spacer()

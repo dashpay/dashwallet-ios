@@ -382,7 +382,7 @@ struct HomeViewContent<Content: View>: View {
             let joinDashPayDialog = JoinDashPayInfoDialog()
             
             if #available(iOS 16.0, *) {
-                joinDashPayDialog.presentationDetents([.height(600)])
+                joinDashPayDialog.presentationDetents([.height(660)])
             } else {
                 joinDashPayDialog
             }

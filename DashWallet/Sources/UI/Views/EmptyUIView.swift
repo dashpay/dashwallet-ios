@@ -17,7 +17,7 @@
 
 import UIKit
 
-final class EmptyView: UIView {
+final class EmptyUIView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
 
