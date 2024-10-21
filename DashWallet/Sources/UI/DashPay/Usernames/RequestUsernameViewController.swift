@@ -169,7 +169,7 @@ extension RequestUsernameViewController {
     }
     
     func configureObservers() {
-        viewModel.$hasEnoughBalance
+        viewModel.$hasMinimumRequiredBalance
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] hasEnough in

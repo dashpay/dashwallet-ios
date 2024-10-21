@@ -307,11 +307,6 @@ extension HomeViewController: HomeViewDelegate {
         present(controller, animated: true, completion: nil)
     }
     
-    func homeViewShowDashPayRegistrationFlow(_ homeView: HomeView?) {
-        let action = ShortcutAction(type: .createUsername)
-        performAction(for: action, sender: homeView)
-    }
-    
     func homeView(_ homeView: HomeView, showReclassifyYourTransactionsFlowWithTransaction transaction: DSTransaction) {
         showReclassifyYourTransactionsIfPossible(with: transaction)
     }

@@ -18,41 +18,66 @@
 import SwiftUI
 
 struct TextIntro: View {
-    let icon: IconName
+    var icon: IconName? = nil
     var buttonLabel: String? = nil
     var action: (() -> Void)? = nil
+    var isActionEnabled: Bool = true
     var inProgress: Binding<Bool>? = nil
     @ViewBuilder var topText: () -> FeatureTopText
+    var features: () -> [FeatureSingleItem] = {[]}
+    var info: String? = nil
     
     var body: some View {
         ZStack(alignment: Alignment(horizontal: .center, vertical: .top)) {
             VStack(alignment: .leading, spacing: 0) {
-                Icon(name: icon)
-                    .frame(maxWidth: .infinity, maxHeight: 100, alignment: .center)
+                if let icon = icon {
+                    Icon(name: icon)
+                        .frame(maxWidth: .infinity, maxHeight: 100, alignment: .center)
+                        .padding(.bottom, 24)
+                }
                 
-                topText().padding(.top, 24)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                topText()
+                    .frame(maxWidth: .infinity, alignment: .top)
+                
+                if !features().isEmpty {
+                    VStack(spacing: 0) {
+                        ForEach(0..<features().count, id: \.self) { index in
+                            features()[index]
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top, 16)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                    .padding(.top, -40)
+                }
+                
+                Spacer()
+                
+                if let info = info {
+                    Text(info)
+                        .multilineTextAlignment(.center)
+                        .font(.footnote)
+                        .foregroundColor(.tertiaryText)
+                        .frame(maxWidth: .infinity)
+                }
           
                 if let label = buttonLabel {
-                    Button(action:{
-                        if inProgress == nil || inProgress!.wrappedValue == false {
-                            action?()
+                    ZStack(alignment: .center) {
+                        DashButton(
+                            text: inProgress != nil && inProgress!.wrappedValue ? "" : label,
+                            isEnabled: isActionEnabled
+                        ) {
+                            if inProgress == nil || inProgress!.wrappedValue == false {
+                                action?()
+                            }
                         }
-                    }, label: {
-                        if inProgress == nil || inProgress!.wrappedValue == false {
-                            Text(label)
-                                .font(.system(size: 16)).fontWeight(.semibold)
-                                .foregroundColor(.white)
-                        } else {
+                        
+                        if inProgress != nil && inProgress!.wrappedValue {
                             SwiftUI.ProgressView()
                                 .tint(.white)
                         }
-                    })
-                    .frame(maxWidth: .infinity, maxHeight: 46)
-                    .alignmentGuide(.bottom) { d in d[.bottom] }
-                    .background(Color.dashBlue)
-                    .cornerRadius(12)
-                    .padding(.top, 40)
+                    }
+                    .padding(.top, 10)
                 }
             }
         }
