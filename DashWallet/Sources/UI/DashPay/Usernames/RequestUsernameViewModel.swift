@@ -34,18 +34,26 @@ public class RequestUsernameVMObjcWrapper: NSObject {
     }
 }
 
-class RequestUsernameViewModel {
+private let kRecommendedBalance = DUFFS / 4
+
+class RequestUsernameViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     private let dao: UsernameRequestsDAO = UsernameRequestsDAOImpl.shared
     private let prefs = VotingPrefs.shared
     
     var completionHandler: ((Bool) -> ())?
     var enteredUsername: String = ""
-    @Published private(set) var hasEnoughBalance = false
+    @Published private(set) var hasMinimumRequiredBalance = false
+    @Published private(set) var hasRecommendedBalance = false
     @Published private(set) var currentUsernameRequest: UsernameRequest? = nil
+    @Published private(set) var balance: String = ""
     
     var minimumRequiredBalance: String {
-        return DWDP_MIN_BALANCE_TO_CREATE_USERNAME.formattedDashAmount
+        return DWDP_MIN_BALANCE_TO_CREATE_USERNAME.dashAmount.formattedDashAmountWithoutCurrencySymbol
+    }
+    
+    var recommendedBalance: String {
+        return kRecommendedBalance.dashAmount.formattedDashAmountWithoutCurrencySymbol
     }
     
     var minimumRequiredBalanceFiat: String {
@@ -151,6 +159,8 @@ class RequestUsernameViewModel {
     
     private func checkBalance() {
         let balance = DWEnvironment.sharedInstance().currentAccount.balance
-        hasEnoughBalance = balance >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        self.balance = balance.dashAmount.formattedDashAmountWithoutCurrencySymbol
+        hasMinimumRequiredBalance = balance >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        hasRecommendedBalance = balance >= kRecommendedBalance
     }
 }

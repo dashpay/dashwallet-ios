@@ -130,30 +130,39 @@ class ContactsPlaceholderViewController: ActionButtonViewController {
                 let controller = CoinJoinLevelsViewController.controller(isFullScreen: true)
                 self.present(controller, animated: true, completion: nil)
             }, negativeAction: {
-                let controller = DashPaySetupFlowController(dashPayModel: self.dashPayModel,
-                                                           invitationURL: nil,
-                                                         definedUsername: nil)
-                controller.modalPresentationStyle = .fullScreen
-                self.present(controller, animated: true, completion: nil)
+                if UsernamePrefs.shared.joinDashPayInfoShown {
+                    self.navigateToCreateUsername()
+                } else {
+                    UsernamePrefs.shared.joinDashPayInfoShown = true
+                    self.showDashPayInfo()
+                }
             }
         )
         let hostingController = UIHostingController(rootView: swiftUIView)
+        hostingController.setDetent(250)
         
-        if #available(iOS 16.0, *) {
-            if let sheet = hostingController.sheetPresentationController {
-                let fitId = UISheetPresentationController.Detent.Identifier("fit")
-                let fitDetent = UISheetPresentationController.Detent.custom(identifier: fitId) { _ in
-                    250
-                }
-                sheet.detents = [fitDetent]
-            }
+        present(hostingController, animated: true, completion: nil)
+    }
+ 
+    private func showDashPayInfo() {
+        let swiftUIView = JoinDashPayInfoDialog() {
+            self.navigateToCreateUsername()
         }
-        
+        let hostingController = UIHostingController(rootView: swiftUIView)
+        hostingController.setDetent(600)
         present(hostingController, animated: true, completion: nil)
     }
     
     @objc func update() {
         actionButton?.isEnabled = dashPayReady.shouldShowCreateUserNameButton()
+    }
+    
+    private func navigateToCreateUsername() {
+        let controller = DashPaySetupFlowController(dashPayModel: self.dashPayModel,
+                                                   invitationURL: nil,
+                                                 definedUsername: nil)
+        controller.modalPresentationStyle = .fullScreen
+        self.present(controller, animated: true, completion: nil)
     }
 }
 

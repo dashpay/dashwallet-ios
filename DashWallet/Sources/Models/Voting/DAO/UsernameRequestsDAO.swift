@@ -181,7 +181,7 @@ extension UsernameRequestsDAOImpl {
                 guard let self = self else { return continuation.resume(returning: []) }
                     
                 do {
-                    let results = try self.db.prepare(query, bindings).prepareRowIterator().map { Item(row: $0) }
+                    let results = try self.db.prepareRowIterator(query, bindings: bindings).map { Item(row: $0) }
                     continuation.resume(returning: results)
                 } catch {
                     continuation.resume(throwing: error)

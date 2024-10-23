@@ -71,6 +71,6 @@ class ExploreDatabaseConnection {
     }
 
     func execute<Item: RowDecodable>(query: String) throws -> [Item] {
-        try db.prepare(query).prepareRowIterator().map { Item(row: $0) }
+        try db.prepareRowIterator(query).map { Item(row: $0) }
     }
 }

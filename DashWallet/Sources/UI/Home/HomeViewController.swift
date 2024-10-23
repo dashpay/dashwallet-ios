@@ -293,9 +293,14 @@ extension HomeViewController: RootEditProfileViewControllerDelegate {
 // MARK: - HomeViewDelegate
 
 extension HomeViewController: HomeViewDelegate {
-    func homeViewShowCoinJoin(_ homeView: HomeView?) {
+    func homeViewShowCoinJoin() {
         let controller = CoinJoinLevelsViewController.controller(isFullScreen: true)
         present(controller, animated: true, completion: nil)
+    }
+    
+    func homeViewRequestUsername() {
+        let action = ShortcutAction(type: .createUsername)
+        performAction(for: action, sender: nil)
     }
     
     func homeView(_ homeView: HomeView, showTxFilter sender: UIView) {
@@ -305,11 +310,6 @@ extension HomeViewController: HomeViewDelegate {
     func homeView(_ homeView: HomeView, showSyncingStatus sender: UIView) {
         let controller = SyncingAlertViewController()
         present(controller, animated: true, completion: nil)
-    }
-    
-    func homeViewShowDashPayRegistrationFlow(_ homeView: HomeView?) {
-        let action = ShortcutAction(type: .createUsername)
-        performAction(for: action, sender: homeView)
     }
     
     func homeView(_ homeView: HomeView, showReclassifyYourTransactionsFlowWithTransaction transaction: DSTransaction) {

@@ -50,8 +50,10 @@ final class RequestUsernameViewController: UIViewController {
         return label
     }()
     
-    static func controller() -> RequestUsernameViewController {
-        RequestUsernameViewController()
+    static func controller(isFullScreen: Bool = false) -> RequestUsernameViewController {
+        let vc = RequestUsernameViewController()
+        vc.modalPresentationStyle = isFullScreen ? .fullScreen : .formSheet
+        return vc
     }
 
     override func viewDidLoad() {
@@ -169,7 +171,7 @@ extension RequestUsernameViewController {
     }
     
     func configureObservers() {
-        viewModel.$hasEnoughBalance
+        viewModel.$hasMinimumRequiredBalance
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] hasEnough in

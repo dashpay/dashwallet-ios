@@ -1,6 +1,6 @@
-//
-//  Created by PT
-//  Copyright © 2023 Dash Core Group. All rights reserved.
+//  
+//  Created by Andrei Ashikhmin
+//  Copyright © 2024 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,18 +15,18 @@
 //  limitations under the License.
 //
 
-import UIKit
+import SwiftUI
 
-final class EmptyView: UIView {
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-
-        backgroundColor = .clear
-    }
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-
-        backgroundColor = .clear
+public struct JoinDashPayInfoDialog: View {
+    @Environment(\.presentationMode) private var presentationMode
+    var action: () -> Void
+    
+    public var body: some View {
+        BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
+            JoinDashPayScreen {
+                presentationMode.wrappedValue.dismiss()
+                action()
+            }
+        }
     }
 }

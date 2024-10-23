@@ -140,25 +140,33 @@ class MainMenuContentView: UIView {
             positiveAction: {
                 self.delegate?.mainMenuContentView(self, showCoinJoin: sender)
             }, negativeAction: {
-                self.delegate?.mainMenuContentView(self, joinDashPayAction: sender)
+                if UsernamePrefs.shared.joinDashPayInfoShown {
+                    self.delegate?.mainMenuContentView(self, joinDashPayAction: sender)
+                } else {
+                    UsernamePrefs.shared.joinDashPayInfoShown = true
+                    self.showDashPayInfo(sender)
+                }
             }
         )
         let hostingController = UIHostingController(rootView: swiftUIView)
-        
-        if #available(iOS 16.0, *) {
-            if let sheet = hostingController.sheetPresentationController {
-                let fitId = UISheetPresentationController.Detent.Identifier("fit")
-                let fitDetent = UISheetPresentationController.Detent.custom(identifier: fitId) { _ in
-                    250
-                }
-                sheet.detents = [fitDetent]
-            }
-        }
+        hostingController.setDetent(250)
         
         if let parentVC = self.parentViewController() {
             parentVC.present(hostingController, animated: true, completion: nil)
         } else {
             delegate?.mainMenuContentView(self, joinDashPayAction: sender)
+        }
+    }
+    
+    private func showDashPayInfo(_ sender: UIButton) {
+        let swiftUIView = JoinDashPayInfoDialog() {
+            self.delegate?.mainMenuContentView(self, joinDashPayAction: sender)
+        }
+        let hostingController = UIHostingController(rootView: swiftUIView)
+        hostingController.setDetent(600)
+        
+        if let parentVC = self.parentViewController() {
+            parentVC.present(hostingController, animated: true, completion: nil)
         }
     }
     #endif

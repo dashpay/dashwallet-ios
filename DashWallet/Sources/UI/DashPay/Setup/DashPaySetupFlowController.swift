@@ -17,7 +17,7 @@
 
 import UIKit
 
-protocol DWDashPaySetupFlowControllerDelegate: AnyObject {
+protocol DashPaySetupFlowControllerDelegate: AnyObject {
     func dashPaySetupFlowController(_ controller: DashPaySetupFlowController, didConfirmUsername username: String)
 }
 
@@ -27,7 +27,7 @@ class DashPaySetupFlowController: UIViewController, NavigationFullscreenable, DW
     private(set) var dashPayModel: DWDashPayProtocol
     private(set) var invitationURL: URL?
     private(set) var definedUsername: String?
-    weak var confirmationDelegate: DWDashPaySetupFlowControllerDelegate?
+    weak var confirmationDelegate: DashPaySetupFlowControllerDelegate?
     private var headerHeightConstraint: NSLayoutConstraint!
     private var containerController: DWContainerViewController!
     private var createUsernameViewController: DWCreateUsernameViewController!
@@ -55,7 +55,7 @@ class DashPaySetupFlowController: UIViewController, NavigationFullscreenable, DW
         super.init(nibName: nil, bundle: nil)
     }
 
-    init(confirmationDelegate: DWDashPaySetupFlowControllerDelegate) {
+    init(confirmationDelegate: DashPaySetupFlowControllerDelegate) {
         self.dashPayModel = DWDashPaySetupModel()
         self.confirmationDelegate = confirmationDelegate
         super.init(nibName: nil, bundle: nil)

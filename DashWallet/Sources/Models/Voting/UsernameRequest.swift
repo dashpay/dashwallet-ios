@@ -17,6 +17,7 @@
 
 import Foundation
 import SQLite
+private typealias Expression = SQLite.Expression
 
 // MARK: - GroupedUsernames
 
@@ -60,11 +61,11 @@ struct UsernameRequest: RowDecodable, Hashable {
 extension UsernameRequest {
     static var table: Table { Table("username_requests") }
     
-    static var requestId: Expression<String> { Expression<String>("requestId") }
-    static var username: Expression<String> { Expression<String>("username") }
-    static var createdAt: Expression<Int64> { Expression<Int64>("createdAt") }
-    static var identity: Expression<String> { Expression<String>("identity") }
-    static var votes: Expression<Int> { Expression<Int>("votes") }
-    static var isApproved: Expression<Bool> { Expression<Bool>("isApproved") }
-    static var link: Expression<String?> { .init("link") }
+    static var requestId: SQLite.Expression<String> { Expression<String>("requestId") }
+    static var username: SQLite.Expression<String> { Expression<String>("username") }
+    static var createdAt: SQLite.Expression<Int64> { Expression<Int64>("createdAt") }
+    static var identity: SQLite.Expression<String> { Expression<String>("identity") }
+    static var votes: SQLite.Expression<Int> { Expression<Int>("votes") }
+    static var isApproved: SQLite.Expression<Bool> { Expression<Bool>("isApproved") }
+    static var link: SQLite.Expression<String?> { .init("link") }
 }
