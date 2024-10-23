@@ -50,8 +50,10 @@ final class RequestUsernameViewController: UIViewController {
         return label
     }()
     
-    static func controller() -> RequestUsernameViewController {
-        RequestUsernameViewController()
+    static func controller(isFullScreen: Bool = false) -> RequestUsernameViewController {
+        let vc = RequestUsernameViewController()
+        vc.modalPresentationStyle = isFullScreen ? .fullScreen : .formSheet
+        return vc
     }
 
     override func viewDidLoad() {

@@ -23,11 +23,12 @@ import SwiftUI
 protocol HomeViewDelegate: AnyObject {
     func homeView(_ homeView: HomeView, showTxFilter sender: UIView)
     func homeView(_ homeView: HomeView, showSyncingStatus sender: UIView)
-    func homeViewShowCoinJoin(_ homeView: HomeView?)
+    func homeViewShowCoinJoin()
     func homeView(_ homeView: HomeView, showReclassifyYourTransactionsFlowWithTransaction transaction: DSTransaction)
     
 #if DASHPAY
     func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt)
+    func homeViewRequestUsername()
 #endif
 }
 
@@ -276,9 +277,10 @@ struct TxPreviewModel: Identifiable, Equatable {
 struct HomeViewContent<Content: View>: View {
     @State private var selectedTxDataItem: TransactionListDataItem? = nil
     @State private var shouldShowMixDialog: Bool = false
-    @State private var shouldShowDashPayFlow: Bool = false
+    @State private var shouldShowJoinDashPayInfo: Bool = false
     @State private var navigateToDashPayFlow: Bool = false
     @State private var navigateToCoinJoin: Bool = false
+    @State private var skipToCreateUsername: Bool = false
     
     @StateObject var viewModel: HomeViewModel
     weak var delegate: HomeViewDelegate?
@@ -307,9 +309,10 @@ struct HomeViewContent<Content: View>: View {
                         )
                         .padding(.horizontal, 15)
                         .id(viewModel.coinJoinItem.id)
-                        .onTapGesture { delegate?.homeViewShowCoinJoin(nil) }
+                        .onTapGesture { delegate?.homeViewShowCoinJoin() }
                     }
 
+                    #if DASHPAY
                     if viewModel.showJoinDashpay {
                         JoinDashPayView {
                             if viewModel.shouldShowMixDashDialog {
@@ -317,10 +320,11 @@ struct HomeViewContent<Content: View>: View {
                                 self.navigateToCoinJoin = false
                                 self.shouldShowMixDialog = true
                             } else {
-                                self.shouldShowDashPayFlow = true
+                                self.shouldShowJoinDashPayInfo = true
                             }
                         }
                     }
+                    #endif
                     
                     syncingHeader()
                         .frame(height: 50)
@@ -356,20 +360,21 @@ struct HomeViewContent<Content: View>: View {
         .sheet(item: $selectedTxDataItem) { item in
             TransactionDetailsSheet(item: item)
         }
+        #if DASHPAY
         .sheet(isPresented: $shouldShowMixDialog, onDismiss: {
             viewModel.shouldShowMixDashDialog = false
-            
-            if navigateToDashPayFlow {
-                navigateToDashPayFlow = false
-                shouldShowDashPayFlow = true
-            } else if navigateToCoinJoin {
-                navigateToCoinJoin = false
-                delegate?.homeViewShowCoinJoin(nil)
-            }
+            finishMixDialogNavigation()
         }) {
             let mixDashDialog = MixDashDialog(
                 positiveAction: { self.navigateToCoinJoin = true },
-                negativeAction: { self.navigateToDashPayFlow = true }
+                negativeAction: {
+                    if UsernamePrefs.shared.joinDashPayInfoShown {
+                        skipToCreateUsername = true
+                    } else {
+                        UsernamePrefs.shared.joinDashPayInfoShown = true
+                        navigateToDashPayFlow = true
+                    }
+                }
             )
 
             if #available(iOS 16.0, *) {
@@ -378,15 +383,23 @@ struct HomeViewContent<Content: View>: View {
                 mixDashDialog
             }
         }
-        .sheet(isPresented: $shouldShowDashPayFlow) {
-            let joinDashPayDialog = JoinDashPayInfoDialog()
+        .sheet(isPresented: $shouldShowJoinDashPayInfo, onDismiss: {
+            if navigateToDashPayFlow {
+                navigateToDashPayFlow = false
+                delegate?.homeViewRequestUsername()
+            }
+        }) {
+            let joinDashPayDialog = JoinDashPayInfoDialog {
+                navigateToDashPayFlow = true
+            }
             
             if #available(iOS 16.0, *) {
-                joinDashPayDialog.presentationDetents([.height(660)])
+                joinDashPayDialog.presentationDetents([.height(600)])
             } else {
                 joinDashPayDialog
             }
         }
+        #endif
         .onAppear {
             viewModel.checkTimeSkew()
         }
@@ -464,6 +477,19 @@ struct HomeViewContent<Content: View>: View {
             }
 
             return r
+        }
+    }
+    
+    private func finishMixDialogNavigation() {
+        if navigateToDashPayFlow {
+            navigateToDashPayFlow = false
+            shouldShowJoinDashPayInfo = true
+        } else if navigateToCoinJoin {
+            navigateToCoinJoin = false
+            delegate?.homeViewShowCoinJoin()
+        } else if skipToCreateUsername {
+            skipToCreateUsername = false
+            delegate?.homeViewRequestUsername()
         }
     }
 }

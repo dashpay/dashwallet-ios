@@ -657,6 +657,8 @@
 		75CDD7872C08D61300F433D2 /* DashAmount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CDD7852C08D61300F433D2 /* DashAmount.swift */; };
 		75CED09E2ACFD0ED0095F10C /* CoinbaseDepositRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CED09D2ACFD0ED0095F10C /* CoinbaseDepositRequest.swift */; };
 		75CED0A02ACFED200095F10C /* CoinbaseDepositResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75CED09F2ACFED200095F10C /* CoinbaseDepositResponse.swift */; };
+		75D5D5332CC928630049ED7B /* UIHostingController+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D5D5322CC9285B0049ED7B /* UIHostingController+DashWallet.swift */; };
+		75D5D5342CC928630049ED7B /* UIHostingController+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D5D5322CC9285B0049ED7B /* UIHostingController+DashWallet.swift */; };
 		75D5F3CE191EC270004AB296 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3CD191EC270004AB296 /* main.m */; };
 		75D6561C2B07935000D1A902 /* WelcomeToDashpayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D6561B2B07935000D1A902 /* WelcomeToDashpayViewController.swift */; };
 		75D6561D2B07936100D1A902 /* UsernameRequests.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75D656192B0792F500D1A902 /* UsernameRequests.storyboard */; };
@@ -2522,6 +2524,7 @@
 		75CE50B51B5216F100DBC18C /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = DashWalletTests/Info.plist; sourceTree = SOURCE_ROOT; };
 		75CED09D2ACFD0ED0095F10C /* CoinbaseDepositRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseDepositRequest.swift; sourceTree = "<group>"; };
 		75CED09F2ACFED200095F10C /* CoinbaseDepositResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseDepositResponse.swift; sourceTree = "<group>"; };
+		75D5D5322CC9285B0049ED7B /* UIHostingController+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIHostingController+DashWallet.swift"; sourceTree = "<group>"; };
 		75D5F3BE191EC270004AB296 /* dashwallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = dashwallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D5F3C9191EC270004AB296 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		75D5F3CD191EC270004AB296 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -5010,6 +5013,7 @@
 				47E4B7B6292F85E800CE0EB6 /* Numbers+Dash.swift */,
 				47EE171629560DC200BA1986 /* ErrorPresentable.swift */,
 				47CDEECD294A3CF2008AE06D /* UIViewController+DashWallet.swift */,
+				75D5D5322CC9285B0049ED7B /* UIHostingController+DashWallet.swift */,
 				47EE17182959CDC200BA1986 /* ColorizedText.swift */,
 				4730586D295AB3BD004641DA /* UIDevice+Compatibility.swift */,
 				4730586F295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift */,
@@ -8541,6 +8545,7 @@
 				477F50102950A55A003C7508 /* Coinbase+Error.swift in Sources */,
 				2A63003F2327B4BB00827825 /* DWPaymentOutput+DWView.m in Sources */,
 				750CED602C94BFD7000FB837 /* SettingsViewModel.swift in Sources */,
+				75D5D5342CC928630049ED7B /* UIHostingController+DashWallet.swift in Sources */,
 				2ACD53EE234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m in Sources */,
 				11860923297598B400279FCC /* AddressStatus.swift in Sources */,
 				C91E919729FBACE6003E7883 /* ExtendedPublicKeysModel.swift in Sources */,
@@ -9537,6 +9542,7 @@
 				C9D2C7CA2A320AA000D15901 /* DWModalDismissalAnimation.m in Sources */,
 				C9D2C7CB2A320AA000D15901 /* (null) in Sources */,
 				C9D2C7CD2A320AA000D15901 /* UIViewController+DashWallet.swift in Sources */,
+				75D5D5332CC928630049ED7B /* UIHostingController+DashWallet.swift in Sources */,
 				C9D2C7CE2A320AA000D15901 /* CrowdNodeCell.swift in Sources */,
 				751B61C62ADFFD0A00D1C2EF /* IntegrationViewController+Coinbase.swift in Sources */,
 				C9D2C7CF2A320AA000D15901 /* MerchantListLocationOffCell.swift in Sources */,

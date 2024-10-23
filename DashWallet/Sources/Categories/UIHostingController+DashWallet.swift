@@ -17,15 +17,15 @@
 
 import SwiftUI
 
-public struct JoinDashPayInfoDialog: View {
-    @Environment(\.presentationMode) private var presentationMode
-    var action: () -> Void
-    
-    public var body: some View {
-        BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
-            JoinDashPayScreen {
-                presentationMode.wrappedValue.dismiss()
-                action()
+extension UIHostingController {
+    func setDetent(_ detent: CGFloat) {
+        if #available(iOS 16.0, *) {
+            if let sheet = self.sheetPresentationController {
+                let fitId = UISheetPresentationController.Detent.Identifier("fit")
+                let fitDetent = UISheetPresentationController.Detent.custom(identifier: fitId) { _ in
+                    detent
+                }
+                sheet.detents = [fitDetent]
             }
         }
     }

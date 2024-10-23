@@ -18,23 +18,26 @@
 import SwiftUI
 
 public struct VotingInfoScreen: View {
+    var action: () -> Void
+    
     public var body: some View {
-        TextIntro(
-            buttonLabel: NSLocalizedString("Continue", comment: ""),
-            action: { }, // TODO: navlink
-            inProgress: .constant(false),
-            topText: {
-                FeatureTopText(
-                    title: NSLocalizedString("What is username voting?", comment: "Usernames"),
-                    text: NSLocalizedString("The Dash network has to vote to approve some usernames before they are created", comment: "Usernames")
-                )
-            },
-            features: {[
-                FeatureSingleItem(iconName: .custom("username.letter"), title: NSLocalizedString("Voting is only required in some cases", comment: "Usernames"), description: NSLocalizedString("Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved", comment: "Usernames")),
-                FeatureSingleItem(iconName: .custom("friends.add"), title: NSLocalizedString("Some usernames can be blocked", comment: "Usernames"), description: NSLocalizedString("If enough of the network feels that a username is inappropriate, they can block it", comment: "Usernames")),
-                FeatureSingleItem(iconName: .custom("profile.personalized"), title: NSLocalizedString("In case your request is not approved", comment: "Usernames"), description: NSLocalizedString("Pay now and if not approved, you can create a different name without paying again", comment: "Usernames")),
-                FeatureSingleItem(iconName: .custom("profile.personalized"), title: NSLocalizedString("Keep your passphrase safe", comment: "Usernames"), description: NSLocalizedString("In case you lose your passphrase you will lose your right to your requested username.", comment: "Usernames"))
-            ]}
-        )
+        ZStack {
+            TextIntro(
+                buttonLabel: NSLocalizedString("Continue", comment: ""),
+                action: action,
+                inProgress: .constant(false),
+                topText: {
+                    FeatureTopText(
+                        title: NSLocalizedString("What is username voting?", comment: "Usernames"),
+                        text: NSLocalizedString("The Dash network has to vote to approve some usernames before they are created", comment: "Usernames")
+                    )
+                },
+                features: {[
+                    FeatureSingleItem(iconName: .custom("voting.list"), title: NSLocalizedString("Voting is only required in some cases", comment: "Usernames"), description: NSLocalizedString("Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved", comment: "Usernames")),
+                    FeatureSingleItem(iconName: .custom("voting.blocked"), title: NSLocalizedString("Some usernames can be blocked", comment: "Usernames"), description: NSLocalizedString("If enough of the network feels that a username is inappropriate, they can block it", comment: "Usernames")),
+                    FeatureSingleItem(iconName: .custom("icon.passphrase"), title: NSLocalizedString("Keep your passphrase safe", comment: "Usernames"), description: NSLocalizedString("In case you lose your passphrase you will lose your right to your requested username.", comment: "Usernames"))
+                ]}
+            )
+        }
     }
 }

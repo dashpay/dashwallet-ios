@@ -44,10 +44,12 @@ class HomeViewModel: ObservableObject {
         get { coinJoinService.mode }
     }
     
+    #if DASHPAY
     var shouldShowMixDashDialog: Bool {
         get { coinJoinService.mode == .none || !UsernamePrefs.shared.mixDashShown }
         set(value) { UsernamePrefs.shared.mixDashShown = !value }
     }
+    #endif
     
     init() {
         model.networkStatusDidChange = { status in

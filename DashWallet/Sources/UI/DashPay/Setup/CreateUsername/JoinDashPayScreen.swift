@@ -20,6 +20,7 @@ import SwiftUI
 public struct JoinDashPayScreen: View {
     @StateObject private var viewModel = RequestUsernameViewModel.shared
     @State private var navigateToVotingInfo = false
+    var action: () -> Void
     
     public var body: some View {
         ZStack {
@@ -43,7 +44,7 @@ public struct JoinDashPayScreen: View {
             )
 
             NavigationLink(
-                destination: VotingInfoScreen().navigationBarHidden(true),
+                destination: VotingInfoScreen(action: action).navigationBarHidden(true),
                 isActive: $navigateToVotingInfo
             ) {
                 EmptyView()
