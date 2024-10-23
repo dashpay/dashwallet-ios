@@ -480,6 +480,7 @@ struct HomeViewContent<Content: View>: View {
         }
     }
     
+    #if DASHPAY
     private func finishMixDialogNavigation() {
         if navigateToDashPayFlow {
             navigateToDashPayFlow = false
@@ -492,6 +493,7 @@ struct HomeViewContent<Content: View>: View {
             delegate?.homeViewRequestUsername()
         }
     }
+    #endif
 }
 
 struct TransactionDetailsSheet: View {
