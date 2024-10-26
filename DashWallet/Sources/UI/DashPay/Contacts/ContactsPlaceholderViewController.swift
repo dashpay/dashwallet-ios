@@ -158,9 +158,9 @@ class ContactsPlaceholderViewController: ActionButtonViewController {
     }
     
     private func navigateToCreateUsername() {
-        let controller = DashPaySetupFlowController(dashPayModel: self.dashPayModel,
-                                                   invitationURL: nil,
-                                                 definedUsername: nil)
+        let controller = CreateUsernameViewController(dashPayModel: self.dashPayModel,
+                                                     invitationURL: nil,
+                                                   definedUsername: nil)
         controller.modalPresentationStyle = .fullScreen
         self.present(controller, animated: true, completion: nil)
     }
