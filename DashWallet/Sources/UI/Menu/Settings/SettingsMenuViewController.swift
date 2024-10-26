@@ -229,6 +229,7 @@ struct SettingsMenuContent: View {
                         title: cjItem.title,
                         subtitleView: AnyView(CoinJoinSubtitle(cjItem)),
                         icon: .custom("image.coinjoin.menu"),
+                        badgeText: NSLocalizedString("Beta", comment: ""),
                         action: cjItem.action
                     )
                 } else {
@@ -259,6 +260,7 @@ struct SettingsMenuContent: View {
     private func CoinJoinSubtitle(_ cjItem: CoinJoinMenuItemModel) -> some View {
         if cjItem.isOn {
             CoinJoinProgressInfo(state: cjItem.state, progress: cjItem.progress, mixed: cjItem.mixed, total: cjItem.total, textColor: .tertiaryText, font: .caption)
+                .padding(.top, 2)
         } else {
             Text(NSLocalizedString("Turned off", comment: "CoinJoin"))
                 .font(.caption)

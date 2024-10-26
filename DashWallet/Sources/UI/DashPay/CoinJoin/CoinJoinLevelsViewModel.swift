@@ -36,7 +36,7 @@ class CoinJoinLevelViewModel: ObservableObject {
     private let coinJoinService = CoinJoinService.shared
     
     @Published var selectedMode: CoinJoinMode = .none
-    @Published private(set) var mixingState: MixingStatus = .notStarted
+    @Published private(set) var isMixing: Bool = false
     
     private var _infoShown: Bool? = nil
     var infoShown: Bool {
@@ -63,13 +63,7 @@ class CoinJoinLevelViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] mode in
                 self?.selectedMode = mode
-            }
-            .store(in: &cancellableBag)
-        
-        coinJoinService.$mixingState
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] state in
-                self?.mixingState = state
+                self?.isMixing = mode != .none
             }
             .store(in: &cancellableBag)
         
@@ -78,7 +72,7 @@ class CoinJoinLevelViewModel: ObservableObject {
 
     func resetSelectedMode() {
         self.selectedMode = coinJoinService.mode
-        self.mixingState = coinJoinService.mixingState
+        self.isMixing = coinJoinService.mode != .none
     }
     
     func startMixing() {

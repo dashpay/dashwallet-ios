@@ -304,6 +304,9 @@
 /* TimeSkew */
 "behind" = "behind";
 
+/* No comment provided by engineer. */
+"Beta" = "Beta";
+
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "%1$ld～%2$ld文字";
 
@@ -1188,6 +1191,9 @@
 
 /* No comment provided by engineer. */
 "Invite your friends and family to the Dash Network" = "友達や家族をDashネットワークに招待する";
+
+/* No comment provided by engineer. */
+"iOS Dash Wallet: %@ Reported issue" = "iOS Dash Wallet: %@ Reported issue";
 
 /* CrowdNode */
 "It can take a minute for your balance to be updated." = "お客様の残高が更新されるまで、1分ほどかかる場合があります。";
