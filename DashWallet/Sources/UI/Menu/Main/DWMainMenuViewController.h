@@ -32,10 +32,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWWipeDelegate, DWMainMenuViewControllerDelegate> delegate;
 
+#if DASHPAY
 - (instancetype)initWithDashPayModel:(id<DWDashPayProtocol>)dashPayModel
                         receiveModel:(id<DWReceiveModelProtocol>)receiveModel
                         dashPayReady:(id<DWDashPayReadyProtocol>)dashPayReady
                     userProfileModel:(DWCurrentUserProfileModel *)userProfileModel;
+#endif
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 - (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;

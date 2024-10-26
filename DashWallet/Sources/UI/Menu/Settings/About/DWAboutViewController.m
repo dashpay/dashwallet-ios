@@ -17,6 +17,7 @@
 
 #import "DWAboutViewController.h"
 
+#import <MessageUI/MessageUI.h>
 #import <StoreKit/StoreKit.h>
 
 #import "DWAboutModel.h"
@@ -27,7 +28,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAboutViewController () <DWAboutModelDelegate>
+@interface DWAboutViewController () <DWAboutModelDelegate, MFMailComposeViewControllerDelegate>
 
 @property (strong, nonatomic) IBOutlet UIImageView *dashLogoImageView;
 @property (strong, nonatomic) IBOutlet UILabel *appVersionLabel;
@@ -136,10 +137,29 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (IBAction)contactSupportButtonAction:(id)sender {
-    NSArray *dataToShare = [[DSLogger sharedInstance] logFiles];
-    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:dataToShare
-                                                                                         applicationActivities:nil];
-    [self presentViewController:activityViewController animated:YES completion:nil];
+    NSArray *logFiles = [[DSLogger sharedInstance] logFiles];
+
+    if ([MFMailComposeViewController canSendMail]) {
+        MFMailComposeViewController *mailComposer = [[MFMailComposeViewController alloc] init];
+        mailComposer.mailComposeDelegate = self;
+
+        NSString *email = [NSBundle mainBundle].infoDictionary[@"SupportEmail"];
+        NSString *version = [NSBundle mainBundle].infoDictionary[@"CFBundleShortVersionString"];
+        [mailComposer setToRecipients:@[ email ]];
+        [mailComposer setSubject:[NSString stringWithFormat:NSLocalizedString(@"iOS Dash Wallet: %@ Reported issue", @""), version]];
+
+        for (NSURL *logFileURL in logFiles) {
+            NSData *logData = [NSData dataWithContentsOfURL:logFileURL];
+            [mailComposer addAttachmentData:logData mimeType:@"text/plain" fileName:[logFileURL lastPathComponent]];
+        }
+
+        [self presentViewController:mailComposer animated:YES completion:nil];
+    }
+    else {
+        UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:logFiles
+                                                                                             applicationActivities:nil];
+        [self presentViewController:activityViewController animated:YES completion:nil];
+    }
 }
 
 #pragma mark - Notifications
@@ -267,6 +287,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)exploreDashDatabaseSyncStateChanged {
     self.exploreDashLastDeviceSyncLabel.text = [self.model exploreDashSyncState];
     self.exploreDashLastServerUpdateLabel.text = [self.model exploreLastServerUpdateDate];
+}
+
+#pragma mark - MFMailComposeViewControllerDelegate
+
+- (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(nullable NSError *)error {
+    [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

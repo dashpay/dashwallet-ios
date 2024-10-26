@@ -28,6 +28,7 @@ struct MenuItem: View {
     var secondaryIcon: IconName? = nil
     var showInfo: Bool = false
     var showChevron: Bool = false
+    var badgeText: String? = nil
     var dashAmount: Int64? = nil
     var overrideFiatAmount: String? = nil
     var showToggle: Bool = false
@@ -42,6 +43,7 @@ struct MenuItem: View {
          secondaryIcon: IconName? = nil,
          showInfo: Bool = false,
          showChevron: Bool = false,
+         badgeText: String? = nil,
          dashAmount: Int64? = nil,
          overrideFiatAmount: String? = nil,
          showToggle: Bool = false,
@@ -66,6 +68,7 @@ struct MenuItem: View {
             secondaryIcon: secondaryIcon,
             showInfo: showInfo,
             showChevron: showChevron,
+            badgeText: badgeText,
             dashAmount: dashAmount,
             overrideFiatAmount: overrideFiatAmount,
             showToggle: showToggle,
@@ -82,6 +85,7 @@ struct MenuItem: View {
          secondaryIcon: IconName? = nil,
          showInfo: Bool = false,
          showChevron: Bool = false,
+         badgeText: String? = nil,
          dashAmount: Int64? = nil,
          overrideFiatAmount: String? = nil,
          showToggle: Bool = false,
@@ -97,6 +101,7 @@ struct MenuItem: View {
         self.showInfo = showInfo
         self.showChevron = showChevron
         self.dashAmount = dashAmount
+        self.badgeText = badgeText
         self.overrideFiatAmount = overrideFiatAmount
         self._isToggled = State(initialValue: isToggled)
         self.showToggle = showToggle
@@ -150,6 +155,18 @@ struct MenuItem: View {
                         Image(systemName: "info.circle.fill")
                             .foregroundColor(.gray300)
                             .imageScale(.small)
+                    }
+
+                    Spacer()
+
+                    if let badgeText = badgeText {
+                        Text(badgeText)
+                            .font(.caption)
+                            .foregroundColor(.systemYellow)
+                            .padding(.vertical, 4)
+                            .padding(.horizontal, 8)
+                            .background(Color.systemYellow.opacity(0.2))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)

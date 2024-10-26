@@ -50,8 +50,12 @@ class CoinJoinLevelsViewController: UIViewController {
 
     @IBAction
     func continueButtonAction() {
-        if viewModel.mixingState == .notStarted {
-            self.navigationController?.popViewController(animated: true)
+        if !viewModel.isMixing {
+            if modalPresentationStyle == .fullScreen {
+                dismiss(animated: true)
+            } else {
+                self.navigationController?.popViewController(animated: true)
+            }
             viewModel.startMixing()
         } else {
             let alert = UIAlertController(title: NSLocalizedString("Are you sure you want to stop mixing?", comment: "CoinJoin"), message: NSLocalizedString("Any funds that have been mixed will be combined with your un mixed funds", comment: "CoinJoin"), preferredStyle: .alert)
@@ -106,7 +110,7 @@ extension CoinJoinLevelsViewController {
             return
         }
         
-        if viewModel.selectedMode == .none || viewModel.mixingState == .notStarted {
+        if viewModel.selectedMode == .none || !viewModel.isMixing {
             Task {
                 if !viewModel.keepOpenInfoShown {
                     await showModalDialog(
@@ -179,12 +183,12 @@ extension CoinJoinLevelsViewController {
             })
             .store(in: &cancellableBag)
         
-        viewModel.$mixingState
+        viewModel.$isMixing
             .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] status in
+            .sink(receiveValue: { [weak self] isMixing in
                 guard let self = self else { return }
                 
-                if status == .notStarted {
+                if !isMixing {
                     self.continueButton.accentColor = .dw_dashBlue()
                     self.continueButton.setTitle(NSLocalizedString("Start Mixing", comment: "CoinJoin"), for: .normal)
                 } else {

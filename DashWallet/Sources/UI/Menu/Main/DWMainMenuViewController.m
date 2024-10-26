@@ -18,6 +18,7 @@
 #import "DWMainMenuViewController.h"
 
 #import <DashSync/DashSync.h>
+#import <MessageUI/MessageUI.h>
 
 #import "DWAboutModel.h"
 #import "DWExploreTestnetViewController.h"
@@ -29,8 +30,8 @@
 #import "dashwallet-Swift.h"
 
 #ifdef DASHPAY
-#import "DWUserProfileModalQRViewController.h"
 #import "DWInvitationHistoryViewController.h"
+#import "DWUserProfileModalQRViewController.h"
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
@@ -39,7 +40,8 @@ NS_ASSUME_NONNULL_BEGIN
                                         DWToolsMenuViewControllerDelegate,
                                         DWSettingsMenuViewControllerDelegate,
                                         DWExploreTestnetViewControllerDelegate,
-                                        DWRootEditProfileViewControllerDelegate>
+                                        DWRootEditProfileViewControllerDelegate,
+                                        MFMailComposeViewControllerDelegate>
 
 @property (nonatomic, strong) DWMainMenuContentView *view;
 @property (nonatomic, strong) id<DWReceiveModelProtocol> receiveModel;
@@ -90,7 +92,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
 #if DASHPAY
     self.view.userModel = self.userProfileModel;
     self.view.dashPayReady = self.dashPayReady;
@@ -101,10 +103,10 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewWillAppear:animated];
 
     self.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeNever;
-    
+
 #ifdef DASHPAY
     BOOL invitationsEnabled = ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled && (self.userProfileModel.blockchainIdentity != nil));
-    
+
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
     BOOL isVotingEnabled = [VotingPrefsWrapper getIsEnabled] && now < VotingConstants.votingEndTime;
     self.view.model = [[DWMainMenuModel alloc] initWithInvitesEnabled:invitationsEnabled votingEnabled:isVotingEnabled];
@@ -112,7 +114,6 @@ NS_ASSUME_NONNULL_BEGIN
 #else
     self.view.model = [[DWMainMenuModel alloc] initWithInvitesEnabled:NO votingEnabled:NO];
 #endif
-    
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -168,10 +169,29 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWMainMenuItemType_Support: {
-            NSArray *dataToShare = [[DSLogger sharedInstance] logFiles];
-            UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:dataToShare
-                                                                                                 applicationActivities:nil];
-            [self presentViewController:activityViewController animated:YES completion:nil];
+            NSArray *logFiles = [[DSLogger sharedInstance] logFiles];
+
+            if ([MFMailComposeViewController canSendMail]) {
+                MFMailComposeViewController *mailComposer = [[MFMailComposeViewController alloc] init];
+                mailComposer.mailComposeDelegate = self;
+
+                NSString *email = [NSBundle mainBundle].infoDictionary[@"SupportEmail"];
+                NSString *version = [NSBundle mainBundle].infoDictionary[@"CFBundleShortVersionString"];
+                [mailComposer setToRecipients:@[ email ]];
+                [mailComposer setSubject:[NSString stringWithFormat:NSLocalizedString(@"iOS Dash Wallet: %@ Reported issue", @""), version]];
+
+                for (NSURL *logFileURL in logFiles) {
+                    NSData *logData = [NSData dataWithContentsOfURL:logFileURL];
+                    [mailComposer addAttachmentData:logData mimeType:@"text/plain" fileName:[logFileURL lastPathComponent]];
+                }
+
+                [self presentViewController:mailComposer animated:YES completion:nil];
+            }
+            else {
+                UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:logFiles
+                                                                                                     applicationActivities:nil];
+                [self presentViewController:activityViewController animated:YES completion:nil];
+            }
             break;
         }
 #if DASHPAY
@@ -191,6 +211,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
+
 #if DASHPAY
 - (void)mainMenuContentView:(DWMainMenuContentView *)view showQRAction:(UIButton *)sender {
     DWUserProfileModalQRViewController *controller = [[DWUserProfileModalQRViewController alloc] initWithModel:self.receiveModel];
@@ -208,27 +229,35 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)mainMenuContentView:(DWMainMenuContentView *)view joinDashPayAction:(UIButton *)sender {
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
     BOOL isVotingEnabled = [VotingPrefsWrapper getIsEnabled] && now < VotingConstants.votingEndTime;
-    
+
     if (isVotingEnabled) {
         UIViewController *controller = [RequestUsernameVMObjcWrapper getRootVCWith:^(BOOL result) {
             if (result) {
                 [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Username was successfully requested", @"Usernames") offsetForNavBar:YES];
-            } else {
+            }
+            else {
                 [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Your request was cancelled", @"Usernames") offsetForNavBar:YES];
             }
         }];
-        
+
         controller.hidesBottomBarWhenPushed = YES;
         [self.navigationController pushViewController:controller animated:YES];
-    } else {
-        DWDashPaySetupFlowController *controller =
-            [[DWDashPaySetupFlowController alloc]
+    }
+    else {
+        CreateUsernameViewController *controller =
+            [[CreateUsernameViewController alloc]
                 initWithDashPayModel:self.dashPayModel
                        invitationURL:nil
                      definedUsername:nil];
-        controller.modalPresentationStyle = UIModalPresentationFullScreen;
-        [self presentViewController:controller animated:YES completion:nil];
+        controller.hidesBottomBarWhenPushed = YES;
+        [self.navigationController pushViewController:controller animated:YES];
     }
+}
+
+- (void)mainMenuContentView:(DWMainMenuContentView *_Nonnull)view showCoinJoin:(UIButton *_Nonnull)sender {
+    CoinJoinLevelsViewController *controller = [CoinJoinLevelsViewController controllerWithIsFullScreen:NO];
+    controller.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:controller animated:YES];
 }
 #endif
 
@@ -270,6 +299,12 @@ NS_ASSUME_NONNULL_BEGIN
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
 #endif
+
+#pragma mark - MFMailComposeViewControllerDelegate
+
+- (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(nullable NSError *)error {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
 
 @end
 
