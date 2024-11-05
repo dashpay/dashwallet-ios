@@ -39,8 +39,6 @@ struct FeatureTopText: View {
                 .lineSpacing(3)
                 .foregroundColor(.secondaryText)
             
-            // TODO: features
-            
             if let label = label {
                 DashButton(text: label, trailingIcon: labelIcon, style: .plain, size: .small, stretch: false) {
                     linkAction?()

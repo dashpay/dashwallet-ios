@@ -211,6 +211,9 @@
 /* CoinJoin */
 "Any funds that have been mixed will be combined with your un mixed funds" = "Karıştırılmış fonlarınız, karıştırılmamış fonlarınızla birleştirilecektir.";
 
+/* Usernames */
+"Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved";
+
 /* Coinbase/Payment Methods */
 "Apple Pay" = "Apple Pay";
 
@@ -887,6 +890,9 @@
 "For your security, you have been signed out." = "Güvenliğiniz için oturumunuz kapatıldı.";
 
 /* No comment provided by engineer. */
+"Forget about long crypto addresses, create the username, find friends and add them to your contacts" = "Forget about long crypto addresses, create the username, find friends and add them to your contacts";
+
+/* No comment provided by engineer. */
 "Forgot PIN?" = "PİN'inizi unuttunuz mu?";
 
 /* No comment provided by engineer. */
@@ -1020,6 +1026,9 @@
 
 /* Voting */
 "Identity" = "Kimlik";
+
+/* Usernames */
+"If enough of the network feels that a username is inappropriate, they can block it" = "If enough of the network feels that a username is inappropriate, they can block it";
 
 /* Usernames */
 "If somebody else requests the same username as you, we will let the network decide whom to give this username" = "Başka biri sizinle aynı kullanıcı adını isterse, bu kullanıcı adını kime vereceğine ağın karar vermesine izin vereceğiz";
@@ -1378,6 +1387,12 @@
 
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "Tüccar araması, Konum Servisleri açıkken daha iyi çalışır.";
+
+/* CoinJoin */
+"Mix coins" = "Mix coins";
+
+/* CoinJoin */
+"Mix your Dash Coins" = "Mix your Dash Coins";
 
 /* No comment provided by engineer. */
 "Mixed balance" = "Mixed balance";
@@ -2103,6 +2118,9 @@
 /* No comment provided by engineer. */
 "Skip" = "Atla";
 
+/* Usernames */
+"Some usernames can be blocked" = "Some usernames can be blocked";
+
 /* No comment provided by engineer. */
 "Something went wrong" = "Bir şeyler ters gitti";
 
@@ -2196,6 +2214,9 @@
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "Kod yanlış. Lütfen kontrol edip tekrar deneyin!";
 
+/* Usernames */
+"The Dash network has to vote to approve some usernames before they are created" = "The Dash network has to vote to approve some usernames before they are created";
+
 /* CrowdNode */
 "The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "Dash Ağı, ödemeleri kolaylaştırmanın önemli bir parçası olan bir dizi Ana Düğüm tarafından yönlendirilmektedir.";
 
@@ -2273,6 +2294,9 @@
 
 /* Coinbase */
 "to Dash Wallet on this device" = "bu cihazdaki Dash Cüzdan'ına";
+
+/* CoinJoin */
+"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
 
 /* Usernames */
 "To request a username on the Dash Network, you need to have more than %@ Dash" = "Dash Ağında bir kullanıcı adı istemek için %@ Dash'tan fazlasına sahip olmanız gerekir";
@@ -2537,6 +2561,9 @@
 /* No comment provided by engineer. */
 "Voting Address" = "Oy Verme Adresi";
 
+/* Usernames */
+"Voting is only required in some cases" = "Voting is only required in some cases";
+
 /* No comment provided by engineer. */
 "Voting Keys" = "Oy Verme Anahtarları";
 
@@ -2712,6 +2739,9 @@
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "Coinbase'deki yetki sınırını aştınız.";
 
+/* Usernames */
+"You have %@ Dash.\nSome usernames cost up to %@ Dash." = "You have %1$@ Dash.\nSome usernames cost up to %2$@ Dash.";
+
 /* No comment provided by engineer. */
 "You have been invited by %@. Start using Dash cryptocurrency." = "%@ tarafından davet edildiniz. Dash kripto para birimini kullanmaya başlayın.";
 
@@ -2735,6 +2765,9 @@
 
 /* CrowdNode */
 "You need at least %@ on your Dash Wallet" = "Dash Cüzdan'ınızda en az %@ olması gerekir";
+
+/* Usernames */
+"You need to have more than %@ Dash to create a username" = "You need to have more than %@ Dash to create a username";
 
 /* CrowdNode */
 "You need to wait 5 minutes before initiating another withdrawal" = "Başka bir para çekme işlemine başlamadan önce 5 dakika beklemeniz gerekir";

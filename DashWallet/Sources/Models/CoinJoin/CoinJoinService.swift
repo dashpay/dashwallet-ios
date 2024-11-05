@@ -61,7 +61,6 @@ private let kDefaultRounds: Int32 = 4
 private let kDefaultSessions: Int32 = 6
 private let kDefaultDenominationGoal: Int32 = 50
 private let kDefaultDenominationHardcap: Int32 = 300
-private let kCoinJoinMixDashShown = "coinJoinMixDashShownKey"
 private let kCoinJoinMainnetMode = "coinJoinModeMainnetKey"
 private let kCoinJoinTestnetMode = "coinJoinModeTestnetKey"
 let kMaxAllowedAheadTimeskew: TimeInterval = 5
@@ -90,6 +89,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     private var coinJoinManager: DSCoinJoinManager? = nil
     private var hasAnonymizableBalance: Bool = false
     private var timeSkew: TimeInterval = 0
+    private var savedBalance: UInt64 = 0
     private var workingChain: ChainType
 
     private var chainModeKey: String {
@@ -111,15 +111,6 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
         set(value) {
             self.mode = value
             UserDefaults.standard.set(value.rawValue, forKey: chainModeKey)
-        }
-    }
-    
-    private var _mixDashShown: Bool? = nil
-    var mixDashShown: Bool {
-        get { _mixDashShown ?? UserDefaults.standard.bool(forKey: kCoinJoinMixDashShown) }
-        set(value) {
-            _mixDashShown = value
-            UserDefaults.standard.set(value, forKey: kCoinJoinMixDashShown)
         }
     }
     
@@ -158,7 +149,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
         }
         
         let account = DWEnvironment.sharedInstance().currentAccount
-        updateBalance(balance: account.balance)
+        await updateBalance(balance: account.balance)
         updateState(mode: mode, timeSkew: self.timeSkew, hasAnonymizableBalance: self.hasAnonymizableBalance, networkStatus: self.networkStatus, chain: DWEnvironment.sharedInstance().currentChain)
     }
     
@@ -174,7 +165,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
         coinJoinManager.start()
     }
     
-    private func startMixing() {
+    private func startMixing() async {
         guard let coinJoinManager = self.coinJoinManager else { return }
         
         if !coinJoinManager.startMixing() {
@@ -182,7 +173,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
         } else {
             coinJoinManager.refreshUnusedKeys()
             coinJoinManager.initMasternodeGroup()
-            coinJoinManager.doAutomaticDenominating(withReport: true)
+            await coinJoinManager.doAutomaticDenominating(withDryRun: false)
         }
     }
     
@@ -224,12 +215,13 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
         return self.coinJoinManager
     }
     
-    private func updateBalance(balance: UInt64) {
+    private func updateBalance(balance: UInt64) async {
         guard let coinJoinManager = self.coinJoinManager else { return }
         
+        self.savedBalance = balance
         coinJoinManager.updateOptions(withAmount: balance)
         DSLogger.log("CoinJoin: total balance: \(balance)")
-        let canDenominate = coinJoinManager.doAutomaticDenominating(withDryRun: true)
+        let canDenominate = await coinJoinManager.doAutomaticDenominating(withDryRun: true)
 
         let coinJoinBalance = coinJoinManager.getBalance()
         DSLogger.log("CoinJoin: mixed balance: \(coinJoinBalance.anonymized)")
@@ -318,7 +310,9 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
             if state == .mixing && previousMixingStatus != .mixing {
                 // start mixing
                 prepareMixing()
-                startMixing()
+                Task {
+                    await startMixing()
+                }
             } else if previousMixingStatus == .mixing && state != .mixing {
                 // finish mixing
                 stopMixing()
@@ -378,7 +372,14 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     private func configureObservers() {
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
             .sink { [weak self] _ in
-                self?.updateBalance(balance:  DWEnvironment.sharedInstance().currentAccount.balance)
+                guard let self = self else { return }
+                let balance = DWEnvironment.sharedInstance().currentAccount.balance
+                
+                if self.savedBalance != balance {
+                    Task {
+                        await self.updateBalance(balance: balance)
+                    }
+                }
             }
             .store(in: &cancellableBag)
         

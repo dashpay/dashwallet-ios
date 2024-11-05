@@ -36,7 +36,7 @@ class HomeViewModel: ObservableObject {
     @Published private(set) var coinJoinItem = CoinJoinMenuItemModel(title: NSLocalizedString("Mixing", comment: "CoinJoin"), isOn: false, state: .notStarted, progress: 0.0, mixed: 0.0, total: 0.0)
     @Published var showTimeSkewAlertDialog: Bool = false
     @Published private(set) var timeSkew: TimeInterval = 0
-    @Published var showJoinDashpay: Bool = false
+    @Published var showJoinDashpay: Bool = true
     
     private var model: SyncModel = SyncModelImpl()
     
@@ -44,10 +44,12 @@ class HomeViewModel: ObservableObject {
         get { coinJoinService.mode }
     }
     
+    #if DASHPAY
     var shouldShowMixDashDialog: Bool {
-        get { coinJoinService.mode == .none || !coinJoinService.mixDashShown }
-        set(value) { coinJoinService.mixDashShown = !value }
+        get { coinJoinService.mode == .none || !UsernamePrefs.shared.mixDashShown }
+        set(value) { UsernamePrefs.shared.mixDashShown = !value }
     }
+    #endif
     
     init() {
         model.networkStatusDidChange = { status in
