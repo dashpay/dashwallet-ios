@@ -565,7 +565,7 @@ PODS:
     - abseil/base/base_internal
     - abseil/base/config
     - abseil/meta/type_traits
-  - Alamofire (5.9.1)
+  - Alamofire (5.10.0)
   - BlueCryptor (1.0.32)
   - BlueECC (1.2.5)
   - BlueRSA (1.0.200)
@@ -591,11 +591,9 @@ PODS:
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
-  - DashSharedCore (0.4.16)
   - DashSync (0.1.0):
     - CocoaLumberjack (= 3.7.2)
     - DAPI-GRPC (= 0.22.0-dev.8)
-    - DashSharedCore (= 0.4.16)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
     - TinyCborObjc (= 0.4.6)
@@ -710,17 +708,17 @@ PODS:
   - nanopb/decode (2.30908.0)
   - nanopb/encode (2.30908.0)
   - PromisesObjC (2.4.0)
-  - Protobuf (3.27.2)
+  - Protobuf (3.28.2)
   - SDWebImage (5.13.2):
     - SDWebImage/Core (= 5.13.2)
   - SDWebImage/Core (5.13.2)
-  - SQLite.swift (0.13.3):
-    - SQLite.swift/standard (= 0.13.3)
-  - SQLite.swift/standard (0.13.3)
-  - SQLiteMigrationManager.swift (0.8.1):
-    - SQLiteMigrationManager.swift/standard (= 0.8.1)
-  - SQLiteMigrationManager.swift/standard (0.8.1):
-    - SQLite.swift (~> 0.13.0)
+  - SQLite.swift (0.15.3):
+    - SQLite.swift/standard (= 0.15.3)
+  - SQLite.swift/standard (0.15.3)
+  - SQLiteMigrationManager.swift (0.8.3):
+    - SQLiteMigrationManager.swift/standard (= 0.8.3)
+  - SQLiteMigrationManager.swift/standard (0.8.3):
+    - SQLite.swift (~> 0.15.3)
   - SSZipArchive (2.4.3)
   - SwiftJWT (3.6.200):
     - BlueCryptor (~> 1.0)
@@ -746,8 +744,8 @@ DEPENDENCIES:
   - MMSegmentSlider (from `https://github.com/podkovyrin/MMSegmentSlider`, commit `2d91366`)
   - Moya (~> 15.0)
   - SDWebImage (= 5.13.2)
-  - SQLite.swift (~> 0.13.3)
-  - SQLiteMigrationManager.swift
+  - SQLite.swift (~> 0.15.3)
+  - SQLiteMigrationManager.swift (= 0.8.3)
   - SSZipArchive
   - SwiftJWT (= 3.6.200)
   - TOCropViewController (= 2.6.1)
@@ -766,7 +764,6 @@ SPEC REPOS:
     - CloudInAppMessaging
     - CocoaLumberjack
     - DAPI-GRPC
-    - DashSharedCore
     - DSDynamicOptions
     - DWAlertController
     - Firebase
@@ -822,7 +819,7 @@ SPEC CHECKSUMS:
   "!ProtoCompiler": e9c09244955a8565817aa59a4787b6bb849a63c6
   "!ProtoCompiler-gRPCPlugin": 755f0ee414a0d5f0028e0dcfe98c23bdbc3e6fa3
   abseil: 926fb7a82dc6d2b8e1f2ed7f3a718bce691d1e46
-  Alamofire: f36a35757af4587d8e4f4bfa223ad10be2422b8c
+  Alamofire: cd0b98508df05796dd2ff278f3bb055a631b5390
   BlueCryptor: b0aee3d9b8f367b49b30de11cda90e1735571c24
   BlueECC: 0d18e93347d3ec6d41416de21c1ffa4d4cd3c2cc
   BlueRSA: dfeef51db96bcc4edec654956c1581adbda4e6a3
@@ -831,8 +828,7 @@ SPEC CHECKSUMS:
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
-  DashSharedCore: 81d3327cbea4103114b768eed4d36e742417b63b
-  DashSync: 5c4dea6e4ef83df33f23f85b7f2b97ef6843de87
+  DashSync: 2438dbf626f13a8633ccc19c718c1c223c8ee831
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   Firebase: 5f8193dff4b5b7c5d5ef72ae54bb76c08e2b841d
@@ -856,10 +852,10 @@ SPEC CHECKSUMS:
   Moya: 138f0573e53411fb3dc17016add0b748dfbd78ee
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  Protobuf: fb2c13674723f76ff6eede14f78847a776455fa2
+  Protobuf: 28c89b24435762f60244e691544ed80f50d82701
   SDWebImage: 72f86271a6f3139cc7e4a89220946489d4b9a866
-  SQLite.swift: 903bfa3bc9ab06345fdfbb578e34f47cfcf417da
-  SQLiteMigrationManager.swift: 5383578f5bc8955c06695e8bf04835ee0e6673a8
+  SQLite.swift: 8d054987f02728cc912b0eb5a9659650573a65a2
+  SQLiteMigrationManager.swift: b63bb5eaf834f8e8cc78b37fdf2ce064e35914cd
   SSZipArchive: fe6a26b2a54d5a0890f2567b5cc6de5caa600aef
   SwiftJWT: 88c412708f58c169d431d344c87bc79a87c830ae
   tinycbor: d4d71dddda1f8392fbb4249f63faf8552f327590
@@ -867,6 +863,6 @@ SPEC CHECKSUMS:
   TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: 8dff55782a9c478127464baadc00c6fc85af48ba
+PODFILE CHECKSUM: f09efff2a2f19044a1962e054a3c3bbb3ae206db
 
 COCOAPODS: 1.15.2
