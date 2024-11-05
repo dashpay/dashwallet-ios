@@ -18,6 +18,7 @@
 import Foundation
 import SQLite
 
+
 extension TxUserInfoTaxCategory {
     var stringValue: String {
         switch self {
@@ -109,11 +110,11 @@ extension TxUserInfo {
 
 extension TxUserInfo {
     static var table: Table { Table("tx_userinfo") }
-    static var txCategoryColumn: Expression<Int> { Expression<Int>("taxCategory") }
-    static var txHashColumn: Expression<Data> { Expression<Data>("txHash") }
-    static var txRateColumn: Expression<Int?> { .init("rate") }
-    static var txRateCurrencyCodeColumn: Expression<String?> { .init("rateCurrencyCode") }
-    static var txRateMaximumFractionDigitsColumn: Expression<Int?> { .init("rateMaximumFractionDigits") }
+    static var txCategoryColumn: SQLite.Expression<Int> { Expression<Int>("taxCategory") }
+    static var txHashColumn: SQLite.Expression<Data> { Expression<Data>("txHash") }
+    static var txRateColumn: SQLite.Expression<Int?> { .init("rate") }
+    static var txRateCurrencyCodeColumn: SQLite.Expression<String?> { .init("rateCurrencyCode") }
+    static var txRateMaximumFractionDigitsColumn: SQLite.Expression<Int?> { .init("rateMaximumFractionDigits") }
 }
 
 @objc

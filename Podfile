@@ -4,8 +4,8 @@ target 'dashwallet' do
   platform :ios, '14.0'
   
   pod 'DashSync', :path => '../DashSync/'
-  pod 'SQLite.swift', '~> 0.13.3'
-  pod 'SQLiteMigrationManager.swift'
+  pod 'SQLite.swift', '~> 0.15.3'
+  pod 'SQLiteMigrationManager.swift', '0.8.3'
   pod 'CloudInAppMessaging', '0.1.0'
   pod 'FirebaseStorage', '8.15.0'
   pod 'Firebase/DynamicLinks'
@@ -27,8 +27,8 @@ target 'dashpay' do
   platform :ios, '14.0'
   
   pod 'DashSync', :path => '../DashSync/'
-  pod 'SQLite.swift', '~> 0.13.3'
-  pod 'SQLiteMigrationManager.swift'
+  pod 'SQLite.swift', '~> 0.15.3'
+  pod 'SQLiteMigrationManager.swift', '0.8.3'
   pod 'CloudInAppMessaging', '0.1.0'
   pod 'FirebaseStorage', '8.15.0'
   pod 'Firebase/DynamicLinks'
@@ -83,10 +83,14 @@ post_install do |installer|
 
     end
 
-    # Hide warnings for specific pods
-    if ["gRPC"].include? target.name
-      target.build_configurations.each do |config|
-        config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
+    # Ensure the GCC_WARN_INHIBIT_ALL_WARNINGS flag is removed for BoringSSL-GRPC and BoringSSL-GRPC-iOS
+    if ['BoringSSL-GRPC', 'BoringSSL-GRPC-iOS'].include? target.name
+      target.source_build_phase.files.each do |file|
+        if file.settings && file.settings['COMPILER_FLAGS']
+          flags = file.settings['COMPILER_FLAGS'].split
+          flags.reject! { |flag| flag == '-GCC_WARN_INHIBIT_ALL_WARNINGS' }
+          file.settings['COMPILER_FLAGS'] = flags.join(' ')
+        end
       end
     end
 
