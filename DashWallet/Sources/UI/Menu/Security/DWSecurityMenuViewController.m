@@ -47,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
-    
+
         self.title = NSLocalizedString(@"Security", nil);
         self.hidesBottomBarWhenPushed = YES;
     }

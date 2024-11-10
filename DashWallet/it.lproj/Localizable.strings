@@ -310,6 +310,9 @@
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "Tra %1$ld e %2$ld caratteri\n ";
 
+/* Usernames */
+"Between 3 and 23 characters" = "Between 3 and 23 characters";
+
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase" = "Tra Dash Wallet e Coinbase";
 
@@ -562,6 +565,9 @@
 
 /* No comment provided by engineer. */
 "Create Username" = "Crea un nome utente";
+
+/* Usernames */
+"Create your username" = "Create your username";
 
 /* No comment provided by engineer. */
 "Create your Username, find friends & family with their usernames and add them to your contacts" = "Crea il tuo Username, trova amici e familiari con i loro Usernames e aggiungili ai tuoi contatti";
@@ -1268,6 +1274,9 @@
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Consenti ai tuoi amici e familiari di unirsi alla Dash Network. Invitali nel mondo del social banking.";
 
+/* Usernames */
+"Letter, numbers and hyphens only" = "Letter, numbers and hyphens only";
+
 /* Validation rule */
 "Letters, numbers and hyphens only" = "Solo lettere, numeri e trattini";
 
@@ -1693,6 +1702,9 @@
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Tieni presente che l'Email non viene salvata da Dash Wallet e viene inviata solo a CrowdNode";
+
+/* Usernames */
+"Please note that you will not be able to change it in future" = "Please note that you will not be able to change it in future";
 
 /* Leftover balance warning */
 "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "Tieni presente che non sarai in grado di prelevare i tuoi fondi da CowdNode a questo portafoglio fino a quando non aumenterai il tuo saldo a %@ Dash";
@@ -2229,6 +2241,9 @@
 /* Usernames */
 "The Dash network must vote to approve your username before it is created." = "La rete Dash deve votare per approvare il tuo nome utente prima che venga creato.";
 
+/* Usernames */
+"The Dash network will vote on this username. We will notify you of the results on March 14, 2024." = "The Dash network will vote on this username. We will notify you of the results on March 14, 2024.";
+
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Il Dash è stato depositato con successo sul tuo conto Coinbase. Ma si è verificato un problema durante il trasferimento a Dash Wallet su questo dispositivo.";
 
@@ -2288,6 +2303,12 @@
 
 /* Voting */
 "This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "Questo nome utente è già stato richiesto, ma puoi richiederlo anche tu e lasciare che sia la rete a votare per decidere se puoi averlo";
+
+/* Usernames */
+"This username is already created by someone else" = "This username is already created by someone else";
+
+/* Usernames */
+"This username is blocked by the Dash Network" = "This username is blocked by the Dash Network";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Questo portafoglio non è vuoto o la sincronizzazione non è terminata, non puoi cancellarlo senza la frase di recupero";
@@ -2485,6 +2506,9 @@
 
 /* No comment provided by engineer. */
 "Username available" = "Username disponibile";
+
+/* Usernames */
+"Username is available" = "Username is available";
 
 /* No comment provided by engineer. */
 "Username taken" = "Username già in uso";

@@ -310,6 +310,9 @@
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "Ενδιάμεσα σε %1$ld και %2$ld χαρακτήρες";
 
+/* Usernames */
+"Between 3 and 23 characters" = "Between 3 and 23 characters";
+
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase" = "Μεταξύ Dash Wallet και Coinbase.";
 
@@ -562,6 +565,9 @@
 
 /* No comment provided by engineer. */
 "Create Username" = "Δημιουργία ονόματος χρήστη";
+
+/* Usernames */
+"Create your username" = "Create your username";
 
 /* No comment provided by engineer. */
 "Create your Username, find friends & family with their usernames and add them to your contacts" = "Δημιουργήστε το Όνομα Χρήστη σας, βρείτε φίλους και συγγενείς με τα ονόματα χρήστη τους και προσθέστε τους στις επαφές σας.";
@@ -1268,6 +1274,9 @@
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Αφήστε τους φίλους και την συγγενείς σας να ενταχθούν στο Dash Network. Προσκαλέστε τους στον κόσμο της κοινωνικής τραπεζικής.";
 
+/* Usernames */
+"Letter, numbers and hyphens only" = "Letter, numbers and hyphens only";
+
 /* Validation rule */
 "Letters, numbers and hyphens only" = "Μόνο γράμματα, αριθμοί και παύλες";
 
@@ -1693,6 +1702,9 @@
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Λάβετε υπόψη ότι το email δεν αποθηκεύεται από το Dash Wallet και αποστέλλεται μόνο στο Crowdnode";
+
+/* Usernames */
+"Please note that you will not be able to change it in future" = "Please note that you will not be able to change it in future";
 
 /* Leftover balance warning */
 "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "Σημειώστε ότι δεν θα μπορείτε να κάνετε ανάληψη των χρημάτων σας από το CrowdNode σε αυτό το πορτοφόλι μέχρι να αυξήσετε το υπόλοιπό σας σε %@ Dash.";
@@ -2229,6 +2241,9 @@
 /* Usernames */
 "The Dash network must vote to approve your username before it is created." = "Το Dash δίκτυο θα πρέπει να ψηφίσει για να εγκρίνει το όνομα χρήστη σας πριν δημιουργηθεί.";
 
+/* Usernames */
+"The Dash network will vote on this username. We will notify you of the results on March 14, 2024." = "The Dash network will vote on this username. We will notify you of the results on March 14, 2024.";
+
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Τα Dash κατατέθηκαν επιτυχώς στο λογαριασμό σας στην Coinbase. Υπήρξε όμως πρόβλημα στη μεταφορά τους στο Dash Wallet σε αυτή τη συσκευή.";
 
@@ -2288,6 +2303,12 @@
 
 /* Voting */
 "This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "Αυτό το όνομα χρήστη έχει ήδη ζητηθεί, αλλά μπορείτε να το ζητήσετε κι εσείς και να αφήσετε το δίκτυο να ψηφίσει για να αποφασίσει αν μπορείτε να το έχετε.";
+
+/* Usernames */
+"This username is already created by someone else" = "This username is already created by someone else";
+
+/* Usernames */
+"This username is blocked by the Dash Network" = "This username is blocked by the Dash Network";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Αυτό το πορτοφόλι δεν είναι άδειο η ο συγχρονισμός δεν έχει ολοκληρωθεί , δεν θα πρέπει να το καθαρίσετε χωρίς την φράση ανάκτησης";
@@ -2485,6 +2506,9 @@
 
 /* No comment provided by engineer. */
 "Username available" = "Διαθέσιμο όνομα χρήστη";
+
+/* Usernames */
+"Username is available" = "Username is available";
 
 /* No comment provided by engineer. */
 "Username taken" = "Το όνομα χρήστη είναι κατειλημμένο";

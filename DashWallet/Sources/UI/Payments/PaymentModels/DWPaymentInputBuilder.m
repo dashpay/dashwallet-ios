@@ -153,10 +153,10 @@ NS_ASSUME_NONNULL_BEGIN
         paymentInput.canChangeAmount = YES;
         paymentInput.request = paymentRequest;
         paymentInput.request.dashpayUsername = userItem.username;
-        
+
         return paymentInput;
     }
-    
+
     DSFriendRequestEntity *friendRequest = [userItem friendRequestToPay];
     NSParameterAssert(friendRequest);
 

@@ -75,7 +75,7 @@ static CGSize QRCodeSizeRequestAmount(void) {
         else {
             _qrCodeSize = QRCodeSizeBasic();
         }
-        
+
         CGFloat logoSize = _qrCodeSize.height * 0.22;
         _logoSize = CGSizeMake(logoSize, logoSize);
     }
@@ -88,19 +88,19 @@ static CGSize QRCodeSizeRequestAmount(void) {
 
     CGSize size = overlayImage.size;
     NSString *username;
-    
+
 #if DASHPAY
     username = [DWGlobalOptions sharedInstance].dashpayUsername;
 #endif
-    
+
     const BOOL shouldDrawUser = username != nil;
-    
+
     if (shouldDrawUser) {
         size = _logoSize;
     }
     else {
         overlayImage = [overlayImage dw_resize:_logoSize
-                        withInterpolationQuality:kCGInterpolationHigh];
+                      withInterpolationQuality:kCGInterpolationHigh];
     }
 
     if (shouldDrawUser) {

@@ -17,9 +17,9 @@
 
 #import "DWUserProfileContactActionsCell.h"
 
-#import "dashwallet-Swift.h"
 #import "DWUIKit.h"
 #import "DWUserProfileModel.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

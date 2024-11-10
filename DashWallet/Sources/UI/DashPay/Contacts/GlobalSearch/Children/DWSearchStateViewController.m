@@ -17,9 +17,9 @@
 
 #import "DWSearchStateViewController.h"
 
-#import "dashwallet-Swift.h"
-#import "DWUIKit.h"
 #import "DWInvitationSuggestionView.h"
+#import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -124,7 +124,7 @@ NS_ASSUME_NONNULL_END
     [self.view addSubview:horizontalStackView];
 
     UILayoutGuide *guide = self.view.layoutMarginsGuide;
-    
+
     [self.view addSubview:self.invitationView];
 
     [NSLayoutConstraint activateConstraints:@[
@@ -133,7 +133,7 @@ NS_ASSUME_NONNULL_END
         [guide.trailingAnchor constraintEqualToAnchor:horizontalStackView.trailingAnchor],
         [self.view.bottomAnchor constraintEqualToAnchor:horizontalStackView.bottomAnchor],
         [self.actionButton.heightAnchor constraintEqualToConstant:44.0],
-        
+
         [self.invitationView.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor],
         [guide.trailingAnchor constraintEqualToAnchor:self.invitationView.trailingAnchor],
         [guide.bottomAnchor constraintEqualToAnchor:self.invitationView.bottomAnchor],

@@ -171,6 +171,10 @@ extension UIViewController {
             buttonsStyle: buttonsStyle
         )
 
+        showModalDialog(dialog: dialog)
+    }
+    
+    func showModalDialog(dialog: some View) {
         let hostingController = UIHostingController(rootView: dialog)
         hostingController.modalPresentationStyle = .overFullScreen
         hostingController.modalTransitionStyle = .crossDissolve

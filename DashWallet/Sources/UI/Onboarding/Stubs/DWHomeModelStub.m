@@ -108,7 +108,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)checkCrowdNodeState {
 }
 
-- (void) checkVotingState {
+- (void)checkVotingState {
 }
 
 - (void)registerForPushNotifications {

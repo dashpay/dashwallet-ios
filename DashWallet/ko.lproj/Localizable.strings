@@ -310,6 +310,9 @@
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "%1$ld 와 %2$ld 글자 사이";
 
+/* Usernames */
+"Between 3 and 23 characters" = "Between 3 and 23 characters";
+
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase" = "대시 지갑과 코인베이스 사이";
 
@@ -562,6 +565,9 @@
 
 /* No comment provided by engineer. */
 "Create Username" = "사용자 이름 생성";
+
+/* Usernames */
+"Create your username" = "Create your username";
 
 /* No comment provided by engineer. */
 "Create your Username, find friends & family with their usernames and add them to your contacts" = "사용자 이름을 생성하고, 사용자 이름으로 친구와 가족을 찾아 당신의 연락처에 추가하세요.";
@@ -1268,6 +1274,9 @@
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "당신의 친구와 가족들이 대시 네트워크에 가입하도록 도와주고, 소셜 뱅킹의 세계에 초대해보세요.";
 
+/* Usernames */
+"Letter, numbers and hyphens only" = "Letter, numbers and hyphens only";
+
 /* Validation rule */
 "Letters, numbers and hyphens only" = "글자, 숫자 및 하이픈만 사용할 수 있습니다.";
 
@@ -1693,6 +1702,9 @@
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "이 이메일은 대시 지갑에 의해 저장되지 않으며 크라우드노드로만 보내진다는 점에 주의하십시오";
+
+/* Usernames */
+"Please note that you will not be able to change it in future" = "Please note that you will not be able to change it in future";
 
 /* Leftover balance warning */
 "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "당신의 잔고를 %@ 대시로 올리지 않으면 크라우드노드에서 이 지갑으로 자금을 출금할 수 없다는 점에 주의하세요.";
@@ -2229,6 +2241,9 @@
 /* Usernames */
 "The Dash network must vote to approve your username before it is created." = "사용자 이름이 생성되기 전 대시 네트워크가 투표를 통해 승인해야 합니다.";
 
+/* Usernames */
+"The Dash network will vote on this username. We will notify you of the results on March 14, 2024." = "The Dash network will vote on this username. We will notify you of the results on March 14, 2024.";
+
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "대시가 당신의 코인베이스 계정에 성공적으로 입금되었습니다. 그러나 이 기기의 대시 지갑으로 옮기는 데에 문제가 발생했습니다.";
 
@@ -2288,6 +2303,12 @@
 
 /* Voting */
 "This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "이 사용자 이름은 이미 요청이 진행중이나, 당신도 요청할 수 있으며 누가 가지게 될 지는 네트워크가 투표로 결정합니다";
+
+/* Usernames */
+"This username is already created by someone else" = "This username is already created by someone else";
+
+/* Usernames */
+"This username is blocked by the Dash Network" = "This username is blocked by the Dash Network";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "이 지갑은 비어 있지 않거나 동기화가 완료되지 않았습니다. 복구 문구없이 삭제할 수 없습니다.";
@@ -2485,6 +2506,9 @@
 
 /* No comment provided by engineer. */
 "Username available" = "사용할 수 없는 사용자 이름";
+
+/* Usernames */
+"Username is available" = "Username is available";
 
 /* No comment provided by engineer. */
 "Username taken" = "이미 사용 중인 사용자 이름";

@@ -18,9 +18,10 @@
 import SwiftUI
 
 struct TextInput: View {
+    @FocusState private var isFocused: Bool
+    
     let label: String
     @Binding var text: String
-    @State private var isFocused: Bool = false
     var isError: Bool = false
     var trailingIcon: Image?
     var trailingAction: (() -> Void)?
@@ -35,27 +36,26 @@ struct TextInput: View {
                     .scaleEffect(labelScale, anchor: .leading)
                     .animation(.spring(response: 0.2, dampingFraction: 0.8), value: isFocused || !text.isEmpty)
                 
-                TextField("", text: $text) { focused in
-                    withAnimation {
-                        isFocused = focused
-                    }
-                }
-                .font(.body2)
-                .padding(.top, 15)
+                TextField("", text: $text)
+                    .focused($isFocused)
+                    .autocorrectionDisabled(true)
+                    .font(.body2)
+                    .padding(.top, 15)
 
                 HStack {
                     Spacer()
                     Button(action: {
                         trailingAction?() ?? clearText()
                     }) {
-                        trailingIcon ?? Image(systemName: "xmark.circle.fill")
+                        (trailingIcon ?? Image(systemName: "xmark.circle.fill"))
+                            .foregroundColor(.tertiaryText)
                     }
-//                    .opacity(text.isEmpty ? 0 : 1)
+                    .opacity(text.isEmpty ? 0 : 1)
                 }
             }
         }
         .padding(.horizontal, 12)
-        .frame(minHeight: 58)
+        .frame(minHeight: 60)
         .background(backgroundColor)
         .cornerRadius(12)
         .overlay(
@@ -71,6 +71,9 @@ struct TextInput: View {
                 }
             }
         )
+        .onTapGesture {
+            isFocused = true
+        }
     }
     
     
@@ -79,7 +82,7 @@ struct TextInput: View {
     }
     
     private var labelScale: CGFloat {
-        isFocused || !text.isEmpty ? 0.8 : 1
+        isFocused || !text.isEmpty ? 0.85 : 1
     }
     
     private var backgroundColor: Color {

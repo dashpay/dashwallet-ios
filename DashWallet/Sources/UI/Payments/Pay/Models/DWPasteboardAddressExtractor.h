@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWPasteboardAddressExtractor : NSObject
 
 - (NSArray<NSString *> *)extractAddresses;
-- (NSArray<NSString *> *)extractAddressesFromString: (NSString *)string;
+- (NSArray<NSString *> *)extractAddressesFromString:(NSString *)string;
 
 @end
 

@@ -17,11 +17,11 @@
 
 #import "DWPreviewSeedPhraseContentView.h"
 
-#import "dashwallet-Swift.h"
 #import "DWCheckbox.h"
 #import "DWSeedPhraseTitledView.h"
 #import "DWSeedUIConstants.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

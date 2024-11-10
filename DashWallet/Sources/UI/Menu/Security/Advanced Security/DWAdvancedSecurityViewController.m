@@ -17,12 +17,12 @@
 
 #import "DWAdvancedSecurityViewController.h"
 
-#import "dashwallet-Swift.h"
 #import "DWAdvancedSecurityModel.h"
 #import "DWFormTableViewController.h"
 #import "DWSecurityStatusView.h"
 #import "DWSegmentSliderFormTableViewCell.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -240,16 +240,16 @@ NS_ASSUME_NONNULL_BEGIN
     UIView *tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
     tableFooterView.backgroundColor = [UIColor clearColor];
     formController.tableView.tableFooterView = tableFooterView;
-    
+
     PlainButton *resetButton = [[PlainButton alloc] init];
     [resetButton setTranslatesAutoresizingMaskIntoConstraints:NO];
     [resetButton setTitle:NSLocalizedString(@"Reset to Default", nil) forState:UIControlStateNormal];
     [resetButton addTarget:self action:@selector(resetButtonAction) forControlEvents:UIControlEventTouchUpInside];
     [tableFooterView addSubview:resetButton];
-    
+
     [[resetButton.centerYAnchor constraintEqualToAnchor:tableFooterView.centerYAnchor] setActive:YES];
     [[resetButton.centerXAnchor constraintEqualToAnchor:tableFooterView.centerXAnchor] setActive:YES];
-    
+
     [self dw_embedChild:formController];
     self.formController = formController;
 
