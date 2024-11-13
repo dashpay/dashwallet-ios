@@ -159,7 +159,7 @@ class MainMenuContentView: UIView {
     }
     
     private func showDashPayInfo(_ sender: UIButton) {
-        let swiftUIView = JoinDashPayInfoDialog() {
+        let swiftUIView = JoinDashPayInfoDialog {
             self.delegate?.mainMenuContentView(self, joinDashPayAction: sender)
         }
         let hostingController = UIHostingController(rootView: swiftUIView)

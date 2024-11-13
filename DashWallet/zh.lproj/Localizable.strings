@@ -160,9 +160,6 @@
 /* Usernames */
 "After the voting ends we will notify you about its results" = "当投票结束后我们将向您通知结果";
 
-/* Usernames */
-"After voting is completed on %@ you can create any username that has not already been created" = "在%@投票完成后, 您可以创建任何尚未创建的用户名";
-
 /* No comment provided by engineer. */
 "Agree" = "同意";
 
@@ -452,9 +449,6 @@
 /* No comment provided by engineer. */
 "Confirm PIN" = "确认PIN";
 
-/* Voting */
-"Confirm Username Request" = "确认用户名申请";
-
 /* No comment provided by engineer. */
 "Confirming" = "确认中";
 
@@ -513,6 +507,9 @@
 
 /* No comment provided by engineer. */
 "Copy Logs" = "复制日志";
+
+/* No comment provided by engineer. */
+"Copy text" = "Copy text";
 
 /* No comment provided by engineer. */
 "Copyright © 2023 Dash Core" = "版权所有 © 2023 Dash Core";
@@ -793,9 +790,6 @@
 /* CoinJoin */
 "Error ·" = "Error ·";
 
-/* Usernames */
-"Example post" = "示例内容";
-
 /* No comment provided by engineer. */
 "Exit" = "退出";
 
@@ -1019,6 +1013,9 @@
 "I Accept" = "我同意";
 
 /* No comment provided by engineer. */
+"I accept" = "I accept";
+
+/* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "我同意如果我丢失助记词, 我会丢失我的Dash";
 
 /* CrowdNode */
@@ -1089,9 +1086,6 @@
 
 /* Usernames */
 "In case you lose your passphrase you will lose your right to your requested username." = "如果您丢失了您的密码, 您将会失去您申请用户名的权力.";
-
-/* Usernames */
-"In case your request is not approved" = "如果您的申请没有被通过";
 
 /* CrowdNode Portal */
 "In process…" = "正在进行...";
@@ -1353,7 +1347,7 @@
 "Mainnet" = "Mainnet";
 
 /* Usernames */
-"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "在知名社交媒体或信息平台使用上述文本 (或类似内容) 发布一个帖子以证明您是所申请用户名的原始持有者, 并将链接粘贴在下方";
+"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "管理 GPS 权限";
@@ -1556,9 +1550,6 @@
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "一旦 %@ 通过了您的朋友申请, 您就可以使用用户名直接付款";
 
-/* Voting */
-"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "当投票完成时, 您可以创建任何一个您想要的用户名, 只要它还没有被创建";
-
 /* Online */
 "Online" = "线上";
 
@@ -1593,7 +1584,7 @@
 "Owner Keys" = "所有者私钥";
 
 /* Usernames */
-"Paste the link" = "粘贴链接";
+"Past link here" = "Past link here";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "粘贴您的图片链接";
@@ -1606,9 +1597,6 @@
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "直接付款给用户名";
-
-/* Usernames */
-"Pay now and if not approved, you can create a different name without paying again" = "现在付款, 若未通过, 您可创建另一个用户名无需再次付款";
 
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "以用户名支付. 无需使用字母数字地址";
@@ -1702,6 +1690,9 @@
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "请注意, Dash钱包不保存电子邮件, 仅发送至 CrowdNode";
+
+/* Usernames */
+"Please note that the username can NOT be changed once it is registered." = "Please note that the username can NOT be changed once it is registered.";
 
 /* Usernames */
 "Please note that you will not be able to change it in future" = "Please note that you will not be able to change it in future";
@@ -1870,9 +1861,6 @@
 
 /* Voting */
 "Request details" = "申请的细节";
-
-/* Voting */
-"Request Username" = "申请用户名";
 
 /* Voting */
 "Request your username" = "申请您的用户名";
@@ -2239,9 +2227,6 @@
 "The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "Dash 网络由众多主节点驱动, 这是令支付更便捷的重要组成部分.";
 
 /* Usernames */
-"The Dash network must vote to approve your username before it is created." = "在用户名被创建前, Dash网络必须投票来通过您的申请.";
-
-/* Usernames */
 "The Dash network will vote on this username. We will notify you of the results on March 14, 2024." = "The Dash network will vote on this username. We will notify you of the results on March 14, 2024.";
 
 /* Coinbase/Buy Dash/Confirm Order */
@@ -2251,7 +2236,7 @@
 "The image you select will be uploaded to Imgur anonymously." = "您选择的图片将匿名上传到 Imgur.";
 
 /* Usernames */
-"The link you send will be visible to all of the Dash network." = "您发送的链接将对全 Dash 网络可见.";
+"The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "您可以发送的最小额度是%@";
@@ -2270,9 +2255,6 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "您的朋友中没有与名称 %@ 匹配的用户";
-
-/* Usernames */
-"There was a network error, you can try again at no extra cost" = "产生了一个网络错误, 您可以再试一次无需额外费用";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "当向 ZenLedger 导出您的交易历史时产生了一个错误";
@@ -2301,9 +2283,6 @@
 /* CrowdNode */
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "这代表完整主节点当前年度百分比收益减去15%的CrowdNode费用. 这不是保证回报率, 可能会根据CrowdNode资金池的大小和Dash价格而上下浮动.";
 
-/* Voting */
-"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "这个用户名已经被申请, 但您仍可以申请并让网络投票决定您是否可以获得它";
-
 /* Usernames */
 "This username is already created by someone else" = "This username is already created by someone else";
 
@@ -2324,9 +2303,6 @@
 
 /* CoinJoin */
 "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
-
-/* Usernames */
-"To request a username on the Dash Network, you need to have more than %@ Dash" = "在 Dash 网络上申请一个用户名, 您需要持有超过 %@ Dash";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "开始质押前, 需要创建一个CrowdNode账户或连接到现有账户.";
@@ -2386,9 +2362,6 @@
 
 /* An action */
 "Try again" = "再试一次";
-
-/* No comment provided by engineer. */
-"Try Again" = "再试一次";
 
 /* Alert title */
 "Turn device passcode on" = "打开设备密码";
@@ -2597,9 +2570,6 @@
 /* No comment provided by engineer. */
 "Voting Keys" = "投票者密钥";
 
-/* Usernames */
-"Voting will not be required forever" = "将永远不需要投票";
-
 /* Voting */
 "Voting:" = "投票:";
 
@@ -2650,9 +2620,6 @@
 
 /* No comment provided by engineer. */
 "Welcome" = "欢迎";
-
-/* Usernames */
-"Welcome to Dash Pay" = "欢迎来到 DashPay";
 
 /* No comment provided by engineer. */
 "Welcome to DashPay" = "欢迎来到 DashPay";
@@ -2760,6 +2727,9 @@
 /* No comment provided by engineer. */
 "You cannot claim this invite since you already have a Dash username" = "由于您已经有了 Dash用户名, 因此无法认领此邀请";
 
+/* Usernames */
+"You chose “%@” as your username." = "You chose “%@” as your username.";
+
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "您目前没有任何联系人";
 
@@ -2797,6 +2767,9 @@
 "You need at least %@ on your Dash Wallet" = "您的Dash钱包中至少需要有%@ Dash";
 
 /* Usernames */
+"You need to have more %@ Dash to create this username" = "You need to have more %@ Dash to create this username";
+
+/* Usernames */
 "You need to have more than %@ Dash to create a username" = "You need to have more than %@ Dash to create a username";
 
 /* CrowdNode */
@@ -2819,9 +2792,6 @@
 
 /* No comment provided by engineer. */
 "You should have at least %@ to proceed with the CrowdNode verification." = "您至少需要有%@才能进行CrowdNode验证.";
-
-/* Usernames */
-"You should have more than %@ Dash to create a username" = "您应该拥有超过%@ Dash 来创建一个用户名";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "您同样需要使用浏览器从Uphold网站退出";

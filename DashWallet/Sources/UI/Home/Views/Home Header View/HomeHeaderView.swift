@@ -42,7 +42,7 @@ final class HomeHeaderView: UIView {
     private let votingView: DPVotingResultView = DPVotingResultView(frame: .zero)
     var isVotingViewHidden = true {
         didSet {
-            votingView.isHidden = isVotingViewHidden
+//            votingView.isHidden = isVotingViewHidden TODO
         }
     }
     var votingState: DPVotingState {

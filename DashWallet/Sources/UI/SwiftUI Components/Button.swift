@@ -25,6 +25,7 @@ struct DashButton: View {
     var size: Size = .large
     var stretch: Bool = true
     var isEnabled: Bool = true
+    var isLoading: Bool = false
     var action: () -> Void
     
     enum Style {
@@ -54,7 +55,13 @@ struct DashButton: View {
                         .font(.system(size: iconSize))
                 }
                 
-                if let text = text {
+                if isLoading {
+                    SwiftUI.ProgressView()
+                        .progressViewStyle(.circular)
+                        .tint(.white)
+                        .scaleEffect(0.8)
+                        .padding(.vertical, 2)
+                } else if let text = text {
                     Text(text)
                         .font(.system(size: fontSize))
                         .fontWeight(.semibold)
@@ -82,7 +89,7 @@ struct DashButton: View {
             .cornerRadius(cornerRadius)
             .opacity(isEnabled ? 1.0 : 0.5)
         }
-        .disabled(!isEnabled)
+        .disabled(!isEnabled || isLoading)
         .background(GeometryReader { geometry in
             Color.clear
         })

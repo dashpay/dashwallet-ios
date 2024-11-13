@@ -160,9 +160,6 @@
 /* Usernames */
 "After the voting ends we will notify you about its results" = "After the voting ends we will notify you about its results";
 
-/* Usernames */
-"After voting is completed on %@ you can create any username that has not already been created" = "หลังจากการโหวตเสร็จสิ้นใน %@ คุณสามารถสร้างชื่อผู้ใช้ใดๆ ที่ยังไม่ได้สร้างได้";
-
 /* No comment provided by engineer. */
 "Agree" = "เห็นด้วย";
 
@@ -452,9 +449,6 @@
 /* No comment provided by engineer. */
 "Confirm PIN" = "ยืนยัน PIN";
 
-/* Voting */
-"Confirm Username Request" = "Confirm Username Request";
-
 /* No comment provided by engineer. */
 "Confirming" = "กำลังยืนยัน";
 
@@ -513,6 +507,9 @@
 
 /* No comment provided by engineer. */
 "Copy Logs" = "คัดลอกข้อมูลจากกการบันทึก";
+
+/* No comment provided by engineer. */
+"Copy text" = "Copy text";
 
 /* No comment provided by engineer. */
 "Copyright © 2023 Dash Core" = "Copyright © 2023 Dash Core";
@@ -793,9 +790,6 @@
 /* CoinJoin */
 "Error ·" = "Error ·";
 
-/* Usernames */
-"Example post" = "Example post";
-
 /* No comment provided by engineer. */
 "Exit" = "ออก";
 
@@ -1019,6 +1013,9 @@
 "I Accept" = "ฉันยอมรับ";
 
 /* No comment provided by engineer. */
+"I accept" = "I accept";
+
+/* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "ฉันยอมรับที่ฉันจะสูญเสียเหรียญของฉันถ้าฉันไม่มีวลีกู้คืน";
 
 /* CrowdNode */
@@ -1089,9 +1086,6 @@
 
 /* Usernames */
 "In case you lose your passphrase you will lose your right to your requested username." = "ในกรณีที่คุณทำรหัสผ่านหาย คุณจะสูญเสียสิทธิ์ในการใช้ชื่อผู้ใช้ที่คุณร้องขอ";
-
-/* Usernames */
-"In case your request is not approved" = "ในกรณีที่คำขอของคุณไม่ได้รับการอนุมัติ";
 
 /* CrowdNode Portal */
 "In process…" = "อยู่ในระหว่างการดำเนินงาน…";
@@ -1353,7 +1347,7 @@
 "Mainnet" = "Mainnet";
 
 /* Usernames */
-"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow";
+"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "การอนุญาต GPS";
@@ -1556,9 +1550,6 @@
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "เมื่อ %@ ยอมรับคำขอของคุณคุณสามารถชำระเงินโดยตรงกับชื่อผู้ใช้";
 
-/* Voting */
-"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "Once the voting ends you can create any username you want as long as it hasn’t already been created";
-
 /* Online */
 "Online" = "ออนไลน์";
 
@@ -1593,7 +1584,7 @@
 "Owner Keys" = "เจ้าของกุญแจ";
 
 /* Usernames */
-"Paste the link" = "Paste the link";
+"Past link here" = "Past link here";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "วาง URL ภาพของคุณ";
@@ -1606,9 +1597,6 @@
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "ชำระเงินโดยตรงกับชื่อผู้ใช้";
-
-/* Usernames */
-"Pay now and if not approved, you can create a different name without paying again" = "ชำระเงินตอนนี้และหากไม่ได้รับการอนุมัติ คุณสามารถสร้างชื่ออื่นได้โดยไม่ต้องชำระเงินอีกครั้ง";
 
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "จ่ายให้กับชื่อผู้ใช้  ไม่มีที่อยู่ตัวอักษรและตัวเลขอีกต่อไป";
@@ -1702,6 +1690,9 @@
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "โปรดทราบว่าอีเมลที่ไม่ได้รับการบันทึกโดยกระเป๋าเงิน Dash และจะถูกส่งไปยัง CrowdNode เท่านั้น";
+
+/* Usernames */
+"Please note that the username can NOT be changed once it is registered." = "Please note that the username can NOT be changed once it is registered.";
 
 /* Usernames */
 "Please note that you will not be able to change it in future" = "Please note that you will not be able to change it in future";
@@ -1870,9 +1861,6 @@
 
 /* Voting */
 "Request details" = "ขอรายละเอียด";
-
-/* Voting */
-"Request Username" = "Request Username";
 
 /* Voting */
 "Request your username" = "Request your username";
@@ -2239,9 +2227,6 @@
 "The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "Dash Network ขับเคลื่อนโดย Masternodes จำนวนหนึ่งซึ่งเป็นส่วนสำคัญในการอำนวยความสะดวกในการชำระเงิน";
 
 /* Usernames */
-"The Dash network must vote to approve your username before it is created." = "เครือข่าย Dash จะต้องโหวตเพื่ออนุมัติชื่อผู้ใช้ของคุณก่อนจึงจะถูกสร้างขึ้น";
-
-/* Usernames */
 "The Dash network will vote on this username. We will notify you of the results on March 14, 2024." = "The Dash network will vote on this username. We will notify you of the results on March 14, 2024.";
 
 /* Coinbase/Buy Dash/Confirm Order */
@@ -2251,7 +2236,7 @@
 "The image you select will be uploaded to Imgur anonymously." = "รูปภาพที่คุณเลือกจะถูกอัปโหลดไปยัง Imgur โดยไม่ระบุชื่อ";
 
 /* Usernames */
-"The link you send will be visible to all of the Dash network." = "The link you send will be visible to all of the Dash network.";
+"The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "จำนวนเงินขั้นต่ำที่คุณสามารถส่งได้คือ %@";
@@ -2270,9 +2255,6 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "ไม่มีผู้ใช้ที่ตรงกับชื่อ %@ ในรายชื่อผู้ติดต่อของคุณ";
-
-/* Usernames */
-"There was a network error, you can try again at no extra cost" = "There was a network error, you can try again at no extra cost";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "There was an error when exporting your transaction history to ZenLedger";
@@ -2301,9 +2283,6 @@
 /* CrowdNode */
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "สิ่งนี้แสดงถึงอัตราผลตอบแทนร้อยละต่อปีปัจจุบันของมาสเตอรืโหนด เต็มน้อยกว่าค่าธรรมเนียม CrowdNode 15% แต่มันไม่ได้เป็นอัตราผลตอบแทนที่รับประกันได้และอาจเพิ่มขึ้นหรือลงตามขนาดของกลุ่ม CrowdNode และราคา Dash";
 
-/* Voting */
-"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "This username has already been requested, but you can request it too and let the network vote to decide if you can have it";
-
 /* Usernames */
 "This username is already created by someone else" = "This username is already created by someone else";
 
@@ -2324,9 +2303,6 @@
 
 /* CoinJoin */
 "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
-
-/* Usernames */
-"To request a username on the Dash Network, you need to have more than %@ Dash" = "To request a username on the Dash Network, you need to have more than %@ Dash";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "ในการเริ่มการ stakingให้สร้างบัญชีบน CrowdNode หรือเชื่อมต่อกับบัญชีที่มีอยู่";
@@ -2386,9 +2362,6 @@
 
 /* An action */
 "Try again" = "ลองอีกครั้ง";
-
-/* No comment provided by engineer. */
-"Try Again" = "ลองอีกครั้ง";
 
 /* Alert title */
 "Turn device passcode on" = "เปิดรหัสผ่านของอุปกรณ์";
@@ -2597,9 +2570,6 @@
 /* No comment provided by engineer. */
 "Voting Keys" = "Voting Keys";
 
-/* Usernames */
-"Voting will not be required forever" = "ไม่จำเป็นต้องลงคะแนนเสียงตลอดไป";
-
 /* Voting */
 "Voting:" = "Voting:";
 
@@ -2650,9 +2620,6 @@
 
 /* No comment provided by engineer. */
 "Welcome" = "ยินดีต้อนรับ";
-
-/* Usernames */
-"Welcome to Dash Pay" = "ยินดีต้อนรับสู่ Dash Pay";
 
 /* No comment provided by engineer. */
 "Welcome to DashPay" = "ยินดีต้อนรับสู่ DashPay";
@@ -2760,6 +2727,9 @@
 /* No comment provided by engineer. */
 "You cannot claim this invite since you already have a Dash username" = "คุณไม่สามารถเรียกร้องคำเชิญนี้ได้เนื่องจากคุณมีชื่อผู้ใช้ DASH อยู่แล้ว";
 
+/* Usernames */
+"You chose “%@” as your username." = "You chose “%@” as your username.";
+
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "คุณไม่มีผู้ติดต่อใด ๆ ในขณะนี้";
 
@@ -2797,6 +2767,9 @@
 "You need at least %@ on your Dash Wallet" = "คุณต้องมีอย่างน้อย %@ บนกระเป๋า Dash ของคุณ";
 
 /* Usernames */
+"You need to have more %@ Dash to create this username" = "You need to have more %@ Dash to create this username";
+
+/* Usernames */
 "You need to have more than %@ Dash to create a username" = "You need to have more than %@ Dash to create a username";
 
 /* CrowdNode */
@@ -2819,9 +2792,6 @@
 
 /* No comment provided by engineer. */
 "You should have at least %@ to proceed with the CrowdNode verification." = "คุณต้องมีอย่างน้อย %@ เพื่อดำเนินการตรวจสอบ CrowdNode";
-
-/* Usernames */
-"You should have more than %@ Dash to create a username" = "คุณควรมีมากกว่า  %@ Dash เพื่อสร้างชื่อผู้ใช้";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "คุณจะต้องออกจากระบบของเว็บไซต์ Uphold โดยใช้เบราว์เซอร์ของคุณ";

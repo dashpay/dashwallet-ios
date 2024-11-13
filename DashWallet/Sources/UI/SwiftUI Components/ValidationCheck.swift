@@ -27,7 +27,6 @@ struct ValidationCheck: View {
                 SwiftUI.ProgressView()
                     .frame(width: 18, height: 18)
                     .progressViewStyle(.circular)
-//                    .padding(.trailing, 4)
             } else {
                 Icon(name: getIconName())
                     .frame(width: 18, height: 18)

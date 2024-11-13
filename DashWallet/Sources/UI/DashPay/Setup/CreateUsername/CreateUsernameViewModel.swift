@@ -47,27 +47,117 @@ struct CreateUsernameUIState {
 @MainActor
 class CreateUsernameViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
+    private let dao: UsernameRequestsDAO = UsernameRequestsDAOImpl.shared
+    private let prefs = VotingPrefs.shared
     private let illegalChars = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-").inverted
+    static let shared = CreateUsernameViewModel()
+    
+    var hasUsernameRequest: Bool {
+        prefs.requestedUsernameId != nil
+    }
+    
+    var shouldRequestPayment: Bool {
+        get { !prefs.alreadyPaid }
+        set { prefs.alreadyPaid = !newValue }
+    }
     
     @Published var uiState = CreateUsernameUIState()
     @Published var username: String = ""
+    @Published private(set) var currentUsernameRequest: UsernameRequest? = nil
+    @Published private(set) var hasMinimumRequiredBalance = false
+    @Published private(set) var hasRecommendedBalance = false
+    @Published private(set) var balance: String = ""
+    
+    var minimumRequiredBalance: String {
+        return DWDP_MIN_BALANCE_TO_CREATE_USERNAME.dashAmount.formattedDashAmountWithoutCurrencySymbol
+    }
+    
+    var recommendedBalance: String {
+        return DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME.dashAmount.formattedDashAmountWithoutCurrencySymbol
+    }
+    
+    var minimumRequiredBalanceFiat: String {
+        let fiat: String
+
+        if let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: DWDP_MIN_BALANCE_TO_CREATE_USERNAME.dashAmount, to: App.fiatCurrency) {
+            fiat = NumberFormatter.fiatFormatter.string(from: fiatAmount as NSNumber)!
+        } else {
+            fiat = NSLocalizedString("Syncing…", comment: "Balance")
+        }
+
+        return fiat
+    }
     
     init() {
         $username
             .throttle(for: .milliseconds(500), scheduler: RunLoop.main, latest: true)
+            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] text in
                 self?.validateUsername(username: text)
             }
             .store(in: &cancellableBag)
         
-        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
-            .removeDuplicates()
-            .sink { [weak self] _ in
-                guard let self = self else { return }
-                self.validateUsername(username: self.username)
+        observeBalance()
+    }
+    
+    func hasRequests(for username: String) async -> Bool {
+        return await dao.get(byUsername: username) != nil
+    }
+    
+    func submitUsernameRequest(withProve link: URL?) async -> Bool {
+        do {
+            // TODO: simulation of a request. Remove when not needed
+            // dashPayModel.createUsername(username, invitation: invitationURL)
+            
+            let now = Date().timeIntervalSince1970
+            let identityData = withUnsafeBytes(of: UUID().uuid) { Data($0) }
+            let identity = (identityData as NSData).base58String()
+            let usernameRequest = UsernameRequest(requestId: UUID().uuidString, username: username, createdAt: Int64(now), identity: "\(identity)\(identity)", link: link?.absoluteString, votes: 0, isApproved: false)
+            
+            await dao.create(dto: usernameRequest)
+            prefs.requestedUsernameId = usernameRequest.requestId
+            prefs.requestedUsername = usernameRequest.username
+            
+            let oneSecond = TimeInterval(1_000_000_000)
+            let delay = UInt64(oneSecond * 2)
+            try await Task.sleep(nanoseconds: delay)
+            
+            return true
+        } catch {
+            return false
+        }
+    }
+    
+    func fetchUsernameRequestData() {
+        if let id = prefs.requestedUsernameId {
+            Task {
+                currentUsernameRequest = await dao.get(byRequestId: id)
+                username = currentUsernameRequest?.username ?? ""
             }
-            .store(in: &cancellableBag)
+        }
+    }
+    
+    func cancelRequest() {
+        if let requestId = prefs.requestedUsernameId {
+            Task {
+                currentUsernameRequest = nil
+                username = ""
+                await dao.delete(by: requestId)
+                prefs.requestedUsernameId = nil
+                prefs.requestedUsername = nil
+            }
+        }
+    }
+    
+    func updateRequest(with link: URL) {
+        Task {
+            if var usernameRequest = currentUsernameRequest {
+                usernameRequest.link = link.absoluteString
+                await dao.update(dto: usernameRequest)
+                currentUsernameRequest = usernameRequest
+            }
+        }
     }
     
     private func validateUsername(username: String) {
@@ -112,5 +202,24 @@ class CreateUsernameViewModel: ObservableObject {
             uiState.usernameBlockedRule = .warning
             uiState.canContinue = true
         }
+    }
+    
+    private func observeBalance() {
+        checkBalance()
+        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                self.validateUsername(username: self.username)
+                self.checkBalance()
+            }
+            .store(in: &cancellableBag)
+    }
+    
+    private func checkBalance() {
+        let balance = DWEnvironment.sharedInstance().currentAccount.balance
+        self.balance = balance.dashAmount.formattedDashAmountWithoutCurrencySymbol
+        hasMinimumRequiredBalance = balance >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        hasRecommendedBalance = balance >= DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
     }
 }

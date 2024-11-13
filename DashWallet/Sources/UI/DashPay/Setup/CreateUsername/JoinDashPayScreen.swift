@@ -18,7 +18,7 @@
 import SwiftUI
 
 public struct JoinDashPayScreen: View {
-    @StateObject private var viewModel = RequestUsernameViewModel.shared
+    @StateObject private var viewModel = CreateUsernameViewModel.shared
     @State private var navigateToVotingInfo = false
     var action: () -> Void
     

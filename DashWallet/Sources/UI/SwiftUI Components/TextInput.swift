@@ -64,7 +64,7 @@ struct TextInput: View {
         )
         .overlay(
             Group {
-                if isFocused {
+                if isFocused && !isError {
                     RoundedRectangle(cornerRadius: 14)
                         .stroke(Color.dashBlue.opacity(0.1), lineWidth: 3)
                         .padding(-2)

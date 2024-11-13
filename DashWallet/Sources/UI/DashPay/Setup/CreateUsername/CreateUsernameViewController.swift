@@ -20,6 +20,7 @@ import SwiftUI
 
 class CreateUsernameViewController: UIViewController {
     private let dashPayModel: DWDashPayProtocol
+    @objc var completionHandler: ((Bool) -> ())?
     
     @objc
     init(dashPayModel: DWDashPayProtocol, invitationURL: URL?, definedUsername: String?) {
@@ -41,6 +42,9 @@ class CreateUsernameViewController: UIViewController {
             self.showModalDialog(dialog: dialog)
         } dismissDialog: {
             self.dismiss(animated: true)
+        } finish: {
+            self.navigationController?.popViewController(animated: true)
+            self.completionHandler?(true)
         }
         let swiftUIController = UIHostingController(rootView: content)
         swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
@@ -60,9 +64,15 @@ class CreateUsernameViewController: UIViewController {
 struct CreateUsernameView: View {
     @State var dashPayModel: DWDashPayProtocol
     @StateObject private var viewModel = CreateUsernameViewModel()
+    @FocusState private var isTextInputFocused: Bool
     @State private var showVotingInfo: Bool = false
-    var showVerifyDialog: (any View) -> Void
+    @State private var showVerifyIdentity: Bool = false
+    @State private var confirmUsernameRequest: Bool = false
+    @State private var inProgress: Bool = false
+    @State private var prove: URL? = nil
+    var showVerifyConfirmation: (any View) -> Void
     var dismissDialog: () -> Void
+    var finish: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -75,6 +85,7 @@ struct CreateUsernameView: View {
                 .font(.system(size: 14))
             TextInput(label: "Username", text: $viewModel.username)
                 .padding(.top, 20)
+                .focused($isTextInputFocused)
                 
             if viewModel.uiState.lengthRule != .hidden {
                 ValidationCheck(
@@ -123,18 +134,30 @@ struct CreateUsernameView: View {
             
             DashButton(
                 text: NSLocalizedString("Continue", comment: ""),
-                isEnabled: viewModel.uiState.canContinue
+                isEnabled: viewModel.uiState.canContinue,
+                isLoading: inProgress
             ) {
                 if viewModel.uiState.usernameBlockedRule == .valid {
-//                    dashPayModel.createUsername(username, invitation: invitationURL) TODO
+                    Task {
+                        inProgress = true
+                        let result = await viewModel.submitUsernameRequest(withProve: nil)
+                        inProgress = false
+                        
+                        if result {
+                            finish()
+                        }
+                    }
                 } else {
-                    showVerifyDialog(getVerifyDialog())
+                    showVerifyConfirmation(getVerifyConfirmation())
                 }
             }
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .onAppear {
+            isTextInputFocused = true
+        }
         .sheet(isPresented: $showVotingInfo) {
             let dialog = BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
                 VotingInfoScreen {
@@ -148,21 +171,70 @@ struct CreateUsernameView: View {
                 dialog
             }
         }
+        .sheet(isPresented: $showVerifyIdentity, onDismiss: {
+            guard let url = self.prove else { return }
+            
+            if viewModel.currentUsernameRequest == nil {
+                confirmUsernameRequest = true
+            } else {
+                viewModel.updateRequest(with: url)
+            }
+        }) {
+            let dialog = BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
+                VerifyIdentityScreen(
+                    viewModel: viewModel,
+                    onConfirmed: { url in
+                        self.prove = url
+                        showVerifyIdentity = false
+                    }
+                )
+            }
+            
+            if #available(iOS 16.0, *) {
+                dialog.presentationDetents([.height(650)])
+            } else {
+                dialog
+            }
+        }
+        .sheet(isPresented: $confirmUsernameRequest) {
+            let dialog = ConfirmSpendDialog(username: viewModel.username, amount: Int64(viewModel.uiState.requiredDash)) {
+                confirmUsernameRequest = false
+            } onConfirm: {
+                confirmUsernameRequest = false
+                Task {
+                    inProgress = true
+                    let result = await viewModel.submitUsernameRequest(withProve: self.prove)
+                    inProgress = false
+                    
+                    if result {
+                        finish()
+                    }
+                }
+            }
+            
+            if #available(iOS 16.0, *) {
+                dialog.presentationDetents([.height(340)])
+            } else {
+                dialog
+            }
+        }
     }
     
     @ViewBuilder
-    private func getVerifyDialog() -> some View {
+    private func getVerifyConfirmation() -> some View {
         ModalDialog(
             heading: NSLocalizedString("Verify your identity to enhance your chances of getting your requested username", comment: "Usernames"),
             textBlock1: NSLocalizedString("If somebody else requests the same username as you, we will let the network decide whom to give this username", comment: "Usernames"),
             positiveButtonText: NSLocalizedString("Verify", comment: ""),
             positiveButtonAction: {
                 dismissDialog()
+                self.prove = nil
+                showVerifyIdentity = true
             },
             negativeButtonText: NSLocalizedString("Skip", comment: ""),
             negativeButtonAction: {
                 dismissDialog()
-//                    dashPayModel.createUsername(username, invitation: invitationURL) TODO
+                confirmUsernameRequest = true
             },
             buttonsOrientation: .horizontal
         )

@@ -160,9 +160,6 @@
 /* Usernames */
 "After the voting ends we will notify you about its results" = "Po ukončení hlasovania vás budeme informovať o výsledkoch";
 
-/* Usernames */
-"After voting is completed on %@ you can create any username that has not already been created" = "Po dokončení hlasovania o %@ si môžete vytvoriť ľubovoľné používateľské meno, ktoré ešte nebolo vytvorené";
-
 /* No comment provided by engineer. */
 "Agree" = "Súhlasím";
 
@@ -452,9 +449,6 @@
 /* No comment provided by engineer. */
 "Confirm PIN" = "Potvrdiť PIN";
 
-/* Voting */
-"Confirm Username Request" = "Potvrdiť žiadosť o používateľské meno";
-
 /* No comment provided by engineer. */
 "Confirming" = "Potvrdzuje sa";
 
@@ -513,6 +507,9 @@
 
 /* No comment provided by engineer. */
 "Copy Logs" = "Skopírovať Záznamy";
+
+/* No comment provided by engineer. */
+"Copy text" = "Copy text";
 
 /* No comment provided by engineer. */
 "Copyright © 2023 Dash Core" = "Autorské práva © 2023 Dash Core";
@@ -793,9 +790,6 @@
 /* CoinJoin */
 "Error ·" = "Error ·";
 
-/* Usernames */
-"Example post" = "Príklad príspevku";
-
 /* No comment provided by engineer. */
 "Exit" = "Zatvoriť";
 
@@ -1019,6 +1013,9 @@
 "I Accept" = "Súhlasím";
 
 /* No comment provided by engineer. */
+"I accept" = "I accept";
+
+/* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Akceptujem, že stratím svoje mince v prípade, že už nedržím frázu pre obnovenie";
 
 /* CrowdNode */
@@ -1089,9 +1086,6 @@
 
 /* Usernames */
 "In case you lose your passphrase you will lose your right to your requested username." = "V prípade, že stratíte svoju prístupovú frázu, stratíte právo na požadované používateľské meno.";
-
-/* Usernames */
-"In case your request is not approved" = "V prípade, že vaša žiadosť nebude schválená";
 
 /* CrowdNode Portal */
 "In process…" = "V procese…";
@@ -1353,7 +1347,7 @@
 "Mainnet" = "Mainnet";
 
 /* Usernames */
-"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "Uverejnite príspevok s textom uvedeným vyššie (alebo niečím podobným) na známej sociálnej sieti alebo platforme na odosielanie správ, aby ste si overili, že ste pôvodným vlastníkom požadovaného používateľského mena, a vložte odkaz na príspevok nižšie";
+"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "Spravovať povolenie GPS";
@@ -1556,9 +1550,6 @@
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Hneď ako %@ akceptuje vašu žiadosť, môžete platiť priamo na meno používateľa";
 
-/* Voting */
-"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "Po skončení hlasovania si môžete vytvoriť ľubovoľné používateľské meno, pokiaľ ešte nebolo vytvorené";
-
 /* Online */
 "Online" = "Online";
 
@@ -1593,7 +1584,7 @@
 "Owner Keys" = "Kľúče vlastníka";
 
 /* Usernames */
-"Paste the link" = "Vložte odkaz";
+"Past link here" = "Past link here";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "Vložte URL vášho obrázku";
@@ -1606,9 +1597,6 @@
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "Platiť priamo na meno používateľa";
-
-/* Usernames */
-"Pay now and if not approved, you can create a different name without paying again" = "Zaplaťte teraz a v prípade neschválenia si môžete vytvoriť iné meno bez toho, aby ste museli platiť znova";
 
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "Platba na používateľské mená. Už žiadne alfanumerické adresy";
@@ -1702,6 +1690,9 @@
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Upozorňujeme, že e-mail nie je uložený v Dash peňaženke a je odoslaný iba do CrowdNode";
+
+/* Usernames */
+"Please note that the username can NOT be changed once it is registered." = "Please note that the username can NOT be changed once it is registered.";
 
 /* Usernames */
 "Please note that you will not be able to change it in future" = "Please note that you will not be able to change it in future";
@@ -1870,9 +1861,6 @@
 
 /* Voting */
 "Request details" = "Vyžiadať podrobnosti";
-
-/* Voting */
-"Request Username" = "Požiadať o používateľské meno";
 
 /* Voting */
 "Request your username" = "Požiadať o používateľské meno";
@@ -2239,9 +2227,6 @@
 "The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "Sieť Dash je riadená množstvom Masternodov, ktoré sú nevyhnutnou súčasťou uskutočnenia platieb.";
 
 /* Usernames */
-"The Dash network must vote to approve your username before it is created." = "Sieť Dash musí hlasovať, aby schválila vaše používateľské meno pred jeho vytvorením.";
-
-/* Usernames */
 "The Dash network will vote on this username. We will notify you of the results on March 14, 2024." = "The Dash network will vote on this username. We will notify you of the results on March 14, 2024.";
 
 /* Coinbase/Buy Dash/Confirm Order */
@@ -2251,7 +2236,7 @@
 "The image you select will be uploaded to Imgur anonymously." = "Obrázok, ktorý vyberiete, bude anonymne nahraný na Imgur.";
 
 /* Usernames */
-"The link you send will be visible to all of the Dash network." = "Odkaz, ktorý odošlete, bude viditeľný pre celú sieť Dash.";
+"The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "Minimálna suma, ktorú môžete poslať, je %@";
@@ -2270,9 +2255,6 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "Vo vašich kontaktoch neexistujú žiadni používatelia, ktorí sa zhodujú s menom %@ ";
-
-/* Usernames */
-"There was a network error, you can try again at no extra cost" = "Vyskytla sa chyba siete. Môžete skúsiť znova bez ďalších poplatkov";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "Pri exporte vašej histórie transakcií do ZenLedger sa vyskytla chyba";
@@ -2301,9 +2283,6 @@
 /* CrowdNode */
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "To predstavuje to aktuálny ročný percentuálny výnos celého Masternódu mínus 15 % poplatok CrowdNode. Nie je to zaručená miera návratnosti a môže stúpať alebo klesať v závislosti od veľkosti fondov CrowdNode a ceny Dash.";
 
-/* Voting */
-"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "Toto používateľské meno už bolo vyžiadané, ale môžete si ho vyžiadať aj vy a nechať hlasovanie siete, aby rozhodla, či ho môžete mať";
-
 /* Usernames */
 "This username is already created by someone else" = "This username is already created by someone else";
 
@@ -2324,9 +2303,6 @@
 
 /* CoinJoin */
 "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
-
-/* Usernames */
-"To request a username on the Dash Network, you need to have more than %@ Dash" = "Ak chcete požiadať o používateľské meno v sieti Dash, musíte mať viac ako %@ Dash";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "Ak chcete začať stávkovať, vytvorte si účet na CrowdNode alebo sa pripojte k existujúcemu účtu.";
@@ -2386,9 +2362,6 @@
 
 /* An action */
 "Try again" = "Skúsiť znova";
-
-/* No comment provided by engineer. */
-"Try Again" = "Skúsiť znova";
 
 /* Alert title */
 "Turn device passcode on" = "Zapnúť prístupový kód";
@@ -2597,9 +2570,6 @@
 /* No comment provided by engineer. */
 "Voting Keys" = "Hlasovacie kľúče";
 
-/* Usernames */
-"Voting will not be required forever" = "Hlasovanie nebude potrebné navždy";
-
 /* Voting */
 "Voting:" = "Hlasovanie:";
 
@@ -2650,9 +2620,6 @@
 
 /* No comment provided by engineer. */
 "Welcome" = "Vitajte";
-
-/* Usernames */
-"Welcome to Dash Pay" = "Vitajte v Dash Pay";
 
 /* No comment provided by engineer. */
 "Welcome to DashPay" = "Vitajte v DashPay";
@@ -2760,6 +2727,9 @@
 /* No comment provided by engineer. */
 "You cannot claim this invite since you already have a Dash username" = "Túto pozvánku si nemôžete nárokovať, pretože už máte používateľské meno Dash";
 
+/* Usernames */
+"You chose “%@” as your username." = "You chose “%@” as your username.";
+
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "Momentálne nemáte žiadne kontakty";
 
@@ -2797,6 +2767,9 @@
 "You need at least %@ on your Dash Wallet" = "V Dash peňaženke potrebujete aspoň %@";
 
 /* Usernames */
+"You need to have more %@ Dash to create this username" = "You need to have more %@ Dash to create this username";
+
+/* Usernames */
 "You need to have more than %@ Dash to create a username" = "You need to have more than %@ Dash to create a username";
 
 /* CrowdNode */
@@ -2819,9 +2792,6 @@
 
 /* No comment provided by engineer. */
 "You should have at least %@ to proceed with the CrowdNode verification." = "Pre pokračovanie s overením na CrowdNode, by ste mali mať aspoň %@.";
-
-/* Usernames */
-"You should have more than %@ Dash to create a username" = "Na vytvorenie používateľského mena by ste mali mať viac ako %@ Dashov";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Budete sa tiež musieť odhlásiť z webovej stránky Upholdu pomocou svojho prehliadača";

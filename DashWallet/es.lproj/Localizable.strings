@@ -160,9 +160,6 @@
 /* Usernames */
 "After the voting ends we will notify you about its results" = "Una vez finalizada la votación te notificaremos sobre tus resultados.";
 
-/* Usernames */
-"After voting is completed on %@ you can create any username that has not already been created" = "Una vez completada la votación en %@ puedes crear cualquier nombre de usuario que aún no haya sido creado";
-
 /* No comment provided by engineer. */
 "Agree" = "Aceptar";
 
@@ -452,9 +449,6 @@
 /* No comment provided by engineer. */
 "Confirm PIN" = "Confirmar PIN";
 
-/* Voting */
-"Confirm Username Request" = "Confirmar solicitud de nombre de usuario";
-
 /* No comment provided by engineer. */
 "Confirming" = "Confirmando";
 
@@ -513,6 +507,9 @@
 
 /* No comment provided by engineer. */
 "Copy Logs" = "Copiar logs";
+
+/* No comment provided by engineer. */
+"Copy text" = "Copy text";
 
 /* No comment provided by engineer. */
 "Copyright © 2023 Dash Core" = "Copyright © 2023 Dash Core";
@@ -793,9 +790,6 @@
 /* CoinJoin */
 "Error ·" = "Error ·";
 
-/* Usernames */
-"Example post" = "Publicación de ejemplo";
-
 /* No comment provided by engineer. */
 "Exit" = "Sali";
 
@@ -1019,6 +1013,9 @@
 "I Accept" = "Yo acepto";
 
 /* No comment provided by engineer. */
+"I accept" = "I accept";
+
+/* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Acepto que perderé mis monedas si ya no tengo mi frase de recuperación";
 
 /* CrowdNode */
@@ -1089,9 +1086,6 @@
 
 /* Usernames */
 "In case you lose your passphrase you will lose your right to your requested username." = "En caso de que pierdas tu frase de contraseña, perderás tu derecho al nombre de usuario solicitado.";
-
-/* Usernames */
-"In case your request is not approved" = "En caso de que tu solicitud no sea aprobada";
 
 /* CrowdNode Portal */
 "In process…" = "En proceso...";
@@ -1353,7 +1347,7 @@
 "Mainnet" = "Mainnet";
 
 /* Usernames */
-"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "Haz una publicación con el texto de arriba (o algo similar) en una red social o plataforma de mensajería conocida para verificar que eres el propietario original del nombre de usuario solicitado y pega un enlace a la publicación a continuación.";
+"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "Administrar permisos de GPS";
@@ -1556,9 +1550,6 @@
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Una vez que %@ aceptes tu solicitud, puedes pagar directamente al nombre de usuario";
 
-/* Voting */
-"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "Una vez finalizada la votación podrás crear el nombre de usuario que quieras siempre que no se haya creado ya.";
-
 /* Online */
 "Online" = "En línea";
 
@@ -1593,7 +1584,7 @@
 "Owner Keys" = "Llaves del propietario";
 
 /* Usernames */
-"Paste the link" = "Pega el enlace";
+"Past link here" = "Past link here";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "Pega la URL de tu imagen";
@@ -1606,9 +1597,6 @@
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "Pagar directamente al nombre de usuario";
-
-/* Usernames */
-"Pay now and if not approved, you can create a different name without paying again" = "Paga ahora y si no es aprobado, puedes crear un nombre diferente sin pagar nuevamente";
 
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "Pagar a los nombres de usuario. No más direcciones alfanuméricas";
@@ -1702,6 +1690,9 @@
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Ten en cuenta que la billetera de Dash no guarda el correo electrónico y solo se envía a CrowdNode";
+
+/* Usernames */
+"Please note that the username can NOT be changed once it is registered." = "Please note that the username can NOT be changed once it is registered.";
 
 /* Usernames */
 "Please note that you will not be able to change it in future" = "Please note that you will not be able to change it in future";
@@ -1870,9 +1861,6 @@
 
 /* Voting */
 "Request details" = "Pedir detalles";
-
-/* Voting */
-"Request Username" = "Solicitar nombre de usuario";
 
 /* Voting */
 "Request your username" = "Solicita tu nombre de usuario";
@@ -2239,9 +2227,6 @@
 "The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "Dash Network está impulsada por una serie de Masternodes que son una parte esencial para facilitar los pagos.";
 
 /* Usernames */
-"The Dash network must vote to approve your username before it is created." = "La red Dash debe votar para aprobar tu nombre de usuario antes de que se cree.";
-
-/* Usernames */
 "The Dash network will vote on this username. We will notify you of the results on March 14, 2024." = "The Dash network will vote on this username. We will notify you of the results on March 14, 2024.";
 
 /* Coinbase/Buy Dash/Confirm Order */
@@ -2251,7 +2236,7 @@
 "The image you select will be uploaded to Imgur anonymously." = "La imagen que selecciones se cargará en Imgur de forma anónima.";
 
 /* Usernames */
-"The link you send will be visible to all of the Dash network." = "El enlace que envíes será visible para toda la red Dash.";
+"The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "El monto mínimo que puedes enviar es %@";
@@ -2270,9 +2255,6 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "No hay usuarios que coincidan con el nombre %@ en tus contactos";
-
-/* Usernames */
-"There was a network error, you can try again at no extra cost" = "Hubo un error de red, puedes volver a intentarlo sin costo adicional";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "Hubo un error al exportar tu historial de transacciones a ZenLedger";
@@ -2301,9 +2283,6 @@
 /* CrowdNode */
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "Esto representa el rendimiento porcentual anual actual de un Masternode completo menos la tarifa de CrowdNode del 15%. No es una tasa de rendimiento garantizada y puede aumentar o disminuir según el tamaño de los grupos de CrowdNode y el precio de Dash.";
 
-/* Voting */
-"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "Este nombre de usuario ya ha sido solicitado, pero tú también puedes solicitarlo y dejar que la red vote para decidir si puedes tenerlo.";
-
 /* Usernames */
 "This username is already created by someone else" = "This username is already created by someone else";
 
@@ -2324,9 +2303,6 @@
 
 /* CoinJoin */
 "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
-
-/* Usernames */
-"To request a username on the Dash Network, you need to have more than %@ Dash" = "Para solicitar un nombre de usuario en Dash Network, debes tener más de%@ Dash";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "Para comenzar a hacer staking, crea una cuenta en CrowdNode o conéctate a una existente.";
@@ -2386,9 +2362,6 @@
 
 /* An action */
 "Try again" = "Intenta nuevamente";
-
-/* No comment provided by engineer. */
-"Try Again" = "Intentar de nuevo";
 
 /* Alert title */
 "Turn device passcode on" = "Habilita la clave de acceso de tu dispositivo";
@@ -2597,9 +2570,6 @@
 /* No comment provided by engineer. */
 "Voting Keys" = "Llaves para votar";
 
-/* Usernames */
-"Voting will not be required forever" = "La votación no será necesaria para siempre";
-
 /* Voting */
 "Voting:" = "Votación:";
 
@@ -2650,9 +2620,6 @@
 
 /* No comment provided by engineer. */
 "Welcome" = "Bienvenido";
-
-/* Usernames */
-"Welcome to Dash Pay" = "Bienvenido a Dash Pay";
 
 /* No comment provided by engineer. */
 "Welcome to DashPay" = "Bienvenido a DashPay";
@@ -2760,6 +2727,9 @@
 /* No comment provided by engineer. */
 "You cannot claim this invite since you already have a Dash username" = "No puedes reclamar esta invitación porque ya tienes un nombre de usuario de Dash";
 
+/* Usernames */
+"You chose “%@” as your username." = "You chose “%@” as your username.";
+
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "No tienes ningún contacto en este momento";
 
@@ -2797,6 +2767,9 @@
 "You need at least %@ on your Dash Wallet" = "Necesitas al menos %@ en tu billetera de Dash";
 
 /* Usernames */
+"You need to have more %@ Dash to create this username" = "You need to have more %@ Dash to create this username";
+
+/* Usernames */
 "You need to have more than %@ Dash to create a username" = "You need to have more than %@ Dash to create a username";
 
 /* CrowdNode */
@@ -2819,9 +2792,6 @@
 
 /* No comment provided by engineer. */
 "You should have at least %@ to proceed with the CrowdNode verification." = "Deberías tener al menos %@ para continuar con la verificación de CrowdNode.";
-
-/* Usernames */
-"You should have more than %@ Dash to create a username" = "Deberías tener más de %@ Dash para crear un nombre de usuario";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "También deberás cerrar sesión en el sitio web de Uphold utilizando tu navegador";

@@ -225,31 +225,21 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)mainMenuContentView:(DWMainMenuContentView *)view joinDashPayAction:(UIButton *)sender {
-    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    BOOL isVotingEnabled = [VotingPrefsWrapper getIsEnabled] && now < VotingConstants.votingEndTime;
-
-    if (isVotingEnabled) {
-        UIViewController *controller = [RequestUsernameVMObjcWrapper getRootVCWith:^(BOOL result) {
-            if (result) {
-                [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Username was successfully requested", @"Usernames") offsetForNavBar:YES];
-            }
-            else {
-                [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Your request was cancelled", @"Usernames") offsetForNavBar:YES];
-            }
-        }];
-
-        controller.hidesBottomBarWhenPushed = YES;
-        [self.navigationController pushViewController:controller animated:YES];
-    }
-    else {
-        CreateUsernameViewController *controller =
-            [[CreateUsernameViewController alloc]
-                initWithDashPayModel:self.dashPayModel
-                       invitationURL:nil
-                     definedUsername:nil];
-        controller.hidesBottomBarWhenPushed = YES;
-        [self.navigationController pushViewController:controller animated:YES];
-    }
+    CreateUsernameViewController *controller =
+        [[CreateUsernameViewController alloc]
+            initWithDashPayModel:self.dashPayModel
+                   invitationURL:nil
+                 definedUsername:nil];
+    controller.hidesBottomBarWhenPushed = YES;
+    controller.completionHandler = ^(BOOL result) {
+        if (result) {
+            [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Username was successfully requested", @"Usernames") offsetForNavBar:YES];
+        }
+        else {
+            [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Your request was cancelled", @"Usernames") offsetForNavBar:YES];
+        }
+    };
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 - (void)mainMenuContentView:(DWMainMenuContentView *_Nonnull)view showCoinJoin:(UIButton *_Nonnull)sender {
