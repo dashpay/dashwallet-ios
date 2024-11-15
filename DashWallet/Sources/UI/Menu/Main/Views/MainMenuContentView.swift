@@ -48,6 +48,16 @@ class MainMenuContentView: UIView {
     @objc var userModel: DWCurrentUserProfileModel? = nil
     private let headerView: DWUserProfileContainerView
     private let joinHeaderView: DPWelcomeMenuView
+    
+    var shouldShowMixDashDialog: Bool {
+        get { CoinJoinService.shared.mode == .none || !UsernamePrefs.shared.mixDashShown }
+        set(value) { UsernamePrefs.shared.mixDashShown = !value }
+    }
+    
+    var shouldShowDashPayInfo: Bool {
+        get { !UsernamePrefs.shared.joinDashPayInfoShown }
+        set(value) { UsernamePrefs.shared.joinDashPayInfoShown = !value }
+    }
     #endif
     
     // MARK: - Initialization
@@ -136,6 +146,16 @@ class MainMenuContentView: UIView {
     }
     
     @objc private func joinButtonAction(_ sender: UIButton) {
+        if shouldShowMixDashDialog {
+            self.showMixDashDialog(sender)
+        } else if shouldShowDashPayInfo {
+            self.showDashPayInfo(sender)
+        } else {
+            self.delegate?.mainMenuContentView(self, joinDashPayAction: sender)
+        }
+    }
+    
+    private func showMixDashDialog(_ sender: UIButton) {
         let swiftUIView = MixDashDialog(
             positiveAction: {
                 self.delegate?.mainMenuContentView(self, showCoinJoin: sender)
@@ -149,7 +169,7 @@ class MainMenuContentView: UIView {
             }
         )
         let hostingController = UIHostingController(rootView: swiftUIView)
-        hostingController.setDetent(250)
+        hostingController.setDetent(260)
         
         if let parentVC = self.parentViewController() {
             parentVC.present(hostingController, animated: true, completion: nil)

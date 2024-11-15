@@ -49,6 +49,11 @@ class HomeViewModel: ObservableObject {
         get { coinJoinService.mode == .none || !UsernamePrefs.shared.mixDashShown }
         set(value) { UsernamePrefs.shared.mixDashShown = !value }
     }
+    
+    var shouldShowDashPayInfo: Bool {
+        get { !UsernamePrefs.shared.joinDashPayInfoShown }
+        set(value) { UsernamePrefs.shared.joinDashPayInfoShown = !value }
+    }
     #endif
     
     init() {

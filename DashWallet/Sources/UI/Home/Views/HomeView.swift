@@ -319,8 +319,10 @@ struct HomeViewContent<Content: View>: View {
                                 self.navigateToDashPayFlow = false
                                 self.navigateToCoinJoin = false
                                 self.shouldShowMixDialog = true
-                            } else {
+                            } else if viewModel.shouldShowDashPayInfo {
                                 self.shouldShowJoinDashPayInfo = true
+                            } else {
+                                delegate?.homeViewRequestUsername()
                             }
                         }
                     }
@@ -378,7 +380,7 @@ struct HomeViewContent<Content: View>: View {
             )
 
             if #available(iOS 16.0, *) {
-                mixDashDialog.presentationDetents([.height(250)])
+                mixDashDialog.presentationDetents([.height(260)])
             } else {
                 mixDashDialog
             }

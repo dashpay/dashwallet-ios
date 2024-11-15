@@ -26,6 +26,18 @@ class ContactsPlaceholderViewController: ActionButtonViewController {
     private let dashPayModel: DWDashPayProtocol
     private let dashPayReady: DWDashPayReadyProtocol
     
+    #if DASHPAY
+    var shouldShowMixDashDialog: Bool {
+        get { CoinJoinService.shared.mode == .none || !UsernamePrefs.shared.mixDashShown }
+        set(value) { UsernamePrefs.shared.mixDashShown = !value }
+    }
+
+    var shouldShowDashPayInfo: Bool {
+        get { !UsernamePrefs.shared.joinDashPayInfoShown }
+        set(value) { UsernamePrefs.shared.joinDashPayInfoShown = !value }
+    }
+    #endif
+    
     // MARK: - Initializers
     
     @objc
@@ -125,6 +137,16 @@ class ContactsPlaceholderViewController: ActionButtonViewController {
     // MARK: - Actions
     
     @objc override func actionButtonAction(sender: UIView) {
+        if shouldShowMixDashDialog {
+            self.showMixDashDialog(sender)
+        } else if shouldShowDashPayInfo {
+            self.showDashPayInfo()
+        } else {
+            self.navigateToCreateUsername()
+        }
+    }
+    
+    private func showMixDashDialog(_ sender: UIView) {
         let swiftUIView = MixDashDialog(
             positiveAction: {
                 let controller = CoinJoinLevelsViewController.controller(isFullScreen: true)
@@ -139,7 +161,7 @@ class ContactsPlaceholderViewController: ActionButtonViewController {
             }
         )
         let hostingController = UIHostingController(rootView: swiftUIView)
-        hostingController.setDetent(250)
+        hostingController.setDetent(260)
         
         present(hostingController, animated: true, completion: nil)
     }
