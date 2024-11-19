@@ -47,7 +47,6 @@
 		114CFED2296489CD005F421B /* MinimumDepositBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114CFED1296489CD005F421B /* MinimumDepositBanner.swift */; };
 		114D16B629812730009A124C /* OnlineAccountDetailsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114D16B529812730009A124C /* OnlineAccountDetailsController.swift */; };
 		114D16B829828BCC009A124C /* OnlineAccountConfirmationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114D16B729828BCC009A124C /* OnlineAccountConfirmationController.swift */; };
-		11517C832949E6A3004FC7BF /* CrowdNodeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C822949E6A3004FC7BF /* CrowdNodeAPI.swift */; };
 		11517C852949E6F0004FC7BF /* CrowdNodeEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C842949E6F0004FC7BF /* CrowdNodeEndpoint.swift */; };
 		11517C87294B0FED004FC7BF /* CrowdNodeWebService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C86294B0FED004FC7BF /* CrowdNodeWebService.swift */; };
 		11517C8A294B11DD004FC7BF /* CrowdNodeBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C89294B11DD004FC7BF /* CrowdNodeBalance.swift */; };
@@ -586,6 +585,9 @@
 		755C32392C358FC0007DA721 /* BackupSeedPhraseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */; };
 		755E6DFE2A99E7A000A42870 /* DWInvitationSetupState.m in Sources */ = {isa = PBXBuildFile; fileRef = 755E6DFC2A99E7A000A42870 /* DWInvitationSetupState.m */; };
 		756188212B1EE78A00B778E3 /* DPVotingResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756188202B1EE78A00B778E3 /* DPVotingResultView.swift */; };
+		756557B52CE84FFA0060348D /* FeeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756557B42CE84FF70060348D /* FeeInfo.swift */; };
+		756557B62CE84FFA0060348D /* FeeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756557B42CE84FF70060348D /* FeeInfo.swift */; };
+		7565D5952B08B35F0092C9BA /* RequestUsernameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7565D5942B08B35F0092C9BA /* RequestUsernameViewModel.swift */; };
 		7566F4832BB6949E005238D2 /* ToolsMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4822BB69498005238D2 /* ToolsMenuViewController.swift */; };
 		7566F4842BB6949E005238D2 /* ToolsMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4822BB69498005238D2 /* ToolsMenuViewController.swift */; };
 		7566F48A2BB6CAF2005238D2 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4892BB6CAF2005238D2 /* MenuItem.swift */; };
@@ -964,7 +966,6 @@
 		C9D2C6972A320AA000D15901 /* DWBiometricAuthViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44314622CF82D9009BAF7F /* DWBiometricAuthViewController.m */; };
 		C9D2C6982A320AA000D15901 /* CrowdNodeWebService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C86294B0FED004FC7BF /* CrowdNodeWebService.swift */; };
 		C9D2C6992A320AA000D15901 /* DWStartViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D12196E25D00A6E7E6 /* DWStartViewController.m */; };
-		C9D2C69A2A320AA000D15901 /* CrowdNodeAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C822949E6A3004FC7BF /* CrowdNodeAPI.swift */; };
 		C9D2C69B2A320AA000D15901 /* DWStartModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D62196E5CF00A6E7E6 /* DWStartModel.m */; };
 		C9D2C69C2A320AA000D15901 /* DWAdvancedSecurityModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417923A929B6004E37A7 /* DWAdvancedSecurityModelStub.m */; };
 		C9D2C69D2A320AA000D15901 /* Foundation+Bitcoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C32028818D5400B4BD48 /* Foundation+Bitcoin.swift */; };
@@ -1693,7 +1694,6 @@
 		114CFED1296489CD005F421B /* MinimumDepositBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimumDepositBanner.swift; sourceTree = "<group>"; };
 		114D16B529812730009A124C /* OnlineAccountDetailsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineAccountDetailsController.swift; sourceTree = "<group>"; };
 		114D16B729828BCC009A124C /* OnlineAccountConfirmationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineAccountConfirmationController.swift; sourceTree = "<group>"; };
-		11517C822949E6A3004FC7BF /* CrowdNodeAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeAPI.swift; sourceTree = "<group>"; };
 		11517C842949E6F0004FC7BF /* CrowdNodeEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeEndpoint.swift; sourceTree = "<group>"; };
 		11517C86294B0FED004FC7BF /* CrowdNodeWebService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeWebService.swift; sourceTree = "<group>"; };
 		11517C89294B11DD004FC7BF /* CrowdNodeBalance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeBalance.swift; sourceTree = "<group>"; };
@@ -2474,6 +2474,8 @@
 		755E6DFC2A99E7A000A42870 /* DWInvitationSetupState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWInvitationSetupState.m; sourceTree = "<group>"; };
 		755E6DFD2A99E7A000A42870 /* DWInvitationSetupState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInvitationSetupState.h; sourceTree = "<group>"; };
 		756188202B1EE78A00B778E3 /* DPVotingResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DPVotingResultView.swift; sourceTree = "<group>"; };
+		756557B42CE84FF70060348D /* FeeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeInfo.swift; sourceTree = "<group>"; };
+		7565D5942B08B35F0092C9BA /* RequestUsernameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestUsernameViewModel.swift; sourceTree = "<group>"; };
 		7566F4822BB69498005238D2 /* ToolsMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsMenuViewController.swift; sourceTree = "<group>"; };
 		7566F4892BB6CAF2005238D2 /* MenuItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuItem.swift; sourceTree = "<group>"; };
 		756A8F131CE566F6007893E2 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Interface.strings; sourceTree = "<group>"; };
@@ -3358,7 +3360,6 @@
 			isa = PBXGroup;
 			children = (
 				11517C88294B11CE004FC7BF /* DTOs */,
-				11517C822949E6A3004FC7BF /* CrowdNodeAPI.swift */,
 				11517C842949E6F0004FC7BF /* CrowdNodeEndpoint.swift */,
 			);
 			path = API;
@@ -3367,6 +3368,7 @@
 		11517C88294B11CE004FC7BF /* DTOs */ = {
 			isa = PBXGroup;
 			children = (
+				756557B42CE84FF70060348D /* FeeInfo.swift */,
 				11517C89294B11DD004FC7BF /* CrowdNodeBalance.swift */,
 				111C3C4D296C52F800788E18 /* WithdrawalLimit.swift */,
 				1186092029758B2F00279FCC /* IsAddressInUse.swift */,
@@ -8512,7 +8514,6 @@
 				11517C87294B0FED004FC7BF /* CrowdNodeWebService.swift in Sources */,
 				75EBAA1D2BBA71D9004488E3 /* ZenLedgerInfoSheet.swift in Sources */,
 				2A4E531422E9F0A200E5168A /* DWStartViewController.m in Sources */,
-				11517C832949E6A3004FC7BF /* CrowdNodeAPI.swift in Sources */,
 				2A4E531522E9F0A200E5168A /* DWStartModel.m in Sources */,
 				2AB3417A23A929B6004E37A7 /* DWAdvancedSecurityModelStub.m in Sources */,
 				4709C32128818D5400B4BD48 /* Foundation+Bitcoin.swift in Sources */,
@@ -8607,6 +8608,7 @@
 				47F2C6842860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift in Sources */,
 				2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */,
 				C9F451FD2A0CC4A300825057 /* BadgeView.swift in Sources */,
+				756557B52CE84FFA0060348D /* FeeInfo.swift in Sources */,
 				C9F451F52A0CAC9400825057 /* HomeHeaderView.swift in Sources */,
 				C9F451F92A0CB08900825057 /* ProgressView.swift in Sources */,
 				2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */,
@@ -9124,7 +9126,6 @@
 				75A8C1652AE5726B0042256E /* UsernameRequestsDAO.swift in Sources */,
 				C9D2C6992A320AA000D15901 /* DWStartViewController.m in Sources */,
 				C943B4C02A40A54600AF23C5 /* DWContactsSearchInfoHeaderView.m in Sources */,
-				C9D2C69A2A320AA000D15901 /* CrowdNodeAPI.swift in Sources */,
 				C9D2C69B2A320AA000D15901 /* DWStartModel.m in Sources */,
 				754495DD2AE91B6300492817 /* GroupedRequestCell.swift in Sources */,
 				7503643B2C89CFB70029EC0D /* CoinJoinProgressView.swift in Sources */,
@@ -9521,6 +9522,7 @@
 				C9D2C7B22A320AA000D15901 /* (null) in Sources */,
 				C9D2C7B32A320AA000D15901 /* SpecifyAmountViewController.swift in Sources */,
 				C943B4EA2A40A54600AF23C5 /* DWUserProfileViewController.m in Sources */,
+				756557B62CE84FFA0060348D /* FeeInfo.swift in Sources */,
 				C943B5922A40ED7B00AF23C5 /* DWTextField.m in Sources */,
 				75EBAA0D2BB9792F004488E3 /* FeatureTopText.swift in Sources */,
 				C9D2C7B42A320AA000D15901 /* DWUpholdTransactionObject+DWView.m in Sources */,
@@ -10765,7 +10767,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.2.0;
+				MARKETING_VERSION = 8.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -10794,7 +10796,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.2.0;
+				MARKETING_VERSION = 8.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -11586,7 +11588,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.2.0;
+				MARKETING_VERSION = 8.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -11896,7 +11898,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.2.0;
+				MARKETING_VERSION = 8.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

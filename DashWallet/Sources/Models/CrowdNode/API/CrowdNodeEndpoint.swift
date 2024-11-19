@@ -33,6 +33,7 @@ public enum CrowdNodeEndpoint {
     case hasDefaultEmail(String)
     case sendSignedMessage(address: String, message: String, signature: String, messagetype: MessageType)
     case getMessages(String)
+    case getFees(String)
 }
 
 // MARK: TargetType
@@ -53,9 +54,10 @@ extension CrowdNodeEndpoint: TargetType {
         case .hasDefaultEmail(let address): return "odata/apiaddresses/UsingDefaultApiEmail(address='\(address)')"
         case .sendSignedMessage(let address, let message, let signature, let messagetype): return "odata/apimessages/SendMessage(address='\(address)',message='\(message)',signature='\(signature)',messagetype=\(messagetype.rawValue))"
         case .getMessages(let address): return "odata/apimessages/GetMessages(address='\(address)')"
+        case .getFees(let address): return "odata/apifundings/GetFeeJson(address='\(address)')"
         }
     }
-
+    
     public var method: Moya.Method {
         .get
     }
@@ -67,4 +69,8 @@ extension CrowdNodeEndpoint: TargetType {
     public var headers: [String : String]? {
         [:]
     }
+}
+
+final class CrowdNodeAPI: HTTPClient<CrowdNodeEndpoint> {
+    static let shared = CrowdNodeAPI()
 }

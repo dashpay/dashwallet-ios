@@ -35,6 +35,7 @@ extension CrowdNode {
     static let minimumDeposit = UInt64(kOneDash / 2)
     static let minimumLeftoverBalance: UInt64 = 30_000
     static let apiConfirmationDashAmount: UInt64 = 54321
+    static let defaultFee = 0.35
 
     static let notificationID = "CrowdNode"
 

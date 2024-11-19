@@ -101,4 +101,8 @@ extension CrowdNodeService {
             return nil
         }
     }
+    
+    func getFees(address: String) async throws -> FeeInfo {
+        try await httpClient.request(.getFees(address))
+    }
 }
