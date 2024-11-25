@@ -113,7 +113,7 @@ class CreateUsernameViewModel: ObservableObject {
             let now = Date().timeIntervalSince1970
             let identityData = withUnsafeBytes(of: UUID().uuid) { Data($0) }
             let identity = (identityData as NSData).base58String()
-            let usernameRequest = UsernameRequest(requestId: UUID().uuidString, username: username, createdAt: Int64(now), identity: "\(identity)\(identity)", link: link?.absoluteString, votes: 0, isApproved: false)
+            let usernameRequest = UsernameRequest(requestId: UUID().uuidString, username: username, createdAt: Int64(now), identity: "\(identity)\(identity)", link: link?.absoluteString, votes: 0, blockVotes: 0, isApproved: false)
             
             await dao.create(dto: usernameRequest)
             prefs.requestedUsernameId = usernameRequest.requestId

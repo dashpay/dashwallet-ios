@@ -5,5 +5,6 @@ CREATE TABLE username_requests (
     identity TEXT NOT NULL,
     link TEXT,
     votes INTEGER NOT NULL,
+    blockVotes INTEGER NOT NULL,
     isApproved INTEGER NOT NULL
 );

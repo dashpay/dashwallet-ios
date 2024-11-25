@@ -198,7 +198,7 @@ extension VotingViewModel {
             let link = nameCount % 2 == 0 ? "https://example.com" : nil
             let isApproved = Bool.random()
             
-            let dto = UsernameRequest(requestId: UUID().uuidString, username: randomName, createdAt: Int64(randomValue), identity: "\(identity)\(identity)\(identity)", link: link, votes: Int.random(in: 0..<15), isApproved: isApproved)
+            let dto = UsernameRequest(requestId: UUID().uuidString, username: randomName, createdAt: Int64(randomValue), identity: "\(identity)\(identity)\(identity)", link: link, votes: Int.random(in: 0..<15), blockVotes: Int.random(in: 0..<15), isApproved: isApproved)
             print(dto)
             await dao.create(dto: dto)
             

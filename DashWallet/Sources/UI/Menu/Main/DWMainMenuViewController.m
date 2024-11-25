@@ -106,7 +106,7 @@ NS_ASSUME_NONNULL_BEGIN
     BOOL invitationsEnabled = ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled && (self.userProfileModel.blockchainIdentity != nil));
 
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    BOOL isVotingEnabled = [VotingPrefsWrapper getIsEnabled] && now < VotingConstants.votingEndTime;
+    BOOL isVotingEnabled = [VotingPrefsWrapper getIsEnabled];
     self.view.model = [[DWMainMenuModel alloc] initWithInvitesEnabled:invitationsEnabled votingEnabled:isVotingEnabled];
     [self.view updateUserHeader];
 #else

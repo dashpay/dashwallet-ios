@@ -18,14 +18,8 @@
 import UIKit
 
 final class UsernameRequestCell: UITableViewCell {
+    var onApproveTapped: ((UsernameRequest) -> Void)?
     var model: UsernameRequest?
-    
-    private let bullet: UIView = {
-        let view = UIView()
-        view.backgroundColor = .dw_label()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
     
     private let dateCreated: UILabel = {
         let label = UILabel()
@@ -35,11 +29,12 @@ final class UsernameRequestCell: UITableViewCell {
         return label
     }()
     
-    private let linkBadge: UIImageView = {
-        let image = UIImageView(image: UIImage(named: "link.badge"))
-        image.contentMode = .scaleAspectFit
-        image.translatesAutoresizingMaskIntoConstraints = false
-        return image
+    private let linkLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont.dw_regularFont(ofSize: 12)
+        label.textColor = .dw_dashBlue()
+        return label
     }()
     
     private let votes: UILabel = {
@@ -60,6 +55,21 @@ final class UsernameRequestCell: UITableViewCell {
         return view
     }()
     
+    private let approveButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.titleLabel?.font = .dw_regularFont(ofSize: 13)
+        button.layer.cornerRadius = 15
+        button.contentEdgeInsets = UIEdgeInsets(top: 5, left: 12, bottom: 5, right: 12)
+        button.setTitle(NSLocalizedString("Approve", comment: "Voting"), for: .normal)
+        return button
+    }()
+    
+    @objc private func approveButtonTapped() {
+        guard let model else { return }
+        onApproveTapped?(model)
+    }
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         configureLayout()
@@ -74,18 +84,14 @@ final class UsernameRequestCell: UITableViewCell {
 private extension UsernameRequestCell {
     func configureLayout() {
         contentView.addSubview(dateCreated)
-        contentView.addSubview(bullet)
-        contentView.addSubview(linkBadge)
+        contentView.addSubview(linkLabel)
         contentView.addSubview(votesBadge)
         votesBadge.addSubview(votes)
+        approveButton.addTarget(self, action: #selector(approveButtonTapped), for: .touchUpInside)
+        contentView.addSubview(approveButton)
         
         NSLayoutConstraint.activate([
             contentView.heightAnchor.constraint(equalToConstant: 44),
-            
-            bullet.heightAnchor.constraint(equalToConstant: 3),
-            bullet.widthAnchor.constraint(equalToConstant: 3),
-            bullet.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            bullet.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
             
             votesBadge.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             votesBadge.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
@@ -95,13 +101,16 @@ private extension UsernameRequestCell {
             votes.trailingAnchor.constraint(equalTo: votesBadge.trailingAnchor, constant: -6),
             votes.bottomAnchor.constraint(equalTo: votesBadge.bottomAnchor, constant: -3),
             
-            linkBadge.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            linkBadge.trailingAnchor.constraint(equalTo: votesBadge.leadingAnchor, constant: -5),
-            
-            dateCreated.topAnchor.constraint(equalTo: contentView.topAnchor),
-            dateCreated.leadingAnchor.constraint(equalTo: bullet.trailingAnchor, constant: 8),
+            dateCreated.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
             dateCreated.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            dateCreated.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            
+            linkLabel.topAnchor.constraint(equalTo: dateCreated.bottomAnchor, constant: 2),
+            linkLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
+            linkLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            linkLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -4),
+
+            approveButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            approveButton.trailingAnchor.constraint(equalTo: votesBadge.leadingAnchor, constant: -8)
         ])
     }
 }
@@ -112,11 +121,31 @@ extension UsernameRequestCell {
         let unixTimestamp = TimeInterval(model.createdAt)
         let date = Date(timeIntervalSince1970: unixTimestamp)
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd MMM yyyy · H:mm"
-        let formattedDate = dateFormatter.string(from: date)
-        self.dateCreated.text = formattedDate
-        linkBadge.isHidden = model.link == nil
+        dateFormatter.dateFormat = "dd MMM yyyy"
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "H:mm"
+
+        let dateString = dateFormatter.string(from: date)
+        let timeString = timeFormatter.string(from: date)
+        
+        let attributedString = NSMutableAttributedString(string: dateString)
+        attributedString.append(NSAttributedString(string: " \(timeString)", attributes: [.foregroundColor: UIColor.dw_tertiaryText()]))
+        self.dateCreated.attributedText = attributedString
+        
+        let attachment = NSTextAttachment()
+        attachment.image = UIImage(named: "link.badge")?.withRenderingMode(.alwaysTemplate)
+        attachment.bounds = CGRect(x: 0, y: -3, width: 14, height: 14)
+        let linkAttributedString = NSMutableAttributedString(attachment: attachment)
+        linkAttributedString.append(NSAttributedString(string: " link included"))
+        linkLabel.attributedText = linkAttributedString
+        linkLabel.isHidden = model.link == nil
         votes.text = String(describing: model.votes)
+        
+        if model.link == nil {
+            dateCreated.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
+        } else {
+            dateCreated.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4).isActive = true
+        }
         
         if model.isApproved {
             votesBadge.backgroundColor = .dw_dashBlue()
@@ -127,5 +156,8 @@ extension UsernameRequestCell {
             votesBadge.layer.borderColor = UIColor.dw_separatorLine().cgColor
             votes.textColor = .dw_tertiaryText()
         }
+
+        approveButton.setTitleColor(model.isApproved ? .white : .dw_dashBlue(), for: .normal)
+        approveButton.backgroundColor = model.isApproved ? .dw_dashBlue() : .clear
     }
 }
