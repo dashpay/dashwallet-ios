@@ -101,15 +101,18 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     
     private var currentMode: CoinJoinMode {
         get {
-            let current = CoinJoinMode(rawValue: UserDefaults.standard.integer(forKey: chainModeKey)) ?? .none
+            let current = CoinJoinMode(rawValue: UserDefaults.standard.integer(forKey: chainModeKey))
+            DSLogger.log("[SW] CoinJoin: get currentMode: \(current == nil ? "nil" : String(describing: current!))")
+            let final = current ?? .none
             
-            if self.mode != current {
-                self.mode = current
+            if self.mode != final {
+                self.mode = final
             }
             
-            return current
+            return final
         }
         set(value) {
+            DSLogger.log("[SW] CoinJoin: set currentMode: \(value)")
             self.mode = value
             UserDefaults.standard.set(value.rawValue, forKey: chainModeKey)
         }
@@ -268,7 +271,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
         }
         
         synchronized(self.updateMutex) {
-            DSLogger.log("CoinJoin: \(mode), \(timeSkew) s, \(hasAnonymizableBalance), \(networkStatus), synced: \(SyncingActivityMonitor.shared.state == .syncDone)")
+            DSLogger.log("CoinJoin updateState: \(mode), \(timeSkew) s, \(hasAnonymizableBalance), \(networkStatus), synced: \(SyncingActivityMonitor.shared.state == .syncDone)")
             
             self.networkStatus = networkStatus
             self.hasAnonymizableBalance = hasAnonymizableBalance
@@ -337,6 +340,8 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     }
     
     private func restoreMode() {
+        DSLogger.log("[SW] CoinJoin: restoreMode, self.currentMode: \(self.currentMode)")
+        
         self.stopMixing()
         self.coinJoinManager = nil
         self.hasAnonymizableBalance = false
@@ -461,3 +466,4 @@ extension CoinJoinService: SyncingActivityMonitorObserver {
         }
     }
 }
+
