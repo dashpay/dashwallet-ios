@@ -145,9 +145,12 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     func updateMode(mode: CoinJoinMode, force: Bool = false) async {
         self.coinJoinManager?.updateOptions(withEnabled: mode != .none)
         
-        if mode != .none && (force || self.currentMode == .none) {
-            configureMixing()
-            configureObservers()
+        if mode != .none && (force || mode != self.currentMode) {
+            configureMixing(mode: mode)
+            
+            if self.currentMode == .none {
+                configureObservers()
+            }
         } else if mode == .none {
             removeObservers()
         }
@@ -181,12 +184,12 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
         }
     }
     
-    private func configureMixing() {
+    private func configureMixing(mode: CoinJoinMode) {
         guard let coinJoinManager = self.coinJoinManager ?? createCoinJoinManager() else { return }
         
         let account = DWEnvironment.sharedInstance().currentAccount
         let rounds: Int32
-        switch currentMode {
+        switch mode {
         case .none:
             return
         case .intermediate:
@@ -271,7 +274,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
         }
         
         synchronized(self.updateMutex) {
-            DSLogger.log("CoinJoin updateState: \(mode), \(timeSkew) s, \(hasAnonymizableBalance), \(networkStatus), synced: \(SyncingActivityMonitor.shared.state == .syncDone)")
+            DSLogger.log("CoinJoin updateState: \(mode), \(timeSkew)s, \(hasAnonymizableBalance), \(networkStatus), synced: \(SyncingActivityMonitor.shared.state == .syncDone)")
             
             self.networkStatus = networkStatus
             self.hasAnonymizableBalance = hasAnonymizableBalance
@@ -281,7 +284,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
             if mode == .none || !isInsideTimeSkewBounds(timeSkew: timeSkew) || DWGlobalOptions.sharedInstance().isResyncingWallet {
                 updateMixingState(state: .notStarted)
             } else {
-                configureMixing()
+                configureMixing(mode: mode)
                 
                 if hasAnonymizableBalance {
                     if networkStatus == .online && SyncingActivityMonitor.shared.state == .syncDone {
