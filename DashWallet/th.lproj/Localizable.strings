@@ -223,6 +223,9 @@
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "แอพพลิเคชั่น %@ ต้องการรับ Master Public Key ของคุณ ซึ่งสามารถใช้ในการติดตามกระเป๋าสตางค์ของคุณได้ แต่ไม่สามารถใช้ในการย้าย Dash ของคุณ";
 
+/* Voting */
+"Approve" = "Approve";
+
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "แน่ใจหรือว่าต้องการยกเลิกคำสั่งซื้อนี้?";
 
@@ -315,6 +318,9 @@
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "ระหว่างกระเป๋าเงิน Dash และบัญชี Coinbase ของคุณ";
+
+/* Voting */
+"Block" = "Block";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "กลุ่ม # %1$d of %2$d";

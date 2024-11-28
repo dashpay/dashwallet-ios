@@ -84,12 +84,14 @@ extension UsernameVotingViewController {
         let tap = UITapGestureRecognizer(target: self, action: #selector(mockData))
         titleLabel.addGestureRecognizer(tap)
         
-        tableView.estimatedRowHeight = 200
+        tableView.estimatedRowHeight = 50
         tableView.rowHeight = UITableView.automaticDimension
         tableView.separatorStyle = .none
         tableView.allowsSelection = false
         tableView.keyboardDismissMode = .onDrag
+        tableView.contentInset.bottom = 50
         tableView.register(GroupedRequestCell.self, forCellReuseIdentifier: GroupedRequestCell.description())
+        tableView.register(UsernameRequestCell.self, forCellReuseIdentifier: UsernameRequestCell.description())
         
         let headerNib = UINib(nibName: "VotingHeaderView", bundle: nil)
         
@@ -184,19 +186,33 @@ extension UsernameVotingViewController {
             (tableView: UITableView, indexPath: IndexPath, item: GroupedUsernames) -> UITableViewCell? in
 
             guard self != nil else { return UITableViewCell() }
-            let cell = tableView.dequeueReusableCell(withIdentifier: GroupedRequestCell.description(), for: indexPath)
+            
+            if item.requests.count == 1 {
+                let cell = tableView.dequeueReusableCell(withIdentifier: UsernameRequestCell.description(), for: indexPath)
+                
+                if let requestCell = cell as? UsernameRequestCell {
+                    requestCell.configure(withModel: item.requests[0], isInGroup: false)
+                    requestCell.onApproveTapped = { [weak self] request in
+                        self?.openDetails(for: request)
+                    }
+                }
+                
+                return cell
+            } else {
+                let cell = tableView.dequeueReusableCell(withIdentifier: GroupedRequestCell.description(), for: indexPath)
 
-            if let groupedCell = cell as? GroupedRequestCell {
-                groupedCell.configure(withModel: item.requests)
-                groupedCell.onHeightChanged = {
-                    tableView.performBatchUpdates(nil)
+                if let groupedCell = cell as? GroupedRequestCell {
+                    groupedCell.configure(withModel: item.requests)
+                    groupedCell.onHeightChanged = {
+                        tableView.performBatchUpdates(nil)
+                    }
+                    groupedCell.onRequestSelected = { [weak self] request in
+                        self?.openDetails(for: request)
+                    }
                 }
-                groupedCell.onRequestSelected = { [weak self] request in
-                    self?.openDetails(for: request)
-                }
+
+                return cell
             }
-
-            return cell
         }
     }
     

@@ -80,32 +80,21 @@ final class GroupedRequestCell: UITableViewCell {
 
     private let tableView: UITableView = {
         let tableView = UITableView()
-        tableView.estimatedRowHeight = 44
+        tableView.estimatedRowHeight = 60
         tableView.rowHeight = UITableView.automaticDimension
         tableView.isScrollEnabled = false
-        tableView.separatorStyle = .singleLine
+        tableView.separatorStyle = .none
         tableView.register(UsernameRequestCell.self, forCellReuseIdentifier: UsernameRequestCell.description())
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.tableFooterView = UIView(frame: .zero)
         return tableView
     }()
 
-    private let blockButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.titleLabel?.font = .dw_regularFont(ofSize: 13)
-        button.layer.cornerRadius = 15
-        button.contentEdgeInsets = UIEdgeInsets(top: 5, left: 12, bottom: 5, right: 12)
-        return button
-    }()
-    
-    private let approveButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.titleLabel?.font = .dw_regularFont(ofSize: 13)
-        button.layer.cornerRadius = 15
-        button.contentEdgeInsets = UIEdgeInsets(top: 5, left: 12, bottom: 5, right: 12)
-        button.setTitle(NSLocalizedString("Approve", comment: "Voting"), for: .normal)
+    private let blockButton: VoteButton = {
+        let button = VoteButton()
+        button.selectedBackgroundColor = .dw_red()
+        button.buttonText = NSLocalizedString("Block", comment: "Voting")
+        button.value = 0
         return button
     }()
 }
@@ -114,14 +103,11 @@ private extension GroupedRequestCell {
     func configureLayout() {
         toggleArea.addTarget(self, action: #selector(expandOrCollapse), for: .touchUpInside)
         toggleArea.addSubview(username)
-        toggleArea.addSubview(chevron)
         toggleArea.addSubview(requestsAmount)
+        toggleArea.addSubview(chevron)
 
         blockButton.addTarget(self, action: #selector(blockButtonTapped), for: .touchUpInside)
-        approveButton.addTarget(self, action: #selector(approveButtonTapped), for: .touchUpInside)
-        
         toggleArea.addSubview(blockButton)
-        toggleArea.addSubview(approveButton)
 
         container.addArrangedSubview(toggleArea)
         containerHeightConstraint = container.heightAnchor.constraint(equalToConstant: kToogleAreaHeight)
@@ -145,7 +131,7 @@ private extension GroupedRequestCell {
             username.leadingAnchor.constraint(equalTo: toggleArea.leadingAnchor, constant: 15),
             
             requestsAmount.topAnchor.constraint(equalTo: username.topAnchor),
-            requestsAmount.trailingAnchor.constraint(equalTo: chevron.leadingAnchor, constant: -10),
+            requestsAmount.leadingAnchor.constraint(equalTo: username.trailingAnchor, constant: 6),
             requestsAmount.bottomAnchor.constraint(equalTo: username.bottomAnchor),
             
             chevron.heightAnchor.constraint(equalToConstant: 14),
@@ -160,11 +146,10 @@ private extension GroupedRequestCell {
             container.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             container.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -15),
 
+            blockButton.heightAnchor.constraint(equalToConstant: 35),
+            blockButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 65),
             blockButton.centerYAnchor.constraint(equalTo: username.centerYAnchor),
-            blockButton.trailingAnchor.constraint(equalTo: requestsAmount.leadingAnchor, constant: -10),
-            
-            approveButton.centerYAnchor.constraint(equalTo: username.centerYAnchor),
-            approveButton.trailingAnchor.constraint(equalTo: blockButton.leadingAnchor, constant: -8)
+            blockButton.trailingAnchor.constraint(equalTo: chevron.leadingAnchor, constant: -8)
         ])
     }
     
@@ -193,10 +178,6 @@ private extension GroupedRequestCell {
     @objc private func blockButtonTapped() {
         // TODO
     }
-    
-    @objc private func approveButtonTapped() {
-        // TODO
-    }
 }
 
 extension GroupedRequestCell {
@@ -209,16 +190,10 @@ extension GroupedRequestCell {
         self.configureDataSource()
         self.reloadDataSource(data: model)
 
-        let isBlocked = model.first?.blockVotes ?? 0 > 0
-        blockButton.setTitle(isBlocked ? "Unblock" : "Block", for: .normal)
-        blockButton.setTitleColor(isBlocked ? .white : .dw_red(), for: .normal)
-        blockButton.backgroundColor = isBlocked ? .dw_red() : .clear
-        
-        approveButton.isHidden = model.count != 1
-        if let request = model.first, model.count == 1 {
-            approveButton.setTitleColor(request.isApproved ? .white : .dw_dashBlue(), for: .normal)
-            approveButton.backgroundColor = request.isApproved ? .dw_dashBlue() : .clear
-        }
+        let isBlocked = !(model.last?.isApproved == true)
+        blockButton.isSelected = isBlocked
+        blockButton.value = model.last?.blockVotes ?? 0
+        blockButton.buttonText = isBlocked ? NSLocalizedString("Unblock", comment: "Voting") : NSLocalizedString("Block", comment: "Voting")
     }
     
     private func updateInnerTableViewHeight() {
