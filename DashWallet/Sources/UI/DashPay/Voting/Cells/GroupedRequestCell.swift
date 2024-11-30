@@ -26,8 +26,7 @@ final class GroupedRequestCell: UITableViewCell {
     
     var onHeightChanged: (() -> ())?
     var onRequestSelected: ((UsernameRequest) -> ())?
-    var onBlockTapped: ((String, Bool) -> Void)?
-    var onApproveTapped: ((UsernameRequest) -> Void)?
+    var onBlockTapped: ((UsernameRequest) -> Void)?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -106,8 +105,9 @@ private extension GroupedRequestCell {
         toggleArea.addSubview(requestsAmount)
         toggleArea.addSubview(chevron)
 
-        blockButton.addTarget(self, action: #selector(blockButtonTapped), for: .touchUpInside)
         toggleArea.addSubview(blockButton)
+        blockButton.isUserInteractionEnabled = true
+        blockButton.addTarget(self, action: #selector(blockButtonTapped), for: .touchUpInside)
 
         container.addArrangedSubview(toggleArea)
         containerHeightConstraint = container.heightAnchor.constraint(equalToConstant: kToogleAreaHeight)
@@ -147,7 +147,7 @@ private extension GroupedRequestCell {
             container.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -15),
 
             blockButton.heightAnchor.constraint(equalToConstant: 35),
-            blockButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 65),
+            blockButton.widthAnchor.constraint(equalToConstant: 65),
             blockButton.centerYAnchor.constraint(equalTo: username.centerYAnchor),
             blockButton.trailingAnchor.constraint(equalTo: chevron.leadingAnchor, constant: -8)
         ])
@@ -176,7 +176,8 @@ private extension GroupedRequestCell {
     }
     
     @objc private func blockButtonTapped() {
-        // TODO
+        guard let usernameRequest = model.last else { return }
+        onBlockTapped?(usernameRequest)
     }
 }
 
@@ -190,9 +191,10 @@ extension GroupedRequestCell {
         self.configureDataSource()
         self.reloadDataSource(data: model)
 
-        let isBlocked = !(model.last?.isApproved == true)
+        let blockVotes = model.last?.blockVotes ?? 0
+        let isBlocked = blockVotes > 0
         blockButton.isSelected = isBlocked
-        blockButton.value = model.last?.blockVotes ?? 0
+        blockButton.value = blockVotes
         blockButton.buttonText = isBlocked ? NSLocalizedString("Unblock", comment: "Voting") : NSLocalizedString("Block", comment: "Voting")
     }
     
@@ -219,6 +221,9 @@ extension GroupedRequestCell {
 
             if let requestCell = cell as? UsernameRequestCell {
                 requestCell.configure(withModel: item)
+                requestCell.onApproveTapped = { [weak self] username in
+                    self?.onRequestSelected?(username)
+                }
             }
 
             return cell

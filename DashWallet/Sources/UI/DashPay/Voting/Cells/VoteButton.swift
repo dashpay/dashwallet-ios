@@ -86,6 +86,7 @@ final class VoteButton: UIButton {
         
         stackView.addArrangedSubview(numberLabel)
         stackView.addArrangedSubview(textLabel)
+        stackView.isUserInteractionEnabled = false
         addSubview(stackView)
         layer.cornerRadius = 7
         

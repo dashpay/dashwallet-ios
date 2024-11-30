@@ -59,8 +59,8 @@ final class UsernameRequestCell: UITableViewCell {
     
     private let approveButton: VoteButton = {
         let button = VoteButton()
+        button.selectedBackgroundColor = .dw_dashBlue()
         button.buttonText = NSLocalizedString("Approve", comment: "Voting")
-        button.backgroundColor = .dw_dashBlue()
         button.value = 0
         return button
     }()
@@ -102,13 +102,12 @@ private extension UsernameRequestCell {
         containerView.addSubview(dateCreated)
         containerView.addSubview(username)
         containerView.addSubview(linkLabel)
+        containerView.addSubview(approveButton)
+        containerView.addSubview(blockButton)
         approveButton.addTarget(self, action: #selector(approveButtonTapped), for: .touchUpInside)
         blockButton.addTarget(self, action: #selector(blockButtonTapped), for: .touchUpInside)
-        containerView.addSubview(approveButton)
         
         NSLayoutConstraint.activate([
-            contentView.heightAnchor.constraint(equalToConstant: 56),
-            
             dateCreated.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 15),
             dateCreated.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
             
@@ -121,7 +120,12 @@ private extension UsernameRequestCell {
             approveButton.heightAnchor.constraint(equalToConstant: 35),
             approveButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 65),
             approveButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
-            approveButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -8)
+            approveButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -8),
+            
+            blockButton.heightAnchor.constraint(equalToConstant: 35),
+            blockButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 65),
+            blockButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            blockButton.trailingAnchor.constraint(equalTo: approveButton.leadingAnchor, constant: -8)
         ])
     }
 }
@@ -144,6 +148,7 @@ extension UsernameRequestCell {
             containerView.layer.borderColor = UIColor.dw_separatorLine().cgColor
             
             NSLayoutConstraint.activate([
+                contentView.heightAnchor.constraint(equalToConstant: 56),
                 containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4),
                 containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
                 containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
@@ -172,6 +177,7 @@ extension UsernameRequestCell {
             attributedString.append(NSAttributedString(string: " \(timeString)", attributes: [.foregroundColor: UIColor.dw_tertiaryText()]))
             self.dateCreated.attributedText = attributedString
             self.username.isHidden = true
+            self.blockButton.isHidden = true
         } else {
             containerView.backgroundColor = .dw_background()
             containerView.layer.cornerRadius = 10
@@ -181,6 +187,7 @@ extension UsernameRequestCell {
             containerView.layer.borderColor = nil
             
             NSLayoutConstraint.activate([
+                contentView.heightAnchor.constraint(equalToConstant: 64),
                 containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
                 containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
                 containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
@@ -200,6 +207,7 @@ extension UsernameRequestCell {
             self.dateCreated.isHidden = true
             self.blockButton.value = model.blockVotes
             self.approveButton.value = model.votes
+            self.blockButton.isHidden = false
         }
         
         let attachment = NSTextAttachment()
@@ -212,14 +220,18 @@ extension UsernameRequestCell {
         
         if model.isApproved {
             approveButton.isSelected = true
-            blockButton.isSelected = false
             approveButton.buttonText = NSLocalizedString("Approvals", comment: "Voting")
-            blockButton.buttonText = NSLocalizedString("Block", comment: "Voting")
         } else {
             approveButton.isSelected = false
-            blockButton.isSelected = true
             approveButton.buttonText = NSLocalizedString("Approve", comment: "Voting")
+        }
+        
+        if model.blockVotes > 0 {
+            blockButton.isSelected = true
             blockButton.buttonText = NSLocalizedString("Unblock", comment: "Voting")
+        } else {
+            blockButton.isSelected = false
+            blockButton.buttonText = NSLocalizedString("Block", comment: "Voting")
         }
     }
 }

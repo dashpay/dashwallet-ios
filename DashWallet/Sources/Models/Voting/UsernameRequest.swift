@@ -24,6 +24,7 @@ private typealias Expression = SQLite.Expression
 struct GroupedUsernames: Hashable {
     var username: String
     var requests: [UsernameRequest]
+    var votesForUsername: Int = 0
 }
 
 // MARK: - UsernameRequest
