@@ -784,9 +784,6 @@
 /* No comment provided by engineer. */
 "Error updating your profile" = "プロフィールの更新エラー";
 
-/* No comment provided by engineer. */
-"Error Upgrading" = "アップグレード中のエラー";
-
 /* CoinJoin */
 "Error ·" = "Error ·";
 
@@ -975,9 +972,6 @@
 
 /* No comment provided by engineer. */
 "header #%d of %d" = "%2$dのヘッダー#%1$d";
-
-/* Hello username, */
-"Hello %@," = "こんにちは、%@。";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "品質を向上させるためにご協力ください";
@@ -2437,9 +2431,6 @@
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "進化版にアップグレードする";
-
-/* No comment provided by engineer. */
-"Upgrading to DashPay" = "DashPayにアップグレード中";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";

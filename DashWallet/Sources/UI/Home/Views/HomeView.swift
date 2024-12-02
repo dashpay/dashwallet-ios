@@ -34,15 +34,12 @@ protocol HomeViewDelegate: AnyObject {
 
 // MARK: - HomeView
 
-final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorRetryDelegate {
+final class HomeView: UIView, DWHomeModelUpdatesObserver {
     weak var delegate: HomeViewDelegate?
 
     private(set) var headerView: HomeHeaderView!
     private(set) var syncingHeaderView: SyncingHeaderView!
-
-    // Strong ref to current dataSource to make sure it always exists while tableView uses it
-    var currentDataSource: TransactionListDataSource?
-    private let viewModel = HomeViewModel.shared
+    let viewModel = HomeViewModel.shared
 
     @objc
     var model: DWHomeProtocol? {
@@ -134,14 +131,9 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
 
     // MARK: - DWHomeModelUpdatesObserver
 
-    func homeModel(_ model: DWHomeProtocol, didUpdate dataSource: TransactionListDataSource, shouldAnimate: Bool) {
-        currentDataSource = dataSource
-        dataSource.retryDelegate = self
-        
-        self.viewModel.updateItems(transactions: dataSource.items)
-
+    func homeModel(_ model: any DWHomeProtocol, didUpdate dataSource: [DSTransaction], shouldAnimate: Bool) {
+        self.viewModel.reloadShortcuts()
         headerView.reloadBalance()
-        reloadShortcuts()
     }
 
     func homeModel(_ model: DWHomeProtocol, didReceiveNewIncomingTransaction transaction: DSTransaction) {
@@ -150,11 +142,11 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
 
     func homeModelDidChangeInnerModels(_ model: DWHomeProtocol) {
         headerView.reloadBalance()
-        reloadShortcuts()
+        viewModel.reloadShortcuts()
     }
 
     func homeModelWant(toReloadShortcuts model: DWHomeProtocol) {
-        reloadShortcuts()
+        viewModel.reloadShortcuts()
         #if DASHPAY
         updateHeaderView()
         #endif
@@ -166,20 +158,14 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver, DWDPRegistrationErrorR
         #endif
     }
 
-
     // MARK: - DWDPRegistrationErrorRetryDelegate
 
-    func registrationErrorRetryAction() {
+    func registrationErrorRetryAction() { // TODO
         if model?.dashPayModel.canRetry() ?? false {
             model?.dashPayModel.retry()
         } else {
-            // TODO
+            
         }
-    }
-
-    @objc
-    func reloadShortcuts() {
-        headerView?.reloadShortcuts()
     }
     
     // MARK: DWDashPayRegistrationStatusUpdated

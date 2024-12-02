@@ -24,6 +24,7 @@
 #import "DWGlobalOptions.h"
 #import "DWProfileTxsFetchedDataSource.h"
 #import "DWUserProfileDataSourceObject.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -33,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) DWProfileTxsFetchedDataSource *txsFetchedDataSource;
 @property (nonatomic, strong) id<DWUserProfileDataSource> dataSource;
 @property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> txDataProvider;
+@property (nonatomic, assign) DWHomeTxDisplayMode displayMode;
 
 @end
 
@@ -303,11 +305,11 @@ NS_ASSUME_NONNULL_END
     }
 
     BOOL shouldShowContactRequests = YES;
-    if (self.displayMode == DWHomeTxDisplayMode_Sent) {
+    if (self.displayMode == DWHomeTxDisplayModeSent) {
         meToFriend = nil;
         shouldShowContactRequests = NO;
     }
-    else if (self.displayMode == DWHomeTxDisplayMode_Received) {
+    else if (self.displayMode == DWHomeTxDisplayModeReceived) {
         friendToMe = nil;
         shouldShowContactRequests = NO;
     }

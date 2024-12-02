@@ -784,9 +784,6 @@
 /* No comment provided by engineer. */
 "Error updating your profile" = "Σφάλμα ενημέρωσης του προφίλ σας";
 
-/* No comment provided by engineer. */
-"Error Upgrading" = "Σφάλμα Αναβάθμισης";
-
 /* CoinJoin */
 "Error ·" = "Error ·";
 
@@ -975,9 +972,6 @@
 
 /* No comment provided by engineer. */
 "header #%d of %d" = "header #%1$d of %2$d";
-
-/* Hello username, */
-"Hello %@," = "Γεια σας %@,";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Βοηθήστε μας να βελτιώσουμε την εμπειρία σας";
@@ -2437,9 +2431,6 @@
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "Αναβάθμιση σε Evolution";
-
-/* No comment provided by engineer. */
-"Upgrading to DashPay" = "Αναβάθμιση σε DashPay";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";

@@ -784,9 +784,6 @@
 /* No comment provided by engineer. */
 "Error updating your profile" = "Profiliniz güncellenirken hata oluştu";
 
-/* No comment provided by engineer. */
-"Error Upgrading" = "Yükseltme Hatası";
-
 /* CoinJoin */
 "Error ·" = "Error ·";
 
@@ -975,9 +972,6 @@
 
 /* No comment provided by engineer. */
 "header #%d of %d" = "başlık #%1$d / %2$d";
-
-/* Hello username, */
-"Hello %@," = "Merhaba %@,";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Deneyiminizi geliştirmemize yardımcı olun";
@@ -2437,9 +2431,6 @@
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "Evolution'a Yükselt";
-
-/* No comment provided by engineer. */
-"Upgrading to DashPay" = "DashPay'e yükseltiliyor";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";

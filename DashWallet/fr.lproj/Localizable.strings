@@ -784,9 +784,6 @@
 /* No comment provided by engineer. */
 "Error updating your profile" = "Erreur en modifiant votre profil";
 
-/* No comment provided by engineer. */
-"Error Upgrading" = "Erreur pendant la mise à jour";
-
 /* CoinJoin */
 "Error ·" = "Error ·";
 
@@ -975,9 +972,6 @@
 
 /* No comment provided by engineer. */
 "header #%d of %d" = "en-tête #%1$d sur %2$d";
-
-/* Hello username, */
-"Hello %@," = "Bonjour %@,";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Aidez-nous à améliorer votre expérience";
@@ -2437,9 +2431,6 @@
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "Mise à jour vers Evolution";
-
-/* No comment provided by engineer. */
-"Upgrading to DashPay" = "Mise à jour vers DashPay";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";

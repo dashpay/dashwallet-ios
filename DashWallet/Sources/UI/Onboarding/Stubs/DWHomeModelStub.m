@@ -30,10 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWHomeModelStub () <DWBalanceViewDataSource>
 
 @property (readonly, nonatomic, copy) NSArray<DWTransactionStub *> *stubTxs;
-
 @property (readonly, nonatomic, strong) DWTransactionListDataProviderStub *dataProvider;
-
-@property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
+@property (readonly, nonatomic, strong) NSArray<DSTransaction *> *dataSource;
+@property (nonatomic, assign) DWHomeTxDisplayMode displayMode;
 
 @end
 
@@ -76,7 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
     _updatesObserver = updatesObserver;
 
     if (self.allDataSource) {
-        [updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:NO];
+        [updatesObserver homeModel:self didUpdate:self.dataSource shouldAnimate:NO];
     }
 }
 
@@ -87,10 +86,10 @@ NS_ASSUME_NONNULL_BEGIN
 
     _displayMode = displayMode;
 
-    [self.updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:YES];
+    [self.updatesObserver homeModel:self didUpdate:self.dataSource shouldAnimate:YES];
 }
 
-- (DWTransactionListDataSource *)dataSource {
+- (NSArray<DSTransaction *> *)dataSource {
     return self.allDataSource;
 }
 
@@ -146,10 +145,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)reloadTxDataSource {
-    self.allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:self.stubTxs
-                                                                registrationStatus:[self.dashPayModel registrationStatus]];
-
-    [self.updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:NO];
+    self.allDataSource = self.stubTxs;
+    [self.updatesObserver homeModel:self didUpdate:self.dataSource shouldAnimate:NO];
 }
 
 @end

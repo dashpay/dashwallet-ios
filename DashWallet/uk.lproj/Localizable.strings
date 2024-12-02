@@ -784,9 +784,6 @@
 /* No comment provided by engineer. */
 "Error updating your profile" = "Помилка оновлення профіля";
 
-/* No comment provided by engineer. */
-"Error Upgrading" = "Помилка оновлення";
-
 /* CoinJoin */
 "Error ·" = "Error ·";
 
@@ -975,9 +972,6 @@
 
 /* No comment provided by engineer. */
 "header #%d of %d" = "заголовок #%1$d з %2$d";
-
-/* Hello username, */
-"Hello %@," = "Привіт, %@,";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Допоможіть нам стати кращими";
@@ -2437,9 +2431,6 @@
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "Оновлення до Evolution";
-
-/* No comment provided by engineer. */
-"Upgrading to DashPay" = "Оновлення до DashPay";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";

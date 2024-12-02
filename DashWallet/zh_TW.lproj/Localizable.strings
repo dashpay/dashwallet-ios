@@ -784,9 +784,6 @@
 /* No comment provided by engineer. */
 "Error updating your profile" = "更新您的個人資料時出錯";
 
-/* No comment provided by engineer. */
-"Error Upgrading" = "錯誤升級";
-
 /* CoinJoin */
 "Error ·" = "Error ·";
 
@@ -975,9 +972,6 @@
 
 /* No comment provided by engineer. */
 "header #%d of %d" = "標頭 #%1$d of %2$d";
-
-/* Hello username, */
-"Hello %@," = "您好 %@,";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "幫助我們改善您的體驗";
@@ -2437,9 +2431,6 @@
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "升級到 Evolution";
-
-/* No comment provided by engineer. */
-"Upgrading to DashPay" = "升級到 DashPay";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";

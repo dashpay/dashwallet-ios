@@ -86,7 +86,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         }
 
         model.registerForPushNotifications()
-        showReclassifyYourTransactionsIfPossible(with: model.allDataSource.items.first)
+        showReclassifyYourTransactionsIfPossible(with: model.allDataSource.first)
         model.checkCrowdNodeState()
         model.checkVotingState()
     }
@@ -304,7 +304,9 @@ extension HomeViewController: HomeViewDelegate {
     }
     
     func homeView(_ homeView: HomeView, showTxFilter sender: UIView) {
-        showTxFilter(withSender: sender, displayModeProvider: model, shouldShowRewards: true)
+        showTxFilter(sender: sender, displayModeCallback: { [weak self] mode in
+            self?.viewModel.displayMode = mode
+        }, shouldShowRewards: true)
     }
 
     func homeView(_ homeView: HomeView, showSyncingStatus sender: UIView) {

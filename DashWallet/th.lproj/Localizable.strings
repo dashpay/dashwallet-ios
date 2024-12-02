@@ -784,9 +784,6 @@
 /* No comment provided by engineer. */
 "Error updating your profile" = "ข้อผิดพลาดในการอัปเดตโปรไฟล์ของคุณ";
 
-/* No comment provided by engineer. */
-"Error Upgrading" = "อัพเกรดข้อผิดพลาด";
-
 /* CoinJoin */
 "Error ·" = "Error ·";
 
@@ -975,9 +972,6 @@
 
 /* No comment provided by engineer. */
 "header #%d of %d" = "หัวข้อ #%1$d of %2$d";
-
-/* Hello username, */
-"Hello %@," = "สวัสดี %@,";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "ช่วยเราเพื่อพัฒนาประสบการณ์ของคุณ";
@@ -2437,9 +2431,6 @@
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "อัพเกรดเป็นวิวัฒนาการ";
-
-/* No comment provided by engineer. */
-"Upgrading to DashPay" = "อัพเกรดเป็น DashPay";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
