@@ -55,7 +55,16 @@ class UsernameRequestDetailsViewController: UIViewController {
         } else if viewModel.masternodeKeys.isEmpty {
             vc = EnterVotingKeyViewController.controller()
         } else {
-            vc = CastVoteViewController.controller()
+            let id = viewModel.selectedRequest!.requestId
+            let votesLeft = viewModel.votesLeft(for: id)
+            print("VOTING: votesLeft: \(votesLeft)")
+            
+            if votesLeft <= 1 {
+                warnVotesLeft(votesLeft, for: id)
+                return
+            } else {
+                vc = CastVoteViewController.controller()
+            }
         }
         
         self.navigationController?.pushViewController(vc, animated: true)
@@ -63,6 +72,28 @@ class UsernameRequestDetailsViewController: UIViewController {
     
     private func setRequest(_ request: UsernameRequest) {
         viewModel.selectedRequest = request
+    }
+    
+    private func warnVotesLeft(_ left: Int, for requestId: String) {
+        guard left <= 1 else { return }
+        
+        let title = left == 0 ? NSLocalizedString("No votes left", comment: "Voting") : NSLocalizedString("One vote left", comment: "Voting")
+        let message = left == 0 ? String.localizedStringWithFormat(NSLocalizedString("You have already voted for this username %ld times. You cannot vote for it anymore.", comment: "Voting"), VotingConstants.maxVotes) : String.localizedStringWithFormat(NSLocalizedString("You have already voted for this username %ld times. You can only cast one more vote for this username.", comment: "Voting"), VotingConstants.maxVotes - 1)
+
+        showModalDialog(
+            style: .warning,
+            icon: .system("exclamationmark.triangle.fill"),
+            heading: title,
+            textBlock1: message,
+            positiveButtonText: NSLocalizedString("OK", comment: "") ,
+            positiveButtonAction: { [weak self] in
+                if left > 0 {
+                    let vc = CastVoteViewController.controller()
+                    self?.navigationController?.pushViewController(vc, animated: true)
+                }
+            },
+            negativeButtonText: left == 0 ? nil : NSLocalizedString("Cancel", comment: "")
+        )
     }
 }
 

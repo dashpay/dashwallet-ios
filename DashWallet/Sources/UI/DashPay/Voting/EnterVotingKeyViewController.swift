@@ -23,6 +23,7 @@ final class EnterVotingKeyViewController: UIViewController {
     private var votingKeyField: DashInputField!
     private var continueButton: ActionButton!
     private var viewModel: VotingViewModel = VotingViewModel.shared
+    private var isBlocking: Bool = false
 
     override func viewWillDisappear(_ animated: Bool) {
         votingKeyField.resignFirstResponder()
@@ -31,8 +32,10 @@ final class EnterVotingKeyViewController: UIViewController {
     }
     
     
-    static func controller() -> EnterVotingKeyViewController {
-        EnterVotingKeyViewController()
+    static func controller(blocking: Bool = false) -> EnterVotingKeyViewController {
+        let vc = EnterVotingKeyViewController()
+        vc.isBlocking = blocking
+        return vc
     }
 
     override func viewDidLoad() {
@@ -113,7 +116,7 @@ extension EnterVotingKeyViewController {
     
     private func continueButtonAction() {
         if viewModel.addMasternodeKey(key: votingKeyField.text) {
-            let vc = CastVoteViewController.controller()
+            let vc = CastVoteViewController.controller(blocking: self.isBlocking)
             
             if self.navigationController?.previousController is CastVoteViewController {
                 self.navigationController?.popViewController(animated: true)

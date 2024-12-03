@@ -223,6 +223,9 @@
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Ứng dụng %@ có thể nhận Master Public Key của bạn.  Nó có thể được dùng để theo dõi ví của bạn, nhưng nó không thể dùng để chuyển Dash.";
 
+/* Voting */
+"Approve" = "Approve";
+
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Are you sure you want to cancel this order?";
 
@@ -315,6 +318,9 @@
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Between Dash Wallet and your Coinbase account";
+
+/* Voting */
+"Block" = "Block";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "khối #%1$d của %2$d";
