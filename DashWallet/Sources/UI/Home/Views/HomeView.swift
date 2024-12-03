@@ -323,12 +323,12 @@ struct HomeViewContent<Content: View>: View {
                             .foregroundColor(Color.primary.opacity(0.5))
                             .padding(.top, 20)
                     } else {
-                        ForEach(viewModel.txItems, id: \.0.key) { key, value in
-                            Section(header: SectionHeader(key)
+                        ForEach(viewModel.txItems) { group in
+                            Section(header: SectionHeader(key: group.id, date: group.date)
                                 .padding(.bottom, -24)
                             ) {
                                 VStack(spacing: 0) {
-                                    ForEach(value, id: \.id) { txItem in
+                                    ForEach(group.items, id: \.id) { txItem in
                                         TransactionPreviewFrom(txItem: txItem)
                                             .padding(.horizontal, 5)
                                     }
@@ -394,19 +394,19 @@ struct HomeViewContent<Content: View>: View {
     }
 
     @ViewBuilder
-    private func SectionHeader(_ dateKey: DateKey) -> some View {
+    private func SectionHeader(key: String, date: Date) -> some View {
         VStack {
             Spacer()
             
             HStack {
-                Text(dateKey.key)
+                Text(key)
                     .font(.footnote)
                     .fontWeight(.medium)
                     .padding(.leading, 15)
                 
                 Spacer()
                 
-                Text(DWDateFormatter.sharedInstance.dayOfWeek(from: dateKey.date))
+                Text(DWDateFormatter.sharedInstance.dayOfWeek(from: date))
                     .font(.footnote)
                     .foregroundStyle(Color.tertiaryText)
                     .padding(.trailing, 15)
@@ -425,13 +425,13 @@ struct HomeViewContent<Content: View>: View {
         txItem txDataItem: TransactionListDataItem
     ) -> some View {
         switch txDataItem {
-        case .crowdnode(let txItems):
+        case .crowdnode(let set):
             TransactionPreview(
                 title: NSLocalizedString("CrowdNode · Account", comment: "Crowdnode"),
-                subtitle: txItems.last?.shortTimeString ?? "",
-                topText: String(format: NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), txItems.count),
+                subtitle: set.transactions.values.first?.formattedShortTxTime ?? "",
+                topText: String(format: NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactions.count),
                 icon: .custom("tx.item.cn.icon"),
-                dashAmount: self.crowdNodeAmount(txItems)
+                dashAmount: set.amount
             ) {
                 self.selectedTxDataItem = txDataItem
             }
@@ -447,24 +447,6 @@ struct HomeViewContent<Content: View>: View {
             ) {
                 self.selectedTxDataItem = txDataItem
             }
-        }
-    }
-    
-    private func crowdNodeAmount(_ transactions: [Transaction]) -> Int64 {
-        return transactions.reduce(0) { partialResult, tx in
-            var r = partialResult
-            let direction = tx.direction
-
-            switch direction {
-            case .sent:
-                r -= Int64(tx.dashAmount)
-            case .received:
-                r += Int64(tx.dashAmount)
-            default:
-                break
-            }
-
-            return r
         }
     }
     
@@ -504,9 +486,9 @@ struct TransactionDetailsSheet: View {
         from txDataItem: TransactionListDataItem
     ) -> some View {
         switch txDataItem {
-        case .crowdnode(let txItems):
+        case .crowdnode(let set):
             CrowdNodeGroupedTransactionsScreen(
-                model: CNCreateAccountTxDetailsModel(transactions: txItems),
+                model: CNCreateAccountTxDetailsModel(transactions: set.transactions.values.map { Transaction(transaction: $0) }),
                 backNavigationRequested: $backNavigationRequested,
                 onShowBackButton: { show in
                     showBackButton = show

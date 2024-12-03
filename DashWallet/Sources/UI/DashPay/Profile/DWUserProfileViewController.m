@@ -31,7 +31,7 @@
 #import "DWUserProfileNavigationTitleView.h"
 #import "DWUserProfileSendRequestCell.h"
 #import "UICollectionView+DWDPItemDequeue.h"
-#import "UIViewController+DWTxFilter.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

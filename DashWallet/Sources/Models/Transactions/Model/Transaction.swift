@@ -84,6 +84,12 @@ class Transaction: TransactionDataItem, Identifiable {
 
     var state: State! { _state }
     private lazy var _state: State! = {
+//        let startTime = CFAbsoluteTimeGetCurrent()
+//        defer {
+//            let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+//            DSLogger.log("CoinJoin: Transaction state calculation took \(timeElapsed) seconds")
+//        }
+        
         if tx is DWTransactionStub {
             return .ok
         }
@@ -109,7 +115,7 @@ class Transaction: TransactionDataItem, Identifiable {
                 // should be very hard to get here, a miner would have to include a non standard transaction into a block
                 return .locked;
             } else if !instantSendReceived && confirms == 0 && !account!.transactionIsVerified(tx) {
-                return .processing;
+                return .processing
             }
             else if account!.transactionOutputsAreLocked(tx) {
                 return .locked;
@@ -127,7 +133,7 @@ class Transaction: TransactionDataItem, Identifiable {
             if !instantSendReceived
                 && confirms == 0
                 && !account!.transactionIsVerified(tx) {
-                return .processing;
+                return .processing
             }
         }
 

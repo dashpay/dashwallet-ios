@@ -30,7 +30,6 @@ public enum HomeTxDisplayMode: UInt {
     case rewards
 }
 
-@MainActor
 class HomeViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     private let queue = DispatchQueue(label: "HomeViewModel", qos: .userInitiated)
@@ -41,7 +40,10 @@ class HomeViewModel: ObservableObject {
         return HomeViewModel()
     }()
     
-    @Published private(set) var txItems: Array<(DateKey, [TransactionListDataItem])> = []
+    private var txByHash: [String: TransactionListDataItem] = [:]
+    private var crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
+    
+    @Published private(set) var txItems: [TransactionGroup] = []
     @Published var shortcutItems: [ShortcutAction] = []
     @Published private(set) var coinJoinItem = CoinJoinMenuItemModel(title: NSLocalizedString("Mixing", comment: "CoinJoin"), isOn: false, state: .notStarted, progress: 0.0, mixed: 0.0, total: 0.0)
     @Published var showTimeSkewAlertDialog: Bool = false
@@ -100,62 +102,112 @@ class HomeViewModel: ObservableObject {
         
         NotificationCenter.default.publisher(for: .DSTransactionManagerTransactionStatusDidChange)
             .sink { [weak self] notification in
-                self?.onTransactionStatusChanged(notification: notification)
+                if let tx = notification.userInfo?[DSTransactionManagerNotificationTransactionKey] as? DSTransaction {
+                    self?.onTransactionStatusChanged(tx: tx)
+                }
             }
             .store(in: &cancellableBag)
     }
     
+    // This is expensive and should not be called often
     private func reloadTxDataSource() {
-        queue.async { [weak self] in
+        self.queue.async { [weak self] in
             guard let self = self else { return }
             let wallet = DWEnvironment.sharedInstance().currentWallet
             let transactions = wallet.allTransactions
+            self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
             
-            let crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
             var items: [TransactionListDataItem] = transactions.compactMap {
-                if crowdNodeTxSet.isComplete { return .tx(Transaction(transaction: $0)) }
+                if self.crowdNodeTxSet.isComplete { return .tx(Transaction(transaction: $0)) }
                 
-                return crowdNodeTxSet.tryInclude(tx: $0) ? nil : .tx(Transaction(transaction: $0))
+                return self.crowdNodeTxSet.tryInclude(tx: $0) ? nil : .tx(Transaction(transaction: $0))
+            }
+
+            self.txByHash.removeAll()
+            items.forEach { item in
+                self.txByHash[item.id] = item
             }
 
             if !crowdNodeTxSet.transactions.isEmpty {
-                let crowdNodeTxs: [Transaction] = crowdNodeTxSet.transactions.values
-                    .map { Transaction(transaction: $0) }
-                
-                items.insert(.crowdnode(crowdNodeTxs), at: 0)
+                let item: TransactionListDataItem = .crowdnode(crowdNodeTxSet)
+                items.insert(item, at: 0)
+                self.txByHash[FullCrowdNodeSignUpTxSet.id] = item
             }
 
             let groupedItems = Dictionary(
                 grouping: items.sorted(by: { $0.date > $1.date }),
-                by: { DateKey(key: DWDateFormatter.sharedInstance.dateOnly(from: $0.date), date: $0.date) }
+                by: { DWDateFormatter.sharedInstance.dateOnly(from: $0.date) }
             )
             
-            let arary = groupedItems.sorted(by: { kv1, kv2 in
-                kv1.key.date > kv2.key.date
-            })
+            let array = groupedItems.map { key, items in
+                TransactionGroup(id: key, date: items.first!.date, items: items)
+            }.sorted { $0.date > $1.date }
 
             DispatchQueue.main.async {
-                self.txItems = arary
+                self.txItems = array
             }
         }
     }
     
-    private func onTransactionStatusChanged(notification: Notification) {
-        if let tx = notification.userInfo?[DSTransactionManagerNotificationTransactionKey] as? DSTransaction {
-            let txHash = tx.txHashHexString
-            let date = tx.date
-            
-            if let changes = notification.userInfo?[DSTransactionManagerNotificationTransactionChangesKey] as? [String: Any] {
-                let accepted = changes[DSTransactionManagerNotificationTransactionAcceptedStatusKey] as? NSNumber
-                let lockVerified = changes[DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey] as? NSNumber
-                let lock = changes[DSTransactionManagerNotificationInstantSendTransactionLockKey] as? DSInstantSendTransactionLock
-                
-                DSLogger.log("CoinJoin: Transaction status changed - Hash: \(txHash), Date: \(date), Accepted: \(String(describing: accepted)), Lock Verified: \(String(describing: lockVerified)), Has Lock: \(lock != nil)")
+    private func onTransactionStatusChanged(tx: DSTransaction) {
+        self.queue.async { [weak self] in
+            guard let self = self else { return }
+            var itemId = tx.txHashHexString
+            var isCrowdNode = false
+
+            if self.crowdNodeTxSet.tryInclude(tx: tx) {
+                itemId = FullCrowdNodeSignUpTxSet.id
+                isCrowdNode = true
             }
-            
-            self.reloadTxDataSource()
+
+            let txItem: TransactionListDataItem = isCrowdNode ? .crowdnode(self.crowdNodeTxSet) : .tx(Transaction(transaction: tx))
+            let dateKey = DWDateFormatter.sharedInstance.dateOnly(from: txItem.date)
+
+            if let existingItem = self.txByHash[itemId] {
+                // Updating existing item
+                self.txByHash[itemId] = txItem
+                var isChanged = true
+                
+                if case let .tx(existingTx) = existingItem, case let .tx(newTx) = txItem {
+                    isChanged = newTx.state != existingTx.state
+                }
+                
+                if isChanged {
+                    if let groupIndex = self.txItems.firstIndex(where: { $0.id == dateKey }),
+                        let itemIndex = self.txItems[groupIndex].items.firstIndex(where: { $0.id == itemId }) {
+                        DispatchQueue.main.async {
+                            self.txItems[groupIndex].items[itemIndex] = txItem
+                        }
+                    }
+                }
+            } else {
+                // New item
+                self.txByHash[itemId] = txItem
+                
+                if let groupIndex = self.txItems.firstIndex(where: { $0.id == dateKey }) {
+                    // Add to an existing date group
+                    DispatchQueue.main.async {
+                        self.txItems[groupIndex].items.append(txItem)
+                        self.txItems[groupIndex].items.sort { $0.date > $1.date }
+                    }
+                } else {
+                    // Create a new date group
+                    let newGroup = TransactionGroup(id: dateKey, date: txItem.date, items: [txItem])
+                    let insertIndex = self.txItems.firstIndex(where: { $0.date < txItem.date })
+                        
+                    DispatchQueue.main.async {
+                        if let index = insertIndex {
+                            self.txItems.insert(newGroup, at: index)
+                        } else {
+                            self.txItems.append(newGroup)
+                        }
+                    }
+                }
+            }
         }
     }
+
+    
 
 //    private func reloadTxDataSource() {
 //        queue.async { [weak self] in
@@ -258,6 +310,7 @@ class HomeViewModel: ObservableObject {
 //    }
     
     
+    @MainActor
     func checkTimeSkew(force: Bool = false) {
         Task {
             let (isTimeSkewed, timeSkew) = await getDeviceTimeSkew(force: force)
@@ -406,25 +459,28 @@ extension HomeViewModel {
 
 // MARK: - TransactionListDataItem
 
+class TransactionGroup: Identifiable {
+    let id: String
+    let date: Date
+    var items: [TransactionListDataItem]
+    
+    init(id: String, date: Date, items: [TransactionListDataItem]) {
+        self.id = id
+        self.date = date
+        self.items = items
+    }
+}
+
 enum TransactionListDataItem {
     case tx(Transaction)
-    case crowdnode([Transaction])
+    case crowdnode(FullCrowdNodeSignUpTxSet)
 }
 
 extension TransactionListDataItem: Identifiable {
-    var tx: Transaction {
-        switch self {
-        case .crowdnode(let txs):
-            return txs.first!
-        case .tx(let tx):
-            return tx
-        }
-    }
-    
     var id: String {
         switch self {
-        case .crowdnode(let txs):
-            return txs.first!.txHashHexString
+        case .crowdnode(_):
+            return FullCrowdNodeSignUpTxSet.id
         case .tx(let tx):
             return tx.txHashHexString
         }
@@ -432,29 +488,10 @@ extension TransactionListDataItem: Identifiable {
     
     var date: Date {
         switch self {
-        case .crowdnode(let txs):
-            return txs.last!.date
+        case .crowdnode(let set):
+            return set.transactions.values.first!.date
         case .tx(let tx):
             return tx.date
         }
-    }
-}
-
-struct DateKey: Hashable {
-    let key: String
-    let date: Date
-    
-    static func == (lhs: DateKey, rhs: DateKey) -> Bool {
-        return lhs.key == rhs.key
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(key)
-    }
-}
-
-extension FullCrowdNodeSignUpTxSet {
-    var isComplete: Bool {
-        transactions.count == 5
     }
 }

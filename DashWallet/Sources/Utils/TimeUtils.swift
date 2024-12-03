@@ -20,7 +20,7 @@ class TimeUtils {
             }
 
             connection.send(content: message, completion: .contentProcessed({ error in
-                if let error = error {
+                if error != nil {
                     connection.cancel()
                     continuation.resume(returning: nil)
                     return
@@ -29,7 +29,7 @@ class TimeUtils {
                 connection.receive(minimumIncompleteLength: 48, maximumLength: 48) { content, _, _, error in
                     defer { connection.cancel() }
                     
-                    if let error = error {
+                    if error != nil {
                         continuation.resume(returning: nil)
                         return
                     }
@@ -60,7 +60,6 @@ class TimeUtils {
         
         // Check if we can use the cached skew
         if !force && (lastTimeWhenSkewChecked + 60_000 > currentTimeMillis) {
-            print("CoinJoin: timeskew: \(lastTimeSkew); using last value")
             return lastTimeSkew
         }
         
@@ -104,7 +103,6 @@ class TimeUtils {
                 }
             }
             
-            print("CoinJoin: timeskew: network time is \(String(describing: networkTime))")
             guard networkTime != nil else {
                 throw NSError(domain: "TimeUtils", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to get network time"])
             }

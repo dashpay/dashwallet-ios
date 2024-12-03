@@ -16,11 +16,17 @@
 //
 
 final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
+    static let id = "FullCrowdNodeSignUpTxSet"
     private let savedAccountAddress = CrowdNodeDefaults.shared.accountAddress
     private let januaryFirst2022 = 1640995200.0 // Safe to assume there weren't any CrowdNode accounts before this point
     private var matchedFilters: [CoinsToAddressTxFilter] = []
 
     var transactions: [Data: DSTransaction] = [:]
+    private(set) var amount: Int64 = 0
+    
+    var isComplete: Bool {
+        transactions.count == 5
+    }
 
     var welcomeToApiResponse: CoinsToAddressTxFilter? {
         matchedFilters.first { filter in
@@ -55,6 +61,7 @@ final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
         let txHashData = tx.txHashData
 
         if transactions[txHashData] != nil {
+            transactions[txHashData] = tx
             // Already included, return true
             return true
         }
@@ -73,6 +80,15 @@ final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
         if let matchedFilter = crowdNodeTxFilters.first(where: { $0.matches(tx: tx) }) {
             transactions[txHashData] = tx
             matchedFilters.append(matchedFilter)
+            
+            switch tx.direction {
+            case .sent:
+                amount -= Int64(tx.dashAmount)
+            case .received:
+                amount += Int64(tx.dashAmount)
+            default:
+                break
+            }
 
             return true
         }
