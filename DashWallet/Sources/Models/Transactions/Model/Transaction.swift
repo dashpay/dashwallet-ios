@@ -84,11 +84,11 @@ class Transaction: TransactionDataItem, Identifiable {
 
     var state: State! { _state }
     private lazy var _state: State! = {
-//        let startTime = CFAbsoluteTimeGetCurrent()
-//        defer {
-//            let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
-//            DSLogger.log("CoinJoin: Transaction state calculation took \(timeElapsed) seconds")
-//        }
+                let startTime = CFAbsoluteTimeGetCurrent()
+                defer {
+                    let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+                    DSLogger.log("CoinJoin: Transaction state calculation took \(timeElapsed) seconds")
+                }
         
         if tx is DWTransactionStub {
             return .ok
@@ -105,7 +105,7 @@ class Transaction: TransactionDataItem, Identifiable {
         let processingInstantSend = tx.hasUnverifiedInstantSendLock
         let confirmed = tx.confirmed
         let confirms = (tx.blockHeight > blockHeight) ? 0 : (blockHeight - tx.blockHeight) + 1
-
+        
         if (direction == .sent || direction == .moved)
             && confirms == 0
             && !account!.transactionIsValid(tx) {
@@ -113,14 +113,12 @@ class Transaction: TransactionDataItem, Identifiable {
         } else if direction == .received {
             if !instantSendReceived && confirms == 0 && account!.transactionIsPending(tx) {
                 // should be very hard to get here, a miner would have to include a non standard transaction into a block
-                return .locked;
+                return .locked
             } else if !instantSendReceived && confirms == 0 && !account!.transactionIsVerified(tx) {
                 return .processing
-            }
-            else if account!.transactionOutputsAreLocked(tx) {
-                return .locked;
-            }
-            else if !instantSendReceived && !confirmed {
+            } else if account!.transactionOutputsAreLocked(tx) {
+                return .locked
+            } else if !instantSendReceived && !confirmed {
                 let transactionAge = NSDate().timeIntervalSince1970 - tx
                     .timestamp // we check the transaction age, as we might still be waiting on a transaction lock, 1 second seems like a good wait time
                 if confirms == 0 && (processingInstantSend || transactionAge < 1.0) {
@@ -129,15 +127,11 @@ class Transaction: TransactionDataItem, Identifiable {
                     return .confirming
                 }
             }
-        } else if direction != .notAccountFunds {
-            if !instantSendReceived
-                && confirms == 0
-                && !account!.transactionIsVerified(tx) {
-                return .processing
-            }
+        } else if direction == .notAccountFunds || instantSendReceived || confirms > 0 {
+            return .ok
         }
-
-        return .ok
+        
+        return account!.transactionIsVerified(tx) ? .ok : .processing
     }()
 
     private lazy var _shortDateString: String = tx.formattedShortTxDate
