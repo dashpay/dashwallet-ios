@@ -17,6 +17,8 @@
 
 import Foundation
 
+let kConfirmationThreshold = Double(30 * 60)
+
 // MARK: - Transaction
 
 class Transaction: TransactionDataItem, Identifiable {
@@ -81,25 +83,32 @@ class Transaction: TransactionDataItem, Identifiable {
 
     var transactionType: `Type` { _transactionType }
     private lazy var _transactionType: `Type` = tx.type
+    
+    private var startTime = 0.0
 
     var state: State! { _state }
     private lazy var _state: State! = {
-                let startTime = CFAbsoluteTimeGetCurrent()
-                defer {
-                    let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
-                    DSLogger.log("CoinJoin: Transaction state calculation took \(timeElapsed) seconds")
-                }
+        startTime = CFAbsoluteTimeGetCurrent()
+        defer {
+            let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+            DSLogger.log("CoinJoin: Transaction state calculation took \(timeElapsed) seconds")
+            
+            if timeElapsed >= 0.1 {
+                DSLogger.log("CoinJoin: Too Long, confirmations: \(tx.confirmations), blockHeight: \(tx.blockHeight), timestamp: \(tx.timestamp)")
+            }
+        }
         
         if tx is DWTransactionStub {
             return .ok
         }
         
         let chain = DWEnvironment.sharedInstance().currentChain
-        let currentAccount = DWEnvironment.sharedInstance().currentAccount;
+        let currentAccount = DWEnvironment.sharedInstance().currentAccount
         let account = tx.accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
         if account == nil {
             return .invalid
         }
+        
         let blockHeight = chain.lastTerminalBlockHeight
         let instantSendReceived = tx.instantSendReceived
         let processingInstantSend = tx.hasUnverifiedInstantSendLock
@@ -108,15 +117,15 @@ class Transaction: TransactionDataItem, Identifiable {
         
         if (direction == .sent || direction == .moved)
             && confirms == 0
-            && !account!.transactionIsValid(tx) {
+            && !isValid(account, tx) {
             return .invalid
         } else if direction == .received {
-            if !instantSendReceived && confirms == 0 && account!.transactionIsPending(tx) {
+            if !instantSendReceived && confirms == 0 && isPending(account, tx) {
                 // should be very hard to get here, a miner would have to include a non standard transaction into a block
                 return .locked
-            } else if !instantSendReceived && confirms == 0 && !account!.transactionIsVerified(tx) {
+            } else if !instantSendReceived && confirms == 0 && !isVerified(account, tx) {
                 return .processing
-            } else if account!.transactionOutputsAreLocked(tx) {
+            } else if outputsAreLocked(account, tx) {
                 return .locked
             } else if !instantSendReceived && !confirmed {
                 let transactionAge = NSDate().timeIntervalSince1970 - tx
@@ -131,8 +140,36 @@ class Transaction: TransactionDataItem, Identifiable {
             return .ok
         }
         
-        return account!.transactionIsVerified(tx) ? .ok : .processing
+        return isVerified(account, tx) ? .ok : .processing
     }()
+    
+    private func outputsAreLocked(_ account: DSAccount?, _ tx: DSTransaction) -> Bool {
+        return account!.transactionOutputsAreLocked(tx)
+    }
+
+    private func isPending(_ account: DSAccount?, _ tx: DSTransaction) -> Bool {
+        if tx.timestamp + kConfirmationThreshold < Date().timeIntervalSince1970 {
+            return false
+        }
+
+        return account!.transactionIsPending(tx)
+    }
+
+    private func isVerified(_ account: DSAccount?, _ tx: DSTransaction) -> Bool {
+        if tx.timestamp + kConfirmationThreshold < Date().timeIntervalSince1970 {
+            return true
+        }
+
+        return account!.transactionIsVerified(tx)
+    }
+    
+    private func isValid(_ account: DSAccount?, _ tx: DSTransaction) -> Bool {
+        if tx.timestamp + kConfirmationThreshold < Date().timeIntervalSince1970 {
+            return true
+        }
+        
+        return account!.transactionIsValid(tx)
+    }
 
     private lazy var _shortDateString: String = tx.formattedShortTxDate
     var date: Date

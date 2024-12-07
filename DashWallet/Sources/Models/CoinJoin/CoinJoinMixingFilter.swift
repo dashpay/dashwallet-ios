@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2024 Dash Core Group. All rights reserved.
 //
@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-class CoinJoinTxFilter: TransactionFilter {
+struct CoinJoinTxFilter: TransactionFilter {
     let type: CoinJoinTransactionType
     
     init(type: CoinJoinTransactionType) {
@@ -31,39 +31,3 @@ class CoinJoinTxFilter: TransactionFilter {
     static let mixingFee = CoinJoinTxFilter(type: CoinJoinTransactionType_MixingFee)
     static let mixing = CoinJoinTxFilter(type: CoinJoinTransactionType_Mixing)
 }
-
-// class CoinJoinTxFilter: TransactionFilter {
-//     let type: CoinJoinTransactionType
-    
-//     init(type: CoinJoinTransactionType) {
-//         self.type = type
-//     }
-    
-//     func matches(tx: DSTransaction) -> Bool {
-//         return DSCoinJoinWrapper.coinJoinTxType(for: tx) == self.type
-//     }
-// }
-
-// class CreateDenominationTxFilter: CoinJoinTxFilter {
-//     init() {
-//         super.init(type: CoinJoinTransactionType_CreateDenomination)
-//     }
-// }
-
-// class MakeCollateralTxFilter: CoinJoinTxFilter {
-//     init() {
-//         super.init(type: CoinJoinTransactionType_MakeCollateralInputs)
-//     }
-// }
-
-// class MixingFeeTxFilter: CoinJoinTxFilter {
-//     init() {
-//         super.init(type: CoinJoinTransactionType_MixingFee)
-//     }
-// }
-
-// class MixingTxFilter: CoinJoinTxFilter {
-//     init() {
-//         super.init(type: CoinJoinTransactionType_Mixing)
-//     }
-// }

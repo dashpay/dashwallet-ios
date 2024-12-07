@@ -21,7 +21,7 @@ public final class CrowdNodeTopUpTx: CoinsToAddressTxFilter {
     }
 
     override func matches(tx: DSTransaction) -> Bool {
-        tx.direction() == DSTransactionDirection.moved &&
+        tx.direction == DSTransactionDirection.moved &&
             super.matches(tx: tx)
     }
 }

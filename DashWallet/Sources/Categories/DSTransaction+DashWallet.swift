@@ -29,38 +29,6 @@ extension DSTransaction {
         let txDate = Date(timeIntervalSince1970: timestamp)
         return txDate;
     }
-
-    var dashAmount: UInt64 {
-        var amount: UInt64 = 0
-
-        let chain = DWEnvironment.sharedInstance().currentChain
-        let currentAccount = DWEnvironment.sharedInstance().currentAccount;
-        let account = accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
-
-        let direction = direction
-
-        switch direction {
-        case .notAccountFunds, .moved:
-            amount = 0
-        case .sent:
-            let amountSent = chain.amountSent(by: self)
-            let amountReceived = chain.amountReceived(from: self)
-
-            // NOTE: During the sync we may get an incorectly amount from DashSync.
-            if amountReceived > amountSent {
-                return UInt64.max
-            }
-
-            let fee = feeUsed == UInt64.max ? 0 : feeUsed
-            amount = amountSent - amountReceived - fee
-        case .received:
-            amount = account?.amountReceived(from: self) ?? 0
-        @unknown default:
-            fatalError()
-        }
-
-        return amount
-    }
 }
 
 extension DSTransaction {
@@ -80,10 +48,6 @@ extension DSTransaction {
         }
 
         return .classic;
-    }
-
-    var direction: DSTransactionDirection {
-        return chain.direction(of: self)
     }
 
     var outputReceiveAddresses: [String] {

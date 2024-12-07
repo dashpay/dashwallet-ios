@@ -436,6 +436,18 @@ struct HomeViewContent<Content: View>: View {
                 self.selectedTxDataItem = txDataItem
             }
             .frame(height: 80)
+    
+        case .coinjoin(let set):
+            TransactionPreview(
+                title: NSLocalizedString("CoinJoin Mixing", comment: "CoinJoin"),
+                subtitle: set.transactions.values.first?.formattedShortTxTime ?? "",
+                topText: String(format: NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactions.count),
+                icon: .custom("tx.item.cn.icon"), // TODO
+                dashAmount: set.amount
+            ) {
+//                self.selectedTxDataItem = txDataItem
+            }
+            .frame(height: 80)
             
         case .tx(let txItem):
             TransactionPreview(
@@ -488,6 +500,14 @@ struct TransactionDetailsSheet: View {
         switch txDataItem {
         case .crowdnode(let set):
             CrowdNodeGroupedTransactionsScreen(
+                model: CNCreateAccountTxDetailsModel(transactions: set.transactions.values.map { Transaction(transaction: $0) }),
+                backNavigationRequested: $backNavigationRequested,
+                onShowBackButton: { show in
+                    showBackButton = show
+                }
+            )
+        case .coinjoin(let set):
+            CrowdNodeGroupedTransactionsScreen( // TODO
                 model: CNCreateAccountTxDetailsModel(transactions: set.transactions.values.map { Transaction(transaction: $0) }),
                 backNavigationRequested: $backNavigationRequested,
                 onShowBackButton: { show in

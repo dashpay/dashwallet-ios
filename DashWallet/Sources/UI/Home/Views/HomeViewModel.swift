@@ -208,7 +208,6 @@ class HomeViewModel: ObservableObject {
     }
 
     
-
 //    private func reloadTxDataSource() {
 //        queue.async { [weak self] in
 //            guard let self = self else { return }
@@ -474,6 +473,7 @@ class TransactionGroup: Identifiable {
 enum TransactionListDataItem {
     case tx(Transaction)
     case crowdnode(FullCrowdNodeSignUpTxSet)
+    case coinjoin(CoinJoinMixingTxSet)
 }
 
 extension TransactionListDataItem: Identifiable {
@@ -481,6 +481,8 @@ extension TransactionListDataItem: Identifiable {
         switch self {
         case .crowdnode(_):
             return FullCrowdNodeSignUpTxSet.id
+        case .coinjoin(let set):
+            return set.id
         case .tx(let tx):
             return tx.txHashHexString
         }
@@ -490,6 +492,8 @@ extension TransactionListDataItem: Identifiable {
         switch self {
         case .crowdnode(let set):
             return set.transactions.values.first!.date
+        case .coinjoin(let set):
+            return set.groupDay
         case .tx(let tx):
             return tx.date
         }

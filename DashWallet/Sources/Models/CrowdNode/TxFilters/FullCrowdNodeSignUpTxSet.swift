@@ -81,11 +81,12 @@ final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
             transactions[txHashData] = tx
             matchedFilters.append(matchedFilter)
             
+            let dashAmount = tx.dashAmount
             switch tx.direction {
             case .sent:
-                amount -= Int64(tx.dashAmount)
+                amount -= Int64(dashAmount)
             case .received:
-                amount += Int64(tx.dashAmount)
+                amount += Int64(dashAmount)
             default:
                 break
             }

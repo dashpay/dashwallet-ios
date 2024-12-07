@@ -440,6 +440,9 @@
 /* CoinJoin */
 "CoinJoin" = "코인조인";
 
+/* CoinJoin */
+"CoinJoin Mixing" = "CoinJoin Mixing";
+
 /* No comment provided by engineer. */
 "Confirm" = "승인";
 

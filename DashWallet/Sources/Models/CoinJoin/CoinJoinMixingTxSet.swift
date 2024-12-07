@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2024 Dash Core Group. All rights reserved.
 //
@@ -15,42 +15,58 @@
 //  limitations under the License.
 //
 
-//final class CoinJoinMixingTxSet: TransactionWrapper {
-//    private var matchedFilters: [CoinJoinTxFilter] = []
-//
-//    var transactions: [Data: DSTransaction] = [:]
-//
-//    @discardableResult
-//    func tryInclude(tx: DSTransaction) -> Bool {
-//        if tx.timestamp < januaryFirst2022 {
-//            return false
-//        }
-//
-//        let txHashData = tx.txHashData
-//
-//        if transactions[txHashData] != nil {
-//            // Already included, return true
-//            return true
-//        }
-//
-//        var crowdNodeTxFilters = [
-//            CrowdNodeRequest(requestCode: ApiCode.signUp),
-//            CrowdNodeResponse(responseCode: ApiCode.welcomeToApi, accountAddress: nil),
-//            CrowdNodeRequest(requestCode: ApiCode.acceptTerms),
-//            CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms, accountAddress: nil),
-//        ]
-//
-//        if let accountAddress = savedAccountAddress {
-//            crowdNodeTxFilters.append(CrowdNodeTopUpTx(address: accountAddress))
-//        }
-//
-//        if let matchedFilter = crowdNodeTxFilters.first(where: { $0.matches(tx: tx) }) {
-//            transactions[txHashData] = tx
-//            matchedFilters.append(matchedFilter)
-//
-//            return true
-//        }
-//
-//        return false
-//    }
-//}
+final class CoinJoinMixingTxSet: TransactionWrapper {
+    private var matchedFilters: [CoinJoinTxFilter] = []
+    private let coinjoinTxFilters = [
+        CoinJoinTxFilter.createDenomination,
+        CoinJoinTxFilter.makeCollateral,
+        CoinJoinTxFilter.mixingFee,
+        CoinJoinTxFilter.mixing
+    ]
+    
+    private(set) var amount: Int64 = 0
+    var transactions: [Data: DSTransaction] = [:]
+    var id: String = "coinjoin"
+    var groupDay: Date = Date.now {
+        didSet {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            id = "coinjoin-\(dateFormatter.string(from: groupDay))"
+        }
+    }
+
+    @discardableResult
+    func tryInclude(tx: DSTransaction) -> Bool {
+        let txHashData = tx.txHashData
+
+        if transactions[txHashData] != nil {
+            transactions[txHashData] = tx
+            // Already included, return true
+            return true
+        }
+
+        if let matchedFilter = coinjoinTxFilters.first(where: { $0.matches(tx: tx) }) {
+            if transactions.isEmpty {
+                groupDay = tx.date
+            } else if !Calendar.current.isDate(tx.date, inSameDayAs: groupDay) {
+                return false
+            }
+            
+            transactions[txHashData] = tx
+            matchedFilters.append(matchedFilter)
+            
+            switch tx.direction {
+            case .sent:
+                amount -= Int64(tx.dashAmount)
+            case .received:
+                amount += Int64(tx.dashAmount)
+            default:
+                break
+            }
+
+            return true
+        }
+
+        return false
+    }
+}
