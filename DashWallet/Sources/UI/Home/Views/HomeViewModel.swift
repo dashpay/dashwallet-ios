@@ -98,7 +98,7 @@ class HomeViewModel: ObservableObject {
             self.reloadTxDataSource()
             self.reloadShortcuts()
         }
-        self.reloadTxDataSource();
+        self.reloadTxDataSource()
         self.reloadShortcuts()
         self.recalculateHeight()
 

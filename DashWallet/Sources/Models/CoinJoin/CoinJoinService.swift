@@ -400,6 +400,13 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
             }
             .store(in: &cancellableBag)
         
+        NotificationCenter.default.publisher(for: NSNotification.Name.DWWillWipeWallet)
+            .sink { _ in
+                UserDefaults.standard.set(CoinJoinMode.none.rawValue, forKey: kCoinJoinMainnetMode)
+                UserDefaults.standard.set(CoinJoinMode.none.rawValue, forKey: kCoinJoinTestnetMode)
+            }
+            .store(in: &cancellableBag)
+        
         SyncingActivityMonitor.shared.add(observer: self)
     }
     
