@@ -51,15 +51,31 @@ class HomeViewModel: ObservableObject {
     @Published var showJoinDashpay: Bool = true
     @Published var displayMode: HomeTxDisplayMode = .all {
         didSet {
-            // TODO
+            reloadTxDataSource()
         }
     }
     @Published private(set) var balanceHeaderHeight: CGFloat = kBaseBalanceHeaderHeight // TDOO: move back to HomeView when fully transitioned to SwiftUI
+    @Published private(set) var showReclassifyTransaction: DSTransaction? = nil
     
     private var model: SyncModel = SyncModelImpl()
     
     var coinJoinMode: CoinJoinMode {
         get { coinJoinService.mode }
+    }
+    
+    private var reclassifyTransactionsActivatedAt: Date {
+        get { DWGlobalOptions.sharedInstance().dateReclassifyYourTransactionsFlowActivated ?? Date() }
+    }
+    
+    private var shouldDisplayReclassifyTransaction: Bool {
+        get { DWGlobalOptions.sharedInstance().shouldDisplayReclassifyYourTransactionsFlow }
+        set(value) {
+            DWGlobalOptions.sharedInstance().shouldDisplayReclassifyYourTransactionsFlow = value
+            
+            if (!value) {
+                showReclassifyTransaction = nil
+            }
+        }
     }
     
     #if DASHPAY
@@ -107,6 +123,14 @@ class HomeViewModel: ObservableObject {
                 }
             }
             .store(in: &cancellableBag)
+        
+        NotificationCenter.default.publisher(for: Notification.Name.DSChainManagerSyncWillStart)
+            .sink { [weak self] _ in
+                if DWGlobalOptions.sharedInstance().isResyncingWallet {
+                    self?.reloadTxDataSource()
+                }
+            }
+            .store(in: &cancellableBag)
     }
     
     // This is expensive and should not be called often
@@ -118,9 +142,21 @@ class HomeViewModel: ObservableObject {
             self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
             
             var items: [TransactionListDataItem] = transactions.compactMap {
-                if self.crowdNodeTxSet.isComplete { return .tx(Transaction(transaction: $0)) }
+                Tx.shared.updateRateIfNeeded(for: $0)
                 
-                return self.crowdNodeTxSet.tryInclude(tx: $0) ? nil : .tx(Transaction(transaction: $0))
+                if self.displayMode == .sent && $0.direction != .sent {
+                    return nil
+                }
+                
+                if self.displayMode == .received && ($0.direction != .received || $0 is DSCoinbaseTransaction) {
+                    return nil
+                }
+                
+                if self.displayMode == .rewards && !($0 is DSCoinbaseTransaction) {
+                    return nil
+                }
+                
+                return !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: $0) ? nil : .tx(Transaction(transaction: $0))
             }
 
             self.txByHash.removeAll()
@@ -152,6 +188,20 @@ class HomeViewModel: ObservableObject {
     private func onTransactionStatusChanged(tx: DSTransaction) {
         self.queue.async { [weak self] in
             guard let self = self else { return }
+            
+            if self.displayMode == .sent && tx.direction != .sent {
+                return
+            }
+            
+            if self.displayMode == .received && (tx.direction != .received || tx is DSCoinbaseTransaction) {
+                return
+            }
+            
+            if self.displayMode == .rewards && !(tx is DSCoinbaseTransaction) {
+                return
+            }
+            
+            Tx.shared.updateRateIfNeeded(for: tx)
             var itemId = tx.txHashHexString
             var isCrowdNode = false
 
@@ -183,12 +233,14 @@ class HomeViewModel: ObservableObject {
             } else {
                 // New item
                 self.txByHash[itemId] = txItem
+                let shouldShowReclassify = self.shouldDisplayReclassifyTransaction && tx.date > reclassifyTransactionsActivatedAt
                 
                 if let groupIndex = self.txItems.firstIndex(where: { $0.id == dateKey }) {
                     // Add to an existing date group
                     DispatchQueue.main.async {
                         self.txItems[groupIndex].items.append(txItem)
                         self.txItems[groupIndex].items.sort { $0.date > $1.date }
+                        self.showReclassifyTransaction = shouldShowReclassify ? tx : nil
                     }
                 } else {
                     // Create a new date group
@@ -201,113 +253,12 @@ class HomeViewModel: ObservableObject {
                         } else {
                             self.txItems.append(newGroup)
                         }
+                        self.showReclassifyTransaction = shouldShowReclassify ? tx : nil
                     }
                 }
             }
         }
     }
-
-    
-//    private func reloadTxDataSource() {
-//        queue.async { [weak self] in
-//            guard let self = self else { return }
-//            let wallet = DWEnvironment.sharedInstance().currentWallet
-//            let transactions = wallet.allTransactions
-//            let transactions = wallet.allTransactions.sorted { tx1, tx2 in
-//                let val1 = tx1.timestamp
-//                let val2 = tx2.timestamp
-//                    
-//                switch (val1, val2) {
-//                    case (0, 0): return false
-//                    case (0, _): return true
-//                    case (_, 0): return false
-//                    default: return val1 > val2
-//                }
-//            }
-            
-//            var receivedNewTransaction = false
-//            var allowedToShowReclassifyYourTransactions = false
-//            var shouldAnimate = true
-            
-//            let prevTransaction = self.allDataSource.first // TODO
-//            let newTransaction = transactions.first
-//            
-//            if prevTransaction == nil || prevTransaction === newTransaction {
-//                shouldAnimate = false
-//            }
-//            
-//            if let newTransaction = newTransaction, prevTransaction !== newTransaction {
-//                receivedNewTransaction = true
-//                
-//                let dateReclassifyYourTransactionsFlowActivated = DWGlobalOptions.shared().dateReclassifyYourTransactionsFlowActivated
-//                allowedToShowReclassifyYourTransactions = newTransaction.transactionDate.compare(dateReclassifyYourTransactionsFlowActivated) == .orderedDescending
-//            }
-            
-//            transactions.forEach { tx in TODO: separate thread?
-//                Tx.shared.updateRateIfNeeded(for: tx)
-//            }
-            
-//            self.allDataSource = transactions
-//            self.receivedDataSource = nil
-//            self.sentDataSource = nil
-            
-            // Pre-filter while in background queue
-//            switch self.displayMode {
-//            case .received:
-//                _ = self.receivedDataSource
-//            case .sent:
-//                _ = self.sentDataSource
-//            case .rewards:
-//                _ = self.rewardsDataSource
-//            default:
-//                break
-//            }
-            
-//            let datasource = self.dataSource
-//            
-//            DispatchQueue.main.async {
-//                self.setAllowedToShowReclassifyYourTransactions(allowedToShowReclassifyYourTransactions)
-//                
-//                if receivedNewTransaction {
-//                    // TODO: try to do for all transactions
-//                    if newTransaction?.direction == .received {
-//                        self.updatesObserver?.homeModel(self, didReceiveNewIncomingTransaction: newTransaction!)
-//                    }
-//                }
-//                self.updatesObserver?.homeModel(self, didUpdate: datasource, shouldAnimate: shouldAnimate)
-//            }
-//        }
-//    }
-    
-    
-    
-    // TODO
-//    - (NSArray<DSTransaction *> *)filterTransactions:(NSArray<DSTransaction *> *)allTransactions
-//                                      forDisplayMode:(DWHomeTxDisplayMode)displayMode {
-//        NSAssert(displayMode != DWHomeTxDisplayMode_All, @"All transactions should not be filtered");
-//        if (displayMode == DWHomeTxDisplayMode_All) {
-//            return allTransactions;
-//        }
-//
-//        DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-//        NSMutableArray<DSTransaction *> *mutableTransactions = [NSMutableArray array];
-//
-//        for (DSTransaction *tx in allTransactions) {
-//            uint64_t sent = [account amountSentByTransaction:tx];
-//            if (displayMode == DWHomeTxDisplayMode_Sent && sent > 0) {
-//                [mutableTransactions addObject:tx];
-//            }
-//            else if (displayMode == DWHomeTxDisplayMode_Received && sent == 0 && ![tx isKindOfClass:[DSCoinbaseTransaction class]]) {
-//                [mutableTransactions addObject:tx];
-//            }
-//            else if (displayMode == DWHomeTxDisplayMode_Rewards && sent == 0 && [tx isKindOfClass:[DSCoinbaseTransaction class]]) {
-//                [mutableTransactions addObject:tx];
-//            }
-//        }
-//
-//        return [mutableTransactions copy];
-//    }
-    
     
     @MainActor
     func checkTimeSkew(force: Bool = false) {
@@ -319,6 +270,12 @@ class HomeViewModel: ObservableObject {
                 timeSkewDialogShown = true
                 showTimeSkewAlertDialog = true
             }
+        }
+    }
+    
+    func reclassifyTransactionShown(isShown: Bool) {
+        if isShown {
+            shouldDisplayReclassifyTransaction = false
         }
     }
     

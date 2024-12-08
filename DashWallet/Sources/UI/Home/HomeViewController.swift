@@ -86,7 +86,6 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         }
 
         model.registerForPushNotifications()
-        showReclassifyYourTransactionsIfPossible(with: model.allDataSource.first)
         model.checkCrowdNodeState()
         model.checkVotingState()
     }
@@ -203,18 +202,11 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         homeView.model = model
     }
 
-    private func showReclassifyYourTransactionsIfPossible(with transaction: DSTransaction?) {
-        guard presentedViewController == nil else { return }
-
-        if model.isAllowedToShowReclassifyYourTransactions {
-            let vc = TxReclassifyTransactionsInfoViewController.controller()
-            vc.delegate = self
-            vc.transaction = transaction
-            DispatchQueue.main.async {
-                self.present(vc, animated: true, completion: nil)
-            }
-            DWGlobalOptions.sharedInstance().shouldDisplayReclassifyYourTransactionsFlow = false
-        }
+    private func showReclassifyTransaction(with transaction: DSTransaction?) {
+        let vc = TxReclassifyTransactionsInfoViewController.controller()
+        vc.delegate = self
+        vc.transaction = transaction
+        self.present(vc, animated: true, completion: nil)
     }
 
     private func presentTransactionDetails(_ transaction: DSTransaction) {
@@ -239,6 +231,16 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         
         NotificationCenter.default.publisher(for: .NSSystemClockDidChange)
             .sink { [weak self] _ in self?.viewModel.checkTimeSkew(force: true) }
+            .store(in: &cancellableBag)
+        
+        viewModel.$showReclassifyTransaction
+            .removeDuplicates()
+            .filter { $0 != nil }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] tx in
+                self?.showReclassifyTransaction(with: tx)
+                self?.viewModel.reclassifyTransactionShown(isShown: true)
+            }
             .store(in: &cancellableBag)
     }
     
@@ -314,10 +316,6 @@ extension HomeViewController: HomeViewDelegate {
         present(controller, animated: true, completion: nil)
     }
     
-    func homeView(_ homeView: HomeView, showReclassifyYourTransactionsFlowWithTransaction transaction: DSTransaction) {
-        showReclassifyYourTransactionsIfPossible(with: transaction)
-    }
-    
     #if DASHPAY
     func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt) {
         avatarView.blockchainIdentity = identity
@@ -332,7 +330,7 @@ extension HomeViewController: HomeViewDelegate {
 // MARK: - TxReclassifyTransactionsInfoViewControllerDelegate
 
 extension HomeViewController: TxReclassifyTransactionsInfoViewControllerDelegate {
-    func txReclassifyTransactionsFlowDidClosedWithUnderstanding(controller: TxReclassifyTransactionsInfoViewController, transaction: DSTransaction) {
+    func txReclassifyTransactionsFlowDidClose(controller: TxReclassifyTransactionsInfoViewController, transaction: DSTransaction) {
         presentTransactionDetails(transaction)
     }
 }

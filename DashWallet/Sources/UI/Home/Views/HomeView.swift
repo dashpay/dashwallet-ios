@@ -24,7 +24,6 @@ protocol HomeViewDelegate: AnyObject {
     func homeView(_ homeView: HomeView, showTxFilter sender: UIView)
     func homeView(_ homeView: HomeView, showSyncingStatus sender: UIView)
     func homeViewShowCoinJoin()
-    func homeView(_ homeView: HomeView, showReclassifyYourTransactionsFlowWithTransaction transaction: DSTransaction)
     
 #if DASHPAY
     func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt)
@@ -134,10 +133,6 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
     func homeModel(_ model: any DWHomeProtocol, didUpdate dataSource: [DSTransaction], shouldAnimate: Bool) {
         self.viewModel.reloadShortcuts()
         headerView.reloadBalance()
-    }
-
-    func homeModel(_ model: DWHomeProtocol, didReceiveNewIncomingTransaction transaction: DSTransaction) {
-        delegate?.homeView(self, showReclassifyYourTransactionsFlowWithTransaction: transaction)
     }
 
     func homeModelDidChangeInnerModels(_ model: DWHomeProtocol) {

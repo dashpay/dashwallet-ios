@@ -83,21 +83,9 @@ class Transaction: TransactionDataItem, Identifiable {
 
     var transactionType: `Type` { _transactionType }
     private lazy var _transactionType: `Type` = tx.type
-    
-    private var startTime = 0.0
 
     var state: State! { _state }
     private lazy var _state: State! = {
-        startTime = CFAbsoluteTimeGetCurrent()
-        defer {
-            let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
-            DSLogger.log("CoinJoin: Transaction state calculation took \(timeElapsed) seconds")
-            
-            if timeElapsed >= 0.1 {
-                DSLogger.log("CoinJoin: Too Long, confirmations: \(tx.confirmations), blockHeight: \(tx.blockHeight), timestamp: \(tx.timestamp)")
-            }
-        }
-        
         if tx is DWTransactionStub {
             return .ok
         }

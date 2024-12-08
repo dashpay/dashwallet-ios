@@ -34,9 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
         didUpdate:(NSArray<DSTransaction *> *)dataSource
     shouldAnimate:(BOOL)shouldAnimate;
 
-- (void)homeModel:(id<DWHomeProtocol>)model
-    didReceiveNewIncomingTransaction:(DSTransaction *)transaction;
-
 - (void)homeModelDidChangeInnerModels:(id<DWHomeProtocol>)model;
 - (void)homeModelWantToReloadShortcuts:(id<DWHomeProtocol>)model;
 - (void)homeModelWantToReloadVoting:(id<DWHomeProtocol>)model;

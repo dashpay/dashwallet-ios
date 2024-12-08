@@ -66,7 +66,6 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize dashPayModel = _dashPayModel;
 @synthesize updatesObserver = _updatesObserver;
 @synthesize allDataSource = _allDataSource;
-@synthesize allowedToShowReclassifyYourTransactions = _allowedToShowReclassifyYourTransactions;
 
 
 - (instancetype)init {
@@ -145,15 +144,6 @@ NS_ASSUME_NONNULL_BEGIN
     if (self.allDataSource) {
         [updatesObserver homeModel:self didUpdate:self.dataSource shouldAnimate:NO];
     }
-}
-
-- (void)setAllowedToShowReclassifyYourTransactions:(BOOL)value {
-    _allowedToShowReclassifyYourTransactions = value;
-}
-
-- (BOOL)isAllowedToShowReclassifyYourTransactions {
-    BOOL shouldDisplayReclassifyYourTransactionsFlow = [DWGlobalOptions sharedInstance].shouldDisplayReclassifyYourTransactionsFlow;
-    return _allowedToShowReclassifyYourTransactions && shouldDisplayReclassifyYourTransactionsFlow;
 }
 
 - (BOOL)isWalletEmpty {

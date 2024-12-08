@@ -22,8 +22,8 @@ import UIKit
 @objc
 protocol TxReclassifyTransactionsInfoViewControllerDelegate: AnyObject {
     @objc
-    func txReclassifyTransactionsFlowDidClosedWithUnderstanding(controller: TxReclassifyTransactionsInfoViewController,
-                                                                transaction: DSTransaction)
+    func txReclassifyTransactionsFlowDidClose(controller: TxReclassifyTransactionsInfoViewController,
+                                             transaction: DSTransaction)
 }
 
 // MARK: - TxReclassifyTransactionsInfoViewController
@@ -61,7 +61,7 @@ class TxReclassifyTransactionsInfoViewController: BasePageSheetViewController {
     @IBAction
     func iUndersandAction() {
         dismiss(animated: true) {
-            self.delegate?.txReclassifyTransactionsFlowDidClosedWithUnderstanding(controller: self, transaction: self.transaction)
+            self.delegate?.txReclassifyTransactionsFlowDidClose(controller: self, transaction: self.transaction)
         }
     }
 
