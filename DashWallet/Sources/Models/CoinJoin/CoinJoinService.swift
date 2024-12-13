@@ -147,10 +147,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
         
         if mode != .none && (force || mode != self.currentMode) {
             configureMixing(mode: mode)
-            
-            if self.currentMode == .none {
-                configureObservers()
-            }
+            configureObservers()
         } else if mode == .none {
             removeObservers()
         }
@@ -376,6 +373,8 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     }
     
     private func configureObservers() {
+        self.removeObservers()
+        
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
             .sink { [weak self] _ in
                 guard let self = self else { return }
@@ -476,4 +475,3 @@ extension CoinJoinService: SyncingActivityMonitorObserver {
         }
     }
 }
-
