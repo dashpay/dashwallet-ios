@@ -180,7 +180,9 @@ NS_ASSUME_NONNULL_BEGIN
 
                 for (NSURL *logFileURL in logFiles) {
                     NSData *logData = [NSData dataWithContentsOfURL:logFileURL];
-                    [mailComposer addAttachmentData:logData mimeType:@"text/plain" fileName:[logFileURL lastPathComponent]];
+                    NSString *fileName = [logFileURL lastPathComponent];
+                    NSString *mimeType = [fileName hasSuffix:@".gz"] ? @"application/gzip" : @"text/plain";
+                    [mailComposer addAttachmentData:logData mimeType:mimeType fileName:fileName];
                 }
 
                 [self presentViewController:mailComposer animated:YES completion:nil];
