@@ -186,7 +186,7 @@ static CGFloat const SMALL_PADDING = 12.0;
         self.contactView.hidden = YES;
     }
 #endif
-    
+
     self.detailLabel.textAlignment = model.detailAlignment;
 }
 

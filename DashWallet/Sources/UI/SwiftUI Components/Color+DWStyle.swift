@@ -54,6 +54,10 @@ extension Color {
         Color("Gray300")
     }
     
+    static var gray400: Color {
+        return Color("Gray400")
+    }
+    
     static var gray500: Color {
         Color("Gray500")
     }

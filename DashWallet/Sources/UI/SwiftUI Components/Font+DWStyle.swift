@@ -20,4 +20,5 @@ import SwiftUI
 extension Font {
     public static let subtitle1: Font = .system(size: 16, weight: .semibold)
     public static let body2: Font = .system(size: 14)
+    public static let h5Bold: Font = .system(size: 24, weight: .bold)
 }

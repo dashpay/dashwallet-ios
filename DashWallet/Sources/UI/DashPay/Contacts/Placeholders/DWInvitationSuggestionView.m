@@ -17,8 +17,8 @@
 
 #import "DWInvitationSuggestionView.h"
 
-#import "dashwallet-Swift.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 @implementation DWInvitationSuggestionView
 

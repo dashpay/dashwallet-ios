@@ -18,8 +18,8 @@
 #import <Foundation/Foundation.h>
 
 #import "DWDashPayProtocol.h"
-#import "DWTxDisplayModeProtocol.h"
 #import "DWDashPayReadyProtocol.h"
+#import "DWTxDisplayModeProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

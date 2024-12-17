@@ -160,9 +160,6 @@
 /* Usernames */
 "After the voting ends we will notify you about its results" = "投票終了後、投票結果をお知らせします";
 
-/* Usernames */
-"After voting is completed on %@ you can create any username that has not already been created" = "%@で投票が完了すると、まだ作成されていないユーザー名を作成することができます";
-
 /* No comment provided by engineer. */
 "Agree" = "同意する";
 
@@ -225,6 +222,9 @@
 
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = " %@ というアプリがあなたのマスターパブリックキーを要求しています。これはあなたのウォレットの記録を取るために使用されます。あなたのDashが他へ送金されることはありません。";
+
+/* Voting */
+"Approve" = "Approve";
 
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "この注文のキャンセルをしてもよろしいですか。";
@@ -304,14 +304,23 @@
 /* TimeSkew */
 "behind" = "behind";
 
+/* No comment provided by engineer. */
+"Beta" = "Beta";
+
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "%1$ld～%2$ld文字";
+
+/* Usernames */
+"Between 3 and 23 characters" = "Between 3 and 23 characters";
 
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase" = "DashウォレットとCoinbase間";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "DashウォレットとCoinbaseアカウント間";
+
+/* Voting */
+"Block" = "Block";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "ブロック #%1$d / %2$d";
@@ -446,9 +455,6 @@
 /* No comment provided by engineer. */
 "Confirm PIN" = "PINを確認する";
 
-/* Voting */
-"Confirm Username Request" = "ユーザー名の申請を確認する";
-
 /* No comment provided by engineer. */
 "Confirming" = "確認中";
 
@@ -509,6 +515,9 @@
 "Copy Logs" = "ログをコピーする";
 
 /* No comment provided by engineer. */
+"Copy text" = "Copy text";
+
+/* No comment provided by engineer. */
 "Copyright © 2023 Dash Core" = "Copyright © 2023 Dash Core";
 
 /* No comment provided by engineer. */
@@ -559,6 +568,9 @@
 
 /* No comment provided by engineer. */
 "Create Username" = "ユーザー名を作成";
+
+/* Usernames */
+"Create your username" = "Create your username";
 
 /* No comment provided by engineer. */
 "Create your Username, find friends & family with their usernames and add them to your contacts" = "ユーザー名を作成し、そのユーザー名で友達や家族を探し、連絡先に追加することができます。";
@@ -784,9 +796,6 @@
 /* CoinJoin */
 "Error ·" = "Error ·";
 
-/* Usernames */
-"Example post" = "投稿例";
-
 /* No comment provided by engineer. */
 "Exit" = "終了する";
 
@@ -1010,6 +1019,9 @@
 "I Accept" = "承認しました";
 
 /* No comment provided by engineer. */
+"I accept" = "I accept";
+
+/* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "もし復元フレーズを無くしたら、自分のコインが失われることに同意します";
 
 /* CrowdNode */
@@ -1080,9 +1092,6 @@
 
 /* Usernames */
 "In case you lose your passphrase you will lose your right to your requested username." = "パスフレーズを紛失した場合、お客様が請求したユーザー名を使用する権利を失います。";
-
-/* Usernames */
-"In case your request is not approved" = "お客様の請求が承認されない場合";
 
 /* CrowdNode Portal */
 "In process…" = "処理中";
@@ -1189,6 +1198,9 @@
 /* No comment provided by engineer. */
 "Invite your friends and family to the Dash Network" = "友達や家族をDashネットワークに招待する";
 
+/* No comment provided by engineer. */
+"iOS Dash Wallet: %@ Reported issue" = "iOS Dash Wallet: %@ Reported issue";
+
 /* CrowdNode */
 "It can take a minute for your balance to be updated." = "お客様の残高が更新されるまで、1分ほどかかる場合があります。";
 
@@ -1261,6 +1273,9 @@
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "友達や家族をDashネットワークに招待しましょう。ソーシャルバンクの世界へご招待します。";
+
+/* Usernames */
+"Letter, numbers and hyphens only" = "Letter, numbers and hyphens only";
 
 /* Validation rule */
 "Letters, numbers and hyphens only" = "英字、数字、ハイフンのみ";
@@ -1338,7 +1353,7 @@
 "Mainnet" = "Mainnet";
 
 /* Usernames */
-"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "よく知られたソーシャルメディアやメッセージングプラットフォームに、上記のテキスト（または類似のもの）を投稿し、お客様が申請されたユーザー名の元々の所有者であることを認証し、下記の投稿へのリンクを貼り付けます";
+"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "GPS許可を管理する";
@@ -1541,9 +1556,6 @@
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "一度%@があなたのリクエストを承認すると、ユーザー名に直接支払えるようになります。";
 
-/* Voting */
-"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "投票の終了後、まだ作成されていないユーザー名であれば、お好きなユーザー名を作成できます";
-
 /* Online */
 "Online" = "オンライン";
 
@@ -1578,7 +1590,7 @@
 "Owner Keys" = "所有者の諸々のキー";
 
 /* Usernames */
-"Paste the link" = "リンクを貼り付ける";
+"Past link here" = "Past link here";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "画像のURLを貼り付ける";
@@ -1591,9 +1603,6 @@
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "ユーザー名に直接支払う";
-
-/* Usernames */
-"Pay now and if not approved, you can create a different name without paying again" = "今すぐ支払いをして承認されなくても、再度支払うことなく別の名前を作成することができます";
 
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "ユーザー名に支払います。英数字のアドレスはもう必要ありません";
@@ -1687,6 +1696,12 @@
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "メールはDashウォレットには保存されず、CrowdNodeにのみ送信されることにご留意ください。";
+
+/* Usernames */
+"Please note that the username can NOT be changed once it is registered." = "Please note that the username can NOT be changed once it is registered.";
+
+/* Usernames */
+"Please note that you will not be able to change it in future" = "Please note that you will not be able to change it in future";
 
 /* Leftover balance warning */
 "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "残高を%@Dashに増加させない限り、CrowdNodeからこのウォレットに資金を引き出すことはできませんので、ご注意ください。";
@@ -1852,9 +1867,6 @@
 
 /* Voting */
 "Request details" = "詳細の申請";
-
-/* Voting */
-"Request Username" = "ユーザー名の申請";
 
 /* Voting */
 "Request your username" = "お客様のユーザー名を申請";
@@ -2221,7 +2233,7 @@
 "The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "Dashネットワークは多くのマスターノードで駆動され、決済を促進するのに不可欠な役割を担っています。";
 
 /* Usernames */
-"The Dash network must vote to approve your username before it is created." = "Dashネットワークでお客様のユーザー名が投票で承認されると、そのユーザー名が作成されます。";
+"The Dash network will vote on this username. We will notify you of the results on March 14, 2024." = "The Dash network will vote on this username. We will notify you of the results on March 14, 2024.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "このDashはお客様のCoinbaseアカウントに正常に入金されました。しかし、この端末でDashウォレットに送金する際に問題が発生しました。";
@@ -2230,7 +2242,7 @@
 "The image you select will be uploaded to Imgur anonymously." = "選択した画像は、匿名でImgurにアップロードされます。";
 
 /* Usernames */
-"The link you send will be visible to all of the Dash network." = "送信したリンクは、Dashネットワーク内のすべての人に公開されます。";
+"The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "送金可能な最小金額は、%@です";
@@ -2249,9 +2261,6 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "あなたの連絡先に名前%@に一致するユーザーはいません。";
-
-/* Usernames */
-"There was a network error, you can try again at no extra cost" = "ネットワークエラーが発生しました、追加料金なしで再試行できます";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "取引履歴をZenLedgerにエクスポートする際に、エラーが発生しました";
@@ -2280,8 +2289,11 @@
 /* CrowdNode */
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "これは、現在のフル・マスターノードの年間利回りから15%のCrowdNode手数料を差し引いたものです。これは保証された還元率ではなく、CrowdNodeプールの規模やDashの価格によって上下する可能性があります。";
 
-/* Voting */
-"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "このユーザー名はすでに申請されていますが、お客様も同じものを申請でき、ネットワークの投票によってユーザー名の使用可否が決定されます。";
+/* Usernames */
+"This username is already created by someone else" = "This username is already created by someone else";
+
+/* Usernames */
+"This username is blocked by the Dash Network" = "This username is blocked by the Dash Network";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "このウォレットは何も入っていないか、もしくは同期が終わっていません。復元フレーズがない場合は削除しないでください。";
@@ -2297,9 +2309,6 @@
 
 /* CoinJoin */
 "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
-
-/* Usernames */
-"To request a username on the Dash Network, you need to have more than %@ Dash" = "Dashネットワークでユーザー名を申請するには、%@以上のDashが必要です";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "ステーキングを開始するには、CrowdNodeにアカウントを作成するか、既存のアカウントに接続します。";
@@ -2359,9 +2368,6 @@
 
 /* An action */
 "Try again" = "もう一度お試しください";
-
-/* No comment provided by engineer. */
-"Try Again" = "再試行する";
 
 /* Alert title */
 "Turn device passcode on" = "端末のパスコードを有効に";
@@ -2480,6 +2486,9 @@
 /* No comment provided by engineer. */
 "Username available" = "ユーザー名は使用可能です";
 
+/* Usernames */
+"Username is available" = "Username is available";
+
 /* No comment provided by engineer. */
 "Username taken" = "ユーザー名を取得しました";
 
@@ -2567,9 +2576,6 @@
 /* No comment provided by engineer. */
 "Voting Keys" = "投票のキー";
 
-/* Usernames */
-"Voting will not be required forever" = "投票は永続的に不要";
-
 /* Voting */
 "Voting:" = "投票：";
 
@@ -2620,9 +2626,6 @@
 
 /* No comment provided by engineer. */
 "Welcome" = "ようこそ";
-
-/* Usernames */
-"Welcome to Dash Pay" = "Dash Payへようこそ";
 
 /* No comment provided by engineer. */
 "Welcome to DashPay" = "DashPayにようこそ";
@@ -2730,6 +2733,9 @@
 /* No comment provided by engineer. */
 "You cannot claim this invite since you already have a Dash username" = "すでにDashのユーザー名を持っているため、この招待状を請求できません。";
 
+/* Usernames */
+"You chose “%@” as your username." = "You chose “%@” as your username.";
+
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "現在、連絡先がありません";
 
@@ -2767,6 +2773,9 @@
 "You need at least %@ on your Dash Wallet" = "CrowdNodeの認証を進めるには、%@以上必要です。";
 
 /* Usernames */
+"You need to have more %@ Dash to create this username" = "You need to have more %@ Dash to create this username";
+
+/* Usernames */
 "You need to have more than %@ Dash to create a username" = "You need to have more than %@ Dash to create a username";
 
 /* CrowdNode */
@@ -2789,9 +2798,6 @@
 
 /* No comment provided by engineer. */
 "You should have at least %@ to proceed with the CrowdNode verification." = "CrowdNodeの認証を進めるには、%@以上必要です。 ";
-
-/* Usernames */
-"You should have more than %@ Dash to create a username" = "ユーザー名を作成するには、%@Dash以上必要です。";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "またブラウザーを使ってUpholdのウェブサイトからログアウトする必要もあります";

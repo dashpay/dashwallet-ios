@@ -41,9 +41,12 @@ struct ToastView: View {
             Text(text)
                 .font(.system(size: 14))
                 .lineSpacing(3)
-                .padding(.leading, 8)
+                .padding(.horizontal, 8)
                 .padding(.vertical, 12)
-            Spacer()
+            
+            if (actionText != nil && action != nil) || (closeButtonIcon != nil && closeAction != nil) {
+                Spacer()
+            }
             
             if let text = actionText, let action = action {
                 DashButton(text: text, style: .plain, size: .extraSmall, stretch: false, action: action)

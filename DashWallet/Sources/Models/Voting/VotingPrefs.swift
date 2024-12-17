@@ -51,7 +51,10 @@ class VotingPrefs {
     
     private var _votingEnabled: Bool? = nil
     var votingEnabled: Bool {
-        get { _votingEnabled ?? UserDefaults.standard.bool(forKey: kVotingEnabled) }
+        get {
+            let result = _votingEnabled ?? UserDefaults.standard.bool(forKey: kVotingEnabled)
+            return result
+        }
         set(value) {
             _votingEnabled = value
             UserDefaults.standard.set(value, forKey: kVotingEnabled)

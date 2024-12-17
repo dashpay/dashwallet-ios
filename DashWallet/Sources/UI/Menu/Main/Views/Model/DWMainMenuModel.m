@@ -47,27 +47,27 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super init];
     if (self) {
         NSMutableArray<id<DWMainMenuItem>> *items = [NSMutableArray array];
-        
+
         if (enabled) {
             [items addObject:[[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Invite]];
         }
-        
+
         if ([[DWEnvironment sharedInstance].currentChain isMainnet]) {
-            [items addObjectsFromArray:@[[[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_BuySellDash]]];
+            [items addObjectsFromArray:@[ [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_BuySellDash] ]];
         }
-        
+
         [items addObjectsFromArray:@[
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Explore],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Security],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Settings],
             [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Tools]
         ]];
-        
+
         if (votingEnabled) {
-            [items addObjectsFromArray:@[[[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Voting]]];
+            [items addObjectsFromArray:@[ [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Voting] ]];
         }
-        
-        [items addObjectsFromArray:@[[[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Support]]];
+
+        [items addObjectsFromArray:@[ [[DWMainMenuItemImpl alloc] initWithType:DWMainMenuItemType_Support] ]];
         _items = items;
     }
     return self;

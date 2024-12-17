@@ -167,8 +167,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)recoverWalletWithCurrentSeedPhrase {
     NSUInteger count = [self.textView.text wordsCount];
-    if (count < 10) { return; }
-    
+    if (count < 10) {
+        return;
+    }
+
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be deallocated immediately
         UITextView *textView = self.textView;
         NSString *phrase = textView.text;

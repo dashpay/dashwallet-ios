@@ -79,7 +79,7 @@ struct CoinJoinProgressInfo: View {
                     .padding(.leading, 4)
                 
                 Spacer()
-                Text("\(mixed, format: .number.precision(.fractionLength(0...3))) of \(total, format: .number.precision(.fractionLength(0...3)))") // TODO
+                Text("\(mixed, format: .number.precision(.fractionLength(0...3))) of \(total, format: .number.precision(.fractionLength(0...3)))")
                     .foregroundColor(textColor)
                     .font(font)
                 Image("icon_dash_currency")

@@ -151,15 +151,16 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)paymentControllerDidFinishTransaction:(PaymentController *_Nonnull)controller transaction:(DSTransaction *_Nonnull)transaction {
-    [self dismissViewControllerAnimated:true completion:^{
-        DWTxDetailModel *model = [[DWTxDetailModel alloc] initWithTransaction:transaction];
-        SuccessTxDetailViewController *vc = [[SuccessTxDetailViewController alloc] initWithModel:model];
-        vc.contactItem = self->_paymentController.contactItem;
-        vc.delegate = self;
-        [self presentViewController:vc
-                           animated:YES
-                         completion:nil];
-    }];
+    [self dismissViewControllerAnimated:true
+                             completion:^{
+                                 DWTxDetailModel *model = [[DWTxDetailModel alloc] initWithTransaction:transaction];
+                                 SuccessTxDetailViewController *vc = [[SuccessTxDetailViewController alloc] initWithModel:model];
+                                 vc.contactItem = self->_paymentController.contactItem;
+                                 vc.delegate = self;
+                                 [self presentViewController:vc
+                                                    animated:YES
+                                                  completion:nil];
+                             }];
 }
 
 - (UIViewController *_Nonnull)presentationAnchorForPaymentController:(PaymentController *_Nonnull)controller {

@@ -18,15 +18,21 @@
 import UIKit
 
 final class UsernameRequestCell: UITableViewCell {
+    var onApproveTapped: ((UsernameRequest) -> Void)?
+    var onBlockTapped: ((UsernameRequest) -> Void)?
     var model: UsernameRequest?
     
-    private let bullet: UIView = {
+    private var dateCenterConstraint: NSLayoutConstraint?
+    private var dateTopConstraint: NSLayoutConstraint?
+    private var usernameCenterConstraint: NSLayoutConstraint?
+    private var usernameTopConstraint: NSLayoutConstraint?
+    
+    private var containerView: UIView = {
         let view = UIView()
-        view.backgroundColor = .dw_label()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-    
+
     private let dateCreated: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -35,30 +41,48 @@ final class UsernameRequestCell: UITableViewCell {
         return label
     }()
     
-    private let linkBadge: UIImageView = {
-        let image = UIImageView(image: UIImage(named: "link.badge"))
-        image.contentMode = .scaleAspectFit
-        image.translatesAutoresizingMaskIntoConstraints = false
-        return image
-    }()
-    
-    private let votes: UILabel = {
+    private let username: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.dw_regularFont(ofSize: 12)
-        label.textColor = UIColor.dw_tertiaryText()
+        label.font = UIFont.dw_mediumFont(ofSize: 13)
+        label.textColor = UIColor.dw_label()
         return label
     }()
     
-    private let votesBadge: UIView = {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.layer.cornerRadius = 10
-        view.layer.borderWidth = 1
-        view.clipsToBounds = true
-        view.layer.borderColor = UIColor.dw_separatorLine().cgColor
-        return view
+    private let linkLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont.dw_regularFont(ofSize: 12)
+        label.textColor = .dw_dashBlue()
+        return label
     }()
+    
+    private let approveButton: VoteButton = {
+        let button = VoteButton()
+        button.selectedBackgroundColor = .dw_dashBlue()
+        button.buttonText = NSLocalizedString("Approve", comment: "Voting")
+        button.value = 0
+        return button
+    }()
+    
+    private let blockButton: VoteButton = {
+        let button = VoteButton()
+        button.selectedBackgroundColor = .dw_red()
+        button.buttonText = NSLocalizedString("Block", comment: "Voting")
+        button.value = 0
+        return button
+    }()
+    
+    @objc private func approveButtonTapped() {
+        guard let model else { return }
+        onApproveTapped?(model)
+    }
+    
+    @objc private func blockButtonTapped() {
+        guard let model else { return }
+        onBlockTapped?(model)
+    }
+    
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -73,59 +97,141 @@ final class UsernameRequestCell: UITableViewCell {
 
 private extension UsernameRequestCell {
     func configureLayout() {
-        contentView.addSubview(dateCreated)
-        contentView.addSubview(bullet)
-        contentView.addSubview(linkBadge)
-        contentView.addSubview(votesBadge)
-        votesBadge.addSubview(votes)
+        contentView.addSubview(containerView)
+
+        containerView.addSubview(dateCreated)
+        containerView.addSubview(username)
+        containerView.addSubview(linkLabel)
+        containerView.addSubview(approveButton)
+        containerView.addSubview(blockButton)
+        approveButton.addTarget(self, action: #selector(approveButtonTapped), for: .touchUpInside)
+        blockButton.addTarget(self, action: #selector(blockButtonTapped), for: .touchUpInside)
         
         NSLayoutConstraint.activate([
-            contentView.heightAnchor.constraint(equalToConstant: 44),
+            dateCreated.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 15),
+            dateCreated.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
             
-            bullet.heightAnchor.constraint(equalToConstant: 3),
-            bullet.widthAnchor.constraint(equalToConstant: 3),
-            bullet.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            bullet.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
+            username.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 15),
             
-            votesBadge.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            votesBadge.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
+            linkLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 15),
+            linkLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            linkLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -8),
+
+            approveButton.heightAnchor.constraint(equalToConstant: 35),
+            approveButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 65),
+            approveButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            approveButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -8),
             
-            votes.topAnchor.constraint(equalTo: votesBadge.topAnchor, constant: 3),
-            votes.leadingAnchor.constraint(equalTo: votesBadge.leadingAnchor, constant: 6),
-            votes.trailingAnchor.constraint(equalTo: votesBadge.trailingAnchor, constant: -6),
-            votes.bottomAnchor.constraint(equalTo: votesBadge.bottomAnchor, constant: -3),
-            
-            linkBadge.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            linkBadge.trailingAnchor.constraint(equalTo: votesBadge.leadingAnchor, constant: -5),
-            
-            dateCreated.topAnchor.constraint(equalTo: contentView.topAnchor),
-            dateCreated.leadingAnchor.constraint(equalTo: bullet.trailingAnchor, constant: 8),
-            dateCreated.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            dateCreated.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            blockButton.heightAnchor.constraint(equalToConstant: 35),
+            blockButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 65),
+            blockButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            blockButton.trailingAnchor.constraint(equalTo: approveButton.leadingAnchor, constant: -8)
         ])
     }
 }
 
 extension UsernameRequestCell {
-    func configure(withModel model: UsernameRequest) {
+    func configure(withModel model: UsernameRequest, isInGroup: Bool = true) {
         self.model = model
-        let unixTimestamp = TimeInterval(model.createdAt)
-        let date = Date(timeIntervalSince1970: unixTimestamp)
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd MMM yyyy · H:mm"
-        let formattedDate = dateFormatter.string(from: date)
-        self.dateCreated.text = formattedDate
-        linkBadge.isHidden = model.link == nil
-        votes.text = String(describing: model.votes)
+        
+        dateCenterConstraint?.isActive = false
+        dateTopConstraint?.isActive = false
+        usernameCenterConstraint?.isActive = false
+        usernameTopConstraint?.isActive = false
+
+        if isInGroup {
+            containerView.backgroundColor = .clear
+            containerView.layer.cornerRadius = 10
+            contentView.backgroundColor = .clear
+
+            containerView.layer.borderWidth = 0.5
+            containerView.layer.borderColor = UIColor.dw_separatorLine().cgColor
+            
+            NSLayoutConstraint.activate([
+                contentView.heightAnchor.constraint(equalToConstant: 56),
+                containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4),
+                containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
+                containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
+                containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -4),
+            ])
+            
+            if model.link == nil {
+                dateCenterConstraint = dateCreated.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+                dateCenterConstraint?.isActive = true
+            } else {
+                dateTopConstraint = dateCreated.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 11)
+                dateTopConstraint?.isActive = true
+            }
+            
+            let unixTimestamp = TimeInterval(model.createdAt)
+            let date = Date(timeIntervalSince1970: unixTimestamp)
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "dd MMM yyyy"
+            let timeFormatter = DateFormatter()
+            timeFormatter.dateFormat = "H:mm"
+
+            let dateString = dateFormatter.string(from: date)
+            let timeString = timeFormatter.string(from: date)
+            
+            let attributedString = NSMutableAttributedString(string: dateString)
+            attributedString.append(NSAttributedString(string: " \(timeString)", attributes: [.foregroundColor: UIColor.dw_tertiaryText()]))
+            self.dateCreated.attributedText = attributedString
+            self.username.isHidden = true
+            self.blockButton.isHidden = true
+        } else {
+            containerView.backgroundColor = .dw_background()
+            containerView.layer.cornerRadius = 10
+            contentView.backgroundColor = .dw_secondaryBackground()
+
+            containerView.layer.borderWidth = 0
+            containerView.layer.borderColor = nil
+            
+            NSLayoutConstraint.activate([
+                contentView.heightAnchor.constraint(equalToConstant: 64),
+                containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
+                containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+                containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+                containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -15),
+            ])
+            
+            if model.link == nil {
+                usernameCenterConstraint = username.centerYAnchor.constraint(equalTo: contentView.centerYAnchor, constant: -8)
+                usernameCenterConstraint?.isActive = true
+            } else {
+                usernameTopConstraint = username.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8)
+                usernameTopConstraint?.isActive = true
+            }
+            
+            self.username.text = model.username
+            self.username.isHidden = false
+            self.dateCreated.isHidden = true
+            self.blockButton.value = model.blockVotes
+            self.approveButton.value = model.votes
+            self.blockButton.isHidden = false
+        }
+        
+        let attachment = NSTextAttachment()
+        attachment.image = UIImage(named: "link.badge")?.withRenderingMode(.alwaysTemplate)
+        attachment.bounds = CGRect(x: 0, y: -3, width: 14, height: 14)
+        let linkAttributedString = NSMutableAttributedString(attachment: attachment)
+        linkAttributedString.append(NSAttributedString(string: " link included"))
+        linkLabel.attributedText = linkAttributedString
+        linkLabel.isHidden = model.link == nil
         
         if model.isApproved {
-            votesBadge.backgroundColor = .dw_dashBlue()
-            votesBadge.layer.borderColor = UIColor.dw_dashBlue().cgColor
-            votes.textColor = .white
+            approveButton.isSelected = true
+            approveButton.buttonText = NSLocalizedString("Approvals", comment: "Voting")
         } else {
-            votesBadge.backgroundColor = nil
-            votesBadge.layer.borderColor = UIColor.dw_separatorLine().cgColor
-            votes.textColor = .dw_tertiaryText()
+            approveButton.isSelected = false
+            approveButton.buttonText = NSLocalizedString("Approve", comment: "Voting")
+        }
+        
+        if model.blockVotes > 0 {
+            blockButton.isSelected = true
+            blockButton.buttonText = NSLocalizedString("Unblock", comment: "Voting")
+        } else {
+            blockButton.isSelected = false
+            blockButton.buttonText = NSLocalizedString("Block", comment: "Voting")
         }
     }
 }

@@ -154,7 +154,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     self.dateHistoricalRatesActivated = nil;
     self.exploreDashMerchantsInfoShown = NO;
     self.coinbaseInfoShown = NO;
-    
+
 #ifdef DASHPAY
     self.dashpayUsername = nil;
     self.dashpayRegistrationCompleted = NO;

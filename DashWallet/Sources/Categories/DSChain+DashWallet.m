@@ -20,9 +20,9 @@
 #import "DSChainsManager.h"
 #import "DSCheckpoint.h"
 #import "DSMasternodeManager.h"
+#import "DSSimplifiedMasternodeEntry.h"
 #import "NSDate+Utils.h"
 #import <objc/runtime.h>
-#import "DSSimplifiedMasternodeEntry.h"
 
 
 NS_ASSUME_NONNULL_BEGIN
@@ -91,17 +91,18 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
         return nil;
 
     DSMasternodeList *masternodeList = self.chainManager.masternodeManager.currentMasternodeList;
-  
+
     if (masternodeList.validMasternodeCount == 0)
         return nil;
-    
+
     NSInteger virtualMNCount = 0;
 
     for (DSSimplifiedMasternodeEntry *entry in masternodeList.simplifiedMasternodeEntries) {
         if (entry.isValid) {
             if (entry.type == 1) { // HPMN
                 virtualMNCount += 4;
-            } else {
+            }
+            else {
                 virtualMNCount += 1;
             }
         }
@@ -188,14 +189,14 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
         // Activated but we have to wait for the next cycle to start realocation, nothing to do
         return ret;
     }
-    
+
     if ([self isCore20ActiveAtHeight:height]) {
         // Once MNRewardReallocated activates, block reward is 80% of block subsidy (+ tx fees) since treasury is 20%
         // Since the MN reward needs to be equal to 60% of the block subsidy (according to the proposal), MN reward is set to 75% of the block reward.
         // Previous reallocation periods are dropped.
         return blockReward * 3 / 4;
     }
-    
+
     NSUInteger reallocCycle = superblockCycle * 3;
     NSUInteger nCurrentPeriod = MIN((height - reallocStart) / reallocCycle, periodsCount - 1);
     return (blockReward * periods[nCurrentPeriod]) / 1000;

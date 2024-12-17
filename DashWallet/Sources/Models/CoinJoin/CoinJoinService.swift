@@ -91,6 +91,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     private var timeSkew: TimeInterval = 0
     private var savedBalance: UInt64 = 0
     private var workingChain: ChainType
+    private var currentSyncState: SyncingActivityMonitor.State = .unknown
 
     private var chainModeKey: String {
         get {
@@ -222,16 +223,13 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
         coinJoinManager.updateOptions(withAmount: balance)
         DSLogger.log("CoinJoin: total balance: \(balance)")
         let canDenominate = await coinJoinManager.doAutomaticDenominating(withDryRun: true)
-
         let coinJoinBalance = coinJoinManager.getBalance()
-        DSLogger.log("CoinJoin: mixed balance: \(coinJoinBalance.anonymized)")
-
-        let anonBalance = coinJoinManager.getAnonymizableBalance(withSkipDenominated: false, skipUnconfirmed: false)
-        DSLogger.log("CoinJoin: anonymizable balance \(anonBalance)")
-
-        let smallestDenomination = coinJoinManager.getSmallestDenomination()
+        DSLogger.log("CoinJoin: mixed balance: \(coinJoinBalance.anonymized), denomTrusted: \(coinJoinBalance.denominatedTrusted)")
+        let anonBalance = await coinJoinManager.calculateAnonymizableBalance(withSkipDenominated: false, skipUnconfirmed: false)
+        let minValue = await coinJoinManager.minimumAnonymizableBalance()
+        DSLogger.log("CoinJoin: anonymizable balance \(anonBalance), minValue: \(minValue)")
         let hasPartiallyMixedCoins = (coinJoinBalance.denominatedTrusted - coinJoinBalance.anonymized) > 0
-        let hasAnonymizableBalance = anonBalance > smallestDenomination
+        let hasAnonymizableBalance = anonBalance > minValue
         let hasBalanceLeftToMix: Bool
         
         if hasPartiallyMixedCoins {
@@ -242,7 +240,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
             hasBalanceLeftToMix = false
         }
 
-        DSLogger.log("CoinJoin: can mix balance: \(hasBalanceLeftToMix) = balance: (\(anonBalance > smallestDenomination) && canDenominate: \(canDenominate)) || partially-mixed: \(hasPartiallyMixedCoins)")
+        DSLogger.log("CoinJoin: can mix balance: \(hasBalanceLeftToMix) = balance: (\(anonBalance > minValue) && canDenominate: \(canDenominate)) || partially-mixed: \(hasPartiallyMixedCoins)")
 
         updateState(
             mode: self.currentMode,
@@ -415,26 +413,26 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
 }
 
 extension CoinJoinService: DSCoinJoinManagerDelegate {
-    func sessionStarted(withId baseId: Int32, clientSessionId clientId: UInt256, denomination denom: UInt32, poolState state: PoolState, poolMessage message: PoolMessage, ipAddress address: UInt128, isJoined joined: Bool) { }
+    func sessionStarted(withId baseId: Int32, clientSessionId clientId: UInt256, denomination denom: UInt32, poolState state: PoolState, poolMessage message: PoolMessage, poolStatus status: PoolStatus, ipAddress address: UInt128, isJoined joined: Bool) { }
     
-    func sessionComplete(withId baseId: Int32, clientSessionId clientId: UInt256, denomination denom: UInt32, poolState state: PoolState, poolMessage message: PoolMessage, ipAddress address: UInt128, isJoined joined: Bool) { }
+    func sessionComplete(withId baseId: Int32, clientSessionId clientId: UInt256, denomination denom: UInt32, poolState state: PoolState, poolMessage message: PoolMessage, poolStatus status: PoolStatus, ipAddress address: UInt128, isJoined joined: Bool) { }
     
     func mixingStarted() { }
     
-    func mixingComplete(_ withError: Bool, isInterrupted: Bool) {
+    func mixingComplete(_ withError: Bool, errorStatus: PoolStatus, isInterrupted: Bool) {
         if isInterrupted {
-            DSLogger.log("[SW] CoinJoin: Mixing Interrupted. \(progress)")
+            DSLogger.log("CoinJoin: Mixing Interrupted. \(progress)")
             updateMixingState(state: .notStarted)
             return
         }
         
         if withError {
-            DSLogger.log("[SW] CoinJoin: Mixing Error. \(progress)")
+            DSLogger.log("CoinJoin: Mixing Error. status: \(errorStatus), progress: \(progress)")
         } else {
-            DSLogger.log("[SW] CoinJoin: Mixing Complete. \(progress)")
+            DSLogger.log("CoinJoin: Mixing Complete. status: \(errorStatus), \(progress)")
         }
         
-        self.updateMixingState(state: withError ? .error : .finished) // TODO: paused?
+        self.updateMixingState(state: withError && errorStatus != PoolStatus_ErrNotEnoughFunds ? .error : .finished)
     }
     
     func transactionProcessed(withId txId: UInt256, type: CoinJoinTransactionType) {
@@ -446,12 +444,20 @@ extension CoinJoinService: SyncingActivityMonitorObserver {
     func syncingActivityMonitorProgressDidChange(_ progress: Double) { }
     
     func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
-        self.updateState(
-            mode: self.currentMode,
-            timeSkew: self.timeSkew,
-            hasAnonymizableBalance: self.hasAnonymizableBalance,
-            networkStatus: self.networkStatus,
-            chain: DWEnvironment.sharedInstance().currentChain
-        )
+        if state != currentSyncState {
+            currentSyncState = state
+            self.updateState(
+                mode: self.currentMode,
+                timeSkew: self.timeSkew,
+                hasAnonymizableBalance: self.hasAnonymizableBalance,
+                networkStatus: self.networkStatus,
+                chain: DWEnvironment.sharedInstance().currentChain
+            )
+        } else {
+            Task {
+                let balance = DWEnvironment.sharedInstance().currentAccount.balance
+                await self.updateBalance(balance: balance)
+            }
+        }
     }
 }

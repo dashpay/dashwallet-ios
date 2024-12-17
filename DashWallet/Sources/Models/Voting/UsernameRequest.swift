@@ -24,6 +24,7 @@ private typealias Expression = SQLite.Expression
 struct GroupedUsernames: Hashable {
     var username: String
     var requests: [UsernameRequest]
+    var votesForUsername: Int = 0
 }
 
 // MARK: - UsernameRequest
@@ -35,15 +36,17 @@ struct UsernameRequest: RowDecodable, Hashable {
     var identity: String
     var link: String?
     var votes: Int
+    var blockVotes: Int
     var isApproved: Bool
 
-    init(requestId: String, username: String, createdAt: Int64, identity: String, link: String?, votes: Int, isApproved: Bool) {
+    init(requestId: String, username: String, createdAt: Int64, identity: String, link: String?, votes: Int, blockVotes: Int, isApproved: Bool) {
         self.requestId = requestId
         self.username = username
         self.createdAt = createdAt
         self.identity = identity
         self.link = link
         self.votes = votes
+        self.blockVotes = blockVotes
         self.isApproved = isApproved
     }
 
@@ -54,6 +57,7 @@ struct UsernameRequest: RowDecodable, Hashable {
         self.identity = row[UsernameRequest.identity]
         self.link = row[UsernameRequest.link]
         self.votes = row[UsernameRequest.votes]
+        self.blockVotes = row[UsernameRequest.blockVotes]
         self.isApproved = row[UsernameRequest.isApproved]
     }
 }
@@ -66,6 +70,7 @@ extension UsernameRequest {
     static var createdAt: SQLite.Expression<Int64> { Expression<Int64>("createdAt") }
     static var identity: SQLite.Expression<String> { Expression<String>("identity") }
     static var votes: SQLite.Expression<Int> { Expression<Int>("votes") }
+    static var blockVotes: SQLite.Expression<Int> { Expression<Int>("blockVotes") }
     static var isApproved: SQLite.Expression<Bool> { Expression<Bool>("isApproved") }
     static var link: SQLite.Expression<String?> { .init("link") }
 }

@@ -160,9 +160,6 @@
 /* Usernames */
 "After the voting ends we will notify you about its results" = "Μετά τη λήξη της ψηφοφορίας θα σας ενημερώσουμε για τα αποτελέσματά της.";
 
-/* Usernames */
-"After voting is completed on %@ you can create any username that has not already been created" = "Μετά την ολοκλήρωση της ψηφοφορίας στο %@ μπορείτε να δημιουργήσετε οποιοδήποτε όνομα χρήστη που δεν έχει ήδη δημιουργηθεί.";
-
 /* No comment provided by engineer. */
 "Agree" = "Συμφωνώ";
 
@@ -225,6 +222,9 @@
 
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Η εφαρμογή %@ θέλει να λάβει το Κύριο Δημόσιο κλειδί σας. Αυτό μπορεί να χρησιμοποιηθεί για να παρακολουθείτε το πορτοφόλι σας, αυτό δεν μπορεί να χρησιμοποιηθεί για να μετακινήσετε τα Dash σας.";
+
+/* Voting */
+"Approve" = "Approve";
 
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Σίγουρα θέλετε να ακυρώσετε αυτή την παραγγελία;";
@@ -304,14 +304,23 @@
 /* TimeSkew */
 "behind" = "behind";
 
+/* No comment provided by engineer. */
+"Beta" = "Beta";
+
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "Ενδιάμεσα σε %1$ld και %2$ld χαρακτήρες";
+
+/* Usernames */
+"Between 3 and 23 characters" = "Between 3 and 23 characters";
 
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase" = "Μεταξύ Dash Wallet και Coinbase.";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Μεταξύ του Dash Wallet και του λογαριασμού σας στην Coinbase.";
+
+/* Voting */
+"Block" = "Block";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "μπλόκ #%1$d από %2$d";
@@ -446,9 +455,6 @@
 /* No comment provided by engineer. */
 "Confirm PIN" = "Επιβεβαίωση PIN";
 
-/* Voting */
-"Confirm Username Request" = "Επιβεβαίωση αίτησης για Όνομα Χρήστη";
-
 /* No comment provided by engineer. */
 "Confirming" = "Επιβεβαίωση";
 
@@ -509,6 +515,9 @@
 "Copy Logs" = "αντιγραφή αρχείων καταγραφής";
 
 /* No comment provided by engineer. */
+"Copy text" = "Copy text";
+
+/* No comment provided by engineer. */
 "Copyright © 2023 Dash Core" = "Copyright © 2023 Dash Core";
 
 /* No comment provided by engineer. */
@@ -559,6 +568,9 @@
 
 /* No comment provided by engineer. */
 "Create Username" = "Δημιουργία ονόματος χρήστη";
+
+/* Usernames */
+"Create your username" = "Create your username";
 
 /* No comment provided by engineer. */
 "Create your Username, find friends & family with their usernames and add them to your contacts" = "Δημιουργήστε το Όνομα Χρήστη σας, βρείτε φίλους και συγγενείς με τα ονόματα χρήστη τους και προσθέστε τους στις επαφές σας.";
@@ -784,9 +796,6 @@
 /* CoinJoin */
 "Error ·" = "Error ·";
 
-/* Usernames */
-"Example post" = "Παράδειγμα δημοσίευσης";
-
 /* No comment provided by engineer. */
 "Exit" = "Έξοδος";
 
@@ -1010,6 +1019,9 @@
 "I Accept" = "Αποδέχομαι";
 
 /* No comment provided by engineer. */
+"I accept" = "I accept";
+
+/* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Αποδέχομαι ότι θα χάσω τα νομίσματά μου εάν δεν διαθέτω πλέον τη φράση ανάκτησης";
 
 /* CrowdNode */
@@ -1080,9 +1092,6 @@
 
 /* Usernames */
 "In case you lose your passphrase you will lose your right to your requested username." = "Σε περίπτωση που χάσετε τον φράση πρόσβασής σας, θα χάσετε το δικαίωμα στο όνομα χρήστη σας.";
-
-/* Usernames */
-"In case your request is not approved" = "Σε περίπτωση που ο αίτημά σας δεν εγκριθεί.";
 
 /* CrowdNode Portal */
 "In process…" = "Σε εξέλιξη...";
@@ -1189,6 +1198,9 @@
 /* No comment provided by engineer. */
 "Invite your friends and family to the Dash Network" = "Προσκαλέστε τους φίλους και την οικογένειά σας στο Dash Network";
 
+/* No comment provided by engineer. */
+"iOS Dash Wallet: %@ Reported issue" = "iOS Dash Wallet: %@ Reported issue";
+
 /* CrowdNode */
 "It can take a minute for your balance to be updated." = "Μπορεί να χρειαστεί ένα λεπτό για να ενημερωθεί το υπόλοιπό σας.";
 
@@ -1261,6 +1273,9 @@
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Αφήστε τους φίλους και την συγγενείς σας να ενταχθούν στο Dash Network. Προσκαλέστε τους στον κόσμο της κοινωνικής τραπεζικής.";
+
+/* Usernames */
+"Letter, numbers and hyphens only" = "Letter, numbers and hyphens only";
 
 /* Validation rule */
 "Letters, numbers and hyphens only" = "Μόνο γράμματα, αριθμοί και παύλες";
@@ -1338,7 +1353,7 @@
 "Mainnet" = "Mainnet";
 
 /* Usernames */
-"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "Κάντε μια ανάρτηση με το παραπάνω κείμενο (ή κάτι παρόμοιο) σε ένα γνωστό μέσο κοινωνικής δικτύωσης ή σε μια πλατφόρμα ανταλλαγής μηνυμάτων για να επαληθεύσετε ότι είστε ο αρχικός κάτοχος του ζητούμενου ονόματος χρήστη και επικολλήστε έναν σύνδεσμο στην παρακάτω ανάρτηση.";
+"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "Διαχείριση άδειας GPS";
@@ -1541,9 +1556,6 @@
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Μόλις ο/η %@ αποδεχτεί το αίτημα σας, θα μπορείτε να πληρώσετε απευθείας στο όνομα χρήστη";
 
-/* Voting */
-"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "Μόλις τελειώσει η ψηφοφορία, μπορείτε να δημιουργήσετε όποιο όνομα χρήστη θέλετε, εφόσον δεν έχει ήδη δημιουργηθεί.";
-
 /* Online */
 "Online" = "Online";
 
@@ -1578,7 +1590,7 @@
 "Owner Keys" = "Κλειδιά Κατόχου";
 
 /* Usernames */
-"Paste the link" = "Επικολλήστε τον σύνδεσμο";
+"Past link here" = "Past link here";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "Επικολλήστε τη διεύθυνση URL της εικόνας σας";
@@ -1591,9 +1603,6 @@
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "Πληρώστε απευθείας στο όνομα χρήστη";
-
-/* Usernames */
-"Pay now and if not approved, you can create a different name without paying again" = "Πληρώστε τώρα και αν δεν εγκριθεί, μπορείτε να δημιουργήσετε ένα διαφορετικό όνομα χωρίς να πληρώσετε ξανά.";
 
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "Πληρωμή σε ονόματα χρηστών. Όχι άλλες αλφαριθμητικές διευθύνσεις";
@@ -1687,6 +1696,12 @@
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Λάβετε υπόψη ότι το email δεν αποθηκεύεται από το Dash Wallet και αποστέλλεται μόνο στο Crowdnode";
+
+/* Usernames */
+"Please note that the username can NOT be changed once it is registered." = "Please note that the username can NOT be changed once it is registered.";
+
+/* Usernames */
+"Please note that you will not be able to change it in future" = "Please note that you will not be able to change it in future";
 
 /* Leftover balance warning */
 "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "Σημειώστε ότι δεν θα μπορείτε να κάνετε ανάληψη των χρημάτων σας από το CrowdNode σε αυτό το πορτοφόλι μέχρι να αυξήσετε το υπόλοιπό σας σε %@ Dash.";
@@ -1852,9 +1867,6 @@
 
 /* Voting */
 "Request details" = "Λεπτομέρειες αιτήματος";
-
-/* Voting */
-"Request Username" = "Αίτημα ονόματος χρήστη";
 
 /* Voting */
 "Request your username" = "Ζητήστε το όνομα χρήστη σας";
@@ -2221,7 +2233,7 @@
 "The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "Το δίκτυο Dash διευθύνεται από έναν αριθμό Masternodes, οι οποίοι αποτελούν βασικό μέρος της διεξαγωγής των πληρωμών.";
 
 /* Usernames */
-"The Dash network must vote to approve your username before it is created." = "Το Dash δίκτυο θα πρέπει να ψηφίσει για να εγκρίνει το όνομα χρήστη σας πριν δημιουργηθεί.";
+"The Dash network will vote on this username. We will notify you of the results on March 14, 2024." = "The Dash network will vote on this username. We will notify you of the results on March 14, 2024.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Τα Dash κατατέθηκαν επιτυχώς στο λογαριασμό σας στην Coinbase. Υπήρξε όμως πρόβλημα στη μεταφορά τους στο Dash Wallet σε αυτή τη συσκευή.";
@@ -2230,7 +2242,7 @@
 "The image you select will be uploaded to Imgur anonymously." = "Η εικόνα που επιλέγετε θα μεταφορτωθεί στο Imgur ανώνυμα.";
 
 /* Usernames */
-"The link you send will be visible to all of the Dash network." = "Ο σύνδεσμος που στέλνετε θα είναι ορατός σε όλο το δίκτυο Dash.";
+"The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "Το ελάχιστο ποσό που μπορείτε να στείλετε είναι %@";
@@ -2249,9 +2261,6 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "Δεν υπάρχουν χρήστες που να ταιριάζουν με το όνομα %@ στις επαφές σας";
-
-/* Usernames */
-"There was a network error, you can try again at no extra cost" = "Υπήρξε σφάλμα δικτύου, μπορείτε να προσπαθήσετε ξανά χωρίς επιπλέον κόστος";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "Υπήρξε σφάλμα κατά την εξαγωγή του ιστορικού των συναλλαγών σας στο ZenLedger";
@@ -2280,8 +2289,11 @@
 /* CrowdNode */
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "Αυτό αντιπροσωπεύει την τρέχουσα Ετήσια Ποσοστιαία Απόδοση ενός πλήρους Masternode μείον το τέλος CrowdNode 15%. Δεν αποτελεί εγγυημένο ποσοστό απόδοσης και μπορεί να αυξηθεί ή να μειωθεί ανάλογα με το μέγεθος των δεξαμενών CrowdNode και την τιμή του Dash.";
 
-/* Voting */
-"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "Αυτό το όνομα χρήστη έχει ήδη ζητηθεί, αλλά μπορείτε να το ζητήσετε κι εσείς και να αφήσετε το δίκτυο να ψηφίσει για να αποφασίσει αν μπορείτε να το έχετε.";
+/* Usernames */
+"This username is already created by someone else" = "This username is already created by someone else";
+
+/* Usernames */
+"This username is blocked by the Dash Network" = "This username is blocked by the Dash Network";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Αυτό το πορτοφόλι δεν είναι άδειο η ο συγχρονισμός δεν έχει ολοκληρωθεί , δεν θα πρέπει να το καθαρίσετε χωρίς την φράση ανάκτησης";
@@ -2297,9 +2309,6 @@
 
 /* CoinJoin */
 "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
-
-/* Usernames */
-"To request a username on the Dash Network, you need to have more than %@ Dash" = "Για να ζητήσετε ένα όνομα χρήστη στο δίκτυο Dash, θα πρέπει να έχετε περισσότερα από  %@  Dash";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "Για να ξεκινήσετε το staking, δημιουργήστε έναν λογαριασμό στο CrowdNode ή συνδεθείτε σε έναν ήδη υπάρχοντα.";
@@ -2359,9 +2368,6 @@
 
 /* An action */
 "Try again" = "Προσπαθήστε ξανά";
-
-/* No comment provided by engineer. */
-"Try Again" = "Προσπαθήστε ξανά";
 
 /* Alert title */
 "Turn device passcode on" = "Ενεργοποιήστε τον κωδικό πρόσβασης της συσκευής";
@@ -2480,6 +2486,9 @@
 /* No comment provided by engineer. */
 "Username available" = "Διαθέσιμο όνομα χρήστη";
 
+/* Usernames */
+"Username is available" = "Username is available";
+
 /* No comment provided by engineer. */
 "Username taken" = "Το όνομα χρήστη είναι κατειλημμένο";
 
@@ -2567,9 +2576,6 @@
 /* No comment provided by engineer. */
 "Voting Keys" = "Κλειδιά ψήφου";
 
-/* Usernames */
-"Voting will not be required forever" = "Η ψηφοφορία δεν θα απαιτείται για πάντα.";
-
 /* Voting */
 "Voting:" = "Ψηφοφορία:";
 
@@ -2620,9 +2626,6 @@
 
 /* No comment provided by engineer. */
 "Welcome" = "Καλώς ορίσατε";
-
-/* Usernames */
-"Welcome to Dash Pay" = "Καλώς ήρθατε στο Dash Pay";
 
 /* No comment provided by engineer. */
 "Welcome to DashPay" = "Καλώς ήρθατε στο DashPay";
@@ -2730,6 +2733,9 @@
 /* No comment provided by engineer. */
 "You cannot claim this invite since you already have a Dash username" = "Δεν μπορείτε να διεκδικήσετε αυτή την πρόσκληση αφού έχετε ήδη ένα όνομα χρήστη Dash.";
 
+/* Usernames */
+"You chose “%@” as your username." = "You chose “%@” as your username.";
+
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "Δεν έχετε επαφές αυτή τη στιγμή";
 
@@ -2767,6 +2773,9 @@
 "You need at least %@ on your Dash Wallet" = "Χρειάζεστε τουλάχιστον %@ στο Dash Wallet σας";
 
 /* Usernames */
+"You need to have more %@ Dash to create this username" = "You need to have more %@ Dash to create this username";
+
+/* Usernames */
 "You need to have more than %@ Dash to create a username" = "You need to have more than %@ Dash to create a username";
 
 /* CrowdNode */
@@ -2789,9 +2798,6 @@
 
 /* No comment provided by engineer. */
 "You should have at least %@ to proceed with the CrowdNode verification." = "Θα πρέπει να έχετε τουλάχιστον %@ για να προχωρήσετε στην επαλήθευση του CrowdNode.";
-
-/* Usernames */
-"You should have more than %@ Dash to create a username" = "Θα πρέπει να έχετε περισσότερα από %@  Dash για να δημιουργήσετε ένα όνομα χρήστη.";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Θα πρέπει επίσης να αποσυνδεθείτε από την ιστοσελίδα Uphold χρησιμοποιώντας το πρόγραμμα περιήγησης σας";

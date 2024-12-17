@@ -160,9 +160,6 @@
 /* Usernames */
 "After the voting ends we will notify you about its results" = "投票結束後，我們將通知您投票結果";
 
-/* Usernames */
-"After voting is completed on %@ you can create any username that has not already been created" = " %@ 的投票完成後，您可以建立任何尚未建立的使用者名稱";
-
 /* No comment provided by engineer. */
 "Agree" = "同意";
 
@@ -225,6 +222,9 @@
 
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "應用程式 %@ 想要取得您的主公鑰。 這可以用來追踪你的錢包結餘，但並不能動用你的達世幣。";
+
+/* Voting */
+"Approve" = "Approve";
 
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "您確定要取消此訂單嗎?";
@@ -304,14 +304,23 @@
 /* TimeSkew */
 "behind" = "behind";
 
+/* No comment provided by engineer. */
+"Beta" = "Beta";
+
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "在 %1$ld 和 %2$ld 個字符之間";
+
+/* Usernames */
+"Between 3 and 23 characters" = "Between 3 and 23 characters";
 
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase" = "在達世幣錢包和 Coinbase 之間。";
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "在達世幣錢包和您的 Coinbase 帳戶之間";
+
+/* Voting */
+"Block" = "Block";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "%2$d 中 #%1$d 的區塊";
@@ -446,9 +455,6 @@
 /* No comment provided by engineer. */
 "Confirm PIN" = "確認密碼";
 
-/* Voting */
-"Confirm Username Request" = "確認用戶名申请";
-
 /* No comment provided by engineer. */
 "Confirming" = "確認中";
 
@@ -509,6 +515,9 @@
 "Copy Logs" = "複製日誌";
 
 /* No comment provided by engineer. */
+"Copy text" = "Copy text";
+
+/* No comment provided by engineer. */
 "Copyright © 2023 Dash Core" = "版權所有 © 2023 Dash Core";
 
 /* No comment provided by engineer. */
@@ -559,6 +568,9 @@
 
 /* No comment provided by engineer. */
 "Create Username" = "建立用戶名稱";
+
+/* Usernames */
+"Create your username" = "Create your username";
 
 /* No comment provided by engineer. */
 "Create your Username, find friends & family with their usernames and add them to your contacts" = "創建您的用戶名，使用朋友和家人的用戶名來搜索並將他們添加到您的聯絡人列表中";
@@ -784,9 +796,6 @@
 /* CoinJoin */
 "Error ·" = "Error ·";
 
-/* Usernames */
-"Example post" = "範例貼文";
-
 /* No comment provided by engineer. */
 "Exit" = "退出";
 
@@ -1010,6 +1019,9 @@
 "I Accept" = "我接受";
 
 /* No comment provided by engineer. */
+"I accept" = "I accept";
+
+/* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "我同意如果我丟失恢復密語，我會丟失我的達世幣";
 
 /* CrowdNode */
@@ -1080,9 +1092,6 @@
 
 /* Usernames */
 "In case you lose your passphrase you will lose your right to your requested username." = "如果您遺失了密碼，您將失去所要求的用戶名稱的權利。";
-
-/* Usernames */
-"In case your request is not approved" = "如果您的申請未獲批准";
 
 /* CrowdNode Portal */
 "In process…" = "進行中…";
@@ -1189,6 +1198,9 @@
 /* No comment provided by engineer. */
 "Invite your friends and family to the Dash Network" = "邀請您的朋友和家人加入達世幣網絡";
 
+/* No comment provided by engineer. */
+"iOS Dash Wallet: %@ Reported issue" = "iOS Dash Wallet: %@ Reported issue";
+
 /* CrowdNode */
 "It can take a minute for your balance to be updated." = "您的餘額可能需要一分鐘後才能更新。";
 
@@ -1261,6 +1273,9 @@
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "讓您的朋友和家人加入達世幣網絡。邀請他們進入社交銀行的世界。";
+
+/* Usernames */
+"Letter, numbers and hyphens only" = "Letter, numbers and hyphens only";
 
 /* Validation rule */
 "Letters, numbers and hyphens only" = "僅限字母、數字和連字符";
@@ -1338,7 +1353,7 @@
 "Mainnet" = "Mainnet";
 
 /* Usernames */
-"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "在知名社交媒體或訊息平台上發布包含上述文字（或類似內容）的帖子，以驗證您是所請求用戶名的原始所有者，並將連結貼到下面的帖子";
+"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "管理 GPS 權限";
@@ -1541,9 +1556,6 @@
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "當 %@ 接受您的請求後，您就可以直接向用戶名付款";
 
-/* Voting */
-"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "投票結束後，您可以建立任何您想要的用戶名，只要尚未建立即可";
-
 /* Online */
 "Online" = "在線的";
 
@@ -1578,7 +1590,7 @@
 "Owner Keys" = "擁有者公鑰";
 
 /* Usernames */
-"Paste the link" = "貼上連結";
+"Past link here" = "Past link here";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "貼上您的圖片網址";
@@ -1591,9 +1603,6 @@
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "直接支付給用戶名";
-
-/* Usernames */
-"Pay now and if not approved, you can create a different name without paying again" = "立即付款，如果未獲批准，您可以建立不同的名稱，而無需再次付款";
 
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "以用戶名來支付。不再需要使用字母數字位址";
@@ -1687,6 +1696,12 @@
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "請注意，達世幣錢包不保存電子郵件，僅發送至 CrowdNode";
+
+/* Usernames */
+"Please note that the username can NOT be changed once it is registered." = "Please note that the username can NOT be changed once it is registered.";
+
+/* Usernames */
+"Please note that you will not be able to change it in future" = "Please note that you will not be able to change it in future";
 
 /* Leftover balance warning */
 "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "請注意，在您的餘額增加到 %@ Dash之前，您將無法將資金從 CrowdNode 提款到此錢包。";
@@ -1852,9 +1867,6 @@
 
 /* Voting */
 "Request details" = "索取詳情";
-
-/* Voting */
-"Request Username" = "申请用戶名";
 
 /* Voting */
 "Request your username" = "申请您的用戶名";
@@ -2221,7 +2233,7 @@
 "The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "達世幣網絡由許多主節點驅動，這是令支付更便捷的重要組成部分。";
 
 /* Usernames */
-"The Dash network must vote to approve your username before it is created." = "在創建用戶名之前，達世幣網路必須投票批准您的用戶名。";
+"The Dash network will vote on this username. We will notify you of the results on March 14, 2024." = "The Dash network will vote on this username. We will notify you of the results on March 14, 2024.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Dash 已成功存入您的 Coinbase 帳戶。但是將它轉移到此設備上的達世幣錢包時出現問題。";
@@ -2230,7 +2242,7 @@
 "The image you select will be uploaded to Imgur anonymously." = "您選擇的圖像將匿名上傳到 Imgur。";
 
 /* Usernames */
-"The link you send will be visible to all of the Dash network." = "您發送的連結將對整個達世幣網路可見。";
+"The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "您可以發送的最小金額是 %@";
@@ -2249,9 +2261,6 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "在您的通訊錄中沒有與名稱 %@ 匹配的用戶";
-
-/* Usernames */
-"There was a network error, you can try again at no extra cost" = "網路錯誤，您可以重試，無需額外費用";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "將交易歷史記錄匯出到 ZenLedger 時發生錯誤";
@@ -2280,8 +2289,11 @@
 /* CrowdNode */
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "這代表完整主節點的當前年度百分比收益率減去 15% 的 CrowdNode 費用。這不是保證回報率，可能會根據 CrowdNode 資金池的大小和達世幣價格而上升或下降。";
 
-/* Voting */
-"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "該用戶名已被要求，但您也可以要求它，並讓網路投票決定您是否可以擁有它";
+/* Usernames */
+"This username is already created by someone else" = "This username is already created by someone else";
+
+/* Usernames */
+"This username is blocked by the Dash Network" = "This username is blocked by the Dash Network";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "此錢包不是空的或同步尚未完成，如果沒有恢復詞組請不要進行擦除";
@@ -2297,9 +2309,6 @@
 
 /* CoinJoin */
 "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
-
-/* Usernames */
-"To request a username on the Dash Network, you need to have more than %@ Dash" = "要在達世幣網路上請求用戶名，您需要擁有超過 %@ 的達世幣";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "要開始質押，請在 CrowdNode 上創建一個帳戶或連接到現有帳戶。";
@@ -2359,9 +2368,6 @@
 
 /* An action */
 "Try again" = "再試一次";
-
-/* No comment provided by engineer. */
-"Try Again" = "再試一次";
 
 /* Alert title */
 "Turn device passcode on" = "在設備上開啟驗證碼";
@@ -2480,6 +2486,9 @@
 /* No comment provided by engineer. */
 "Username available" = "用戶名可用";
 
+/* Usernames */
+"Username is available" = "Username is available";
+
 /* No comment provided by engineer. */
 "Username taken" = "用戶名已被使用";
 
@@ -2567,9 +2576,6 @@
 /* No comment provided by engineer. */
 "Voting Keys" = "投票公鑰";
 
-/* Usernames */
-"Voting will not be required forever" = "永遠不需要投票";
-
 /* Voting */
 "Voting:" = "表決中：";
 
@@ -2620,9 +2626,6 @@
 
 /* No comment provided by engineer. */
 "Welcome" = "歡迎";
-
-/* Usernames */
-"Welcome to Dash Pay" = "歡迎使用 Dash Pay";
 
 /* No comment provided by engineer. */
 "Welcome to DashPay" = "歡迎來到 DashPay";
@@ -2730,6 +2733,9 @@
 /* No comment provided by engineer. */
 "You cannot claim this invite since you already have a Dash username" = "由於您已經有達世幣用戶名，因此您無法認領此邀請";
 
+/* Usernames */
+"You chose “%@” as your username." = "You chose “%@” as your username.";
+
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "您目前沒有任何聯絡人";
 
@@ -2767,6 +2773,9 @@
 "You need at least %@ on your Dash Wallet" = "您的達世幣錢包中至少需要 %@ 的 Dash";
 
 /* Usernames */
+"You need to have more %@ Dash to create this username" = "You need to have more %@ Dash to create this username";
+
+/* Usernames */
 "You need to have more than %@ Dash to create a username" = "You need to have more than %@ Dash to create a username";
 
 /* CrowdNode */
@@ -2789,9 +2798,6 @@
 
 /* No comment provided by engineer. */
 "You should have at least %@ to proceed with the CrowdNode verification." = "您應該至少有 %@ 才能繼續進行 CrowdNode 的驗證。";
-
-/* Usernames */
-"You should have more than %@ Dash to create a username" = "您應該擁有超過 %@ Dash 才能建立用戶名稱";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "您還需要從瀏覽器中登出Uphold網站";

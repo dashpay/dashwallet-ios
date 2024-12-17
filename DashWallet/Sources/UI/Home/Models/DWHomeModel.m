@@ -85,10 +85,10 @@ NS_ASSUME_NONNULL_BEGIN
         _syncMonitor = SyncingActivityMonitor.shared;
         [_syncMonitor addObserver:self];
 
-        
+
         _dataProvider = [[DWTransactionListDataProvider alloc] init];
 
-        
+
 #if DASHPAY
         _dashPayModel = [[DWDashPayModel alloc] init];
 #endif /* DASHPAY_ENABLED */
@@ -123,7 +123,7 @@ NS_ASSUME_NONNULL_BEGIN
                                selector:@selector(chainWalletsDidChangeNotification:)
                                    name:DSChainWalletsDidChangeNotification
                                  object:nil];
-        
+
         [notificationCenter addObserver:self
                                selector:@selector(willWipeWalletNotification)
                                    name:DWWillWipeWalletNotification
@@ -139,7 +139,7 @@ NS_ASSUME_NONNULL_BEGIN
                                    name:DWDashPayRegistrationStatusUpdatedNotification
                                  object:nil];
 #endif
-        
+
         [self reloadTxDataSource];
 
         NSDate *date = [NSDate new];
@@ -553,11 +553,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark SyncingActivityMonitorObserver
 
-- (void)syncingActivityMonitorProgressDidChange:(double)progress {}
+- (void)syncingActivityMonitorProgressDidChange:(double)progress {
+}
 
 - (void)syncingActivityMonitorStateDidChangeWithPreviousState:(enum SyncingActivityMonitorState)previousState state:(enum SyncingActivityMonitorState)state {
     BOOL isSynced = state == SyncingActivityMonitorStateSyncDone;
-    
+
     if (isSynced) {
         [self.dashPayModel updateUsernameStatus];
 
@@ -567,7 +568,7 @@ NS_ASSUME_NONNULL_BEGIN
             [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
 #endif
         }
-        
+
         [self checkCrowdNodeState];
     }
 
