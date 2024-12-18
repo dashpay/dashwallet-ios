@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWUserProfileSendRequestCell ()
 
 @property (readonly, nonatomic, strong) UILabel *textLabel;
-@property (readonly, nonatomic, strong) DWActionButton *sendRequestButton;
+@property (readonly, nonatomic, strong) DWDashButton *sendRequestButton;
 @property (readonly, nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
 
 @property (nullable, nonatomic, strong) NSLayoutConstraint *contentWidthConstraint;
@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_END
         textLabel.textAlignment = NSTextAlignmentCenter;
         _textLabel = textLabel;
 
-        DashButton *sendRequestButton = [[DashButton alloc] init];
+        DWDashButton *sendRequestButton = [[DWDashButton alloc] init];
         sendRequestButton.translatesAutoresizingMaskIntoConstraints = NO;
         [sendRequestButton setImage:[UIImage imageNamed:@"dp_send_request"] forState:UIControlStateNormal];
         [sendRequestButton setTitle:NSLocalizedString(@"Send Contact Request", nil) forState:UIControlStateNormal];
@@ -74,7 +74,7 @@ NS_ASSUME_NONNULL_END
         _sendRequestButton = sendRequestButton;
 
         // fire up activity indicator in advance to fix reuse issue
-        UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+        UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
         activityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
         activityIndicatorView.color = [UIColor dw_dashBlueColor];
         [activityIndicatorView startAnimating];

@@ -18,14 +18,17 @@
 import UIKit
 import SwiftUI
 
-class HomeViewController: DWBasePayViewController {
+class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     var model: DWHomeProtocol!
     private var homeView: HomeView!
     weak var delegate: (DWHomeViewControllerDelegate & DWWipeDelegate)?
 
     #if DASHPAY
+    var isBackButtonHidden: Bool = false
     private var invitationSetup: DWInvitationSetupState?
     private var avatarView: DWDPAvatarView!
+    #else
+    var isBackButtonHidden: Bool = true
     #endif
     
     override var payModel: any DWPayModelProtocol {
@@ -139,15 +142,9 @@ class HomeViewController: DWBasePayViewController {
             return
         }
 
-        let notificationsImage: UIImage?
-        if hasNotifications {
-            notificationsImage = UIImage(named: "icon_bell_active")
-        } else {
-            notificationsImage = UIImage(named: "icon_bell")
-        }
-
-        notificationsImage?.withRenderingMode(.alwaysOriginal)
+        let notificationsImage = UIImage(named: hasNotifications ? "icon_bell_active" : "icon_bell")!.withRenderingMode(.alwaysOriginal)
         let notificationButton = UIBarButtonItem(image: notificationsImage, style: .plain, target: self, action: #selector(notificationAction))
+        notificationButton.tintColor = .white
         navigationItem.rightBarButtonItem = notificationButton
     }
 
@@ -157,7 +154,7 @@ class HomeViewController: DWBasePayViewController {
     }
 
     @objc func profileAction() {
-        let controller = DWRootEditProfileViewController()
+        let controller = RootEditProfileViewController()
         controller.delegate = self
         let navigation = BaseNavigationController(rootViewController: controller)
         navigation.modalPresentationStyle = .fullScreen
@@ -227,16 +224,16 @@ class HomeViewController: DWBasePayViewController {
 
 
 #if DASHPAY
-// MARK: - DWRootEditProfileViewControllerDelegate
+// MARK: - RootEditProfileViewControllerDelegate
 
-extension HomeViewController: DWRootEditProfileViewControllerDelegate {
-    func editProfileViewController(_ controller: DWRootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?) {
+extension HomeViewController: RootEditProfileViewControllerDelegate {
+    func editProfileViewController(_ controller: RootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?) {
         model.dashPayModel.userProfile.updateModel.update(withDisplayName: rawDisplayName, aboutMe: rawAboutMe, avatarURLString: avatarURLString)
-        controller.navigateBack(animated: true, completion: nil)
+        controller.dismiss(animated: true, completion: nil)
     }
 
-    func editProfileViewControllerDidCancel(_ controller: DWRootEditProfileViewController) {
-        controller.navigateBack(animated: true, completion: nil)
+    func editProfileViewControllerDidCancel(_ controller: RootEditProfileViewController) {
+        controller.dismiss(animated: true, completion: nil)
     }
 }
 #endif

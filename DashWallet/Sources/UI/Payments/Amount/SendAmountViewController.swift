@@ -41,10 +41,6 @@ class SendAmountViewController: BaseAmountViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func maxButtonAction() {
-        sendAmountModel.selectAllFunds()
-    }
-
     internal func checkLeftoverBalance(isCrowdNodeTransfer: Bool = false, completion: @escaping ((Bool) -> Void)) {
         if CrowdNodeDefaults.shared.lastKnownBalance <= 0 && !isCrowdNodeTransfer {
             // If CrowdNode balance is 0, then there is no need to check the leftover balance
@@ -63,7 +59,7 @@ class SendAmountViewController: BaseAmountViewController {
             let message = String
                 .localizedStringWithFormat(NSLocalizedString("Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash.",
                                                              comment: "Leftover balance warning"),
-                                           CrowdNode.minimumLeftoverBalance.formattedDashAmountWithoutCurrencySymbol)
+                                            CrowdNode.minimumLeftoverBalance.formattedDashAmountWithoutCurrencySymbol)
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: NSLocalizedString("Continue", comment: "Leftover balance warning"), style: .default, handler: { _ in
                 completion(true)

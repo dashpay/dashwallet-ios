@@ -27,6 +27,8 @@
 
 #if DASHPAY
 #import "DWDPUserObject.h"
+// if MOCK_DASHPAY
+#import "DWDashPayConstants.h"
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
@@ -125,6 +127,14 @@ static NSString *sanitizeString(NSString *s) {
     if (requestUsername) {
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
         DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+        
+        if (MOCK_DASHPAY && myBlockchainIdentity == NULL) {
+            NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
+            
+            if (username != nil) {
+                myBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
+            }
+        }
 
         if (myBlockchainIdentity) {
             NSManagedObjectContext *context = NSManagedObjectContext.viewContext;

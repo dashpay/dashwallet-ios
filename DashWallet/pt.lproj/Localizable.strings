@@ -22,6 +22,9 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@ não tem permissão para acessar Touch ID";
 
+/* Credits */
+"%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
+
 /* Voting */
 "%ld duplicates" = "%ld duplicados";
 
@@ -324,6 +327,9 @@
 "Buy and convert Dash with another crypto" = "Compre e converta Dash com outra criptomoeda";
 
 /* No comment provided by engineer. */
+"Buy credits" = "Buy credits";
+
+/* No comment provided by engineer. */
 "Buy Dash" = "Comprar Dash";
 
 /* Dash Service Overview */
@@ -586,6 +592,9 @@
 
 /* CrowdNode */
 "Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Endereço Dash designado para sua conta CrowdNode na Carteira Dash neste dispositivo";
+
+/* No comment provided by engineer. */
+"Dash balance" = "Dash balance";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "Saldo Dash na Coinbase";
@@ -2223,6 +2232,9 @@
 /* No comment provided by engineer. */
 "Tools" = "Ferramentas";
 
+/* No comment provided by engineer. */
+"Top-up your credits to continue making changes to your profile and adding contacts" = "Top-up your credits to continue making changes to your profile and adding contacts";
+
 /* Dash Portal */
 "Topper" = "Topper";
 
@@ -2608,6 +2620,9 @@
 "You can change how / when your reward earnings are paid to you." = "Você pode alterar como / quando seus ganhos de recompensa serão pagos.";
 
 /* No comment provided by engineer. */
+"You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance";
+
+/* No comment provided by engineer. */
 "You can create a different username without paying again" = "Você pode criar um nome de usuário diferente sem pagar novamente";
 
 /* Voting */
@@ -2699,6 +2714,12 @@
 
 /* CrowdNode */
 "You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "Você receberá pagamentos fracionados automaticamente e eles serão reinvestidos por padrão, no entanto, também é fácil configurar saques automáticos para receber pagamentos recorrentes.";
+
+/* No comment provided by engineer. */
+"Your credit balance has been fully depleted" = "Your credit balance has been fully depleted";
+
+/* No comment provided by engineer. */
+"Your credit balance is low" = "Your credit balance is low";
 
 /* CrowdNode */
 "Your CrowdNode account is creating…" = "Sua conta CrowdNode está sendo criada…";

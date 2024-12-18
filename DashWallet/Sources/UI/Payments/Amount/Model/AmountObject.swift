@@ -19,7 +19,7 @@ import Foundation
 
 // MARK: - AmountObject
 
-struct AmountObject {
+struct AmountObject: Equatable {
     let amountType: AmountType
     let amountInternalRepresentation: String
 

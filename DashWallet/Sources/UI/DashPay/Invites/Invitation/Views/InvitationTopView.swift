@@ -94,7 +94,7 @@ class InvitationTopView: BaseInvitationTopView {
         let now = chain.timestamp(forBlockHeight: UInt32(TX_UNCONFIRMED))
         let txTime = (transaction.timestamp > 1) ? transaction.timestamp : now
         let txDate = Date(timeIntervalSince1970: txTime)
-        let dateString = DWDateFormatter.sharedInstance.shortString(from: txDate)
+        let dateString = DWDateFormatter.sharedInstance.dateOnly(from: txDate)
         dateLabel.text = dateString
     }
 }

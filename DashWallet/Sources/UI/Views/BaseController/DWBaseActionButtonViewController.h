@@ -31,11 +31,11 @@ extern CGFloat DWBottomButtonHeight(void);
 
 @property (nonatomic, assign, getter=isKeyboardNotificationsEnabled) BOOL keyboardNotificationsEnabled;
 @property (readonly, nullable, nonatomic, strong) id<DWActionButtonProtocol> actionButton;
+@property (readonly, nonatomic) NSString *actionButtonTitle;
 
 + (BOOL)showsActionButton;
 + (BOOL)isActionButtonInNavigationBar;
 
-- (NSString *)actionButtonTitle;
 - (NSString *)actionButtonDisabledTitle;
 
 - (void)setupContentView:(UIView *)contentView;

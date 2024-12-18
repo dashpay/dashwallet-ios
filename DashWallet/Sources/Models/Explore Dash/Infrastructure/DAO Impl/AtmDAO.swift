@@ -18,6 +18,7 @@
 import CoreLocation
 import Foundation
 import SQLite
+private typealias Expression = SQLite.Expression
 
 class AtmDAO: PointOfUseDAO {
     typealias Item = ExplorePointOfUse

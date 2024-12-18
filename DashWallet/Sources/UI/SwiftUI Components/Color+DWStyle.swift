@@ -54,6 +54,10 @@ extension Color {
         Color("Gray300")
     }
     
+    static var gray500: Color {
+        Color("Gray500")
+    }
+    
     // Background and secondary background are mismatched in the assests.
     // The correct values per the design:
     // Primary background: #F7F7F7

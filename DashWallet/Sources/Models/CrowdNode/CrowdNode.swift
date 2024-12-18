@@ -132,7 +132,8 @@ public final class CrowdNode {
 
     init() {
         masternodeAPY = DWEnvironment.sharedInstance().apy.doubleValue
-        crowdnodeAPY = masternodeAPY * 0.85
+        crowdnodeAPY = masternodeAPY * (1 - prefs.feePercentage)
+        print("CrowdNode: masternodeAPY: \(masternodeAPY), crowdnodeAPY: \(crowdnodeAPY)")
 
         NotificationCenter.default.publisher(for: NSNotification.Name.DWWillWipeWallet)
             .sink { [weak self] _ in self?.reset() }
@@ -195,6 +196,7 @@ extension CrowdNode {
 
         if tryRestoreSignUp() {
             refreshWithdrawalLimits()
+            refreshFees()
             restoreCreatedOnlineAccount(accountAddress)
             return
         }
@@ -306,7 +308,8 @@ extension CrowdNode {
     
         if let apy = chain.calculateMasternodeAPY()?.doubleValue {
             masternodeAPY = apy
-            crowdnodeAPY = masternodeAPY * 0.85
+            let multiplier = 1 - prefs.feePercentage
+            crowdnodeAPY = masternodeAPY * multiplier
             chain.apy = NSNumber(value: apy)
         }
     }
@@ -609,6 +612,20 @@ extension CrowdNode {
                 }
             } catch {
                 DSLogger.log("CrowdNode refreshWithdrawalLimits error: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func refreshFees() {
+        Task {
+            do {
+                let feeInfo = try await webService.getFees(address: accountAddress)
+
+                if let value = feeInfo.getNormalFee() {
+                    prefs.feePercentage = value.fee / 100
+                }
+            } catch {
+                DSLogger.log("CrowdNode refreshFees error: \(error.localizedDescription)")
             }
         }
     }

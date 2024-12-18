@@ -67,7 +67,7 @@ class SendAmountModel: BaseAmountModel {
         checkAmountForErrors()
     }
 
-    func selectAllFunds() {
+    override func selectAllFunds() {
         auth { [weak self] isAuthenticated in
             if isAuthenticated {
                 self?.selectAllFundsWithoutAuth()

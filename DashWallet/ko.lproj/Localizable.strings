@@ -22,6 +22,9 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID" = "%@게 터치 ID 접근 권한이 없습니다";
 
+/* Credits */
+"%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
+
 /* Voting */
 "%ld duplicates" = "%Id 복사";
 
@@ -324,6 +327,9 @@
 "Buy and convert Dash with another crypto" = "다른 암호화폐로 대시 구매 및 전환하기";
 
 /* No comment provided by engineer. */
+"Buy credits" = "Buy credits";
+
+/* No comment provided by engineer. */
 "Buy Dash" = "대시 매수";
 
 /* Dash Service Overview */
@@ -586,6 +592,9 @@
 
 /* CrowdNode */
 "Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "이 기기의 대시 지갑 내 크라우드노드 계정에 지정한 대시 주소";
+
+/* No comment provided by engineer. */
+"Dash balance" = "Dash balance";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "코인베이스의 대시 잔액";
@@ -2223,6 +2232,9 @@
 /* No comment provided by engineer. */
 "Tools" = "도구";
 
+/* No comment provided by engineer. */
+"Top-up your credits to continue making changes to your profile and adding contacts" = "Top-up your credits to continue making changes to your profile and adding contacts";
+
 /* Dash Portal */
 "Topper" = "토퍼";
 
@@ -2608,6 +2620,9 @@
 "You can change how / when your reward earnings are paid to you." = "당신의 리워드 수익을 어떻게 / 언제 받을 것인지 변경할 수 있습니다.";
 
 /* No comment provided by engineer. */
+"You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance";
+
+/* No comment provided by engineer. */
 "You can create a different username without paying again" = "다시 지불하지 않고도 다른 사용자 이름을 생성할 수 있습니다.";
 
 /* Voting */
@@ -2699,6 +2714,12 @@
 
 /* CrowdNode */
 "You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "당신은 분할된 지불금을 자동적으로 받게 되며, 이 금액은 디폴트로 다시 투자됩니다. 그러나, 쉬운 설정을 통해 지속적으로 이 수익금을 받아 자동 출금할 수도 있습니다.";
+
+/* No comment provided by engineer. */
+"Your credit balance has been fully depleted" = "Your credit balance has been fully depleted";
+
+/* No comment provided by engineer. */
+"Your credit balance is low" = "Your credit balance is low";
 
 /* CrowdNode */
 "Your CrowdNode account is creating…" = "당신의 크라우드노드 계정을 생성하는 중입니다...";

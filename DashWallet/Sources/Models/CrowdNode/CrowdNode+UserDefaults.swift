@@ -32,6 +32,7 @@ private let kOnlineInfoShown = "crowdNodeOnlineInfoShownKey"
 private let kSignedEmailMessageId = "crowdNodeSignedEmailMessageId"
 private let kShouldShowConfirmedNotification = "shouldShowConfirmedNotification"
 private let kLastWithdrawalBlock = "lastWithdrawalBlockKey"
+private let kFeePercentage = "feePercentageKey"
 
 // MARK: - CrowdNodeDefaults
 
@@ -89,6 +90,15 @@ class CrowdNodeDefaults {
         set(value) {
             _crowdNodeWithdrawalLimitPerDay = value
             UserDefaults.standard.set(value, forKey: kWithdrawalLimitPerDay)
+        }
+    }
+    
+    private var _feePercentage: Double? = nil
+    var feePercentage: Double {
+        get { _feePercentage ?? UserDefaults.standard.value(forKey: kFeePercentage) as? Double ?? CrowdNode.defaultFee }
+        set(value) {
+            _feePercentage = value
+            UserDefaults.standard.set(value, forKey: kFeePercentage)
         }
     }
 

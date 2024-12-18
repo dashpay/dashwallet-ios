@@ -43,14 +43,19 @@ struct ModalDialog: View {
         VStack {
             if let icon = icon {
                 switch icon {
-                case .custom(_):
-                    Icon(name: icon)
+                case .custom(let name):
+                    Image(name)
+                        .resizable()
+                        .scaledToFit()
                         .frame(width: 48, height: 48)
                         .padding(.top, 12)
                         .padding(.bottom, 16)
-                case .system(_):
-                    Icon(name: icon)
-                        .frame(width: 22, height: 22)
+                case .system(let name):
+                    Image(systemName: name)
+                        .resizable()
+                        .scaledToFit()
+                        .imageScale(.medium)
+                        .frame(width: 20, height: 20)
                         .frame(width: 48, height: 48)
                         .foregroundColor(.white)
                         .background(iconBackgroundColor(for: style))
@@ -155,13 +160,13 @@ extension UIViewController {
             smallButtonAction: smallButtonAction,
             positiveButtonText: positiveButtonText,
             positiveButtonAction: {
-                positiveButtonAction?()
                 self.dismiss(animated: true)
+                positiveButtonAction?()
             },
             negativeButtonText: negativeButtonText,
             negativeButtonAction: {
-                negativeButtonAction?()
                 self.dismiss(animated: true)
+                negativeButtonAction?()
             },
             buttonsOrientation: buttonsOrientation,
             buttonsStyle: buttonsStyle

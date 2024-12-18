@@ -22,7 +22,6 @@ import Foundation
 
 final class CrowdNodeTransferController: SendAmountViewController, NetworkReachabilityHandling {
     private let viewModel = CrowdNodeModel.shared
-    private var cancellableBag = Set<AnyCancellable>()
 
     internal var mode: TransferDirection {
         transferModel.direction
