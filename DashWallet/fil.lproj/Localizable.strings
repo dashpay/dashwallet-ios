@@ -446,6 +446,9 @@
 /* CoinJoin */
 "CoinJoin" = "CoinJoin";
 
+/* CoinJoin */
+"CoinJoin Mixing" = "CoinJoin Mixing";
+
 /* No comment provided by engineer. */
 "Confirm" = "Kumpirmahin";
 
@@ -790,9 +793,6 @@
 /* No comment provided by engineer. */
 "Error updating your profile" = "Error sa pag-update ng iyong profile";
 
-/* No comment provided by engineer. */
-"Error Upgrading" = "Kamalian sa Pag-upgrade";
-
 /* CoinJoin */
 "Error ·" = "Error ·";
 
@@ -981,9 +981,6 @@
 
 /* No comment provided by engineer. */
 "header #%d of %d" = "header #%1$d ng %2$d";
-
-/* Hello username, */
-"Hello %@," = "Hello %@,";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Tulungan kaming mapabuti ang iyong karanasan";
@@ -2443,9 +2440,6 @@
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "Mag-upgrade sa Ebolusyon";
-
-/* No comment provided by engineer. */
-"Upgrading to DashPay" = "Pag-a-upgrade sa DashPay";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";

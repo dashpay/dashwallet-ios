@@ -73,7 +73,7 @@ struct CoinJoinProgressInfo: View {
                 .padding(.leading, state == .mixing ? 2 : 5)
             
             if state.isInProgress {
-                Text(progress.formatted(.percent.precision(.fractionLength(0...2))))
+                Text(progress.formatted(.percent.precision(.fractionLength(0...1))))
                     .foregroundColor(textColor)
                     .font(font)
                     .padding(.leading, 4)

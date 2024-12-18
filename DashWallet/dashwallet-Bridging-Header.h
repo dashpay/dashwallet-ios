@@ -50,7 +50,6 @@ static const bool _SNAPSHOT = 0;
 #import "DSTransaction+DashWallet.h"
 #import "DWAlertController.h"
 #import "DWHomeProtocol.h"
-#import "DWDPRegistrationErrorRetryDelegate.h"
 #import "UIDevice+DashWallet.h"
 #import "DWCenteredTableView.h"
 
@@ -98,10 +97,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWDPBasicUserItem.h"
 #import "DWDPAvatarView.h"
 #import "DWDPRegistrationStatus.h"
-#import "DWDPRegistrationErrorTableViewCell.h"
-#import "DWDPRegistrationDoneTableViewCell.h"
-#import "DWDPRegistrationStatusTableViewCell.h"
-#import "DWDPRegistrationErrorRetryDelegate.h"
 #import "DWDPUserObject.h"
 #import "DWModalUserProfileViewController.h"
 #import "DWInvitationActionsView.h"
@@ -134,6 +129,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWDPWelcomeCollectionViewController.h"
 #import "DWGetStarted.h"
 #import "DWGetStartedContentViewController.h"
+#import "DWDashPayContactsUpdater.h"
 #endif
 
 //MARK: CrowdNode
@@ -155,7 +151,6 @@ static const bool _SNAPSHOT = 0;
 //MARK: Home
 #import "DWHomeModel.h"
 #import "DWRecoverViewController.h"
-#import "UIViewController+DWTxFilter.h"
 #import "DSAuthenticationManager.h"
 #import "DWSecureWalletDelegate.h"
 #import "DWSettingsMenuModel.h"
@@ -178,3 +173,7 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: CoinJoin
 #import "DSCoinJoinManager.h"
+
+
+// TODO
+#import "DSInstantSendTransactionLock.h"

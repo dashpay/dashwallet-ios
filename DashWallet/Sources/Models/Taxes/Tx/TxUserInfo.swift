@@ -121,7 +121,7 @@ extension TxUserInfo {
 extension DSTransaction {
     @objc
     func defaultTaxCategory() -> TxUserInfoTaxCategory {
-        switch direction() {
+        switch direction {
         case .moved:
             return .expense
         case .sent:

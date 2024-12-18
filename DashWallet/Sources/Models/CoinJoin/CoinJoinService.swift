@@ -101,15 +101,18 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     
     private var currentMode: CoinJoinMode {
         get {
-            let current = CoinJoinMode(rawValue: UserDefaults.standard.integer(forKey: chainModeKey)) ?? .none
+            let current = CoinJoinMode(rawValue: UserDefaults.standard.integer(forKey: chainModeKey))
+            DSLogger.log("[SW] CoinJoin: get currentMode: \(current == nil ? "nil" : String(describing: current!))")
+            let final = current ?? .none
             
-            if self.mode != current {
-                self.mode = current
+            if self.mode != final {
+                self.mode = final
             }
             
-            return current
+            return final
         }
         set(value) {
+            DSLogger.log("[SW] CoinJoin: set currentMode: \(value)")
             self.mode = value
             UserDefaults.standard.set(value.rawValue, forKey: chainModeKey)
         }
@@ -142,8 +145,8 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     func updateMode(mode: CoinJoinMode, force: Bool = false) async {
         self.coinJoinManager?.updateOptions(withEnabled: mode != .none)
         
-        if mode != .none && (force || self.currentMode == .none) {
-            configureMixing()
+        if mode != .none && (force || mode != self.currentMode) {
+            configureMixing(mode: mode)
             configureObservers()
         } else if mode == .none {
             removeObservers()
@@ -178,12 +181,12 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
         }
     }
     
-    private func configureMixing() {
+    private func configureMixing(mode: CoinJoinMode) {
         guard let coinJoinManager = self.coinJoinManager ?? createCoinJoinManager() else { return }
         
         let account = DWEnvironment.sharedInstance().currentAccount
         let rounds: Int32
-        switch currentMode {
+        switch mode {
         case .none:
             return
         case .intermediate:
@@ -268,7 +271,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
         }
         
         synchronized(self.updateMutex) {
-            DSLogger.log("CoinJoin: \(mode), \(timeSkew) s, \(hasAnonymizableBalance), \(networkStatus), synced: \(SyncingActivityMonitor.shared.state == .syncDone)")
+            DSLogger.log("CoinJoin updateState: \(mode), \(timeSkew)s, \(hasAnonymizableBalance), \(networkStatus), synced: \(SyncingActivityMonitor.shared.state == .syncDone)")
             
             self.networkStatus = networkStatus
             self.hasAnonymizableBalance = hasAnonymizableBalance
@@ -278,7 +281,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
             if mode == .none || !isInsideTimeSkewBounds(timeSkew: timeSkew) || DWGlobalOptions.sharedInstance().isResyncingWallet {
                 updateMixingState(state: .notStarted)
             } else {
-                configureMixing()
+                configureMixing(mode: mode)
                 
                 if hasAnonymizableBalance {
                     if networkStatus == .online && SyncingActivityMonitor.shared.state == .syncDone {
@@ -337,6 +340,8 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     }
     
     private func restoreMode() {
+        DSLogger.log("[SW] CoinJoin: restoreMode, self.currentMode: \(self.currentMode)")
+        
         self.stopMixing()
         self.coinJoinManager = nil
         self.hasAnonymizableBalance = false
@@ -368,6 +373,8 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     }
     
     private func configureObservers() {
+        self.removeObservers()
+        
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
             .sink { [weak self] _ in
                 guard let self = self else { return }
@@ -389,6 +396,13 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
                 Task {
                     self.updateTimeSkewInternal(timeSkew: await self.getCurrentTimeSkew())
                 }
+            }
+            .store(in: &cancellableBag)
+        
+        NotificationCenter.default.publisher(for: NSNotification.Name.DWWillWipeWallet)
+            .sink { _ in
+                UserDefaults.standard.set(CoinJoinMode.none.rawValue, forKey: kCoinJoinMainnetMode)
+                UserDefaults.standard.set(CoinJoinMode.none.rawValue, forKey: kCoinJoinTestnetMode)
             }
             .store(in: &cancellableBag)
         

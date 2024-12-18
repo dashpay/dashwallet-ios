@@ -446,6 +446,9 @@
 /* CoinJoin */
 "CoinJoin" = "코인조인";
 
+/* CoinJoin */
+"CoinJoin Mixing" = "CoinJoin Mixing";
+
 /* No comment provided by engineer. */
 "Confirm" = "승인";
 
@@ -790,9 +793,6 @@
 /* No comment provided by engineer. */
 "Error updating your profile" = "프로필 업데이트 오류";
 
-/* No comment provided by engineer. */
-"Error Upgrading" = "업그레이드 오류";
-
 /* CoinJoin */
 "Error ·" = "Error ·";
 
@@ -981,9 +981,6 @@
 
 /* No comment provided by engineer. */
 "header #%d of %d" = "헤더 %2$d 중 #%1$d";
-
-/* Hello username, */
-"Hello %@," = "%@님 안녕하세요,";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "우리가 당신의 경험을 향상할 수 있도록 도와주세요";
@@ -2443,9 +2440,6 @@
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "에볼루션으로 업그레이드 하기";
-
-/* No comment provided by engineer. */
-"Upgrading to DashPay" = "대시페이로 업그레이드 중";
 
 /* No comment provided by engineer. */
 "Uphold" = "업홀드";

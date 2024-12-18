@@ -16,6 +16,7 @@
 //
 
 import UIKit
+import Combine
 
 func cellSize(for contentSizeCategory: UIContentSizeCategory) -> CGSize {
     var size = CGSize.zero
@@ -70,6 +71,9 @@ protocol ShortcutsViewDelegate: AnyObject {
 
 @objc
 class ShortcutsView: UIView {
+    private var cancellableBag = Set<AnyCancellable>()
+    private let viewModel = HomeViewModel.shared
+    
     @objc
     weak var actionDelegate: ShortcutsActionDelegate?
 
@@ -85,8 +89,6 @@ class ShortcutsView: UIView {
     @IBOutlet
     var collectionViewHeightConstraint: NSLayoutConstraint!
 
-    var model = ShortcutsModel()
-
     override init(frame: CGRect) {
         super.init(frame: frame)
         commonInit()
@@ -97,15 +99,15 @@ class ShortcutsView: UIView {
         commonInit()
     }
 
-    func reloadData() {
-        model.reloadShortcuts()
-    }
-
     private func commonInit() {
-        model.shortcutItemsDidChangeHandler = { [weak self] in
-            self?.collectionView.reloadData()
-        }
-
+        viewModel.$shortcutItems
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] text in
+                self?.collectionView.reloadData()
+            }
+            .store(in: &cancellableBag)
+        
         Bundle.main.loadNibNamed(String(describing: type(of: self)), owner: self, options: nil)
 
         backgroundColor = .dw_secondaryBackground()
@@ -169,7 +171,7 @@ class ShortcutsView: UIView {
 
 extension ShortcutsView: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let action = model.items[indexPath.item]
+        let action = viewModel.shortcutItems[indexPath.item]
 
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ShortcutCell.reuseIdentifier, for: indexPath) as! ShortcutCell
         cell.model = action
@@ -184,13 +186,13 @@ extension ShortcutsView: UICollectionViewDataSource, UICollectionViewDelegate, U
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        model.items.count
+        viewModel.shortcutItems.count
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
 
-        let action = model.items[indexPath.item]
+        let action = viewModel.shortcutItems[indexPath.item]
         guard action.enabled else { return }
         guard let cell = collectionView.cellForItem(at: indexPath) else { return }
 

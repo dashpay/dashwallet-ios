@@ -446,6 +446,9 @@
 /* CoinJoin */
 "CoinJoin" = "CoinJoin";
 
+/* CoinJoin */
+"CoinJoin Mixing" = "CoinJoin Mixing";
+
 /* No comment provided by engineer. */
 "Confirm" = "Confirme";
 
@@ -790,9 +793,6 @@
 /* No comment provided by engineer. */
 "Error updating your profile" = "Erro ao atualizar seu perfil";
 
-/* No comment provided by engineer. */
-"Error Upgrading" = "Erro no Upgrade";
-
 /* CoinJoin */
 "Error ·" = "Error ·";
 
@@ -981,9 +981,6 @@
 
 /* No comment provided by engineer. */
 "header #%d of %d" = "cabeçalho #%1$d de %2$d";
-
-/* Hello username, */
-"Hello %@," = "Olá %@,";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Ajude-nos a melhorar a sua experiência";
@@ -2443,9 +2440,6 @@
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "Atualize para a evolução";
-
-/* No comment provided by engineer. */
-"Upgrading to DashPay" = "Upgrade para DashPay";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";

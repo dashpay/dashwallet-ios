@@ -17,6 +17,8 @@
 
 import Foundation
 
+let kConfirmationThreshold = Double(30 * 60)
+
 // MARK: - Transaction
 
 class Transaction: TransactionDataItem, Identifiable {
@@ -89,32 +91,31 @@ class Transaction: TransactionDataItem, Identifiable {
         }
         
         let chain = DWEnvironment.sharedInstance().currentChain
-        let currentAccount = DWEnvironment.sharedInstance().currentAccount;
+        let currentAccount = DWEnvironment.sharedInstance().currentAccount
         let account = tx.accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
         if account == nil {
             return .invalid
         }
+        
         let blockHeight = chain.lastTerminalBlockHeight
         let instantSendReceived = tx.instantSendReceived
         let processingInstantSend = tx.hasUnverifiedInstantSendLock
         let confirmed = tx.confirmed
         let confirms = (tx.blockHeight > blockHeight) ? 0 : (blockHeight - tx.blockHeight) + 1
-
+        
         if (direction == .sent || direction == .moved)
             && confirms == 0
-            && !account!.transactionIsValid(tx) {
+            && !isValid(account, tx) {
             return .invalid
         } else if direction == .received {
-            if !instantSendReceived && confirms == 0 && account!.transactionIsPending(tx) {
+            if !instantSendReceived && confirms == 0 && isPending(account, tx) {
                 // should be very hard to get here, a miner would have to include a non standard transaction into a block
-                return .locked;
-            } else if !instantSendReceived && confirms == 0 && !account!.transactionIsVerified(tx) {
-                return .processing;
-            }
-            else if account!.transactionOutputsAreLocked(tx) {
-                return .locked;
-            }
-            else if !instantSendReceived && !confirmed {
+                return .locked
+            } else if !instantSendReceived && confirms == 0 && !isVerified(account, tx) {
+                return .processing
+            } else if outputsAreLocked(account, tx) {
+                return .locked
+            } else if !instantSendReceived && !confirmed {
                 let transactionAge = NSDate().timeIntervalSince1970 - tx
                     .timestamp // we check the transaction age, as we might still be waiting on a transaction lock, 1 second seems like a good wait time
                 if confirms == 0 && (processingInstantSend || transactionAge < 1.0) {
@@ -123,16 +124,40 @@ class Transaction: TransactionDataItem, Identifiable {
                     return .confirming
                 }
             }
-        } else if direction != .notAccountFunds {
-            if !instantSendReceived
-                && confirms == 0
-                && !account!.transactionIsVerified(tx) {
-                return .processing;
-            }
+        } else if direction == .notAccountFunds || instantSendReceived || confirms > 0 {
+            return .ok
+        }
+        
+        return isVerified(account, tx) ? .ok : .processing
+    }()
+    
+    private func outputsAreLocked(_ account: DSAccount?, _ tx: DSTransaction) -> Bool {
+        return account!.transactionOutputsAreLocked(tx)
+    }
+
+    private func isPending(_ account: DSAccount?, _ tx: DSTransaction) -> Bool {
+        if tx.timestamp + kConfirmationThreshold < Date().timeIntervalSince1970 {
+            return false
         }
 
-        return .ok
-    }()
+        return account!.transactionIsPending(tx)
+    }
+
+    private func isVerified(_ account: DSAccount?, _ tx: DSTransaction) -> Bool {
+        if tx.timestamp + kConfirmationThreshold < Date().timeIntervalSince1970 {
+            return true
+        }
+
+        return account!.transactionIsVerified(tx)
+    }
+    
+    private func isValid(_ account: DSAccount?, _ tx: DSTransaction) -> Bool {
+        if tx.timestamp + kConfirmationThreshold < Date().timeIntervalSince1970 {
+            return true
+        }
+        
+        return account!.transactionIsValid(tx)
+    }
 
     private lazy var _shortDateString: String = tx.formattedShortTxDate
     var date: Date

@@ -132,7 +132,6 @@ final class HomeHeaderView: UIView {
             }
 
             self?.reloadBalance()
-            self?.reloadShortcuts()
         }
     }
 
@@ -147,10 +146,6 @@ final class HomeHeaderView: UIView {
 
         balanceView.reloadData()
         balanceView.state = isSyncing ? .syncing : .`default`
-    }
-
-    func reloadShortcuts() {
-        shortcutsView.reloadData()
     }
 
     private func hideSyncView() {

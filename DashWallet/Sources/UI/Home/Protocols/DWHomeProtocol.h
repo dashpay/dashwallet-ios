@@ -19,12 +19,10 @@
 
 #import "DWDashPayProtocol.h"
 #import "DWDashPayReadyProtocol.h"
-#import "DWTxDisplayModeProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWHomeProtocol;
-@class DWTransactionListDataSource;
 @class DSTransaction;
 @protocol DWPayModelProtocol;
 @protocol DWReceiveModelProtocol;
@@ -33,18 +31,15 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWHomeModelUpdatesObserver <NSObject>
 
 - (void)homeModel:(id<DWHomeProtocol>)model
-    didUpdateDataSource:(DWTransactionListDataSource *)dataSource
-          shouldAnimate:(BOOL)shouldAnimate;
-
-- (void)homeModel:(id<DWHomeProtocol>)model
-    didReceiveNewIncomingTransaction:(DSTransaction *)transaction;
+        didUpdate:(NSArray<DSTransaction *> *)dataSource
+    shouldAnimate:(BOOL)shouldAnimate;
 
 - (void)homeModelDidChangeInnerModels:(id<DWHomeProtocol>)model;
 - (void)homeModelWantToReloadShortcuts:(id<DWHomeProtocol>)model;
 - (void)homeModelWantToReloadVoting:(id<DWHomeProtocol>)model;
 @end
 
-@protocol DWHomeProtocol <DWTxDisplayModeProtocol, DWDashPayReadyProtocol>
+@protocol DWHomeProtocol <DWDashPayReadyProtocol>
 
 @property (nullable, nonatomic, weak) id<DWHomeModelUpdatesObserver> updatesObserver;
 
@@ -52,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, strong) id<DWReceiveModelProtocol> receiveModel;
 @property (readonly, nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
 
-@property (nonatomic, strong) DWTransactionListDataSource *allDataSource;
+@property (nonatomic, strong) NSArray<DSTransaction *> *allDataSource;
 
 @property (readonly, nonatomic, assign) BOOL shouldShowWalletBackupReminder;
 

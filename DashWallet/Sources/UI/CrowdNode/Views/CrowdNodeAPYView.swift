@@ -68,7 +68,7 @@ class CrowdNodeAPYView: UIView {
     }
 
     private var apy: String {
-        let apyValue = DWEnvironment.sharedInstance().apy.doubleValue * 0.85
+        let apyValue = CrowdNode.shared.crowdnodeAPY
 
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = .percent

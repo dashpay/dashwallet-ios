@@ -446,6 +446,9 @@
 /* CoinJoin */
 "CoinJoin" = "CoinJoin";
 
+/* CoinJoin */
+"CoinJoin Mixing" = "CoinJoin Mixing";
+
 /* No comment provided by engineer. */
 "Confirm" = "Potvrdiť";
 
@@ -790,9 +793,6 @@
 /* No comment provided by engineer. */
 "Error updating your profile" = "Pri aktualizácii vášho profilu sa vyskytla chyba";
 
-/* No comment provided by engineer. */
-"Error Upgrading" = "Chyba pri inovácii";
-
 /* CoinJoin */
 "Error ·" = "Error ·";
 
@@ -981,9 +981,6 @@
 
 /* No comment provided by engineer. */
 "header #%d of %d" = "hlavička číslo %1$d z %2$d";
-
-/* Hello username, */
-"Hello %@," = "Ahoj %@,";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Pomôžte nám vylepšiť váš zážitok";
@@ -2443,9 +2440,6 @@
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "Inovujte na Evolution";
-
-/* No comment provided by engineer. */
-"Upgrading to DashPay" = "Inovuje sa na DashPay";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
