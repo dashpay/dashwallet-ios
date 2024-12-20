@@ -565,7 +565,7 @@ PODS:
     - abseil/base/base_internal
     - abseil/base/config
     - abseil/meta/type_traits
-  - Alamofire (5.10.1)
+  - Alamofire (5.10.2)
   - BlueCryptor (1.0.32)
   - BlueECC (1.2.5)
   - BlueRSA (1.0.200)
@@ -710,7 +710,7 @@ PODS:
   - nanopb/decode (2.30908.0)
   - nanopb/encode (2.30908.0)
   - PromisesObjC (2.4.0)
-  - Protobuf (3.28.3)
+  - Protobuf (3.29.2)
   - SDWebImage (5.13.2):
     - SDWebImage/Core (= 5.13.2)
   - SDWebImage/Core (5.13.2)
@@ -737,7 +737,7 @@ PODS:
 DEPENDENCIES:
   - CloudInAppMessaging (= 0.1.0)
   - CocoaImageHashing (from `https://github.com/ameingast/cocoaimagehashing.git`, commit `ad01eee`)
-  - DashSync (from `../DashSync2/`)
+  - DashSync (from `../DashSync/`)
   - DSDynamicOptions (= 0.1.2)
   - Firebase/DynamicLinks
   - FirebaseStorage (= 8.15.0)
@@ -805,7 +805,7 @@ EXTERNAL SOURCES:
     :commit: ad01eee
     :git: https://github.com/ameingast/cocoaimagehashing.git
   DashSync:
-    :path: "../DashSync2/"
+    :path: "../DashSync/"
   MMSegmentSlider:
     :commit: 2d91366
     :git: https://github.com/podkovyrin/MMSegmentSlider
@@ -822,7 +822,7 @@ SPEC CHECKSUMS:
   "!ProtoCompiler": e9c09244955a8565817aa59a4787b6bb849a63c6
   "!ProtoCompiler-gRPCPlugin": 755f0ee414a0d5f0028e0dcfe98c23bdbc3e6fa3
   abseil: 926fb7a82dc6d2b8e1f2ed7f3a718bce691d1e46
-  Alamofire: 840d2a1ad82355b536ec6ba5f97e5bfa54600ca3
+  Alamofire: 7193b3b92c74a07f85569e1a6c4f4237291e7496
   BlueCryptor: b0aee3d9b8f367b49b30de11cda90e1735571c24
   BlueECC: 0d18e93347d3ec6d41416de21c1ffa4d4cd3c2cc
   BlueRSA: dfeef51db96bcc4edec654956c1581adbda4e6a3
@@ -856,7 +856,7 @@ SPEC CHECKSUMS:
   Moya: 138f0573e53411fb3dc17016add0b748dfbd78ee
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  Protobuf: 5a8a7781d8e1004302f108977ac2d5b99323146f
+  Protobuf: ba5d83b2201386fec27d484c099cac510ea5c169
   SDWebImage: 72f86271a6f3139cc7e4a89220946489d4b9a866
   SQLite.swift: 8d054987f02728cc912b0eb5a9659650573a65a2
   SQLiteMigrationManager.swift: b63bb5eaf834f8e8cc78b37fdf2ce064e35914cd
@@ -867,6 +867,6 @@ SPEC CHECKSUMS:
   TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: 1da6bc05eab949162cc8ff52999f19f07df2ee04
+PODFILE CHECKSUM: f09efff2a2f19044a1962e054a3c3bbb3ae206db
 
 COCOAPODS: 1.15.2
