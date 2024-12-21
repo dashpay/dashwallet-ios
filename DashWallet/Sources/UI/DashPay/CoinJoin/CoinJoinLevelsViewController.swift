@@ -157,7 +157,7 @@ extension CoinJoinLevelsViewController {
                         style: .warning,
                         icon: .system("exclamationmark.triangle.fill"),
                         heading: heading,
-                        textBlock1: NSLocalizedString("It is recommended to be on a Wi-Fi network to avoid losing any funds", comment: "CoinJoin"),
+                        textBlock1: NSLocalizedString("It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees", comment: "CoinJoin"),
                         positiveButtonText: NSLocalizedString("Continue Anyway", comment: ""),
                         negativeButtonText: NSLocalizedString("Cancel", comment: "")
                     )

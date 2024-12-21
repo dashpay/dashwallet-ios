@@ -441,7 +441,19 @@
 "CoinJoin" = "CoinJoin";
 
 /* CoinJoin */
+"CoinJoin Collateral Inputs" = "CoinJoin Collateral Inputs";
+
+/* CoinJoin */
+"CoinJoin Create Denominations" = "CoinJoin Create Denominations";
+
+/* CoinJoin */
 "CoinJoin Mixing" = "CoinJoin Mixing";
+
+/* CoinJoin */
+"CoinJoin Mixing Fee" = "CoinJoin Mixing Fee";
+
+/* CoinJoin */
+"CoinJoin Send" = "CoinJoin Send";
 
 /* No comment provided by engineer. */
 "Confirm" = "Memastikan";
@@ -1205,7 +1217,7 @@
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "Diperlukan waktu hingga 10 menit untuk mentransfer Dash dari Coinbase ke Dash Wallet di perangkat ini";
 
 /* CoinJoin */
-"It is recommended to be on a Wi-Fi network to avoid losing any funds" = "It is recommended to be on a Wi-Fi network to avoid losing any funds";
+"It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees" = "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees";
 
 /* Coinbase */
 "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "Akan sangat sulit bagi pengguna tingkat lanjut dengan tingkat keahlian teknis apa pun untuk menentukan riwayat transaksi Anda";
@@ -1411,6 +1423,9 @@
 
 /* CoinJoin */
 "Mixing Paused ·" = "Mixing Paused ·";
+
+/* CoinJoin */
+"Mixing Transactions" = "Mixing Transactions";
 
 /* CoinJoin */
 "Mixing your Dash coins will make your transactions more private" = "Mencampur koin Dash Anda akan membuat transaksi Anda lebih pribadi";
@@ -2724,6 +2739,9 @@
 /* Usernames */
 "You chose “%@” as your username." = "You chose “%@” as your username.";
 
+/* CoinJoin */
+"You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
+
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "Anda tidak memiliki kontak saat ini";
 
@@ -2818,7 +2836,7 @@
 "Your CrowdNode account is set up and ready to use!" = "Akun CrowdNode Anda sudah disiapkan dan siap digunakan!";
 
 /* Crowdnode */
-"Your CrowdNode account was created using these transactions. " = "Akun CrowdNode Anda dibuat menggunakan transaksi ini.";
+"Your CrowdNode account was created using these transactions." = "Your CrowdNode account was created using these transactions.";
 
 /* CrowdNode */
 "Your CrowdNode address has been confirmed." = "Alamat CrowdNode Anda telah dikonfirmasi.";

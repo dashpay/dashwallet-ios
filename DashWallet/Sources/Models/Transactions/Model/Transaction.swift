@@ -76,6 +76,10 @@ class Transaction: TransactionDataItem, Identifiable {
     var fiatAmount: String {
         storedFiatAmount
     }
+    
+    var iconName: String {
+        direction.iconName
+    }
 
     private lazy var storedFiatAmount = userInfo?.fiatAmountString(from: _dashAmount) ?? NSLocalizedString("Not available", comment: "");
 

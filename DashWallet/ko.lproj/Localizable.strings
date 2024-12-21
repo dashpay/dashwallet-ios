@@ -441,7 +441,19 @@
 "CoinJoin" = "코인조인";
 
 /* CoinJoin */
+"CoinJoin Collateral Inputs" = "CoinJoin Collateral Inputs";
+
+/* CoinJoin */
+"CoinJoin Create Denominations" = "CoinJoin Create Denominations";
+
+/* CoinJoin */
 "CoinJoin Mixing" = "CoinJoin Mixing";
+
+/* CoinJoin */
+"CoinJoin Mixing Fee" = "CoinJoin Mixing Fee";
+
+/* CoinJoin */
+"CoinJoin Send" = "CoinJoin Send";
 
 /* No comment provided by engineer. */
 "Confirm" = "승인";
@@ -1205,7 +1217,7 @@
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "코인베이스로부터 이 기기의 대시 지갑으로 대시를 옮기는 데에는 최대 10분이 소요될 수 있습니다.";
 
 /* CoinJoin */
-"It is recommended to be on a Wi-Fi network to avoid losing any funds" = "It is recommended to be on a Wi-Fi network to avoid losing any funds";
+"It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees" = "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees";
 
 /* Coinbase */
 "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "어떤 수준의 기술적 전문 지식을 가진 고급 사용자라고 하더라도 자신의 거래 기록을 결정하는 것은 어려울 수 있습니다.";
@@ -1411,6 +1423,9 @@
 
 /* CoinJoin */
 "Mixing Paused ·" = "Mixing Paused ·";
+
+/* CoinJoin */
+"Mixing Transactions" = "Mixing Transactions";
 
 /* CoinJoin */
 "Mixing your Dash coins will make your transactions more private" = "대시 코인을 믹싱하면 거래 내역이 보다 보호됩니다.";
@@ -2724,6 +2739,9 @@
 /* Usernames */
 "You chose “%@” as your username." = "You chose “%@” as your username.";
 
+/* CoinJoin */
+"You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
+
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "현재 연락처에 아무도 없습니다";
 
@@ -2818,7 +2836,7 @@
 "Your CrowdNode account is set up and ready to use!" = "크라우드노드 계정 설정이 완료되어 지금 사용할 수 있습니다!";
 
 /* Crowdnode */
-"Your CrowdNode account was created using these transactions. " = "당신의 크라우드노드 계정이 이와 같은 거래를 통해 생성되었습니다.";
+"Your CrowdNode account was created using these transactions." = "Your CrowdNode account was created using these transactions.";
 
 /* CrowdNode */
 "Your CrowdNode address has been confirmed." = "당신의 크라우드노드 주소가 확인되었습니다.";

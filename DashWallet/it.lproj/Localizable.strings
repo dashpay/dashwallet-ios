@@ -441,7 +441,19 @@
 "CoinJoin" = "CoinJoin";
 
 /* CoinJoin */
+"CoinJoin Collateral Inputs" = "CoinJoin Collateral Inputs";
+
+/* CoinJoin */
+"CoinJoin Create Denominations" = "CoinJoin Create Denominations";
+
+/* CoinJoin */
 "CoinJoin Mixing" = "CoinJoin Mixing";
+
+/* CoinJoin */
+"CoinJoin Mixing Fee" = "CoinJoin Mixing Fee";
+
+/* CoinJoin */
+"CoinJoin Send" = "CoinJoin Send";
 
 /* No comment provided by engineer. */
 "Confirm" = "Conferma";
@@ -1205,7 +1217,7 @@
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "Potrebbero essere necessari fino a 10 minuti per trasferire Dash da Coinbase a Dash Wallet su questo dispositivo";
 
 /* CoinJoin */
-"It is recommended to be on a Wi-Fi network to avoid losing any funds" = "It is recommended to be on a Wi-Fi network to avoid losing any funds";
+"It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees" = "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees";
 
 /* Coinbase */
 "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "Sarebbe molto difficile per gli utenti avanzati con qualsiasi livello di competenza tecnica determinare la cronologia delle transazioni";
@@ -1411,6 +1423,9 @@
 
 /* CoinJoin */
 "Mixing Paused ·" = "Mixing Paused ·";
+
+/* CoinJoin */
+"Mixing Transactions" = "Mixing Transactions";
 
 /* CoinJoin */
 "Mixing your Dash coins will make your transactions more private" = "Mixare i tuoi Dash renderà le tue transazioni più private";
@@ -2724,6 +2739,9 @@
 /* Usernames */
 "You chose “%@” as your username." = "You chose “%@” as your username.";
 
+/* CoinJoin */
+"You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
+
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "Non hai nessun contatto al momento";
 
@@ -2818,7 +2836,7 @@
 "Your CrowdNode account is set up and ready to use!" = "Il tuo account CrowdNode è configurato e pronto per l'uso!";
 
 /* Crowdnode */
-"Your CrowdNode account was created using these transactions. " = "Il tuo account CrowdNode è stato creato utilizzando queste transazioni.";
+"Your CrowdNode account was created using these transactions." = "Your CrowdNode account was created using these transactions.";
 
 /* CrowdNode */
 "Your CrowdNode address has been confirmed." = "Il tuo indirizzo CrowdNode è stato confermato.";

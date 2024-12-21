@@ -441,7 +441,19 @@
 "CoinJoin" = "CoinJoin";
 
 /* CoinJoin */
+"CoinJoin Collateral Inputs" = "CoinJoin Collateral Inputs";
+
+/* CoinJoin */
+"CoinJoin Create Denominations" = "CoinJoin Create Denominations";
+
+/* CoinJoin */
 "CoinJoin Mixing" = "CoinJoin Mixing";
+
+/* CoinJoin */
+"CoinJoin Mixing Fee" = "CoinJoin Mixing Fee";
+
+/* CoinJoin */
+"CoinJoin Send" = "CoinJoin Send";
 
 /* No comment provided by engineer. */
 "Confirm" = "確認:";
@@ -1205,7 +1217,7 @@
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "將達世幣從 Coinbase 轉帳到此設備上的達世幣錢包最多可能需要 10 分鐘";
 
 /* CoinJoin */
-"It is recommended to be on a Wi-Fi network to avoid losing any funds" = "It is recommended to be on a Wi-Fi network to avoid losing any funds";
+"It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees" = "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees";
 
 /* Coinbase */
 "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "即使對於具有任何技術專業水平的高級用戶來說，要確定您的交易歷史記錄都是非常困難的";
@@ -1411,6 +1423,9 @@
 
 /* CoinJoin */
 "Mixing Paused ·" = "Mixing Paused ·";
+
+/* CoinJoin */
+"Mixing Transactions" = "Mixing Transactions";
 
 /* CoinJoin */
 "Mixing your Dash coins will make your transactions more private" = "混合您的達世幣將使您交易的私隱度更高";
@@ -2724,6 +2739,9 @@
 /* Usernames */
 "You chose “%@” as your username." = "You chose “%@” as your username.";
 
+/* CoinJoin */
+"You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
+
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "您目前沒有任何聯絡人";
 
@@ -2818,7 +2836,7 @@
 "Your CrowdNode account is set up and ready to use!" = "您的 CrowdNode 帳戶已設置好並可以使用!";
 
 /* Crowdnode */
-"Your CrowdNode account was created using these transactions. " = "您的 CrowdNode 帳戶是使用這些交易創建的。";
+"Your CrowdNode account was created using these transactions." = "Your CrowdNode account was created using these transactions.";
 
 /* CrowdNode */
 "Your CrowdNode address has been confirmed." = "您的 CrowdNode 位址已確認。";

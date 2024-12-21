@@ -42,6 +42,7 @@ class HomeViewModel: ObservableObject {
     
     private var txByHash: [String: TransactionListDataItem] = [:]
     private var crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
+    private var coinJoinTxSets: [String: CoinJoinMixingTxSet] = [:] // Grouped by date
     
     @Published private(set) var txItems: [TransactionGroup] = []
     @Published var shortcutItems: [ShortcutAction] = []
@@ -137,9 +138,11 @@ class HomeViewModel: ObservableObject {
     private func reloadTxDataSource() {
         self.queue.async { [weak self] in
             guard let self = self else { return }
+            
             let wallet = DWEnvironment.sharedInstance().currentWallet
             let transactions = wallet.allTransactions
             self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
+            self.coinJoinTxSets = [:]
             
             var items: [TransactionListDataItem] = transactions.compactMap {
                 Tx.shared.updateRateIfNeeded(for: $0)
@@ -147,27 +150,53 @@ class HomeViewModel: ObservableObject {
                 if self.displayMode == .sent && $0.direction != .sent {
                     return nil
                 }
-                
+               
                 if self.displayMode == .received && ($0.direction != .received || $0 is DSCoinbaseTransaction) {
                     return nil
                 }
-                
+               
                 if self.displayMode == .rewards && !($0 is DSCoinbaseTransaction) {
                     return nil
                 }
+               
+                if !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: $0) {
+                    return nil
+                }
                 
-                return !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: $0) ? nil : .tx(Transaction(transaction: $0))
-            }
+                if !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: $0) {
+                    // CrowdNode transactions will be included below
+                    return nil
+                }
 
+                let date = DWDateFormatter.sharedInstance.dateOnly(from: $0.date)
+                let coinJoinTxSet = self.coinJoinTxSets[date] ?? CoinJoinMixingTxSet()
+                self.coinJoinTxSets[date] = coinJoinTxSet
+               
+                if coinJoinTxSet.tryInclude(tx: $0) {
+                    // CoinJoin transactions will be included below
+                    return nil
+                }
+                
+                return .tx(Transaction(transaction: $0))
+            }
+            
             self.txByHash.removeAll()
             items.forEach { item in
                 self.txByHash[item.id] = item
             }
 
-            if !crowdNodeTxSet.transactions.isEmpty {
+            if !crowdNodeTxSet.transactionMap.isEmpty {
                 let item: TransactionListDataItem = .crowdnode(crowdNodeTxSet)
-                items.insert(item, at: 0)
+                items.append(item)
                 self.txByHash[FullCrowdNodeSignUpTxSet.id] = item
+            }
+
+            for (_, coinJoinTxSet) in self.coinJoinTxSets {
+                if !coinJoinTxSet.transactionMap.isEmpty {
+                    let item: TransactionListDataItem = .coinjoin(coinJoinTxSet)
+                    items.append(item)
+                    self.txByHash[coinJoinTxSet.id] = item
+                }
             }
 
             let groupedItems = Dictionary(
@@ -178,7 +207,7 @@ class HomeViewModel: ObservableObject {
             let array = groupedItems.map { key, items in
                 TransactionGroup(id: key, date: items.first!.date, items: items)
             }.sorted { $0.date > $1.date }
-
+            
             DispatchQueue.main.async {
                 self.txItems = array
             }
@@ -203,15 +232,21 @@ class HomeViewModel: ObservableObject {
             
             Tx.shared.updateRateIfNeeded(for: tx)
             var itemId = tx.txHashHexString
-            var isCrowdNode = false
+            var txItem: TransactionListDataItem = .tx(Transaction(transaction: tx))
+            let dateKey = DWDateFormatter.sharedInstance.dateOnly(from: tx.date)
 
             if self.crowdNodeTxSet.tryInclude(tx: tx) {
                 itemId = FullCrowdNodeSignUpTxSet.id
-                isCrowdNode = true
+                txItem = .crowdnode(self.crowdNodeTxSet)
+            } else {
+                let coinJoinTxSet = self.coinJoinTxSets[dateKey] ?? CoinJoinMixingTxSet()
+                self.coinJoinTxSets[dateKey] = coinJoinTxSet
+               
+                if coinJoinTxSet.tryInclude(tx: tx) {
+                    itemId = coinJoinTxSet.id
+                    txItem = .coinjoin(coinJoinTxSet)
+                }
             }
-
-            let txItem: TransactionListDataItem = isCrowdNode ? .crowdnode(self.crowdNodeTxSet) : .tx(Transaction(transaction: tx))
-            let dateKey = DWDateFormatter.sharedInstance.dateOnly(from: txItem.date)
 
             if let existingItem = self.txByHash[itemId] {
                 // Updating existing item
@@ -448,7 +483,7 @@ extension TransactionListDataItem: Identifiable {
     var date: Date {
         switch self {
         case .crowdnode(let set):
-            return set.transactions.values.first!.date
+            return set.transactionMap.values.first!.date
         case .coinjoin(let set):
             return set.groupDay
         case .tx(let tx):
