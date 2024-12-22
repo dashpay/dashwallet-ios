@@ -21,6 +21,8 @@ enum VoteAction {
     case none
     case approved
     case revoked
+    case blocked
+    case unblocked
 }
 
 class VotingViewModel {
@@ -83,8 +85,13 @@ class VotingViewModel {
                 requests = await dao.all(onlyWithLinks: filters.onlyWithLinks ?? false)
             }
             
+            let oldVotes = Dictionary(uniqueKeysWithValues: self.groupedRequests.map { ($0.username, $0.votesForUsername) })
             self.groupedRequests = Dictionary(grouping: requests, by: { $0.username })
-                .map { GroupedUsernames(username: $0.key, requests: $0.value.sortAndFilter(by: filters)) }
+                .map { username, reqs in 
+                    var group = GroupedUsernames(username: username, requests: reqs.sortAndFilter(by: filters))
+                    group.votesForUsername = max(oldVotes[username] ?? 0, 0)
+                    return group
+                }
                 .filter { !$0.requests.isEmpty }
                 .sorted { $0.username < $1.username }
             self.filteredRequests = self.groupedRequests.filter { $0.username.starts(with: searchQuery) }
@@ -147,6 +154,15 @@ extension VotingViewModel {
                 await dao.update(dto: copy)
                 lastVoteAction = .approved
                 refresh()
+                
+                // TODO: "votes left" check. Replace with actual logic
+                if let groupIndex = groupedRequests.firstIndex(where: { group in
+                    group.requests.contains { request in
+                        request.requestId == requestId
+                    }
+                }) {
+                    groupedRequests[groupIndex].votesForUsername += masternodeKeys.count
+                }
             }
         }
     }
@@ -158,6 +174,47 @@ extension VotingViewModel {
                 copy.isApproved = false
                 await dao.update(dto: copy)
                 lastVoteAction = .revoked
+                refresh()
+                
+                // TODO: "votes left" check. Replace with actual logic
+                if let groupIndex = groupedRequests.firstIndex(where: { group in
+                    group.requests.contains { request in
+                        request.requestId == requestId
+                    }
+                }) {
+                    groupedRequests[groupIndex].votesForUsername -= max(copy.votes - masternodeKeys.count, 0)
+                }
+            }
+        }
+    }
+    
+    func votesLeft(for requestId: String) -> Int {
+        // TODO: "votes left" check. Replace with actual logic
+        let group = groupedRequests.first(where: { group in
+            group.requests.contains { request in
+                request.requestId == requestId
+            }
+        })
+        return max(VotingConstants.maxVotes - (group?.votesForUsername ?? 0), 0)
+    }
+    
+    func block(request requestId: String) {
+        Task {
+            if var copy = await dao.get(byRequestId: requestId) {
+                copy.blockVotes += masternodeKeys.count
+                await dao.update(dto: copy)
+                lastVoteAction = .blocked
+                refresh()
+            }
+        }
+    }
+    
+    func unblock(request requestId: String) {
+        Task {
+            if var copy = await dao.get(byRequestId: requestId) {
+                copy.blockVotes = max(copy.blockVotes - masternodeKeys.count, 0)
+                await dao.update(dto: copy)
+                lastVoteAction = .unblocked
                 refresh()
             }
         }
@@ -196,9 +253,9 @@ extension VotingViewModel {
             let identity = (identityData as NSData).base58String()
             let randomName = names[Int.random(in: 0..<min(names.count, nameCount))]
             let link = nameCount % 2 == 0 ? "https://example.com" : nil
-            let isApproved = Bool.random()
+            let isApproved = false
             
-            let dto = UsernameRequest(requestId: UUID().uuidString, username: randomName, createdAt: Int64(randomValue), identity: "\(identity)\(identity)\(identity)", link: link, votes: Int.random(in: 0..<15), isApproved: isApproved)
+            let dto = UsernameRequest(requestId: UUID().uuidString, username: randomName, createdAt: Int64(randomValue), identity: "\(identity)\(identity)\(identity)", link: link, votes: Int.random(in: 0..<15), blockVotes: Int.random(in: 0..<15), isApproved: isApproved)
             print(dto)
             await dao.create(dto: dto)
             

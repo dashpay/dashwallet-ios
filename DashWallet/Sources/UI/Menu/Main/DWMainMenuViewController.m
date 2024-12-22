@@ -106,7 +106,7 @@ NS_ASSUME_NONNULL_BEGIN
     BOOL invitationsEnabled = ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled && (self.userProfileModel.blockchainIdentity != nil));
 
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    BOOL isVotingEnabled = [VotingPrefsWrapper getIsEnabled] && now < VotingConstants.votingEndTime;
+    BOOL isVotingEnabled = [VotingPrefsWrapper getIsEnabled];
     self.view.model = [[DWMainMenuModel alloc] initWithInvitesEnabled:invitationsEnabled votingEnabled:isVotingEnabled];
     [self.view updateUserHeader];
 #else
@@ -180,7 +180,9 @@ NS_ASSUME_NONNULL_BEGIN
 
                 for (NSURL *logFileURL in logFiles) {
                     NSData *logData = [NSData dataWithContentsOfURL:logFileURL];
-                    [mailComposer addAttachmentData:logData mimeType:@"text/plain" fileName:[logFileURL lastPathComponent]];
+                    NSString *fileName = [logFileURL lastPathComponent];
+                    NSString *mimeType = [fileName hasSuffix:@".gz"] ? @"application/gzip" : @"text/plain";
+                    [mailComposer addAttachmentData:logData mimeType:mimeType fileName:fileName];
                 }
 
                 [self presentViewController:mailComposer animated:YES completion:nil];

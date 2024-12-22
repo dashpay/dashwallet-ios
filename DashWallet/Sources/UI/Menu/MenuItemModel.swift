@@ -38,7 +38,7 @@ class MenuItemModel: Identifiable, Equatable {
         self.showInfo = showInfo
         self.showChevron = showChevron
         self.showToggle = showToggle
-        self.isToggled = isToggled
+        self._isToggled = State<Bool>.init(initialValue: isToggled)
         self.action = action
     }
     

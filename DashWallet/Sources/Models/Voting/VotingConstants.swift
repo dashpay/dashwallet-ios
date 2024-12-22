@@ -17,6 +17,7 @@
 
 @objcMembers
 class VotingConstants: NSObject {
+    static let maxVotes = 5 // max allowed by Platform for a masternode
     // TODO: replace
     static let votingStartTime = TimeInterval(1696091858)
     static let votingEndTime = TimeInterval(1702695521)

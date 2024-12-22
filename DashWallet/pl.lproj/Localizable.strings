@@ -223,6 +223,9 @@
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Aplikacja %@ chce otrzymaćdostęp do głównego publicznego klucza. Klucz ten pozwoli to na monitorowanie portfela, ale nie da możliwości ruszenia twoich monet.";
 
+/* Voting */
+"Approve" = "Approve";
+
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Czy na pewno chcesz anulować to zlecenie?";
 
@@ -315,6 +318,9 @@
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Pomiędzy twoim Portfelem Dash a twoim kontem na Coinbase";
+
+/* Voting */
+"Block" = "Block";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "blok #%1$d z %2$d";

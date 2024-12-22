@@ -223,6 +223,9 @@
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Ang application %@ ay gustong makuha ang iyong Master Public Key.  Ito ay maaaring gamitin upang masubaybayan ang iyong pitaka, ito ay hindi maaaring gamitin sa paglipat ng iyong Dash.";
 
+/* Voting */
+"Approve" = "Approve";
+
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Sigurado ka bang gusto mong kanselahin ang order na ito?";
 
@@ -315,6 +318,9 @@
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Sa pagitan ng Dash Wallet at ng iyong Coinbase account";
+
+/* Voting */
+"Block" = "Block";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "block #%1$d ng %2$d";
