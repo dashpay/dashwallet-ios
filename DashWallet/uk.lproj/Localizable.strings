@@ -25,6 +25,9 @@
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
 
+/* Voting - multiple keys warning */
+"%d votes will be cast as you have multiple voting keys stored in the wallet" = "%d votes will be cast as you have multiple voting keys stored in the wallet";
+
 /* Voting */
 "%ld duplicates" = "%Ід дублікатів";
 
@@ -224,6 +227,9 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Додаток %@ хоче отримати ваш основний публічний ключ. Це може бути використане для відстеження вашого гаманця, але не для відправлення ваших Dash.";
 
 /* Voting */
+"Approvals" = "Approvals";
+
+/* Voting */
 "Approve" = "Approve";
 
 /* Coinbase/Buy Dash/Cancel Order     */
@@ -327,6 +333,9 @@
 
 /* No comment provided by engineer. */
 "Block #%d of %d" = "Блок #%1$d з %2$d";
+
+/* Voting */
+"Blocked '%@' username" = "Blocked '%@' username";
 
 /* Buy
    buy */
@@ -676,6 +685,9 @@
 
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Валюта за замовчуванням, ярлики, про програму.";
+
+/* Voting */
+"Default filter setting" = "Default filter setting";
 
 /* Location Service Status */
 "Denied" = "Заборонено";
@@ -1520,6 +1532,9 @@
 /* Explore Dash/Merchants/Filters */
 "No Results Found" = "Нічого не знайдено";
 
+/* Voting */
+"No votes left" = "No votes left";
+
 /* No comment provided by engineer. */
 "Node IP" = "IP вузла";
 
@@ -1567,6 +1582,9 @@
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Щойно %@ прийме ваш запит, ви зможете здійснити оплату безпосередньо на ім’я користувача";
+
+/* Voting */
+"One vote left" = "One vote left";
 
 /* Online */
 "Online" = "Інтернет-магазин";
@@ -2178,6 +2196,9 @@
 /* CoinJoin */
 "Stop Mixing" = "Зупинити змішування";
 
+/* Voting */
+"Submit" = "Submit";
+
 /* No comment provided by engineer. */
 "Swept!" = "Переведено!";
 
@@ -2249,6 +2270,9 @@
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Dash успішно внесено на ваш обліковий запис Coinbase. Але виникла проблема під час перенесення його в Dash Wallet на цьому пристрої.";
+
+/* Voting */
+"The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter.";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "Вибране вами зображення буде анонімно завантажено в Imgur.";
@@ -2423,6 +2447,12 @@
 /* No comment provided by engineer. */
 "Unable to upload your picture. Please try again." = "Не вдалося завантажити ваше зображення. Будь ласка спробуйте ще раз.";
 
+/* Voting */
+"Unblock" = "Unblock";
+
+/* Voting */
+"Unblocked '%@' username" = "Unblocked '%@' username";
+
 /* No comment provided by engineer. */
 "Unknown" = "Невідомий";
 
@@ -2560,9 +2590,6 @@
 
 /* Voting */
 "Vote for All" = "Голосувати за всіх";
-
-/* Voting */
-"Vote only on duplicates" = "Голосувати лише за дублікати";
 
 /* Voting */
 "Vote to Approve" = "Голосувати за схвалення";
@@ -2730,9 +2757,6 @@
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "Ви можете ввести свій ключ у будь-якому з таких форматів: WIF/base58/base64/hex";
 
-/* Voting */
-"You can review all requests but you only need to vote on duplicates" = "Ви можете переглянути всі запити, але голосувати потрібно лише за дублікати";
-
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "Ви можете переглянути детальну інформацію про свої депозити, зняття коштів і доходи.";
 
@@ -2759,6 +2783,12 @@
 
 /* Usernames */
 "You have %@ Dash.\nSome usernames cost up to %@ Dash." = "You have %1$@ Dash.\nSome usernames cost up to %2$@ Dash.";
+
+/* Voting */
+"You have already voted for this username %ld times. You can only cast one more vote for this username." = "You have already voted for this username %ld times. You can only cast one more vote for this username.";
+
+/* Voting */
+"You have already voted for this username %ld times. You cannot vote for it anymore." = "You have already voted for this username %ld times. You cannot vote for it anymore.";
 
 /* No comment provided by engineer. */
 "You have been invited by %@. Start using Dash cryptocurrency." = "Вас запросив %@. Почніть використовувати криптовалюту Dash.";
