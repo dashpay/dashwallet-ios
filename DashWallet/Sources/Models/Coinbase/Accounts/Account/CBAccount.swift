@@ -136,8 +136,8 @@ extension CBAccount {
             let _ = try? await refreshAccount() // Ignore if fails
 
             return result.data
-        } catch HTTPClientError.statusCode(let r) where r.statusCode == 402 {
-            DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 402")
+        } catch HTTPClientError.statusCode(let r) where r.statusCode == 400 {
+            DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 400")
             if let err = r.error?.errors.first {
                 if err.id == .twoFactorRequired {
                     throw Coinbase.Error.transactionFailed(.twoFactorRequired)
