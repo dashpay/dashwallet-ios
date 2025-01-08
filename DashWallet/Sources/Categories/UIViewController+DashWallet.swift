@@ -77,18 +77,20 @@ extension UIViewController {
             let maxSize: Int64 = 25 * 1024 * 1024 // 25MB in bytes
             
             for logFileURL in sortedLogFiles {
-                guard let attributes = try? FileManager.default.attributesOfItem(atPath: logFileURL.path),
-                      let fileSize = attributes[.size] as? Int64 else { continue }
+                guard let logData = try? Data(contentsOf: logFileURL) else {
+                    continue
+                }
                 
                 // Break if this file would exceed the size limit
-                if totalSize + fileSize > maxSize { break }
+                if totalSize + Int64(logData.count) > maxSize {
+                    break
+                }
                 
-                guard let logData = try? Data(contentsOf: logFileURL) else { continue }
                 let fileName = logFileURL.lastPathComponent
                 let mimeType = fileName.hasSuffix(".gz") ? "application/gzip" : "text/plain"
                 mailComposer.addAttachmentData(logData, mimeType: mimeType, fileName: fileName)
-                
-                totalSize += fileSize
+                                                                
+                totalSize += Int64(logData.count)
             }
             
             present(mailComposer, animated: true)
