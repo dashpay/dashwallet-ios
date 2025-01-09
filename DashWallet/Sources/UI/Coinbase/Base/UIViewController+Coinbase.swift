@@ -60,18 +60,18 @@ extension BaseViewController {
 protocol CoinbaseCodeConfirmationPreviewing: ActivityIndicatorPreviewing {
     var codeConfirmationController: TwoFactorAuthViewController? { set get }
     var isCancelingToFail: Bool { get }
-    func codeConfirmationControllerDidContinue(with code: String)
+    func codeConfirmationControllerDidContinue(with code: String, for idem: UUID)
     func codeConfirmationControllerDidCancel()
 }
 
 extension CoinbaseCodeConfirmationPreviewing where Self: BaseViewController {
     var isCancelingToFail: Bool { false }
 
-    func showCodeConfirmationController() {
-        let vc = TwoFactorAuthViewController.controller()
+    func showCodeConfirmationController(idem: UUID) {
+        let vc = TwoFactorAuthViewController.controller(idem: idem)
         vc.isCancelingToFail = isCancelingToFail
-        vc.verifyHandler = { [weak self] code in
-            self?.codeConfirmationControllerDidContinue(with: code)
+        vc.verifyHandler = { [weak self] (code: String, idem: UUID) in
+            self?.codeConfirmationControllerDidContinue(with: code, for: idem)
         }
         vc.cancelHandler = { [weak self] in
             self?.codeConfirmationControllerDidCancel()
@@ -95,8 +95,8 @@ extension CoinbaseTransactionHandling where Self: BaseViewController {
     func transferFromCoinbaseToWalletDidFail(with error: Error) {
         if case Coinbase.Error.transactionFailed(let r) = error {
             switch r {
-            case .twoFactorRequired:
-                showCodeConfirmationController()
+            case .twoFactorRequired(let idem):
+                showCodeConfirmationController(idem: idem)
             case .invalidVerificationCode:
                 showInvalidCodeState()
             case .invalidAmount, .enteredAmountTooLow, .limitExceded, .notEnoughFunds:

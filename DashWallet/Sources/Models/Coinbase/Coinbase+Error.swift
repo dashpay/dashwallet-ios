@@ -111,7 +111,7 @@ extension Coinbase {
 
             case invalidAmount
             case failedToObtainNewAddress
-            case twoFactorRequired
+            case twoFactorRequired(idem: UUID)
             case invalidVerificationCode
             case notEnoughFunds
             case enteredAmountTooLow(minimumAmount: String)

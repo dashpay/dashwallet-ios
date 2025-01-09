@@ -98,7 +98,7 @@ extension CBAccount {
 
 // MARK: Transfer
 extension CBAccount {
-    public func send(amount: UInt64, verificationCode: String?) async throws -> CoinbaseTransaction {
+    public func send(amount: UInt64, verificationCode: String?, idem: UUID?) async throws -> CoinbaseTransaction {
         // NOTE: Maybe better to get the address once and use it during the tx flow
         guard let dashWalletAddress = DWEnvironment.sharedInstance().currentAccount.receiveAddress else {
             fatalError("No wallet")
@@ -121,15 +121,15 @@ extension CBAccount {
 
         // NOTE: Make sure we format the amount back into coinbase format (en_US)
         let coinbaseAmount = amount.formattedDashAmountWithoutCurrencySymbol.coinbaseAmount()
-
+        let currentIdem = idem ?? UUID()
+        
         do {
             try await authInterop.refreshTokenIfNeeded()
-
             let dto = CoinbaseTransactionsRequest(type: .send,
                                                   to: dashWalletAddress,
                                                   amount: coinbaseAmount,
                                                   currency: kDashCurrency,
-                                                  idem: UUID())
+                                                  idem: currentIdem)
 
             let result: BaseDataResponse<CoinbaseTransaction> = try await httpClient
                 .request(.sendCoinsToWallet(accountId: accountId, verificationCode: verificationCode, dto: dto))
@@ -140,7 +140,7 @@ extension CBAccount {
             DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 400")
             if let err = r.error?.errors.first {
                 if err.id == .twoFactorRequired {
-                    throw Coinbase.Error.transactionFailed(.twoFactorRequired)
+                    throw Coinbase.Error.transactionFailed(.twoFactorRequired(idem: currentIdem))
                 } else {
                     throw Coinbase.Error.transactionFailed(.unknown(err))
                 }
