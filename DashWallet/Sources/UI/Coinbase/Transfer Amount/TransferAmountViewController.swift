@@ -161,8 +161,8 @@ extension TransferAmountViewController: PaymentControllerPresentationContextProv
 // MARK: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling
 
 extension TransferAmountViewController: CoinbaseCodeConfirmationPreviewing, CoinbaseTransactionHandling {
-    func codeConfirmationControllerDidContinue(with code: String) {
-        transferModel.continueTransferFromCoinbase(with: code)
+    func codeConfirmationControllerDidContinue(with code: String, for idem: UUID) {
+        transferModel.continueTransferFromCoinbase(with: code, idem: idem)
     }
 
     func codeConfirmationControllerDidCancel() {
