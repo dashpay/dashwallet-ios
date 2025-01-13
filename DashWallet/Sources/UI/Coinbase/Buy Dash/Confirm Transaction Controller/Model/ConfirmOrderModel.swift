@@ -59,7 +59,7 @@ final class ConfirmOrderModel: OrderPreviewModel {
         let result = try await Coinbase.shared.placeCoinbaseBuyOrder(amount: amountToTransfer)
         
         if !result.success {
-            throw Coinbase.Error.transactionFailed(.message(result.errorResponse?.message ?? result.failureReason))
+            throw Coinbase.Error.transactionFailed(.message(result.errorResponse?.message ?? result.failureReason ?? "unknown error"))
         }
         
         try await transferFromCoinbase(amount: amountToTransfer, with: nil)
