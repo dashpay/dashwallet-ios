@@ -101,9 +101,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     
     private var currentMode: CoinJoinMode {
         get {
-            let current = CoinJoinMode(rawValue: UserDefaults.standard.integer(forKey: chainModeKey))
-            DSLogger.log("[SW] CoinJoin: get currentMode: \(current == nil ? "nil" : String(describing: current!))")
-            let final = current ?? .none
+            let final = CoinJoinMode(rawValue: UserDefaults.standard.integer(forKey: chainModeKey)) ?? .none
             
             if self.mode != final {
                 self.mode = final

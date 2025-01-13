@@ -25,6 +25,7 @@
 #import "DWUIKit.h"
 #import "DWWindow.h"
 #import "SFSafariViewController+DashWallet.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -137,29 +138,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (IBAction)contactSupportButtonAction:(id)sender {
-    NSArray *logFiles = [[DSLogger sharedInstance] logFiles];
-
-    if ([MFMailComposeViewController canSendMail]) {
-        MFMailComposeViewController *mailComposer = [[MFMailComposeViewController alloc] init];
-        mailComposer.mailComposeDelegate = self;
-
-        NSString *email = [NSBundle mainBundle].infoDictionary[@"SupportEmail"];
-        NSString *version = [NSBundle mainBundle].infoDictionary[@"CFBundleShortVersionString"];
-        [mailComposer setToRecipients:@[ email ]];
-        [mailComposer setSubject:[NSString stringWithFormat:NSLocalizedString(@"iOS Dash Wallet: %@ Reported issue", @""), version]];
-
-        for (NSURL *logFileURL in logFiles) {
-            NSData *logData = [NSData dataWithContentsOfURL:logFileURL];
-            [mailComposer addAttachmentData:logData mimeType:@"text/plain" fileName:[logFileURL lastPathComponent]];
-        }
-
-        [self presentViewController:mailComposer animated:YES completion:nil];
-    }
-    else {
-        UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:logFiles
-                                                                                             applicationActivities:nil];
-        [self presentViewController:activityViewController animated:YES completion:nil];
-    }
+    [self presentSupportEmailController];
 }
 
 #pragma mark - Notifications

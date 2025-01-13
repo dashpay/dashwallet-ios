@@ -17,10 +17,10 @@
 
 import SwiftUI
 
-struct CrowdNodeGroupedTransactionsScreen: View {
+struct GroupedTransactionsScreen: View {
     @State private var currentTag: String?
     
-    let model: CNCreateAccountTxDetailsModel!
+    let model: GroupedTransactions!
     @Binding var backNavigationRequested: Bool
     var onShowBackButton: (Bool) -> Void
     
@@ -34,7 +34,7 @@ struct CrowdNodeGroupedTransactionsScreen: View {
                                 .font(.subheadline)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
-                            DashAmount(amount: model.netAmount, font: .largeTitle, dashSymbolFactor: 0.7)
+                            DashAmount(amount: model.amount, font: .largeTitle, dashSymbolFactor: 0.7)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             Text(model.fiatAmount)
@@ -58,13 +58,13 @@ struct CrowdNodeGroupedTransactionsScreen: View {
                     
                 Section {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(NSLocalizedString("Why do I see all these transactions?", comment: "Crowdnode"))
+                        Text(NSLocalizedString("Why do I see all these transactions?", comment: "Grouped Transactions"))
                             .font(.footnote)
                             .fontWeight(.medium)
                             .foregroundStyle(Color.tertiaryText)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             
-                        Text(NSLocalizedString("Your CrowdNode account was created using these transactions. ", comment: "Crowdnode"))
+                        Text(model.infoText)
                             .font(.subheadline)
                             .foregroundColor(Color.primaryText)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -75,30 +75,30 @@ struct CrowdNodeGroupedTransactionsScreen: View {
                     .cornerRadius(10)
                     .padding()
                 }
-                
     
                 Section {
-                    VStack(spacing: 0) {
-                        ForEach(model.transactions, id: \.self) { txItem in
+                    LazyVStack(spacing: 0) {
+                        ForEach(model.transactions, id: \.txHashHexString) { txItem in
                             ZStack {
                                 NavigationLink(
-                                    destination: TXDetailVCWrapper(
-                                                    tx: txItem,
-                                                    navigateBack: $backNavigationRequested,
-                                                    onDismissed: {
-                                                        onShowBackButton(false)
-                                                    }
-                                                 ).navigationBarHidden(true),
+                                    destination:
+                                        TXDetailVCWrapper(
+                                            tx: txItem,
+                                            navigateBack: $backNavigationRequested,
+                                            onDismissed: {
+                                                onShowBackButton(false)
+                                            }
+                                        ).navigationBarHidden(true),
                                     tag: txItem.txHashHexString,
                                     selection: self.$currentTag
                                 ) {
                                     SwiftUI.EmptyView()
                                 }.opacity(0)
-                                                    
+
                                 TransactionPreview(
                                     title: txItem.stateTitle,
-                                    subtitle: txItem.shortDateString,
-                                    icon: .custom(txItem.direction.iconName),
+                                    subtitle: txItem.shortTimeString,
+                                    icon: .custom(txItem.iconName),
                                     dashAmount: txItem.signedDashAmount,
                                     overrideFiatAmount: txItem.fiatAmount
                                 ) {
@@ -120,4 +120,3 @@ struct CrowdNodeGroupedTransactionsScreen: View {
         .background(Color.primaryBackground)
     }
 }
-

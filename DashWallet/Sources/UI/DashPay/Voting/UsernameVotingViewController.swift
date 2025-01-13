@@ -136,7 +136,8 @@ extension UsernameVotingViewController {
                 case .revoked:
                     self?.showToast(text: NSLocalizedString("Your vote was cancelled", comment: "Voting"), icon: .system("checkmark.circle.fill"), duration: 2)
                 case .blocked:
-                    self?.showToast(text: NSLocalizedString("Blocked ‘\(self?.viewModel.selectedRequest?.username ?? "")’ username", comment: "Voting"), icon: .system("checkmark.circle.fill"), duration: 2)
+                    let username = self?.viewModel.selectedRequest?.username ?? ""
+                    self?.showToast(text: String.localizedStringWithFormat(NSLocalizedString("Blocked '%@' username", comment: "Voting"), username), icon: .system("checkmark.circle.fill"), duration: 2)
                 default:
                     break
                 }
@@ -251,7 +252,7 @@ extension UsernameVotingViewController {
             self.navigateToBlock(request: request)
         } else { // TODO: replace with correct logic
             self.viewModel.unblock(request: request.requestId)
-            self.showToast(text: NSLocalizedString("Unblocked ‘\(request.username)’ username", comment: "Voting"), icon: .system("checkmark.circle.fill"), duration: 2)
+            self.showToast(text: String.localizedStringWithFormat(NSLocalizedString("Unblocked '%@' username", comment: "Voting"), request.username), icon: .system("checkmark.circle.fill"), duration: 2)
         }
     }
     

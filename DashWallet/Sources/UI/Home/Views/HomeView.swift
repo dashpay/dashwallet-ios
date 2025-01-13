@@ -421,10 +421,11 @@ struct HomeViewContent<Content: View>: View {
     ) -> some View {
         switch txDataItem {
         case .crowdnode(let set):
+            let firstTx = set.transactionMap.values.first
             TransactionPreview(
                 title: NSLocalizedString("CrowdNode · Account", comment: "Crowdnode"),
-                subtitle: set.transactions.values.first?.formattedShortTxTime ?? "",
-                topText: String(format: NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactions.count),
+                subtitle: firstTx?.shortTimeString ?? "",
+                topText: String(format: NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
                 icon: .custom("tx.item.cn.icon"),
                 dashAmount: set.amount
             ) {
@@ -433,14 +434,15 @@ struct HomeViewContent<Content: View>: View {
             .frame(height: 80)
     
         case .coinjoin(let set):
+            let firstTx = set.transactionMap.values.first
             TransactionPreview(
-                title: NSLocalizedString("CoinJoin Mixing", comment: "CoinJoin"),
-                subtitle: set.transactions.values.first?.formattedShortTxTime ?? "",
-                topText: String(format: NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactions.count),
-                icon: .custom("tx.item.cn.icon"), // TODO
+                title: NSLocalizedString("Mixing Transactions", comment: "CoinJoin"),
+                subtitle: firstTx?.shortTimeString ?? "",
+                topText: String(format: NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
+                icon: .custom("tx.item.coinjoin.icon"),
                 dashAmount: set.amount
             ) {
-//                self.selectedTxDataItem = txDataItem
+                self.selectedTxDataItem = txDataItem
             }
             .frame(height: 80)
             
@@ -494,16 +496,16 @@ struct TransactionDetailsSheet: View {
     ) -> some View {
         switch txDataItem {
         case .crowdnode(let set):
-            CrowdNodeGroupedTransactionsScreen(
-                model: CNCreateAccountTxDetailsModel(transactions: set.transactions.values.map { Transaction(transaction: $0) }),
+            GroupedTransactionsScreen(
+                model: set,
                 backNavigationRequested: $backNavigationRequested,
                 onShowBackButton: { show in
                     showBackButton = show
                 }
             )
         case .coinjoin(let set):
-            CrowdNodeGroupedTransactionsScreen( // TODO
-                model: CNCreateAccountTxDetailsModel(transactions: set.transactions.values.map { Transaction(transaction: $0) }),
+            GroupedTransactionsScreen(
+                model: set,
                 backNavigationRequested: $backNavigationRequested,
                 onShowBackButton: { show in
                     showBackButton = show
@@ -514,4 +516,3 @@ struct TransactionDetailsSheet: View {
         }
     }
 }
-

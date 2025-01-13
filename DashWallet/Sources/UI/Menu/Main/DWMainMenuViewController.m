@@ -167,31 +167,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWMainMenuItemType_Support: {
-            NSArray *logFiles = [[DSLogger sharedInstance] logFiles];
-
-            if ([MFMailComposeViewController canSendMail]) {
-                MFMailComposeViewController *mailComposer = [[MFMailComposeViewController alloc] init];
-                mailComposer.mailComposeDelegate = self;
-
-                NSString *email = [NSBundle mainBundle].infoDictionary[@"SupportEmail"];
-                NSString *version = [NSBundle mainBundle].infoDictionary[@"CFBundleShortVersionString"];
-                [mailComposer setToRecipients:@[ email ]];
-                [mailComposer setSubject:[NSString stringWithFormat:NSLocalizedString(@"iOS Dash Wallet: %@ Reported issue", @""), version]];
-
-                for (NSURL *logFileURL in logFiles) {
-                    NSData *logData = [NSData dataWithContentsOfURL:logFileURL];
-                    NSString *fileName = [logFileURL lastPathComponent];
-                    NSString *mimeType = [fileName hasSuffix:@".gz"] ? @"application/gzip" : @"text/plain";
-                    [mailComposer addAttachmentData:logData mimeType:mimeType fileName:fileName];
-                }
-
-                [self presentViewController:mailComposer animated:YES completion:nil];
-            }
-            else {
-                UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:logFiles
-                                                                                                     applicationActivities:nil];
-                [self presentViewController:activityViewController animated:YES completion:nil];
-            }
+            [self presentSupportEmailController];
             break;
         }
 #if DASHPAY

@@ -1,6 +1,6 @@
-//
+//  
 //  Created by Andrei Ashikhmin
-//  Copyright © 2022 Dash Core Group. All rights reserved.
+//  Copyright © 2024 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,8 +15,11 @@
 //  limitations under the License.
 //
 
-protocol TransactionWrapper {
-    var transactionMap: [Data: Transaction] { get }
-    var amount: Int64 { get }
-    func tryInclude(tx: DSTransaction) -> Bool
+class GroupedTransactions {
+    var title: String { "" }
+    var iconName: String { "" }
+    var infoText: String { "" }
+    var fiatAmount: String { "" }
+    var amount: Int64 { 0 }
+    var transactions: [Transaction] { [] }
 }

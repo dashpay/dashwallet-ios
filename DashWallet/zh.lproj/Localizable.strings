@@ -25,6 +25,9 @@
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
 
+/* Voting - multiple keys warning */
+"%d votes will be cast as you have multiple voting keys stored in the wallet" = "%d votes will be cast as you have multiple voting keys stored in the wallet";
+
 /* Voting */
 "%ld duplicates" = "%ld 重复项";
 
@@ -224,6 +227,9 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "应用程序 %@ 想要获取您的公钥. 它可以被用作查看您的钱包记录, 但无法用来移动您钱包中的Dash.";
 
 /* Voting */
+"Approvals" = "Approvals";
+
+/* Voting */
 "Approve" = "Approve";
 
 /* Coinbase/Buy Dash/Cancel Order     */
@@ -327,6 +333,9 @@
 
 /* No comment provided by engineer. */
 "Block #%d of %d" = "%2$d中#%1$d的区块";
+
+/* Voting */
+"Blocked '%@' username" = "Blocked '%@' username";
 
 /* Buy
    buy */
@@ -447,7 +456,19 @@
 "CoinJoin" = "CoinJoin";
 
 /* CoinJoin */
+"CoinJoin Collateral Inputs" = "CoinJoin Collateral Inputs";
+
+/* CoinJoin */
+"CoinJoin Create Denominations" = "CoinJoin Create Denominations";
+
+/* CoinJoin */
 "CoinJoin Mixing" = "CoinJoin Mixing";
+
+/* CoinJoin */
+"CoinJoin Mixing Fee" = "CoinJoin Mixing Fee";
+
+/* CoinJoin */
+"CoinJoin Send" = "CoinJoin Send";
 
 /* No comment provided by engineer. */
 "Confirm" = "确认";
@@ -664,6 +685,9 @@
 
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "默认货币, 快捷方式, 关于...";
+
+/* Voting */
+"Default filter setting" = "Default filter setting";
 
 /* Location Service Status */
 "Denied" = "拒绝";
@@ -1211,7 +1235,7 @@
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "将 Dash从 Coinbase转账到此设备的 Dash钱包最多可能需要10分钟.";
 
 /* CoinJoin */
-"It is recommended to be on a Wi-Fi network to avoid losing any funds" = "It is recommended to be on a Wi-Fi network to avoid losing any funds";
+"It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees" = "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees";
 
 /* Coinbase */
 "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "具有任何水平技术专长的进阶用户都很难决定您的交易历史记录";
@@ -1419,6 +1443,9 @@
 "Mixing Paused ·" = "Mixing Paused ·";
 
 /* CoinJoin */
+"Mixing Transactions" = "Mixing Transactions";
+
+/* CoinJoin */
 "Mixing your Dash coins will make your transactions more private" = "通过混合您的Dash将使您的交易更具隐私性";
 
 /* CoinJoin */
@@ -1505,6 +1532,9 @@
 /* Explore Dash/Merchants/Filters */
 "No Results Found" = "未找到结果";
 
+/* Voting */
+"No votes left" = "No votes left";
+
 /* No comment provided by engineer. */
 "Node IP" = "节点 IP";
 
@@ -1552,6 +1582,9 @@
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "一旦 %@ 通过了您的朋友申请, 您就可以使用用户名直接付款";
+
+/* Voting */
+"One vote left" = "One vote left";
 
 /* Online */
 "Online" = "线上";
@@ -2163,6 +2196,9 @@
 /* CoinJoin */
 "Stop Mixing" = "停止混币";
 
+/* Voting */
+"Submit" = "Submit";
+
 /* No comment provided by engineer. */
 "Swept!" = "已清除!";
 
@@ -2234,6 +2270,9 @@
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Dash已成功存入您的 Coinbase账户. 但是把 Dash转账到此设备上的 Dash钱包时出错.";
+
+/* Voting */
+"The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter.";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "您选择的图片将匿名上传到 Imgur.";
@@ -2408,6 +2447,12 @@
 /* No comment provided by engineer. */
 "Unable to upload your picture. Please try again." = "无法上传您的图片. 请再试一次.";
 
+/* Voting */
+"Unblock" = "Unblock";
+
+/* Voting */
+"Unblocked '%@' username" = "Unblocked '%@' username";
+
 /* No comment provided by engineer. */
 "Unknown" = "未知";
 
@@ -2545,9 +2590,6 @@
 
 /* Voting */
 "Vote for All" = "投给所有";
-
-/* Voting */
-"Vote only on duplicates" = "只对重复项投票";
 
 /* Voting */
 "Vote to Approve" = "投票通过";
@@ -2715,9 +2757,6 @@
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "您可以以下面任何格式来输入您的密钥: WIF/base58/base64/hex";
 
-/* Voting */
-"You can review all requests but you only need to vote on duplicates" = "您能够查看所有申请, 但您只需对重复项投票";
-
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "您可以查看有关您的存款, 提款和奖励收入的详细信息.";
 
@@ -2730,6 +2769,9 @@
 /* Usernames */
 "You chose “%@” as your username." = "You chose “%@” as your username.";
 
+/* CoinJoin */
+"You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
+
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "您目前没有任何联系人";
 
@@ -2741,6 +2783,12 @@
 
 /* Usernames */
 "You have %@ Dash.\nSome usernames cost up to %@ Dash." = "You have %1$@ Dash.\nSome usernames cost up to %2$@ Dash.";
+
+/* Voting */
+"You have already voted for this username %ld times. You can only cast one more vote for this username." = "You have already voted for this username %ld times. You can only cast one more vote for this username.";
+
+/* Voting */
+"You have already voted for this username %ld times. You cannot vote for it anymore." = "You have already voted for this username %ld times. You cannot vote for it anymore.";
 
 /* No comment provided by engineer. */
 "You have been invited by %@. Start using Dash cryptocurrency." = "您已被%@邀请. 开始使用 Dash加密数字货币.";
@@ -2824,7 +2872,7 @@
 "Your CrowdNode account is set up and ready to use!" = "您的CrowdNode账户已设置好并可以使用了!";
 
 /* Crowdnode */
-"Your CrowdNode account was created using these transactions. " = "您的CrowdNode账户是以这些交易创建的.";
+"Your CrowdNode account was created using these transactions." = "Your CrowdNode account was created using these transactions.";
 
 /* CrowdNode */
 "Your CrowdNode address has been confirmed." = "您的CrowdNode地址已确认.";
