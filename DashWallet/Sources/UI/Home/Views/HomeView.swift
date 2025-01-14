@@ -172,7 +172,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
             let isDPInfoHidden = DWGlobalOptions.sharedInstance().dashPayRegistrationOpenedOnce || model.shouldShowCreateUserNameButton() != true
             let isVotingEnabled = VotingPrefs.shared.votingEnabled
             
-            if let usernameRequestId = VotingPrefs.shared.requestedUsernameId, isVotingEnabled {
+            if let usernameRequestId = UsernamePrefs.shared.requestedUsernameId, isVotingEnabled {
                 setVotingState(dpInfoHidden: isDPInfoHidden, requestId: usernameRequestId)
             } else {
                 setIdentity(dpInfoHidden: isDPInfoHidden, model: model)

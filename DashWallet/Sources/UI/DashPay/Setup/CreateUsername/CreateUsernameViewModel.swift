@@ -48,7 +48,7 @@ struct CreateUsernameUIState {
 class CreateUsernameViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     private let dao: UsernameRequestsDAO = UsernameRequestsDAOImpl.shared
-    private let prefs = VotingPrefs.shared
+    private let prefs = UsernamePrefs.shared
     private let illegalChars = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-").inverted
     static let shared = CreateUsernameViewModel()
     

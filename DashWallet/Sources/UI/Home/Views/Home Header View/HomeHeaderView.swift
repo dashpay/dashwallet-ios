@@ -86,10 +86,10 @@ final class HomeHeaderView: UIView {
             guard let self = self else { return }
             
             VotingPrefs.shared.votingPanelClosed = true
-            VotingPrefs.shared.requestedUsernameId = nil
+            UsernamePrefs.shared.requestedUsernameId = nil
             
             if (MOCK_DASHPAY.boolValue) {
-                DWGlobalOptions.sharedInstance().dashpayUsername = VotingPrefs.shared.requestedUsername
+                DWGlobalOptions.sharedInstance().dashpayUsername = UsernamePrefs.shared.requestedUsername
             }
             
             self.votingView.isHidden = true

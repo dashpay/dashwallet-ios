@@ -23,7 +23,7 @@ enum DPWelcomState {
 }
 
 class DPWelcomeMenuView: UIView {
-    private let prefs = VotingPrefs.shared
+    private let prefs = UsernamePrefs.shared
     
     private let titleLabel: UILabel = {
         let label = UILabel()
