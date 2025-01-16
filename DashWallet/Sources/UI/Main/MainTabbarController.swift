@@ -166,18 +166,21 @@ extension MainTabbarController {
         var nvc = BaseNavigationController(rootViewController: homeVC)
         nvc.tabBarItem = item
         viewControllers.append(nvc)
-            
-        #if DASHPAY
-        // Contacts
-        item = UITabBarItem(title: nil, image: MainTabbarTabs.contacts.icon, selectedImage: MainTabbarTabs.contacts.selectedIcon)
-        item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
         
-        let contactsVC = DWRootContactsViewController(payModel: homeModel.payModel, dataProvider: homeModel.getDataProvider(), dashPayModel: homeModel.dashPayModel, dashPayReady: homeModel)
-        contactsNavigationController = contactsVC
-        nvc = BaseNavigationController(rootViewController: contactsVC)
-        nvc.tabBarItem = item
-        viewControllers.append(nvc)
-        #endif
+        let identity = DWEnvironment.sharedInstance().currentWallet.defaultBlockchainIdentity
+        
+        if identity != nil {
+            // Contacts
+            item = UITabBarItem(title: nil, image: MainTabbarTabs.contacts.icon, selectedImage: MainTabbarTabs.contacts.selectedIcon)
+            item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
+            
+            let contactsVC = DWRootContactsViewController(payModel: homeModel.payModel, dataProvider: homeModel.getDataProvider(), dashPayModel: homeModel.dashPayModel, dashPayReady: homeModel)
+            contactsNavigationController = contactsVC
+            nvc = BaseNavigationController(rootViewController: contactsVC)
+            nvc.tabBarItem = item
+            viewControllers.append(nvc)
+        }
+        
 
         // Payment
         item = UITabBarItem(title: "", image: UIImage(), tag: 2)
@@ -187,18 +190,18 @@ extension MainTabbarController {
         vc.tabBarItem = item
         viewControllers.append(vc)
         
-        #if DASHPAY
-        // Explore
-        item = UITabBarItem(title: nil, image: MainTabbarTabs.explore.icon, selectedImage: MainTabbarTabs.explore.selectedIcon)
-        item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
-        
-        let exploreVC = DWExploreTestnetViewController()
-        exploreVC.delegate = self
-        exploreNavigationController = exploreVC
-        nvc = BaseNavigationController(rootViewController: exploreVC)
-        nvc.tabBarItem = item
-        viewControllers.append(nvc)
-        #endif
+        if identity != nil {
+            // Explore
+            item = UITabBarItem(title: nil, image: MainTabbarTabs.explore.icon, selectedImage: MainTabbarTabs.explore.selectedIcon)
+            item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
+            
+            let exploreVC = DWExploreTestnetViewController()
+            exploreVC.delegate = self
+            exploreNavigationController = exploreVC
+            nvc = BaseNavigationController(rootViewController: exploreVC)
+            nvc.tabBarItem = item
+            viewControllers.append(nvc)
+        }
 
         // More
         item = UITabBarItem(title: nil, image: MainTabbarTabs.more.icon, selectedImage: MainTabbarTabs.more.selectedIcon)
