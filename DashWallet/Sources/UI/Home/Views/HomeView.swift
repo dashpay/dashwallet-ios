@@ -21,8 +21,8 @@ import SwiftUI
 // MARK: - HomeViewDelegate
 
 protocol HomeViewDelegate: AnyObject {
-    func homeView(_ homeView: HomeView, showTxFilter sender: UIView)
-    func homeView(_ homeView: HomeView, showSyncingStatus sender: UIView)
+    func homeViewShowTxFilter()
+    func homeViewShowSyncingStatus()
     func homeViewShowCoinJoin()
     
 #if DASHPAY
@@ -37,7 +37,6 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
     weak var delegate: HomeViewDelegate?
 
     private(set) var headerView: HomeHeaderView!
-    private(set) var syncingHeaderView: SyncingHeaderView!
     let viewModel = HomeViewModel.shared
 
     @objc
@@ -83,14 +82,10 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
         headerView = HomeHeaderView(frame: CGRect.zero)
         headerView.delegate = self
         
-        syncingHeaderView = SyncingHeaderView(frame: CGRect.zero)
-        syncingHeaderView.delegate = self
-        
         let content = HomeViewContent(
             viewModel: self.viewModel,
             delegate: self.delegate,
-            balanceHeader: { UIViewWrapper(uiView: self.headerView) },
-            syncingHeader: { UIViewWrapper(uiView: self.syncingHeaderView) }
+            balanceHeader: { UIViewWrapper(uiView: self.headerView) }
         )
         let swiftUIController = UIHostingController(rootView: content)
         swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
@@ -227,18 +222,6 @@ extension HomeView: HomeHeaderViewDelegate {
     }
 }
 
-// MARK: SyncingHeaderViewDelegate
-
-extension HomeView: SyncingHeaderViewDelegate {
-    func syncingHeaderView(_ view: SyncingHeaderView, syncingButtonAction sender: UIButton) {
-        delegate?.homeView(self, showSyncingStatus: sender)
-    }
-
-    func syncingHeaderView(_ view: SyncingHeaderView, filterButtonAction sender: UIButton) {
-        delegate?.homeView(self, showTxFilter: sender)
-    }
-}
-
 struct TxPreviewModel: Identifiable, Equatable {
     var id: String
     var title: String
@@ -266,7 +249,6 @@ struct HomeViewContent<Content: View>: View {
     @StateObject var viewModel: HomeViewModel
     weak var delegate: HomeViewDelegate?
     @ViewBuilder var balanceHeader: () -> Content
-    @ViewBuilder var syncingHeader: () -> Content
     
     private let topOverscrollSize: CGFloat = 1000 // Fixed value for top overscroll area
 
@@ -309,8 +291,11 @@ struct HomeViewContent<Content: View>: View {
                     }
                     #endif
                     
-                    syncingHeader()
-                        .frame(height: 50)
+                    SyncingHeaderView(onFilterTap: {
+                        delegate?.homeViewShowTxFilter()
+                    }, onSyncTap: {
+                        delegate?.homeViewShowSyncingStatus()
+                    })
                     
                     if viewModel.txItems.isEmpty {
                         Text(NSLocalizedString("There are no transactions to display", comment: ""))

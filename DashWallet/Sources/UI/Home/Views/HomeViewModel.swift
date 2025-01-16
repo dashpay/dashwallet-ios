@@ -96,11 +96,9 @@ class HomeViewModel: ObservableObject {
             self.recalculateHeight()
         }
         model.stateDidChage = { state in
-            self.reloadTxDataSource()
-            self.reloadShortcuts()
+            self.onSyncStateChanged()
         }
-        self.reloadTxDataSource()
-        self.reloadShortcuts()
+        self.onSyncStateChanged()
         self.recalculateHeight()
 
         self.observeCoinJoin()
@@ -383,6 +381,12 @@ extension HomeViewModel {
             mixed: Double(coinJoinService.progress.coinJoinBalance) / Double(DUFFS),
             total: Double(coinJoinService.progress.totalBalance) / Double(DUFFS)
         )
+    }
+    
+    private func onSyncStateChanged() {
+        self.reloadTxDataSource()
+        self.reloadShortcuts()
+        self.showJoinDashpay = model.state == .syncDone
     }
 }
 
