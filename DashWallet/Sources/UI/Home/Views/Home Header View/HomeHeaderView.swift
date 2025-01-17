@@ -37,20 +37,6 @@ final class HomeHeaderView: UIView {
     private(set) var shortcutsView: ShortcutsView!
     private(set) var stackView: UIStackView!
 
-    // Available only in DashPay
-    #if DASHPAY
-    private let votingView: DPVotingResultView = DPVotingResultView(frame: .zero)
-    var isVotingViewHidden = true {
-        didSet {
-//            votingView.isHidden = isVotingViewHidden TODO
-        }
-    }
-    var votingState: DPVotingState {
-        get { return votingView.state }
-        set { votingView.state = newValue }
-    }
-    #endif
-
     weak var shortcutsDelegate: ShortcutsActionDelegate? {
         get {
             shortcutsView.actionDelegate
@@ -76,31 +62,7 @@ final class HomeHeaderView: UIView {
         shortcutsView = ShortcutsView(frame: .zero)
         shortcutsView.translatesAutoresizingMaskIntoConstraints = false
 
-    #if DASHPAY
-        votingView.translatesAutoresizingMaskIntoConstraints = false
-        votingView.isHidden = true
-        votingView.onAction = { [weak self] in
-            // TODO: show dashpay flow
-        }
-        votingView.onClose = { [weak self] in
-            guard let self = self else { return }
-            
-            VotingPrefs.shared.votingPanelClosed = true
-            UsernamePrefs.shared.requestedUsernameId = nil
-            
-            if (MOCK_DASHPAY.boolValue) {
-                DWGlobalOptions.sharedInstance().dashpayUsername = UsernamePrefs.shared.requestedUsername
-            }
-            
-            self.votingView.isHidden = true
-            self.delegate?.homeHeaderViewDidUpdateContents(self)
-        }
-
-        let views: [UIView] = [balanceView, shortcutsView, syncView, votingView]
-    #else
         let views: [UIView] = [balanceView, shortcutsView, syncView]
-    #endif
-
         let stackView = UIStackView(arrangedSubviews: views)
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical

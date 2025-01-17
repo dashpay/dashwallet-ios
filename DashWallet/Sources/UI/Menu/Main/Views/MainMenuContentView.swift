@@ -23,10 +23,10 @@ protocol MainMenuContentViewDelegate: AnyObject {
     func mainMenuContentView(_ view: MainMenuContentView, didSelectMenuItem item: DWMainMenuItem)
     
     #if DASHPAY
-    func mainMenuContentView(_ view: MainMenuContentView, joinDashPayAction sender: UIButton)
-    func mainMenuContentView(_ view: MainMenuContentView, showQRAction sender: UIButton)
-    func mainMenuContentView(_ view: MainMenuContentView, editProfileAction sender: UIButton)
-    func mainMenuContentView(_ view: MainMenuContentView, showCoinJoin sender: UIButton)
+    func mainMenuContentView(joinDashPayAction view: MainMenuContentView)
+    func mainMenuContentView(showQRAction view: MainMenuContentView)
+    func mainMenuContentView(editProfileAction view: MainMenuContentView)
+    func mainMenuContentView(showCoinJoin view: MainMenuContentView)
     #endif
 }
 
@@ -47,7 +47,7 @@ class MainMenuContentView: UIView {
     #if DASHPAY
     @objc var userModel: DWCurrentUserProfileModel? = nil
     private let headerView: DWUserProfileContainerView
-    private let joinHeaderView: DPWelcomeMenuView
+    private var welcomeView: JoinDashPayView!
     
     var shouldShowMixDashDialog: Bool {
         get { CoinJoinService.shared.mode == .none || !UsernamePrefs.shared.mixDashShown }
@@ -68,7 +68,6 @@ class MainMenuContentView: UIView {
         
         #if DASHPAY
         self.headerView = DWUserProfileContainerView(frame: .zero)
-        self.joinHeaderView = DPWelcomeMenuView(frame: .zero)
         #endif
         
         super.init(frame: frame)
@@ -81,8 +80,19 @@ class MainMenuContentView: UIView {
     }
     
     // MARK: - Setup
+    private var height = 0.0
     
     private func setupViews() {
+        welcomeView = JoinDashPayView(onTap: {
+            self.joinButtonAction()
+        }, onSizeChange: { size in
+            self.height = size.height
+            if let header = self.tableView.tableHeaderView {
+                header.frame = CGRect(x: 0, y: 0, width: self.tableView.bounds.width, height: self.height)
+                self.tableView.tableHeaderView = header
+            }
+        })
+        
         backgroundColor = UIColor.dw_secondaryBackground()
         
         tableView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -101,9 +111,6 @@ class MainMenuContentView: UIView {
         
         #if DASHPAY
         headerView.delegate = self
-        
-        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(joinButtonAction(_:)))
-        joinHeaderView.addGestureRecognizer(tapRecognizer)
         #endif
     }
     
@@ -113,16 +120,6 @@ class MainMenuContentView: UIView {
         super.layoutSubviews()
         
         tableView.frame = self.bounds
-        #if DASHPAY
-        if let tableHeaderView = tableView.tableHeaderView {
-            let headerSize = tableHeaderView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
-            if tableHeaderView.frame.height != headerSize.height {
-                tableHeaderView.frame = CGRect(x: 0, y: 0, width: headerSize.width, height: headerSize.height)
-                tableView.tableHeaderView = tableHeaderView
-            }
-        }
-        joinHeaderView.refreshState()
-        #endif
     }
     
     // MARK: - Public Methods
@@ -134,37 +131,41 @@ class MainMenuContentView: UIView {
     }
     
     private func updateHeader() {
-        var header: UIView = joinHeaderView
-        
         if userModel?.blockchainIdentity != nil {
             headerView.update()
-            header = headerView
         }
         
+        let hostingController = UIHostingController(
+            rootView: welcomeView
+                .padding(.bottom, 20)
+                .padding(.horizontal, 18)
+        )
+        hostingController.view.backgroundColor = .clear
+        let header = hostingController.view
         tableView.tableHeaderView = header
         setNeedsLayout()
     }
     
-    @objc private func joinButtonAction(_ sender: UIButton) {
+    private func joinButtonAction() {
         if shouldShowMixDashDialog {
-            self.showMixDashDialog(sender)
+            self.showMixDashDialog()
         } else if shouldShowDashPayInfo {
-            self.showDashPayInfo(sender)
+            self.showDashPayInfo()
         } else {
-            self.delegate?.mainMenuContentView(self, joinDashPayAction: sender)
+            self.delegate?.mainMenuContentView(joinDashPayAction: self)
         }
     }
     
-    private func showMixDashDialog(_ sender: UIButton) {
+    private func showMixDashDialog() {
         let swiftUIView = MixDashDialog(
             positiveAction: {
-                self.delegate?.mainMenuContentView(self, showCoinJoin: sender)
+                self.delegate?.mainMenuContentView(showCoinJoin: self)
             }, negativeAction: {
                 if UsernamePrefs.shared.joinDashPayInfoShown {
-                    self.delegate?.mainMenuContentView(self, joinDashPayAction: sender)
+                    self.delegate?.mainMenuContentView(joinDashPayAction: self)
                 } else {
                     UsernamePrefs.shared.joinDashPayInfoShown = true
-                    self.showDashPayInfo(sender)
+                    self.showDashPayInfo()
                 }
             }
         )
@@ -174,13 +175,13 @@ class MainMenuContentView: UIView {
         if let parentVC = self.parentViewController() {
             parentVC.present(hostingController, animated: true, completion: nil)
         } else {
-            delegate?.mainMenuContentView(self, joinDashPayAction: sender)
+            delegate?.mainMenuContentView(joinDashPayAction: self)
         }
     }
     
-    private func showDashPayInfo(_ sender: UIButton) {
+    private func showDashPayInfo() {
         let swiftUIView = JoinDashPayInfoDialog {
-            self.delegate?.mainMenuContentView(self, joinDashPayAction: sender)
+            self.delegate?.mainMenuContentView(joinDashPayAction: self)
         }
         let hostingController = UIHostingController(rootView: swiftUIView)
         hostingController.setDetent(600)
@@ -232,11 +233,11 @@ extension MainMenuContentView: UITableViewDelegate {
 
 extension MainMenuContentView: DWCurrentUserProfileViewDelegate {
     public func currentUserProfileView(_ view: DWCurrentUserProfileView, showQRAction sender: UIButton) {
-        delegate?.mainMenuContentView(self, showQRAction: sender)
+        delegate?.mainMenuContentView(showQRAction: self)
     }
     
     public func currentUserProfileView(_ view: DWCurrentUserProfileView, editProfileAction sender: UIButton) {
-        delegate?.mainMenuContentView(self, editProfileAction: sender)
+        delegate?.mainMenuContentView(editProfileAction: self)
     }
 }
 #endif

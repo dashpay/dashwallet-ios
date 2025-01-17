@@ -65,13 +65,4 @@ class VotingPrefs {
             UserDefaults.standard.set(value, forKey: kIsVotingInfoShown)
         }
     }
-    
-    private var _votingPanelClosed: Bool? = nil
-    var votingPanelClosed: Bool {
-        get { _votingPanelClosed ?? UserDefaults.standard.bool(forKey: kVotingPanelClosed) }
-        set(value) {
-            _votingPanelClosed = value
-            UserDefaults.standard.set(value, forKey: kVotingPanelClosed)
-        }
-    }
 }
