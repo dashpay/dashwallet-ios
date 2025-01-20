@@ -155,7 +155,12 @@ extension VotingViewModel {
                 lastVoteAction = .approved
                 refresh()
                 
-                // TODO: "votes left" check. Replace with actual logic
+                // TODO: MOCK_DASHPAY user own name approval. Remove when not needed
+                if UsernamePrefs.shared.requestedUsernameId == requestId {
+                    DWGlobalOptions.sharedInstance().dashpayUsername = copy.username
+                }
+                
+                // TODO: MOCK_DASHPAY "votes left" check. Replace with actual logic
                 if let groupIndex = groupedRequests.firstIndex(where: { group in
                     group.requests.contains { request in
                         request.requestId == requestId
@@ -176,7 +181,12 @@ extension VotingViewModel {
                 lastVoteAction = .revoked
                 refresh()
                 
-                // TODO: "votes left" check. Replace with actual logic
+                // TODO: MOCK_DASHPAY user own name approval. Remove when not needed
+                if UsernamePrefs.shared.requestedUsernameId == requestId {
+                    DWGlobalOptions.sharedInstance().dashpayUsername = nil
+                }
+                
+                // TODO: MOCK_DASHPAY "votes left" check. Replace with actual logic
                 if let groupIndex = groupedRequests.firstIndex(where: { group in
                     group.requests.contains { request in
                         request.requestId == requestId
@@ -189,7 +199,7 @@ extension VotingViewModel {
     }
     
     func votesLeft(for requestId: String) -> Int {
-        // TODO: "votes left" check. Replace with actual logic
+        // TODO: MOCK_DASHPAY "votes left" check. Replace with actual logic
         let group = groupedRequests.first(where: { group in
             group.requests.contains { request in
                 request.requestId == requestId
@@ -205,6 +215,11 @@ extension VotingViewModel {
                 await dao.update(dto: copy)
                 lastVoteAction = .blocked
                 refresh()
+                
+                // TODO: MOCK_DASHPAY user own name approval. Remove when not needed
+                if UsernamePrefs.shared.requestedUsernameId == requestId {
+                    DWGlobalOptions.sharedInstance().dashpayUsername = nil
+                }
             }
         }
     }
@@ -239,7 +254,7 @@ extension VotingViewModel {
 }
 
 
-// TODO: remove when not needed
+// TODO: MOCK_DASHPAY remove when not needed
 
 extension VotingViewModel {
     func addMockRequest() {

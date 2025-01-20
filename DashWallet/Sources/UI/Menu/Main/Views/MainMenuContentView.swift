@@ -27,6 +27,7 @@ protocol MainMenuContentViewDelegate: AnyObject {
     func mainMenuContentView(showQRAction view: MainMenuContentView)
     func mainMenuContentView(editProfileAction view: MainMenuContentView)
     func mainMenuContentView(showCoinJoin view: MainMenuContentView)
+    func mainMenuContentView(showRequestDetails view: MainMenuContentView)
     #endif
 }
 
@@ -45,7 +46,8 @@ class MainMenuContentView: UIView {
     private let tableView: UITableView
     
     #if DASHPAY
-    @objc var userModel: DWCurrentUserProfileModel? = nil
+    @objc var userModel: CurrentUserProfileModel? = nil
+    let joinDPViewModel = JoinDashPayViewModel(initialState: .none)
     private let headerView: DWUserProfileContainerView
     private var welcomeView: JoinDashPayView!
     
@@ -83,15 +85,35 @@ class MainMenuContentView: UIView {
     private var height = 0.0
     
     private func setupViews() {
-        welcomeView = JoinDashPayView(onTap: {
-            self.joinButtonAction()
-        }, onSizeChange: { size in
-            self.height = size.height
-            if let header = self.tableView.tableHeaderView {
-                header.frame = CGRect(x: 0, y: 0, width: self.tableView.bounds.width, height: self.height)
-                self.tableView.tableHeaderView = header
+        #if DASHPAY
+        welcomeView = JoinDashPayView(
+            viewModel: self.joinDPViewModel,
+            onTap: { state in
+                if state == .registered {
+                    self.delegate?.mainMenuContentView(editProfileAction: self)
+                } else if state == .voting {
+                    self.delegate?.mainMenuContentView(showRequestDetails: self)
+                } else if state == .none {
+                    self.joinButtonAction()
+                }
+            }, onActionButton: { state in
+                if state == .blocked || state == .failed || state == .contested {
+                    self.joinButtonAction()
+                } else {
+                    self.delegate?.mainMenuContentView(editProfileAction: self)
+                    self.joinDPViewModel.markAsDismissed()
+                }
+            }, onDismissButton: { state in
+                self.joinDPViewModel.markAsDismissed()
+            }, onSizeChange: { size in
+                self.height = size.height
+                if let header = self.tableView.tableHeaderView {
+                    header.frame = CGRect(x: 0, y: 0, width: self.tableView.bounds.width, height: self.height)
+                    self.tableView.tableHeaderView = header
+                }
             }
-        })
+        )
+        #endif
         
         backgroundColor = UIColor.dw_secondaryBackground()
         
@@ -126,23 +148,19 @@ class MainMenuContentView: UIView {
     
     #if DASHPAY
     @objc func updateUserHeader() {
-        userModel?.update()
-        updateHeader()
-    }
-    
-    private func updateHeader() {
-        if userModel?.blockchainIdentity != nil {
-            headerView.update()
+        if userModel?.showJoinDashpay == true {
+            let hostingController = UIHostingController(
+                rootView: welcomeView
+                    .padding(.bottom, 20)
+                    .padding(.horizontal, 18)
+            )
+            hostingController.view.backgroundColor = .clear
+            let header = hostingController.view
+            tableView.tableHeaderView = header
+        } else {
+            tableView.tableHeaderView = nil
         }
         
-        let hostingController = UIHostingController(
-            rootView: welcomeView
-                .padding(.bottom, 20)
-                .padding(.horizontal, 18)
-        )
-        hostingController.view.backgroundColor = .clear
-        let header = hostingController.view
-        tableView.tableHeaderView = header
         setNeedsLayout()
     }
     

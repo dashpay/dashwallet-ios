@@ -17,6 +17,7 @@
 
 import UIKit
 import SwiftUI
+import Combine
 
 // MARK: - HomeViewDelegate
 
@@ -28,24 +29,24 @@ protocol HomeViewDelegate: AnyObject {
 #if DASHPAY
     func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt)
     func homeViewRequestUsername()
+    func homeViewEditProfile()
 #endif
 }
 
 // MARK: - HomeView
 
 final class HomeView: UIView, DWHomeModelUpdatesObserver {
+    private var cancellableBag = Set<AnyCancellable>()
     weak var delegate: HomeViewDelegate?
 
     private(set) var headerView: HomeHeaderView!
     let viewModel = HomeViewModel.shared
+    let joinDPViewModel = JoinDashPayViewModel(initialState: .callToAction)
 
     @objc
     var model: DWHomeProtocol? {
         didSet {
             model?.updatesObserver = self
-            #if DASHPAY
-            updateHeaderView()
-            #endif
         }
     }
 
@@ -84,6 +85,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
         
         let content = HomeViewContent(
             viewModel: self.viewModel,
+            joinDPViewModel: self.joinDPViewModel,
             delegate: self.delegate,
             balanceHeader: { UIViewWrapper(uiView: self.headerView) }
         )
@@ -110,17 +112,15 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
                                                name: UIContentSizeCategory.didChangeNotification,
                                                object: nil)
         
-        #if DASHPAY
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(updateHeaderView),
-                                               name:NSNotification.Name.DWDashPayRegistrationStatusUpdated,
-                                               object: nil)
-        
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(updateHeaderView),
-                                               name:NSNotification.Name.DWNotificationsProviderDidUpdate,
-                                               object:nil);
-        #endif
+        joinDPViewModel.$state
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                if state == .approved || state == .registered {
+                    self?.setIdentity()
+                }
+            }
+            .store(in: &cancellableBag)
     }
 
     // MARK: - DWHomeModelUpdatesObserver
@@ -137,74 +137,30 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
 
     func homeModelWant(toReloadShortcuts model: DWHomeProtocol) {
         viewModel.reloadShortcuts()
-        #if DASHPAY
-        updateHeaderView()
-        #endif
-    }
-    
-    func homeModelWant(toReloadVoting model: DWHomeProtocol) {
-        #if DASHPAY
-        updateHeaderView()
-        #endif
     }
 
-    // MARK: - DWDPRegistrationErrorRetryDelegate
-
-    func registrationErrorRetryAction() { // TODO
-        if model?.dashPayModel.canRetry() ?? false {
-            model?.dashPayModel.retry()
-        } else {
-            
-        }
-    }
-    
     // MARK: DWDashPayRegistrationStatusUpdated
     
     #if DASHPAY
-    @objc
-    func updateHeaderView() {
-//        if let model = self.model {
-//            let isDPInfoHidden = DWGlobalOptions.sharedInstance().dashPayRegistrationOpenedOnce || model.shouldShowCreateUserNameButton() != true
-//            let isVotingEnabled = VotingPrefs.shared.votingEnabled
-//            
-//            if let usernameRequestId = UsernamePrefs.shared.requestedUsernameId, isVotingEnabled {
-//                setVotingState(dpInfoHidden: isDPInfoHidden, requestId: usernameRequestId)
-//            } else {
-//                setIdentity(dpInfoHidden: isDPInfoHidden, model: model)
-//            }
-//        }
+    
+    private func setIdentity() {
+        guard let model = model else { return }
+        
+        let status = model.dashPayModel.registrationStatus
+        let completed = model.dashPayModel.registrationCompleted
+        
+        if status?.state == .done || completed {
+            let identity = model.dashPayModel.blockchainIdentity
+            let notificaitonAmount = model.dashPayModel.unreadNotificationsCount
+            
+            delegate?.homeView(self, didUpdateProfile: identity, unreadNotifications: notificaitonAmount)
+        } else {
+            delegate?.homeView(self, didUpdateProfile: nil, unreadNotifications: 0)
+        }
+        
+        setNeedsLayout()
     }
     
-//    private func setIdentity(dpInfoHidden: Bool, model: DWHomeProtocol) { TODO
-//        let status = model.dashPayModel.registrationStatus
-//        let completed = model.dashPayModel.registrationCompleted
-//        
-//        if status?.state == .done || completed {
-//            let identity = model.dashPayModel.blockchainIdentity
-//            let notificaitonAmount = model.dashPayModel.unreadNotificationsCount
-//            
-//            delegate?.homeView(self, didUpdateProfile: identity, unreadNotifications: notificaitonAmount)
-//        } else {
-//            delegate?.homeView(self, didUpdateProfile: nil, unreadNotifications: 0)
-//        }
-//        
-//        setNeedsLayout()
-//    }
-    
-//    private func setVotingState(dpInfoHidden: Bool, requestId: String) { TODO
-//        let wasClosed = VotingPrefs.shared.votingPanelClosed
-//        let now = Date().timeIntervalSince1970
-//        headerView.isVotingViewHidden = dpInfoHidden || wasClosed || now < VotingConstants.votingEndTime
-////        viewModel.showJoinDashpay = false
-//        let dao = UsernameRequestsDAOImpl.shared
-//        
-//        Task {
-//            let request = await dao.get(byRequestId: requestId)
-//            // TODO: change this logic
-//            self.headerView.votingState = (request?.isApproved ?? false) ? .approved : .notApproved
-//            setNeedsLayout()
-//        }
-//    }
     #endif
 }
 
@@ -245,6 +201,7 @@ struct HomeViewContent<Content: View>: View {
     @State private var skipToCreateUsername: Bool = false
     
     @StateObject var viewModel: HomeViewModel
+    @StateObject var joinDPViewModel: JoinDashPayViewModel
     weak var delegate: HomeViewDelegate?
     @ViewBuilder var balanceHeader: () -> Content
     
@@ -275,28 +232,32 @@ struct HomeViewContent<Content: View>: View {
 
                     #if DASHPAY
                     if viewModel.showJoinDashpay {
-                        JoinDashPayView(onTap: {}, onActionButton: {
-                            if viewModel.shouldShowMixDashDialog {
-                                self.navigateToDashPayFlow = false
-                                self.navigateToCoinJoin = false
-                                self.shouldShowMixDialog = true
-                            } else if viewModel.shouldShowDashPayInfo {
-                                self.shouldShowJoinDashPayInfo = true
-                            } else {
-                                delegate?.homeViewRequestUsername()
+                        JoinDashPayView(
+                            viewModel: joinDPViewModel,
+                            onTap: { _ in },
+                            onActionButton: { state in
+                                if state == .approved {
+                                    delegate?.homeViewEditProfile()
+                                    joinDPViewModel.markAsDismissed()
+                                    viewModel.checkJoinDashPay()
+                                } else {
+                                    // TODO: ? MOCK_DASHPAY if failed, maybe need to call model?.dashPayModel.retry()
+                                    if viewModel.shouldShowMixDashDialog {
+                                        self.navigateToDashPayFlow = false
+                                        self.navigateToCoinJoin = false
+                                        self.shouldShowMixDialog = true
+                                    } else if viewModel.shouldShowDashPayInfo {
+                                        self.shouldShowJoinDashPayInfo = true
+                                    } else {
+                                        delegate?.homeViewRequestUsername()
+                                    }
+                                }
+                            }, onDismissButton: { _ in
+                                joinDPViewModel.markAsDismissed()
+                                viewModel.checkJoinDashPay()
                             }
-                        }, onDismissButton: {
-                            // TODO
-//                            VotingPrefs.shared.votingPanelClosed = true
-//                            UsernamePrefs.shared.requestedUsernameId = nil
-//                            
-//                            if (MOCK_DASHPAY.boolValue) {
-//                                DWGlobalOptions.sharedInstance().dashpayUsername = UsernamePrefs.shared.requestedUsername
-//                            }
-//                            
-//                            self.votingView.isHidden = true
-//                            self.delegate?.homeHeaderViewDidUpdateContents(self)
-                        }).padding(.horizontal, 14)
+                        ).padding(.horizontal, 14)
+                         .padding(.bottom, 4)
                     }
                     #endif
                     
@@ -379,6 +340,12 @@ struct HomeViewContent<Content: View>: View {
         #endif
         .onAppear {
             viewModel.checkTimeSkew()
+            viewModel.checkJoinDashPay()
+            joinDPViewModel.checkUsername()
+        }
+        .onChange(of: joinDPViewModel.state) { state in
+            viewModel.joinDashPayState = state
+            viewModel.checkJoinDashPay()
         }
     }
 

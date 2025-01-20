@@ -87,7 +87,6 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
         model.registerForPushNotifications()
         model.checkCrowdNodeState()
-        model.checkVotingState()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -323,6 +322,10 @@ extension HomeViewController: HomeViewDelegate {
         let hasNotifications = unreadNotifications > 0
         avatarView.isHidden = !hasIdentity
         refreshNotificationBell(hasIdentity: hasIdentity, hasNotifications: hasNotifications)
+    }
+    
+    func homeViewEditProfile() {
+        profileAction()
     }
     #endif
 }

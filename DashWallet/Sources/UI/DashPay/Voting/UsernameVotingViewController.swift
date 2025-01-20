@@ -250,7 +250,7 @@ extension UsernameVotingViewController {
     private func onBlockTapped(request: UsernameRequest) {
         if viewModel.masternodeKeys.isEmpty || request.blockVotes <= 0 {
             self.navigateToBlock(request: request)
-        } else { // TODO: replace with correct logic
+        } else { // TODO: MOCK_DASHPAY replace with correct logic
             self.viewModel.unblock(request: request.requestId)
             self.showToast(text: String.localizedStringWithFormat(NSLocalizedString("Unblocked '%@' username", comment: "Voting"), request.username), icon: .system("checkmark.circle.fill"), duration: 2)
         }

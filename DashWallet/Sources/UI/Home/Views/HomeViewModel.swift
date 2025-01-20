@@ -49,7 +49,7 @@ class HomeViewModel: ObservableObject {
     @Published private(set) var coinJoinItem = CoinJoinMenuItemModel(title: NSLocalizedString("Mixing", comment: "CoinJoin"), isOn: false, state: .notStarted, progress: 0.0, mixed: 0.0, total: 0.0)
     @Published var showTimeSkewAlertDialog: Bool = false
     @Published private(set) var timeSkew: TimeInterval = 0
-    @Published var showJoinDashpay: Bool = true
+    @Published private(set) var showJoinDashpay: Bool = true
     @Published var displayMode: HomeTxDisplayMode = .all {
         didSet {
             reloadTxDataSource()
@@ -58,7 +58,11 @@ class HomeViewModel: ObservableObject {
     @Published private(set) var balanceHeaderHeight: CGFloat = kBaseBalanceHeaderHeight // TDOO: move back to HomeView when fully transitioned to SwiftUI
     @Published private(set) var showReclassifyTransaction: DSTransaction? = nil
     
-    private var model: SyncModel = SyncModelImpl()
+#if DASHPAY
+    var joinDashPayState: JoinDashPayState = .callToAction
+#endif
+    
+    private var syncModel = SyncModelImpl()
     
     var coinJoinMode: CoinJoinMode {
         get { coinJoinService.mode }
@@ -92,11 +96,8 @@ class HomeViewModel: ObservableObject {
     #endif
     
     init() {
-        model.networkStatusDidChange = { status in
+        syncModel.networkStatusDidChange = { status in
             self.recalculateHeight()
-        }
-        model.stateDidChage = { state in
-            self.onSyncStateChanged()
         }
         self.onSyncStateChanged()
         self.recalculateHeight()
@@ -106,6 +107,19 @@ class HomeViewModel: ObservableObject {
         #if DASHPAY
         self.observeDashPay()
         #endif
+    }
+    
+    @MainActor
+    func checkTimeSkew(force: Bool = false) {
+        Task {
+            let (isTimeSkewed, timeSkew) = await getDeviceTimeSkew(force: force)
+            self.timeSkew = timeSkew
+            
+            if isTimeSkewed && (!timeSkewDialogShown || force) {
+                timeSkewDialogShown = true
+                showTimeSkewAlertDialog = true
+            }
+        }
     }
     
     private func observeWallet() {
@@ -128,6 +142,15 @@ class HomeViewModel: ObservableObject {
                 if DWGlobalOptions.sharedInstance().isResyncingWallet {
                     self?.reloadTxDataSource()
                 }
+            }
+            .store(in: &cancellableBag)
+        
+        syncModel.$state
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                guard let self = self else { return }
+                self.onSyncStateChanged()
             }
             .store(in: &cancellableBag)
     }
@@ -293,19 +316,6 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    @MainActor
-    func checkTimeSkew(force: Bool = false) {
-        Task {
-            let (isTimeSkewed, timeSkew) = await getDeviceTimeSkew(force: force)
-            self.timeSkew = timeSkew
-            
-            if isTimeSkewed && (!timeSkewDialogShown || force) {
-                timeSkewDialogShown = true
-                showTimeSkewAlertDialog = true
-            }
-        }
-    }
-    
     func reclassifyTransactionShown(isShown: Bool) {
         if isShown {
             shouldDisplayReclassifyTransaction = false
@@ -314,7 +324,7 @@ class HomeViewModel: ObservableObject {
     
     private func recalculateHeight() {
         var height = kBaseBalanceHeaderHeight
-        let hasNetwork = model.networkStatus == .online
+        let hasNetwork = syncModel.networkStatus == .online
         
         if !hasNetwork {
             height += 85
@@ -386,7 +396,7 @@ extension HomeViewModel {
     private func onSyncStateChanged() {
         self.reloadTxDataSource()
         self.reloadShortcuts()
-        self.showJoinDashpay = model.state == .syncDone
+        self.checkJoinDashPay()
     }
 }
 
@@ -441,57 +451,26 @@ extension HomeViewModel {
 
 #if DASHPAY
 extension HomeViewModel {
+    func checkJoinDashPay() {
+        self.showJoinDashpay = syncModel.state == .syncDone &&
+            !UsernamePrefs.shared.joinDashPayDismissed &&
+            joinDashPayState != .voting && joinDashPayState != .registered
+    }
+    
     private func observeDashPay() {
         NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)
             .sink { [weak self] _ in
                 self?.reloadTxDataSource()
                 DWDashPayContactsUpdater.sharedInstance().beginUpdating()
+                // TODO: updateHeaderView
             }
             .store(in: &cancellableBag)
+        
+        // TODO: update notifications
+//        NotificationCenter.default.addObserver(self,
+//                                               selector: #selector(updateHeaderView),
+//                                               name:NSNotification.Name.DWNotificationsProviderDidUpdate,
+//                                               object:nil);
     }
 }
 #endif
-
-// MARK: - TransactionListDataItem
-
-class TransactionGroup: Identifiable {
-    let id: String
-    let date: Date
-    var items: [TransactionListDataItem]
-    
-    init(id: String, date: Date, items: [TransactionListDataItem]) {
-        self.id = id
-        self.date = date
-        self.items = items
-    }
-}
-
-enum TransactionListDataItem {
-    case tx(Transaction)
-    case crowdnode(FullCrowdNodeSignUpTxSet)
-    case coinjoin(CoinJoinMixingTxSet)
-}
-
-extension TransactionListDataItem: Identifiable {
-    var id: String {
-        switch self {
-        case .crowdnode(_):
-            return FullCrowdNodeSignUpTxSet.id
-        case .coinjoin(let set):
-            return set.id
-        case .tx(let tx):
-            return tx.txHashHexString
-        }
-    }
-    
-    var date: Date {
-        switch self {
-        case .crowdnode(let set):
-            return set.transactionMap.values.first!.date
-        case .coinjoin(let set):
-            return set.groupDay
-        case .tx(let tx):
-            return tx.date
-        }
-    }
-}

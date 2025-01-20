@@ -59,7 +59,6 @@ struct SyncingHeaderView: View {
         }
         .padding(.leading, 16)
         .padding(.trailing, 10)
-        .padding(.vertical, 8)
         .background(Color.primaryBackground)
     }
 }

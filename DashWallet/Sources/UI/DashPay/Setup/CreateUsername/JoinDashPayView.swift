@@ -25,15 +25,20 @@ enum JoinDashPayState {
     case failed
     case blocked
     case contested
+    case registered
+}
+
+extension JoinDashPayState {
+    func hasAction() -> Bool {
+        return self == .callToAction || self == .approved || self == .failed || self == .blocked || self == .contested
+    }
 }
 
 struct JoinDashPayView: View {
-    private let prefs = UsernamePrefs.shared
-    @State private var state: JoinDashPayState = .none
-    @State private var username: String?
-    var onTap: () -> Void
-    var onActionButton: (() -> Void)? = nil
-    var onDismissButton: (() -> Void)? = nil
+    @StateObject var viewModel: JoinDashPayViewModel
+    var onTap: (JoinDashPayState) -> Void
+    var onActionButton: ((JoinDashPayState) -> Void)? = nil
+    var onDismissButton: ((JoinDashPayState) -> Void)? = nil
     var onSizeChange: ((CGSize) -> Void)? = nil
     
     var body: some View {
@@ -50,28 +55,30 @@ struct JoinDashPayView: View {
                         .foregroundColor(.primaryText)
                         .multilineTextAlignment(.leading)
                     
-                    Text(subtitleText)
-                        .font(.footnote)
-                        .foregroundColor(.tertiaryText)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .multilineTextAlignment(.leading)
-                        .padding(.top, 2)
+                    if viewModel.state != .registered {
+                        Text(subtitleText)
+                            .font(.footnote)
+                            .foregroundColor(.tertiaryText)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .multilineTextAlignment(.leading)
+                            .padding(.top, 2)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             
-            if state != .none && state != .voting {
+            if viewModel.state.hasAction() {
                 ButtonsGroup(
                     orientation: .horizontal,
                     size: .small,
                     positiveButtonText: actionButtonText,
-                    positiveButtonIcon: .system("arrow.counterclockwise"),
+                    positiveButtonIcon: actionButtonIcon,
                     positiveButtonAction: {
-                        onActionButton?()
+                        onActionButton?(viewModel.state)
                     },
                     negativeButtonText: NSLocalizedString("Hide", comment: ""),
                     negativeButtonAction: {
-                        onDismissButton?()
+                        onDismissButton?(viewModel.state)
                     }
                 ).padding(.top, 15)
                  .padding(.trailing, 10)
@@ -89,16 +96,16 @@ struct JoinDashPayView: View {
         .cornerRadius(8)
         .shadow(color: .shadow, radius: 10, x: 0, y: 5)
         .onTapGesture {
-            onTap()
+            onTap(viewModel.state)
         }
         .onAppear {
-            refreshState()
+            viewModel.checkUsername()
         }
     }
     
     private var leadingIconName: String {
-        switch state {
-        case .none, .callToAction:
+        switch viewModel.state {
+        case .none, .callToAction, .registered:
             return "dp_user_generic"
         case .voting:
             return "username_requested"
@@ -110,13 +117,13 @@ struct JoinDashPayView: View {
     }
     
     private var titleText: String {
-        switch state {
+        switch viewModel.state {
         case .none:
             return NSLocalizedString("Join DashPay", comment: "")
         case .callToAction:
             return NSLocalizedString("Upgrade to DashPay", comment: "")
-        case .voting:
-            return username ?? ""
+        case .voting, .registered:
+            return viewModel.username
         case .approved:
             return NSLocalizedString("Your username has been successfully created", comment: "Usernames")
         case .failed:
@@ -129,7 +136,7 @@ struct JoinDashPayView: View {
     }
     
     private var subtitleText: String {
-        switch state {
+        switch viewModel.state {
         case .none:
             return NSLocalizedString("Request your username", comment: "")
         case .callToAction:
@@ -137,20 +144,22 @@ struct JoinDashPayView: View {
         case .voting:
             let endDate = Date(timeIntervalSince1970: VotingConstants.votingEndTime)
             let endDateStr = DWDateFormatter.sharedInstance.dateOnly(from: endDate)
-            return String.localizedStringWithFormat(NSLocalizedString("Username %@ has been requested on the Dash network. After the voting ends (%@) we will notify you about its results", comment: "Usernames"), username ?? "", endDateStr)
+            return String.localizedStringWithFormat(NSLocalizedString("Username %@ has been requested on the Dash network. After the voting ends (%@) we will notify you about its results", comment: "Usernames"), viewModel.username, endDateStr)
         case .approved:
             return NSLocalizedString("Get started by setting up your profile picture and other information.", comment: "Usernames")
         case .failed:
-            return String.localizedStringWithFormat(NSLocalizedString("For some reason, the request for the username '%@' has failed.", comment: "Usernames"), username ?? "")
+            return String.localizedStringWithFormat(NSLocalizedString("For some reason, the request for the username '%@' has failed.", comment: "Usernames"), viewModel.username)
         case .blocked:
-            return String.localizedStringWithFormat(NSLocalizedString("The username '%@' was blocked by the Dash Network. Please try again by requesting another username.", comment: "Usernames"), username ?? "")
+            return String.localizedStringWithFormat(NSLocalizedString("The username '%@' was blocked by the Dash Network. Please try again by requesting another username.", comment: "Usernames"), viewModel.username)
         case .contested:
-            return String.localizedStringWithFormat(NSLocalizedString("Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username.", comment: "Usernames"), username ?? "")
+            return String.localizedStringWithFormat(NSLocalizedString("Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username.", comment: "Usernames"), viewModel.username)
+        case .registered:
+            return ""
         }
     }
     
     private var actionButtonText: String {
-        switch state {
+        switch viewModel.state {
         case .callToAction:
             return NSLocalizedString("Upgrade", comment: "")
         case .approved:
@@ -160,12 +169,12 @@ struct JoinDashPayView: View {
         }
     }
     
-    private func refreshState() {
-        username = prefs.requestedUsername
-        state = .blocked //prefs.requestedUsernameId != nil ? .voting : .none
+    private var actionButtonIcon: IconName? {
+        switch viewModel.state {
+        case .failed, .blocked, .contested:
+            return .system("arrow.counterclockwise")
+        default:
+            return nil
+        }
     }
-}
-
-#Preview {
-    JoinDashPayView(onTap: { }, onSizeChange: { _ in })
 }

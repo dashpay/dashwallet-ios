@@ -226,6 +226,12 @@ NS_ASSUME_NONNULL_BEGIN
     [self.navigationController pushViewController:controller animated:YES];
 }
 
+- (void)mainMenuContentViewWithShowRequestDetails:(DWMainMenuContentView *)view {
+    RequestDetailsViewController *controller = [RequestDetailsViewController controller];
+    controller.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:controller animated:YES];
+}
+
 #endif
 
 #pragma mark - DWToolsMenuViewControllerDelegate
