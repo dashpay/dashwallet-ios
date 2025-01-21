@@ -33,7 +33,7 @@ protocol CoinbaseTransactionSendable {
     var transactionDelegate: CoinbaseTransactionDelegate? { set get }
 
     func transferFromCoinbase()
-    func continueTransferFromCoinbase(with verificationCode: String)
+    func continueTransferFromCoinbase(with verificationCode: String, idem: UUID)
 }
 
 extension CoinbaseTransactionSendable {
@@ -49,17 +49,17 @@ extension CoinbaseTransactionSendable {
         }
     }
 
-    func continueTransferFromCoinbase(with verificationCode: String) {
+    func continueTransferFromCoinbase(with verificationCode: String, idem: UUID) {
         let amount = amountToTransfer
 
         Task {
-            try await transferFromCoinbase(amount: amount, with: verificationCode)
+            try await transferFromCoinbase(amount: amount, with: verificationCode, for: idem)
         }
     }
 
-    func transferFromCoinbase(amount: UInt64, with verificationCode: String?) async throws {
+    func transferFromCoinbase(amount: UInt64, with verificationCode: String?, for idem: UUID? = nil) async throws {
         do {
-            _ = try await Coinbase.shared.transferFromCoinbaseToDashWallet(verificationCode: verificationCode, amount: amount)
+            _ = try await Coinbase.shared.transferFromCoinbaseToDashWallet(amount: amount, verificationCode: verificationCode, idem: idem)
             await MainActor.run {
                 self.transactionDelegate?.transferFromCoinbaseToWalletDidSucceed()
             }

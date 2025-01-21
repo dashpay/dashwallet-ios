@@ -149,10 +149,11 @@ extension Coinbase {
         }
     }
 
-    public func transferFromCoinbaseToDashWallet(verificationCode: String?,
-                                                 amount: UInt64) async throws -> CoinbaseTransaction {
+    public func transferFromCoinbaseToDashWallet(amount: UInt64,
+                                                 verificationCode: String?,
+                                                 idem: UUID?) async throws -> CoinbaseTransaction {
         do {
-            let tx = try await accountService.send(from: kDashAccount, amount: amount, verificationCode: verificationCode)
+            let tx = try await accountService.send(from: kDashAccount, amount: amount, verificationCode: verificationCode, idem: idem)
 
             if let address = tx.to?.address {
                 Taxes.shared.mark(address: address, with: .transferIn)

@@ -306,8 +306,8 @@ extension OrderPreviewViewController: CoinbaseCodeConfirmationPreviewing, Coinba
         actionButton?.hideActivityIndicator()
     }
 
-    func codeConfirmationControllerDidContinue(with code: String) {
-        model.continueTransferFromCoinbase(with: code)
+    func codeConfirmationControllerDidContinue(with code: String, for idem: UUID) {
+        model.continueTransferFromCoinbase(with: code, idem: idem)
     }
 
     func codeConfirmationControllerDidCancel() {
