@@ -105,6 +105,16 @@ class MainTabbarController: UITabBarController {
     // TODO: Move it out from here and initialize the model inside home view controller
     @objc
     var homeModel: DWHomeProtocol!
+    
+    // TODO: MOCK_DASHPAY remove when not mocked
+    private var blockchainIdentity: DSBlockchainIdentity? {
+        if MOCK_DASHPAY.boolValue {
+            if let username = DWGlobalOptions.sharedInstance().dashpayUsername {
+                return DWEnvironment.sharedInstance().currentWallet.createBlockchainIdentity(forUsername: username)
+            }
+        }
+        return DWEnvironment.sharedInstance().currentWallet.defaultBlockchainIdentity
+    }
 
     @objc
     init(homeModel: DWHomeProtocol) {
@@ -112,6 +122,20 @@ class MainTabbarController: UITabBarController {
 
         self.homeModel = homeModel
         configureControllers()
+        
+        NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+
+                if self.blockchainIdentity != nil {
+                    let previousIndex = self.selectedIndex
+                    self.configureControllers()
+                    self.selectedIndex = previousIndex == 0 ? 0 : previousIndex + 2
+                    self.view.setNeedsLayout()
+                    self.view.layoutIfNeeded()
+                }
+            }
+            .store(in: &cancellableBag)
     }
 
     required init?(coder: NSCoder) {
@@ -167,7 +191,7 @@ extension MainTabbarController {
         nvc.tabBarItem = item
         viewControllers.append(nvc)
         
-        let identity = DWEnvironment.sharedInstance().currentWallet.defaultBlockchainIdentity
+        let identity = self.blockchainIdentity
         
         if identity != nil {
             // Contacts

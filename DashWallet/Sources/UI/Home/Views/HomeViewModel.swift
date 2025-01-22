@@ -460,9 +460,9 @@ extension HomeViewModel {
     private func observeDashPay() {
         NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)
             .sink { [weak self] _ in
+                self?.checkJoinDashPay()
                 self?.reloadTxDataSource()
                 DWDashPayContactsUpdater.sharedInstance().beginUpdating()
-                // TODO: updateHeaderView
             }
             .store(in: &cancellableBag)
         

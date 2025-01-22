@@ -36,7 +36,7 @@ class JoinDashPayViewModel: ObservableObject {
 
     @MainActor
     func checkUsername() {
-        if blockchainIdentity != nil && DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted {
+        if blockchainIdentity != nil && DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted && UsernamePrefs.shared.joinDashPayDismissed { // TODO: MOCK_DASHPAY simplify
             self.state = .registered
             self.username = blockchainIdentity?.currentDashpayUsername ?? ""
         } else {
@@ -49,6 +49,11 @@ class JoinDashPayViewModel: ObservableObject {
                     
                     if request.isApproved {
                         self.state = .approved
+                        
+                        if DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted != true {
+                            DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted = true
+                            NotificationCenter.default.post(name: NSNotification.Name.DWDashPayRegistrationStatusUpdated, object: nil)
+                        }
                     } else if request.blockVotes > 0 {
                         self.state = .blocked
                     } else {
@@ -65,9 +70,7 @@ class JoinDashPayViewModel: ObservableObject {
     func markAsDismissed() {
         UsernamePrefs.shared.joinDashPayDismissed = true
         
-        if state == .approved {
-            DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted = true
-        } else {
+        if state != .approved {
             UsernamePrefs.shared.requestedUsernameId = nil
         }
         
