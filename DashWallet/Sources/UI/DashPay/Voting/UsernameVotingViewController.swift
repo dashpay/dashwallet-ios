@@ -48,6 +48,7 @@ class UsernameVotingViewController: UIViewController {
         super.viewDidLoad()
         
         viewModel.refresh()
+        apply(filters: VotingFilters.defaultFilters)
         configureLayout()
         configureDataSource()
         configureObservers()
@@ -56,7 +57,6 @@ class UsernameVotingViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         if viewModel.shouldShowFirstTimeInfo {
             viewModel.shouldShowFirstTimeInfo = false
-            
             showModalDialog(icon: .system("info"), heading: NSLocalizedString("Default filter setting", comment: "Voting"), textBlock1: NSLocalizedString("The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter.", comment: "Voting"), positiveButtonText: NSLocalizedString("OK", comment: ""))
         }
     }
