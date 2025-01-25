@@ -106,6 +106,7 @@ class MainTabbarController: UITabBarController {
     @objc
     var homeModel: DWHomeProtocol!
     
+    #if DASHPAY
     // TODO: MOCK_DASHPAY remove when not mocked
     private var blockchainIdentity: DSBlockchainIdentity? {
         if MOCK_DASHPAY.boolValue {
@@ -115,6 +116,7 @@ class MainTabbarController: UITabBarController {
         }
         return DWEnvironment.sharedInstance().currentWallet.defaultBlockchainIdentity
     }
+    #endif
 
     @objc
     init(homeModel: DWHomeProtocol) {
@@ -123,6 +125,7 @@ class MainTabbarController: UITabBarController {
         self.homeModel = homeModel
         configureControllers()
         
+        #if DASHPAY
         NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)
             .sink { [weak self] _ in
                 guard let self = self else { return }
@@ -136,6 +139,7 @@ class MainTabbarController: UITabBarController {
                 }
             }
             .store(in: &cancellableBag)
+        #endif
     }
 
     required init?(coder: NSCoder) {
@@ -191,6 +195,7 @@ extension MainTabbarController {
         nvc.tabBarItem = item
         viewControllers.append(nvc)
         
+        #if DASHPAY
         let identity = self.blockchainIdentity
         
         if identity != nil {
@@ -204,7 +209,7 @@ extension MainTabbarController {
             nvc.tabBarItem = item
             viewControllers.append(nvc)
         }
-        
+        #endif
 
         // Payment
         item = UITabBarItem(title: "", image: UIImage(), tag: 2)
@@ -214,6 +219,7 @@ extension MainTabbarController {
         vc.tabBarItem = item
         viewControllers.append(vc)
         
+        #if DASHPAY
         if identity != nil {
             // Explore
             item = UITabBarItem(title: nil, image: MainTabbarTabs.explore.icon, selectedImage: MainTabbarTabs.explore.selectedIcon)
@@ -226,6 +232,7 @@ extension MainTabbarController {
             nvc.tabBarItem = item
             viewControllers.append(nvc)
         }
+        #endif
 
         // More
         item = UITabBarItem(title: nil, image: MainTabbarTabs.more.icon, selectedImage: MainTabbarTabs.more.selectedIcon)
