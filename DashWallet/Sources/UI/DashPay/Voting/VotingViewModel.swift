@@ -150,6 +150,7 @@ extension VotingViewModel {
         Task {
             if var copy = await dao.get(byRequestId: requestId) {
                 copy.votes += masternodeKeys.count
+                copy.blockVotes = 0 // TODO: MOCK_DASHPAY
                 copy.isApproved = true
                 await dao.update(dto: copy)
                 lastVoteAction = .approved
