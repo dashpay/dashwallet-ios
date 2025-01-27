@@ -27,7 +27,8 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     @IBOutlet var twoFactorAuthField: UITextField!
     @IBOutlet var hintLabel: UILabel!
 
-    public var verifyHandler: ((String) -> Void)?
+    private var idem: UUID!
+    public var verifyHandler: ((String, UUID) -> Void)?
     public var cancelHandler: (() -> Void)?
 
     public var isCancelingToFail = false
@@ -94,7 +95,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
 
     override func actionButtonAction(sender: UIView) {
         showActivityIndicator()
-        verifyHandler?(twoFactorAuthField.text!)
+        verifyHandler?(twoFactorAuthField.text!, idem)
     }
 
     func styleTitle() {
@@ -225,8 +226,10 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     }
 
     @objc
-    class func controller() -> TwoFactorAuthViewController {
-        vc(TwoFactorAuthViewController.self, from: sb("Coinbase"))
+    class func controller(idem: UUID) -> TwoFactorAuthViewController {
+        let vc = vc(TwoFactorAuthViewController.self, from: sb("Coinbase"))
+        vc.idem = idem
+        return vc
     }
 }
 
