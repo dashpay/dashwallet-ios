@@ -39,8 +39,6 @@ final class CoinJoinMixingTxSet: GroupedTransactions, TransactionWrapper {
     private let amountLock = NSLock()
     private var _amount: Int64 = 0
     override var amount: Int64 {
-        amountLock.lock()
-        defer { amountLock.unlock() }
         return _amount
     }
 
@@ -90,6 +88,7 @@ final class CoinJoinMixingTxSet: GroupedTransactions, TransactionWrapper {
         amountQueue.async { [weak self] in
             guard let self = self else { return }
             self.amountLock.lock()
+            defer { self.amountLock.unlock() }
             
             switch type {
             case CoinJoinTransactionType_MixingFee,
@@ -100,8 +99,6 @@ final class CoinJoinMixingTxSet: GroupedTransactions, TransactionWrapper {
             default:
                 break
             }
-            
-            self.amountLock.unlock()
         }
 
         return true
