@@ -15,14 +15,17 @@ class TimeUtils {
         return await withCheckedContinuation { continuation in
             let timeout = DispatchTime.now() + .seconds(5)
             
-            DispatchQueue.global().asyncAfter(deadline: timeout) {
+            let timeoutWorkItem = DispatchWorkItem {
                 connection.cancel()
+                continuation.resume(returning: nil)
             }
+            DispatchQueue.global().asyncAfter(deadline: timeout, execute: timeoutWorkItem)
 
             connection.send(content: message, completion: .contentProcessed({ error in
                 if error != nil {
                     connection.cancel()
                     continuation.resume(returning: nil)
+                    timeoutWorkItem.cancel()
                     return
                 }
                 
@@ -31,11 +34,13 @@ class TimeUtils {
                     
                     if error != nil {
                         continuation.resume(returning: nil)
+                        timeoutWorkItem.cancel()
                         return
                     }
                     
                     guard let message = content else {
                         continuation.resume(returning: nil)
+                        timeoutWorkItem.cancel()
                         return
                     }
                     
@@ -50,6 +55,7 @@ class TimeUtils {
                     
                     let result = (seconds - 2_208_988_800) * 1000
                     continuation.resume(returning: result)
+                    timeoutWorkItem.cancel()
                 }
             }))
         }
