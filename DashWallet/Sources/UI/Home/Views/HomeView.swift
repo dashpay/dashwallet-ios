@@ -41,7 +41,9 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
 
     private(set) var headerView: HomeHeaderView!
     let viewModel = HomeViewModel.shared
+    #if DASHPAY
     let joinDPViewModel = JoinDashPayViewModel(initialState: .callToAction)
+    #endif
 
     @objc
     var model: DWHomeProtocol? {
@@ -83,12 +85,20 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
         headerView = HomeHeaderView(frame: CGRect.zero)
         headerView.delegate = self
         
+        #if DASHPAY
         let content = HomeViewContent(
             viewModel: self.viewModel,
             joinDPViewModel: self.joinDPViewModel,
             delegate: self.delegate,
             balanceHeader: { UIViewWrapper(uiView: self.headerView) }
         )
+        #else
+        let content = HomeViewContent(
+            viewModel: self.viewModel,
+            delegate: self.delegate,
+            balanceHeader: { UIViewWrapper(uiView: self.headerView) }
+        )
+        #endif
         let swiftUIController = UIHostingController(rootView: content)
         swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
         
@@ -112,6 +122,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
                                                name: UIContentSizeCategory.didChangeNotification,
                                                object: nil)
         
+        #if DASHPAY
         joinDPViewModel.$state
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
@@ -121,6 +132,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
                 }
             }
             .store(in: &cancellableBag)
+        #endif
     }
 
     // MARK: - DWHomeModelUpdatesObserver
@@ -201,7 +213,9 @@ struct HomeViewContent<Content: View>: View {
     @State private var skipToCreateUsername: Bool = false
     
     @StateObject var viewModel: HomeViewModel
+    #if DASHPAY
     @StateObject var joinDPViewModel: JoinDashPayViewModel
+    #endif
     weak var delegate: HomeViewDelegate?
     @ViewBuilder var balanceHeader: () -> Content
     
@@ -337,15 +351,17 @@ struct HomeViewContent<Content: View>: View {
                 joinDashPayDialog
             }
         }
-        #endif
-        .onAppear {
-            viewModel.checkTimeSkew()
-            viewModel.checkJoinDashPay()
-            joinDPViewModel.checkUsername()
-        }
         .onChange(of: joinDPViewModel.state) { state in
             viewModel.joinDashPayState = state
             viewModel.checkJoinDashPay()
+        }
+        #endif
+        .onAppear {
+            viewModel.checkTimeSkew()
+            #if DASHPAY
+            viewModel.checkJoinDashPay()
+            joinDPViewModel.checkUsername()
+            #endif
         }
     }
 

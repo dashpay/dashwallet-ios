@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="22155" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22131"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -12,7 +12,7 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <view contentMode="scaleToFill" restorationIdentifier="VotingHeaderView" id="CnO-Ai-9Ti" userLabel="VotingHeaderView" customClass="VotingHeaderView" customModule="dashpay" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="393" height="190"/>
+            <rect key="frame" x="0.0" y="0.0" width="393" height="235"/>
             <autoresizingMask key="autoresizingMask"/>
             <subviews>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FTp-4g-lBL" userLabel="Description">
@@ -28,20 +28,25 @@
                     </attributedString>
                     <nil key="highlightedColor"/>
                 </label>
+                <searchBar contentMode="redraw" searchBarStyle="minimal" text="" placeholder="Search" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VEc-ve-pA6">
+                    <rect key="frame" x="12" y="70" width="369" height="56"/>
+                    <color key="barTintColor" name="SecondaryBackgroundColor"/>
+                    <textInputTraits key="textInputTraits" autocorrectionType="no" returnKeyType="done"/>
+                </searchBar>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="All" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TSE-6A-6Oz">
-                    <rect key="frame" x="20" y="72" width="277.33333333333331" height="27.666666666666671"/>
+                    <rect key="frame" x="20" y="134" width="277.33333333333331" height="27.666666666666657"/>
                     <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="252" text="X duplicates" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mJf-UV-hWU" userLabel="Duplicates">
-                    <rect key="frame" x="20" y="101.66666666666667" width="277.33333333333331" height="14.333333333333329"/>
+                    <rect key="frame" x="20" y="163.66666666666666" width="277.33333333333331" height="14.333333333333343"/>
                     <fontDescription key="fontDescription" type="system" pointSize="12"/>
                     <color key="textColor" name="SecondaryTextColor"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Fiv-Fv-87I">
-                    <rect key="frame" x="297.33333333333331" y="72" width="75.666666666666686" height="44"/>
+                    <rect key="frame" x="297.33333333333331" y="134" width="75.666666666666686" height="44"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="44" id="KJb-ow-IpM"/>
                     </constraints>
@@ -53,11 +58,6 @@
                         <action selector="onFilterButtonTap" destination="CnO-Ai-9Ti" eventType="touchUpInside" id="Ps5-ej-WJP"/>
                     </connections>
                 </button>
-                <searchBar contentMode="redraw" searchBarStyle="minimal" text="" placeholder="Search by username" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VEc-ve-pA6">
-                    <rect key="frame" x="12" y="120" width="369" height="56"/>
-                    <color key="barTintColor" name="SecondaryBackgroundColor"/>
-                    <textInputTraits key="textInputTraits" autocorrectionType="no" returnKeyType="done"/>
-                </searchBar>
             </subviews>
             <viewLayoutGuide key="safeArea" id="4fH-JV-vis"/>
             <color key="backgroundColor" name="SecondaryBackgroundColor"/>
@@ -67,13 +67,13 @@
                 <constraint firstItem="TSE-6A-6Oz" firstAttribute="trailing" secondItem="Fiv-Fv-87I" secondAttribute="leading" id="9lq-tk-uHl"/>
                 <constraint firstItem="TSE-6A-6Oz" firstAttribute="leading" secondItem="4fH-JV-vis" secondAttribute="leading" constant="20" id="EJX-2y-NAk"/>
                 <constraint firstItem="mJf-UV-hWU" firstAttribute="leading" secondItem="4fH-JV-vis" secondAttribute="leading" constant="20" id="EzI-x5-oOW"/>
-                <constraint firstItem="TSE-6A-6Oz" firstAttribute="top" secondItem="FTp-4g-lBL" secondAttribute="bottom" constant="12" id="HvX-ID-Tjm"/>
+                <constraint firstItem="TSE-6A-6Oz" firstAttribute="top" secondItem="VEc-ve-pA6" secondAttribute="bottom" constant="8" id="HvX-ID-Tjm"/>
                 <constraint firstItem="mJf-UV-hWU" firstAttribute="top" secondItem="TSE-6A-6Oz" secondAttribute="bottom" constant="2" id="Iaa-QT-AVs"/>
                 <constraint firstItem="FTp-4g-lBL" firstAttribute="leading" secondItem="4fH-JV-vis" secondAttribute="leading" constant="20" id="MmG-iy-aaD"/>
                 <constraint firstItem="Fiv-Fv-87I" firstAttribute="top" secondItem="TSE-6A-6Oz" secondAttribute="top" id="Oo9-Nz-V6X"/>
                 <constraint firstItem="4fH-JV-vis" firstAttribute="trailing" secondItem="VEc-ve-pA6" secondAttribute="trailing" constant="12" id="Tk5-gu-Kh7"/>
                 <constraint firstItem="4fH-JV-vis" firstAttribute="trailing" secondItem="FTp-4g-lBL" secondAttribute="trailing" constant="20" id="VoY-lA-fZV"/>
-                <constraint firstItem="VEc-ve-pA6" firstAttribute="top" secondItem="mJf-UV-hWU" secondAttribute="bottom" constant="4" id="Xc8-YV-7EV"/>
+                <constraint firstItem="VEc-ve-pA6" firstAttribute="top" secondItem="FTp-4g-lBL" secondAttribute="bottom" constant="10" id="Xc8-YV-7EV"/>
                 <constraint firstItem="Fiv-Fv-87I" firstAttribute="bottom" secondItem="mJf-UV-hWU" secondAttribute="bottom" id="biW-zB-5Ap"/>
                 <constraint firstItem="VEc-ve-pA6" firstAttribute="leading" secondItem="4fH-JV-vis" secondAttribute="leading" constant="12" id="gby-ne-eWB"/>
                 <constraint firstItem="4fH-JV-vis" firstAttribute="trailing" secondItem="Fiv-Fv-87I" secondAttribute="trailing" constant="20" id="k7w-QO-3S6"/>
@@ -87,7 +87,7 @@
                 <outlet property="searchBar" destination="VEc-ve-pA6" id="b2l-G2-h4M"/>
                 <outlet property="subtitleLabel" destination="FTp-4g-lBL" id="CZV-Nb-hi9"/>
             </connections>
-            <point key="canvasLocation" x="526" y="-13"/>
+            <point key="canvasLocation" x="525.95419847328242" y="4.2253521126760569"/>
         </view>
     </objects>
     <resources>

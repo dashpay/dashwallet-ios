@@ -13,18 +13,29 @@ class TimeUtils {
         connection.start(queue: .global())
         
         return await withCheckedContinuation { continuation in
+            var didResume = false
+            
+            // A helper function so that we only resume once.
+            func safeResume(with result: Int64?) {
+                // Ensure that resume is only called once.
+                if !didResume {
+                    didResume = true
+                    continuation.resume(returning: result)
+                }
+            }
+            
             let timeout = DispatchTime.now() + .seconds(5)
             
             let timeoutWorkItem = DispatchWorkItem {
                 connection.cancel()
-                continuation.resume(returning: nil)
+                safeResume(with: nil)
             }
             DispatchQueue.global().asyncAfter(deadline: timeout, execute: timeoutWorkItem)
-
+            
             connection.send(content: message, completion: .contentProcessed({ error in
                 if error != nil {
                     connection.cancel()
-                    continuation.resume(returning: nil)
+                    safeResume(with: nil)
                     timeoutWorkItem.cancel()
                     return
                 }
@@ -33,28 +44,25 @@ class TimeUtils {
                     defer { connection.cancel() }
                     
                     if error != nil {
-                        continuation.resume(returning: nil)
+                        safeResume(with: nil)
                         timeoutWorkItem.cancel()
                         return
                     }
                     
                     guard let message = content else {
-                        continuation.resume(returning: nil)
+                        safeResume(with: nil)
                         timeoutWorkItem.cancel()
                         return
                     }
                     
-                    // Timestamp starts at byte 40 of the received packet and is four bytes,
-                    // or two words, long. First byte is the high-order byte of the integer;
-                    // the last byte is the low-order byte. The high word is the seconds field,
-                    // and the low word is the fractional field.
+                    // Parse the NTP response.
                     let seconds = Int64(message[40]) << 24 |
                         Int64(message[41]) << 16 |
                         Int64(message[42]) << 8 |
                         Int64(message[43])
                     
                     let result = (seconds - 2_208_988_800) * 1000
-                    continuation.resume(returning: result)
+                    safeResume(with: result)
                     timeoutWorkItem.cancel()
                 }
             }))

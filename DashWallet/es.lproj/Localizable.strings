@@ -574,9 +574,6 @@
 /* Usernames */
 "Create a username" = "Crear nombre de usuario";
 
-/* No comment provided by engineer. */
-"Create a username, add your friends." = "Crea un nombre de usuario, agrega a tus amigos.";
-
 /* CrowdNode */
 "Create Account" = "Crear una cuenta";
 
@@ -589,9 +586,6 @@
 /* CrowdNode
    CrowdNode Portal */
 "Create Online Account" = "Crear cuenta online";
-
-/* No comment provided by engineer. */
-"Create Username" = "Crear nombre de usuario";
 
 /* Usernames */
 "Create your username" = "Create your username";
@@ -757,6 +751,9 @@
 /* Geoblock */
 "Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "Debido a restricciones de regulación, no podrá usar las funcionalidades de Coinbase si está en el Reino Unido.";
 
+/* Usernames */
+"Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username." = "Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username.";
+
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "por ejemplo,  johndoe@mail.com";
 
@@ -771,6 +768,9 @@
 
 /* No comment provided by engineer. */
 "Edit Profile" = "Editar perfil";
+
+/* No comment provided by engineer. */
+"Edit profile" = "Edit profile";
 
 /* Invitation tag placeholder */
 "eg: Dad" = "por ejemplo: papa";
@@ -919,6 +919,9 @@
 /* CrowdNode */
 "First minimum deposit" = "Primer depósito mínimo";
 
+/* Usernames */
+"For some reason, the request for the username '%@' has failed." = "For some reason, the request for the username '%@' has failed.";
+
 /* Coinbase */
 "For your security, you have been signed out." = "Por su seguridad, has sido desconectado.";
 
@@ -973,6 +976,9 @@
 /* No comment provided by engineer. */
 "Get Started" = "Comienza";
 
+/* Usernames */
+"Get started by setting up your profile picture and other information." = "Get started by setting up your profile picture and other information.";
+
 /* No comment provided by engineer. */
 "Get Test Dash" = "Obtener Dash de prueba";
 
@@ -1011,6 +1017,9 @@
 
 /* CrowdNode */
 "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "Aquí hay una dirección de Dash designada para tu cuenta de CrowdNode en la billetera de Dash en este dispositivo.";
+
+/* No comment provided by engineer. */
+"Hide" = "Hide";
 
 /* adjective, security level */
 "High" = "Alto";
@@ -1895,17 +1904,20 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "Reportar un problema";
 
+/* No comment provided by engineer. */
+"Request a username and say goodbye to numerical addresses" = "Request a username and say goodbye to numerical addresses";
+
 /* Voting */
 "Request details" = "Pedir detalles";
 
 /* Voting */
 "Request your username" = "Solicita tu nombre de usuario";
 
-/* No comment provided by engineer. */
-"Requested username was not approved" = "El nombre de usuario solicitado no fue aprobado";
+/* Usernames */
+"Requested username has been blocked" = "Requested username has been blocked";
 
-/* No comment provided by engineer. */
-"Requested · Voting: %@" = "Solicitado · Votación: %@";
+/* Usernames */
+"Requested username has been given to someone else" = "Requested username has been given to someone else";
 
 /* An action */
 "Rescan" = "Escanear nuevamente";
@@ -1927,6 +1939,9 @@
 
 /* Location Service Status */
 "Restricted" = "Restringido";
+
+/* Usernames */
+"Results" = "Results";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Conservar el historial de transacciones mutuas";
@@ -2283,6 +2298,9 @@
 /* Coinbase */
 "The minimum amount you can send is %@" = "El monto mínimo que puedes enviar es %@";
 
+/* Usernames */
+"The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
+
 /* No comment provided by engineer. */
 "them (Fetching Info)" = "Ellos (Obteniendo Información)";
 
@@ -2468,9 +2486,6 @@
 /* CoinJoin */
 "up to 30 minutes" = "hasta 30 minutos";
 
-/* No comment provided by engineer. */
-"Update your profile and start adding contacts" = "Actualiza tu perfil y comienza a agregar contactos";
-
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Actualizado: %@";
 
@@ -2482,6 +2497,9 @@
 
 /* No comment provided by engineer. */
 "Upgrade" = "Actualizar";
+
+/* No comment provided by engineer. */
+"Upgrade to DashPay" = "Upgrade to DashPay";
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "Actualizar a Evolution";
@@ -2519,6 +2537,9 @@
 /* Voting */
 "Username" = "Nombre de usuario";
 
+/* Usernames */
+"Username %@ has been requested on the Dash network. After the voting ends (%@) we will notify you about its results" = "Username %1$@ has been requested on the Dash network. After the voting ends (%2$@) we will notify you about its results";
+
 /* No comment provided by engineer. */
 "Username already found" = "Nombre de usuario ya encontrado";
 
@@ -2527,6 +2548,9 @@
 
 /* Usernames */
 "Username is available" = "Username is available";
+
+/* Usernames */
+"Username request failed" = "Username request failed";
 
 /* No comment provided by engineer. */
 "Username taken" = "Nombre de usuario ya ha sido tomado";
@@ -2595,9 +2619,6 @@
 "Vote to Approve" = "Vota para aprobar";
 
 /* Voting */
-"Votes:" = "Votos:";
-
-/* Voting */
 "Votes: High to low" = "Votos: Alto a bajo";
 
 /* Voting */
@@ -2611,9 +2632,6 @@
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Llaves para votar";
-
-/* Voting */
-"Voting:" = "Votación:";
 
 /* ZenLedger */
 "Wait until the chain is fully synced, so we can review your transaction history." = "Espera hasta que la cadena esté completamente sincronizada para que podamos revisar tu historial de transacciones.";
@@ -2750,9 +2768,6 @@
 
 /* No comment provided by engineer. */
 "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance";
-
-/* No comment provided by engineer. */
-"You can create a different username without paying again" = "Puedes crear un nombre de usuario diferente sin pagar nuevamente";
 
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "Puedes ingresar tu clave en cualquiera de los siguientes formatos: WIF/base58/base64/hex";
@@ -2925,8 +2940,8 @@
 /* No comment provided by engineer. */
 "Your username %@ is being created on the Dash Network" = "Tu nombre de usuario %@ se está creando en la red Dash ";
 
-/* No comment provided by engineer. */
-"Your username was approved" = "Tu nombre de usuario fue aprobado";
+/* Usernames */
+"Your username has been successfully created" = "Your username has been successfully created";
 
 /* No comment provided by engineer. */
 "Your vote was cancelled" = "Tu voto fue cancelado";

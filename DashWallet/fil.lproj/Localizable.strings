@@ -574,9 +574,6 @@
 /* Usernames */
 "Create a username" = "Gumawa ng username";
 
-/* No comment provided by engineer. */
-"Create a username, add your friends." = "Lumikha ng isang username, idagdag ang iyong mga kaibigan.";
-
 /* CrowdNode */
 "Create Account" = "Lumikha ng Account";
 
@@ -589,9 +586,6 @@
 /* CrowdNode
    CrowdNode Portal */
 "Create Online Account" = "Lumikha ng Online na Account";
-
-/* No comment provided by engineer. */
-"Create Username" = "Gumawa ng username";
 
 /* Usernames */
 "Create your username" = "Create your username";
@@ -757,6 +751,9 @@
 /* Geoblock */
 "Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "Dahil sa mga hadlang sa regulasyon, hindi mo magagamit ang mga feature ng Coinbase habang ikaw ay nasa UK";
 
+/* Usernames */
+"Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username." = "Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username.";
+
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "hal. juandelacruz@gmail.com";
 
@@ -771,6 +768,9 @@
 
 /* No comment provided by engineer. */
 "Edit Profile" = "I-edit ang profile";
+
+/* No comment provided by engineer. */
+"Edit profile" = "Edit profile";
 
 /* Invitation tag placeholder */
 "eg: Dad" = "hal: Tatay";
@@ -919,6 +919,9 @@
 /* CrowdNode */
 "First minimum deposit" = "Unang Minimum na Deposito";
 
+/* Usernames */
+"For some reason, the request for the username '%@' has failed." = "For some reason, the request for the username '%@' has failed.";
+
 /* Coinbase */
 "For your security, you have been signed out." = "Para sa iyong seguridad, na-sign out ka.";
 
@@ -973,6 +976,9 @@
 /* No comment provided by engineer. */
 "Get Started" = "Magsimula";
 
+/* Usernames */
+"Get started by setting up your profile picture and other information." = "Get started by setting up your profile picture and other information.";
+
 /* No comment provided by engineer. */
 "Get Test Dash" = "Kunin ang Test Dash";
 
@@ -1011,6 +1017,9 @@
 
 /* CrowdNode */
 "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "Narito ang isang Dash address na itinalaga para sa iyong CrowdNode account sa Dash Wallet sa device na ito.";
+
+/* No comment provided by engineer. */
+"Hide" = "Hide";
 
 /* adjective, security level */
 "High" = "Mataas";
@@ -1895,17 +1904,20 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "I-report ang Isyu";
 
+/* No comment provided by engineer. */
+"Request a username and say goodbye to numerical addresses" = "Request a username and say goodbye to numerical addresses";
+
 /* Voting */
 "Request details" = "Mga detalye ng kahilingan";
 
 /* Voting */
 "Request your username" = "Hilingin ang iyong username";
 
-/* No comment provided by engineer. */
-"Requested username was not approved" = "Ang hiniling na username ay hindi naaprubahan";
+/* Usernames */
+"Requested username has been blocked" = "Requested username has been blocked";
 
-/* No comment provided by engineer. */
-"Requested · Voting: %@" = "Hiniling · Pagboto: %@";
+/* Usernames */
+"Requested username has been given to someone else" = "Requested username has been given to someone else";
 
 /* An action */
 "Rescan" = "I-scan muli";
@@ -1927,6 +1939,9 @@
 
 /* Location Service Status */
 "Restricted" = "Pinaghihigpitan";
+
+/* Usernames */
+"Results" = "Results";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Panatlihin ang Kasaysayan ng Kapwang Transaksyon";
@@ -2283,6 +2298,9 @@
 /* Coinbase */
 "The minimum amount you can send is %@" = "Ang pinakamababang halaga na maaari mong ipadala ay %@";
 
+/* Usernames */
+"The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
+
 /* No comment provided by engineer. */
 "them (Fetching Info)" = "sila (Pagkuha ng Impormasyon)";
 
@@ -2468,9 +2486,6 @@
 /* CoinJoin */
 "up to 30 minutes" = "hanggang 30 minuto";
 
-/* No comment provided by engineer. */
-"Update your profile and start adding contacts" = "I-update ang iyong profile at magsimulang magdagdag ng mga contact";
-
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "Na-update: %@";
 
@@ -2482,6 +2497,9 @@
 
 /* No comment provided by engineer. */
 "Upgrade" = "I-upgrade";
+
+/* No comment provided by engineer. */
+"Upgrade to DashPay" = "Upgrade to DashPay";
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "Mag-upgrade sa Ebolusyon";
@@ -2519,6 +2537,9 @@
 /* Voting */
 "Username" = "Username";
 
+/* Usernames */
+"Username %@ has been requested on the Dash network. After the voting ends (%@) we will notify you about its results" = "Username %1$@ has been requested on the Dash network. After the voting ends (%2$@) we will notify you about its results";
+
 /* No comment provided by engineer. */
 "Username already found" = "Nahanap na ang username";
 
@@ -2527,6 +2548,9 @@
 
 /* Usernames */
 "Username is available" = "Username is available";
+
+/* Usernames */
+"Username request failed" = "Username request failed";
 
 /* No comment provided by engineer. */
 "Username taken" = "Kinuha na Username";
@@ -2595,9 +2619,6 @@
 "Vote to Approve" = "Bumoto para Aprubahan";
 
 /* Voting */
-"Votes:" = "Mga Boto:";
-
-/* Voting */
 "Votes: High to low" = "Mga Boto: Mataas hanggang mababa";
 
 /* Voting */
@@ -2611,9 +2632,6 @@
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Mga susi ng pagboto";
-
-/* Voting */
-"Voting:" = "Pagboto:";
 
 /* ZenLedger */
 "Wait until the chain is fully synced, so we can review your transaction history." = "Maghintay hanggang sa ganap na ma-sync ang chain, para masuri namin ang iyong history ng transaksyon.";
@@ -2750,9 +2768,6 @@
 
 /* No comment provided by engineer. */
 "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance";
-
-/* No comment provided by engineer. */
-"You can create a different username without paying again" = "Maaari kang lumikha ng ibang username nang hindi nagbabayad muli";
 
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "Maaari mong ilagay ang iyong susi sa alinman sa mga sumusunod na format: WIF/base58/base64/hex";
@@ -2925,8 +2940,8 @@
 /* No comment provided by engineer. */
 "Your username %@ is being created on the Dash Network" = "Ang iyong username %@ ay nilikha sa Network ng Dash";
 
-/* No comment provided by engineer. */
-"Your username was approved" = "Naaprubahan ang iyong username";
+/* Usernames */
+"Your username has been successfully created" = "Your username has been successfully created";
 
 /* No comment provided by engineer. */
 "Your vote was cancelled" = "Kinansela ang iyong boto";

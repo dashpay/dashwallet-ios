@@ -57,19 +57,37 @@ final class UsernameRequestCell: UITableViewCell {
         return label
     }()
     
-    private let approveButton: VoteButton = {
-        let button = VoteButton()
-        button.selectedBackgroundColor = .dw_dashBlue()
-        button.buttonText = NSLocalizedString("Approve", comment: "Voting")
-        button.value = 0
+    private let approveButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitle("0", for: .normal)
+        button.setImage(UIImage(named: "icon_thumbs_up")!, for: .normal)
+        button.tintColor = .dw_label()
+        button.backgroundColor = .dw_secondaryBackground()
+        button.layer.cornerRadius = 7
+        button.semanticContentAttribute = .forceRightToLeft
+        button.contentHorizontalAlignment = .center
+        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 6)
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 0)
+
         return button
     }()
     
-    private let blockButton: VoteButton = {
-        let button = VoteButton()
-        button.selectedBackgroundColor = .dw_red()
-        button.buttonText = NSLocalizedString("Block", comment: "Voting")
-        button.value = 0
+    private let blockButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitle("0", for: .normal)
+        let image = UIImage(named: "icon_thumbs_up")!
+        button.setImage(image.withRenderingMode(.alwaysTemplate), for: .normal)
+        button.imageView?.transform = CGAffineTransform(rotationAngle: .pi)
+        button.tintColor = .dw_label()
+        button.backgroundColor = .dw_secondaryBackground()
+        button.layer.cornerRadius = 7
+        button.semanticContentAttribute = .forceRightToLeft
+        button.contentHorizontalAlignment = .center
+        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 6)
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 0)
+
         return button
     }()
     
@@ -117,15 +135,15 @@ private extension UsernameRequestCell {
             linkLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
             linkLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -8),
 
-            approveButton.heightAnchor.constraint(equalToConstant: 35),
-            approveButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 65),
+            approveButton.heightAnchor.constraint(equalToConstant: 30),
+            approveButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 70),
             approveButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
-            approveButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -8),
+            approveButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10),
             
-            blockButton.heightAnchor.constraint(equalToConstant: 35),
-            blockButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 65),
+            blockButton.heightAnchor.constraint(equalToConstant: 30),
+            blockButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 70),
             blockButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
-            blockButton.trailingAnchor.constraint(equalTo: approveButton.leadingAnchor, constant: -8)
+            blockButton.trailingAnchor.constraint(equalTo: approveButton.leadingAnchor, constant: -10)
         ])
     }
 }
@@ -142,7 +160,7 @@ extension UsernameRequestCell {
         if isInGroup {
             containerView.backgroundColor = .clear
             containerView.layer.cornerRadius = 10
-            contentView.backgroundColor = .clear
+            contentView.backgroundColor = .dw_background()
 
             containerView.layer.borderWidth = 0.5
             containerView.layer.borderColor = UIColor.dw_separatorLine().cgColor
@@ -205,11 +223,11 @@ extension UsernameRequestCell {
             self.username.text = model.username
             self.username.isHidden = false
             self.dateCreated.isHidden = true
-            self.blockButton.value = model.blockVotes
-            self.approveButton.value = model.votes
+            self.blockButton.setTitle("\(model.blockVotes)", for: .normal)
             self.blockButton.isHidden = false
         }
         
+        self.approveButton.setTitle("\(model.votes)", for: .normal)
         let attachment = NSTextAttachment()
         attachment.image = UIImage(named: "link.badge")?.withRenderingMode(.alwaysTemplate)
         attachment.bounds = CGRect(x: 0, y: -3, width: 14, height: 14)
@@ -219,19 +237,23 @@ extension UsernameRequestCell {
         linkLabel.isHidden = model.link == nil
         
         if model.isApproved {
-            approveButton.isSelected = true
-            approveButton.buttonText = NSLocalizedString("Approvals", comment: "Voting")
+            approveButton.backgroundColor = .dw_dashBlue()
+            approveButton.tintColor = .white
+        } else if model.votes > 0 {
+            approveButton.backgroundColor = .dw_dashBlue().withAlphaComponent(0.05)
+            approveButton.tintColor = .dw_dashBlue()
         } else {
-            approveButton.isSelected = false
-            approveButton.buttonText = NSLocalizedString("Approve", comment: "Voting")
+            approveButton.backgroundColor = .dw_secondaryBackground()
+            approveButton.tintColor = .dw_label()
         }
         
         if model.blockVotes > 0 {
-            blockButton.isSelected = true
-            blockButton.buttonText = NSLocalizedString("Unblock", comment: "Voting")
+            blockButton.backgroundColor = .dw_red()
+            blockButton.tintColor = .white
         } else {
-            blockButton.isSelected = false
-            blockButton.buttonText = NSLocalizedString("Block", comment: "Voting")
+            blockButton.backgroundColor = .dw_secondaryBackground()
+            blockButton.tintColor = .dw_label()
         }
+        // TODO: pink block button
     }
 }
