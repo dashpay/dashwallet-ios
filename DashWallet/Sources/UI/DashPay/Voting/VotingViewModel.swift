@@ -87,7 +87,7 @@ class VotingViewModel {
             
             let oldVotes = Dictionary(uniqueKeysWithValues: self.groupedRequests.map { ($0.username, $0.votesForUsername) })
             self.groupedRequests = Dictionary(grouping: requests, by: { $0.username })
-                .map { username, reqs in 
+                .map { username, reqs in
                     var group = GroupedUsernames(username: username, requests: reqs.sortAndFilter(by: filters))
                     group.votesForUsername = max(oldVotes[username] ?? 0, 0)
                     return group
@@ -133,8 +133,10 @@ extension [UsernameRequest] {
         switch filterOption {
         case .approved:
             result = sorted.filter { $0.isApproved }
-        case .notApproved:
-            result = sorted.filter { !$0.isApproved }
+        case .notVoted:
+            result = sorted.filter { !$0.isApproved } // TODO: MOCK_DASHPAY recheck logic
+        case .hasBlockVotes:
+            result = sorted.filter { $0.blockVotes > 0 }
         default:
             result = sorted
         }
@@ -262,8 +264,8 @@ extension VotingViewModel {
         Task {
             nameCount += 1
             let now = Date().timeIntervalSince1970
-            let from: TimeInterval = 1658290321
-            let randomValue = Double.random(in: from..<now)
+            let twoWeeksAgo = now - (14 * 24 * 60 * 60)
+            let randomValue = Double.random(in: twoWeeksAgo..<now)
             let identityData = withUnsafeBytes(of: UUID().uuid) { Data($0) }
             let names = ["John", "Doe", "Sarah", "Jane", "Jack", "Jill", "Bob"]
             let identity = (identityData as NSData).base58String()

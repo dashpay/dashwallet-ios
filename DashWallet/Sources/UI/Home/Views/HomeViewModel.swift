@@ -396,7 +396,9 @@ extension HomeViewModel {
     private func onSyncStateChanged() {
         self.reloadTxDataSource()
         self.reloadShortcuts()
+        #if DASHPAY
         self.checkJoinDashPay()
+        #endif
     }
 }
 
