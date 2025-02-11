@@ -78,7 +78,7 @@ class Transaction: TransactionDataItem, Identifiable {
     }
     
     var iconName: String {
-        direction.iconName
+        state == .invalid ? "tx.invalid.icon" : direction.iconName
     }
 
     private lazy var storedFiatAmount = userInfo?.fiatAmountString(from: _dashAmount) ?? NSLocalizedString("Not available", comment: "");
@@ -109,7 +109,7 @@ class Transaction: TransactionDataItem, Identifiable {
         
         if (direction == .sent || direction == .moved)
             && confirms == 0
-            && !isValid(account, tx) {
+            && !account!.transactionIsValid(tx) {
             return .invalid
         } else if direction == .received {
             if !instantSendReceived && confirms == 0 && isPending(account, tx) {
@@ -154,14 +154,6 @@ class Transaction: TransactionDataItem, Identifiable {
 
         return account!.transactionIsVerified(tx)
     }
-    
-    private func isValid(_ account: DSAccount?, _ tx: DSTransaction) -> Bool {
-        if tx.timestamp + kConfirmationThreshold < Date().timeIntervalSince1970 {
-            return true
-        }
-        
-        return account!.transactionIsValid(tx)
-    }
 
     private lazy var _shortDateString: String = tx.formattedShortTxDate
     var date: Date
@@ -181,8 +173,9 @@ class Transaction: TransactionDataItem, Identifiable {
             case .sent:
                 if state == .processing {
                     return NSLocalizedString("Sending", comment: "")
-                }
-                else {
+                } else if state == .invalid {
+                    return NSLocalizedString("Invalid", comment: "")
+                } else {
                     return NSLocalizedString("Sent", comment: "")
                 }
             case .received, .notAccountFunds:
