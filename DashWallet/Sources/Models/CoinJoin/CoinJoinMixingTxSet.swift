@@ -96,7 +96,7 @@ final class CoinJoinMixingTxSet: GroupedTransactions, TransactionWrapper {
                  CoinJoinTransactionType_CreateDenomination,
                  CoinJoinTransactionType_MakeCollateralInputs:
                 let fee = tx.feeUsed
-                self._amount -= (fee <= Int64.max ? Int64(fee) : 0)
+                self._amount -= (fee > 0 && fee <= Int64.max ? Int64(fee) : 0)
             default:
                 break
             }
