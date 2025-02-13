@@ -64,8 +64,8 @@ NS_ASSUME_NONNULL_END
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
     DSBlockchainInvitation *invitation = [wallet createBlockchainInvitation];
     invitation.name = [NSString stringWithFormat:NSLocalizedString(@"Invitation %ld", @"Invitation #3"), wallet.blockchainInvitations.count + 1];
-    
-    
+
+
     DSBlockchainIdentityRegistrationStep steps = DSBlockchainIdentityRegistrationStep_L1Steps;
     [invitation generateBlockchainInvitationsExtendedPublicKeysWithPrompt:NSLocalizedString(@"Create invitation", nil)
                                                                completion:^(BOOL registered) {
@@ -76,7 +76,8 @@ NS_ASSUME_NONNULL_END
                                                                                                                                         registerOnNetwork:steps
                                                                                                                                         withFundingAccount:account
                                                                                                                                         forTopupAmount:DWDP_MIN_BALANCE_TO_CREATE_INVITE
-                                                                                                                                     pinPrompt:@"Would you like to create this invitation?"                                             stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
+                                                                                                                                        pinPrompt:@"Would you like to create this invitation?"
+                                                                                                                                        stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
                                                                                                                                         }
                                                                                                                                         completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
                                                                                                                                             if (error) {

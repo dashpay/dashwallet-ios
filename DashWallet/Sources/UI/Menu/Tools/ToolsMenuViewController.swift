@@ -167,23 +167,6 @@ extension DWImportWalletInfoViewController {
     }
 }
 
-struct MenuItemModel: Identifiable, Equatable {
-    let id = UUID()
-    
-    var title: String
-    var subtitle: String? = nil
-    var details: String? = nil
-    var icon: IconName? = nil
-    var showInfo: Bool = false
-    var showChevron: Bool = false
-    var isToggled: Binding<Bool>? = nil
-    var action: (() -> Void)? = nil
-    
-    static func == (lhs: MenuItemModel, rhs: MenuItemModel) -> Bool {
-        lhs.id == rhs.id
-    }
-}
-
 struct ToolsMenuContent: View {
     var items: [MenuItemModel]
     @State private var showZenLedgerSheet: Bool = false

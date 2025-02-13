@@ -78,29 +78,28 @@ NS_ASSUME_NONNULL_END
     [self.imageView sd_cancelCurrentImageLoad];
 
     NSString *username = blockchainIdentity.currentDashpayUsername;
-	NSString *avatarUrlString = [blockchainIdentity.avatarPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-	
-	[self setUsername:username];
-	
-	__block typeof(self) weakSelf = self;
-	
-	[self.imageView dw_setAvatarWithURLString:avatarUrlString
-										 completion:^(UIImage *_Nullable image) {
-		__strong typeof(weakSelf) strongSelf = weakSelf;
-		if (!strongSelf) {
-			return;
-		}
-		
-		if (image) {
-			strongSelf.imageView.hidden = NO;
-			strongSelf.letterLabel.hidden = YES;
-			strongSelf.imageView.image = image;
-		}
-		else {
-			[strongSelf setUsername:username];
-		}
-	}];
-    
+    NSString *avatarUrlString = [blockchainIdentity.avatarPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+
+    [self setUsername:username];
+
+    __block typeof(self) weakSelf = self;
+
+    [self.imageView dw_setAvatarWithURLString:avatarUrlString
+                                   completion:^(UIImage *_Nullable image) {
+                                       __strong typeof(weakSelf) strongSelf = weakSelf;
+                                       if (!strongSelf) {
+                                           return;
+                                       }
+
+                                       if (image) {
+                                           strongSelf.imageView.hidden = NO;
+                                           strongSelf.letterLabel.hidden = YES;
+                                           strongSelf.imageView.image = image;
+                                       }
+                                       else {
+                                           [strongSelf setUsername:username];
+                                       }
+                                   }];
 }
 
 - (void)configureWithUsername:(NSString *)username {

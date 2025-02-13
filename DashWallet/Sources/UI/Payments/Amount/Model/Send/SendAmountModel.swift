@@ -21,10 +21,12 @@ import Foundation
 
 enum SendAmountError: Error, ColorizedText, LocalizedError {
     case insufficientFunds
+    case insufficientMixedFunds
     case syncingChain
 
     var errorDescription: String? {
         switch self {
+        case .insufficientMixedFunds: return NSLocalizedString("Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction.", comment: "Send screen")
         case .insufficientFunds: return NSLocalizedString("Insufficient funds", comment: "Send screen")
         case .syncingChain: return NSLocalizedString("Wait until wallet is synced to complete the transaction",
                                                      comment: "Send screen")
@@ -34,6 +36,7 @@ enum SendAmountError: Error, ColorizedText, LocalizedError {
     var textColor: UIColor {
         switch self {
         case .insufficientFunds: return .systemRed
+        case .insufficientMixedFunds: return .systemRed
         case .syncingChain: return .secondaryLabel
         }
     }
@@ -42,6 +45,8 @@ enum SendAmountError: Error, ColorizedText, LocalizedError {
 // MARK: - SendAmountModel
 
 class SendAmountModel: BaseAmountModel {
+    @Published var coinJoinBalance: UInt64 = 0
+    
     override var isAllowedToContinue: Bool {
         super.isAllowedToContinue &&
             !canShowInsufficientFunds &&
@@ -53,7 +58,7 @@ class SendAmountModel: BaseAmountModel {
         let plainAmount = amount.plainAmount
 
         let account = DWEnvironment.sharedInstance().currentAccount
-        let allAvailableFunds = account.maxOutputAmount
+        let allAvailableFunds =  CoinJoinService.shared.mode == .none ? account.maxOutputAmount : coinJoinBalance
 
         return plainAmount > allAvailableFunds
     }
@@ -65,6 +70,15 @@ class SendAmountModel: BaseAmountModel {
 
         initializeSyncingActivityMonitor()
         checkAmountForErrors()
+        
+        if CoinJoinService.shared.mode != .none {
+            CoinJoinService.shared.$progress
+                .removeDuplicates()
+                .sink { [weak self] progress in
+                    self?.coinJoinBalance = progress.coinJoinBalance
+                }
+                .store(in: &cancellableBag)
+        }
     }
 
     override func selectAllFunds() {
@@ -77,7 +91,7 @@ class SendAmountModel: BaseAmountModel {
 
     internal func selectAllFundsWithoutAuth() {
         let account = DWEnvironment.sharedInstance().currentAccount
-        let allAvailableFunds = account.maxOutputAmount
+        let allAvailableFunds = CoinJoinService.shared.mode == .none ? account.maxOutputAmount : coinJoinBalance
 
         if allAvailableFunds > 0 {
             updateCurrentAmountObject(with: allAvailableFunds)
@@ -93,7 +107,7 @@ class SendAmountModel: BaseAmountModel {
         }
 
         guard !canShowInsufficientFunds else {
-            error = SendAmountError.insufficientFunds
+            error = CoinJoinService.shared.mode == .none ? SendAmountError.insufficientFunds : SendAmountError.insufficientMixedFunds
             return
         }
 

@@ -23,12 +23,18 @@ import Combine
 final class CastVoteViewController: UIViewController {
     private var cancellableBag = Set<AnyCancellable>()
     private var viewModel: VotingViewModel = VotingViewModel.shared
-    
     private var dataSource: DataSource! = nil
-    @IBOutlet private var tableView: UITableView!
+    private var isBlocking: Bool = false
     
-    class func controller() -> CastVoteViewController {
-        CastVoteViewController.initiate(from: sb("UsernameVoting"))
+    @IBOutlet private var tableView: UITableView!
+    @IBOutlet private var actionButton: UIButton!
+    @IBOutlet private var multipleKeysLabel: UILabel!
+    @IBOutlet private var multipleKeysHeightConstraint: NSLayoutConstraint!
+    
+    class func controller(blocking: Bool = false) -> CastVoteViewController {
+        let vc = CastVoteViewController.initiate(from: sb("UsernameVoting"))
+        vc.isBlocking = blocking
+        return vc
     }
     
     override func viewDidLoad() {
@@ -43,6 +49,28 @@ extension CastVoteViewController {
     private func configureHierarchy() {
         tableView.separatorStyle = .none
         tableView.allowsSelection = false
+        
+        actionButton.layer.cornerRadius = 8
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.dw_mediumFont(ofSize: 15)
+        ]
+        
+        if !isBlocking {
+            actionButton.backgroundColor = .dw_dashBlue()
+            actionButton.tintColor = .white
+            let attributedTitle = NSAttributedString(string: NSLocalizedString("Submit", comment: "Voting"), attributes: attributes)
+            actionButton.setAttributedTitle(attributedTitle, for: .normal)
+        } else if viewModel.selectedRequest?.blockVotes ?? 0 > 0 {
+            actionButton.backgroundColor = .dw_red().withAlphaComponent(0.1)
+            actionButton.tintColor = .dw_red()
+            let attributedTitle = NSAttributedString(string: NSLocalizedString("Unblock", comment: "Voting"), attributes: attributes)
+            actionButton.setAttributedTitle(attributedTitle, for: .normal)
+        } else {
+            actionButton.backgroundColor = .dw_red()
+            actionButton.tintColor = .white
+            let attributedTitle = NSAttributedString(string: NSLocalizedString("Block", comment: "Voting"), attributes: attributes)
+            actionButton.setAttributedTitle(attributedTitle, for: .normal)
+        }
     }
     
     private func configureObservers() {
@@ -66,7 +94,12 @@ extension CastVoteViewController {
     @IBAction
     func submit() {
         if let id = viewModel.selectedRequest?.requestId {
-            viewModel.vote(for: id)
+            if isBlocking {
+                viewModel.block(request: id)
+            } else {
+                viewModel.vote(for: id)
+            }
+            
             self.navigationController?.popToViewController(ofType: UsernameVotingViewController.self, animated: true)
         }
     }
@@ -100,5 +133,10 @@ extension CastVoteViewController {
         snapshot.appendItems(keys)
         dataSource.apply(snapshot, animatingDifferences: false)
         dataSource.defaultRowAnimation = .none
+        self.multipleKeysHeightConstraint.constant = keys.count <= 1 ? 0 : 32
+        
+        if keys.count > 1 {
+            multipleKeysLabel.text = String.localizedStringWithFormat(NSLocalizedString("%d votes will be cast as you have multiple voting keys stored in the wallet", comment: "Voting - multiple keys warning"), keys.count)
+        }
     }
 }

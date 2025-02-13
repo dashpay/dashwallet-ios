@@ -42,7 +42,7 @@
 
     __block id<DWDPNewIncomingRequestItem> newRequestItem = (id<DWDPNewIncomingRequestItem>)item;
     newRequestItem.requestState = DWDPNewIncomingRequestItemState_Processing;
-    
+
     if (MOCK_DASHPAY) {
         NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
         DSDashpayUserEntity *contact = [DSDashpayUserEntity managedObjectInBlockedContext:context];
@@ -56,20 +56,19 @@
         entity.dashpayUsername = username;
         contact.associatedBlockchainIdentity = entity;
         NSError *error = [contact applyTransientDashpayUser:item.blockchainIdentity.transientDashpayUser save:YES];
-            
+
         newRequestItem.requestState = DWDPNewIncomingRequestItemState_Accepted;
-        
+
         return;
     }
 
     void (^resultCompletion)(BOOL success, NSArray<NSError *> *errors) = ^(BOOL success, NSArray<NSError *> *errors) {
-        if (newRequestItem == nil)
-        {
+        if (newRequestItem == nil) {
             NSLog(@"324 %lu", (unsigned long)((id<DWDPNewIncomingRequestItem>)newRequestItem).requestState);
         }
-        
+
         NSLog(@"%lu", (unsigned long)((id<DWDPNewIncomingRequestItem>)newRequestItem).requestState);
-        
+
         ((id<DWDPNewIncomingRequestItem>)newRequestItem).requestState = success ? DWDPNewIncomingRequestItemState_Accepted : DWDPNewIncomingRequestItemState_Failed;
 
         if (!success) {

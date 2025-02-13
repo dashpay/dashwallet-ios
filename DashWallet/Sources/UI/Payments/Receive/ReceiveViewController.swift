@@ -104,7 +104,7 @@ extension ReceiveViewController {
         importPrivateKeyButton.isHidden = !allowedToImportPrivateKey
         mainStackView.addArrangedSubview(importPrivateKeyButton)
 
-        mainStackView.addArrangedSubview(EmptyView())
+        mainStackView.addArrangedSubview(EmptyUIView())
         
         NSLayoutConstraint.activate([
             mainStackView.topAnchor.constraint(equalTo: view.topAnchor),

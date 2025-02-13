@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "passphrase.png",
+      "filename" : "icon.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "passphrase@2x.png",
+      "filename" : "icon@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "passphrase@3x.png",
+      "filename" : "icon@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

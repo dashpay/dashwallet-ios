@@ -50,10 +50,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) SyncingActivityMonitor *syncMonitor;
 
-@property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
-@property (null_resettable, nonatomic, strong) DWTransactionListDataSource *receivedDataSource;
-@property (null_resettable, nonatomic, strong) DWTransactionListDataSource *sentDataSource;
-@property (null_resettable, nonatomic, strong) DWTransactionListDataSource *rewardsDataSource;
+@property (readonly, nonatomic, strong) NSArray<DSTransaction *> *dataSource;
+@property (null_resettable, nonatomic, strong) NSArray<DSTransaction *> *receivedDataSource;
+@property (null_resettable, nonatomic, strong) NSArray<DSTransaction *> *sentDataSource;
+@property (null_resettable, nonatomic, strong) NSArray<DSTransaction *> *rewardsDataSource;
 
 @property (nonatomic, assign) BOOL upgradedExtendedKeys;
 
@@ -61,13 +61,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWHomeModel
 
-@synthesize displayMode = _displayMode;
 @synthesize payModel = _payModel;
 @synthesize receiveModel = _receiveModel;
 @synthesize dashPayModel = _dashPayModel;
 @synthesize updatesObserver = _updatesObserver;
 @synthesize allDataSource = _allDataSource;
-@synthesize allowedToShowReclassifyYourTransactions = _allowedToShowReclassifyYourTransactions;
 
 
 - (instancetype)init {
@@ -85,17 +83,16 @@ NS_ASSUME_NONNULL_BEGIN
         _syncMonitor = SyncingActivityMonitor.shared;
         [_syncMonitor addObserver:self];
 
-        
+
         _dataProvider = [[DWTransactionListDataProvider alloc] init];
 
-        
+
 #if DASHPAY
         _dashPayModel = [[DWDashPayModel alloc] init];
 #endif /* DASHPAY_ENABLED */
 
         // set empty datasource
-        _allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:@[]
-                                                                registrationStatus:[_dashPayModel registrationStatus]];
+        _allDataSource = @[];
 
         _receiveModel = [[DWReceiveModel alloc] init];
         [_receiveModel updateReceivingInfo];
@@ -116,14 +113,9 @@ NS_ASSUME_NONNULL_BEGIN
                                    name:DSWalletBalanceDidChangeNotification
                                  object:nil];
         [notificationCenter addObserver:self
-                               selector:@selector(transactionManagerTransactionStatusDidChangeNotification)
-                                   name:DSTransactionManagerTransactionStatusDidChangeNotification
-                                 object:nil];
-        [notificationCenter addObserver:self
                                selector:@selector(chainWalletsDidChangeNotification:)
                                    name:DSChainWalletsDidChangeNotification
                                  object:nil];
-        
         [notificationCenter addObserver:self
                                selector:@selector(willWipeWalletNotification)
                                    name:DWWillWipeWalletNotification
@@ -132,15 +124,6 @@ NS_ASSUME_NONNULL_BEGIN
                                selector:@selector(fiatCurrencyDidChangeNotification)
                                    name:DWApp.fiatCurrencyDidChangeNotification
                                  object:nil];
-
-#if DASHPAY
-        [notificationCenter addObserver:self
-                               selector:@selector(dashPayRegistrationStatusUpdatedNotification)
-                                   name:DWDashPayRegistrationStatusUpdatedNotification
-                                 object:nil];
-#endif
-        
-        [self reloadTxDataSource];
 
         NSDate *date = [NSDate new];
         [[DWGlobalOptions sharedInstance] setActivationDateForReclassifyYourTransactionsFlowIfNeeded:date];
@@ -159,27 +142,8 @@ NS_ASSUME_NONNULL_BEGIN
     _updatesObserver = updatesObserver;
 
     if (self.allDataSource) {
-        [updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:NO];
+        [updatesObserver homeModel:self didUpdate:self.dataSource shouldAnimate:NO];
     }
-}
-
-- (void)setDisplayMode:(DWHomeTxDisplayMode)displayMode {
-    if (_displayMode == displayMode) {
-        return;
-    }
-
-    _displayMode = displayMode;
-
-    [self.updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:YES];
-}
-
-- (void)setAllowedToShowReclassifyYourTransactions:(BOOL)value {
-    _allowedToShowReclassifyYourTransactions = value;
-}
-
-- (BOOL)isAllowedToShowReclassifyYourTransactions {
-    BOOL shouldDisplayReclassifyYourTransactionsFlow = [DWGlobalOptions sharedInstance].shouldDisplayReclassifyYourTransactionsFlow;
-    return _allowedToShowReclassifyYourTransactions && shouldDisplayReclassifyYourTransactionsFlow;
 }
 
 - (BOOL)isWalletEmpty {
@@ -187,19 +151,6 @@ NS_ASSUME_NONNULL_BEGIN
     const BOOL hasFunds = (wallet.totalReceived + wallet.totalSent > 0);
 
     return !hasFunds;
-}
-
-- (DWTransactionListDataSource *)dataSource {
-    switch (self.displayMode) {
-        case DWHomeTxDisplayMode_All:
-            return self.allDataSource;
-        case DWHomeTxDisplayMode_Received:
-            return self.receivedDataSource;
-        case DWHomeTxDisplayMode_Sent:
-            return self.sentDataSource;
-        case DWHomeTxDisplayMode_Rewards:
-            return self.rewardsDataSource;
-    }
 }
 
 - (BOOL)shouldShowWalletBackupReminder {
@@ -354,11 +305,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)walletBalanceDidChangeNotification {
     [self updateBalance];
-    [self reloadTxDataSource];
-}
-
-- (void)transactionManagerTransactionStatusDidChangeNotification {
-    [self reloadTxDataSource];
 }
 
 - (void)applicationWillEnterForegroundNotification {
@@ -367,7 +313,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)fiatCurrencyDidChangeNotification {
     [self updateBalance];
-    [self reloadTxDataSource];
     [self.updatesObserver homeModelDidChangeInnerModels:self];
 }
 
@@ -379,13 +324,6 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
-- (void)dashPayRegistrationStatusUpdatedNotification {
-    [self reloadTxDataSource];
-#if DASHPAY
-    [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
-#endif
-}
-
 - (void)willWipeWalletNotification {
 #if DASHPAY
     [[DWDashPayContactsUpdater sharedInstance] endUpdating];
@@ -393,42 +331,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark - Private
-
-- (void)notifyAboutNewTransaction {
-}
-
-- (DWTransactionListDataSource *)receivedDataSource {
-    if (_receivedDataSource == nil) {
-        NSArray<DSTransaction *> *transactions = [self filterTransactions:self.allDataSource.items
-                                                           forDisplayMode:DWHomeTxDisplayMode_Received];
-        _receivedDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
-                                                                     registrationStatus:[self.dashPayModel registrationStatus]];
-    }
-
-    return _receivedDataSource;
-}
-
-- (DWTransactionListDataSource *)sentDataSource {
-    if (_sentDataSource == nil) {
-        NSArray<DSTransaction *> *transactions = [self filterTransactions:self.allDataSource.items
-                                                           forDisplayMode:DWHomeTxDisplayMode_Sent];
-        _sentDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
-                                                                 registrationStatus:[self.dashPayModel registrationStatus]];
-    }
-
-    return _sentDataSource;
-}
-
-- (DWTransactionListDataSource *)rewardsDataSource {
-    if (_rewardsDataSource == nil) {
-        NSArray<DSTransaction *> *transactions = [self filterTransactions:self.allDataSource.items
-                                                           forDisplayMode:DWHomeTxDisplayMode_Rewards];
-        _rewardsDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
-                                                                    registrationStatus:[self.dashPayModel registrationStatus]];
-    }
-
-    return _rewardsDataSource;
-}
 
 - (void)startSyncIfNeeded {
     // This method might be called from init. Don't use any instance variables
@@ -439,125 +341,19 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
-- (void)reloadTxDataSource {
-    dispatch_async(self.queue, ^{
-        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-
-        NSString *sortKey = DW_KEYPATH(DSTransaction.new, timestamp);
-
-        // Timestamps are set to 0 if the transaction hasn't yet been confirmed, they should be at the top of the list if this is the case
-        NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:sortKey
-                                                                         ascending:NO
-                                                                        comparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
-                                                                            if ([obj1 unsignedIntValue] == 0) {
-                                                                                if ([obj2 unsignedIntValue] == 0) {
-                                                                                    return NSOrderedSame;
-                                                                                }
-                                                                                else {
-                                                                                    return NSOrderedDescending;
-                                                                                }
-                                                                            }
-                                                                            else if ([obj2 unsignedIntValue] == 0) {
-                                                                                return NSOrderedAscending;
-                                                                            }
-                                                                            else {
-                                                                                return [(NSNumber *)obj2 compare:obj2];
-                                                                            }
-                                                                        }];
-        NSArray<DSTransaction *> *transactions = [wallet.allTransactions sortedArrayUsingDescriptors:@[ sortDescriptor ]];
-
-        BOOL receivedNewTransaction = NO;
-        BOOL allowedToShowReclassifyYourTransactions = NO;
-        BOOL shouldAnimate = YES;
-
-        DSTransaction *prevTransaction = self.allDataSource.items.firstObject;
-        DSTransaction *newTransaction = transactions.firstObject;
-
-        if (!prevTransaction || prevTransaction == newTransaction) {
-            shouldAnimate = NO;
-        }
-
-        if (newTransaction && prevTransaction != newTransaction) {
-            receivedNewTransaction = YES;
-
-            NSDate *dateReclassifyYourTransactionsFlowActivated = [DWGlobalOptions sharedInstance].dateReclassifyYourTransactionsFlowActivated;
-            allowedToShowReclassifyYourTransactions = [newTransaction.transactionDate compare:dateReclassifyYourTransactionsFlowActivated] == NSOrderedDescending;
-        }
-
-        for (DSTransaction *tx in transactions) {
-            [Tx.shared updateRateIfNeededFor:tx];
-        }
-
-        self.allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
-                                                                    registrationStatus:self.dashPayModel.registrationStatus];
-        self.receivedDataSource = nil;
-        self.sentDataSource = nil;
-
-        // pre-filter while in background queue
-        if (self.displayMode == DWHomeTxDisplayMode_Received) {
-            [self receivedDataSource];
-        }
-        else if (self.displayMode == DWHomeTxDisplayMode_Sent) {
-            [self sentDataSource];
-        }
-        else if (self.displayMode == DWHomeTxDisplayMode_Rewards) {
-            [self rewardsDataSource];
-        }
-
-        DWTransactionListDataSource *datasource = self.dataSource;
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self setAllowedToShowReclassifyYourTransactions:allowedToShowReclassifyYourTransactions];
-
-            if (receivedNewTransaction) {
-                // TODO: try to do for all transactions
-                if (newTransaction.direction == DSTransactionDirection_Received) {
-                    [self.updatesObserver homeModel:self didReceiveNewIncomingTransaction:newTransaction];
-                }
-            }
-            [self.updatesObserver homeModel:self didUpdateDataSource:datasource shouldAnimate:shouldAnimate];
-        });
-    });
-}
-
 - (void)updateBalance {
     [self.receiveModel updateReceivingInfo];
     [self.updatesObserver homeModelWantToReloadShortcuts:self];
 }
 
-- (NSArray<DSTransaction *> *)filterTransactions:(NSArray<DSTransaction *> *)allTransactions
-                                  forDisplayMode:(DWHomeTxDisplayMode)displayMode {
-    NSAssert(displayMode != DWHomeTxDisplayMode_All, @"All transactions should not be filtered");
-    if (displayMode == DWHomeTxDisplayMode_All) {
-        return allTransactions;
-    }
-
-    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-    NSMutableArray<DSTransaction *> *mutableTransactions = [NSMutableArray array];
-
-    for (DSTransaction *tx in allTransactions) {
-        uint64_t sent = [account amountSentByTransaction:tx];
-        if (displayMode == DWHomeTxDisplayMode_Sent && sent > 0) {
-            [mutableTransactions addObject:tx];
-        }
-        else if (displayMode == DWHomeTxDisplayMode_Received && sent == 0 && ![tx isKindOfClass:[DSCoinbaseTransaction class]]) {
-            [mutableTransactions addObject:tx];
-        }
-        else if (displayMode == DWHomeTxDisplayMode_Rewards && sent == 0 && [tx isKindOfClass:[DSCoinbaseTransaction class]]) {
-            [mutableTransactions addObject:tx];
-        }
-    }
-
-    return [mutableTransactions copy];
-}
-
 #pragma mark SyncingActivityMonitorObserver
 
-- (void)syncingActivityMonitorProgressDidChange:(double)progress {}
+- (void)syncingActivityMonitorProgressDidChange:(double)progress {
+}
 
 - (void)syncingActivityMonitorStateDidChangeWithPreviousState:(enum SyncingActivityMonitorState)previousState state:(enum SyncingActivityMonitorState)state {
     BOOL isSynced = state == SyncingActivityMonitorStateSyncDone;
-    
+
     if (isSynced) {
         [self.dashPayModel updateUsernameStatus];
 
@@ -567,12 +363,11 @@ NS_ASSUME_NONNULL_BEGIN
             [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
 #endif
         }
-        
+
         [self checkCrowdNodeState];
     }
 
     [self updateBalance];
-    [self reloadTxDataSource];
 }
 
 @end

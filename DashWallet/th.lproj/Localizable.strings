@@ -25,6 +25,9 @@
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
 
+/* Voting - multiple keys warning */
+"%d votes will be cast as you have multiple voting keys stored in the wallet" = "%d votes will be cast as you have multiple voting keys stored in the wallet";
+
 /* Voting */
 "%ld duplicates" = "%ld ซ้ำ";
 
@@ -148,6 +151,9 @@
 /* CoinJoin */
 "Advanced" = "ระดับสูง";
 
+/* CoinJoin */
+"Advanced privacy level requires a reliable internet connection" = "Advanced privacy level requires a reliable internet connection";
+
 /* No comment provided by engineer. */
 "Advanced Security" = "ความปลอดภัยขั้นสูง";
 
@@ -157,11 +163,11 @@
 /* Usernames */
 "After the voting ends we will notify you about its results" = "After the voting ends we will notify you about its results";
 
-/* Usernames */
-"After voting is completed on %@ you can create any username that has not already been created" = "หลังจากการโหวตเสร็จสิ้นใน %@ คุณสามารถสร้างชื่อผู้ใช้ใดๆ ที่ยังไม่ได้สร้างได้";
-
 /* No comment provided by engineer. */
 "Agree" = "เห็นด้วย";
+
+/* TimeSkew */
+"ahead" = "ahead";
 
 /* No comment provided by engineer. */
 "All" = "ทั้งหมด";
@@ -205,6 +211,9 @@
 /* CoinJoin */
 "Any funds that have been mixed will be combined with your un mixed funds" = "กองทุนใดๆ ที่ได้รับการผสมจะถูกรวมเข้ากับกองทุนที่ยังไม่ได้ผสมของคุณ";
 
+/* Usernames */
+"Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved";
+
 /* Coinbase/Payment Methods */
 "Apple Pay" = "Apple Pay";
 
@@ -216,6 +225,12 @@
 
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "แอพพลิเคชั่น %@ ต้องการรับ Master Public Key ของคุณ ซึ่งสามารถใช้ในการติดตามกระเป๋าสตางค์ของคุณได้ แต่ไม่สามารถใช้ในการย้าย Dash ของคุณ";
+
+/* Voting */
+"Approvals" = "Approvals";
+
+/* Voting */
+"Approve" = "Approve";
 
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "แน่ใจหรือว่าต้องการยกเลิกคำสั่งซื้อนี้?";
@@ -292,8 +307,17 @@
 /* CrowdNode */
 "Become part of a Dash Masternode with CrowdNode" = "เป็นส่วนหนึ่งของ Dash มาสเตอร์โหนด กับ CrowdNode";
 
+/* TimeSkew */
+"behind" = "behind";
+
+/* No comment provided by engineer. */
+"Beta" = "Beta";
+
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "ระหว่าง %1$ld and %2$ld ตัวอักษร";
+
+/* Usernames */
+"Between 3 and 23 characters" = "Between 3 and 23 characters";
 
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase" = "ระหว่าง Dash Wallet และ Coinbase";
@@ -301,11 +325,17 @@
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "ระหว่างกระเป๋าเงิน Dash และบัญชี Coinbase ของคุณ";
 
+/* Voting */
+"Block" = "Block";
+
 /* No comment provided by engineer. */
 "block #%d of %d" = "กลุ่ม # %1$d of %2$d";
 
 /* No comment provided by engineer. */
 "Block #%d of %d" = "กลุ่ม # %1$d of %2$d";
+
+/* Voting */
+"Blocked '%@' username" = "Blocked '%@' username";
 
 /* Buy
    buy */
@@ -383,6 +413,9 @@
 /* CoinJoin */
 "Change to Intermediate" = "เปลี่ยนเป็นระดับกลาง";
 
+/* TimeSkew */
+"Check date & time settings" = "Check date & time settings";
+
 /* No comment provided by engineer. */
 "Check your connection" = "ตรวจสอบการเชื่อมต่อ";
 
@@ -422,6 +455,21 @@
 /* CoinJoin */
 "CoinJoin" = "CoinJoin";
 
+/* CoinJoin */
+"CoinJoin Collateral Inputs" = "CoinJoin Collateral Inputs";
+
+/* CoinJoin */
+"CoinJoin Create Denominations" = "CoinJoin Create Denominations";
+
+/* CoinJoin */
+"CoinJoin Mixing" = "CoinJoin Mixing";
+
+/* CoinJoin */
+"CoinJoin Mixing Fee" = "CoinJoin Mixing Fee";
+
+/* CoinJoin */
+"CoinJoin Send" = "CoinJoin Send";
+
 /* No comment provided by engineer. */
 "Confirm" = "ยืนยัน";
 
@@ -430,9 +478,6 @@
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "ยืนยัน PIN";
-
-/* Voting */
-"Confirm Username Request" = "Confirm Username Request";
 
 /* No comment provided by engineer. */
 "Confirming" = "กำลังยืนยัน";
@@ -475,6 +520,9 @@
 /* No comment provided by engineer. */
 "Continue" = "ดำเนินการต่อ";
 
+/* No comment provided by engineer. */
+"Continue Anyway" = "Continue Anyway";
+
 /* Coinbase Entry Point */
 "Convert Crypto" = "การแปลงคริปโต";
 
@@ -489,6 +537,9 @@
 
 /* No comment provided by engineer. */
 "Copy Logs" = "คัดลอกข้อมูลจากกการบันทึก";
+
+/* No comment provided by engineer. */
+"Copy text" = "Copy text";
 
 /* No comment provided by engineer. */
 "Copyright © 2023 Dash Core" = "Copyright © 2023 Dash Core";
@@ -541,6 +592,9 @@
 
 /* No comment provided by engineer. */
 "Create Username" = "Create Username";
+
+/* Usernames */
+"Create your username" = "Create your username";
 
 /* No comment provided by engineer. */
 "Create your Username, find friends & family with their usernames and add them to your contacts" = "สร้างชื่อผู้ใช้ของคุณค้นหาเพื่อนและครอบครัวที่มีชื่อผู้ใช้และเพิ่มพวกเขาลงในรายชื่อผู้ติดต่อของคุณ";
@@ -632,6 +686,9 @@
 /* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "สกุลเงินเริ่มต้น, ทางลัด, เกี่ยวกับ...";
 
+/* Voting */
+"Default filter setting" = "Default filter setting";
+
 /* Location Service Status */
 "Denied" = "ปฏิเสธแล้ว";
 
@@ -669,6 +726,9 @@
 /* Buy Sell Portal
    Coinbase Entry Point */
 "Disconnected" = "ตัดการเชื่อมต่อ";
+
+/* No comment provided by engineer. */
+"Dismiss" = "Dismiss";
 
 /* No comment provided by engineer. */
 "Display Name" = "ชื่อที่แสดง";
@@ -757,11 +817,8 @@
 /* No comment provided by engineer. */
 "Error updating your profile" = "ข้อผิดพลาดในการอัปเดตโปรไฟล์ของคุณ";
 
-/* No comment provided by engineer. */
-"Error Upgrading" = "อัพเกรดข้อผิดพลาด";
-
-/* Usernames */
-"Example post" = "Example post";
+/* CoinJoin */
+"Error ·" = "Error ·";
 
 /* No comment provided by engineer. */
 "Exit" = "ออก";
@@ -777,6 +834,9 @@
 
 /* ZenLedger */
 "Export all transactions" = "Export all transactions";
+
+/* No comment provided by engineer. */
+"Export CSV" = "Export CSV";
 
 /* No comment provided by engineer. */
 "Extended Public Keys" = "ขยายกุญแจสาธารณะ";
@@ -863,6 +923,9 @@
 "For your security, you have been signed out." = "เพื่อความปลอดภัยของคุณคุณได้ลงทะเบียนแล้ว";
 
 /* No comment provided by engineer. */
+"Forget about long crypto addresses, create the username, find friends and add them to your contacts" = "Forget about long crypto addresses, create the username, find friends and add them to your contacts";
+
+/* No comment provided by engineer. */
 "Forgot PIN?" = "ลืม PIN ใช่หรือไม่";
 
 /* No comment provided by engineer. */
@@ -888,6 +951,9 @@
 
 /* Coinbase */
 "from your Coinbase account" = "จากบัญชี Coinbase ของคุณ";
+
+/* CoinJoin */
+"Fully mixed" = "Fully mixed";
 
 /* CrowdNode */
 "Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "รับรางวัลจากเงินฝากใน Dash มาสเตอร์โหนดที่มีเพียง 0.5 Dash";
@@ -940,9 +1006,6 @@
 /* No comment provided by engineer. */
 "header #%d of %d" = "หัวข้อ #%1$d of %2$d";
 
-/* Hello username, */
-"Hello %@," = "สวัสดี %@,";
-
 /* No comment provided by engineer. */
 "Help us improve your experience" = "ช่วยเราเพื่อพัฒนาประสบการณ์ของคุณ";
 
@@ -977,6 +1040,9 @@
 "I Accept" = "ฉันยอมรับ";
 
 /* No comment provided by engineer. */
+"I accept" = "I accept";
+
+/* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "ฉันยอมรับที่ฉันจะสูญเสียเหรียญของฉันถ้าฉันไม่มีวลีกู้คืน";
 
 /* CrowdNode */
@@ -993,6 +1059,9 @@
 
 /* Voting */
 "Identity" = "ตัวตน";
+
+/* Usernames */
+"If enough of the network feels that a username is inappropriate, they can block it" = "If enough of the network feels that a username is inappropriate, they can block it";
 
 /* Usernames */
 "If somebody else requests the same username as you, we will let the network decide whom to give this username" = "If somebody else requests the same username as you, we will let the network decide whom to give this username";
@@ -1045,9 +1114,6 @@
 /* Usernames */
 "In case you lose your passphrase you will lose your right to your requested username." = "ในกรณีที่คุณทำรหัสผ่านหาย คุณจะสูญเสียสิทธิ์ในการใช้ชื่อผู้ใช้ที่คุณร้องขอ";
 
-/* Usernames */
-"In case your request is not approved" = "ในกรณีที่คำขอของคุณไม่ได้รับการอนุมัติ";
-
 /* CrowdNode Portal */
 "In process…" = "อยู่ในระหว่างการดำเนินงาน…";
 
@@ -1063,6 +1129,9 @@
 /* No comment provided by engineer. */
 "Insufficient funds" = "ยอดเงินไม่เพียงพอ";
 
+/* Send screen */
+"Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction." = "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction.";
+
 /* No comment provided by engineer. */
 "Insufficient Wallet Balance" = "ยอดเงินไม่เพียงพอ";
 
@@ -1071,6 +1140,9 @@
 
 /* CoinJoin */
 "Intermediate" = "ระดับกลาง";
+
+/* CoinJoin */
+"Intermediate privacy level requires a reliable internet connection" = "Intermediate privacy level requires a reliable internet connection";
 
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "โอนเงินภายใน";
@@ -1147,6 +1219,9 @@
 /* No comment provided by engineer. */
 "Invite your friends and family to the Dash Network" = "เชิญเพื่อนและครอบครัวของคุณเข้าร่วมเครือข่าย Dash";
 
+/* No comment provided by engineer. */
+"iOS Dash Wallet: %@ Reported issue" = "iOS Dash Wallet: %@ Reported issue";
+
 /* CrowdNode */
 "It can take a minute for your balance to be updated." = "อาจใช้เวลาสักครู่เพื่ออัปเดตยอดคงเหลือของคุณ";
 
@@ -1158,6 +1233,9 @@
 
 /* Coinbase */
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "อาจใช้เวลานานถึง 10 นาทีในการโอน Dash จาก Coinbase ไปยังกระเป๋าเงิน Dash บนอุปกรณ์นี้";
+
+/* CoinJoin */
+"It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees" = "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees";
 
 /* Coinbase */
 "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "เป็นเรื่องยากมากสำหรับผู้ใช้ระดับสูงที่มีความเชี่ยวชาญทางเทคนิคทุกระดับในการพิจารณาประวัติการทำธุรกรรมของคุณ";
@@ -1216,6 +1294,9 @@
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "ให้เพื่อนและครอบครัวของคุณเข้าร่วมเครือข่าย Dash เชิญพวกเขาเข้าสู่โลกของธนาคารเพื่อสังคม";
+
+/* Usernames */
+"Letter, numbers and hyphens only" = "Letter, numbers and hyphens only";
 
 /* Validation rule */
 "Letters, numbers and hyphens only" = "ตัวอักษรตัวเลขและยัติภังค์เท่านั้น";
@@ -1289,8 +1370,11 @@
 /* Voting */
 "Low to high" = "ต่ำไปสูง";
 
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
+
 /* Usernames */
-"Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow" = "Make a post with the text above (or something similar) on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste a link to the post bellow";
+"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "การอนุญาต GPS";
@@ -1341,7 +1425,31 @@
 "Merchant search works better with Location Services turned on." = "การค้นหาร้านค้าทำงานได้ดีขึ้นเมื่อเปิดการใช้งานบริการสถานที่";
 
 /* CoinJoin */
+"Mix coins" = "Mix coins";
+
+/* CoinJoin */
+"Mix your Dash Coins" = "Mix your Dash Coins";
+
+/* No comment provided by engineer. */
+"Mixed balance" = "Mixed balance";
+
+/* CoinJoin */
+"Mixing" = "Mixing";
+
+/* CoinJoin */
+"Mixing is only possible with the app open" = "Mixing is only possible with the app open";
+
+/* CoinJoin */
+"Mixing Paused ·" = "Mixing Paused ·";
+
+/* CoinJoin */
+"Mixing Transactions" = "Mixing Transactions";
+
+/* CoinJoin */
 "Mixing your Dash coins will make your transactions more private" = "การผสมเหรียญ Dash ของคุณจะทำให้ธุรกรรมของคุณเป็นส่วนตัวมากขึ้น";
+
+/* CoinJoin */
+"Mixing ·" = "Mixing ·";
 
 /* No comment provided by engineer. */
 "More" = "มากขึ้น";
@@ -1424,6 +1532,9 @@
 /* Explore Dash/Merchants/Filters */
 "No Results Found" = "ไม่พบผลลัพธ์";
 
+/* Voting */
+"No votes left" = "No votes left";
+
 /* No comment provided by engineer. */
 "Node IP" = "โหนด IP";
 
@@ -1451,6 +1562,9 @@
 /* Location Service Status */
 "Not Determined" = "ไม่ได้กำหนด";
 
+/* CoinJoin */
+"Not started" = "Not started";
+
 /* No comment provided by engineer. */
 "Not yet used" = "ยังไม่ถูกใช้";
 
@@ -1470,7 +1584,7 @@
 "Once %@ accepts your request you can Pay Directly to Username" = "เมื่อ %@ ยอมรับคำขอของคุณคุณสามารถชำระเงินโดยตรงกับชื่อผู้ใช้";
 
 /* Voting */
-"Once the voting ends you can create any username you want as long as it hasn’t already been created" = "Once the voting ends you can create any username you want as long as it hasn’t already been created";
+"One vote left" = "One vote left";
 
 /* Online */
 "Online" = "ออนไลน์";
@@ -1506,7 +1620,7 @@
 "Owner Keys" = "เจ้าของกุญแจ";
 
 /* Usernames */
-"Paste the link" = "Paste the link";
+"Past link here" = "Past link here";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "วาง URL ภาพของคุณ";
@@ -1519,9 +1633,6 @@
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Pay Directly to Username" = "ชำระเงินโดยตรงกับชื่อผู้ใช้";
-
-/* Usernames */
-"Pay now and if not approved, you can create a different name without paying again" = "ชำระเงินตอนนี้และหากไม่ได้รับการอนุมัติ คุณสามารถสร้างชื่ออื่นได้โดยไม่ต้องชำระเงินอีกครั้ง";
 
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "จ่ายให้กับชื่อผู้ใช้  ไม่มีที่อยู่ตัวอักษรและตัวเลขอีกต่อไป";
@@ -1615,6 +1726,12 @@
 
 /* CrowdNode */
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "โปรดทราบว่าอีเมลที่ไม่ได้รับการบันทึกโดยกระเป๋าเงิน Dash และจะถูกส่งไปยัง CrowdNode เท่านั้น";
+
+/* Usernames */
+"Please note that the username can NOT be changed once it is registered." = "Please note that the username can NOT be changed once it is registered.";
+
+/* Usernames */
+"Please note that you will not be able to change it in future" = "Please note that you will not be able to change it in future";
 
 /* Leftover balance warning */
 "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "โปรดทราบว่าคุณจะไม่สามารถถอนเงินจาก CowdNode ไปยังกระเป๋าเงินนี้ได้จนกว่าคุณจะเพิ่มยอดคงเหลือเป็น%@ Dash.";
@@ -1780,9 +1897,6 @@
 
 /* Voting */
 "Request details" = "ขอรายละเอียด";
-
-/* Voting */
-"Request Username" = "Request Username";
 
 /* Voting */
 "Request your username" = "Request your username";
@@ -2046,6 +2160,9 @@
 /* No comment provided by engineer. */
 "Skip" = "ข้าม";
 
+/* Usernames */
+"Some usernames can be blocked" = "Some usernames can be blocked";
+
 /* No comment provided by engineer. */
 "Something went wrong" = "มีบางอย่างผิดพลาด";
 
@@ -2079,8 +2196,8 @@
 /* CoinJoin */
 "Stop Mixing" = "หยุดผสม";
 
-/* No comment provided by engineer. */
-"Support" = "ฝ่ายสนับสนุน";
+/* Voting */
+"Submit" = "Submit";
 
 /* No comment provided by engineer. */
 "Swept!" = "ลบล้าง";
@@ -2134,25 +2251,34 @@
 "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "Test Dash นั้นฟรีและสามารถรับได้จากสิ่งที่เรียกว่า faucet\nคัดลอกที่อยู่จากหน้าจอรับของกระเป๋าเงินของคุณ และคลิกที่ปุ่มด้านล่างเพื่อรับ Dash ของคุณ";
 
 /* No comment provided by engineer. */
+"Testnet" = "Testnet";
+
+/* No comment provided by engineer. */
 "The chain is syncing…" = "โซ่กำลังซิงค์...";
 
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "รหัสไม่ถูกต้อง กรุณาตรวจสอบและลองอีกครั้ง!";
 
+/* Usernames */
+"The Dash network has to vote to approve some usernames before they are created" = "The Dash network has to vote to approve some usernames before they are created";
+
 /* CrowdNode */
 "The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "Dash Network ขับเคลื่อนโดย Masternodes จำนวนหนึ่งซึ่งเป็นส่วนสำคัญในการอำนวยความสะดวกในการชำระเงิน";
 
 /* Usernames */
-"The Dash network must vote to approve your username before it is created." = "เครือข่าย Dash จะต้องโหวตเพื่ออนุมัติชื่อผู้ใช้ของคุณก่อนจึงจะถูกสร้างขึ้น";
+"The Dash network will vote on this username. We will notify you of the results on March 14, 2024." = "The Dash network will vote on this username. We will notify you of the results on March 14, 2024.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Dash ถูกฝากเข้าบัญชี Coinbase ของคุณเรียบร้อยแล้ว แต่มีปัญหาในการโอนไปยังกระเป๋าเงิน Dash ของคุณบนอุปกรณ์นี้";
+
+/* Voting */
+"The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter.";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "รูปภาพที่คุณเลือกจะถูกอัปโหลดไปยัง Imgur โดยไม่ระบุชื่อ";
 
 /* Usernames */
-"The link you send will be visible to all of the Dash network." = "The link you send will be visible to all of the Dash network.";
+"The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "จำนวนเงินขั้นต่ำที่คุณสามารถส่งได้คือ %@";
@@ -2171,9 +2297,6 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "ไม่มีผู้ใช้ที่ตรงกับชื่อ %@ ในรายชื่อผู้ติดต่อของคุณ";
-
-/* Usernames */
-"There was a network error, you can try again at no extra cost" = "There was a network error, you can try again at no extra cost";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "There was an error when exporting your transaction history to ZenLedger";
@@ -2202,8 +2325,11 @@
 /* CrowdNode */
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "สิ่งนี้แสดงถึงอัตราผลตอบแทนร้อยละต่อปีปัจจุบันของมาสเตอรืโหนด เต็มน้อยกว่าค่าธรรมเนียม CrowdNode 15% แต่มันไม่ได้เป็นอัตราผลตอบแทนที่รับประกันได้และอาจเพิ่มขึ้นหรือลงตามขนาดของกลุ่ม CrowdNode และราคา Dash";
 
-/* Voting */
-"This username has already been requested, but you can request it too and let the network vote to decide if you can have it" = "This username has already been requested, but you can request it too and let the network vote to decide if you can have it";
+/* Usernames */
+"This username is already created by someone else" = "This username is already created by someone else";
+
+/* Usernames */
+"This username is blocked by the Dash Network" = "This username is blocked by the Dash Network";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Wallet นี้ยังมีข้อมูลหรือการซิงค์ที่ยังไม่เสร็จสิ้น คุณไม่สามารถลบข้อมูลได้โดยไม่ใช้วลีกู้คืน";
@@ -2217,8 +2343,8 @@
 /* Coinbase */
 "to Dash Wallet on this device" = "เพื่อกระเป๋า Dash บนอุปกรณ์นี้";
 
-/* Usernames */
-"To request a username on the Dash Network, you need to have more than %@ Dash" = "To request a username on the Dash Network, you need to have more than %@ Dash";
+/* CoinJoin */
+"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "ในการเริ่มการ stakingให้สร้างบัญชีบน CrowdNode หรือเชื่อมต่อกับบัญชีที่มีอยู่";
@@ -2279,11 +2405,11 @@
 /* An action */
 "Try again" = "ลองอีกครั้ง";
 
-/* No comment provided by engineer. */
-"Try Again" = "ลองอีกครั้ง";
-
 /* Alert title */
 "Turn device passcode on" = "เปิดรหัสผ่านของอุปกรณ์";
+
+/* CoinJoin */
+"Turned off" = "Turned off";
 
 /* Coinbase */
 "Turning this feature on will result a higher battery usage" = "การเปิดคุณสมบัตินี้จะส่งผลให้มีการใช้งานแบตเตอรี่มากขึ้น";
@@ -2321,6 +2447,12 @@
 /* No comment provided by engineer. */
 "Unable to upload your picture. Please try again." = "ไม่สามารถอัปโหลดรูปภาพของคุณได้ กรุณาลองอีกครั้ง.";
 
+/* Voting */
+"Unblock" = "Unblock";
+
+/* Voting */
+"Unblocked '%@' username" = "Unblocked '%@' username";
+
 /* No comment provided by engineer. */
 "Unknown" = "ซึ่งเป็นไม่เป็นที่รู้จัก";
 
@@ -2353,9 +2485,6 @@
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "อัพเกรดเป็นวิวัฒนาการ";
-
-/* No comment provided by engineer. */
-"Upgrading to DashPay" = "อัพเกรดเป็น DashPay";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
@@ -2395,6 +2524,9 @@
 
 /* No comment provided by engineer. */
 "Username available" = "มีชื่อผู้ใช้";
+
+/* Usernames */
+"Username is available" = "Username is available";
 
 /* No comment provided by engineer. */
 "Username taken" = "ใช้ชื่อผู้ใช้แล้ว";
@@ -2460,9 +2592,6 @@
 "Vote for All" = "โหวตให้ทุกคน";
 
 /* Voting */
-"Vote only on duplicates" = "โหวตเฉพาะรายการที่ซ้ำกันเท่านั้น";
-
-/* Voting */
 "Vote to Approve" = "ลงคะแนนเพื่ออนุมัติ";
 
 /* Voting */
@@ -2477,11 +2606,11 @@
 /* No comment provided by engineer. */
 "Voting Address" = "ที่อยู่ซึ่งใช้ในการออกเสียงลงคะแนน";
 
+/* Usernames */
+"Voting is only required in some cases" = "Voting is only required in some cases";
+
 /* No comment provided by engineer. */
 "Voting Keys" = "Voting Keys";
-
-/* Usernames */
-"Voting will not be required forever" = "ไม่จำเป็นต้องลงคะแนนเสียงตลอดไป";
 
 /* Voting */
 "Voting:" = "Voting:";
@@ -2534,9 +2663,6 @@
 /* No comment provided by engineer. */
 "Welcome" = "ยินดีต้อนรับ";
 
-/* Usernames */
-"Welcome to Dash Pay" = "ยินดีต้อนรับสู่ Dash Pay";
-
 /* No comment provided by engineer. */
 "Welcome to DashPay" = "ยินดีต้อนรับสู่ DashPay";
 
@@ -2545,6 +2671,9 @@
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "เมื่อธุรกรรมถูกยืนยัน วอลเล็ทอื่นๆจะไม่มีจราคาและไม่ควรนำมาใช้อีกครั้งเพื่อความปลอดภัย";
+
+/* CoinJoin */
+"When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app." = "When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app.";
 
 /* No comment provided by engineer. */
 "Where to Spend" = "จะใช้จ่ายที่ไหน";
@@ -2628,9 +2757,6 @@
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "คุณสามารถป้อนคีย์ของคุณในรูปแบบใดๆ ต่อไปนี้: WIF/base58/base64/hex";
 
-/* Voting */
-"You can review all requests but you only need to vote on duplicates" = "คุณสามารถตรวจสอบคำขอทั้งหมดได้ แต่คุณจะต้องโหวตเฉพาะรายการที่ซ้ำกันเท่านั้น";
-
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "คุณสามารถดูข้อมูลโดยละเอียดเกี่ยวกับเงินฝากการถอนและรางวัลของคุณ";
 
@@ -2640,6 +2766,12 @@
 /* No comment provided by engineer. */
 "You cannot claim this invite since you already have a Dash username" = "คุณไม่สามารถเรียกร้องคำเชิญนี้ได้เนื่องจากคุณมีชื่อผู้ใช้ DASH อยู่แล้ว";
 
+/* Usernames */
+"You chose “%@” as your username." = "You chose “%@” as your username.";
+
+/* CoinJoin */
+"You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
+
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "คุณไม่มีผู้ติดต่อใด ๆ ในขณะนี้";
 
@@ -2648,6 +2780,15 @@
 
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "คุณทำรายการเกินขีดจำกัดการอนุญาตของ Coinbase";
+
+/* Usernames */
+"You have %@ Dash.\nSome usernames cost up to %@ Dash." = "You have %1$@ Dash.\nSome usernames cost up to %2$@ Dash.";
+
+/* Voting */
+"You have already voted for this username %ld times. You can only cast one more vote for this username." = "You have already voted for this username %ld times. You can only cast one more vote for this username.";
+
+/* Voting */
+"You have already voted for this username %ld times. You cannot vote for it anymore." = "You have already voted for this username %ld times. You cannot vote for it anymore.";
 
 /* No comment provided by engineer. */
 "You have been invited by %@. Start using Dash cryptocurrency." = "คุณได้รับเชิญโดย %@. เริ่มใช้ Dash";
@@ -2673,6 +2814,12 @@
 /* CrowdNode */
 "You need at least %@ on your Dash Wallet" = "คุณต้องมีอย่างน้อย %@ บนกระเป๋า Dash ของคุณ";
 
+/* Usernames */
+"You need to have more %@ Dash to create this username" = "You need to have more %@ Dash to create this username";
+
+/* Usernames */
+"You need to have more than %@ Dash to create a username" = "You need to have more than %@ Dash to create a username";
+
 /* CrowdNode */
 "You need to wait 5 minutes before initiating another withdrawal" = "You need to wait 5 minutes before initiating another withdrawal";
 
@@ -2693,9 +2840,6 @@
 
 /* No comment provided by engineer. */
 "You should have at least %@ to proceed with the CrowdNode verification." = "คุณต้องมีอย่างน้อย %@ เพื่อดำเนินการตรวจสอบ CrowdNode";
-
-/* Usernames */
-"You should have more than %@ Dash to create a username" = "คุณควรมีมากกว่า  %@ Dash เพื่อสร้างชื่อผู้ใช้";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "คุณจะต้องออกจากระบบของเว็บไซต์ Uphold โดยใช้เบราว์เซอร์ของคุณ";
@@ -2728,7 +2872,7 @@
 "Your CrowdNode account is set up and ready to use!" = "บัญชี CrowdNode ของคุณถูกตั้งค่าและพร้อมใช้งาน!";
 
 /* Crowdnode */
-"Your CrowdNode account was created using these transactions. " = "บัญชี CrowdNode ของคุณถูกสร้างขึ้นโดยใช้ธุรกรรมเหล่านี้";
+"Your CrowdNode account was created using these transactions." = "Your CrowdNode account was created using these transactions.";
 
 /* CrowdNode */
 "Your CrowdNode address has been confirmed." = "ที่อยู่ CrowdNode ของคุณได้รับการยืนยันแล้ว";
@@ -2741,6 +2885,15 @@
 
 /* CrowdNode */
 "Your deposit to CrowdNode is received." = "ได้รับเงินฝากของคุณไปยัง CrowdNode";
+
+/* TimeSkew */
+"Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin." = "Your device time is %1$@ by %2$d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.";
+
+/* TimeSkew */
+"Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings." = "Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings.";
+
+/* TimeSkew */
+"Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin." = "Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin.";
 
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "อีเมลของคุณไม่ได้ถูกเก็บไว้ในกระเป๋าเงิน DashpPay หรือบนเซิร์ฟเวอร์ใด ๆ มันถูกใช้หนึ่งครั้งเพื่อรับรายละเอียดบัญชี Gravatar  ของคุณแล้วทิ้ง";

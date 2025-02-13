@@ -62,18 +62,18 @@ NS_ASSUME_NONNULL_BEGIN
     return resultSet.array;
 }
 
-- (NSArray<NSString *> *)extractAddressesFromString: (NSString *)string {
+- (NSArray<NSString *> *)extractAddressesFromString:(NSString *)string {
     NSMutableOrderedSet<NSString *> *resultSet = [NSMutableOrderedSet orderedSet];
     NSCharacterSet *whitespacesSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
     NSString *str = [string stringByTrimmingCharactersInSet:whitespacesSet];
-    
+
     if (str.length > 0) {
         NSCharacterSet *separatorsSet = [NSCharacterSet alphanumericCharacterSet].invertedSet;
 
         [resultSet addObject:str];
         [resultSet addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separatorsSet]];
     }
-    
+
     return resultSet.array;
 }
 

@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_END
 
         UIView *avatarContainer = [[UIView alloc] init];
         avatarContainer.translatesAutoresizingMaskIntoConstraints = NO;
-        avatarContainer.backgroundColor = [UIColor dw_dashBlueColor]; //TODO: must be light blue
+        avatarContainer.backgroundColor = [UIColor dw_dashBlueColor]; // TODO: must be light blue
         [self addSubview:avatarContainer];
         _avatarContainer = avatarContainer;
 

@@ -39,7 +39,6 @@ class UsernameRequestsDAOImpl: NSObject, UsernameRequestsDAO {
     private var cache: [String: UsernameRequest] = [:]
 
     func create(dto: UsernameRequest) async {
-        
         do {
             let usernameRequest = UsernameRequest.table.insert(or: .replace,
                                                           UsernameRequest.requestId <- dto.requestId,
@@ -48,6 +47,7 @@ class UsernameRequestsDAOImpl: NSObject, UsernameRequestsDAO {
                                                           UsernameRequest.identity <- dto.identity,
                                                           UsernameRequest.link <- dto.link,
                                                           UsernameRequest.votes <- dto.votes,
+                                                          UsernameRequest.blockVotes <- dto.blockVotes,
                                                           UsernameRequest.isApproved <- dto.isApproved)
             try await execute(usernameRequest)
             self.cache[dto.requestId] = dto
@@ -181,7 +181,7 @@ extension UsernameRequestsDAOImpl {
                 guard let self = self else { return continuation.resume(returning: []) }
                     
                 do {
-                    let results = try self.db.prepare(query, bindings).prepareRowIterator().map { Item(row: $0) }
+                    let results = try self.db.prepareRowIterator(query, bindings: bindings).map { Item(row: $0) }
                     continuation.resume(returning: results)
                 } catch {
                     continuation.resume(throwing: error)

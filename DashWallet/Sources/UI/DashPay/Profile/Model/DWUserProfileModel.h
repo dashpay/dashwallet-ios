@@ -22,7 +22,6 @@
 
 #import "DWDPBasicUserItem.h"
 #import "DWDPBlockchainIdentityBackedItem.h"
-#import "DWTxDisplayModeProtocol.h"
 #import "DWUserProfileDataSource.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -43,7 +42,7 @@ typedef NS_ENUM(NSInteger, DWUserProfileModelState) {
 
 @end
 
-@interface DWUserProfileModel : NSObject <DWTxDisplayModeProtocol>
+@interface DWUserProfileModel : NSObject
 
 @property (readonly, nonatomic, strong) id<DWDPBasicUserItem> item;
 @property (readonly, nonatomic, assign) DWUserProfileModelState state;

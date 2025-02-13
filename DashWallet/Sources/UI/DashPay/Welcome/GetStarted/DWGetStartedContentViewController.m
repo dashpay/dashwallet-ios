@@ -46,7 +46,7 @@
 
     UILabel *subtitleLabel = [[UILabel alloc] init];
     subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-	subtitleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleLargeTitle];
+    subtitleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleLargeTitle];
     subtitleLabel.textColor = [UIColor dw_darkTitleColor];
     subtitleLabel.text = NSLocalizedString(@"Let’s Get Started", nil);
     subtitleLabel.numberOfLines = 0;

@@ -167,7 +167,7 @@ NS_ASSUME_NONNULL_END
 - (void)updateContentKeyboardConstraintsIfNeeded {
     NSLayoutConstraint *constraint = [self.contentController.view dw_findConstraintWithAttribute:NSLayoutAttributeBottom];
     if (self.ka_keyboardHeight > 0) {
-        constraint.constant = self.ka_keyboardHeight; //TODO: DashPay - DW_TABBAR_HEIGHT;
+        constraint.constant = self.ka_keyboardHeight; // TODO: DashPay - DW_TABBAR_HEIGHT;
     }
     else {
         constraint.constant = 0;

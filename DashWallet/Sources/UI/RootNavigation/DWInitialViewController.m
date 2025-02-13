@@ -117,7 +117,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (self.launchingWasDeferred) {
         [controller setLaunchingAsDeferredController];
     }
-    
+
 #if DASHPAY
     if (self.deferredDeeplink) {
         [controller handleDeeplink:self.deferredDeeplink];

@@ -17,6 +17,7 @@
 
 #import "DWAboutViewController.h"
 
+#import <MessageUI/MessageUI.h>
 #import <StoreKit/StoreKit.h>
 
 #import "DWAboutModel.h"
@@ -24,10 +25,11 @@
 #import "DWUIKit.h"
 #import "DWWindow.h"
 #import "SFSafariViewController+DashWallet.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAboutViewController () <DWAboutModelDelegate>
+@interface DWAboutViewController () <DWAboutModelDelegate, MFMailComposeViewControllerDelegate>
 
 @property (strong, nonatomic) IBOutlet UIImageView *dashLogoImageView;
 @property (strong, nonatomic) IBOutlet UILabel *appVersionLabel;
@@ -52,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAboutViewController
 
-+ (instancetype)controller {
++ (instancetype)createController {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"About" bundle:nil];
     DWAboutViewController *controller = [storyboard instantiateInitialViewController];
     controller.hidesBottomBarWhenPushed = YES;
@@ -136,8 +138,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (IBAction)contactSupportButtonAction:(id)sender {
-    NSURL *url = [DWAboutModel supportURL];
-    [self displaySafariControllerWithURL:url];
+    [self presentSupportEmailController];
 }
 
 #pragma mark - Notifications
@@ -176,30 +177,6 @@ NS_ASSUME_NONNULL_BEGIN
                     [self setFixedPeer];
                 }];
     [alert addAction:setPeerAction];
-
-    // #warning Disable in Release
-    //     UIAlertAction *destructAction = [UIAlertAction
-    //         actionWithTitle:@"☠️ Exterminate!"
-    //                   style:UIAlertActionStyleDestructive
-    //                 handler:^(UIAlertAction *_Nonnull action) {
-    //                     [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
-    //                     CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication);
-    //
-    //                     NSArray *secItemClasses = @[ (__bridge id)kSecClassGenericPassword,
-    //                                                  (__bridge id)kSecClassInternetPassword,
-    //                                                  (__bridge id)kSecClassCertificate,
-    //                                                  (__bridge id)kSecClassKey,
-    //                                                  (__bridge id)kSecClassIdentity ];
-    //                     for (id secItemClass in secItemClasses) {
-    //                         NSDictionary *spec = @{(__bridge id)kSecClass : secItemClass};
-    //                         SecItemDelete((__bridge CFDictionaryRef)spec);
-    //                     }
-    //
-    //                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-    //                         exit(0);
-    //                     });
-    //                 }];
-    //     [alert addAction:destructAction];
 
     UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
                                                        style:UIAlertActionStyleCancel
@@ -289,6 +266,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)exploreDashDatabaseSyncStateChanged {
     self.exploreDashLastDeviceSyncLabel.text = [self.model exploreDashSyncState];
     self.exploreDashLastServerUpdateLabel.text = [self.model exploreLastServerUpdateDate];
+}
+
+#pragma mark - MFMailComposeViewControllerDelegate
+
+- (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(nullable NSError *)error {
+    [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

@@ -24,8 +24,8 @@
 #import "DWPaymentInputBuilder.h"
 
 #if DASHPAY
-#import "DWEnvironment.h"
 #import "DWDashPayConstants.h"
+#import "DWEnvironment.h"
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
@@ -61,7 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)refreshOptions {
     NSMutableArray<DWPayOptionModel *> *options = [NSMutableArray array];
-    
+
 #if DASHPAY
     DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
     if (blockchainIdentity.currentDashpayUsername != nil || MOCK_DASHPAY) {
@@ -104,13 +104,14 @@ NS_ASSUME_NONNULL_BEGIN
     [self payToAddressFromContents:contents completion:completion];
 }
 
-- (void)payToAddressFromContents: (NSArray<NSString *> *)contents completion:(void (^)(BOOL success))completion {
+- (void)payToAddressFromContents:(NSArray<NSString *> *)contents completion:(void (^)(BOOL success))completion {
     if (contents.count == 0) {
         self.pasteboardPaymentInput = nil;
 
         if (completion)
             completion(NO);
-    } else {
+    }
+    else {
         __weak typeof(self) weakSelf = self;
         [self.inputBuilder payFirstFromArray:contents
                                       source:DWPaymentInputSource_Pasteboard

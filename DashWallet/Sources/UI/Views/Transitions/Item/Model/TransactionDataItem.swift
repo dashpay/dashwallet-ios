@@ -23,10 +23,12 @@ protocol TransactionDataItem {
     var outputReceiveAddresses: [String] { get }
     var inputSendAddresses: [String] { get }
     var specialInfoAddresses: [String: Int]? { get }
+    var txHashHexString: String { get }
     var dashAmount: UInt64 { get }
+    var signedDashAmount: Int64 { get }
     var direction: DSTransactionDirection { get }
     var fiatAmount: String { get }
-
+    var iconName: String { get }
     var stateTitle: String { get }
     var shortDateString: String { get }
 }

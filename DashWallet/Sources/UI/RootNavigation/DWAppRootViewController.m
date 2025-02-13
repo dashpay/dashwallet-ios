@@ -97,7 +97,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         self.deferredDeeplinkToProcess = url;
         return;
     }
-    
+
     [self.mainController handleDeeplink:url definedUsername:nil];
 }
 #endif
@@ -288,7 +288,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     UIViewController *mainController = self.mainController;
     [self transitionToController:mainController
                   transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
-    
+
 #if DASHPAY
     if (self.invitationSetup.invitation != nil) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -333,7 +333,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             self.lockWindow.rootViewController = nil;
             self.lockWindow.hidden = YES;
             self.lockWindow.alpha = 1.0;
-        
+
             if (self.deferredDeeplinkToProcess) {
 #if DASHPAY
                 [self handleDeeplink:self.deferredDeeplinkToProcess];

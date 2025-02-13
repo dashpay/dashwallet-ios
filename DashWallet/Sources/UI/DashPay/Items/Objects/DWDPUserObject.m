@@ -52,7 +52,7 @@
         BOOL hasDisplayName = _blockchainIdentity.displayName.length > 0;
         _displayName = hasDisplayName ? _blockchainIdentity.displayName : nil;
     }
-    
+
     return _displayName;
 }
 

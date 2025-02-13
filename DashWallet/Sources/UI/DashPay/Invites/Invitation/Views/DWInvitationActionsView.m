@@ -17,9 +17,9 @@
 
 #import "DWInvitationActionsView.h"
 
-#import "dashwallet-Swift.h"
 #import "DWTextField.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -60,7 +60,7 @@ static NSTimeInterval DEBOUNCE_DELAY = 0.2;
         [textField addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
         [self addSubview:textField];
         _tagTextField = textField;
-        
+
         DWActionButton *copyButton = [[DWActionButton alloc] init];
         copyButton.translatesAutoresizingMaskIntoConstraints = NO;
         [copyButton addTarget:self action:@selector(copyButtonAction) forControlEvents:UIControlEventTouchUpInside];
@@ -99,7 +99,7 @@ static NSTimeInterval DEBOUNCE_DELAY = 0.2;
 
 - (void)textFieldDidChange:(UITextField *)textField {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tagDidUpdate) object:nil];
-    
+
     [self performSelector:@selector(tagDidUpdate) withObject:nil afterDelay:DEBOUNCE_DELAY];
 }
 

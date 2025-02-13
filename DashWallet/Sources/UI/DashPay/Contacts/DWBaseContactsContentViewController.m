@@ -18,11 +18,11 @@
 #import "DWBaseContactsContentViewController+DWProtected.h"
 
 #import "DWDPBasicCell.h"
+#import "DWFilterHeaderView.h"
 #import "DWListCollectionLayout.h"
 #import "DWSharedUIConstants.h"
 #import "DWUIKit.h"
 #import "UICollectionView+DWDPItemDequeue.h"
-#import "DWFilterHeaderView.h"
 
 typedef NS_ENUM(NSInteger, DWContactsContentSection) {
     DWContactsContentSectionSearch,

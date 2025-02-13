@@ -199,11 +199,10 @@ NS_ASSUME_NONNULL_END
     }
 
     DWNotificationsData *data = self.model.data;
-    if (indexPath.section == 1 && data.unreadItems.count == 0)
-    {
+    if (indexPath.section == 1 && data.unreadItems.count == 0) {
         return; // empty state
     }
-        
+
     id<DWDPBasicUserItem> item = [self itemAtIndexPath:indexPath];
     DWUserProfileViewController *profileController =
         [[DWUserProfileViewController alloc] initWithItem:item

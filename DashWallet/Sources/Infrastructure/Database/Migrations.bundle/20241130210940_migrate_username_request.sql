@@ -1,0 +1,1 @@
+ALTER TABLE username_requests ADD COLUMN blockVotes INTEGER NOT NULL DEFAULT 0;

@@ -32,6 +32,14 @@ static UInt256 RandomUInt256(void) {
 
 @implementation DWTransactionStub
 
+- (uint64_t)dashAmount {
+    return self.stubDashAmount;
+}
+
+- (DSTransactionDirection)direction {
+    return self.stubDirection;
+}
+
 + (NSArray<DWTransactionStub *> *)stubs {
     NSMutableArray<DWTransactionStub *> *stubs = [NSMutableArray array];
 
@@ -41,8 +49,8 @@ static UInt256 RandomUInt256(void) {
         DWTransactionStub *tx = [[DWTransactionStub alloc] initOnChain:dummyChain];
         tx.txHash = RandomUInt256();
         tx.timestamp = [NSDate timeIntervalSince1970] - 0 * 100000;
-        tx.dashAmount = DUFFS * 3.140000000001;
-        tx.direction = DSTransactionDirection_Sent;
+        tx.stubDashAmount = DUFFS * 3.140000000001;
+        tx.stubDirection = DSTransactionDirection_Sent;
         [stubs addObject:tx];
     }
 
@@ -50,8 +58,8 @@ static UInt256 RandomUInt256(void) {
         DWTransactionStub *tx = [[DWTransactionStub alloc] initOnChain:dummyChain];
         tx.txHash = RandomUInt256();
         tx.timestamp = [NSDate timeIntervalSince1970] - 1 * 100000;
-        tx.dashAmount = DUFFS * 2.710000000001;
-        tx.direction = DSTransactionDirection_Received;
+        tx.stubDashAmount = DUFFS * 2.710000000001;
+        tx.stubDirection = DSTransactionDirection_Received;
         [stubs addObject:tx];
     }
 
@@ -59,8 +67,8 @@ static UInt256 RandomUInt256(void) {
         DWTransactionStub *tx = [[DWTransactionStub alloc] initOnChain:dummyChain];
         tx.txHash = RandomUInt256();
         tx.timestamp = [NSDate timeIntervalSince1970] - 2 * 100000;
-        tx.dashAmount = DUFFS * 1.6180000000001;
-        tx.direction = DSTransactionDirection_Sent;
+        tx.stubDashAmount = DUFFS * 1.6180000000001;
+        tx.stubDirection = DSTransactionDirection_Sent;
         [stubs addObject:tx];
     }
 
@@ -68,8 +76,8 @@ static UInt256 RandomUInt256(void) {
         DWTransactionStub *tx = [[DWTransactionStub alloc] initOnChain:dummyChain];
         tx.txHash = RandomUInt256();
         tx.timestamp = [NSDate timeIntervalSince1970] - 3 * 100000;
-        tx.dashAmount = DUFFS * 44.0480000000001;
-        tx.direction = DSTransactionDirection_Received;
+        tx.stubDashAmount = DUFFS * 44.0480000000001;
+        tx.stubDirection = DSTransactionDirection_Received;
         [stubs addObject:tx];
     }
 

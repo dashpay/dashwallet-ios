@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWAboutViewController : UIViewController
 
-+ (instancetype)controller;
++ (instancetype)createController;
 
 @end
 

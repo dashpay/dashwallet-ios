@@ -19,7 +19,7 @@ import Combine
 
 class RequestDetailsViewController: UIViewController {
     private var cancellableBag = Set<AnyCancellable>()
-    private let viewModel = RequestUsernameViewModel.shared
+    private let viewModel = CreateUsernameViewModel.shared
     
     @IBOutlet private var titleLabel: UILabel!
     @IBOutlet private var subtitleLabel: UILabel!
@@ -130,7 +130,6 @@ extension RequestDetailsViewController {
         let alert = UIAlertController(title: NSLocalizedString("Do you really want to cancel the username request?", comment: "Usernames"), message: NSLocalizedString("If you tap “Cancel Request”, you will still have a chance to request another username without paying again", comment: "Usernames"), preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel Request", comment: "Usernames"), style: .destructive, handler: { [weak self] _ in
             self?.viewModel.cancelRequest()
-            self?.viewModel.onFlowComplete(withResult: false)
             self?.navigationController?.popViewController(animated: true)
         }))
         let cancelAction = UIAlertAction(title: NSLocalizedString("Close", comment: ""), style: .cancel)
@@ -143,12 +142,13 @@ extension RequestDetailsViewController {
         if let url = viewModel.currentUsernameRequest?.link {
             UIApplication.shared.open(URL(string: url)!)
         } else {
-            self.navigationController?.pushViewController(VerifyIdenityViewController.controller(), animated: true)
+            // TODO
+//            self.navigationController?.pushViewController(VerifyIdenityViewController.controller(), animated: true)
         }
     }
     
     @objc
     private func infoButtonAction() {
-        self.navigationController?.pushViewController(VotingInfoViewController.controller(goBackOnClose: true), animated: true)
+        // TODO
     }
 }

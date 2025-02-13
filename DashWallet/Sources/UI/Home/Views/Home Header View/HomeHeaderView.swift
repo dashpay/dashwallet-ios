@@ -24,10 +24,6 @@ private let kAvatarSize = CGSize(width: 72.0, height: 72.0)
 protocol HomeHeaderViewDelegate: AnyObject {
     func homeHeaderView(_ headerView: HomeHeaderView, retrySyncButtonAction sender: UIView)
     func homeHeaderViewDidUpdateContents(_ headerView: HomeHeaderView)
-
-    #if DASHPAY
-    func homeHeaderViewJoinDashPayAction(_ headerView: HomeHeaderView)
-    #endif
 }
 
 // MARK: - HomeHeaderView
@@ -43,17 +39,10 @@ final class HomeHeaderView: UIView {
 
     // Available only in DashPay
     #if DASHPAY
-    private let welcomeView: DPWelcomeView = DPWelcomeView(frame: .zero)
-    var isDPWelcomeViewHidden = true {
-        didSet {
-            welcomeView.isHidden = isDPWelcomeViewHidden
-        }
-    }
-    
     private let votingView: DPVotingResultView = DPVotingResultView(frame: .zero)
     var isVotingViewHidden = true {
         didSet {
-            votingView.isHidden = isVotingViewHidden
+//            votingView.isHidden = isVotingViewHidden TODO
         }
     }
     var votingState: DPVotingState {
@@ -88,13 +77,10 @@ final class HomeHeaderView: UIView {
         shortcutsView.translatesAutoresizingMaskIntoConstraints = false
 
     #if DASHPAY
-        welcomeView.translatesAutoresizingMaskIntoConstraints = false
-        welcomeView.addTarget(self, action: #selector(joinDashPayAction), for: .touchUpInside)
-        welcomeView.isHidden = true
         votingView.translatesAutoresizingMaskIntoConstraints = false
         votingView.isHidden = true
         votingView.onAction = { [weak self] in
-            self?.joinDashPayAction()
+            // TODO: show dashpay flow
         }
         votingView.onClose = { [weak self] in
             guard let self = self else { return }
@@ -110,7 +96,7 @@ final class HomeHeaderView: UIView {
             self.delegate?.homeHeaderViewDidUpdateContents(self)
         }
 
-        let views: [UIView] = [balanceView, shortcutsView, syncView, welcomeView, votingView]
+        let views: [UIView] = [balanceView, shortcutsView, syncView, votingView]
     #else
         let views: [UIView] = [balanceView, shortcutsView, syncView]
     #endif
@@ -146,22 +132,12 @@ final class HomeHeaderView: UIView {
             }
 
             self?.reloadBalance()
-            self?.reloadShortcuts()
         }
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    #if DASHPAY
-    
-    @objc
-    func joinDashPayAction() {
-        delegate?.homeHeaderViewJoinDashPayAction(self)
-    }
-    
-    #endif
 
     func parentScrollViewDidScroll(_ scrollView: UIScrollView) { }
 
@@ -170,10 +146,6 @@ final class HomeHeaderView: UIView {
 
         balanceView.reloadData()
         balanceView.state = isSyncing ? .syncing : .`default`
-    }
-
-    func reloadShortcuts() {
-        shortcutsView.reloadData()
     }
 
     private func hideSyncView() {

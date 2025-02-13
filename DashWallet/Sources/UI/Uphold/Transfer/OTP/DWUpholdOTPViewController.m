@@ -130,17 +130,17 @@ NS_ASSUME_NONNULL_BEGIN
     if (string.length == 0) {
         return YES;
     }
-    
+
     NSString *resultText = [textField.text stringByAppendingString:string];
-        
+
     if ([self isLooksLikeOTPToken:resultText]) {
         if (resultText.length == 6) {
             [self confirmOTPToken:resultText];
         }
-        
+
         return YES;
     }
-    
+
     return NO;
 }
 

@@ -57,10 +57,7 @@ class UsernameVotingViewController: UIViewController {
         if viewModel.shouldShowFirstTimeInfo {
             viewModel.shouldShowFirstTimeInfo = false
             
-            let alert = UIAlertController(title: NSLocalizedString("Vote only on duplicates", comment: "Voting"), message: NSLocalizedString("You can review all requests but you only need to vote on duplicates", comment: "Voting"), preferredStyle: .alert)
-            let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel)
-            alert.addAction(okAction)
-            present(alert, animated: true)
+            showModalDialog(icon: .system("info"), heading: NSLocalizedString("Default filter setting", comment: "Voting"), textBlock1: NSLocalizedString("The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter.", comment: "Voting"), positiveButtonText: NSLocalizedString("OK", comment: ""))
         }
     }
     
@@ -84,12 +81,14 @@ extension UsernameVotingViewController {
         let tap = UITapGestureRecognizer(target: self, action: #selector(mockData))
         titleLabel.addGestureRecognizer(tap)
         
-        tableView.estimatedRowHeight = 200
+        tableView.estimatedRowHeight = 50
         tableView.rowHeight = UITableView.automaticDimension
         tableView.separatorStyle = .none
-        tableView.allowsSelection = false
+        tableView.allowsSelection = true
         tableView.keyboardDismissMode = .onDrag
+        tableView.contentInset.bottom = 50
         tableView.register(GroupedRequestCell.self, forCellReuseIdentifier: GroupedRequestCell.description())
+        tableView.register(UsernameRequestCell.self, forCellReuseIdentifier: UsernameRequestCell.description())
         
         let headerNib = UINib(nibName: "VotingHeaderView", bundle: nil)
         
@@ -133,9 +132,12 @@ extension UsernameVotingViewController {
             .sink { [weak self] action in
                 switch action {
                 case .approved:
-                    self?.view.dw_showInfoHUD(withText: NSLocalizedString("Your vote was submitted", comment: "Voting"))
+                    self?.showToast(text: NSLocalizedString("Your vote was submitted", comment: "Voting"), icon: .system("checkmark.circle.fill"), duration: 2)
                 case .revoked:
-                    self?.view.dw_showInfoHUD(withText: NSLocalizedString("Your vote was cancelled", comment: ""))
+                    self?.showToast(text: NSLocalizedString("Your vote was cancelled", comment: "Voting"), icon: .system("checkmark.circle.fill"), duration: 2)
+                case .blocked:
+                    let username = self?.viewModel.selectedRequest?.username ?? ""
+                    self?.showToast(text: String.localizedStringWithFormat(NSLocalizedString("Blocked '%@' username", comment: "Voting"), username), icon: .system("checkmark.circle.fill"), duration: 2)
                 default:
                     break
                 }
@@ -162,6 +164,19 @@ extension UsernameVotingViewController {
         self.navigationItem.rightBarButtonItem = requests.isEmpty || keys.isEmpty ?
             nil : self.quickVotingButton
     }
+    
+    private func navigateToBlock(request: UsernameRequest) {
+        viewModel.selectedRequest = request
+        let vc: UIViewController
+        
+        if viewModel.masternodeKeys.isEmpty {
+            vc = EnterVotingKeyViewController.controller(blocking: true)
+        } else {
+            vc = CastVoteViewController.controller(blocking: true)
+        }
+        
+        self.navigationController?.pushViewController(vc, animated: true)
+    }
 }
 
 extension UsernameVotingViewController: VotingFiltersViewControllerDelegate {
@@ -169,6 +184,17 @@ extension UsernameVotingViewController: VotingFiltersViewControllerDelegate {
         viewModel.apply(filters: filters)
         headerView?.set(filterLabel: filters.filterBy?.localizedString ?? "")
         filterViewSubtitle.text = filters.localizedDescription
+    }
+}
+
+extension UsernameVotingViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        guard let item = dataSource.itemIdentifier(for: indexPath),
+              item.requests.count == 1 else { return }
+              
+        openDetails(for: item.requests[0])
     }
 }
 
@@ -180,23 +206,53 @@ extension UsernameVotingViewController {
     class DataSource: UITableViewDiffableDataSource<Section, GroupedUsernames> { }
     
     private func configureDataSource() {
+        tableView.delegate = self
         dataSource = DataSource(tableView: tableView) { [weak self]
             (tableView: UITableView, indexPath: IndexPath, item: GroupedUsernames) -> UITableViewCell? in
 
             guard self != nil else { return UITableViewCell() }
-            let cell = tableView.dequeueReusableCell(withIdentifier: GroupedRequestCell.description(), for: indexPath)
+            
+            if item.requests.count == 1 {
+                let cell = tableView.dequeueReusableCell(withIdentifier: UsernameRequestCell.description(), for: indexPath)
+                
+                if let requestCell = cell as? UsernameRequestCell {
+                    requestCell.configure(withModel: item.requests[0], isInGroup: false)
+                    requestCell.onApproveTapped = { [weak self] request in
+                        self?.openDetails(for: request)
+                    }
+                    requestCell.onBlockTapped = { [weak self] request in
+                        self?.onBlockTapped(request: request)
+                    }
+                }
+                
+                return cell
+            } else {
+                let cell = tableView.dequeueReusableCell(withIdentifier: GroupedRequestCell.description(), for: indexPath)
 
-            if let groupedCell = cell as? GroupedRequestCell {
-                groupedCell.configure(withModel: item.requests)
-                groupedCell.onHeightChanged = {
-                    tableView.performBatchUpdates(nil)
+                if let groupedCell = cell as? GroupedRequestCell {
+                    groupedCell.configure(withModel: item.requests)
+                    groupedCell.onHeightChanged = {
+                        tableView.performBatchUpdates(nil)
+                    }
+                    groupedCell.onRequestSelected = { [weak self] request in
+                        self?.openDetails(for: request)
+                    }
+                    groupedCell.onBlockTapped = { [weak self] request in
+                        self?.onBlockTapped(request: request)
+                    }
                 }
-                groupedCell.onRequestSelected = { [weak self] request in
-                    self?.openDetails(for: request)
-                }
+
+                return cell
             }
-
-            return cell
+        }
+    }
+    
+    private func onBlockTapped(request: UsernameRequest) {
+        if viewModel.masternodeKeys.isEmpty || request.blockVotes <= 0 {
+            self.navigateToBlock(request: request)
+        } else { // TODO: replace with correct logic
+            self.viewModel.unblock(request: request.requestId)
+            self.showToast(text: String.localizedStringWithFormat(NSLocalizedString("Unblocked '%@' username", comment: "Voting"), request.username), icon: .system("checkmark.circle.fill"), duration: 2)
         }
     }
     

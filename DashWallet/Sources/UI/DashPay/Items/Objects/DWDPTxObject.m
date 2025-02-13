@@ -51,10 +51,10 @@ NS_ASSUME_NONNULL_END
         _dataProvider = dataProvider;
         _blockchainIdentity = blockchainIdentity;
         _username = blockchainIdentity.currentDashpayUsername;
-       
+
         BOOL hasDisplayName = blockchainIdentity.displayName.length > 0;
         _displayName = hasDisplayName ? blockchainIdentity.displayName : nil;
-        
+
         _subtitle = [dataProvider shortDateStringForTransaction:tx];
         _dataItem = [dataProvider transactionDataForTransaction:tx];
     }

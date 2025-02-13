@@ -23,8 +23,8 @@
 #import "DWInvitationHistoryModel.h"
 #import "DWInvitationTableViewCell.h"
 #import "DWSendInviteFlowController.h"
-#import "dashwallet-Swift.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -67,9 +67,9 @@ NS_ASSUME_NONNULL_END
     ]];
 }
 
-- (void)viewWillAppear:(BOOL)animated{
+- (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    
+
     [_tableView reloadData];
 }
 
@@ -140,8 +140,8 @@ NS_ASSUME_NONNULL_END
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
 
     id<DWInvitationHistoryItem> item = self.model.items[indexPath.row];
-    NSUInteger index =  self.model.items.count - indexPath.row;
-    
+    NSUInteger index = self.model.items.count - indexPath.row;
+
     __weak typeof(self) weakSelf = self;
     [item.blockchainInvitation
         createInvitationFullLinkFromIdentity:myBlockchainIdentity
@@ -159,8 +159,8 @@ NS_ASSUME_NONNULL_END
                                       dispatch_async(dispatch_get_main_queue(), ^{
                                           BaseInvitationViewController *controller =
                                               [[BaseInvitationViewController alloc] initWith:item.blockchainInvitation
-                                                                                                   fullLink:invitationFullLink
-                                              index:index];
+                                                                                    fullLink:invitationFullLink
+                                                                                       index:index];
                                           controller.title = NSLocalizedString(@"Invite", nil);
                                           controller.hidesBottomBarWhenPushed = YES;
                                           controller.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];

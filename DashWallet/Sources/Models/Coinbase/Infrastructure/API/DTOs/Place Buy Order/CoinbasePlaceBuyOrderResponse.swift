@@ -11,8 +11,8 @@ import Foundation
 
 struct CoinbasePlaceBuyOrder: Codable {
     let success: Bool
-    let failureReason: String
-    let orderId: String
+    let failureReason: String?
+    let clientOrderId: String?
     let errorResponse: ErrorResponse?
     let successResponse: SuccessResponse?
     let orderConfiguration: OrderConfiguration?
@@ -20,7 +20,7 @@ struct CoinbasePlaceBuyOrder: Codable {
     enum CodingKeys: String, CodingKey {
         case success
         case failureReason = "failure_reason"
-        case orderId = "order_id"
+        case clientOrderId = "client_order_id"
         case errorResponse = "error_response"
         case successResponse = "success_response"
         case orderConfiguration = "order_configuration"

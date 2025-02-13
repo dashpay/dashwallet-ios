@@ -113,8 +113,8 @@ extension ConfirmPaymentViewController {
         tableView.dataSource = self
         tableView.layoutMargins = view.layoutMargins
         tableView.registerClass(for: TitleValueCell.self)
-        tableView.tableHeaderView = EmptyView(frame: .init(x: 0, y: 0, width: 1, height: CGFloat.leastNonzeroMagnitude))
-        tableView.tableFooterView = EmptyView(frame: .init(x: 0, y: 0, width: 1, height: CGFloat.leastNonzeroMagnitude))
+        tableView.tableHeaderView = EmptyUIView(frame: .init(x: 0, y: 0, width: 1, height: CGFloat.leastNonzeroMagnitude))
+        tableView.tableFooterView = EmptyUIView(frame: .init(x: 0, y: 0, width: 1, height: CGFloat.leastNonzeroMagnitude))
         view.addSubview(tableView)
 
         let bottomButtonsStack = UIStackView()
