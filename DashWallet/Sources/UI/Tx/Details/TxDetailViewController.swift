@@ -251,14 +251,14 @@ extension TXDetailViewController {
 
         switch model.direction {
         case .moved:
-            let fee: DWTitleDetailItem = model.fee(with: detailFont, tintColor: UIColor.label)!
+            let fee: DWTitleDetailItem = model.fee(with: detailFont, tintColor: UIColor.label)
             currentSnapshot.appendItems([
                 .movedFrom(model.inputAddresses(with: detailFont)),
                 .movedTo(model.outputAddresses(with: detailFont)),
             ], toSection: .info)
             currentSnapshot.appendItems([.networkFee(fee)], toSection: .info)
         case .sent:
-            let fee: DWTitleDetailItem = model.fee(with: detailFont, tintColor: UIColor.label)!
+            let fee: DWTitleDetailItem = model.fee(with: detailFont, tintColor: UIColor.label)
             currentSnapshot.appendItems([
                 .sentFrom(model.inputAddresses(with: detailFont)),
                 .sentTo(model.outputAddresses(with: detailFont)),
