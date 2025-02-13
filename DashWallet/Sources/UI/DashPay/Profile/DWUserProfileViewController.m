@@ -362,11 +362,11 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWFilterHeaderViewDelegate
 
 - (void)filterHeaderView:(DWFilterHeaderView *)view filterButtonAction:(UIView *)sender {
-    [self showTxFilterWithSender:sender
-             displayModeCallback:^(DWHomeTxDisplayMode mode) {
-                 self.displayMode = mode;
-             }
-               shouldShowRewards:NO];
+    [self
+        showTxFilterWithDisplayModeCallback:^(DWHomeTxDisplayMode mode) {
+            self.displayMode = mode;
+        }
+                          shouldShowRewards:NO];
 }
 
 - (void)filterHeaderView:(DWFilterHeaderView *)view infoButtonAction:(UIView *)sender {

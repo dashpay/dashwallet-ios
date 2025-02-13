@@ -46,8 +46,9 @@ class UsernameVotingViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         viewModel.refresh()
+        apply(filters: VotingFilters.defaultFilters)
         configureLayout()
         configureDataSource()
         configureObservers()
@@ -56,7 +57,6 @@ class UsernameVotingViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         if viewModel.shouldShowFirstTimeInfo {
             viewModel.shouldShowFirstTimeInfo = false
-            
             showModalDialog(icon: .system("info"), heading: NSLocalizedString("Default filter setting", comment: "Voting"), textBlock1: NSLocalizedString("The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter.", comment: "Voting"), positiveButtonText: NSLocalizedString("OK", comment: ""))
         }
     }
@@ -87,6 +87,7 @@ extension UsernameVotingViewController {
         tableView.allowsSelection = true
         tableView.keyboardDismissMode = .onDrag
         tableView.contentInset.bottom = 50
+        tableView.sectionHeaderTopPadding = 12
         tableView.register(GroupedRequestCell.self, forCellReuseIdentifier: GroupedRequestCell.description())
         tableView.register(UsernameRequestCell.self, forCellReuseIdentifier: UsernameRequestCell.description())
         
@@ -190,17 +191,45 @@ extension UsernameVotingViewController: VotingFiltersViewControllerDelegate {
 extension UsernameVotingViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        guard let item = dataSource.itemIdentifier(for: indexPath), item.requests.count == 1 else { return }
         
-        guard let item = dataSource.itemIdentifier(for: indexPath),
-              item.requests.count == 1 else { return }
-              
         openDetails(for: item.requests[0])
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let headerView = UIView()
+        headerView.backgroundColor = .clear
+        
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = String.localizedStringWithFormat(NSLocalizedString("Voting ends in %dd", comment: "Voting"), dataSource.snapshot().sectionIdentifiers[section].votingEndsInDays)
+        label.font = UIFont.preferredFont(forTextStyle: .caption1)
+        label.textColor = .dw_tertiaryText()
+        label.textAlignment = .center
+        
+        headerView.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
+            label.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16),
+            label.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 0),
+            label.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8)
+        ])
+        
+        return headerView
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 25
+    }
+    
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return 0
     }
 }
 
 extension UsernameVotingViewController {
-    enum Section: CaseIterable {
-        case main
+    struct Section: Hashable {
+        let votingEndsInDays: Int
     }
     
     class DataSource: UITableViewDiffableDataSource<Section, GroupedUsernames> { }
@@ -250,7 +279,7 @@ extension UsernameVotingViewController {
     private func onBlockTapped(request: UsernameRequest) {
         if viewModel.masternodeKeys.isEmpty || request.blockVotes <= 0 {
             self.navigateToBlock(request: request)
-        } else { // TODO: replace with correct logic
+        } else { // TODO: MOCK_DASHPAY replace with correct logic
             self.viewModel.unblock(request: request.requestId)
             self.showToast(text: String.localizedStringWithFormat(NSLocalizedString("Unblocked '%@' username", comment: "Voting"), request.username), icon: .system("checkmark.circle.fill"), duration: 2)
         }
@@ -258,8 +287,20 @@ extension UsernameVotingViewController {
     
     private func reloadDataSource(data: [GroupedUsernames]) {
         var snapshot = NSDiffableDataSourceSnapshot<Section, GroupedUsernames>()
-        snapshot.appendSections([.main])
-        snapshot.appendItems(data)
+        let groupedData = Dictionary(grouping: data, by: { grouped in
+            grouped.requests.sorted { $0.createdAt < $1.createdAt }.first.map { req in
+                let twoWeeks = 14.0 * 24 * 60 * 60
+                let endDate = Date(timeIntervalSince1970: TimeInterval(req.createdAt)).addingTimeInterval(twoWeeks)
+                let days = max(0, Int(endDate.timeIntervalSinceNow / (24 * 60 * 60)))
+                return days
+            } ?? 0 // TODO: MOCK_DASHPAY might be incorrect logic for the vote ending date
+        })
+           
+        for (votingEndsInDays, items) in groupedData {
+            snapshot.appendSections([Section(votingEndsInDays: votingEndsInDays)])
+            snapshot.appendItems(items)
+        }
+           
         dataSource.apply(snapshot, animatingDifferences: false)
         dataSource.defaultRowAnimation = .none
     }

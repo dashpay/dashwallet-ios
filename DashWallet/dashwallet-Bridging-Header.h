@@ -130,6 +130,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWGetStarted.h"
 #import "DWGetStartedContentViewController.h"
 #import "DWDashPayContactsUpdater.h"
+#import "DWDPUpdateProfileModel.h"
 #endif
 
 //MARK: CrowdNode

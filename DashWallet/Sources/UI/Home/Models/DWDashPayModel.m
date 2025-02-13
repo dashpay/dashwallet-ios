@@ -17,13 +17,13 @@
 
 #import "DWDashPayModel.h"
 
-#import "DWCurrentUserProfileModel.h"
 #import "DWDPRegistrationStatus.h"
 #import "DWDashPayConstants.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWNotificationsData.h"
 #import "DWNotificationsProvider.h"
+#import "dashwallet-Swift.h"
 #import <DashSync/DSLogger.h>
 
 NS_ASSUME_NONNULL_BEGIN

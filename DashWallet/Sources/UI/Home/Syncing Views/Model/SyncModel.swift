@@ -34,14 +34,14 @@ protocol SyncModel {
 
 // MARK: - SyncModelImpl
 
-final class SyncModelImpl: SyncModel {
+final class SyncModelImpl: SyncModel, ObservableObject {
     var networkStatusDidChange: ((NetworkStatus) -> ())?
 
     var stateDidChage: ((SyncingActivityMonitor.State) -> ())?
-    private(set) var state: SyncingActivityMonitor.State
+    @Published private(set) var state: SyncingActivityMonitor.State
 
     var progressDidChange: ((Double) -> ())?
-    private(set) var progress: Double
+    @Published private(set) var progress: Double
 
     internal var reachabilityObserver: Any!
     private let syncMonitor: SyncingActivityMonitor
