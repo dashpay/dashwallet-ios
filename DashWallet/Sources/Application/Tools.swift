@@ -17,6 +17,7 @@
 
 import Foundation
 
+private let formatterLock = NSLock()
 private var _cachedFormatters: [String: NumberFormatter] = [:]
 
 private var _decimalFormatter: NumberFormatter!
@@ -119,8 +120,11 @@ extension NumberFormatter {
     }
 
     static func cryptoFormatter(currencyCode: String, exponent: Int) -> NumberFormatter {
+        formatterLock.lock()
+        defer { formatterLock.unlock() }
+        
         if let formatter = _cachedFormatters[currencyCode] {
-            return formatter
+            return formatter.copy() as! NumberFormatter
         }
 
         let formatter = NumberFormatter()
@@ -141,12 +145,15 @@ extension NumberFormatter {
         formatter.minimumFractionDigits = 0
         _cachedFormatters[currencyCode] = formatter
 
-        return formatter
+        return formatter.copy() as! NumberFormatter
     }
 
     static func fiatFormatter(currencyCode: String) -> NumberFormatter {
+        formatterLock.lock()
+        defer { formatterLock.unlock() }
+        
         if let formatter = _cachedFormatters[currencyCode] {
-            return formatter
+            return formatter.copy() as! NumberFormatter
         }
 
         let formatter = NumberFormatter()
@@ -156,7 +163,7 @@ extension NumberFormatter {
         formatter.currencyCode = currencyCode
         _cachedFormatters[currencyCode] = formatter
 
-        return formatter
+        return formatter.copy() as! NumberFormatter
     }
 }
 
