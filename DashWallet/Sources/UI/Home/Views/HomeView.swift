@@ -427,7 +427,7 @@ struct HomeViewContent<Content: View>: View {
             TransactionPreview(
                 title: txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
-                icon: .custom(txItem.direction.iconName),
+                icon: .custom(txItem.iconName),
                 dashAmount: txItem.signedDashAmount,
                 overrideFiatAmount: txItem.fiatAmount
             ) {
