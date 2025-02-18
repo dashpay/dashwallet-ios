@@ -36,7 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeModelDidChangeInnerModels:(id<DWHomeProtocol>)model;
 - (void)homeModelWantToReloadShortcuts:(id<DWHomeProtocol>)model;
-- (void)homeModelWantToReloadVoting:(id<DWHomeProtocol>)model;
 @end
 
 @protocol DWHomeProtocol <DWDashPayReadyProtocol>
@@ -67,7 +66,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)retrySyncing;
 - (void)checkCrowdNodeState;
-- (void)checkVotingState;
 
 #if DASHPAY
 - (void)handleDeeplink:(NSURL *)url

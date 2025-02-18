@@ -19,6 +19,9 @@ import Foundation
 
 private let kCoinJoinMixDashShown = "coinJoinMixDashShownKey"
 private let kJoinDashPayInfoShown = "joinDashPayInfoShownKey"
+private let kRequestedUsernameId = "requestedUsernameIdKey"
+private let kAlreadyPaid = "alreadyPaidForUsernameKey"
+private let kJoinDashPayDismissed = "joinDashPayDismissed"
 
 // MARK: - UsernamePrefs
 
@@ -40,6 +43,33 @@ class UsernamePrefs {
         set(value) {
             _joinDashPayInfoShown = value
             UserDefaults.standard.set(value, forKey: kJoinDashPayInfoShown)
+        }
+    }
+    
+    private var _requestedUsernameId: String? = nil
+    var requestedUsernameId: String? {
+        get { _requestedUsernameId ?? UserDefaults.standard.string(forKey: kRequestedUsernameId) }
+        set(value) {
+            _requestedUsernameId = value
+            UserDefaults.standard.set(value, forKey: kRequestedUsernameId)
+        }
+    }
+    
+    private var _alreadyPaid: Bool? = nil
+    var alreadyPaid: Bool {
+        get { _alreadyPaid ?? UserDefaults.standard.bool(forKey: kAlreadyPaid) }
+        set(value) {
+            _alreadyPaid = value
+            UserDefaults.standard.set(value, forKey: kAlreadyPaid)
+        }
+    }
+    
+    private var _joinDashPayDismissed: Bool? = nil
+    var joinDashPayDismissed: Bool {
+        get { _joinDashPayDismissed ?? UserDefaults.standard.bool(forKey: kJoinDashPayDismissed) }
+        set(value) {
+            _joinDashPayDismissed = value
+            UserDefaults.standard.set(value, forKey: kJoinDashPayDismissed)
         }
     }
 }

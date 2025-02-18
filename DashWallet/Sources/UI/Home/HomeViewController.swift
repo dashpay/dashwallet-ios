@@ -87,7 +87,6 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
         model.registerForPushNotifications()
         model.checkCrowdNodeState()
-        model.checkVotingState()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -305,13 +304,13 @@ extension HomeViewController: HomeViewDelegate {
         performAction(for: action, sender: nil)
     }
     
-    func homeView(_ homeView: HomeView, showTxFilter sender: UIView) {
-        showTxFilter(sender: sender, displayModeCallback: { [weak self] mode in
+    func homeViewShowTxFilter() {
+        showTxFilter(displayModeCallback: { [weak self] mode in
             self?.viewModel.displayMode = mode
         }, shouldShowRewards: true)
     }
 
-    func homeView(_ homeView: HomeView, showSyncingStatus sender: UIView) {
+    func homeViewShowSyncingStatus() {
         let controller = SyncingAlertViewController()
         present(controller, animated: true, completion: nil)
     }
@@ -323,6 +322,10 @@ extension HomeViewController: HomeViewDelegate {
         let hasNotifications = unreadNotifications > 0
         avatarView.isHidden = !hasIdentity
         refreshNotificationBell(hasIdentity: hasIdentity, hasNotifications: hasNotifications)
+    }
+    
+    func homeViewEditProfile() {
+        profileAction()
     }
     #endif
 }

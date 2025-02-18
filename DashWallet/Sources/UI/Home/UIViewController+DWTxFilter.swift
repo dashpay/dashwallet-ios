@@ -19,9 +19,7 @@ import UIKit
 
 extension UIViewController {
     @objc
-    func showTxFilter(sender: UIView,
-                     displayModeCallback: @escaping (HomeTxDisplayMode) -> Void,
-                     shouldShowRewards: Bool) {
+    func showTxFilter(displayModeCallback: @escaping (HomeTxDisplayMode) -> Void, shouldShowRewards: Bool) {
         let title = NSLocalizedString("Filter Transactions", comment: "")
         let alert = UIAlertController(title: title,
                                     message: nil,
@@ -62,11 +60,6 @@ extension UIViewController {
             title: NSLocalizedString("Cancel", comment: ""),
             style: .cancel)
         alert.addAction(cancelAction)
-        
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            alert.popoverPresentationController?.sourceView = sender
-            alert.popoverPresentationController?.sourceRect = sender.bounds
-        }
         
         present(alert, animated: true)
     }

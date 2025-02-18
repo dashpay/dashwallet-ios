@@ -574,9 +574,6 @@
 /* Usernames */
 "Create a username" = "사용자이름 생성하기";
 
-/* No comment provided by engineer. */
-"Create a username, add your friends." = "사용자 이름을 생성하고, 친구를 추가하세요.";
-
 /* CrowdNode */
 "Create Account" = "계정 생성하기";
 
@@ -589,9 +586,6 @@
 /* CrowdNode
    CrowdNode Portal */
 "Create Online Account" = "온라인 계정 생성하기";
-
-/* No comment provided by engineer. */
-"Create Username" = "사용자 이름 생성";
 
 /* Usernames */
 "Create your username" = "Create your username";
@@ -757,6 +751,9 @@
 /* Geoblock */
 "Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "규제적 제약으로 인하여, 영국에 계실 때에는 코인베이스 기능을 사용할 수 없습니다.";
 
+/* Usernames */
+"Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username." = "Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username.";
+
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "예시 johndoe@mail.com";
 
@@ -771,6 +768,9 @@
 
 /* No comment provided by engineer. */
 "Edit Profile" = "프로필 수정";
+
+/* No comment provided by engineer. */
+"Edit profile" = "Edit profile";
 
 /* Invitation tag placeholder */
 "eg: Dad" = "예시: 아빠";
@@ -919,6 +919,9 @@
 /* CrowdNode */
 "First minimum deposit" = "첫 번째 최소 입금";
 
+/* Usernames */
+"For some reason, the request for the username '%@' has failed." = "For some reason, the request for the username '%@' has failed.";
+
 /* Coinbase */
 "For your security, you have been signed out." = "보안을 위해 로그아웃 되었습니다.";
 
@@ -973,6 +976,9 @@
 /* No comment provided by engineer. */
 "Get Started" = "시작하기";
 
+/* Usernames */
+"Get started by setting up your profile picture and other information." = "Get started by setting up your profile picture and other information.";
+
 /* No comment provided by engineer. */
 "Get Test Dash" = "테스트 대시 얻기";
 
@@ -1011,6 +1017,9 @@
 
 /* CrowdNode */
 "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "다음은 이 기기의 대시 지갑 내 크라우드노드 계정에 지정된 대시 주소입니다";
+
+/* No comment provided by engineer. */
+"Hide" = "Hide";
 
 /* adjective, security level */
 "High" = "높음";
@@ -1895,17 +1904,20 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "오류 보고하기";
 
+/* No comment provided by engineer. */
+"Request a username and say goodbye to numerical addresses" = "Request a username and say goodbye to numerical addresses";
+
 /* Voting */
 "Request details" = "요청 세부 내용";
 
 /* Voting */
 "Request your username" = "당신의 사용자 이름을 요청하세요";
 
-/* No comment provided by engineer. */
-"Requested username was not approved" = "요청된 사용자 이름이 승인되지 않았습니다";
+/* Usernames */
+"Requested username has been blocked" = "Requested username has been blocked";
 
-/* No comment provided by engineer. */
-"Requested · Voting: %@" = "요청됨 · 투표중: %@";
+/* Usernames */
+"Requested username has been given to someone else" = "Requested username has been given to someone else";
 
 /* An action */
 "Rescan" = "재스캔";
@@ -1927,6 +1939,9 @@
 
 /* Location Service Status */
 "Restricted" = "제한됨";
+
+/* Usernames */
+"Results" = "Results";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "상호 거래 내역을 유지합니다";
@@ -2283,6 +2298,9 @@
 /* Coinbase */
 "The minimum amount you can send is %@" = "송금 가능한 최소 금액은 %@ 입니다";
 
+/* Usernames */
+"The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
+
 /* No comment provided by engineer. */
 "them (Fetching Info)" = "다른 사람들 (정보 불러오기)";
 
@@ -2468,9 +2486,6 @@
 /* CoinJoin */
 "up to 30 minutes" = "최대 30분";
 
-/* No comment provided by engineer. */
-"Update your profile and start adding contacts" = "당신의 프로필을 업데이트하고 연락처를 추가하세요";
-
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "업데이트됨: %@";
 
@@ -2482,6 +2497,9 @@
 
 /* No comment provided by engineer. */
 "Upgrade" = "업그레이드";
+
+/* No comment provided by engineer. */
+"Upgrade to DashPay" = "Upgrade to DashPay";
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "에볼루션으로 업그레이드 하기";
@@ -2519,6 +2537,9 @@
 /* Voting */
 "Username" = "사용자 이름";
 
+/* Usernames */
+"Username %@ has been requested on the Dash network. After the voting ends (%@) we will notify you about its results" = "Username %1$@ has been requested on the Dash network. After the voting ends (%2$@) we will notify you about its results";
+
 /* No comment provided by engineer. */
 "Username already found" = "사용자 이름을 이미 찾았습니다";
 
@@ -2527,6 +2548,9 @@
 
 /* Usernames */
 "Username is available" = "Username is available";
+
+/* Usernames */
+"Username request failed" = "Username request failed";
 
 /* No comment provided by engineer. */
 "Username taken" = "이미 사용 중인 사용자 이름";
@@ -2595,9 +2619,6 @@
 "Vote to Approve" = "투표하여 승인하기";
 
 /* Voting */
-"Votes:" = "투표수:";
-
-/* Voting */
 "Votes: High to low" = "투표: 높음부터 낮음";
 
 /* Voting */
@@ -2611,9 +2632,6 @@
 
 /* No comment provided by engineer. */
 "Voting Keys" = "투표 키";
-
-/* Voting */
-"Voting:" = "투표중:";
 
 /* ZenLedger */
 "Wait until the chain is fully synced, so we can review your transaction history." = "블록체인이 완전히 동기화될 때까지 기다리셔야 거래 내역을 확인할 수 있습니다.";
@@ -2750,9 +2768,6 @@
 
 /* No comment provided by engineer. */
 "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance";
-
-/* No comment provided by engineer. */
-"You can create a different username without paying again" = "다시 지불하지 않고도 다른 사용자 이름을 생성할 수 있습니다.";
 
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "다음과 같은 포맷 중 어떤 형태로도 키를 입력할 수 있습니다: WIF/base58/base64/hex";
@@ -2925,8 +2940,8 @@
 /* No comment provided by engineer. */
 "Your username %@ is being created on the Dash Network" = "당신의 사용자 이름인 %@가 대시 네트워크에 생성되는 중입니다";
 
-/* No comment provided by engineer. */
-"Your username was approved" = "당신의 사용자 이름이 승인되었습니다";
+/* Usernames */
+"Your username has been successfully created" = "Your username has been successfully created";
 
 /* No comment provided by engineer. */
 "Your vote was cancelled" = "투표가 취소되었습니다";

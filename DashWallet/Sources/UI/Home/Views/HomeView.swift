@@ -17,36 +17,38 @@
 
 import UIKit
 import SwiftUI
+import Combine
 
 // MARK: - HomeViewDelegate
 
 protocol HomeViewDelegate: AnyObject {
-    func homeView(_ homeView: HomeView, showTxFilter sender: UIView)
-    func homeView(_ homeView: HomeView, showSyncingStatus sender: UIView)
+    func homeViewShowTxFilter()
+    func homeViewShowSyncingStatus()
     func homeViewShowCoinJoin()
     
 #if DASHPAY
     func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt)
     func homeViewRequestUsername()
+    func homeViewEditProfile()
 #endif
 }
 
 // MARK: - HomeView
 
 final class HomeView: UIView, DWHomeModelUpdatesObserver {
+    private var cancellableBag = Set<AnyCancellable>()
     weak var delegate: HomeViewDelegate?
 
     private(set) var headerView: HomeHeaderView!
-    private(set) var syncingHeaderView: SyncingHeaderView!
     let viewModel = HomeViewModel.shared
+    #if DASHPAY
+    let joinDPViewModel = JoinDashPayViewModel(initialState: .callToAction)
+    #endif
 
     @objc
     var model: DWHomeProtocol? {
         didSet {
             model?.updatesObserver = self
-            #if DASHPAY
-            updateHeaderView()
-            #endif
         }
     }
 
@@ -83,15 +85,20 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
         headerView = HomeHeaderView(frame: CGRect.zero)
         headerView.delegate = self
         
-        syncingHeaderView = SyncingHeaderView(frame: CGRect.zero)
-        syncingHeaderView.delegate = self
-        
+        #if DASHPAY
+        let content = HomeViewContent(
+            viewModel: self.viewModel,
+            joinDPViewModel: self.joinDPViewModel,
+            delegate: self.delegate,
+            balanceHeader: { UIViewWrapper(uiView: self.headerView) }
+        )
+        #else
         let content = HomeViewContent(
             viewModel: self.viewModel,
             delegate: self.delegate,
-            balanceHeader: { UIViewWrapper(uiView: self.headerView) },
-            syncingHeader: { UIViewWrapper(uiView: self.syncingHeaderView) }
+            balanceHeader: { UIViewWrapper(uiView: self.headerView) }
         )
+        #endif
         let swiftUIController = UIHostingController(rootView: content)
         swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
         
@@ -116,15 +123,15 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
                                                object: nil)
         
         #if DASHPAY
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(updateHeaderView),
-                                               name:NSNotification.Name.DWDashPayRegistrationStatusUpdated,
-                                               object: nil)
-        
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(updateHeaderView),
-                                               name:NSNotification.Name.DWNotificationsProviderDidUpdate,
-                                               object:nil);
+        joinDPViewModel.$state
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                if state == .approved || state == .registered {
+                    self?.setIdentity()
+                }
+            }
+            .store(in: &cancellableBag)
         #endif
     }
 
@@ -142,47 +149,15 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
 
     func homeModelWant(toReloadShortcuts model: DWHomeProtocol) {
         viewModel.reloadShortcuts()
-        #if DASHPAY
-        updateHeaderView()
-        #endif
-    }
-    
-    func homeModelWant(toReloadVoting model: DWHomeProtocol) {
-        #if DASHPAY
-        updateHeaderView()
-        #endif
     }
 
-    // MARK: - DWDPRegistrationErrorRetryDelegate
-
-    func registrationErrorRetryAction() { // TODO
-        if model?.dashPayModel.canRetry() ?? false {
-            model?.dashPayModel.retry()
-        } else {
-            
-        }
-    }
-    
     // MARK: DWDashPayRegistrationStatusUpdated
     
     #if DASHPAY
-    @objc
-    func updateHeaderView() {
-        if let model = self.model {
-            let isDPInfoHidden = DWGlobalOptions.sharedInstance().dashPayRegistrationOpenedOnce || model.shouldShowCreateUserNameButton() != true
-            let isVotingEnabled = VotingPrefs.shared.votingEnabled
-            
-            if let usernameRequestId = VotingPrefs.shared.requestedUsernameId, isVotingEnabled {
-                setVotingState(dpInfoHidden: isDPInfoHidden, requestId: usernameRequestId)
-            } else {
-                setIdentity(dpInfoHidden: isDPInfoHidden, model: model)
-            }
-        }
-    }
     
-    private func setIdentity(dpInfoHidden: Bool, model: DWHomeProtocol) {
-        headerView.isVotingViewHidden = true
-//        viewModel.showJoinDashpay = !dpInfoHidden
+    private func setIdentity() {
+        guard let model = model else { return }
+        
         let status = model.dashPayModel.registrationStatus
         let completed = model.dashPayModel.registrationCompleted
         
@@ -198,20 +173,6 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
         setNeedsLayout()
     }
     
-    private func setVotingState(dpInfoHidden: Bool, requestId: String) {
-        let wasClosed = VotingPrefs.shared.votingPanelClosed
-        let now = Date().timeIntervalSince1970
-        headerView.isVotingViewHidden = dpInfoHidden || wasClosed || now < VotingConstants.votingEndTime
-//        viewModel.showJoinDashpay = false
-        let dao = UsernameRequestsDAOImpl.shared
-        
-        Task {
-            let request = await dao.get(byRequestId: requestId)
-            // TODO: change this logic
-            self.headerView.votingState = (request?.isApproved ?? false) ? .approved : .notApproved
-            setNeedsLayout()
-        }
-    }
     #endif
 }
 
@@ -224,18 +185,6 @@ extension HomeView: HomeHeaderViewDelegate {
 
     func homeHeaderViewDidUpdateContents(_ view: HomeHeaderView) {
         setNeedsLayout()
-    }
-}
-
-// MARK: SyncingHeaderViewDelegate
-
-extension HomeView: SyncingHeaderViewDelegate {
-    func syncingHeaderView(_ view: SyncingHeaderView, syncingButtonAction sender: UIButton) {
-        delegate?.homeView(self, showSyncingStatus: sender)
-    }
-
-    func syncingHeaderView(_ view: SyncingHeaderView, filterButtonAction sender: UIButton) {
-        delegate?.homeView(self, showTxFilter: sender)
     }
 }
 
@@ -264,9 +213,11 @@ struct HomeViewContent<Content: View>: View {
     @State private var skipToCreateUsername: Bool = false
     
     @StateObject var viewModel: HomeViewModel
+    #if DASHPAY
+    @StateObject var joinDPViewModel: JoinDashPayViewModel
+    #endif
     weak var delegate: HomeViewDelegate?
     @ViewBuilder var balanceHeader: () -> Content
-    @ViewBuilder var syncingHeader: () -> Content
     
     private let topOverscrollSize: CGFloat = 1000 // Fixed value for top overscroll area
 
@@ -295,22 +246,40 @@ struct HomeViewContent<Content: View>: View {
 
                     #if DASHPAY
                     if viewModel.showJoinDashpay {
-                        JoinDashPayView {
-                            if viewModel.shouldShowMixDashDialog {
-                                self.navigateToDashPayFlow = false
-                                self.navigateToCoinJoin = false
-                                self.shouldShowMixDialog = true
-                            } else if viewModel.shouldShowDashPayInfo {
-                                self.shouldShowJoinDashPayInfo = true
-                            } else {
-                                delegate?.homeViewRequestUsername()
+                        JoinDashPayView(
+                            viewModel: joinDPViewModel,
+                            onTap: { _ in },
+                            onActionButton: { state in
+                                if state == .approved {
+                                    delegate?.homeViewEditProfile()
+                                    joinDPViewModel.markAsDismissed()
+                                    viewModel.checkJoinDashPay()
+                                } else {
+                                    // TODO: ? MOCK_DASHPAY if failed, maybe need to call model?.dashPayModel.retry()
+                                    if viewModel.shouldShowMixDashDialog {
+                                        self.navigateToDashPayFlow = false
+                                        self.navigateToCoinJoin = false
+                                        self.shouldShowMixDialog = true
+                                    } else if viewModel.shouldShowDashPayInfo {
+                                        self.shouldShowJoinDashPayInfo = true
+                                    } else {
+                                        delegate?.homeViewRequestUsername()
+                                    }
+                                }
+                            }, onDismissButton: { _ in
+                                joinDPViewModel.markAsDismissed()
+                                viewModel.checkJoinDashPay()
                             }
-                        }
+                        ).padding(.horizontal, 14)
+                         .padding(.bottom, 4)
                     }
                     #endif
                     
-                    syncingHeader()
-                        .frame(height: 50)
+                    SyncingHeaderView(onFilterTap: {
+                        delegate?.homeViewShowTxFilter()
+                    }, onSyncTap: {
+                        delegate?.homeViewShowSyncingStatus()
+                    })
                     
                     if viewModel.txItems.isEmpty {
                         Text(NSLocalizedString("There are no transactions to display", comment: ""))
@@ -382,9 +351,17 @@ struct HomeViewContent<Content: View>: View {
                 joinDashPayDialog
             }
         }
+        .onChange(of: joinDPViewModel.state) { state in
+            viewModel.joinDashPayState = state
+            viewModel.checkJoinDashPay()
+        }
         #endif
         .onAppear {
             viewModel.checkTimeSkew()
+            #if DASHPAY
+            viewModel.checkJoinDashPay()
+            joinDPViewModel.checkUsername()
+            #endif
         }
     }
 

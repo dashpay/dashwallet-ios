@@ -17,8 +17,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWCurrentUserProfileModel.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSNotificationName const DWDashPayRegistrationStatusUpdatedNotification;
