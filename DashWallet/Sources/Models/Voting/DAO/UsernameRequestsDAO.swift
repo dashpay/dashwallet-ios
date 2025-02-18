@@ -63,7 +63,7 @@ class UsernameRequestsDAOImpl: NSObject, UsernameRequestsDAO {
             let results: [UsernameRequest] = try await prepare(statement)
             self.cache[id] = results.first
             return results.first
-        } catch {
+        } catch { 
             print(error)
         }
 

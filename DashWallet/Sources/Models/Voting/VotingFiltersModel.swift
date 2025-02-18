@@ -44,7 +44,8 @@ struct VotingFilters: Equatable {
     enum FilterBy {
         case all
         case approved
-        case notApproved
+        case notVoted
+        case hasBlockVotes
         
         var localizedString: String {
             switch self {
@@ -52,8 +53,10 @@ struct VotingFilters: Equatable {
                 return NSLocalizedString("All", comment: "Voting")
             case .approved:
                 return NSLocalizedString("I have approved", comment: "Voting")
-            case .notApproved:
-                return NSLocalizedString("I have not approved", comment: "Voting")
+            case .notVoted:
+                return NSLocalizedString("I have not voted", comment: "Voting")
+            case .hasBlockVotes:
+                return NSLocalizedString("Has blocked votes", comment: "Voting")
             }
         }
     }
@@ -63,7 +66,7 @@ struct VotingFilters: Equatable {
     var onlyDuplicates: Bool?
     var onlyWithLinks: Bool?
 
-    static let defaultFilters = VotingFilters(sortBy: .datesDesc, filterBy: .notApproved, onlyDuplicates: true, onlyWithLinks: false)
+    static let defaultFilters = VotingFilters(sortBy: .datesDesc, filterBy: .notVoted, onlyDuplicates: true, onlyWithLinks: false)
     
     var localizedDescription: String? {
         var string: [String] = []
@@ -107,8 +110,10 @@ extension VotingFilters {
                 set.insert(.typeAll)
             case .approved:
                 set.insert(.typeApproved)
-            case .notApproved:
-                set.insert(.typeNotApproved)
+            case .notVoted:
+                set.insert(.typeNotVoted)
+            case .hasBlockVotes:
+                set.insert(.typeHasBlockVotes)
             }
         }
         
@@ -133,7 +138,8 @@ enum VotingFilterItem: String {
     case votesDesc
     case typeAll
     case typeApproved
-    case typeNotApproved
+    case typeNotVoted
+    case typeHasBlockVotes
     case onlyDuplicates
     case onlyRequestsWithLinks
     case reset
@@ -149,11 +155,13 @@ enum VotingFilterItem: String {
         case .votesDesc:
             return [.dateAsc, .dateDesc, .votesAsc]
         case .typeAll:
-            return [.typeApproved, .typeNotApproved]
+            return [.typeApproved, .typeNotVoted, .typeHasBlockVotes]
         case .typeApproved:
-            return [.typeAll, .typeNotApproved]
-        case .typeNotApproved:
-            return [.typeApproved, .typeAll]
+            return [.typeAll, .typeNotVoted, .typeHasBlockVotes]
+        case .typeNotVoted:
+            return [.typeApproved, .typeAll, .typeHasBlockVotes]
+        case .typeHasBlockVotes:
+            return [.typeApproved, .typeAll, .typeNotVoted]
         default:
             return []
         }
@@ -184,8 +192,10 @@ enum VotingFilterItem: String {
             return NSLocalizedString("All", comment: "Voting")
         case .typeApproved:
             return NSLocalizedString("I have approved", comment: "Voting")
-        case .typeNotApproved:
-            return NSLocalizedString("I have not approved", comment: "Voting")
+        case .typeNotVoted:
+            return NSLocalizedString("I have not voted", comment: "Voting")
+        case .typeHasBlockVotes:
+            return NSLocalizedString("Has blocked votes", comment: "Voting")
         case .reset:
             return NSLocalizedString("Reset Filters", comment: "")
         case .onlyDuplicates:
@@ -273,8 +283,12 @@ extension VotingFiltersModel {
             filters.filterBy = .approved
         }
         
-        if selected.contains(.typeNotApproved) {
-            filters.filterBy = .notApproved
+        if selected.contains(.typeNotVoted) {
+            filters.filterBy = .notVoted
+        }
+        
+        if selected.contains(.typeHasBlockVotes) {
+            filters.filterBy = .hasBlockVotes
         }
         
         if selected.contains(.onlyDuplicates) {

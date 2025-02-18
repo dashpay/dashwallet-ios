@@ -23,8 +23,6 @@ class RequestDetailsViewController: UIViewController {
     
     @IBOutlet private var titleLabel: UILabel!
     @IBOutlet private var subtitleLabel: UILabel!
-    @IBOutlet private var votingPeriodLabel: UILabel!
-    @IBOutlet private var voteAmountLabel: UILabel!
 
     @IBOutlet private var usernameLabel: UILabel!
     @IBOutlet private var usernameText: UILabel!
@@ -34,6 +32,8 @@ class RequestDetailsViewController: UIViewController {
     @IBOutlet private var identityLabel: UILabel!
     @IBOutlet private var identityText: UILabel!
     @IBOutlet private var identityConstraint: NSLayoutConstraint!
+    @IBOutlet private var resultsLabel: UILabel!
+    @IBOutlet private var resultsDateText: UILabel!
 
     @IBOutlet private var continueButton: TintedButton!
     
@@ -66,16 +66,13 @@ extension RequestDetailsViewController {
         titleLabel.text = NSLocalizedString("Request details", comment: "Usernames")
         subtitleLabel.text = NSLocalizedString("After the voting ends we will notify you about its results", comment: "Usernames")
         
-        let startDate = Date(timeIntervalSince1970: VotingConstants.votingStartTime)
-        let endDate = Date(timeIntervalSince1970: VotingConstants.votingEndTime) // TODO replace
-        let startDateStr = DWDateFormatter.sharedInstance.dateOnly(from: startDate)
-        let endDateStr = DWDateFormatter.sharedInstance.dateOnly(from: endDate)
-        let regularText = "\(startDateStr) - \(endDateStr)"
-        votingPeriodLabel.attributedText = getAttributedTextWith(icon: UIImage(systemName: "calendar")!, boldText: NSLocalizedString("Voting:", comment: "Voting"), regularText: regularText, iconSize: CGSize(width: 16, height: 15), iconOffsetY: -3)
-        
         usernameLabel.text = NSLocalizedString("Username", comment: "Usernames")
         linkLabel.text = NSLocalizedString("Link", comment: "Usernames")
         identityLabel.text = NSLocalizedString("Identity", comment: "Usernames")
+        resultsLabel.text = NSLocalizedString("Results", comment: "Usernames")
+        let endDate = Date(timeIntervalSince1970: VotingConstants.votingEndTime) // TODO replace
+        let endDateStr = DWDateFormatter.sharedInstance.dateOnly(from: endDate)
+        resultsDateText.text = endDateStr
         
         var configuration = UIButton.Configuration.configuration(from: .tinted())
         configuration.baseBackgroundColor = .dw_red().withAlphaComponent(0.08)
@@ -99,8 +96,6 @@ extension RequestDetailsViewController {
     }
     
     private func showUsernameRequestInfo(request: UsernameRequest) {
-        voteAmountLabel.attributedText = getAttributedTextWith(icon: UIImage(systemName: "hand.thumbsup.fill")!, boldText: NSLocalizedString("Votes:", comment: "Voting"), regularText: String(describing: request.votes), iconSize: CGSize(width: 16, height: 15), iconOffsetY: -3)
-        
         usernameText.text = request.username
         
         if let link = request.link, !link.isEmpty {

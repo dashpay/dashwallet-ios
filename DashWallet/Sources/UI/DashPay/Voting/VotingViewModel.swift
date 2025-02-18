@@ -87,7 +87,7 @@ class VotingViewModel {
             
             let oldVotes = Dictionary(uniqueKeysWithValues: self.groupedRequests.map { ($0.username, $0.votesForUsername) })
             self.groupedRequests = Dictionary(grouping: requests, by: { $0.username })
-                .map { username, reqs in 
+                .map { username, reqs in
                     var group = GroupedUsernames(username: username, requests: reqs.sortAndFilter(by: filters))
                     group.votesForUsername = max(oldVotes[username] ?? 0, 0)
                     return group
@@ -133,8 +133,10 @@ extension [UsernameRequest] {
         switch filterOption {
         case .approved:
             result = sorted.filter { $0.isApproved }
-        case .notApproved:
-            result = sorted.filter { !$0.isApproved }
+        case .notVoted:
+            result = sorted.filter { !$0.isApproved } // TODO: MOCK_DASHPAY recheck logic
+        case .hasBlockVotes:
+            result = sorted.filter { $0.blockVotes > 0 }
         default:
             result = sorted
         }
@@ -150,12 +152,18 @@ extension VotingViewModel {
         Task {
             if var copy = await dao.get(byRequestId: requestId) {
                 copy.votes += masternodeKeys.count
+                copy.blockVotes = 0 // TODO: MOCK_DASHPAY
                 copy.isApproved = true
                 await dao.update(dto: copy)
                 lastVoteAction = .approved
                 refresh()
                 
-                // TODO: "votes left" check. Replace with actual logic
+                // TODO: MOCK_DASHPAY user own name approval. Remove when not needed
+                if UsernamePrefs.shared.requestedUsernameId == requestId {
+                    DWGlobalOptions.sharedInstance().dashpayUsername = copy.username
+                }
+                
+                // TODO: MOCK_DASHPAY "votes left" check. Replace with actual logic
                 if let groupIndex = groupedRequests.firstIndex(where: { group in
                     group.requests.contains { request in
                         request.requestId == requestId
@@ -176,7 +184,12 @@ extension VotingViewModel {
                 lastVoteAction = .revoked
                 refresh()
                 
-                // TODO: "votes left" check. Replace with actual logic
+                // TODO: MOCK_DASHPAY user own name approval. Remove when not needed
+                if UsernamePrefs.shared.requestedUsernameId == requestId {
+                    DWGlobalOptions.sharedInstance().dashpayUsername = nil
+                }
+                
+                // TODO: MOCK_DASHPAY "votes left" check. Replace with actual logic
                 if let groupIndex = groupedRequests.firstIndex(where: { group in
                     group.requests.contains { request in
                         request.requestId == requestId
@@ -189,7 +202,7 @@ extension VotingViewModel {
     }
     
     func votesLeft(for requestId: String) -> Int {
-        // TODO: "votes left" check. Replace with actual logic
+        // TODO: MOCK_DASHPAY "votes left" check. Replace with actual logic
         let group = groupedRequests.first(where: { group in
             group.requests.contains { request in
                 request.requestId == requestId
@@ -205,6 +218,11 @@ extension VotingViewModel {
                 await dao.update(dto: copy)
                 lastVoteAction = .blocked
                 refresh()
+                
+                // TODO: MOCK_DASHPAY user own name approval. Remove when not needed
+                if UsernamePrefs.shared.requestedUsernameId == requestId {
+                    DWGlobalOptions.sharedInstance().dashpayUsername = nil
+                }
             }
         }
     }
@@ -239,15 +257,15 @@ extension VotingViewModel {
 }
 
 
-// TODO: remove when not needed
+// TODO: MOCK_DASHPAY remove when not needed
 
 extension VotingViewModel {
     func addMockRequest() {
         Task {
             nameCount += 1
             let now = Date().timeIntervalSince1970
-            let from: TimeInterval = 1658290321
-            let randomValue = Double.random(in: from..<now)
+            let twoWeeksAgo = now - (14 * 24 * 60 * 60)
+            let randomValue = Double.random(in: twoWeeksAgo..<now)
             let identityData = withUnsafeBytes(of: UUID().uuid) { Data($0) }
             let names = ["John", "Doe", "Sarah", "Jane", "Jack", "Jill", "Bob"]
             let identity = (identityData as NSData).base58String()

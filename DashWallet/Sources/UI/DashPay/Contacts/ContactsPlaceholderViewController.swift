@@ -126,12 +126,6 @@ class ContactsPlaceholderViewController: ActionButtonViewController {
                                        selector: #selector(update),
                                        name: .DWDashPayRegistrationStatusUpdatedNotification,
                                        object: nil)
-        
-        // TODO: This notification is never posted. Check if needed
-        // notificationCenter.addObserver(self,
-        //                                selector: #selector(update),
-        //                                name: .DWDashPayAvailabilityStatusUpdatedNotification,
-        //                                object: nil)
     }
     
     // MARK: - Actions
