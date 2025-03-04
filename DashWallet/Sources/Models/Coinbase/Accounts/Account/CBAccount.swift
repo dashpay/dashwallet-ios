@@ -129,7 +129,8 @@ extension CBAccount {
                                                   to: dashWalletAddress,
                                                   amount: coinbaseAmount,
                                                   currency: kDashCurrency,
-                                                  idem: currentIdem)
+                                                  idem: currentIdem.uuidString.lowercased(),
+                                                  description: "Dash Wallet iOS")
 
             let result: BaseDataResponse<CoinbaseTransaction> = try await httpClient
                 .request(.sendCoinsToWallet(accountId: accountId, verificationCode: verificationCode, dto: dto))
