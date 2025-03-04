@@ -285,14 +285,15 @@ extension TxDetailModel {
         return models
     }
 
-    func fee(with font: UIFont, tintColor: UIColor) -> DWTitleDetailItem? {
-        guard hasFee else { return nil }
-
+    func fee(with font: UIFont, tintColor: UIColor) -> DWTitleDetailItem {
         let title = NSLocalizedString("Network fee", comment: "")
-
-        var feeValue = transaction.feeUsed
-        feeValue = feeValue == UInt64.max ? 0 : feeValue
-
+        var feeValue: UInt64 = 0
+        
+        if hasFee {
+            feeValue = transaction.feeUsed
+            feeValue = feeValue == UInt64.max ? 0 : feeValue
+        }
+        
         let detail = NSAttributedString.dashAttributedString(for: feeValue, tintColor: tintColor, font: font)
 
         return DWTitleDetailCellModel(style: .default, title: title, attributedDetail: detail)
