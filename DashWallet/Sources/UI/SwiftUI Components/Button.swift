@@ -90,9 +90,7 @@ struct DashButton: View {
             .opacity(isEnabled ? 1.0 : 0.5)
         }
         .disabled(!isEnabled || isLoading)
-        .background(GeometryReader { geometry in
-            Color.clear
-        })
+        .background(Color.clear)
     }
 
     private var backgroundColor: Color {
@@ -206,7 +204,7 @@ struct DashButton: View {
         case .medium:
             return 42
         case .small:
-            return 32
+            return 36
         default:
             return 28
         }

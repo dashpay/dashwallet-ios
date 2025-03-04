@@ -48,7 +48,7 @@ struct CreateUsernameUIState {
 class CreateUsernameViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     private let dao: UsernameRequestsDAO = UsernameRequestsDAOImpl.shared
-    private let prefs = VotingPrefs.shared
+    private let prefs = UsernamePrefs.shared
     private let illegalChars = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-").inverted
     static let shared = CreateUsernameViewModel()
     
@@ -107,7 +107,7 @@ class CreateUsernameViewModel: ObservableObject {
     
     func submitUsernameRequest(withProve link: URL?) async -> Bool {
         do {
-            // TODO: simulation of a request. Remove when not needed
+            // TODO: MOCK_DASHPAY simulation of a request. Remove when not needed
             // dashPayModel.createUsername(username, invitation: invitationURL)
             
             let now = Date().timeIntervalSince1970
@@ -117,7 +117,7 @@ class CreateUsernameViewModel: ObservableObject {
             
             await dao.create(dto: usernameRequest)
             prefs.requestedUsernameId = usernameRequest.requestId
-            prefs.requestedUsername = usernameRequest.username
+            UsernamePrefs.shared.joinDashPayDismissed = false // TODO: MOCK_DASHPAY remove
             
             let oneSecond = TimeInterval(1_000_000_000)
             let delay = UInt64(oneSecond * 2)
@@ -145,7 +145,6 @@ class CreateUsernameViewModel: ObservableObject {
                 username = ""
                 await dao.delete(by: requestId)
                 prefs.requestedUsernameId = nil
-                prefs.requestedUsername = nil
             }
         }
     }
@@ -168,7 +167,7 @@ class CreateUsernameViewModel: ObservableObject {
             return
         }
         
-        let isContested = false // TODO
+        let isContested = false // TODO MOCK_DASHPAY
         let lengthValid = username.count >= DW_MIN_USERNAME_LENGTH && username.count <= DW_MAX_USERNAME_LENGTH
         let hasIllegalCharacters = username.rangeOfCharacter(from: illegalChars) != nil
         let startsOrEndsWithHyphen = username.first == "-" || username.last == "-"
@@ -194,6 +193,7 @@ class CreateUsernameViewModel: ObservableObject {
     }
     
     private func checkIfBlocked(username: String) async {
+        // TODO: MOCK_DASHPAY remove
         let oneSecond = TimeInterval(1_000_000_000)
         let delay = UInt64(oneSecond * 2)
         try! await Task.sleep(nanoseconds: delay)

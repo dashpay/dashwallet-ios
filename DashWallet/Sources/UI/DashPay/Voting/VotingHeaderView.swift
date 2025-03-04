@@ -49,8 +49,8 @@ class VotingHeaderView: UIView {
     }
     
     private func configureLayout() {
-        subtitleLabel.text = NSLocalizedString("As a masternode owner you can vote to approve requested usernames before users will be able to create it.", comment: "Voting")
-        searchBar.placeholder = NSLocalizedString("Search by username", comment: "Voting")
+        subtitleLabel.text = NSLocalizedString("As a masternode owner you can vote to approve requested usernames before users will be able to create it.\nYou can block the creation of the usernames that you feel inappropriate.", comment: "Voting")
+        searchBar.placeholder = NSLocalizedString("Search", comment: "")
         searchBar.searchTextField.font = .dw_regularFont(ofSize: 15)
         filterLabel.text = VotingFilters.defaultFilters.filterBy?.localizedString ?? ""
 

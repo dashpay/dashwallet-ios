@@ -17,11 +17,11 @@
 
 #import "DWUserProfileContainerView.h"
 
-#import "DWCurrentUserProfileModel.h"
 #import "DWErrorUpdatingUserProfileView.h"
 #import "DWUIKit.h"
 #import "DWUpdatingUserProfileView.h"
 #import "DWDashPayModel.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -131,7 +131,6 @@ NS_ASSUME_NONNULL_END
 
 - (void)errorUpdatingUserProfileView:(DWErrorUpdatingUserProfileView *)view cancelAction:(UIButton *)sender {
     [self.userModel.updateModel reset];
-    [self.userModel update];
 }
 
 @end

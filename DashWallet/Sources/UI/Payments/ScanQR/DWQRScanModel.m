@@ -185,7 +185,9 @@ NS_ASSUME_NONNULL_END
 
     AVMetadataMachineReadableCodeObject *codeObject = [self preferredMetadataObjectInObjects:metadataObjects];
     if (!codeObject) {
-        [self resumeQRCodeSearch];
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            [self resumeQRCodeSearch];
+        });
 
         return;
     }

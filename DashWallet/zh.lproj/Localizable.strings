@@ -574,9 +574,6 @@
 /* Usernames */
 "Create a username" = "创建一个用户名";
 
-/* No comment provided by engineer. */
-"Create a username, add your friends." = "创建用户名, 添加您的好友.";
-
 /* CrowdNode */
 "Create Account" = "创建账户";
 
@@ -589,9 +586,6 @@
 /* CrowdNode
    CrowdNode Portal */
 "Create Online Account" = "创建线上账户";
-
-/* No comment provided by engineer. */
-"Create Username" = "创建用户名";
 
 /* Usernames */
 "Create your username" = "Create your username";
@@ -757,6 +751,9 @@
 /* Geoblock */
 "Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "由于法律限制, 当您身在英国时无法使用Coinbase功能";
 
+/* Usernames */
+"Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username." = "Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username.";
+
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "例 johndoe@mail.com";
 
@@ -771,6 +768,9 @@
 
 /* No comment provided by engineer. */
 "Edit Profile" = "编辑个人资料";
+
+/* No comment provided by engineer. */
+"Edit profile" = "Edit profile";
 
 /* Invitation tag placeholder */
 "eg: Dad" = "例: 爸吧";
@@ -919,6 +919,9 @@
 /* CrowdNode */
 "First minimum deposit" = "首次最低存款";
 
+/* Usernames */
+"For some reason, the request for the username '%@' has failed." = "For some reason, the request for the username '%@' has failed.";
+
 /* Coinbase */
 "For your security, you have been signed out." = "为了保障您的账户安全, 您已被登出.";
 
@@ -973,6 +976,9 @@
 /* No comment provided by engineer. */
 "Get Started" = "开始使用";
 
+/* Usernames */
+"Get started by setting up your profile picture and other information." = "Get started by setting up your profile picture and other information.";
+
 /* No comment provided by engineer. */
 "Get Test Dash" = "获得 Test Dash";
 
@@ -1011,6 +1017,9 @@
 
 /* CrowdNode */
 "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "这是在此设备上的 Dash钱包中为您的 CrowdNode账户指定的 Dash地址";
+
+/* No comment provided by engineer. */
+"Hide" = "Hide";
 
 /* adjective, security level */
 "High" = "高";
@@ -1895,17 +1904,20 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "报告问题";
 
+/* No comment provided by engineer. */
+"Request a username and say goodbye to numerical addresses" = "Request a username and say goodbye to numerical addresses";
+
 /* Voting */
 "Request details" = "申请的细节";
 
 /* Voting */
 "Request your username" = "申请您的用户名";
 
-/* No comment provided by engineer. */
-"Requested username was not approved" = "所申请的用户名未被批准";
+/* Usernames */
+"Requested username has been blocked" = "Requested username has been blocked";
 
-/* No comment provided by engineer. */
-"Requested · Voting: %@" = "已申请的 · 投票: %@";
+/* Usernames */
+"Requested username has been given to someone else" = "Requested username has been given to someone else";
 
 /* An action */
 "Rescan" = "重新扫描";
@@ -1927,6 +1939,9 @@
 
 /* Location Service Status */
 "Restricted" = "受限的";
+
+/* Usernames */
+"Results" = "Results";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "保留相互交易记录";
@@ -2283,6 +2298,9 @@
 /* Coinbase */
 "The minimum amount you can send is %@" = "您可以发送的最小额度是%@";
 
+/* Usernames */
+"The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
+
 /* No comment provided by engineer. */
 "them (Fetching Info)" = "他们 (获取信息)";
 
@@ -2468,9 +2486,6 @@
 /* CoinJoin */
 "up to 30 minutes" = "最多30分钟";
 
-/* No comment provided by engineer. */
-"Update your profile and start adding contacts" = "更新您的个人信息并开始添加联系人";
-
 /* ex., Updated: 27.12, 8:30 */
 "Updated: %@" = "已更新: %@";
 
@@ -2482,6 +2497,9 @@
 
 /* No comment provided by engineer. */
 "Upgrade" = "升级";
+
+/* No comment provided by engineer. */
+"Upgrade to DashPay" = "Upgrade to DashPay";
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "升级到Evolution";
@@ -2519,6 +2537,9 @@
 /* Voting */
 "Username" = "用户名";
 
+/* Usernames */
+"Username %@ has been requested on the Dash network. After the voting ends (%@) we will notify you about its results" = "Username %1$@ has been requested on the Dash network. After the voting ends (%2$@) we will notify you about its results";
+
 /* No comment provided by engineer. */
 "Username already found" = "已找到的用户名";
 
@@ -2527,6 +2548,9 @@
 
 /* Usernames */
 "Username is available" = "Username is available";
+
+/* Usernames */
+"Username request failed" = "Username request failed";
 
 /* No comment provided by engineer. */
 "Username taken" = "用户名已被使用";
@@ -2595,9 +2619,6 @@
 "Vote to Approve" = "投票通过";
 
 /* Voting */
-"Votes:" = "投数:";
-
-/* Voting */
 "Votes: High to low" = "投票: 从高到低";
 
 /* Voting */
@@ -2611,9 +2632,6 @@
 
 /* No comment provided by engineer. */
 "Voting Keys" = "投票者密钥";
-
-/* Voting */
-"Voting:" = "投票:";
 
 /* ZenLedger */
 "Wait until the chain is fully synced, so we can review your transaction history." = "等待区块链完全同步, 我们便可以回顾您的交易历史.";
@@ -2750,9 +2768,6 @@
 
 /* No comment provided by engineer. */
 "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance";
-
-/* No comment provided by engineer. */
-"You can create a different username without paying again" = "您可以创建一个不同的用户名无需再次付款";
 
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "您可以以下面任何格式来输入您的密钥: WIF/base58/base64/hex";
@@ -2925,8 +2940,8 @@
 /* No comment provided by engineer. */
 "Your username %@ is being created on the Dash Network" = "您的用户名 %@ 正在Dash网络上创建中";
 
-/* No comment provided by engineer. */
-"Your username was approved" = "您的用户名已被通过";
+/* Usernames */
+"Your username has been successfully created" = "Your username has been successfully created";
 
 /* No comment provided by engineer. */
 "Your vote was cancelled" = "您的投票已被取消";

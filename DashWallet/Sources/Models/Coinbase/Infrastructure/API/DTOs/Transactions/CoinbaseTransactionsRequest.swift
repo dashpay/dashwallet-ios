@@ -14,7 +14,8 @@ public struct CoinbaseTransactionsRequest: Codable {
     let to: String
     let amount: String
     let currency: String
-    let idem: UUID
+    let idem: String
+    let description: String
 }
 
 // MARK: CoinbaseTransactionsRequest.TransactionsType
