@@ -58,7 +58,7 @@ class SendAmountModel: BaseAmountModel {
         let plainAmount = amount.plainAmount
 
         let account = DWEnvironment.sharedInstance().currentAccount
-        let allAvailableFunds =  CoinJoinService.shared.mode == .none ? account.maxOutputAmount : coinJoinBalance
+        let allAvailableFunds = CoinJoinService.shared.mixingState.isInProgress ? coinJoinBalance : account.maxOutputAmount
 
         return plainAmount > allAvailableFunds
     }
@@ -71,11 +71,12 @@ class SendAmountModel: BaseAmountModel {
         initializeSyncingActivityMonitor()
         checkAmountForErrors()
         
-        if CoinJoinService.shared.mode != .none {
+        if CoinJoinService.shared.mixingState.isInProgress {
             CoinJoinService.shared.$progress
                 .removeDuplicates()
                 .sink { [weak self] progress in
                     self?.coinJoinBalance = progress.coinJoinBalance
+                    print("CoinJoin: setCoinJoin balance \(progress.coinJoinBalance)")
                 }
                 .store(in: &cancellableBag)
         }
@@ -91,8 +92,8 @@ class SendAmountModel: BaseAmountModel {
 
     internal func selectAllFundsWithoutAuth() {
         let account = DWEnvironment.sharedInstance().currentAccount
-        let allAvailableFunds = CoinJoinService.shared.mode == .none ? account.maxOutputAmount : coinJoinBalance
-
+        let allAvailableFunds = CoinJoinService.shared.mixingState.isInProgress ? coinJoinBalance : account.maxOutputAmount
+        
         if allAvailableFunds > 0 {
             updateCurrentAmountObject(with: allAvailableFunds)
         }
@@ -107,7 +108,7 @@ class SendAmountModel: BaseAmountModel {
         }
 
         guard !canShowInsufficientFunds else {
-            error = CoinJoinService.shared.mode == .none ? SendAmountError.insufficientFunds : SendAmountError.insufficientMixedFunds
+            error = CoinJoinService.shared.mixingState.isInProgress ? SendAmountError.insufficientMixedFunds : SendAmountError.insufficientFunds
             return
         }
 
