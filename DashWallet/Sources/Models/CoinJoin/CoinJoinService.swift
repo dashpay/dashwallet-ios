@@ -22,13 +22,12 @@ enum MixingStatus: Int {
     case notStarted
     case mixing
     case paused
+    case finishing
     case finished
     case error
     
     var isInProgress: Bool {
-        get {
-            return self == .mixing || self == .paused || self == .error
-        }
+        self == .mixing || self == .paused || self == .error || self == .finishing
     }
     
     var localizedValue: String {
@@ -40,6 +39,8 @@ enum MixingStatus: Int {
                 NSLocalizedString("Mixing ·", comment: "CoinJoin")
             case .paused:
                 NSLocalizedString("Mixing Paused ·", comment: "CoinJoin")
+            case .finishing:
+                NSLocalizedString("Mixing Finishing…", comment: "CoinJoin")
             case .finished:
                 NSLocalizedString("Fully mixed", comment: "CoinJoin")
             case .error:
@@ -141,8 +142,6 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     }
     
     func updateMode(mode: CoinJoinMode, force: Bool = false) async {
-        self.coinJoinManager?.updateOptions(withEnabled: mode != .none)
-        
         if mode != .none && (force || mode != self.currentMode) {
             configureMixing(mode: mode)
             configureObservers()
@@ -256,6 +255,10 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
         self.coinJoinManager?.managerDelegate = nil
         self.coinJoinManager?.stop()
     }
+    
+    private func initiateShutdown() {
+        self.coinJoinManager?.initiateShutdown()
+    }
 
     private func updateState(
         mode: CoinJoinMode,
@@ -277,7 +280,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
             self.timeSkew = timeSkew
             
             if mode == .none || !isInsideTimeSkewBounds(timeSkew: timeSkew) || DWGlobalOptions.sharedInstance().isResyncingWallet {
-                updateMixingState(state: .notStarted)
+                updateMixingState(state: self.mixingState == .mixing || self.mixingState == .finishing ? .finishing : .finished)
             } else {
                 configureMixing(mode: mode)
                 
@@ -312,6 +315,8 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
                 Task {
                     await startMixing()
                 }
+            } else if state == .finishing && previousMixingStatus != .finishing {
+                initiateShutdown()
             } else if previousMixingStatus == .mixing && state != .mixing {
                 // finish mixing
                 stopMixing()
@@ -432,6 +437,8 @@ extension CoinJoinService: DSCoinJoinManagerDelegate {
     func mixingStarted() { }
     
     func mixingComplete(_ withError: Bool, errorStatus: PoolStatus, isInterrupted: Bool) {
+        self.coinJoinManager?.updateOptions(withEnabled: false)
+        
         if isInterrupted {
             DSLogger.log("CoinJoin: Mixing Interrupted. \(progress)")
             updateMixingState(state: .notStarted)

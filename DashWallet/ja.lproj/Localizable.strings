@@ -226,12 +226,6 @@
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = " %@ というアプリがあなたのマスターパブリックキーを要求しています。これはあなたのウォレットの記録を取るために使用されます。あなたのDashが他へ送金されることはありません。";
 
-/* Voting */
-"Approvals" = "Approvals";
-
-/* Voting */
-"Approve" = "Approve";
-
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "この注文のキャンセルをしてもよろしいですか。";
 
@@ -248,7 +242,7 @@
 "Are you sure?" = "本当によろしいですか？";
 
 /* Voting */
-"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "マスターノードの所有者として、お客様が投票で請求されたユーザー名を承認すると、ユーザーはそのユーザー名を作成できるようになります。";
+"As a masternode owner you can vote to approve requested usernames before users will be able to create it.\nYou can block the creation of the usernames that you feel inappropriate." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.\nYou can block the creation of the usernames that you feel inappropriate.";
 
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "1000Dashを手元に持ち合わせている人はほとんどいないため、Crowdnodeはメンバーからの預金をプールすることでマスターノードを所有するメリットを得ることができるサービスを作りました。";
@@ -1003,6 +997,9 @@
 /* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "GPSの許可を得ると、近くにある店舗を表示できます。";
 
+/* Voting */
+"Has blocked votes" = "Has blocked votes";
+
 /* Username has requested to be your friend */
 "has requested to be your friend" = "から友達リクエストが届きました";
 
@@ -1061,7 +1058,7 @@
 "I have approved" = "承認しました";
 
 /* Voting */
-"I have not approved" = "承認しませんでした";
+"I have not voted" = "I have not voted";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "紙に書き留めました";
@@ -1444,6 +1441,9 @@
 
 /* CoinJoin */
 "Mixing" = "Mixing";
+
+/* CoinJoin */
+"Mixing Finishing…" = "Mixing Finishing…";
 
 /* CoinJoin */
 "Mixing is only possible with the app open" = "Mixing is only possible with the app open";
@@ -1994,8 +1994,8 @@
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "スクリーンショットは、他のアプリやデバイスで閲覧することができます。新しい復元フレーズを作り大事に守って下さい。";
 
-/* Voting */
-"Search by username" = "ユーザー名で検索";
+/* No comment provided by engineer. */
+"Search" = "Search";
 
 /* No comment provided by engineer. */
 "Search for a contact" = "連絡先を検索";
@@ -2626,6 +2626,9 @@
 
 /* No comment provided by engineer. */
 "Voting Address" = " 投票のアドレス";
+
+/* Voting */
+"Voting ends in %dd" = "Voting ends in %dd";
 
 /* Usernames */
 "Voting is only required in some cases" = "Voting is only required in some cases";

@@ -226,12 +226,6 @@
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Aplicação %@gostaria de receber sua chave mestra pública. Isso pode ser usado para manter acompanhamento de sua carteira, ela não pode ser usada para mover seu Dash.";
 
-/* Voting */
-"Approvals" = "Approvals";
-
-/* Voting */
-"Approve" = "Approve";
-
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Tem certeza de que deseja cancelar este pedido?";
 
@@ -248,7 +242,7 @@
 "Are you sure?" = "Você tem certeza?";
 
 /* Voting */
-"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "Como proprietário de um masternode, você pode votar para aprovar nomes de usuário solicitados antes que os usuários possam criá-los.";
+"As a masternode owner you can vote to approve requested usernames before users will be able to create it.\nYou can block the creation of the usernames that you feel inappropriate." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.\nYou can block the creation of the usernames that you feel inappropriate.";
 
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "Como a maioria das pessoas não possui exatamente 1000 Dash em mãos, o CrowdNode criou um serviço no qual, reunindo os depósitos dos membros, eles podem obter os benefícios de possuir um Masternode.";
@@ -1003,6 +997,9 @@
 /* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "Conceda permissões de GPS para que possamos mostrar locais próximos a você.";
 
+/* Voting */
+"Has blocked votes" = "Has blocked votes";
+
 /* Username has requested to be your friend */
 "has requested to be your friend" = "pediu para ser seu amigo";
 
@@ -1061,7 +1058,7 @@
 "I have approved" = "Eu aprovei";
 
 /* Voting */
-"I have not approved" = "Eu não aprovei";
+"I have not voted" = "I have not voted";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "Eu anotei";
@@ -1444,6 +1441,9 @@
 
 /* CoinJoin */
 "Mixing" = "Mixing";
+
+/* CoinJoin */
+"Mixing Finishing…" = "Mixing Finishing…";
 
 /* CoinJoin */
 "Mixing is only possible with the app open" = "Mixing is only possible with the app open";
@@ -1994,8 +1994,8 @@
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Capturas de Tela são visíveis para outros dispositivos e aplicativos. Gere uma nova frase de recuperação e a mantenha secreta.";
 
-/* Voting */
-"Search by username" = "Pesquisar por nome de usuário";
+/* No comment provided by engineer. */
+"Search" = "Search";
 
 /* No comment provided by engineer. */
 "Search for a contact" = "Pesquisar um contato";
@@ -2626,6 +2626,9 @@
 
 /* No comment provided by engineer. */
 "Voting Address" = "Endereço de Votação";
+
+/* Voting */
+"Voting ends in %dd" = "Voting ends in %dd";
 
 /* Usernames */
 "Voting is only required in some cases" = "Voting is only required in some cases";

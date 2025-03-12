@@ -226,12 +226,6 @@
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "应用程序 %@ 想要获取您的公钥. 它可以被用作查看您的钱包记录, 但无法用来移动您钱包中的Dash.";
 
-/* Voting */
-"Approvals" = "Approvals";
-
-/* Voting */
-"Approve" = "Approve";
-
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "您确定要取消此订单吗?";
 
@@ -248,7 +242,7 @@
 "Are you sure?" = "您确定吗?";
 
 /* Voting */
-"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "作为主节点用户, 您可以在用户能够创建用户名之前投票通过申请的用户名.";
+"As a masternode owner you can vote to approve requested usernames before users will be able to create it.\nYou can block the creation of the usernames that you feel inappropriate." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.\nYou can block the creation of the usernames that you feel inappropriate.";
 
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "由于大多数人手中没有 1000个 Dash, CrowdNode提供了一项服务, 他们通过汇集成员的存款来帮助成员获得主节点的收益.";
@@ -1003,6 +997,9 @@
 /* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "授予 GPS权限, 以便我们能向您显示您附近的位置.";
 
+/* Voting */
+"Has blocked votes" = "Has blocked votes";
+
 /* Username has requested to be your friend */
 "has requested to be your friend" = "已申请成为您的朋友";
 
@@ -1061,7 +1058,7 @@
 "I have approved" = "我已通过的";
 
 /* Voting */
-"I have not approved" = "我已否决的";
+"I have not voted" = "I have not voted";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "我已将它写下来";
@@ -1444,6 +1441,9 @@
 
 /* CoinJoin */
 "Mixing" = "Mixing";
+
+/* CoinJoin */
+"Mixing Finishing…" = "Mixing Finishing…";
 
 /* CoinJoin */
 "Mixing is only possible with the app open" = "Mixing is only possible with the app open";
@@ -1994,8 +1994,8 @@
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "屏幕截图可以被其他程序或者设备获得. 请生成一个新的助记词并妥善保管.";
 
-/* Voting */
-"Search by username" = "以用户名搜索";
+/* No comment provided by engineer. */
+"Search" = "Search";
 
 /* No comment provided by engineer. */
 "Search for a contact" = "搜索朋友";
@@ -2626,6 +2626,9 @@
 
 /* No comment provided by engineer. */
 "Voting Address" = "投票者地址";
+
+/* Voting */
+"Voting ends in %dd" = "Voting ends in %dd";
 
 /* Usernames */
 "Voting is only required in some cases" = "Voting is only required in some cases";

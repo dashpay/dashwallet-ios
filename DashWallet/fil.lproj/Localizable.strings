@@ -226,12 +226,6 @@
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Ang application %@ ay gustong makuha ang iyong Master Public Key.  Ito ay maaaring gamitin upang masubaybayan ang iyong pitaka, ito ay hindi maaaring gamitin sa paglipat ng iyong Dash.";
 
-/* Voting */
-"Approvals" = "Approvals";
-
-/* Voting */
-"Approve" = "Approve";
-
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Sigurado ka bang gusto mong kanselahin ang order na ito?";
 
@@ -248,7 +242,7 @@
 "Are you sure?" = "Sigurado ka ba?";
 
 /* Voting */
-"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "Bilang may-ari ng masternode maaari kang bumoto upang aprubahan ang mga hiniling na username bago ito magawa ng mga user.";
+"As a masternode owner you can vote to approve requested usernames before users will be able to create it.\nYou can block the creation of the usernames that you feel inappropriate." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.\nYou can block the creation of the usernames that you feel inappropriate.";
 
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "Dahil karamihan sa mga tao ay walang eksaktong 1000 Dash, gumawa ang Crowdnode ng isang serbisyo kung saan, sa pamamagitan ng pagsasama-sama ng mga deposito mula sa mga miyembro, makakamit nila ang mga benepisyo ng pagmamay-ari ng Masternode.";
@@ -1003,6 +997,9 @@
 /* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "Magbigay ng mga pahintulot sa GPS upang maipakita namin sa iyo ang mga lokasyong malapit sa iyo.";
 
+/* Voting */
+"Has blocked votes" = "Has blocked votes";
+
 /* Username has requested to be your friend */
 "has requested to be your friend" = "ay humiling na maging kaibigan mo";
 
@@ -1061,7 +1058,7 @@
 "I have approved" = "Naaprubahan ko na";
 
 /* Voting */
-"I have not approved" = "hindi ko na inaprubahan";
+"I have not voted" = "I have not voted";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "Naisulat ko na ito";
@@ -1444,6 +1441,9 @@
 
 /* CoinJoin */
 "Mixing" = "Mixing";
+
+/* CoinJoin */
+"Mixing Finishing…" = "Mixing Finishing…";
 
 /* CoinJoin */
 "Mixing is only possible with the app open" = "Mixing is only possible with the app open";
@@ -1994,8 +1994,8 @@
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Ang mga screenshot ay kita sa ibang apps o device. Lumikha ng bagong recovery phrase at panatilihin itong sikreto.                                  ";
 
-/* Voting */
-"Search by username" = "Maghanap sa pamamagitan ng username";
+/* No comment provided by engineer. */
+"Search" = "Search";
 
 /* No comment provided by engineer. */
 "Search for a contact" = "Maghanap para sa isang contact";
@@ -2626,6 +2626,9 @@
 
 /* No comment provided by engineer. */
 "Voting Address" = "Address ng pagboto";
+
+/* Voting */
+"Voting ends in %dd" = "Voting ends in %dd";
 
 /* Usernames */
 "Voting is only required in some cases" = "Voting is only required in some cases";
