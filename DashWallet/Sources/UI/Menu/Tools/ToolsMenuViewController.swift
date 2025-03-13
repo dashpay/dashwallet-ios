@@ -18,14 +18,12 @@
 import UIKit
 import SwiftUI
 
-@objc(DWToolsMenuViewControllerDelegate)
 protocol ToolsMenuViewControllerDelegate: AnyObject {
     func toolsMenuViewControllerImportPrivateKey(_ controller: ToolsMenuViewController)
 }
 
-@objc(DWToolsMenuViewController)
 class ToolsMenuViewController: UIViewController, DWImportWalletInfoViewControllerDelegate {
-    @objc weak var delegate: ToolsMenuViewControllerDelegate?
+    weak var delegate: ToolsMenuViewControllerDelegate?
     
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
