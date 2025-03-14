@@ -1,12 +1,19 @@
 import SwiftUI
 
 struct ConfirmSpendDialog: View {
-    @State private var isAccepted: Bool = false
+    @State private var isAccepted: Bool = true
     
-    let username: String
     let amount: Int64
-    var onCancel: () -> Void
-    var onConfirm: () -> Void
+    var title: String
+    let onCancel: () -> Void
+    let onConfirm: () -> Void
+
+    var username: String? = nil
+    var detailsText: String? = nil
+    var requiresAcceptance: Bool = false
+    var acceptanceText: String = NSLocalizedString("I accept", comment: "")
+    var confirmButtonText: String = NSLocalizedString("Confirm", comment: "")
+    var cancelButtonText: String = NSLocalizedString("Cancel", comment: "")
     
     var body: some View {
         VStack(spacing: 0) {
@@ -19,7 +26,7 @@ struct ConfirmSpendDialog: View {
                 Spacer()
             }
             
-            Text(NSLocalizedString("Confirm", comment: ""))
+            Text(title)
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .padding(.top, 15)
@@ -28,39 +35,48 @@ struct ConfirmSpendDialog: View {
                 .padding(.top, 15)
             FormattedFiatText(from: amount)
             
-            VStack(spacing: 4) {
-                Text(String.localizedStringWithFormat(NSLocalizedString("You chose “%@” as your username.", comment: "Usernames"), username))
-                    .font(.body2)
-                Text(NSLocalizedString("Please note that the username can NOT be changed once it is registered.", comment: "Usernames"))
-                    .font(.body2)
-                    .multilineTextAlignment(.center)
+            if username != nil || detailsText != nil {
+                VStack(spacing: 4) {
+                    if let username = username {
+                        Text(String.localizedStringWithFormat(NSLocalizedString("You chose \"%@\" as your username.", comment: "Usernames"), username))
+                            .font(.body2)
+                    }
+                    
+                    if let detailsText = detailsText {
+                        Text(detailsText)
+                            .font(.body2)
+                            .multilineTextAlignment(.center)
+                    }
+                }
+                .padding(.top, 15)
             }
-            .padding(.top, 15)
             
-            Toggle(isOn: $isAccepted) {
-                Text(NSLocalizedString("I accept", comment: ""))
-                    .font(.system(size: 15))
-                    .padding(.leading, 4)
+            if requiresAcceptance {
+                Toggle(isOn: $isAccepted) {
+                    Text(acceptanceText)
+                        .font(.system(size: 15))
+                        .padding(.leading, 4)
+                }
+                .onTapGesture {
+                    isAccepted.toggle()
+                }
+                .toggleStyle(CheckboxToggleStyle())
+                .padding(.top, 19)
             }
-            .onTapGesture {
-                isAccepted.toggle()
-            }
-            .toggleStyle(CheckboxToggleStyle())
-            .padding(.top, 19)
             
             Spacer()
             
             ButtonsGroup(
                 orientation: .horizontal,
                 size: .large,
-                positiveActionEnabled: isAccepted,
-                positiveButtonText: NSLocalizedString("Confirm", comment: ""),
+                positiveActionEnabled: !requiresAcceptance || isAccepted,
+                positiveButtonText: confirmButtonText,
                 positiveButtonAction: {
-                    if isAccepted {
+                    if !requiresAcceptance || isAccepted {
                         onConfirm()
                     }
                 },
-                negativeButtonText: NSLocalizedString("Cancel", comment: ""),
+                negativeButtonText: cancelButtonText,
                 negativeButtonAction: {
                     onCancel()
                 }

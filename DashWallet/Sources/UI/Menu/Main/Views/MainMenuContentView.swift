@@ -18,7 +18,6 @@
 import UIKit
 import SwiftUI
 
-@objc(DWMainMenuContentViewDelegate)
 protocol MainMenuContentViewDelegate: AnyObject {
     func mainMenuContentView(_ view: MainMenuContentView, didSelectMenuItem item: DWMainMenuItem)
     
@@ -31,22 +30,21 @@ protocol MainMenuContentViewDelegate: AnyObject {
     #endif
 }
 
-@objc(DWMainMenuContentView)
 class MainMenuContentView: UIView {
     
     // MARK: - Properties
     
-    @objc var model: DWMainMenuModel {
+    var model: DWMainMenuModel {
         didSet {
             tableView.reloadData()
         }
     }
-    @objc weak var delegate: MainMenuContentViewDelegate?
+    weak var delegate: MainMenuContentViewDelegate?
     
     private let tableView: UITableView
     
     #if DASHPAY
-    @objc var userModel: CurrentUserProfileModel? = nil
+    var userModel: CurrentUserProfileModel? = nil
     let joinDPViewModel = JoinDashPayViewModel(initialState: .none)
     private let headerView: DWUserProfileContainerView
     private var welcomeView: JoinDashPayView!
@@ -147,7 +145,7 @@ class MainMenuContentView: UIView {
     // MARK: - Public Methods
     
     #if DASHPAY
-    @objc func updateUserHeader() {
+    func updateUserHeader() {
         if userModel?.showJoinDashpay == true {
             let hostingController = UIHostingController(
                 rootView: welcomeView
@@ -166,7 +164,17 @@ class MainMenuContentView: UIView {
     
     private func joinButtonAction() {
         if shouldShowMixDashDialog {
-            self.showMixDashDialog()
+            self.showMixDashDialog(
+                purposeText: NSLocalizedString("your username", comment: "Usernames"),
+                onSkip: {
+                    if UsernamePrefs.shared.joinDashPayInfoShown {
+                        self.delegate?.mainMenuContentView(joinDashPayAction: self)
+                    } else {
+                        UsernamePrefs.shared.joinDashPayInfoShown = true
+                        self.showDashPayInfo()
+                    }
+                }
+            )
         } else if shouldShowDashPayInfo {
             self.showDashPayInfo()
         } else {
@@ -174,26 +182,18 @@ class MainMenuContentView: UIView {
         }
     }
     
-    private func showMixDashDialog() {
+    func showMixDashDialog(purposeText: String, onSkip: @escaping () -> Void) {
         let swiftUIView = MixDashDialog(
+            purposeText: purposeText,
             positiveAction: {
                 self.delegate?.mainMenuContentView(showCoinJoin: self)
-            }, negativeAction: {
-                if UsernamePrefs.shared.joinDashPayInfoShown {
-                    self.delegate?.mainMenuContentView(joinDashPayAction: self)
-                } else {
-                    UsernamePrefs.shared.joinDashPayInfoShown = true
-                    self.showDashPayInfo()
-                }
-            }
+            }, negativeAction: onSkip
         )
         let hostingController = UIHostingController(rootView: swiftUIView)
         hostingController.setDetent(260)
         
         if let parentVC = self.parentViewController() {
             parentVC.present(hostingController, animated: true, completion: nil)
-        } else {
-            delegate?.mainMenuContentView(joinDashPayAction: self)
         }
     }
     
@@ -203,6 +203,16 @@ class MainMenuContentView: UIView {
         }
         let hostingController = UIHostingController(rootView: swiftUIView)
         hostingController.setDetent(600)
+        
+        if let parentVC = self.parentViewController() {
+            parentVC.present(hostingController, animated: true, completion: nil)
+        }
+    }
+
+    func showInvitationFeeDialog(onAction: @escaping () -> Void) {
+        let swiftUIView = InvitationFeeDialog(action: onAction)
+        let hostingController = UIHostingController(rootView: swiftUIView)
+        hostingController.setDetent(520)
         
         if let parentVC = self.parentViewController() {
             parentVC.present(hostingController, animated: true, completion: nil)

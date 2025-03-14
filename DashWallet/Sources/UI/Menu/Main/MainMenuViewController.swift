@@ -17,8 +17,10 @@
 
 import UIKit
 import MessageUI
+import Combine
 
 class MainMenuViewController: UIViewController {
+    private var cancellableBag = Set<AnyCancellable>()
     
     // MARK: - Properties
     
@@ -76,6 +78,7 @@ class MainMenuViewController: UIViewController {
         if let userProfileModel = userProfileModel {
             contentView.userModel = userProfileModel
         }
+        setupObservers()
         #endif
     }
     
@@ -85,11 +88,7 @@ class MainMenuViewController: UIViewController {
         navigationItem.largeTitleDisplayMode = .never
         
         #if DASHPAY
-        let invitationsEnabled = DWGlobalOptions.sharedInstance().dpInvitationFlowEnabled && (userProfileModel?.blockchainIdentity != nil)
-        
-        let isVotingEnabled = VotingPrefsWrapper.getIsEnabled()
-        contentView.model = DWMainMenuModel(invitesEnabled: invitationsEnabled, votingEnabled: isVotingEnabled)
-        contentView.updateUserHeader()
+        refreshContent()
         #else
         contentView.model = DWMainMenuModel(invitesEnabled: false, votingEnabled: false)
         #endif
@@ -99,6 +98,26 @@ class MainMenuViewController: UIViewController {
         return .lightContent
     }
 }
+
+#if DASHPAY
+extension MainMenuViewController {
+    func setupObservers() {
+        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+            .removeDuplicates()
+            .sink { [weak self] _ in self?.refreshContent() }
+            .store(in: &cancellableBag)
+    }
+    
+    func refreshContent() {
+        let balance = DWEnvironment.sharedInstance().currentAccount.balance
+        let invitationsEnabled = DWGlobalOptions.sharedInstance().dpInvitationFlowEnabled && 
+            (userProfileModel?.blockchainIdentity != nil) && balance > DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        let isVotingEnabled = VotingPrefsWrapper.getIsEnabled()
+        contentView.model = DWMainMenuModel(invitesEnabled: invitationsEnabled, votingEnabled: isVotingEnabled)
+        contentView.updateUserHeader()
+    }
+}
+#endif
 
 // MARK: - MainMenuContentViewDelegate
 
@@ -143,10 +162,15 @@ extension MainMenuViewController: MainMenuContentViewDelegate {
             
         #if DASHPAY
         case .invite:
-            let controller = DWInvitationHistoryViewController()
-            controller.hidesBottomBarWhenPushed = true
-            navigationController?.pushViewController(controller, animated: true)
-            
+            if contentView.shouldShowMixDashDialog {
+                contentView.showMixDashDialog(purposeText: NSLocalizedString("an invitation", comment: "Invites")) { [weak self] in
+                    self?.contentView.showInvitationFeeDialog() { [weak self] in
+                         self?.navigateToInvites()
+                    }
+                }
+            } else {
+                self.navigateToInvites()
+            }
         case .voting:
             let controller = UsernameVotingViewController.controller()
             controller.hidesBottomBarWhenPushed = true
@@ -195,6 +219,12 @@ extension MainMenuViewController: MainMenuContentViewDelegate {
     
     func mainMenuContentView(showRequestDetails view: MainMenuContentView) {
         let controller = RequestDetailsViewController.controller()
+        controller.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(controller, animated: true)
+    }
+    
+    private func navigateToInvites() {
+        let controller = DWInvitationHistoryViewController()
         controller.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(controller, animated: true)
     }

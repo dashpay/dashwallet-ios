@@ -605,6 +605,7 @@
 		757AE4A52D82E10A00C9CAF7 /* MainMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757AE4A32D82E10A00C9CAF7 /* MainMenuViewController.swift */; };
 		757AE4A72D8303C300C9CAF7 /* MainMenuViewControllerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757AE4A62D8303C300C9CAF7 /* MainMenuViewControllerDelegate.swift */; };
 		757AE4A82D8303C300C9CAF7 /* MainMenuViewControllerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757AE4A62D8303C300C9CAF7 /* MainMenuViewControllerDelegate.swift */; };
+		757AE4AB2D8413F400C9CAF7 /* InvitationFeeDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757AE4AA2D8413EA00C9CAF7 /* InvitationFeeDialog.swift */; };
 		757B937D2BFF4F93002046A5 /* GroupedTransactionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757B937C2BFF4F93002046A5 /* GroupedTransactionsScreen.swift */; };
 		757B937E2BFF4F93002046A5 /* GroupedTransactionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757B937C2BFF4F93002046A5 /* GroupedTransactionsScreen.swift */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
@@ -2469,6 +2470,7 @@
 		757514E42B1735370026AD8E /* JoinDashPayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinDashPayView.swift; sourceTree = "<group>"; };
 		757AE4A32D82E10A00C9CAF7 /* MainMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuViewController.swift; sourceTree = "<group>"; };
 		757AE4A62D8303C300C9CAF7 /* MainMenuViewControllerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuViewControllerDelegate.swift; sourceTree = "<group>"; };
+		757AE4AA2D8413EA00C9CAF7 /* InvitationFeeDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationFeeDialog.swift; sourceTree = "<group>"; };
 		757B937C2BFF4F93002046A5 /* GroupedTransactionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupedTransactionsScreen.swift; sourceTree = "<group>"; };
 		757E09981ADB8EEB006FD352 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		7581B1992CE349BB00714007 /* ConfirmSpendDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmSpendDialog.swift; sourceTree = "<group>"; };
@@ -7024,15 +7026,16 @@
 		C943B44B2A40A54600AF23C5 /* Invites */ = {
 			isa = PBXGroup;
 			children = (
-				C943B44C2A40A54600AF23C5 /* DWSendInviteFirstStepViewController.h */,
 				C943B44D2A40A54600AF23C5 /* Additions */,
-				C943B4502A40A54600AF23C5 /* DWSendInviteFlowController.h */,
 				C943B4512A40A54600AF23C5 /* Confirmation */,
-				C943B4572A40A54600AF23C5 /* DWSendInviteFirstStepViewController.m */,
 				C943B4582A40A54600AF23C5 /* History */,
-				C943B46C2A40A54600AF23C5 /* Preview */,
-				C943B46F2A40A54600AF23C5 /* DWSendInviteFlowController.m */,
 				C943B4702A40A54600AF23C5 /* Invitation */,
+				C943B46C2A40A54600AF23C5 /* Preview */,
+				C943B44C2A40A54600AF23C5 /* DWSendInviteFirstStepViewController.h */,
+				C943B4502A40A54600AF23C5 /* DWSendInviteFlowController.h */,
+				C943B4572A40A54600AF23C5 /* DWSendInviteFirstStepViewController.m */,
+				C943B46F2A40A54600AF23C5 /* DWSendInviteFlowController.m */,
+				757AE4AA2D8413EA00C9CAF7 /* InvitationFeeDialog.swift */,
 			);
 			path = Invites;
 			sourceTree = "<group>";
@@ -9355,6 +9358,7 @@
 				C943B32D2A408CED00AF23C5 /* DWAvatarPublicURLViewController.m in Sources */,
 				75AA33D32BF9E18E00F12465 /* Color+DWStyle.swift in Sources */,
 				C9D2C76F2A320AA000D15901 /* DWProgressAnimator.mm in Sources */,
+				757AE4AB2D8413F400C9CAF7 /* InvitationFeeDialog.swift in Sources */,
 				C943B3192A408CED00AF23C5 /* DWDPUpdateProfileModel.m in Sources */,
 				C9D2C7702A320AA000D15901 /* CrowdNodeModel.swift in Sources */,
 				75889B792AD2A04900C17F5D /* CoinJoinInfoViewController.swift in Sources */,

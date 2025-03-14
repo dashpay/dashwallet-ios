@@ -19,6 +19,7 @@ import SwiftUI
 
 public struct MixDashDialog: View {
     @Environment(\.presentationMode) private var presentationMode
+    var purposeText: String
     var positiveAction: () -> Void
     var negativeAction: () -> Void
     
@@ -27,7 +28,7 @@ public struct MixDashDialog: View {
             VStack(spacing: 0) {
                 FeatureTopText(
                     title: NSLocalizedString("Mix your Dash Coins", comment: "CoinJoin"),
-                    text: NSLocalizedString("To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.", comment: "CoinJoin"),
+                    text: String(format: NSLocalizedString("To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@.", comment: "CoinJoin"), purposeText),
                     alignment: .leading
                 )
                 
