@@ -25,7 +25,10 @@ struct ButtonsGroup: View {
     
     var orientation: Axis = .vertical
     var style: Style = .regular
+    var size: DashButton.Size = .medium
+    var positiveActionEnabled: Bool = true
     var positiveButtonText: String? = nil
+    var positiveButtonIcon: IconName? = nil
     var positiveButtonAction: (() -> Void)? = nil
     var negativeButtonText: String? = nil
     var negativeButtonAction: (() -> Void)? = nil
@@ -34,8 +37,10 @@ struct ButtonsGroup: View {
         if let text = positiveButtonText {
             return DashButton(
                 text: text,
+                leadingIcon: positiveButtonIcon,
                 style: negativeButtonText == nil ? .plain : .filled,
-                size: .medium,
+                size: size,
+                isEnabled: positiveActionEnabled,
                 action: { positiveButtonAction?() }
             )
         }
@@ -48,7 +53,7 @@ struct ButtonsGroup: View {
             return DashButton(
                 text: text,
                 style: .plain,
-                size: .medium,
+                size: size,
                 action: { negativeButtonAction?() }
             )
         }

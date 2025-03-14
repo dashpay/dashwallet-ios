@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22155" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22131"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -60,13 +60,13 @@
                                                 </userDefinedRuntimeAttributes>
                                             </view>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Filtered by" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DUl-fu-Ve9" userLabel="FilteredBy">
-                                                <rect key="frame" x="166.66666666666666" y="5" width="59.666666666666657" height="19"/>
+                                                <rect key="frame" x="166.66666666666666" y="5" width="59.666666666666657" height="34"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                 <color key="textColor" name="TertiaryTextColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="New to old, only duplicates" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5ou-8Y-Qo6" userLabel="Filters">
-                                                <rect key="frame" x="119.66666666666669" y="24" width="154" height="15"/>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5ou-8Y-Qo6" userLabel="Filters">
+                                                <rect key="frame" x="196.66666666666666" y="39" width="0.0" height="0.0"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                 <color key="textColor" name="Label"/>
                                                 <nil key="highlightedColor"/>
@@ -484,7 +484,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="m4X-Mt-c9E">
-                                <rect key="frame" x="0.0" y="154.66666666666669" width="393" height="536.33333333333326"/>
+                                <rect key="frame" x="0.0" y="154.66666666666666" width="393" height="484.33333333333337"/>
                                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="MasternodeIPCell" rowHeight="48" id="s6L-h8-z71" userLabel="MasternodeIPCell" customClass="MasternodeIPCell" customModule="dashpay" customModuleProvider="target">
@@ -510,6 +510,7 @@
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                     </subviews>
+                                                    <color key="backgroundColor" name="BackgroundColor"/>
                                                     <constraints>
                                                         <constraint firstItem="r6s-bs-MeW" firstAttribute="top" secondItem="GUv-Uq-L7N" secondAttribute="top" constant="10" id="1Ik-QG-10S"/>
                                                         <constraint firstItem="wf9-fB-mOQ" firstAttribute="leading" secondItem="GUv-Uq-L7N" secondAttribute="leading" constant="15" id="CGj-uT-Qqp"/>
@@ -542,7 +543,7 @@
                                 </prototypes>
                             </tableView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PFV-VI-Kfa" userLabel="AddKey">
-                                <rect key="frame" x="15" y="701" width="363" height="46"/>
+                                <rect key="frame" x="15" y="649" width="363" height="46"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="46" id="jZS-U9-YCT"/>
                                 </constraints>
@@ -557,7 +558,16 @@
                                     <action selector="addMasternodeKey" destination="v7H-vb-eUA" eventType="touchUpInside" id="dSg-wC-qsA"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Cx9-go-LT2" userLabel="Submit" customClass="DWActionButton">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="2 votes will be cast as you have multiple voting keys stored in the wallet" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="e3N-LQ-KAs" userLabel="Multiple keys">
+                                <rect key="frame" x="20" y="705" width="353" height="32"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="32" id="jbK-c7-QqH"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="13"/>
+                                <color key="textColor" red="0.32156862745098042" green="0.36078431372549019" blue="0.40000000000000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Cx9-go-LT2" userLabel="Submit">
                                 <rect key="frame" x="15" y="757" width="363" height="46"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="46" id="rMb-3c-5EZ"/>
@@ -576,8 +586,12 @@
                         <constraints>
                             <constraint firstItem="9TF-qx-cBq" firstAttribute="top" secondItem="7NK-AL-PFx" secondAttribute="top" id="2IQ-Va-2mw"/>
                             <constraint firstItem="7NK-AL-PFx" firstAttribute="trailing" secondItem="m4X-Mt-c9E" secondAttribute="trailing" id="DY1-kd-r25"/>
+                            <constraint firstItem="Cx9-go-LT2" firstAttribute="top" secondItem="e3N-LQ-KAs" secondAttribute="bottom" constant="20" id="EcL-Tj-jgq"/>
                             <constraint firstItem="PFV-VI-Kfa" firstAttribute="top" secondItem="m4X-Mt-c9E" secondAttribute="bottom" constant="10" id="FGQ-lk-3LP"/>
                             <constraint firstItem="EXZ-1V-PqP" firstAttribute="leading" secondItem="7NK-AL-PFx" secondAttribute="leading" constant="20" id="FiP-ye-DPL"/>
+                            <constraint firstItem="e3N-LQ-KAs" firstAttribute="top" secondItem="PFV-VI-Kfa" secondAttribute="bottom" constant="10" id="IXM-In-ZpI"/>
+                            <constraint firstItem="e3N-LQ-KAs" firstAttribute="leading" secondItem="7NK-AL-PFx" secondAttribute="leading" constant="20" id="IcO-DQ-heW"/>
+                            <constraint firstItem="7NK-AL-PFx" firstAttribute="trailing" secondItem="e3N-LQ-KAs" secondAttribute="trailing" constant="20" id="J3o-Zc-DZm"/>
                             <constraint firstItem="7NK-AL-PFx" firstAttribute="trailing" secondItem="PFV-VI-Kfa" secondAttribute="trailing" constant="15" id="LHd-ai-IVw"/>
                             <constraint firstItem="EXZ-1V-PqP" firstAttribute="top" secondItem="9TF-qx-cBq" secondAttribute="bottom" constant="8" id="PzM-Ta-Jh9"/>
                             <constraint firstItem="7NK-AL-PFx" firstAttribute="bottom" secondItem="Cx9-go-LT2" secondAttribute="bottom" constant="15" id="QgV-dj-ZR0"/>
@@ -589,11 +603,13 @@
                             <constraint firstItem="m4X-Mt-c9E" firstAttribute="top" secondItem="EXZ-1V-PqP" secondAttribute="bottom" constant="15" id="vGQ-vn-2FZ"/>
                             <constraint firstItem="9TF-qx-cBq" firstAttribute="leading" secondItem="7NK-AL-PFx" secondAttribute="leading" constant="20" id="vac-4T-cdQ"/>
                             <constraint firstItem="PFV-VI-Kfa" firstAttribute="leading" secondItem="7NK-AL-PFx" secondAttribute="leading" constant="15" id="wls-Qd-wL3"/>
-                            <constraint firstItem="PFV-VI-Kfa" firstAttribute="bottom" secondItem="Cx9-go-LT2" secondAttribute="top" constant="-10" id="yey-Oq-2y7"/>
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="tableView" destination="m4X-Mt-c9E" id="7Eg-cA-JA4"/>
+                        <outlet property="actionButton" destination="Cx9-go-LT2" id="gzR-vl-0CL"/>
+                        <outlet property="multipleKeysHeightConstraint" destination="jbK-c7-QqH" id="z9h-Nd-3vI"/>
+                        <outlet property="multipleKeysLabel" destination="e3N-LQ-KAs" id="m3r-le-f9l"/>
+                        <outlet property="tableView" destination="m4X-Mt-c9E" id="Tm6-wf-2Me"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="SWw-Fe-KMM" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -612,10 +628,10 @@
             <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="DashBlueColor">
-            <color red="0.0" green="0.55294117647058827" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.55294117647058827" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="Label">
-            <color red="0.094117647058823528" green="0.10980392156862745" blue="0.12156862745098039" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.098039215686274508" green="0.10980392156862745" blue="0.12156862745098039" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="QuaternaryFillColor">
             <color red="0.4392156862745098" green="0.4392156862745098" blue="0.44705882352941179" alpha="0.070000000298023224" colorSpace="custom" customColorSpace="sRGB"/>

@@ -87,7 +87,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (!username) {
         return;
     }
-    
+
     UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
     pasteboard.string = username;
 }
@@ -180,7 +180,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if DASHPAY
         paymentRequest.dashpayUsername = [DWGlobalOptions sharedInstance].dashpayUsername;
 #endif
-        
+
         UIImage *rawQRImage = nil;
         if (!hasAmount && [paymentRequest.data isEqual:appGroupOptions.receiveRequestData]) {
             NSData *qrImageData = appGroupOptions.receiveQRImageData;

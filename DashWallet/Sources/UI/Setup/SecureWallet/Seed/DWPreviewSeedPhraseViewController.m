@@ -102,11 +102,11 @@ NS_ASSUME_NONNULL_BEGIN
                                              selector:@selector(userDidTakeScreenshotNotification:)
                                                  name:UIApplicationUserDidTakeScreenshotNotification
                                                object:nil];
-    
+
     [[NSNotificationCenter defaultCenter] addObserver:self
-                           selector:@selector(applicationWillResignActiveNotification)
-                               name:UIApplicationWillResignActiveNotification
-                             object:nil];
+                                             selector:@selector(applicationWillResignActiveNotification)
+                                                 name:UIApplicationWillResignActiveNotification
+                                               object:nil];
 }
 
 - (void)setupContentViewModel {

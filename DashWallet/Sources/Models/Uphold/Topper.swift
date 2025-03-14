@@ -101,7 +101,6 @@ class Topper {
     }
     
     private func generateToken(privateKeyData: Data, sourceAsset: String, receiverAddress: String, walletName: String) -> String {
-            
         do {
             let defaultValue = getDefaultValue(sourceAsset: sourceAsset, paymentMethods: supportedPaymentMethods)
             let amount = defaultValue.value.string

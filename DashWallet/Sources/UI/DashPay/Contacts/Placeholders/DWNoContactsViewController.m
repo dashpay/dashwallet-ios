@@ -17,10 +17,10 @@
 
 #import "DWNoContactsViewController.h"
 
-#import "dashwallet-Swift.h"
 #import "DWGlobalOptions.h"
 #import "DWInvitationSuggestionView.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 @interface DWNoContactsViewController ()
 

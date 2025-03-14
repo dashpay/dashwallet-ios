@@ -16,6 +16,7 @@
 //
 
 import UIKit
+import MessageUI
 
 @objc
 extension UIViewController {
@@ -50,6 +51,56 @@ extension UIViewController {
             return 20.0;
         } else { // iPhone 5-like, 6-like
             return 16.0;
+        }
+    }
+
+    @objc func presentSupportEmailController() {
+        let logFiles = DSLogger.sharedInstance().logFiles()
+        
+        if MFMailComposeViewController.canSendMail() {
+            let mailComposer = MFMailComposeViewController()
+            mailComposer.mailComposeDelegate = self as? MFMailComposeViewControllerDelegate
+            
+            let email = Bundle.main.infoDictionary?["SupportEmail"] as? String ?? ""
+            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+            mailComposer.setToRecipients([email])
+            mailComposer.setSubject(String(format: NSLocalizedString("iOS Dash Wallet: %@ Reported issue", comment: ""), version))
+            
+            // Sort log files by modification date, most recent first
+            let sortedLogFiles = logFiles.sorted { (url1, url2) -> Bool in
+                let date1 = try? url1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+                let date2 = try? url2.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+                return (date1 ?? .distantPast) > (date2 ?? .distantPast)
+            }
+            
+            var totalSize: Int64 = 0
+            let maxSize: Int64 = 25 * 1024 * 1024 // 25MB in bytes
+            
+            for logFileURL in sortedLogFiles {
+                guard let logData = try? Data(contentsOf: logFileURL) else {
+                    continue
+                }
+                
+                // Break if this file would exceed the size limit
+                if totalSize + Int64(logData.count) > maxSize {
+                    break
+                }
+                
+                let fileName = logFileURL.lastPathComponent
+                let mimeType = fileName.hasSuffix(".gz") ? "application/gzip" : "text/plain"
+                mailComposer.addAttachmentData(logData, mimeType: mimeType, fileName: fileName)
+                                                                
+                totalSize += Int64(logData.count)
+            }
+            
+            present(mailComposer, animated: true)
+        }
+        else {
+            let activityViewController = UIActivityViewController(
+                activityItems: logFiles,
+                applicationActivities: nil
+            )
+            present(activityViewController, animated: true)
         }
     }
 }

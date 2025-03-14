@@ -97,7 +97,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)setupDidFinish {
-    //TODO: check whether we really need to do that here
+    // TODO: check whether we really need to do that here
     //[self.homeModel.shortcutsModel reloadShortcuts];
 }
 

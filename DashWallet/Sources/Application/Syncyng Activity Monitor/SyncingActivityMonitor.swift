@@ -205,7 +205,9 @@ extension SyncingActivityMonitor {
             state = .noConnection
             return
         }
-        updateProgress()
+        DispatchQueue.main.async {
+            self.updateProgress()
+        }
     }
 
     private func updateProgress() {

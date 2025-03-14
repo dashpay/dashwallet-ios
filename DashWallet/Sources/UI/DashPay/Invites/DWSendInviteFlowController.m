@@ -59,7 +59,9 @@ NS_ASSUME_NONNULL_END
 
 - (void)showSuccessInvitation:(DSBlockchainInvitation *)invitation fullLink:(NSString *)fullLink {
     SuccessInvitationViewController *invitationController =
-    [[SuccessInvitationViewController alloc] initWith:invitation fullLink:fullLink index:0];
+        [[SuccessInvitationViewController alloc] initWith:invitation
+                                                 fullLink:fullLink
+                                                    index:0];
     invitationController.delegate = self;
     DWFullScreenModalControllerViewController *modal =
         [[DWFullScreenModalControllerViewController alloc] initWithController:invitationController];
@@ -102,8 +104,8 @@ NS_ASSUME_NONNULL_END
 - (void)successInvitationViewControllerDidSelectLaterWithController:(SuccessInvitationViewController *)controller {
     [controller dismissViewControllerAnimated:YES
                                    completion:^{
-        [self.delegate sendInviteFlowControllerDidFinish:self];
-    }];
+                                       [self.delegate sendInviteFlowControllerDidFinish:self];
+                                   }];
 }
 
 @end

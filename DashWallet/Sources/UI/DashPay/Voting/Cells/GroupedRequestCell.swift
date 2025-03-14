@@ -26,6 +26,7 @@ final class GroupedRequestCell: UITableViewCell {
     
     var onHeightChanged: (() -> ())?
     var onRequestSelected: ((UsernameRequest) -> ())?
+    var onBlockTapped: ((UsernameRequest) -> Void)?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -59,12 +60,16 @@ final class GroupedRequestCell: UITableViewCell {
         return label
     }()
     
-    private let chevron: UIImageView = {
-        let image = UIImageView(image: UIImage(systemName: "chevron.down"))
-        image.contentMode = .scaleAspectFill
-        image.tintColor = .dw_label()
-        image.translatesAutoresizingMaskIntoConstraints = false
-        return image
+    private let chevronButton: UIButton = {
+        let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        let image = UIImage(systemName: "chevron.down")!.withConfiguration(UIImage.SymbolConfiguration(scale: .small))
+        button.setImage(image, for: .normal)
+        button.tintColor = .dw_label()
+        button.backgroundColor = .dw_secondaryBackground()
+        button.layer.cornerRadius = 7
+        button.isUserInteractionEnabled = false
+        return button
     }()
     
     private let container: UIStackView = {
@@ -78,14 +83,33 @@ final class GroupedRequestCell: UITableViewCell {
 
     private let tableView: UITableView = {
         let tableView = UITableView()
-        tableView.estimatedRowHeight = 44
+        tableView.estimatedRowHeight = 60
         tableView.rowHeight = UITableView.automaticDimension
         tableView.isScrollEnabled = false
-        tableView.separatorStyle = .singleLine
+        tableView.separatorStyle = .none
         tableView.register(UsernameRequestCell.self, forCellReuseIdentifier: UsernameRequestCell.description())
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.tableFooterView = UIView(frame: .zero)
+        tableView.backgroundColor = .dw_background()
         return tableView
+    }()
+
+    private let blockButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitle("0", for: .normal)
+        let image = UIImage(named: "icon_thumbs_up")!
+        button.setImage(image.withRenderingMode(.alwaysTemplate), for: .normal)
+        button.imageView?.transform = CGAffineTransform(rotationAngle: .pi)
+        button.tintColor = .dw_label()
+        button.backgroundColor = .dw_secondaryBackground()
+        button.layer.cornerRadius = 7
+        button.semanticContentAttribute = .forceRightToLeft
+        button.contentHorizontalAlignment = .center
+        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 6)
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 0)
+
+        return button
     }()
 }
 
@@ -93,8 +117,12 @@ private extension GroupedRequestCell {
     func configureLayout() {
         toggleArea.addTarget(self, action: #selector(expandOrCollapse), for: .touchUpInside)
         toggleArea.addSubview(username)
-        toggleArea.addSubview(chevron)
         toggleArea.addSubview(requestsAmount)
+        toggleArea.addSubview(chevronButton)
+
+        toggleArea.addSubview(blockButton)
+        blockButton.addTarget(self, action: #selector(blockButtonTapped), for: .touchUpInside)
+
         container.addArrangedSubview(toggleArea)
         containerHeightConstraint = container.heightAnchor.constraint(equalToConstant: kToogleAreaHeight)
         
@@ -117,20 +145,24 @@ private extension GroupedRequestCell {
             username.leadingAnchor.constraint(equalTo: toggleArea.leadingAnchor, constant: 15),
             
             requestsAmount.topAnchor.constraint(equalTo: username.topAnchor),
-            requestsAmount.trailingAnchor.constraint(equalTo: chevron.leadingAnchor, constant: -10),
+            requestsAmount.leadingAnchor.constraint(equalTo: username.trailingAnchor, constant: 6),
             requestsAmount.bottomAnchor.constraint(equalTo: username.bottomAnchor),
             
-            chevron.heightAnchor.constraint(equalToConstant: 14),
-            chevron.widthAnchor.constraint(equalToConstant: 14),
-            chevron.topAnchor.constraint(equalTo: username.topAnchor),
-            chevron.trailingAnchor.constraint(equalTo: toggleArea.trailingAnchor, constant: -15),
-            chevron.bottomAnchor.constraint(equalTo: username.bottomAnchor),
+            chevronButton.heightAnchor.constraint(equalToConstant: 30),
+            chevronButton.widthAnchor.constraint(equalToConstant: 70),
+            chevronButton.centerYAnchor.constraint(equalTo: username.centerYAnchor),
+            chevronButton.trailingAnchor.constraint(equalTo: toggleArea.trailingAnchor, constant: -10),
             
             containerHeightConstraint,
             container.topAnchor.constraint(equalTo: contentView.topAnchor),
             container.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             container.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             container.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -15),
+
+            blockButton.heightAnchor.constraint(equalToConstant: 30),
+            blockButton.widthAnchor.constraint(equalToConstant: 70),
+            blockButton.centerYAnchor.constraint(equalTo: username.centerYAnchor),
+            blockButton.trailingAnchor.constraint(equalTo: chevronButton.leadingAnchor, constant: -10),
         ])
     }
     
@@ -148,12 +180,17 @@ private extension GroupedRequestCell {
         self.container.setNeedsLayout()
         self.onHeightChanged?()
         
-        UIView.transition(with: container,
+        UIView.transition(with: chevronButton.imageView ?? chevronButton,
                           duration: 0.3,
                           options: .curveEaseInOut) { [weak self] in
             let transform = expand ? CGAffineTransform(rotationAngle: CGFloat.pi) :  CGAffineTransform.identity
-            self?.chevron.transform = transform
+            self?.chevronButton.imageView?.transform = transform
         }
+    }
+    
+    @objc private func blockButtonTapped() {
+        guard let usernameRequest = model.last else { return }
+        onBlockTapped?(usernameRequest)
     }
 }
 
@@ -166,6 +203,12 @@ extension GroupedRequestCell {
         self.requestsAmount.text = String.localizedStringWithFormat(NSLocalizedString("%ld requests", comment: "Voting"), model.count)
         self.configureDataSource()
         self.reloadDataSource(data: model)
+
+        let blockVotes = model.last?.blockVotes ?? 0
+        let isBlocked = blockVotes > 0
+        blockButton.backgroundColor = isBlocked ? .dw_red() : .dw_secondaryBackground()
+        blockButton.tintColor = isBlocked ? .white : .dw_label()
+        blockButton.setTitle("\(blockVotes)", for: .normal)
     }
     
     private func updateInnerTableViewHeight() {
@@ -191,6 +234,9 @@ extension GroupedRequestCell {
 
             if let requestCell = cell as? UsernameRequestCell {
                 requestCell.configure(withModel: item)
+                requestCell.onApproveTapped = { [weak self] username in
+                    self?.onRequestSelected?(username)
+                }
             }
 
             return cell
@@ -213,5 +259,8 @@ extension GroupedRequestCell: UITableViewDelegate {
         let request = model[indexPath.row]
         onRequestSelected?(request)
     }
+    
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return 0
+    }
 }
-

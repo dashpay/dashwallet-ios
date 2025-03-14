@@ -21,6 +21,8 @@ enum VoteAction {
     case none
     case approved
     case revoked
+    case blocked
+    case unblocked
 }
 
 class VotingViewModel {
@@ -83,8 +85,13 @@ class VotingViewModel {
                 requests = await dao.all(onlyWithLinks: filters.onlyWithLinks ?? false)
             }
             
+            let oldVotes = Dictionary(uniqueKeysWithValues: self.groupedRequests.map { ($0.username, $0.votesForUsername) })
             self.groupedRequests = Dictionary(grouping: requests, by: { $0.username })
-                .map { GroupedUsernames(username: $0.key, requests: $0.value.sortAndFilter(by: filters)) }
+                .map { username, reqs in
+                    var group = GroupedUsernames(username: username, requests: reqs.sortAndFilter(by: filters))
+                    group.votesForUsername = max(oldVotes[username] ?? 0, 0)
+                    return group
+                }
                 .filter { !$0.requests.isEmpty }
                 .sorted { $0.username < $1.username }
             self.filteredRequests = self.groupedRequests.filter { $0.username.starts(with: searchQuery) }
@@ -126,8 +133,10 @@ extension [UsernameRequest] {
         switch filterOption {
         case .approved:
             result = sorted.filter { $0.isApproved }
-        case .notApproved:
-            result = sorted.filter { !$0.isApproved }
+        case .notVoted:
+            result = sorted.filter { !$0.isApproved } // TODO: MOCK_DASHPAY recheck logic
+        case .hasBlockVotes:
+            result = sorted.filter { $0.blockVotes > 0 }
         default:
             result = sorted
         }
@@ -143,10 +152,25 @@ extension VotingViewModel {
         Task {
             if var copy = await dao.get(byRequestId: requestId) {
                 copy.votes += masternodeKeys.count
+                copy.blockVotes = 0 // TODO: MOCK_DASHPAY
                 copy.isApproved = true
                 await dao.update(dto: copy)
                 lastVoteAction = .approved
                 refresh()
+                
+                // TODO: MOCK_DASHPAY user own name approval. Remove when not needed
+                if UsernamePrefs.shared.requestedUsernameId == requestId {
+                    DWGlobalOptions.sharedInstance().dashpayUsername = copy.username
+                }
+                
+                // TODO: MOCK_DASHPAY "votes left" check. Replace with actual logic
+                if let groupIndex = groupedRequests.firstIndex(where: { group in
+                    group.requests.contains { request in
+                        request.requestId == requestId
+                    }
+                }) {
+                    groupedRequests[groupIndex].votesForUsername += masternodeKeys.count
+                }
             }
         }
     }
@@ -158,6 +182,57 @@ extension VotingViewModel {
                 copy.isApproved = false
                 await dao.update(dto: copy)
                 lastVoteAction = .revoked
+                refresh()
+                
+                // TODO: MOCK_DASHPAY user own name approval. Remove when not needed
+                if UsernamePrefs.shared.requestedUsernameId == requestId {
+                    DWGlobalOptions.sharedInstance().dashpayUsername = nil
+                }
+                
+                // TODO: MOCK_DASHPAY "votes left" check. Replace with actual logic
+                if let groupIndex = groupedRequests.firstIndex(where: { group in
+                    group.requests.contains { request in
+                        request.requestId == requestId
+                    }
+                }) {
+                    groupedRequests[groupIndex].votesForUsername -= max(copy.votes - masternodeKeys.count, 0)
+                }
+            }
+        }
+    }
+    
+    func votesLeft(for requestId: String) -> Int {
+        // TODO: MOCK_DASHPAY "votes left" check. Replace with actual logic
+        let group = groupedRequests.first(where: { group in
+            group.requests.contains { request in
+                request.requestId == requestId
+            }
+        })
+        return max(VotingConstants.maxVotes - (group?.votesForUsername ?? 0), 0)
+    }
+    
+    func block(request requestId: String) {
+        Task {
+            if var copy = await dao.get(byRequestId: requestId) {
+                copy.blockVotes += masternodeKeys.count
+                await dao.update(dto: copy)
+                lastVoteAction = .blocked
+                refresh()
+                
+                // TODO: MOCK_DASHPAY user own name approval. Remove when not needed
+                if UsernamePrefs.shared.requestedUsernameId == requestId {
+                    DWGlobalOptions.sharedInstance().dashpayUsername = nil
+                }
+            }
+        }
+    }
+    
+    func unblock(request requestId: String) {
+        Task {
+            if var copy = await dao.get(byRequestId: requestId) {
+                copy.blockVotes = max(copy.blockVotes - masternodeKeys.count, 0)
+                await dao.update(dto: copy)
+                lastVoteAction = .unblocked
                 refresh()
             }
         }
@@ -182,23 +257,23 @@ extension VotingViewModel {
 }
 
 
-// TODO: remove when not needed
+// TODO: MOCK_DASHPAY remove when not needed
 
 extension VotingViewModel {
     func addMockRequest() {
         Task {
             nameCount += 1
             let now = Date().timeIntervalSince1970
-            let from: TimeInterval = 1658290321
-            let randomValue = Double.random(in: from..<now)
+            let twoWeeksAgo = now - (14 * 24 * 60 * 60)
+            let randomValue = Double.random(in: twoWeeksAgo..<now)
             let identityData = withUnsafeBytes(of: UUID().uuid) { Data($0) }
             let names = ["John", "Doe", "Sarah", "Jane", "Jack", "Jill", "Bob"]
             let identity = (identityData as NSData).base58String()
             let randomName = names[Int.random(in: 0..<min(names.count, nameCount))]
             let link = nameCount % 2 == 0 ? "https://example.com" : nil
-            let isApproved = Bool.random()
+            let isApproved = false
             
-            let dto = UsernameRequest(requestId: UUID().uuidString, username: randomName, createdAt: Int64(randomValue), identity: "\(identity)\(identity)\(identity)", link: link, votes: Int.random(in: 0..<15), isApproved: isApproved)
+            let dto = UsernameRequest(requestId: UUID().uuidString, username: randomName, createdAt: Int64(randomValue), identity: "\(identity)\(identity)\(identity)", link: link, votes: Int.random(in: 0..<15), blockVotes: Int.random(in: 0..<15), isApproved: isApproved)
             print(dto)
             await dao.create(dto: dto)
             

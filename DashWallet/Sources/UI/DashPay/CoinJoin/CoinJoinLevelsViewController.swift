@@ -18,7 +18,7 @@
 import Combine
 
 class CoinJoinLevelsViewController: UIViewController {
-    private let viewModel = CoinJoinViewModel.shared
+    private let viewModel = CoinJoinLevelViewModel.shared
     private var cancellableBag = Set<AnyCancellable>()
     
     @IBOutlet private var titleLabel: UILabel!
@@ -32,11 +32,15 @@ class CoinJoinLevelsViewController: UIViewController {
     @IBOutlet private var advancedTime: UILabel!
     @IBOutlet private var continueButton: ActionButton!
     
-    @Published private(set) var selectedMode: CoinJoinMode = .none
+    var requiresNoNavigationBar: Bool {
+        return true
+    }
     
-    @objc
-    static func controller() -> CoinJoinLevelsViewController {
-        vc(CoinJoinLevelsViewController.self, from: sb("CoinJoin"))
+    @objc(controllerWithIsFullScreen:)
+    static func controller(isFullScreen: Bool = false) -> CoinJoinLevelsViewController {
+        let vc = vc(CoinJoinLevelsViewController.self, from: sb("CoinJoin"))
+        vc.modalPresentationStyle = isFullScreen ? .fullScreen : .formSheet
+        return vc
     }
     
     override func viewDidLoad() {
@@ -44,12 +48,21 @@ class CoinJoinLevelsViewController: UIViewController {
         configureHierarchy()
         configureObservers()
     }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        viewModel.resetSelectedMode()
+    }
 
     @IBAction
     func continueButtonAction() {
-        if viewModel.status == .notStarted {
-            self.navigationController?.popViewController(animated: true)
-            viewModel.startMixing(mode: selectedMode)
+        if !viewModel.isMixing {
+            if modalPresentationStyle == .fullScreen {
+                dismiss(animated: true)
+            } else {
+                self.navigationController?.popViewController(animated: true)
+            }
+            viewModel.startMixing()
         } else {
             let alert = UIAlertController(title: NSLocalizedString("Are you sure you want to stop mixing?", comment: "CoinJoin"), message: NSLocalizedString("Any funds that have been mixed will be combined with your un mixed funds", comment: "CoinJoin"), preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: NSLocalizedString("Stop Mixing", comment: "CoinJoin"), style: .destructive, handler: { [weak self] _ in
@@ -64,8 +77,6 @@ class CoinJoinLevelsViewController: UIViewController {
 
 extension CoinJoinLevelsViewController {
     private func configureHierarchy() {
-        selectedMode = viewModel.mode
-        
         titleLabel.text = NSLocalizedString("Select mixing level", comment: "CoinJoin")
         intermediateTitle.text = NSLocalizedString("Intermediate", comment: "CoinJoin")
         intermediateDescription.text = NSLocalizedString("Advanced users who have a very high level of technical expertise can determine your transaction history", comment: "Coinbase")
@@ -88,36 +99,100 @@ extension CoinJoinLevelsViewController {
         advancedBox.layer.borderColor = UIColor.dw_separatorLine().cgColor
         let advancedTap = UITapGestureRecognizer(target: self, action: #selector(selectAdvanced))
         advancedBox.addGestureRecognizer(advancedTap)
+
+        if modalPresentationStyle == .fullScreen {
+            let backButton = UIButton(type: .system)
+            backButton.setImage(UIImage(systemName: "xmark"), for: .normal)
+            backButton.addTarget(self, action: #selector(closeButtonAction), for: .touchUpInside)
+            backButton.tintColor = .label
+            view.addSubview(backButton)
+            backButton.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 0),
+                backButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+                backButton.widthAnchor.constraint(equalToConstant: 44),
+                backButton.heightAnchor.constraint(equalToConstant: 44),
+                titleLabel.topAnchor.constraint(equalTo: backButton.bottomAnchor, constant: 0)
+            ])
+        }
+    }
+    
+    @objc
+    private func closeButtonAction() {
+        dismiss(animated: true)
     }
     
     @objc
     private func selectIntermediate() {
-        if selectedMode == .intermediate {
-            return
-        }
-        
-        if viewModel.status == .mixing {
-            confirmFor(.intermediate)
-        } else {
-            selectedMode = .intermediate
-        }
+        selectMode(.intermediate)
     }
     
     @objc
     private func selectAdvanced() {
-        if selectedMode == .advanced {
+        selectMode(.advanced)
+    }
+    
+    private func selectMode(_ mode: CoinJoinMode) {
+        if viewModel.selectedMode == mode {
             return
         }
         
-        if viewModel.status == .mixing {
-            confirmFor(.advanced)
+        if viewModel.selectedMode == .none || !viewModel.isMixing {
+            Task {
+                if !viewModel.keepOpenInfoShown {
+                    await showModalDialog(
+                        style: .regular,
+                        icon: .system("info"),
+                        heading: NSLocalizedString("Mixing is only possible with the app open", comment: "CoinJoin"),
+                        textBlock1: NSLocalizedString("When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app.", comment: "CoinJoin"),
+                        positiveButtonText: NSLocalizedString("OK", comment: "")
+                    )
+                    
+                    viewModel.keepOpenInfoShown = true
+                }
+                
+                if !viewModel.hasWiFi {
+                    let heading = viewModel.selectedMode == .intermediate ? NSLocalizedString("Intermediate privacy level requires a reliable internet connection", comment: "CoinJoin") : NSLocalizedString("Advanced privacy level requires a reliable internet connection", comment: "CoinJoin")
+                    let shouldContinue = await showModalDialog(
+                        style: .warning,
+                        icon: .system("exclamationmark.triangle.fill"),
+                        heading: heading,
+                        textBlock1: NSLocalizedString("It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees", comment: "CoinJoin"),
+                        positiveButtonText: NSLocalizedString("Continue Anyway", comment: ""),
+                        negativeButtonText: NSLocalizedString("Cancel", comment: "")
+                    )
+                    
+                    if shouldContinue {
+                        viewModel.selectedMode = mode
+                    }
+                } else if await viewModel.isTimeSkewedForCoinJoin() {
+                    let settingsURL = URL(string: UIApplication.openSettingsURLString)
+                    let hasSettings = settingsURL != nil && UIApplication.shared.canOpenURL(settingsURL!)
+                    let message = String(format: NSLocalizedString("Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin.", comment: "TimeSkew"))
+                    
+                    showModalDialog(
+                        icon: .custom("image.coinjoin.menu"),
+                        heading: NSLocalizedString("CoinJoin", comment: "CoinJoin"),
+                        textBlock1: message,
+                        positiveButtonText: NSLocalizedString("Settings", comment: ""),
+                        positiveButtonAction: hasSettings ? {
+                            if let url = settingsURL {
+                                UIApplication.shared.open(url)
+                            }
+                        } : nil,
+                        negativeButtonText: NSLocalizedString("Dismiss", comment: "")
+                    )
+                } else {
+                    viewModel.selectedMode = mode
+                }
+            }
         } else {
-            selectedMode = .advanced
+            confirmFor(mode)
         }
     }
     
     private func configureObservers() {
-        $selectedMode
+        viewModel.$selectedMode
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] mode in
                 guard let self = self else { return }
@@ -135,12 +210,12 @@ extension CoinJoinLevelsViewController {
             })
             .store(in: &cancellableBag)
         
-        viewModel.$status
+        viewModel.$isMixing
             .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] status in
+            .sink(receiveValue: { [weak self] isMixing in
                 guard let self = self else { return }
                 
-                if status == .notStarted {
+                if !isMixing {
                     self.continueButton.accentColor = .dw_dashBlue()
                     self.continueButton.setTitle(NSLocalizedString("Start Mixing", comment: "CoinJoin"), for: .normal)
                 } else {
@@ -179,7 +254,8 @@ extension CoinJoinLevelsViewController {
         
         let alert = UIAlertController(title: "", message: NSLocalizedString("Are you sure you want to change the privacy level?", comment: "CoinJoin"), preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: title, style: .default, handler: { [weak self] _ in
-            self?.selectedMode = mode
+            self?.viewModel.selectedMode = mode
+            self?.viewModel.startMixing()
         }))
         let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel)
         alert.addAction(cancelAction)

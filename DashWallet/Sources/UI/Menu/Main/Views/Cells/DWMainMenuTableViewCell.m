@@ -55,7 +55,7 @@ static NSString *TitleByType(DWMainMenuItemType type) {
         case DWMainMenuItemType_Tools:
             return NSLocalizedString(@"Tools", nil);
         case DWMainMenuItemType_Support:
-            return NSLocalizedString(@"Support", nil);
+            return NSLocalizedString(@"Contact Support", nil);
         case DWMainMenuItemType_Invite:
             return NSLocalizedString(@"Invite", nil);
         case DWMainMenuItemType_Voting:

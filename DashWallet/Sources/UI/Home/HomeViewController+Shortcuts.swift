@@ -19,7 +19,7 @@ import UIKit
 
 extension HomeViewController: DWLocalCurrencyViewControllerDelegate, DWExploreTestnetViewControllerDelegate {
 
-    func performAction(for action: ShortcutAction, sender: UIView) {
+    func performAction(for action: ShortcutAction, sender: UIView?) {
         switch action.type {
         case .secureWallet:
             secureWalletAction()
@@ -30,7 +30,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, DWExploreTe
         case .buySellDash:
             buySellDashAction()
         case .syncNow:
-            DWSettingsMenuModel.rescanBlockchainAction(from: self, sourceView: sender, sourceRect: sender.bounds, completion: nil)
+            DWSettingsMenuModel.rescanBlockchainAction(from: self, sourceView: sender!, sourceRect: sender!.bounds, completion: nil)
         case .payWithNFC:
             performNFCReadingAction()
         case .localCurrency:
@@ -102,9 +102,16 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, DWExploreTe
 
     func showCreateUsername(withInvitation invitationURL: URL?, definedUsername: String?) {
         #if DASHPAY
-        let controller = DashPaySetupFlowController(dashPayModel: model.dashPayModel, invitationURL: nil, definedUsername: nil)
-        controller.modalPresentationStyle = .fullScreen
-        present(controller, animated: true, completion: nil)
+        let controller = CreateUsernameViewController(dashPayModel: model.dashPayModel, invitationURL: nil, definedUsername: nil)
+        controller.hidesBottomBarWhenPushed = true
+        controller.completionHandler = { result in
+            if (result) {
+                self.view.dw_showInfoHUD(withText: NSLocalizedString("Username was successfully requested", comment: "Usernames"), offsetForNavBar:true)
+            } else {
+                self.view.dw_showInfoHUD(withText: NSLocalizedString("Your request was cancelled", comment: "Usernames"), offsetForNavBar:true)
+            }
+        }
+        self.navigationController?.pushViewController(controller, animated: true)
         #endif
     }
 

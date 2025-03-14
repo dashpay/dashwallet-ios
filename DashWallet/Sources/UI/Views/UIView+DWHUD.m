@@ -52,11 +52,11 @@ NSTimeInterval const DW_INFO_HUD_DISPLAY_TIME = 3.5;
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self animated:YES];
     hud.removeFromSuperViewOnHide = YES;
     hud.mode = MBProgressHUDModeCustomView;
-    
+
     DWCustomHUDView *customView = [[DWCustomHUDView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.frame), 28)];
     [customView setText:text];
     [customView setIconImage:[UIImage imageNamed:@"checkmark.circle.white"]];
-        
+
     hud.customView = customView;
     hud.bezelView.layer.cornerRadius = 8.0f;
     hud.bezelView.clipsToBounds = YES;
@@ -66,7 +66,7 @@ NSTimeInterval const DW_INFO_HUD_DISPLAY_TIME = 3.5;
     CGFloat yOffset = CGRectGetHeight(self.bounds) / 2 - CGRectGetHeight(customView.bounds) - (shouldOffset ? 85 : 35);
     hud.offset = CGPointMake(0.0f, yOffset);
     hud.userInteractionEnabled = NO;
-    
+
     __weak typeof(self) weakSelf = self;
     hud.completionBlock = ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;

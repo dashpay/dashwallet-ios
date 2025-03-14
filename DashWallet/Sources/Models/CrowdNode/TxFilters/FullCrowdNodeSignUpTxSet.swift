@@ -15,12 +15,43 @@
 //  limitations under the License.
 //
 
-final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
+final class FullCrowdNodeSignUpTxSet: GroupedTransactions, TransactionWrapper {
+    override var title: String {
+        NSLocalizedString("CrowdNode · Account", comment: "CrowdNode")
+    }
+    
+    override var iconName: String {
+        "tx.item.cn.icon"
+    }
+    
+    override var infoText: String {
+        NSLocalizedString("Your CrowdNode account was created using these transactions.", comment: "Crowdnode")
+    }
+    
+    override var fiatAmount: String {
+        (try? CurrencyExchanger.shared.convertDash(amount: UInt64(abs(amount)).dashAmount, to: App.fiatCurrency).formattedFiatAmount) ??
+            NSLocalizedString("Updating Price", comment: "Updating Price")
+    }
+    
+    static let id = "FullCrowdNodeSignUpTxSet"
     private let savedAccountAddress = CrowdNodeDefaults.shared.accountAddress
     private let januaryFirst2022 = 1640995200.0 // Safe to assume there weren't any CrowdNode accounts before this point
     private var matchedFilters: [CoinsToAddressTxFilter] = []
 
-    var transactions: [Data: DSTransaction] = [:]
+    var transactionMap: [Data: Transaction] = [:]
+    override var transactions: [Transaction] {
+        get {
+            return transactionMap.values.map { $0 }.sorted { tx1, tx2 in
+                tx1.date > tx2.date
+            }
+        }
+    }
+    private(set) var _amount: Int64 = 0
+    override var amount: Int64 { _amount }
+    
+    var isComplete: Bool {
+        transactionMap.count == 5
+    }
 
     var welcomeToApiResponse: CoinsToAddressTxFilter? {
         matchedFilters.first { filter in
@@ -54,7 +85,8 @@ final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
 
         let txHashData = tx.txHashData
 
-        if transactions[txHashData] != nil {
+        if transactionMap[txHashData] != nil {
+            transactionMap[txHashData] = Transaction(transaction: tx)
             // Already included, return true
             return true
         }
@@ -71,8 +103,18 @@ final class FullCrowdNodeSignUpTxSet: TransactionWrapper {
         }
 
         if let matchedFilter = crowdNodeTxFilters.first(where: { $0.matches(tx: tx) }) {
-            transactions[txHashData] = tx
+            transactionMap[txHashData] = Transaction(transaction: tx)
             matchedFilters.append(matchedFilter)
+            
+            let dashAmount = tx.dashAmount
+            switch tx.direction {
+            case .sent:
+                _amount -= Int64(dashAmount)
+            case .received:
+                _amount += Int64(dashAmount)
+            default:
+                break
+            }
 
             return true
         }

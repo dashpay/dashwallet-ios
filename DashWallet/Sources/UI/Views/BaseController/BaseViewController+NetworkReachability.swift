@@ -28,6 +28,8 @@ extension NetworkReachabilityHandling {
     var networkStatus: NetworkStatus {
         reachability.networkStatus
     }
+    
+    var hasWiFi: Bool { reachability.isReachableViaWiFi }
 
     internal var reachability: DSReachabilityManager { DSReachabilityManager.shared() }
 

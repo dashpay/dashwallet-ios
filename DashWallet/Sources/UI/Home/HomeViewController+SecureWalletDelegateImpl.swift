@@ -24,7 +24,7 @@ extension HomeViewController: DWSecureWalletDelegate {
 
     func secureWalletRoutineDidVerify(_ controller: UIViewController) {
         if let view = self.view as? HomeView {
-            view.reloadShortcuts()
+            view.viewModel.reloadShortcuts()
         }
     }
 

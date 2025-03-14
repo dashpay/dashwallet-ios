@@ -42,7 +42,7 @@ typedef NS_ENUM(NSUInteger, DWCurrencyPickerPresentationMode) {
 @property (nonatomic, assign) BOOL isGlobal;
 
 - (instancetype)initWithNavigationAppearance:(DWNavigationAppearance)navigationAppearance
-                                presentationMode:(DWCurrencyPickerPresentationMode)mode
+                            presentationMode:(DWCurrencyPickerPresentationMode)mode
                                 currencyCode:(nullable NSString *)currencyCode;
 
 @end

@@ -31,7 +31,7 @@
 #import "DWUserProfileNavigationTitleView.h"
 #import "DWUserProfileSendRequestCell.h"
 #import "UICollectionView+DWDPItemDequeue.h"
-#import "UIViewController+DWTxFilter.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -59,6 +59,7 @@ static CGFloat const FILTER_PADDING = 15.0; // same as horizontal padding for it
 @property (null_resettable, nonatomic, strong) DWUserProfileContactActionsCell *measuringActionsCell;
 @property (null_resettable, nonatomic, strong) DWDPBasicCell *measuringBasicCell;
 
+@property (nonatomic, assign) DWHomeTxDisplayMode displayMode;
 @end
 
 NS_ASSUME_NONNULL_END
@@ -361,7 +362,11 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWFilterHeaderViewDelegate
 
 - (void)filterHeaderView:(DWFilterHeaderView *)view filterButtonAction:(UIView *)sender {
-    [self showTxFilterWithSender:sender displayModeProvider:self.model shouldShowRewards:NO];
+    [self
+        showTxFilterWithDisplayModeCallback:^(DWHomeTxDisplayMode mode) {
+            self.displayMode = mode;
+        }
+                          shouldShowRewards:NO];
 }
 
 - (void)filterHeaderView:(DWFilterHeaderView *)view infoButtonAction:(UIView *)sender {
@@ -376,14 +381,14 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - DWTxDetailFullscreenViewControllerDelegate
 
-//TODO: DashPay
+// TODO: DashPay
 //- (void)detailFullscreenViewControllerDidFinish:(DWTxDetailsViewController *)controller {
-//    if (self.model.shouldAcceptIncomingAfterPayment) {
-//        [self.model acceptContactRequest];
-//    }
+//     if (self.model.shouldAcceptIncomingAfterPayment) {
+//         [self.model acceptContactRequest];
+//     }
 //
-//    [super detailFullscreenViewControllerDidFinish:controller];
-//}
+//     [super detailFullscreenViewControllerDidFinish:controller];
+// }
 
 #pragma mark - Private
 
@@ -482,14 +487,14 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSString *)titleForFilterButton {
-    switch (self.model.displayMode) {
-        case DWHomeTxDisplayMode_All:
+    switch (self.displayMode) {
+        case DWHomeTxDisplayModeAll:
             return NSLocalizedString(@"All", nil);
-        case DWHomeTxDisplayMode_Received:
+        case DWHomeTxDisplayModeReceived:
             return NSLocalizedString(@"Received", nil);
-        case DWHomeTxDisplayMode_Sent:
+        case DWHomeTxDisplayModeSent:
             return NSLocalizedString(@"Sent", nil);
-        case DWHomeTxDisplayMode_Rewards:
+        case DWHomeTxDisplayModeRewards:
             NSAssert(NO, @"Not implemented here");
             return nil;
     }

@@ -17,11 +17,14 @@
 
 import UIKit
 import SwiftUI
+import Combine
 
 class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
+    private var cancellableBag = Set<AnyCancellable>()
     var model: DWHomeProtocol!
     private var homeView: HomeView!
     weak var delegate: (DWHomeViewControllerDelegate & DWWipeDelegate)?
+    private let viewModel = HomeViewModel.shared
 
     #if DASHPAY
     var isBackButtonHidden: Bool = false
@@ -47,9 +50,8 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
     override func loadView() {
         let frame = UIScreen.main.bounds
-        homeView = HomeView(frame: frame)
+        homeView = HomeView(frame: frame, delegate: self)
         homeView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        homeView.delegate = self
         homeView.shortcutsDelegate = self
         view = homeView
     }
@@ -61,6 +63,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
         setupView()
         performJailbreakCheck()
+        configureObservers()
     }
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -83,9 +86,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         }
 
         model.registerForPushNotifications()
-        showReclassifyYourTransactionsIfPossible(with: model.allDataSource.items.first)
         model.checkCrowdNodeState()
-        model.checkVotingState()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -200,18 +201,11 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         homeView.model = model
     }
 
-    private func showReclassifyYourTransactionsIfPossible(with transaction: DSTransaction?) {
-        guard presentedViewController == nil else { return }
-
-        if model.isAllowedToShowReclassifyYourTransactions {
-            let vc = TxReclassifyTransactionsInfoViewController.controller()
-            vc.delegate = self
-            vc.transaction = transaction
-            DispatchQueue.main.async {
-                self.present(vc, animated: true, completion: nil)
-            }
-            DWGlobalOptions.sharedInstance().shouldDisplayReclassifyYourTransactionsFlow = false
-        }
+    private func showReclassifyTransaction(with transaction: DSTransaction?) {
+        let vc = TxReclassifyTransactionsInfoViewController.controller()
+        vc.delegate = self
+        vc.transaction = transaction
+        self.present(vc, animated: true, completion: nil)
     }
 
     private func presentTransactionDetails(_ transaction: DSTransaction) {
@@ -219,6 +213,65 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         let controller = TXDetailViewController(model: model)
         let nvc = BaseNavigationController(rootViewController: controller)
         present(nvc, animated: true, completion: nil)
+    }
+    
+    private func configureObservers() {
+        viewModel.$showTimeSkewAlertDialog
+            .sink { [weak self] showTimeSkew in
+                guard let self = self else { return }
+                
+                if showTimeSkew {
+                    let diffSeconds = (viewModel.timeSkew < 0 ? -1 : 1) * Int64(ceil(abs(viewModel.timeSkew)))
+                    let coinJoinOn = viewModel.coinJoinMode != .none
+                    self.showTimeSkewDialog(diffSeconds: diffSeconds, coinjoin: coinJoinOn)
+                }
+            }
+            .store(in: &cancellableBag)
+        
+        NotificationCenter.default.publisher(for: .NSSystemClockDidChange)
+            .sink { [weak self] _ in self?.viewModel.checkTimeSkew(force: true) }
+            .store(in: &cancellableBag)
+        
+        viewModel.$showReclassifyTransaction
+            .removeDuplicates()
+            .filter { $0 != nil }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] tx in
+                self?.showReclassifyTransaction(with: tx)
+                self?.viewModel.reclassifyTransactionShown(isShown: true)
+            }
+            .store(in: &cancellableBag)
+    }
+    
+    private func showTimeSkewDialog(diffSeconds: Int64, coinjoin: Bool) {
+        let settingsURL = URL(string: UIApplication.openSettingsURLString)
+        let hasSettings = settingsURL != nil && UIApplication.shared.canOpenURL(settingsURL!)
+        let message: String
+        
+        if coinjoin {
+            let position = diffSeconds > 0 ? NSLocalizedString("ahead", comment: "TimeSkew") : NSLocalizedString("behind", comment: "TimeSkew")
+            message = String(format: NSLocalizedString("Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.", comment: "TimeSkew"), position, abs(diffSeconds))
+        } else {
+            message = String(format: NSLocalizedString("Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings.", comment: "TimeSkew"), abs(diffSeconds / 60))
+        }
+        
+        showModalDialog(
+            style: .warning,
+            icon: .system("exclamationmark.triangle"),
+            heading: NSLocalizedString("Check date & time settings", comment: "TimeSkew"),
+            textBlock1: message,
+            positiveButtonText: NSLocalizedString("Settings", comment: ""),
+            positiveButtonAction: hasSettings ? {
+                self.viewModel.showTimeSkewAlertDialog = false
+                if let url = settingsURL {
+                    UIApplication.shared.open(url)
+                }
+            } : nil,
+            negativeButtonText: NSLocalizedString("Dismiss", comment: ""),
+            negativeButtonAction: {
+                self.viewModel.showTimeSkewAlertDialog = false
+            }
+        )
     }
 }
 
@@ -241,22 +294,25 @@ extension HomeViewController: RootEditProfileViewControllerDelegate {
 // MARK: - HomeViewDelegate
 
 extension HomeViewController: HomeViewDelegate {
-    func homeView(_ homeView: HomeView, showTxFilter sender: UIView) {
-        showTxFilter(withSender: sender, displayModeProvider: model, shouldShowRewards: true)
-    }
-
-    func homeView(_ homeView: HomeView, showSyncingStatus sender: UIView) {
-        let controller = SyncingAlertViewController()
+    func homeViewShowCoinJoin() {
+        let controller = CoinJoinLevelsViewController.controller(isFullScreen: true)
         present(controller, animated: true, completion: nil)
     }
     
-    func homeViewShowDashPayRegistrationFlow(_ homeView: HomeView) {
+    func homeViewRequestUsername() {
         let action = ShortcutAction(type: .createUsername)
-        performAction(for: action, sender: homeView)
+        performAction(for: action, sender: nil)
     }
     
-    func homeView(_ homeView: HomeView, showReclassifyYourTransactionsFlowWithTransaction transaction: DSTransaction) {
-        showReclassifyYourTransactionsIfPossible(with: transaction)
+    func homeViewShowTxFilter() {
+        showTxFilter(displayModeCallback: { [weak self] mode in
+            self?.viewModel.displayMode = mode
+        }, shouldShowRewards: true)
+    }
+
+    func homeViewShowSyncingStatus() {
+        let controller = SyncingAlertViewController()
+        present(controller, animated: true, completion: nil)
     }
     
     #if DASHPAY
@@ -267,13 +323,17 @@ extension HomeViewController: HomeViewDelegate {
         avatarView.isHidden = !hasIdentity
         refreshNotificationBell(hasIdentity: hasIdentity, hasNotifications: hasNotifications)
     }
+    
+    func homeViewEditProfile() {
+        profileAction()
+    }
     #endif
 }
 
 // MARK: - TxReclassifyTransactionsInfoViewControllerDelegate
 
 extension HomeViewController: TxReclassifyTransactionsInfoViewControllerDelegate {
-    func txReclassifyTransactionsFlowDidClosedWithUnderstanding(controller: TxReclassifyTransactionsInfoViewController, transaction: DSTransaction) {
+    func txReclassifyTransactionsFlowDidClose(controller: TxReclassifyTransactionsInfoViewController, transaction: DSTransaction) {
         presentTransactionDetails(transaction)
     }
 }

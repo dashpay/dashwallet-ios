@@ -54,6 +54,10 @@ extension Color {
         Color("Gray300")
     }
     
+    static var gray400: Color {
+        return Color("Gray400")
+    }
+    
     static var gray500: Color {
         Color("Gray500")
     }
@@ -71,6 +75,13 @@ extension Color {
     }
     
     static var shadow: Color {
-        Color(red: 0.72, green: 0.76, blue: 0.8).opacity(0.1)
+         Color(UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 0.5) // TODO
+            default:
+                return UIColor(red: 0.72, green: 0.76, blue: 0.8, alpha: 0.1)
+            }
+        })
     }
 }

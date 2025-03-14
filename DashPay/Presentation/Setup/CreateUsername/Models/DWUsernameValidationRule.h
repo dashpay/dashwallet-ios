@@ -16,25 +16,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-typedef NS_ENUM(NSUInteger, DWUsernameValidationRuleResult) {
-    /// No icon, black text
-    DWUsernameValidationRuleResultEmpty,
-    /// activity indicator, black text
-    DWUsernameValidationRuleResultLoading,
-    /// Checkmark, black text
-    DWUsernameValidationRuleResultValid,
-    /// Red cross and black text
-    DWUsernameValidationRuleResultInvalid,
-    /// Red cross and red text
-    DWUsernameValidationRuleResultInvalidCritical,
-    /// Red cross and red text
-    DWUsernameValidationRuleResultError,
-    /// View is hidden
-    DWUsernameValidationRuleResultHidden,
-};
 
 @interface DWUsernameValidationRule : NSObject
 

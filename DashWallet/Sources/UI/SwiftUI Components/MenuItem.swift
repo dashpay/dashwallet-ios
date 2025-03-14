@@ -21,17 +21,92 @@ typealias TransactionPreview = MenuItem
 
 struct MenuItem: View {
     var title: String
-    var subtitle: String? = nil
+    @State var subtitleView: AnyView? = nil
     var details: String? = nil
     var topText: String? = nil
     var icon: IconName? = nil
     var secondaryIcon: IconName? = nil
     var showInfo: Bool = false
     var showChevron: Bool = false
+    var badgeText: String? = nil
     var dashAmount: Int64? = nil
     var overrideFiatAmount: String? = nil
-    var isToggled: Binding<Bool>? = nil
+    var showToggle: Bool = false
+    @State var isToggled: Bool = false
     var action: (() -> Void)? = nil
+
+    init(title: String,
+         subtitle: String? = nil,
+         details: String? = nil,
+         topText: String? = nil,
+         icon: IconName? = nil,
+         secondaryIcon: IconName? = nil,
+         showInfo: Bool = false,
+         showChevron: Bool = false,
+         badgeText: String? = nil,
+         dashAmount: Int64? = nil,
+         overrideFiatAmount: String? = nil,
+         showToggle: Bool = false,
+         isToggled: Bool = false,
+         action: (() -> Void)? = nil
+    ) {
+        self.init(
+            title: title,
+            subtitleView: subtitle.map {
+                AnyView(
+                    Text($0)
+                        .font(.caption)
+                        .lineSpacing(3)
+                        .foregroundColor(.tertiaryText)
+                        .padding(.leading, 4)
+                        .padding(.top, 2)
+                )
+            },
+            details: details,
+            topText: topText,
+            icon: icon,
+            secondaryIcon: secondaryIcon,
+            showInfo: showInfo,
+            showChevron: showChevron,
+            badgeText: badgeText,
+            dashAmount: dashAmount,
+            overrideFiatAmount: overrideFiatAmount,
+            showToggle: showToggle,
+            isToggled: isToggled,
+            action: action
+        )
+    }
+
+    init(title: String,
+         subtitleView: AnyView? = nil,
+         details: String? = nil,
+         topText: String? = nil,
+         icon: IconName? = nil,
+         secondaryIcon: IconName? = nil,
+         showInfo: Bool = false,
+         showChevron: Bool = false,
+         badgeText: String? = nil,
+         dashAmount: Int64? = nil,
+         overrideFiatAmount: String? = nil,
+         showToggle: Bool = false,
+         isToggled: Bool = false,
+         action: (() -> Void)? = nil
+    ) {
+        self.title = title
+        self._subtitleView = State(initialValue: subtitleView)
+        self.details = details
+        self.topText = topText
+        self.icon = icon
+        self.secondaryIcon = secondaryIcon
+        self.showInfo = showInfo
+        self.showChevron = showChevron
+        self.dashAmount = dashAmount
+        self.badgeText = badgeText
+        self.overrideFiatAmount = overrideFiatAmount
+        self._isToggled = State(initialValue: isToggled)
+        self.showToggle = showToggle
+        self.action = action
+    }
     
     var body: some View {
         HStack(spacing: 4) {
@@ -81,19 +156,26 @@ struct MenuItem: View {
                             .foregroundColor(.gray300)
                             .imageScale(.small)
                     }
+
+                    Spacer()
+
+                    if let badgeText = badgeText {
+                        Text(badgeText)
+                            .font(.caption)
+                            .foregroundColor(.systemYellow)
+                            .padding(.vertical, 4)
+                            .padding(.horizontal, 8)
+                            .background(Color.systemYellow.opacity(0.2))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 4)
                 
-                if let subtitle = subtitle {
-                    Text(subtitle)
-                        .font(.caption)
-                        .lineSpacing(3)
-                        .foregroundColor(.tertiaryText)
-                        .padding(.leading, 4)
-                        .padding(.top, 2)
+                if let subtitle = subtitleView {
+                    subtitle
                 }
-                    
+                
                 if let details = details {
                     Text(details)
                         .font(.caption)
@@ -105,8 +187,10 @@ struct MenuItem: View {
             }
             .frame(maxWidth: .infinity)
 
-            if let isToggled = isToggled {
-                Toggle(isOn: isToggled) { }
+            if showToggle {
+                Toggle(isOn: $isToggled) { }
+                    .tint(Color.dashBlue)
+                    .scaleEffect(0.75)
                     .frame(maxWidth: 60)
             }
             
@@ -137,6 +221,10 @@ struct MenuItem: View {
         .padding(10)
         .frame(maxWidth: .infinity, minHeight: 66)
         .onTapGesture {
+            if showToggle {
+                isToggled.toggle()
+            }
+            
             action?()
         }
     }
@@ -157,6 +245,7 @@ struct MenuItem: View {
         subtitle: "Easily stake Dash and earn passive income with a few simple steps",
         icon: .system("faceid"),
         showInfo: true,
-        isToggled: .constant(true)
+        showToggle: true,
+        isToggled: true
     )
 }

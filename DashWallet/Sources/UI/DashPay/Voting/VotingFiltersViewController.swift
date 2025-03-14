@@ -58,7 +58,7 @@ class VotingFiltersViewController: UIViewController {
             case .sortBy:
                 return [.dateDesc, .dateAsc, .votesDesc, .votesAsc]
             case .approvedType:
-                return [.typeAll, .typeApproved, .typeNotApproved]
+                return [.typeAll, .typeApproved, .typeNotVoted, .typeHasBlockVotes]
             case .onlyDuplicates:
                 return [.onlyDuplicates]
             case .onlyRequestsWithLinks:

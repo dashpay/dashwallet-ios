@@ -24,6 +24,7 @@
 #import "DWPaymentInput.h"
 #import "DWPaymentInputBuilder.h"
 #import "DWPaymentOutput+Private.h"
+#import "dashwallet-Swift.h"
 
 #if DASHPAY
 #import "DWDPUserObject.h"
@@ -127,10 +128,10 @@ static NSString *sanitizeString(NSString *s) {
     if (requestUsername) {
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
         DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-        
+
         if (MOCK_DASHPAY && myBlockchainIdentity == NULL) {
             NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
-            
+
             if (username != nil) {
                 myBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
             }
@@ -162,7 +163,8 @@ static NSString *sanitizeString(NSString *s) {
             DSPaymentProtocolRequest *protocolRequest = [self protocolRequestFromPaymentRequest:self.paymentInput.request];
             [self txManagerRequestingAdditionalInfo:DSRequestingAdditionalInfo_Amount
                                     protocolRequest:protocolRequest];
-        } else {
+        }
+        else {
             self.canChangeAmount = paymentInput.canChangeAmount;
             [self confirmRequest:paymentInput.request];
         }
@@ -200,8 +202,9 @@ static NSString *sanitizeString(NSString *s) {
     self.didSendRequestDelegateNotified = NO;
 
     const BOOL requiresSpendingAuthenticationPrompt = ![[DWGlobalOptions sharedInstance] spendingConfirmationDisabled];
-
+    BOOL mixedOnly = [CoinJoinServiceWrapper mode] != CoinJoinModeNone;
     DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
+
     [chainManager.transactionManager
         signAndPublishTransaction:paymentOutput.tx
         createdFromProtocolRequest:protocolRequest
@@ -211,6 +214,7 @@ static NSString *sanitizeString(NSString *s) {
         promptMessage:nil
         forAmount:paymentOutput.amount
         keepAuthenticatedIfErrorAfterAuthentication:NO
+        mixedOnly:mixedOnly
         requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
             [self txManagerRequestingAdditionalInfo:additionalInfoRequestType
                                     protocolRequest:protocolRequest];
@@ -300,14 +304,14 @@ static NSString *sanitizeString(NSString *s) {
     }
 }
 
-- (DSPaymentProtocolRequest*)protocolRequestFromPaymentRequest:(DSPaymentRequest *)request {
+- (DSPaymentProtocolRequest *)protocolRequestFromPaymentRequest:(DSPaymentRequest *)request {
     // `request.protocolRequest` is a legacy method and shouldn't be used directly.
     // `myBlockchainIdentity` can be nil.
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
     NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
-    
+
     return [request protocolRequestForBlockchainIdentity:myBlockchainIdentity
                                                onAccount:account
                                                inContext:context];
@@ -323,6 +327,7 @@ static NSString *sanitizeString(NSString *s) {
     const BOOL addressIsFromPasteboard = self.paymentInput.source == DWPaymentInputSource_Pasteboard;
 
     self.didSendRequestDelegateNotified = NO;
+    BOOL mixedOnly = [CoinJoinServiceWrapper mode] != CoinJoinModeNone;
 
     [chainManager.transactionManager
         confirmProtocolRequest:protocolRequest
@@ -332,6 +337,7 @@ static NSString *sanitizeString(NSString *s) {
         acceptReusingAddress:NO
         addressIsFromPasteboard:addressIsFromPasteboard
         acceptUncertifiedPayee:NO
+        mixedOnly:mixedOnly
         requiresSpendingAuthenticationPrompt:YES
         keepAuthenticatedIfErrorAfterAuthentication:NO
         requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {

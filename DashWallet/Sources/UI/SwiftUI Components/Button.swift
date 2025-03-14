@@ -24,6 +24,8 @@ struct DashButton: View {
     var style: Style = .filled
     var size: Size = .large
     var stretch: Bool = true
+    var isEnabled: Bool = true
+    var isLoading: Bool = false
     var action: () -> Void
     
     enum Style {
@@ -53,7 +55,13 @@ struct DashButton: View {
                         .font(.system(size: iconSize))
                 }
                 
-                if let text = text {
+                if isLoading {
+                    SwiftUI.ProgressView()
+                        .progressViewStyle(.circular)
+                        .tint(.white)
+                        .scaleEffect(0.8)
+                        .padding(.vertical, 2)
+                } else if let text = text {
                     Text(text)
                         .font(.system(size: fontSize))
                         .fontWeight(.semibold)
@@ -72,22 +80,24 @@ struct DashButton: View {
             .if(stretch) { view in
                 view.frame(maxWidth: .infinity)
             }
+            .frame(minHeight: minimumHeight)
             .background(backgroundColor)
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .stroke(borderColor, lineWidth: 2)
             )
             .cornerRadius(cornerRadius)
-        }.background(GeometryReader { geometry in
-            Color.clear
-                .onAppear {
-                    let size = geometry.size
-                    print("CustomView size: \(size)")
-                }
-        })
+            .opacity(isEnabled ? 1.0 : 0.5)
+        }
+        .disabled(!isEnabled || isLoading)
+        .background(Color.clear)
     }
 
     private var backgroundColor: Color {
+        if !isEnabled {
+            return Color.black.opacity(0.2)
+        }
+        
         switch style {
         case .filled:
             return overridenBackgroundColor ?? Color.dashBlue
@@ -97,6 +107,10 @@ struct DashButton: View {
     }
 
     private var foregroundColor: Color {
+        if !isEnabled {
+            return Color.black.opacity(0.6)
+        }
+        
         switch style {
         case .filled:
             return Color.white
@@ -106,6 +120,10 @@ struct DashButton: View {
     }
 
     private var borderColor: Color {
+        if !isEnabled {
+            return Color.clear
+        }
+        
         switch style {
         case .outlined:
             return Color.tertiaryText.opacity(0.25)
@@ -176,6 +194,19 @@ struct DashButton: View {
             return 8
         case .extraSmall:
             return 6
+        }
+    }
+
+    private var minimumHeight: CGFloat {
+        switch size {
+        case .large:
+            return 48
+        case .medium:
+            return 42
+        case .small:
+            return 36
+        default:
+            return 28
         }
     }
 }

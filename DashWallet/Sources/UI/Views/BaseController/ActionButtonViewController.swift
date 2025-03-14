@@ -104,15 +104,7 @@ class ActionButtonViewController: BaseViewController, ActivityIndicatorPreviewin
             ka_startObservingKeyboardNotifications()
         }
     }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-
-        if isKeyboardNotificationsEnabled {
-            ka_stopObservingKeyboardNotifications()
-        }
-    }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 

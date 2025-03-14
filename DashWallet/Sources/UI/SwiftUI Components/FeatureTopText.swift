@@ -21,24 +21,23 @@ struct FeatureTopText: View {
     var title: String
     var text: String
     var label: String? = nil
+    var alignment: TextAlignment = .center
     var labelIcon: IconName? = nil
     var linkAction: (() -> Void)? = nil
     
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(alignment: getStackAlignment(), spacing: 6) {
             Text(title)
                 .font(Font.system(size: 24).weight(.bold))
-                .multilineTextAlignment(.center)
+                .multilineTextAlignment(alignment)
                 .lineSpacing(3)
                 .foregroundColor(.primaryText)
           
             Text(text)
                 .font(Font.system(size: 14))
-                .multilineTextAlignment(.center)
+                .multilineTextAlignment(alignment)
                 .lineSpacing(3)
                 .foregroundColor(.secondaryText)
-            
-            // TODO: features
             
             if let label = label {
                 DashButton(text: label, trailingIcon: labelIcon, style: .plain, size: .small, stretch: false) {
@@ -49,7 +48,18 @@ struct FeatureTopText: View {
             }
         }
         .padding(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
-        .frame(maxWidth: .infinity);
+        .frame(maxWidth: .infinity)
+    }
+    
+    func getStackAlignment() -> HorizontalAlignment {
+        switch self.alignment {
+        case .leading:
+            return .leading
+        case .center:
+            return .center
+        case .trailing:
+            return .trailing
+        }
     }
 }
 

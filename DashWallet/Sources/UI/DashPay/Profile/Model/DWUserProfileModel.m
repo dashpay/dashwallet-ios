@@ -17,13 +17,14 @@
 
 #import "DWUserProfileModel.h"
 
+#import "DWDashPayConstants.h"
 #import "DWDashPayContactsActions.h"
 #import "DWDashPayContactsUpdater.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWProfileTxsFetchedDataSource.h"
 #import "DWUserProfileDataSourceObject.h"
-#import "DWDashPayConstants.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -33,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) DWProfileTxsFetchedDataSource *txsFetchedDataSource;
 @property (nonatomic, strong) id<DWUserProfileDataSource> dataSource;
 @property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> txDataProvider;
+@property (nonatomic, assign) DWHomeTxDisplayMode displayMode;
 
 @end
 
@@ -156,7 +158,7 @@ NS_ASSUME_NONNULL_END
 - (void)sendContactRequest:(void (^)(BOOL success))completion {
     if (MOCK_DASHPAY) {
         self.sendRequestState = DWUserProfileModelState_Loading;
-        
+
         NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
         DSDashpayUserEntity *contact = [DSDashpayUserEntity managedObjectInBlockedContext:context];
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
@@ -170,11 +172,11 @@ NS_ASSUME_NONNULL_END
         entity.dashpayUsername = username;
         contact.associatedBlockchainIdentity = entity;
         NSError *error = [contact applyTransientDashpayUser:identity.transientDashpayUser save:YES];
-        
+
         completion(YES);
         return;
     }
-    
+
     self.sendRequestState = DWUserProfileModelState_Loading;
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
@@ -248,12 +250,13 @@ NS_ASSUME_NONNULL_END
         if (uint256_is_zero(self.item.blockchainIdentity.uniqueID)) {
             // From search
             return DSBlockchainIdentityFriendshipStatus_None;
-        } else {
+        }
+        else {
             // From mocked contacts
             return DSBlockchainIdentityFriendshipStatus_Friends;
         }
     }
-    
+
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
     DSBlockchainIdentity *blockchainIdentity = self.item.blockchainIdentity;
@@ -269,28 +272,29 @@ NS_ASSUME_NONNULL_END
     DSDashpayUserEntity *friend = nil;
     DSFriendRequestEntity *meToFriend = nil;
     DSFriendRequestEntity *friendToMe = nil;
-    
+
     if (MOCK_DASHPAY) {
         meToFriend = self.item.friendRequestToPay;
         friendBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:self.item.username];
         NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
-        
+
         if (username != nil) {
             myBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
         }
-    } else {
+    }
+    else {
         if (myBlockchainIdentity == nil) {
             return;
         }
-        
+
         NSAssert(myBlockchainIdentity.matchingDashpayUserInViewContext, @"Invalid DSBlockchainIdentity: myBlockchainIdentity");
         DSDashpayUserEntity *me = [myBlockchainIdentity matchingDashpayUserInContext:context];
-        
+
         if (friendBlockchainIdentity.matchingDashpayUserInViewContext) {
             friend = [friendBlockchainIdentity matchingDashpayUserInContext:context];
         }
-        
-        
+
+
         if (friend != nil) {
             meToFriend = [[me.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@", friend]] anyObject];
         }
@@ -301,11 +305,11 @@ NS_ASSUME_NONNULL_END
     }
 
     BOOL shouldShowContactRequests = YES;
-    if (self.displayMode == DWHomeTxDisplayMode_Sent) {
+    if (self.displayMode == DWHomeTxDisplayModeSent) {
         meToFriend = nil;
         shouldShowContactRequests = NO;
     }
-    else if (self.displayMode == DWHomeTxDisplayMode_Received) {
+    else if (self.displayMode == DWHomeTxDisplayModeReceived) {
         friendToMe = nil;
         shouldShowContactRequests = NO;
     }

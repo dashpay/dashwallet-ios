@@ -57,7 +57,7 @@ NS_ASSUME_NONNULL_END
         _friendBlockchainIdentity = friendBlockchainIdentity;
         _items = [NSMutableArray array];
         _hasDataToShow = (frc != nil) || (friendToMe != nil) || (meToFriend != nil);
-        
+
         if (MOCK_DASHPAY) {
             _hasDataToShow = YES;
             _incomingNotification = [[DWDPAcceptedRequestNotificationObject alloc] initWithBlockchainIdentity:friendBlockchainIdentity];
@@ -147,11 +147,11 @@ NS_ASSUME_NONNULL_END
             NSIndexPath *txIndexPath = [NSIndexPath indexPathForItem:item inSection:0];
             DSTxOutputEntity *txOutputEntity = [self.frc objectAtIndexPath:txIndexPath];
             DSTransaction *transaction = [txOutputEntity.transaction transaction];
-            
+
             if (MOCK_DASHPAY) {
                 DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
                 NSString *address = @"yeRZBWYfeNE4yVUHV4ZLs83Ppn9aMRH57A"; // Testnet faucet address, used as a mocked address for a contact
-                
+
                 for (DSTransaction *tx in wallet.allTransactions) {
                     if ([tx.outputAddresses containsObject:address]) {
                         transaction = tx;
@@ -159,13 +159,13 @@ NS_ASSUME_NONNULL_END
                     }
                 }
             }
-            
+
             NSDate *txDate = [transaction date];
-            
+
             if (MOCK_DASHPAY && transaction == nil) {
                 txDate = [NSDate date];
             }
-            
+
             DWDPTxObject *txObject = [[DWDPTxObject alloc] initWithTransaction:transaction
                                                                   dataProvider:self.txDataProvider
                                                             blockchainIdentity:self.friendBlockchainIdentity];
