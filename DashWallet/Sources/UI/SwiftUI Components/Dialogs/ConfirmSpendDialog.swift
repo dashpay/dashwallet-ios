@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ConfirmSpendDialog: View {
-    @State private var isAccepted: Bool = true
+    @State private var isAccepted: Bool = false
     
     let amount: Int64
     var title: String
