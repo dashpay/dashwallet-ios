@@ -21,6 +21,7 @@ public struct InvitationFeeDialog: View {
     @Environment(\.presentationMode) private var presentationMode
     @State private var selectedOption: FeeOption = .contested
     @State private var showConfirmation: Bool = false
+    @State private var isConfirmed: Bool = false
     var action: () -> Void
     
     public var body: some View {
@@ -65,8 +66,12 @@ public struct InvitationFeeDialog: View {
             }
             .padding(.horizontal, 20)
             .frame(maxHeight: .infinity)
-            .sheet(isPresented: $showConfirmation) {
-                let amount = selectedOption == .contested ? 
+            .sheet(isPresented: $showConfirmation, onDismiss: {
+                if isConfirmed {
+                    action()
+                }
+            }) {
+                let amount = selectedOption == .contested ?
                     Int64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME) : 
                     Int64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME)
                 
@@ -77,8 +82,8 @@ public struct InvitationFeeDialog: View {
                         presentationMode.wrappedValue.dismiss()
                     },
                     onConfirm: {
+                        isConfirmed = true
                         presentationMode.wrappedValue.dismiss()
-                        action()
                     }
                 )
                 

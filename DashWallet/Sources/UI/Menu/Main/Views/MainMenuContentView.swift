@@ -209,15 +209,6 @@ class MainMenuContentView: UIView {
         }
     }
 
-    func showInvitationFeeDialog(onAction: @escaping () -> Void) {
-        let swiftUIView = InvitationFeeDialog(action: onAction)
-        let hostingController = UIHostingController(rootView: swiftUIView)
-        hostingController.setDetent(520)
-        
-        if let parentVC = self.parentViewController() {
-            parentVC.present(hostingController, animated: true, completion: nil)
-        }
-    }
     #endif
 }
 

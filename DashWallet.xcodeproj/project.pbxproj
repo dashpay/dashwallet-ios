@@ -542,6 +542,7 @@
 		7527720F2AA9F58E0066557E /* TopperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720E2AA9F58E0066557E /* TopperViewModel.swift */; };
 		752772122AAA1CE30066557E /* Coinbase-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752772112AAA1CE30066557E /* Coinbase-Info.plist */; };
 		752C3ED22B1AF19C00F46CD3 /* BuySellPortal.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C9FAABB42AB793CE00878224 /* BuySellPortal.storyboard */; };
+		7530157D2D86CDDF00B1740F /* InvitationHistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7530157C2D86CDDF00B1740F /* InvitationHistoryViewController.swift */; };
 		75303FE52AE7B70500870D8B /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75303FE42AE7B70500870D8B /* CrowdNode.storyboard */; };
 		75303FE62AE7B70500870D8B /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75303FE42AE7B70500870D8B /* CrowdNode.storyboard */; };
 		7531308D2B47EC910069C9B7 /* UpholdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7531308C2B47EC910069C9B7 /* UpholdClient.swift */; };
@@ -582,6 +583,8 @@
 		755C32382C358FC0007DA721 /* BackupSeedPhraseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */; };
 		755C32392C358FC0007DA721 /* BackupSeedPhraseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */; };
 		755E6DFE2A99E7A000A42870 /* DWInvitationSetupState.m in Sources */ = {isa = PBXBuildFile; fileRef = 755E6DFC2A99E7A000A42870 /* DWInvitationSetupState.m */; };
+		75626BA62D8999A400C0A490 /* SendInviteFlowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75626BA52D8999A400C0A490 /* SendInviteFlowController.swift */; };
+		75626BA82D899C2900C0A490 /* BaseInvitesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75626BA72D899C2200C0A490 /* BaseInvitesViewController.swift */; };
 		756557B52CE84FFA0060348D /* FeeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756557B42CE84FF70060348D /* FeeInfo.swift */; };
 		756557B62CE84FFA0060348D /* FeeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756557B42CE84FF70060348D /* FeeInfo.swift */; };
 		7566F4832BB6949E005238D2 /* ToolsMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4822BB69498005238D2 /* ToolsMenuViewController.swift */; };
@@ -863,11 +866,7 @@
 		C943B50A2A40A54600AF23C5 /* DWDPContactsItemsFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4482A40A54600AF23C5 /* DWDPContactsItemsFactory.m */; };
 		C943B50B2A40A54600AF23C5 /* DWDPSearchItemsFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4492A40A54600AF23C5 /* DWDPSearchItemsFactory.m */; };
 		C943B50C2A40A54600AF23C5 /* DPAlertViewController+DWInvite.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B44F2A40A54600AF23C5 /* DPAlertViewController+DWInvite.m */; };
-		C943B50D2A40A54600AF23C5 /* DWConfirmInvitationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4522A40A54600AF23C5 /* DWConfirmInvitationViewController.m */; };
-		C943B50E2A40A54600AF23C5 /* DWConfirmInvitationContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4532A40A54600AF23C5 /* DWConfirmInvitationContentView.m */; };
-		C943B50F2A40A54600AF23C5 /* DWConfirmInvitationContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C943B4562A40A54600AF23C5 /* DWConfirmInvitationContentView.xib */; };
 		C943B5102A40A54600AF23C5 /* DWSendInviteFirstStepViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4572A40A54600AF23C5 /* DWSendInviteFirstStepViewController.m */; };
-		C943B5112A40A54600AF23C5 /* DWInvitationHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4592A40A54600AF23C5 /* DWInvitationHistoryViewController.m */; };
 		C943B5122A40A54600AF23C5 /* DWInvitationHistoryModel.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B45C2A40A54600AF23C5 /* DWInvitationHistoryModel.m */; };
 		C943B5132A40A54600AF23C5 /* DWHistoryFilterContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4602A40A54600AF23C5 /* DWHistoryFilterContentView.m */; };
 		C943B5142A40A54600AF23C5 /* DWHistoryFilterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4612A40A54600AF23C5 /* DWHistoryFilterViewController.m */; };
@@ -875,7 +874,6 @@
 		C943B5162A40A54600AF23C5 /* DWCreateInvitationButton.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4672A40A54600AF23C5 /* DWCreateInvitationButton.m */; };
 		C943B5172A40A54600AF23C5 /* DWHistoryHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4692A40A54600AF23C5 /* DWHistoryHeaderView.m */; };
 		C943B5182A40A54600AF23C5 /* DWInvitationPreviewViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B46E2A40A54600AF23C5 /* DWInvitationPreviewViewController.m */; };
-		C943B5192A40A54600AF23C5 /* DWSendInviteFlowController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B46F2A40A54600AF23C5 /* DWSendInviteFlowController.m */; };
 		C943B51A2A40A54600AF23C5 /* DWInvitationLinkBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4712A40A54600AF23C5 /* DWInvitationLinkBuilder.m */; };
 		C943B51B2A40A54600AF23C5 /* BaseInvitationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C943B4722A40A54600AF23C5 /* BaseInvitationViewController.swift */; };
 		C943B51C2A40A54600AF23C5 /* SuccessInvitationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C943B4732A40A54600AF23C5 /* SuccessInvitationViewController.swift */; };
@@ -2425,6 +2423,7 @@
 		7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedTopperAssets.swift; sourceTree = "<group>"; };
 		7527720E2AA9F58E0066557E /* TopperViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopperViewModel.swift; sourceTree = "<group>"; };
 		752772112AAA1CE30066557E /* Coinbase-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Coinbase-Info.plist"; sourceTree = "<group>"; };
+		7530157C2D86CDDF00B1740F /* InvitationHistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationHistoryViewController.swift; sourceTree = "<group>"; };
 		75303FE42AE7B70500870D8B /* CrowdNode.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = CrowdNode.storyboard; sourceTree = "<group>"; };
 		7531308C2B47EC910069C9B7 /* UpholdClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpholdClient.swift; sourceTree = "<group>"; };
 		753130902B47EE920069C9B7 /* UpholdCapability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpholdCapability.swift; sourceTree = "<group>"; };
@@ -2453,6 +2452,8 @@
 		755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSeedPhraseViewController.swift; sourceTree = "<group>"; };
 		755E6DFC2A99E7A000A42870 /* DWInvitationSetupState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWInvitationSetupState.m; sourceTree = "<group>"; };
 		755E6DFD2A99E7A000A42870 /* DWInvitationSetupState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInvitationSetupState.h; sourceTree = "<group>"; };
+		75626BA52D8999A400C0A490 /* SendInviteFlowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendInviteFlowController.swift; sourceTree = "<group>"; };
+		75626BA72D899C2200C0A490 /* BaseInvitesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseInvitesViewController.swift; sourceTree = "<group>"; };
 		756557B42CE84FF70060348D /* FeeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeInfo.swift; sourceTree = "<group>"; };
 		7566F4822BB69498005238D2 /* ToolsMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsMenuViewController.swift; sourceTree = "<group>"; };
 		7566F4892BB6CAF2005238D2 /* MenuItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuItem.swift; sourceTree = "<group>"; };
@@ -2851,14 +2852,7 @@
 		C943B44C2A40A54600AF23C5 /* DWSendInviteFirstStepViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSendInviteFirstStepViewController.h; sourceTree = "<group>"; };
 		C943B44E2A40A54600AF23C5 /* DPAlertViewController+DWInvite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DPAlertViewController+DWInvite.h"; sourceTree = "<group>"; };
 		C943B44F2A40A54600AF23C5 /* DPAlertViewController+DWInvite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DPAlertViewController+DWInvite.m"; sourceTree = "<group>"; };
-		C943B4502A40A54600AF23C5 /* DWSendInviteFlowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSendInviteFlowController.h; sourceTree = "<group>"; };
-		C943B4522A40A54600AF23C5 /* DWConfirmInvitationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWConfirmInvitationViewController.m; sourceTree = "<group>"; };
-		C943B4532A40A54600AF23C5 /* DWConfirmInvitationContentView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWConfirmInvitationContentView.m; sourceTree = "<group>"; };
-		C943B4542A40A54600AF23C5 /* DWConfirmInvitationContentView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWConfirmInvitationContentView.h; sourceTree = "<group>"; };
-		C943B4552A40A54600AF23C5 /* DWConfirmInvitationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWConfirmInvitationViewController.h; sourceTree = "<group>"; };
-		C943B4562A40A54600AF23C5 /* DWConfirmInvitationContentView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DWConfirmInvitationContentView.xib; sourceTree = "<group>"; };
 		C943B4572A40A54600AF23C5 /* DWSendInviteFirstStepViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWSendInviteFirstStepViewController.m; sourceTree = "<group>"; };
-		C943B4592A40A54600AF23C5 /* DWInvitationHistoryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWInvitationHistoryViewController.m; sourceTree = "<group>"; };
 		C943B45B2A40A54600AF23C5 /* DWInvitationHistoryFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInvitationHistoryFilter.h; sourceTree = "<group>"; };
 		C943B45C2A40A54600AF23C5 /* DWInvitationHistoryModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWInvitationHistoryModel.m; sourceTree = "<group>"; };
 		C943B45D2A40A54600AF23C5 /* DWInvitationHistoryModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInvitationHistoryModel.h; sourceTree = "<group>"; };
@@ -2873,10 +2867,8 @@
 		C943B4682A40A54600AF23C5 /* DWInvitationTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInvitationTableViewCell.h; sourceTree = "<group>"; };
 		C943B4692A40A54600AF23C5 /* DWHistoryHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWHistoryHeaderView.m; sourceTree = "<group>"; };
 		C943B46A2A40A54600AF23C5 /* DWCreateInvitationButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWCreateInvitationButton.h; sourceTree = "<group>"; };
-		C943B46B2A40A54600AF23C5 /* DWInvitationHistoryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInvitationHistoryViewController.h; sourceTree = "<group>"; };
 		C943B46D2A40A54600AF23C5 /* DWInvitationPreviewViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInvitationPreviewViewController.h; sourceTree = "<group>"; };
 		C943B46E2A40A54600AF23C5 /* DWInvitationPreviewViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWInvitationPreviewViewController.m; sourceTree = "<group>"; };
-		C943B46F2A40A54600AF23C5 /* DWSendInviteFlowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWSendInviteFlowController.m; sourceTree = "<group>"; };
 		C943B4712A40A54600AF23C5 /* DWInvitationLinkBuilder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWInvitationLinkBuilder.m; sourceTree = "<group>"; };
 		C943B4722A40A54600AF23C5 /* BaseInvitationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseInvitationViewController.swift; sourceTree = "<group>"; };
 		C943B4732A40A54600AF23C5 /* SuccessInvitationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuccessInvitationViewController.swift; sourceTree = "<group>"; };
@@ -7027,14 +7019,13 @@
 			isa = PBXGroup;
 			children = (
 				C943B44D2A40A54600AF23C5 /* Additions */,
-				C943B4512A40A54600AF23C5 /* Confirmation */,
 				C943B4582A40A54600AF23C5 /* History */,
 				C943B4702A40A54600AF23C5 /* Invitation */,
 				C943B46C2A40A54600AF23C5 /* Preview */,
 				C943B44C2A40A54600AF23C5 /* DWSendInviteFirstStepViewController.h */,
-				C943B4502A40A54600AF23C5 /* DWSendInviteFlowController.h */,
 				C943B4572A40A54600AF23C5 /* DWSendInviteFirstStepViewController.m */,
-				C943B46F2A40A54600AF23C5 /* DWSendInviteFlowController.m */,
+				75626BA72D899C2200C0A490 /* BaseInvitesViewController.swift */,
+				75626BA52D8999A400C0A490 /* SendInviteFlowController.swift */,
 				757AE4AA2D8413EA00C9CAF7 /* InvitationFeeDialog.swift */,
 			);
 			path = Invites;
@@ -7049,26 +7040,13 @@
 			path = Additions;
 			sourceTree = "<group>";
 		};
-		C943B4512A40A54600AF23C5 /* Confirmation */ = {
-			isa = PBXGroup;
-			children = (
-				C943B4522A40A54600AF23C5 /* DWConfirmInvitationViewController.m */,
-				C943B4532A40A54600AF23C5 /* DWConfirmInvitationContentView.m */,
-				C943B4542A40A54600AF23C5 /* DWConfirmInvitationContentView.h */,
-				C943B4552A40A54600AF23C5 /* DWConfirmInvitationViewController.h */,
-				C943B4562A40A54600AF23C5 /* DWConfirmInvitationContentView.xib */,
-			);
-			path = Confirmation;
-			sourceTree = "<group>";
-		};
 		C943B4582A40A54600AF23C5 /* History */ = {
 			isa = PBXGroup;
 			children = (
-				C943B4592A40A54600AF23C5 /* DWInvitationHistoryViewController.m */,
 				C943B45A2A40A54600AF23C5 /* Models */,
 				C943B45F2A40A54600AF23C5 /* Filter */,
 				C943B4642A40A54600AF23C5 /* Views */,
-				C943B46B2A40A54600AF23C5 /* DWInvitationHistoryViewController.h */,
+				7530157C2D86CDDF00B1740F /* InvitationHistoryViewController.swift */,
 			);
 			path = History;
 			sourceTree = "<group>";
@@ -8018,7 +7996,6 @@
 				75303FE62AE7B70500870D8B /* CrowdNode.storyboard in Resources */,
 				C9D2C9452A320AA000D15901 /* AmountPreviewView.xib in Resources */,
 				C9D2C9462A320AA000D15901 /* TxDetailActionCell.xib in Resources */,
-				C943B50F2A40A54600AF23C5 /* DWConfirmInvitationContentView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9127,6 +9104,7 @@
 				751A57302B132FED00EF4925 /* RequestDetailsViewController.swift in Sources */,
 				C9D2C6D22A320AA000D15901 /* TransactionWrapper.swift in Sources */,
 				C9D2C6D32A320AA000D15901 /* Transactions.swift in Sources */,
+				75626BA82D899C2900C0A490 /* BaseInvitesViewController.swift in Sources */,
 				C9D2C6D42A320AA000D15901 /* DWRecoverTextView.m in Sources */,
 				C943B5012A40A54600AF23C5 /* DWDPGenericItemView.m in Sources */,
 				C9D2C6D52A320AA000D15901 /* TxUserInfo.swift in Sources */,
@@ -9695,7 +9673,6 @@
 				C9D2C87F2A320AA000D15901 /* AddressUserInfoDAO.swift in Sources */,
 				75D66D332B05E7AE00A8DDA6 /* QuickVoteViewController.swift in Sources */,
 				754D020D2D1558EB005CA466 /* GroupedTransactions.swift in Sources */,
-				C943B5112A40A54600AF23C5 /* DWInvitationHistoryViewController.m in Sources */,
 				C9D2C8812A320AA000D15901 /* DWModalTransition.m in Sources */,
 				C943B4E12A40A54600AF23C5 /* DWGetStartedItemView.m in Sources */,
 				C9D2C8832A320AA000D15901 /* MerchantsDataProvider.swift in Sources */,
@@ -9756,13 +9733,13 @@
 				C9D2C8B12A320AA000D15901 /* SingleInputAddressSelector.swift in Sources */,
 				C943B5382A40A65B00AF23C5 /* DWScrollingViewController.m in Sources */,
 				C9D2C8B22A320AA000D15901 /* CoinbaseAccountAddress.swift in Sources */,
+				75626BA62D8999A400C0A490 /* SendInviteFlowController.swift in Sources */,
 				C9D2C8B32A320AA000D15901 /* DWMainMenuTableViewCell.m in Sources */,
 				C930784E2A6AD59E00906E4B /* ConfirmPaymentModel.swift in Sources */,
 				C9D2C8B42A320AA000D15901 /* CrowdNodeTransferViewController.swift in Sources */,
 				C9D2C8B62A320AA000D15901 /* CBAuthInterop.swift in Sources */,
 				C9D2C8B82A320AA000D15901 /* CoinbaseAmountViewController.swift in Sources */,
 				C9D2C8BA2A320AA000D15901 /* DWSegmentSliderFormCellModel.m in Sources */,
-				C943B5192A40A54600AF23C5 /* DWSendInviteFlowController.m in Sources */,
 				C9D2C8BB2A320AA000D15901 /* DWSeedPhraseView.m in Sources */,
 				C9D2C8BD2A320AA000D15901 /* UIStackView+DashWallet.swift in Sources */,
 				C943B34E2A40A4C500AF23C5 /* DWInfoPopupContentView.m in Sources */,
@@ -9772,7 +9749,6 @@
 				C9D2C8C22A320AA000D15901 /* TransactionObserver.swift in Sources */,
 				C943B4EB2A40A54600AF23C5 /* DWModalUserProfileViewController.m in Sources */,
 				C9D2C8C32A320AA000D15901 /* DWInfoTextCell.m in Sources */,
-				C943B50D2A40A54600AF23C5 /* DWConfirmInvitationViewController.m in Sources */,
 				C943B4F62A40A54600AF23C5 /* DWDPContactObject.m in Sources */,
 				C9D2C8C42A320AA000D15901 /* ColorizedText.swift in Sources */,
 				75EAFBB22B04C057005ABC6A /* CustomHUDView.swift in Sources */,
@@ -9785,6 +9761,7 @@
 				C9D2C8CD2A320AA000D15901 /* StakingInfoDialogController.swift in Sources */,
 				C9D2C8CF2A320AA000D15901 /* TwoFactorAuthViewController.swift in Sources */,
 				C9D2C8D02A320AA000D15901 /* Taxes.swift in Sources */,
+				7530157D2D86CDDF00B1740F /* InvitationHistoryViewController.swift in Sources */,
 				C9D2C8D12A320AA000D15901 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
 				C9D2C8D22A320AA000D15901 /* CoinbaseAPIClient.swift in Sources */,
 				C943B4ED2A40A54600AF23C5 /* DWPendingContactInfoView.m in Sources */,
@@ -9800,7 +9777,6 @@
 				C9D2C8D92A320AA000D15901 /* SQLite+ExloreDash.swift in Sources */,
 				C9D2C8DC2A320AA000D15901 /* DWAdvancedSecurityModel.m in Sources */,
 				C9D2C8DD2A320AA000D15901 /* AtmDataProvider.swift in Sources */,
-				C943B50E2A40A54600AF23C5 /* DWConfirmInvitationContentView.m in Sources */,
 				C9D2C8DE2A320AA000D15901 /* GettingStartedViewController.swift in Sources */,
 				C9D2C8DF2A320AA000D15901 /* NetworkUnavailableView.swift in Sources */,
 				C9D2C8E02A320AA000D15901 /* (null) in Sources */,

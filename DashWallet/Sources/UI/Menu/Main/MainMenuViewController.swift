@@ -162,15 +162,9 @@ extension MainMenuViewController: MainMenuContentViewDelegate {
             
         #if DASHPAY
         case .invite:
-            if contentView.shouldShowMixDashDialog {
-                contentView.showMixDashDialog(purposeText: NSLocalizedString("an invitation", comment: "Invites")) { [weak self] in
-                    self?.contentView.showInvitationFeeDialog() { [weak self] in
-                         self?.navigateToInvites()
-                    }
-                }
-            } else {
-                self.navigateToInvites()
-            }
+            let controller = InvitationHistoryViewController()
+            controller.hidesBottomBarWhenPushed = true
+            navigationController?.pushViewController(controller, animated: true)
         case .voting:
             let controller = UsernameVotingViewController.controller()
             controller.hidesBottomBarWhenPushed = true
@@ -223,11 +217,6 @@ extension MainMenuViewController: MainMenuContentViewDelegate {
         navigationController?.pushViewController(controller, animated: true)
     }
     
-    private func navigateToInvites() {
-        let controller = DWInvitationHistoryViewController()
-        controller.hidesBottomBarWhenPushed = true
-        navigationController?.pushViewController(controller, animated: true)
-    }
     #endif
 }
 

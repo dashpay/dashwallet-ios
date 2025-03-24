@@ -19,7 +19,6 @@
 
 #import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
 
-#import "DWSendInviteFlowController.h"
 #import "DWUIKit.h"
 #import "DWUserProfileViewController.h"
 #import "DWUserSearchViewController.h"

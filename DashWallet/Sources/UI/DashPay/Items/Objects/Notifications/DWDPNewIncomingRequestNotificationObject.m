@@ -37,7 +37,12 @@
 
 - (NSString *)subtitle {
     if (_subtitle == nil) {
-        _subtitle = [[DWDateFormatter sharedInstance] shortStringFromDate:self.date];
+        if (MOCK_DASHPAY) {
+            _subtitle = [[DWDateFormatter sharedInstance] shortStringFromDate:[NSDate now]];
+        }
+        else {
+            _subtitle = [[DWDateFormatter sharedInstance] shortStringFromDate:self.date];
+        }
     }
     return _subtitle;
 }
