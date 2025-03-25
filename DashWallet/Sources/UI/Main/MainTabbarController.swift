@@ -83,7 +83,7 @@ class MainTabbarController: UITabBarController {
     private var ratesVolatileWarningShown = false
 
     weak var homeController: HomeViewController?
-    weak var menuNavigationController: DWMainMenuViewController?
+    weak var menuNavigationController: MainMenuViewController?
     
     #if DASHPAY
     weak var contactsNavigationController: DWRootContactsViewController?
@@ -238,11 +238,11 @@ extension MainTabbarController {
         item = UITabBarItem(title: nil, image: MainTabbarTabs.more.icon, selectedImage: MainTabbarTabs.more.selectedIcon)
         item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
         
-        let menuVC: DWMainMenuViewController
+        let menuVC: MainMenuViewController
         #if DASHPAY
-        menuVC = DWMainMenuViewController(dashPayModel: homeModel.dashPayModel, receiveModel: homeModel.receiveModel, dashPayReady: homeModel, userProfileModel: homeModel.dashPayModel.userProfile)
+        menuVC = MainMenuViewController(dashPayModel: homeModel.dashPayModel, receiveModel: homeModel.receiveModel, dashPayReady: homeModel, userProfileModel: homeModel.dashPayModel.userProfile)
         #else
-        menuVC = DWMainMenuViewController()
+        menuVC = MainMenuViewController()
         #endif
         
         menuVC.delegate = self
@@ -333,14 +333,14 @@ extension MainTabbarController {
     #endif
 }
 
-// MARK: DWMainMenuViewControllerDelegate
+// MARK: MainMenuViewControllerDelegate
 
-extension MainTabbarController: DWMainMenuViewControllerDelegate {
-    func mainMenuViewControllerImportPrivateKey(_ controller: DWMainMenuViewController) {
+extension MainTabbarController: MainMenuViewControllerDelegate {
+    func mainMenuViewControllerImportPrivateKey(_ controller: MainMenuViewController) {
         performScanQRCodeAction()
     }
 
-    func mainMenuViewControllerOpenHomeScreen(_ controller: DWMainMenuViewController) {
+    func mainMenuViewControllerOpenHomeScreen(_ controller: MainMenuViewController) {
         selectedIndex = MainTabbarTabs.home.rawValue
     }
 }

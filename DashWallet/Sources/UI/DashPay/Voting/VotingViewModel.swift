@@ -31,7 +31,7 @@ class VotingViewModel {
     private var dao: UsernameRequestsDAO = UsernameRequestsDAOImpl.shared
     private var cancellableBag = Set<AnyCancellable>()
     private var groupedRequests: [GroupedUsernames] = []
-    private var validKeys: [String] = [ // TODO: temp
+    private var validKeys: [String] = [ // TODO: MOCK_DASHPAY temp
         "kn2GwaSZkoY8qg6i2dPCpDtDoBCftJWMzZXtHDDJ1w7PjFYfq",
         "n6YtJ7pdDYPTa57imEHEp8zinq1oNGUdwZQdnGk1MMpCWBHEq",
         "maEiRZeKXNLZovNqoS3HkmZJGmACbro7s3eC8GenExLF7QMQs"

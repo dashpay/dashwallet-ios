@@ -197,20 +197,28 @@ struct CreateUsernameView: View {
             }
         }
         .sheet(isPresented: $confirmUsernameRequest) {
-            let dialog = ConfirmSpendDialog(username: viewModel.username, amount: Int64(viewModel.uiState.requiredDash)) {
-                confirmUsernameRequest = false
-            } onConfirm: {
-                confirmUsernameRequest = false
-                Task {
-                    inProgress = true
-                    let result = await viewModel.submitUsernameRequest(withProve: self.prove)
-                    inProgress = false
-                    
-                    if result {
-                        finish()
+            let dialog = ConfirmSpendDialog(
+                amount: Int64(viewModel.uiState.requiredDash),
+                title: NSLocalizedString("Confirm", comment: ""),
+                onCancel: {
+                    confirmUsernameRequest = false
+                },
+                onConfirm: {
+                    confirmUsernameRequest = false
+                    Task {
+                        inProgress = true
+                        let result = await viewModel.submitUsernameRequest(withProve: self.prove)
+                        inProgress = false
+                        
+                        if result {
+                            finish()
+                        }
                     }
-                }
-            }
+                },
+                username: viewModel.username,
+                detailsText: NSLocalizedString("Please note that the username can NOT be changed once it is registered.", comment: "Usernames"),
+                requiresAcceptance: true
+            )
             
             if #available(iOS 16.0, *) {
                 dialog.presentationDetents([.height(340)])

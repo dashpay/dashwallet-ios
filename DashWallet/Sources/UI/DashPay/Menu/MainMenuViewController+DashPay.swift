@@ -17,7 +17,7 @@
 
 import UIKit
 
-extension DWMainMenuViewController: RootEditProfileViewControllerDelegate {
+extension MainMenuViewController: RootEditProfileViewControllerDelegate {
     func editProfileViewController(_ controller: RootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?) {
         guard let view = self.view as? MainMenuContentView else { return }
         view.userModel?.updateModel.update(withDisplayName: rawDisplayName, aboutMe: rawAboutMe, avatarURLString: avatarURLString)

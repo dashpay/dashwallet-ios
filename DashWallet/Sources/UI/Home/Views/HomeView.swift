@@ -318,6 +318,7 @@ struct HomeViewContent<Content: View>: View {
             finishMixDialogNavigation()
         }) {
             let mixDashDialog = MixDashDialog(
+                purposeText: NSLocalizedString("your username", comment: "Usernames"),
                 positiveAction: { self.navigateToCoinJoin = true },
                 negativeAction: {
                     if UsernamePrefs.shared.joinDashPayInfoShown {
