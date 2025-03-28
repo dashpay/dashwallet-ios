@@ -2254,7 +2254,7 @@
 "Tap the address from the clipboard to paste it" = "Klepnutím na adresu zo schránky ju použijete";
 
 /* No comment provided by engineer. */
-"Tap to hide balance" = "Klepnutím skryť zostatok";
+"Tap to unhide balance" = "Tap to unhide balance";
 
 /* No comment provided by engineer. */
 "Tax Category" = "Daňová kategória";
@@ -2306,9 +2306,6 @@
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "Nie sú k dispozícii žiadne nové upozornenia";
-
-/* No comment provided by engineer. */
-"There are no transactions to display" = "Žiadne transakcie na zobrazenie";
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@" = "Neexistujú žiadni používatelia, ktorí sa zhodujú s menom %@";

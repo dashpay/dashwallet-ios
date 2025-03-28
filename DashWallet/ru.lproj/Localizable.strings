@@ -2254,7 +2254,7 @@
 "Tap the address from the clipboard to paste it" = "Чтобы вставить адрес из буфера обмена, нажмите на него";
 
 /* No comment provided by engineer. */
-"Tap to hide balance" = "Нажмите, чтобы скрыть баланс";
+"Tap to unhide balance" = "Tap to unhide balance";
 
 /* No comment provided by engineer. */
 "Tax Category" = "Категория";
@@ -2306,9 +2306,6 @@
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "У вас нет новых уведомлений";
-
-/* No comment provided by engineer. */
-"There are no transactions to display" = "Нет транзакций для отображения";
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@" = "Пользователей, чьё имя совпадает с %@ не найдено";

@@ -2254,7 +2254,7 @@
 "Tap the address from the clipboard to paste it" = "Πατήστε τη διεύθυνση από το πρόχειρο για να την επικολλήσετε";
 
 /* No comment provided by engineer. */
-"Tap to hide balance" = "Πατήστε για να κρύψετε το υπόλοιπο";
+"Tap to unhide balance" = "Tap to unhide balance";
 
 /* No comment provided by engineer. */
 "Tax Category" = "Φορολογική κατηγορία";
@@ -2306,9 +2306,6 @@
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "Δεν υπάρχουν νέες ειδοποιήσεις";
-
-/* No comment provided by engineer. */
-"There are no transactions to display" = "Δεν υπάρχουν συναλλαγές για προβολή";
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@" = "Δεν υπάρχουν χρήστες που να ταιριάζουν με το όνομα %@";

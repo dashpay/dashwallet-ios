@@ -2254,7 +2254,7 @@
 "Tap the address from the clipboard to paste it" = "Tippe auf die Adresse in der Zwischenablage, um sie einzufügen.";
 
 /* No comment provided by engineer. */
-"Tap to hide balance" = "Zum Verbergen des Guthabens tippen";
+"Tap to unhide balance" = "Tap to unhide balance";
 
 /* No comment provided by engineer. */
 "Tax Category" = "Steuerliche Kategorie";
@@ -2306,9 +2306,6 @@
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "Es gibt keine neuen Benachrichtigungen";
-
-/* No comment provided by engineer. */
-"There are no transactions to display" = "Es existieren keine anzuzeigenden Transaktionen";
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@" = "Es gibt keine Benutzer mit dem Namen %@";

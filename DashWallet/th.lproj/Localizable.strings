@@ -2254,7 +2254,7 @@
 "Tap the address from the clipboard to paste it" = "แตะที่อยู่จากคลิปบอร์ดเพื่อวาง";
 
 /* No comment provided by engineer. */
-"Tap to hide balance" = "กดเพื่อซ่อนยอดคงเหลือ";
+"Tap to unhide balance" = "Tap to unhide balance";
 
 /* No comment provided by engineer. */
 "Tax Category" = "หมวดภาษี";
@@ -2306,9 +2306,6 @@
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "ไม่มีการแจ้งเตือนใหม่";
-
-/* No comment provided by engineer. */
-"There are no transactions to display" = "ไม่มีธุรกรรมเพื่อแสดง";
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@" = "ไม่มีผู้ใช้ที่ตรงกับชื่อ %@";
