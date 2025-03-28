@@ -2254,7 +2254,7 @@
 "Tap the address from the clipboard to paste it" = "クリップボードからアドレスをタップしてペーストする";
 
 /* No comment provided by engineer. */
-"Tap to hide balance" = "タップして残高を非表示にする";
+"Tap to unhide balance" = "Tap to unhide balance";
 
 /* No comment provided by engineer. */
 "Tax Category" = "税金の区分";
@@ -2306,9 +2306,6 @@
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "新しい通知はありません。";
-
-/* No comment provided by engineer. */
-"There are no transactions to display" = "表示する取引はありません";
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@" = "名前%@に一致するユーザーはいません。";

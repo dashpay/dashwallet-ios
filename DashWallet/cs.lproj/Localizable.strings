@@ -2254,7 +2254,7 @@
 "Tap the address from the clipboard to paste it" = "Tap the address from the clipboard to paste it";
 
 /* No comment provided by engineer. */
-"Tap to hide balance" = "Klepněte pro skrytí zůstatku";
+"Tap to unhide balance" = "Tap to unhide balance";
 
 /* No comment provided by engineer. */
 "Tax Category" = "Tax Category";
@@ -2306,9 +2306,6 @@
 
 /* No comment provided by engineer. */
 "There are no new notifications" = "Žádná nová oznámení";
-
-/* No comment provided by engineer. */
-"There are no transactions to display" = "Žádné transakce k zobrazení";
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@" = "Neexistují žádní uživatelé, se jménem %@";

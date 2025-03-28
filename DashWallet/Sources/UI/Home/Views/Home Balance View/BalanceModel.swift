@@ -16,26 +16,23 @@
 //
 
 import Foundation
+import Combine
 
 // MARK: - BalanceModel
 
-final class BalanceModel {
-    private(set) var state: SyncingActivityMonitor.State
-
-    private(set) var value: UInt64 = 0
-    var isBalanceHidden: Bool
-
-    var balanceDidChange: (() -> ())?
+final class BalanceModel: ObservableObject {
+    private var cancellableBag = Set<AnyCancellable>()
+    
+    @Published private(set) var state = SyncingActivityMonitor.shared.state
+    @Published private(set) var value: UInt64 = 0
+    @Published private(set) var isBalanceHidden: Bool
 
     init() {
         isBalanceHidden = DWGlobalOptions.sharedInstance().balanceHidden
-        state = SyncingActivityMonitor.shared.state
-
         SyncingActivityMonitor.shared.add(observer: self)
 
         reloadBalance()
-
-        NotificationCenter.default.addObserver(self, selector: #selector(applicationWillEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
+        observeWallet()
     }
 
     func hideBalanceIfNeeded() {
@@ -64,18 +61,33 @@ final class BalanceModel {
         }
 
         options.userHasBalance = balanceValue > 0
-
-        balanceDidChange?()
     }
-
-    @objc
-    func applicationWillEnterForeground(_ notification: NSNotification) {
-        hideBalanceIfNeeded()
+    
+    func toggleBalanceVisibility() {
+        isBalanceHidden = !isBalanceHidden
     }
 
     deinit {
         NotificationCenter.default.removeObserver(self)
         SyncingActivityMonitor.shared.remove(observer: self)
+    }
+}
+
+extension BalanceModel {
+    func observeWallet() {
+        NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                self?.hideBalanceIfNeeded()
+            }
+            .store(in: &cancellableBag)
+        
+        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                self?.reloadBalance()
+            }
+            .store(in: &cancellableBag)
     }
 }
 
