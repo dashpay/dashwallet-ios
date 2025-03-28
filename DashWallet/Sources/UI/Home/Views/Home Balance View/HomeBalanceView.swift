@@ -28,51 +28,62 @@ enum HomeBalanceViewState: Int {
 
 struct HomeBalanceView: View {
     @StateObject private var viewModel = BalanceModel()
+    @State private var opacity: Double = 0.3
     var onLongPress: () -> Void
     
     var body: some View {
         VStack(spacing: 0) {
-            if !viewModel.isBalanceHidden && viewModel.state == .syncing {
-                Text(NSLocalizedString("Syncing Balance", comment: ""))
-                    .font(.caption)
-                    .foregroundColor(.white.opacity(0.7))
-                    .opacity(0.8)
-                    .animation(
-                        Animation.easeInOut(duration: 0.8)
-                            .repeatForever(autoreverses: true),
-                        value: viewModel.state
-                    )
+            ZStack {
+                if !viewModel.isBalanceHidden && viewModel.state == .syncing {
+                    Text(NSLocalizedString("Syncing Balance", comment: ""))
+                        .font(.caption)
+                        .foregroundColor(.white)
+                        .opacity(opacity)
+                        .onAppear {
+                            withAnimation(
+                                .easeInOut(duration: 0.8)
+                                    .repeatForever(autoreverses: true)
+                            ) {
+                                opacity = 0.7
+                            }
+                        }
+                }
             }
+            .frame(height: 15)
             
             ZStack {
                 if viewModel.isBalanceHidden {
-                    VStack(spacing: 8) {
-                        Image(systemName: "eye.slash")
+                    Image(systemName: "eye.slash.fill")
+                        .foregroundColor(.white)
+                        .padding(10)
+                        .background(
+                            Circle()
+                                .fill(Color.black.opacity(0.2))
+                        )
+                        .frame(width: 58, height: 58)
+                } else {
+                    VStack(spacing: 0) {
+                        DashAmount(amount: Int64(viewModel.value), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
+                            .foregroundColor(.white)
+                        Text(viewModel.fiatAmountString())
+                            .font(.body2)
                             .foregroundColor(.white)
                         
-                        Button(action: { viewModel.toggleBalanceVisibility() }) {
-                            Text(NSLocalizedString("Tap to unhide balance", comment: ""))
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.5))
+                        ZStack {
+                            if viewModel.shouldShowTapToHideBalance {
+                                Text(NSLocalizedString("Tap to hide balance", comment: ""))
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.5))
+                            }
                         }
+                        .frame(height: 12)
+                        .padding(.top, 8)
                     }
-                    .transition(.opacity)
                 }
-                
-                VStack(spacing: 4) {
-                    Text(viewModel.mainAmountString)
-                        .font(.title)
-                        .foregroundColor(.white)
-                    
-                    Text(viewModel.supplementaryAmountString)
-                        .font(.callout)
-                        .foregroundColor(.white)
-                }
-                .opacity(viewModel.isBalanceHidden ? 0 : 1)
-                .transition(.opacity)
             }
-            .frame(height: 52)
-            .contentShape(Rectangle())
+            .frame(maxWidth: .infinity)
+            .background(Color.dashBlue)
+            .animation(.easeInOut(duration: 0.3), value: viewModel.isBalanceHidden)
             .onTapGesture {
                 viewModel.toggleBalanceVisibility()
             }
@@ -80,7 +91,9 @@ struct HomeBalanceView: View {
                 onLongPress()
             }
         }
-        .padding()
+        .onAppear {
+            viewModel.reloadBalance()
+        }
         .onDisappear {
             viewModel.hideBalanceIfNeeded()
         }

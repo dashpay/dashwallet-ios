@@ -205,6 +205,11 @@ struct HomeViewContent<Content: View>: View {
                         let action = ShortcutAction(type: .localCurrency)
                         shortcutsDelegate?.shortcutsView(didSelectAction: action, sender: nil)
                     }
+                    .frame(height: 110)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.dashBlue)
+                    .padding(.top, 5)
+                    .padding(.bottom, -12)
                     
                     headerView()
                         .frame(height: viewModel.headerHeight)
