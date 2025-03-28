@@ -18,7 +18,7 @@
 import Foundation
 import Combine
 
-private let kBaseBalanceHeaderHeight: CGFloat = 150
+private let kBaseBalanceHeaderHeight: CGFloat = 100
 private let kTimeskewTolerance: TimeInterval = 3600 // 1 hour
 private let maxShortcutsCount = 4
 
