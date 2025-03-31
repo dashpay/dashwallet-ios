@@ -53,10 +53,11 @@ extension ExplorePointOfUse {
             case onlineAndPhysical = "both"
         }
 
-        let merchantId: Int64
+        let merchantId: String
         let paymentMethod: PaymentMethod
         let type: `Type`
         let deeplink: String?
+        let savingsPercentage: Int
     }
 
     var merchant: Merchant? {
@@ -71,14 +72,14 @@ extension ExplorePointOfUse {
         return atm
     }
 
-    var pointOfUseId: Int64 {
+    var pointOfUseId: String {
         switch category {
         case .merchant(let m):
             return m.merchantId
         case .atm(let atm):
-            return Int64(atm.manufacturer.hashValue)
+            return atm.manufacturer
         case .unknown:
-            return Int64.max
+            return ""
         }
     }
     
@@ -163,7 +164,7 @@ extension ExplorePointOfUse: RowDecodable {
     static let deeplink = Expression<String?>("deeplink")
     static let plusCode = Expression<String?>("plusCode")
     static let paymentMethod = Expression<String>("paymentMethod")
-    static let merchantId = Expression<Int64>("merchantId")
+    static let merchantId = Expression<String>("merchantId")
     static let id = Expression<Int64>("id")
     static let active = Expression<Bool>("active")
     static let city = Expression<String?>("city")
@@ -181,7 +182,7 @@ extension ExplorePointOfUse: RowDecodable {
     static let type = Expression<String>("type")
     static let source = Expression<String>("source")
     static let manufacturer = Expression<String?>("manufacturer")
-
+    static let savingPercentage = Expression<Int>("savingsPercentage")
 
     init(row: Row) {
         let name = row[ExplorePointOfUse.name]
@@ -217,9 +218,10 @@ extension ExplorePointOfUse: RowDecodable {
             let merchantId = row[ExplorePointOfUse.merchantId]
             let type: Merchant.`Type`! = .init(rawValue: row[ExplorePointOfUse.type])
             let deeplink = row[ExplorePointOfUse.deeplink]
+            let savingsPercentage = row[ExplorePointOfUse.savingPercentage]
             category = .merchant(Merchant(merchantId: merchantId,
-                                          paymentMethod: Merchant.PaymentMethod(rawValue: paymentMethodRaw)!, type: type,
-                                          deeplink: deeplink))
+                                          paymentMethod: Merchant.PaymentMethod(rawValue: paymentMethodRaw)!,
+                                          type: type, deeplink: deeplink, savingsPercentage: savingsPercentage))
         } else if let manufacturer = try? row.get(ExplorePointOfUse.manufacturer) {
             let type: Atm.`Type`! = .init(rawValue: row[ExplorePointOfUse.type])
             category = .atm(Atm(manufacturer: manufacturer, type: type))

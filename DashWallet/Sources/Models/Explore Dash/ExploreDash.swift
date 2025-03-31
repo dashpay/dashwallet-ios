@@ -170,7 +170,7 @@ extension ExploreDash {
         merchantDAO.allMerchants(by: query, in: bounds, userPoint: userPoint, paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, offset: offset, completion: completion)
     }
 
-    func allLocations(for merchantId: Int64, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
+    func allLocations(for merchantId: String, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                       completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         merchantDAO.allLocations(for: merchantId, in: bounds, userPoint: userPoint, completion: completion)
     }

@@ -591,10 +591,11 @@ PODS:
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
-  - DashSharedCore (0.5.0)
+  - DashSharedCore (0.5.1)
   - DashSync (0.1.0):
     - CocoaLumberjack (= 3.7.2)
     - DAPI-GRPC (= 0.22.0-dev.8)
+    - DashSharedCore (= 0.5.1)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
     - TinyCborObjc (= 0.4.6)
@@ -709,7 +710,7 @@ PODS:
   - nanopb/decode (2.30908.0)
   - nanopb/encode (2.30908.0)
   - PromisesObjC (2.4.0)
-  - Protobuf (3.29.3)
+  - Protobuf (3.29.4)
   - SDWebImage (5.13.2):
     - SDWebImage/Core (= 5.13.2)
   - SDWebImage/Core (5.13.2)
@@ -736,7 +737,6 @@ PODS:
 DEPENDENCIES:
   - CloudInAppMessaging (= 0.1.0)
   - CocoaImageHashing (from `https://github.com/ameingast/cocoaimagehashing.git`, commit `ad01eee`)
-  - DashSharedCore (from `../dash-shared-core/`)
   - DashSync (from `../DashSync/`)
   - DSDynamicOptions (= 0.1.2)
   - Firebase/DynamicLinks
@@ -766,6 +766,7 @@ SPEC REPOS:
     - CloudInAppMessaging
     - CocoaLumberjack
     - DAPI-GRPC
+    - DashSharedCore
     - DSDynamicOptions
     - DWAlertController
     - Firebase
@@ -803,8 +804,6 @@ EXTERNAL SOURCES:
   CocoaImageHashing:
     :commit: ad01eee
     :git: https://github.com/ameingast/cocoaimagehashing.git
-  DashSharedCore:
-    :path: "../dash-shared-core/"
   DashSync:
     :path: "../DashSync/"
   MMSegmentSlider:
@@ -832,8 +831,8 @@ SPEC CHECKSUMS:
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
-  DashSharedCore: 18baa0f6c2bc2b4fc4628651d293f4fd6645025f
-  DashSync: 2438dbf626f13a8633ccc19c718c1c223c8ee831
+  DashSharedCore: b8481feb5f08acf162b548edbfc7a9b1ce491141
+  DashSync: 1f5741aad267dcc0cfc04b6903490d304232ddf2
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   Firebase: 5f8193dff4b5b7c5d5ef72ae54bb76c08e2b841d
@@ -857,7 +856,7 @@ SPEC CHECKSUMS:
   Moya: 138f0573e53411fb3dc17016add0b748dfbd78ee
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  Protobuf: e2de96d939c642ce8da186343ff8929b35223212
+  Protobuf: 2e6de032ba12b9efb390ae550d1a243a5b19ddfc
   SDWebImage: 72f86271a6f3139cc7e4a89220946489d4b9a866
   SQLite.swift: 8d054987f02728cc912b0eb5a9659650573a65a2
   SQLiteMigrationManager.swift: b63bb5eaf834f8e8cc78b37fdf2ce064e35914cd
@@ -868,6 +867,6 @@ SPEC CHECKSUMS:
   TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: b535dc7a434729d93abcb2df19da65e1f1e302e4
+PODFILE CHECKSUM: a5ef71862394897c78a0cc247502754372e88c07
 
 COCOAPODS: 1.15.2
