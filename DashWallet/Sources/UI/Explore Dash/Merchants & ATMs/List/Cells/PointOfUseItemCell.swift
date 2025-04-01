@@ -78,7 +78,7 @@ extension PointOfUseItemCell {
 
         nameLabel = UILabel()
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
-        nameLabel.font = UIFont.systemFont(ofSize: 14)
+        nameLabel.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         textStackView.addArrangedSubview(nameLabel)
 
         subLabel = UILabel()

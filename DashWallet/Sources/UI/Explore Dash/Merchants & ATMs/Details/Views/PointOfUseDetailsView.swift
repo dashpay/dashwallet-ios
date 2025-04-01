@@ -262,12 +262,19 @@ extension PointOfUseDetailsView {
                 payButton.setImage(UIImage(named: "image.explore.dash.gift-card"), for: .normal)
                 payButton.accentColor = .dw_orange()
 
-                if let deeplink = m.deeplink, let url = URL(string: deeplink) {
-                    payButton.isEnabled = UIApplication.shared.canOpenURL(url)
-                } else {
-                    payButton.isEnabled = false
-                }
+                if m.savingsPercentage > 0 {
+                    let savingsTag = SavingsTagView()
+                    savingsTag.backgroundColor = .clear
+                    savingsTag.translatesAutoresizingMaskIntoConstraints = false
+                    savingsTag.setText(String(format: NSLocalizedString("Save %.2f%%", comment: "DashSpend"), Double(m.savingsPercentage) / 100))
+                    containerView.addSubview(savingsTag)
 
+                    NSLayoutConstraint.activate([
+                        savingsTag.trailingAnchor.constraint(equalTo: payButton.trailingAnchor, constant: -30),
+                        savingsTag.bottomAnchor.constraint(equalTo: payButton.topAnchor, constant: 13),
+                        savingsTag.heightAnchor.constraint(equalToConstant: 26),
+                    ])
+                }
             } else {
                 payButton.setTitle(NSLocalizedString("Pay with Dash", comment: "Pay with Dash"), for: .normal)
                 payButton.setImage(UIImage(named: "image.explore.dash.circle"), for: .normal)
@@ -295,5 +302,56 @@ final class VerticalButton: TintedButton {
         updatedConfiguration.titleAlignment = .center
         updatedConfiguration.imagePadding = 3
         self.configuration = updatedConfiguration
+    }
+}
+
+// MARK: - SavingsTagView
+
+final class SavingsTagView: UIView {
+    private let label = UILabel()
+    private let tailSize: CGFloat = 8
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupView()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func setupView() {
+        label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.textColor = .white
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(label)
+        
+        NSLayoutConstraint.activate([
+            label.topAnchor.constraint(equalTo: topAnchor),
+            label.bottomAnchor.constraint(equalTo: bottomAnchor),
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
+        ])
+    }
+    
+    func setText(_ text: String) {
+        label.text = text
+    }
+    
+    override func draw(_ rect: CGRect) {
+        let path = UIBezierPath()
+        
+        let mainRect = rect.inset(by: UIEdgeInsets(top: 0, left: tailSize, bottom: 0, right: 0))
+        let roundedRect = UIBezierPath(roundedRect: mainRect, cornerRadius: 4)
+        path.append(roundedRect)
+
+        path.move(to: CGPoint(x: tailSize, y: 3))
+        path.addLine(to: CGPoint(x: 0, y: rect.midY))
+        path.addLine(to: CGPoint(x: tailSize, y: rect.midY))
+        path.close()
+        
+        UIColor.dw_label().withAlphaComponent(0.7).setFill()
+        path.fill()
     }
 }
