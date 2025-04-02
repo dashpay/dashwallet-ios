@@ -2254,7 +2254,7 @@
 "Tap the address from the clipboard to paste it" = "클립보드의 주소를 탭하여 붙여넣기";
 
 /* No comment provided by engineer. */
-"Tap to hide balance" = "Tap to hide balance";
+"Tap to hide balance" = "잔고를 숨기시려면 탭하세요";
 
 /* No comment provided by engineer. */
 "Tax Category" = "세금 카테고리";
@@ -2308,7 +2308,7 @@
 "There are no new notifications" = "새로운 알림이 없습니다";
 
 /* No comment provided by engineer. */
-"There are no transactions to display" = "There are no transactions to display";
+"There are no transactions to display" = "표시할 거래가 없습니다";
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@" = "%@ 라는 이름에 맞는 사용자가 존재하지 않습니다";

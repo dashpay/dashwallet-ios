@@ -2254,7 +2254,7 @@
 "Tap the address from the clipboard to paste it" = "Tik op het adres van het klembord om het te plakken";
 
 /* No comment provided by engineer. */
-"Tap to hide balance" = "Tap to hide balance";
+"Tap to hide balance" = "Tik om saldo te verbergen";
 
 /* No comment provided by engineer. */
 "Tax Category" = "Belastingcategorie";
@@ -2308,7 +2308,7 @@
 "There are no new notifications" = "Er zijn geen nieuwe meldingen";
 
 /* No comment provided by engineer. */
-"There are no transactions to display" = "There are no transactions to display";
+"There are no transactions to display" = "Er zijn geen transacties om weer te geven";
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@" = "Er zijn geen gebruikers die overeenkomen met de naam %@";

@@ -2254,7 +2254,7 @@
 "Tap the address from the clipboard to paste it" = "點擊剪貼板中的地址進行粘貼";
 
 /* No comment provided by engineer. */
-"Tap to hide balance" = "Tap to hide balance";
+"Tap to hide balance" = "點按即可隱藏餘額";
 
 /* No comment provided by engineer. */
 "Tax Category" = "稅種";
@@ -2308,7 +2308,7 @@
 "There are no new notifications" = "沒有新的通知";
 
 /* No comment provided by engineer. */
-"There are no transactions to display" = "There are no transactions to display";
+"There are no transactions to display" = "沒有交易能夠顯示";
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@" = "沒有找到與 %@ 名稱匹配的用戶";
