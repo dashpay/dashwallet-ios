@@ -132,6 +132,12 @@ static const bool _SNAPSHOT = 0;
 #import "DWGetStartedContentViewController.h"
 #import "DWDashPayContactsUpdater.h"
 #import "DWDPUpdateProfileModel.h"
+#import "DWInvitationHistoryModel.h"
+#import "DWInvitationTableViewCell.h"
+#import "DWSendInviteFirstStepViewController.h"
+#import "DWHistoryFilterViewController.h"
+#import "DWHistoryHeaderView.h"
+#import "DWFullScreenModalControllerViewController.h"
 #endif
 
 //MARK: CrowdNode
@@ -143,12 +149,12 @@ static const bool _SNAPSHOT = 0;
 #import "DSChain+DashWallet.h"
 
 //MARK: Tabbar
-#import "DWMainMenuViewController.h"
 #import "DWWipeDelegate.h"
 #import "DWPayModel.h"
 #import "DWHomeViewControllerDelegate.h"
-#import "DWMainMenuViewControllerDelegate.h"
 #import "DWExploreTestnetViewController.h"
+#import "DWSecurityMenuViewController.h"
+#import "DWUserProfileModalQRViewController.h"
 
 //MARK: Home
 #import "DWHomeModel.h"
