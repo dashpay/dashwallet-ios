@@ -2254,7 +2254,7 @@
 "Tap the address from the clipboard to paste it" = "Tap the address from the clipboard to paste it";
 
 /* No comment provided by engineer. */
-"Tap to hide balance" = "Tap to hide balance";
+"Tap to hide balance" = "Bấm để ẩn số dư";
 
 /* No comment provided by engineer. */
 "Tax Category" = "Tax Category";
@@ -2308,7 +2308,7 @@
 "There are no new notifications" = "Không có thông báo mới";
 
 /* No comment provided by engineer. */
-"There are no transactions to display" = "There are no transactions to display";
+"There are no transactions to display" = "Không có giao dịch nào để hiển thị";
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@" = "Không có người dùng nào có tên trùng với %@";

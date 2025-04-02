@@ -2254,7 +2254,7 @@
 "Tap the address from the clipboard to paste it" = "اضغط على العنوان من لوحة الملاحظات للصقه";
 
 /* No comment provided by engineer. */
-"Tap to hide balance" = "Tap to hide balance";
+"Tap to hide balance" = "اضغط لاخفاء الرصيد";
 
 /* No comment provided by engineer. */
 "Tax Category" = "فئة الضريبة";
@@ -2308,7 +2308,7 @@
 "There are no new notifications" = "There are no new notifications";
 
 /* No comment provided by engineer. */
-"There are no transactions to display" = "There are no transactions to display";
+"There are no transactions to display" = "لا توجد معاملات لعرضها";
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@" = "There are no users that match with the name %@";

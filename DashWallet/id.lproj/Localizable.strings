@@ -2254,7 +2254,7 @@
 "Tap the address from the clipboard to paste it" = "Ketuk alamat dari clipboard untuk menempelkannya";
 
 /* No comment provided by engineer. */
-"Tap to hide balance" = "Tap to hide balance";
+"Tap to hide balance" = "Ketuk untuk menyembunyikan saldo";
 
 /* No comment provided by engineer. */
 "Tax Category" = "Kategori Pajak";
@@ -2308,7 +2308,7 @@
 "There are no new notifications" = "Tidak ada pemberitahuan baru";
 
 /* No comment provided by engineer. */
-"There are no transactions to display" = "There are no transactions to display";
+"There are no transactions to display" = "Tidak ada transaksi untuk ditampilkan";
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@" = "Tidak ada pengguna yang cocok dengan nama %@";
