@@ -22,23 +22,18 @@
 #import "DWPayModelStub.h"
 #import "DWReceiveModelStub.h"
 #import "DWTransactionListDataProviderStub.h"
-#import "DWTransactionStub.h"
-#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeModelStub () <DWBalanceViewDataSource>
+@interface DWHomeModelStub ()
 
-@property (readonly, nonatomic, copy) NSArray<DWTransactionStub *> *stubTxs;
 @property (readonly, nonatomic, strong) DWTransactionListDataProviderStub *dataProvider;
 @property (readonly, nonatomic, strong) NSArray<DSTransaction *> *dataSource;
-@property (nonatomic, assign) DWHomeTxDisplayMode displayMode;
 
 @end
 
 @implementation DWHomeModelStub
 
-@synthesize displayMode = _displayMode;
 @synthesize payModel = _payModel;
 @synthesize receiveModel = _receiveModel;
 @synthesize dashPayModel = _dashPayModel;
@@ -73,20 +68,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setUpdatesObserver:(nullable id<DWHomeModelUpdatesObserver>)updatesObserver {
     _updatesObserver = updatesObserver;
-
-    if (self.allDataSource) {
-        [updatesObserver homeModel:self didUpdate:self.dataSource shouldAnimate:NO];
-    }
-}
-
-- (void)setDisplayMode:(DWHomeTxDisplayMode)displayMode {
-    if (_displayMode == displayMode) {
-        return;
-    }
-
-    _displayMode = displayMode;
-
-    [self.updatesObserver homeModel:self didUpdate:self.dataSource shouldAnimate:YES];
 }
 
 - (NSArray<DSTransaction *> *)dataSource {
@@ -143,7 +124,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)reloadTxDataSource {
     self.allDataSource = self.stubTxs;
-    [self.updatesObserver homeModel:self didUpdate:self.dataSource shouldAnimate:NO];
 }
 
 @end

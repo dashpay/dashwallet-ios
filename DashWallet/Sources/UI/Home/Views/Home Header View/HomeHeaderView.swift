@@ -32,7 +32,6 @@ final class HomeHeaderView: UIView {
 
     public weak var delegate: HomeHeaderViewDelegate?
 
-    private(set) var balanceView: HomeBalanceView!
     private(set) var syncView: SyncView!
     private(set) var shortcutsView: ShortcutsView!
     private(set) var stackView: UIStackView!
@@ -48,21 +47,18 @@ final class HomeHeaderView: UIView {
 
     private let model: HomeHeaderModel
 
-    override init(frame: CGRect) {
+    init(frame: CGRect, viewModel: HomeViewModel) {
         model = HomeHeaderModel()
 
         super.init(frame: frame)
 
-        balanceView = HomeBalanceView(frame: .zero)
-        balanceView.delegate = self
-
         syncView = SyncView.view()
         syncView.delegate = self
 
-        shortcutsView = ShortcutsView(frame: .zero)
+        shortcutsView = ShortcutsView(frame: .zero, viewModel: viewModel)
         shortcutsView.translatesAutoresizingMaskIntoConstraints = false
 
-        let views: [UIView] = [balanceView, shortcutsView, syncView]
+        let views: [UIView] = [shortcutsView, syncView]
         let stackView = UIStackView(arrangedSubviews: views)
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
@@ -82,18 +78,12 @@ final class HomeHeaderView: UIView {
             hideSyncView()
         }
 
-        reloadBalance()
-
         model.stateDidChage = { [weak self] state in
-            self?.balanceView.state = state == .syncing ? .syncing : .default
-
             if state == .syncFailed || state == .noConnection {
                 self?.showSyncView()
             } else {
                 self?.hideSyncView()
             }
-
-            self?.reloadBalance()
         }
     }
 
@@ -103,13 +93,6 @@ final class HomeHeaderView: UIView {
 
     func parentScrollViewDidScroll(_ scrollView: UIScrollView) { }
 
-    func reloadBalance() {
-        let isSyncing = SyncingActivityMonitor.shared.state == .syncing
-
-        balanceView.reloadData()
-        balanceView.state = isSyncing ? .syncing : .`default`
-    }
-
     private func hideSyncView() {
         syncView.isHidden = true
         delegate?.homeHeaderViewDidUpdateContents(self)
@@ -118,15 +101,6 @@ final class HomeHeaderView: UIView {
     private func showSyncView() {
         syncView.isHidden = false
         delegate?.homeHeaderViewDidUpdateContents(self)
-    }
-}
-
-// MARK: HomeBalanceViewDelegate
-
-extension HomeHeaderView: HomeBalanceViewDelegate {
-    func balanceView(_ view: HomeBalanceView, balanceLongPressAction sender: UIControl) {
-        let action = ShortcutAction(type: .localCurrency)
-        shortcutsDelegate?.shortcutsView(view, didSelectAction: action, sender: sender)
     }
 }
 

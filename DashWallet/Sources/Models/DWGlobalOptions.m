@@ -35,6 +35,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic autoLockAppInterval;
 @dynamic shortcuts;
 @dynamic balanceHidden;
+@dynamic tapToHideBalanceShown;
 @dynamic shouldDisplayOnboarding;
 @dynamic paymentsScreenCurrentTab;
 @dynamic resyncingWallet;
@@ -147,6 +148,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     self.shortcuts = nil;
     self.localNotificationsEnabled = YES;
     self.balanceHidden = NO;
+    self.tapToHideBalanceShown = NO;
     self.resyncingWallet = NO;
     self.selectedPaymentCurrency = DWPaymentCurrencyDash;
     self.shouldDisplayReclassifyYourTransactionsFlow = YES;
