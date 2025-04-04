@@ -20,6 +20,7 @@ import SwiftUI
 struct BottomSheet<Content: View>: View {
     @Environment(\.presentationMode) private var presentationMode
     
+    var title: String = ""
     @Binding var showBackButton: Bool
     var onBackButtonPressed: (() -> Void)? = nil
     @ViewBuilder var content: () -> Content
@@ -41,11 +42,18 @@ struct BottomSheet<Content: View>: View {
                 
                 Spacer()
                            
-                Rectangle()
-                    .fill(Color(red: 0.83, green: 0.83, blue: 0.85))
-                    .frame(width: 36, height: 5)
-                    .cornerRadius(2.50)
-                    .padding(.top, 6)
+                VStack {
+                    Rectangle()
+                        .fill(Color(red: 0.83, green: 0.83, blue: 0.85))
+                        .frame(width: 36, height: 5)
+                        .cornerRadius(2.50)
+                    
+                    Text(title)
+                        .font(.subtitle1)
+                        .foregroundColor(.primaryText)
+                        .padding(.top, 10)
+                }
+                .padding(.top, 6)
                 
                 Spacer()
                            
@@ -61,12 +69,15 @@ struct BottomSheet<Content: View>: View {
             }
             .frame(height: 50)
             .padding(.horizontal, 10)
+            .background(Color.primaryBackground)
             
             NavigationView {
                 content()
                     .navigationBarHidden(true)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.primaryBackground)
             }
-            .padding(.top, 4)
         }
+        .edgesIgnoringSafeArea(.bottom)
     }
 }

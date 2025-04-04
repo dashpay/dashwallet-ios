@@ -82,11 +82,11 @@ class BaseInvitesViewController: UIViewController {
                                     // Step completion handler
                                 },
                                 completion: { stepsCompleted, error in
-                                    if let error = error {
+                                   if let error = error {
                                         self.dw_displayErrorModally(error)
-                                    } else {
-                                        self.generateLinkForInvitationAndFinish(invitation, completion: completion)
-                                    }
+                                   } else {
+                                       self.generateLinkForInvitationAndFinish(invitation, completion: completion)
+                                   }
                                 }
                             )
                         }
@@ -121,7 +121,7 @@ class BaseInvitesViewController: UIViewController {
                 
                 DispatchQueue.main.async {
                     if !cancelled, let link = invitationFullLink {
-                        completion?(link, invitation)
+                        completion?(invitationFullLink, invitation)
                     }
                 }
             }

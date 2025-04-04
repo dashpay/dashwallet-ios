@@ -205,6 +205,9 @@
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "跨所有設備的直觀熟悉的體驗";
 
+/* Invites */
+"an invitation" = "an invitation";
+
 /* CrowdNode */
 "and" = "和";
 
@@ -470,6 +473,12 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "確認 (%1$d%2$@)";
 
+/* Invites */
+"Confirm and pay" = "Confirm and pay";
+
+/* Invites */
+"Confirm invitation" = "Confirm invitation";
+
 /* No comment provided by engineer. */
 "Confirm PIN" = "確認密碼";
 
@@ -510,6 +519,9 @@
 
 /* No comment provided by engineer. */
 "Contacts" = "通訊錄";
+
+/* Usernames */
+"Contested" = "Contested";
 
 /* No comment provided by engineer. */
 "Continue" = "繼續";
@@ -751,8 +763,8 @@
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "例如 johndoe@mail.com";
 
-/* No comment provided by engineer. */
-"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "每個邀請都將獲得該金額的資助，以便接收者可以在達世幣網絡上快速創建他們的用戶名";
+/* Invites */
+"Each invitation will be funded so that the receiver can quickly create their username on the Dash Network." = "Each invitation will be funded so that the receiver can quickly create their username on the Dash Network.";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "之前";
@@ -1195,8 +1207,8 @@
 /* No comment provided by engineer. */
 "Invitation Created Successfully" = "創建邀請成功";
 
-/* No comment provided by engineer. */
-"Invitation Fee" = "邀請費";
+/* Invites */
+"Invitation fee" = "Invitation fee";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "邀請己被使用";
@@ -1546,6 +1558,9 @@
 
 /* No comment provided by engineer. */
 "Node IP" = "節點IP";
+
+/* Usernames */
+"Non-contested" = "Non-contested";
 
 /* adjective, security level */
 "None" = "沒有";
@@ -2036,6 +2051,10 @@
 /* Buy Sell Dash */
 "Select a service" = "選擇一項服務";
 
+/* Block explorer picker
+   Block explorer selection title */
+"Select block explorer" = "Select block explorer";
+
 /* No comment provided by engineer. */
 "Select from Gallery" = "從圖庫中選擇";
 
@@ -2298,6 +2317,12 @@
 /* Coinbase */
 "The minimum amount you can send is %@" = "您可以發送的最小金額是 %@";
 
+/* Invites */
+"The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen" = "The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen";
+
+/* Invites */
+"The person that you send this invitation to can request any username they want and the network will vote to approve it" = "The person that you send this invitation to can request any username they want and the network will vote to approve it";
+
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
 
@@ -2362,7 +2387,7 @@
 "to Dash Wallet on this device" = "到此設備上的 達世幣錢包";
 
 /* CoinJoin */
-"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
+"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@.";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "要開始質押，請在 CrowdNode 上創建一個帳戶或連接到現有帳戶。";
@@ -2736,6 +2761,9 @@
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "你願意接受這個邀請嗎?";
 
+/* Invites */
+"Would you like to create this invitation?" = "Would you like to create this invitation?";
+
 /* Coinbase */
 "Would you like to make a deposit for your purchase using a linked bank account?" = "您想在關聯的銀行帳戶所存入一筆資金並使用它來為您的購買埋單嗎？";
 
@@ -2785,7 +2813,7 @@
 "You cannot claim this invite since you already have a Dash username" = "由於您已經有達世幣用戶名，因此您無法認領此邀請";
 
 /* Usernames */
-"You chose “%@” as your username." = "You chose “%@” as your username.";
+"You chose \"%@\" as your username." = "You chose \"%@\" as your username.";
 
 /* CoinJoin */
 "You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
@@ -2936,6 +2964,9 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "您的交易已發送，金額應在幾分鐘內顯示在您的錢包中。";
+
+/* Usernames */
+"your username" = "your username";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "您的用戶名 %@ 已在達世幣網絡上成功創建";
