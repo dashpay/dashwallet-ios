@@ -127,30 +127,30 @@ static NSString *sanitizeString(NSString *s) {
     NSString *requestUsername = paymentInput.request.dashpayUsername;
     if (requestUsername) {
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-        DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+        DSIdentity *myIdentity = wallet.defaultIdentity;
 
-        if (MOCK_DASHPAY && myBlockchainIdentity == NULL) {
+        if (MOCK_DASHPAY && myIdentity == NULL) {
             NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
 
             if (username != nil) {
-                myBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
+                myIdentity = [[DWEnvironment sharedInstance].currentWallet createIdentityForUsername:username];
             }
         }
 
-        if (myBlockchainIdentity) {
+        if (myIdentity) {
             NSManagedObjectContext *context = NSManagedObjectContext.viewContext;
-            DSDashpayUserEntity *dashpayUserEntity = [myBlockchainIdentity matchingDashpayUserInContext:context];
-            DSBlockchainIdentity *requestIdentity = nil;
+            DSDashpayUserEntity *dashpayUserEntity = [myIdentity matchingDashpayUserInContext:context];
+            DSIdentity *requestIdentity = nil;
             for (DSFriendRequestEntity *friendRequest in dashpayUserEntity.incomingRequests) {
                 if ([[friendRequest.sourceContact.associatedBlockchainIdentity.dashpayUsername stringValue] isEqualToString:requestUsername]) {
-                    requestIdentity = [friendRequest.sourceContact.associatedBlockchainIdentity blockchainIdentity];
+                    requestIdentity = [friendRequest.sourceContact.associatedBlockchainIdentity identity];
                     break;
                 }
             }
 
 
             if (requestIdentity) {
-                paymentInput.userItem = [[DWDPUserObject alloc] initWithBlockchainIdentity:requestIdentity];
+                paymentInput.userItem = [[DWDPUserObject alloc] initWithIdentity:requestIdentity];
             }
         }
     }
@@ -306,15 +306,15 @@ static NSString *sanitizeString(NSString *s) {
 
 - (DSPaymentProtocolRequest *)protocolRequestFromPaymentRequest:(DSPaymentRequest *)request {
     // `request.protocolRequest` is a legacy method and shouldn't be used directly.
-    // `myBlockchainIdentity` can be nil.
+    // `myIdentity` can be nil.
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    DSIdentity *myIdentity = wallet.defaultIdentity;
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
     NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
 
-    return [request protocolRequestForBlockchainIdentity:myBlockchainIdentity
-                                               onAccount:account
-                                               inContext:context];
+    return [request protocolRequestForIdentity:myIdentity
+                                     onAccount:account
+                                     inContext:context];
 }
 
 - (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protocolRequest {

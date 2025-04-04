@@ -15,13 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DSBlockchainIdentity+DWDisplayTitleSubtitle.h"
+#import "DSIdentity+DWDisplayTitleSubtitle.h"
 
 #import <DashSync/DashSync.h>
 
 #import "DWUIKit.h"
 
-@implementation DSBlockchainIdentity (DWDisplayTitleSubtitle)
+@implementation DSIdentity (DWDisplayTitleSubtitle)
 
 - (NSAttributedString *)dw_asTitleSubtitle {
     NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];

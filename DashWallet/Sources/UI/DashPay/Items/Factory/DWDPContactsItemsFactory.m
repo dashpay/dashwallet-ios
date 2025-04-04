@@ -41,8 +41,8 @@
 
 - (id<DWDPBasicUserItem, DWDPFriendRequestBackedItem>)itemForFriendRequestEntity:(DSFriendRequestEntity *)entity {
     // TODO: DP impl case `if entity.isIgnored`
-    DSBlockchainIdentity *blockchainIdentity = [entity.sourceContact.associatedBlockchainIdentity blockchainIdentity];
-    return [[DWDPNewIncomingRequestObject alloc] initWithFriendRequestEntity:entity blockchainIdentity:blockchainIdentity];
+    DSIdentity *identity = [entity.sourceContact.associatedBlockchainIdentity identity];
+    return [[DWDPNewIncomingRequestObject alloc] initWithFriendRequestEntity:entity identity:identity];
 }
 
 - (id<DWDPBasicUserItem, DWDPDashpayUserBackedItem>)itemForDashpayUserEntity:(DSDashpayUserEntity *)entity {

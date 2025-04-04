@@ -120,7 +120,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)update {
-    self.profileView.blockchainIdentity = self.userModel.blockchainIdentity;
+    self.profileView.identity = self.userModel.identity;
 }
 
 #pragma mark - DWErrorUpdatingUserProfileViewDelegate

@@ -27,9 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWDPEstablishedContactNotificationObject : DWDPEstablishedContactObject <DWDPNotificationItem>
 
 - (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
-                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+                                   identity:(DSIdentity *)identity;
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_UNAVAILABLE;
+- (instancetype)initWithIdentity:(DSIdentity *)identity NS_UNAVAILABLE;
 
 @end
 

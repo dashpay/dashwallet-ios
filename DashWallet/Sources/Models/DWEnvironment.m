@@ -46,7 +46,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
 
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     if (![userDefaults objectForKey:CURRENT_CHAIN_TYPE_KEY]) {
-        [userDefaults setInteger:ChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
+        [userDefaults setInteger:dash_spv_crypto_network_chain_type_ChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
     }
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain mainnet]]; // initialization
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain testnet]]; // initialization
@@ -64,17 +64,17 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     // DSChainType chainType = [userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY];
     switch ([userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY]) {
-        case ChainType_MainNet:
+        case dash_spv_crypto_network_chain_type_ChainType_MainNet:
             self.currentChain = [DSChain mainnet];
             break;
-        case ChainType_TestNet:
+        case dash_spv_crypto_network_chain_type_ChainType_TestNet:
             self.currentChain = [DSChain testnet];
             break;
-        case ChainType_DevNet: // we will only have evonet
+        case dash_spv_crypto_network_chain_type_ChainType_DevNet: // we will only have evonet
             self.currentChain = [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier];
             if (!self.currentChain) {
                 NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-                [userDefaults setInteger:ChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
+                [userDefaults setInteger:dash_spv_crypto_network_chain_type_ChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
                 self.currentChain = [DSChain mainnet];
             }
             break;
@@ -116,20 +116,20 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
 }
 
 - (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion {
-    if (self.currentChain != [DSChain mainnet]) {
-        [self switchToNetwork:ChainType_MainNet withIdentifier:nil withCompletion:completion];
+    if (![self.currentChain isMainnet]) {
+        [self switchToNetwork:dash_spv_crypto_network_chain_type_ChainType_MainNet withIdentifier:nil withCompletion:completion];
     }
 }
 
 - (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion {
-    if (self.currentChain != [DSChain testnet]) {
-        [self switchToNetwork:ChainType_TestNet withIdentifier:nil withCompletion:completion];
+    if (![self.currentChain isTestnet]) {
+        [self switchToNetwork:dash_spv_crypto_network_chain_type_ChainType_TestNet withIdentifier:nil withCompletion:completion];
     }
 }
 
 - (void)switchToEvonetWithCompletion:(void (^)(BOOL success))completion {
     if (self.currentChain != [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier]) {
-        [self switchToNetwork:ChainType_DevNet withIdentifier:DWDevnetEvonetIdentifier withCompletion:completion];
+        [self switchToNetwork:dash_spv_crypto_network_chain_type_ChainType_DevNet withIdentifier:DWDevnetEvonetIdentifier withCompletion:completion];
     }
 }
 
@@ -155,10 +155,10 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
     return [NSOrderedSet orderedSetWithArray:serviceLocations];
 }
 
-- (void)switchToNetwork:(ChainType_Tag)chainType withIdentifier:(NSString *)identifier withCompletion:(void (^)(BOOL success))completion {
+- (void)switchToNetwork:(int)chainType withIdentifier:(NSString *)identifier withCompletion:(void (^)(BOOL success))completion {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    ChainType_Tag originalChainType = [userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY];
-    if (originalChainType == chainType) {
+    int originalChainType = [userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY];
+    if (originalChainType == (int)chainType) {
         // Notification isn't send here as the chain remains the same
         completion(YES); // didn't really switch but good enough
         return;
@@ -166,13 +166,13 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
     DSWallet *wallet = [self currentWallet];
     DSChain *destinationChain = nil;
     switch (chainType) {
-        case ChainType_MainNet:
+        case dash_spv_crypto_network_chain_type_ChainType_MainNet:
             destinationChain = [DSChain mainnet];
             break;
-        case ChainType_TestNet:
+        case dash_spv_crypto_network_chain_type_ChainType_TestNet:
             destinationChain = [DSChain testnet];
             break;
-        case ChainType_DevNet:
+        case dash_spv_crypto_network_chain_type_ChainType_DevNet:
             destinationChain = [DSChain devnetWithIdentifier:identifier];
             if (!destinationChain && [identifier isEqualToString:DWDevnetEvonetIdentifier]) {
                 // TODO: add devnet eventually

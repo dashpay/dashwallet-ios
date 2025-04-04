@@ -113,7 +113,7 @@ final class OnlineAccountEmailController: UIViewController {
 
 extension OnlineAccountEmailController: UITextViewDelegate {
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
-        guard let range = text.rangeOfCharacter(from: .newlines) else {
+        guard text.rangeOfCharacter(from: .newlines) != nil else {
             return true
         }
 

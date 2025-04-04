@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, strong) DSDashpayUserEntity *userEntity;
 
 @property (nonatomic, strong) NSString *username;
-@property (nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@property (nonatomic, strong) DSIdentity *identity;
 
 - (instancetype)initWithDashpayUserEntity:(DSDashpayUserEntity *)userEntity;
 

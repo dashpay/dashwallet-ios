@@ -206,14 +206,13 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (UIScrollView *)stackView {
+- (UIStackView *)stackView {
 	if (_stackView == nil) {
 		_stackView = [[UIStackView alloc] initWithFrame:CGRectZero];
 		_stackView.translatesAutoresizingMaskIntoConstraints = NO;
 		_stackView.axis = UILayoutConstraintAxisVertical;
 		_stackView.spacing = SPACING;
 	}
-	
 	return _stackView;
 }
 

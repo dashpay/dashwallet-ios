@@ -15,9 +15,9 @@
 //  limitations under the License.
 //
 
-#import "DSBlockchainIdentity+DWDisplayName.h"
+#import "DSIdentity+DWDisplayName.h"
 
-@implementation DSBlockchainIdentity (DWDisplayName)
+@implementation DSIdentity (DWDisplayName)
 
 - (NSString *)dw_displayNameOrUsername {
     NSString *displayName = self.displayName;

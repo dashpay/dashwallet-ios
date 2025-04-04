@@ -42,14 +42,14 @@
     return self;
 }
 
-- (BOOL)hasBlockchainIdentity {
+- (BOOL)hasIdentity {
     if (MOCK_DASHPAY) {
         return YES;
     }
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    return myBlockchainIdentity != nil;
+    DSIdentity *myIdentity = wallet.defaultIdentity;
+    return myIdentity != nil;
 }
 
 - (id<DWContactsDataSource>)dataSource {

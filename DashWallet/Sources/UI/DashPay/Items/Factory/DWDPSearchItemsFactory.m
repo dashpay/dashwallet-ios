@@ -26,21 +26,21 @@
 
 @implementation DWDPSearchItemsFactory
 
-- (id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>)itemForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (id<DWDPBasicUserItem, DWDPIdentityBackedItem>)itemForIdentity:(DSIdentity *)identity {
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    DSBlockchainIdentityFriendshipStatus friendshipStatus = [myBlockchainIdentity friendshipStatusForRelationshipWithBlockchainIdentity:blockchainIdentity];
+    DSIdentity *myIdentity = wallet.defaultIdentity;
+    DSIdentityFriendshipStatus friendshipStatus = [myIdentity friendshipStatusForRelationshipWithIdentity:identity];
 
     switch (friendshipStatus) {
-        case DSBlockchainIdentityFriendshipStatus_Unknown:
-        case DSBlockchainIdentityFriendshipStatus_None:
-            return [[DWDPUserObject alloc] initWithBlockchainIdentity:blockchainIdentity];
-        case DSBlockchainIdentityFriendshipStatus_Outgoing:
-            return [[DWDPPendingRequestObject alloc] initWithBlockchainIdentity:blockchainIdentity];
-        case DSBlockchainIdentityFriendshipStatus_Incoming:
-            return [[DWDPNewIncomingRequestObject alloc] initWithBlockchainIdentity:blockchainIdentity];
-        case DSBlockchainIdentityFriendshipStatus_Friends:
-            return [[DWDPEstablishedContactObject alloc] initWithBlockchainIdentity:blockchainIdentity];
+        case DSIdentityFriendshipStatus_Unknown:
+        case DSIdentityFriendshipStatus_None:
+            return [[DWDPUserObject alloc] initWithIdentity:identity];
+        case DSIdentityFriendshipStatus_Outgoing:
+            return [[DWDPPendingRequestObject alloc] initWithIdentity:identity];
+        case DSIdentityFriendshipStatus_Incoming:
+            return [[DWDPNewIncomingRequestObject alloc] initWithIdentity:identity];
+        case DSIdentityFriendshipStatus_Friends:
+            return [[DWDPEstablishedContactObject alloc] initWithIdentity:identity];
     }
 }
 

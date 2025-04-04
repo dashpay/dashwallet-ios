@@ -43,9 +43,9 @@ NS_ASSUME_NONNULL_END
     self.avatarImageView.image = image;
 }
 
-- (void)setImageWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (void)setImageWithIdentity:(DSIdentity *)identity {
     __weak typeof(self) weakSelf = self;
-    [self.avatarImageView dw_setAvatarWithURLString:blockchainIdentity.avatarPath
+    [self.avatarImageView dw_setAvatarWithURLString:identity.avatarPath
                                          completion:^(UIImage *_Nullable image) {
                                              __strong typeof(weakSelf) strongSelf = weakSelf;
                                              if (!strongSelf) {

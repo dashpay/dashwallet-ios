@@ -91,7 +91,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     private var hasAnonymizableBalance: Bool = false
     private var timeSkew: TimeInterval = 0
     private var savedBalance: UInt64 = 0
-    private var workingChain: ChainType
+    private var workingChain: DSChain
     private var currentSyncState: SyncingActivityMonitor.State = .unknown
 
     private var chainModeKey: String {
@@ -123,7 +123,7 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     @Published private(set) var networkStatus: NetworkStatus = .online
     
     override init() {
-        workingChain = DWEnvironment.sharedInstance().currentChain.chainType
+        workingChain = DWEnvironment.sharedInstance().currentChain
         super.init()
         
         networkStatusDidChange = { [weak self] state in
@@ -131,8 +131,8 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
         }
         NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
             .sink { [weak self] _ in
-                DSLogger.log("CoinJoin: change of network to \(DWEnvironment.sharedInstance().currentChain.chainType.tag), resetting")
-                self?.workingChain = DWEnvironment.sharedInstance().currentChain.chainType
+                DSLogger.log("CoinJoin: change of network to \(DWEnvironment.sharedInstance().currentChain.name), resetting")
+                self?.workingChain = DWEnvironment.sharedInstance().currentChain
                 self?.restoreMode()
             }
             .store(in: &permanentBag)
@@ -363,11 +363,11 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
     }
     
     private func recheckCurrentChain() -> Bool {
-        let chainType = DWEnvironment.sharedInstance().currentChain.chainType
+        let chain = DWEnvironment.sharedInstance().currentChain
         
-        if self.workingChain.tag != chainType.tag {
-            DSLogger.log("[SW] CoinJoin: reset chain after recheck to type \(chainType.tag)")
-            self.workingChain = chainType
+        if self.workingChain != chain {
+            DSLogger.log("[SW] CoinJoin: reset chain after recheck to type \(chain.name)")
+            self.workingChain = chain
             restoreMode()
             return false
         }
@@ -430,13 +430,16 @@ class CoinJoinService: NSObject, NetworkReachabilityHandling {
 }
 
 extension CoinJoinService: DSCoinJoinManagerDelegate {
-    func sessionStarted(withId baseId: Int32, clientSessionId clientId: UInt256, denomination denom: UInt32, poolState state: PoolState, poolMessage message: PoolMessage, poolStatus status: PoolStatus, ipAddress address: UInt128, isJoined joined: Bool) { }
+    func sessionStarted(withId baseId: Int32, clientSessionId clientId: UInt256, denomination denom: UInt32, poolState state: dash_spv_coinjoin_messages_pool_state_PoolState, poolMessage message: dash_spv_coinjoin_messages_pool_message_PoolMessage, poolStatus status: dash_spv_coinjoin_messages_pool_status_PoolStatus, ipAddress address: UInt128, isJoined joined: Bool) {
+        
+    }
     
-    func sessionComplete(withId baseId: Int32, clientSessionId clientId: UInt256, denomination denom: UInt32, poolState state: PoolState, poolMessage message: PoolMessage, poolStatus status: PoolStatus, ipAddress address: UInt128, isJoined joined: Bool) { }
-    
+    func sessionComplete(withId baseId: Int32, clientSessionId clientId: UInt256, denomination denom: UInt32, poolState state: dash_spv_coinjoin_messages_pool_state_PoolState, poolMessage message: dash_spv_coinjoin_messages_pool_message_PoolMessage, poolStatus status: dash_spv_coinjoin_messages_pool_status_PoolStatus, ipAddress address: UInt128, isJoined joined: Bool) {
+        
+    }
     func mixingStarted() { }
     
-    func mixingComplete(_ withError: Bool, errorStatus: PoolStatus, isInterrupted: Bool) {
+    func mixingComplete(_ withError: Bool, errorStatus: UnsafeMutablePointer<dash_spv_coinjoin_messages_pool_status_PoolStatus>, isInterrupted: Bool) {
         self.coinJoinManager?.updateOptions(withEnabled: false)
         
         if isInterrupted {
@@ -450,11 +453,10 @@ extension CoinJoinService: DSCoinJoinManagerDelegate {
         } else {
             DSLogger.log("CoinJoin: Mixing Complete. status: \(errorStatus), \(progress)")
         }
-        
-        self.updateMixingState(state: withError && errorStatus != PoolStatus_ErrNotEnoughFunds ? .error : .finished)
+
+        self.updateMixingState(state: withError && !dash_spv_coinjoin_messages_pool_status_PoolStatus_is_err_not_enough_funds(errorStatus) ? .error : .finished)
     }
-    
-    func transactionProcessed(withId txId: UInt256, type: CoinJoinTransactionType) {
+    func transactionProcessed(withId txId: UInt256, type: UnsafeMutablePointer<dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType>) {
         self.updateProgress()
     }
 }

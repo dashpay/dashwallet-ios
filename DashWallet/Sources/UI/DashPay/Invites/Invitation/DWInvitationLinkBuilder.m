@@ -20,7 +20,7 @@
 #import "DWEnvironment.h"
 #import <Firebase/Firebase.h>
 
-#import "DSBlockchainIdentity+DWDisplayName.h"
+#import "DSIdentity+DWDisplayName.h"
 
 static NSString *const AndroidBundleID = @"org.dash.dashpay.testnet";
 // TODO: DP set app store id
@@ -29,18 +29,18 @@ static NSString *const iOSAppStoreID = @"1563288407";
 @implementation DWInvitationLinkBuilder
 
 + (void)dynamicLinkFrom:(NSString *)linkString
-    myBlockchainIdentity:(DSBlockchainIdentity *)myBlockchainIdentity
-              completion:(void (^)(NSURL *_Nullable url))completion {
-    NSString *encodedName = [[myBlockchainIdentity dw_displayNameOrUsername] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+             myIdentity:(DSIdentity *)myIdentity
+             completion:(void (^)(NSURL *_Nullable url))completion {
+    NSString *encodedName = [[myIdentity dw_displayNameOrUsername] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
 
     NSString *displayNameParam = @"";
-    if (myBlockchainIdentity.displayName.length != 0) {
+    if (myIdentity.displayName.length != 0) {
         displayNameParam = [NSString stringWithFormat:@"&display-name=%@", encodedName];
     }
 
     NSString *avatarParam = @"";
-    if (myBlockchainIdentity.avatarPath.length > 0) {
-        NSString *encodedAvatar = [myBlockchainIdentity.avatarPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    if (myIdentity.avatarPath.length > 0) {
+        NSString *encodedAvatar = [myIdentity.avatarPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
         avatarParam = [NSString stringWithFormat:@"&avatar-url=%@", encodedAvatar];
     }
 
@@ -68,7 +68,7 @@ static NSString *const iOSAppStoreID = @"1563288407";
     linkBuilder.socialMetaTagParameters.imageURL = [NSURL URLWithString:urlFormat];
     linkBuilder.socialMetaTagParameters.descriptionText =
         [NSString stringWithFormat:NSLocalizedString(@"You have been invited by %@. Start using Dash cryptocurrency.", nil),
-                                   [myBlockchainIdentity dw_displayNameOrUsername]];
+                                   [myIdentity dw_displayNameOrUsername]];
 
     [linkBuilder shortenWithCompletion:^(NSURL *_Nullable shortURL,
                                          NSArray<NSString *> *_Nullable warnings,

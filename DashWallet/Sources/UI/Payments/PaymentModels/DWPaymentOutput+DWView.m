@@ -186,14 +186,14 @@ static NSString *sanitizeString(NSString *s) {
 
 #if DASHPAY
 - (BOOL)isAcceptContactRequestCheckboxVisible {
-    if (self.userItem.blockchainIdentity == nil) {
+    if (self.userItem.identity == nil) {
         return NO;
     }
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    DSBlockchainIdentity *blockchainIdentity = self.userItem.blockchainIdentity;
-    return [myBlockchainIdentity friendshipStatusForRelationshipWithBlockchainIdentity:blockchainIdentity] == DSBlockchainIdentityFriendshipStatus_Incoming;
+    DSIdentity *myIdentity = wallet.defaultIdentity;
+    DSIdentity *identity = self.userItem.identity;
+    return [myIdentity friendshipStatusForRelationshipWithIdentity:identity] == DSIdentityFriendshipStatus_Incoming;
 }
 
 - (BOOL)isAcceptContactRequestCheckboxOn {

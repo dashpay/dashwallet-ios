@@ -108,13 +108,13 @@ class MainTabbarController: UITabBarController {
     
     #if DASHPAY
     // TODO: MOCK_DASHPAY remove when not mocked
-    private var blockchainIdentity: DSBlockchainIdentity? {
+    private var identity: DSIdentity? {
         if MOCK_DASHPAY.boolValue {
             if let username = DWGlobalOptions.sharedInstance().dashpayUsername {
-                return DWEnvironment.sharedInstance().currentWallet.createBlockchainIdentity(forUsername: username)
+                return DWEnvironment.sharedInstance().currentWallet.createIdentity(forUsername: username)
             }
         }
-        return DWEnvironment.sharedInstance().currentWallet.defaultBlockchainIdentity
+        return DWEnvironment.sharedInstance().currentWallet.defaultIdentity
     }
     #endif
 
@@ -130,7 +130,7 @@ class MainTabbarController: UITabBarController {
             .sink { [weak self] _ in
                 guard let self = self else { return }
 
-                if self.blockchainIdentity != nil {
+                if self.identity != nil {
                     let previousIndex = self.selectedIndex
                     self.configureControllers()
                     self.selectedIndex = previousIndex == 0 ? 0 : previousIndex + 2
@@ -197,7 +197,7 @@ extension MainTabbarController {
         viewControllers.append(nvc)
         
         #if DASHPAY
-        let identity = self.blockchainIdentity
+        let identity = self.identity
         
         if identity != nil {
             // Contacts

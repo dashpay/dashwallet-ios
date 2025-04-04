@@ -34,13 +34,13 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
     @objc let updateModel: DWDPUpdateProfileModel
     @Published private(set) var showJoinDashpay: Bool = true
     
-    @objc var blockchainIdentity: DSBlockchainIdentity? {
+    @objc var identity: DSIdentity? {
         if MOCK_DASHPAY.boolValue {
             if let username = DWGlobalOptions.sharedInstance().dashpayUsername {
-                return DWEnvironment.sharedInstance().currentWallet.createBlockchainIdentity(forUsername: username)
+                return DWEnvironment.sharedInstance().currentWallet.createIdentity(forUsername: username)
             }
         }
-        return DWEnvironment.sharedInstance().currentWallet.defaultBlockchainIdentity
+        return DWEnvironment.sharedInstance().currentWallet.defaultIdentity
     }
     
     override init() {
@@ -57,7 +57,7 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
     }
     
     @objc func update() {
-        guard let _ = blockchainIdentity else {
+        guard let _ = identity else {
             state = .none
             return
         }
@@ -75,7 +75,7 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
             return
         }
         
-        blockchainIdentity?.fetchProfile { [weak self] success, error in
+        identity?.fetchProfile { [weak self] success, error in
             guard let self = self else { return }
             self.state = success ? .done : .error
         }

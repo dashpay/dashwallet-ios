@@ -91,7 +91,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
     #if DASHPAY
     func handleDeeplink(_ url: URL, definedUsername: String?) {
-        if model.dashPayModel.blockchainIdentity != nil {
+        if model.dashPayModel.identity != nil {
             let title = NSLocalizedString("Username already found", comment: "")
             let message = NSLocalizedString("You cannot claim this invite since you already have a Dash username", comment: "")
             let alert = DPAlertViewController(icon: UIImage(named: "icon_invitation_error")!, title: title, description: message)
@@ -160,7 +160,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     private func setupView() {
         let logoImage: UIImage?
         let logoHeight: CGFloat
-        if DWEnvironment.sharedInstance().currentChain.chainType.tag == ChainType_TestNet {
+        if DWEnvironment.sharedInstance().currentChain.isTestnet() {
             logoImage = UIImage(named: "dash_logo_testnet")
             logoHeight = 40.0
         } else {
@@ -310,8 +310,8 @@ extension HomeViewController: HomeViewDelegate {
     }
     
     #if DASHPAY
-    func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt) {
-        avatarView.blockchainIdentity = identity
+    func homeView(_ homeView: HomeView, didUpdateProfile identity: DSIdentity?, unreadNotifications: UInt) {
+        avatarView.identity = identity
         let hasIdentity = identity != nil
         let hasNotifications = unreadNotifications > 0
         avatarView.isHidden = !hasIdentity

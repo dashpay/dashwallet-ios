@@ -16,24 +16,24 @@
 //
 
 class CoinJoinTransaction: Transaction {
-    let type: CoinJoinTransactionType
+    let type: dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType
     
-    init(transaction: DSTransaction, type: CoinJoinTransactionType) {
+    init(transaction: DSTransaction, type: dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType) {
         self.type = type
         super.init(transaction: transaction)
     }
     
     override var stateTitle: String {
         switch type {
-        case CoinJoinTransactionType_CreateDenomination:
+        case dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_CreateDenomination:
             NSLocalizedString("CoinJoin Create Denominations", comment: "CoinJoin")
-        case CoinJoinTransactionType_MakeCollateralInputs:
+        case dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_MakeCollateralInputs:
             NSLocalizedString("CoinJoin Collateral Inputs", comment: "CoinJoin")
-        case CoinJoinTransactionType_MixingFee:
+        case dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_MixingFee:
             NSLocalizedString("CoinJoin Mixing Fee", comment: "CoinJoin")
-        case CoinJoinTransactionType_Mixing:
+        case dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_Mixing:
             NSLocalizedString("CoinJoin Mixing", comment: "CoinJoin")
-        case CoinJoinTransactionType_Send:
+        case dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_Send:
             NSLocalizedString("CoinJoin Send", comment: "CoinJoin")
         default:
             ""
@@ -42,7 +42,7 @@ class CoinJoinTransaction: Transaction {
     
     override var iconName: String {
         switch type {
-        case CoinJoinTransactionType_MixingFee, CoinJoinTransactionType_Send:
+        case dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_MixingFee, dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_Send:
             "tx.item.sent.icon"
         default:
             "tx.item.internal.icon"

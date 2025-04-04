@@ -27,8 +27,10 @@ static NSString *TitleForOptionType(DWPayOptionModelType type) {
             return NSLocalizedString(@"Send to copied address or QR code", nil);
         case DWPayOptionModelType_NFC:
             return NSLocalizedString(@"NFC device", nil);
+#if DASHPAY
         case DWPayOptionModelType_DashPayUser:
             return NSLocalizedString(@"Send to contact", nil);
+#endif
     }
 }
 
@@ -44,9 +46,11 @@ static UIImage *IconForOptionType(DWPayOptionModelType type) {
         case DWPayOptionModelType_NFC:
             image = [UIImage imageNamed:@"pay_nfc"];
             break;
+#if DASHPAY
         case DWPayOptionModelType_DashPayUser:
             image = [UIImage imageNamed:@"pay_to_contact"];
             break;
+#endif
     }
     NSCParameterAssert(image);
 

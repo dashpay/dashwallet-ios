@@ -18,10 +18,10 @@
 #import <Foundation/Foundation.h>
 
 #import <CoreData/CoreData.h>
-#import <DashSync/DSBlockchainIdentity.h>
+#import <DashSync/DSIdentity.h>
 
 #import "DWDPBasicUserItem.h"
-#import "DWDPBlockchainIdentityBackedItem.h"
+#import "DWDPIdentityBackedItem.h"
 #import "DWUserProfileDataSource.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -47,7 +47,7 @@ typedef NS_ENUM(NSInteger, DWUserProfileModelState) {
 @property (readonly, nonatomic, strong) id<DWDPBasicUserItem> item;
 @property (readonly, nonatomic, assign) DWUserProfileModelState state;
 @property (readonly, nonatomic, copy) NSString *username;
-@property (readonly, nonatomic, assign) DSBlockchainIdentityFriendshipStatus friendshipStatus;
+@property (readonly, nonatomic, assign) DSIdentityFriendshipStatus friendshipStatus;
 @property (readonly, nonatomic, strong) id<DWUserProfileDataSource> dataSource;
 @property (readonly, nonatomic, assign) DWUserProfileModelState sendRequestState;
 @property (readonly, nonatomic, assign) DWUserProfileModelState acceptRequestState;

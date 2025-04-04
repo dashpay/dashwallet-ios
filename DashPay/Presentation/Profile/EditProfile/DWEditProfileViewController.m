@@ -19,7 +19,7 @@
 
 #import <MobileCoreServices/MobileCoreServices.h>
 
-#import "DSBlockchainIdentity+DWDisplayName.h"
+#import "DSIdentity+DWDisplayName.h"
 #import "DWAvatarEditSelectorViewController.h"
 #import "DWAvatarGravatarViewController.h"
 #import "DWAvatarPublicURLViewController.h"
@@ -36,6 +36,7 @@
 // if MOCK_DASHPAY
 #import "DWDashPayConstants.h"
 #import "DWGlobalOptions.h"
+#import <UniformTypeIdentifiers/UTCoreTypes.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -62,11 +63,11 @@ NS_ASSUME_NONNULL_END
 }
 
 - (BOOL)hasChanges {
-    if (![self.displayName isEqualToString:[self.blockchainIdentity dw_displayNameOrUsername]]) {
+    if (![self.displayName isEqualToString:[self.identity dw_displayNameOrUsername]]) {
         return YES;
     }
 
-    if (self.aboutMe && ![self.aboutMe isEqualToString:self.blockchainIdentity.matchingDashpayUserInViewContext.publicMessage]) {
+    if (self.aboutMe && ![self.aboutMe isEqualToString:self.identity.matchingDashpayUserInViewContext.publicMessage]) {
         return YES;
     }
 
@@ -86,7 +87,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSString *)avatarURLString {
-    return self.unsavedAvatarURL ?: self.blockchainIdentity.avatarPath;
+    return self.unsavedAvatarURL ?: self.identity.avatarPath;
 }
 
 - (BOOL)isValid {
@@ -103,17 +104,17 @@ NS_ASSUME_NONNULL_END
 
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
-    self.blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+    self.identity = [DWEnvironment sharedInstance].currentWallet.defaultIdentity;
     
-    if (MOCK_DASHPAY && self.blockchainIdentity == nil) {
+    if (MOCK_DASHPAY && self.identity == nil) {
         NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
         
         if (username != nil) {
-            self.blockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
+            self.identity = [[DWEnvironment sharedInstance].currentWallet createIdentityForUsername:username];
         }
     }
     
-    NSParameterAssert(self.blockchainIdentity);
+    NSParameterAssert(self.identity);
 
     [self setupItems];
     [self setupView];
@@ -137,7 +138,7 @@ NS_ASSUME_NONNULL_END
 - (void)setupView {
     self.headerView = [[DWEditProfileAvatarView alloc] initWithFrame:CGRectZero];
     self.headerView.delegate = self;
-    [self.headerView setImageWithBlockchainIdentity:self.blockchainIdentity];
+    [self.headerView setImageWithIdentity:self.identity];
 
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
     self.tableView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
@@ -164,7 +165,7 @@ NS_ASSUME_NONNULL_END
         self.displayNameModel = cellModel;
         cellModel.autocorrectionType = UITextAutocorrectionTypeNo;
         cellModel.returnKeyType = UIReturnKeyNext;
-        cellModel.text = [self.blockchainIdentity dw_displayNameOrUsername];
+        cellModel.text = [self.identity dw_displayNameOrUsername];
         __weak typeof(self) weakSelf = self;
         cellModel.didChangeValueBlock = ^(DWTextFieldFormCellModel *_Nonnull cellModel) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -180,7 +181,7 @@ NS_ASSUME_NONNULL_END
     {
         DWProfileAboutCellModel *cellModel = [[DWProfileAboutCellModel alloc] initWithTitle:NSLocalizedString(@"About me", nil)];
         self.aboutModel = cellModel;
-        cellModel.text = self.blockchainIdentity.matchingDashpayUserInViewContext.publicMessage;
+        cellModel.text = self.identity.matchingDashpayUserInViewContext.publicMessage;
         __weak typeof(self) weakSelf = self;
         cellModel.didChangeValueBlock = ^(DWTextFieldFormCellModel *_Nonnull cellModel) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -367,14 +368,12 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)showImagePickerWithType:(UIImagePickerControllerSourceType)sourceType {
-    if (![UIImagePickerController isSourceTypeAvailable:sourceType]) {
+    if (![UIImagePickerController isSourceTypeAvailable:sourceType])
         return;
-    }
-
     UIImagePickerController *picker = [[UIImagePickerController alloc] init];
     picker.delegate = self;
     picker.sourceType = sourceType;
-    picker.mediaTypes = @[ (id)kUTTypeImage ];
+    picker.mediaTypes = @[UTTypeImage.identifier];
     [self presentViewController:picker animated:YES completion:nil];
 }
 

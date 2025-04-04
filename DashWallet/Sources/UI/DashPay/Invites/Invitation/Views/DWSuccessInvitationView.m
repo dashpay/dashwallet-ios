@@ -36,12 +36,12 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWSuccessInvitationView
 
-- (DSBlockchainIdentity *)blockchainIdentity {
-    return self.avatarView.blockchainIdentity;
+- (DSIdentity *)identity {
+    return self.avatarView.identity;
 }
 
-- (void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-    self.avatarView.blockchainIdentity = blockchainIdentity;
+- (void)setIdentity:(DSIdentity *)identity {
+    self.avatarView.identity = identity;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {

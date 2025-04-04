@@ -19,7 +19,7 @@
 
 @implementation DWDashPaySetupModel
 
-@synthesize blockchainIdentity;
+@synthesize identity;
 
 @synthesize lastRegistrationError;
 

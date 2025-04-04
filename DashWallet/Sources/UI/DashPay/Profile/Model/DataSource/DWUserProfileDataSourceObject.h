@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class NSFetchedResultsController;
 @class DSFriendRequestEntity;
-@class DSBlockchainIdentity;
+@class DSIdentity;
 
 @interface DWUserProfileDataSourceObject : NSObject <DWUserProfileDataSource>
 
@@ -30,8 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
                txDataProvider:(id<DWTransactionListDataProviderProtocol>)txDataProvider
             friendToMeRequest:(nullable DSFriendRequestEntity *)friendToMe
             meToFriendRequest:(nullable DSFriendRequestEntity *)meToFriend
-     friendBlockchainIdentity:(DSBlockchainIdentity *)friendBlockchainIdentity
-         myBlockchainIdentity:(DSBlockchainIdentity *)myBlockchainIdentity;
+               friendIdentity:(DSIdentity *)friendIdentity
+                   myIdentity:(DSIdentity *)myIdentity;
 
 /// Initialize as empty
 - (instancetype)init;

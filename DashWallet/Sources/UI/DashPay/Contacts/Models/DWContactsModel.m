@@ -39,14 +39,14 @@
     return self;
 }
 
-- (BOOL)canOpenBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (BOOL)canOpenIdentity:(DSIdentity *)identity {
     if (MOCK_DASHPAY) {
         return YES;
     }
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    return !uint256_eq(myBlockchainIdentity.uniqueID, blockchainIdentity.uniqueID);
+    DSIdentity *myIdentity = wallet.defaultIdentity;
+    return !uint256_eq(myIdentity.uniqueID, identity.uniqueID);
 }
 
 - (DWRequestsModel *)contactRequestsModel {
@@ -54,19 +54,19 @@
 }
 
 - (void)rebuildFRCDataSources {
-    DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+    DSIdentity *identity = [DWEnvironment sharedInstance].currentWallet.defaultIdentity;
 
-    if (!blockchainIdentity && !MOCK_DASHPAY) {
+    if (!identity && !MOCK_DASHPAY) {
         return;
     }
 
     NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
 
-    _requestsDataSource = [[DWIncomingFetchedDataSource alloc] initWithBlockchainIdentity:blockchainIdentity inContext:context];
+    _requestsDataSource = [[DWIncomingFetchedDataSource alloc] initWithIdentity:identity inContext:context];
     _requestsDataSource.shouldSubscribeToNotifications = YES;
     _requestsDataSource.delegate = self;
 
-    _contactsDataSource = [[DWContactsFetchedDataSource alloc] initWithBlockchainIdentity:blockchainIdentity inContext:context];
+    _contactsDataSource = [[DWContactsFetchedDataSource alloc] initWithIdentity:identity inContext:context];
     _contactsDataSource.shouldSubscribeToNotifications = YES;
     _contactsDataSource.delegate = self;
 }

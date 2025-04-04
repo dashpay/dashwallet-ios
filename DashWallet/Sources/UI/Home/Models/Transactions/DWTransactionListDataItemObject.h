@@ -33,7 +33,8 @@ typedef NS_ENUM(NSUInteger, DWTransactionType) {
     DWTransactionType_MasternodeRegistration,
     DWTransactionType_MasternodeUpdate,
     DWTransactionType_MasternodeRevoke,
-    DWTransactionType_BlockchainIdentityRegistration,
+    DWTransactionType_AssetLock,
+    DWTransactionType_AssetUnlock,
 };
 
 @interface DWTransactionListDataItemObject : NSObject <DWTransactionListDataItem>

@@ -18,7 +18,7 @@
 import UIKit
 
 class InvitationBottomView: UIView {
-    init(invitation: DSBlockchainInvitation) {
+    init(invitation: DSInvitation) {
         super.init(frame: .zero)
         
         let stackView = UIStackView()
@@ -51,7 +51,7 @@ class InvitationBottomView: UIView {
         let avatarView = DWDPAvatarView()
         avatarView.isSmall = true
         avatarView.backgroundMode = .random
-        avatarView.blockchainIdentity = invitation.identity
+        avatarView.identity = invitation.identity
         userStackView.addArrangedSubview(avatarView)
         
         let titleStackView = UIStackView()
