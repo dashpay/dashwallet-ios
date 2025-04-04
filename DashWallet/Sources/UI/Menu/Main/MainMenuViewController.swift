@@ -111,7 +111,7 @@ extension MainMenuViewController {
     func refreshContent() {
         let balance = DWEnvironment.sharedInstance().currentAccount.balance
         let invitationsEnabled = DWGlobalOptions.sharedInstance().dpInvitationFlowEnabled && 
-            (userProfileModel?.blockchainIdentity != nil) && balance > DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+            (userProfileModel?.identity != nil) && balance > DWDP_MIN_BALANCE_TO_CREATE_USERNAME
         let isVotingEnabled = VotingPrefsWrapper.getIsEnabled()
         contentView.model = DWMainMenuModel(invitesEnabled: invitationsEnabled, votingEnabled: isVotingEnabled)
         contentView.updateUserHeader()

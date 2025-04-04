@@ -25,6 +25,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wobjc-designated-initializers"
+
 static CGFloat const AVATAR_SIZE = 128.0;
 static CGFloat const BUTTON_HEIGHT = 40.0;
 
@@ -119,7 +122,7 @@ NS_ASSUME_NONNULL_END
         [bottomContentView addSubview:actionButton];
         _actionButton = actionButton;
 
-        UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+        UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleLarge];
         activityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
         activityIndicatorView.color = [UIColor dw_dashBlueColor];
         [bottomContentView addSubview:activityIndicatorView];
@@ -209,7 +212,7 @@ NS_ASSUME_NONNULL_END
 - (void)setModel:(DWUserProfileModel *)model {
     _model = model;
 
-    [self updateBlockchainIdentity:model.item.blockchainIdentity];
+    [self updateIdentity:model.item.identity];
 }
 
 - (void)setScrollingPercent:(float)percent {
@@ -288,12 +291,12 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (void)updateBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (void)updateIdentity:(DSIdentity *)identity {
     NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
     [result beginEditing];
 
-    BOOL hasDisplayName = blockchainIdentity.displayName.length > 0;
-    NSString *title = hasDisplayName ? blockchainIdentity.displayName : blockchainIdentity.currentDashpayUsername;
+    BOOL hasDisplayName = identity.displayName.length > 0;
+    NSString *title = hasDisplayName ? identity.displayName : identity.currentDashpayUsername;
 
     NSAttributedString *titleString = [[NSAttributedString alloc]
         initWithString:title ? title : @"<Fetching Contact>"
@@ -304,7 +307,7 @@ NS_ASSUME_NONNULL_END
     [result appendAttributedString:titleString];
 
     if (hasDisplayName) {
-        NSString *subtitle = [NSString stringWithFormat:@"\n%@", blockchainIdentity.currentDashpayUsername];
+        NSString *subtitle = [NSString stringWithFormat:@"\n%@", identity.currentDashpayUsername];
         NSAttributedString *subtitleString = [[NSAttributedString alloc]
             initWithString:subtitle
                 attributes:@{
@@ -317,20 +320,20 @@ NS_ASSUME_NONNULL_END
     [result endEditing];
 
     self.detailsLabel.attributedText = result;
-    self.avatarView.blockchainIdentity = blockchainIdentity;
+    self.avatarView.identity = identity;
 
     [self setScrollingPercent:0.0];
 }
 
 - (void)updateActions {
-    const DSBlockchainIdentityFriendshipStatus friendshipStatus = self.model.friendshipStatus;
+    const DSIdentityFriendshipStatus friendshipStatus = self.model.friendshipStatus;
     switch (friendshipStatus) {
-        case DSBlockchainIdentityFriendshipStatus_Unknown:
+        case DSIdentityFriendshipStatus_Unknown:
             self.actionButton.hidden = YES;
             self.pendingView.hidden = YES;
 
             break;
-        case DSBlockchainIdentityFriendshipStatus_None:
+        case DSIdentityFriendshipStatus_None:
             self.actionButton.hidden = NO;
             self.pendingView.hidden = YES;
 
@@ -338,14 +341,14 @@ NS_ASSUME_NONNULL_END
             [self.actionButton setTitle:NSLocalizedString(@"Send Contact Request", nil) forState:UIControlStateNormal];
 
             break;
-        case DSBlockchainIdentityFriendshipStatus_Outgoing:
+        case DSIdentityFriendshipStatus_Outgoing:
             self.actionButton.hidden = YES;
             self.pendingView.hidden = NO;
             [self.pendingView setAsPendingRequest];
 
             break;
-        case DSBlockchainIdentityFriendshipStatus_Incoming:
-        case DSBlockchainIdentityFriendshipStatus_Friends:
+        case DSIdentityFriendshipStatus_Incoming:
+        case DSIdentityFriendshipStatus_Friends:
             self.actionButton.hidden = NO;
             self.pendingView.hidden = YES;
 
@@ -360,3 +363,5 @@ NS_ASSUME_NONNULL_END
 }
 
 @end
+
+#pragma clang diagnostic pop

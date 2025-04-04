@@ -127,7 +127,7 @@ NS_ASSUME_NONNULL_END
         return;
     }
 
-    if (![self.model canOpenBlockchainIdentity:item.blockchainIdentity]) {
+    if (![self.model canOpenIdentity:item.identity]) {
         [cell dw_shakeView];
         return;
     }

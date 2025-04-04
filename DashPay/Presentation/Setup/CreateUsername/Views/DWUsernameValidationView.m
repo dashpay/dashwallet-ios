@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_END
         [self addSubview:iconImageView];
         _iconImageView = iconImageView;
 
-        UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+        UIActivityIndicatorView *activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
         activityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
         activityIndicatorView.color = [UIColor dw_darkTitleColor];
         [self addSubview:activityIndicatorView];
@@ -110,6 +110,9 @@ NS_ASSUME_NONNULL_END
             self.iconImageView.tintColor = [UIColor dw_greenColor];
             self.titleLabel.textColor = [UIColor dw_darkTitleColor];
             [self.activityIndicatorView stopAnimating];
+            break;
+        case DWUsernameValidationRuleResultWarning:
+            // TODO
             break;
         case DWUsernameValidationRuleResultInvalid:
             self.hidden = NO;

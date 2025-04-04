@@ -126,7 +126,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     NSDate *date = [ExploreDashObjcWrapper lastServerUpdateDate];
-    return [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Last server update", @"Explore Dash"), [dateFormatter stringFromDate:date]];
+    return DSLocalizedFormat(@"Last server update: %@", @"Explore Dash", [dateFormatter stringFromDate:date]);
 }
 
 - (NSString *)status {
@@ -140,24 +140,15 @@ NS_ASSUME_NONNULL_BEGIN
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DSPeerManager *peerManager = [DWEnvironment sharedInstance].currentChainManager.peerManager;
     DSMasternodeManager *masternodeManager = [DWEnvironment sharedInstance].currentChainManager.masternodeManager;
-    DSMasternodeList *currentMasternodeList = masternodeManager.currentMasternodeList;
-
-    NSString *rateString = [NSString stringWithFormat:NSLocalizedString(@"Rate: %@ = %@", @"ex., Rate 1 US $ = 0.000009 Dash"),
-                                                      [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:DUFFS / CurrencyExchangerObjcWrapper.localCurrencyDashPrice.doubleValue],
-                                                      [CurrencyExchangerObjcWrapper stringForDashAmount:DUFFS / CurrencyExchangerObjcWrapper.localCurrencyDashPrice.doubleValue]];
-    NSString *updatedString = [NSString stringWithFormat:NSLocalizedString(@"Updated: %@", @"ex., Updated: 27.12, 8:30"),
-                                                         [dateFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:authenticationManager.secureTime]].lowercaseString];
-    NSString *blockString = [NSString stringWithFormat:NSLocalizedString(@"Block #%d of %d", nil),
-                                                       chain.lastSyncBlockHeight,
-                                                       chain.estimatedBlockHeight];
-    NSString *peersString = [NSString stringWithFormat:NSLocalizedString(@"Connected peers: %d", nil),
-                                                       (int)peerManager.connectedPeerCount];
-    NSString *dlPeerString = [NSString stringWithFormat:NSLocalizedString(@"Download peer: %@", @"ex., Download peer: 127.0.0.1:9999"),
-                                                        peerManager.downloadPeerName ? peerManager.downloadPeerName : @"-"];
-    NSString *quorumsString = [NSString stringWithFormat:NSLocalizedString(@"Quorums validated: %d/%d", nil),
-                                                         (int)[currentMasternodeList validQuorumsCountOfType:LLMQType_Llmqtype50_60],
-                                                         (int)[currentMasternodeList quorumsCountOfType:LLMQType_Llmqtype50_60]];
-
+    DMasternodeList *currentMasternodeList = masternodeManager.currentMasternodeList;
+    int validQuorumCount = [masternodeManager currentValidQuorumsOfType:dashcore_sml_llmq_type_LLMQType_Llmqtype50_60];
+    int quorumCount = [masternodeManager currentValidQuorumsOfType:dashcore_sml_llmq_type_LLMQType_Llmqtype50_60];
+    NSString *rateString = DSLocalizedFormat(@"Rate: %@ = %@", @"ex., Rate 1 US $ = 0.000009 Dash", [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:DUFFS / CurrencyExchangerObjcWrapper.localCurrencyDashPrice.doubleValue), [CurrencyExchangerObjcWrapper stringForDashAmount:DUFFS / CurrencyExchangerObjcWrapper.localCurrencyDashPrice.doubleValue]];
+    NSString *updatedString = DSLocalizedFormat(@"Updated: %@", @"ex., Updated: 27.12, 8:30", [dateFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:authenticationManager.secureTime]].lowercaseString);
+    NSString *blockString = DSLocalizedFormat(@"Block #%d of %d", nil, chain.lastSyncBlockHeight, chain.estimatedBlockHeight);
+    NSString *peersString = DSLocalizedFormat(@"Connected peers: %d", nil, (int)peerManager.connectedPeerCount);
+    NSString *dlPeerString = DSLocalizedFormat(@"Download peer: %@", @"ex., Download peer: 127.0.0.1:9999", peerManager.downloadPeerName ? peerManager.downloadPeerName : @"-");
+    NSString *quorumsString = DSLocalizedFormat(@"Quorums validated: %d/%d", nil, validQuorumCount, quorumCount);
     NSString *usernameString = @"";
 
 #if DASHPAY

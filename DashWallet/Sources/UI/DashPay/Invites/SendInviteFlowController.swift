@@ -47,7 +47,7 @@ class SendInviteFlowController: BaseInvitesViewController {
         dismiss(animated: true, completion: nil)
     }
     
-    private func showSuccessInvitation(_ invitation: DSBlockchainInvitation, fullLink: String) {
+    private func showSuccessInvitation(_ invitation: DSInvitation, fullLink: String) {
         let invitationController = SuccessInvitationViewController(with: invitation, 
                                                                   fullLink: fullLink, 
                                                                   index: 0)

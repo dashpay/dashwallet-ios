@@ -27,7 +27,7 @@ protocol HomeViewDelegate: AnyObject {
     func homeViewShowCoinJoin()
     
 #if DASHPAY
-    func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt)
+    func homeView(_ homeView: HomeView, didUpdateProfile identity: DSIdentity?, unreadNotifications: UInt)
     func homeViewRequestUsername()
     func homeViewEditProfile()
 #endif
@@ -162,7 +162,7 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
         let completed = model.dashPayModel.registrationCompleted
         
         if status?.state == .done || completed {
-            let identity = model.dashPayModel.blockchainIdentity
+            let identity = model.dashPayModel.identity
             let notificaitonAmount = model.dashPayModel.unreadNotificationsCount
             
             delegate?.homeView(self, didUpdateProfile: identity, unreadNotifications: notificaitonAmount)

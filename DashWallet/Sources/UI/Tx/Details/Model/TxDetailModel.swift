@@ -94,11 +94,11 @@ extension TxDetailModel {
 
 extension TxDetailModel {
     var hasSourceUser: Bool {
-        !transaction.tx.sourceBlockchainIdentities.isEmpty
+        !transaction.tx.sourceIdentities.isEmpty
     }
 
     var hasDestinationUser: Bool {
-        !transaction.tx.destinationBlockchainIdentities.isEmpty
+        !transaction.tx.destinationIdentities.isEmpty
     }
 
     var hasFee: Bool {
@@ -177,31 +177,31 @@ extension TxDetailModel {
     }
 
     private func sourceUsers(with title: String, font: UIFont) -> [DWTitleDetailItem] {
-        guard let blockchainIdentity = transaction.tx.sourceBlockchainIdentities.first else {
+        guard let identity = transaction.tx.sourceIdentities.first else {
             return []
         }
 
         #if DASHPAY
-        let user = DWDPUserObject(blockchainIdentity: blockchainIdentity)
+        let user = DWDPUserObject(identity: identity)
         let model = DWTitleDetailCellModel(title: title, userItem: user, copyableData: nil)
         return [model]
-        #endif
-
+        #else
         return []
+        #endif
     }
 
     private func destinationUsers(with title: String, font: UIFont) -> [DWTitleDetailItem] {
-        guard let blockchainIdentity = transaction.tx.destinationBlockchainIdentities.first else {
+        guard let identity = transaction.tx.destinationIdentities.first else {
             return []
         }
 
         #if DASHPAY
-        let user = DWDPUserObject(blockchainIdentity: blockchainIdentity)
+        let user = DWDPUserObject(identity: identity)
         let model = DWTitleDetailCellModel(title: title, userItem: user, copyableData: nil)
         return [model]
-        #endif
-
+        #else
         return []
+        #endif
     }
 
 

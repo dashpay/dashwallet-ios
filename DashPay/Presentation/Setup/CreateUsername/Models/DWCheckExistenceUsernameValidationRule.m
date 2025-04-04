@@ -34,7 +34,7 @@ static NSTimeInterval VALIDATION_DEBOUNCE_DELAY = 0.4;
 @property (nullable, nonatomic, weak) id<DWCheckExistenceUsernameValidationRuleDelegate> delegate;
 
 @property (nullable, nonatomic, copy) NSString *username;
-@property (nullable, nonatomic, strong) id<DSDAPINetworkServiceRequest> request;
+//@property (nullable, nonatomic, strong) id<DSDAPINetworkServiceRequest> request;
 @property (readonly, nonatomic, copy) NSArray<DWUsernameValidationRule *> *validators;
 
 @end
@@ -75,7 +75,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)validateText:(NSString *)text {
-    [self.request cancel];
+//    [self.request cancel];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(performValidationWithUsername:) object:nil];
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(performValidation) object:nil];
     self.username = text;
 
@@ -117,33 +118,24 @@ NS_ASSUME_NONNULL_END
         return;
     }
     
-    self.request = [manager
-        searchIdentityByDashpayUsername:username
-                         withCompletion:^(BOOL succeess, DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error) {
-                             __strong typeof(weakSelf) strongSelf = weakSelf;
-                             if (!strongSelf) {
-                                 return;
-                             }
-
-                             NSAssert([NSThread isMainThread], @"Main thread is assumed here");
-
-                             // search query was changed before results arrive, ignore results
-                             if (![strongSelf.username isEqualToString:username]) {
-                                 return;
-                             }
-
-                             if (succeess) {
-                                 if (blockchainIdentity != nil) {
-                                     strongSelf.validationResult = DWUsernameValidationRuleResultInvalidCritical;
-                                 }
-                                 else {
-                                     strongSelf.validationResult = DWUsernameValidationRuleResultValid;
-                                 }
-                             }
-                             else {
-                                 strongSelf.validationResult = DWUsernameValidationRuleResultError;
-                             }
-                         }];
+    [manager searchIdentityByDashpayUsername:username
+                              withCompletion:^(BOOL succeess, DSIdentity *_Nullable identity, NSError *_Nullable error) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+        // search query was changed before results arrive, ignore results
+        if (![strongSelf.username isEqualToString:username]) return;
+        
+        if (succeess) {
+            if (identity != nil) {
+                strongSelf.validationResult = DWUsernameValidationRuleResultInvalidCritical;
+            } else {
+                strongSelf.validationResult = DWUsernameValidationRuleResultValid;
+            }
+        } else {
+            strongSelf.validationResult = DWUsernameValidationRuleResultError;
+        }
+    }];
 }
 
 @end

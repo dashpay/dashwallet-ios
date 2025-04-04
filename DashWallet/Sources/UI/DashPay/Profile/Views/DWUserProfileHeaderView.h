@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import <DashSync/DSBlockchainIdentity.h>
+#import <DashSync/DSIdentity.h>
 #import <KVO-MVVM/KVOUICollectionReusableView.h>
 
 NS_ASSUME_NONNULL_BEGIN

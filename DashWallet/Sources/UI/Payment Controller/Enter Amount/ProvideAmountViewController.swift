@@ -81,7 +81,7 @@ final class ProvideAmountViewController: SendAmountViewController {
         if let contact = contact {
             avatarView = DWDPAvatarView()
             destination = contact.username
-            avatarView!.blockchainIdentity = contact.blockchainIdentity
+            avatarView!.identity = contact.identity
             avatarView!.translatesAutoresizingMaskIntoConstraints = false
             avatarView!.backgroundMode = .random
             avatarView!.isUserInteractionEnabled = false

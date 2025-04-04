@@ -46,7 +46,7 @@ final class SyncingAlertViewController: BaseViewController, SyncingAlertContentV
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        model.networkStatusDidChange = { [weak self] _ in
+        model.networkStatusDidChange = { /*[weak self]*/ _ in
             // TODO: update view based on network connection instead of passing sync state
         }
 

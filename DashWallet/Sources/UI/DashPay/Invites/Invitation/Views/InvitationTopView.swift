@@ -78,7 +78,7 @@ class InvitationTopView: BaseInvitationTopView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func update(with blockchainIdentity: DSBlockchainIdentity, invitation: DSBlockchainInvitation) {
+    override func update(with identity: DSIdentity, invitation: DSInvitation) {
         if invitation.identity.isRegistered {
             iconView.image = UIImage(named: "icon_invitation_read_big")!
         }
@@ -88,7 +88,7 @@ class InvitationTopView: BaseInvitationTopView {
         let title = invitation.name ?? (tag ?? String(defaultTitle))
         titleLabel.text = title
         
-        let transaction: DSTransaction = invitation.identity.registrationCreditFundingTransaction!
+        let transaction: DSTransaction = invitation.identity.registrationAssetLockTransaction!
         let chain = DWEnvironment.sharedInstance().currentChain
         
         let now = chain.timestamp(forBlockHeight: UInt32(TX_UNCONFIRMED))
@@ -124,7 +124,7 @@ class BaseInvitationTopView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func update(with blockchainIdentity: DSBlockchainIdentity, invitation: DSBlockchainInvitation) {
+    func update(with identity: DSIdentity, invitation: DSInvitation) {
         
     }
     

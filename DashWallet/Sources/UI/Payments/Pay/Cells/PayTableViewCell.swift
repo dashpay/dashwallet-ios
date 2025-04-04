@@ -34,7 +34,7 @@ class PayTableViewCell: UITableViewCell {
         didSet {
             guard let model else { return }
 
-            let type = model.type
+//            let type = model.type
             titleLabel.text = model.title
             iconImageView.image = model.icon
         }

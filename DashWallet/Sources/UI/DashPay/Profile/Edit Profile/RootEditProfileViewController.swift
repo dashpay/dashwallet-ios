@@ -28,8 +28,8 @@ class RootEditProfileViewController: ActionButtonViewController, DWEditProfileVi
     var isBackButtonHidden: Bool = false
     weak var delegate: RootEditProfileViewControllerDelegate?
     private var editController: DWEditProfileViewController!
-    var blockchainIdentity: DSBlockchainIdentity? {
-        return editController.blockchainIdentity
+    var identity: DSIdentity? {
+        return editController.identity
     }
     
     override func viewDidLoad() {

@@ -58,7 +58,7 @@ final class ConvertCryptoOrderPreviewModel: OrderPreviewModel {
         Task { [weak self] in
             do {
                 let _ = try await Coinbase.shared.commitTradeOrder(origin: selectedAccount, orderID: orderId)
-                try await self?.transferFromCoinbase(amount: amountToTransfer, with: nil)
+                try await self?.transferFromCoinbase(amount: self?.amountToTransfer ?? 0, with: nil)
             } catch {
                 await MainActor.run { [weak self] in
                     self?.failureHandle?(.error)

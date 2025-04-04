@@ -51,9 +51,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) SyncingActivityMonitor *syncMonitor;
 
 @property (readonly, nonatomic, strong) NSArray<DSTransaction *> *dataSource;
-@property (null_resettable, nonatomic, strong) NSArray<DSTransaction *> *receivedDataSource;
-@property (null_resettable, nonatomic, strong) NSArray<DSTransaction *> *sentDataSource;
-@property (null_resettable, nonatomic, strong) NSArray<DSTransaction *> *rewardsDataSource;
+@property (nonatomic, strong) NSArray<DSTransaction *> *receivedDataSource;
+@property (nonatomic, strong) NSArray<DSTransaction *> *sentDataSource;
+@property (nonatomic, strong) NSArray<DSTransaction *> *rewardsDataSource;
 
 @property (nonatomic, assign) BOOL upgradedExtendedKeys;
 
@@ -66,6 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize dashPayModel = _dashPayModel;
 @synthesize updatesObserver = _updatesObserver;
 @synthesize allDataSource = _allDataSource;
+@synthesize allowedToShowReclassifyYourTransactions = _allowedToShowReclassifyYourTransactions;
 
 
 - (instancetype)init {

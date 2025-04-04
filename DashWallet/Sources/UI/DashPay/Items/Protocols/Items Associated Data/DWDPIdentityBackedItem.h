@@ -15,13 +15,15 @@
 //  limitations under the License.
 //
 
-#import "DSBlockchainIdentity.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSBlockchainIdentity (DWDisplayTitleSubtitle)
+@class DSIdentity;
 
-- (NSAttributedString *)dw_asTitleSubtitle;
+@protocol DWDPIdentityBackedItem <NSObject>
+
+@property (readonly, nonatomic, strong) DSIdentity *identity;
 
 @end
 

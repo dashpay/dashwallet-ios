@@ -19,11 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity;
+@class DSIdentity;
 
 @interface DWSuccessInvitationView : UIView
 
-@property (nullable, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@property (nullable, nonatomic, strong) DSIdentity *identity;
 
 - (void)prepareForAnimation;
 - (void)showAnimated;

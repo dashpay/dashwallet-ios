@@ -23,13 +23,13 @@ extern NSNotificationName const DWDashPayRegistrationStatusUpdatedNotification;
 extern NSNotificationName const DWDashPaySentContactRequestToInviter;
 
 @class DWDPRegistrationStatus;
-@class DSBlockchainIdentity;
+@class DSIdentity;
 @class DWCurrentUserProfileModel;
 
 @protocol DWDashPayProtocol <NSObject>
 
 @property (nullable, readonly, nonatomic, copy) NSString *username;
-@property (nullable, readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@property (nullable, readonly, nonatomic, strong) DSIdentity *identity;
 @property (nullable, readonly, nonatomic, strong) DWDPRegistrationStatus *registrationStatus;
 @property (readonly, nonatomic, strong) DWCurrentUserProfileModel *userProfile;
 @property (nullable, readonly, nonatomic, strong) NSError *lastRegistrationError;

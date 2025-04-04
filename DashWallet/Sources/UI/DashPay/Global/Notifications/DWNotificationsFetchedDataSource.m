@@ -21,11 +21,11 @@
 
 @implementation DWNotificationsFetchedDataSource
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
-                                 inContext:(NSManagedObjectContext *)context {
+- (instancetype)initWithIdentity:(DSIdentity *)identity
+                       inContext:(NSManagedObjectContext *)context {
     self = [super initWithContext:context];
     if (self) {
-        _blockchainIdentity = blockchainIdentity;
+        _identity = identity;
     }
     return self;
 }
@@ -35,7 +35,7 @@
 }
 
 - (NSPredicate *)predicate {
-    DSDashpayUserEntity *dashPayUser = [self.blockchainIdentity matchingDashpayUserInContext:self.context];
+    DSDashpayUserEntity *dashPayUser = [self.identity matchingDashpayUserInContext:self.context];
     return [NSPredicate predicateWithFormat:@"destinationContact == %@ || sourceContact == %@", dashPayUser, dashPayUser];
 }
 

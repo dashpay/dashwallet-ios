@@ -34,6 +34,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWReceiveModelStub
 
+@synthesize delegate;
+#if DASHPAY
+@synthesize username;
+#endif
+
 - (instancetype)initWithAmount:(uint64_t)amount {
     self = [super initWithAmount:amount];
     if (self) {
@@ -96,6 +101,16 @@ NS_ASSUME_NONNULL_BEGIN
         });
     });
 }
+
+#if DASHPAY
+- (void)copyUsernameToPasteboard {
+    NSString *username = self.paymentRequest.dashpayUsername;
+    if (!username)
+        return;
+    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+    pasteboard.string = username;
+}
+#endif
 
 @end
 
