@@ -71,12 +71,9 @@ post_install do |installer|
     # fixes warnings about unsupported Deployment Target in Xcode
     target.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
-      
     end
-    
-    # update info about current DashSync version
-    # the command runs in the background after 1 sec, when `pod install` updates Podfile.lock
-    system("(sleep 1; sh ./scripts/dashsync_version.sh)")
-    
   end
+  # update info about current DashSync version
+  # the command runs in the background after 1 sec, when `pod install` updates Podfile.lock
+  system("(sleep 1; sh ./scripts/dashsync_version.sh)")
 end

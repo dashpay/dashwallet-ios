@@ -88,8 +88,7 @@ PODS:
 DEPENDENCIES:
   - CloudInAppMessaging (= 0.1.0)
   - CocoaImageHashing (from `https://github.com/ameingast/cocoaimagehashing.git`, commit `ad01eee`)
-  - DashSharedCore (from `../dash-shared-core-ferment/`)
-  - DashSync (from `../DashSync2/`)
+  - DashSync (from `../DashSync/`)
   - DSDynamicOptions (= 0.1.2)
   - Firebase/DynamicLinks
   - FirebaseStorage (= 8.15.0)
@@ -113,6 +112,7 @@ SPEC REPOS:
     - BlueRSA
     - CloudInAppMessaging
     - CocoaLumberjack
+    - DashSharedCore
     - DSDynamicOptions
     - DWAlertController
     - Firebase
@@ -143,10 +143,8 @@ EXTERNAL SOURCES:
   CocoaImageHashing:
     :commit: ad01eee
     :git: https://github.com/ameingast/cocoaimagehashing.git
-  DashSharedCore:
-    :path: "../dash-shared-core-ferment/"
   DashSync:
-    :path: "../DashSync2/"
+    :path: "../DashSync/"
   MMSegmentSlider:
     :commit: 2d91366
     :git: https://github.com/podkovyrin/MMSegmentSlider
@@ -167,7 +165,7 @@ SPEC CHECKSUMS:
   CloudInAppMessaging: 5dde21e2e67e173e3803ca7532eacaa77e19d744
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
-  DashSharedCore: 37eda0b2954bf605aa4afa310d9ab4474fff9097
+  DashSharedCore: b8481feb5f08acf162b548edbfc7a9b1ce491141
   DashSync: 8d090412f8041f916fdeed32fc5814d88538856c
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
@@ -196,6 +194,6 @@ SPEC CHECKSUMS:
   TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: f26463d0bd6784a210f3603d6020ffeb490d7f1a
+PODFILE CHECKSUM: d29548f7ded955715bfdc33b3791810beeddb598
 
 COCOAPODS: 1.15.2
