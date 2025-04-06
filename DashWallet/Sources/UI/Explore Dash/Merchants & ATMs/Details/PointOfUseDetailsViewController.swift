@@ -165,8 +165,6 @@ extension PointOfUseDetailsViewController {
             return nil
         }
     }
-
-
 }
 
 

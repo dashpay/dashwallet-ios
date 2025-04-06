@@ -165,7 +165,7 @@ extension MerchantDAO {
               completion: completion)
     }
 
-    func allLocations(for merchantId: Int64, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
+    func allLocations(for merchantId: String, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                       completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }

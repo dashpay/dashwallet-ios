@@ -20,7 +20,7 @@ import Foundation
 import SSZipArchive
 
 // TODO: Move it to plist and note in release process
-let gsFilePath = "gs://dash-wallet-firebase.appspot.com/explore/explore.db"
+let gsFilePath = "gs://dash-wallet-firebase.appspot.com/explore/explore-v2.db"
 
 private let fileName = "explore"
 
@@ -87,10 +87,9 @@ public class ExploreDatabaseSyncManager {
             }
 
             let timeInterval = timeIntervalMillesecond/1000
-            let savedTs = wSelf.exploreDatabaseLastSyncTimestamp
-            wSelf.exploreDatabaseLastVersion = timeInterval
+            let installedVersion = wSelf.exploreDatabaseLastVersion
 
-            guard timeInterval > savedTs else {
+            guard timeInterval > installedVersion else {
                 wSelf.syncState = .synced(Date())
                 return
             }
@@ -110,7 +109,8 @@ public class ExploreDatabaseSyncManager {
 extension ExploreDatabaseSyncManager {
     private func downloadDatabase(metadata: StorageMetadata) {
         guard let timestamp = metadata.customMetadata?[timestampKey],
-              let checksum = metadata.customMetadata?[checksumKey] else {
+              let checksum = metadata.customMetadata?[checksumKey],
+              let timeIntervalMillesecond = TimeInterval(timestamp) else {
             syncState = .error(Date(), nil)
             return
         }
@@ -120,13 +120,14 @@ extension ExploreDatabaseSyncManager {
 
         storageRef.getData(maxSize: metadata.size) { [weak self] data, error in
             let date = Date()
-            let timestamp = date.timeIntervalSince1970
+            let now = date.timeIntervalSince1970
 
             if let e = error {
                 self?.syncState = .error(date, e)
             } else {
                 try? data?.write(to: urlToSave)
-                self?.exploreDatabaseLastSyncTimestamp = timestamp
+                self?.exploreDatabaseLastSyncTimestamp = now
+                self?.exploreDatabaseLastVersion = timeIntervalMillesecond / 1000
                 self?.syncState = .synced(date)
                 self?.unzipFile(at: urlToSave.path, password: checksum)
             }

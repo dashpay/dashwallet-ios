@@ -69,7 +69,7 @@ class PointOfUseListFiltersCell: UITableViewCell {
         var label = UILabel()
         label.adjustsFontSizeToFitWidth = true
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = .systemFont(ofSize: 20)
+        label.font = .systemFont(ofSize: 20, weight: .semibold)
         label.minimumScaleFactor = 0.5
         txtStackView.addArrangedSubview(label)
         titleLabel = label

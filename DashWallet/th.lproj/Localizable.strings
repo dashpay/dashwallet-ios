@@ -1964,6 +1964,9 @@
 /* No comment provided by engineer. */
 "Save" = "บันทึก";
 
+/* DashSpend */
+"Save %.2f%%" = "Save %.2f%%";
+
 /* No comment provided by engineer. */
 "Save Changes" = "บันทึกการเปลี่ยนแปลง";
 
@@ -2957,3 +2960,6 @@
 
 /* No comment provided by engineer. */
 "ZenLedger" = "ZenLedger";
+
+/* Savings percentage */
+"~%.0f%%" = "~%.0f%%";
