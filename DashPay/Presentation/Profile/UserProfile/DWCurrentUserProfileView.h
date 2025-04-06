@@ -20,7 +20,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWCurrentUserProfileView;
-@class DSBlockchainIdentity;
+@class DSIdentity;
 
 @protocol DWCurrentUserProfileViewDelegate <NSObject>
 
@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWCurrentUserProfileView : UIView
 
 @property (nullable, nonatomic, weak) id<DWCurrentUserProfileViewDelegate> delegate;
-@property (nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@property (nonatomic, strong) DSIdentity *identity;
 
 @end
 

@@ -1,6 +1,6 @@
-//
-//  Created by Andrew Podkovyrin
-//  Copyright © 2020 Dash Core Group. All rights reserved.
+//  
+//  Created by Andrei Ashikhmin
+//  Copyright © 2025 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,16 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DSBlockchainIdentity+DWDisplayName.h"
-
-@implementation DSBlockchainIdentity (DWDisplayName)
-
-- (NSString *)dw_displayNameOrUsername {
-    NSString *displayName = self.displayName;
-    if (displayName.length == 0) {
-        return self.currentDashpayUsername;
+class StubTransactionSource: TransactionSource {
+    let model: DWHomeModelStub
+    
+    init(model: DWHomeModelStub) {
+        self.model = model
     }
-    return displayName;
+    
+    var allTransactions: Array<DSTransaction> {
+        return model.stubTxs
+    }
 }
-
-@end

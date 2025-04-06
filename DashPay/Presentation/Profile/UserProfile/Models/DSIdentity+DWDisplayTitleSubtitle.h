@@ -15,13 +15,13 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DSIdentity.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UIImageView (DWDPAvatar)
+@interface DSIdentity (DWDisplayTitleSubtitle)
 
-- (void)dw_setAvatarWithURLString:(NSString *)urlString completion:(void (^)(UIImage *_Nullable image))completion;
+- (NSAttributedString *)dw_asTitleSubtitle;
 
 @end
 

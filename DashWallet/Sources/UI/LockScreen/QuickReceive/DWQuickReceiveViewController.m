@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 static NSString *const DASH_WEBSITE = @"https://dash.org";
 
-@interface DWQuickReceiveViewController () <DWReceiveViewControllerDelegate>
+@interface DWQuickReceiveViewController () // <DWReceiveViewControllerDelegate>
 
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UIView *receiveContentView;
@@ -89,7 +89,7 @@ static NSString *const DASH_WEBSITE = @"https://dash.org";
     self.titleLabel.text = NSLocalizedString(@"Scan this to Pay", @"A title of the quick receive screen");
 
     DWReceiveViewController *receiveController = [[DWReceiveViewController alloc] initWithModel:self.receiveModel];
-    receiveController.delegate = self;
+    //    receiveController.delegate = self;
     receiveController.allowedToImportPrivateKey = NO;
 
     [self dw_embedChild:receiveController inContainer:self.receiveContentView];

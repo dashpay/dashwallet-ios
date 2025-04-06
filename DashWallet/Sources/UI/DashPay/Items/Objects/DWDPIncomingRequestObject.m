@@ -23,24 +23,24 @@
 
 @implementation DWDPIncomingRequestObject
 
-@synthesize blockchainIdentity = _blockchainIdentity;
+@synthesize identity = _identity;
 @synthesize username = _username;
 
 - (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
-                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+                                   identity:(DSIdentity *)identity {
     self = [super init];
     if (self) {
-        _blockchainIdentity = blockchainIdentity;
+        _identity = identity;
         _friendRequestEntity = friendRequestEntity;
     }
     return self;
 }
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (instancetype)initWithIdentity:(DSIdentity *)identity {
     self = [super init];
     if (self) {
-        _blockchainIdentity = blockchainIdentity;
-        _username = blockchainIdentity.currentDashpayUsername;
+        _identity = identity;
+        _username = identity.currentDashpayUsername;
     }
     return self;
 }
@@ -56,8 +56,8 @@
 
 - (NSString *)displayName {
     if (_username == nil) {
-        BOOL hasDisplayName = _blockchainIdentity.displayName.length > 0;
-        _username = hasDisplayName ? [_blockchainIdentity.displayName copy] : nil;
+        BOOL hasDisplayName = _identity.displayName.length > 0;
+        _username = hasDisplayName ? [_identity.displayName copy] : nil;
     }
 
     return _username;

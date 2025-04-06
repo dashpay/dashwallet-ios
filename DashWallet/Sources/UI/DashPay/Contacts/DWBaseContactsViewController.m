@@ -176,7 +176,7 @@ NS_ASSUME_NONNULL_END
 #pragma mark - Actions
 
 - (void)addContactButtonAction {
-    if (!self.model.hasBlockchainIdentity) {
+    if (!self.model.hasIdentity) {
         return;
     }
 

@@ -17,7 +17,7 @@
 
 #import "DWUserProfileModalQRContentView.h"
 
-#import "DSBlockchainIdentity+DWDisplayTitleSubtitle.h"
+#import "DSIdentity+DWDisplayTitleSubtitle.h"
 #import "dashwallet-Swift.h"
 #import "DWEnvironment.h"
 #import "DWReceiveModelProtocol.h"
@@ -153,8 +153,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)reloadAttributedData {
-    DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
-    self.infoLabel.attributedText = [blockchainIdentity dw_asTitleSubtitle];
+    DSIdentity *identity = [DWEnvironment sharedInstance].currentWallet.defaultIdentity;
+    self.infoLabel.attributedText = [identity dw_asTitleSubtitle];
 }
 
 - (void)qrCodeButtonAction {

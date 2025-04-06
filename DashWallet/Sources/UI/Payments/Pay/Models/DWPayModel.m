@@ -63,8 +63,8 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableArray<DWPayOptionModel *> *options = [NSMutableArray array];
 
 #if DASHPAY
-    DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
-    if (blockchainIdentity.currentDashpayUsername != nil || MOCK_DASHPAY) {
+    DSIdentity *identity = [DWEnvironment sharedInstance].currentWallet.defaultIdentity;
+    if (identity.currentDashpayUsername != nil || MOCK_DASHPAY) {
         DWPayOptionModel *option = [[DWPayOptionModel alloc] initWithType:DWPayOptionModelType_DashPayUser];
         [options addObject:option];
     }

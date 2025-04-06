@@ -63,7 +63,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (BOOL)shouldAcceptIncomingAfterPayment {
-    return ([DWGlobalOptions sharedInstance].confirmationAcceptContactRequestIsOn && [self friendshipStatusInternal] == DSBlockchainIdentityFriendshipStatus_Incoming);
+    return ([DWGlobalOptions sharedInstance].confirmationAcceptContactRequestIsOn && [self friendshipStatusInternal] == DSIdentityFriendshipStatus_Incoming);
 }
 
 - (void)setDisplayMode:(DWHomeTxDisplayMode)displayMode {
@@ -121,9 +121,9 @@ NS_ASSUME_NONNULL_END
     }];
 }
 
-- (DSBlockchainIdentityFriendshipStatus)friendshipStatus {
+- (DSIdentityFriendshipStatus)friendshipStatus {
     if (self.state == DWUserProfileModelState_None || self.state == DWUserProfileModelState_Loading) {
-        return DSBlockchainIdentityFriendshipStatus_Unknown;
+        return DSIdentityFriendshipStatus_Unknown;
     }
 
     return [self friendshipStatusInternal];
@@ -134,25 +134,25 @@ NS_ASSUME_NONNULL_END
         return NO;
     }
 
-    const DSBlockchainIdentityFriendshipStatus status = self.friendshipStatus;
-    return (status == DSBlockchainIdentityFriendshipStatus_Incoming ||
-            status == DSBlockchainIdentityFriendshipStatus_None ||
-            status == DSBlockchainIdentityFriendshipStatus_Outgoing);
+    const DSIdentityFriendshipStatus status = self.friendshipStatus;
+    return (status == DSIdentityFriendshipStatus_Incoming ||
+            status == DSIdentityFriendshipStatus_None ||
+            status == DSIdentityFriendshipStatus_Outgoing);
 }
 
 - (BOOL)shouldShowSendRequestAction {
     NSParameterAssert(self.state == DWUserProfileModelState_Done);
 
-    const DSBlockchainIdentityFriendshipStatus status = self.friendshipStatus;
-    return (status == DSBlockchainIdentityFriendshipStatus_None ||
-            status == DSBlockchainIdentityFriendshipStatus_Outgoing);
+    const DSIdentityFriendshipStatus status = self.friendshipStatus;
+    return (status == DSIdentityFriendshipStatus_None ||
+            status == DSIdentityFriendshipStatus_Outgoing);
 }
 
 - (BOOL)shouldShowAcceptDeclineRequestAction {
     NSParameterAssert(self.state == DWUserProfileModelState_Done);
 
-    const DSBlockchainIdentityFriendshipStatus status = self.friendshipStatus;
-    return status == DSBlockchainIdentityFriendshipStatus_Incoming;
+    const DSIdentityFriendshipStatus status = self.friendshipStatus;
+    return status == DSIdentityFriendshipStatus_Incoming;
 }
 
 - (void)sendContactRequest:(void (^)(BOOL success))completion {
@@ -163,7 +163,7 @@ NS_ASSUME_NONNULL_END
         DSDashpayUserEntity *contact = [DSDashpayUserEntity managedObjectInBlockedContext:context];
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
         contact.chain = [wallet.chain chainEntityInContext:context];
-        DSBlockchainIdentity *identity = [wallet createBlockchainIdentityForUsername:_item.username];
+        DSIdentity *identity = [wallet createIdentityForUsername:_item.username];
         DSBlockchainIdentityUsernameEntity *username = [DSBlockchainIdentityUsernameEntity managedObjectInBlockedContext:context];
         username.stringValue = _item.username;
         DSBlockchainIdentityEntity *entity = [DSBlockchainIdentityEntity managedObjectInBlockedContext:context];
@@ -180,22 +180,22 @@ NS_ASSUME_NONNULL_END
     self.sendRequestState = DWUserProfileModelState_Loading;
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    DSIdentity *myIdentity = wallet.defaultIdentity;
     __weak typeof(self) weakSelf = self;
-    [myBlockchainIdentity sendNewFriendRequestToBlockchainIdentity:self.item.blockchainIdentity
-                                                        completion:^(BOOL success, NSArray<NSError *> *_Nullable errors) {
-                                                            __strong typeof(weakSelf) strongSelf = weakSelf;
-                                                            if (!strongSelf) {
-                                                                return;
-                                                            }
+    [myIdentity sendNewFriendRequestToIdentity:self.item.identity
+                                    completion:^(BOOL success, NSArray<NSError *> *_Nullable errors) {
+                                        __strong typeof(weakSelf) strongSelf = weakSelf;
+                                        if (!strongSelf) {
+                                            return;
+                                        }
 
-                                                            [strongSelf updateDataSource];
-                                                            strongSelf.sendRequestState = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
+                                        [strongSelf updateDataSource];
+                                        strongSelf.sendRequestState = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
 
-                                                            if (completion) {
-                                                                completion(success);
-                                                            }
-                                                        }];
+                                        if (completion) {
+                                            completion(success);
+                                        }
+                                    }];
 }
 
 - (void)acceptContactRequest {
@@ -245,53 +245,53 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - Private
 
-- (DSBlockchainIdentityFriendshipStatus)friendshipStatusInternal {
+- (DSIdentityFriendshipStatus)friendshipStatusInternal {
     if (MOCK_DASHPAY) {
-        if (uint256_is_zero(self.item.blockchainIdentity.uniqueID)) {
+        if (uint256_is_zero(self.item.identity.uniqueID)) {
             // From search
-            return DSBlockchainIdentityFriendshipStatus_None;
+            return DSIdentityFriendshipStatus_None;
         }
         else {
             // From mocked contacts
-            return DSBlockchainIdentityFriendshipStatus_Friends;
+            return DSIdentityFriendshipStatus_Friends;
         }
     }
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    DSBlockchainIdentity *blockchainIdentity = self.item.blockchainIdentity;
-    return [myBlockchainIdentity friendshipStatusForRelationshipWithBlockchainIdentity:blockchainIdentity];
+    DSIdentity *myIdentity = wallet.defaultIdentity;
+    DSIdentity *identity = self.item.identity;
+    return [myIdentity friendshipStatusForRelationshipWithIdentity:identity];
 }
 
 - (void)updateDataSource {
     NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    DSBlockchainIdentity *friendBlockchainIdentity = self.item.blockchainIdentity;
+    DSIdentity *myIdentity = wallet.defaultIdentity;
+    DSIdentity *friendIdentity = self.item.identity;
     DSDashpayUserEntity *friend = nil;
     DSFriendRequestEntity *meToFriend = nil;
     DSFriendRequestEntity *friendToMe = nil;
 
     if (MOCK_DASHPAY) {
         meToFriend = self.item.friendRequestToPay;
-        friendBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:self.item.username];
+        friendIdentity = [[DWEnvironment sharedInstance].currentWallet createIdentityForUsername:self.item.username];
         NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
 
         if (username != nil) {
-            myBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
+            myIdentity = [[DWEnvironment sharedInstance].currentWallet createIdentityForUsername:username];
         }
     }
     else {
-        if (myBlockchainIdentity == nil) {
+        if (myIdentity == nil) {
             return;
         }
 
-        NSAssert(myBlockchainIdentity.matchingDashpayUserInViewContext, @"Invalid DSBlockchainIdentity: myBlockchainIdentity");
-        DSDashpayUserEntity *me = [myBlockchainIdentity matchingDashpayUserInContext:context];
+        NSAssert(myIdentity.matchingDashpayUserInViewContext, @"Invalid DSIdentity: myIdentity");
+        DSDashpayUserEntity *me = [myIdentity matchingDashpayUserInContext:context];
 
-        if (friendBlockchainIdentity.matchingDashpayUserInViewContext) {
-            friend = [friendBlockchainIdentity matchingDashpayUserInContext:context];
+        if (friendIdentity.matchingDashpayUserInViewContext) {
+            friend = [friendIdentity matchingDashpayUserInContext:context];
         }
 
 
@@ -330,8 +330,8 @@ NS_ASSUME_NONNULL_END
                                                             txDataProvider:self.txDataProvider
                                                          friendToMeRequest:shouldShowContactRequests ? friendToMe : nil
                                                          meToFriendRequest:shouldShowContactRequests ? meToFriend : nil
-                                                  friendBlockchainIdentity:friendBlockchainIdentity
-                                                      myBlockchainIdentity:myBlockchainIdentity];
+                                                            friendIdentity:friendIdentity
+                                                                myIdentity:myIdentity];
 
     [self.delegate userProfileModelDidUpdate:self];
 }

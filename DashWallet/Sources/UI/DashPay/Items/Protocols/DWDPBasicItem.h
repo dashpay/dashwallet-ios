@@ -17,14 +17,14 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWDPBlockchainIdentityBackedItem.h"
+#import "DWDPIdentityBackedItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWDPItemCellDelegate <NSObject>
 @end
 
-@protocol DWDPBasicItem <DWDPBlockchainIdentityBackedItem>
+@protocol DWDPBasicItem <DWDPIdentityBackedItem>
 
 @property (readonly, nonatomic) NSString *username;
 @property (nullable, readonly, nonatomic) NSString *displayName;

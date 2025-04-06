@@ -91,6 +91,12 @@ final class DerivationPathKeysModel {
     let infoItems: [DerivationPathInfo]
 
     var visibleIndexes: Int
+    
+    lazy var seed: Data? = {
+        guard let phrase = DWEnvironment.sharedInstance().currentWallet.seedPhraseIfAuthenticated() else { return nil }
+        return DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
+    }()
+
 
     init(key: MNKey, derivationPath: DSAuthenticationKeysDerivationPath) {
         self.key = key
@@ -119,7 +125,8 @@ extension DerivationPathKeysModel {
     }
 
     func usageInfoForKey(at index: Int) -> String {
-        let used = derivationPath.addressIsUsed(at: UInt32(index))
+        let address = derivationPath.address(at: IndexPath(index: index))
+        let used = derivationPath.addressIsUsed(address)
 
         if used {
             if let localMasternode = derivationPath.chain.chainManager!.masternodeManager.localMasternode(using: UInt32(index), at: derivationPath) {
@@ -144,59 +151,80 @@ extension DerivationPathKeysModel {
         }
     }
 
-    func privateKeyAtIndex(index: UInt32, forWallet wallet: DSWallet) -> UnsafeMutablePointer<OpaqueKey>? {
-        guard let phrase = wallet.seedPhraseIfAuthenticated() else {
+    func privateKeyAtIndexPath(_ path: IndexPath) -> UnsafeMutablePointer<Result_ok_dash_spv_crypto_keys_key_OpaqueKey_err_dash_spv_crypto_keys_KeyError>? {
+        guard let seed = seed else {
             return nil
         }
-        let seed = DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
-        let opaqueKey = derivationPath.privateKey(at: index, fromSeed: seed)!
-        return opaqueKey
+        return derivationPath.privateKey(at: path, fromSeed: seed)
     }
 
     func itemForInfo(_ info: DerivationPathInfo, atIndex index: Int) -> DerivationPathKeysItem {
         let wallet = DWEnvironment.sharedInstance().currentWallet
+        let indexPath = IndexPath(index: index)
         let index = UInt32(index)
         return autoreleasepool {
             switch info {
             case .address:
-                let address = derivationPath.address(at: index)
+                let address = derivationPath.address(at: indexPath)
                 return DerivationPathKeysItem(info: info, value: address)
             case .publicKey:
-                guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
+                guard let opaqueKey = privateKeyAtIndexPath(indexPath) else {
                     return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
                 }
-                let key = DSKeyManager.blsPublicKeySerialize(opaqueKey, legacy: false)
-                return DerivationPathKeysItem(info: info, value: key.lowercased())
+                guard let key = opaqueKey.pointee.ok else {
+                    Result_ok_dash_spv_crypto_keys_key_OpaqueKey_err_dash_spv_crypto_keys_KeyError_destroy(opaqueKey)
+                    return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
+                }
+                let keyString = DSKeyManager.blsPublicKeySerialize(key, legacy: false)
+                Result_ok_dash_spv_crypto_keys_key_OpaqueKey_err_dash_spv_crypto_keys_KeyError_destroy(opaqueKey)
+                return DerivationPathKeysItem(info: info, value: keyString.lowercased())
             case .publicKeyLegacy:
-                guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
+                guard let opaqueKey = privateKeyAtIndexPath(indexPath) else {
                     return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
                 }
-                let key = DSKeyManager.blsPublicKeySerialize(opaqueKey, legacy: true)
-                return DerivationPathKeysItem(info: info, value: key.lowercased())
+                guard let key = opaqueKey.pointee.ok else {
+                    Result_ok_dash_spv_crypto_keys_key_OpaqueKey_err_dash_spv_crypto_keys_KeyError_destroy(opaqueKey)
+                    return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
+                }
+                let keyString = DSKeyManager.blsPublicKeySerialize(key, legacy: true)
+                Result_ok_dash_spv_crypto_keys_key_OpaqueKey_err_dash_spv_crypto_keys_KeyError_destroy(opaqueKey)
+                return DerivationPathKeysItem(info: info, value: keyString.lowercased())
             case .privateKey:
-                guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
+                guard let opaqueKey = privateKeyAtIndexPath(indexPath) else {
                     return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
                 }
-                let key = DSKeyManager.secretKeyHexString(opaqueKey)
-                return DerivationPathKeysItem(info: info, value: key)
+                guard let key = opaqueKey.pointee.ok else {
+                    Result_ok_dash_spv_crypto_keys_key_OpaqueKey_err_dash_spv_crypto_keys_KeyError_destroy(opaqueKey)
+                    return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
+                }
+                let keyString = DSKeyManager.secretKeyHexString(key)
+                return DerivationPathKeysItem(info: info, value: keyString)
             case .wifPrivateKey:
-                guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
+                guard let opaqueKey = privateKeyAtIndexPath(indexPath) else {
                     return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
                 }
-                let key = DSKeyManager.serializedPrivateKey(opaqueKey, chainType: wallet.chain.chainType)
-                return DerivationPathKeysItem(info: info, value: key)
+                guard let key = opaqueKey.pointee.ok else {
+                    Result_ok_dash_spv_crypto_keys_key_OpaqueKey_err_dash_spv_crypto_keys_KeyError_destroy(opaqueKey)
+                    return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
+                }
+                let keyString = DSKeyManager.serializedPrivateKey(key, chainType: wallet.chain.chainType)
+                return DerivationPathKeysItem(info: info, value: keyString)
             case .keyId:
-                let pubKeyData = derivationPath.publicKeyData(at: index) as NSData
-                var bytes = pubKeyData.sha256()
-                let hexString = NSData(bytes: &bytes, length: MemoryLayout<UInt160>.size).hexString()
+                var keyId = derivationPath.keyId(at: index)
+                let hexString = NSData(bytes: &keyId, length: MemoryLayout<UInt160>.size).hexString()
                 return DerivationPathKeysItem(info: info, value: hexString.lowercased())
 
             case .privatePublicKeysBase64:
-                guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
+                guard let opaqueKey = privateKeyAtIndexPath(indexPath) else {
                     return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
                 }
-                let privateKeyData = DSKeyManager.privateKeyData(opaqueKey)
-                let pubKeyData = self.derivationPath.publicKeyData(at: index)
+                guard let key = opaqueKey.pointee.ok else {
+                    Result_ok_dash_spv_crypto_keys_key_OpaqueKey_err_dash_spv_crypto_keys_KeyError_destroy(opaqueKey)
+                    return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
+                }
+
+                let privateKeyData = DSKeyManager.privateKeyData(key)
+                let pubKeyData = self.derivationPath.publicKeyData(at: indexPath)!
                 let data = privateKeyData + pubKeyData
                 return DerivationPathKeysItem(info: info, value: data.base64EncodedString())
             }

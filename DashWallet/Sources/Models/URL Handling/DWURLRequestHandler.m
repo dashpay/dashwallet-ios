@@ -49,13 +49,13 @@ NS_ASSUME_NONNULL_BEGIN
                               if (authenticatedOrSuccess) {
                                   DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
 
-                                  NSString *masterPublicKeySerialized = [account.bip44DerivationPath serializedExtendedPublicKey];
+                                  NSString *masterPublicKeySerialized = [DSDerivationPathFactory serializedExtendedPublicKey:account.bip44DerivationPath];
                                   NSParameterAssert(masterPublicKeySerialized);
                                   if (!masterPublicKeySerialized) {
                                       return;
                                   }
 
-                                  NSString *masterPublicKeyNoPurposeSerialized = [account.bip32DerivationPath serializedExtendedPublicKey];
+                                  NSString *masterPublicKeyNoPurposeSerialized = [DSDerivationPathFactory serializedExtendedPublicKey:account.bip32DerivationPath];
                                   NSParameterAssert(masterPublicKeyNoPurposeSerialized);
                                   if (!masterPublicKeyNoPurposeSerialized) {
                                       return;

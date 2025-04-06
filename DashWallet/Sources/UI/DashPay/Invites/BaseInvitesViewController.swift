@@ -23,7 +23,7 @@ class BaseInvitesViewController: UIViewController {
         set(value) { UsernamePrefs.shared.mixDashShown = !value }
     }
     
-    func runInvitationFlow(completion: ((String, DSBlockchainInvitation) -> Void)? = nil) {
+    func runInvitationFlow(completion: ((String, DSInvitation) -> Void)? = nil) {
         if shouldShowMixDashDialog {
             showMixDashDialog() { [weak self] in
                 self?.showInvitationFeeDialog() { [weak self] in
@@ -59,14 +59,14 @@ class BaseInvitesViewController: UIViewController {
         self.present(hostingController, animated: true, completion: nil)
     }
     
-    private func createInvite(completion: ((String, DSBlockchainInvitation) -> Void)? = nil) {
+    private func createInvite(completion: ((String, DSInvitation) -> Void)? = nil) {
         let wallet = DWEnvironment.sharedInstance().currentWallet
         let account = DWEnvironment.sharedInstance().currentAccount
-        let invitation = wallet.createBlockchainInvitation()
-        invitation.name = String(format: NSLocalizedString("Invitation %ld", comment: "Invitation #3"), wallet.blockchainInvitations.count + 1)
+        let invitation = wallet.createInvitation()
+        invitation.name = String(format: NSLocalizedString("Invitation %ld", comment: "Invitation #3"), wallet.invitations.count + 1)
         
-        let steps = DSBlockchainIdentityRegistrationStep.l1Steps
-        invitation.generateBlockchainInvitationsExtendedPublicKeys(
+        let steps = DSIdentityRegistrationStep.l1Steps
+        invitation.generateInvitationsExtendedPublicKeys(
             withPrompt: NSLocalizedString("Create invitation", comment: "Invites"),
             completion: { registered in
                 invitation.identity.createFundingPrivateKeyForInvitation(
@@ -81,8 +81,8 @@ class BaseInvitesViewController: UIViewController {
                                 stepCompletion: { stepCompleted in
                                     // Step completion handler
                                 },
-                                completion: { stepsCompleted, error in
-                                   if let error = error {
+                                completion: { stepsCompleted, errors in
+                                    if let error = errors.last {
                                         self.dw_displayErrorModally(error)
                                    } else {
                                        self.generateLinkForInvitationAndFinish(invitation, completion: completion)
@@ -96,23 +96,23 @@ class BaseInvitesViewController: UIViewController {
         )
     }
     
-    private func generateLinkForInvitationAndFinish(_ invitation: DSBlockchainInvitation, completion: ((String, DSBlockchainInvitation) -> Void)? = nil) {
+    private func generateLinkForInvitationAndFinish(_ invitation: DSInvitation, completion: ((String, DSInvitation) -> Void)? = nil) {
         let wallet = DWEnvironment.sharedInstance().currentWallet
-        var identity = wallet.defaultBlockchainIdentity
+        var identity = wallet.defaultIdentity
         
         if identity == nil && MOCK_DASHPAY.boolValue {
             if let username = DWGlobalOptions.sharedInstance().dashpayUsername {
-                identity = DWEnvironment.sharedInstance().currentWallet.createBlockchainIdentity(forUsername: username)
+                identity = DWEnvironment.sharedInstance().currentWallet.createIdentity(forUsername: username)
             }
         }
         
-        guard let myBlockchainIdentity = identity else { return }
+        guard let myIdentity = identity else { return }
         
-        weak var weakSelf = self
+        //weak var weakSelf = self
         invitation.createInvitationFullLink(
-            from: myBlockchainIdentity,
+            from: myIdentity,
             completion: { cancelled, invitationFullLink in
-                guard let strongSelf = weakSelf else { return }
+                //guard let strongSelf = weakSelf else { return }
                 
                 // skip?
                 if !cancelled && invitationFullLink == nil {

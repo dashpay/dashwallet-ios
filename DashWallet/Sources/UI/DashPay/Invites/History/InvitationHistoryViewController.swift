@@ -116,25 +116,25 @@ extension InvitationHistoryViewController: UITableViewDelegate {
         tableView.deselectRow(at: indexPath, animated: true)
         
         let wallet = DWEnvironment.sharedInstance().currentWallet
-        var identity = wallet.defaultBlockchainIdentity
+        var identity = wallet.defaultIdentity
         
         if identity == nil && MOCK_DASHPAY.boolValue {
             if let username = DWGlobalOptions.sharedInstance().dashpayUsername {
-                identity = DWEnvironment.sharedInstance().currentWallet.createBlockchainIdentity(forUsername: username)
+                identity = DWEnvironment.sharedInstance().currentWallet.createIdentity(forUsername: username)
             }
         }
         
-        guard let myBlockchainIdentity = identity else { return }
+        guard let myIdentity = identity else { return }
         
         let item = model.items[indexPath.row]
         let index = model.items.count - indexPath.row
         
-        item.blockchainInvitation.createInvitationFullLink(from: myBlockchainIdentity) { [weak self] cancelled, invitationFullLink in
+        item.invitation.createInvitationFullLink(from: myIdentity) { [weak self] cancelled, invitationFullLink in
             guard let self = self else { return }
             guard let invitationLink = invitationFullLink else { return }
             
             DispatchQueue.main.async {
-                let controller = BaseInvitationViewController(with: item.blockchainInvitation, fullLink: invitationLink, index: index)
+                let controller = BaseInvitationViewController(with: item.invitation, fullLink: invitationLink, index: index)
                 controller.title = NSLocalizedString("Invite", comment: "")
                 controller.hidesBottomBarWhenPushed = true
                 controller.view.backgroundColor = UIColor.dw_secondaryBackground()

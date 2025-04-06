@@ -15,14 +15,16 @@
 //  limitations under the License.
 //
 
-#import <DashSync/DashSync.h>
+#import "DSIdentity+DWDisplayName.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation DSIdentity (DWDisplayName)
 
-@interface DSBlockchainIdentity (DWDisplayName)
-
-- (NSString *)dw_displayNameOrUsername;
+- (NSString *)dw_displayNameOrUsername {
+    NSString *displayName = self.displayName;
+    if (displayName.length == 0) {
+        return self.currentDashpayUsername;
+    }
+    return displayName;
+}
 
 @end
-
-NS_ASSUME_NONNULL_END

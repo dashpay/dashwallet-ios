@@ -20,13 +20,13 @@ class JoinDashPayViewModel: ObservableObject {
     @Published private(set) var state: JoinDashPayState
     @Published private(set) var username: String = ""
     
-    private var blockchainIdentity: DSBlockchainIdentity? {
+    private var identity: DSIdentity? {
         if MOCK_DASHPAY.boolValue {
             if let username = DWGlobalOptions.sharedInstance().dashpayUsername {
-                return DWEnvironment.sharedInstance().currentWallet.createBlockchainIdentity(forUsername: username)
+                return DWEnvironment.sharedInstance().currentWallet.createIdentity(forUsername: username)
             }
         }
-        return DWEnvironment.sharedInstance().currentWallet.defaultBlockchainIdentity
+        return DWEnvironment.sharedInstance().currentWallet.defaultIdentity
     }
     
     init(initialState: JoinDashPayState) {
@@ -36,9 +36,9 @@ class JoinDashPayViewModel: ObservableObject {
 
     @MainActor
     func checkUsername() {
-        if blockchainIdentity != nil && DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted && UsernamePrefs.shared.joinDashPayDismissed { // TODO: MOCK_DASHPAY simplify
+        if identity != nil && DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted && UsernamePrefs.shared.joinDashPayDismissed { // TODO: MOCK_DASHPAY simplify
             self.state = .registered
-            self.username = blockchainIdentity?.currentDashpayUsername ?? ""
+            self.username = identity?.currentDashpayUsername ?? ""
         } else {
             Task {
                 // TODO: MOCK_DASHPAY replace with actual state check

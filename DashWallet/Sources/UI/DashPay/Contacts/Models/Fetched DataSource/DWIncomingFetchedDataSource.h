@@ -19,14 +19,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity;
+@class DSIdentity;
 
 @interface DWIncomingFetchedDataSource : DWFetchedResultsDataSource
 
-@property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@property (readonly, nonatomic, strong) DSIdentity *identity;
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
-                                 inContext:(NSManagedObjectContext *)context NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithIdentity:(DSIdentity *)identity
+                       inContext:(NSManagedObjectContext *)context NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithContext:(NSManagedObjectContext *)context NS_UNAVAILABLE;
 

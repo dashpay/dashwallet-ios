@@ -55,8 +55,8 @@ class SuccessInvitationTopView: BaseInvitationTopView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func update(with blockchainIdentity: DSBlockchainIdentity, invitation: DSBlockchainInvitation) {
-        self.iconView.blockchainIdentity = blockchainIdentity;
+    override func update(with identity: DSIdentity, invitation: DSInvitation) {
+        self.iconView.identity = identity;
     }
     
     override func viewWillAppear() {

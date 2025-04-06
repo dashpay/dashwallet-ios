@@ -17,7 +17,7 @@
 
 #import "DWInvitationPreviewViewController.h"
 
-#import "DSBlockchainIdentity+DWDisplayName.h"
+#import "DSIdentity+DWDisplayName.h"
 #import "DWEnvironment.h"
 #import "DWModalPopupTransition.h"
 #import "DWSuccessInvitationView.h"
@@ -122,22 +122,22 @@ NS_ASSUME_NONNULL_END
 
     // Setup
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    DSIdentity *myIdentity = wallet.defaultIdentity;
 
     if (MOCK_DASHPAY) {
         NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
 
         if (username != nil) {
-            myBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
+            myIdentity = [[DWEnvironment sharedInstance].currentWallet createIdentityForUsername:username];
         }
     }
 
-    iconView.blockchainIdentity = myBlockchainIdentity;
+    iconView.identity = myIdentity;
 
     NSMutableAttributedString *desc = [[NSMutableAttributedString alloc] init];
     [desc beginEditing];
 
-    NSString *name = [myBlockchainIdentity dw_displayNameOrUsername];
+    NSString *name = [myIdentity dw_displayNameOrUsername];
     NSString *text = [NSString stringWithFormat:NSLocalizedString(@"You have been invited by %@. Start using Dash cryptocurrency.", nil), name];
 
     [desc appendAttributedString:[[NSAttributedString alloc] initWithString:text attributes:@{NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleBody]}]];

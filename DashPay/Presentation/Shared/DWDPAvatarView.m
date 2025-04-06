@@ -72,13 +72,13 @@ NS_ASSUME_NONNULL_END
     [self updateBackgroundColor];
 }
 
-- (void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-    _blockchainIdentity = blockchainIdentity;
+- (void)setIdentity:(DSIdentity *)identity {
+    _identity = identity;
 
     [self.imageView sd_cancelCurrentImageLoad];
 
-    NSString *username = blockchainIdentity.currentDashpayUsername;
-	NSString *avatarUrlString = [blockchainIdentity.avatarPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    NSString *username = identity.currentDashpayUsername;
+	NSString *avatarUrlString = [identity.avatarPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
 	
 	[self setUsername:username];
 	

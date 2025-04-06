@@ -36,7 +36,8 @@ class Transaction: TransactionDataItem, Identifiable {
         case masternodeRegistration
         case masternodeUpdate
         case masternodeRevoke
-        case blockchainIdentityRegistration
+        case assetLock
+        case assetUnlock
     }
     
     var id: String {
@@ -193,7 +194,9 @@ class Transaction: TransactionDataItem, Identifiable {
             return NSLocalizedString("Masternode Update", comment: "")
         case .masternodeRevoke:
             return NSLocalizedString("Masternode Revocation", comment: "")
-        case .blockchainIdentityRegistration:
+        case .assetLock:
+            return NSLocalizedString("DashPay Upgrade Fee", comment: "")
+        case .assetUnlock:
             return NSLocalizedString("DashPay Upgrade Fee", comment: "")
         }
     }

@@ -15,15 +15,13 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity;
+@interface DSIdentity (DWDisplayName)
 
-@protocol DWDPBlockchainIdentityBackedItem <NSObject>
-
-@property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+- (NSString *)dw_displayNameOrUsername;
 
 @end
 

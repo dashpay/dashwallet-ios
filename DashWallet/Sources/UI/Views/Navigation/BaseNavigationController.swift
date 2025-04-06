@@ -171,11 +171,21 @@ extension BaseNavigationController: UINavigationControllerDelegate {
         delegate?.navigationController?(navigationController, willShow: viewController, animated: animated)
 
         if !hideBackButton && viewController.navigationItem.leftBarButtonItem == nil {
-            let backButton = UIButton(type: .custom)
+            let backButton: UIButton
+            if #available(iOS 15.0, *) {
+                var config = UIButton.Configuration.plain()
+                config.image = UIImage(systemName: "arrow.backward")
+                config.baseForegroundColor = backButtonTintColor
+                config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: -10, bottom: 0, trailing: 0)
+
+                backButton = UIButton(configuration: config)
+            } else {
+                backButton = UIButton(type: .custom)
+                backButton.setImage(UIImage(systemName: "arrow.backward"), for: .normal)
+                backButton.tintColor = backButtonTintColor
+                backButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
+            }
             backButton.frame = .init(x: 0, y: 0, width: 30, height: 30)
-            backButton.setImage(UIImage(systemName: "arrow.backward"), for: .normal)
-            backButton.tintColor = backButtonTintColor
-            backButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
             backButton.addTarget(self, action: #selector(backButtonAction), for: .touchUpInside)
             let item = UIBarButtonItem(customView: backButton)
 

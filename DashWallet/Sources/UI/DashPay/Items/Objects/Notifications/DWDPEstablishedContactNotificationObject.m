@@ -39,8 +39,8 @@ NS_ASSUME_NONNULL_END
 @synthesize date = _date;
 
 - (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
-                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-    self = [super initWithBlockchainIdentity:blockchainIdentity];
+                                   identity:(DSIdentity *)identity {
+    self = [super initWithIdentity:identity];
     if (self) {
         _friendRequestEntity = friendRequestEntity;
         _date = [NSDate dateWithTimeIntervalSince1970:friendRequestEntity.timestamp];
