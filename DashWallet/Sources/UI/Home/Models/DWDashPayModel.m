@@ -271,11 +271,13 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)verifyDeeplink:(NSURL *)url
-            completion:(void (^)(BOOL success,
+            completion:(void (^)(DSTransaction *_Nullable assetLockTx,
                                  NSString *_Nullable errorTitle,
                                  NSString *_Nullable errorMessage))completion {
     if (MOCK_DASHPAY) {
-        completion(YES, nil, nil);
+        DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+        DSTransaction *fakeLockTx = [account recentTransactions][0];
+        completion(fakeLockTx, nil, nil);
         return;
     }
 
@@ -293,18 +295,18 @@ NS_ASSUME_NONNULL_END
                           }
                       }
                       if (transaction != nil) {
-                          completion(YES, nil, nil);
+                          completion(transaction, nil, nil);
                       }
                       else {
                           if (spent) {
                               completion(
-                                  NO,
+                                  NULL,
                                   NSLocalizedString(@"Invitation already claimed", nil),
                                   [NSString stringWithFormat:NSLocalizedString(@"Your invitation from %@ has been already claimed", nil), username]);
                           }
                           else {
                               completion(
-                                  NO,
+                                  NULL,
                                   NSLocalizedString(@"Invalid Inviation", nil),
                                   [NSString stringWithFormat:NSLocalizedString(@"Your invitation from %@ is not valid", nil), username]);
                           }

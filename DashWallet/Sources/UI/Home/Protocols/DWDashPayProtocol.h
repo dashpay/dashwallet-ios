@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+#import "DSTransaction.h"
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -45,7 +46,7 @@ extern NSNotificationName const DWDashPaySentContactRequestToInviter;
 - (void)setHasEnoughBalanceForInvitationNotification:(BOOL)value;
 
 - (void)verifyDeeplink:(NSURL *)url
-            completion:(void (^)(BOOL success,
+            completion:(void (^)(DSTransaction *_Nullable assetLockTx,
                                  NSString *_Nullable errorTitle,
                                  NSString *_Nullable errorMessage))completion;
 

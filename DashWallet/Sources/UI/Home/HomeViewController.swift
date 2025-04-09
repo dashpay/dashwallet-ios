@@ -114,11 +114,11 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             return
         }
 
-        model.handleDeeplink(url) { [weak self] success, errorTitle, errorMessage in
+        model.handleDeeplink(url) { [weak self] assetLockTx, errorTitle, errorMessage in
             guard let self = self else { return }
 
-            if success {
-                self.showCreateUsername(withInvitation: url, definedUsername: definedUsername)
+            if assetLockTx != nil {
+                self.showCreateUsername(withInvitation: url, assetLockTx: assetLockTx, definedUsername: definedUsername)
             } else {
                 let alert = DPAlertViewController(icon: UIImage(named: "icon_invitation_error")!, title: errorTitle ?? "", description: errorMessage ?? "")
                 self.present(alert, animated: true, completion: nil)

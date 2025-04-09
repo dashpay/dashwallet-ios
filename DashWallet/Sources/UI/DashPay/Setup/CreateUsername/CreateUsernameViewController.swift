@@ -20,12 +20,15 @@ import SwiftUI
 
 class CreateUsernameViewController: UIViewController {
     private let dashPayModel: DWDashPayProtocol
+    private let invitationURL: URL?
+    private let assetLockTx: DSTransaction?
     @objc var completionHandler: ((Bool) -> ())?
     
     @objc
-    init(dashPayModel: DWDashPayProtocol, invitationURL: URL?, definedUsername: String?) {
-        // TODO: invites
+    init(dashPayModel: DWDashPayProtocol, invitationURL: URL?, assetLockTx: DSTransaction?, definedUsername: String?) {
         self.dashPayModel = dashPayModel
+        self.invitationURL = invitationURL
+        self.assetLockTx = assetLockTx
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -38,7 +41,7 @@ class CreateUsernameViewController: UIViewController {
         
         self.view.backgroundColor = UIColor.dw_secondaryBackground()
 
-        let content = CreateUsernameView(dashPayModel: dashPayModel) { dialog in
+        let content = CreateUsernameView(assetLockTx: self.assetLockTx, dashPayModel: dashPayModel) { dialog in
             self.showModalDialog(dialog: dialog)
         } dismissDialog: {
             self.dismiss(animated: true)
@@ -62,6 +65,7 @@ class CreateUsernameViewController: UIViewController {
 }
 
 struct CreateUsernameView: View {
+    let assetLockTx: DSTransaction?
     @State var dashPayModel: DWDashPayProtocol
     @StateObject private var viewModel = CreateUsernameViewModel()
     @FocusState private var isTextInputFocused: Bool
@@ -82,22 +86,43 @@ struct CreateUsernameView: View {
                 .padding(.top, 12)
             Text(NSLocalizedString("Please note that you will not be able to change it in future", comment: "Usernames"))
                 .foregroundColor(.primaryText)
-                .font(.system(size: 14))
+                .font(.body2)
             TextInput(label: "Username", text: $viewModel.username)
                 .padding(.top, 20)
                 .focused($isTextInputFocused)
-                
+            
+            if viewModel.uiState.hasInvite && !viewModel.uiState.isInvitationForContested {
+                HStack(spacing: 0) {
+                    Text(NSLocalizedString("The username must meet ", comment: "Usernames"))
+                    Text(NSLocalizedString("one", comment: "Usernames"))
+                        .fontWeight(.bold)
+                    Text(NSLocalizedString(" of these criteria", comment: "Usernames"))
+                }
+                .foregroundColor(.primaryText)
+                .font(.body2)
+                .padding(.top, 12)
+            } else {
+                Text(NSLocalizedString("The username must meet these criteria", comment: "Usernames"))
+                    .foregroundColor(.primaryText)
+                    .font(.body2)
+                    .padding(.top, 12)
+            }
+            
             if viewModel.uiState.lengthRule != .hidden {
                 ValidationCheck(
                     validationResult: viewModel.uiState.lengthRule,
-                    text: NSLocalizedString("Between 3 and 23 characters", comment: "Usernames")
+                    text: viewModel.uiState.hasInvite && !viewModel.uiState.isInvitationForContested ?
+                        NSLocalizedString("Between 20 and 23 characters", comment: "Usernames") :
+                        NSLocalizedString("Between 3 and 23 characters", comment: "Usernames")
                 ).padding(.top, 20)
             }
             
             if viewModel.uiState.allowedCharactersRule != .hidden {
                 ValidationCheck(
                     validationResult: viewModel.uiState.allowedCharactersRule,
-                    text: NSLocalizedString("Letter, numbers and hyphens only", comment: "Usernames")
+                    text: viewModel.uiState.hasInvite && !viewModel.uiState.isInvitationForContested ?
+                        NSLocalizedString("Contains numbers 2-9", comment: "Usernames") :
+                        NSLocalizedString("Letter, numbers and hyphens only", comment: "Usernames")
                 ).padding(.top, 20)
             }
             
@@ -132,6 +157,37 @@ struct CreateUsernameView: View {
             
             Spacer()
             
+            if viewModel.uiState.hasInvite {
+                if !viewModel.uiState.isInvitationMixed {
+                    HStack(alignment: .top) {
+                        Image("invite.unmixed")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                        
+                        Text(NSLocalizedString("The invitation was created with un-mixed funds", comment: "Invites"))
+                            .foregroundColor(.primaryText)
+                            .font(.body2)
+                    }
+                    .padding(.bottom, 16)
+                }
+                
+                if !viewModel.uiState.isInvitationForContested {
+                    HStack(alignment: .top) {
+                        Image("invite.noncontested")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                        
+                        Text(NSLocalizedString("You can only create a non-contested username using this invitaiton", comment: "Invites"))
+                            .foregroundColor(.primaryText)
+                            .font(.body2)
+                    }
+                    .frame(minHeight: 36)
+                    .padding(.bottom, 20)
+                }
+            }
+            
             DashButton(
                 text: NSLocalizedString("Continue", comment: ""),
                 isEnabled: viewModel.uiState.canContinue,
@@ -157,6 +213,10 @@ struct CreateUsernameView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
             isTextInputFocused = true
+            
+            if let tx = assetLockTx {
+                viewModel.checkAssetLockTx(tx)
+            }
         }
         .sheet(isPresented: $showVotingInfo) {
             let dialog = BottomSheet(showBackButton: Binding<Bool>.constant(false)) {

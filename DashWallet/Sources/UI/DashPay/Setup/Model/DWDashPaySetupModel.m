@@ -63,7 +63,7 @@
     // nop
 }
 
-- (void)verifyDeeplink:(nonnull NSURL *)url completion:(nonnull void (^)(BOOL, NSString *_Nullable, NSString *_Nullable))completion {
+- (void)verifyDeeplink:(nonnull NSURL *)url completion:(void (^)(DSTransaction *_Nullable assetLockTx, NSString *_Nullable, NSString *_Nullable))completion {
     NSAssert(NO, @"Should not be called");
     // nop
 }

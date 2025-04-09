@@ -207,6 +207,7 @@ NS_ASSUME_NONNULL_BEGIN
         [[CreateUsernameViewController alloc]
             initWithDashPayModel:self.dashPayModel
                    invitationURL:nil
+                     assetLockTx:nil
                  definedUsername:nil];
     controller.hidesBottomBarWhenPushed = YES;
     controller.completionHandler = ^(BOOL result) {
