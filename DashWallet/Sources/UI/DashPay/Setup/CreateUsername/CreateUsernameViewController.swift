@@ -72,6 +72,7 @@ struct CreateUsernameView: View {
     @State private var showVotingInfo: Bool = false
     @State private var showVerifyIdentity: Bool = false
     @State private var confirmUsernameRequest: Bool = false
+    @State private var showContestedInfo: Bool = false
     @State private var inProgress: Bool = false
     @State private var prove: URL? = nil
     var showVerifyConfirmation: (any View) -> Void
@@ -182,6 +183,19 @@ struct CreateUsernameView: View {
                         Text(NSLocalizedString("You can only create a non-contested username using this invitaiton", comment: "Invites"))
                             .foregroundColor(.primaryText)
                             .font(.body2)
+
+                        Spacer()
+                        
+                        Button {
+                            showContestedInfo = true
+                        } label: {
+                            Image(systemName: "info.circle.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .padding(8)
+                                .foregroundColor(.gray300)
+                        }
+                        .frame(width: 30, height: 30)
                     }
                     .frame(minHeight: 36)
                     .padding(.bottom, 20)
@@ -274,6 +288,29 @@ struct CreateUsernameView: View {
             
             if #available(iOS 16.0, *) {
                 dialog.presentationDetents([.height(340)])
+            } else {
+                dialog
+            }
+        }
+        .sheet(isPresented: $showContestedInfo) {
+            let dialog = BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
+                TextIntro(
+                    buttonLabel: NSLocalizedString("OK", comment: ""),
+                    action: {
+                        showContestedInfo = false
+                    },
+                    inProgress: .constant(false)
+                ) {
+                    FeatureTopText(
+                        title: NSLocalizedString("What are contested and non-contested usernames?", comment: "Usernames"),
+                        text: NSLocalizedString("There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are longer than 20 characters and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period.", comment: "Usernames"),
+                        alignment: .leading
+                    )
+                }
+            }
+            
+            if #available(iOS 16.0, *) {
+                dialog.presentationDetents([.height(500)])
             } else {
                 dialog
             }

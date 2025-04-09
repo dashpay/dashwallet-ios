@@ -119,7 +119,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWConfirmUsernameViewController.h"
 #import "DWUsernamePendingViewController.h"
 #import "DWRegistrationCompletedViewController.h"
-#import "DWUsernameHeaderView.h"
 #import "DWContainerViewController.h"
 #import "DWDashPaySetupModel.h"
 #import "UIViewController+DWDisplayError.h"

@@ -560,6 +560,7 @@
 		753FDBEC2AECF4CC0005EEC3 /* VotingHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 753FDBEB2AECF4CC0005EEC3 /* VotingHeaderView.xib */; };
 		753FDBEE2AECF52B0005EEC3 /* UsernameVoting.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 753FDBED2AECF52B0005EEC3 /* UsernameVoting.storyboard */; };
 		754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
+		7542CFEB2DA67F850019D910 /* DWTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 7542CFE82DA67F850019D910 /* DWTextField.m */; };
 		754495DD2AE91B6300492817 /* GroupedRequestCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754495DC2AE91B6300492817 /* GroupedRequestCell.swift */; };
 		754495DF2AE91D3500492817 /* UsernameRequestCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754495DE2AE91D3500492817 /* UsernameRequestCell.swift */; };
 		754BEA122C0B6BD700E8C93C /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */; };
@@ -909,9 +910,6 @@
 		C943B5582A40DA3700AF23C5 /* DWFullScreenModalControllerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5572A40DA3700AF23C5 /* DWFullScreenModalControllerViewController.m */; };
 		C943B55B2A40DD4000AF23C5 /* NSArray+DWFlatten.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B55A2A40DD4000AF23C5 /* NSArray+DWFlatten.m */; };
 		C943B55E2A40E6F200AF23C5 /* DWFilterHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B55C2A40E6F200AF23C5 /* DWFilterHeaderView.m */; };
-		C943B5922A40ED7B00AF23C5 /* DWTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5772A40ED4300AF23C5 /* DWTextField.m */; };
-		C943B5932A40ED7B00AF23C5 /* DWUsernameHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5792A40ED4300AF23C5 /* DWUsernameHeaderView.m */; };
-		C943B5942A40ED7B00AF23C5 /* DWPlanetarySystemView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B57C2A40ED4400AF23C5 /* DWPlanetarySystemView.m */; };
 		C943B5962A40EDC400AF23C5 /* DWRegistrationCompletedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5692A40ED4100AF23C5 /* DWRegistrationCompletedViewController.m */; };
 		C943B5972A40EDDA00AF23C5 /* DWConfirmUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5672A40ED4100AF23C5 /* DWConfirmUsernameViewController.m */; };
 		C943B5982A40EDEF00AF23C5 /* DWConfirmUsernameContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5722A40ED4200AF23C5 /* DWConfirmUsernameContentView.m */; };
@@ -2427,6 +2425,8 @@
 		753FDBE92AEA422F0005EEC3 /* VotingPrefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingPrefs.swift; sourceTree = "<group>"; };
 		753FDBEB2AECF4CC0005EEC3 /* VotingHeaderView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = VotingHeaderView.xib; sourceTree = "<group>"; };
 		753FDBED2AECF52B0005EEC3 /* UsernameVoting.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UsernameVoting.storyboard; sourceTree = "<group>"; };
+		7542CFE72DA67F850019D910 /* DWTextField.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTextField.h; sourceTree = "<group>"; };
+		7542CFE82DA67F850019D910 /* DWTextField.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTextField.m; sourceTree = "<group>"; };
 		754495DC2AE91B6300492817 /* GroupedRequestCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupedRequestCell.swift; sourceTree = "<group>"; };
 		754495DE2AE91D3500492817 /* UsernameRequestCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequestCell.swift; sourceTree = "<group>"; };
 		754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
@@ -2940,12 +2940,6 @@
 		C943B5712A40ED4200AF23C5 /* DWConfirmUsernameContentView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWConfirmUsernameContentView.xib; sourceTree = "<group>"; };
 		C943B5722A40ED4200AF23C5 /* DWConfirmUsernameContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWConfirmUsernameContentView.m; sourceTree = "<group>"; };
 		C943B5732A40ED4200AF23C5 /* DWConfirmUsernameContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWConfirmUsernameContentView.h; sourceTree = "<group>"; };
-		C943B5762A40ED4300AF23C5 /* DWPlanetarySystemView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPlanetarySystemView.h; sourceTree = "<group>"; };
-		C943B5772A40ED4300AF23C5 /* DWTextField.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTextField.m; sourceTree = "<group>"; };
-		C943B5782A40ED4300AF23C5 /* DWUsernameHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUsernameHeaderView.h; sourceTree = "<group>"; };
-		C943B5792A40ED4300AF23C5 /* DWUsernameHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUsernameHeaderView.m; sourceTree = "<group>"; };
-		C943B57B2A40ED4400AF23C5 /* DWTextField.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTextField.h; sourceTree = "<group>"; };
-		C943B57C2A40ED4400AF23C5 /* DWPlanetarySystemView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPlanetarySystemView.m; sourceTree = "<group>"; };
 		C943B59A2A40EE4800AF23C5 /* DWNetworkErrorViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNetworkErrorViewController.m; sourceTree = "<group>"; };
 		C943B59B2A40EE4800AF23C5 /* DWNetworkErrorViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNetworkErrorViewController.h; sourceTree = "<group>"; };
 		C94946DE2A25EDA8008A678D /* DWHomeViewControllerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeViewControllerDelegate.h; sourceTree = "<group>"; };
@@ -5984,6 +5978,23 @@
 			path = Model;
 			sourceTree = "<group>";
 		};
+		7542CFE92DA67F850019D910 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				7542CFE72DA67F850019D910 /* DWTextField.h */,
+				7542CFE82DA67F850019D910 /* DWTextField.m */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		7542CFEA2DA67F850019D910 /* CreateUsername */ = {
+			isa = PBXGroup;
+			children = (
+				7542CFE92DA67F850019D910 /* Views */,
+			);
+			path = CreateUsername;
+			sourceTree = "<group>";
+		};
 		754495DB2AE91AF700492817 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
@@ -7273,33 +7284,12 @@
 			path = RegistrationCompleted;
 			sourceTree = "<group>";
 		};
-		C943B56B2A40ED4100AF23C5 /* CreateUsername */ = {
-			isa = PBXGroup;
-			children = (
-				C943B5742A40ED4300AF23C5 /* Views */,
-			);
-			path = CreateUsername;
-			sourceTree = "<group>";
-		};
 		C943B5702A40ED4200AF23C5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				C943B5722A40ED4200AF23C5 /* DWConfirmUsernameContentView.m */,
 				C943B5712A40ED4200AF23C5 /* DWConfirmUsernameContentView.xib */,
 				C943B5732A40ED4200AF23C5 /* DWConfirmUsernameContentView.h */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		C943B5742A40ED4300AF23C5 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				C943B5792A40ED4300AF23C5 /* DWUsernameHeaderView.m */,
-				C943B57C2A40ED4400AF23C5 /* DWPlanetarySystemView.m */,
-				C943B5772A40ED4300AF23C5 /* DWTextField.m */,
-				C943B57B2A40ED4400AF23C5 /* DWTextField.h */,
-				C943B5762A40ED4300AF23C5 /* DWPlanetarySystemView.h */,
-				C943B5782A40ED4300AF23C5 /* DWUsernameHeaderView.h */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -7429,7 +7419,7 @@
 		C9D2C96D2A38777A00D15901 /* Setup */ = {
 			isa = PBXGroup;
 			children = (
-				C943B56B2A40ED4100AF23C5 /* CreateUsername */,
+				7542CFEA2DA67F850019D910 /* CreateUsername */,
 				C943B5682A40ED4100AF23C5 /* RegistrationCompleted */,
 				C943B5652A40ED4000AF23C5 /* ConfirmUsername */,
 			);
@@ -9079,6 +9069,7 @@
 				C9D2C6D62A320AA000D15901 /* ExtendedPublicKeysViewController.swift in Sources */,
 				C9D2C6D82A320AA000D15901 /* AtmListViewController.swift in Sources */,
 				C9D2C6D92A320AA000D15901 /* TxDetailViewController.swift in Sources */,
+				7542CFEB2DA67F850019D910 /* DWTextField.m in Sources */,
 				C9D2C6DA2A320AA000D15901 /* NSAttributedString+Builder.swift in Sources */,
 				C943B4DE2A40A54600AF23C5 /* DWDPWelcomePageViewController.m in Sources */,
 				C9D2C6DB2A320AA000D15901 /* DWPreviewSeedPhraseContentView.m in Sources */,
@@ -9388,7 +9379,6 @@
 				C9D2C7B32A320AA000D15901 /* SpecifyAmountViewController.swift in Sources */,
 				C943B4EA2A40A54600AF23C5 /* DWUserProfileViewController.m in Sources */,
 				756557B62CE84FFA0060348D /* FeeInfo.swift in Sources */,
-				C943B5922A40ED7B00AF23C5 /* DWTextField.m in Sources */,
 				75EBAA0D2BB9792F004488E3 /* FeatureTopText.swift in Sources */,
 				C9D2C7B42A320AA000D15901 /* DWUpholdTransactionObject+DWView.m in Sources */,
 				C943B54A2A40B52F00AF23C5 /* NSLayoutConstraint+DWAutolayout.m in Sources */,
@@ -9405,7 +9395,6 @@
 				C956AF212A5C33E5002FAB75 /* DWButton.m in Sources */,
 				C9D2C7BF2A320AA000D15901 /* TerritoriesListViewController.swift in Sources */,
 				C9D2C7C02A320AA000D15901 /* HomeHeaderModel.swift in Sources */,
-				C943B5942A40ED7B00AF23C5 /* DWPlanetarySystemView.m in Sources */,
 				C9D2C7C12A320AA000D15901 /* TerritoryListModel.swift in Sources */,
 				C9D2C7C22A320AA000D15901 /* (null) in Sources */,
 				C9D2C7C32A320AA000D15901 /* DWDPRegistrationStatus.m in Sources */,
@@ -9544,7 +9533,6 @@
 				C9D2C8312A320AA000D15901 /* DWCheckbox.m in Sources */,
 				C9D2C8322A320AA000D15901 /* DWRequestAmountViewController.m in Sources */,
 				C9D2C8332A320AA000D15901 /* DerivationPathKeysModel.swift in Sources */,
-				C943B5932A40ED7B00AF23C5 /* DWUsernameHeaderView.m in Sources */,
 				C9D2C8342A320AA000D15901 /* DWSeedUIConstants.m in Sources */,
 				C9D2C8352A320AA000D15901 /* DWWindow.m in Sources */,
 				753130982B4944130069C9B7 /* UpholdError.swift in Sources */,
