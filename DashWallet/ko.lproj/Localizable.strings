@@ -205,6 +205,9 @@
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "당신의 모든 기기에 걸친 직관적이고 친근한 경험";
 
+/* Invites */
+"an invitation" = "an invitation";
+
 /* CrowdNode */
 "and" = "또한";
 
@@ -470,6 +473,12 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "확인 (%1$d%2$@)";
 
+/* Invites */
+"Confirm and pay" = "Confirm and pay";
+
+/* Invites */
+"Confirm invitation" = "Confirm invitation";
+
 /* No comment provided by engineer. */
 "Confirm PIN" = "PIN 확인";
 
@@ -510,6 +519,9 @@
 
 /* No comment provided by engineer. */
 "Contacts" = "연락처";
+
+/* Usernames */
+"Contested" = "Contested";
 
 /* No comment provided by engineer. */
 "Continue" = "계속";
@@ -751,8 +763,8 @@
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "예시 johndoe@mail.com";
 
-/* No comment provided by engineer. */
-"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "각 초대는 이 금액을 통해 지원되며, 이로써 받는 이가 재빨리 대시 네트워크에 사용자 이름을 생성할 수 있습니다";
+/* Invites */
+"Each invitation will be funded so that the receiver can quickly create their username on the Dash Network." = "Each invitation will be funded so that the receiver can quickly create their username on the Dash Network.";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "이전";
@@ -1195,8 +1207,8 @@
 /* No comment provided by engineer. */
 "Invitation Created Successfully" = "초대가 성공적으로 생성되었습니다";
 
-/* No comment provided by engineer. */
-"Invitation Fee" = "초대 수수료";
+/* Invites */
+"Invitation fee" = "Invitation fee";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "다음에 사용된 초대";
@@ -1546,6 +1558,9 @@
 
 /* No comment provided by engineer. */
 "Node IP" = "노드 IP";
+
+/* Usernames */
+"Non-contested" = "Non-contested";
 
 /* adjective, security level */
 "None" = "없음";
@@ -2036,6 +2051,10 @@
 /* Buy Sell Dash */
 "Select a service" = "서비스를 선택하세요";
 
+/* Block explorer picker
+   Block explorer selection title */
+"Select block explorer" = "Select block explorer";
+
 /* No comment provided by engineer. */
 "Select from Gallery" = "갤러리에서 선택";
 
@@ -2298,6 +2317,12 @@
 /* Coinbase */
 "The minimum amount you can send is %@" = "송금 가능한 최소 금액은 %@ 입니다";
 
+/* Invites */
+"The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen" = "The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen";
+
+/* Invites */
+"The person that you send this invitation to can request any username they want and the network will vote to approve it" = "The person that you send this invitation to can request any username they want and the network will vote to approve it";
+
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
 
@@ -2362,7 +2387,7 @@
 "to Dash Wallet on this device" = "이 기기의 대시 지갑으로";
 
 /* CoinJoin */
-"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
+"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@.";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "스테이킹을 시작하려면 크라우드노드에 계정을 만들거나 기존 계정에 연결하세요.";
@@ -2736,6 +2761,9 @@
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "초대를 수락하시겠습니까?";
 
+/* Invites */
+"Would you like to create this invitation?" = "Would you like to create this invitation?";
+
 /* Coinbase */
 "Would you like to make a deposit for your purchase using a linked bank account?" = "연결된 은행 계좌를 이용해 구매를 위한 입금 처리를 완료하시겠습니까?";
 
@@ -2785,7 +2813,7 @@
 "You cannot claim this invite since you already have a Dash username" = "이미 대시 사용자 이름을 가지고 있어 이 초대를 수락할 수 없습니다.";
 
 /* Usernames */
-"You chose “%@” as your username." = "You chose “%@” as your username.";
+"You chose \"%@\" as your username." = "You chose \"%@\" as your username.";
 
 /* CoinJoin */
 "You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
@@ -2936,6 +2964,9 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "당신의 거래가 완료되었으며 수 분 이내에 당신의 지갑에 잔액이 표시될 예정입니다.";
+
+/* Usernames */
+"your username" = "your username";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "당신의 사용자 이름인 %@가 대시 네트워크에 성공적으로 생성되었습니다";
