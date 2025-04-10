@@ -19,7 +19,7 @@ import SwiftUI
 
 struct FeatureTopText: View {
     var title: String
-    var text: String
+    var text: String?
     var label: String? = nil
     var alignment: TextAlignment = .center
     var labelIcon: IconName? = nil
@@ -33,11 +33,13 @@ struct FeatureTopText: View {
                 .lineSpacing(3)
                 .foregroundColor(.primaryText)
           
-            Text(text)
-                .font(Font.system(size: 14))
-                .multilineTextAlignment(alignment)
-                .lineSpacing(3)
-                .foregroundColor(.secondaryText)
+            if let text = text {
+                Text(text)
+                    .font(Font.system(size: 14))
+                    .multilineTextAlignment(alignment)
+                    .lineSpacing(3)
+                    .foregroundColor(.secondaryText)
+            }
             
             if let label = label {
                 DashButton(text: label, trailingIcon: labelIcon, style: .plain, size: .small, stretch: false) {

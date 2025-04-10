@@ -202,6 +202,9 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "Montant envoyé";
 
+/* An error occurred */
+"An error occurred" = "An error occurred";
+
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Une utilisation familière et intuitive sur tous vos appareils";
 
@@ -571,11 +574,20 @@
 /* CrowdNode */
 "Create Account" = "Créer un compte";
 
+/* DashSpend account title */
+"Create an account or log into an existing one" = "Create an account or log into an existing one";
+
 /* CrowdNode */
 "Create an online CrowdNode account" = "Créer un compte en ligne CrowdNode";
 
+/* Create CTXSpend Account */
+"Create CTXSpend Account" = "Create CTXSpend Account";
+
 /* No comment provided by engineer. */
 "Create invitation" = "Créer une invitation";
+
+/* Create new account */
+"Create new account" = "Create new account";
 
 /* CrowdNode
    CrowdNode Portal */
@@ -795,6 +807,9 @@
 
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Saisissez la phrase de récupération";
+
+/* Enter Verification Code */
+"Enter Verification Code" = "Enter Verification Code";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Tapez ci-dessous votre code 2FA";
@@ -1183,6 +1198,9 @@
 /* No comment provided by engineer. */
 "Invalid QR Code" = "QR-code non valide";
 
+/* Invalid verification code */
+"Invalid verification code" = "Invalid verification code";
+
 /* No comment provided by engineer. */
 "Invitation" = "Invitation";
 
@@ -1349,8 +1367,17 @@
 /* No comment provided by engineer. */
 "Locked" = "Verrouillé";
 
+/* Log in */
+"Log in" = "Log in";
+
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Se connecter à CrowdNode";
+
+/* Log in to CTXSpend Account */
+"Log in to CTXSpend Account" = "Log in to CTXSpend Account";
+
+/* Log in to CTXSpend account to buy gift cards */
+"Log in to CTXSpend account to buy gift cards" = "Log in to CTXSpend account to buy gift cards";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Se déconnecter d'Uphold";
@@ -1711,6 +1738,9 @@
 
 /* Coinbase/Buy Dash */
 "Please add a payment method on Coinbase" = "Veuillez ajouter un mode de paiement sur Coinbase";
+
+/* Please check your email for the verification code */
+"Please check your email for the verification code" = "Please check your email for the verification code";
 
 /* Network Unavailable */
 "Please check your network connection" = "Veuillez vérifier votre connexion réseau";
@@ -2262,6 +2292,9 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Catégorie de taxe";
 
+/* Terms & conditions */
+"Terms & conditions" = "Terms & conditions";
+
 /* No comment provided by engineer. */
 "Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Les dashs de test n'ont pas de valeur réelle, mais vous pouvez les envoyer et recevoir avec d'autres utilisateurs DashPay Alpha.";
 
@@ -2575,6 +2608,9 @@
 
 /* No comment provided by engineer. */
 "Validating username…" = "Validation du nom d'utilisateur en cours…";
+
+/* Verification Code */
+"Verification Code" = "Verification Code";
 
 /* CrowdNode Portal */
 "Verification Required" = "Vérification demandée";

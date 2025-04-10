@@ -17,6 +17,7 @@
 
 import MapKit
 import UIKit
+import SwiftUI
 
 // MARK: - PointOfUseDetailsViewController
 
@@ -136,6 +137,10 @@ extension PointOfUseDetailsViewController {
             vc.sellDashHandler = wSelf.sellDashHandler
             wSelf.navigationController?.pushViewController(vc, animated: true)
         }
+        detailsView.buyGiftCardHandler = { [weak self] in
+            self?.showCTXSpendLoginInfo()
+        }
+        
         detailsView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(detailsView)
 
@@ -151,6 +156,36 @@ extension PointOfUseDetailsViewController {
         showMapIfNeeded()
         prepareContentView()
         showDetailsView()
+    }
+    
+    private func showCTXSpendLoginInfo() {
+        let swiftUIView = CTXSpendLoginInfoView(
+            onCreateNewAccount: { [weak self] in
+                self?.showCTXSpendAuth()
+            },
+            onLogIn: {},
+            onTermsAndConditions: {
+                // TODO: Open learn more URL
+            }
+        )
+        let hostingController = UIHostingController(rootView: swiftUIView)
+        hostingController.setDetent(450)
+        self.present(hostingController, animated: true)
+    }
+
+    private func showCTXSpendAuth() {
+        let hostingController = UIHostingController(
+            rootView: CTXSpendUserAuthView(
+                authType: .signIn,
+                onSuccess: { [weak self] in
+                    // TODO: Handle successful authentication
+                }
+            )
+        )
+        
+//        hostingController.modalPresentationStyle = .fullScreen
+        
+        self.present(hostingController, animated: true)
     }
 }
 

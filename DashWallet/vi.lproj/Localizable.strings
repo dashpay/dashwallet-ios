@@ -202,6 +202,9 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "Số tiền đã gửi";
 
+/* An error occurred */
+"An error occurred" = "An error occurred";
+
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Một giao diện trực quan và quen thuộc trên tất cả các thiết bị của bạn";
 
@@ -571,11 +574,20 @@
 /* CrowdNode */
 "Create Account" = "Create Account";
 
+/* DashSpend account title */
+"Create an account or log into an existing one" = "Create an account or log into an existing one";
+
 /* CrowdNode */
 "Create an online CrowdNode account" = "Create an online CrowdNode account";
 
+/* Create CTXSpend Account */
+"Create CTXSpend Account" = "Create CTXSpend Account";
+
 /* No comment provided by engineer. */
 "Create invitation" = "Create invitation";
+
+/* Create new account */
+"Create new account" = "Create new account";
 
 /* CrowdNode
    CrowdNode Portal */
@@ -795,6 +807,9 @@
 
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Nhập cụm từ phục hồi";
+
+/* Enter Verification Code */
+"Enter Verification Code" = "Enter Verification Code";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Hãy nhập mà xác thực 2 lớp vào dưới đây";
@@ -1183,6 +1198,9 @@
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Mã QR không hợp lệ";
 
+/* Invalid verification code */
+"Invalid verification code" = "Invalid verification code";
+
 /* No comment provided by engineer. */
 "Invitation" = "Invitation";
 
@@ -1349,8 +1367,17 @@
 /* No comment provided by engineer. */
 "Locked" = "Đã khoá";
 
+/* Log in */
+"Log in" = "Log in";
+
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Log in to CrowdNode";
+
+/* Log in to CTXSpend Account */
+"Log in to CTXSpend Account" = "Log in to CTXSpend Account";
+
+/* Log in to CTXSpend account to buy gift cards */
+"Log in to CTXSpend account to buy gift cards" = "Log in to CTXSpend account to buy gift cards";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Đăng xuất khỏi Uphold";
@@ -1711,6 +1738,9 @@
 
 /* Coinbase/Buy Dash */
 "Please add a payment method on Coinbase" = "Please add a payment method on Coinbase";
+
+/* Please check your email for the verification code */
+"Please check your email for the verification code" = "Please check your email for the verification code";
 
 /* Network Unavailable */
 "Please check your network connection" = "Please check your network connection";
@@ -2262,6 +2292,9 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Tax Category";
 
+/* Terms & conditions */
+"Terms & conditions" = "Terms & conditions";
+
 /* No comment provided by engineer. */
 "Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users.";
 
@@ -2575,6 +2608,9 @@
 
 /* No comment provided by engineer. */
 "Validating username…" = "Đang kiểm tra tên người dùng...";
+
+/* Verification Code */
+"Verification Code" = "Verification Code";
 
 /* CrowdNode Portal */
 "Verification Required" = "Verification Required";

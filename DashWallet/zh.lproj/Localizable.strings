@@ -202,6 +202,9 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "发送数额";
 
+/* An error occurred */
+"An error occurred" = "An error occurred";
+
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "所有设备上的直观熟悉体验";
 
@@ -571,11 +574,20 @@
 /* CrowdNode */
 "Create Account" = "创建账户";
 
+/* DashSpend account title */
+"Create an account or log into an existing one" = "Create an account or log into an existing one";
+
 /* CrowdNode */
 "Create an online CrowdNode account" = "创建一个线上CrowdNode账户";
 
+/* Create CTXSpend Account */
+"Create CTXSpend Account" = "Create CTXSpend Account";
+
 /* No comment provided by engineer. */
 "Create invitation" = "创建邀请";
+
+/* Create new account */
+"Create new account" = "Create new account";
 
 /* CrowdNode
    CrowdNode Portal */
@@ -795,6 +807,9 @@
 
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "输入助记词";
+
+/* Enter Verification Code */
+"Enter Verification Code" = "Enter Verification Code";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "下方输入您的2次验证码";
@@ -1183,6 +1198,9 @@
 /* No comment provided by engineer. */
 "Invalid QR Code" = "无效二维码";
 
+/* Invalid verification code */
+"Invalid verification code" = "Invalid verification code";
+
 /* No comment provided by engineer. */
 "Invitation" = "邀请";
 
@@ -1349,8 +1367,17 @@
 /* No comment provided by engineer. */
 "Locked" = "已锁定";
 
+/* Log in */
+"Log in" = "Log in";
+
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "登录到CrowdNode";
+
+/* Log in to CTXSpend Account */
+"Log in to CTXSpend Account" = "Log in to CTXSpend Account";
+
+/* Log in to CTXSpend account to buy gift cards */
+"Log in to CTXSpend account to buy gift cards" = "Log in to CTXSpend account to buy gift cards";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "从Uphold退出";
@@ -1711,6 +1738,9 @@
 
 /* Coinbase/Buy Dash */
 "Please add a payment method on Coinbase" = "请在Coinbase上添加一种支付方式";
+
+/* Please check your email for the verification code */
+"Please check your email for the verification code" = "Please check your email for the verification code";
 
 /* Network Unavailable */
 "Please check your network connection" = "请检查您的网络连接";
@@ -2262,6 +2292,9 @@
 /* No comment provided by engineer. */
 "Tax Category" = "税务种类";
 
+/* Terms & conditions */
+"Terms & conditions" = "Terms & conditions";
+
 /* No comment provided by engineer. */
 "Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Test Dash没有任何实际价值, 但您可以与其他 DashPay 测试用户进行收发.";
 
@@ -2575,6 +2608,9 @@
 
 /* No comment provided by engineer. */
 "Validating username…" = "正在验证用户名...";
+
+/* Verification Code */
+"Verification Code" = "Verification Code";
 
 /* CrowdNode Portal */
 "Verification Required" = "需要验证";

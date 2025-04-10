@@ -202,6 +202,9 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "Відправлена сума";
 
+/* An error occurred */
+"An error occurred" = "An error occurred";
+
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Інтуїтивний та звичний інтерфейс на всіх ваших пристроях";
 
@@ -571,11 +574,20 @@
 /* CrowdNode */
 "Create Account" = "Створити обліковий запис";
 
+/* DashSpend account title */
+"Create an account or log into an existing one" = "Create an account or log into an existing one";
+
 /* CrowdNode */
 "Create an online CrowdNode account" = "Створити обліковий запис CrowdNode онлайн";
 
+/* Create CTXSpend Account */
+"Create CTXSpend Account" = "Create CTXSpend Account";
+
 /* No comment provided by engineer. */
 "Create invitation" = "Створити запрошення";
+
+/* Create new account */
+"Create new account" = "Create new account";
 
 /* CrowdNode
    CrowdNode Portal */
@@ -795,6 +807,9 @@
 
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Введіть фразу відновлення";
+
+/* Enter Verification Code */
+"Enter Verification Code" = "Enter Verification Code";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Введіть код 2FA нижче";
@@ -1183,6 +1198,9 @@
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Неправильний QR код";
 
+/* Invalid verification code */
+"Invalid verification code" = "Invalid verification code";
+
 /* No comment provided by engineer. */
 "Invitation" = "Запрошення";
 
@@ -1349,8 +1367,17 @@
 /* No comment provided by engineer. */
 "Locked" = "Заблоковано";
 
+/* Log in */
+"Log in" = "Log in";
+
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Ввійти в CrowdNode";
+
+/* Log in to CTXSpend Account */
+"Log in to CTXSpend Account" = "Log in to CTXSpend Account";
+
+/* Log in to CTXSpend account to buy gift cards */
+"Log in to CTXSpend account to buy gift cards" = "Log in to CTXSpend account to buy gift cards";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Вийти з Uphold";
@@ -1711,6 +1738,9 @@
 
 /* Coinbase/Buy Dash */
 "Please add a payment method on Coinbase" = "Додайте спосіб оплати на Coinbase";
+
+/* Please check your email for the verification code */
+"Please check your email for the verification code" = "Please check your email for the verification code";
 
 /* Network Unavailable */
 "Please check your network connection" = "Будь ласка, перевірте підключення до мережі";
@@ -2262,6 +2292,9 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Податкова категорія";
 
+/* Terms & conditions */
+"Terms & conditions" = "Terms & conditions";
+
 /* No comment provided by engineer. */
 "Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Tестові Dash не мають жодної цінності в реальному світі, але ви можете надсилати й отримувати їх разом з іншими користувачами DashPay Alpha.";
 
@@ -2575,6 +2608,9 @@
 
 /* No comment provided by engineer. */
 "Validating username…" = "Валідація імені користувача";
+
+/* Verification Code */
+"Verification Code" = "Verification Code";
 
 /* CrowdNode Portal */
 "Verification Required" = "Потрібна Верифікація";

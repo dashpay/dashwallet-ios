@@ -202,6 +202,9 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "จำนวนเงินที่ส่ง";
 
+/* An error occurred */
+"An error occurred" = "An error occurred";
+
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "ประสบการณ์ที่ใช้งานง่ายและคุ้นเคย";
 
@@ -571,11 +574,20 @@
 /* CrowdNode */
 "Create Account" = "สร้างบัญชี";
 
+/* DashSpend account title */
+"Create an account or log into an existing one" = "Create an account or log into an existing one";
+
 /* CrowdNode */
 "Create an online CrowdNode account" = "สร้างบัญชี CrowdNode ออนไลน์";
 
+/* Create CTXSpend Account */
+"Create CTXSpend Account" = "Create CTXSpend Account";
+
 /* No comment provided by engineer. */
 "Create invitation" = "สร้างคำเชิญ";
+
+/* Create new account */
+"Create new account" = "Create new account";
 
 /* CrowdNode
    CrowdNode Portal */
@@ -795,6 +807,9 @@
 
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "ใส่วลีกู้คืน";
+
+/* Enter Verification Code */
+"Enter Verification Code" = "Enter Verification Code";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "ป้อนรหัส 2FA ของคุณด้านล่าง";
@@ -1183,6 +1198,9 @@
 /* No comment provided by engineer. */
 "Invalid QR Code" = "QR Code ไม่ถูกต้อง";
 
+/* Invalid verification code */
+"Invalid verification code" = "Invalid verification code";
+
 /* No comment provided by engineer. */
 "Invitation" = "คำเชิญ";
 
@@ -1349,8 +1367,17 @@
 /* No comment provided by engineer. */
 "Locked" = "ล็อค";
 
+/* Log in */
+"Log in" = "Log in";
+
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "ลงชื่อเข้าใช้ CrowdNode";
+
+/* Log in to CTXSpend Account */
+"Log in to CTXSpend Account" = "Log in to CTXSpend Account";
+
+/* Log in to CTXSpend account to buy gift cards */
+"Log in to CTXSpend account to buy gift cards" = "Log in to CTXSpend account to buy gift cards";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "ออกจากระบบ Uphold";
@@ -1711,6 +1738,9 @@
 
 /* Coinbase/Buy Dash */
 "Please add a payment method on Coinbase" = "โปรดเพิ่มวิธีการชำระเงินบน Coinbase";
+
+/* Please check your email for the verification code */
+"Please check your email for the verification code" = "Please check your email for the verification code";
 
 /* Network Unavailable */
 "Please check your network connection" = "โปรดตรวจสอบการเชื่อมต่อเครือข่ายของคุณ";
@@ -2262,6 +2292,9 @@
 /* No comment provided by engineer. */
 "Tax Category" = "หมวดภาษี";
 
+/* Terms & conditions */
+"Terms & conditions" = "Terms & conditions";
+
 /* No comment provided by engineer. */
 "Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Test Dash ไม่มีค่าใดๆ ในโลกแห่งความเป็นจริง แต่คุณสามารถส่งและรับกับผู้ใช้ DashPay Alpha คนอื่นๆ ได้";
 
@@ -2575,6 +2608,9 @@
 
 /* No comment provided by engineer. */
 "Validating username…" = "ตรวจสอบชื่อผู้ใช้...";
+
+/* Verification Code */
+"Verification Code" = "Verification Code";
 
 /* CrowdNode Portal */
 "Verification Required" = "จำเป็นต้องมีการตรวจสอบ";

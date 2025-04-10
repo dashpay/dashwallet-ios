@@ -21,9 +21,10 @@ import UIKit
 // MARK: - PointOfUseDetailsView
 
 class PointOfUseDetailsView: UIView {
-    @objc public var payWithDashHandler: (()->())?
-    @objc public var sellDashHandler: (()->())?
-    @objc public var showAllLocationsActionBlock: (() -> ())?
+    public var payWithDashHandler: (()->())?
+    public var sellDashHandler: (()->())?
+    public var buyGiftCardHandler: (()->())?
+    public var showAllLocationsActionBlock: (() -> ())?
 
     var containerView: UIStackView!
     var headerContainerView: UIStackView!
@@ -86,6 +87,8 @@ class PointOfUseDetailsView: UIView {
         if case .merchant(let m) = merchant.category, let deeplink = m.deeplink, let url = URL(string: deeplink),
            UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url)
+        } else if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
+            buyGiftCardHandler?()
         } else {
             payWithDashHandler?()
         }
