@@ -22,11 +22,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainInvitation;
+@class DSInvitation;
 
 @protocol DWInvitationHistoryItem <DWInvitationItem>
 
-@property (readonly, nonatomic, strong) DSBlockchainInvitation *blockchainInvitation;
+@property (readonly, nonatomic, strong) DSInvitation *invitation;
 @property (readonly, nonatomic, strong) NSString *tag;
 
 @end

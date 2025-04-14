@@ -33,13 +33,13 @@ extension DSDerivationPath {
         let title: String
 
         if let dp = self as? DSIncomingFundsDerivationPath,
-           let username = dp.contactDestinationBlockchainIdentity.currentDashpayUsername {
+           let username = dp.chain.identity(forUniqueId: dp.contactDestinationIdentityUniqueId, foundIn: nil, includeForeignIdentities: true).currentDashpayUsername {
             title = username
         } else {
             title = referenceName
         }
-
-        let value = serializedExtendedPublicKey() ?? NSLocalizedString("Not available", comment: "")
+        
+        let value = DSDerivationPathFactory.serializedExtendedPublicKey(self) ?? NSLocalizedString("Not available", comment: "")
 
         return DerivationPathKeysItem(title: title, value: value)
     }

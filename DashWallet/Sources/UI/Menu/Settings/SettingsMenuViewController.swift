@@ -19,15 +19,13 @@ import UIKit
 import SwiftUI
 import Combine
 
-@objc(DWSettingsMenuViewControllerDelegate)
 protocol SettingsMenuViewControllerDelegate: AnyObject {
     func settingsMenuViewControllerDidRescanBlockchain(_ controller: SettingsMenuViewController)
 }
 
-@objc(DWSettingsMenuViewController)
 class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControllerDelegate {
     
-    @objc weak var delegate: SettingsMenuViewControllerDelegate?
+    weak var delegate: SettingsMenuViewControllerDelegate?
     
     private lazy var model: DWSettingsMenuModel = DWSettingsMenuModel()
     private lazy var viewModel: SettingsViewModel = SettingsViewModel(model: model)

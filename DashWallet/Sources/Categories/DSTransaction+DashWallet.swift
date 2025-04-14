@@ -43,8 +43,10 @@ extension DSTransaction {
             return .masternodeUpdate;
         } else if self is DSProviderUpdateRevocationTransaction {
             return .masternodeRevoke;
-        } else if self is DSCreditFundingTransaction {
-            return .blockchainIdentityRegistration;
+        } else if self is DSAssetLockTransaction {
+            return .assetLock;
+        } else if self is DSAssetUnlockTransaction {
+            return .assetUnlock;
         }
 
         return .classic;

@@ -1,6 +1,6 @@
-//
-//  Created by Andrew Podkovyrin
-//  Copyright © 2021 Dash Core Group. All rights reserved.
+//  
+//  Created by Andrei Ashikhmin
+//  Copyright © 2025 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,22 +15,14 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-NS_ASSUME_NONNULL_BEGIN
-
-@class DWSendInviteFlowController;
-
-@protocol DWSendInviteFlowControllerDelegate <NSObject>
-
-- (void)sendInviteFlowControllerDidFinish:(DWSendInviteFlowController *)controller;
-
-@end
-
-@interface DWSendInviteFlowController : UIViewController
-
-@property (nullable, nonatomic, weak) id<DWSendInviteFlowControllerDelegate> delegate;
-
-@end
-
-NS_ASSUME_NONNULL_END
+class StubTransactionSource: TransactionSource {
+    let model: DWHomeModelStub
+    
+    init(model: DWHomeModelStub) {
+        self.model = model
+    }
+    
+    var allTransactions: Array<DSTransaction> {
+        return model.stubTxs
+    }
+}

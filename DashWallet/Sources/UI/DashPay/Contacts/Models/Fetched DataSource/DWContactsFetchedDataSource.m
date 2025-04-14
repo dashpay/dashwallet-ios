@@ -21,11 +21,11 @@
 
 @implementation DWContactsFetchedDataSource
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
-                                 inContext:(NSManagedObjectContext *)context {
+- (instancetype)initWithIdentity:(DSIdentity *)identity
+                       inContext:(NSManagedObjectContext *)context {
     self = [super initWithContext:context];
     if (self) {
-        _blockchainIdentity = blockchainIdentity;
+        _identity = identity;
     }
     return self;
 }
@@ -38,7 +38,7 @@
     return [NSPredicate
         predicateWithFormat:
             @"ANY friends == %@",
-            [self.blockchainIdentity matchingDashpayUserInContext:self.context]];
+            [self.identity matchingDashpayUserInContext:self.context]];
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {

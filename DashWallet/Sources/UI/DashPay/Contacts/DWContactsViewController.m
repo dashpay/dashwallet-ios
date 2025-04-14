@@ -136,7 +136,7 @@ NS_ASSUME_NONNULL_END
 - (void)baseContactsContentViewController:(DWBaseContactsContentViewController *)controller
                                 didSelect:(id<DWDPBasicUserItem>)item
                                 indexPath:(NSIndexPath *)indexPath {
-    if (![self.model canOpenBlockchainIdentity:item.blockchainIdentity]) {
+    if (![self.model canOpenIdentity:item.identity]) {
         UICollectionViewCell *cell = [self.contentController.collectionView cellForItemAtIndexPath:indexPath];
         [cell dw_shakeView];
         return;

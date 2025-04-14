@@ -15,13 +15,13 @@
 //  limitations under the License.
 //
 
-#import <DashSync/DashSync.h>
+#import "DSIdentity.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSBlockchainIdentity (DWDisplayName)
+@interface DSIdentity (DWDisplayTitleSubtitle)
 
-- (NSString *)dw_displayNameOrUsername;
+- (NSAttributedString *)dw_asTitleSubtitle;
 
 @end
 

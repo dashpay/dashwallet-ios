@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, copy) NSString *trimmedQuery;
 @property (nonatomic, assign) uint32_t offset;
-@property (nullable, nonatomic, copy) NSArray<id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>> *items;
+@property (nullable, nonatomic, copy) NSArray<id<DWDPBasicUserItem, DWDPIdentityBackedItem>> *items;
 @property (nonatomic, assign) BOOL requestInProgress;
 @property (nonatomic, assign) BOOL hasNextPage;
 @property (nullable, nonatomic, copy) NSData *lastItem;
@@ -61,7 +61,7 @@ static NSTimeInterval SEARCH_DEBOUNCE_DELAY = 0.4;
 @interface DWUserSearchModel ()
 
 @property (nullable, nonatomic, strong) DWUserSearchRequest *searchRequest;
-@property (nullable, nonatomic, strong) id<DSDAPINetworkServiceRequest> request;
+//@property (nullable, nonatomic, strong) id<DSDAPINetworkServiceRequest> request;
 @property (readonly, nonatomic, strong) DWDPSearchItemsFactory *itemsFactory;
 
 @end
@@ -84,9 +84,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)searchWithQuery:(NSString *)searchQuery {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(performInitialSearch) object:nil];
-
-    [self.request cancel];
-    self.request = nil;
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(performSearchWithQuery:offset:) object:nil];
 
     self.searchRequest = nil;
 
@@ -121,14 +119,14 @@ NS_ASSUME_NONNULL_END
     return self.searchRequest.items[index];
 }
 
-- (BOOL)canOpenBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (BOOL)canOpenIdentity:(DSIdentity *)identity {
     if (MOCK_DASHPAY) {
         return YES;
     }
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    return !uint256_eq(myBlockchainIdentity.uniqueID, blockchainIdentity.uniqueID);
+    DSIdentity *myIdentity = wallet.defaultIdentity;
+    return !uint256_eq(myIdentity.uniqueID, identity.uniqueID);
 }
 
 - (void)acceptContactRequest:(id<DWDPBasicUserItem>)item {
@@ -169,13 +167,13 @@ NS_ASSUME_NONNULL_END
 
 - (void)performSearchWithQuery:(NSString *)query offset:(uint32_t)offset {
     if (MOCK_DASHPAY) {
-        NSMutableArray<id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>> *items = [NSMutableArray array];
+        NSMutableArray<id<DWDPBasicUserItem, DWDPIdentityBackedItem>> *items = [NSMutableArray array];
 
         for (int i = 0; i < 3; i++) {
             DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
             NSString *username = [NSString stringWithFormat:@"%@%d", query, i];
-            DSBlockchainIdentity *identity = [wallet createBlockchainIdentityForUsername:username];
-            id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem> item = [self.itemsFactory itemForBlockchainIdentity:identity];
+            DSIdentity *identity = [wallet createIdentityForUsername:username];
+            id<DWDPBasicUserItem, DWDPIdentityBackedItem> item = [self.itemsFactory itemForIdentity:identity];
             [items addObject:item];
         }
 
@@ -189,37 +187,34 @@ NS_ASSUME_NONNULL_END
 
     DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;
     __weak typeof(self) weakSelf = self;
-    self.request = [manager searchIdentitiesByNamePrefix:query
-                                                inDomain:@"dash"
-                                              startAfter:self.searchRequest.lastItem
-                                                   limit:LIMIT
-                                          withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
-                                              __strong typeof(weakSelf) strongSelf = weakSelf;
-                                              if (!strongSelf) {
-                                                  return;
-                                              }
-                                              NSAssert([NSThread isMainThread], @"Main thread is assumed here");
-                                              // search query was changed before results arrive, ignore results
-                                              if (!strongSelf.searchRequest || ![strongSelf.searchRequest.trimmedQuery isEqualToString:query]) {
-                                                  return;
-                                              }
-                                              strongSelf.searchRequest.requestInProgress = NO;
-                                              if (success) {
-                                                  NSMutableArray<id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>> *items = strongSelf.searchRequest.items ? [strongSelf.searchRequest.items mutableCopy] : [NSMutableArray array];
-                                                  for (DSBlockchainIdentity *blockchainIdentity in blockchainIdentities) {
-                                                      id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem> item = [strongSelf.itemsFactory itemForBlockchainIdentity:blockchainIdentity];
-                                                      [items addObject:item];
-                                                  }
-                                                  strongSelf.searchRequest.hasNextPage = blockchainIdentities.count >= LIMIT;
-                                                  strongSelf.searchRequest.items = items;
-                                                  strongSelf.searchRequest.lastItem = [[[items lastObject] blockchainIdentity] uniqueIDData];
-                                                  [strongSelf.delegate userSearchModel:strongSelf completedWithItems:items];
-                                              }
-                                              else {
-                                                  strongSelf.searchRequest.hasNextPage = NO;
-                                                  [strongSelf.delegate userSearchModel:strongSelf completedWithError:errors.firstObject];
-                                              }
-                                          }];
+    [manager searchIdentitiesByNamePrefix:query
+                               startAfter:self.searchRequest.lastItem
+                                    limit:LIMIT
+                           withCompletion:^(BOOL success, NSArray<DSIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
+                               __strong typeof(weakSelf) strongSelf = weakSelf;
+                               if (!strongSelf)
+                                   return;
+                               NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+                               // search query was changed before results arrive, ignore results
+                               if (!strongSelf.searchRequest || ![strongSelf.searchRequest.trimmedQuery isEqualToString:query])
+                                   return;
+                               strongSelf.searchRequest.requestInProgress = NO;
+                               if (success) {
+                                   NSMutableArray<id<DWDPBasicUserItem, DWDPIdentityBackedItem>> *items = strongSelf.searchRequest.items ? [strongSelf.searchRequest.items mutableCopy] : [NSMutableArray array];
+                                   for (DSIdentity *identity in blockchainIdentities) {
+                                       id<DWDPBasicUserItem, DWDPIdentityBackedItem> item = [strongSelf.itemsFactory itemForIdentity:identity];
+                                       [items addObject:item];
+                                   }
+                                   strongSelf.searchRequest.hasNextPage = blockchainIdentities.count >= LIMIT;
+                                   strongSelf.searchRequest.items = items;
+                                   strongSelf.searchRequest.lastItem = [[[items lastObject] identity] uniqueIDData];
+                                   [strongSelf.delegate userSearchModel:strongSelf completedWithItems:items];
+                               }
+                               else {
+                                   strongSelf.searchRequest.hasNextPage = NO;
+                                   [strongSelf.delegate userSearchModel:strongSelf completedWithError:errors.firstObject];
+                               }
+                           }];
 }
 
 @end

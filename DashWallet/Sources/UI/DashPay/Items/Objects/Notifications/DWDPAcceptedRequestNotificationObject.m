@@ -31,6 +31,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_ASSUME_NONNULL_END
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wobjc-designated-initializers"
+
 @implementation DWDPAcceptedRequestNotificationObject
 
 @synthesize title = _title;
@@ -38,9 +41,9 @@ NS_ASSUME_NONNULL_END
 @synthesize date = _date;
 
 - (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
-                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
+                                   identity:(DSIdentity *)identity
                           isInitiatedByThem:(BOOL)isInitiatedByThem {
-    self = [super initWithFriendRequestEntity:friendRequestEntity blockchainIdentity:blockchainIdentity];
+    self = [super initWithFriendRequestEntity:friendRequestEntity identity:identity];
     if (self) {
         _date = [NSDate dateWithTimeIntervalSince1970:friendRequestEntity.timestamp];
         _initiatedByThem = isInitiatedByThem;
@@ -76,3 +79,4 @@ NS_ASSUME_NONNULL_END
 }
 
 @end
+#pragma clang diagnostic pop

@@ -32,6 +32,8 @@ NS_ASSUME_NONNULL_END
 
 @implementation NSString (MD5Gravatar)
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (NSString *)dw_MD5String {
     const char *cStr = [self UTF8String];
     unsigned char result[CC_MD5_DIGEST_LENGTH];
@@ -44,6 +46,7 @@ NS_ASSUME_NONNULL_END
                          result[8], result[9], result[10], result[11],
                          result[12], result[13], result[14], result[15]];
 }
+#pragma clang diagnostic pop
 
 @end
 

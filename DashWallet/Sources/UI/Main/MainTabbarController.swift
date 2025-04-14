@@ -83,7 +83,7 @@ class MainTabbarController: UITabBarController {
     private var ratesVolatileWarningShown = false
 
     weak var homeController: HomeViewController?
-    weak var menuNavigationController: DWMainMenuViewController?
+    weak var menuNavigationController: MainMenuViewController?
     
     #if DASHPAY
     weak var contactsNavigationController: DWRootContactsViewController?
@@ -108,13 +108,13 @@ class MainTabbarController: UITabBarController {
     
     #if DASHPAY
     // TODO: MOCK_DASHPAY remove when not mocked
-    private var blockchainIdentity: DSBlockchainIdentity? {
+    private var identity: DSIdentity? {
         if MOCK_DASHPAY.boolValue {
             if let username = DWGlobalOptions.sharedInstance().dashpayUsername {
-                return DWEnvironment.sharedInstance().currentWallet.createBlockchainIdentity(forUsername: username)
+                return DWEnvironment.sharedInstance().currentWallet.createIdentity(forUsername: username)
             }
         }
-        return DWEnvironment.sharedInstance().currentWallet.defaultBlockchainIdentity
+        return DWEnvironment.sharedInstance().currentWallet.defaultIdentity
     }
     #endif
 
@@ -130,7 +130,7 @@ class MainTabbarController: UITabBarController {
             .sink { [weak self] _ in
                 guard let self = self else { return }
 
-                if self.blockchainIdentity != nil {
+                if self.identity != nil {
                     let previousIndex = self.selectedIndex
                     self.configureControllers()
                     self.selectedIndex = previousIndex == 0 ? 0 : previousIndex + 2
@@ -189,6 +189,7 @@ extension MainTabbarController {
         let homeVC = HomeViewController()
         homeVC.delegate = self
         homeVC.model = homeModel
+        homeVC.viewModel = homeModel is DWHomeModelStub ? HomeViewModel(transactionSource: StubTransactionSource(model: homeModel as! DWHomeModelStub)) : HomeViewModel.shared
         homeController = homeVC
 
         var nvc = BaseNavigationController(rootViewController: homeVC)
@@ -196,7 +197,7 @@ extension MainTabbarController {
         viewControllers.append(nvc)
         
         #if DASHPAY
-        let identity = self.blockchainIdentity
+        let identity = self.identity
         
         if identity != nil {
             // Contacts
@@ -238,11 +239,11 @@ extension MainTabbarController {
         item = UITabBarItem(title: nil, image: MainTabbarTabs.more.icon, selectedImage: MainTabbarTabs.more.selectedIcon)
         item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
         
-        let menuVC: DWMainMenuViewController
+        let menuVC: MainMenuViewController
         #if DASHPAY
-        menuVC = DWMainMenuViewController(dashPayModel: homeModel.dashPayModel, receiveModel: homeModel.receiveModel, dashPayReady: homeModel, userProfileModel: homeModel.dashPayModel.userProfile)
+        menuVC = MainMenuViewController(dashPayModel: homeModel.dashPayModel, receiveModel: homeModel.receiveModel, dashPayReady: homeModel, userProfileModel: homeModel.dashPayModel.userProfile)
         #else
-        menuVC = DWMainMenuViewController()
+        menuVC = MainMenuViewController()
         #endif
         
         menuVC.delegate = self
@@ -333,14 +334,14 @@ extension MainTabbarController {
     #endif
 }
 
-// MARK: DWMainMenuViewControllerDelegate
+// MARK: MainMenuViewControllerDelegate
 
-extension MainTabbarController: DWMainMenuViewControllerDelegate {
-    func mainMenuViewControllerImportPrivateKey(_ controller: DWMainMenuViewController) {
+extension MainTabbarController: MainMenuViewControllerDelegate {
+    func mainMenuViewControllerImportPrivateKey(_ controller: MainMenuViewController) {
         performScanQRCodeAction()
     }
 
-    func mainMenuViewControllerOpenHomeScreen(_ controller: DWMainMenuViewController) {
+    func mainMenuViewControllerOpenHomeScreen(_ controller: MainMenuViewController) {
         selectedIndex = MainTabbarTabs.home.rawValue
     }
 }

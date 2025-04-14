@@ -29,13 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWTransactionListDataProviderProtocol;
 
 @protocol DWHomeModelUpdatesObserver <NSObject>
-
-- (void)homeModel:(id<DWHomeProtocol>)model
-        didUpdate:(NSArray<DSTransaction *> *)dataSource
-    shouldAnimate:(BOOL)shouldAnimate;
-
 - (void)homeModelDidChangeInnerModels:(id<DWHomeProtocol>)model;
-- (void)homeModelWantToReloadShortcuts:(id<DWHomeProtocol>)model;
 @end
 
 @protocol DWHomeProtocol <DWDashPayReadyProtocol>

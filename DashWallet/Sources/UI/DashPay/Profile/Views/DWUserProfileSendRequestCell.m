@@ -222,28 +222,28 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)updateActions {
-    const DSBlockchainIdentityFriendshipStatus friendshipStatus = self.model.friendshipStatus;
+    const DSIdentityFriendshipStatus friendshipStatus = self.model.friendshipStatus;
     switch (friendshipStatus) {
-        case DSBlockchainIdentityFriendshipStatus_Unknown:
+        case DSIdentityFriendshipStatus_Unknown:
             self.sendRequestButton.hidden = YES;
             self.textLabel.hidden = YES;
             self.textLabel.attributedText = nil;
 
             break;
-        case DSBlockchainIdentityFriendshipStatus_None: // not a friend nor incoming request
+        case DSIdentityFriendshipStatus_None: // not a friend nor incoming request
             self.sendRequestButton.hidden = NO;
             self.textLabel.hidden = NO;
             self.textLabel.attributedText = [self notAContactText];
 
             break;
-        case DSBlockchainIdentityFriendshipStatus_Outgoing: // request was sent, pending
+        case DSIdentityFriendshipStatus_Outgoing: // request was sent, pending
             self.sendRequestButton.hidden = YES;
             self.textLabel.hidden = NO;
             self.textLabel.attributedText = [self pendingContactText];
 
             break;
-        case DSBlockchainIdentityFriendshipStatus_Incoming:
-        case DSBlockchainIdentityFriendshipStatus_Friends:
+        case DSIdentityFriendshipStatus_Incoming:
+        case DSIdentityFriendshipStatus_Friends:
             self.sendRequestButton.hidden = YES;
             self.textLabel.hidden = YES;
             self.textLabel.attributedText = nil;

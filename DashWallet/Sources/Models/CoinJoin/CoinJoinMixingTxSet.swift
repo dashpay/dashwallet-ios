@@ -73,7 +73,7 @@ final class CoinJoinMixingTxSet: GroupedTransactions, TransactionWrapper {
         
         let type = DSCoinJoinWrapper.coinJoinTxType(for: tx, account: account)
         
-        if type == CoinJoinTransactionType_None {
+        if dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_is_none(type) {
             return false
         }
         
@@ -82,25 +82,19 @@ final class CoinJoinMixingTxSet: GroupedTransactions, TransactionWrapper {
         } else if !Calendar.current.isDate(tx.date, inSameDayAs: groupDay) {
             return false
         }
-        
-        transactionMap[txHashData] = CoinJoinTransaction(transaction: tx, type: type)
+        let shouldUseFee = dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_should_use_fee(type)
+        transactionMap[txHashData] = CoinJoinTransaction(transaction: tx, type: type.pointee)
             
         amountQueue.async { [weak self] in
             guard let self = self else { return }
             self.amountLock.lock()
             defer { self.amountLock.unlock() }
-            
-            switch type {
-            case CoinJoinTransactionType_MixingFee,
-                 CoinJoinTransactionType_CreateDenomination,
-                 CoinJoinTransactionType_MakeCollateralInputs:
+            if shouldUseFee {
                 let fee = tx.feeUsed
                 self._amount -= (fee > 0 && fee <= Int64.max ? Int64(fee) : 0)
-            default:
-                break
             }
         }
-
+        dash_spv_coinjoin_models_coinjoin_tx_type_CoinJoinTransactionType_destroy(type)
         return true
     }
 }

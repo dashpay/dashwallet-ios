@@ -17,13 +17,13 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWCheckbox.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWConfirmInvitationContentView : UIView
+@class DSIdentity;
 
-@property (readonly, nonatomic, weak) DWCheckbox *confirmationCheckbox;
+@protocol DWDPIdentityBackedItem <NSObject>
+
+@property (readonly, nonatomic, strong) DSIdentity *identity;
 
 @end
 

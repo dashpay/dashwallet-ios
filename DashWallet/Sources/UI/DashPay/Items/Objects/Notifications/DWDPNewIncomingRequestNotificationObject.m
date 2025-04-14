@@ -20,6 +20,8 @@
 #import <DashSync/DashSync.h>
 
 #import "dashwallet-Swift.h"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wobjc-designated-initializers"
 
 @implementation DWDPNewIncomingRequestNotificationObject
 
@@ -27,8 +29,8 @@
 @synthesize date = _date;
 
 - (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
-                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-    self = [super initWithFriendRequestEntity:friendRequestEntity blockchainIdentity:blockchainIdentity];
+                                   identity:(DSIdentity *)identity {
+    self = [super initWithFriendRequestEntity:friendRequestEntity identity:identity];
     if (self) {
         _date = [NSDate dateWithTimeIntervalSince1970:friendRequestEntity.timestamp];
     }
@@ -37,9 +39,15 @@
 
 - (NSString *)subtitle {
     if (_subtitle == nil) {
-        _subtitle = [[DWDateFormatter sharedInstance] shortStringFromDate:self.date];
+        if (MOCK_DASHPAY) {
+            _subtitle = [[DWDateFormatter sharedInstance] shortStringFromDate:[NSDate now]];
+        }
+        else {
+            _subtitle = [[DWDateFormatter sharedInstance] shortStringFromDate:self.date];
+        }
     }
     return _subtitle;
 }
 
 @end
+#pragma clang diagnostic pop

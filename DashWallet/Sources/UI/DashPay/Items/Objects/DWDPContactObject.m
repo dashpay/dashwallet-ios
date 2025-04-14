@@ -30,7 +30,7 @@
     self = [super init];
     if (self) {
         _userEntity = userEntity;
-        _blockchainIdentity = [userEntity.associatedBlockchainIdentity blockchainIdentity];
+        _identity = [userEntity.associatedBlockchainIdentity identity];
     }
     return self;
 }
@@ -61,10 +61,10 @@
 
 - (DSFriendRequestEntity *)friendRequestToPay {
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    DSIdentity *myIdentity = wallet.defaultIdentity;
     NSPredicate *predicate = [NSPredicate predicateWithFormat:
                                               @"destinationContact.associatedBlockchainIdentity.uniqueID == %@",
-                                              myBlockchainIdentity.uniqueIDData];
+                                              myIdentity.uniqueIDData];
     DSFriendRequestEntity *friendRequest = [[self.userEntity.outgoingRequests filteredSetUsingPredicate:predicate] anyObject];
     return friendRequest;
 }

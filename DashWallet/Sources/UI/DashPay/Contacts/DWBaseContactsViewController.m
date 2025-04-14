@@ -19,7 +19,6 @@
 
 #import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
 
-#import "DWSendInviteFlowController.h"
 #import "DWUIKit.h"
 #import "DWUserProfileViewController.h"
 #import "DWUserSearchViewController.h"
@@ -177,7 +176,7 @@ NS_ASSUME_NONNULL_END
 #pragma mark - Actions
 
 - (void)addContactButtonAction {
-    if (!self.model.hasBlockchainIdentity) {
+    if (!self.model.hasIdentity) {
         return;
     }
 

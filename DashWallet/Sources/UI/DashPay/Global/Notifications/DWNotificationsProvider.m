@@ -75,23 +75,23 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)forceUpdate {
-    DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+    DSIdentity *identity = [DWEnvironment sharedInstance].currentWallet.defaultIdentity;
 
     if (MOCK_DASHPAY) {
         NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
 
         if (username != nil) {
-            blockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
+            identity = [[DWEnvironment sharedInstance].currentWallet createIdentityForUsername:username];
         }
     }
 
-    if (!blockchainIdentity) {
+    if (!identity) {
         return;
     }
 
     NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
 
-    _fetchedDataSource = [[DWNotificationsFetchedDataSource alloc] initWithBlockchainIdentity:blockchainIdentity inContext:context];
+    _fetchedDataSource = [[DWNotificationsFetchedDataSource alloc] initWithIdentity:identity inContext:context];
     _fetchedDataSource.shouldSubscribeToNotifications = YES;
     _fetchedDataSource.delegate = self;
     [_fetchedDataSource start];
@@ -114,16 +114,16 @@ NS_ASSUME_NONNULL_END
         NSMutableArray<id<DWDPBasicUserItem, DWDPNotificationItem>> *newItems = [NSMutableArray array];
         NSMutableArray<id<DWDPBasicUserItem, DWDPNotificationItem>> *oldItems = [NSMutableArray array];
 
-        DSBlockchainIdentity *identity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:@"tonnypaperoni"];
-        DWDPNewIncomingRequestNotificationObject *incoming = [[DWDPNewIncomingRequestNotificationObject alloc] initWithBlockchainIdentity:identity];
+        DSIdentity *identity = [[DWEnvironment sharedInstance].currentWallet createIdentityForUsername:@"tonnypaperoni"];
+        DWDPNewIncomingRequestNotificationObject *incoming = [[DWDPNewIncomingRequestNotificationObject alloc] initWithIdentity:identity];
         [newItems addObject:incoming];
 
-        identity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:@"jamesholden"];
-        incoming = [[DWDPNewIncomingRequestNotificationObject alloc] initWithBlockchainIdentity:identity];
+        identity = [[DWEnvironment sharedInstance].currentWallet createIdentityForUsername:@"jamesholden"];
+        incoming = [[DWDPNewIncomingRequestNotificationObject alloc] initWithIdentity:identity];
         [oldItems addObject:incoming];
 
-        identity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:@"johndoe"];
-        DWDPOutgoingRequestNotificationObject *outgoing = [[DWDPOutgoingRequestNotificationObject alloc] initWithBlockchainIdentity:identity];
+        identity = [[DWEnvironment sharedInstance].currentWallet createIdentityForUsername:@"johndoe"];
+        DWDPOutgoingRequestNotificationObject *outgoing = [[DWDPOutgoingRequestNotificationObject alloc] initWithIdentity:identity];
         [oldItems addObject:outgoing];
 
         self.data = [[DWNotificationsData alloc] initWithUnreadItems:[newItems reverseObjectEnumerator].allObjects
@@ -147,8 +147,8 @@ NS_ASSUME_NONNULL_END
         [sourceConnections addObject:request.destinationContact.objectID];
     }
 
-    DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
-    NSManagedObjectID *userID = blockchainIdentity.matchingDashpayUserInViewContext.objectID;
+    DSIdentity *identity = [DWEnvironment sharedInstance].currentWallet.defaultIdentity;
+    NSManagedObjectID *userID = identity.matchingDashpayUserInViewContext.objectID;
 
     DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
     const NSTimeInterval mostRecentViewedTimestamp = [options.mostRecentViewedNotificationDate timeIntervalSince1970];
@@ -171,10 +171,10 @@ NS_ASSUME_NONNULL_END
             [processed addObject:destinationID];
 
             if (isFriendship) {
-                DSBlockchainIdentity *blockchainIdentity = [request.destinationContact.associatedBlockchainIdentity blockchainIdentity];
+                DSIdentity *identity = [request.destinationContact.associatedBlockchainIdentity identity];
                 DWDPOutgoingRequestNotificationObject *object =
                     [[DWDPOutgoingRequestNotificationObject alloc] initWithFriendRequestEntity:request
-                                                                            blockchainIdentity:blockchainIdentity
+                                                                                      identity:identity
                                                                                isInitiatedByMe:isInitiatedByMe];
                 // all outgoing events should be in the Earlier section
                 [oldItems addObject:object];
@@ -186,11 +186,11 @@ NS_ASSUME_NONNULL_END
             const BOOL isInitiatedByThem = ![processed containsObject:sourceID];
             [processed addObject:sourceID];
 
-            DSBlockchainIdentity *blockchainIdentity = [request.sourceContact.associatedBlockchainIdentity blockchainIdentity];
+            DSIdentity *identity = [request.sourceContact.associatedBlockchainIdentity identity];
             if (isFriendship) {
                 DWDPAcceptedRequestNotificationObject *object =
                     [[DWDPAcceptedRequestNotificationObject alloc] initWithFriendRequestEntity:request
-                                                                            blockchainIdentity:blockchainIdentity
+                                                                                      identity:identity
                                                                              isInitiatedByThem:isInitiatedByThem];
                 // Don't add notifications about MY responses to the New section
                 if (isInitiatedByThem) {
@@ -203,7 +203,7 @@ NS_ASSUME_NONNULL_END
             else {
                 DWDPNewIncomingRequestNotificationObject *object =
                     [[DWDPNewIncomingRequestNotificationObject alloc] initWithFriendRequestEntity:request
-                                                                               blockchainIdentity:blockchainIdentity];
+                                                                                         identity:identity];
                 [items addObject:object];
             }
         }

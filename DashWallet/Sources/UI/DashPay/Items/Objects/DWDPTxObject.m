@@ -40,20 +40,20 @@ NS_ASSUME_NONNULL_END
 @synthesize subtitle = _subtitle;
 @synthesize username = _username;
 @synthesize transaction = _transaction;
-@synthesize blockchainIdentity = _blockchainIdentity;
+@synthesize identity = _identity;
 
 - (instancetype)initWithTransaction:(DSTransaction *)tx
                        dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider
-                 blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+                           identity:(DSIdentity *)identity {
     self = [super init];
     if (self) {
         _transaction = tx;
         _dataProvider = dataProvider;
-        _blockchainIdentity = blockchainIdentity;
-        _username = blockchainIdentity.currentDashpayUsername;
+        _identity = identity;
+        _username = identity.currentDashpayUsername;
 
-        BOOL hasDisplayName = blockchainIdentity.displayName.length > 0;
-        _displayName = hasDisplayName ? blockchainIdentity.displayName : nil;
+        BOOL hasDisplayName = identity.displayName.length > 0;
+        _displayName = hasDisplayName ? identity.displayName : nil;
 
         _subtitle = [dataProvider shortDateStringForTransaction:tx];
         _dataItem = [dataProvider transactionDataForTransaction:tx];

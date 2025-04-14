@@ -23,12 +23,12 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWDPAcceptedRequestNotificationObject : DWDPRespondedIncomingRequestObject <DWDPNotificationItem>
 
 - (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
-                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
+                                   identity:(DSIdentity *)identity
                           isInitiatedByThem:(BOOL)isInitiatedByThem NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
-                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_UNAVAILABLE;
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity; // if !MOCK_DASHPAY NS_UNAVAILABLE;
+                                   identity:(DSIdentity *)identity NS_UNAVAILABLE;
+//- (instancetype)initWithIdentity:(DSIdentity *)identity; // if !MOCK_DASHPAY NS_UNAVAILABLE;
 
 @end
 
