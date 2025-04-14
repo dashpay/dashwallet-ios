@@ -115,6 +115,9 @@
 /* No comment provided by engineer. */
 "Accept" = "Kabul et";
 
+/* Explore */
+"Accept Dash directly" = "Accept Dash directly";
+
 /* DashSpend */
 "Accept terms and\nconditions" = "Accept terms and\nconditions";
 
@@ -123,9 +126,6 @@
 
 /* CrowdNode */
 "Accepting terms of use…" = "Kullanım şartlarını kabul etmek…";
-
-/* No comment provided by engineer. */
-"Accepts DASH directly" = "Doğrudan DASH kabul eder";
 
 /* CrowdNode */
 "Account Recovery" = "Hesap Kurtarma";
@@ -352,9 +352,6 @@
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Hediye Kartı Satın Alın";
-
-/* No comment provided by engineer. */
-"Buy a gift card with Dash." = "Dash ile bir hediye kartı satın alın.";
 
 /* Dash Service Overview */
 "Buy and convert Dash with another crypto" = "Başka bir kripto para kullanarak Dash satın alın";
@@ -914,9 +911,6 @@
 "Filters" = "Filtreler";
 
 /* No comment provided by engineer. */
-"Find a merchant." = "Bir tüccar bulun.";
-
-/* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Dash Ağında bir kullanıcı bulun";
 
 /* No comment provided by engineer. */
@@ -1059,9 +1053,6 @@
 
 /* CrowdNode */
 "How to confirm your API Dash address" = "API Dash adresinizi nasıl onaylarsınız?";
-
-/* No comment provided by engineer. */
-"How to Use a Gift Card" = "Hediye Kartı Nasıl Kullanılır";
 
 /* No comment provided by engineer. */
 "HPMN Operator Keys" = "Evolution Node Kimlik Anahtarları";
@@ -1312,9 +1303,6 @@
 
 /* Explore Dash */
 "Last server update" = "Son sunucu güncellemesi";
-
-/* No comment provided by engineer. */
-"Learn More" = "Daha fazla bilgi edin";
 
 /* Info Screen */
 "Learn More..." = "Daha fazla bilgi edin...";
@@ -1613,9 +1601,6 @@
 /* Usernames */
 "Not a valid URL" = "Geçerli bir URL değil";
 
-/* No comment provided by engineer. */
-"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Tüm mağazalar DASH'i doğrudan kabul etmez, ancak Dash'inizle bir hediye kartı satın alabilirsiniz.";
-
 /* Fiat amount */
 "Not available" = "Mevcut değil";
 
@@ -1636,6 +1621,9 @@
 
 /* No comment provided by engineer. */
 "OK" = "Tamam";
+
+/* No comment provided by engineer. */
+"Ok" = "Ok";
 
 /* Voting */
 "Old to new" = "Eskiden yeniye";
@@ -1711,9 +1699,6 @@
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Kolaylıkla öde";
-
-/* No comment provided by engineer. */
-"Pay with the DASH Wallet." = "DASH Cüzdanı ile ödeme yapın.";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "Ödeniyor";
@@ -1939,9 +1924,6 @@
 
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Kurtarma ifadesi 12, 15, 18, 21 veya 24 sözcükten oluşmalıdır";
-
-/* No comment provided by engineer. */
-"Redeem your gift card online within seconds or at the cashier." = "Hediye kartınızı saniyeler içinde çevrimiçi olarak veya kasiyerde kullanın.";
 
 /* Button title, Register (username) */
 "Register" = "Kayıt ol";
@@ -2349,6 +2331,9 @@
 /* Voting */
 "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter.";
 
+/* Explore */
+"The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps.";
+
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "Seçtiğiniz resim anonim olarak Imgur'a yüklenecektir.";
 
@@ -2727,10 +2712,10 @@
 "We couldn’t withdraw from your CrowdNode account." = "CrowdNode hesabınızdan para çekemedik.";
 
 /* No comment provided by engineer. */
-"We have 2 types of merchants" = "2 tip tüccarımız var";
-
-/* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Dash Wallet'ın taşıma işlemi sırasında çöktüğünü tespit ettik. Blok zincirini tekrar tararsanız sorun çözülecektir veya tekrar deneyebilirsiniz. Tekrar taramanın kablosuz ağ üzerinde yapılması tercih edilir ve bu işlem yarım saat kadar sürer. Eşleşme süreci tamamlanınca bakiyenizi kullanabilirsiniz.";
+
+/* Explore */
+"We have two types of merchants" = "We have two types of merchants";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Yeni sürüme geçtik";
@@ -2834,6 +2819,9 @@
 
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "Anahtarınızı aşağıdaki formatlardan herhangi birinde girebilirsiniz: WIF/base58/base64/hex";
+
+/* Explore */
+"You can pay with Dash at the cashier." = "You can pay with Dash at the cashier.";
 
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "Para yatırma, çekme ve ödüllerinizin detaylı bilgileri görebilirsiniz.";

@@ -115,6 +115,9 @@
 /* No comment provided by engineer. */
 "Accept" = "Accepteren";
 
+/* Explore */
+"Accept Dash directly" = "Accept Dash directly";
+
 /* DashSpend */
 "Accept terms and\nconditions" = "Accept terms and\nconditions";
 
@@ -123,9 +126,6 @@
 
 /* CrowdNode */
 "Accepting terms of use…" = "Gebruiksvoorwaarden accepteren...";
-
-/* No comment provided by engineer. */
-"Accepts DASH directly" = "Accepteert DASH direct";
 
 /* CrowdNode */
 "Account Recovery" = "Accountherstel";
@@ -352,9 +352,6 @@
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Koop een geschenkbon";
-
-/* No comment provided by engineer. */
-"Buy a gift card with Dash." = "Koop een geschenkbon met Dash.";
 
 /* Dash Service Overview */
 "Buy and convert Dash with another crypto" = "Koop en converteer Dash met een andere cryptovaluta";
@@ -914,9 +911,6 @@
 "Filters" = "Filters";
 
 /* No comment provided by engineer. */
-"Find a merchant." = "Vind een acceptant";
-
-/* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Zoek een gebruiker op het Dash netwerk";
 
 /* No comment provided by engineer. */
@@ -1059,9 +1053,6 @@
 
 /* CrowdNode */
 "How to confirm your API Dash address" = "Hoe je het API Dash adres kunt bevestigen";
-
-/* No comment provided by engineer. */
-"How to Use a Gift Card" = "Hoe een geschenkbon te gebruiken";
 
 /* No comment provided by engineer. */
 "HPMN Operator Keys" = "Evolution Node ID sleutels";
@@ -1312,9 +1303,6 @@
 
 /* Explore Dash */
 "Last server update" = "Laatste server update";
-
-/* No comment provided by engineer. */
-"Learn More" = "Lees verder";
 
 /* Info Screen */
 "Learn More..." = "Kom meer te weten...";
@@ -1613,9 +1601,6 @@
 /* Usernames */
 "Not a valid URL" = "Geen geldige URL";
 
-/* No comment provided by engineer. */
-"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Niet alle winkels accepteren direct DASH, maar je kan een geschenkbon kopen met je Dash.";
-
 /* Fiat amount */
 "Not available" = "Niet beschikbaar";
 
@@ -1636,6 +1621,9 @@
 
 /* No comment provided by engineer. */
 "OK" = "Oké";
+
+/* No comment provided by engineer. */
+"Ok" = "Ok";
 
 /* Voting */
 "Old to new" = "Oud naar nieuw";
@@ -1711,9 +1699,6 @@
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Betaal met gemak";
-
-/* No comment provided by engineer. */
-"Pay with the DASH Wallet." = "Betaal met de DASH portemonnee.";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "Aan het betalen";
@@ -1939,9 +1924,6 @@
 
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Herstelzin moet 12, 15, 18, 21 of 24 woorden hebben";
-
-/* No comment provided by engineer. */
-"Redeem your gift card online within seconds or at the cashier." = "Wissel je geschenkbon online in binnen een paar seconden of bij de kassa. ";
 
 /* Button title, Register (username) */
 "Register" = "Registreren";
@@ -2349,6 +2331,9 @@
 /* Voting */
 "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter.";
 
+/* Explore */
+"The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps.";
+
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "De afbeelding die je selecteert, wordt anoniem naar Imgur geüpload.";
 
@@ -2727,10 +2712,10 @@
 "We couldn’t withdraw from your CrowdNode account." = "We konden niet opnemen uit je CrowdNode account.";
 
 /* No comment provided by engineer. */
-"We have 2 types of merchants" = "We hebben 2 typen acceptanten";
-
-/* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We detecteerden dat de Dash portemonnee tijdens de migratie is gecrasht. Opnieuw scannen van de blockchain zal dit probleem oplossen of uw kan het opnieuw proberen. Opnieuw scannen dient bij voorkeur met wifi te worden gedaan en duurt ongeveer een half uur. Uw saldo zal pas beschikbaar zijn zodra het synchronisatieproces is afgerond.";
+
+/* Explore */
+"We have two types of merchants" = "We have two types of merchants";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "We hebben een upgrade uitgevoerd";
@@ -2834,6 +2819,9 @@
 
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "Je kunt je sleutel in een van de volgende formaten invoeren: WIF/base58/base64/hex";
+
+/* Explore */
+"You can pay with Dash at the cashier." = "You can pay with Dash at the cashier.";
 
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "Je kunt gedetailleerde informatie zien over uw stortingen, opnames en inkomsten.";

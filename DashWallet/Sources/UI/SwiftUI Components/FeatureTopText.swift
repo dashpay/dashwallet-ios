@@ -31,6 +31,8 @@ struct FeatureTopText: View {
             Text(title)
                 .font(.h5Bold)
                 .multilineTextAlignment(alignment)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
                 .lineSpacing(3)
                 .foregroundColor(.primaryText)
           

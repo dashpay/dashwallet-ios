@@ -115,6 +115,9 @@
 /* No comment provided by engineer. */
 "Accept" = "接受";
 
+/* Explore */
+"Accept Dash directly" = "Accept Dash directly";
+
 /* DashSpend */
 "Accept terms and\nconditions" = "Accept terms and\nconditions";
 
@@ -123,9 +126,6 @@
 
 /* CrowdNode */
 "Accepting terms of use…" = "接受使用條款…";
-
-/* No comment provided by engineer. */
-"Accepts DASH directly" = "直接接受達世幣";
 
 /* CrowdNode */
 "Account Recovery" = "恢復帳戶";
@@ -352,9 +352,6 @@
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "購買禮品卡";
-
-/* No comment provided by engineer. */
-"Buy a gift card with Dash." = "使用達世幣購買禮品卡。";
 
 /* Dash Service Overview */
 "Buy and convert Dash with another crypto" = "用另一種加密貨幣購買和兌換達世幣";
@@ -914,9 +911,6 @@
 "Filters" = "過濾器";
 
 /* No comment provided by engineer. */
-"Find a merchant." = "尋找商家。";
-
-/* No comment provided by engineer. */
 "Find a user on the Dash Network" = "在達世幣網絡上查找用戶";
 
 /* No comment provided by engineer. */
@@ -1059,9 +1053,6 @@
 
 /* CrowdNode */
 "How to confirm your API Dash address" = "如何確認您的 API 達世幣位址";
-
-/* No comment provided by engineer. */
-"How to Use a Gift Card" = "如何使用禮品卡";
 
 /* No comment provided by engineer. */
 "HPMN Operator Keys" = "Evolution 節點 ID 金鑰";
@@ -1312,9 +1303,6 @@
 
 /* Explore Dash */
 "Last server update" = "上一次服務器更新";
-
-/* No comment provided by engineer. */
-"Learn More" = "了解更多";
 
 /* Info Screen */
 "Learn More..." = "了解更多...";
@@ -1613,9 +1601,6 @@
 /* Usernames */
 "Not a valid URL" = "不是有效的網址";
 
-/* No comment provided by engineer. */
-"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "並非所有商店都直接接受達世幣，但您可以使用達世幣購買禮品卡。";
-
 /* Fiat amount */
 "Not available" = "無法使用";
 
@@ -1636,6 +1621,9 @@
 
 /* No comment provided by engineer. */
 "OK" = "好";
+
+/* No comment provided by engineer. */
+"Ok" = "Ok";
 
 /* Voting */
 "Old to new" = "從舊到新";
@@ -1711,9 +1699,6 @@
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "輕鬆付款";
-
-/* No comment provided by engineer. */
-"Pay with the DASH Wallet." = "使用達世幣錢包付款。";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "付款中";
@@ -1939,9 +1924,6 @@
 
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "恢復詞組必須包含 12, 15, 18, 21 或24 個字";
-
-/* No comment provided by engineer. */
-"Redeem your gift card online within seconds or at the cashier." = "在幾秒鐘內在線或在收銀台兌換您的禮品卡。";
 
 /* Button title, Register (username) */
 "Register" = "注冊";
@@ -2349,6 +2331,9 @@
 /* Voting */
 "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter.";
 
+/* Explore */
+"The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps.";
+
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "您選擇的圖像將匿名上傳到 Imgur。";
 
@@ -2727,10 +2712,10 @@
 "We couldn’t withdraw from your CrowdNode account." = "我們無法從您的 CrowdNode 帳戶中提款。";
 
 /* No comment provided by engineer. */
-"We have 2 types of merchants" = "我們有2種類型的商家";
-
-/* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "我們發現達世幣錢包在遷移過程中崩潰了。 重新掃描區塊鏈將解決此問題，您也可以再試一次。 重新掃描最好應在wifi上進行，最多需要半小時。 同步過程完成後，您的資金將可使用。";
+
+/* Explore */
+"We have two types of merchants" = "We have two types of merchants";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "我們升級了";
@@ -2834,6 +2819,9 @@
 
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "您可以採用以下任一格式輸入金鑰 : WIF/base58/base64/hex";
+
+/* Explore */
+"You can pay with Dash at the cashier." = "You can pay with Dash at the cashier.";
 
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "您可以查看有關您的存款、提款和獎勵收入的詳細信息。";

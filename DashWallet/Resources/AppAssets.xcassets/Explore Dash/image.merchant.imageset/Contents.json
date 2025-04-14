@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "GiftCard.png",
+      "filename" : "merchants.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "GiftCard@2x.png",
+      "filename" : "merchants@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "GiftCard@3x.png",
+      "filename" : "merchants@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
