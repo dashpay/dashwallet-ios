@@ -115,6 +115,9 @@
 /* No comment provided by engineer. */
 "Accept" = "承認";
 
+/* DashSpend */
+"Accept terms and\nconditions" = "Accept terms and\nconditions";
+
 /* CrowdNode */
 "Accept Terms Of Use" = "利用規約に同意する";
 
@@ -258,6 +261,9 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "認証はご利用できません";
+
+/* Authorization error message */
+"Authorization error. Please try logging in again." = "Authorization error. Please try logging in again.";
 
 /* Location Service Status */
 "Authorized" = "認証済み";
@@ -415,6 +421,9 @@
 
 /* No comment provided by engineer. */
 "Check your connection" = "接続を確認してください";
+
+/* DashSpend */
+"Check your email and enter the verification code." = "Check your email and enter the verification code.";
 
 /* Choose your Dash username */
 "Choose your" = "あなたのを選択する";
@@ -574,14 +583,14 @@
 /* CrowdNode */
 "Create Account" = "アカウントの作成";
 
+/* Create DashSpend account */
+"Create account" = "Create account";
+
 /* DashSpend account title */
 "Create an account or log into an existing one" = "Create an account or log into an existing one";
 
 /* CrowdNode */
 "Create an online CrowdNode account" = "CrowdNodeのオンラインアカウントを作成";
-
-/* Create CTXSpend Account */
-"Create CTXSpend Account" = "Create CTXSpend Account";
 
 /* No comment provided by engineer. */
 "Create invitation" = "招待状を作成する";
@@ -808,8 +817,8 @@
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "復元フレーズを入力してください";
 
-/* Enter Verification Code */
-"Enter Verification Code" = "Enter Verification Code";
+/* Enter verification code */
+"Enter verification code" = "Enter verification code";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "以下に2FAコードを入力してください";
@@ -1062,6 +1071,9 @@
 
 /* No comment provided by engineer. */
 "I accept" = "I accept";
+
+/* Accept terms checkbox */
+"I accept DashSpend terms and conditions" = "I accept DashSpend terms and conditions";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "もし復元フレーズを無くしたら、自分のコインが失われることに同意します";
@@ -1373,14 +1385,23 @@
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "CrowdNodeにログイン";
 
-/* Log in to CTXSpend Account */
-"Log in to CTXSpend Account" = "Log in to CTXSpend Account";
+/* DashSpend */
+"Log in to your account" = "Log in to your account";
 
-/* Log in to CTXSpend account to buy gift cards */
-"Log in to CTXSpend account to buy gift cards" = "Log in to CTXSpend account to buy gift cards";
+/* Log out button */
+"Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Upholdからログアウトする";
+
+/* Logged in status */
+"Logged in" = "Logged in";
+
+/* DashSpend */
+"Logged in as %@" = "Logged in as %@";
+
+/* DashSpend */
+"Logged in to DashSpend account" = "Logged in to DashSpend account";
 
 /* No comment provided by engineer. */
 "Login with Face ID" = "Face IDを使ってログインする";
@@ -1526,6 +1547,9 @@
 /* No comment provided by engineer. */
 "Network" = "ネットワーク";
 
+/* Network error message */
+"Network error. Please check your connection." = "Network error. Please check your connection.";
+
 /* No comment provided by engineer. */
 "Network fee" = "ネットワーク手数料";
 
@@ -1655,6 +1679,9 @@
 /* No comment provided by engineer. */
 "Owner Keys" = "所有者の諸々のキー";
 
+/* DashSpend */
+"Password" = "Password";
+
 /* Usernames */
 "Past link here" = "Past link here";
 
@@ -1738,9 +1765,6 @@
 
 /* Coinbase/Buy Dash */
 "Please add a payment method on Coinbase" = "Coinbaseで支払い方法を追加してください";
-
-/* Please check your email for the verification code */
-"Please check your email for the verification code" = "Please check your email for the verification code";
 
 /* Network Unavailable */
 "Please check your network connection" = "ネットワーク接続を確認してください";
@@ -2609,9 +2633,6 @@
 /* No comment provided by engineer. */
 "Validating username…" = "ユーザー名の有効化中...";
 
-/* Verification Code */
-"Verification Code" = "Verification Code";
-
 /* CrowdNode Portal */
 "Verification Required" = "認証が必要です";
 
@@ -2954,6 +2975,9 @@
 
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "お客様のメールアドレスは、DashPayウォレットにもサーバーにも保存されません。Gravatarアカウントの詳細を取得するために一度だけ使用され、その後は破棄されます。";
+
+/* Email is only used for OTP */
+"Your email is only used to send a one-time password." = "Your email is only used to send a one-time password.";
 
 /* No comment provided by engineer. */
 "Your invitation from %@ has been already claimed" = "%@からの招待状はすでに請求済みです";

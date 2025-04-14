@@ -115,6 +115,9 @@
 /* No comment provided by engineer. */
 "Accept" = "Tanggapin";
 
+/* DashSpend */
+"Accept terms and\nconditions" = "Accept terms and\nconditions";
+
 /* CrowdNode */
 "Accept Terms Of Use" = "Tanggapin ang Mga Tuntunin ng paggamit";
 
@@ -258,6 +261,9 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Hindi magagamit ang pagpapatunay";
+
+/* Authorization error message */
+"Authorization error. Please try logging in again." = "Authorization error. Please try logging in again.";
 
 /* Location Service Status */
 "Authorized" = "Awtorisado";
@@ -415,6 +421,9 @@
 
 /* No comment provided by engineer. */
 "Check your connection" = "Suriin ang koneksyon";
+
+/* DashSpend */
+"Check your email and enter the verification code." = "Check your email and enter the verification code.";
 
 /* Choose your Dash username */
 "Choose your" = "Pumili ng iyong";
@@ -574,14 +583,14 @@
 /* CrowdNode */
 "Create Account" = "Lumikha ng Account";
 
+/* Create DashSpend account */
+"Create account" = "Create account";
+
 /* DashSpend account title */
 "Create an account or log into an existing one" = "Create an account or log into an existing one";
 
 /* CrowdNode */
 "Create an online CrowdNode account" = "Lumikha ng online na CrowdNode account";
-
-/* Create CTXSpend Account */
-"Create CTXSpend Account" = "Create CTXSpend Account";
 
 /* No comment provided by engineer. */
 "Create invitation" = "Gumawa ng imbitasyon";
@@ -808,8 +817,8 @@
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Ilagay ang Recovery Phrase";
 
-/* Enter Verification Code */
-"Enter Verification Code" = "Enter Verification Code";
+/* Enter verification code */
+"Enter verification code" = "Enter verification code";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Ilagay ang iyong 2FA code sa ibaba";
@@ -1062,6 +1071,9 @@
 
 /* No comment provided by engineer. */
 "I accept" = "I accept";
+
+/* Accept terms checkbox */
+"I accept DashSpend terms and conditions" = "I accept DashSpend terms and conditions";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Tinatanggap ko na mawawala ko ang aking mga barya kung sakaling hindi ko na maalala ang recovery phrase";
@@ -1373,14 +1385,23 @@
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Mag-log in sa CrowdNode";
 
-/* Log in to CTXSpend Account */
-"Log in to CTXSpend Account" = "Log in to CTXSpend Account";
+/* DashSpend */
+"Log in to your account" = "Log in to your account";
 
-/* Log in to CTXSpend account to buy gift cards */
-"Log in to CTXSpend account to buy gift cards" = "Log in to CTXSpend account to buy gift cards";
+/* Log out button */
+"Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Mag-log out mula sa Uphold";
+
+/* Logged in status */
+"Logged in" = "Logged in";
+
+/* DashSpend */
+"Logged in as %@" = "Logged in as %@";
+
+/* DashSpend */
+"Logged in to DashSpend account" = "Logged in to DashSpend account";
 
 /* No comment provided by engineer. */
 "Login with Face ID" = "Buksan gamit ang Face ID";
@@ -1526,6 +1547,9 @@
 /* No comment provided by engineer. */
 "Network" = "Network";
 
+/* Network error message */
+"Network error. Please check your connection." = "Network error. Please check your connection.";
+
 /* No comment provided by engineer. */
 "Network fee" = "Network fee";
 
@@ -1655,6 +1679,9 @@
 /* No comment provided by engineer. */
 "Owner Keys" = "Susi ng may-ari";
 
+/* DashSpend */
+"Password" = "Password";
+
 /* Usernames */
 "Past link here" = "Past link here";
 
@@ -1738,9 +1765,6 @@
 
 /* Coinbase/Buy Dash */
 "Please add a payment method on Coinbase" = "Mangyaring magdagdag ng paraan ng pagbabayad sa Coinbase";
-
-/* Please check your email for the verification code */
-"Please check your email for the verification code" = "Please check your email for the verification code";
 
 /* Network Unavailable */
 "Please check your network connection" = "Mangyaring suriin ang iyong koneksyon sa network";
@@ -2609,9 +2633,6 @@
 /* No comment provided by engineer. */
 "Validating username…" = "Pagpapatunay ng username...";
 
-/* Verification Code */
-"Verification Code" = "Verification Code";
-
 /* CrowdNode Portal */
 "Verification Required" = "Kailangan ng beripikasyon";
 
@@ -2954,6 +2975,9 @@
 
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Ang iyong Email ay hindi nakaimbak sa DashPay wallet o sa anumang mga server. Ginagamit ito nang isang beses upang makuha ang mga detalye ng iyong Gravatar account at pagkatapos ay itapon.";
+
+/* Email is only used for OTP */
+"Your email is only used to send a one-time password." = "Your email is only used to send a one-time password.";
 
 /* No comment provided by engineer. */
 "Your invitation from %@ has been already claimed" = "Na-claim na ang iyong imbitasyon mula sa %@ ";

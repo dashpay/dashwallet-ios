@@ -115,6 +115,9 @@
 /* No comment provided by engineer. */
 "Accept" = "同意";
 
+/* DashSpend */
+"Accept terms and\nconditions" = "Accept terms and\nconditions";
+
 /* CrowdNode */
 "Accept Terms Of Use" = "接受使用条款";
 
@@ -258,6 +261,9 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "身份验证不可用";
+
+/* Authorization error message */
+"Authorization error. Please try logging in again." = "Authorization error. Please try logging in again.";
 
 /* Location Service Status */
 "Authorized" = "已授权";
@@ -415,6 +421,9 @@
 
 /* No comment provided by engineer. */
 "Check your connection" = "检查您的连接";
+
+/* DashSpend */
+"Check your email and enter the verification code." = "Check your email and enter the verification code.";
 
 /* Choose your Dash username */
 "Choose your" = "选择您的";
@@ -574,14 +583,14 @@
 /* CrowdNode */
 "Create Account" = "创建账户";
 
+/* Create DashSpend account */
+"Create account" = "Create account";
+
 /* DashSpend account title */
 "Create an account or log into an existing one" = "Create an account or log into an existing one";
 
 /* CrowdNode */
 "Create an online CrowdNode account" = "创建一个线上CrowdNode账户";
-
-/* Create CTXSpend Account */
-"Create CTXSpend Account" = "Create CTXSpend Account";
 
 /* No comment provided by engineer. */
 "Create invitation" = "创建邀请";
@@ -808,8 +817,8 @@
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "输入助记词";
 
-/* Enter Verification Code */
-"Enter Verification Code" = "Enter Verification Code";
+/* Enter verification code */
+"Enter verification code" = "Enter verification code";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "下方输入您的2次验证码";
@@ -1062,6 +1071,9 @@
 
 /* No comment provided by engineer. */
 "I accept" = "I accept";
+
+/* Accept terms checkbox */
+"I accept DashSpend terms and conditions" = "I accept DashSpend terms and conditions";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "我同意如果我丢失助记词, 我会丢失我的Dash";
@@ -1373,14 +1385,23 @@
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "登录到CrowdNode";
 
-/* Log in to CTXSpend Account */
-"Log in to CTXSpend Account" = "Log in to CTXSpend Account";
+/* DashSpend */
+"Log in to your account" = "Log in to your account";
 
-/* Log in to CTXSpend account to buy gift cards */
-"Log in to CTXSpend account to buy gift cards" = "Log in to CTXSpend account to buy gift cards";
+/* Log out button */
+"Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "从Uphold退出";
+
+/* Logged in status */
+"Logged in" = "Logged in";
+
+/* DashSpend */
+"Logged in as %@" = "Logged in as %@";
+
+/* DashSpend */
+"Logged in to DashSpend account" = "Logged in to DashSpend account";
 
 /* No comment provided by engineer. */
 "Login with Face ID" = "以脸部识别登入";
@@ -1526,6 +1547,9 @@
 /* No comment provided by engineer. */
 "Network" = "网络";
 
+/* Network error message */
+"Network error. Please check your connection." = "Network error. Please check your connection.";
+
 /* No comment provided by engineer. */
 "Network fee" = "网络手续费";
 
@@ -1655,6 +1679,9 @@
 /* No comment provided by engineer. */
 "Owner Keys" = "所有者私钥";
 
+/* DashSpend */
+"Password" = "Password";
+
 /* Usernames */
 "Past link here" = "Past link here";
 
@@ -1738,9 +1765,6 @@
 
 /* Coinbase/Buy Dash */
 "Please add a payment method on Coinbase" = "请在Coinbase上添加一种支付方式";
-
-/* Please check your email for the verification code */
-"Please check your email for the verification code" = "Please check your email for the verification code";
 
 /* Network Unavailable */
 "Please check your network connection" = "请检查您的网络连接";
@@ -2609,9 +2633,6 @@
 /* No comment provided by engineer. */
 "Validating username…" = "正在验证用户名...";
 
-/* Verification Code */
-"Verification Code" = "Verification Code";
-
 /* CrowdNode Portal */
 "Verification Required" = "需要验证";
 
@@ -2954,6 +2975,9 @@
 
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "您的电子邮箱不会存储在 DashPay钱包或任何服务器上. 它用于获取您的 Gravatar账户详细信息, 之后会被丢弃.";
+
+/* Email is only used for OTP */
+"Your email is only used to send a one-time password." = "Your email is only used to send a one-time password.";
 
 /* No comment provided by engineer. */
 "Your invitation from %@ has been already claimed" = "您来自%@的邀请已被认领";

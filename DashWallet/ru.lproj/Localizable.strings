@@ -115,6 +115,9 @@
 /* No comment provided by engineer. */
 "Accept" = "Подтвердить";
 
+/* DashSpend */
+"Accept terms and\nconditions" = "Accept terms and\nconditions";
+
 /* CrowdNode */
 "Accept Terms Of Use" = "Принять условия использования";
 
@@ -258,6 +261,9 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Авторизация недоступна";
+
+/* Authorization error message */
+"Authorization error. Please try logging in again." = "Authorization error. Please try logging in again.";
 
 /* Location Service Status */
 "Authorized" = "Подтверждён";
@@ -415,6 +421,9 @@
 
 /* No comment provided by engineer. */
 "Check your connection" = "Проверьте ваше интернет-соединение";
+
+/* DashSpend */
+"Check your email and enter the verification code." = "Check your email and enter the verification code.";
 
 /* Choose your Dash username */
 "Choose your" = "Выберите ваше";
@@ -574,14 +583,14 @@
 /* CrowdNode */
 "Create Account" = "Создать аккаунт";
 
+/* Create DashSpend account */
+"Create account" = "Create account";
+
 /* DashSpend account title */
 "Create an account or log into an existing one" = "Create an account or log into an existing one";
 
 /* CrowdNode */
 "Create an online CrowdNode account" = "Создать онлайн-аккаунт CrowdNode";
-
-/* Create CTXSpend Account */
-"Create CTXSpend Account" = "Create CTXSpend Account";
 
 /* No comment provided by engineer. */
 "Create invitation" = "Создать приглашение";
@@ -808,8 +817,8 @@
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Введите фразу восстановления";
 
-/* Enter Verification Code */
-"Enter Verification Code" = "Enter Verification Code";
+/* Enter verification code */
+"Enter verification code" = "Enter verification code";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Введите код 2FA ниже";
@@ -1062,6 +1071,9 @@
 
 /* No comment provided by engineer. */
 "I accept" = "I accept";
+
+/* Accept terms checkbox */
+"I accept DashSpend terms and conditions" = "I accept DashSpend terms and conditions";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Я понимаю, что потеряю свои средства, если у меня не будет фразы восстановления";
@@ -1373,14 +1385,23 @@
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Войти в CrowdNode";
 
-/* Log in to CTXSpend Account */
-"Log in to CTXSpend Account" = "Log in to CTXSpend Account";
+/* DashSpend */
+"Log in to your account" = "Log in to your account";
 
-/* Log in to CTXSpend account to buy gift cards */
-"Log in to CTXSpend account to buy gift cards" = "Log in to CTXSpend account to buy gift cards";
+/* Log out button */
+"Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Выйти из Uphold";
+
+/* Logged in status */
+"Logged in" = "Logged in";
+
+/* DashSpend */
+"Logged in as %@" = "Logged in as %@";
+
+/* DashSpend */
+"Logged in to DashSpend account" = "Logged in to DashSpend account";
 
 /* No comment provided by engineer. */
 "Login with Face ID" = "Войти с помощью Face ID";
@@ -1526,6 +1547,9 @@
 /* No comment provided by engineer. */
 "Network" = "Сеть";
 
+/* Network error message */
+"Network error. Please check your connection." = "Network error. Please check your connection.";
+
 /* No comment provided by engineer. */
 "Network fee" = "Комиссия сети";
 
@@ -1655,6 +1679,9 @@
 /* No comment provided by engineer. */
 "Owner Keys" = "Ключи владельца";
 
+/* DashSpend */
+"Password" = "Password";
+
 /* Usernames */
 "Past link here" = "Past link here";
 
@@ -1738,9 +1765,6 @@
 
 /* Coinbase/Buy Dash */
 "Please add a payment method on Coinbase" = "Добавьте способ оплаты на Coinbase";
-
-/* Please check your email for the verification code */
-"Please check your email for the verification code" = "Please check your email for the verification code";
 
 /* Network Unavailable */
 "Please check your network connection" = "Пожалуйста, проверьте ваше подключение к сети";
@@ -2609,9 +2633,6 @@
 /* No comment provided by engineer. */
 "Validating username…" = "Подтверждение имени пользователя...";
 
-/* Verification Code */
-"Verification Code" = "Verification Code";
-
 /* CrowdNode Portal */
 "Verification Required" = "Требуется верификация";
 
@@ -2954,6 +2975,9 @@
 
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Введёный адрес электронной почты нигде не сохраняется - ни в кошельке DashPay, ни на серверах. Он нужен лишь единожды для получения информации с Gravatar.";
+
+/* Email is only used for OTP */
+"Your email is only used to send a one-time password." = "Your email is only used to send a one-time password.";
 
 /* No comment provided by engineer. */
 "Your invitation from %@ has been already claimed" = "Приглашение от %@уже подтверждено. ";

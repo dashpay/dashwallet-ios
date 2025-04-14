@@ -161,31 +161,38 @@ extension PointOfUseDetailsViewController {
     private func showCTXSpendLoginInfo() {
         let swiftUIView = CTXSpendLoginInfoView(
             onCreateNewAccount: { [weak self] in
-                self?.showCTXSpendAuth()
+                self?.dismiss(animated: true) {
+                    self?.showCTXSpendTerms()
+                }
             },
-            onLogIn: {},
+            onLogIn: { [weak self] in
+                self?.dismiss(animated: true) {
+                    self?.showCTXSpendAuth(authType: .signIn)
+                }
+            },
             onTermsAndConditions: {
-                // TODO: Open learn more URL
+                UIApplication.shared.open(URL(string: CTXConstants.ctxGiftCardAgreementUrl)!, options: [:], completionHandler: nil)
             }
         )
         let hostingController = UIHostingController(rootView: swiftUIView)
         hostingController.setDetent(450)
         self.present(hostingController, animated: true)
     }
+    
+    private func showCTXSpendTerms() {
+        let hostingController = UIHostingController(rootView: CTXSpendTermsScreen())
+        hostingController.modalPresentationStyle = .fullScreen
+        self.navigationController?.pushViewController(hostingController, animated: true)
+    }
 
-    private func showCTXSpendAuth() {
+    private func showCTXSpendAuth(authType: CTXSpendUserAuthType) {
         let hostingController = UIHostingController(
-            rootView: CTXSpendUserAuthView(
-                authType: .signIn,
-                onSuccess: { [weak self] in
-                    // TODO: Handle successful authentication
-                }
-            )
+            rootView: NavigationView {
+                CTXSpendUserAuthScreen(authType: authType)
+            }
         )
         
-//        hostingController.modalPresentationStyle = .fullScreen
-        
-        self.present(hostingController, animated: true)
+        self.navigationController?.pushViewController(hostingController, animated: true)
     }
 }
 
@@ -240,4 +247,9 @@ extension ExplorePointOfUse {
             return nil
         }
     }
+}
+
+extension UIHostingController: NavigationBarDisplayable {
+    var isBackButtonHidden: Bool { true }
+    var isNavigationBarHidden: Bool { true }
 }

@@ -24,18 +24,19 @@ struct FeatureTopText: View {
     var alignment: TextAlignment = .center
     var labelIcon: IconName? = nil
     var linkAction: (() -> Void)? = nil
+    var shakeLabel: Bool = false
     
     var body: some View {
         VStack(alignment: getStackAlignment(), spacing: 6) {
             Text(title)
-                .font(Font.system(size: 24).weight(.bold))
+                .font(.h5Bold)
                 .multilineTextAlignment(alignment)
                 .lineSpacing(3)
                 .foregroundColor(.primaryText)
           
             if let text = text {
                 Text(text)
-                    .font(Font.system(size: 14))
+                    .font(.body2)
                     .multilineTextAlignment(alignment)
                     .lineSpacing(3)
                     .foregroundColor(.secondaryText)
@@ -47,6 +48,7 @@ struct FeatureTopText: View {
                 }
                 .padding(.top, 8)
                 .overrideForegroundColor(.dashBlue)
+                .wiggle(shakeLabel)
             }
         }
         .padding(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
@@ -64,6 +66,33 @@ struct FeatureTopText: View {
         }
     }
 }
+
+extension View {
+    func wiggle(_ trigger: Bool) -> some View {
+        modifier(WiggleModifier(trigger: trigger))
+    }
+}
+
+struct WiggleModifier: ViewModifier {
+    let trigger: Bool
+    @State private var isAnimating = false
+    
+    func body(content: Content) -> some View {
+        content
+            .offset(x: isAnimating ? -10 : 0)
+            .onChange(of: trigger) { newValue in
+                guard newValue else { return }
+                withAnimation(.easeInOut(duration: 0.05).repeatCount(3)) {
+                    isAnimating = true
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    isAnimating = false
+                }
+            }
+    }
+}
+
 
 #Preview {
     FeatureTopText(

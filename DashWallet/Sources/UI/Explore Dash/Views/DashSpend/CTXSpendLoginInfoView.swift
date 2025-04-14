@@ -35,6 +35,7 @@ struct CTXSpendLoginInfoView: View {
                     }
                 )
                 .padding(.horizontal)
+                .padding(.bottom, 10)
             }
         }
     }
