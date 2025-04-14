@@ -38,6 +38,7 @@ struct FeatureTopText: View {
                 .multilineTextAlignment(alignment)
                 .lineSpacing(3)
                 .foregroundColor(.secondaryText)
+                .padding(.top, 2)
             
             if let label = label {
                 DashButton(text: label, trailingIcon: labelIcon, style: .plain, size: .small, stretch: false) {

@@ -276,7 +276,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)handleDeeplink:(NSURL *)url
-            completion:(void (^)(BOOL success,
+            completion:(void (^)(DSTransaction *_Nullable assetLockTx,
                                  NSString *_Nullable errorTitle,
                                  NSString *_Nullable errorMessage))completion {
     [self.dashPayModel verifyDeeplink:url completion:completion];

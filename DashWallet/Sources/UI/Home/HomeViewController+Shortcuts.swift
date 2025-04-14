@@ -48,7 +48,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, DWExploreTe
         case .reportAnIssue:
             break
         case .createUsername:
-            showCreateUsername(withInvitation: nil, definedUsername: nil)
+            showCreateUsername(withInvitation: nil, assetLockTx: nil, definedUsername: nil)
         case .receive:
             delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.receive.rawValue)
         case .explore:
@@ -100,9 +100,9 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, DWExploreTe
         presentControllerModallyInNavigationController(controller)
     }
 
-    func showCreateUsername(withInvitation invitationURL: URL?, definedUsername: String?) {
+    func showCreateUsername(withInvitation invitationURL: URL?, assetLockTx: DSTransaction?, definedUsername: String?) {
         #if DASHPAY
-        let controller = CreateUsernameViewController(dashPayModel: model.dashPayModel, invitationURL: nil, definedUsername: nil)
+        let controller = CreateUsernameViewController(dashPayModel: model.dashPayModel, invitationURL: invitationURL, assetLockTx: assetLockTx, definedUsername: nil)
         controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { result in
             if (result) {
