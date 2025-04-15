@@ -35,54 +35,38 @@ protocol HomeViewDelegate: AnyObject {
 
 // MARK: - HomeView
 
-final class HomeView: UIView, DWHomeModelUpdatesObserver {
+final class HomeView: UIView {
     private var cancellableBag = Set<AnyCancellable>()
     weak var delegate: HomeViewDelegate?
 
     private(set) var headerView: HomeHeaderView!
-    let viewModel = HomeViewModel.shared
+    let viewModel: HomeViewModel
     #if DASHPAY
     let joinDPViewModel = JoinDashPayViewModel(initialState: .callToAction)
     #endif
 
-    @objc
-    var model: DWHomeProtocol? {
-        didSet {
-            model?.updatesObserver = self
-        }
-    }
+    var model: DWHomeProtocol?
 
-    @objc
     weak var shortcutsDelegate: ShortcutsActionDelegate? {
         get { headerView.shortcutsDelegate }
         set { headerView.shortcutsDelegate = newValue }
     }
 
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setupView()
-    }
-    
-    init(frame: CGRect, delegate: HomeViewDelegate?) {
-        super.init(frame: frame)
+    init(frame: CGRect, delegate: HomeViewDelegate?, viewModel: HomeViewModel) {
+        self.viewModel = viewModel
         self.delegate = delegate
+        super.init(frame: frame)
         setupView()
     }
 
     required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setupView()
-    }
-
-    @objc
-    func hideBalanceIfNeeded() {
-        headerView?.balanceView.hideBalanceIfNeeded()
+        fatalError("init(coder:) has not been implemented")
     }
 
     private func setupView() {
         backgroundColor = UIColor.dw_secondaryBackground()
 
-        headerView = HomeHeaderView(frame: CGRect.zero)
+        headerView = HomeHeaderView(frame: CGRect.zero, viewModel: viewModel)
         headerView.delegate = self
         
         #if DASHPAY
@@ -90,13 +74,15 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
             viewModel: self.viewModel,
             joinDPViewModel: self.joinDPViewModel,
             delegate: self.delegate,
-            balanceHeader: { UIViewWrapper(uiView: self.headerView) }
+            shortcutsDelegate: self.shortcutsDelegate,
+            headerView: { UIViewWrapper(uiView: self.headerView) }
         )
         #else
         let content = HomeViewContent(
             viewModel: self.viewModel,
             delegate: self.delegate,
-            balanceHeader: { UIViewWrapper(uiView: self.headerView) }
+            shortcutsDelegate: self.shortcutsDelegate,
+            headerView: { UIViewWrapper(uiView: self.headerView) }
         )
         #endif
         let swiftUIController = UIHostingController(rootView: content)
@@ -133,22 +119,6 @@ final class HomeView: UIView, DWHomeModelUpdatesObserver {
             }
             .store(in: &cancellableBag)
         #endif
-    }
-
-    // MARK: - DWHomeModelUpdatesObserver
-
-    func homeModel(_ model: any DWHomeProtocol, didUpdate dataSource: [DSTransaction], shouldAnimate: Bool) {
-        self.viewModel.reloadShortcuts()
-        headerView.reloadBalance()
-    }
-
-    func homeModelDidChangeInnerModels(_ model: DWHomeProtocol) {
-        headerView.reloadBalance()
-        viewModel.reloadShortcuts()
-    }
-
-    func homeModelWant(toReloadShortcuts model: DWHomeProtocol) {
-        viewModel.reloadShortcuts()
     }
 
     // MARK: DWDashPayRegistrationStatusUpdated
@@ -217,9 +187,11 @@ struct HomeViewContent<Content: View>: View {
     @StateObject var joinDPViewModel: JoinDashPayViewModel
     #endif
     weak var delegate: HomeViewDelegate?
-    @ViewBuilder var balanceHeader: () -> Content
+    weak var shortcutsDelegate: ShortcutsActionDelegate?
+    @ViewBuilder var headerView: () -> Content
     
     private let topOverscrollSize: CGFloat = 1000 // Fixed value for top overscroll area
+    
 
     var body: some View {
         ZStack {
@@ -229,8 +201,18 @@ struct HomeViewContent<Content: View>: View {
                     .padding(EdgeInsets(top: -topOverscrollSize, leading: 0, bottom: 0, trailing: 0))
                 
                 LazyVStack(pinnedViews: [.sectionHeaders]) {
-                    balanceHeader()
-                        .frame(height: viewModel.balanceHeaderHeight)
+                    HomeBalanceView {
+                        let action = ShortcutAction(type: .localCurrency)
+                        shortcutsDelegate?.shortcutsView(didSelectAction: action, sender: nil)
+                    }
+                    .frame(height: 110)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.dashBlue)
+                    .padding(.top, 5)
+                    .padding(.bottom, -12)
+                    
+                    headerView()
+                        .frame(height: viewModel.headerHeight)
                     
                     if viewModel.coinJoinItem.isOn {
                         CoinJoinProgressView(

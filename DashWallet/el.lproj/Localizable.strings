@@ -205,6 +205,9 @@
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Μια διαισθητική και οικεία εμπειρία σε όλες τις συσκευές σας";
 
+/* Invites */
+"an invitation" = "an invitation";
+
 /* CrowdNode */
 "and" = "και";
 
@@ -470,6 +473,12 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "Επιβεβαιώστε (%1$d%2$@)";
 
+/* Invites */
+"Confirm and pay" = "Confirm and pay";
+
+/* Invites */
+"Confirm invitation" = "Confirm invitation";
+
 /* No comment provided by engineer. */
 "Confirm PIN" = "Επιβεβαίωση PIN";
 
@@ -510,6 +519,9 @@
 
 /* No comment provided by engineer. */
 "Contacts" = "Επαφές";
+
+/* Usernames */
+"Contested" = "Contested";
 
 /* No comment provided by engineer. */
 "Continue" = "Συνέχεια";
@@ -751,8 +763,8 @@
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "e.g. johndoe@mail.com";
 
-/* No comment provided by engineer. */
-"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Κάθε πρόσκληση θα χρηματοδοτείται με αυτό το ποσό, ώστε ο παραλήπτης να μπορεί να δημιουργήσει γρήγορα το όνομα χρήστη του στο δίκτυο Dash.";
+/* Invites */
+"Each invitation will be funded so that the receiver can quickly create their username on the Dash Network." = "Each invitation will be funded so that the receiver can quickly create their username on the Dash Network.";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Νωρίτερα";
@@ -1195,8 +1207,8 @@
 /* No comment provided by engineer. */
 "Invitation Created Successfully" = "Πρόσκληση δημιουργήθηκε επιτυχώς";
 
-/* No comment provided by engineer. */
-"Invitation Fee" = "Παράβολο πρόσκλησης";
+/* Invites */
+"Invitation fee" = "Invitation fee";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "Η πρόσκληση χρησιμοποιείται από";
@@ -1546,6 +1558,9 @@
 
 /* No comment provided by engineer. */
 "Node IP" = "IP Κόμβου";
+
+/* Usernames */
+"Non-contested" = "Non-contested";
 
 /* adjective, security level */
 "None" = "κανενα";
@@ -2036,6 +2051,10 @@
 /* Buy Sell Dash */
 "Select a service" = "Επιλέξτε μια υπηρεσία";
 
+/* Block explorer picker
+   Block explorer selection title */
+"Select block explorer" = "Select block explorer";
+
 /* No comment provided by engineer. */
 "Select from Gallery" = "Επιλέξτε από την Συλλογή";
 
@@ -2298,6 +2317,12 @@
 /* Coinbase */
 "The minimum amount you can send is %@" = "Το ελάχιστο ποσό που μπορείτε να στείλετε είναι %@";
 
+/* Invites */
+"The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen" = "The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen";
+
+/* Invites */
+"The person that you send this invitation to can request any username they want and the network will vote to approve it" = "The person that you send this invitation to can request any username they want and the network will vote to approve it";
+
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
 
@@ -2362,7 +2387,7 @@
 "to Dash Wallet on this device" = "στο Dash Wallet σε αυτή τη συσκευή";
 
 /* CoinJoin */
-"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
+"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@.";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "Για να ξεκινήσετε το staking, δημιουργήστε έναν λογαριασμό στο CrowdNode ή συνδεθείτε σε έναν ήδη υπάρχοντα.";
@@ -2736,6 +2761,9 @@
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "Θέλετε να αποδεχθείτε την πρόσκληση;";
 
+/* Invites */
+"Would you like to create this invitation?" = "Would you like to create this invitation?";
+
 /* Coinbase */
 "Would you like to make a deposit for your purchase using a linked bank account?" = "Θα θέλατε να κάνετε μια κατάθεση για την πληρωμή της αγοράς σας χρησιμοποιώντας έναν συνδεδεμένο τραπεζικό λογαριασμό;";
 
@@ -2785,7 +2813,7 @@
 "You cannot claim this invite since you already have a Dash username" = "Δεν μπορείτε να διεκδικήσετε αυτή την πρόσκληση αφού έχετε ήδη ένα όνομα χρήστη Dash.";
 
 /* Usernames */
-"You chose “%@” as your username." = "You chose “%@” as your username.";
+"You chose \"%@\" as your username." = "You chose \"%@\" as your username.";
 
 /* CoinJoin */
 "You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
@@ -2936,6 +2964,9 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Η συναλλαγή σας απεστάλη και το ποσό θα πρέπει να εμφανιστεί στο πορτοφόλι σας σε λίγα λεπτά.";
+
+/* Usernames */
+"your username" = "your username";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Το όνομα χρήστη %@ δημιουργήθηκε με επιτυχία στο Dash Δίκτυο";

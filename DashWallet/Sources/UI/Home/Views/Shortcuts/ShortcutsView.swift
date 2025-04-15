@@ -55,29 +55,24 @@ func cellSize(for contentSizeCategory: UIContentSizeCategory) -> CGSize {
 
 // MARK: - ShortcutsActionDelegate
 
-@objc(DWShortcutsActionDelegate)
 protocol ShortcutsActionDelegate: AnyObject {
-    func shortcutsView(_ view: UIView, didSelectAction action: ShortcutAction, sender: UIView)
+    func shortcutsView(didSelectAction action: ShortcutAction, sender: UIView?)
 }
 
 // MARK: - ShortcutsViewDelegate
 
-@objc(DWShortcutsViewDelegate)
 protocol ShortcutsViewDelegate: AnyObject {
     func shortcutsViewDidUpdateContentSize(_ shortcutsView: ShortcutsView)
 }
 
 // MARK: - ShortcutsView
 
-@objc
 class ShortcutsView: UIView {
     private var cancellableBag = Set<AnyCancellable>()
-    private let viewModel = HomeViewModel.shared
+    private let viewModel: HomeViewModel
     
-    @objc
     weak var actionDelegate: ShortcutsActionDelegate?
 
-    @objc
     weak var delegate: ShortcutsViewDelegate?
 
     @IBOutlet
@@ -89,14 +84,14 @@ class ShortcutsView: UIView {
     @IBOutlet
     var collectionViewHeightConstraint: NSLayoutConstraint!
 
-    override init(frame: CGRect) {
+    init(frame: CGRect, viewModel: HomeViewModel) {
+        self.viewModel = viewModel
         super.init(frame: frame)
         commonInit()
     }
 
     required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-        commonInit()
+        fatalError("init(coder:) has not been implemented")
     }
 
     private func commonInit() {
@@ -196,7 +191,7 @@ extension ShortcutsView: UICollectionViewDataSource, UICollectionViewDelegate, U
         guard action.enabled else { return }
         guard let cell = collectionView.cellForItem(at: indexPath) else { return }
 
-        actionDelegate?.shortcutsView(self, didSelectAction: action, sender: cell)
+        actionDelegate?.shortcutsView(didSelectAction: action, sender: cell)
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {

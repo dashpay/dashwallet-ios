@@ -81,14 +81,19 @@ extension TxDetailModel {
                                                 font: font)
     }
 
-    var explorerURL: URL? {
-        if DWEnvironment.sharedInstance().currentChain.isTestnet() {
-            return URL(string: "https://insight.testnet.networks.dash.org:3002/insight/tx/\(transactionId)")
-        } else if DWEnvironment.sharedInstance().currentChain.isMainnet() {
-            return URL(string: "https://insight.dash.org/insight/tx/\(transactionId)")
+    func getExplorerURL(explorer: BlockExplorer) -> URL? {
+        switch explorer {
+        case .insight:
+            if DWEnvironment.sharedInstance().currentChain.isTestnet() {
+                return URL(string: "https://insight.testnet.networks.dash.org:3002/insight/tx/\(transactionId)")
+            } else if DWEnvironment.sharedInstance().currentChain.isMainnet() {
+                return URL(string: "https://insight.dash.org/insight/tx/\(transactionId)")
+            }
+        case .blockchair:
+            return URL(string: "https://blockchair.com/dash/transaction/\(transactionId)")
         }
-
-        return nil;
+        
+        return nil
     }
 }
 

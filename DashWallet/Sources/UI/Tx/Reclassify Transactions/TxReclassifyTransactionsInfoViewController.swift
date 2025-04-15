@@ -84,11 +84,17 @@ class TxReclassifyTransactionsInfoViewController: BasePageSheetViewController {
         let model = TxDetailModel(transaction: transaction)
         let vc = TXDetailViewController(model: model)
         dw_embedChild(vc, inContainer: transactionScreenContainer)
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        transactionScreenContainer.layoutIfNeeded()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self else { return }
+            guard self.view.window != nil else { return }
+            
             UIGraphicsBeginImageContextWithOptions(self.view.bounds.size, false, UIScreen.main.scale)
-            vc.view.drawHierarchy(in: self.view.bounds, afterScreenUpdates: true)
-            self.transactionScreenImage = UIGraphicsGetImageFromCurrentImageContext()
+            if let context = UIGraphicsGetCurrentContext() {
+                vc.view.layer.render(in: context)
+                self.transactionScreenImage = UIGraphicsGetImageFromCurrentImageContext()
+            }
             UIGraphicsEndImageContext()
         }
     }
