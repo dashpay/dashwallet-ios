@@ -1201,9 +1201,6 @@
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Geçersiz QR Kodu";
 
-/* Invalid verification code */
-"Invalid verification code" = "Invalid verification code";
-
 /* No comment provided by engineer. */
 "Invitation" = "Davetiye";
 
@@ -1534,9 +1531,6 @@
 
 /* No comment provided by engineer. */
 "Network" = "Ağ";
-
-/* Network error message */
-"Network error. Please check your connection." = "Network error. Please check your connection.";
 
 /* No comment provided by engineer. */
 "Network fee" = "Ağ ücreti";

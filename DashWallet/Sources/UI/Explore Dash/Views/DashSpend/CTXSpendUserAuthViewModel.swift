@@ -52,16 +52,16 @@ class CTXSpendUserAuthViewModel: ObservableObject {
                 }
             } catch CTXSpendError.invalidCode {
                 showError = true
-                errorMessage = NSLocalizedString("Invalid verification code", comment: "Invalid verification code error message")
+                errorMessage = NSLocalizedString("The code is incorrect. Please check and try again!", comment: "DashSpend")
             } catch CTXSpendError.networkError {
                 showError = true
-                errorMessage = NSLocalizedString("Network error. Please check your connection.", comment: "Network error message")
+                errorMessage = NSLocalizedString("Please check your network connection", comment: "")
             } catch CTXSpendError.unauthorized {
                 showError = true
-                errorMessage = NSLocalizedString("Authorization error. Please try logging in again.", comment: "Authorization error message")
+                errorMessage = NSLocalizedString("Authorization error. Please try logging in again.", comment: "DashSpend")
             } catch {
                 showError = true
-                errorMessage = NSLocalizedString("An error occurred", comment: "Generic error message")
+                errorMessage = NSLocalizedString("An error occurred", comment: "")
             }
             
             isLoading = false

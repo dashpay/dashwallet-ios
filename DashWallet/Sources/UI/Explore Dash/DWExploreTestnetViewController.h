@@ -21,7 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWExploreTestnetViewController;
 @protocol DWNavigationFullscreenable;
-@protocol DWExploreTestnetViewControllerDelegate;
 
 @protocol DWExploreTestnetViewControllerDelegate <NSObject>
 

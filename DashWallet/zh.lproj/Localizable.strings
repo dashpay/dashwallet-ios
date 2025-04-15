@@ -1201,9 +1201,6 @@
 /* No comment provided by engineer. */
 "Invalid QR Code" = "无效二维码";
 
-/* Invalid verification code */
-"Invalid verification code" = "Invalid verification code";
-
 /* No comment provided by engineer. */
 "Invitation" = "邀请";
 
@@ -1534,9 +1531,6 @@
 
 /* No comment provided by engineer. */
 "Network" = "网络";
-
-/* Network error message */
-"Network error. Please check your connection." = "Network error. Please check your connection.";
 
 /* No comment provided by engineer. */
 "Network fee" = "网络手续费";

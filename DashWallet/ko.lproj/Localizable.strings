@@ -1201,9 +1201,6 @@
 /* No comment provided by engineer. */
 "Invalid QR Code" = "유효하지 않은 QR 코드";
 
-/* Invalid verification code */
-"Invalid verification code" = "Invalid verification code";
-
 /* No comment provided by engineer. */
 "Invitation" = "초대";
 
@@ -1534,9 +1531,6 @@
 
 /* No comment provided by engineer. */
 "Network" = "네트워크";
-
-/* Network error message */
-"Network error. Please check your connection." = "Network error. Please check your connection.";
 
 /* No comment provided by engineer. */
 "Network fee" = "네트워크 수수료";

@@ -1,7 +1,23 @@
+//
+//  Created by Andrei Ashikhmin
+//  Copyright © 2025 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
 import Foundation
 import Moya
 
-/// Base URL for CTXSpend API Endpoint
 private let kBaseURL = URL(string: CTXConstants.baseURI)!
 
 // MARK: - CTXSpendAPIError
@@ -9,8 +25,6 @@ private let kBaseURL = URL(string: CTXConstants.baseURI)!
 struct CTXSpendAPIError: Decodable {
     struct Error: Swift.Error, LocalizedError, Decodable {
         let id: String?
-        
-        /// Human readable message.
         let message: String
         
         var errorDescription: String? {
@@ -84,7 +98,6 @@ extension CTXSpendEndpoint: TargetType, AccessTokenAuthorizable {
     public var headers: [String: String]? {
         var headers = ["Content-Type": "application/json"]
         
-        // Add localization header if needed
         if let lang = Locale.current.languageCode {
             headers["Accept-Language"] = lang
         }
