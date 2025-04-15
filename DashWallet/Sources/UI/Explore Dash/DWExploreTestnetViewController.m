@@ -29,17 +29,6 @@
     return YES;
 }
 
-- (void)showWhereToSpendViewController {
-    DWExploreTestnetViewController *__weak weakSelf = self;
-
-    MerchantListViewController *vc = [[MerchantListViewController alloc] init];
-    vc.payWithDashHandler = ^{
-        [weakSelf.delegate exploreTestnetViewControllerShowSendPayment:weakSelf];
-    };
-
-    [self.navigationController pushViewController:vc animated:YES];
-}
-
 - (void)showAtms {
     DWExploreTestnetViewController *__weak weakSelf = self;
 

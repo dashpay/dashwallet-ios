@@ -115,14 +115,17 @@
 /* No comment provided by engineer. */
 "Accept" = "Accept";
 
+/* Explore */
+"Accept Dash directly" = "Accept Dash directly";
+
+/* DashSpend */
+"Accept terms and\nconditions" = "Accept terms and\nconditions";
+
 /* CrowdNode */
 "Accept Terms Of Use" = "Accept Terms Of Use";
 
 /* CrowdNode */
 "Accepting terms of use…" = "Accepting terms of use…";
-
-/* No comment provided by engineer. */
-"Accepts DASH directly" = "Accepts DASH directly";
 
 /* CrowdNode */
 "Account Recovery" = "Account Recovery";
@@ -202,6 +205,9 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "Amount Sent";
 
+/* An error occurred */
+"An error occurred" = "An error occurred";
+
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "An intuitive and familiar experience across all your devices";
 
@@ -255,6 +261,9 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Authentication is unvailable";
+
+/* Authorization error message */
+"Authorization error. Please try logging in again." = "Authorization error. Please try logging in again.";
 
 /* Location Service Status */
 "Authorized" = "Authorized";
@@ -344,9 +353,6 @@
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Buy a Gift Card";
 
-/* No comment provided by engineer. */
-"Buy a gift card with Dash." = "Buy a gift card with Dash.";
-
 /* Dash Service Overview */
 "Buy and convert Dash with another crypto" = "Buy and convert Dash with another crypto";
 
@@ -412,6 +418,9 @@
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
+
+/* DashSpend */
+"Check your email and enter the verification code." = "Check your email and enter the verification code.";
 
 /* Choose your Dash username */
 "Choose your" = "Choose your";
@@ -571,11 +580,20 @@
 /* CrowdNode */
 "Create Account" = "Create Account";
 
+/* Create DashSpend account */
+"Create account" = "Create account";
+
+/* DashSpend account title */
+"Create an account or log into an existing one" = "Create an account or log into an existing one";
+
 /* CrowdNode */
 "Create an online CrowdNode account" = "Create an online CrowdNode account";
 
 /* No comment provided by engineer. */
 "Create invitation" = "Create invitation";
+
+/* Create new account */
+"Create new account" = "Create new account";
 
 /* CrowdNode
    CrowdNode Portal */
@@ -796,6 +814,9 @@
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Enter Recovery Phrase";
 
+/* Enter verification code */
+"Enter verification code" = "Enter verification code";
+
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Enter your 2FA code below";
 
@@ -888,9 +909,6 @@
 
 /* Explore Dash */
 "Filters" = "Filters";
-
-/* No comment provided by engineer. */
-"Find a merchant." = "Find a merchant.";
 
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Find a user on the Dash Network";
@@ -1037,9 +1055,6 @@
 "How to confirm your API Dash address" = "How to confirm your API Dash address";
 
 /* No comment provided by engineer. */
-"How to Use a Gift Card" = "How to Use a Gift Card";
-
-/* No comment provided by engineer. */
 "HPMN Operator Keys" = "Evolution Node ID Keys";
 
 /* No comment provided by engineer. */
@@ -1047,6 +1062,9 @@
 
 /* No comment provided by engineer. */
 "I accept" = "I accept";
+
+/* Accept terms checkbox */
+"I accept DashSpend terms and conditions" = "I accept DashSpend terms and conditions";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "I accept that I will lose my coins if I no longer possess the recovery phrase";
@@ -1283,9 +1301,6 @@
 /* Explore Dash */
 "Last server update" = "Last server update";
 
-/* No comment provided by engineer. */
-"Learn More" = "Learn More";
-
 /* Info Screen */
 "Learn More..." = "Learn More...";
 
@@ -1349,11 +1364,29 @@
 /* No comment provided by engineer. */
 "Locked" = "Locked";
 
+/* Log in */
+"Log in" = "Log in";
+
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Log in to CrowdNode";
 
+/* DashSpend */
+"Log in to your account" = "Log in to your account";
+
+/* Log out button */
+"Log Out" = "Log Out";
+
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Log out from Uphold";
+
+/* Logged in status */
+"Logged in" = "Logged in";
+
+/* DashSpend */
+"Logged in as %@" = "Logged in as %@";
+
+/* DashSpend */
+"Logged in to DashSpend account" = "Logged in to DashSpend account";
 
 /* No comment provided by engineer. */
 "Login with Face ID" = "Login with Face ID";
@@ -1562,9 +1595,6 @@
 /* Usernames */
 "Not a valid URL" = "Not a valid URL";
 
-/* No comment provided by engineer. */
-"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Not all of the stores accept DASH directly, but you can buy a gift card with your Dash.";
-
 /* Fiat amount */
 "Not available" = "Not available";
 
@@ -1585,6 +1615,9 @@
 
 /* No comment provided by engineer. */
 "OK" = "O.k.";
+
+/* No comment provided by engineer. */
+"Ok" = "Ok";
 
 /* Voting */
 "Old to new" = "Old to new";
@@ -1628,6 +1661,9 @@
 /* No comment provided by engineer. */
 "Owner Keys" = "Owner Keys";
 
+/* DashSpend */
+"Password" = "Password";
+
 /* Usernames */
 "Past link here" = "Past link here";
 
@@ -1657,9 +1693,6 @@
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Pay with Ease";
-
-/* No comment provided by engineer. */
-"Pay with the DASH Wallet." = "Pay with the DASH Wallet.";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "Paying";
@@ -1885,9 +1918,6 @@
 
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Recovery phrase must have 12, 15, 18, 21 or 24 words";
-
-/* No comment provided by engineer. */
-"Redeem your gift card online within seconds or at the cashier." = "Redeem your gift card online within seconds or at the cashier.";
 
 /* Button title, Register (username) */
 "Register" = "Register";
@@ -2262,6 +2292,9 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Tax Category";
 
+/* Terms & conditions */
+"Terms & conditions" = "Terms & conditions";
+
 /* No comment provided by engineer. */
 "Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users.";
 
@@ -2291,6 +2324,9 @@
 
 /* Voting */
 "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter.";
+
+/* Explore */
+"The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps.";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
@@ -2670,10 +2706,10 @@
 "We couldn’t withdraw from your CrowdNode account." = "We couldn’t withdraw from your CrowdNode account.";
 
 /* No comment provided by engineer. */
-"We have 2 types of merchants" = "We have 2 types of merchants";
-
-/* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
+
+/* Explore */
+"We have two types of merchants" = "We have two types of merchants";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "We Upgraded";
@@ -2777,6 +2813,9 @@
 
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "You can enter your key in any of the following formats: WIF/base58/base64/hex";
+
+/* Explore */
+"You can pay with Dash at the cashier." = "You can pay with Dash at the cashier.";
 
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "You can see detailed information about your deposits, withdrawals and reward earnings.";
@@ -2918,6 +2957,9 @@
 
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded.";
+
+/* Email is only used for OTP */
+"Your email is only used to send a one-time password." = "Your email is only used to send a one-time password.";
 
 /* No comment provided by engineer. */
 "Your invitation from %@ has been already claimed" = "Your invitation from %@ has been already claimed";

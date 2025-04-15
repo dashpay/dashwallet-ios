@@ -19,7 +19,7 @@ import SwiftUI
 
 enum IconName {
     case system(_ name: String)
-    case custom(_ name: String)
+    case custom(_ name: String, maxHeight: CGFloat? = nil)
 }
 
 struct Icon: View {
@@ -36,10 +36,11 @@ struct Icon: View {
                 Image(systemName: name)
                     .imageScale(.medium)
             }
-        case .custom(let name):
+        case .custom(let name, let height):
             Image(name)
                 .resizable()
                 .scaledToFit()
+                .frame(maxHeight: height)
         }
     }
 }

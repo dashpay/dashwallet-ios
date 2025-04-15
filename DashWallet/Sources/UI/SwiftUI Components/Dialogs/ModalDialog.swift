@@ -43,7 +43,7 @@ struct ModalDialog: View {
         VStack {
             if let icon = icon {
                 switch icon {
-                case .custom(let name):
+                case .custom(let name, let maxHeight):
                     Image(name)
                         .resizable()
                         .scaledToFit()

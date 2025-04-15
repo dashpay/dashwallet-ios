@@ -115,14 +115,17 @@
 /* No comment provided by engineer. */
 "Accept" = "Prijať";
 
+/* Explore */
+"Accept Dash directly" = "Accept Dash directly";
+
+/* DashSpend */
+"Accept terms and\nconditions" = "Accept terms and\nconditions";
+
 /* CrowdNode */
 "Accept Terms Of Use" = "Prijať podmienky používania";
 
 /* CrowdNode */
 "Accepting terms of use…" = "Prijímam podmienky používania…";
-
-/* No comment provided by engineer. */
-"Accepts DASH directly" = "Prijíma priamo DASH";
 
 /* CrowdNode */
 "Account Recovery" = "Obnovenie účtu";
@@ -202,6 +205,9 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "Odoslaná suma";
 
+/* An error occurred */
+"An error occurred" = "An error occurred";
+
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Intuitívny a známy zážitok vo všetkých vašich zariadeniach";
 
@@ -255,6 +261,9 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Autentifikácia nie je k dispozícii";
+
+/* Authorization error message */
+"Authorization error. Please try logging in again." = "Authorization error. Please try logging in again.";
 
 /* Location Service Status */
 "Authorized" = "Autorizované";
@@ -344,9 +353,6 @@
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Kúpiť darčekovú kartu";
 
-/* No comment provided by engineer. */
-"Buy a gift card with Dash." = "Kúpte si darčekovú kartu s Dashom.";
-
 /* Dash Service Overview */
 "Buy and convert Dash with another crypto" = "Kúpte a preveďte Dash pomocou inej kryptomeny";
 
@@ -412,6 +418,9 @@
 
 /* No comment provided by engineer. */
 "Check your connection" = "Skontrolujte pripojenie";
+
+/* DashSpend */
+"Check your email and enter the verification code." = "Check your email and enter the verification code.";
 
 /* Choose your Dash username */
 "Choose your" = "Vybrať vaše";
@@ -571,11 +580,20 @@
 /* CrowdNode */
 "Create Account" = "Vytvoriť účet";
 
+/* Create DashSpend account */
+"Create account" = "Create account";
+
+/* DashSpend account title */
+"Create an account or log into an existing one" = "Create an account or log into an existing one";
+
 /* CrowdNode */
 "Create an online CrowdNode account" = "Vytvorte si online CrowdNode účet";
 
 /* No comment provided by engineer. */
 "Create invitation" = "Vytvoriť pozvánku";
+
+/* Create new account */
+"Create new account" = "Create new account";
 
 /* CrowdNode
    CrowdNode Portal */
@@ -796,6 +814,9 @@
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Zadať frázu pre obnovenie";
 
+/* Enter verification code */
+"Enter verification code" = "Enter verification code";
+
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Nižšie zadajte váš 2FA kód";
 
@@ -888,9 +909,6 @@
 
 /* Explore Dash */
 "Filters" = "Filtre";
-
-/* No comment provided by engineer. */
-"Find a merchant." = "Nájsť obchodníka.";
 
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Nájsť používateľa v sieti Dash";
@@ -1037,9 +1055,6 @@
 "How to confirm your API Dash address" = "Ako potvrdiť svoju API Dash adresu ";
 
 /* No comment provided by engineer. */
-"How to Use a Gift Card" = "Ako používať darčekovú poukážku";
-
-/* No comment provided by engineer. */
 "HPMN Operator Keys" = "Identifikačné kľúče uzla Evolution";
 
 /* No comment provided by engineer. */
@@ -1047,6 +1062,9 @@
 
 /* No comment provided by engineer. */
 "I accept" = "I accept";
+
+/* Accept terms checkbox */
+"I accept DashSpend terms and conditions" = "I accept DashSpend terms and conditions";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Akceptujem, že stratím svoje mince v prípade, že už nedržím frázu pre obnovenie";
@@ -1283,9 +1301,6 @@
 /* Explore Dash */
 "Last server update" = "Posledná synchronizácia servera";
 
-/* No comment provided by engineer. */
-"Learn More" = "Ďalšie informácie";
-
 /* Info Screen */
 "Learn More..." = "Ďalšie informácie...";
 
@@ -1349,11 +1364,29 @@
 /* No comment provided by engineer. */
 "Locked" = "Uzamknuté";
 
+/* Log in */
+"Log in" = "Log in";
+
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Prihláste sa do CrowdNode";
 
+/* DashSpend */
+"Log in to your account" = "Log in to your account";
+
+/* Log out button */
+"Log Out" = "Log Out";
+
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Odhlásiť s Upholdu";
+
+/* Logged in status */
+"Logged in" = "Logged in";
+
+/* DashSpend */
+"Logged in as %@" = "Logged in as %@";
+
+/* DashSpend */
+"Logged in to DashSpend account" = "Logged in to DashSpend account";
 
 /* No comment provided by engineer. */
 "Login with Face ID" = "Prihláste sa pomocou Face ID";
@@ -1562,9 +1595,6 @@
 /* Usernames */
 "Not a valid URL" = "Neplatná adresa URL";
 
-/* No comment provided by engineer. */
-"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Nie všetky obchody akceptujú priamo DASH, ale môžete si kúpiť darčekovú kartu s Dashom.";
-
 /* Fiat amount */
 "Not available" = "Nie je k dispozícií";
 
@@ -1585,6 +1615,9 @@
 
 /* No comment provided by engineer. */
 "OK" = "OK";
+
+/* No comment provided by engineer. */
+"Ok" = "Ok";
 
 /* Voting */
 "Old to new" = "Od najstarších";
@@ -1628,6 +1661,9 @@
 /* No comment provided by engineer. */
 "Owner Keys" = "Kľúče vlastníka";
 
+/* DashSpend */
+"Password" = "Password";
+
 /* Usernames */
 "Past link here" = "Past link here";
 
@@ -1657,9 +1693,6 @@
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Plaťte jednoducho";
-
-/* No comment provided by engineer. */
-"Pay with the DASH Wallet." = "Plaťte pomocou DASH peňaženky.";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "Platí sa";
@@ -1885,9 +1918,6 @@
 
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Fráza pre obnovenie musí mať 12, 15, 18, 21 alebo 24 slov";
-
-/* No comment provided by engineer. */
-"Redeem your gift card online within seconds or at the cashier." = "Uplatnite svoju darčekovú kartu online v priebehu niekoľkých sekúnd alebo pri pokladni.";
 
 /* Button title, Register (username) */
 "Register" = "Registrovať";
@@ -2262,6 +2292,9 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Daňová kategória";
 
+/* Terms & conditions */
+"Terms & conditions" = "Terms & conditions";
+
 /* No comment provided by engineer. */
 "Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Testovací Dash nemá v skutočnom svete žiadnu hodnotu, ale môžete ho odosielať a prijímať s ostatnými používateľmi DashPay Alpha.";
 
@@ -2291,6 +2324,9 @@
 
 /* Voting */
 "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter.";
+
+/* Explore */
+"The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps.";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "Obrázok, ktorý vyberiete, bude anonymne nahraný na Imgur.";
@@ -2670,10 +2706,10 @@
 "We couldn’t withdraw from your CrowdNode account." = "Nepodarilo sa nám vybrať z vášho CrowdNode účtu.";
 
 /* No comment provided by engineer. */
-"We have 2 types of merchants" = "Máme dva typy obchodníkov";
-
-/* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Zistili sme, že Dash Wallet zlyhal počas migrácie. Opätovné skenovanie reťazca blokov tento problém vyrieši, prípadne môžete skúsiť znova. Opätovné skenovanie by sa malo prednostne vykonávať na wifi a môže trvať zhruba pol hodiny. Vaše prostriedky budú k dispozícii po dokončení procesu synchronizácie.";
+
+/* Explore */
+"We have two types of merchants" = "We have two types of merchants";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Aktualizovali sme";
@@ -2777,6 +2813,9 @@
 
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "Váš kľúč môžete zadať v ktoromkoľvek z nasledujúcich formátov: WIF/base58/base64/hex";
+
+/* Explore */
+"You can pay with Dash at the cashier." = "You can pay with Dash at the cashier.";
 
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "Môžete vidieť podrobné informácie o svojich vkladoch, výberoch a zárobkoch z odmien.";
@@ -2918,6 +2957,9 @@
 
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Váš e-mail nie je uložený v peňaženke DashPay ani na žiadnych serveroch. Použije sa jeden krát na získanie podrobností o vašom Gravatar účte a potom sa zahodí.";
+
+/* Email is only used for OTP */
+"Your email is only used to send a one-time password." = "Your email is only used to send a one-time password.";
 
 /* No comment provided by engineer. */
 "Your invitation from %@ has been already claimed" = "Vaša pozvánka od používateľa %@ už bola nárokovaná";
