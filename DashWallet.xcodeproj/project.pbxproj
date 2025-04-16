@@ -577,6 +577,8 @@
 		755049AA2C846299008FA7EB /* DWAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 755049A72C846299008FA7EB /* DWAboutViewController.m */; };
 		755049AC2C846576008FA7EB /* MenuItemModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755049AB2C846576008FA7EB /* MenuItemModel.swift */; };
 		755049AD2C846576008FA7EB /* MenuItemModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755049AB2C846576008FA7EB /* MenuItemModel.swift */; };
+		75575A9D2DAE9B8C00971FCD /* TxDetailPrivateNoteCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 75575A9C2DAE9B8C00971FCD /* TxDetailPrivateNoteCell.xib */; };
+		75575A9E2DAE9B8C00971FCD /* TxDetailPrivateNoteCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 75575A9C2DAE9B8C00971FCD /* TxDetailPrivateNoteCell.xib */; };
 		755A22BD2B1385FD001F170D /* IconAttributedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755A22BC2B1385FD001F170D /* IconAttributedText.swift */; };
 		755B4B222B0C903500B844F0 /* DWDateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755B4B212B0C903500B844F0 /* DWDateFormatter.swift */; };
 		755B4B232B0C903500B844F0 /* DWDateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755B4B212B0C903500B844F0 /* DWDateFormatter.swift */; };
@@ -2447,6 +2449,7 @@
 		755049A72C846299008FA7EB /* DWAboutViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWAboutViewController.m; sourceTree = "<group>"; };
 		755049A82C846299008FA7EB /* DWAboutViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAboutViewController.h; sourceTree = "<group>"; };
 		755049AB2C846576008FA7EB /* MenuItemModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuItemModel.swift; sourceTree = "<group>"; };
+		75575A9C2DAE9B8C00971FCD /* TxDetailPrivateNoteCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TxDetailPrivateNoteCell.xib; sourceTree = "<group>"; };
 		755A22BC2B1385FD001F170D /* IconAttributedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconAttributedText.swift; sourceTree = "<group>"; };
 		755B4B212B0C903500B844F0 /* DWDateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWDateFormatter.swift; sourceTree = "<group>"; };
 		755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSeedPhraseViewController.swift; sourceTree = "<group>"; };
@@ -3651,6 +3654,7 @@
 				47A5146328491C60005A8E3E /* TxDetailCells.swift */,
 				474C720C298A19D100475CA6 /* TxDetailHeaderCell.xib */,
 				474C720E298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib */,
+				75575A9C2DAE9B8C00971FCD /* TxDetailPrivateNoteCell.xib */,
 				474C7212298A1EFC00475CA6 /* TxDetailInfoCell.xib */,
 				474C7214298A1FCF00475CA6 /* TxDetailActionCell.xib */,
 			);
@@ -7909,6 +7913,7 @@
 				C94F5E8829D3E7E30034FD57 /* GoogleService-Info.plist in Resources */,
 				2A811559269CE09300215F81 /* uphold-logout.jpg in Resources */,
 				2ACCD865231959CD00A96B62 /* AmountPreviewView.xib in Resources */,
+				75575A9D2DAE9B8C00971FCD /* TxDetailPrivateNoteCell.xib in Resources */,
 				474C7215298A1FCF00475CA6 /* TxDetailActionCell.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -8006,6 +8011,7 @@
 				C9D2C93C2A320AA000D15901 /* Pay.storyboard in Resources */,
 				C9D2C93D2A320AA000D15901 /* QuickReceive.storyboard in Resources */,
 				C9D2C93E2A320AA000D15901 /* Tx.storyboard in Resources */,
+				75575A9E2DAE9B8C00971FCD /* TxDetailPrivateNoteCell.xib in Resources */,
 				C9D2C93F2A320AA000D15901 /* DashSyncCurrentCommit in Resources */,
 				C9D2C9402A320AA000D15901 /* DWMainMenuTableViewCell.xib in Resources */,
 				C9D2C9412A320AA000D15901 /* VerifiedSuccessfully.storyboard in Resources */,

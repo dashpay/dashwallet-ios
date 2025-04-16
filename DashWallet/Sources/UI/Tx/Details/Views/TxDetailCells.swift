@@ -148,6 +148,26 @@ class TxDetailTaxCategoryCell: TxDetailTitleDetailsCell {
     }
 }
 
+// MARK: - TxDetailPrivateNoteCell
+
+class TxDetailPrivateNoteCell: TxDetailTitleDetailsCell {
+    @IBOutlet var addNoteLabel: UILabel!
+    @IBOutlet var noteLabel: UILabel!
+
+    override func update(with item: TXDetailViewController.Item) {
+        switch item {
+        case .privateNote(let item):
+            let note = item.plainDetail ?? ""
+            titleLabel.text = item.title
+            addNoteLabel.text = note.isEmpty ? NSLocalizedString("Add Note", comment: "Private Note") : NSLocalizedString("Edit Note", comment: "Private Note")
+            noteLabel.text = note
+            noteLabel.isHidden = note.isEmpty
+        default:
+            break
+        }
+    }
+}
+
 // MARK: - TxDetailTitleDetailsCell
 
 class TxDetailTitleDetailsCell: TxDetailTitleCell {

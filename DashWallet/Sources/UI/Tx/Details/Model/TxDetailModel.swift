@@ -24,6 +24,7 @@ class TxDetailModel: NSObject {
     var transaction: Transaction
     var transactionId: String
     var txTaxCategory: TxUserInfoTaxCategory
+    var metadataPrivateNote: String
 
     var title: String {
         direction.title
@@ -51,6 +52,7 @@ class TxDetailModel: NSObject {
 
         transactionId = transaction.txHashHexString
         txTaxCategory = Taxes.shared.taxCategory(for: transaction)
+        metadataPrivateNote = "" // TODO:
     }
 
     func toggleTaxCategoryOnCurrentTransaction() {
@@ -309,6 +311,13 @@ extension TxDetailModel {
     var taxCategory: DWTitleDetailCellModel {
         let title = NSLocalizedString("Tax Category", comment: "")
         let detail = txTaxCategory.stringValue
+        let model = DWTitleDetailCellModel(style: .default, title: title, plainDetail: detail)
+        return model
+    }
+    
+    var privateNote: DWTitleDetailCellModel {
+        let title = NSLocalizedString("Private Note", comment: "Private Note")
+        let detail = metadataPrivateNote
         let model = DWTitleDetailCellModel(style: .default, title: title, plainDetail: detail)
         return model
     }
