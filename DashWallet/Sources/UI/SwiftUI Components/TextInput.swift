@@ -25,22 +25,44 @@ struct TextInput: View {
     var isError: Bool = false
     var trailingIcon: Image?
     var trailingAction: (() -> Void)?
+    var isMultiline: Bool = false
+    var maxChars: Int? = nil
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            ZStack(alignment: .leading) {
+            ZStack(alignment: .topLeading) {
+                if isMultiline {
+                    TextEditor(text: $text)
+                        .focused($isFocused)
+                        .autocorrectionDisabled(true)
+                        .font(.body2)
+                        .padding(.top, 15)
+                        .onChange(of: text) { newValue in
+                            if let max = maxChars, newValue.count > max {
+                                text = String(newValue.prefix(max))
+                            }
+                        }
+                } else {
+                    TextField("", text: $text)
+                        .focused($isFocused)
+                        .autocorrectionDisabled(true)
+                        .font(.body2)
+                        .padding(.top, 15)
+                        .onChange(of: text) { newValue in
+                            if let max = maxChars, newValue.count > max {
+                                text = String(newValue.prefix(max))
+                            }
+                        }
+                }
+                
                 Text(label)
                     .font(.body2)
                     .foregroundColor(.secondaryText)
                     .offset(y: labelOffset)
                     .scaleEffect(labelScale, anchor: .leading)
                     .animation(.spring(response: 0.2, dampingFraction: 0.8), value: isFocused || !text.isEmpty)
-                
-                TextField("", text: $text)
-                    .focused($isFocused)
-                    .autocorrectionDisabled(true)
-                    .font(.body2)
-                    .padding(.top, 15)
+                    .padding(.top, isMultiline ? 18 : 6)
+                    .padding(.leading, isMultiline ? 4 : 0)
 
                 HStack {
                     Spacer()
@@ -51,6 +73,17 @@ struct TextInput: View {
                             .foregroundColor(.tertiaryText)
                     }
                     .opacity(text.isEmpty ? 0 : 1)
+                }.padding(.top, isMultiline ? 20 : 15)
+            }
+            
+            if let max = maxChars {
+                HStack {
+                    Spacer()
+                    Text("\(text.count)/\(max) " + NSLocalizedString("characters", comment: "TextInput"))
+                        .font(.caption)
+                        .foregroundColor(text.count > max ? .systemRed : .tertiaryText)
+                        .padding(.top, 2)
+                        .padding(.trailing, 2)
                 }
             }
         }
@@ -122,6 +155,7 @@ struct TextInput_Previews: PreviewProvider {
             TextInput(label: "Username", text: .constant(""))
             TextInput(label: "Password", text: .constant("password"))
             TextInput(label: "Email", text: .constant("user@example.com"), isError: true)
+            TextInput(label: "Bio", text: .constant("This is a multiline bio."), isMultiline: true, maxChars: 25)
         }
         .padding()
     }
