@@ -15,13 +15,15 @@
 //  limitations under the License.
 //
 
-class PrivateNoteViewModel: ObservableObject {
+class PrivateMemoViewModel: ObservableObject {
+    let maxChars = 25
+    
     @Published var input: String = ""
     @Published var showError: Bool = false
     @Published var errorMessage: String = "This is some error"
     
     func canContinue() -> Bool {
-        return !input.isEmpty
+        return !input.isEmpty && input.count <= maxChars
     }
     
     func onContinue() {

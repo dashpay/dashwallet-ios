@@ -28,6 +28,8 @@ struct TextInput: View {
     var isMultiline: Bool = false
     var maxChars: Int? = nil
     
+    @State private(set) var isOverCharLimit: Bool = false
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ZStack(alignment: .topLeading) {
@@ -36,10 +38,11 @@ struct TextInput: View {
                         .focused($isFocused)
                         .autocorrectionDisabled(true)
                         .font(.body2)
-                        .padding(.top, 15)
+                        .padding(.top, 20)
+                        .modifier(ClearBackgroundModifier())
                         .onChange(of: text) { newValue in
-                            if let max = maxChars, newValue.count > max {
-                                text = String(newValue.prefix(max))
+                            if let max = maxChars {
+                                isOverCharLimit = newValue.count > max
                             }
                         }
                 } else {
@@ -49,8 +52,8 @@ struct TextInput: View {
                         .font(.body2)
                         .padding(.top, 15)
                         .onChange(of: text) { newValue in
-                            if let max = maxChars, newValue.count > max {
-                                text = String(newValue.prefix(max))
+                            if let max = maxChars {
+                                isOverCharLimit = newValue.count > max
                             }
                         }
                 }
@@ -81,14 +84,14 @@ struct TextInput: View {
                     Spacer()
                     Text("\(text.count)/\(max) " + NSLocalizedString("characters", comment: "TextInput"))
                         .font(.caption)
-                        .foregroundColor(text.count > max ? .systemRed : .tertiaryText)
-                        .padding(.top, 2)
-                        .padding(.trailing, 2)
+                        .foregroundColor(isOverCharLimit ? .systemRed : .tertiaryText)
                 }
+                .padding(.vertical, 8)
+                .padding(.trailing, 2)
             }
         }
         .padding(.horizontal, 12)
-        .frame(minHeight: 60)
+        .frame(minHeight: maxChars != nil ? 78 : 60)
         .background(backgroundColor)
         .cornerRadius(12)
         .overlay(
@@ -97,7 +100,7 @@ struct TextInput: View {
         )
         .overlay(
             Group {
-                if isFocused && !isError {
+                if isFocused && !isError && !isOverCharLimit {
                     RoundedRectangle(cornerRadius: 14)
                         .stroke(Color.dashBlue.opacity(0.1), lineWidth: 3)
                         .padding(-2)
@@ -119,7 +122,7 @@ struct TextInput: View {
     }
     
     private var backgroundColor: Color {
-        if isError {
+        if isError || isOverCharLimit {
             return Color.systemRed.opacity(0.1)
         }
         
@@ -131,7 +134,7 @@ struct TextInput: View {
     }
     
     private var borderColor: Color {
-        if isError {
+        if isError || isOverCharLimit {
             return .systemRed
         }
         
@@ -147,16 +150,22 @@ struct TextInput: View {
     }
 }
 
-
-// Preview
-struct TextInput_Previews: PreviewProvider {
-    static var previews: some View {
-        VStack(spacing: 20) {
-            TextInput(label: "Username", text: .constant(""))
-            TextInput(label: "Password", text: .constant("password"))
-            TextInput(label: "Email", text: .constant("user@example.com"), isError: true)
-            TextInput(label: "Bio", text: .constant("This is a multiline bio."), isMultiline: true, maxChars: 25)
+struct ClearBackgroundModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 16.0, *) {
+            content.scrollContentBackground(.hidden)
+        } else {
+            content
         }
-        .padding()
     }
+}
+
+#Preview {
+    VStack(spacing: 20) {
+        TextInput(label: "Username", text: .constant(""))
+        TextInput(label: "Password", text: .constant("password"))
+        TextInput(label: "Email", text: .constant("user@example.com"), isError: true)
+        TextInput(label: "Bio", text: .constant("This is a multiline bio."), isMultiline: true, maxChars: 25)
+    }
+    .padding()
 }

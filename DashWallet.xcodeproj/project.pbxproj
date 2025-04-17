@@ -554,10 +554,10 @@
 		753261AE2CBC1040003CDE00 /* InvitationFlowViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261AD2CBC1040003CDE00 /* InvitationFlowViewController.swift */; };
 		753261B02CBC11BF003CDE00 /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261AF2CBC11BF003CDE00 /* WelcomeViewController.swift */; };
 		753261B22CBC157F003CDE00 /* GetStartedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261B12CBC157F003CDE00 /* GetStartedViewController.swift */; };
-		7535BD9F2DAFC3A200344D1A /* PrivateNoteScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7535BD9E2DAFC39E00344D1A /* PrivateNoteScreen.swift */; };
-		7535BDA02DAFC3A200344D1A /* PrivateNoteScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7535BD9E2DAFC39E00344D1A /* PrivateNoteScreen.swift */; };
-		7535BDA22DAFC48600344D1A /* PrivateNoteViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7535BDA12DAFC48300344D1A /* PrivateNoteViewModel.swift */; };
-		7535BDA32DAFC48600344D1A /* PrivateNoteViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7535BDA12DAFC48300344D1A /* PrivateNoteViewModel.swift */; };
+		7535BD9F2DAFC3A200344D1A /* PrivateMemoScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7535BD9E2DAFC39E00344D1A /* PrivateMemoScreen.swift */; };
+		7535BDA02DAFC3A200344D1A /* PrivateMemoScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7535BD9E2DAFC39E00344D1A /* PrivateMemoScreen.swift */; };
+		7535BDA22DAFC48600344D1A /* PrivateMemoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7535BDA12DAFC48300344D1A /* PrivateMemoViewModel.swift */; };
+		7535BDA32DAFC48600344D1A /* PrivateMemoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7535BDA12DAFC48300344D1A /* PrivateMemoViewModel.swift */; };
 		753FD7E22CA44BDD00B7751F /* CoinJoinProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753FD7E12CA44BDD00B7751F /* CoinJoinProgress.swift */; };
 		753FD7E32CA44BDD00B7751F /* CoinJoinProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753FD7E12CA44BDD00B7751F /* CoinJoinProgress.swift */; };
 		753FDBEA2AEA422F0005EEC3 /* VotingPrefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753FDBE92AEA422F0005EEC3 /* VotingPrefs.swift */; };
@@ -2437,8 +2437,8 @@
 		753261AD2CBC1040003CDE00 /* InvitationFlowViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationFlowViewController.swift; sourceTree = "<group>"; };
 		753261AF2CBC11BF003CDE00 /* WelcomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
 		753261B12CBC157F003CDE00 /* GetStartedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetStartedViewController.swift; sourceTree = "<group>"; };
-		7535BD9E2DAFC39E00344D1A /* PrivateNoteScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateNoteScreen.swift; sourceTree = "<group>"; };
-		7535BDA12DAFC48300344D1A /* PrivateNoteViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateNoteViewModel.swift; sourceTree = "<group>"; };
+		7535BD9E2DAFC39E00344D1A /* PrivateMemoScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateMemoScreen.swift; sourceTree = "<group>"; };
+		7535BDA12DAFC48300344D1A /* PrivateMemoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateMemoViewModel.swift; sourceTree = "<group>"; };
 		753FD7E12CA44BDD00B7751F /* CoinJoinProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinProgress.swift; sourceTree = "<group>"; };
 		753FDBE92AEA422F0005EEC3 /* VotingPrefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingPrefs.swift; sourceTree = "<group>"; };
 		753FDBEB2AECF4CC0005EEC3 /* VotingHeaderView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = VotingHeaderView.xib; sourceTree = "<group>"; };
@@ -3682,7 +3682,7 @@
 		2A1B7D9E23239C7500BA8C6A /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				7535BDA12DAFC48300344D1A /* PrivateNoteViewModel.swift */,
+				7535BDA12DAFC48300344D1A /* PrivateMemoViewModel.swift */,
 				4709C31A288020DE00B4BD48 /* TxDetailModel.swift */,
 			);
 			path = Model;
@@ -5926,7 +5926,7 @@
 				2A1B7D9E23239C7500BA8C6A /* Model */,
 				2A1B7D82232156A600BA8C6A /* Views */,
 				47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */,
-				7535BD9E2DAFC39E00344D1A /* PrivateNoteScreen.swift */,
+				7535BD9E2DAFC39E00344D1A /* PrivateMemoScreen.swift */,
 			);
 			path = Details;
 			sourceTree = "<group>";
@@ -8617,7 +8617,7 @@
 				47AE8BFD28C1306000490F5E /* ExploreMapView.swift in Sources */,
 				2AD1CE9422DD078600C99324 /* DWSeedPhraseRow.m in Sources */,
 				0F71317928F436ED0072F454 /* ServiceOverviewViewController.swift in Sources */,
-				7535BD9F2DAFC3A200344D1A /* PrivateNoteScreen.swift in Sources */,
+				7535BD9F2DAFC3A200344D1A /* PrivateMemoScreen.swift in Sources */,
 				4751CAC4296EFE9500F63AC4 /* AccountListModel.swift in Sources */,
 				2A3DC86E239717C2004B3DBA /* DWRecoverWalletCommand.m in Sources */,
 				2A9FFE832230FF4700956D5F /* DWSwitcherFormTableViewCell.m in Sources */,
@@ -8768,7 +8768,7 @@
 				47305872295C971F004641DA /* UIViewController+AlertPresenting.swift in Sources */,
 				2A858A0F237EE89C0097A7B5 /* DSWatchTransactionDataObject.m in Sources */,
 				47FA3B0229364991008D58DC /* HTTPClient.swift in Sources */,
-				7535BDA32DAFC48600344D1A /* PrivateNoteViewModel.swift in Sources */,
+				7535BDA32DAFC48600344D1A /* PrivateMemoViewModel.swift in Sources */,
 				2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressExtractor.m in Sources */,
 				757111A12CF20ED800A7D452 /* CoinJoinMixingTxSet.swift in Sources */,
 				477F501529531C07003C7508 /* ViewModel+Coinbase.swift in Sources */,
@@ -9047,7 +9047,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7535BDA22DAFC48600344D1A /* PrivateNoteViewModel.swift in Sources */,
+				7535BDA22DAFC48600344D1A /* PrivateMemoViewModel.swift in Sources */,
 				C9D2C6942A320AA000D15901 /* DWReceiveModelStub.m in Sources */,
 				C9D2C6952A320AA000D15901 /* DWBaseAdvancedSecurityModel.m in Sources */,
 				75EBAA262BBA9DC2004488E3 /* ZenLedger.swift in Sources */,
@@ -9595,7 +9595,7 @@
 				C943B4E82A40A54600AF23C5 /* DWProfileTxsFetchedDataSource.m in Sources */,
 				C9D2C8232A320AA000D15901 /* BaseNavigationController.swift in Sources */,
 				C9D2C8242A320AA000D15901 /* UIViewController+Coinbase.swift in Sources */,
-				7535BDA02DAFC3A200344D1A /* PrivateNoteScreen.swift in Sources */,
+				7535BDA02DAFC3A200344D1A /* PrivateMemoScreen.swift in Sources */,
 				C9D2C8262A320AA000D15901 /* CSVBuilder.swift in Sources */,
 				C9D2C8282A320AA000D15901 /* CoinbaseUserAuthInformation.swift in Sources */,
 				C943B5982A40EDEF00AF23C5 /* DWConfirmUsernameContentView.m in Sources */,

@@ -18,10 +18,10 @@
 import SwiftUI
 import Combine
 
-struct PrivateNoteScreen: View {
+struct PrivateMemoScreen: View {
     @Environment(\.presentationMode) private var presentationMode
     @FocusState private var isTextFieldFocused: Bool
-    @StateObject private var viewModel = PrivateNoteViewModel()
+    @StateObject private var viewModel = PrivateMemoViewModel()
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -33,12 +33,12 @@ struct PrivateNoteScreen: View {
                 TextInput(
                     label: NSLocalizedString("Note", comment: "Private Note"),
                     text: $viewModel.input,
-                    isMultiline: true
-//                    maxChars: 25
+                    isMultiline: true,
+                    maxChars: viewModel.maxChars
                 ).focused($isTextFieldFocused)
-                .frame(maxHeight: 100)
-                .padding(.top, 20)
-                    
+                 .frame(maxHeight: 108)
+                 .padding(.top, 20)
+                
                 if viewModel.showError {
                     Text(viewModel.errorMessage)
                         .font(.footnote)
@@ -60,7 +60,7 @@ struct PrivateNoteScreen: View {
         }
         .background(Color.secondaryBackground)
         .onAppear {
-//            isTextFieldFocused = true
+            isTextFieldFocused = true
         }
     }
 }

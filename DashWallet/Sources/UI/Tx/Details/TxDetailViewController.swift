@@ -203,7 +203,7 @@ extension TXDetailViewController {
     private func editNote() {
         #if DASHPAY
         let swiftUIView = BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
-            PrivateNoteScreen()
+            PrivateMemoScreen()
         }
         
         let hostingController = UIHostingController(rootView: swiftUIView)
