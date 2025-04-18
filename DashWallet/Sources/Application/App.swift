@@ -89,7 +89,7 @@ final class App {
     static let shared = App()
 
     func cleanUp() {
-        TxUserInfoDAOImpl.shared.deleteAll()
+        TransactionMetadataDAOImpl.shared.deleteAll()
         AddressUserInfoDAOImpl.shared.deleteAll()
     #if DASHPAY
         UsernameRequestsDAOImpl.shared.deleteAll()

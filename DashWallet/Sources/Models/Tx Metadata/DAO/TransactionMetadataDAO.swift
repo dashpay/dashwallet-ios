@@ -20,31 +20,31 @@ import SQLite
 
 // MARK: - TxUserInfoDAO
 
-protocol TxUserInfoDAO {
-    func create(dto: TxUserInfo)
-    func get(by hash: Data) -> TxUserInfo?
-    func update(dto: TxUserInfo)
-    func delete(dto: TxUserInfo)
+protocol TransactionMetadataDAO {
+    func create(dto: TransactionMetadata)
+    func get(by hash: Data) -> TransactionMetadata?
+    func update(dto: TransactionMetadata)
+    func delete(dto: TransactionMetadata)
     func deleteAll()
 }
 
 // MARK: - TxUserInfoDAOImpl
 
-class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
+class TransactionMetadataDAOImpl: NSObject, TransactionMetadataDAO {
     private var db: Connection { DatabaseConnection.shared.db }
-    private var cache: [Data: TxUserInfo] = [:]
+    private var cache: [Data: TransactionMetadata] = [:]
 
-    private let queue = DispatchQueue(label: "org.dash.infrastructure.queue.tx-user-info-dao", attributes: .concurrent)
+    private let queue = DispatchQueue(label: "org.dash.infrastructure.queue.transaction-metadata-dao", attributes: .concurrent)
 
-    func create(dto: TxUserInfo) {
+    func create(dto: TransactionMetadata) {
         do {
-            let txUserInfo = TxUserInfo.table.insert(or: .replace,
-                                                     TxUserInfo.txHashColumn <- dto.txHash,
-                                                     TxUserInfo.txCategoryColumn <- dto.taxCategory.rawValue,
-                                                     TxUserInfo.txRateColumn <- dto.rate,
-                                                     TxUserInfo.txRateCurrencyCodeColumn <- dto.rateCurrency,
-                                                     TxUserInfo.txRateMaximumFractionDigitsColumn <- dto.rateMaximumFractionDigits)
-            try db.run(txUserInfo)
+            let transactionMetadata = TransactionMetadata.table.insert(or: .replace,
+                                                     TransactionMetadata.txHashColumn <- dto.txHash,
+                                                     TransactionMetadata.txCategoryColumn <- dto.taxCategory.rawValue,
+                                                     TransactionMetadata.txRateColumn <- dto.rate,
+                                                     TransactionMetadata.txRateCurrencyCodeColumn <- dto.rateCurrency,
+                                                     TransactionMetadata.txRateMaximumFractionDigitsColumn <- dto.rateMaximumFractionDigits)
+            try db.run(transactionMetadata)
 
         } catch {
             print(error)
@@ -55,14 +55,14 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         }
     }
 
-    func all() -> [TxUserInfo] {
-        let txUserInfos = TxUserInfo.table
+    func all() -> [TransactionMetadata] {
+        let txUserInfos = TransactionMetadata.table
 
-        var userInfos: [TxUserInfo] = []
+        var userInfos: [TransactionMetadata] = []
 
         do {
             for txInfo in try db.prepare(txUserInfos) {
-                let userInfo = TxUserInfo(row: txInfo)
+                let userInfo = TransactionMetadata(row: txInfo)
                 userInfos.append(userInfo)
             }
         } catch {
@@ -72,16 +72,16 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         return userInfos
     }
 
-    func get(by hash: Data) -> TxUserInfo? {
+    func get(by hash: Data) -> TransactionMetadata? {
         if let cached = cachedValue(by: hash) {
             return cached
         }
 
-        let txUserInfo = TxUserInfo.table.filter(TxUserInfo.txHashColumn == hash)
+        let txUserInfo = TransactionMetadata.table.filter(TransactionMetadata.txHashColumn == hash)
 
         do {
             for txInfo in try db.prepare(txUserInfo) {
-                let userInfo = TxUserInfo(row: txInfo)
+                let userInfo = TransactionMetadata(row: txInfo)
                 queue.async(flags: .barrier) { [weak self] in
                     self?.cache[hash] = userInfo
                 }
@@ -94,8 +94,8 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         return nil
     }
 
-    private func cachedValue(by key: Data) -> TxUserInfo? {
-        var v: TxUserInfo?
+    private func cachedValue(by key: Data) -> TransactionMetadata? {
+        var v: TransactionMetadata?
 
         queue.sync {
             v = cache[key]
@@ -104,11 +104,11 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         return v
     }
 
-    func update(dto: TxUserInfo) {
+    func update(dto: TransactionMetadata) {
         create(dto: dto)
     }
 
-    func delete(dto: TxUserInfo) {
+    func delete(dto: TransactionMetadata) {
         queue.async(flags: .barrier) { [weak self] in
             self?.cache[dto.txHash] = nil
         }
@@ -116,7 +116,7 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
 
     func deleteAll() {
         do {
-            try db.run(TxUserInfo.table.delete())
+            try db.run(TransactionMetadata.table.delete())
             queue.async(flags: .barrier) { [weak self] in
                 self?.cache = [:]
             }
@@ -125,11 +125,11 @@ class TxUserInfoDAOImpl: NSObject, TxUserInfoDAO {
         }
     }
 
-    static let shared = TxUserInfoDAOImpl()
+    static let shared = TransactionMetadataDAOImpl()
 }
 
-extension TxUserInfoDAOImpl {
-    func dictionaryOfAllItems() -> [Data: TxUserInfo] {
+extension TransactionMetadataDAOImpl {
+    func dictionaryOfAllItems() -> [Data: TransactionMetadata] {
         _ = all()
         return cache
     }

@@ -63,8 +63,8 @@ enum TaxReportGenerator {
 
         DispatchQueue.global(qos: .default).async {
             let transactions = transactions
-            let userInfosArray = TxUserInfoDAOImpl().all()
-            let userInfos = userInfosArray.reduce(into: [Data: TxUserInfo]()) { partialResult, dto in
+            let userInfosArray = TransactionMetadataDAOImpl().all()
+            let userInfos = userInfosArray.reduce(into: [Data: TransactionMetadata]()) { partialResult, dto in
                 partialResult[dto.txHash] = dto
             }
 
@@ -119,7 +119,7 @@ enum TaxReportGenerator {
         return fileName
     }
 
-    private static func value(for column: ReportColumns, transaction: DSTransaction, andUserInfo userInfo: TxUserInfo?) -> String {
+    private static func value(for column: ReportColumns, transaction: DSTransaction, andUserInfo userInfo: TransactionMetadata?) -> String {
         let transactionDirection = transaction.direction
         let isOutcoming = transactionDirection == .sent
 
