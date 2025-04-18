@@ -28,7 +28,7 @@ final class Tx: NSObject {
         .init()
     }
 
-    private var txUserInfos: TxUserInfoDAO = TxUserInfoDAOImpl.shared
+    private var txUserInfos: TransactionMetadataDAO = TransactionMetadataDAOImpl.shared
 
     @objc
     func updateRateIfNeeded(for transaction: DSTransaction) {
@@ -59,7 +59,7 @@ final class Tx: NSObject {
         set(rate: rate, currency: currency, maximumFractionDigits: maximumFractionDigits, for: .init(txHash: transaction.txHashData, taxCategory: transaction.defaultTaxCategory()))
     }
 
-    private func set(rate: Int, currency: String, maximumFractionDigits: Int, for userInfo: TxUserInfo) {
+    private func set(rate: Int, currency: String, maximumFractionDigits: Int, for userInfo: TransactionMetadata) {
         var userInfo = userInfo
         userInfo.update(rate: rate, currency: currency, maximumFractionDigits: maximumFractionDigits)
         txUserInfos.update(dto: userInfo)

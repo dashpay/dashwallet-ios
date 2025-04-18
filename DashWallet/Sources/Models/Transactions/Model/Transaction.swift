@@ -83,7 +83,7 @@ class Transaction: TransactionDataItem, Identifiable {
 
     private lazy var storedFiatAmount = userInfo?.fiatAmountString(from: _dashAmount) ?? NSLocalizedString("Not available", comment: "");
 
-    lazy var userInfo: TxUserInfo? = TxUserInfoDAOImpl.shared.get(by: tx.txHashData)
+    lazy var userInfo: TransactionMetadata? = TransactionMetadataDAOImpl.shared.get(by: tx.txHashData)
 
     var transactionType: `Type` { _transactionType }
     private lazy var _transactionType: `Type` = tx.type
