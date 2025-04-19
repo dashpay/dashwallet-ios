@@ -16,15 +16,20 @@
 //
 
 import Foundation
+import Combine
 
 // MARK: - TxDetailModel
 
 @objc(DWTxDetailModel)
 class TxDetailModel: NSObject {
+    private var cancellableBag = Set<AnyCancellable>()
+    
+    var metadataDao: TransactionMetadataDAOImpl
     var transaction: Transaction
     var transactionId: String
     var txTaxCategory: TxMetadataTaxCategory
     var metadataPrivateNote: String
+    var metadataUpdated: (() -> Void)? = nil
 
     var title: String {
         direction.title
@@ -48,25 +53,45 @@ class TxDetailModel: NSObject {
     }
 
     init(transaction: Transaction) {
+        self.metadataDao = TransactionMetadataDAOImpl.shared
         self.transaction = transaction
-
-        transactionId = transaction.txHashHexString
-        txTaxCategory = Taxes.shared.taxCategory(for: transaction)
-        metadataPrivateNote = "" // TODO:
+        self.transactionId = transaction.txHashHexString
+        self.txTaxCategory = Taxes.shared.taxCategory(for: transaction)
+        self.metadataPrivateNote = metadataDao.get(by: transaction.txHashData)?.memo ?? ""
+        super.init()
+        
+        self.metadataDao.$lastChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] change in
+                guard let self = self, let change = change else { return }
+                
+                switch change {
+                case .created(let metadata), .updated(let metadata, _), .deleted(let metadata):
+                    if metadata.txHash == self.transaction.txHashData {
+                        self.metadataPrivateNote = metadata.memo ?? ""
+                        self.txTaxCategory = metadata.taxCategory
+                    }
+                case .deletedAll:
+                    self.metadataPrivateNote = ""
+                    self.txTaxCategory = .unknown
+                }
+                
+                self.metadataUpdated?()
+            }
+            .store(in: &cancellableBag)
     }
 
     func toggleTaxCategoryOnCurrentTransaction() {
-        if txTaxCategory == .unknown {
-            txTaxCategory = transaction.tx.defaultTaxCategory()
+        var updatedTaxCategory = txTaxCategory
+        
+        if updatedTaxCategory == .unknown {
+            updatedTaxCategory = transaction.tx.defaultTaxCategory()
         }
 
-        txTaxCategory = txTaxCategory.nextTaxCategory
+        updatedTaxCategory = updatedTaxCategory.nextTaxCategory
         let txHash = transaction.txHashData
-
-        var txUserInfo = transaction.userInfo ?? TransactionMetadata(txHash: txHash, taxCategory: txTaxCategory)
-        txUserInfo.taxCategory = txTaxCategory
-
-        // TODO: Move it to Domain layer
+        var txUserInfo = TransactionMetadata(txHash: txHash, taxCategory: updatedTaxCategory)
+        
         TransactionMetadataDAOImpl.shared.update(dto: txUserInfo)
     }
 

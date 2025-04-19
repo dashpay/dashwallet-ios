@@ -15,18 +15,35 @@
 //  limitations under the License.
 //
 
+let kMaxChars = 25
+
 class PrivateMemoViewModel: ObservableObject {
-    let maxChars = 25
+    private let initialValue: String
     
+    let txId: Data
     @Published var input: String = ""
     @Published var showError: Bool = false
-    @Published var errorMessage: String = "This is some error"
+    @Published var errorMessage: String = ""
     
-    func canContinue() -> Bool {
-        return !input.isEmpty && input.count <= maxChars
+    init(txHash: Data, initialValue: String) {
+        self.txId = txHash
+        self.initialValue = initialValue
+        self.input = initialValue
     }
     
-    func onContinue() {
-        print("onContinue")
+    func canContinue() -> Bool {
+        return (!input.isEmpty || input != initialValue) && input.count <= kMaxChars
+    }
+    
+    func onContinue() -> Bool {
+        if (input.isEmpty && initialValue.isEmpty) || input.count > kMaxChars {
+            return false
+        }
+        
+        var metadata = TransactionMetadata(txHash: txId)
+        metadata.memo = input
+        TransactionMetadataDAOImpl.shared.update(dto: metadata)
+        
+        return true
     }
 }

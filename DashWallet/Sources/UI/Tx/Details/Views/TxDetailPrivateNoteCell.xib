@@ -10,59 +10,61 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="TxDetailPrivateNoteCell" rowHeight="52" id="J4F-HM-1vV" userLabel="TxDetailPrivateNoteCell" customClass="TxDetailPrivateNoteCell" customModule="dashpay" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="374" height="52"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="TxDetailPrivateNoteCell" rowHeight="99" id="J4F-HM-1vV" userLabel="TxDetailPrivateNoteCell" customClass="TxDetailPrivateNoteCell" customModule="dashpay" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="374" height="99"/>
             <autoresizingMask key="autoresizingMask"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="J4F-HM-1vV" id="SB9-be-vIx">
-                <rect key="frame" x="0.0" y="0.0" width="374" height="52"/>
+                <rect key="frame" x="0.0" y="0.0" width="374" height="99"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Add note" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3yL-We-hxk">
-                        <rect key="frame" x="13.999999999999996" y="16" width="63.666666666666657" height="18"/>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="Add note" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3yL-We-hxk">
+                        <rect key="frame" x="13.999999999999996" y="18" width="63.666666666666657" height="18"/>
                         <fontDescription key="fontDescription" type="system" weight="medium" pointSize="15"/>
                         <nil key="textColor"/>
                         <nil key="highlightedColor"/>
                     </label>
                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="pencil" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="FFl-Xe-Mqx">
-                        <rect key="frame" x="271" y="18.666666666666664" width="20" height="15"/>
+                        <rect key="frame" x="271" y="20.666666666666664" width="20" height="15"/>
                         <constraints>
                             <constraint firstAttribute="width" secondItem="FFl-Xe-Mqx" secondAttribute="height" multiplier="1:1" id="rQ7-ra-7fk"/>
                             <constraint firstAttribute="height" constant="20" id="y4L-Qy-wgP"/>
                         </constraints>
                     </imageView>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Add Note" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MWT-T1-WCW" userLabel="Add Note">
-                        <rect key="frame" x="295" y="16" width="67" height="18"/>
+                        <rect key="frame" x="295" y="18" width="67" height="18"/>
                         <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
                         <color key="textColor" name="DashBlueColor"/>
                         <nil key="highlightedColor"/>
                     </label>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="749" text="Note" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="e6b-s8-6Fo" userLabel="Note">
-                        <rect key="frame" x="14" y="38" width="348" height="14"/>
-                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="15"/>
-                        <nil key="textColor"/>
+                        <rect key="frame" x="14" y="52" width="348" height="31"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                        <color key="textColor" name="Label"/>
                         <nil key="highlightedColor"/>
                     </label>
                 </subviews>
                 <color key="backgroundColor" name="BackgroundColor"/>
                 <constraints>
-                    <constraint firstItem="FFl-Xe-Mqx" firstAttribute="top" secondItem="SB9-be-vIx" secondAttribute="top" constant="16" id="0MX-bf-vv4"/>
+                    <constraint firstItem="FFl-Xe-Mqx" firstAttribute="top" secondItem="SB9-be-vIx" secondAttribute="top" constant="18" id="0MX-bf-vv4"/>
                     <constraint firstItem="e6b-s8-6Fo" firstAttribute="leading" secondItem="SB9-be-vIx" secondAttribute="leading" constant="14" id="9kB-Fv-K0h"/>
-                    <constraint firstItem="e6b-s8-6Fo" firstAttribute="top" secondItem="3yL-We-hxk" secondAttribute="bottom" constant="4" id="9uc-hk-XxY"/>
-                    <constraint firstItem="3yL-We-hxk" firstAttribute="top" secondItem="SB9-be-vIx" secondAttribute="top" constant="16" id="AKb-vk-JZU"/>
-                    <constraint firstAttribute="bottom" secondItem="e6b-s8-6Fo" secondAttribute="bottom" id="KPZ-cN-oHI"/>
+                    <constraint firstItem="e6b-s8-6Fo" firstAttribute="top" secondItem="3yL-We-hxk" secondAttribute="bottom" constant="16" id="9uc-hk-XxY"/>
+                    <constraint firstItem="3yL-We-hxk" firstAttribute="top" secondItem="SB9-be-vIx" secondAttribute="top" constant="18" id="AKb-vk-JZU"/>
+                    <constraint firstAttribute="bottom" secondItem="e6b-s8-6Fo" secondAttribute="bottom" constant="16" id="KPZ-cN-oHI"/>
                     <constraint firstItem="3yL-We-hxk" firstAttribute="leading" secondItem="SB9-be-vIx" secondAttribute="leading" constant="14" id="RFo-tD-HkV"/>
                     <constraint firstAttribute="trailing" secondItem="e6b-s8-6Fo" secondAttribute="trailing" constant="12" id="Uy2-HI-dto"/>
                     <constraint firstAttribute="trailing" secondItem="MWT-T1-WCW" secondAttribute="trailing" constant="12" id="j1L-Cn-b6W"/>
                     <constraint firstItem="FFl-Xe-Mqx" firstAttribute="trailing" secondItem="MWT-T1-WCW" secondAttribute="leading" constant="-4" id="ong-38-q1Q"/>
-                    <constraint firstItem="MWT-T1-WCW" firstAttribute="top" secondItem="SB9-be-vIx" secondAttribute="top" constant="16" id="sTu-LW-BuU"/>
+                    <constraint firstItem="MWT-T1-WCW" firstAttribute="top" secondItem="SB9-be-vIx" secondAttribute="top" constant="18" id="sTu-LW-BuU"/>
                 </constraints>
             </tableViewCellContentView>
             <connections>
                 <outlet property="addNoteLabel" destination="MWT-T1-WCW" id="n4c-MC-B6a"/>
+                <outlet property="noteBottomConstraint" destination="KPZ-cN-oHI" id="B5m-jQ-dgb"/>
                 <outlet property="noteLabel" destination="e6b-s8-6Fo" id="bH7-P6-lnV"/>
+                <outlet property="noteTopConstraint" destination="9uc-hk-XxY" id="yqr-Rz-alT"/>
                 <outlet property="titleLabel" destination="3yL-We-hxk" id="arI-YN-sTX"/>
             </connections>
-            <point key="canvasLocation" x="92" y="41"/>
+            <point key="canvasLocation" x="91.603053435114504" y="57.394366197183103"/>
         </tableViewCell>
     </objects>
     <resources>
@@ -72,6 +74,9 @@
         </namedColor>
         <namedColor name="DashBlueColor">
             <color red="0.0" green="0.55294117647058827" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="Label">
+            <color red="0.098039215686274508" green="0.10980392156862745" blue="0.12156862745098039" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

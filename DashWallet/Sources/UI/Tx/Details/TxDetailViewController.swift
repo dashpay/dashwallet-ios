@@ -161,8 +161,10 @@ class TXDetailViewController: BaseTxDetailsViewController {
     @objc
     init(model: TxDetailModel) {
         self.model = model
-
         super.init(nibName: nil, bundle: nil)
+        self.model.metadataUpdated = {
+            self.reloadDataSource()
+        }
     }
 
     required init?(coder: NSCoder) {
@@ -203,7 +205,7 @@ extension TXDetailViewController {
     private func editNote() {
         #if DASHPAY
         let swiftUIView = BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
-            PrivateMemoScreen()
+            PrivateMemoScreen(txId: self.model.transaction.txHashData, initialValue: self.model.metadataPrivateNote)
         }
         
         let hostingController = UIHostingController(rootView: swiftUIView)
@@ -315,7 +317,6 @@ extension TXDetailViewController {
         switch section {
         case .taxCategory:
             model.toggleTaxCategoryOnCurrentTransaction()
-            reloadDataSource()
             break
         case .privateNote:
             editNote()

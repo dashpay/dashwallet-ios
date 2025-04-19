@@ -19,9 +19,17 @@ import SwiftUI
 import Combine
 
 struct PrivateMemoScreen: View {
+    let txId: Data
+    let initialValue: String
     @Environment(\.presentationMode) private var presentationMode
     @FocusState private var isTextFieldFocused: Bool
-    @StateObject private var viewModel = PrivateMemoViewModel()
+    @StateObject private var viewModel: PrivateMemoViewModel
+    
+    init(txId: Data, initialValue: String) {
+        self.txId = txId
+        self.initialValue = initialValue
+        _viewModel = StateObject(wrappedValue: PrivateMemoViewModel(txHash: txId, initialValue: initialValue))
+    }
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -34,7 +42,7 @@ struct PrivateMemoScreen: View {
                     label: NSLocalizedString("Note", comment: "Private Note"),
                     text: $viewModel.input,
                     isMultiline: true,
-                    maxChars: viewModel.maxChars
+                    maxChars: kMaxChars
                 ).focused($isTextFieldFocused)
                  .frame(maxHeight: 108)
                  .padding(.top, 20)
@@ -53,7 +61,9 @@ struct PrivateMemoScreen: View {
                     text: NSLocalizedString("Continue", comment: "Continue"),
                     isEnabled: viewModel.canContinue()
                 ) {
-                    viewModel.onContinue()
+                    if viewModel.onContinue() {
+                        presentationMode.wrappedValue.dismiss()
+                    }
                 }
                 .padding(.bottom, 20)
             }.padding(.horizontal, 20)

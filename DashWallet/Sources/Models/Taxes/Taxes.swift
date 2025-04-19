@@ -59,6 +59,10 @@ class Taxes: NSObject {
     }
 
     func taxCategory(for tx: DSTransaction) -> TxMetadataTaxCategory {
+        if let storedCategory = txUserInfos.get(by: tx.txHashData)?.taxCategory, storedCategory != .unknown {
+            return storedCategory
+        }
+        
         var taxCategory: TxMetadataTaxCategory = tx.defaultTaxCategory()
 
         for outputAddress in tx.outputAddresses {
@@ -74,8 +78,6 @@ class Taxes: NSObject {
                 }
             }
         }
-
-        taxCategory = txUserInfos.get(by: tx.txHashData)?.taxCategory ?? taxCategory
 
         return taxCategory
     }
