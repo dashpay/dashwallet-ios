@@ -627,6 +627,10 @@
 		759063EF2C427324002F2AA9 /* DWMainMenuViewController+DashPay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759063EE2C427324002F2AA9 /* DWMainMenuViewController+DashPay.swift */; };
 		7592AA7C2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */; };
 		7592AA7D2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */; };
+		7593ABDE2DB3B26500462FDB /* MetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7593ABDD2DB3B26100462FDB /* MetadataProvider.swift */; };
+		7593ABDF2DB3B26500462FDB /* MetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7593ABDD2DB3B26100462FDB /* MetadataProvider.swift */; };
+		7593ABE62DB3B77500462FDB /* PrivateMemoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7593ABE52DB3B76800462FDB /* PrivateMemoProvider.swift */; };
+		7593ABE72DB3B77500462FDB /* PrivateMemoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7593ABE52DB3B76800462FDB /* PrivateMemoProvider.swift */; };
 		7596091A2C4550F500F3BF04 /* DWDashPaySetupModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 759609182C4550F400F3BF04 /* DWDashPaySetupModel.m */; };
 		759609212C4553A400F3BF04 /* BuyCreditsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759609202C4553A400F3BF04 /* BuyCreditsViewController.swift */; };
 		759609232C455B2000F3BF04 /* SendIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759609222C455B2000F3BF04 /* SendIntro.swift */; };
@@ -2486,6 +2490,8 @@
 		759063EC2C42687F002F2AA9 /* RootEditProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootEditProfileViewController.swift; sourceTree = "<group>"; };
 		759063EE2C427324002F2AA9 /* DWMainMenuViewController+DashPay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DWMainMenuViewController+DashPay.swift"; sourceTree = "<group>"; };
 		7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedTopperPaymentMethods.swift; sourceTree = "<group>"; };
+		7593ABDD2DB3B26100462FDB /* MetadataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataProvider.swift; sourceTree = "<group>"; };
+		7593ABE52DB3B76800462FDB /* PrivateMemoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateMemoProvider.swift; sourceTree = "<group>"; };
 		759609172C4550F400F3BF04 /* DWDashPaySetupModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDashPaySetupModel.h; sourceTree = "<group>"; };
 		759609182C4550F400F3BF04 /* DWDashPaySetupModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDashPaySetupModel.m; sourceTree = "<group>"; };
 		759609202C4553A400F3BF04 /* BuyCreditsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyCreditsViewController.swift; sourceTree = "<group>"; };
@@ -3647,6 +3653,7 @@
 		2A1B7D7E232151B800BA8C6A /* Tx */ = {
 			isa = PBXGroup;
 			children = (
+				7593ABE32DB3B75000462FDB /* Private Memo */,
 				47F2C6802860315D00C2B774 /* Reclassify Transactions */,
 				47F2C67E2860314A00C2B774 /* Details */,
 				47A514612848FEAD005A8E3E /* Tx.storyboard */,
@@ -3682,7 +3689,6 @@
 		2A1B7D9E23239C7500BA8C6A /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				7535BDA12DAFC48300344D1A /* PrivateMemoViewModel.swift */,
 				4709C31A288020DE00B4BD48 /* TxDetailModel.swift */,
 			);
 			path = Model;
@@ -3756,6 +3762,7 @@
 				C9F452002A0CE6C900825057 /* HomeView.swift */,
 				754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */,
 				751C05DC2D3E39A600475E52 /* TransactionListDataItem.swift */,
+				7593ABDD2DB3B26100462FDB /* MetadataProvider.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -5926,7 +5933,6 @@
 				2A1B7D9E23239C7500BA8C6A /* Model */,
 				2A1B7D82232156A600BA8C6A /* Views */,
 				47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */,
-				7535BD9E2DAFC39E00344D1A /* PrivateMemoScreen.swift */,
 			);
 			path = Details;
 			sourceTree = "<group>";
@@ -6086,6 +6092,24 @@
 				75C1F0442AE26AC0006929CA /* CoinJoinLevelsViewModel.swift */,
 			);
 			path = CoinJoin;
+			sourceTree = "<group>";
+		};
+		7593ABE32DB3B75000462FDB /* Private Memo */ = {
+			isa = PBXGroup;
+			children = (
+				7593ABE42DB3B75C00462FDB /* Model */,
+				7535BD9E2DAFC39E00344D1A /* PrivateMemoScreen.swift */,
+			);
+			path = "Private Memo";
+			sourceTree = "<group>";
+		};
+		7593ABE42DB3B75C00462FDB /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				7593ABE52DB3B76800462FDB /* PrivateMemoProvider.swift */,
+				7535BDA12DAFC48300344D1A /* PrivateMemoViewModel.swift */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 		759609192C4550F400F3BF04 /* Setup */ = {
@@ -8489,6 +8513,7 @@
 				2A63003F2327B4BB00827825 /* DWPaymentOutput+DWView.m in Sources */,
 				750CED602C94BFD7000FB837 /* SettingsViewModel.swift in Sources */,
 				75D5D5342CC928630049ED7B /* UIHostingController+DashWallet.swift in Sources */,
+				7593ABDE2DB3B26500462FDB /* MetadataProvider.swift in Sources */,
 				2ACD53EE234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m in Sources */,
 				11860923297598B400279FCC /* AddressStatus.swift in Sources */,
 				C91E919729FBACE6003E7883 /* ExtendedPublicKeysModel.swift in Sources */,
@@ -8672,6 +8697,7 @@
 				2A1B7DA82323AF4300BA8C6A /* DWModalPopupTransition.m in Sources */,
 				754C27CC2CC3C15B00BA7B9F /* FeatureSingleItem.swift in Sources */,
 				2A7F3B1B238C646600DEA3EF /* DWAdvancedSecurityViewController.m in Sources */,
+				7593ABE62DB3B77500462FDB /* PrivateMemoProvider.swift in Sources */,
 				4751CAD6297024ED00F63AC4 /* OrderPreviewModel.swift in Sources */,
 				2A885FD6244DFEF100B9F679 /* UIView+DWFindConstraints.m in Sources */,
 				2A1B7DA52323AC1F00BA8C6A /* DWModalPopupPresentationController.m in Sources */,
@@ -9108,6 +9134,7 @@
 				C9D2C6BE2A320AA000D15901 /* DWLocationManager.swift in Sources */,
 				7514E4EC2AF27E5900A0466F /* VotingHeaderView.swift in Sources */,
 				C943B3432A409F9E00AF23C5 /* UIImageView+DWDPAvatar.m in Sources */,
+				7593ABDF2DB3B26500462FDB /* MetadataProvider.swift in Sources */,
 				C943B5212A40A54600AF23C5 /* SuccessInvitationTopView.swift in Sources */,
 				C9D2C6BF2A320AA000D15901 /* FetchingNextPageCell.swift in Sources */,
 				C943B3172A408CED00AF23C5 /* DWErrorUpdatingUserProfileView.m in Sources */,
@@ -9267,6 +9294,7 @@
 				C9D2C72E2A320AA000D15901 /* DWRecoverModel.m in Sources */,
 				C9D2C72F2A320AA000D15901 /* DWCenteredTableView.m in Sources */,
 				C9D2C7302A320AA000D15901 /* DWOnboardingViewController.m in Sources */,
+				7593ABE72DB3B77500462FDB /* PrivateMemoProvider.swift in Sources */,
 				C9D2C7322A320AA000D15901 /* CrowdNode+UserDefaults.swift in Sources */,
 				C9D2C7342A320AA000D15901 /* DWPinView.m in Sources */,
 				C9D2C7362A320AA000D15901 /* DWBaseReceiveModel.m in Sources */,

@@ -33,6 +33,7 @@ enum TransactionMetadataChange {
 protocol TransactionMetadataDAO {
     func create(dto: TransactionMetadata)
     func get(by hash: Data, ignoreCache: Bool) -> TransactionMetadata?
+    func getPrivateMemos() -> [TransactionMetadata]
     func update(dto: TransactionMetadata)
     func delete(dto: TransactionMetadata)
     func deleteAll()
@@ -118,6 +119,22 @@ class TransactionMetadataDAOImpl: NSObject, TransactionMetadataDAO, ObservableOb
         }
 
         return nil
+    }
+
+    func getPrivateMemos() -> [TransactionMetadata] {
+        let txUserInfos = TransactionMetadata.table.filter(TransactionMetadata.memo != nil && TransactionMetadata.memo != "")
+        var userInfos: [TransactionMetadata] = []
+
+        do {
+            for txInfo in try db.prepare(txUserInfos) {
+                let userInfo = TransactionMetadata(row: txInfo)
+                userInfos.append(userInfo)
+            }
+        } catch {
+            print(error)
+        }
+
+        return userInfos
     }
 
     private func cachedValue(by key: Data) -> TransactionMetadata? {
