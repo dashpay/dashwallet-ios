@@ -99,8 +99,8 @@ final class SyncView: UIView {
                         model.lastTerminalBlockHeight,
                         model.estimatedBlockHeight)
                 } else if kind == .masternodes {
-                    let masternodeListsReceived = model.masternodeListSyncInfo.retrievalQueueCount
-                    let masternodeListsTotal = model.masternodeListSyncInfo.retrievalQueueMaxAmount
+                    let masternodeListsReceived = model.masternodeListSyncInfo.queueCount
+                    let masternodeListsTotal = model.masternodeListSyncInfo.queueMaxAmount
                     descriptionLabel.text = String(format: NSLocalizedString("masternode list #%d of %d", comment: ""),
                         masternodeListsReceived > masternodeListsTotal ? 0 : masternodeListsTotal - masternodeListsTotal,
                         masternodeListsTotal)

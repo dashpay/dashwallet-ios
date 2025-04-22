@@ -119,12 +119,19 @@ final class SyncingAlertContentView: UIView {
                     model.lastTerminalBlockHeight,
                     model.estimatedBlockHeight)
             } else if kind == .masternodes {
-                let masternodeListsReceived = model.masternodeListSyncInfo.retrievalQueueCount
-                let masternodeListsTotal = model.masternodeListSyncInfo.retrievalQueueMaxAmount
+                let masternodeListsReceived = model.masternodeListSyncInfo.queueCount
+                let masternodeListsTotal = model.masternodeListSyncInfo.queueMaxAmount
                 subtitleLabel.text = localized(
                     template: "masternode list #%d of %d",
                     masternodeListsReceived > masternodeListsTotal ? 0 : masternodeListsTotal - masternodeListsTotal,
                     masternodeListsTotal)
+            } else if kind == .platform {
+                let identitiesKeysCount = model.platformSyncInfo.queueCount
+                let identitiesKeysTotal = model.platformSyncInfo.queueMaxAmount
+                subtitleLabel.text = localized(
+                    template: "platform #%d of %d",
+                    identitiesKeysCount > identitiesKeysTotal ? 0 : identitiesKeysTotal - identitiesKeysCount,
+                    identitiesKeysTotal)
             } else {
                 subtitleLabel.text = localized(
                     template: "block #%d of %d",
@@ -193,7 +200,7 @@ final class SyncingAlertContentView: UIView {
             let model = notification.userInfo?[kChainManagerNotificationSyncStateKey] as? DSSyncState else {
             return
         }
-        self.update(with: model.combinedSyncProgress)
+        self.update(with: model.progress)
     }
 
 }

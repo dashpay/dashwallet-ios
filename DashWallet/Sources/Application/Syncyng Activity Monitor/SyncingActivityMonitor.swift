@@ -153,7 +153,7 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
     
     @objc
     func peerManagerConnectedPeersDidChangeNotification(notification: Notification) {
-       if model.peerManagerConnected {
+        if model.peersSyncInfo.peerManagerConnected {
             removeChainObserver(.peerManagerConnectedPeersDidChange)
             startSyncingIfNeeded()
         }
@@ -172,7 +172,7 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
 extension SyncingActivityMonitor {
     
     private func startSyncingIfNeeded() {
-        guard model.peerManagerConnected else {
+        guard model.peersSyncInfo.peerManagerConnected else {
             addChainObserver(.peerManagerConnectedPeersDidChange, #selector(peerManagerConnectedPeersDidChangeNotification(notification:)))
             return
         }
@@ -183,7 +183,7 @@ extension SyncingActivityMonitor {
     private func startSyncingActivity() {
         guard !isSyncing else { return }
 
-        progress = model.combinedSyncProgress
+        progress = model.progress
         lastPeakDate = nil
 
         NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(syncLoop), object: nil)
@@ -211,7 +211,7 @@ extension SyncingActivityMonitor {
     }
 
     private func updateProgress() {
-        let progress = model.combinedSyncProgress
+        let progress = model.progress
         if progress < kSyncingCompleteProgress {
             isSyncing = true
 
@@ -277,7 +277,7 @@ extension SyncingActivityMonitor {
 
 extension SyncingActivityMonitor {
     private var chainSyncProgress: Double {
-        model.combinedSyncProgress
+        model.progress
     }
 
     private var shouldStopSyncing: Bool {

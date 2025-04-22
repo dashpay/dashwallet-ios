@@ -71,6 +71,10 @@ post_install do |installer|
     # fixes warnings about unsupported Deployment Target in Xcode
     target.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'DASHCORE_QUORUM_VALIDATION=1'
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'DPP_STATE_TRANSITIONS=1'
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'PLATFORM_VALUE_STD=1'
     end
   end
   # update info about current DashSync version
