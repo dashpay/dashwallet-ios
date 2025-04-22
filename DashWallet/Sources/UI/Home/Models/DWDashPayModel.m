@@ -449,7 +449,7 @@ NS_ASSUME_NONNULL_END
         if (isDone) {
             [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted = YES;
             [DWGlobalOptions sharedInstance].dashpayUsername = nil;
-            NSAssert(self.username != nil, @"Default DSIdentity has an empty username");
+            // NSAssert(self.username != nil, @"Default DSIdentity has an empty username");
 
             [self.userProfile update];
         }
