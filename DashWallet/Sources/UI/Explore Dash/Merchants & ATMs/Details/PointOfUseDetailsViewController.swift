@@ -17,6 +17,7 @@
 
 import MapKit
 import UIKit
+import SwiftUI
 
 // MARK: - PointOfUseDetailsViewController
 
@@ -136,6 +137,10 @@ extension PointOfUseDetailsViewController {
             vc.sellDashHandler = wSelf.sellDashHandler
             wSelf.navigationController?.pushViewController(vc, animated: true)
         }
+        detailsView.buyGiftCardHandler = { [weak self] in
+            self?.showCTXSpendLoginInfo()
+        }
+        
         detailsView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(detailsView)
 
@@ -151,6 +156,43 @@ extension PointOfUseDetailsViewController {
         showMapIfNeeded()
         prepareContentView()
         showDetailsView()
+    }
+    
+    private func showCTXSpendLoginInfo() {
+        let swiftUIView = CTXSpendLoginInfoView(
+            onCreateNewAccount: { [weak self] in
+                self?.dismiss(animated: true) {
+                    self?.showCTXSpendTerms()
+                }
+            },
+            onLogIn: { [weak self] in
+                self?.dismiss(animated: true) {
+                    self?.showCTXSpendAuth(authType: .signIn)
+                }
+            },
+            onTermsAndConditions: {
+                UIApplication.shared.open(URL(string: CTXConstants.ctxGiftCardAgreementUrl)!, options: [:], completionHandler: nil)
+            }
+        )
+        let hostingController = UIHostingController(rootView: swiftUIView)
+        hostingController.setDetent(450)
+        self.present(hostingController, animated: true)
+    }
+    
+    private func showCTXSpendTerms() {
+        let hostingController = UIHostingController(rootView: CTXSpendTermsScreen())
+        hostingController.modalPresentationStyle = .fullScreen
+        self.navigationController?.pushViewController(hostingController, animated: true)
+    }
+
+    private func showCTXSpendAuth(authType: CTXSpendUserAuthType) {
+        let hostingController = UIHostingController(
+            rootView: NavigationView {
+                CTXSpendUserAuthScreen(authType: authType)
+            }
+        )
+        
+        self.navigationController?.pushViewController(hostingController, animated: true)
     }
 }
 
@@ -205,4 +247,9 @@ extension ExplorePointOfUse {
             return nil
         }
     }
+}
+
+extension UIHostingController: NavigationBarDisplayable {
+    var isBackButtonHidden: Bool { true }
+    var isNavigationBarHidden: Bool { true }
 }

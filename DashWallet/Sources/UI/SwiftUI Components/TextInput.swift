@@ -23,6 +23,9 @@ struct TextInput: View {
     let label: String
     @Binding var text: String
     var isError: Bool = false
+    var keyboardType: UIKeyboardType = .default
+    var autocapitalization: TextInputAutocapitalization? = .sentences
+    var isEnabled: Bool = true
     var trailingIcon: Image?
     var trailingAction: (() -> Void)?
     
@@ -37,10 +40,13 @@ struct TextInput: View {
                     .animation(.spring(response: 0.2, dampingFraction: 0.8), value: isFocused || !text.isEmpty)
                 
                 TextField("", text: $text)
+                    .keyboardType(keyboardType)
+                    .textInputAutocapitalization(autocapitalization)
                     .focused($isFocused)
                     .autocorrectionDisabled(true)
                     .font(.body2)
                     .padding(.top, 15)
+                    .disabled(!isEnabled)
 
                 HStack {
                     Spacer()
@@ -113,7 +119,6 @@ struct TextInput: View {
         text = ""
     }
 }
-
 
 // Preview
 struct TextInput_Previews: PreviewProvider {

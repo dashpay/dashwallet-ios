@@ -115,14 +115,17 @@
 /* No comment provided by engineer. */
 "Accept" = "수락";
 
+/* Explore */
+"Accept Dash directly" = "Accept Dash directly";
+
+/* DashSpend */
+"Accept terms and\nconditions" = "Accept terms and\nconditions";
+
 /* CrowdNode */
 "Accept Terms Of Use" = "이용약관 수락하기";
 
 /* CrowdNode */
 "Accepting terms of use…" = "이용 약관에 동의하는 중...";
-
-/* No comment provided by engineer. */
-"Accepts DASH directly" = "직접 DASH 받기";
 
 /* CrowdNode */
 "Account Recovery" = "계정 복구";
@@ -202,6 +205,9 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "보낸 금액";
 
+/* An error occurred */
+"An error occurred" = "An error occurred";
+
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "당신의 모든 기기에 걸친 직관적이고 친근한 경험";
 
@@ -255,6 +261,9 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "인증할 수 없습니다";
+
+/* Authorization error message */
+"Authorization error. Please try logging in again." = "Authorization error. Please try logging in again.";
 
 /* Location Service Status */
 "Authorized" = "공인됨";
@@ -344,9 +353,6 @@
 /* Buy a Gift Card */
 "Buy a Gift Card" = "기프트 카드 구매";
 
-/* No comment provided by engineer. */
-"Buy a gift card with Dash." = "대시로 기프트 카드를 구매합니다.";
-
 /* Dash Service Overview */
 "Buy and convert Dash with another crypto" = "다른 암호화폐로 대시 구매 및 전환하기";
 
@@ -412,6 +418,9 @@
 
 /* No comment provided by engineer. */
 "Check your connection" = "연결을 확인하세요";
+
+/* DashSpend */
+"Check your email and enter the verification code." = "Check your email and enter the verification code.";
 
 /* Choose your Dash username */
 "Choose your" = "다음을 선택하세요";
@@ -571,11 +580,20 @@
 /* CrowdNode */
 "Create Account" = "계정 생성하기";
 
+/* Create DashSpend account */
+"Create account" = "Create account";
+
+/* DashSpend account title */
+"Create an account or log into an existing one" = "Create an account or log into an existing one";
+
 /* CrowdNode */
 "Create an online CrowdNode account" = "온라인 크라우드노드 계정 생성하기";
 
 /* No comment provided by engineer. */
 "Create invitation" = "초대 생성하기";
+
+/* Create new account */
+"Create new account" = "Create new account";
 
 /* CrowdNode
    CrowdNode Portal */
@@ -796,6 +814,9 @@
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "복원 문구를 입력하세요";
 
+/* Enter verification code */
+"Enter verification code" = "Enter verification code";
+
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "아래에 귀하의 2FA 코드를 입력하세요";
 
@@ -888,9 +909,6 @@
 
 /* Explore Dash */
 "Filters" = "필터";
-
-/* No comment provided by engineer. */
-"Find a merchant." = "상점을 찾습니다.";
 
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "대시 네트워크에서 사용자를 검색합니다";
@@ -1037,9 +1055,6 @@
 "How to confirm your API Dash address" = "당신의 API 대시 주소를 확인하는 방법";
 
 /* No comment provided by engineer. */
-"How to Use a Gift Card" = "기프트 카드 사용 방법";
-
-/* No comment provided by engineer. */
 "HPMN Operator Keys" = "에볼루션 노드 ID 키";
 
 /* No comment provided by engineer. */
@@ -1047,6 +1062,9 @@
 
 /* No comment provided by engineer. */
 "I accept" = "I accept";
+
+/* Accept terms checkbox */
+"I accept DashSpend terms and conditions" = "I accept DashSpend terms and conditions";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "복구 문구를 보유하고 있지 않은 경우 코인을 분실하는 것에 동의합니다.";
@@ -1283,9 +1301,6 @@
 /* Explore Dash */
 "Last server update" = "마지막 서버 업데이트";
 
-/* No comment provided by engineer. */
-"Learn More" = "더 알아보기";
-
 /* Info Screen */
 "Learn More..." = "더 알아보기...";
 
@@ -1349,11 +1364,29 @@
 /* No comment provided by engineer. */
 "Locked" = "잠김";
 
+/* Log in */
+"Log in" = "Log in";
+
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "크라우드노드에 로그인";
 
+/* DashSpend */
+"Log in to your account" = "Log in to your account";
+
+/* Log out button */
+"Log Out" = "Log Out";
+
 /* No comment provided by engineer. */
 "Log out from Uphold" = "업홀드에서 로그아웃";
+
+/* Logged in status */
+"Logged in" = "Logged in";
+
+/* DashSpend */
+"Logged in as %@" = "Logged in as %@";
+
+/* DashSpend */
+"Logged in to DashSpend account" = "Logged in to DashSpend account";
 
 /* No comment provided by engineer. */
 "Login with Face ID" = "페이스 ID로 로그인";
@@ -1562,9 +1595,6 @@
 /* Usernames */
 "Not a valid URL" = "유효하지 않은 URL";
 
-/* No comment provided by engineer. */
-"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "모든 상점에서 직접 대시를 받는 것은 아니지만, 대시를 통해 기프트 카드를 구매할 수 있습니다.";
-
 /* Fiat amount */
 "Not available" = "이용할 수 없음";
 
@@ -1585,6 +1615,9 @@
 
 /* No comment provided by engineer. */
 "OK" = "OK";
+
+/* No comment provided by engineer. */
+"Ok" = "Ok";
 
 /* Voting */
 "Old to new" = "과거부터 현재";
@@ -1628,6 +1661,9 @@
 /* No comment provided by engineer. */
 "Owner Keys" = "소유자 키";
 
+/* DashSpend */
+"Password" = "Password";
+
 /* Usernames */
 "Past link here" = "Past link here";
 
@@ -1657,9 +1693,6 @@
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "쉬운 지불";
-
-/* No comment provided by engineer. */
-"Pay with the DASH Wallet." = "대시 지갑으로 지불하세요.";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "지불 중";
@@ -1885,9 +1918,6 @@
 
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "복구 문구는 12, 15, 18, 21 및 24 단어를 지녀야 합니다";
-
-/* No comment provided by engineer. */
-"Redeem your gift card online within seconds or at the cashier." = "수초만에 온라인으로, 혹은 카운터에서 기프트 카드를 현금화합니다.";
 
 /* Button title, Register (username) */
 "Register" = "등록";
@@ -2262,6 +2292,9 @@
 /* No comment provided by engineer. */
 "Tax Category" = "세금 카테고리";
 
+/* Terms & conditions */
+"Terms & conditions" = "Terms & conditions";
+
 /* No comment provided by engineer. */
 "Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "테스트 대시는 실생활에서 어떤 가치도 지니지 않으나 다른 대시페이 알파 사용자들과 주고 받을 수 있습니다.";
 
@@ -2291,6 +2324,9 @@
 
 /* Voting */
 "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter.";
+
+/* Explore */
+"The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps.";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "당신이 선택한 이미지는 Imgur에 익명으로 업로드됩니다.";
@@ -2670,10 +2706,10 @@
 "We couldn’t withdraw from your CrowdNode account." = "당신의 크라우드노드 계정에서 출금하지 못했습니다.";
 
 /* No comment provided by engineer. */
-"We have 2 types of merchants" = "두 가지 유형의 상점이 있습니다";
-
-/* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "대시 지갑의 마이그레이션 중 충돌을 감지하였습니다. 블록체인을 재스캔하거나 다시 시도하여 이 문제를 해결할 수 있습니다. 재스캔은 와이파이에서 수행하실 것을 권장하며 30분 가량 소요됩니다. 당신의 자금은 동기화 과정이 완료되게 되면 이용할 수 있습니다.";
+
+/* Explore */
+"We have two types of merchants" = "We have two types of merchants";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "다음을 업그레이드 하였습니다";
@@ -2777,6 +2813,9 @@
 
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "다음과 같은 포맷 중 어떤 형태로도 키를 입력할 수 있습니다: WIF/base58/base64/hex";
+
+/* Explore */
+"You can pay with Dash at the cashier." = "You can pay with Dash at the cashier.";
 
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "입금, 출금 및 리워드 수익에 대한 자세한 정보를 확인할 수 있습니다.";
@@ -2918,6 +2957,9 @@
 
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "당신의 이메일은 대시페이 지갑 혹은 다른 어떤 서버에도 저장되지 ㅇ낳습니다. 이는 Gravatar 계정 상세 정보에 한 번 사용될 뿐이며, 그 이후로는 폐기됩니다.";
+
+/* Email is only used for OTP */
+"Your email is only used to send a one-time password." = "Your email is only used to send a one-time password.";
 
 /* No comment provided by engineer. */
 "Your invitation from %@ has been already claimed" = "%@으로부터의 초대장이 이미 사용되었습니다";

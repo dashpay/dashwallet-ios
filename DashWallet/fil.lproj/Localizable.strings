@@ -115,14 +115,17 @@
 /* No comment provided by engineer. */
 "Accept" = "Tanggapin";
 
+/* Explore */
+"Accept Dash directly" = "Accept Dash directly";
+
+/* DashSpend */
+"Accept terms and\nconditions" = "Accept terms and\nconditions";
+
 /* CrowdNode */
 "Accept Terms Of Use" = "Tanggapin ang Mga Tuntunin ng paggamit";
 
 /* CrowdNode */
 "Accepting terms of use…" = "Tumatanggap ng mga tuntunin sa paggamit…";
-
-/* No comment provided by engineer. */
-"Accepts DASH directly" = "Direktang tumatanggap ng DASH";
 
 /* CrowdNode */
 "Account Recovery" = "Pagbawi ng Account";
@@ -202,6 +205,9 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "Halagang ipinadala";
 
+/* An error occurred */
+"An error occurred" = "An error occurred";
+
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Ang sapantaha at pamilyar na karanasan sa lahat ng iyong aparato";
 
@@ -255,6 +261,9 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Hindi magagamit ang pagpapatunay";
+
+/* Authorization error message */
+"Authorization error. Please try logging in again." = "Authorization error. Please try logging in again.";
 
 /* Location Service Status */
 "Authorized" = "Awtorisado";
@@ -344,9 +353,6 @@
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Bumili ng Gift Card";
 
-/* No comment provided by engineer. */
-"Buy a gift card with Dash." = "Bumili ng gift card gamit ang iyong Dash";
-
 /* Dash Service Overview */
 "Buy and convert Dash with another crypto" = "Bumili at i-convert ang Dash gamit ang isa pang crypto";
 
@@ -412,6 +418,9 @@
 
 /* No comment provided by engineer. */
 "Check your connection" = "Suriin ang koneksyon";
+
+/* DashSpend */
+"Check your email and enter the verification code." = "Check your email and enter the verification code.";
 
 /* Choose your Dash username */
 "Choose your" = "Pumili ng iyong";
@@ -571,11 +580,20 @@
 /* CrowdNode */
 "Create Account" = "Lumikha ng Account";
 
+/* Create DashSpend account */
+"Create account" = "Create account";
+
+/* DashSpend account title */
+"Create an account or log into an existing one" = "Create an account or log into an existing one";
+
 /* CrowdNode */
 "Create an online CrowdNode account" = "Lumikha ng online na CrowdNode account";
 
 /* No comment provided by engineer. */
 "Create invitation" = "Gumawa ng imbitasyon";
+
+/* Create new account */
+"Create new account" = "Create new account";
 
 /* CrowdNode
    CrowdNode Portal */
@@ -796,6 +814,9 @@
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Ilagay ang Recovery Phrase";
 
+/* Enter verification code */
+"Enter verification code" = "Enter verification code";
+
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Ilagay ang iyong 2FA code sa ibaba";
 
@@ -888,9 +909,6 @@
 
 /* Explore Dash */
 "Filters" = "Mga filter";
-
-/* No comment provided by engineer. */
-"Find a merchant." = "Maghanap ng merchant.";
 
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Maghanap ng gumagamit sa Network ng Dash";
@@ -1037,9 +1055,6 @@
 "How to confirm your API Dash address" = "Paano kumpirmahin ang iyong API Dash address";
 
 /* No comment provided by engineer. */
-"How to Use a Gift Card" = "Paano Gumamit ng Gift Card";
-
-/* No comment provided by engineer. */
 "HPMN Operator Keys" = "Mga key ng Evolution Node ID";
 
 /* No comment provided by engineer. */
@@ -1047,6 +1062,9 @@
 
 /* No comment provided by engineer. */
 "I accept" = "I accept";
+
+/* Accept terms checkbox */
+"I accept DashSpend terms and conditions" = "I accept DashSpend terms and conditions";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Tinatanggap ko na mawawala ko ang aking mga barya kung sakaling hindi ko na maalala ang recovery phrase";
@@ -1283,9 +1301,6 @@
 /* Explore Dash */
 "Last server update" = "Huling pag-update ng server";
 
-/* No comment provided by engineer. */
-"Learn More" = "Matuto pa";
-
 /* Info Screen */
 "Learn More..." = "Matuto pa...";
 
@@ -1349,11 +1364,29 @@
 /* No comment provided by engineer. */
 "Locked" = "Naka-lock";
 
+/* Log in */
+"Log in" = "Log in";
+
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Mag-log in sa CrowdNode";
 
+/* DashSpend */
+"Log in to your account" = "Log in to your account";
+
+/* Log out button */
+"Log Out" = "Log Out";
+
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Mag-log out mula sa Uphold";
+
+/* Logged in status */
+"Logged in" = "Logged in";
+
+/* DashSpend */
+"Logged in as %@" = "Logged in as %@";
+
+/* DashSpend */
+"Logged in to DashSpend account" = "Logged in to DashSpend account";
 
 /* No comment provided by engineer. */
 "Login with Face ID" = "Buksan gamit ang Face ID";
@@ -1562,9 +1595,6 @@
 /* Usernames */
 "Not a valid URL" = "Hindi wastong URL";
 
-/* No comment provided by engineer. */
-"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Hindi lahat ng tindahan ay direktang tumatanggap ng DASH, ngunit maaari kang bumili ng gift card gamit ang iyong Dash.";
-
 /* Fiat amount */
 "Not available" = "Hindi available";
 
@@ -1585,6 +1615,9 @@
 
 /* No comment provided by engineer. */
 "OK" = "OK";
+
+/* No comment provided by engineer. */
+"Ok" = "Ok";
 
 /* Voting */
 "Old to new" = "Luma sa bago";
@@ -1628,6 +1661,9 @@
 /* No comment provided by engineer. */
 "Owner Keys" = "Susi ng may-ari";
 
+/* DashSpend */
+"Password" = "Password";
+
 /* Usernames */
 "Past link here" = "Past link here";
 
@@ -1657,9 +1693,6 @@
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Magbayad ng walang kahirap-hirap";
-
-/* No comment provided by engineer. */
-"Pay with the DASH Wallet." = "Magbayad gamit ang DASH Wallet.";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "Nagbabayad";
@@ -1885,9 +1918,6 @@
 
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = " Ang recovery phrase ay kailangang mayroong 12, 15, 18, 21 o 24 na salita";
-
-/* No comment provided by engineer. */
-"Redeem your gift card online within seconds or at the cashier." = "I-redeem ang iyong gift card online sa loob ng ilang segundo o sa cashier.";
 
 /* Button title, Register (username) */
 "Register" = "Magparehistro";
@@ -2262,6 +2292,9 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Kategorya ng Buwis";
 
+/* Terms & conditions */
+"Terms & conditions" = "Terms & conditions";
+
 /* No comment provided by engineer. */
 "Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Ang Test Dash ay walang anumang halaga sa totoong mundo ngunit maaari mo itong ipadala at tanggapin kasama ng iba pang mga gumagamit ng DashPay Alpha.";
 
@@ -2291,6 +2324,9 @@
 
 /* Voting */
 "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter.";
+
+/* Explore */
+"The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps.";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "Ang larawang pipiliin mo ay ia-upload sa Imgur nang hindi nagpapakilala.";
@@ -2670,10 +2706,10 @@
 "We couldn’t withdraw from your CrowdNode account." = "Hindi kami makapag-withdraw mula sa iyong CrowdNode account.";
 
 /* No comment provided by engineer. */
-"We have 2 types of merchants" = "Mayroon kaming 2 uri ng merchant";
-
-/* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Aming nabatid na nagkaroon ng problema ang Dash Wallet habang inililipat. Ang pagre-scan sa block chain ay makakalutas sa isyung ito o subukan muli.  Mas mainam na isagawa ang pag-scan gamit and wifi at aabot ito ng hanggang kalahating oras. Ang iyong pondo ay magiging available na kapag natapos na ang proseso.";
+
+/* Explore */
+"We have two types of merchants" = "We have two types of merchants";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Kami ay nag-upgrade";
@@ -2777,6 +2813,9 @@
 
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "Maaari mong ilagay ang iyong susi sa alinman sa mga sumusunod na format: WIF/base58/base64/hex";
+
+/* Explore */
+"You can pay with Dash at the cashier." = "You can pay with Dash at the cashier.";
 
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "Maaari mong makita ang detalyadong impormasyon tungkol sa iyong mga deposito, pag-withdraw at mga kita ng reward.";
@@ -2918,6 +2957,9 @@
 
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Ang iyong Email ay hindi nakaimbak sa DashPay wallet o sa anumang mga server. Ginagamit ito nang isang beses upang makuha ang mga detalye ng iyong Gravatar account at pagkatapos ay itapon.";
+
+/* Email is only used for OTP */
+"Your email is only used to send a one-time password." = "Your email is only used to send a one-time password.";
 
 /* No comment provided by engineer. */
 "Your invitation from %@ has been already claimed" = "Na-claim na ang iyong imbitasyon mula sa %@ ";

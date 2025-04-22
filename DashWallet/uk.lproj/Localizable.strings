@@ -115,14 +115,17 @@
 /* No comment provided by engineer. */
 "Accept" = "Прийняти";
 
+/* Explore */
+"Accept Dash directly" = "Accept Dash directly";
+
+/* DashSpend */
+"Accept terms and\nconditions" = "Accept terms and\nconditions";
+
 /* CrowdNode */
 "Accept Terms Of Use" = "Прийняття умов використання";
 
 /* CrowdNode */
 "Accepting terms of use…" = "Прийняття умов використання…";
-
-/* No comment provided by engineer. */
-"Accepts DASH directly" = "Приймає DASH безпосередньо";
 
 /* CrowdNode */
 "Account Recovery" = "Відновлення Акаунта";
@@ -202,6 +205,9 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "Відправлена сума";
 
+/* An error occurred */
+"An error occurred" = "An error occurred";
+
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Інтуїтивний та звичний інтерфейс на всіх ваших пристроях";
 
@@ -255,6 +261,9 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Автентифікація недоступна";
+
+/* Authorization error message */
+"Authorization error. Please try logging in again." = "Authorization error. Please try logging in again.";
 
 /* Location Service Status */
 "Authorized" = "Авторизований";
@@ -344,9 +353,6 @@
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Купити подарункову карту";
 
-/* No comment provided by engineer. */
-"Buy a gift card with Dash." = "Купити подарункову картку за допомогою Dash";
-
 /* Dash Service Overview */
 "Buy and convert Dash with another crypto" = "Купуйте та конвертуйте Dash за допомогою іншої криптовалюти";
 
@@ -412,6 +418,9 @@
 
 /* No comment provided by engineer. */
 "Check your connection" = "Перевірте з'єднання";
+
+/* DashSpend */
+"Check your email and enter the verification code." = "Check your email and enter the verification code.";
 
 /* Choose your Dash username */
 "Choose your" = "Виберіть свій";
@@ -571,11 +580,20 @@
 /* CrowdNode */
 "Create Account" = "Створити обліковий запис";
 
+/* Create DashSpend account */
+"Create account" = "Create account";
+
+/* DashSpend account title */
+"Create an account or log into an existing one" = "Create an account or log into an existing one";
+
 /* CrowdNode */
 "Create an online CrowdNode account" = "Створити обліковий запис CrowdNode онлайн";
 
 /* No comment provided by engineer. */
 "Create invitation" = "Створити запрошення";
+
+/* Create new account */
+"Create new account" = "Create new account";
 
 /* CrowdNode
    CrowdNode Portal */
@@ -796,6 +814,9 @@
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Введіть фразу відновлення";
 
+/* Enter verification code */
+"Enter verification code" = "Enter verification code";
+
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Введіть код 2FA нижче";
 
@@ -888,9 +909,6 @@
 
 /* Explore Dash */
 "Filters" = "Фільтри";
-
-/* No comment provided by engineer. */
-"Find a merchant." = "Знайти продавця.";
 
 /* No comment provided by engineer. */
 "Find a user on the Dash Network" = "Знайдіть користувача в Dash Network";
@@ -1037,9 +1055,6 @@
 "How to confirm your API Dash address" = "Як підтвердити свою API Dash адресу";
 
 /* No comment provided by engineer. */
-"How to Use a Gift Card" = "Як використовувати подарункову карту";
-
-/* No comment provided by engineer. */
 "HPMN Operator Keys" = "Ключі ідентифікатора вузла Evolution";
 
 /* No comment provided by engineer. */
@@ -1047,6 +1062,9 @@
 
 /* No comment provided by engineer. */
 "I accept" = "I accept";
+
+/* Accept terms checkbox */
+"I accept DashSpend terms and conditions" = "I accept DashSpend terms and conditions";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Я погоджуюся з тим, що втрачу свої монети, якщо більше не матиму фрази відновлення";
@@ -1283,9 +1301,6 @@
 /* Explore Dash */
 "Last server update" = "Останнє оновлення сервера";
 
-/* No comment provided by engineer. */
-"Learn More" = "Дізнатися більше";
-
 /* Info Screen */
 "Learn More..." = "Дізнатися більше...";
 
@@ -1349,11 +1364,29 @@
 /* No comment provided by engineer. */
 "Locked" = "Заблоковано";
 
+/* Log in */
+"Log in" = "Log in";
+
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Ввійти в CrowdNode";
 
+/* DashSpend */
+"Log in to your account" = "Log in to your account";
+
+/* Log out button */
+"Log Out" = "Log Out";
+
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Вийти з Uphold";
+
+/* Logged in status */
+"Logged in" = "Logged in";
+
+/* DashSpend */
+"Logged in as %@" = "Logged in as %@";
+
+/* DashSpend */
+"Logged in to DashSpend account" = "Logged in to DashSpend account";
 
 /* No comment provided by engineer. */
 "Login with Face ID" = "Увійти за допомогою Face ID";
@@ -1562,9 +1595,6 @@
 /* Usernames */
 "Not a valid URL" = "Недійсний URL";
 
-/* No comment provided by engineer. */
-"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "Не всі магазини приймають DASH напряму, але ви можете купити подарункову картку за допомогою Dash.";
-
 /* Fiat amount */
 "Not available" = "Недоступний";
 
@@ -1585,6 +1615,9 @@
 
 /* No comment provided by engineer. */
 "OK" = "OK";
+
+/* No comment provided by engineer. */
+"Ok" = "Ok";
 
 /* Voting */
 "Old to new" = "Від старого до нового";
@@ -1628,6 +1661,9 @@
 /* No comment provided by engineer. */
 "Owner Keys" = "Ключі власника";
 
+/* DashSpend */
+"Password" = "Password";
+
 /* Usernames */
 "Past link here" = "Past link here";
 
@@ -1657,9 +1693,6 @@
 
 /* No comment provided by engineer. */
 "Pay with Ease" = "Платіть з легкістю";
-
-/* No comment provided by engineer. */
-"Pay with the DASH Wallet." = "Платіть через DASH гаманець.";
 
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "Оплата";
@@ -1885,9 +1918,6 @@
 
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Фраза для відновлення повинна містити 12, 15, 18, 21 або 24 слова";
-
-/* No comment provided by engineer. */
-"Redeem your gift card online within seconds or at the cashier." = "Отримайте свою подарункову картку онлайн за лічені секунди або в касі.";
 
 /* Button title, Register (username) */
 "Register" = "Реєстрація";
@@ -2262,6 +2292,9 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Податкова категорія";
 
+/* Terms & conditions */
+"Terms & conditions" = "Terms & conditions";
+
 /* No comment provided by engineer. */
 "Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Tестові Dash не мають жодної цінності в реальному світі, але ви можете надсилати й отримувати їх разом з іншими користувачами DashPay Alpha.";
 
@@ -2291,6 +2324,9 @@
 
 /* Voting */
 "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter.";
+
+/* Explore */
+"The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps.";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "Вибране вами зображення буде анонімно завантажено в Imgur.";
@@ -2670,10 +2706,10 @@
 "We couldn’t withdraw from your CrowdNode account." = "Не вдалося зняти кошти з вашого облікового запису CrowdNode.";
 
 /* No comment provided by engineer. */
-"We have 2 types of merchants" = "У нас є 2 види продавців";
-
-/* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Виявлено, що під час міграції Dash Wallet стався збій. Повторне сканування блокчейну вирішить цю проблему або спробуйте ще раз. Повторне сканування бажано проводити з використанням Wi-Fi, і це займе до півгодини. Ваші кошти будуть доступні після завершення процесу синхронізації.";
+
+/* Explore */
+"We have two types of merchants" = "We have two types of merchants";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Ми оновились";
@@ -2777,6 +2813,9 @@
 
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "Ви можете ввести свій ключ у будь-якому з таких форматів: WIF/base58/base64/hex";
+
+/* Explore */
+"You can pay with Dash at the cashier." = "You can pay with Dash at the cashier.";
 
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "Ви можете переглянути детальну інформацію про свої депозити, зняття коштів і доходи.";
@@ -2918,6 +2957,9 @@
 
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "Ваша електронна пошта не зберігається ні в гаманці DashPay, ні на будь-яких серверах. Він використовується один раз, щоб отримати дані вашого облікового запису Gravatar, а потім відкидається.";
+
+/* Email is only used for OTP */
+"Your email is only used to send a one-time password." = "Your email is only used to send a one-time password.";
 
 /* No comment provided by engineer. */
 "Your invitation from %@ has been already claimed" = "Ваше запрошення від %@ уже отримано";
