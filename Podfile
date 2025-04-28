@@ -1,9 +1,11 @@
 inhibit_all_warnings!
 
 def common_pods
-  
-  pod 'DashSync', :path => '../DashSync/'
-#  pod 'DashSharedCore', :path => '../dash-shared-core-ferment/'
+
+  platform :ios, '14.0'
+
+  pod 'DashSync', :path => '../DashSync2/'
+  pod 'DashSharedCore', :path => '../dash-shared-core/'
   pod 'SQLite.swift', '~> 0.15.3'
   pod 'SQLiteMigrationManager.swift', '0.8.3'
   pod 'CloudInAppMessaging', '0.1.0'
@@ -24,16 +26,10 @@ def common_pods
 end
 
 target 'dashwallet' do
-  
-  platform :ios, '14.0'
-  
   common_pods
-  
 end
 
 target 'dashpay' do
-  platform :ios, '14.0'
-  
   common_pods
   pod 'TOCropViewController', '2.6.1'
 
@@ -49,7 +45,7 @@ end
 
 
 target 'TodayExtension' do
-  platform :ios, '13.0'
+  platform :ios, '14.0'
   
   pod 'DSDynamicOptions', '0.1.2'
 
