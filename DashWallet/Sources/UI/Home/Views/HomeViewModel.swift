@@ -387,7 +387,6 @@ class HomeViewModel: ObservableObject {
             }
         }
         
-        print("METADATA: resolved finalMetadata: \(String(describing: finalMetadata))")
         return finalMetadata
     }
 }
