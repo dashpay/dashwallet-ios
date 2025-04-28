@@ -105,7 +105,7 @@ NS_ASSUME_NONNULL_END
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
     DWUserProfileNavigationTitleView *titleView = [[DWUserProfileNavigationTitleView alloc] initWithFrame:CGRectZero];
-    [titleView updateWithBlockchainIdentity:self.model.item.blockchainIdentity];
+    [titleView updateWithIdentity:self.model.item.identity];
     CGSize titleSize = [titleView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
     titleView.frame = CGRectMake(0, 0, titleSize.width, titleSize.height);
     self.navigationItem.titleView = titleView;
@@ -176,7 +176,7 @@ NS_ASSUME_NONNULL_END
                                withReuseIdentifier:DWFilterHeaderView.dw_reuseIdentifier
                                       forIndexPath:indexPath];
         headerView.padding = FILTER_PADDING;
-        headerView.infoButton.hidden = (self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Friends);
+        headerView.infoButton.hidden = (self.model.friendshipStatus == DSIdentityFriendshipStatus_Friends);
         headerView.titleLabel.text = NSLocalizedString(@"Activity", nil);
         headerView.delegate = self;
         [headerView.filterButton setTitle:[self titleForFilterButton] forState:UIControlStateNormal];
@@ -331,8 +331,8 @@ NS_ASSUME_NONNULL_END
         return;
     }
 
-    const BOOL canPay = self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Incoming ||
-                        self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Friends;
+    const BOOL canPay = self.model.friendshipStatus == DSIdentityFriendshipStatus_Incoming ||
+                        self.model.friendshipStatus == DSIdentityFriendshipStatus_Friends;
     NSParameterAssert(canPay);
     if (canPay) {
         [self performPayToUser:self.model.item];
@@ -348,7 +348,7 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWUserProfileContactActionsCellDelegate
 
 - (void)userProfileContactActionsCell:(DWUserProfileContactActionsCell *)cell mainButtonAction:(UIButton *)sender {
-    const BOOL canAcceptRequest = self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_Incoming;
+    const BOOL canAcceptRequest = self.model.friendshipStatus == DSIdentityFriendshipStatus_Incoming;
     NSParameterAssert(canAcceptRequest);
     if (canAcceptRequest) {
         [self.model acceptContactRequest];
@@ -393,7 +393,7 @@ NS_ASSUME_NONNULL_END
 #pragma mark - Private
 
 - (void)sendContactRequest {
-    const BOOL canSendRequest = self.model.friendshipStatus == DSBlockchainIdentityFriendshipStatus_None;
+    const BOOL canSendRequest = self.model.friendshipStatus == DSIdentityFriendshipStatus_None;
     if (canSendRequest) {
         [self.model sendContactRequest:^(BOOL success) {
             if (!success) {

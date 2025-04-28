@@ -142,6 +142,7 @@ class ContactsPlaceholderViewController: ActionButtonViewController {
     
     private func showMixDashDialog(_ sender: UIView) {
         let swiftUIView = MixDashDialog(
+            purposeText: NSLocalizedString("your username", comment: "Usernames"),
             positiveAction: {
                 let controller = CoinJoinLevelsViewController.controller(isFullScreen: true)
                 self.present(controller, animated: true, completion: nil)
@@ -176,6 +177,7 @@ class ContactsPlaceholderViewController: ActionButtonViewController {
     private func navigateToCreateUsername() {
         let controller = CreateUsernameViewController(dashPayModel: self.dashPayModel,
                                                      invitationURL: nil,
+                                                       assetLockTx: nil,
                                                    definedUsername: nil)
         controller.modalPresentationStyle = .fullScreen
         self.present(controller, animated: true, completion: nil)

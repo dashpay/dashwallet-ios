@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWDPUpdateProfileModel ()
 
 @property (nonatomic, assign) DWDPUpdateProfileModelState state;
-@property (readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
+@property (readonly, nonatomic, strong) DSIdentity *identity;
 
 @end
 
@@ -36,23 +36,23 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWDPUpdateProfileModel
 
-- (DSBlockchainIdentity *)blockchainIdentity {
+- (DSIdentity *)identity {
     if (MOCK_DASHPAY) {
         NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
         
         if (username != nil) {
-            return [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
+            return [[DWEnvironment sharedInstance].currentWallet createIdentityForUsername:username];
         }
     }
     
-    return [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+    return [DWEnvironment sharedInstance].currentWallet.defaultIdentity;
 }
 
 - (void)updateWithDisplayName:(NSString *)rawDisplayName
                       aboutMe:(NSString *)rawAboutMe
               avatarURLString:(nullable NSString *)avatarURLString {
     NSString *displayName = rawDisplayName;
-    if ([rawDisplayName isEqualToString:self.blockchainIdentity.currentDashpayUsername]) {
+    if ([rawDisplayName isEqualToString:self.identity.currentDashpayUsername]) {
         displayName = @"";
     }
     displayName = [displayName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_END
         avatar = nil;
     }
 
-    [self.blockchainIdentity updateDashpayProfileWithDisplayName:displayName
+    [self.identity updateDashpayProfileWithDisplayName:displayName
                                                    publicMessage:aboutMe
                                                  avatarURLString:avatar];
 
@@ -75,7 +75,7 @@ NS_ASSUME_NONNULL_END
     self.state = DWDPUpdateProfileModelState_Loading;
 
     __weak typeof(self) weakSelf = self;
-    [self.blockchainIdentity signAndPublishProfileWithCompletion:^(BOOL success, BOOL cancelled, NSError *_Nonnull error) {
+    [self.identity signAndPublishProfileWithCompletion:^(BOOL success, BOOL cancelled, NSError *_Nonnull error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

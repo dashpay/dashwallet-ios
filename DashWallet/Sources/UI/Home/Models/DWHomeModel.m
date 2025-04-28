@@ -51,9 +51,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) SyncingActivityMonitor *syncMonitor;
 
 @property (readonly, nonatomic, strong) NSArray<DSTransaction *> *dataSource;
-@property (null_resettable, nonatomic, strong) NSArray<DSTransaction *> *receivedDataSource;
-@property (null_resettable, nonatomic, strong) NSArray<DSTransaction *> *sentDataSource;
-@property (null_resettable, nonatomic, strong) NSArray<DSTransaction *> *rewardsDataSource;
+@property (nonatomic, strong) NSArray<DSTransaction *> *receivedDataSource;
+@property (nonatomic, strong) NSArray<DSTransaction *> *sentDataSource;
+@property (nonatomic, strong) NSArray<DSTransaction *> *rewardsDataSource;
 
 @property (nonatomic, assign) BOOL upgradedExtendedKeys;
 
@@ -66,6 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize dashPayModel = _dashPayModel;
 @synthesize updatesObserver = _updatesObserver;
 @synthesize allDataSource = _allDataSource;
+@synthesize allowedToShowReclassifyYourTransactions = _allowedToShowReclassifyYourTransactions;
 
 
 - (instancetype)init {
@@ -140,10 +141,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setUpdatesObserver:(nullable id<DWHomeModelUpdatesObserver>)updatesObserver {
     _updatesObserver = updatesObserver;
-
-    if (self.allDataSource) {
-        [updatesObserver homeModel:self didUpdate:self.dataSource shouldAnimate:NO];
-    }
 }
 
 - (BOOL)isWalletEmpty {
@@ -223,7 +220,6 @@ NS_ASSUME_NONNULL_BEGIN
                                                               if (needsCheck) {
                                                                   // Show backup reminder shortcut
                                                                   [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
-                                                                  [self.updatesObserver homeModelWantToReloadShortcuts:self];
                                                               }
                                                           }];
                        }];
@@ -280,7 +276,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)handleDeeplink:(NSURL *)url
-            completion:(void (^)(BOOL success,
+            completion:(void (^)(DSTransaction *_Nullable assetLockTx,
                                  NSString *_Nullable errorTitle,
                                  NSString *_Nullable errorMessage))completion {
     [self.dashPayModel verifyDeeplink:url completion:completion];
@@ -290,8 +286,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Notifications
 
 - (void)reachabilityDidChangeNotification {
-    [self.updatesObserver homeModelWantToReloadShortcuts:self];
-
     if (self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable &&
         [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
 
@@ -300,7 +294,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)walletBalanceDidChangeNotification {
-    [self updateBalance];
+    [self.receiveModel updateReceivingInfo];
 }
 
 - (void)applicationWillEnterForegroundNotification {
@@ -308,15 +302,15 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)fiatCurrencyDidChangeNotification {
-    [self updateBalance];
-    [self.updatesObserver homeModelDidChangeInnerModels:self];
+    [self.receiveModel updateReceivingInfo];
+    ;
 }
 
 - (void)chainWalletsDidChangeNotification:(NSNotification *)notification {
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DSChain *notificationChain = notification.userInfo[DSChainManagerNotificationChainKey];
     if (notificationChain && notificationChain == chain) {
-        [self updateBalance];
+        [self.receiveModel updateReceivingInfo];
     }
 }
 
@@ -335,11 +329,6 @@ NS_ASSUME_NONNULL_BEGIN
         // START_SYNC_ENTRY_POINT
         [[DWEnvironment sharedInstance].currentChainManager startSync];
     }
-}
-
-- (void)updateBalance {
-    [self.receiveModel updateReceivingInfo];
-    [self.updatesObserver homeModelWantToReloadShortcuts:self];
 }
 
 #pragma mark SyncingActivityMonitorObserver
@@ -363,7 +352,7 @@ NS_ASSUME_NONNULL_BEGIN
         [self checkCrowdNodeState];
     }
 
-    [self updateBalance];
+    [self.receiveModel updateReceivingInfo];
 }
 
 @end

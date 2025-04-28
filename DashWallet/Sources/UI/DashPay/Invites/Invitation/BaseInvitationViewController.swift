@@ -44,7 +44,7 @@ class InvitationSourceItem: NSObject, UIActivityItemSource
     internal var sendButton: ActionButton!
     private var bottomConstraint:  NSLayoutConstraint!
     
-    internal let invitation: DSBlockchainInvitation
+    internal let invitation: DSInvitation
     internal let fullLink: String
     internal var invitationURL: URL!
     
@@ -53,7 +53,7 @@ class InvitationSourceItem: NSObject, UIActivityItemSource
         .lightContent
     }
     
-    @objc public init(with invitation: DSBlockchainInvitation, fullLink: String, index: Int = 0) {
+    @objc public init(with invitation: DSInvitation, fullLink: String, index: Int = 0) {
         self.invitation = invitation
         self.fullLink = fullLink
         self.index = index
@@ -61,16 +61,16 @@ class InvitationSourceItem: NSObject, UIActivityItemSource
         super.init(nibName: nil, bundle: nil)
         
         let wallet = DWEnvironment.sharedInstance().currentWallet
-        let myBlockchainIdentity: DSBlockchainIdentity
+        let myIdentity: DSIdentity
         
         if (MOCK_DASHPAY.boolValue) {
             let username = DWGlobalOptions.sharedInstance().dashpayUsername
-            myBlockchainIdentity = wallet.createBlockchainIdentity(forUsername: username)
+            myIdentity = wallet.createIdentity(forUsername: username)
         } else {
-            myBlockchainIdentity = wallet.defaultBlockchainIdentity!
+            myIdentity = wallet.defaultIdentity!
         }
         
-        DWInvitationLinkBuilder.dynamicLink(from: fullLink, myBlockchainIdentity: myBlockchainIdentity, completion: { [weak self] url in
+        DWInvitationLinkBuilder.dynamicLink(from: fullLink, myIdentity: myIdentity, completion: { [weak self] url in
             self?.invitationURL = url ?? URL(string: fullLink)
         })
     }
@@ -106,8 +106,8 @@ class InvitationSourceItem: NSObject, UIActivityItemSource
     }
     
     @objc func profileAction() {
-        let item = DWDPUserObject(blockchainIdentity: invitation.identity)
-        let payModel = DWPayModel()
+//        let item = DWDPUserObject(identity: invitation.identity)
+//        let payModel = DWPayModel()
         //TODO: DashPay
 //        let dataProvider = DWTransactionListDataProviderStub()
 //
@@ -227,15 +227,15 @@ class InvitationSourceItem: NSObject, UIActivityItemSource
         configureHierarchy()
         
         let wallet = DWEnvironment.sharedInstance().currentWallet
-        let myBlockchainIdentity: DSBlockchainIdentity
+        let myIdentity: DSIdentity
         
         if (MOCK_DASHPAY.boolValue) {
-            myBlockchainIdentity = wallet.createBlockchainIdentity(forUsername: DWGlobalOptions.sharedInstance().dashpayUsername)
+            myIdentity = wallet.createIdentity(forUsername: DWGlobalOptions.sharedInstance().dashpayUsername)
         } else {
-            myBlockchainIdentity = wallet.defaultBlockchainIdentity!
+            myIdentity = wallet.defaultIdentity!
         }
         
-        topView.update(with: myBlockchainIdentity, invitation: invitation)
+        topView.update(with: myIdentity, invitation: invitation)
         
         self.actionsView?.tagTextField.text = invitation.tag;
         

@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, assign) BOOL hasDataToShow;
 @property (nullable, readonly, nonatomic, strong) NSFetchedResultsController *frc;
 @property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> txDataProvider;
-@property (readonly, nonatomic, strong) DSBlockchainIdentity *friendBlockchainIdentity;
+@property (readonly, nonatomic, strong) DSIdentity *friendIdentity;
 
 @property (readonly, nonatomic, strong) NSMutableArray<id<DWDPBasicItem>> *items;
 @property (nullable, readonly, nonatomic, strong) DWDPAcceptedRequestNotificationObject *incomingNotification;
@@ -48,19 +48,19 @@ NS_ASSUME_NONNULL_END
                txDataProvider:(id<DWTransactionListDataProviderProtocol>)txDataProvider
             friendToMeRequest:(nullable DSFriendRequestEntity *)friendToMe
             meToFriendRequest:(nullable DSFriendRequestEntity *)meToFriend
-     friendBlockchainIdentity:(DSBlockchainIdentity *)friendBlockchainIdentity
-         myBlockchainIdentity:(DSBlockchainIdentity *)myBlockchainIdentity {
+               friendIdentity:(DSIdentity *)friendIdentity
+                   myIdentity:(DSIdentity *)myIdentity {
     self = [super init];
     if (self) {
         _frc = frc;
         _txDataProvider = txDataProvider;
-        _friendBlockchainIdentity = friendBlockchainIdentity;
+        _friendIdentity = friendIdentity;
         _items = [NSMutableArray array];
         _hasDataToShow = (frc != nil) || (friendToMe != nil) || (meToFriend != nil);
 
         if (MOCK_DASHPAY) {
             _hasDataToShow = YES;
-            _incomingNotification = [[DWDPAcceptedRequestNotificationObject alloc] initWithBlockchainIdentity:friendBlockchainIdentity];
+            _incomingNotification = [[DWDPAcceptedRequestNotificationObject alloc] initWithIdentity:friendIdentity];
         }
 
         BOOL isFriendInitiated;
@@ -77,7 +77,7 @@ NS_ASSUME_NONNULL_END
         if (friendToMe) {
             _incomingNotification =
                 [[DWDPAcceptedRequestNotificationObject alloc] initWithFriendRequestEntity:friendToMe
-                                                                        blockchainIdentity:friendBlockchainIdentity
+                                                                                  identity:friendIdentity
                                                                          isInitiatedByThem:isFriendInitiated];
         }
         else if (!MOCK_DASHPAY) {
@@ -88,7 +88,7 @@ NS_ASSUME_NONNULL_END
         if (meToFriend) {
             _outgoingNotification =
                 [[DWDPOutgoingRequestNotificationObject alloc] initWithFriendRequestEntity:meToFriend
-                                                                        blockchainIdentity:friendBlockchainIdentity
+                                                                                  identity:friendIdentity
                                                                            isInitiatedByMe:!isFriendInitiated];
         }
         else {
@@ -168,7 +168,7 @@ NS_ASSUME_NONNULL_END
 
             DWDPTxObject *txObject = [[DWDPTxObject alloc] initWithTransaction:transaction
                                                                   dataProvider:self.txDataProvider
-                                                            blockchainIdentity:self.friendBlockchainIdentity];
+                                                                      identity:self.friendIdentity];
 
             if (self.incomingNotificationAdded == NO && [self isNotificationNewerThan:self.incomingNotification txDate:txDate]) {
                 [self.items addObject:self.incomingNotification];

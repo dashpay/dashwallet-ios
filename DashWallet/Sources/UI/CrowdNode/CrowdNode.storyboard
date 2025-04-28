@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_0" orientation="portrait" appearance="dark"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22684"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -286,7 +286,7 @@
                                 <rect key="frame" x="28" y="412" width="342" height="93"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Ucn-4T-QzA">
-                                        <rect key="frame" x="0.0" y="-2.6666666666666679" width="34" height="39.666666666666671"/>
+                                        <rect key="frame" x="0.0" y="-3.3333333333333357" width="34" height="39.333333333333336"/>
                                         <color key="tintColor" name="DashBlueColor"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="34" id="MX1-hY-2o7"/>
@@ -853,7 +853,7 @@
                                                             <edgeInsets key="layoutMargins" top="0.0" left="8" bottom="0.0" right="0.0"/>
                                                         </stackView>
                                                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VKL-Yb-Nfk">
-                                                            <rect key="frame" x="262.33333333333331" y="0.0" width="51.666666666666686" height="25"/>
+                                                            <rect key="frame" x="259.33333333333331" y="0.0" width="54.666666666666686" height="25"/>
                                                             <color key="backgroundColor" name="BackgroundColor"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="height" constant="25" id="AKf-Ip-lzv"/>
@@ -869,7 +869,7 @@
                                                                 <attributedString key="attributedTitle">
                                                                     <fragment content="Verify">
                                                                         <attributes>
-                                                                            <font key="NSFont" metaFont="system" size="11"/>
+                                                                            <font key="NSFont" metaFont="smallSystem"/>
                                                                         </attributes>
                                                                     </fragment>
                                                                 </attributedString>
@@ -2491,8 +2491,8 @@
         <image name="image.crowdnode.warning" width="22" height="22"/>
         <image name="info.circle" catalog="system" width="128" height="123"/>
         <image name="qrcode" catalog="system" width="128" height="114"/>
-        <image name="square.and.arrow.up" catalog="system" width="108" height="128"/>
-        <image name="wand.and.stars" catalog="system" width="128" height="115"/>
+        <image name="square.and.arrow.up" catalog="system" width="110" height="128"/>
+        <image name="wand.and.stars" catalog="system" width="128" height="112"/>
         <image name="xmark" catalog="system" width="128" height="113"/>
         <namedColor name="BackgroundColor">
             <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -2534,10 +2534,10 @@
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemCyanColor">
-            <color red="0.1960784314" green="0.67843137249999996" blue="0.90196078430000004" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.19607843137254902" green="0.67843137254901964" blue="0.90196078431372551" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGrayColor">
-            <color red="0.5568627451" green="0.5568627451" blue="0.57647058819999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.55686274509803924" green="0.55686274509803924" blue="0.57647058823529407" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

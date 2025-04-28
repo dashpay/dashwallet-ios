@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const DPCropParameterName;
 
-@class DSBlockchainIdentity;
+@class DSIdentity;
 
 typedef NS_ENUM(NSUInteger, DWDPAvatarBackgroundMode) {
     DWDPAvatarBackgroundMode_DashBlue,
@@ -31,7 +31,7 @@ typedef NS_ENUM(NSUInteger, DWDPAvatarBackgroundMode) {
 @interface DWDPAvatarView : UIView
 
 @property (nonatomic, assign) DWDPAvatarBackgroundMode backgroundMode;
-@property (nullable, nonatomic, copy) DSBlockchainIdentity *blockchainIdentity;
+@property (nullable, nonatomic, copy) DSIdentity *identity;
 @property (nonatomic, assign, getter=isSmall) BOOL small;
 
 - (void)setAsDashPlaceholder;

@@ -21,7 +21,7 @@
 #import "DWBaseContactsModel.h"
 #import "DWDPNewIncomingRequestItem.h"
 #import "DWSearchStateViewController.h"
-#import "DWSendInviteFlowController.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

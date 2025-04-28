@@ -108,24 +108,29 @@ extension TxDetailModel {
                                                 font: font)
     }
 
-    var explorerURL: URL? {
-        if DWEnvironment.sharedInstance().currentChain.isTestnet() {
-            return URL(string: "https://insight.testnet.networks.dash.org:3002/insight/tx/\(transactionId)")
-        } else if DWEnvironment.sharedInstance().currentChain.isMainnet() {
-            return URL(string: "https://insight.dash.org/insight/tx/\(transactionId)")
+    func getExplorerURL(explorer: BlockExplorer) -> URL? {
+        switch explorer {
+        case .insight:
+            if DWEnvironment.sharedInstance().currentChain.isTestnet() {
+                return URL(string: "https://insight.testnet.networks.dash.org:3002/insight/tx/\(transactionId)")
+            } else if DWEnvironment.sharedInstance().currentChain.isMainnet() {
+                return URL(string: "https://insight.dash.org/insight/tx/\(transactionId)")
+            }
+        case .blockchair:
+            return URL(string: "https://blockchair.com/dash/transaction/\(transactionId)")
         }
-
-        return nil;
+        
+        return nil
     }
 }
 
 extension TxDetailModel {
     var hasSourceUser: Bool {
-        !transaction.tx.sourceBlockchainIdentities.isEmpty
+        !transaction.tx.sourceIdentities.isEmpty
     }
 
     var hasDestinationUser: Bool {
-        !transaction.tx.destinationBlockchainIdentities.isEmpty
+        !transaction.tx.destinationIdentities.isEmpty
     }
 
     var hasFee: Bool {
@@ -204,31 +209,31 @@ extension TxDetailModel {
     }
 
     private func sourceUsers(with title: String, font: UIFont) -> [DWTitleDetailItem] {
-        guard let blockchainIdentity = transaction.tx.sourceBlockchainIdentities.first else {
+        guard let identity = transaction.tx.sourceIdentities.first else {
             return []
         }
 
         #if DASHPAY
-        let user = DWDPUserObject(blockchainIdentity: blockchainIdentity)
+        let user = DWDPUserObject(identity: identity)
         let model = DWTitleDetailCellModel(title: title, userItem: user, copyableData: nil)
         return [model]
-        #endif
-
+        #else
         return []
+        #endif
     }
 
     private func destinationUsers(with title: String, font: UIFont) -> [DWTitleDetailItem] {
-        guard let blockchainIdentity = transaction.tx.destinationBlockchainIdentities.first else {
+        guard let identity = transaction.tx.destinationIdentities.first else {
             return []
         }
 
         #if DASHPAY
-        let user = DWDPUserObject(blockchainIdentity: blockchainIdentity)
+        let user = DWDPUserObject(identity: identity)
         let model = DWTitleDetailCellModel(title: title, userItem: user, copyableData: nil)
         return [model]
-        #endif
-
+        #else
         return []
+        #endif
     }
 
 

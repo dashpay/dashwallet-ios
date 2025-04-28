@@ -22,14 +22,20 @@ struct CreateUsernameUIState {
     var allowedCharactersRule: UsernameValidationRuleResult
     var costRule: UsernameValidationRuleResult
     var usernameBlockedRule: UsernameValidationRuleResult
+    var hasInvite: Bool
+    var isInvitationMixed: Bool
+    var isInvitationForContested: Bool
     var requiredDash: UInt64
     var canContinue: Bool
     
-    init(lengthRule: UsernameValidationRuleResult, allowedCharactersRule: UsernameValidationRuleResult, costRule: UsernameValidationRuleResult, usernameBlockedRule: UsernameValidationRuleResult, requiredDash: UInt64, canContinue: Bool) {
+    init(lengthRule: UsernameValidationRuleResult, allowedCharactersRule: UsernameValidationRuleResult, costRule: UsernameValidationRuleResult, usernameBlockedRule: UsernameValidationRuleResult, hasInvite: Bool, isInvitationMixed: Bool, isInvitationForContested: Bool, requiredDash: UInt64, canContinue: Bool) {
         self.lengthRule = lengthRule
         self.allowedCharactersRule = allowedCharactersRule
         self.costRule = costRule
         self.usernameBlockedRule = usernameBlockedRule
+        self.hasInvite = hasInvite
+        self.isInvitationMixed = isInvitationMixed
+        self.isInvitationForContested = isInvitationForContested
         self.requiredDash = requiredDash
         self.canContinue = canContinue
     }
@@ -39,6 +45,9 @@ struct CreateUsernameUIState {
         self.allowedCharactersRule = .empty
         self.costRule = .hidden
         self.usernameBlockedRule = .hidden
+        self.hasInvite = false
+        self.isInvitationMixed = false
+        self.isInvitationForContested = false
         self.requiredDash = DWDP_MIN_BALANCE_TO_CREATE_USERNAME
         self.canContinue = false
     }
@@ -159,35 +168,100 @@ class CreateUsernameViewModel: ObservableObject {
         }
     }
     
+    func checkAssetLockTx(_ tx: DSTransaction) {
+        Task {
+            uiState.isInvitationMixed = await isInvitationMixed(assetLockTx: tx)
+            uiState.isInvitationForContested = await invitationAmount(assetLockTx: tx) >= DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
+            uiState.hasInvite = true
+            uiState.costRule = .hidden
+        }
+    }
+    
+    private func isInvitationMixed(assetLockTx: DSTransaction) async -> Bool {
+        guard let coreNetworkService = DWEnvironment.sharedInstance().currentChain.chainManager?.dapiClient.dapiCoreNetworkService else { return false }
+        let inputTxes: [Data: DSTransaction] = [:]
+        
+        return assetLockTx.inputs.map { input in
+            var hash = input.inputHash
+            let hashData = Data(bytes: &hash.u8, count: 32)
+            let tx = inputTxes[hashData] //?? (await coreNetworkService.getTransactionWithHash(input.inputHash)) // TODO MOCK_DASHPAY: implement async version
+            guard let tx = tx else { return UInt64(0) }
+            
+            let output = tx.outputs[Int(input.index)]
+            return output.amount
+        }.allSatisfy { amount in
+            DSCoinJoinManager.isDenominatedAmount(amount)
+        }
+    }
+    
+    private func invitationAmount(assetLockTx: DSTransaction) async -> UInt64 {
+// TODO MOCK_DASHPAY: adapt for DashSync
+        
+//        return inviteAssetLockTx.value?.let {
+//          it.assetLockPayload.creditOutputs?.find { transactionOutput ->
+//              if (ScriptPattern.isP2PKH(transactionOutput.scriptPubKey)) {
+//                  it.assetLockPublicKey.pubKeyHash.contentEquals(
+//                      ScriptPattern.extractHashFromP2PKH(transactionOutput.scriptPubKey)
+//                  )
+//              } else {
+//                  false
+//              }
+//          }?.value ?: Coin.ZERO
+//      } ?: Coin.ZERO
+        
+        return DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+    }
+    
     private func validateUsername(username: String) {
         let username = username.trimmingCharacters(in: .whitespacesAndNewlines)
         
         guard !username.isEmpty else {
+            let hasInvite = uiState.hasInvite
+            let isMixed = uiState.isInvitationMixed
+            let isContested = uiState.isInvitationForContested
+            
             uiState = CreateUsernameUIState()
+            uiState.hasInvite = hasInvite
+            uiState.isInvitationMixed = isMixed
+            uiState.isInvitationForContested = isContested
             return
         }
         
-        let isContested = false // TODO MOCK_DASHPAY
-        let lengthValid = username.count >= DW_MIN_USERNAME_LENGTH && username.count <= DW_MAX_USERNAME_LENGTH
-        let hasIllegalCharacters = username.rangeOfCharacter(from: illegalChars) != nil
-        let startsOrEndsWithHyphen = username.first == "-" || username.last == "-"
+        let isContestable = isUsernameContestable(username: username)
+        let isContested = isContestable // TODO: MOCK_DASHPAY
+        let lengthValid = isLengthValid(username: username)
+        let allowedCharactersRuleValid = allowedCharactersRuleValid(username: username)
         let requiredCost = isContested ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME : DWDP_MIN_BALANCE_TO_CREATE_USERNAME
         let balance = DWEnvironment.sharedInstance().currentWallet.balance
         let hasEnoughBalance = balance >= requiredCost
-        let canContinue = lengthValid && !hasIllegalCharacters && !startsOrEndsWithHyphen && hasEnoughBalance
+        let isAffordable = uiState.isInvitationForContested || (uiState.hasInvite && !isContested) || hasEnoughBalance
+        let criteriaValid = if uiState.hasInvite && !uiState.isInvitationForContested {
+            lengthValid || allowedCharactersRuleValid
+        } else {
+            lengthValid && allowedCharactersRuleValid
+        }
+        let canContinue = criteriaValid && isAffordable
+        let costRule: UsernameValidationRuleResult = uiState.hasInvite ? .hidden : (hasEnoughBalance ? .valid : .invalid)
         
         uiState = CreateUsernameUIState(
             lengthRule: lengthValid ? .valid : .invalid,
-            allowedCharactersRule: hasIllegalCharacters || startsOrEndsWithHyphen ? .invalid : .valid,
-            costRule: hasEnoughBalance ? .valid : .invalid,
-            usernameBlockedRule: canContinue ? .loading : .hidden,
+            allowedCharactersRule: allowedCharactersRuleValid ? .valid : .invalid,
+            costRule: costRule,
+            usernameBlockedRule: canContinue && isContested ? .loading : .hidden,
+            hasInvite: uiState.hasInvite,
+            isInvitationMixed: uiState.isInvitationMixed,
+            isInvitationForContested: uiState.isInvitationForContested,
             requiredDash: requiredCost,
             canContinue: false
         )
         
         if canContinue {
-            Task {
-                await checkIfBlocked(username: username)
+            if isContested {
+                Task {
+                    await checkIfBlocked(username: username)
+                }
+            } else {
+                uiState.canContinue = true
             }
         }
     }
@@ -221,5 +295,30 @@ class CreateUsernameViewModel: ObservableObject {
         self.balance = balance.dashAmount.formattedDashAmountWithoutCurrencySymbol
         hasMinimumRequiredBalance = balance >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
         hasRecommendedBalance = balance >= DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
+    }
+
+    private func isUsernameContestable(username: String) -> Bool {
+        let regex = try! NSRegularExpression(pattern: "^[a-zA-Z01-]{3,19}$")
+        let range = NSRange(location: 0, length: username.utf16.count)
+        
+        return regex.firstMatch(in: username, options: [], range: range) != nil
+    }
+    
+    private func isLengthValid(username: String) -> Bool {
+        let minLength = uiState.hasInvite && !uiState.isInvitationForContested ? DW_MIN_USERNAME_NONCONTESTED_LENGTH : DW_MIN_USERNAME_LENGTH
+
+        return username.count >= minLength && username.count <= DW_MAX_USERNAME_LENGTH
+    }
+
+    private func allowedCharactersRuleValid(username: String) -> Bool {
+        let hasIllegalCharacters = username.rangeOfCharacter(from: illegalChars) != nil
+        let containsDigits = username.rangeOfCharacter(from: .decimalDigits) != nil
+        let startsOrEndsWithHyphen = username.first == "-" || username.last == "-"
+
+        if uiState.hasInvite && !uiState.isInvitationForContested {
+            return !hasIllegalCharacters && containsDigits && !startsOrEndsWithHyphen
+        }
+
+        return !hasIllegalCharacters && !startsOrEndsWithHyphen
     }
 }

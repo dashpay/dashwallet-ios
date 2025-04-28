@@ -44,35 +44,35 @@ NS_ASSUME_NONNULL_END
 
 @implementation DWInvitationHistoryItemImpl
 
-@synthesize blockchainInvitation = _blockchainInvitation;
+@synthesize invitation = _invitation;
 @synthesize tag = _tag;
 
-- (instancetype)initWithInvitation:(DSBlockchainInvitation *)invitation index:(NSUInteger)index {
+- (instancetype)initWithInvitation:(DSInvitation *)invitation index:(NSUInteger)index {
     self = [super init];
     if (self) {
-        _blockchainInvitation = invitation;
+        _invitation = invitation;
         _index = index;
     }
     return self;
 }
 
 - (NSString *)tag {
-    return _blockchainInvitation.tag;
+    return _invitation.tag;
 }
 
 - (BOOL)isRegistered {
-    return self.blockchainInvitation.identity.isRegistered;
+    return self.invitation.identity.isRegistered;
 }
 
 - (NSString *)title {
-    NSString *name = _blockchainInvitation.name;
+    NSString *name = _invitation.name;
     NSString *tag = [self.tag isEqualToString:@""] ? nil : self.tag;
 
     return (tag ? tag : (name ? name : [NSString stringWithFormat:NSLocalizedString(@"Invitation %ld", @"Invitation #3"), self.index]));
 }
 
 - (NSString *)subtitle {
-    DSTransaction *transaction = self.blockchainInvitation.identity.registrationCreditFundingTransaction;
+    DSTransaction *transaction = self.invitation.identity.registrationAssetLockTransaction;
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     NSTimeInterval now = [chain timestampForBlockHeight:TX_UNCONFIRMED];
     NSTimeInterval txTime = (transaction.timestamp > 1) ? transaction.timestamp : now;
@@ -93,8 +93,8 @@ NS_ASSUME_NONNULL_END
         _filter = DWInvitationHistoryFilter_All;
 
         [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(blockchainIdentityDidUpdateNotification)
-                                                     name:DSBlockchainIdentityDidUpdateNotification
+                                                 selector:@selector(identityDidUpdateNotification)
+                                                     name:DSIdentityDidUpdateNotification
                                                    object:nil];
 
         [self reload];
@@ -116,24 +116,27 @@ NS_ASSUME_NONNULL_END
         [NSSortDescriptor sortDescriptorWithKey:@"identity.registrationCreditFundingTransaction.timestamp"
                                       ascending:NO],
     ];
-    NSArray<DSBlockchainInvitation *> *invitations = [wallet.blockchainInvitations.allValues
+    NSArray<DSInvitation *> *invitations = [wallet.invitations.allValues
         sortedArrayUsingDescriptors:descriptors];
     NSUInteger index = invitations.count;
     NSMutableArray<DWInvitationHistoryItemImpl *> *mutableItems = [NSMutableArray arrayWithCapacity:invitations.count];
-    for (DSBlockchainInvitation *invitation in invitations) {
+    for (DSInvitation *invitation in invitations) {
         BOOL shouldInclude = NO;
         switch (self.filter) {
             case DWInvitationHistoryFilter_All:
                 shouldInclude = YES;
                 break;
-            case DWInvitationHistoryFilter_Pending:
-                shouldInclude = invitation.identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Unknown ||
-                                invitation.identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_NotRegistered;
+            case DWInvitationHistoryFilter_Pending: {
+                DIdentityRegistrationStatus *status = invitation.identity.registrationStatus;
+                shouldInclude = dash_spv_platform_identity_model_IdentityRegistrationStatus_is_unknown(status) || dash_spv_platform_identity_model_IdentityRegistrationStatus_is_not_registered(status);
                 break;
-            case DWInvitationHistoryFilter_Claimed:
-                shouldInclude = invitation.identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Registering ||
-                                invitation.identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Registered;
+            }
+            case DWInvitationHistoryFilter_Claimed: {
+                DIdentityRegistrationStatus *status = invitation.identity.registrationStatus;
+                shouldInclude = dash_spv_platform_identity_model_IdentityRegistrationStatus_is_registering(status) || dash_spv_platform_identity_model_IdentityRegistrationStatus_is_registered(status);
+                shouldInclude = dash_spv_platform_identity_model_IdentityRegistrationStatus_is_unknown(status) || dash_spv_platform_identity_model_IdentityRegistrationStatus_is_not_registered(status);
                 break;
+            }
         }
 
         if (shouldInclude) {
@@ -150,7 +153,7 @@ NS_ASSUME_NONNULL_END
     [self.delegate invitationHistoryModelDidUpdate:self];
 }
 
-- (void)blockchainIdentityDidUpdateNotification {
+- (void)identityDidUpdateNotification {
     [self reload];
 }
 

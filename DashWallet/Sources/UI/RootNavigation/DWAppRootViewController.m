@@ -92,7 +92,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
     // Defer URL until unlocked.
     // This also prevents an issue with too fast unlocking via Face ID.
-    BOOL isLocked = [self.model shouldShowLockScreen] || self.lockController;
+    BOOL shouldShowLockScreen = [self.model shouldShowLockScreen];
+    BOOL isLocked = shouldShowLockScreen || self.lockController;
     if (isLocked && self.deferredDeeplinkToProcess == nil) {
         self.deferredDeeplinkToProcess = url;
         return;
@@ -441,7 +442,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (MainTabbarController *)mainController {
     if (_mainController == nil) {
         id<DWHomeProtocol> homeModel = self.model.homeModel;
-        Class klass = [self.class mainControllerClass];
         MainTabbarController *controller = [[MainTabbarController alloc] initWithHomeModel:self.model.homeModel];
         controller.wipeDelegate = self;
         controller.isDemoMode = self.demoMode;

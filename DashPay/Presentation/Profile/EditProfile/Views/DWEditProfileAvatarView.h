@@ -20,7 +20,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWEditProfileAvatarView;
-@class DSBlockchainIdentity;
+@class DSIdentity;
 
 @protocol DWEditProfileAvatarViewDelegate <NSObject>
 
@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWEditProfileAvatarViewDelegate> delegate;
 
-- (void)setImageWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+- (void)setImageWithIdentity:(DSIdentity *)identity;
 
 @end
 

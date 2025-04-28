@@ -83,9 +83,9 @@ NS_ASSUME_NONNULL_END
     return CGSizeMake(UIViewNoIntrinsicMetric, VIEW_HEIGHT);
 }
 
-- (void)updateWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-    self.titleLabel.text = blockchainIdentity.currentDashpayUsername;
-    self.avatarView.blockchainIdentity = blockchainIdentity;
+- (void)updateWithIdentity:(DSIdentity *)identity {
+    self.titleLabel.text = identity.currentDashpayUsername;
+    self.avatarView.identity = identity;
 
     [self setScrollingPercent:0.0];
 }

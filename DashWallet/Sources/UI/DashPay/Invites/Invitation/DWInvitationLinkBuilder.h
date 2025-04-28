@@ -19,13 +19,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity;
+@class DSIdentity;
 
 @interface DWInvitationLinkBuilder : NSObject
 
 + (void)dynamicLinkFrom:(NSString *)linkString
-    myBlockchainIdentity:(DSBlockchainIdentity *)myBlockchainIdentity
-              completion:(void (^)(NSURL *_Nullable url))completion;
+             myIdentity:(DSIdentity *)myIdentity
+             completion:(void (^)(NSURL *_Nullable url))completion;
 
 @end
 

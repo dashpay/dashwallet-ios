@@ -21,11 +21,11 @@
 
 @implementation DWIncomingFetchedDataSource
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
-                                 inContext:(NSManagedObjectContext *)context {
+- (instancetype)initWithIdentity:(DSIdentity *)identity
+                       inContext:(NSManagedObjectContext *)context {
     self = [super initWithContext:context];
     if (self) {
-        _blockchainIdentity = blockchainIdentity;
+        _identity = identity;
     }
     return self;
 }
@@ -38,14 +38,14 @@
     return [NSPredicate
         predicateWithFormat:
             @"destinationContact == %@ && (SUBQUERY(destinationContact.outgoingRequests, $friendRequest, $friendRequest.destinationContact == SELF.sourceContact).@count == 0)",
-            [self.blockchainIdentity matchingDashpayUserInContext:self.context]];
+            [self.identity matchingDashpayUserInContext:self.context]];
 }
 
 - (NSPredicate *)invertedPredicate {
     return [NSPredicate
         predicateWithFormat:
             @"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count > 0)",
-            [self.blockchainIdentity matchingDashpayUserInContext:self.context]];
+            [self.identity matchingDashpayUserInContext:self.context]];
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {

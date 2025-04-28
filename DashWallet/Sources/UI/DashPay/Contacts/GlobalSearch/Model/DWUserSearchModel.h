@@ -22,7 +22,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWUserSearchModel;
-@class DSBlockchainIdentity;
+@class DSIdentity;
 
 @protocol DWUserSearchModelDelegate <NSObject>
 
@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (id<DWDPBasicUserItem>)itemAtIndex:(NSInteger)index;
 
-- (BOOL)canOpenBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+- (BOOL)canOpenIdentity:(DSIdentity *)identity;
 
 - (void)acceptContactRequest:(id<DWDPBasicUserItem>)item;
 - (void)declineContactRequest:(id<DWDPBasicUserItem>)item;

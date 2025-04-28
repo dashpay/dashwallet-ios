@@ -16,11 +16,12 @@
 //
 
 #import "DSBlock.h"
+#import "DSChain+Checkpoint.h"
 #import "DSChain+DashWallet.h"
+#import "DSChain+Params.h"
 #import "DSChainsManager.h"
 #import "DSCheckpoint.h"
 #import "DSMasternodeManager.h"
-#import "DSSimplifiedMasternodeEntry.h"
 #import "NSDate+Utils.h"
 #import <objc/runtime.h>
 
@@ -78,8 +79,8 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
     NSTimeInterval timeElapsedSinceCheckpoint = [NSDate timeIntervalSince1970] - checkpoint.timestamp;
     uint64_t estimatedBlockHeight = (timeElapsedSinceCheckpoint / BLOCK_TARGET_SPACING) + checkpoint.height;
 
-    DSMasternodeManager *masternodeManager = self.chainManager.masternodeManager;
-    DSMasternodeList *list = [masternodeManager masternodeListForBlockHash:checkpoint.blockHash];
+    //    DSMasternodeManager *masternodeManager = self.chainManager.masternodeManager;
+    //    dashcore_sml_masternode_list_MasternodeList *list = [masternodeManager masternodeListForBlockHash:checkpoint.blockHash];
 
     return [self calculateMasternodeAPYWithHeight:estimatedBlockHeight
                              prevDifficultyTarget:checkpoint.target
@@ -90,16 +91,16 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
     if (self.lastTerminalBlock.target == 0)
         return nil;
 
-    DSMasternodeList *masternodeList = self.chainManager.masternodeManager.currentMasternodeList;
-
-    if (masternodeList.validMasternodeCount == 0)
+    DMasternodeList *masternodeList = self.chainManager.masternodeManager.currentMasternodeList;
+    if (dash_spv_masternode_processor_processing_processor_MasternodeProcessor_valid_masternodes_count(self.sharedProcessorObj) == 0) {
+        DMasternodeListDtor(masternodeList);
         return nil;
-
+    }
     NSInteger virtualMNCount = 0;
-
-    for (DSSimplifiedMasternodeEntry *entry in masternodeList.simplifiedMasternodeEntries) {
-        if (entry.isValid) {
-            if (entry.type == 1) { // HPMN
+    for (int i = 0; i < masternodeList->masternodes->count; i++) {
+        DMasternodeEntry *entry = masternodeList->masternodes->values[i];
+        if (entry->masternode_list_entry->is_valid) {
+            if (entry->masternode_list_entry->mn_type->tag == 1) { // HPMN
                 virtualMNCount += 4;
             }
             else {
@@ -107,7 +108,7 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
             }
         }
     }
-
+    DMasternodeListDtor(masternodeList);
     return [self calculateMasternodeAPYWithHeight:self.lastTerminalBlock.height
                              prevDifficultyTarget:self.lastTerminalBlock.target
                                   masternodeCount:virtualMNCount];
@@ -259,78 +260,78 @@ static void *LaserUnicornPropertyKey = &LaserUnicornPropertyKey;
 }
 
 - (uint64_t)increaseBlockHeight {
-    switch (self.chainType.tag) {
-        case ChainType_MainNet:
+    switch (self.chainType->tag) {
+        case dash_spv_crypto_network_chain_type_ChainType_MainNet:
             return 158000;
-        case ChainType_TestNet:
+        case dash_spv_crypto_network_chain_type_ChainType_TestNet:
             return 4030;
-        case ChainType_DevNet:
+        case dash_spv_crypto_network_chain_type_ChainType_DevNet:
             return 4030;
     }
 }
 
 - (uint64_t)period {
-    switch (self.chainType.tag) {
-        case ChainType_MainNet:
+    switch (self.chainType->tag) {
+        case dash_spv_crypto_network_chain_type_ChainType_MainNet:
             return 576 * 30;
-        case ChainType_TestNet:
+        case dash_spv_crypto_network_chain_type_ChainType_TestNet:
             return 10;
-        case ChainType_DevNet:
+        case dash_spv_crypto_network_chain_type_ChainType_DevNet:
             return 10;
     }
 }
 
 - (uint64_t)brrHeight {
-    switch (self.chainType.tag) {
-        case ChainType_MainNet:
+    switch (self.chainType->tag) {
+        case dash_spv_crypto_network_chain_type_ChainType_MainNet:
             return 1374912;
-        case ChainType_TestNet:
+        case dash_spv_crypto_network_chain_type_ChainType_TestNet:
             return 387500;
-        case ChainType_DevNet:
+        case dash_spv_crypto_network_chain_type_ChainType_DevNet:
             return 300;
     }
 }
 
 - (uint64_t)superblockCycle {
-    switch (self.chainType.tag) {
-        case ChainType_MainNet:
+    switch (self.chainType->tag) {
+        case dash_spv_crypto_network_chain_type_ChainType_MainNet:
             return 16616;
-        case ChainType_TestNet:
+        case dash_spv_crypto_network_chain_type_ChainType_TestNet:
             return 24;
-        case ChainType_DevNet:
+        case dash_spv_crypto_network_chain_type_ChainType_DevNet:
             return 24;
     }
 }
 
 - (uint64_t)superblockStartBlock {
-    switch (self.chainType.tag) {
-        case ChainType_MainNet:
+    switch (self.chainType->tag) {
+        case dash_spv_crypto_network_chain_type_ChainType_MainNet:
             return 614820;
-        case ChainType_TestNet:
+        case dash_spv_crypto_network_chain_type_ChainType_TestNet:
             return 4200;
-        case ChainType_DevNet:
+        case dash_spv_crypto_network_chain_type_ChainType_DevNet:
             return 24;
     }
 }
 
 - (uint64_t)subsidyDecreaseBlockCount {
-    switch (self.chainType.tag) {
-        case ChainType_MainNet:
+    switch (self.chainType->tag) {
+        case dash_spv_crypto_network_chain_type_ChainType_MainNet:
             return 210240;
-        case ChainType_TestNet:
+        case dash_spv_crypto_network_chain_type_ChainType_TestNet:
             return 210240;
-        case ChainType_DevNet:
+        case dash_spv_crypto_network_chain_type_ChainType_DevNet:
             return 210240;
     }
 }
 
 - (uint64_t)budgetPaymentsStartBlock {
-    switch (self.chainType.tag) {
-        case ChainType_MainNet:
+    switch (self.chainType->tag) {
+        case dash_spv_crypto_network_chain_type_ChainType_MainNet:
             return 328008;
-        case ChainType_TestNet:
+        case dash_spv_crypto_network_chain_type_ChainType_TestNet:
             return 4100;
-        case ChainType_DevNet:
+        case dash_spv_crypto_network_chain_type_ChainType_DevNet:
             return 4100;
     }
 }

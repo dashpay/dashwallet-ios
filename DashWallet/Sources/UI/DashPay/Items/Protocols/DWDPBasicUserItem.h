@@ -18,13 +18,13 @@
 #import <Foundation/Foundation.h>
 
 #import "DWDPBasicItem.h"
-#import "DWDPBlockchainIdentityBackedItem.h"
+#import "DWDPIdentityBackedItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSFriendRequestEntity;
 
-@protocol DWDPBasicUserItem <DWDPBasicItem, DWDPBlockchainIdentityBackedItem>
+@protocol DWDPBasicUserItem <DWDPBasicItem, DWDPIdentityBackedItem>
 
 - (nullable DSFriendRequestEntity *)friendRequestToPay;
 

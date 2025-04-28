@@ -34,6 +34,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWReceiveModelStub
 
+@synthesize delegate;
+#if DASHPAY
+@synthesize username;
+#endif
+
 - (instancetype)initWithAmount:(uint64_t)amount {
     self = [super initWithAmount:amount];
     if (self) {
@@ -66,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSString *paymentAddress = @"XrUv3aniSvZEKx2VoFe5fTqFfYL5JYFkbg";
 
-        DSChain *chain = nil;
+        DSChain *chain = DSChain.testnet;
         DSPaymentRequest *paymentRequest = [DSPaymentRequest requestWithString:paymentAddress onChain:chain];
 
         const uint64_t amount = self.amount;
@@ -96,6 +101,16 @@ NS_ASSUME_NONNULL_BEGIN
         });
     });
 }
+
+#if DASHPAY
+- (void)copyUsernameToPasteboard {
+    NSString *username = self.paymentRequest.dashpayUsername;
+    if (!username)
+        return;
+    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+    pasteboard.string = username;
+}
+#endif
 
 @end
 

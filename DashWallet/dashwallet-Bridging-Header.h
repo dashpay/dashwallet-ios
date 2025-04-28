@@ -52,6 +52,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWHomeProtocol.h"
 #import "UIDevice+DashWallet.h"
 #import "DWCenteredTableView.h"
+#import "DWHomeModelStub.h"
 
 //MARK: Backup Wallet
 #import "DWPreviewSeedPhraseViewController.h"
@@ -116,11 +117,9 @@ static const bool _SNAPSHOT = 0;
 #import "DWRootContactsViewController.h"
 #import "DWNotificationsProvider.h"
 #import "DWContactsViewController.h"
-#import "DWCreateUsernameViewController.h"
 #import "DWConfirmUsernameViewController.h"
 #import "DWUsernamePendingViewController.h"
 #import "DWRegistrationCompletedViewController.h"
-#import "DWUsernameHeaderView.h"
 #import "DWContainerViewController.h"
 #import "DWDashPaySetupModel.h"
 #import "UIViewController+DWDisplayError.h"
@@ -131,6 +130,12 @@ static const bool _SNAPSHOT = 0;
 #import "DWGetStartedContentViewController.h"
 #import "DWDashPayContactsUpdater.h"
 #import "DWDPUpdateProfileModel.h"
+#import "DWInvitationHistoryModel.h"
+#import "DWInvitationTableViewCell.h"
+#import "DWSendInviteFirstStepViewController.h"
+#import "DWHistoryFilterViewController.h"
+#import "DWHistoryHeaderView.h"
+#import "DWFullScreenModalControllerViewController.h"
 #endif
 
 //MARK: CrowdNode
@@ -142,12 +147,12 @@ static const bool _SNAPSHOT = 0;
 #import "DSChain+DashWallet.h"
 
 //MARK: Tabbar
-#import "DWMainMenuViewController.h"
 #import "DWWipeDelegate.h"
 #import "DWPayModel.h"
 #import "DWHomeViewControllerDelegate.h"
-#import "DWMainMenuViewControllerDelegate.h"
 #import "DWExploreTestnetViewController.h"
+#import "DWSecurityMenuViewController.h"
+#import "DWUserProfileModalQRViewController.h"
 
 //MARK: Home
 #import "DWHomeModel.h"

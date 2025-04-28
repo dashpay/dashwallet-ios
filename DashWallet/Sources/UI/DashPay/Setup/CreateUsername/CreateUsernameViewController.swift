@@ -20,12 +20,15 @@ import SwiftUI
 
 class CreateUsernameViewController: UIViewController {
     private let dashPayModel: DWDashPayProtocol
+    private let invitationURL: URL?
+    private let assetLockTx: DSTransaction?
     @objc var completionHandler: ((Bool) -> ())?
     
     @objc
-    init(dashPayModel: DWDashPayProtocol, invitationURL: URL?, definedUsername: String?) {
-        // TODO: invites
+    init(dashPayModel: DWDashPayProtocol, invitationURL: URL?, assetLockTx: DSTransaction?, definedUsername: String?) {
         self.dashPayModel = dashPayModel
+        self.invitationURL = invitationURL
+        self.assetLockTx = assetLockTx
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -38,7 +41,7 @@ class CreateUsernameViewController: UIViewController {
         
         self.view.backgroundColor = UIColor.dw_secondaryBackground()
 
-        let content = CreateUsernameView(dashPayModel: dashPayModel) { dialog in
+        let content = CreateUsernameView(assetLockTx: self.assetLockTx, dashPayModel: dashPayModel) { dialog in
             self.showModalDialog(dialog: dialog)
         } dismissDialog: {
             self.dismiss(animated: true)
@@ -62,12 +65,14 @@ class CreateUsernameViewController: UIViewController {
 }
 
 struct CreateUsernameView: View {
+    let assetLockTx: DSTransaction?
     @State var dashPayModel: DWDashPayProtocol
     @StateObject private var viewModel = CreateUsernameViewModel()
     @FocusState private var isTextInputFocused: Bool
     @State private var showVotingInfo: Bool = false
     @State private var showVerifyIdentity: Bool = false
     @State private var confirmUsernameRequest: Bool = false
+    @State private var showContestedInfo: Bool = false
     @State private var inProgress: Bool = false
     @State private var prove: URL? = nil
     var showVerifyConfirmation: (any View) -> Void
@@ -82,22 +87,43 @@ struct CreateUsernameView: View {
                 .padding(.top, 12)
             Text(NSLocalizedString("Please note that you will not be able to change it in future", comment: "Usernames"))
                 .foregroundColor(.primaryText)
-                .font(.system(size: 14))
+                .font(.body2)
             TextInput(label: "Username", text: $viewModel.username)
                 .padding(.top, 20)
                 .focused($isTextInputFocused)
-                
+            
+            if viewModel.uiState.hasInvite && !viewModel.uiState.isInvitationForContested {
+                HStack(spacing: 0) {
+                    Text(NSLocalizedString("The username must meet ", comment: "Usernames"))
+                    Text(NSLocalizedString("one", comment: "Usernames"))
+                        .fontWeight(.bold)
+                    Text(NSLocalizedString(" of these criteria", comment: "Usernames"))
+                }
+                .foregroundColor(.primaryText)
+                .font(.body2)
+                .padding(.top, 12)
+            } else {
+                Text(NSLocalizedString("The username must meet these criteria", comment: "Usernames"))
+                    .foregroundColor(.primaryText)
+                    .font(.body2)
+                    .padding(.top, 12)
+            }
+            
             if viewModel.uiState.lengthRule != .hidden {
                 ValidationCheck(
                     validationResult: viewModel.uiState.lengthRule,
-                    text: NSLocalizedString("Between 3 and 23 characters", comment: "Usernames")
+                    text: viewModel.uiState.hasInvite && !viewModel.uiState.isInvitationForContested ?
+                        NSLocalizedString("Between 20 and 23 characters", comment: "Usernames") :
+                        NSLocalizedString("Between 3 and 23 characters", comment: "Usernames")
                 ).padding(.top, 20)
             }
             
             if viewModel.uiState.allowedCharactersRule != .hidden {
                 ValidationCheck(
                     validationResult: viewModel.uiState.allowedCharactersRule,
-                    text: NSLocalizedString("Letter, numbers and hyphens only", comment: "Usernames")
+                    text: viewModel.uiState.hasInvite && !viewModel.uiState.isInvitationForContested ?
+                        NSLocalizedString("Contains numbers 2-9", comment: "Usernames") :
+                        NSLocalizedString("Letter, numbers and hyphens only", comment: "Usernames")
                 ).padding(.top, 20)
             }
             
@@ -132,6 +158,50 @@ struct CreateUsernameView: View {
             
             Spacer()
             
+            if viewModel.uiState.hasInvite {
+                if !viewModel.uiState.isInvitationMixed {
+                    HStack(alignment: .top) {
+                        Image("invite.unmixed")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                        
+                        Text(NSLocalizedString("The invitation was created with un-mixed funds", comment: "Invites"))
+                            .foregroundColor(.primaryText)
+                            .font(.body2)
+                    }
+                    .padding(.bottom, 16)
+                }
+                
+                if !viewModel.uiState.isInvitationForContested {
+                    HStack(alignment: .top) {
+                        Image("invite.noncontested")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                        
+                        Text(NSLocalizedString("You can only create a non-contested username using this invitaiton", comment: "Invites"))
+                            .foregroundColor(.primaryText)
+                            .font(.body2)
+
+                        Spacer()
+                        
+                        Button {
+                            showContestedInfo = true
+                        } label: {
+                            Image(systemName: "info.circle.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .padding(8)
+                                .foregroundColor(.gray300)
+                        }
+                        .frame(width: 30, height: 30)
+                    }
+                    .frame(minHeight: 36)
+                    .padding(.bottom, 20)
+                }
+            }
+            
             DashButton(
                 text: NSLocalizedString("Continue", comment: ""),
                 isEnabled: viewModel.uiState.canContinue,
@@ -157,6 +227,10 @@ struct CreateUsernameView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
             isTextInputFocused = true
+            
+            if let tx = assetLockTx {
+                viewModel.checkAssetLockTx(tx)
+            }
         }
         .sheet(isPresented: $showVotingInfo) {
             let dialog = BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
@@ -197,23 +271,54 @@ struct CreateUsernameView: View {
             }
         }
         .sheet(isPresented: $confirmUsernameRequest) {
-            let dialog = ConfirmSpendDialog(username: viewModel.username, amount: Int64(viewModel.uiState.requiredDash)) {
-                confirmUsernameRequest = false
-            } onConfirm: {
-                confirmUsernameRequest = false
-                Task {
-                    inProgress = true
-                    let result = await viewModel.submitUsernameRequest(withProve: self.prove)
-                    inProgress = false
-                    
-                    if result {
-                        finish()
+            let dialog = ConfirmSpendDialog(
+                amount: Int64(viewModel.uiState.requiredDash),
+                title: NSLocalizedString("Confirm", comment: ""),
+                onCancel: {
+                    confirmUsernameRequest = false
+                },
+                onConfirm: {
+                    confirmUsernameRequest = false
+                    Task {
+                        inProgress = true
+                        let result = await viewModel.submitUsernameRequest(withProve: self.prove)
+                        inProgress = false
+                        
+                        if result {
+                            finish()
+                        }
                     }
+                },
+                username: viewModel.username,
+                detailsText: NSLocalizedString("Please note that the username can NOT be changed once it is registered.", comment: "Usernames"),
+                requiresAcceptance: true
+            )
+            
+            if #available(iOS 16.0, *) {
+                dialog.presentationDetents([.height(340)])
+            } else {
+                dialog
+            }
+        }
+        .sheet(isPresented: $showContestedInfo) {
+            let dialog = BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
+                TextIntro(
+                    buttonLabel: NSLocalizedString("OK", comment: ""),
+                    action: {
+                        showContestedInfo = false
+                    },
+                    inProgress: .constant(false)
+                ) {
+                    FeatureTopText(
+                        title: NSLocalizedString("What are contested and non-contested usernames?", comment: "Usernames"),
+                        text: NSLocalizedString("There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are longer than 20 characters and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period.", comment: "Usernames"),
+                        alignment: .leading
+                    )
                 }
             }
             
             if #available(iOS 16.0, *) {
-                dialog.presentationDetents([.height(340)])
+                dialog.presentationDetents([.height(500)])
             } else {
                 dialog
             }

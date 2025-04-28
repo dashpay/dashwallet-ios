@@ -27,8 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nullable, strong, nonatomic) DSFriendRequestEntity *friendRequestEntity;
 
 - (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
-                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity NS_DESIGNATED_INITIALIZER;
+                                   identity:(DSIdentity *)identity NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithIdentity:(DSIdentity *)identity NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

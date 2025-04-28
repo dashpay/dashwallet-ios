@@ -22,9 +22,9 @@ import Combine
 class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     private var cancellableBag = Set<AnyCancellable>()
     var model: DWHomeProtocol!
+    var viewModel: HomeViewModel!
     private var homeView: HomeView!
     weak var delegate: (DWHomeViewControllerDelegate & DWWipeDelegate)?
-    private let viewModel = HomeViewModel.shared
 
     #if DASHPAY
     var isBackButtonHidden: Bool = false
@@ -50,7 +50,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
     override func loadView() {
         let frame = UIScreen.main.bounds
-        homeView = HomeView(frame: frame, delegate: self)
+        homeView = HomeView(frame: frame, delegate: self, viewModel: viewModel)
         homeView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         homeView.shortcutsDelegate = self
         view = homeView
@@ -89,15 +89,9 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         model.checkCrowdNodeState()
     }
 
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-
-        homeView.hideBalanceIfNeeded()
-    }
-
     #if DASHPAY
     func handleDeeplink(_ url: URL, definedUsername: String?) {
-        if model.dashPayModel.blockchainIdentity != nil {
+        if model.dashPayModel.identity != nil {
             let title = NSLocalizedString("Username already found", comment: "")
             let message = NSLocalizedString("You cannot claim this invite since you already have a Dash username", comment: "")
             let alert = DPAlertViewController(icon: UIImage(named: "icon_invitation_error")!, title: title, description: message)
@@ -114,11 +108,11 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             return
         }
 
-        model.handleDeeplink(url) { [weak self] success, errorTitle, errorMessage in
+        model.handleDeeplink(url) { [weak self] assetLockTx, errorTitle, errorMessage in
             guard let self = self else { return }
 
-            if success {
-                self.showCreateUsername(withInvitation: url, definedUsername: definedUsername)
+            if assetLockTx != nil {
+                self.showCreateUsername(withInvitation: url, assetLockTx: assetLockTx, definedUsername: definedUsername)
             } else {
                 let alert = DPAlertViewController(icon: UIImage(named: "icon_invitation_error")!, title: errorTitle ?? "", description: errorMessage ?? "")
                 self.present(alert, animated: true, completion: nil)
@@ -166,7 +160,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     private func setupView() {
         let logoImage: UIImage?
         let logoHeight: CGFloat
-        if DWEnvironment.sharedInstance().currentChain.chainType.tag == ChainType_TestNet {
+        if DWEnvironment.sharedInstance().currentChain.isTestnet() {
             logoImage = UIImage(named: "dash_logo_testnet")
             logoHeight = 40.0
         } else {
@@ -316,8 +310,8 @@ extension HomeViewController: HomeViewDelegate {
     }
     
     #if DASHPAY
-    func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt) {
-        avatarView.blockchainIdentity = identity
+    func homeView(_ homeView: HomeView, didUpdateProfile identity: DSIdentity?, unreadNotifications: UInt) {
+        avatarView.identity = identity
         let hasIdentity = identity != nil
         let hasNotifications = unreadNotifications > 0
         avatarView.isHidden = !hasIdentity
@@ -338,10 +332,10 @@ extension HomeViewController: TxReclassifyTransactionsInfoViewControllerDelegate
     }
 }
 
-// MARK: - DWShortcutsActionDelegate
+// MARK: - ShortcutsActionDelegate
 
 extension HomeViewController: ShortcutsActionDelegate {
-    func shortcutsView(_ view: UIView, didSelectAction action: ShortcutAction, sender: UIView) {
+    func shortcutsView(didSelectAction action: ShortcutAction, sender: UIView?) {
         performAction(for: action, sender: sender)
     }
 }

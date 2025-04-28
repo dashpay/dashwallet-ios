@@ -17,7 +17,7 @@
 
 #import "DWCurrentUserProfileView.h"
 
-#import "DSBlockchainIdentity+DWDisplayTitleSubtitle.h"
+#import "DSIdentity+DWDisplayTitleSubtitle.h"
 #import "DWButton.h"
 #import "DWUIKit.h"
 
@@ -113,13 +113,13 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
-- (void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-    _blockchainIdentity = blockchainIdentity;
+- (void)setIdentity:(DSIdentity *)identity {
+    _identity = identity;
 
     self.avatarImageView.image = [UIImage imageNamed:@"dp_current_user_placeholder"];
     
     __weak typeof(self) weakSelf = self;
-    [self.avatarImageView dw_setAvatarWithURLString:blockchainIdentity.avatarPath
+    [self.avatarImageView dw_setAvatarWithURLString:identity.avatarPath
                                          completion:^(UIImage *_Nullable image) {
                                              __strong typeof(weakSelf) strongSelf = weakSelf;
                                              if (!strongSelf) {
@@ -154,7 +154,7 @@ NS_ASSUME_NONNULL_END
 #pragma mark - Private
 
 - (void)reloadAttributedData {
-    self.infoLabel.attributedText = [self.blockchainIdentity dw_asTitleSubtitle];
+    self.infoLabel.attributedText = [self.identity dw_asTitleSubtitle];
 }
 
 @end

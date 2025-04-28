@@ -21,11 +21,11 @@
 
 @implementation DWDPEstablishedContactObject
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (instancetype)initWithIdentity:(DSIdentity *)identity {
     self = [super init];
     if (self) {
-        self.blockchainIdentity = blockchainIdentity;
-        self.username = blockchainIdentity.currentDashpayUsername;
+        self.identity = identity;
+        self.username = identity.currentDashpayUsername;
     }
     return self;
 }

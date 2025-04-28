@@ -24,24 +24,24 @@
 
 @implementation DWDPUserObject
 
-@synthesize blockchainIdentity = _blockchainIdentity;
+@synthesize identity = _identity;
 @synthesize username = _username;
 @synthesize displayName = _displayName;
 
-- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+- (instancetype)initWithIdentity:(DSIdentity *)identity {
     self = [super init];
     if (self) {
-        _blockchainIdentity = blockchainIdentity;
-        _username = blockchainIdentity.currentDashpayUsername;
+        _identity = identity;
+        _username = identity.currentDashpayUsername;
     }
     return self;
 }
 
 - (instancetype)initWithFriendRequestEntity:(DSFriendRequestEntity *)friendRequestEntity
-                         blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+                                   identity:(DSIdentity *)identity {
     self = [super init];
     if (self) {
-        _blockchainIdentity = blockchainIdentity;
+        _identity = identity;
         _friendRequestEntity = friendRequestEntity;
     }
     return self;
@@ -49,8 +49,8 @@
 
 - (NSString *)displayName {
     if (_displayName == nil) {
-        BOOL hasDisplayName = _blockchainIdentity.displayName.length > 0;
-        _displayName = hasDisplayName ? _blockchainIdentity.displayName : nil;
+        BOOL hasDisplayName = _identity.displayName.length > 0;
+        _displayName = hasDisplayName ? _identity.displayName : nil;
     }
 
     return _displayName;
@@ -76,11 +76,11 @@
 
 - (DSFriendRequestEntity *)friendRequestToPay {
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    DSIdentity *myIdentity = wallet.defaultIdentity;
     NSPredicate *predicate = [NSPredicate predicateWithFormat:
                                               @"destinationContact.associatedBlockchainIdentity.uniqueID == %@",
-                                              uint256_data(myBlockchainIdentity.uniqueID)];
-    DSFriendRequestEntity *friendRequest = [[self.blockchainIdentity.matchingDashpayUserInViewContext.outgoingRequests filteredSetUsingPredicate:predicate] anyObject];
+                                              uint256_data(myIdentity.uniqueID)];
+    DSFriendRequestEntity *friendRequest = [[self.identity.matchingDashpayUserInViewContext.outgoingRequests filteredSetUsingPredicate:predicate] anyObject];
     return friendRequest;
 }
 

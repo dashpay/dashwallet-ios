@@ -29,13 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWTransactionListDataProviderProtocol;
 
 @protocol DWHomeModelUpdatesObserver <NSObject>
-
-- (void)homeModel:(id<DWHomeProtocol>)model
-        didUpdate:(NSArray<DSTransaction *> *)dataSource
-    shouldAnimate:(BOOL)shouldAnimate;
-
 - (void)homeModelDidChangeInnerModels:(id<DWHomeProtocol>)model;
-- (void)homeModelWantToReloadShortcuts:(id<DWHomeProtocol>)model;
 @end
 
 @protocol DWHomeProtocol <DWDashPayReadyProtocol>
@@ -69,7 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if DASHPAY
 - (void)handleDeeplink:(NSURL *)url
-            completion:(void (^)(BOOL success,
+            completion:(void (^)(DSTransaction *_Nullable assetLockTx,
                                  NSString *_Nullable errorTitle,
                                  NSString *_Nullable errorMessage))completion;
 #endif
