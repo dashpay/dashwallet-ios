@@ -49,6 +49,7 @@ class BaseTxDetailsViewController: BaseViewController {
         tableView.preservesSuperviewLayoutMargins = true
         tableView.registerNib(for: TxDetailHeaderCell.self)
         tableView.registerNib(for: TxDetailTaxCategoryCell.self)
+        tableView.registerNib(for: TxDetailPrivateNoteCell.self)
         tableView.registerNib(for: TxDetailInfoCell.self)
         tableView.registerNib(for: TxDetailActionCell.self)
         tableView.backgroundColor = UIColor.dw_secondaryBackground()
@@ -112,6 +113,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
         case header
         case info
         case taxCategory
+        case privateNote
         case explorer
     }
 
@@ -129,6 +131,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
         case networkFee(DWTitleDetailItem)
         case date(DWTitleDetailItem)
         case taxCategory(DWTitleDetailItem)
+        case privateNote(DWTitleDetailItem)
         case explorer
 
         func hash(into hasher: inout Hasher) {
@@ -142,7 +145,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
                         hasher.combine(value)
                     }
                 }
-            case .date(let item), .taxCategory(let item), .networkFee(let item):
+            case .date(let item), .taxCategory(let item), .networkFee(let item), .privateNote(let item):
                 hasher.combine(item.title?.hashValue)
                 if let value = item.plainDetail ?? item.attributedDetail?.string {
                     hasher.combine(value.hashValue)
@@ -150,6 +153,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
 
             case .explorer:
                 hasher.combine("Explorer")
+                
             }
         }
     }
@@ -157,8 +161,10 @@ class TXDetailViewController: BaseTxDetailsViewController {
     @objc
     init(model: TxDetailModel) {
         self.model = model
-
         super.init(nibName: nil, bundle: nil)
+        self.model.metadataUpdated = {
+            self.reloadDataSource()
+        }
     }
 
     required init?(coder: NSCoder) {
@@ -208,6 +214,17 @@ extension TXDetailViewController {
         hostingController.setDetent(240)
         present(hostingController, animated: true, completion: nil)
     }
+    
+    private func editNote() {
+        #if DASHPAY
+        let swiftUIView = BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
+            PrivateMemoScreen(txId: self.model.transaction.txHashData, initialValue: self.model.metadataPrivateNote)
+        }
+        
+        let hostingController = UIHostingController(rootView: swiftUIView)
+        present(hostingController, animated: true, completion: nil)
+        #endif
+    }
 }
 
 extension TXDetailViewController {
@@ -244,6 +261,11 @@ extension TXDetailViewController {
                     cell.update(with: item)
                     return cell
 
+                case .privateNote:
+                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailPrivateNoteCell.reuseIdentifier, for: indexPath) as! TxDetailPrivateNoteCell
+                    cell.update(with: item)
+                    return cell
+
                 case .explorer:
                     let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailActionCell.reuseIdentifier,
                                                              for: indexPath) as! TxDetailActionCell
@@ -257,9 +279,10 @@ extension TXDetailViewController {
         let detailFont = UIFont.preferredFont(forTextStyle: .caption1)
         let date = model.date
         let taxCategory = model.taxCategory
+        let privateNote = model.privateNote
 
         currentSnapshot = NSDiffableDataSourceSnapshot<Section, Item>()
-        currentSnapshot.appendSections([.header, .info, .taxCategory, .explorer])
+        currentSnapshot.appendSections([.header, .info, .taxCategory, .privateNote, .explorer])
         currentSnapshot.appendItems([.header], toSection: .header)
 
         switch model.direction {
@@ -287,6 +310,9 @@ extension TXDetailViewController {
 
         currentSnapshot.appendItems([.date(date)], toSection: .info)
         currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
+#if DASHPAY
+        currentSnapshot.appendItems([.privateNote(privateNote)], toSection: .privateNote)
+#endif
         currentSnapshot.appendItems([.explorer], toSection: .explorer)
         dataSource.apply(currentSnapshot, animatingDifferences: false)
         dataSource.defaultRowAnimation = .none
@@ -304,8 +330,9 @@ extension TXDetailViewController {
         switch section {
         case .taxCategory:
             model.toggleTaxCategoryOnCurrentTransaction()
-            reloadDataSource()
             break
+        case .privateNote:
+            editNote()
         case .explorer:
             viewInBlockExplorer()
         default:

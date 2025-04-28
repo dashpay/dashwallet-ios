@@ -148,6 +148,55 @@ class TxDetailTaxCategoryCell: TxDetailTitleDetailsCell {
     }
 }
 
+// MARK: - TxDetailPrivateNoteCell
+
+class TxDetailPrivateNoteCell: TxDetailTitleDetailsCell {
+    @IBOutlet var addNoteLabel: UILabel!
+    @IBOutlet var noteLabel: UILabel!
+    
+    @IBOutlet private var noteTopConstraint: NSLayoutConstraint!
+    @IBOutlet private var noteBottomConstraint: NSLayoutConstraint!
+    
+    private var fixedHeightConstraint: NSLayoutConstraint?
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+
+        fixedHeightConstraint = contentView.heightAnchor.constraint(equalToConstant: 52)
+        fixedHeightConstraint?.isActive = true
+        noteTopConstraint.constant = 0
+        noteBottomConstraint.constant = 0
+        noteLabel.isHidden = true
+    }
+    
+    override func update(with item: TXDetailViewController.Item) {
+        switch item {
+        case .privateNote(let item):
+            let note = item.plainDetail ?? ""
+            titleLabel.text = item.title
+            addNoteLabel.text = note.isEmpty ? NSLocalizedString("Add Note", comment: "Private Note") : NSLocalizedString("Edit Note", comment: "Private Note")
+            noteLabel.text = note
+            
+            if note.isEmpty {
+                noteLabel.isHidden = true
+                noteTopConstraint.constant = 0
+                noteBottomConstraint.constant = 0
+                fixedHeightConstraint?.isActive = true
+            } else {
+                noteLabel.isHidden = false
+                noteTopConstraint.constant = 16
+                noteBottomConstraint.constant = 16
+                fixedHeightConstraint?.isActive = false
+            }
+            
+            setNeedsLayout()
+            layoutIfNeeded()
+        default:
+            break
+        }
+    }
+}
+
 // MARK: - TxDetailTitleDetailsCell
 
 class TxDetailTitleDetailsCell: TxDetailTitleCell {

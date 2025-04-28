@@ -19,7 +19,7 @@ import Foundation
 import SQLite
 
 
-extension TxUserInfoTaxCategory {
+extension TxMetadataTaxCategory {
     var stringValue: String {
         switch self {
         case .unknown:
@@ -36,7 +36,7 @@ extension TxUserInfoTaxCategory {
     }
 
 
-    var nextTaxCategory: TxUserInfoTaxCategory {
+    var nextTaxCategory: TxMetadataTaxCategory {
         switch self {
         case .unknown:
             return .unknown
@@ -52,27 +52,40 @@ extension TxUserInfoTaxCategory {
     }
 }
 
-// MARK: - TxUserInfo
+// MARK: - TransactionMetadata
 
-struct TxUserInfo {
+struct TransactionMetadata {
     var txHash: Data
-    var taxCategory: TxUserInfoTaxCategory = .unknown
-
+    var taxCategory: TxMetadataTaxCategory = .unknown
+    
     var rate: Int?
     var rateCurrency: String?
     var rateMaximumFractionDigits: Int?
+    
+    var timestamp: Int64?
+    var memo: String?
+    var service: String?
+    var customIconId: Data?
+    
+    init(txHash: Data) {
+        self.txHash = txHash
+    }
 
-    init(txHash: Data, taxCategory: TxUserInfoTaxCategory) {
+    init(txHash: Data, taxCategory: TxMetadataTaxCategory) {
         self.txHash = txHash
         self.taxCategory = taxCategory
     }
 
     init(row: Row) {
-        txHash = row[TxUserInfo.txHashColumn]
-        taxCategory = TxUserInfoTaxCategory(rawValue: row[TxUserInfo.txCategoryColumn]) ?? .unknown
-        rate = row[TxUserInfo.txRateColumn]
-        rateCurrency = row[TxUserInfo.txRateCurrencyCodeColumn]
-        rateMaximumFractionDigits = row[TxUserInfo.txRateMaximumFractionDigitsColumn]
+        txHash = row[TransactionMetadata.txHashColumn]
+        taxCategory = TxMetadataTaxCategory(rawValue: row[TransactionMetadata.txCategoryColumn]) ?? .unknown
+        rate = row[TransactionMetadata.txRateColumn]
+        rateCurrency = row[TransactionMetadata.txRateCurrencyCodeColumn]
+        rateMaximumFractionDigits = row[TransactionMetadata.txRateMaximumFractionDigitsColumn]
+        timestamp = row[TransactionMetadata.timestamp]
+        memo = row[TransactionMetadata.memo]
+        service = row[TransactionMetadata.service]
+        customIconId = row[TransactionMetadata.customIconId]
     }
 
     mutating func update(rate: Int, currency: String, maximumFractionDigits: Int) {
@@ -82,7 +95,7 @@ struct TxUserInfo {
     }
 }
 
-extension TxUserInfo {
+extension TransactionMetadata {
     func taxCategoryString() -> String {
         taxCategory.stringValue
     }
@@ -108,19 +121,23 @@ extension TxUserInfo {
     }
 }
 
-extension TxUserInfo {
+extension TransactionMetadata {
     static var table: Table { Table("tx_userinfo") }
     static var txCategoryColumn: SQLite.Expression<Int> { Expression<Int>("taxCategory") }
     static var txHashColumn: SQLite.Expression<Data> { Expression<Data>("txHash") }
     static var txRateColumn: SQLite.Expression<Int?> { .init("rate") }
     static var txRateCurrencyCodeColumn: SQLite.Expression<String?> { .init("rateCurrencyCode") }
     static var txRateMaximumFractionDigitsColumn: SQLite.Expression<Int?> { .init("rateMaximumFractionDigits") }
+    static var timestamp: SQLite.Expression<Int64?> { Expression<Int64?>("timestamp") }
+    static var memo: SQLite.Expression<String?> { .init("memo") }
+    static var service: SQLite.Expression<String?> { .init("service") }
+    static var customIconId: SQLite.Expression<Data?> { Expression<Data?>("customIconId") }
 }
 
 @objc
 extension DSTransaction {
     @objc
-    func defaultTaxCategory() -> TxUserInfoTaxCategory {
+    func defaultTaxCategory() -> TxMetadataTaxCategory {
         switch direction {
         case .moved:
             return .expense

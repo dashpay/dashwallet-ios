@@ -180,7 +180,7 @@ struct MenuItem: View {
                     Text(details)
                         .font(.caption)
                         .lineSpacing(3)
-                        .foregroundColor(.tertiaryText)
+                        .foregroundColor(.primaryText)
                         .padding(.leading, 4)
                         .padding(.top, 2)
                 }
