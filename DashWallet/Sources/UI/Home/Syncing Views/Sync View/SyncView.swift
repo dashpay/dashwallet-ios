@@ -93,17 +93,19 @@ final class SyncView: UIView {
         if syncState == .syncing || syncState == .syncDone {
             if viewStateSeeingBlocks {
                 let model = SyncingActivityMonitor.shared.model;
-                let kind = model.kind;
-                if kind == .headers {
+                if model.hasSyncKind(.headers) {
                     descriptionLabel.text = String(format: NSLocalizedString("header #%d of %d", comment: ""),
                         model.lastTerminalBlockHeight,
                         model.estimatedBlockHeight)
-                } else if kind == .masternodes {
-                    let masternodeListsReceived = model.masternodeListSyncInfo.queueCount
-                    let masternodeListsTotal = model.masternodeListSyncInfo.queueMaxAmount
-                    descriptionLabel.text = String(format: NSLocalizedString("masternode list #%d of %d", comment: ""),
-                        masternodeListsReceived > masternodeListsTotal ? 0 : masternodeListsTotal - masternodeListsTotal,
-                        masternodeListsTotal)
+                } else if model.hasSyncKind(.masternodes) {
+                    let received = model.masternodeListSyncInfo.queueCount
+                    let total = model.masternodeListSyncInfo.queueMaxAmount
+                    descriptionLabel.text = String(format: NSLocalizedString("masternode list #%d of %d", comment: ""), received > total ? 0 : total - received,
+                        total)
+                } else if model.hasSyncKind(.platform) {
+                    let received = model.platformSyncInfo.queueCount
+                    let total = model.platformSyncInfo.queueMaxAmount
+                    descriptionLabel.text = String(format: NSLocalizedString("platform #%d of %d", comment: ""), received > total ? 0 : total - received, total)
                 } else {
                     descriptionLabel.text = String(format: NSLocalizedString("block #%d of %d", comment: ""),
                         model.lastSyncBlockHeight,

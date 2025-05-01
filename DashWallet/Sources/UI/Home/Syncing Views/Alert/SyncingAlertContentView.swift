@@ -112,20 +112,19 @@ final class SyncingAlertContentView: UIView {
         switch syncState {
         case .syncing, .syncDone:
             let model = SyncingActivityMonitor.shared.model;
-            let kind = model.kind;
-            if kind == .headers {
+            if model.hasSyncKind(.headers) {
                 subtitleLabel.text = localized(
                     template: "header #%d of %d",
                     model.lastTerminalBlockHeight,
                     model.estimatedBlockHeight)
-            } else if kind == .masternodes {
+            } else if model.hasSyncKind(.masternodes) {
                 let masternodeListsReceived = model.masternodeListSyncInfo.queueCount
                 let masternodeListsTotal = model.masternodeListSyncInfo.queueMaxAmount
                 subtitleLabel.text = localized(
                     template: "masternode list #%d of %d",
                     masternodeListsReceived > masternodeListsTotal ? 0 : masternodeListsTotal - masternodeListsTotal,
                     masternodeListsTotal)
-            } else if kind == .platform {
+            } else if model.hasSyncKind(.platform) {
                 let identitiesKeysCount = model.platformSyncInfo.queueCount
                 let identitiesKeysTotal = model.platformSyncInfo.queueMaxAmount
                 subtitleLabel.text = localized(
