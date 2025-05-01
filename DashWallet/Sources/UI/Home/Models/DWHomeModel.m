@@ -303,7 +303,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)fiatCurrencyDidChangeNotification {
     [self.receiveModel updateReceivingInfo];
-    ;
 }
 
 - (void)chainWalletsDidChangeNotification:(NSNotification *)notification {

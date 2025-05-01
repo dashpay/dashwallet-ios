@@ -103,7 +103,6 @@ class MainMenuViewController: UIViewController {
 extension MainMenuViewController {
     func setupObservers() {
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
-            .removeDuplicates()
             .sink { [weak self] _ in self?.refreshContent() }
             .store(in: &cancellableBag)
     }

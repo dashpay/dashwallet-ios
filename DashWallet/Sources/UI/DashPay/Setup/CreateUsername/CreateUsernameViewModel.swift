@@ -207,7 +207,6 @@ class CreateUsernameViewModel: ObservableObject {
     private func observeBalance() {
         checkBalance()
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
-            .removeDuplicates()
             .sink { [weak self] _ in
                 guard let self = self else { return }
                 self.validateUsername(username: self.username)

@@ -95,7 +95,6 @@ extension BalanceModel {
             .store(in: &cancellableBag)
         
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
-            .removeDuplicates()
             .sink { [weak self] _ in
                 self?.reloadBalance()
             }
