@@ -159,7 +159,7 @@ static NSString *sanitizeString(NSString *s) {
     self.paymentInput = paymentInput;
 
     if (paymentInput.request) {
-        if (paymentInput.source == DWPaymentInputSource_ScanQR && paymentInput.request.isValidAsNonDashpayPaymentRequest) {
+        if ((paymentInput.source == DWPaymentInputSource_ScanQR || paymentInput.source == DWPaymentInputSource_URL) && paymentInput.request.isValidAsNonDashpayPaymentRequest) {
             DSPaymentProtocolRequest *protocolRequest = [self protocolRequestFromPaymentRequest:self.paymentInput.request];
             [self txManagerRequestingAdditionalInfo:DSRequestingAdditionalInfo_Amount
                                     protocolRequest:protocolRequest];
