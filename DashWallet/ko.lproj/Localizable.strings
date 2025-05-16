@@ -253,6 +253,9 @@
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "대부분의 사람들이 당장 1000대시를 지니고 있지 않은 만큼, 크라우드노드는 구성원들의 보증금을 모아 마스터노드 소유의 장점을 누릴 수 있도록 하는 서비스를 개설하였습니다.";
 
+/* DashSpend */
+"at" = "at";
+
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "ATM 검색은 위치 서비스를 사용할 때 더욱 효과적입니다";
 
@@ -367,6 +370,9 @@
 
 /* Dash Portal */
 "Buy Dash · No account needed" = "대시 구매하기 · 계정이 필요하지 않습니다";
+
+/* DashSpend */
+"Buy gift card" = "Buy gift card";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "대시로 기프트 카드 구매";
@@ -1448,6 +1454,9 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "최대";
 
+/* DashSpend */
+"Max: %@" = "Max: %@";
+
 /* Usernames */
 "Maximum 75 characters" = "최대 75자";
 
@@ -1462,6 +1471,9 @@
 
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "상점 검색은 위치 서비스를 켰을 때 보다 잘 작동합니다.";
+
+/* DashSpend */
+"Min: %@" = "Min: %@";
 
 /* CoinJoin */
 "Mix coins" = "Mix coins";
@@ -1807,6 +1819,9 @@
 
 /* No comment provided by engineer. */
 "Please write it down" = "적어주세요";
+
+/* No comment provided by engineer. */
+"Preview" = "Preview";
 
 /* No comment provided by engineer. */
 "Preview Invitation" = "초대 미리보기";
@@ -2795,6 +2810,9 @@
 
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "당신은 곧 본 기기로부터 이 지갑을 삭제하게 됩니다. 이 지갑과 관련된 자금은 당신이 복원 문구를 가지고 있을 떄에만 복구할 수 있습니다.";
+
+/* DashSpend */
+"You are buying a %@ gift card for %@ (%d%% discount)" = "You are buying a %1$@ gift card for %2$@ (%3$d%% discount)";
 
 /* No comment provided by engineer. */
 "You can always delete the image uploaded, as long as you have access to this wallet." = "이 지갑에 접근이 가능한 경우 언제든 업로드한 이미지를 삭제할 수 있습니다.";

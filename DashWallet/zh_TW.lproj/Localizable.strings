@@ -253,6 +253,9 @@
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "由於大多數人手頭上沒有 1000 個達世幣，Crowdnode 提供了一項服務，透過匯集會員的存款，他們可以獲得擁有主節點的好處。";
 
+/* DashSpend */
+"at" = "at";
+
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "ATM 搜索在打開定位服務的情況下效果更好";
 
@@ -367,6 +370,9 @@
 
 /* Dash Portal */
 "Buy Dash · No account needed" = "購買達世幣 · 無需賬戶";
+
+/* DashSpend */
+"Buy gift card" = "Buy gift card";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "使用達世幣購買禮品卡";
@@ -1448,6 +1454,9 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "最大值";
 
+/* DashSpend */
+"Max: %@" = "Max: %@";
+
 /* Usernames */
 "Maximum 75 characters" = "最多 75 個字符";
 
@@ -1462,6 +1471,9 @@
 
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "開啟位置服務後，商家搜索效果會更好。";
+
+/* DashSpend */
+"Min: %@" = "Min: %@";
 
 /* CoinJoin */
 "Mix coins" = "Mix coins";
@@ -1807,6 +1819,9 @@
 
 /* No comment provided by engineer. */
 "Please write it down" = "請寫下來";
+
+/* No comment provided by engineer. */
+"Preview" = "Preview";
 
 /* No comment provided by engineer. */
 "Preview Invitation" = "預覽邀請";
@@ -2795,6 +2810,9 @@
 
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "您將要從此設備上清除此錢包。 僅當您有恢復詞組時，才能取回與此錢包相關的資金。";
+
+/* DashSpend */
+"You are buying a %@ gift card for %@ (%d%% discount)" = "You are buying a %1$@ gift card for %2$@ (%3$d%% discount)";
 
 /* No comment provided by engineer. */
 "You can always delete the image uploaded, as long as you have access to this wallet." = "只要您有權訪問此錢包，您就可以隨時刪除上傳的圖片。";

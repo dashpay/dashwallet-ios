@@ -253,6 +253,9 @@
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "Çoğu insanın elinde 1000 Dash bulunmadığından Crowdnode üyelerinden gelen yatırma işlemlerini bir havuzda toplayarak ana düğüm sahibi olmanın avantajlarından yararlanabilecekleri bir hizmet sunmuştur.";
 
+/* DashSpend */
+"at" = "at";
+
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "Konum Servisleri açıkken ATM araması daha iyi çalışır";
 
@@ -367,6 +370,9 @@
 
 /* Dash Portal */
 "Buy Dash · No account needed" = "Dash Satın Al · Hesap gerekmez";
+
+/* DashSpend */
+"Buy gift card" = "Buy gift card";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "Dash'iniz ile hediye kartları satın alın";
@@ -1448,6 +1454,9 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Maksimum";
 
+/* DashSpend */
+"Max: %@" = "Max: %@";
+
 /* Usernames */
 "Maximum 75 characters" = "Maksimum 75 karakter";
 
@@ -1462,6 +1471,9 @@
 
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "Tüccar araması, Konum Servisleri açıkken daha iyi çalışır.";
+
+/* DashSpend */
+"Min: %@" = "Min: %@";
 
 /* CoinJoin */
 "Mix coins" = "Mix coins";
@@ -1807,6 +1819,9 @@
 
 /* No comment provided by engineer. */
 "Please write it down" = "Lütfen bir yere yazın";
+
+/* No comment provided by engineer. */
+"Preview" = "Preview";
 
 /* No comment provided by engineer. */
 "Preview Invitation" = "Önizleme Davetiyesi";
@@ -2795,6 +2810,9 @@
 
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Bu cüzdanı bu cihazdan silmek üzeresiniz. Bu cüzdanla ilişkili fonlar yalnızca kurtarma sözcük grubunuz varsa geri alınabilir.";
+
+/* DashSpend */
+"You are buying a %@ gift card for %@ (%d%% discount)" = "You are buying a %1$@ gift card for %2$@ (%3$d%% discount)";
 
 /* No comment provided by engineer. */
 "You can always delete the image uploaded, as long as you have access to this wallet." = "Bu cüzdana erişiminiz olduğu sürece, yüklenen görseli her zaman silebilirsiniz.";

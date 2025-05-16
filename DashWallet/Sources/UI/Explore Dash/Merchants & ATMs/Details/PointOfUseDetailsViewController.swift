@@ -138,6 +138,9 @@ extension PointOfUseDetailsViewController {
             wSelf.navigationController?.pushViewController(vc, animated: true)
         }
         detailsView.buyGiftCardHandler = { [weak self] in
+            self?.showDashSpendPayScreen()
+        }
+        detailsView.dashSpendAuthHandler = { [weak self] in
             self?.showCTXSpendLoginInfo()
         }
         
@@ -180,7 +183,12 @@ extension PointOfUseDetailsViewController {
     }
     
     private func showCTXSpendTerms() {
-        let hostingController = UIHostingController(rootView: CTXSpendTermsScreen())
+        let hostingController = UIHostingController(
+            rootView: CTXSpendTermsScreen {
+                self.navigationController?.popToViewController(ofType: PointOfUseDetailsViewController.self, animated: false)
+                self.showDashSpendPayScreen(justAuthenticated: true)
+            }
+        )
         hostingController.modalPresentationStyle = .fullScreen
         self.navigationController?.pushViewController(hostingController, animated: true)
     }
@@ -188,7 +196,20 @@ extension PointOfUseDetailsViewController {
     private func showCTXSpendAuth(authType: CTXSpendUserAuthType) {
         let hostingController = UIHostingController(
             rootView: NavigationView {
-                CTXSpendUserAuthScreen(authType: authType)
+                CTXSpendUserAuthScreen(authType: authType) {
+                    self.navigationController?.popViewController(animated: false)
+                    self.showDashSpendPayScreen(justAuthenticated: true)
+                }
+            }
+        )
+        
+        self.navigationController?.pushViewController(hostingController, animated: true)
+    }
+    
+    private func showDashSpendPayScreen(justAuthenticated: Bool = false) {
+        let hostingController = UIHostingController(
+            rootView: NavigationView {
+                DashSpendPayScreen(merchant: self.pointOfUse, justAuthenticated: justAuthenticated)
             }
         )
         
