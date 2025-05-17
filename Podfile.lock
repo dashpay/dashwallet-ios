@@ -591,10 +591,11 @@ PODS:
     - "!ProtoCompiler-gRPCPlugin (~> 1.0)"
     - DAPI-GRPC/Messages
     - gRPC-ProtoRPC
-  - DashSharedCore (0.5.0)
+  - DashSharedCore (0.5.1)
   - DashSync (0.1.0):
     - CocoaLumberjack (= 3.7.2)
     - DAPI-GRPC (= 0.22.0-dev.8)
+    - DashSharedCore (= 0.5.1)
     - DSDynamicOptions (= 0.1.2)
     - DWAlertController (= 0.2.1)
     - TinyCborObjc (= 0.4.6)
@@ -736,7 +737,6 @@ PODS:
 DEPENDENCIES:
   - CloudInAppMessaging (= 0.1.0)
   - CocoaImageHashing (from `https://github.com/ameingast/cocoaimagehashing.git`, commit `ad01eee`)
-  - DashSharedCore (from `../dash-shared-core/`)
   - DashSync (from `../DashSync/`)
   - DSDynamicOptions (= 0.1.2)
   - Firebase/DynamicLinks
@@ -766,6 +766,7 @@ SPEC REPOS:
     - CloudInAppMessaging
     - CocoaLumberjack
     - DAPI-GRPC
+    - DashSharedCore
     - DSDynamicOptions
     - DWAlertController
     - Firebase
@@ -803,8 +804,6 @@ EXTERNAL SOURCES:
   CocoaImageHashing:
     :commit: ad01eee
     :git: https://github.com/ameingast/cocoaimagehashing.git
-  DashSharedCore:
-    :path: "../dash-shared-core/"
   DashSync:
     :path: "../DashSync/"
   MMSegmentSlider:
@@ -832,8 +831,8 @@ SPEC CHECKSUMS:
   CocoaImageHashing: 8656031d0899abe6c1c415827de43e9798189c53
   CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
   DAPI-GRPC: 138d62523bbfe7e88a39896f1053c0bc12390d9f
-  DashSharedCore: 18baa0f6c2bc2b4fc4628651d293f4fd6645025f
-  DashSync: 2438dbf626f13a8633ccc19c718c1c223c8ee831
+  DashSharedCore: b8481feb5f08acf162b548edbfc7a9b1ce491141
+  DashSync: 1f5741aad267dcc0cfc04b6903490d304232ddf2
   DSDynamicOptions: 347cc5d2c4e080eb3de6a86719ad3d861b82adfc
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   Firebase: 5f8193dff4b5b7c5d5ef72ae54bb76c08e2b841d
@@ -868,6 +867,6 @@ SPEC CHECKSUMS:
   TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: 1ec71e13430fe0345b364b97448746daa931e0b4
+PODFILE CHECKSUM: a5ef71862394897c78a0cc247502754372e88c07
 
 COCOAPODS: 1.15.2

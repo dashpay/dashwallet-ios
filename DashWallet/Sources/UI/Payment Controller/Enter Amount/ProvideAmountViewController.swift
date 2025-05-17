@@ -193,6 +193,7 @@ struct ProvideAmountIntro<Content: View>: View {
             destination: destination,
             dashBalance: CoinJoinService.shared.mixingState.isInProgress ? model.coinJoinBalance : model.walletBalance,
             balanceLabel: balanceLabel + ":",
+            authCallback: model.auth,
             avatarView: avatarView
         )
     }
