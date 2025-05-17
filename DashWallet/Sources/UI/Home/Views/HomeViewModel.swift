@@ -18,7 +18,7 @@
 import Foundation
 import Combine
 
-private let kBaseBalanceHeaderHeight: CGFloat = 250
+private let kBaseBalanceHeaderHeight: CGFloat = 100
 private let kTimeskewTolerance: TimeInterval = 3600 // 1 hour
 private let maxShortcutsCount = 4
 
@@ -37,9 +37,10 @@ class HomeViewModel: ObservableObject {
     private var timeSkewDialogShown: Bool = false
     
     static let shared: HomeViewModel = {
-        return HomeViewModel()
+        return HomeViewModel(transactionSource: DSWalletSource())
     }()
     
+    private let transactionSource: TransactionSource
     private var txByHash: [String: TransactionListDataItem] = [:]
     private var crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
     private var coinJoinTxSets: [String: CoinJoinMixingTxSet] = [:] // Grouped by date
@@ -55,7 +56,8 @@ class HomeViewModel: ObservableObject {
             reloadTxDataSource()
         }
     }
-    @Published private(set) var balanceHeaderHeight: CGFloat = kBaseBalanceHeaderHeight // TDOO: move back to HomeView when fully transitioned to SwiftUI
+
+    @Published private(set) var headerHeight: CGFloat = kBaseBalanceHeaderHeight // TDOO: move back to HomeView when fully transitioned to SwiftUI
     @Published private(set) var showReclassifyTransaction: DSTransaction? = nil
     
 #if DASHPAY
@@ -95,13 +97,15 @@ class HomeViewModel: ObservableObject {
     }
     #endif
     
-    init() {
+    init(transactionSource: TransactionSource) {
+        self.transactionSource = transactionSource
         syncModel.networkStatusDidChange = { status in
             self.recalculateHeight()
         }
+        
         self.onSyncStateChanged()
         self.recalculateHeight()
-
+        
         self.observeCoinJoin()
         self.observeWallet()
         #if DASHPAY
@@ -125,7 +129,13 @@ class HomeViewModel: ObservableObject {
     private func observeWallet() {
         NotificationCenter.default.publisher(for: Notification.Name.fiatCurrencyDidChange)
             .sink { [weak self] _ in
-                self?.reloadTxDataSource()
+                self?.reloadTxsAndShortcuts()
+            }
+            .store(in: &cancellableBag)
+
+        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+            .sink { [weak self] _ in
+                self?.reloadShortcuts()
             }
             .store(in: &cancellableBag)
         
@@ -140,7 +150,7 @@ class HomeViewModel: ObservableObject {
         NotificationCenter.default.publisher(for: Notification.Name.DSChainManagerSyncWillStart)
             .sink { [weak self] _ in
                 if DWGlobalOptions.sharedInstance().isResyncingWallet {
-                    self?.reloadTxDataSource()
+                    self?.reloadTxsAndShortcuts()
                 }
             }
             .store(in: &cancellableBag)
@@ -160,8 +170,7 @@ class HomeViewModel: ObservableObject {
         self.queue.async { [weak self] in
             guard let self = self else { return }
             
-            let wallet = DWEnvironment.sharedInstance().currentWallet
-            let transactions = wallet.allTransactions
+            let transactions = transactionSource.allTransactions
             self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
             self.coinJoinTxSets = [:]
             
@@ -322,15 +331,16 @@ class HomeViewModel: ObservableObject {
         }
     }
     
+    
     private func recalculateHeight() {
         var height = kBaseBalanceHeaderHeight
         let hasNetwork = syncModel.networkStatus == .online
-        
+
         if !hasNetwork {
             height += 85
         }
-        
-        self.balanceHeaderHeight = height
+
+        self.headerHeight = height
     }
     
     private func getDeviceTimeSkew(force: Bool) async -> (Bool, TimeInterval) {
@@ -394,11 +404,15 @@ extension HomeViewModel {
     }
     
     private func onSyncStateChanged() {
-        self.reloadTxDataSource()
-        self.reloadShortcuts()
+        self.reloadTxsAndShortcuts()
         #if DASHPAY
         self.checkJoinDashPay()
         #endif
+    }
+    
+    func reloadTxsAndShortcuts() {
+        self.reloadTxDataSource()
+        self.reloadShortcuts()
     }
 }
 
@@ -449,6 +463,17 @@ extension HomeViewModel {
     }
 }
 
+protocol TransactionSource {
+    var allTransactions: Array<DSTransaction> { get }
+}
+
+class DSWalletSource: TransactionSource {
+    var allTransactions: Array<DSTransaction> {
+        let wallet = DWEnvironment.sharedInstance().currentWallet
+        return wallet.allTransactions
+    }
+}
+
 // MARK: - DashPay
 
 #if DASHPAY
@@ -463,7 +488,7 @@ extension HomeViewModel {
         NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)
             .sink { [weak self] _ in
                 self?.checkJoinDashPay()
-                self?.reloadTxDataSource()
+                self?.reloadTxsAndShortcuts()
                 DWDashPayContactsUpdater.sharedInstance().beginUpdating()
             }
             .store(in: &cancellableBag)
