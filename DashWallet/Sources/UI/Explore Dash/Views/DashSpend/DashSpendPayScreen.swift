@@ -24,11 +24,14 @@ struct DashSpendPayScreen: View {
     @StateObject private var viewModel: DashSpendPayViewModel
     let merchant: ExplorePointOfUse
     @State var justAuthenticated: Bool
+    @State var showConfirmToast: Bool // TODO: temp
+    @State private var showConfirmationDialog = false
     
     init(merchant: ExplorePointOfUse, justAuthenticated: Bool = false) {
         self.merchant = merchant
         self._viewModel = .init(wrappedValue: DashSpendPayViewModel(merchant: merchant))
         self.justAuthenticated = justAuthenticated
+        self.showConfirmToast = false
     }
     
     var body: some View {
@@ -117,14 +120,15 @@ struct DashSpendPayScreen: View {
                     value: $viewModel.input,
                     showDecimalSeparator: true,
                     actionButtonText: NSLocalizedString("Preview", comment: ""),
+                    actionEnabled: viewModel.error == nil && !viewModel.showLimits,
                     actionHandler: {
-    //                        viewModel.onContinue()
+                        showConfirmationDialog = true
                     }
                 )
                 .frame(maxWidth: .infinity)
                 .frame(height: 320)
                 .padding(.horizontal, 20)
-                .padding(.bottom, 20)
+                .padding(.bottom, 30)
                 .background(Color.secondaryBackground)
                 .cornerRadius(20)
             }
@@ -135,7 +139,15 @@ struct DashSpendPayScreen: View {
                     icon: .system("checkmark.circle")
                 )
                 .frame(height: 20)
-                .padding(.bottom, 20)
+                .padding(.bottom, 30)
+            }
+            
+            if showConfirmToast {
+                ToastView(
+                    text: NSLocalizedString("Not implemented", comment: "")
+                )
+                .frame(height: 20)
+                .padding(.bottom, 30)
             }
         }
         .ignoresSafeArea(.all, edges: .bottom)
@@ -152,5 +164,178 @@ struct DashSpendPayScreen: View {
         .onDisappear {
             viewModel.unsubscribeFromAll()
         }
+        .sheet(isPresented: $showConfirmationDialog) {
+            let dialog = BottomSheet(
+                title: NSLocalizedString("Confirm", comment: "DashSpend confirmation dialog title"),
+                showBackButton: Binding<Bool>.constant(false)
+            ) {
+                ConfirmationDialog(
+                    amount: viewModel.input,
+                    merchantName: viewModel.merchantTitle,
+                    merchantIconUrl: viewModel.merchantIconUrl,
+                    originalPrice: viewModel.amount,
+                    discount: viewModel.savingsFraction,
+                    onConfirm: {
+                        // TODO: Handle confirmation action
+                        showConfirmationDialog = false
+                        showConfirmToast = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            showConfirmToast = false
+                        }
+                    },
+                    onCancel: {
+                        showConfirmationDialog = false
+                    }
+                )
+            }.background(Color.primaryBackground)
+            
+            if #available(iOS 16.0, *) {
+                dialog.presentationDetents([.height(500)])
+            } else {
+                dialog
+            }
+        }
+    }
+}
+
+struct ConfirmationDialog: View {
+    let amount: String
+    let merchantName: String
+    let merchantIconUrl: String
+    let originalPrice: Decimal
+    let discount: Decimal
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
+    
+    @Environment(\.presentationMode) private var presentationMode
+    
+    private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: kDefaultCurrencyCode)
+    
+    var body: some View {
+        VStack(spacing: 40) {
+            HStack {
+                Text(fiatFormatter.currencySymbol + amount)
+                    .font(.system(size: 32, weight: .medium))
+                    .foregroundColor(.primaryText)
+            }
+                
+            // Details
+            VStack(spacing: 0) {
+                HStack(spacing: 8) {
+                    Text(NSLocalizedString("From", comment: "DashSpend"))
+                        .font(.body2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.tertiaryText)
+                        
+                    Spacer()
+                        
+                    Image("image.explore.dash.wts.dash")
+                        .resizable()
+                        .frame(width: 24, height: 24)
+                            
+                    Text(NSLocalizedString("Dash Wallet", comment: "DashSpend"))
+                        .font(.body2)
+                        .foregroundColor(.primaryText)
+                }
+                .padding(.horizontal, 12)
+                .frame(height: 50)
+                    
+                HStack(spacing: 8) {
+                    Text(NSLocalizedString("To", comment: "DashSpend"))
+                        .font(.body2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.tertiaryText)
+                        
+                    Spacer()
+                        
+                    WebImage(url: URL(string: merchantIconUrl))
+                        .resizable()
+                        .indicator(.activity)
+                        .transition(.fade(duration: 0.3))
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .clipShape(Circle())
+                            
+                    Text(merchantName)
+                        .font(.body2)
+                        .foregroundColor(.primaryText)
+                }
+                .padding(.horizontal, 12)
+                .frame(height: 50)
+                    
+                HStack {
+                    Text(NSLocalizedString("Gift card total", comment: "DashSpend"))
+                        .font(.body2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.tertiaryText)
+                        
+                    Spacer()
+                        
+                    Text(fiatFormatter.string(from: NSDecimalNumber(decimal: originalPrice)) ?? "")
+                        .font(.body2)
+                        .foregroundColor(.primaryText)
+                }
+                .padding(.horizontal, 12)
+                .frame(height: 50)
+                    
+                HStack {
+                    Text(NSLocalizedString("Discount", comment: "DashSpend"))
+                        .font(.body2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.tertiaryText)
+                        
+                    Spacer()
+                        
+                    Text("\(NSDecimalNumber(decimal: discount * 100).intValue)%")
+                        .font(.body2)
+                        .foregroundColor(.primaryText)
+                }
+                .padding(.horizontal, 12)
+                .frame(height: 50)
+                    
+                HStack {
+                    Text(NSLocalizedString("You pay", comment: "DashSpend"))
+                        .font(.body2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.tertiaryText)
+                        
+                    Spacer()
+                        
+                    Text(fiatFormatter.string(from: NSDecimalNumber(decimal: originalPrice * (1 - discount))) ?? "")
+                        .font(.body2)
+                        .foregroundColor(.primaryText)
+                }
+                .padding(.horizontal, 12)
+                .frame(height: 50)
+            }
+            .background(Color.white)
+            .cornerRadius(12)
+            .shadow(color: Color.shadow, radius: 10, x: 0, y: 5)
+            
+            HStack(spacing: 20) {
+                Button(action: onCancel) {
+                    Text(NSLocalizedString("Cancel", comment: "DashSpend"))
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.primaryText)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 46)
+                }
+                .background(Color(UIColor.systemGray5))
+                .cornerRadius(12)
+                    
+                Button(action: onConfirm) {
+                    Text(NSLocalizedString("Confirm", comment: "DashSpend"))
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 46)
+                }
+                .background(Color.dashBlue)
+                .cornerRadius(12)
+            }
+        }
+        .padding(.top, 15)
+        .padding(.horizontal, 20)
+        .edgesIgnoringSafeArea(.bottom)
     }
 }

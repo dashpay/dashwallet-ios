@@ -25,10 +25,10 @@ class DashSpendPayViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: defaultCurrency)
     
-    private var amount: Decimal = 0
     private let minimumAmount: Decimal = 5 // TODO: limits
     private let maximumAmount: Decimal = 50
-    private var savingsFraction: Decimal = 0.0
+    private(set) var amount: Decimal = 0
+    private(set) var savingsFraction: Decimal = 0.0
     
     let currencySymbol: String = {
         let locale = Locale.current as NSLocale

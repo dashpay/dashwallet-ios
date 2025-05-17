@@ -211,9 +211,6 @@
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Ang sapantaha at pamilyar na karanasan sa lahat ng iyong aparato";
 
-/* Invites */
-"an invitation" = "an invitation";
-
 /* CrowdNode */
 "and" = "at";
 
@@ -488,12 +485,6 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "Kumpirmahin (%1$d%2$@)";
 
-/* Invites */
-"Confirm and pay" = "Confirm and pay";
-
-/* Invites */
-"Confirm invitation" = "Confirm invitation";
-
 /* No comment provided by engineer. */
 "Confirm PIN" = "Kumpirmahin ang PIN";
 
@@ -534,9 +525,6 @@
 
 /* No comment provided by engineer. */
 "Contacts" = "Mga Contact";
-
-/* Usernames */
-"Contested" = "Contested";
 
 /* No comment provided by engineer. */
 "Continue" = "Ipagpatuloy";
@@ -686,6 +674,9 @@
 /* No comment provided by engineer. */
 "Dash username" = "Dash username";
 
+/* DashSpend confirmation */
+"Dash Wallet" = "Dash Wallet";
+
 /* Buy Dash */
 "Dash Wallet on this device" = "Dash Wallet sa device na ito";
 
@@ -751,6 +742,9 @@
    Coinbase Entry Point */
 "Disconnected" = "Idiskonekta";
 
+/* DashSpend confirmation */
+"Discount" = "Discount";
+
 /* No comment provided by engineer. */
 "Dismiss" = "Dismiss";
 
@@ -787,8 +781,8 @@
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "hal. juandelacruz@gmail.com";
 
-/* Invites */
-"Each invitation will be funded so that the receiver can quickly create their username on the Dash Network." = "Each invitation will be funded so that the receiver can quickly create their username on the Dash Network.";
+/* No comment provided by engineer. */
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Mas maaga";
@@ -970,6 +964,9 @@
 /* No comment provided by engineer. */
 "Found potential missing words:\n%@" = "Natagpuan ang mga potensyal na nawawalang salita:\n%@";
 
+/* DashSpend confirmation */
+"From" = "From";
+
 /* from CrowdNode */
 "from CrowdNode" = "mula sa CrowdNode";
 
@@ -1020,6 +1017,9 @@
 
 /* Explore Dash: Filters */
 "Gift Card" = "Gift card";
+
+/* DashSpend confirmation */
+"Gift card total" = "Gift card total";
 
 /* No comment provided by engineer. */
 "Go to CrowdNode website" = "Pumunta sa website ng CrowdNode";
@@ -1231,8 +1231,8 @@
 /* No comment provided by engineer. */
 "Invitation Created Successfully" = "Matagumpay na Nagawa ang Imbitasyon";
 
-/* Invites */
-"Invitation fee" = "Invitation fee";
+/* No comment provided by engineer. */
+"Invitation Fee" = "Invitation Fee";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "Imbitasyon na ginamit ni";
@@ -1604,9 +1604,6 @@
 /* No comment provided by engineer. */
 "Node IP" = "Node IP";
 
-/* Usernames */
-"Non-contested" = "Non-contested";
-
 /* adjective, security level */
 "None" = "Wala";
 
@@ -1627,6 +1624,9 @@
 
 /* Location Service Status */
 "Not Determined" = "Hindi determinado";
+
+/* No comment provided by engineer. */
+"Not implemented" = "Not implemented";
 
 /* CoinJoin */
 "Not started" = "Not started";
@@ -2371,12 +2371,6 @@
 /* Coinbase */
 "The minimum amount you can send is %@" = "Ang pinakamababang halaga na maaari mong ipadala ay %@";
 
-/* Invites */
-"The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen" = "The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen";
-
-/* Invites */
-"The person that you send this invitation to can request any username they want and the network will vote to approve it" = "The person that you send this invitation to can request any username they want and the network will vote to approve it";
-
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
 
@@ -2437,11 +2431,14 @@
 /* Send Screen: to address */
 "to" = "para kay:";
 
+/* DashSpend confirmation */
+"To" = "To";
+
 /* Coinbase */
 "to Dash Wallet on this device" = "Sa Dash wallet sa device na ito";
 
 /* CoinJoin */
-"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@.";
+"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "Para simulan ang staking, gumawa ng account sa CrowdNode o kumonekta sa mayroon na.";
@@ -2815,9 +2812,6 @@
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "Gusto mo bang tanggapin ang imbitasyon?";
 
-/* Invites */
-"Would you like to create this invitation?" = "Would you like to create this invitation?";
-
 /* Coinbase */
 "Would you like to make a deposit for your purchase using a linked bank account?" = "Gusto mo bang magdeposito para sa iyong pagbili gamit ang isang naka-link na bank account?";
 
@@ -2873,7 +2867,7 @@
 "You cannot claim this invite since you already have a Dash username" = "Hindi mo ma-claim ang imbitasyong ito dahil mayroon ka nang Dash username";
 
 /* Usernames */
-"You chose \"%@\" as your username." = "You chose \"%@\" as your username.";
+"You chose “%@” as your username." = "You chose “%@” as your username.";
 
 /* CoinJoin */
 "You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
@@ -2931,6 +2925,9 @@
 
 /* CrowdNode */
 "You only need %@ to join the pool." = "Kailangan mo lang ng %@ para sumali sa pool.";
+
+/* DashSpend confirmation */
+"You pay" = "You pay";
 
 /* Coinbase */
 "You receive" = "natatanggap mo";
@@ -3027,9 +3024,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Ang iyong transaksyon ay naipadala at ang halaga ay dapat makita sa iyong pitaka sa loob ng ilang minuto.";
-
-/* Usernames */
-"your username" = "your username";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Ang iyong username %@ ay matagumpay na nilikha sa Network ng Dash";

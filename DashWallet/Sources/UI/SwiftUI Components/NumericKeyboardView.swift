@@ -4,6 +4,7 @@ struct NumericKeyboardView: View {
     @Binding var value: String
     let showDecimalSeparator: Bool
     let actionButtonText: String
+    let actionEnabled: Bool
     let actionHandler: () -> Void
     
     private var rows: [[String]] {
@@ -48,7 +49,7 @@ struct NumericKeyboardView: View {
             
             DashButton(
                 text: actionButtonText,
-                isEnabled: !value.isEmpty,
+                isEnabled: !value.isEmpty && actionEnabled,
                 action: actionHandler
             )
             .padding(.top, 20)
@@ -76,6 +77,7 @@ struct NumericKeyboardView: View {
         value: .constant(""),
         showDecimalSeparator: true,
         actionButtonText: NSLocalizedString("Verify", comment: "Button title for numeric keyboard action"),
+        actionEnabled: true,
         actionHandler: { print("Action button tapped") }
     ).frame(height: 400)
 }
