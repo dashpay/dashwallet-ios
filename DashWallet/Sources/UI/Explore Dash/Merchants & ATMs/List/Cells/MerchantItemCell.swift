@@ -45,9 +45,9 @@ class MerchantItemCell: PointOfUseItemCell {
         let paymentIconName = isGiftCard ? "image.explore.dash.wts.payment.gift-card" : "image.explore.dash.wts.payment.dash";
         paymentTypeIconView.image = UIImage(named: paymentIconName)
         
-        if merchant.savingsPercentage > 0 {
+        if merchant.savingsBasisPoints > 0 {
             savingsLabel.isHidden = false
-            savingsLabel.text = String(format: NSLocalizedString("~%.0f%%", comment: "Savings percentage"), Double(merchant.savingsPercentage) / 100)
+            savingsLabel.text = String(format: NSLocalizedString("~%.0f%%", comment: "Savings percentage"), Double(merchant.savingsBasisPoints) / 100)
         } else {
             savingsLabel.isHidden = true
         }

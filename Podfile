@@ -15,7 +15,8 @@ target 'dashwallet' do
   pod 'MBProgressHUD', '1.1.0'
   pod 'MMSegmentSlider', :git => 'https://github.com/podkovyrin/MMSegmentSlider', :commit => '2d91366'
   pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
-  pod 'SDWebImage', '5.13.2'
+  pod 'SDWebImage', '5.21.0', :modular_headers => true
+  pod 'SDWebImageSwiftUI', '3.1.3', :modular_headers => true
   pod 'Moya', '~> 15.0'
   pod 'SwiftJWT', '3.6.200'
   # Debugging purposes
@@ -38,7 +39,8 @@ target 'dashpay' do
   pod 'MBProgressHUD', '1.1.0'
   pod 'MMSegmentSlider', :git => 'https://github.com/podkovyrin/MMSegmentSlider', :commit => '2d91366'
   pod 'CocoaImageHashing', :git => 'https://github.com/ameingast/cocoaimagehashing.git', :commit => 'ad01eee'
-  pod 'SDWebImage', '5.13.2'
+  pod 'SDWebImage', '5.21.0', :modular_headers => true
+  pod 'SDWebImageSwiftUI', '3.1.3', :modular_headers => true
   pod 'Moya', '~> 15.0'
   pod 'SwiftJWT', '3.6.200'
   pod 'TOCropViewController', '2.6.1'

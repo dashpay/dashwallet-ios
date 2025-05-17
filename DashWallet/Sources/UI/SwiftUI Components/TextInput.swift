@@ -28,6 +28,7 @@ struct TextInput: View {
     var isEnabled: Bool = true
     var trailingIcon: Image?
     var trailingAction: (() -> Void)?
+    var onSubmit: (() -> Void)?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -47,6 +48,9 @@ struct TextInput: View {
                     .font(.body2)
                     .padding(.top, 15)
                     .disabled(!isEnabled)
+                    .onSubmit {
+                        onSubmit?()
+                    }
 
                 HStack {
                     Spacer()
@@ -126,7 +130,14 @@ struct TextInput_Previews: PreviewProvider {
         VStack(spacing: 20) {
             TextInput(label: "Username", text: .constant(""))
             TextInput(label: "Password", text: .constant("password"))
-            TextInput(label: "Email", text: .constant("user@example.com"), isError: true)
+            TextInput(
+                label: "Email", 
+                text: .constant("user@example.com"), 
+                isError: true,
+                onSubmit: {
+                    print("Submit pressed on email field")
+                }
+            )
         }
         .padding()
     }

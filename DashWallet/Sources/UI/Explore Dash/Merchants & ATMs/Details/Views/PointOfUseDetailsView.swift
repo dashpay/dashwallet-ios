@@ -27,6 +27,7 @@ class PointOfUseDetailsView: UIView {
     
     public var payWithDashHandler: (()->())?
     public var sellDashHandler: (()->())?
+    public var dashSpendAuthHandler: (()->())?
     public var buyGiftCardHandler: (()->())?
     public var showAllLocationsActionBlock: (() -> ())?
 
@@ -142,8 +143,12 @@ class PointOfUseDetailsView: UIView {
         if case .merchant(let m) = merchant.category, let deeplink = m.deeplink, let url = URL(string: deeplink),
            UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url)
-        } else if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard, /* TODO: temp */ !ctxSpendService.isUserSignedIn {
-            buyGiftCardHandler?()
+        } else if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
+            if ctxSpendService.isUserSignedIn {
+                buyGiftCardHandler?()
+            } else {
+                dashSpendAuthHandler?()
+            }
         } else {
             payWithDashHandler?()
         }
@@ -325,11 +330,11 @@ extension PointOfUseDetailsView {
                 payButton.setImage(UIImage(named: "image.explore.dash.gift-card"), for: .normal)
                 payButton.accentColor = .dw_orange()
 
-                if m.savingsPercentage > 0 {
+                if m.savingsBasisPoints > 0 {
                     let savingsTag = SavingsTagView()
                     savingsTag.backgroundColor = .clear
                     savingsTag.translatesAutoresizingMaskIntoConstraints = false
-                    savingsTag.setText(String(format: NSLocalizedString("Save %.2f%%", comment: "DashSpend"), Double(m.savingsPercentage) / 100))
+                    savingsTag.setText(String(format: NSLocalizedString("Save %.2f%%", comment: "DashSpend"), Double(m.savingsBasisPoints) / 100))
                     containerView.addSubview(savingsTag)
 
                     NSLayoutConstraint.activate([

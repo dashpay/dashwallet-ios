@@ -184,16 +184,29 @@ class TXDetailViewController: BaseTxDetailsViewController {
 
 extension TXDetailViewController {
     private func viewInBlockExplorer() {
-        guard let explorerURL = model.explorerURL else {
-            return
+        let swiftUIView = BottomSheet(
+            title: NSLocalizedString("Select block explorer", comment: "Block explorer picker"),
+            showBackButton: Binding<Bool>.constant(false)
+        ) {
+            BlockExplorerSelectionView { [weak self] explorer in
+                guard let self = self else { return }
+                
+                self.dismiss(animated: true) {
+                    guard let explorerURL = self.model.getExplorerURL(explorer: explorer) else {
+                        return
+                    }
+                    
+                    let vc = SFSafariViewController.dw_controller(with: explorerURL)
+                    vc.modalPresentationStyle = .overFullScreen
+                    vc.modalPresentationCapturesStatusBarAppearance = true
+                    self.present(vc, animated: true)
+                }
+            }
         }
-
-        let vc = SFSafariViewController.dw_controller(with: explorerURL)
-
-        // The views beneath the presented content are not removed from the view hierarchy when the presentation finishes.
-        vc.modalPresentationStyle = .overFullScreen
-        vc.modalPresentationCapturesStatusBarAppearance = true
-        present(vc, animated: true) { }
+        
+        let hostingController = UIHostingController(rootView: swiftUIView)
+        hostingController.setDetent(240)
+        present(hostingController, animated: true, completion: nil)
     }
 }
 

@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (Class)mainControllerClass {
-    return [DemoMainTabbarViewController class];
+    return [MainTabbarController class];
 }
 
 #pragma mark - Demo Mode

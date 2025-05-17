@@ -76,7 +76,6 @@ class SendAmountModel: BaseAmountModel {
                 .removeDuplicates()
                 .sink { [weak self] progress in
                     self?.coinJoinBalance = progress.coinJoinBalance
-                    print("CoinJoin: setCoinJoin balance \(progress.coinJoinBalance)")
                 }
                 .store(in: &cancellableBag)
         }

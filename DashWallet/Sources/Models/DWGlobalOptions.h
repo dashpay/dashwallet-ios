@@ -45,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL localNotificationsEnabled;
 
 @property (nonatomic, assign) BOOL balanceHidden;
+@property (nonatomic, assign) BOOL tapToHideBalanceShown;
 
 @property (nonatomic, assign) BOOL shouldDisplayOnboarding;
 @property (nonatomic, assign) BOOL shouldDisplayReclassifyYourTransactionsFlow;

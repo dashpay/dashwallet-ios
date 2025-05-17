@@ -35,23 +35,24 @@ class TimeUtils {
             connection.send(content: message, completion: .contentProcessed({ error in
                 if error != nil {
                     connection.cancel()
-                    safeResume(with: nil)
                     timeoutWorkItem.cancel()
+                    safeResume(with: nil)
                     return
                 }
                 
                 connection.receive(minimumIncompleteLength: 48, maximumLength: 48) { content, _, _, error in
-                    defer { connection.cancel() }
+                    defer {
+                        connection.cancel()
+                        timeoutWorkItem.cancel()
+                    }
                     
                     if error != nil {
                         safeResume(with: nil)
-                        timeoutWorkItem.cancel()
                         return
                     }
                     
                     guard let message = content else {
                         safeResume(with: nil)
-                        timeoutWorkItem.cancel()
                         return
                     }
                     

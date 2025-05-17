@@ -24,6 +24,8 @@ struct CTXSpendTermsScreen: View {
     @State private var shouldShakeLink: Bool = false
     @State private var navigateToCreateAccount: Bool = false
     
+    let onAuthSuccess: () -> Void
+    
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
@@ -112,7 +114,8 @@ struct CTXSpendTermsScreen: View {
         
         NavigationLink(
             destination: CTXSpendUserAuthScreen(
-                authType: .createAccount
+                authType: .createAccount,
+                onAuthSuccess: onAuthSuccess
             ).navigationBarHidden(true),
             isActive: $navigateToCreateAccount
         ) {

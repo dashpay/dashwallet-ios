@@ -2,15 +2,25 @@ import SwiftUI
 
 struct NumericKeyboardView: View {
     @Binding var value: String
+    let showDecimalSeparator: Bool
     let actionButtonText: String
     let actionHandler: () -> Void
     
-    private let rows = [
-        ["1", "2", "3"],
-        ["4", "5", "6"],
-        ["7", "8", "9"],
-        [".", "0", "⌫"]
-    ]
+    private var rows: [[String]] {
+        let lastRow: [String]
+        if showDecimalSeparator {
+            lastRow = [".", "0", "⌫"]
+        } else {
+            lastRow = ["", "0", "⌫"]
+        }
+        
+        return [
+            ["1", "2", "3"],
+            ["4", "5", "6"],
+            ["7", "8", "9"],
+            lastRow
+        ]
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -51,7 +61,11 @@ struct NumericKeyboardView: View {
             if !value.isEmpty {
                 value.removeLast()
             }
-        } else if key != "." && !key.isEmpty {
+        } else if key == "." {
+            if showDecimalSeparator && !value.contains(".") {
+                value += "."
+            }
+        } else if !key.isEmpty {
             value += key
         }
     }
@@ -60,6 +74,7 @@ struct NumericKeyboardView: View {
 #Preview {
     NumericKeyboardView(
         value: .constant(""),
+        showDecimalSeparator: true,
         actionButtonText: NSLocalizedString("Verify", comment: "Button title for numeric keyboard action"),
         actionHandler: { print("Action button tapped") }
     ).frame(height: 400)

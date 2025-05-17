@@ -1,6 +1,6 @@
 # Dash Wallet
 
-[![Build Status](https://github.com/dashpay/dashwallet-ios/actions/workflows/semantic-pull-request.yml/badge.svg)](https://github.com/dashpay/dashwallet-ios/actions) [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/dashevo/dashwallet-ios/blob/master/LICENSE) [![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20watchOS-blue)](https://github.com/dashevo/dashwallet-ios)
+[![Build Status](https://github.com/dashpay/dashwallet-ios/actions/workflows/semantic-pull-request.yml/badge.svg)](https://github.com/dashpay/dashwallet-ios/actions) [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/dashevo/dashwallet-ios/blob/master/LICENSE) [![Release](https://img.shields.io/github/v/release/dashpay/dashwallet-ios)](https://github.com/dashpay/dashwallet-ios/releases) [![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20watchOS-blue)](https://github.com/dashevo/dashwallet-ios)
 
 <p align="center" >
 <img src="https://docs.dash.org/en/stable/_images/dash_logo.png" alt="Dash Wallet logo" title="Dash Wallet" width="300">

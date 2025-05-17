@@ -211,6 +211,9 @@
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Intuicyjne i znane doświadczenie na wszystkich urządzeniach";
 
+/* Invites */
+"an invitation" = "an invitation";
+
 /* CrowdNode */
 "and" = "i";
 
@@ -252,6 +255,9 @@
 
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "Ponieważ większość ludzi nie ma pod ręką dokładnie 1000 Dash, CrowdNode stworzył usługę, w której  wszyscy mogą czerpać korzyści z posiadania Masternode poprzez kumulacje mniejszych kwot od wielu użytkowników. ";
+
+/* DashSpend */
+"at" = "at";
 
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "Wyszukiwanie ATMów działa lepiej, gdy włączone są usługi lokalizacyjne";
@@ -368,6 +374,9 @@
 /* Dash Portal */
 "Buy Dash · No account needed" = "Kup Dash · Konto nie jest potrzebne";
 
+/* DashSpend */
+"Buy gift card" = "Buy gift card";
+
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "Kup karty podarunkowe za pomocą Dash";
 
@@ -479,6 +488,12 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "Potwierdź (%1$d%2$@)";
 
+/* Invites */
+"Confirm and pay" = "Confirm and pay";
+
+/* Invites */
+"Confirm invitation" = "Confirm invitation";
+
 /* No comment provided by engineer. */
 "Confirm PIN" = "Potwierdź kod PIN";
 
@@ -519,6 +534,9 @@
 
 /* No comment provided by engineer. */
 "Contacts" = "Kontakty";
+
+/* Usernames */
+"Contested" = "Contested";
 
 /* No comment provided by engineer. */
 "Continue" = "Dalej";
@@ -769,8 +787,8 @@
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "e.g. johndoe@mail.com";
 
-/* No comment provided by engineer. */
-"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Każde zaproszenie będzie opłacone tą sumą, aby odbiorca mógł szybko stworzyć swój własny profil na Sieci Dash";
+/* Invites */
+"Each invitation will be funded so that the receiver can quickly create their username on the Dash Network." = "Each invitation will be funded so that the receiver can quickly create their username on the Dash Network.";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Wcześniej";
@@ -1213,8 +1231,8 @@
 /* No comment provided by engineer. */
 "Invitation Created Successfully" = "Zaproszenie zostało stworzone pomyślnie";
 
-/* No comment provided by engineer. */
-"Invitation Fee" = "Opłata za zaproszenie";
+/* Invites */
+"Invitation fee" = "Invitation fee";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "Zaproszenie zostało użyte przez";
@@ -1448,6 +1466,9 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
 
+/* DashSpend */
+"Max: %@" = "Max: %@";
+
 /* Usernames */
 "Maximum 75 characters" = "Maksymalnie 75 znaków";
 
@@ -1462,6 +1483,9 @@
 
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "Szukiwanie sprzedawców działa lepiej z włączonymi usługami lokalizacyjnymi.";
+
+/* DashSpend */
+"Min: %@" = "Min: %@";
 
 /* CoinJoin */
 "Mix coins" = "Mix coins";
@@ -1579,6 +1603,9 @@
 
 /* No comment provided by engineer. */
 "Node IP" = "Węzeł IP";
+
+/* Usernames */
+"Non-contested" = "Non-contested";
 
 /* adjective, security level */
 "None" = "Żaden";
@@ -1807,6 +1834,9 @@
 
 /* No comment provided by engineer. */
 "Please write it down" = "Proszę to zapisać";
+
+/* No comment provided by engineer. */
+"Preview" = "Preview";
 
 /* No comment provided by engineer. */
 "Preview Invitation" = "Podgląd zaproszenia";
@@ -2068,6 +2098,10 @@
 
 /* Buy Sell Dash */
 "Select a service" = "Wybierz usługę";
+
+/* Block explorer picker
+   Block explorer selection title */
+"Select block explorer" = "Select block explorer";
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "Wybierz z Galeri";
@@ -2337,6 +2371,12 @@
 /* Coinbase */
 "The minimum amount you can send is %@" = "Minimalna kwota jaką możesz wysłać to %@";
 
+/* Invites */
+"The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen" = "The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen";
+
+/* Invites */
+"The person that you send this invitation to can request any username they want and the network will vote to approve it" = "The person that you send this invitation to can request any username they want and the network will vote to approve it";
+
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
 
@@ -2401,7 +2441,7 @@
 "to Dash Wallet on this device" = "Do portfela Dash na tym urządzeniu";
 
 /* CoinJoin */
-"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
+"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@.";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "Aby otworzyć lokatę, stwórz konto na CrowdNode lub zaloguj się do już istniejącego konta.";
@@ -2775,6 +2815,9 @@
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "Chcesz zaakcptować zaprosznie?";
 
+/* Invites */
+"Would you like to create this invitation?" = "Would you like to create this invitation?";
+
 /* Coinbase */
 "Would you like to make a deposit for your purchase using a linked bank account?" = "Czy chcesz dokonać depozytu na twój zakup z połączonego konta bankowego?";
 
@@ -2795,6 +2838,9 @@
 
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Za chwilę wyczyścisz ten portfel z tego urządzenia. Fundusze powiązane z tym portfelem można odzyskać tylko wtedy, gdy masz frazy odzyskiwania.";
+
+/* DashSpend */
+"You are buying a %@ gift card for %@ (%d%% discount)" = "You are buying a %1$@ gift card for %2$@ (%3$d%% discount)";
 
 /* No comment provided by engineer. */
 "You can always delete the image uploaded, as long as you have access to this wallet." = "Zawsze masz możliwość skasowania zdjęcia jeśli masz dostęp do portfela. ";
@@ -2827,7 +2873,7 @@
 "You cannot claim this invite since you already have a Dash username" = "Nie możesz odebrać tego zaproszenia, ponieważ już masz własną nazwę użytkownika na sieci Dash.";
 
 /* Usernames */
-"You chose “%@” as your username." = "You chose “%@” as your username.";
+"You chose \"%@\" as your username." = "You chose \"%@\" as your username.";
 
 /* CoinJoin */
 "You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
@@ -2981,6 +3027,9 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Twoja transakcja została wysłana a ilość powinna pojawić się na Twoim koncie w kilka minut.";
+
+/* Usernames */
+"your username" = "your username";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Twoja nazwa użytkownika %@ została stworzona na Sieci Dash";
