@@ -141,6 +141,8 @@ struct DashSpendPayScreen: View {
         .ignoresSafeArea(.all, edges: .bottom)
         .background(Color.primaryBackground)
         .onAppear {
+            viewModel.subscribeToUpdates()
+            
             if justAuthenticated {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                     justAuthenticated = false

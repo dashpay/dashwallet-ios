@@ -84,7 +84,9 @@ class DashSpendPayViewModel: ObservableObject {
         merchantTitle = merchant.name
         merchantIconUrl = merchant.logoLocation ?? ""
         savingsFraction = Decimal(merchant.merchant?.savingsBasisPoints ?? 0) / Decimal(10000)
-        
+    }
+    
+    func subscribeToUpdates() {
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
             .sink { [weak self] _ in self?.refreshBalance() }
             .store(in: &cancellableBag)
@@ -109,7 +111,7 @@ class DashSpendPayViewModel: ObservableObject {
         walletBalance = DWEnvironment.sharedInstance().currentWallet.balance
     }
     
-    func checkAmountForErrors() {
+    private func checkAmountForErrors() {
         guard DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
             DWEnvironment.sharedInstance().currentChainManager.syncPhase == .synced
         else {
@@ -125,7 +127,7 @@ class DashSpendPayViewModel: ObservableObject {
         error = nil
     }
     
-    var canShowInsufficientFunds: Bool {
+    private var canShowInsufficientFunds: Bool {
         let dashAmount = (try? CurrencyExchanger.shared.convertToDash(amount: amount, currency: kDefaultCurrencyCode)) ?? 0
 
         let account = DWEnvironment.sharedInstance().currentAccount
