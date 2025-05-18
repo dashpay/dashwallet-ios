@@ -140,6 +140,7 @@ struct CTXSpendUserAuthScreen: View {
                             value: $viewModel.input,
                             showDecimalSeparator: false,
                             actionButtonText: NSLocalizedString("Continue", comment: ""),
+                            actionEnabled: true,
                             actionHandler: {
                                 viewModel.onContinue()
                             }
