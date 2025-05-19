@@ -253,6 +253,9 @@
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "Como la mayoría de las personas no tienen exactamente 1000 Dash a mano, CrowdNode ha creado un servicio donde, al agrupar los depósitos de los miembros, pueden lograr los beneficios de poseer un Masternode.";
 
+/* DashSpend */
+"at" = "at";
+
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "La búsqueda de cajeros automáticos funciona mejor con los servicios de ubicación activados.";
 
@@ -367,6 +370,9 @@
 
 /* Dash Portal */
 "Buy Dash · No account needed" = "Compra Dash. No se necesita una cuenta";
+
+/* DashSpend */
+"Buy gift card" = "Buy gift card";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "Compra tarjetas de regalo con tus Dash";
@@ -668,6 +674,9 @@
 /* No comment provided by engineer. */
 "Dash username" = "Nombre de usuario de Dash";
 
+/* DashSpend confirmation */
+"Dash Wallet" = "Dash Wallet";
+
 /* Buy Dash */
 "Dash Wallet on this device" = "Billetera de Dash en este dispositivo";
 
@@ -733,6 +742,9 @@
    Coinbase Entry Point */
 "Disconnected" = "Desconectado";
 
+/* DashSpend confirmation */
+"Discount" = "Discount";
+
 /* No comment provided by engineer. */
 "Dismiss" = "Dismiss";
 
@@ -770,7 +782,7 @@
 "e.g. johndoe@mail.com" = "por ejemplo,  johndoe@mail.com";
 
 /* No comment provided by engineer. */
-"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Cada invitación se financiará con esta cantidad para que el receptor pueda crear rápidamente su nombre de usuario en la red de Dash.";
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Antes";
@@ -952,6 +964,9 @@
 /* No comment provided by engineer. */
 "Found potential missing words:\n%@" = "Se encontraron posibles palabras faltantes:\n%@";
 
+/* DashSpend confirmation */
+"From" = "From";
+
 /* from CrowdNode */
 "from CrowdNode" = "desde CrowdNode";
 
@@ -1002,6 +1017,9 @@
 
 /* Explore Dash: Filters */
 "Gift Card" = "Tarjeta de regalo";
+
+/* DashSpend confirmation */
+"Gift card total" = "Gift card total";
 
 /* No comment provided by engineer. */
 "Go to CrowdNode website" = "Ir al sitio web de CrowdNode";
@@ -1214,7 +1232,7 @@
 "Invitation Created Successfully" = "Invitación creada con éxito";
 
 /* No comment provided by engineer. */
-"Invitation Fee" = "Tarifa de invitación";
+"Invitation Fee" = "Invitation Fee";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "Invitación utilizada por";
@@ -1448,6 +1466,9 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Máx";
 
+/* DashSpend */
+"Max: %@" = "Max: %@";
+
 /* Usernames */
 "Maximum 75 characters" = "Máximo 75 caracteres";
 
@@ -1462,6 +1483,9 @@
 
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "La búsqueda de comerciantes funciona mejor con los servicios de ubicación activados.";
+
+/* DashSpend */
+"Min: %@" = "Min: %@";
 
 /* CoinJoin */
 "Mix coins" = "Mix coins";
@@ -1600,6 +1624,9 @@
 
 /* Location Service Status */
 "Not Determined" = "No determinado";
+
+/* No comment provided by engineer. */
+"Not implemented" = "Not implemented";
 
 /* CoinJoin */
 "Not started" = "Not started";
@@ -1807,6 +1834,9 @@
 
 /* No comment provided by engineer. */
 "Please write it down" = "Anótala, por favor";
+
+/* No comment provided by engineer. */
+"Preview" = "Preview";
 
 /* No comment provided by engineer. */
 "Preview Invitation" = "Invitación de vista previa";
@@ -2068,6 +2098,10 @@
 
 /* Buy Sell Dash */
 "Select a service" = "Selecciona un servicio";
+
+/* Block explorer picker
+   Block explorer selection title */
+"Select block explorer" = "Select block explorer";
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "Seleccionar de la galería";
@@ -2396,6 +2430,9 @@
 
 /* Send Screen: to address */
 "to" = "a";
+
+/* DashSpend confirmation */
+"To" = "To";
 
 /* Coinbase */
 "to Dash Wallet on this device" = "a la billetera de Dash en este dispositivo";
@@ -2796,6 +2833,9 @@
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Estás a punto de limpiar esta billetera de este dispositivo. Fondos asociados a esta billetera solo podrán ser recuperados si tienes esta frase de recuperación.";
 
+/* DashSpend */
+"You are buying a %@ gift card for %@ (%d%% discount)" = "You are buying a %1$@ gift card for %2$@ (%3$d%% discount)";
+
 /* No comment provided by engineer. */
 "You can always delete the image uploaded, as long as you have access to this wallet." = "Siempre puedes eliminar la imagen cargada, siempre que tengas acceso a esta billetera.";
 
@@ -2885,6 +2925,9 @@
 
 /* CrowdNode */
 "You only need %@ to join the pool." = "Solo necesitas %@ para unirte al pool.";
+
+/* DashSpend confirmation */
+"You pay" = "You pay";
 
 /* Coinbase */
 "You receive" = "Tu recibes";

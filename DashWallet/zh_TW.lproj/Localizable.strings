@@ -253,6 +253,9 @@
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "由於大多數人手頭上沒有 1000 個達世幣，Crowdnode 提供了一項服務，透過匯集會員的存款，他們可以獲得擁有主節點的好處。";
 
+/* DashSpend */
+"at" = "at";
+
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "ATM 搜索在打開定位服務的情況下效果更好";
 
@@ -367,6 +370,9 @@
 
 /* Dash Portal */
 "Buy Dash · No account needed" = "購買達世幣 · 無需賬戶";
+
+/* DashSpend */
+"Buy gift card" = "Buy gift card";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "使用達世幣購買禮品卡";
@@ -668,6 +674,9 @@
 /* No comment provided by engineer. */
 "Dash username" = "達世幣用戶名";
 
+/* DashSpend confirmation */
+"Dash Wallet" = "Dash Wallet";
+
 /* Buy Dash */
 "Dash Wallet on this device" = "此設備上的達世幣錢包";
 
@@ -733,6 +742,9 @@
    Coinbase Entry Point */
 "Disconnected" = "斷開連接";
 
+/* DashSpend confirmation */
+"Discount" = "Discount";
+
 /* No comment provided by engineer. */
 "Dismiss" = "Dismiss";
 
@@ -770,7 +782,7 @@
 "e.g. johndoe@mail.com" = "例如 johndoe@mail.com";
 
 /* No comment provided by engineer. */
-"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "每個邀請都將獲得該金額的資助，以便接收者可以在達世幣網絡上快速創建他們的用戶名";
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "之前";
@@ -952,6 +964,9 @@
 /* No comment provided by engineer. */
 "Found potential missing words:\n%@" = "找到潛在的遺漏單詞:\n%@";
 
+/* DashSpend confirmation */
+"From" = "From";
+
 /* from CrowdNode */
 "from CrowdNode" = "來自 CrowdNode";
 
@@ -1002,6 +1017,9 @@
 
 /* Explore Dash: Filters */
 "Gift Card" = "禮物卡";
+
+/* DashSpend confirmation */
+"Gift card total" = "Gift card total";
 
 /* No comment provided by engineer. */
 "Go to CrowdNode website" = "訪問 CrowdNode 網站";
@@ -1214,7 +1232,7 @@
 "Invitation Created Successfully" = "創建邀請成功";
 
 /* No comment provided by engineer. */
-"Invitation Fee" = "邀請費";
+"Invitation Fee" = "Invitation Fee";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "邀請己被使用";
@@ -1448,6 +1466,9 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "最大值";
 
+/* DashSpend */
+"Max: %@" = "Max: %@";
+
 /* Usernames */
 "Maximum 75 characters" = "最多 75 個字符";
 
@@ -1462,6 +1483,9 @@
 
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "開啟位置服務後，商家搜索效果會更好。";
+
+/* DashSpend */
+"Min: %@" = "Min: %@";
 
 /* CoinJoin */
 "Mix coins" = "Mix coins";
@@ -1600,6 +1624,9 @@
 
 /* Location Service Status */
 "Not Determined" = "尚未決定";
+
+/* No comment provided by engineer. */
+"Not implemented" = "Not implemented";
 
 /* CoinJoin */
 "Not started" = "Not started";
@@ -1807,6 +1834,9 @@
 
 /* No comment provided by engineer. */
 "Please write it down" = "請寫下來";
+
+/* No comment provided by engineer. */
+"Preview" = "Preview";
 
 /* No comment provided by engineer. */
 "Preview Invitation" = "預覽邀請";
@@ -2068,6 +2098,10 @@
 
 /* Buy Sell Dash */
 "Select a service" = "選擇一項服務";
+
+/* Block explorer picker
+   Block explorer selection title */
+"Select block explorer" = "Select block explorer";
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "從圖庫中選擇";
@@ -2396,6 +2430,9 @@
 
 /* Send Screen: to address */
 "to" = "至";
+
+/* DashSpend confirmation */
+"To" = "To";
 
 /* Coinbase */
 "to Dash Wallet on this device" = "到此設備上的 達世幣錢包";
@@ -2796,6 +2833,9 @@
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "您將要從此設備上清除此錢包。 僅當您有恢復詞組時，才能取回與此錢包相關的資金。";
 
+/* DashSpend */
+"You are buying a %@ gift card for %@ (%d%% discount)" = "You are buying a %1$@ gift card for %2$@ (%3$d%% discount)";
+
 /* No comment provided by engineer. */
 "You can always delete the image uploaded, as long as you have access to this wallet." = "只要您有權訪問此錢包，您就可以隨時刪除上傳的圖片。";
 
@@ -2885,6 +2925,9 @@
 
 /* CrowdNode */
 "You only need %@ to join the pool." = "您至少需要 %@ 的金額來參與資金池。";
+
+/* DashSpend confirmation */
+"You pay" = "You pay";
 
 /* Coinbase */
 "You receive" = "你收到";

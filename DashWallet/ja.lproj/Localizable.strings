@@ -253,6 +253,9 @@
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "1000Dashを手元に持ち合わせている人はほとんどいないため、Crowdnodeはメンバーからの預金をプールすることでマスターノードを所有するメリットを得ることができるサービスを作りました。";
 
+/* DashSpend */
+"at" = "at";
+
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "位置情報サービスをオンにすると、ATM検索がより円滑に行えます";
 
@@ -367,6 +370,9 @@
 
 /* Dash Portal */
 "Buy Dash · No account needed" = "Dashを購入 · アカウント不要";
+
+/* DashSpend */
+"Buy gift card" = "Buy gift card";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "Dashでギフトカードを購入";
@@ -668,6 +674,9 @@
 /* No comment provided by engineer. */
 "Dash username" = "Dashのユーザー名";
 
+/* DashSpend confirmation */
+"Dash Wallet" = "Dash Wallet";
+
 /* Buy Dash */
 "Dash Wallet on this device" = "この端末のDashウォレット";
 
@@ -733,6 +742,9 @@
    Coinbase Entry Point */
 "Disconnected" = "切断されました";
 
+/* DashSpend confirmation */
+"Discount" = "Discount";
+
 /* No comment provided by engineer. */
 "Dismiss" = "Dismiss";
 
@@ -770,7 +782,7 @@
 "e.g. johndoe@mail.com" = "例：johndoe@mail.com";
 
 /* No comment provided by engineer. */
-"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "招待状はこの金額で提供され、受取人はDashネットワーク上で速やかにユーザー名を作成できます。";
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "以前";
@@ -952,6 +964,9 @@
 /* No comment provided by engineer. */
 "Found potential missing words:\n%@" = "可能性のある不足している語句を発見しました:\n%@";
 
+/* DashSpend confirmation */
+"From" = "From";
+
 /* from CrowdNode */
 "from CrowdNode" = "CrowdNodeから";
 
@@ -1002,6 +1017,9 @@
 
 /* Explore Dash: Filters */
 "Gift Card" = "ギフトカード";
+
+/* DashSpend confirmation */
+"Gift card total" = "Gift card total";
 
 /* No comment provided by engineer. */
 "Go to CrowdNode website" = "CrowdNodeのウェブサイトへ移動";
@@ -1214,7 +1232,7 @@
 "Invitation Created Successfully" = "招待状の作成に成功しました";
 
 /* No comment provided by engineer. */
-"Invitation Fee" = "招待料";
+"Invitation Fee" = "Invitation Fee";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "使用された招待状";
@@ -1448,6 +1466,9 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "最大";
 
+/* DashSpend */
+"Max: %@" = "Max: %@";
+
 /* Usernames */
 "Maximum 75 characters" = "75文字以内";
 
@@ -1462,6 +1483,9 @@
 
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "位置情報サービスをオンにすると、加盟店検索がより機能します。";
+
+/* DashSpend */
+"Min: %@" = "Min: %@";
 
 /* CoinJoin */
 "Mix coins" = "Mix coins";
@@ -1600,6 +1624,9 @@
 
 /* Location Service Status */
 "Not Determined" = "未定";
+
+/* No comment provided by engineer. */
+"Not implemented" = "Not implemented";
 
 /* CoinJoin */
 "Not started" = "Not started";
@@ -1807,6 +1834,9 @@
 
 /* No comment provided by engineer. */
 "Please write it down" = "紙に書き留めて下さい";
+
+/* No comment provided by engineer. */
+"Preview" = "Preview";
 
 /* No comment provided by engineer. */
 "Preview Invitation" = "招待状プレビュー";
@@ -2068,6 +2098,10 @@
 
 /* Buy Sell Dash */
 "Select a service" = "サービスを選択する";
+
+/* Block explorer picker
+   Block explorer selection title */
+"Select block explorer" = "Select block explorer";
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "ギャラリーから選択する";
@@ -2396,6 +2430,9 @@
 
 /* Send Screen: to address */
 "to" = "へ";
+
+/* DashSpend confirmation */
+"To" = "To";
 
 /* Coinbase */
 "to Dash Wallet on this device" = "この端末のDashウォレットに";
@@ -2796,6 +2833,9 @@
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "これからこのウォレットを本端末から削除します。削除後にこのウォレットに関連付けられた資金を回収するにはあなたの復元フレーズが必要です。";
 
+/* DashSpend */
+"You are buying a %@ gift card for %@ (%d%% discount)" = "You are buying a %1$@ gift card for %2$@ (%3$d%% discount)";
+
 /* No comment provided by engineer. */
 "You can always delete the image uploaded, as long as you have access to this wallet." = "このウォレットにアクセスできる限り、アップロードした画像はいつでも削除できます。";
 
@@ -2885,6 +2925,9 @@
 
 /* CrowdNode */
 "You only need %@ to join the pool." = "%@だけでプールに参加できます。";
+
+/* DashSpend confirmation */
+"You pay" = "You pay";
 
 /* Coinbase */
 "You receive" = "入金する";

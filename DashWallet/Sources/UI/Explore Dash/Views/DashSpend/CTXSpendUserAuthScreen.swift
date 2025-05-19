@@ -62,6 +62,7 @@ struct CTXSpendUserAuthScreen: View {
     @State private var navigateToOtp: Bool = false
     
     let authType: CTXSpendUserAuthType
+    let onAuthSuccess: () -> Void
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -113,7 +114,10 @@ struct CTXSpendUserAuthScreen: View {
                                 text: $viewModel.input,
                                 keyboardType: .emailAddress,
                                 autocapitalization: .never,
-                                isEnabled: authType != .otp
+                                isEnabled: authType != .otp,
+                                onSubmit: {
+                                    viewModel.onContinue()
+                                }
                             ).focused($isTextFieldFocused)
                             
                             if viewModel.showError {
@@ -134,7 +138,9 @@ struct CTXSpendUserAuthScreen: View {
                     if authType == .otp {
                         NumericKeyboardView(
                             value: $viewModel.input,
+                            showDecimalSeparator: false,
                             actionButtonText: NSLocalizedString("Continue", comment: ""),
+                            actionEnabled: true,
                             actionHandler: {
                                 viewModel.onContinue()
                             }
@@ -164,17 +170,11 @@ struct CTXSpendUserAuthScreen: View {
                 .padding(.bottom, authType == .otp ? 0 : 20)
             }
             
-            if viewModel.isUserSignedIn {
-                ToastView(
-                    text: NSLocalizedString("Logged in to DashSpend account", comment: "DashSpend"),
-                    icon: .system("checkmark.circle")
-                )
-                .frame(height: 20)
-                .padding(.bottom, 20)
-            }
-            
             NavigationLink(
-                destination: CTXSpendUserAuthScreen(authType: .otp).navigationBarHidden(true),
+                destination: CTXSpendUserAuthScreen(
+                    authType: .otp,
+                    onAuthSuccess: onAuthSuccess
+                ).navigationBarHidden(true),
                 isActive: $navigateToOtp
             ) {
                 EmptyView()
@@ -197,5 +197,13 @@ struct CTXSpendUserAuthScreen: View {
                 navigateToOtp = true
             }
         }
+        .onChange(of: viewModel.isUserSignedIn) { isSignedIn in
+            if (isSignedIn && authType == .otp) {
+                presentationMode.wrappedValue.dismiss()
+                onAuthSuccess()
+            }
+        }
     }
 }
+
+// TODO: toast should be on the buy screen

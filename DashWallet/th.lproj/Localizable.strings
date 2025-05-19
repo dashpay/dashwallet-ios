@@ -253,6 +253,9 @@
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "เนื่องจากคนส่วนใหญ่ไม่มี 1000 Dash อยู่ในมืออย่างแน่นอน Crowdnode จึงได้ให้บริการโดยรวบรวมเงินฝากจากสมาชิก พวกเขาสามารถบรรลุผลประโยชน์ของการเป็นเจ้าของ Masternode";
 
+/* DashSpend */
+"at" = "at";
+
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "การค้นหา ATM ทำงานได้ดีขึ้นเมื่อเปิดใช้บริการสถานที่";
 
@@ -367,6 +370,9 @@
 
 /* Dash Portal */
 "Buy Dash · No account needed" = "ซื้อ Dash · ไม่ต้องใช้บัญชี";
+
+/* DashSpend */
+"Buy gift card" = "Buy gift card";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "ซื้อบัตรของขวัญด้วย Dash ของคุณ";
@@ -668,6 +674,9 @@
 /* No comment provided by engineer. */
 "Dash username" = "ชื่อผู้ใช้ Dash";
 
+/* DashSpend confirmation */
+"Dash Wallet" = "Dash Wallet";
+
 /* Buy Dash */
 "Dash Wallet on this device" = "กระเป๋าเงิน Dash บนอุปกรณ์นี้";
 
@@ -733,6 +742,9 @@
    Coinbase Entry Point */
 "Disconnected" = "ตัดการเชื่อมต่อ";
 
+/* DashSpend confirmation */
+"Discount" = "Discount";
+
 /* No comment provided by engineer. */
 "Dismiss" = "Dismiss";
 
@@ -770,7 +782,7 @@
 "e.g. johndoe@mail.com" = "ตัวอย่างเช่น johndoe@mail.com";
 
 /* No comment provided by engineer. */
-"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "คำเชิญแต่ละครั้งจะได้รับเงินทุนด้วยจำนวนเงินนี้เพื่อให้ผู้รับสามารถสร้างชื่อผู้ใช้ของพวกเขาได้อย่างรวดเร็วบนเครือข่าย Dash";
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "ก่อน";
@@ -952,6 +964,9 @@
 /* No comment provided by engineer. */
 "Found potential missing words:\n%@" = "พบคำที่หายไปที่อาจเกิดขึ้น:\n%@";
 
+/* DashSpend confirmation */
+"From" = "From";
+
 /* from CrowdNode */
 "from CrowdNode" = "จาก CrowdNode";
 
@@ -1002,6 +1017,9 @@
 
 /* Explore Dash: Filters */
 "Gift Card" = "บัตรของขวัญ";
+
+/* DashSpend confirmation */
+"Gift card total" = "Gift card total";
 
 /* No comment provided by engineer. */
 "Go to CrowdNode website" = "ไปที่เว็บไซต์ CrowdNode";
@@ -1214,7 +1232,7 @@
 "Invitation Created Successfully" = "คำเชิญที่สร้างขึ้นสำเร็จ";
 
 /* No comment provided by engineer. */
-"Invitation Fee" = "ค่าธรรมเนียมการเชิญ";
+"Invitation Fee" = "Invitation Fee";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "คำเชิญใช้โดย";
@@ -1448,6 +1466,9 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "สูงสุด";
 
+/* DashSpend */
+"Max: %@" = "Max: %@";
+
 /* Usernames */
 "Maximum 75 characters" = "Maximum 75 characters";
 
@@ -1462,6 +1483,9 @@
 
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "การค้นหาร้านค้าทำงานได้ดีขึ้นเมื่อเปิดการใช้งานบริการสถานที่";
+
+/* DashSpend */
+"Min: %@" = "Min: %@";
 
 /* CoinJoin */
 "Mix coins" = "Mix coins";
@@ -1600,6 +1624,9 @@
 
 /* Location Service Status */
 "Not Determined" = "ไม่ได้กำหนด";
+
+/* No comment provided by engineer. */
+"Not implemented" = "Not implemented";
 
 /* CoinJoin */
 "Not started" = "Not started";
@@ -1807,6 +1834,9 @@
 
 /* No comment provided by engineer. */
 "Please write it down" = "กรุณาเขียนลงไป";
+
+/* No comment provided by engineer. */
+"Preview" = "Preview";
 
 /* No comment provided by engineer. */
 "Preview Invitation" = "คำเชิญดูตัวอย่าง";
@@ -2068,6 +2098,10 @@
 
 /* Buy Sell Dash */
 "Select a service" = "เลือกบริการ";
+
+/* Block explorer picker
+   Block explorer selection title */
+"Select block explorer" = "Select block explorer";
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "เลือกจากแกลเลอรี่";
@@ -2396,6 +2430,9 @@
 
 /* Send Screen: to address */
 "to" = "ถึง";
+
+/* DashSpend confirmation */
+"To" = "To";
 
 /* Coinbase */
 "to Dash Wallet on this device" = "เพื่อกระเป๋า Dash บนอุปกรณ์นี้";
@@ -2796,6 +2833,9 @@
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "คุณกำลังจะล้างวอลเล็ทนี้จากอุปกรณ์นี้ เงินทุนที่เกี่ยวข้องกับกระเป๋าเงินนี้สามารถเรียกคืนได้หากคุณมีวลีกู้คืนของคุณ";
 
+/* DashSpend */
+"You are buying a %@ gift card for %@ (%d%% discount)" = "You are buying a %1$@ gift card for %2$@ (%3$d%% discount)";
+
 /* No comment provided by engineer. */
 "You can always delete the image uploaded, as long as you have access to this wallet." = "คุณสามารถลบภาพที่อัปโหลดได้เสมอตราบใดที่คุณสามารถเข้าถึงกระเป๋าเงินนี้ได้";
 
@@ -2885,6 +2925,9 @@
 
 /* CrowdNode */
 "You only need %@ to join the pool." = "คุณต้องใช้เพียงแค่ %@ เพื่อเข้าร่วมใน pool";
+
+/* DashSpend confirmation */
+"You pay" = "You pay";
 
 /* Coinbase */
 "You receive" = "คุณได้รับ";

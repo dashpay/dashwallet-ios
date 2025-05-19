@@ -57,7 +57,7 @@ extension ExplorePointOfUse {
         let paymentMethod: PaymentMethod
         let type: `Type`
         let deeplink: String?
-        let savingsPercentage: Int
+        let savingsBasisPoints: Int // in basis points 1 = 0.001%
     }
 
     var merchant: Merchant? {
@@ -221,7 +221,7 @@ extension ExplorePointOfUse: RowDecodable {
             let savingsPercentage = row[ExplorePointOfUse.savingPercentage]
             category = .merchant(Merchant(merchantId: merchantId,
                                           paymentMethod: Merchant.PaymentMethod(rawValue: paymentMethodRaw)!,
-                                          type: type, deeplink: deeplink, savingsPercentage: savingsPercentage))
+                                          type: type, deeplink: deeplink, savingsBasisPoints: savingsPercentage))
         } else if let manufacturer = try? row.get(ExplorePointOfUse.manufacturer) {
             let type: Atm.`Type`! = .init(rawValue: row[ExplorePointOfUse.type])
             category = .atm(Atm(manufacturer: manufacturer, type: type))

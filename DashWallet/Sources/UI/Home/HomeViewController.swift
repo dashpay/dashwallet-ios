@@ -22,9 +22,9 @@ import Combine
 class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     private var cancellableBag = Set<AnyCancellable>()
     var model: DWHomeProtocol!
+    var viewModel: HomeViewModel!
     private var homeView: HomeView!
     weak var delegate: (DWHomeViewControllerDelegate & DWWipeDelegate)?
-    private let viewModel = HomeViewModel.shared
 
     #if DASHPAY
     var isBackButtonHidden: Bool = false
@@ -50,7 +50,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
     override func loadView() {
         let frame = UIScreen.main.bounds
-        homeView = HomeView(frame: frame, delegate: self)
+        homeView = HomeView(frame: frame, delegate: self, viewModel: viewModel)
         homeView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         homeView.shortcutsDelegate = self
         view = homeView
@@ -87,12 +87,6 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
         model.registerForPushNotifications()
         model.checkCrowdNodeState()
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-
-        homeView.hideBalanceIfNeeded()
     }
 
     #if DASHPAY
@@ -338,10 +332,10 @@ extension HomeViewController: TxReclassifyTransactionsInfoViewControllerDelegate
     }
 }
 
-// MARK: - DWShortcutsActionDelegate
+// MARK: - ShortcutsActionDelegate
 
 extension HomeViewController: ShortcutsActionDelegate {
-    func shortcutsView(_ view: UIView, didSelectAction action: ShortcutAction, sender: UIView) {
+    func shortcutsView(didSelectAction action: ShortcutAction, sender: UIView?) {
         performAction(for: action, sender: sender)
     }
 }
