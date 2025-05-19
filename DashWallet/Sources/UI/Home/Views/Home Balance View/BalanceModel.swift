@@ -88,7 +88,7 @@ final class BalanceModel: ObservableObject {
 extension BalanceModel {
     func observeWallet() {
         NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
-            .removeDuplicates()
+//            .removeDuplicates()
             .sink { [weak self] _ in
                 self?.hideBalanceIfNeeded()
             }

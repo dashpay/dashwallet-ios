@@ -192,7 +192,7 @@ extension MainMenuViewController: MainMenuContentViewDelegate {
     
     func mainMenuContentView(joinDashPayAction view: MainMenuContentView) {
         guard let dashPayModel = dashPayModel else { return }
-        let controller = CreateUsernameViewController(dashPayModel: dashPayModel, invitationURL: nil, definedUsername: nil)
+        let controller = CreateUsernameViewController(model: dashPayModel, invitationURL: nil, definedUsername: nil)
         controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { [weak self] result in
             if result {

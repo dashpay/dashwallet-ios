@@ -127,14 +127,11 @@ NS_ASSUME_NONNULL_END
                 shouldInclude = YES;
                 break;
             case DWInvitationHistoryFilter_Pending: {
-                DIdentityRegistrationStatus *status = invitation.identity.registrationStatus;
-                shouldInclude = dash_spv_platform_identity_model_IdentityRegistrationStatus_is_unknown(status) || dash_spv_platform_identity_model_IdentityRegistrationStatus_is_not_registered(status);
+                shouldInclude = [invitation.identity registrationStatusIsPending];
                 break;
             }
             case DWInvitationHistoryFilter_Claimed: {
-                DIdentityRegistrationStatus *status = invitation.identity.registrationStatus;
-                shouldInclude = dash_spv_platform_identity_model_IdentityRegistrationStatus_is_registering(status) || dash_spv_platform_identity_model_IdentityRegistrationStatus_is_registered(status);
-                shouldInclude = dash_spv_platform_identity_model_IdentityRegistrationStatus_is_unknown(status) || dash_spv_platform_identity_model_IdentityRegistrationStatus_is_not_registered(status);
+                shouldInclude = [invitation.identity registrationStatusIsClaimed];
                 break;
             }
         }

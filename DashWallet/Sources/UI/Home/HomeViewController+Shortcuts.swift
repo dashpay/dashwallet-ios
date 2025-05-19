@@ -102,14 +102,11 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, DWExploreTe
 
     func showCreateUsername(withInvitation invitationURL: URL?, definedUsername: String?) {
         #if DASHPAY
-        let controller = CreateUsernameViewController(dashPayModel: model.dashPayModel, invitationURL: nil, definedUsername: nil)
+        let controller = CreateUsernameViewController(model: model.dashPayModel, invitationURL: invitationURL, definedUsername: definedUsername)
         controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { result in
-            if (result) {
-                self.view.dw_showInfoHUD(withText: NSLocalizedString("Username was successfully requested", comment: "Usernames"), offsetForNavBar:true)
-            } else {
-                self.view.dw_showInfoHUD(withText: NSLocalizedString("Your request was cancelled", comment: "Usernames"), offsetForNavBar:true)
-            }
+            let text = result ? "Username was successfully requested" : "Your request was cancelled";
+            self.view.dw_showInfoHUD(withText: NSLocalizedString(text, comment: "Usernames"), offsetForNavBar:true)
         }
         self.navigationController?.pushViewController(controller, animated: true)
         #endif

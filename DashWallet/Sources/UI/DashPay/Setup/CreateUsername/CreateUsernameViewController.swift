@@ -19,13 +19,13 @@ import UIKit
 import SwiftUI
 
 class CreateUsernameViewController: UIViewController {
-    private let dashPayModel: DWDashPayProtocol
+    private let model: DWDashPayProtocol
     @objc var completionHandler: ((Bool) -> ())?
     
     @objc
-    init(dashPayModel: DWDashPayProtocol, invitationURL: URL?, definedUsername: String?) {
+    init(model: DWDashPayProtocol, invitationURL: URL?, definedUsername: String?) {
         // TODO: invites
-        self.dashPayModel = dashPayModel
+        self.model = model
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -38,7 +38,7 @@ class CreateUsernameViewController: UIViewController {
         
         self.view.backgroundColor = UIColor.dw_secondaryBackground()
 
-        let content = CreateUsernameView(dashPayModel: dashPayModel) { dialog in
+        let content = CreateUsernameView(model: model) { dialog in
             self.showModalDialog(dialog: dialog)
         } dismissDialog: {
             self.dismiss(animated: true)
@@ -62,7 +62,7 @@ class CreateUsernameViewController: UIViewController {
 }
 
 struct CreateUsernameView: View {
-    @State var dashPayModel: DWDashPayProtocol
+    @State var model: DWDashPayProtocol
     @StateObject private var viewModel = CreateUsernameViewModel()
     @FocusState private var isTextInputFocused: Bool
     @State private var showVotingInfo: Bool = false
@@ -138,15 +138,13 @@ struct CreateUsernameView: View {
                 isLoading: inProgress
             ) {
                 if viewModel.uiState.usernameBlockedRule == .valid {
-                    Task {
-                        inProgress = true
-                        let result = await viewModel.submitUsernameRequest(withProve: nil)
-                        inProgress = false
-                        
-                        if result {
-                            finish()
+                    inProgress = true
+                    self.submitUsername(completion: { success in
+                        self.inProgress = false
+                        if success {
+                            self.finish()
                         }
-                    }
+                    })
                 } else {
                     showVerifyConfirmation(getVerifyConfirmation())
                 }
@@ -204,16 +202,13 @@ struct CreateUsernameView: View {
                     confirmUsernameRequest = false
                 },
                 onConfirm: {
-                    confirmUsernameRequest = false
-                    Task {
-                        inProgress = true
-                        let result = await viewModel.submitUsernameRequest(withProve: self.prove)
-                        inProgress = false
-                        
-                        if result {
-                            finish()
+                    inProgress = true
+                    self.submitUsername(completion: { success in
+                        self.inProgress = false
+                        if success {
+                            self.finish()
                         }
-                    }
+                    })
                 },
                 username: viewModel.username,
                 detailsText: NSLocalizedString("Please note that the username can NOT be changed once it is registered.", comment: "Usernames"),
@@ -226,6 +221,54 @@ struct CreateUsernameView: View {
                 dialog
             }
         }
+    }
+
+    private func submitUsername(completion: @escaping @Sendable (_ response: Bool) -> Void) {
+        var observer: NSObjectProtocol?
+        observer = NotificationCenter.default.addObserver(
+            forName: .DWDashPayRegistrationStatusUpdatedNotification,
+            object: nil,
+            queue: .main
+        ) { [weak observer, self] info in
+            guard let status = model.registrationStatus else {
+                if let obs = observer {
+                    NotificationCenter.default.removeObserver(obs)
+                }
+                return
+            }
+            
+            switch status.state {
+            case .processingPayment:
+                
+                break
+            case .creatingID:
+                
+                break
+            case .registrationUsername:
+                break
+            case .done:
+                if let obs = observer {
+                    NotificationCenter.default.removeObserver(obs)
+                }
+                completion(true)
+                break
+            @unknown default:
+                completion(false)
+            }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            Task {
+                let allowBiometric = DSAuthenticationManager.sharedInstance().canUseBiometricAuthentication(forAmount: viewModel.uiState.requiredDash)
+                let biometricEnabled = DWGlobalOptions.sharedInstance().biometricAuthEnabled
+                if await DSAuthenticationManager.sharedInstance().authenticate(
+                    withPrompt: nil,
+                    usingBiometricAuthentication: allowBiometric && biometricEnabled,
+                    alertIfLockout: true).0 {
+                    model.createUsername(viewModel.username, invitation: nil)
+                }
+            }
+        }
+
     }
     
     @ViewBuilder

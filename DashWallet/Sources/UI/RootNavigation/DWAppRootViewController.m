@@ -441,7 +441,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (MainTabbarController *)mainController {
     if (_mainController == nil) {
         id<DWHomeProtocol> homeModel = self.model.homeModel;
-        MainTabbarController *controller = [[MainTabbarController alloc] initWithHomeModel:self.model.homeModel];
+        MainTabbarController *controller = [[MainTabbarController alloc] initWithHomeModel:homeModel];
         controller.wipeDelegate = self;
         controller.isDemoMode = self.demoMode;
         controller.demoDelegate = self.demoDelegate;
