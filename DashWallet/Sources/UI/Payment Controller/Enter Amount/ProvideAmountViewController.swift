@@ -69,7 +69,7 @@ final class ProvideAmountViewController: SendAmountViewController {
 
         let stackView = UIStackView()
         stackView.axis = .vertical
-        stackView.spacing = 26
+        stackView.spacing = UIDevice.isIphone5OrLess ? 10 : 26
         stackView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(stackView)
         
@@ -107,10 +107,10 @@ final class ProvideAmountViewController: SendAmountViewController {
         stackView.addArrangedSubview(amountView)
 
         NSLayoutConstraint.activate([
-            stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
+            stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: UIDevice.isIphone5OrLess ? 0 : 10),
             stackView.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
-            swiftUIController.view.heightAnchor.constraint(equalToConstant: 100)
+            swiftUIController.view.heightAnchor.constraint(equalToConstant: UIDevice.isIphone5OrLess ? 84 : 100)
         ])
     }
 
