@@ -24,11 +24,13 @@ private let defaultCurrency = kDefaultCurrencyCode
 class DashSpendPayViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: defaultCurrency)
+    private let ctxSpendService = CTXSpendService.shared
     
     private let minimumAmount: Decimal = 5 // TODO: limits
     private let maximumAmount: Decimal = 50
     private(set) var amount: Decimal = 0
     private(set) var savingsFraction: Decimal = 0.0
+    @Published private(set) var isLoading = false
     
     let currencySymbol: String = {
         let locale = Locale.current as NSLocale
@@ -64,6 +66,8 @@ class DashSpendPayViewModel: ObservableObject {
         }
     }
     
+    private var merchantId: String = ""
+    
     var costMessage: String {
         let originalPrice = fiatFormatter.string(for: amount) ?? "0.00"
         let discountedPrice = amount * (1 - savingsFraction)
@@ -84,6 +88,10 @@ class DashSpendPayViewModel: ObservableObject {
         merchantTitle = merchant.name
         merchantIconUrl = merchant.logoLocation ?? ""
         savingsFraction = Decimal(merchant.merchant?.savingsBasisPoints ?? 0) / Decimal(10000)
+        
+        if let merchantId = merchant.merchant?.merchantId {
+            self.merchantId = merchantId
+        }
     }
     
     func subscribeToUpdates() {
@@ -101,6 +109,11 @@ class DashSpendPayViewModel: ObservableObject {
         }
         
         self.refreshBalance()
+        
+        // Get updated merchant info from CTX API if user is signed in
+        Task {
+            await updateMerchantInfo()
+        }
     }
     
     func unsubscribeFromAll() {
@@ -134,5 +147,70 @@ class DashSpendPayViewModel: ObservableObject {
         let allAvailableFunds = isMixing ? coinJoinBalance : account.maxOutputAmount
 
         return dashAmount.plainDashAmount > allAvailableFunds
+    }
+    
+    // MARK: - CTX Integration
+    
+    private func updateMerchantInfo() async {
+        guard !merchantId.isEmpty, ctxSpendService.isUserSignedIn else { return }
+        
+        do {
+            let merchantInfo = try await ctxSpendService.getMerchant(merchantId: merchantId)
+            
+            // Update merchant details
+            savingsFraction = Decimal(merchantInfo.savingsPercentage) / 100
+            
+            if merchantInfo.denominationType == .Range {
+                minimumAmount = Decimal(merchantInfo.minimumCardPurchase)
+                maximumAmount = Decimal(merchantInfo.maximumCardPurchase)
+            }
+            
+            // Revalidate current amount
+            checkAmountForErrors()
+        } catch {
+            DSLogger.log("Failed to get merchant info: \(error)")
+        }
+    }
+    
+    func purchaseGiftCard() async throws -> GiftCardResponse {
+        guard !merchantId.isEmpty, ctxSpendService.isUserSignedIn else {
+            DSLogger.log("Purchase gift card failed: User not signed in or merchant ID is empty")
+            throw CTXSpendError.unauthorized
+        }
+        
+        DSLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(amount)")
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            let fiatAmountString = String(format: "%.2f", amount)
+            DSLogger.log("Making API request to purchase gift card: merchantId=\(merchantId), amount=\(fiatAmountString)USD")
+            
+            let response = try await ctxSpendService.purchaseGiftCard(
+                merchantId: merchantId,
+                fiatAmount: fiatAmountString,
+                fiatCurrency: "USD",
+                cryptoCurrency: "DASH"
+            )
+            
+            // Log success details
+            DSLogger.log("Gift card purchase successful!")
+            DSLogger.log("Response details: Merchant=\(response.merchantName), Amount=\(response.fiatAmount) \(response.fiatCurrency)")
+            DSLogger.log("DASH Amount: \(response.dashAmount)")
+            DSLogger.log("DASH Payment URL: \(response.dashPaymentUrl)")
+            
+            if let txid = response.txid {
+                DSLogger.log("Transaction ID: \(txid)")
+            }
+            
+            return response
+        } catch {
+            DSLogger.log("Gift card purchase failed with error: \(error)")
+            throw error
+        }
+    }
+    
+    func isUserSignedIn() -> Bool {
+        return ctxSpendService.isUserSignedIn
     }
 }

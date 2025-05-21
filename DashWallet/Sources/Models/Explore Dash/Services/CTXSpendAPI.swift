@@ -18,12 +18,36 @@
 import Foundation
 import Moya
 
-enum CTXSpendError: Error {
+enum CTXSpendError: Error, LocalizedError {
     case networkError
     case parsingError
     case invalidCode
     case unauthorized
+    case insufficientFunds
+    case invalidMerchant
+    case invalidAmount
     case unknown
+    
+    public var errorDescription: String? {
+        switch self {
+        case .networkError:
+            return NSLocalizedString("Network error. Please check your connection and try again.", comment: "CTXSpend error")
+        case .parsingError:
+            return NSLocalizedString("Error processing server response. Please try again later.", comment: "CTXSpend error")
+        case .invalidCode:
+            return NSLocalizedString("Invalid verification code. Please try again.", comment: "CTXSpend error")
+        case .unauthorized:
+            return NSLocalizedString("Please sign in to your DashSpend account.", comment: "CTXSpend error")
+        case .insufficientFunds:
+            return NSLocalizedString("Insufficient funds to complete this purchase.", comment: "CTXSpend error")
+        case .invalidMerchant:
+            return NSLocalizedString("This merchant is currently unavailable.", comment: "CTXSpend error")
+        case .invalidAmount:
+            return NSLocalizedString("Invalid amount. Please check merchant limits.", comment: "CTXSpend error")
+        case .unknown:
+            return NSLocalizedString("An unknown error occurred. Please try again later.", comment: "CTXSpend error")
+        }
+    }
 }
 
 protocol CTXSpendAPIAccessTokenProvider: AnyObject {

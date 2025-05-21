@@ -24,8 +24,11 @@ struct DashSpendPayScreen: View {
     @StateObject private var viewModel: DashSpendPayViewModel
     let merchant: ExplorePointOfUse
     @State var justAuthenticated: Bool
-    @State var showConfirmToast: Bool // TODO: temp
+    @State var showConfirmToast: Bool
     @State private var showConfirmationDialog = false
+    @State private var showErrorDialog = false
+    @State private var errorMessage = ""
+    @State private var errorTitle = ""
     
     init(merchant: ExplorePointOfUse, justAuthenticated: Bool = false) {
         self.merchant = merchant
@@ -120,8 +123,13 @@ struct DashSpendPayScreen: View {
                     value: $viewModel.input,
                     showDecimalSeparator: true,
                     actionButtonText: NSLocalizedString("Preview", comment: ""),
-                    actionEnabled: viewModel.error == nil && !viewModel.showLimits,
+                    actionEnabled: viewModel.error == nil && !viewModel.showLimits && !viewModel.isLoading,
                     actionHandler: {
+                        if !viewModel.isUserSignedIn() {
+                            showSignInError()
+                            return
+                        }
+                        
                         showConfirmationDialog = true
                     }
                 )
@@ -144,10 +152,26 @@ struct DashSpendPayScreen: View {
             
             if showConfirmToast {
                 ToastView(
-                    text: NSLocalizedString("Not implemented", comment: "")
+                    text: NSLocalizedString("Gift card purchase successful", comment: "DashSpend")
                 )
                 .frame(height: 20)
                 .padding(.bottom, 30)
+            }
+            
+            if showErrorDialog {
+                ModalDialog(
+                    style: .error,
+                    icon: .system("exclamationmark.triangle.fill"),
+                    heading: errorTitle,
+                    textBlock1: errorMessage,
+                    positiveButtonText: NSLocalizedString("OK", comment: ""),
+                    positiveButtonAction: {
+                        showErrorDialog = false
+                    }
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.black.opacity(0.7))
+                .edgesIgnoringSafeArea(.all)
             }
         }
         .ignoresSafeArea(.all, edges: .bottom)
@@ -176,12 +200,8 @@ struct DashSpendPayScreen: View {
                     originalPrice: viewModel.amount,
                     discount: viewModel.savingsFraction,
                     onConfirm: {
-                        // TODO: Handle confirmation action
                         showConfirmationDialog = false
-                        showConfirmToast = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                            showConfirmToast = false
-                        }
+                        purchaseGiftCard()
                     },
                     onCancel: {
                         showConfirmationDialog = false
@@ -195,6 +215,66 @@ struct DashSpendPayScreen: View {
                 dialog
             }
         }
+    }
+    
+    private func purchaseGiftCard() {
+        Task {
+            do {
+                // Show spinner/activity indicator could be added here
+                
+                let response = try await viewModel.purchaseGiftCard()
+                
+                // Success! Show success message and log to console
+                print("============ GIFT CARD PURCHASE SUCCESSFUL ============")
+                print("Merchant: \(response.merchantName)")
+                print("Amount: \(response.fiatCurrency) \(response.fiatAmount)")
+                print("Dash Amount: \(response.dashAmount)")
+                print("Dash Payment URL: \(response.dashPaymentUrl)")
+                
+                if let claimCode = response.claimCode {
+                    print("Claim Code: \(claimCode)")
+                }
+                
+                if let barcode = response.barcode {
+                    print("Barcode: \(barcode)")
+                    if let barcodeType = response.barcodeType {
+                        print("Barcode Type: \(barcodeType)")
+                    }
+                }
+                
+                if let txid = response.txid {
+                    print("Transaction ID: \(txid)")
+                }
+                
+                print("Created At: \(response.createdAt)")
+                print("Status: \(response.status)")
+                print("====================================================")
+                
+                showConfirmToast = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    showConfirmToast = false
+                    // In a real implementation, we would navigate to a gift card details screen
+                }
+            } catch let error as CTXSpendError {
+                errorTitle = NSLocalizedString("Purchase Failed", comment: "Alert title")
+                errorMessage = error.localizedDescription
+                showErrorDialog = true
+                
+                print("Gift card purchase failed with CTXSpendError: \(error)")
+            } catch {
+                errorTitle = NSLocalizedString("Error", comment: "Alert title")
+                errorMessage = error.localizedDescription
+                showErrorDialog = true
+                
+                print("Gift card purchase failed with error: \(error)")
+            }
+        }
+    }
+    
+    private func showSignInError() {
+        errorTitle = NSLocalizedString("Sign in required", comment: "Alert title")
+        errorMessage = NSLocalizedString("You need to sign in to DashSpend to purchase gift cards.", comment: "DashSpend")
+        showErrorDialog = true
     }
 }
 

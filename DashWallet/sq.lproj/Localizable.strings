@@ -211,6 +211,9 @@
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "An intuitive and familiar experience across all your devices";
 
+/* CTXSpend error */
+"An unknown error occurred. Please try again later." = "An unknown error occurred. Please try again later.";
+
 /* CrowdNode */
 "and" = "and";
 
@@ -841,6 +844,9 @@
 /* No comment provided by engineer. */
 "Error" = "Gabim";
 
+/* CTXSpend error */
+"Error processing server response. Please try again later." = "Error processing server response. Please try again later.";
+
 /* No comment provided by engineer. */
 "Error updating your profile" = "Error updating your profile";
 
@@ -1018,6 +1024,9 @@
 /* Explore Dash: Filters */
 "Gift Card" = "Gift Card";
 
+/* DashSpend */
+"Gift card purchase successful" = "Gift card purchase successful";
+
 /* DashSpend confirmation */
 "Gift card total" = "Gift card total";
 
@@ -1171,6 +1180,9 @@
 /* No comment provided by engineer. */
 "Insufficient funds" = "Insufficient funds";
 
+/* CTXSpend error */
+"Insufficient funds to complete this purchase." = "Insufficient funds to complete this purchase.";
+
 /* Send screen */
 "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction." = "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction.";
 
@@ -1201,6 +1213,9 @@
 /* Balance */
 "Invalid amount" = "Invalid amount";
 
+/* CTXSpend error */
+"Invalid amount. Please check merchant limits." = "Invalid amount. Please check merchant limits.";
+
 /* No comment provided by engineer. */
 "Invalid Dash address" = "Invalid Dash address";
 
@@ -1218,6 +1233,9 @@
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Invalid QR Code";
+
+/* CTXSpend error */
+"Invalid verification code. Please try again." = "Invalid verification code. Please try again.";
 
 /* No comment provided by engineer. */
 "Invitation" = "Invitation";
@@ -1556,6 +1574,9 @@
 /* No comment provided by engineer. */
 "Network" = "Network";
 
+/* CTXSpend error */
+"Network error. Please check your connection and try again." = "Network error. Please check your connection and try again.";
+
 /* No comment provided by engineer. */
 "Network fee" = "Tarifa e rrjetit";
 
@@ -1624,9 +1645,6 @@
 
 /* Location Service Status */
 "Not Determined" = "Not Determined";
-
-/* No comment provided by engineer. */
-"Not implemented" = "Not implemented";
 
 /* CoinJoin */
 "Not started" = "Not started";
@@ -1808,6 +1826,9 @@
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Please place your phone near NFC device.";
 
+/* CTXSpend error */
+"Please sign in to your DashSpend account." = "Please sign in to your DashSpend account.";
+
 /* No comment provided by engineer. */
 "Please tap on the words from your recovery phrase in the right order" = "Please tap on the words from your recovery phrase in the right order";
 
@@ -1885,6 +1906,9 @@
 
 /* Coinbase/Buy Dash */
 "Purchase" = "Purchase";
+
+/* Alert title */
+"Purchase Failed" = "Purchase Failed";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Quick Receive";
@@ -2224,6 +2248,9 @@
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Show Recovery Phrase";
 
+/* Alert title */
+"Sign in required" = "Sign in required";
+
 /* CrowdNode */
 "Sign the message" = "Sign the message";
 
@@ -2406,6 +2433,9 @@
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "This extra step shows it’s really you trying to make a transaction.";
+
+/* CTXSpend error */
+"This merchant is currently unavailable." = "This merchant is currently unavailable.";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "This PIN will be required to unlock your app every time when you use it.";
@@ -2919,6 +2949,9 @@
 
 /* Usernames */
 "You need to have more than %@ Dash to create a username" = "You need to have more than %@ Dash to create a username";
+
+/* DashSpend */
+"You need to sign in to DashSpend to purchase gift cards." = "You need to sign in to DashSpend to purchase gift cards.";
 
 /* CrowdNode */
 "You need to wait 5 minutes before initiating another withdrawal" = "You need to wait 5 minutes before initiating another withdrawal";
