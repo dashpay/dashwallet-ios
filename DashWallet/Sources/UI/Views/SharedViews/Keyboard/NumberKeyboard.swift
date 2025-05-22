@@ -170,7 +170,7 @@ extension NumberKeyboard {
 extension NumberKeyboard {
     enum Style {
         static let padding: CGFloat = 5
-        static let buttonHeight: CGFloat = 50
+        static let buttonHeight: CGFloat = UIDevice.isIphone5OrLess ? 45 : 50
         static let buttonMaxWidth: CGFloat = 115
         static let rowsCount: UInt = 4
         static let sectionsCount = 3
