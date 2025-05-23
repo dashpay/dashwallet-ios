@@ -171,7 +171,7 @@ class CreateUsernameViewModel: ObservableObject {
     func checkAssetLockTx(_ tx: DSTransaction) {
         Task {
             uiState.isInvitationMixed = await isInvitationMixed(assetLockTx: tx)
-            uiState.isInvitationForContested = await invitationAmount(assetLockTx: tx) >= DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
+            uiState.isInvitationForContested = false //await invitationAmount(assetLockTx: tx) >= DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME // TODO: restore contested check. Only non-contested enabled for now
             uiState.hasInvite = true
             uiState.costRule = .hidden
         }
