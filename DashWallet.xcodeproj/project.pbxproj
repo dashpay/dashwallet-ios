@@ -551,6 +551,8 @@
 		753261AE2CBC1040003CDE00 /* InvitationFlowViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261AD2CBC1040003CDE00 /* InvitationFlowViewController.swift */; };
 		753261B02CBC11BF003CDE00 /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261AF2CBC11BF003CDE00 /* WelcomeViewController.swift */; };
 		753261B22CBC157F003CDE00 /* GetStartedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753261B12CBC157F003CDE00 /* GetStartedViewController.swift */; };
+		753E46E82DE1E24300A3FF2A /* CTXSpendModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753E46E72DE1E24300A3FF2A /* CTXSpendModels.swift */; };
+		753E46E92DE1E24300A3FF2A /* CTXSpendModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753E46E72DE1E24300A3FF2A /* CTXSpendModels.swift */; };
 		753F75342DD0D42300D40DFE /* DashSpendPayScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753F75332DD0D41900D40DFE /* DashSpendPayScreen.swift */; };
 		753F75352DD0D42300D40DFE /* DashSpendPayScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753F75332DD0D41900D40DFE /* DashSpendPayScreen.swift */; };
 		753F75372DD0D76400D40DFE /* DashSpendPayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 753F75362DD0D75F00D40DFE /* DashSpendPayViewModel.swift */; };
@@ -564,11 +566,9 @@
 		754495DD2AE91B6300492817 /* GroupedRequestCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754495DC2AE91B6300492817 /* GroupedRequestCell.swift */; };
 		754495DF2AE91D3500492817 /* UsernameRequestCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754495DE2AE91D3500492817 /* UsernameRequestCell.swift */; };
 		754565C82DAA52A000DA4E8E /* CTXSpendAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C42DAA52A000DA4E8E /* CTXSpendAPI.swift */; };
-		754565C92DAA52A000DA4E8E /* CTXSpendModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C62DAA52A000DA4E8E /* CTXSpendModels.swift */; };
 		754565CA2DAA52A000DA4E8E /* CTXSpendService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C72DAA52A000DA4E8E /* CTXSpendService.swift */; };
 		754565CB2DAA52A000DA4E8E /* CTXSpendEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C52DAA52A000DA4E8E /* CTXSpendEndpoint.swift */; };
 		754565CC2DAA52A000DA4E8E /* CTXSpendAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C42DAA52A000DA4E8E /* CTXSpendAPI.swift */; };
-		754565CD2DAA52A000DA4E8E /* CTXSpendModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C62DAA52A000DA4E8E /* CTXSpendModels.swift */; };
 		754565CE2DAA52A000DA4E8E /* CTXSpendService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C72DAA52A000DA4E8E /* CTXSpendService.swift */; };
 		754565CF2DAA52A000DA4E8E /* CTXSpendEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C52DAA52A000DA4E8E /* CTXSpendEndpoint.swift */; };
 		754565D12DABA5F300DA4E8E /* MerchantTypesDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565D02DABA5EB00DA4E8E /* MerchantTypesDialog.swift */; };
@@ -2452,6 +2452,7 @@
 		753261AD2CBC1040003CDE00 /* InvitationFlowViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationFlowViewController.swift; sourceTree = "<group>"; };
 		753261AF2CBC11BF003CDE00 /* WelcomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
 		753261B12CBC157F003CDE00 /* GetStartedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetStartedViewController.swift; sourceTree = "<group>"; };
+		753E46E72DE1E24300A3FF2A /* CTXSpendModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTXSpendModels.swift; sourceTree = "<group>"; };
 		753F75332DD0D41900D40DFE /* DashSpendPayScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendPayScreen.swift; sourceTree = "<group>"; };
 		753F75362DD0D75F00D40DFE /* DashSpendPayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendPayViewModel.swift; sourceTree = "<group>"; };
 		753FD7E12CA44BDD00B7751F /* CoinJoinProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinProgress.swift; sourceTree = "<group>"; };
@@ -2462,7 +2463,6 @@
 		754495DE2AE91D3500492817 /* UsernameRequestCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequestCell.swift; sourceTree = "<group>"; };
 		754565C42DAA52A000DA4E8E /* CTXSpendAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTXSpendAPI.swift; sourceTree = "<group>"; };
 		754565C52DAA52A000DA4E8E /* CTXSpendEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTXSpendEndpoint.swift; sourceTree = "<group>"; };
-		754565C62DAA52A000DA4E8E /* CTXSpendModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTXSpendModels.swift; sourceTree = "<group>"; };
 		754565C72DAA52A000DA4E8E /* CTXSpendService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTXSpendService.swift; sourceTree = "<group>"; };
 		754565D02DABA5EB00DA4E8E /* MerchantTypesDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantTypesDialog.swift; sourceTree = "<group>"; };
 		754565D32DAD0F5B00DA4E8E /* DWExploreTestnetViewController+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DWExploreTestnetViewController+DashWallet.swift"; sourceTree = "<group>"; };
@@ -5666,7 +5666,7 @@
 		47AE8B9A28BFAD2000490F5E /* Entites */ = {
 			isa = PBXGroup;
 			children = (
-				754565C62DAA52A000DA4E8E /* CTXSpendModels.swift */,
+				753E46E72DE1E24300A3FF2A /* CTXSpendModels.swift */,
 				47AE8B9B28BFAD2800490F5E /* ExplorePointOfUse.swift */,
 			);
 			path = Entites;
@@ -8836,7 +8836,6 @@
 				47838B7D290133610003E8AB /* PointOfUseListFiltersViewController.swift in Sources */,
 				47AE8C1A28C6A21A00490F5E /* AllMerchantLocationsDataProvider.swift in Sources */,
 				754565CC2DAA52A000DA4E8E /* CTXSpendAPI.swift in Sources */,
-				754565CD2DAA52A000DA4E8E /* CTXSpendModels.swift in Sources */,
 				754565CE2DAA52A000DA4E8E /* CTXSpendService.swift in Sources */,
 				754565CF2DAA52A000DA4E8E /* CTXSpendEndpoint.swift in Sources */,
 				C9F451E52A0B986E00825057 /* MainTabbarController.swift in Sources */,
@@ -8860,6 +8859,7 @@
 				C917023F29D44E0B008C034D /* SendReceivePageController.swift in Sources */,
 				753FD7E22CA44BDD00B7751F /* CoinJoinProgress.swift in Sources */,
 				2A7A7BD92348CB7300451078 /* DWSettingsMenuModel.m in Sources */,
+				753E46E82DE1E24300A3FF2A /* CTXSpendModels.swift in Sources */,
 				478A2C7228DC909C00AD1420 /* BaseNavigationController.swift in Sources */,
 				47CDEECC294A2BAD008AE06D /* UIViewController+Coinbase.swift in Sources */,
 				472D13E1299E1F2F006903F1 /* CSVBuilder.swift in Sources */,
@@ -9575,6 +9575,7 @@
 				C943B5122A40A54600AF23C5 /* DWInvitationHistoryModel.m in Sources */,
 				C943B31A2A408CED00AF23C5 /* DWCurrentUserProfileView.m in Sources */,
 				751B61C22ADFF99D00D1C2EF /* CoinbaseDepositResponse.swift in Sources */,
+				753E46E92DE1E24300A3FF2A /* CTXSpendModels.swift in Sources */,
 				C943B4F32A40A54600AF23C5 /* DWDPEstablishedContactObject.m in Sources */,
 				C9D2C7E02A320AA000D15901 /* TransactionFilter.swift in Sources */,
 				C9D2C7E22A320AA000D15901 /* CrowdNodeWithdrawalReceivedTx.swift in Sources */,
@@ -9834,7 +9835,6 @@
 				C943B5382A40A65B00AF23C5 /* DWScrollingViewController.m in Sources */,
 				C9D2C8B22A320AA000D15901 /* CoinbaseAccountAddress.swift in Sources */,
 				754565C82DAA52A000DA4E8E /* CTXSpendAPI.swift in Sources */,
-				754565C92DAA52A000DA4E8E /* CTXSpendModels.swift in Sources */,
 				754565CA2DAA52A000DA4E8E /* CTXSpendService.swift in Sources */,
 				754565CB2DAA52A000DA4E8E /* CTXSpendEndpoint.swift in Sources */,
 				C9D2C8B32A320AA000D15901 /* DWMainMenuTableViewCell.m in Sources */,

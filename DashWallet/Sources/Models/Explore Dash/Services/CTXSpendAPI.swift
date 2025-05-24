@@ -27,6 +27,7 @@ enum CTXSpendError: Error, LocalizedError {
     case invalidMerchant
     case invalidAmount
     case unknown
+    case paymentProcessingError(String)
     
     public var errorDescription: String? {
         switch self {
@@ -46,6 +47,8 @@ enum CTXSpendError: Error, LocalizedError {
             return NSLocalizedString("Invalid amount. Please check merchant limits.", comment: "CTXSpend error")
         case .unknown:
             return NSLocalizedString("An unknown error occurred. Please try again later.", comment: "CTXSpend error")
+        case .paymentProcessingError(let details):
+            return String(format: NSLocalizedString("Payment processing error: %@", comment: "CTXSpend error"), details)
         }
     }
 }

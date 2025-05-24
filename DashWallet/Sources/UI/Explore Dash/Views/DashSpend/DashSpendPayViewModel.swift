@@ -26,8 +26,6 @@ class DashSpendPayViewModel: ObservableObject {
     private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: defaultCurrency)
     private let ctxSpendService = CTXSpendService.shared
     
-    private let minimumAmount: Decimal = 5 // TODO: limits
-    private let maximumAmount: Decimal = 50
     private(set) var amount: Decimal = 0
     private(set) var savingsFraction: Decimal = 0.0
     @Published private(set) var isLoading = false
@@ -41,6 +39,8 @@ class DashSpendPayViewModel: ObservableObject {
     @Published var merchantIconUrl: String = ""
     @Published var walletBalance: UInt64 = 0
     @Published var coinJoinBalance: UInt64 = 0
+    @Published var minimumAmount: Decimal = 0
+    @Published var maximumAmount: Decimal = 0
     @Published var error: Error? = nil
     @Published var input: String = "0" {
         didSet {
@@ -80,8 +80,8 @@ class DashSpendPayViewModel: ObservableObject {
     }
     var showCost: Bool { error == nil && amount >= minimumAmount && amount <= maximumAmount }
     var showLimits: Bool { error == nil && !showCost }
-    var minimumLimit: String { String.localizedStringWithFormat(NSLocalizedString("Min: %@", comment: "DashSpend"), fiatFormatter.string(for: minimumAmount) ?? "0.0" ) }
-    var maximumimit: String { String.localizedStringWithFormat(NSLocalizedString("Max: %@", comment: "DashSpend"), fiatFormatter.string(for: maximumAmount) ?? "0.0" ) }
+    var minimumLimitMessage: String { String.localizedStringWithFormat(NSLocalizedString("Min: %@", comment: "DashSpend"), fiatFormatter.string(for: minimumAmount) ?? "0.0" ) }
+    var maximumLimitMessage: String { String.localizedStringWithFormat(NSLocalizedString("Max: %@", comment: "DashSpend"), fiatFormatter.string(for: maximumAmount) ?? "0.0" ) }
     var isMixing: Bool { CoinJoinService.shared.mixingState.isInProgress }
     
     init(merchant: ExplorePointOfUse) {
@@ -183,7 +183,7 @@ class DashSpendPayViewModel: ObservableObject {
         defer { isLoading = false }
         
         do {
-            let fiatAmountString = String(format: "%.2f", amount)
+            let fiatAmountString = String(format: "%.2f", Double(truncating: amount as NSDecimalNumber))
             DSLogger.log("Making API request to purchase gift card: merchantId=\(merchantId), amount=\(fiatAmountString)USD")
             
             let response = try await ctxSpendService.purchaseGiftCard(
@@ -192,16 +192,6 @@ class DashSpendPayViewModel: ObservableObject {
                 fiatCurrency: "USD",
                 cryptoCurrency: "DASH"
             )
-            
-            // Log success details
-            DSLogger.log("Gift card purchase successful!")
-            DSLogger.log("Response details: Merchant=\(response.merchantName), Amount=\(response.fiatAmount) \(response.fiatCurrency)")
-            DSLogger.log("DASH Amount: \(response.dashAmount)")
-            DSLogger.log("DASH Payment URL: \(response.dashPaymentUrl)")
-            
-            if let txid = response.txid {
-                DSLogger.log("Transaction ID: \(txid)")
-            }
             
             return response
         } catch {
@@ -212,5 +202,14 @@ class DashSpendPayViewModel: ObservableObject {
     
     func isUserSignedIn() -> Bool {
         return ctxSpendService.isUserSignedIn
+    }
+    
+    func saveGiftCardDummy(txHashData: Data, giftCardId: String) {
+        // TODO: Implement gift card storage in iOS
+        // For now, just log the information
+        DSLogger.log("Gift card saved - txId: \(txHashData.hexEncodedString()), giftCardId: \(giftCardId)")
+        
+        // In a full implementation, this would save to Core Data or UserDefaults
+        // Similar to how the Android version saves to a Room database
     }
 }

@@ -102,7 +102,7 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, ObservableObject {
         )
         
         do {
-            let response = try await CTXSpendAPI.shared.request(.purchaseGiftCard(request))
+            let response: GiftCardResponse = try await CTXSpendAPI.shared.request(.purchaseGiftCard(request))
             DSLogger.log("Gift card purchased successfully: \(response)")
             return response
         } catch let error as CTXSpendError {
@@ -150,7 +150,7 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, ObservableObject {
     
     func getMerchant(merchantId: String) async throws -> MerchantResponse {
         do {
-            let response = try await CTXSpendAPI.shared.request(.getMerchant(merchantId))
+            let response: MerchantResponse = try await CTXSpendAPI.shared.request(.getMerchant(merchantId))
             DSLogger.log("Successfully retrieved merchant info: \(merchantId)")
             return response
         } catch let error as CTXSpendError {

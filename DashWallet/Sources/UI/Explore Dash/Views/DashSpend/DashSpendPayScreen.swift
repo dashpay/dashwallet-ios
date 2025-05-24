@@ -30,6 +30,10 @@ struct DashSpendPayScreen: View {
     @State private var errorMessage = ""
     @State private var errorTitle = ""
     
+    // Payment processor and delegate need to be retained for the duration of the payment
+    @State private var paymentProcessor: DWPaymentProcessor?
+    @State private var paymentDelegate: PaymentProcessorDelegate?
+    
     init(merchant: ExplorePointOfUse, justAuthenticated: Bool = false) {
         self.merchant = merchant
         self._viewModel = .init(wrappedValue: DashSpendPayViewModel(merchant: merchant))
@@ -81,7 +85,7 @@ struct DashSpendPayScreen: View {
                 
                 HStack {
                     if viewModel.showLimits {
-                        Text(viewModel.minimumLimit)
+                        Text(viewModel.minimumLimitMessage)
                             .font(.body2)
                             .foregroundColor(Color.primaryText)
                             .padding(.leading, 20)
@@ -106,7 +110,7 @@ struct DashSpendPayScreen: View {
                     
                     if viewModel.showLimits {
                         Spacer()
-                        Text(viewModel.maximumimit)
+                        Text(viewModel.maximumLimitMessage)
                             .font(.body2)
                             .foregroundColor(Color.primaryText)
                             .padding(.trailing, 20)
@@ -187,10 +191,13 @@ struct DashSpendPayScreen: View {
         }
         .onDisappear {
             viewModel.unsubscribeFromAll()
+            // Clean up payment processor if still active
+            paymentProcessor = nil
+            paymentDelegate = nil
         }
         .sheet(isPresented: $showConfirmationDialog) {
             let dialog = BottomSheet(
-                title: NSLocalizedString("Confirm", comment: "DashSpend confirmation dialog title"),
+                title: NSLocalizedString("Confirm", comment: "DashSpend"),
                 showBackButton: Binding<Bool>.constant(false)
             ) {
                 ConfirmationDialog(
@@ -227,33 +234,22 @@ struct DashSpendPayScreen: View {
                 // Success! Show success message and log to console
                 print("============ GIFT CARD PURCHASE SUCCESSFUL ============")
                 print("Merchant: \(response.merchantName)")
-                print("Amount: \(response.fiatCurrency) \(response.fiatAmount)")
-                print("Dash Amount: \(response.dashAmount)")
-                print("Dash Payment URL: \(response.dashPaymentUrl)")
+                print("Amount: \(response.paymentFiatCurrency) \(response.paymentFiatAmount)")
+                print("Dash Amount: \(response.paymentCryptoAmount)")
+                print("Dash Payment URL: \(response.paymentUrls.first)")
                 
-                if let claimCode = response.claimCode {
-                    print("Claim Code: \(claimCode)")
-                }
                 
-                if let barcode = response.barcode {
-                    print("Barcode: \(barcode)")
-                    if let barcodeType = response.barcodeType {
-                        print("Barcode Type: \(barcodeType)")
-                    }
-                }
+                print("paymentId: \(response.paymentId)")
                 
-                if let txid = response.txid {
-                    print("Transaction ID: \(txid)")
-                }
-                
-                print("Created At: \(response.createdAt)")
+                print("Created At: \(response.created)")
                 print("Status: \(response.status)")
                 print("====================================================")
                 
-                showConfirmToast = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    showConfirmToast = false
-                    // In a real implementation, we would navigate to a gift card details screen
+                // Process the payment using the payment URL
+                if let paymentUrlString = response.paymentUrls.first {
+                    await processPayment(with: paymentUrlString.value, paymentId: response.paymentId)
+                } else {
+                    throw CTXSpendError.paymentProcessingError("No payment URL received")
                 }
             } catch let error as CTXSpendError {
                 errorTitle = NSLocalizedString("Purchase Failed", comment: "Alert title")
@@ -267,6 +263,80 @@ struct DashSpendPayScreen: View {
                 showErrorDialog = true
                 
                 print("Gift card purchase failed with error: \(error)")
+            }
+        }
+    }
+    
+    private func processPayment(with paymentUrlString: String, paymentId: String) async {
+        do {
+            // Create payment input from the URL
+            guard let paymentUrl = URL(string: paymentUrlString) else {
+                throw CTXSpendError.paymentProcessingError("Invalid payment URL")
+            }
+            
+            // Use the existing payment infrastructure
+            let payModel = DWPayModel()
+            let paymentInput = payModel.paymentInput(with: paymentUrl)
+            
+            // If we have a BIP70 payment request URL, we need to fetch it first
+            if paymentInput.request?.r != nil {
+                try await fetchAndProcessPaymentRequest(paymentInput: paymentInput, paymentId: paymentId)
+            } else {
+                throw CTXSpendError.paymentProcessingError("Invalid payment request")
+            }
+            
+        } catch {
+            errorTitle = NSLocalizedString("Payment Error", comment: "Alert title")
+            errorMessage = error.localizedDescription
+            showErrorDialog = true
+        }
+    }
+    
+    private func fetchAndProcessPaymentRequest(paymentInput: DWPaymentInput, paymentId: String) async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            // Store the completion for later use
+            let completion: (DSTransaction?, Error?) -> Void = { transaction, error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        continuation.resume(throwing: error)
+                    } else if let transaction = transaction {
+                        // Payment successful
+                        print("Payment transaction completed: \(transaction.txHashHexString)")
+                        
+                        // Save gift card information
+                        self.viewModel.saveGiftCardDummy(
+                            txHashData: transaction.txHashData,
+                            giftCardId: paymentId
+                        )
+                        
+                        self.showConfirmToast = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            self.showConfirmToast = false
+                            self.presentationMode.wrappedValue.dismiss()
+                        }
+                        
+                        continuation.resume()
+                    } else {
+                        continuation.resume(throwing: CTXSpendError.paymentProcessingError("No transaction returned"))
+                    }
+                    
+                    // Clean up the payment processor and delegate after completion
+                    self.paymentProcessor = nil
+                    self.paymentDelegate = nil
+                }
+            }
+            
+            // Create and retain the delegate and processor
+            let delegate = PaymentProcessorDelegate(completion: completion)
+            let processor = DWPaymentProcessor(delegate: delegate)
+            
+            // Store them in instance variables to keep them alive
+            self.paymentDelegate = delegate
+            self.paymentProcessor = processor
+            
+            // Process the payment on the main thread
+            DispatchQueue.main.async {
+                processor.processPaymentInput(paymentInput)
             }
         }
     }
@@ -417,5 +487,68 @@ struct ConfirmationDialog: View {
         .padding(.top, 15)
         .padding(.horizontal, 20)
         .edgesIgnoringSafeArea(.bottom)
+    }
+}
+
+// MARK: - PaymentProcessorDelegate
+
+class PaymentProcessorDelegate: NSObject, DWPaymentProcessorDelegate {
+    private let completion: (DSTransaction?, Error?) -> Void
+    
+    init(completion: @escaping (DSTransaction?, Error?) -> Void) {
+        self.completion = completion
+    }
+    
+    func paymentProcessor(_ processor: DWPaymentProcessor, didSend protocolRequest: DSPaymentProtocolRequest, transaction: DSTransaction, contactItem: DWDPBasicUserItem?) {
+        completion(transaction, nil)
+    }
+    
+    func paymentProcessor(_ processor: DWPaymentProcessor, didFailWithError error: Error?, title: String?, message: String?) {
+        let fullError = NSError(
+            domain: "DashSpend",
+            code: -1,
+            userInfo: [
+                NSLocalizedDescriptionKey: message ?? title ?? NSLocalizedString("Payment failed", comment: "")
+            ]
+        )
+        completion(nil, error ?? fullError)
+    }
+    
+    func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, details: DSPaymentProtocolDetails?, contactItem: DWDPBasicUserItem?) {
+        // Not needed for our use case
+    }
+    
+    func paymentProcessor(_ processor: DWPaymentProcessor, requestUserActionTitle title: String?, message: String?, actionTitle: String, cancel cancelBlock: (() -> Void)?, actionBlock: (() -> Void)?) {
+        // Auto-confirm for gift card purchases
+        actionBlock?()
+    }
+    
+    func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
+        // Auto-confirm for gift card purchases
+        processor.confirmPaymentOutput(paymentOutput)
+    }
+    
+    func paymentProcessorDidCancelTransactionSigning(_ processor: DWPaymentProcessor) {
+        completion(nil, NSError(domain: "DashSpend", code: -2, userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("Transaction cancelled", comment: "")]))
+    }
+    
+    func paymentProcessor(_ processor: DWPaymentProcessor, didSweepRequest protocolRequest: DSPaymentRequest, transaction: DSTransaction) {
+        completion(transaction, nil)
+    }
+    
+    func paymentProcessor(_ processor: DWPaymentProcessor, displayFileProcessResult result: String) {
+        // Not needed for our use case
+    }
+    
+    func paymentProcessorDidFinishProcessingFile(_ processor: DWPaymentProcessor) {
+        // Not needed for our use case
+    }
+    
+    func paymentProcessor(_ processor: DWPaymentProcessor, showProgressHUDWithMessage message: String?) {
+        // Could show progress indicator here if needed
+    }
+    
+    func paymentInputProcessorHideProgressHUD(_ processor: DWPaymentProcessor) {
+        // Could hide progress indicator here if needed
     }
 }
