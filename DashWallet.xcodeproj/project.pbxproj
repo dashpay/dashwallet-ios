@@ -720,6 +720,8 @@
 		75EE38D32CBE9EFC00845FFF /* MainMenuContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE38D22CBE9EFC00845FFF /* MainMenuContentView.swift */; };
 		75EE38D42CBE9EFC00845FFF /* MainMenuContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE38D22CBE9EFC00845FFF /* MainMenuContentView.swift */; };
 		75EE38D82CBFE52E00845FFF /* ContactsPlaceholderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE38D72CBFE52B00845FFF /* ContactsPlaceholderViewController.swift */; };
+		75EE9F422DE2F750000AD1AD /* DashSpendConfirmationDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE9F412DE2F74B000AD1AD /* DashSpendConfirmationDialog.swift */; };
+		75EE9F432DE2F750000AD1AD /* DashSpendConfirmationDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE9F412DE2F74B000AD1AD /* DashSpendConfirmationDialog.swift */; };
 		75F3F00D2C48F819004470EA /* RootEditProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759063EC2C42687F002F2AA9 /* RootEditProfileViewController.swift */; };
 		75F51AAD2ABD8C800057B499 /* IntegrationViewController+Uphold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */; };
 		75F51AAF2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */; };
@@ -2572,6 +2574,7 @@
 		75EDC78DE1686E55AE12233C /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; sourceTree = "<group>"; };
 		75EE38D22CBE9EFC00845FFF /* MainMenuContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuContentView.swift; sourceTree = "<group>"; };
 		75EE38D72CBFE52B00845FFF /* ContactsPlaceholderViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsPlaceholderViewController.swift; sourceTree = "<group>"; };
+		75EE9F412DE2F74B000AD1AD /* DashSpendConfirmationDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendConfirmationDialog.swift; sourceTree = "<group>"; };
 		75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Uphold.swift"; sourceTree = "<group>"; };
 		75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Coinbase.swift"; sourceTree = "<group>"; };
@@ -3506,7 +3509,6 @@
 		11E47BA928EB383E0097CFA0 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */,
 				117ED4A028EC86E0006E3EE4 /* TransactionObserver.swift */,
 				11517C86294B0FED004FC7BF /* CrowdNodeWebService.swift */,
 			);
@@ -5107,6 +5109,7 @@
 			children = (
 				47081195298CF1FE003FCA3D /* Model */,
 				472D13E2299E23B7006903F1 /* BalanceNotifier.swift */,
+				11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */,
 			);
 			path = Transactions;
 			sourceTree = "<group>";
@@ -6067,6 +6070,7 @@
 			isa = PBXGroup;
 			children = (
 				753F75332DD0D41900D40DFE /* DashSpendPayScreen.swift */,
+				75EE9F412DE2F74B000AD1AD /* DashSpendConfirmationDialog.swift */,
 				753F75362DD0D75F00D40DFE /* DashSpendPayViewModel.swift */,
 				75C3EDFD2DA7C63C00A4E9C0 /* CTXSpendLoginInfoView.swift */,
 				75C3EDFE2DA7C63C00A4E9C0 /* CTXSpendUserAuthScreen.swift */,
@@ -8617,6 +8621,7 @@
 				C9F42FAB29DC1098001BC549 /* ReceiveContentView.swift in Sources */,
 				47838B7528FFD1D10003E8AB /* AmountView.swift in Sources */,
 				4759D512292FD6F3002F20DC /* DWBasePayViewController.m in Sources */,
+				75EE9F432DE2F750000AD1AD /* DashSpendConfirmationDialog.swift in Sources */,
 				1193FF3629602835004EA8D7 /* CrowdNodeTransferModel.swift in Sources */,
 				2A44312622CCC14F009BAF7F /* DWSetPinViewController.m in Sources */,
 				47F4B6C7294842DF00AED4C9 /* ConfirmOrderController.swift in Sources */,
@@ -9636,6 +9641,7 @@
 				C943B3252A408CED00AF23C5 /* DWEditProfileViewController.m in Sources */,
 				75D6D8E52D96A6DB00E40A6D /* StubTransactionSource.swift in Sources */,
 				C943B59C2A40EE5300AF23C5 /* DWNetworkErrorViewController.m in Sources */,
+				75EE9F422DE2F750000AD1AD /* DashSpendConfirmationDialog.swift in Sources */,
 				C9D2C8142A320AA000D15901 /* DWCenteredScrollView.m in Sources */,
 				C9D2C8162A320AA000D15901 /* DWPhraseRepairViewController.m in Sources */,
 				75AA33CD2BF9C82700F12465 /* ModalDialog.swift in Sources */,

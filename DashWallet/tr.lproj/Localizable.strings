@@ -1751,8 +1751,14 @@
 /* 4 out of 4 in the Paying Animation */
 "Paying..." = "Ödeniyor...";
 
+/* No comment provided by engineer. */
+"Payment failed" = "Payment failed";
+
 /* Coinbase/Buy Dash */
 "Payment method" = "Ödeme şekli";
+
+/* CTXSpend error */
+"Payment processing error: %@" = "Payment processing error: %@";
 
 /* Explore Dash/Merchants/Filters */
 "Payment Type" = "Ödeme türü";
@@ -2493,6 +2499,9 @@
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Touch ID limiti";
+
+/* No comment provided by engineer. */
+"Transaction cancelled" = "Transaction cancelled";
 
 /* CrowdNode */
 "Transaction History" = "İşlem Geçmişi";

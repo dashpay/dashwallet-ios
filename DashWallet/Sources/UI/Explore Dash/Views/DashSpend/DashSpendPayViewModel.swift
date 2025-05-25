@@ -21,14 +21,16 @@ import Combine
 private let defaultCurrency = kDefaultCurrencyCode
 
 @MainActor
-class DashSpendPayViewModel: ObservableObject {
+class DashSpendPayViewModel: NSObject, ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: defaultCurrency)
     private let ctxSpendService = CTXSpendService.shared
+    private let sendCoinsService = SendCoinsService()
     
     private(set) var amount: Decimal = 0
     private(set) var savingsFraction: Decimal = 0.0
     @Published private(set) var isLoading = false
+    @Published private(set) var isProcessingPayment = false
     
     let currencySymbol: String = {
         let locale = Locale.current as NSLocale
@@ -158,46 +160,65 @@ class DashSpendPayViewModel: ObservableObject {
             let merchantInfo = try await ctxSpendService.getMerchant(merchantId: merchantId)
             
             // Update merchant details
-            savingsFraction = Decimal(merchantInfo.savingsPercentage) / 100
+            savingsFraction = Decimal(merchantInfo.savingsPercentage) / Decimal(10000)
             
             if merchantInfo.denominationType == .Range {
                 minimumAmount = Decimal(merchantInfo.minimumCardPurchase)
                 maximumAmount = Decimal(merchantInfo.maximumCardPurchase)
             }
             
-            // Revalidate current amount
             checkAmountForErrors()
         } catch {
             DSLogger.log("Failed to get merchant info: \(error)")
         }
     }
     
-    func purchaseGiftCard() async throws -> GiftCardResponse {
+    func purchaseGiftCardAndPay() async throws {
+        isProcessingPayment = true
+        defer { isProcessingPayment = false }
+        
+        let response = try await purchaseGiftCardAPI()
+        
+        // Success! Log the response
+        DSLogger.log("============ GIFT CARD PURCHASE SUCCESSFUL ============")
+        DSLogger.log("Merchant: \(response.merchantName)")
+        DSLogger.log("Amount: \(response.paymentFiatCurrency) \(response.paymentFiatAmount)")
+        DSLogger.log("Dash Amount: \(response.paymentCryptoAmount)")
+        DSLogger.log("Dash Payment URL: \(response.paymentUrls.first?.value ?? "none")")
+        DSLogger.log("Payment ID: \(response.paymentId)")
+        DSLogger.log("Created At: \(response.created)")
+        DSLogger.log("Status: \(response.status)")
+        DSLogger.log("====================================================")
+        
+        // Process the payment using the payment URL
+        guard let paymentUrlString = response.paymentUrls.first?.value else {
+            throw CTXSpendError.paymentProcessingError("No payment URL received")
+        }
+        
+        let transaction = try await sendCoinsService.processGiftCardPayment(with: paymentUrlString)
+        
+        // Payment successful - save gift card information
+        DSLogger.log("Payment transaction completed: \(transaction.txHashHexString)")
+        saveGiftCardDummy(txHashData: transaction.txHashData, giftCardId: response.paymentId)
+    }
+    
+    private func purchaseGiftCardAPI() async throws -> GiftCardResponse {
         guard !merchantId.isEmpty, ctxSpendService.isUserSignedIn else {
             DSLogger.log("Purchase gift card failed: User not signed in or merchant ID is empty")
             throw CTXSpendError.unauthorized
         }
         
         DSLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(amount)")
-        isLoading = true
-        defer { isLoading = false }
         
-        do {
-            let fiatAmountString = String(format: "%.2f", Double(truncating: amount as NSDecimalNumber))
-            DSLogger.log("Making API request to purchase gift card: merchantId=\(merchantId), amount=\(fiatAmountString)USD")
-            
-            let response = try await ctxSpendService.purchaseGiftCard(
-                merchantId: merchantId,
-                fiatAmount: fiatAmountString,
-                fiatCurrency: "USD",
-                cryptoCurrency: "DASH"
-            )
-            
-            return response
-        } catch {
-            DSLogger.log("Gift card purchase failed with error: \(error)")
-            throw error
-        }
+        let fiatAmountString = String(format: "%.2f", Double(truncating: amount as NSDecimalNumber))
+        DSLogger.log("Making API request to purchase gift card: merchantId=\(merchantId), amount=\(fiatAmountString)USD")
+        
+        return try await ctxSpendService.purchaseGiftCard(
+            merchantId: merchantId,
+            fiatAmount: fiatAmountString,
+            fiatCurrency: "USD",
+            cryptoCurrency: "DASH"
+        )
     }
     
     func isUserSignedIn() -> Bool {
@@ -205,11 +226,8 @@ class DashSpendPayViewModel: ObservableObject {
     }
     
     func saveGiftCardDummy(txHashData: Data, giftCardId: String) {
-        // TODO: Implement gift card storage in iOS
-        // For now, just log the information
         DSLogger.log("Gift card saved - txId: \(txHashData.hexEncodedString()), giftCardId: \(giftCardId)")
         
-        // In a full implementation, this would save to Core Data or UserDefaults
-        // Similar to how the Android version saves to a Room database
+        // TODO: save dummy to SQLite
     }
 }

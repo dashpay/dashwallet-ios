@@ -5,6 +5,7 @@ struct NumericKeyboardView: View {
     let showDecimalSeparator: Bool
     let actionButtonText: String
     let actionEnabled: Bool
+    let inProgress: Bool
     let actionHandler: () -> Void
     
     private var rows: [[String]] {
@@ -43,13 +44,16 @@ struct NumericKeyboardView: View {
                                     .foregroundColor(.primaryText)
                             }
                         }
+                        .disabled(inProgress)
                     }
                 }
+                .opacity(inProgress ? 0.5 : 1.0)
             }
             
             DashButton(
                 text: actionButtonText,
                 isEnabled: !value.isEmpty && actionEnabled,
+                isLoading: inProgress,
                 action: actionHandler
             )
             .padding(.top, 20)
@@ -78,6 +82,7 @@ struct NumericKeyboardView: View {
         showDecimalSeparator: true,
         actionButtonText: NSLocalizedString("Verify", comment: "Button title for numeric keyboard action"),
         actionEnabled: true,
+        inProgress: false,
         actionHandler: { print("Action button tapped") }
     ).frame(height: 400)
 }

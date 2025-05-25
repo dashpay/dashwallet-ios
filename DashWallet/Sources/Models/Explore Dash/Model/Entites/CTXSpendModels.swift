@@ -61,11 +61,6 @@ struct MerchantResponse: Codable {
     let cardImageUrl: String
     let currency: String
     
-    // Computed properties for backward compatibility
-    var website: String {
-        return "" // This field doesn't exist in the response
-    }
-    
     var minimumCardPurchase: Double {
         guard denominations.count >= 1, let min = Double(denominations[0]) else { return 0.0 }
         return min
