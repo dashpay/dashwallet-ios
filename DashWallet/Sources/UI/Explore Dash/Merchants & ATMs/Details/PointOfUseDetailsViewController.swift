@@ -195,11 +195,9 @@ extension PointOfUseDetailsViewController {
 
     private func showCTXSpendAuth(authType: CTXSpendUserAuthType) {
         let hostingController = UIHostingController(
-            rootView: NavigationView {
-                CTXSpendUserAuthScreen(authType: authType) {
-                    self.navigationController?.popViewController(animated: false)
-                    self.showDashSpendPayScreen(justAuthenticated: true)
-                }
+            rootView: CTXSpendUserAuthScreen(authType: authType) {
+                self.navigationController?.popViewController(animated: false)
+                self.showDashSpendPayScreen(justAuthenticated: true)
             }
         )
         
@@ -208,9 +206,7 @@ extension PointOfUseDetailsViewController {
     
     private func showDashSpendPayScreen(justAuthenticated: Bool = false) {
         let hostingController = UIHostingController(
-            rootView: NavigationView {
-                DashSpendPayScreen(merchant: self.pointOfUse, justAuthenticated: justAuthenticated)
-            }
+            rootView: DashSpendPayScreen(merchant: self.pointOfUse, justAuthenticated: justAuthenticated)
         )
         
         self.navigationController?.pushViewController(hostingController, animated: true)
