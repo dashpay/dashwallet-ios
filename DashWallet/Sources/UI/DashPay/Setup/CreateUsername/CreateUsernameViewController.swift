@@ -92,7 +92,7 @@ struct CreateUsernameView: View {
                 .padding(.top, 20)
                 .focused($isTextInputFocused)
             
-            if viewModel.uiState.hasInvite && !viewModel.uiState.isInvitationForContested {
+            if !viewModel.uiState.contestedAllowed {
                 HStack(spacing: 0) {
                     Text(NSLocalizedString("The username must meet ", comment: "Usernames"))
                     Text(NSLocalizedString("one", comment: "Usernames"))
@@ -112,7 +112,7 @@ struct CreateUsernameView: View {
             if viewModel.uiState.lengthRule != .hidden {
                 ValidationCheck(
                     validationResult: viewModel.uiState.lengthRule,
-                    text: viewModel.uiState.hasInvite && !viewModel.uiState.isInvitationForContested ?
+                    text: !viewModel.uiState.contestedAllowed ?
                         NSLocalizedString("Between 20 and 23 characters", comment: "Usernames") :
                         NSLocalizedString("Between 3 and 23 characters", comment: "Usernames")
                 ).padding(.top, 20)
@@ -121,7 +121,7 @@ struct CreateUsernameView: View {
             if viewModel.uiState.allowedCharactersRule != .hidden {
                 ValidationCheck(
                     validationResult: viewModel.uiState.allowedCharactersRule,
-                    text: viewModel.uiState.hasInvite && !viewModel.uiState.isInvitationForContested ?
+                    text: !viewModel.uiState.contestedAllowed ?
                         NSLocalizedString("Contains numbers 2-9", comment: "Usernames") :
                         NSLocalizedString("Letter, numbers and hyphens only", comment: "Usernames")
                 ).padding(.top, 20)
@@ -158,48 +158,48 @@ struct CreateUsernameView: View {
             
             Spacer()
             
-            if viewModel.uiState.hasInvite {
-                if !viewModel.uiState.isInvitationMixed {
-                    HStack(alignment: .top) {
-                        Image("invite.unmixed")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 18, height: 18)
+            
+            if viewModel.uiState.hasInvite && !viewModel.uiState.isInvitationMixed {
+                HStack(alignment: .top) {
+                    Image("invite.unmixed")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
                         
-                        Text(NSLocalizedString("The invitation was created with un-mixed funds", comment: "Invites"))
-                            .foregroundColor(.primaryText)
-                            .font(.body2)
-                    }
-                    .padding(.bottom, 16)
+                    Text(NSLocalizedString("The invitation was created with un-mixed funds", comment: "Invites"))
+                        .foregroundColor(.primaryText)
+                        .font(.body2)
                 }
-                
-                if !viewModel.uiState.isInvitationForContested {
-                    HStack(alignment: .top) {
-                        Image("invite.noncontested")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 18, height: 18)
-                        
-                        Text(NSLocalizedString("You can only create a non-contested username using this invitaiton", comment: "Invites"))
-                            .foregroundColor(.primaryText)
-                            .font(.body2)
+                .padding(.bottom, 16)
+            }
+            
+            if !viewModel.uiState.contestedAllowed {
+                HStack(alignment: .top) {
+                    Image("invite.noncontested")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
+                    
+                    Text(viewModel.uiState.hasInvite ? NSLocalizedString("You can only create a non-contested username using this invitaiton", comment: "Invites") :
+                            NSLocalizedString("You can only create a non-contested username at this time", comment: "Invites"))
+                        .foregroundColor(.primaryText)
+                        .font(.body2)
 
-                        Spacer()
-                        
-                        Button {
-                            showContestedInfo = true
-                        } label: {
-                            Image(systemName: "info.circle.fill")
-                                .resizable()
-                                .scaledToFit()
-                                .padding(8)
-                                .foregroundColor(.gray300)
-                        }
-                        .frame(width: 30, height: 30)
+                    Spacer()
+                    
+                    Button {
+                        showContestedInfo = true
+                    } label: {
+                        Image(systemName: "info.circle.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .padding(8)
+                            .foregroundColor(.gray300)
                     }
-                    .frame(minHeight: 36)
-                    .padding(.bottom, 20)
+                    .frame(width: 30, height: 30)
                 }
+                .frame(minHeight: 36)
+                .padding(.bottom, 20)
             }
             
             DashButton(
