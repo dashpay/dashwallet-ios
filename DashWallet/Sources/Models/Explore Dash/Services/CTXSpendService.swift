@@ -136,21 +136,29 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, Ob
             if case .statusCode(let response) = error {
                 switch response.statusCode {
                 case 400:
-                    if let errorData = try? JSONDecoder().decode(CTXSpendAPIError.self, from: response.data),
-                       let firstError = errorData.errors.first {
-                        // Look for specific error messages
-                        let errorMessage = firstError.message.lowercased()
-                        
-                        if errorMessage.contains("insufficient") || errorMessage.contains("funds") {
-                            throw CTXSpendError.insufficientFunds
-                        } else if errorMessage.contains("merchant") {
-                            throw CTXSpendError.invalidMerchant
-                        } else if errorMessage.contains("amount") || errorMessage.contains("value") {
-                            throw CTXSpendError.invalidAmount
+                    if let errorData = try? JSONDecoder().decode(CTXSpendAPIError.self, from: response.data) {
+                        // Check for limit error first
+                        if let fiatAmountErrors = errorData.fields?.fiatAmount,
+                           let firstFiatError = fiatAmountErrors.first,
+                           (firstFiatError == "above threshold" || firstFiatError == "below threshold") {
+                            throw CTXSpendError.customError(NSLocalizedString("The purchase limits for this merchant have changed. Please contact CTX Support for more information.", comment: "DashSpend"))
                         }
                         
-                        // Custom error with the actual message from API
-                        throw NSError(domain: "CTXSpend", code: 400, userInfo: [NSLocalizedDescriptionKey: firstError.message])
+                        if let firstError = errorData.errors.first {
+                            // Look for specific error messages
+                            let errorMessage = firstError.message.lowercased()
+                            
+                            if errorMessage.contains("insufficient") || errorMessage.contains("funds") {
+                                throw CTXSpendError.insufficientFunds
+                            } else if errorMessage.contains("merchant") {
+                                throw CTXSpendError.invalidMerchant
+                            } else if errorMessage.contains("amount") || errorMessage.contains("value") {
+                                throw CTXSpendError.invalidAmount
+                            }
+                            
+                            // Custom error with the actual message from API
+                            throw NSError(domain: "CTXSpend", code: 400, userInfo: [NSLocalizedDescriptionKey: firstError.message])
+                        }
                     }
                 case 401, 403:
                     throw CTXSpendError.unauthorized

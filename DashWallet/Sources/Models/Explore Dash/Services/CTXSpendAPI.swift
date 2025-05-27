@@ -27,6 +27,7 @@ enum CTXSpendError: Error, LocalizedError {
     case insufficientFunds
     case invalidMerchant
     case invalidAmount
+    case customError(String)
     case unknown
     case paymentProcessingError(String)
     
@@ -48,6 +49,8 @@ enum CTXSpendError: Error, LocalizedError {
             return NSLocalizedString("This merchant is currently unavailable.", comment: "DashSpend")
         case .invalidAmount:
             return NSLocalizedString("Invalid amount. Please check merchant limits.", comment: "DashSpend")
+        case .customError(let message):
+            return message
         case .unknown:
             return NSLocalizedString("An unknown error occurred. Please try again later.", comment: "DashSpend")
         case .paymentProcessingError(let details):

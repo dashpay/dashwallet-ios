@@ -517,6 +517,9 @@
    Coinbase Two Factor Auth */
 "Contact Coinbase Support" = "코인베이스 지원센터에 문의하기";
 
+/* DashSpend */
+"Contact CTX Support" = "Contact CTX Support";
+
 /* No comment provided by engineer. */
 "Contact Request Pending" = "연락처 요청 대기 중";
 
@@ -2406,6 +2409,9 @@
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "송금 가능한 최소 금액은 %@ 입니다";
+
+/* DashSpend */
+"The purchase limits for this merchant have changed. Please contact CTX Support for more information." = "The purchase limits for this merchant have changed. Please contact CTX Support for more information.";
 
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";

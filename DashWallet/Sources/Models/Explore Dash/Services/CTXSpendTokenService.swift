@@ -17,7 +17,6 @@
 
 import Foundation
 
-// Forward declaration to avoid circular imports
 protocol CTXSpendTokenProvider: AnyObject {
     var accessToken: String? { get }
     var refreshToken: String? { get }

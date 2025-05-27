@@ -26,6 +26,7 @@ struct DashSpendPayScreen: View {
     @State var showConfirmToast: Bool
     @State private var showConfirmationDialog = false
     @State private var showErrorDialog = false
+    @State private var showCustomErrorDialog = false
     @State private var errorMessage = ""
     @State private var errorTitle = ""
     
@@ -113,6 +114,7 @@ struct DashSpendPayScreen: View {
 
                 }
                 .frame(maxWidth: .infinity)
+                .frame(height: 20)
                 .padding(.top, 20)
                 .padding(.bottom, 10)
                 
@@ -167,6 +169,27 @@ struct DashSpendPayScreen: View {
                     positiveButtonText: NSLocalizedString("OK", comment: ""),
                     positiveButtonAction: {
                         showErrorDialog = false
+                    }
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.black.opacity(0.7))
+                .edgesIgnoringSafeArea(.all)
+            }
+            
+            if showCustomErrorDialog {
+                ModalDialog(
+                    style: .error,
+                    icon: .system("exclamationmark.triangle.fill"),
+                    heading: errorTitle,
+                    textBlock1: errorMessage,
+                    positiveButtonText: NSLocalizedString("Close", comment: ""),
+                    positiveButtonAction: {
+                        showCustomErrorDialog = false
+                    },
+                    negativeButtonText: NSLocalizedString("Contact CTX Support", comment: "DashSpend"),
+                    negativeButtonAction: {
+                        showCustomErrorDialog = false
+                        viewModel.contactCTXSupport()
                     }
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -230,15 +253,18 @@ struct DashSpendPayScreen: View {
                     presentationMode.wrappedValue.dismiss()
                 }
             } catch let error as CTXSpendError {
-                // Close the confirmation dialog and show error
                 showConfirmationDialog = false
                 errorTitle = NSLocalizedString("Purchase Failed", comment: "DashSpend")
                 errorMessage = error.localizedDescription
-                showErrorDialog = true
+                
+                if case .customError = error {
+                    showCustomErrorDialog = true
+                } else {
+                    showErrorDialog = true
+                }
                 
                 DSLogger.log("Gift card purchase failed with CTXSpendError: \(error)")
             } catch {
-                // Close the confirmation dialog and show error
                 showConfirmationDialog = false
                 errorTitle = NSLocalizedString("Error", comment: "")
                 errorMessage = error.localizedDescription

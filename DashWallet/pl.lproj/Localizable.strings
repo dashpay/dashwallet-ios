@@ -517,6 +517,9 @@
    Coinbase Two Factor Auth */
 "Contact Coinbase Support" = "Skontaktuj się z pomocą Coibase";
 
+/* DashSpend */
+"Contact CTX Support" = "Contact CTX Support";
+
 /* No comment provided by engineer. */
 "Contact Request Pending" = "Zaproszenie do kontaktów czeka na odpowiedź";
 
@@ -2406,6 +2409,9 @@
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "Minimalna kwota jaką możesz wysłać to %@";
+
+/* DashSpend */
+"The purchase limits for this merchant have changed. Please contact CTX Support for more information." = "The purchase limits for this merchant have changed. Please contact CTX Support for more information.";
 
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";

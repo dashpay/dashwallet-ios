@@ -26,7 +26,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
     private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: defaultCurrency)
     private let ctxSpendService = CTXSpendService.shared
     private let sendCoinsService = SendCoinsService()
-    
+
+    private var merchantId: String = ""
     private(set) var amount: Decimal = 0
     private(set) var savingsFraction: Decimal = 0.0
     @Published private(set) var isLoading = false
@@ -67,8 +68,6 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
             checkAmountForErrors()
         }
     }
-    
-    private var merchantId: String = ""
     
     var costMessage: String {
         let originalPrice = fiatFormatter.string(for: amount) ?? "0.00"
@@ -116,6 +115,65 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         // Get updated merchant info from CTX API if user is signed in
         Task {
             await updateMerchantInfo()
+        }
+    }
+    
+    func purchaseGiftCardAndPay() async throws {
+        isProcessingPayment = true
+        defer { isProcessingPayment = false }
+        
+        let response = try await purchaseGiftCardAPI()
+        
+        // Success! Log the response
+        DSLogger.log("============ GIFT CARD PURCHASE SUCCESSFUL ============")
+        DSLogger.log("Merchant: \(response.merchantName)")
+        DSLogger.log("Amount: \(response.paymentFiatCurrency) \(response.paymentFiatAmount)")
+        DSLogger.log("Dash Amount: \(response.paymentCryptoAmount)")
+        DSLogger.log("Dash Payment URL: \(response.paymentUrls.first?.value ?? "none")")
+        DSLogger.log("Payment ID: \(response.paymentId)")
+        DSLogger.log("Created At: \(response.created)")
+        DSLogger.log("Status: \(response.status)")
+        DSLogger.log("====================================================")
+        
+        // Process the payment using the payment URL
+        guard let paymentUrlString = response.paymentUrls.first?.value else {
+            throw CTXSpendError.paymentProcessingError("No payment URL received")
+        }
+        
+        let transaction = try await sendCoinsService.processGiftCardPayment(with: paymentUrlString)
+        
+        // Payment successful - save gift card information
+        DSLogger.log("Payment transaction completed: \(transaction.txHashHexString)")
+        saveGiftCardDummy(txHashData: transaction.txHashData, giftCardId: response.paymentId)
+    }
+    
+    func isUserSignedIn() -> Bool {
+        return ctxSpendService.isUserSignedIn
+    }
+    
+    func contactCTXSupport() {
+        let subject = "CTX Issue: Spending Limit Problem"
+        
+        var body = "Merchant details\n"
+        body += "name: \(merchantTitle)\n"
+        body += "id: \(merchantId)\n"
+        body += "min: \(minimumAmount)\n"
+        body += "max: \(maximumAmount)\n"
+        body += "discount: \(savingsFraction)\n"
+//        body += "denominations type: \(denominationsType)\n" TODO: fixed denoms
+//        body += "denominations: \(denominations)\n"
+        body += "\n"
+
+        body += "Purchase Details\n"
+        body += "amount: \(input)\n"
+        body += "\n"
+        
+        // Add device information
+        body += "Platform: iOS\n"
+        body += "App version: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown")\n"
+        
+        if let emailURL = URL(string: "mailto:\(CTXConstants.supportEmail)?subject=\(subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")&body=\(body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")") {
+            UIApplication.shared.open(emailURL)
         }
     }
     
@@ -174,35 +232,6 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         }
     }
     
-    func purchaseGiftCardAndPay() async throws {
-        isProcessingPayment = true
-        defer { isProcessingPayment = false }
-        
-        let response = try await purchaseGiftCardAPI()
-        
-        // Success! Log the response
-        DSLogger.log("============ GIFT CARD PURCHASE SUCCESSFUL ============")
-        DSLogger.log("Merchant: \(response.merchantName)")
-        DSLogger.log("Amount: \(response.paymentFiatCurrency) \(response.paymentFiatAmount)")
-        DSLogger.log("Dash Amount: \(response.paymentCryptoAmount)")
-        DSLogger.log("Dash Payment URL: \(response.paymentUrls.first?.value ?? "none")")
-        DSLogger.log("Payment ID: \(response.paymentId)")
-        DSLogger.log("Created At: \(response.created)")
-        DSLogger.log("Status: \(response.status)")
-        DSLogger.log("====================================================")
-        
-        // Process the payment using the payment URL
-        guard let paymentUrlString = response.paymentUrls.first?.value else {
-            throw CTXSpendError.paymentProcessingError("No payment URL received")
-        }
-        
-        let transaction = try await sendCoinsService.processGiftCardPayment(with: paymentUrlString)
-        
-        // Payment successful - save gift card information
-        DSLogger.log("Payment transaction completed: \(transaction.txHashHexString)")
-        saveGiftCardDummy(txHashData: transaction.txHashData, giftCardId: response.paymentId)
-    }
-    
     private func purchaseGiftCardAPI() async throws -> GiftCardResponse {
         guard !merchantId.isEmpty, ctxSpendService.isUserSignedIn else {
             DSLogger.log("Purchase gift card failed: User not signed in or merchant ID is empty")
@@ -222,11 +251,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         )
     }
     
-    func isUserSignedIn() -> Bool {
-        return ctxSpendService.isUserSignedIn
-    }
-    
-    func saveGiftCardDummy(txHashData: Data, giftCardId: String) {
+    private func saveGiftCardDummy(txHashData: Data, giftCardId: String) {
         DSLogger.log("Gift card saved - txId: \(txHashData.hexEncodedString()), giftCardId: \(giftCardId)")
         
         // TODO: save dummy to SQLite

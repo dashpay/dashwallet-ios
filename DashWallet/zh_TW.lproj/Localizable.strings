@@ -517,6 +517,9 @@
    Coinbase Two Factor Auth */
 "Contact Coinbase Support" = "聯繫 Coinbase 支援服務";
 
+/* DashSpend */
+"Contact CTX Support" = "Contact CTX Support";
+
 /* No comment provided by engineer. */
 "Contact Request Pending" = "有聯繫請求等待批准";
 
@@ -2406,6 +2409,9 @@
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "您可以發送的最小金額是 %@";
+
+/* DashSpend */
+"The purchase limits for this merchant have changed. Please contact CTX Support for more information." = "The purchase limits for this merchant have changed. Please contact CTX Support for more information.";
 
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";

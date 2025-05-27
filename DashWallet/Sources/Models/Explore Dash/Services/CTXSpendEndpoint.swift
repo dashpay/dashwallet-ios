@@ -32,7 +32,12 @@ struct CTXSpendAPIError: Decodable {
         }
     }
     
+    struct FieldError: Decodable {
+        let fiatAmount: [String]?
+    }
+    
     var errors: [Error]
+    let fields: FieldError?
 }
 
 // MARK: - CTXSpendEndpoint
