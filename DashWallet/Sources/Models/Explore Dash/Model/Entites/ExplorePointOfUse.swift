@@ -58,6 +58,14 @@ extension ExplorePointOfUse {
         let type: `Type`
         let deeplink: String?
         let savingsBasisPoints: Int // in basis points 1 = 0.001%
+        
+        func toSavingPercentages() -> Double {
+            return Double(savingsBasisPoints) / 100
+        }
+        
+        func toSavingsFraction() -> Double {
+            return Double(savingsBasisPoints) / 10000
+        }
     }
 
     var merchant: Merchant? {

@@ -47,7 +47,7 @@ class MerchantItemCell: PointOfUseItemCell {
         
         if merchant.savingsBasisPoints > 0 {
             savingsLabel.isHidden = false
-            savingsLabel.text = String(format: NSLocalizedString("~%.0f%%", comment: "Savings percentage"), Double(merchant.savingsBasisPoints) / 100)
+            savingsLabel.text = String(format: NSLocalizedString("~%.0f%%", comment: "Savings percentage"), merchant.toSavingPercentages())
         } else {
             savingsLabel.isHidden = true
         }

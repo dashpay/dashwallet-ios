@@ -90,7 +90,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
     init(merchant: ExplorePointOfUse) {
         merchantTitle = merchant.name
         merchantIconUrl = merchant.logoLocation ?? ""
-        savingsFraction = Decimal(merchant.merchant?.savingsBasisPoints ?? 0) / Decimal(10000)
+        savingsFraction = Decimal(merchant.merchant?.toSavingsFraction() ?? 0.0)
         
         if let merchantId = merchant.merchant?.merchantId {
             self.merchantId = merchantId
