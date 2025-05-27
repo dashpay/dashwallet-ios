@@ -25,6 +25,7 @@ struct SendIntro<Content: View>: View {
     var destination: String? = nil
     var dashBalance: UInt64? = nil
     var balanceLabel: String? = nil
+    var authCallback: ((@escaping (Bool) -> Void) -> Void)? = nil
     @ViewBuilder var avatarView: () -> Content
 
     var body: some View {
@@ -65,7 +66,7 @@ struct SendIntro<Content: View>: View {
                     }
                     
                     Button(action: {
-                        balanceHidden.toggle()
+                        toggleBalanceVisibility()
                     }) {
                         Image(systemName: balanceHidden ? "eye.slash.fill" : "eye.fill")
                             .resizable()
@@ -82,6 +83,18 @@ struct SendIntro<Content: View>: View {
                 .foregroundColor(.secondaryText)
             }
         }.frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    private func toggleBalanceVisibility() {
+        if let authCallback = authCallback, balanceHidden {
+            authCallback { [self] isAuthenticated in
+                if isAuthenticated {
+                    balanceHidden.toggle()
+                }
+            }
+        } else {
+            balanceHidden.toggle()
+        }
     }
     
     @ViewBuilder
