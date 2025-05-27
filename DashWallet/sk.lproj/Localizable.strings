@@ -2774,7 +2774,7 @@
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "Váš kľúč môžete zadať v ktoromkoľvek z nasledujúcich formátov: WIF/base58/base64/hex";
 
 /* Invites */
-"You can only create a non-contested username using this invitaiton" = "You can only create a non-contested username using this invitaiton";
+"You can only create a non-contested username using this invitation" = "You can only create a non-contested username using this invitation";
 
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "Môžete vidieť podrobné informácie o svojich vkladoch, výberoch a zárobkoch z odmien.";

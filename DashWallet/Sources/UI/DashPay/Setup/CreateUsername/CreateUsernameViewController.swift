@@ -180,7 +180,7 @@ struct CreateUsernameView: View {
                         .scaledToFit()
                         .frame(width: 18, height: 18)
                     
-                    Text(viewModel.uiState.hasInvite ? NSLocalizedString("You can only create a non-contested username using this invitaiton", comment: "Invites") :
+                    Text(viewModel.uiState.hasInvite ? NSLocalizedString("You can only create a non-contested username using this invitation", comment: "Invites") :
                             NSLocalizedString("You can only create a non-contested username at this time", comment: "Invites"))
                         .foregroundColor(.primaryText)
                         .font(.body2)

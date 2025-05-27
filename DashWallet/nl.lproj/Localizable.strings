@@ -2774,7 +2774,7 @@
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "Je kunt je sleutel in een van de volgende formaten invoeren: WIF/base58/base64/hex";
 
 /* Invites */
-"You can only create a non-contested username using this invitaiton" = "You can only create a non-contested username using this invitaiton";
+"You can only create a non-contested username using this invitation" = "You can only create a non-contested username using this invitation";
 
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "Je kunt gedetailleerde informatie zien over uw stortingen, opnames en inkomsten.";
