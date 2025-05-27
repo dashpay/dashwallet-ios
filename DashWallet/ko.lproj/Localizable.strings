@@ -1297,6 +1297,9 @@
 /* CoinJoin */
 "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees" = "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees";
 
+/* DashSpend */
+"It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash." = "It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.";
+
 /* Coinbase */
 "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "어떤 수준의 기술적 전문 지식을 가진 고급 사용자라고 하더라도 자신의 거래 기록을 결정하는 것은 어려울 수 있습니다.";
 
@@ -3063,6 +3066,9 @@
 
 /* Usernames */
 "Your request was cancelled" = "당신의 요청이 취소되었습니다";
+
+/* DashSpend */
+"Your session expired" = "Your session expired";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "당신의 거래가 완료되었으며 수 분 이내에 당신의 지갑에 잔액이 표시될 예정입니다.";

@@ -122,7 +122,7 @@ struct DashSpendPayScreen: View {
                     value: $viewModel.input,
                     showDecimalSeparator: true,
                     actionButtonText: NSLocalizedString("Preview", comment: ""),
-                    actionEnabled: viewModel.error == nil && !viewModel.showLimits && !viewModel.isLoading,
+                    actionEnabled: viewModel.error == nil && !viewModel.showLimits && !viewModel.isLoading && viewModel.hasValidLimits,
                     inProgress: viewModel.isProcessingPayment,
                     actionHandler: {
                         if !viewModel.isUserSignedIn() {

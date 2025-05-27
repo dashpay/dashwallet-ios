@@ -1297,6 +1297,9 @@
 /* CoinJoin */
 "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees" = "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees";
 
+/* DashSpend */
+"It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash." = "It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.";
+
 /* Coinbase */
 "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "Θα ήταν πολύ δύσκολο για προχωρημένους χρήστες με οποιοδήποτε επίπεδο τεχνική εξειδίκευση να προσδιορίσουν το ιστορικό συναλλαγών σας.";
 
@@ -3063,6 +3066,9 @@
 
 /* Usernames */
 "Your request was cancelled" = "Το αίτημά σας ακυρώθηκε";
+
+/* DashSpend */
+"Your session expired" = "Your session expired";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Η συναλλαγή σας απεστάλη και το ποσό θα πρέπει να εμφανιστεί στο πορτοφόλι σας σε λίγα λεπτά.";

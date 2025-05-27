@@ -80,8 +80,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
             NSLocalizedString("You are buying a %@ gift card for %@ (%d%% discount)", comment: "DashSpend"),
             originalPrice, formattedDiscountedPrice, discount)
     }
-    var showCost: Bool { error == nil && amount >= minimumAmount && amount <= maximumAmount }
-    var showLimits: Bool { error == nil && !showCost }
+    var showCost: Bool { error == nil && amount >= minimumAmount && amount <= maximumAmount && hasValidLimits }
+    var showLimits: Bool { error == nil && !showCost && hasValidLimits }
+    var hasValidLimits: Bool { minimumAmount > 0 || maximumAmount > 0 }
     var minimumLimitMessage: String { String.localizedStringWithFormat(NSLocalizedString("Min: %@", comment: "DashSpend"), fiatFormatter.string(for: minimumAmount) ?? "0.0" ) }
     var maximumLimitMessage: String { String.localizedStringWithFormat(NSLocalizedString("Max: %@", comment: "DashSpend"), fiatFormatter.string(for: maximumAmount) ?? "0.0" ) }
     var isMixing: Bool { CoinJoinService.shared.mixingState.isInProgress }

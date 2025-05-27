@@ -18,7 +18,7 @@
 import Foundation
 import Combine
 
-class CTXSpendService: CTXSpendAPIAccessTokenProvider, ObservableObject {
+class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, ObservableObject {
     public static let shared: CTXSpendService = .init()
     private let userDefaults = UserDefaults.standard
     
@@ -31,6 +31,10 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, ObservableObject {
     
     var accessToken: String? {
         return KeychainService.load(key: Keys.accessToken)
+    }
+    
+    var refreshToken: String? {
+        return KeychainService.load(key: Keys.refreshToken)
     }
     
     var userEmail: String? {
@@ -89,6 +93,24 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, ObservableObject {
         KeychainService.delete(key: Keys.email)
         userDefaults.removeObject(forKey: Keys.deviceUUID)
         updateSignInState()
+    }
+    
+    // MARK: - Token Management
+    
+    func updateTokens(accessToken: String, refreshToken: String) {
+        KeychainService.save(key: Keys.accessToken, data: accessToken)
+        KeychainService.save(key: Keys.refreshToken, data: refreshToken)
+        updateSignInState()
+    }
+    
+    func clearTokensOnRefreshFailure() {
+        KeychainService.delete(key: Keys.accessToken)
+        KeychainService.delete(key: Keys.refreshToken)
+        updateSignInState()
+    }
+    
+    func refreshToken() async throws {
+        try await CTXSpendTokenService.shared.refreshAccessToken()
     }
     
     // MARK: - Gift Card Methods
@@ -151,7 +173,6 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, ObservableObject {
     func getMerchant(merchantId: String) async throws -> MerchantResponse {
         do {
             let response: MerchantResponse = try await CTXSpendAPI.shared.request(.getMerchant(merchantId))
-            DSLogger.log("Successfully retrieved merchant info: \(merchantId)")
             return response
         } catch let error as CTXSpendError {
             DSLogger.log("Failed to get merchant with CTXSpendError: \(error)")

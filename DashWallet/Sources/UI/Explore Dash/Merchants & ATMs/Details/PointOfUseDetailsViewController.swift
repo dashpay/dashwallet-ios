@@ -54,6 +54,7 @@ class PointOfUseDetailsViewController: UIViewController {
         super.viewDidLoad()
         title = pointOfUse.name
         configureHierarchy()
+        tryRefreshCtxToken()
     }
 }
 
@@ -160,7 +161,25 @@ extension PointOfUseDetailsViewController {
         prepareContentView()
         showDetailsView()
     }
-    
+}
+
+extension PointOfUseDetailsViewController {
+    func detailsView(for pointOfUse: ExplorePointOfUse) -> PointOfUseDetailsView? {
+        switch pointOfUse.category {
+        case .merchant:
+            return PointOfUseDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
+        case .atm:
+            return AtmDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
+        case .unknown:
+            return nil
+        }
+    }
+}
+
+
+// Mark: DashSpend
+
+extension PointOfUseDetailsViewController {
     private func showCTXSpendLoginInfo() {
         let swiftUIView = CTXSpendLoginInfoView(
             onCreateNewAccount: { [weak self] in
@@ -211,17 +230,14 @@ extension PointOfUseDetailsViewController {
         
         self.navigationController?.pushViewController(hostingController, animated: true)
     }
-}
-
-extension PointOfUseDetailsViewController {
-    func detailsView(for pointOfUse: ExplorePointOfUse) -> PointOfUseDetailsView? {
-        switch pointOfUse.category {
-        case .merchant:
-            return PointOfUseDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
-        case .atm:
-            return AtmDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
-        case .unknown:
-            return nil
+    
+    private func tryRefreshCtxToken() {
+        Task {
+            do {
+                try await CTXSpendService.shared.refreshToken()
+            } catch CTXSpendError.tokenRefreshFailed {
+                await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: NSLocalizedString("Your session expired", comment: "DashSpend"), textBlock1: NSLocalizedString("It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.", comment: "DashSpend"), positiveButtonText: NSLocalizedString("Dismiss", comment: ""))
+            }
         }
     }
 }

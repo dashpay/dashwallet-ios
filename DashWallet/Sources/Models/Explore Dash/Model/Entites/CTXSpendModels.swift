@@ -11,6 +11,10 @@ struct VerifyEmailRequest: Codable {
     let code: String
 }
 
+public struct RefreshTokenRequest: Codable {
+    let refreshToken: String
+}
+
 public struct PurchaseGiftCardRequest: Codable {
     let cryptoCurrency: String
     let fiatCurrency: String
@@ -21,6 +25,11 @@ public struct PurchaseGiftCardRequest: Codable {
 // MARK: - Response Models
 
 struct VerifyEmailResponse: Codable {
+    let accessToken: String
+    let refreshToken: String
+}
+
+struct RefreshTokenResponse: Codable {
     let accessToken: String
     let refreshToken: String
 }

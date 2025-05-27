@@ -23,6 +23,7 @@ enum CTXSpendError: Error, LocalizedError {
     case parsingError
     case invalidCode
     case unauthorized
+    case tokenRefreshFailed
     case insufficientFunds
     case invalidMerchant
     case invalidAmount
@@ -32,29 +33,32 @@ enum CTXSpendError: Error, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .networkError:
-            return NSLocalizedString("Network error. Please check your connection and try again.", comment: "CTXSpend error")
+            return NSLocalizedString("Network error. Please check your connection and try again.", comment: "DashSpend")
         case .parsingError:
-            return NSLocalizedString("Error processing server response. Please try again later.", comment: "CTXSpend error")
+            return NSLocalizedString("Error processing server response. Please try again later.", comment: "DashSpend")
         case .invalidCode:
             return NSLocalizedString("Invalid verification code. Please try again.", comment: "CTXSpend error")
         case .unauthorized:
-            return NSLocalizedString("Please sign in to your DashSpend account.", comment: "CTXSpend error")
+            return NSLocalizedString("Please sign in to your DashSpend account.", comment: "DashSpend")
+        case .tokenRefreshFailed:
+            return NSLocalizedString("Your session expired", comment: "DashSpend")
         case .insufficientFunds:
-            return NSLocalizedString("Insufficient funds to complete this purchase.", comment: "CTXSpend error")
+            return NSLocalizedString("Insufficient funds to complete this purchase.", comment: "DashSpend")
         case .invalidMerchant:
-            return NSLocalizedString("This merchant is currently unavailable.", comment: "CTXSpend error")
+            return NSLocalizedString("This merchant is currently unavailable.", comment: "DashSpend")
         case .invalidAmount:
-            return NSLocalizedString("Invalid amount. Please check merchant limits.", comment: "CTXSpend error")
+            return NSLocalizedString("Invalid amount. Please check merchant limits.", comment: "DashSpend")
         case .unknown:
-            return NSLocalizedString("An unknown error occurred. Please try again later.", comment: "CTXSpend error")
+            return NSLocalizedString("An unknown error occurred. Please try again later.", comment: "DashSpend")
         case .paymentProcessingError(let details):
-            return String(format: NSLocalizedString("Payment processing error: %@", comment: "CTXSpend error"), details)
+            return String(format: NSLocalizedString("Payment processing error: %@", comment: "DashSpend"), details)
         }
     }
 }
 
 protocol CTXSpendAPIAccessTokenProvider: AnyObject {
     var accessToken: String? { get }
+    var refreshToken: String? { get }
 }
 
 final class CTXSpendAPI: HTTPClient<CTXSpendEndpoint> {
@@ -65,7 +69,8 @@ final class CTXSpendAPI: HTTPClient<CTXSpendEndpoint> {
             try checkAccessTokenIfNeeded(for: target)
             try await super.request(target)
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
-            throw CTXSpendError.unauthorized
+            try await handleUnauthorizedError(for: target)
+            try await super.request(target)
         }
     }
     
@@ -74,7 +79,8 @@ final class CTXSpendAPI: HTTPClient<CTXSpendEndpoint> {
             try checkAccessTokenIfNeeded(for: target)
             return try await super.request(target)
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
-            throw CTXSpendError.unauthorized
+            try await handleUnauthorizedError(for: target)
+            return try await super.request(target)
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 400 {
             if target.path.contains("/api/verify") {
                 throw CTXSpendError.invalidCode
@@ -82,6 +88,28 @@ final class CTXSpendAPI: HTTPClient<CTXSpendEndpoint> {
             throw CTXSpendError.unknown
         } catch HTTPClientError.decoder {
             throw CTXSpendError.parsingError
+        }
+    }
+    
+    // Direct request method that bypasses refresh logic (used by token service)
+    func requestDirectly<R>(_ target: CTXSpendEndpoint) async throws -> R where R: Decodable {
+        return try await super.request(target)
+    }
+    
+    func requestDirectly(_ target: CTXSpendEndpoint) async throws {
+        try await super.request(target)
+    }
+    
+    private func handleUnauthorizedError(for target: CTXSpendEndpoint) async throws {
+        guard target.authorizationType == .bearer else {
+            throw CTXSpendError.unauthorized
+        }
+        
+        try await CTXSpendTokenService.shared.refreshAccessToken()
+        
+        // Update the access token provider after refresh
+        accessTokenProvider = { [weak self] in
+            self?.ctxSpendAPIAccessTokenProvider?.accessToken
         }
     }
     
@@ -106,5 +134,10 @@ final class CTXSpendAPI: HTTPClient<CTXSpendEndpoint> {
             ctxSpendAPIAccessTokenProvider!.accessToken
         }
         self.ctxSpendAPIAccessTokenProvider = ctxSpendAPIAccessTokenProvider
+        
+        // Configure the token service
+        if let tokenProvider = ctxSpendAPIAccessTokenProvider as? CTXSpendTokenProvider {
+            CTXSpendTokenService.shared.configure(with: tokenProvider)
+        }
     }
 } 
