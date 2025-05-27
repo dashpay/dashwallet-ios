@@ -29,12 +29,15 @@ struct DashSpendPayScreen: View {
     @State private var showCustomErrorDialog = false
     @State private var errorMessage = ""
     @State private var errorTitle = ""
+    @State private var successTxId: Data? = nil
+    let onPurchaseSuccess: ((Data) -> Void)?
     
-    init(merchant: ExplorePointOfUse, justAuthenticated: Bool = false) {
+    init(merchant: ExplorePointOfUse, justAuthenticated: Bool = false, onPurchaseSuccess: ((Data) -> Void)? = nil) {
         self.merchant = merchant
         self._viewModel = .init(wrappedValue: DashSpendPayViewModel(merchant: merchant))
         self.justAuthenticated = justAuthenticated
         self.showConfirmToast = false
+        self.onPurchaseSuccess = onPurchaseSuccess
     }
     
     var body: some View {
@@ -243,15 +246,15 @@ struct DashSpendPayScreen: View {
     private func purchaseGiftCard() {
         Task {
             do {
-                try await viewModel.purchaseGiftCardAndPay()
+                let txId = try await viewModel.purchaseGiftCardAndPay()
                 
-                // Close the confirmation dialog and show success toast
+                // Close the confirmation dialog and dismiss the screen
                 showConfirmationDialog = false
-                showConfirmToast = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    showConfirmToast = false
-                    presentationMode.wrappedValue.dismiss()
-                }
+                successTxId = txId
+                
+                // Navigate back to home and show gift card details
+                presentationMode.wrappedValue.dismiss()
+                onPurchaseSuccess?(txId)
             } catch let error as CTXSpendError {
                 showConfirmationDialog = false
                 errorTitle = NSLocalizedString("Purchase Failed", comment: "DashSpend")

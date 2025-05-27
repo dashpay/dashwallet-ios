@@ -209,6 +209,27 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         present(nvc, animated: true, completion: nil)
     }
     
+    private func showGiftCardDetails(txId: Data) {
+        let giftCardDetailsView = GiftCardDetailsView(txId: txId)
+        let hostingController = UIHostingController(rootView: 
+            BottomSheet(title: NSLocalizedString("Gift Card Details", comment: ""), showBackButton: .constant(false)) {
+                giftCardDetailsView
+            }
+            .background(Color.primaryBackground)
+        )
+        
+        // Configure bottom sheet presentation
+        if #available(iOS 15.0, *) {
+            if let sheet = hostingController.sheetPresentationController {
+                sheet.detents = [.large()]
+                sheet.prefersGrabberVisible = true
+                sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+            }
+        }
+        
+        present(hostingController, animated: true, completion: nil)
+    }
+    
     private func configureObservers() {
         viewModel.$showTimeSkewAlertDialog
             .sink { [weak self] showTimeSkew in
@@ -233,6 +254,15 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             .sink { [weak self] tx in
                 self?.showReclassifyTransaction(with: tx)
                 self?.viewModel.reclassifyTransactionShown(isShown: true)
+            }
+            .store(in: &cancellableBag)
+        
+        // Observe gift card purchase completion
+        NotificationCenter.default.publisher(for: .showGiftCardDetails)
+            .compactMap { $0.userInfo?["txId"] as? Data }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] txId in
+                self?.showGiftCardDetails(txId: txId)
             }
             .store(in: &cancellableBag)
     }

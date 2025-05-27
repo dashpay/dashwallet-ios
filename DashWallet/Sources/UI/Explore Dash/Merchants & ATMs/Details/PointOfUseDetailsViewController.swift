@@ -225,7 +225,19 @@ extension PointOfUseDetailsViewController {
     
     private func showDashSpendPayScreen(justAuthenticated: Bool = false) {
         let hostingController = UIHostingController(
-            rootView: DashSpendPayScreen(merchant: self.pointOfUse, justAuthenticated: justAuthenticated)
+            rootView: DashSpendPayScreen(merchant: self.pointOfUse, justAuthenticated: justAuthenticated) { [weak self] txId in
+                // Navigate back to home and show gift card details
+                self?.navigationController?.popToRootViewController(animated: true)
+                
+                // Show gift card details after navigation completes
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    NotificationCenter.default.post(
+                        name: .showGiftCardDetails,
+                        object: nil,
+                        userInfo: ["txId": txId]
+                    )
+                }
+            }
         )
         
         self.navigationController?.pushViewController(hostingController, animated: true)

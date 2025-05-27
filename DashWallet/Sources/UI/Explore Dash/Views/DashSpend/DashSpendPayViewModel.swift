@@ -118,7 +118,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         }
     }
     
-    func purchaseGiftCardAndPay() async throws {
+    func purchaseGiftCardAndPay() async throws -> Data {
         isProcessingPayment = true
         defer { isProcessingPayment = false }
         
@@ -145,6 +145,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         // Payment successful - save gift card information
         DSLogger.log("Payment transaction completed: \(transaction.txHashHexString)")
         saveGiftCardDummy(txHashData: transaction.txHashData, giftCardId: response.paymentId)
+        
+        return transaction.txHashData
     }
     
     func isUserSignedIn() -> Bool {
@@ -254,6 +256,16 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
     private func saveGiftCardDummy(txHashData: Data, giftCardId: String) {
         DSLogger.log("Gift card saved - txId: \(txHashData.hexEncodedString()), giftCardId: \(giftCardId)")
         
-        // TODO: save dummy to SQLite
+        let giftCard = GiftCard(
+            txId: txHashData,
+            merchantName: merchantTitle,
+            merchantUrl: nil, // TODO: get merchant URL from API
+            price: amount,
+            note: giftCardId // Store payment ID in note field temporarily
+        )
+        
+        Task {
+            await GiftCardsDAOImpl.shared.create(dto: giftCard)
+        }
     }
 }

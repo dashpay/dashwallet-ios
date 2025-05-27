@@ -158,6 +158,14 @@ extension HomeView: HomeHeaderViewDelegate {
     }
 }
 
+extension HomeView {
+    func showGiftCardDetails(txId: Data) {
+        // This will be called from the presenting controller
+        // Need to pass it to HomeViewContent
+        // TODO
+    }
+}
+
 struct TxPreviewModel: Identifiable, Equatable {
     var id: String
     var title: String
@@ -181,6 +189,7 @@ struct HomeViewContent<Content: View>: View {
     @State private var navigateToDashPayFlow: Bool = false
     @State private var navigateToCoinJoin: Bool = false
     @State private var skipToCreateUsername: Bool = false
+    @State private var giftCardTxId: Data? = nil
     
     @StateObject var viewModel: HomeViewModel
     #if DASHPAY
@@ -293,6 +302,13 @@ struct HomeViewContent<Content: View>: View {
         }
         .sheet(item: $selectedTxDataItem) { item in
             TransactionDetailsSheet(item: item)
+        }
+        .sheet(isPresented: .constant(giftCardTxId != nil), onDismiss: {
+            giftCardTxId = nil
+        }) {
+            if let txId = giftCardTxId {
+                GiftCardDetailsSheet(txId: txId)
+            }
         }
         #if DASHPAY
         .sheet(isPresented: $shouldShowMixDialog, onDismiss: {
@@ -432,6 +448,17 @@ struct HomeViewContent<Content: View>: View {
         }
     }
     #endif
+}
+
+struct GiftCardDetailsSheet: View {
+    var txId: Data
+    
+    var body: some View {
+        BottomSheet(title: NSLocalizedString("Gift Card Details", comment: ""), showBackButton: .constant(false)) {
+            GiftCardDetailsView(txId: txId)
+        }
+        .background(Color.primaryBackground)
+    }
 }
 
 struct TransactionDetailsSheet: View {

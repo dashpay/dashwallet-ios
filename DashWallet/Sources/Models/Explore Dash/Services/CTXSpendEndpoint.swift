@@ -99,6 +99,8 @@ extension CTXSpendEndpoint: TargetType, AccessTokenAuthorizable {
             return .requestJSONEncodable(request)
         case .purchaseGiftCard(let request):
             return .requestJSONEncodable(request)
+        case .getGiftCard(let txid):
+            return .requestParameters(parameters: ["txid": txid], encoding: URLEncoding.queryString)
         default:
             return .requestPlain
         }

@@ -36,22 +36,39 @@ struct RefreshTokenResponse: Codable {
 
 struct GiftCardResponse: Codable {
     let id: String
-    let percentDiscount: String
-    let paymentCryptoAmount: String
-    let cardFiatAmount: String
-    let cardFiatCurrency: String
-    let paymentUrls: [String: String]
-    let paymentCryptoCurrency: String
+    let status: String // unpaid, paid, fulfilled, rejected
+    let barcodeUrl: String?
+    let cardNumber: String?
+    let cardPin: String?
+    
+    let cryptoAmount: String?
+    let cryptoCurrency: String?
     let paymentCryptoNetwork: String
-    let paymentFiatCurrency: String
-    let userId: String
-    let merchantName: String
-    let userEmail: String
-    let created: String
-    let rate: String
-    let paymentFiatAmount: String
-    let status: String
     let paymentId: String
+    let percentDiscount: String
+    let rate: String
+    let redeemUrl: String
+    let fiatAmount: String?
+    let fiatCurrency: String?
+    let paymentUrls: [String: String]
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case status
+        case barcodeUrl
+        case cardNumber = "number"
+        case cardPin = "pin"
+        case cryptoAmount = "paymentCryptoAmount"
+        case cryptoCurrency = "paymentCryptoCurrency"
+        case paymentCryptoNetwork
+        case paymentId
+        case percentDiscount
+        case rate
+        case redeemUrl
+        case fiatAmount = "paymentFiatAmount"
+        case fiatCurrency = "paymentFiatCurrency"
+        case paymentUrls
+    }
 }
 
 struct MerchantResponse: Codable {

@@ -698,6 +698,16 @@
 		75D66D332B05E7AE00A8DDA6 /* QuickVoteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D66D322B05E7AE00A8DDA6 /* QuickVoteViewController.swift */; };
 		75D6D8E42D96A6DB00E40A6D /* StubTransactionSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D6D8E32D96A6D500E40A6D /* StubTransactionSource.swift */; };
 		75D6D8E52D96A6DB00E40A6D /* StubTransactionSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D6D8E32D96A6D500E40A6D /* StubTransactionSource.swift */; };
+		75D9EBB82DE5CC3A009416A2 /* AddGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9EBB72DE5CC3A009416A2 /* AddGiftCardsTable.swift */; };
+		75D9EBB92DE5CC3A009416A2 /* AddGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9EBB72DE5CC3A009416A2 /* AddGiftCardsTable.swift */; };
+		75D9EBBC2DE5CD8B009416A2 /* GiftCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9EBBB2DE5CD8B009416A2 /* GiftCard.swift */; };
+		75D9EBBD2DE5CD8B009416A2 /* GiftCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9EBBB2DE5CD8B009416A2 /* GiftCard.swift */; };
+		75D9EBC22DE5CD9C009416A2 /* GiftCardsDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9EBC12DE5CD9C009416A2 /* GiftCardsDAO.swift */; };
+		75D9EBC32DE5CD9C009416A2 /* GiftCardsDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9EBC12DE5CD9C009416A2 /* GiftCardsDAO.swift */; };
+		75D9EBC62DE5CE14009416A2 /* GiftCardDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9EBC52DE5CE14009416A2 /* GiftCardDetailsViewModel.swift */; };
+		75D9EBC72DE5CE14009416A2 /* GiftCardDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9EBC42DE5CE14009416A2 /* GiftCardDetailsView.swift */; };
+		75D9EBC82DE5CE14009416A2 /* GiftCardDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9EBC52DE5CE14009416A2 /* GiftCardDetailsViewModel.swift */; };
+		75D9EBC92DE5CE14009416A2 /* GiftCardDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9EBC42DE5CE14009416A2 /* GiftCardDetailsView.swift */; };
 		75DFAF2E2CF7066600CCA68B /* VoteButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFAF2D2CF7066200CCA68B /* VoteButton.swift */; };
 		75E2F3C82AA4CF1900C3B458 /* Topper-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75E2F3C72AA4CF1900C3B458 /* Topper-Info.plist */; };
 		75E2F3CA2AA4D1B900C3B458 /* Topper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E2F3C92AA4D1B900C3B458 /* Topper.swift */; };
@@ -2557,6 +2567,11 @@
 		75D656192B0792F500D1A902 /* UsernameRequests.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = UsernameRequests.storyboard; sourceTree = "<group>"; };
 		75D66D322B05E7AE00A8DDA6 /* QuickVoteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickVoteViewController.swift; sourceTree = "<group>"; };
 		75D6D8E32D96A6D500E40A6D /* StubTransactionSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StubTransactionSource.swift; sourceTree = "<group>"; };
+		75D9EBB72DE5CC3A009416A2 /* AddGiftCardsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddGiftCardsTable.swift; sourceTree = "<group>"; };
+		75D9EBBB2DE5CD8B009416A2 /* GiftCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCard.swift; sourceTree = "<group>"; };
+		75D9EBC12DE5CD9C009416A2 /* GiftCardsDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardsDAO.swift; sourceTree = "<group>"; };
+		75D9EBC42DE5CE14009416A2 /* GiftCardDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardDetailsView.swift; sourceTree = "<group>"; };
+		75D9EBC52DE5CE14009416A2 /* GiftCardDetailsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardDetailsViewModel.swift; sourceTree = "<group>"; };
 		75DE02411B0EB79A0027FF08 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75DE02491B0EB7C80027FF08 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75DE024D1B0EB7FC0027FF08 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -5152,6 +5167,7 @@
 		4709C310287E78BD00B4BD48 /* Migrations */ = {
 			isa = PBXGroup;
 			children = (
+				75D9EBB72DE5CC3A009416A2 /* AddGiftCardsTable.swift */,
 				4709C311287E78BD00B4BD48 /* SeedDB.swift */,
 			);
 			path = Migrations;
@@ -5665,6 +5681,7 @@
 		47AE8B9928BFAD0B00490F5E /* DAO */ = {
 			isa = PBXGroup;
 			children = (
+				75D9EBC12DE5CD9C009416A2 /* GiftCardsDAO.swift */,
 				47AE8BA028BFADB600490F5E /* PointOfUseDAO.swift */,
 			);
 			path = DAO;
@@ -5673,6 +5690,7 @@
 		47AE8B9A28BFAD2000490F5E /* Entites */ = {
 			isa = PBXGroup;
 			children = (
+				75D9EBBB2DE5CD8B009416A2 /* GiftCard.swift */,
 				753E46E72DE1E24300A3FF2A /* CTXSpendModels.swift */,
 				47AE8B9B28BFAD2800490F5E /* ExplorePointOfUse.swift */,
 			);
@@ -6073,6 +6091,8 @@
 		7545ED552DA91AC80075F45C /* DashSpend */ = {
 			isa = PBXGroup;
 			children = (
+				75D9EBC42DE5CE14009416A2 /* GiftCardDetailsView.swift */,
+				75D9EBC52DE5CE14009416A2 /* GiftCardDetailsViewModel.swift */,
 				753F75332DD0D41900D40DFE /* DashSpendPayScreen.swift */,
 				75EE9F412DE2F74B000AD1AD /* DashSpendConfirmationDialog.swift */,
 				753F75362DD0D75F00D40DFE /* DashSpendPayViewModel.swift */,
@@ -8642,6 +8662,7 @@
 				110D1781298BA9AF005BEB30 /* WKWebView+CrowdNode.swift in Sources */,
 				47FA3AFF29350929008D58DC /* SyncingActivityMonitor.swift in Sources */,
 				C9F42FB029DC27F4001BC549 /* EmptyUIView.swift in Sources */,
+				75D9EBB82DE5CC3A009416A2 /* AddGiftCardsTable.swift in Sources */,
 				757514E32B15DF7C0026AD8E /* ShadowView.swift in Sources */,
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanModel.m in Sources */,
 				C9F451F72A0CAE1300825057 /* SyncView.swift in Sources */,
@@ -8683,6 +8704,8 @@
 				2A3DC86E239717C2004B3DBA /* DWRecoverWalletCommand.m in Sources */,
 				2A9FFE832230FF4700956D5F /* DWSwitcherFormTableViewCell.m in Sources */,
 				2A0C699C23104588001B8C90 /* DWPaymentInput.m in Sources */,
+				75D9EBC62DE5CE14009416A2 /* GiftCardDetailsViewModel.swift in Sources */,
+				75D9EBC72DE5CE14009416A2 /* GiftCardDetailsView.swift in Sources */,
 				114D16B629812730009A124C /* OnlineAccountDetailsController.swift in Sources */,
 				C9F451E92A0BDAE700825057 /* UIApplication+DashWallet.swift in Sources */,
 				110D1784298E68A8005BEB30 /* OnlineAccountInfoController.swift in Sources */,
@@ -8884,6 +8907,7 @@
 				47AE8BA128BFADB600490F5E /* PointOfUseDAO.swift in Sources */,
 				4759D51729300212002F20DC /* ProvideAmountViewController.swift in Sources */,
 				C94D98252A4CC8FD00F3BEE1 /* UIControl+Dash.swift in Sources */,
+				75D9EBBD2DE5CD8B009416A2 /* GiftCard.swift in Sources */,
 				2AD1CE7722DB51B500C99324 /* DWCheckbox.m in Sources */,
 				2ACCD8592319399100A96B62 /* DWRequestAmountViewController.m in Sources */,
 				C909615329F28E3700002D82 /* DerivationPathKeysModel.swift in Sources */,
@@ -8998,6 +9022,7 @@
 				7581B19B2CE349BB00714007 /* ConfirmSpendDialog.swift in Sources */,
 				472D13DF299DF5C6006903F1 /* TaxReportGenerator.swift in Sources */,
 				119E8D122909513F00D406C1 /* CrowdNodeError.swift in Sources */,
+				75D9EBC32DE5CD9C009416A2 /* GiftCardsDAO.swift in Sources */,
 				111C3C4E296C52F800788E18 /* WithdrawalLimit.swift in Sources */,
 				2A8B9E6522FFE43500FF8653 /* DWPayModel.m in Sources */,
 				47AE8C1828C63F9C00490F5E /* PointOfUseDetailsView.swift in Sources */,
@@ -9217,6 +9242,7 @@
 				C9D2C6D82A320AA000D15901 /* AtmListViewController.swift in Sources */,
 				C9D2C6D92A320AA000D15901 /* TxDetailViewController.swift in Sources */,
 				C9D2C6DA2A320AA000D15901 /* NSAttributedString+Builder.swift in Sources */,
+				75D9EBB92DE5CC3A009416A2 /* AddGiftCardsTable.swift in Sources */,
 				C943B4DE2A40A54600AF23C5 /* DWDPWelcomePageViewController.m in Sources */,
 				C9D2C6DB2A320AA000D15901 /* DWPreviewSeedPhraseContentView.m in Sources */,
 				C9D2C6DC2A320AA000D15901 /* DWPhoneWCSessionManager.m in Sources */,
@@ -9645,6 +9671,7 @@
 				C9D2C8122A320AA000D15901 /* SeedDB.swift in Sources */,
 				C9D2C8132A320AA000D15901 /* DWPinField.m in Sources */,
 				C943B3252A408CED00AF23C5 /* DWEditProfileViewController.m in Sources */,
+				75D9EBBC2DE5CD8B009416A2 /* GiftCard.swift in Sources */,
 				75D6D8E52D96A6DB00E40A6D /* StubTransactionSource.swift in Sources */,
 				C943B59C2A40EE5300AF23C5 /* DWNetworkErrorViewController.m in Sources */,
 				75EE9F422DE2F750000AD1AD /* DashSpendConfirmationDialog.swift in Sources */,
@@ -9743,6 +9770,8 @@
 				C943B53F2A40A6BE00AF23C5 /* DPAlertChildContentsView.m in Sources */,
 				C9D2C85B2A320AA000D15901 /* PointOfUseListEmptyResultsView.swift in Sources */,
 				75A0A3F42CA7DBCF003ED48B /* TimeUtils.swift in Sources */,
+				75D9EBC82DE5CE14009416A2 /* GiftCardDetailsViewModel.swift in Sources */,
+				75D9EBC92DE5CE14009416A2 /* GiftCardDetailsView.swift in Sources */,
 				75FFD6C82BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */,
 				C9D2C85D2A320AA000D15901 /* DWLockPinInputView.m in Sources */,
 				C9D2C85E2A320AA000D15901 /* UIView+DWHUD.m in Sources */,
@@ -9922,6 +9951,7 @@
 				7573C2E52B01120B00F4C347 /* MasternodeKey.swift in Sources */,
 				C9D2C8F02A320AA000D15901 /* DWProgressView.m in Sources */,
 				C9D2C8F12A320AA000D15901 /* TxDetailCells.swift in Sources */,
+				75D9EBC22DE5CD9C009416A2 /* GiftCardsDAO.swift in Sources */,
 				754565D12DABA5F300DA4E8E /* MerchantTypesDialog.swift in Sources */,
 				C9D2C8F22A320AA000D15901 /* BaseViewController+NetworkReachability.swift in Sources */,
 				C9D2C8F32A320AA000D15901 /* main.m in Sources */,
