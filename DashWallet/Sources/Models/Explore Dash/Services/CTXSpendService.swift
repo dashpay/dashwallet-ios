@@ -18,7 +18,7 @@
 import Foundation
 import Combine
 
-class CTXSpendService: CTXSpendAPIAccessTokenProvider, ObservableObject {
+class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, ObservableObject {
     public static let shared: CTXSpendService = .init()
     private let userDefaults = UserDefaults.standard
     
@@ -31,6 +31,10 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, ObservableObject {
     
     var accessToken: String? {
         return KeychainService.load(key: Keys.accessToken)
+    }
+    
+    var refreshToken: String? {
+        return KeychainService.load(key: Keys.refreshToken)
     }
     
     var userEmail: String? {
@@ -91,6 +95,24 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, ObservableObject {
         updateSignInState()
     }
     
+    // MARK: - Token Management
+    
+    func updateTokens(accessToken: String, refreshToken: String) {
+        KeychainService.save(key: Keys.accessToken, data: accessToken)
+        KeychainService.save(key: Keys.refreshToken, data: refreshToken)
+        updateSignInState()
+    }
+    
+    func clearTokensOnRefreshFailure() {
+        KeychainService.delete(key: Keys.accessToken)
+        KeychainService.delete(key: Keys.refreshToken)
+        updateSignInState()
+    }
+    
+    func refreshToken() async throws {
+        try await CTXSpendTokenService.shared.refreshAccessToken()
+    }
+    
     // MARK: - Gift Card Methods
     
     func purchaseGiftCard(merchantId: String, fiatAmount: String, fiatCurrency: String = "USD", cryptoCurrency: String = "DASH") async throws -> GiftCardResponse {
@@ -102,17 +124,87 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, ObservableObject {
         )
         
         do {
-            return try await CTXSpendAPI.shared.request(.purchaseGiftCard(request))
+            let response: GiftCardResponse = try await CTXSpendAPI.shared.request(.purchaseGiftCard(request))
+            DSLogger.log("Gift card purchased successfully: \(response)")
+            return response
+        } catch let error as CTXSpendError {
+            DSLogger.log("Gift card purchase failed with CTXSpendError: \(error)")
+            throw error
+        } catch let error as HTTPClientError {
+            DSLogger.log("Gift card purchase failed with HTTPClientError: \(error)")
+            
+            if case .statusCode(let response) = error {
+                switch response.statusCode {
+                case 400:
+                    if let errorData = try? JSONDecoder().decode(CTXSpendAPIError.self, from: response.data) {
+                        // Check for limit error first
+                        if let fiatAmountErrors = errorData.fields?.fiatAmount,
+                           let firstFiatError = fiatAmountErrors.first,
+                           (firstFiatError == "above threshold" || firstFiatError == "below threshold") {
+                            throw CTXSpendError.customError(NSLocalizedString("The purchase limits for this merchant have changed. Please contact CTX Support for more information.", comment: "DashSpend"))
+                        }
+                        
+                        if let firstError = errorData.errors.first {
+                            // Look for specific error messages
+                            let errorMessage = firstError.message.lowercased()
+                            
+                            if errorMessage.contains("insufficient") || errorMessage.contains("funds") {
+                                throw CTXSpendError.insufficientFunds
+                            } else if errorMessage.contains("merchant") {
+                                throw CTXSpendError.invalidMerchant
+                            } else if errorMessage.contains("amount") || errorMessage.contains("value") {
+                                throw CTXSpendError.invalidAmount
+                            }
+                            
+                            // Custom error with the actual message from API
+                            throw NSError(domain: "CTXSpend", code: 400, userInfo: [NSLocalizedDescriptionKey: firstError.message])
+                        }
+                    }
+                case 401, 403:
+                    throw CTXSpendError.unauthorized
+                case 404:
+                    throw CTXSpendError.invalidMerchant
+                case 500...599:
+                    throw CTXSpendError.networkError
+                default:
+                    break
+                }
+            }
+            
+            throw CTXSpendError.unknown
         } catch {
-            throw mapError(error)
+            DSLogger.log("Gift card purchase failed with error: \(error)")
+            throw CTXSpendError.networkError
         }
     }
     
     func getMerchant(merchantId: String) async throws -> MerchantResponse {
         do {
-            return try await CTXSpendAPI.shared.request(.getMerchant(merchantId))
+            let response: MerchantResponse = try await CTXSpendAPI.shared.request(.getMerchant(merchantId))
+            return response
+        } catch let error as CTXSpendError {
+            DSLogger.log("Failed to get merchant with CTXSpendError: \(error)")
+            throw error
+        } catch let error as HTTPClientError {
+            DSLogger.log("Failed to get merchant with HTTPClientError: \(error)")
+            
+            if case .statusCode(let response) = error {
+                switch response.statusCode {
+                case 401, 403:
+                    throw CTXSpendError.unauthorized
+                case 404:
+                    throw CTXSpendError.invalidMerchant
+                case 500...599:
+                    throw CTXSpendError.networkError
+                default:
+                    break
+                }
+            }
+            
+            throw CTXSpendError.unknown
         } catch {
-            throw mapError(error)
+            DSLogger.log("Failed to get merchant with error: \(error)")
+            throw CTXSpendError.networkError
         }
     }
     

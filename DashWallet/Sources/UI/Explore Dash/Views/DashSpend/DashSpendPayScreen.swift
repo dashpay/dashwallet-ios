@@ -17,15 +17,18 @@
 
 import SwiftUI
 import SDWebImageSwiftUI
-import Foundation
 
 struct DashSpendPayScreen: View {
     @Environment(\.presentationMode) private var presentationMode
     @StateObject private var viewModel: DashSpendPayViewModel
     let merchant: ExplorePointOfUse
     @State var justAuthenticated: Bool
-    @State var showConfirmToast: Bool // TODO: temp
+    @State var showConfirmToast: Bool
     @State private var showConfirmationDialog = false
+    @State private var showErrorDialog = false
+    @State private var showCustomErrorDialog = false
+    @State private var errorMessage = ""
+    @State private var errorTitle = ""
     
     init(merchant: ExplorePointOfUse, justAuthenticated: Bool = false) {
         self.merchant = merchant
@@ -78,7 +81,7 @@ struct DashSpendPayScreen: View {
                 
                 HStack {
                     if viewModel.showLimits {
-                        Text(viewModel.minimumLimit)
+                        Text(viewModel.minimumLimitMessage)
                             .font(.body2)
                             .foregroundColor(Color.primaryText)
                             .padding(.leading, 20)
@@ -103,7 +106,7 @@ struct DashSpendPayScreen: View {
                     
                     if viewModel.showLimits {
                         Spacer()
-                        Text(viewModel.maximumimit)
+                        Text(viewModel.maximumLimitMessage)
                             .font(.body2)
                             .foregroundColor(Color.primaryText)
                             .padding(.trailing, 20)
@@ -111,6 +114,7 @@ struct DashSpendPayScreen: View {
 
                 }
                 .frame(maxWidth: .infinity)
+                .frame(height: 20)
                 .padding(.top, 20)
                 .padding(.bottom, 10)
                 
@@ -120,8 +124,14 @@ struct DashSpendPayScreen: View {
                     value: $viewModel.input,
                     showDecimalSeparator: true,
                     actionButtonText: NSLocalizedString("Preview", comment: ""),
-                    actionEnabled: viewModel.error == nil && !viewModel.showLimits,
+                    actionEnabled: viewModel.error == nil && !viewModel.showLimits && !viewModel.isLoading && viewModel.hasValidLimits,
+                    inProgress: viewModel.isProcessingPayment,
                     actionHandler: {
+                        if !viewModel.isUserSignedIn() {
+                            showSignInError()
+                            return
+                        }
+                        
                         showConfirmationDialog = true
                     }
                 )
@@ -144,10 +154,47 @@ struct DashSpendPayScreen: View {
             
             if showConfirmToast {
                 ToastView(
-                    text: NSLocalizedString("Not implemented", comment: "")
+                    text: NSLocalizedString("Gift card purchase successful", comment: "DashSpend")
                 )
                 .frame(height: 20)
                 .padding(.bottom, 30)
+            }
+            
+            if showErrorDialog {
+                ModalDialog(
+                    style: .error,
+                    icon: .system("exclamationmark.triangle.fill"),
+                    heading: errorTitle,
+                    textBlock1: errorMessage,
+                    positiveButtonText: NSLocalizedString("OK", comment: ""),
+                    positiveButtonAction: {
+                        showErrorDialog = false
+                    }
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.black.opacity(0.7))
+                .edgesIgnoringSafeArea(.all)
+            }
+            
+            if showCustomErrorDialog {
+                ModalDialog(
+                    style: .error,
+                    icon: .system("exclamationmark.triangle.fill"),
+                    heading: errorTitle,
+                    textBlock1: errorMessage,
+                    positiveButtonText: NSLocalizedString("Close", comment: ""),
+                    positiveButtonAction: {
+                        showCustomErrorDialog = false
+                    },
+                    negativeButtonText: NSLocalizedString("Contact CTX Support", comment: "DashSpend"),
+                    negativeButtonAction: {
+                        showCustomErrorDialog = false
+                        viewModel.contactCTXSupport()
+                    }
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.black.opacity(0.7))
+                .edgesIgnoringSafeArea(.all)
             }
         }
         .ignoresSafeArea(.all, edges: .bottom)
@@ -166,22 +213,18 @@ struct DashSpendPayScreen: View {
         }
         .sheet(isPresented: $showConfirmationDialog) {
             let dialog = BottomSheet(
-                title: NSLocalizedString("Confirm", comment: "DashSpend confirmation dialog title"),
+                title: NSLocalizedString("Confirm", comment: "DashSpend"),
                 showBackButton: Binding<Bool>.constant(false)
             ) {
-                ConfirmationDialog(
+                DashSpendConfirmationDialog(
                     amount: viewModel.input,
                     merchantName: viewModel.merchantTitle,
                     merchantIconUrl: viewModel.merchantIconUrl,
                     originalPrice: viewModel.amount,
                     discount: viewModel.savingsFraction,
                     onConfirm: {
-                        // TODO: Handle confirmation action
                         showConfirmationDialog = false
-                        showConfirmToast = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                            showConfirmToast = false
-                        }
+                        purchaseGiftCard()
                     },
                     onCancel: {
                         showConfirmationDialog = false
@@ -196,146 +239,45 @@ struct DashSpendPayScreen: View {
             }
         }
     }
-}
-
-struct ConfirmationDialog: View {
-    let amount: String
-    let merchantName: String
-    let merchantIconUrl: String
-    let originalPrice: Decimal
-    let discount: Decimal
-    let onConfirm: () -> Void
-    let onCancel: () -> Void
     
-    @Environment(\.presentationMode) private var presentationMode
-    
-    private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: kDefaultCurrencyCode)
-    
-    var body: some View {
-        VStack(spacing: 40) {
-            HStack {
-                Text(fiatFormatter.currencySymbol + amount)
-                    .font(.system(size: 32, weight: .medium))
-                    .foregroundColor(.primaryText)
-            }
+    private func purchaseGiftCard() {
+        Task {
+            do {
+                try await viewModel.purchaseGiftCardAndPay()
                 
-            // Details
-            VStack(spacing: 0) {
-                HStack(spacing: 8) {
-                    Text(NSLocalizedString("From", comment: "DashSpend"))
-                        .font(.body2)
-                        .fontWeight(.medium)
-                        .foregroundColor(.tertiaryText)
-                        
-                    Spacer()
-                        
-                    Image("image.explore.dash.wts.dash")
-                        .resizable()
-                        .frame(width: 24, height: 24)
-                            
-                    Text(NSLocalizedString("Dash Wallet", comment: "DashSpend"))
-                        .font(.body2)
-                        .foregroundColor(.primaryText)
+                // Close the confirmation dialog and show success toast
+                showConfirmationDialog = false
+                showConfirmToast = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    showConfirmToast = false
+                    presentationMode.wrappedValue.dismiss()
                 }
-                .padding(.horizontal, 12)
-                .frame(height: 50)
-                    
-                HStack(spacing: 8) {
-                    Text(NSLocalizedString("To", comment: "DashSpend"))
-                        .font(.body2)
-                        .fontWeight(.medium)
-                        .foregroundColor(.tertiaryText)
-                        
-                    Spacer()
-                        
-                    WebImage(url: URL(string: merchantIconUrl))
-                        .resizable()
-                        .indicator(.activity)
-                        .transition(.fade(duration: 0.3))
-                        .scaledToFit()
-                        .frame(width: 24, height: 24)
-                        .clipShape(Circle())
-                            
-                    Text(merchantName)
-                        .font(.body2)
-                        .foregroundColor(.primaryText)
+            } catch let error as CTXSpendError {
+                showConfirmationDialog = false
+                errorTitle = NSLocalizedString("Purchase Failed", comment: "DashSpend")
+                errorMessage = error.localizedDescription
+                
+                if case .customError = error {
+                    showCustomErrorDialog = true
+                } else {
+                    showErrorDialog = true
                 }
-                .padding(.horizontal, 12)
-                .frame(height: 50)
-                    
-                HStack {
-                    Text(NSLocalizedString("Gift card total", comment: "DashSpend"))
-                        .font(.body2)
-                        .fontWeight(.medium)
-                        .foregroundColor(.tertiaryText)
-                        
-                    Spacer()
-                        
-                    Text(fiatFormatter.string(from: NSDecimalNumber(decimal: originalPrice)) ?? "")
-                        .font(.body2)
-                        .foregroundColor(.primaryText)
-                }
-                .padding(.horizontal, 12)
-                .frame(height: 50)
-                    
-                HStack {
-                    Text(NSLocalizedString("Discount", comment: "DashSpend"))
-                        .font(.body2)
-                        .fontWeight(.medium)
-                        .foregroundColor(.tertiaryText)
-                        
-                    Spacer()
-                        
-                    Text("\(NSDecimalNumber(decimal: discount * 100).intValue)%")
-                        .font(.body2)
-                        .foregroundColor(.primaryText)
-                }
-                .padding(.horizontal, 12)
-                .frame(height: 50)
-                    
-                HStack {
-                    Text(NSLocalizedString("You pay", comment: "DashSpend"))
-                        .font(.body2)
-                        .fontWeight(.medium)
-                        .foregroundColor(.tertiaryText)
-                        
-                    Spacer()
-                        
-                    Text(fiatFormatter.string(from: NSDecimalNumber(decimal: originalPrice * (1 - discount))) ?? "")
-                        .font(.body2)
-                        .foregroundColor(.primaryText)
-                }
-                .padding(.horizontal, 12)
-                .frame(height: 50)
-            }
-            .background(Color.white)
-            .cornerRadius(12)
-            .shadow(color: Color.shadow, radius: 10, x: 0, y: 5)
-            
-            HStack(spacing: 20) {
-                Button(action: onCancel) {
-                    Text(NSLocalizedString("Cancel", comment: "DashSpend"))
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.primaryText)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 46)
-                }
-                .background(Color(UIColor.systemGray5))
-                .cornerRadius(12)
-                    
-                Button(action: onConfirm) {
-                    Text(NSLocalizedString("Confirm", comment: "DashSpend"))
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 46)
-                }
-                .background(Color.dashBlue)
-                .cornerRadius(12)
+                
+                DSLogger.log("Gift card purchase failed with CTXSpendError: \(error)")
+            } catch {
+                showConfirmationDialog = false
+                errorTitle = NSLocalizedString("Error", comment: "")
+                errorMessage = error.localizedDescription
+                showErrorDialog = true
+                
+                DSLogger.log("Gift card purchase failed with error: \(error)")
             }
         }
-        .padding(.top, 15)
-        .padding(.horizontal, 20)
-        .edgesIgnoringSafeArea(.bottom)
+    }
+    
+    private func showSignInError() {
+        errorTitle = NSLocalizedString("Sign in required", comment: "Alert title")
+        errorMessage = NSLocalizedString("You need to sign in to DashSpend to purchase gift cards.", comment: "DashSpend")
+        showErrorDialog = true
     }
 }

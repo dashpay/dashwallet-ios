@@ -334,7 +334,7 @@ extension PointOfUseDetailsView {
                     let savingsTag = SavingsTagView()
                     savingsTag.backgroundColor = .clear
                     savingsTag.translatesAutoresizingMaskIntoConstraints = false
-                    savingsTag.setText(String(format: NSLocalizedString("Save %.2f%%", comment: "DashSpend"), Double(m.savingsBasisPoints) / 100))
+                    savingsTag.setText(String(format: NSLocalizedString("Save %.2f%%", comment: "DashSpend"), m.toSavingPercentages()))
                     containerView.addSubview(savingsTag)
 
                     NSLayoutConstraint.activate([

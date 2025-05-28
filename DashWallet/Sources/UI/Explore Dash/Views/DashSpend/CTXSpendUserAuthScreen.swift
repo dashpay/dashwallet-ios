@@ -141,11 +141,12 @@ struct CTXSpendUserAuthScreen: View {
                             showDecimalSeparator: false,
                             actionButtonText: NSLocalizedString("Continue", comment: ""),
                             actionEnabled: true,
+                            inProgress: viewModel.isLoading,
                             actionHandler: {
                                 viewModel.onContinue()
                             }
                         ).frame(maxWidth: .infinity)
-                         .frame(height: 320)
+                         .frame(height: UIDevice.isIphone5OrLess ? 290 : 320)
                          .padding(.horizontal, 20)
                          .padding(.bottom, 20)
                     } else {
@@ -181,6 +182,10 @@ struct CTXSpendUserAuthScreen: View {
             }
         }
         .background(Color.secondaryBackground)
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .navigationBarHidden(true)
+        .navigationBarBackButtonHidden(true)
+        .edgesIgnoringSafeArea(.top)
         .onAppear {
             viewModel.setup(screenType: authType)
             

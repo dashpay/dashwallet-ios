@@ -111,6 +111,9 @@ struct CTXSpendTermsScreen: View {
                 .padding(20)
             }
         }
+        .navigationBarHidden(true)
+        .navigationBarBackButtonHidden(true)
+        .edgesIgnoringSafeArea(.top)
         
         NavigationLink(
             destination: CTXSpendUserAuthScreen(

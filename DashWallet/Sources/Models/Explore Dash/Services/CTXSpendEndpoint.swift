@@ -32,7 +32,12 @@ struct CTXSpendAPIError: Decodable {
         }
     }
     
+    struct FieldError: Decodable {
+        let fiatAmount: [String]?
+    }
+    
     var errors: [Error]
+    let fields: FieldError?
 }
 
 // MARK: - CTXSpendEndpoint
@@ -40,6 +45,7 @@ struct CTXSpendAPIError: Decodable {
 public enum CTXSpendEndpoint {
     case login(email: String)
     case verifyEmail(email: String, code: String)
+    case refreshToken(RefreshTokenRequest)
     case purchaseGiftCard(PurchaseGiftCardRequest)
     case getMerchant(String)
     case getGiftCard(String)
@@ -50,7 +56,7 @@ public enum CTXSpendEndpoint {
 extension CTXSpendEndpoint: TargetType, AccessTokenAuthorizable {
     public var authorizationType: Moya.AuthorizationType? {
         switch self {
-        case .login, .verifyEmail:
+        case .login, .verifyEmail, .refreshToken:
             return nil
         default:
             return .bearer
@@ -65,6 +71,7 @@ extension CTXSpendEndpoint: TargetType, AccessTokenAuthorizable {
         switch self {
         case .login: return "login"
         case .verifyEmail: return "verify-email"
+        case .refreshToken: return "refresh-token"
         case .purchaseGiftCard: return "gift-cards"
         case .getMerchant(let merchantId): return "merchants/\(merchantId)"
         case .getGiftCard(let txid): return "gift-cards"
@@ -73,7 +80,7 @@ extension CTXSpendEndpoint: TargetType, AccessTokenAuthorizable {
     
     public var method: Moya.Method {
         switch self {
-        case .login, .verifyEmail, .purchaseGiftCard:
+        case .login, .verifyEmail, .refreshToken, .purchaseGiftCard:
             return .post
         default:
             return .get
@@ -88,6 +95,8 @@ extension CTXSpendEndpoint: TargetType, AccessTokenAuthorizable {
         case .verifyEmail(let email, let code):
             let verifyRequest = VerifyEmailRequest(email: email, code: code)
             return .requestJSONEncodable(verifyRequest)
+        case .refreshToken(let request):
+            return .requestJSONEncodable(request)
         case .purchaseGiftCard(let request):
             return .requestJSONEncodable(request)
         default:

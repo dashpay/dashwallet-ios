@@ -211,6 +211,9 @@
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "跨所有設備的直觀熟悉的體驗";
 
+/* CTXSpend error */
+"An unknown error occurred. Please try again later." = "An unknown error occurred. Please try again later.";
+
 /* CrowdNode */
 "and" = "和";
 
@@ -513,6 +516,9 @@
 /* Coinbase
    Coinbase Two Factor Auth */
 "Contact Coinbase Support" = "聯繫 Coinbase 支援服務";
+
+/* DashSpend */
+"Contact CTX Support" = "Contact CTX Support";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "有聯繫請求等待批准";
@@ -841,6 +847,9 @@
 /* No comment provided by engineer. */
 "Error" = "錯誤";
 
+/* CTXSpend error */
+"Error processing server response. Please try again later." = "Error processing server response. Please try again later.";
+
 /* No comment provided by engineer. */
 "Error updating your profile" = "更新您的個人資料時出錯";
 
@@ -1018,6 +1027,9 @@
 /* Explore Dash: Filters */
 "Gift Card" = "禮物卡";
 
+/* DashSpend */
+"Gift card purchase successful" = "Gift card purchase successful";
+
 /* DashSpend confirmation */
 "Gift card total" = "Gift card total";
 
@@ -1171,6 +1183,9 @@
 /* No comment provided by engineer. */
 "Insufficient funds" = "餘額不足";
 
+/* CTXSpend error */
+"Insufficient funds to complete this purchase." = "Insufficient funds to complete this purchase.";
+
 /* Send screen */
 "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction." = "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction.";
 
@@ -1201,6 +1216,9 @@
 /* Balance */
 "Invalid amount" = "金額無效";
 
+/* CTXSpend error */
+"Invalid amount. Please check merchant limits." = "Invalid amount. Please check merchant limits.";
+
 /* No comment provided by engineer. */
 "Invalid Dash address" = "無效的達世幣位址";
 
@@ -1218,6 +1236,9 @@
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "無效的二維碼";
+
+/* CTXSpend error */
+"Invalid verification code. Please try again." = "Invalid verification code. Please try again.";
 
 /* No comment provided by engineer. */
 "Invitation" = "邀請";
@@ -1278,6 +1299,9 @@
 
 /* CoinJoin */
 "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees" = "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees";
+
+/* DashSpend */
+"It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash." = "It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.";
 
 /* Coinbase */
 "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "即使對於具有任何技術專業水平的高級用戶來說，要確定您的交易歷史記錄都是非常困難的";
@@ -1556,6 +1580,9 @@
 /* No comment provided by engineer. */
 "Network" = "網絡";
 
+/* CTXSpend error */
+"Network error. Please check your connection and try again." = "Network error. Please check your connection and try again.";
+
 /* No comment provided by engineer. */
 "Network fee" = "網絡費用";
 
@@ -1624,9 +1651,6 @@
 
 /* Location Service Status */
 "Not Determined" = "尚未決定";
-
-/* No comment provided by engineer. */
-"Not implemented" = "Not implemented";
 
 /* CoinJoin */
 "Not started" = "Not started";
@@ -1733,8 +1757,14 @@
 /* 4 out of 4 in the Paying Animation */
 "Paying..." = "付款中...";
 
+/* No comment provided by engineer. */
+"Payment failed" = "Payment failed";
+
 /* Coinbase/Buy Dash */
 "Payment method" = "付款方式";
+
+/* CTXSpend error */
+"Payment processing error: %@" = "Payment processing error: %@";
 
 /* Explore Dash/Merchants/Filters */
 "Payment Type" = "支付方式";
@@ -1807,6 +1837,9 @@
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "請將手機放在NFC設備附近。";
+
+/* CTXSpend error */
+"Please sign in to your DashSpend account." = "Please sign in to your DashSpend account.";
 
 /* No comment provided by engineer. */
 "Please tap on the words from your recovery phrase in the right order" = "請以正確的順序點按您的恢復詞組中的單詞";
@@ -1885,6 +1918,9 @@
 
 /* Coinbase/Buy Dash */
 "Purchase" = "購買";
+
+/* Alert title */
+"Purchase Failed" = "Purchase Failed";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "快速接收";
@@ -2224,6 +2260,9 @@
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "顯示恢復詞組";
 
+/* Alert title */
+"Sign in required" = "Sign in required";
+
 /* CrowdNode */
 "Sign the message" = "簽署訊息";
 
@@ -2371,6 +2410,9 @@
 /* Coinbase */
 "The minimum amount you can send is %@" = "您可以發送的最小金額是 %@";
 
+/* DashSpend */
+"The purchase limits for this merchant have changed. Please contact CTX Support for more information." = "The purchase limits for this merchant have changed. Please contact CTX Support for more information.";
+
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
 
@@ -2406,6 +2448,9 @@
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "這個額外的步驟用來證明真的是你在嘗試進行交易。";
+
+/* CTXSpend error */
+"This merchant is currently unavailable." = "This merchant is currently unavailable.";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "每次使用時，都需要使用此密碼來解鎖您的應用程式。";
@@ -2463,6 +2508,9 @@
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "指紋辨識解鎖的限制";
+
+/* No comment provided by engineer. */
+"Transaction cancelled" = "Transaction cancelled";
 
 /* CrowdNode */
 "Transaction History" = "交易記錄";
@@ -2920,6 +2968,9 @@
 /* Usernames */
 "You need to have more than %@ Dash to create a username" = "You need to have more than %@ Dash to create a username";
 
+/* DashSpend */
+"You need to sign in to DashSpend to purchase gift cards." = "You need to sign in to DashSpend to purchase gift cards.";
+
 /* CrowdNode */
 "You need to wait 5 minutes before initiating another withdrawal" = "您需要等待5分鐘才能再次發起提款";
 
@@ -3021,6 +3072,9 @@
 
 /* Usernames */
 "Your request was cancelled" = "您的申请已取消";
+
+/* DashSpend */
+"Your session expired" = "Your session expired";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "您的交易已發送，金額應在幾分鐘內顯示在您的錢包中。";

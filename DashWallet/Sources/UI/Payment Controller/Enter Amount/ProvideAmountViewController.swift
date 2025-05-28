@@ -93,7 +93,11 @@ final class ProvideAmountViewController: SendAmountViewController {
             destination: destination,
             balanceLabel: balanceLabel,
             model: self.model as! SendAmountModel,
-            avatarView: { UIViewWrapper(uiView: avatarView ?? EmptyUIView()) }
+            avatarView: { 
+                if let avatarView = avatarView {
+                    UIViewWrapper(uiView: avatarView)
+                }
+            }
         )
         let swiftUIController = UIHostingController(rootView: intro)
         swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
@@ -193,6 +197,7 @@ struct ProvideAmountIntro<Content: View>: View {
             destination: destination,
             dashBalance: CoinJoinService.shared.mixingState.isInProgress ? model.coinJoinBalance : model.walletBalance,
             balanceLabel: balanceLabel + ":",
+            authCallback: model.auth,
             avatarView: avatarView
         )
     }

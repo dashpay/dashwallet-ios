@@ -21,14 +21,17 @@ import Combine
 private let defaultCurrency = kDefaultCurrencyCode
 
 @MainActor
-class DashSpendPayViewModel: ObservableObject {
+class DashSpendPayViewModel: NSObject, ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: defaultCurrency)
-    
-    private let minimumAmount: Decimal = 5 // TODO: limits
-    private let maximumAmount: Decimal = 50
+    private let ctxSpendService = CTXSpendService.shared
+    private let sendCoinsService = SendCoinsService()
+
+    private var merchantId: String = ""
     private(set) var amount: Decimal = 0
     private(set) var savingsFraction: Decimal = 0.0
+    @Published private(set) var isLoading = false
+    @Published private(set) var isProcessingPayment = false
     
     let currencySymbol: String = {
         let locale = Locale.current as NSLocale
@@ -39,6 +42,8 @@ class DashSpendPayViewModel: ObservableObject {
     @Published var merchantIconUrl: String = ""
     @Published var walletBalance: UInt64 = 0
     @Published var coinJoinBalance: UInt64 = 0
+    @Published var minimumAmount: Decimal = 0
+    @Published var maximumAmount: Decimal = 0
     @Published var error: Error? = nil
     @Published var input: String = "0" {
         didSet {
@@ -74,16 +79,21 @@ class DashSpendPayViewModel: ObservableObject {
             NSLocalizedString("You are buying a %@ gift card for %@ (%d%% discount)", comment: "DashSpend"),
             originalPrice, formattedDiscountedPrice, discount)
     }
-    var showCost: Bool { error == nil && amount >= minimumAmount && amount <= maximumAmount }
-    var showLimits: Bool { error == nil && !showCost }
-    var minimumLimit: String { String.localizedStringWithFormat(NSLocalizedString("Min: %@", comment: "DashSpend"), fiatFormatter.string(for: minimumAmount) ?? "0.0" ) }
-    var maximumimit: String { String.localizedStringWithFormat(NSLocalizedString("Max: %@", comment: "DashSpend"), fiatFormatter.string(for: maximumAmount) ?? "0.0" ) }
+    var showCost: Bool { error == nil && amount >= minimumAmount && amount <= maximumAmount && hasValidLimits }
+    var showLimits: Bool { error == nil && !showCost && hasValidLimits }
+    var hasValidLimits: Bool { minimumAmount > 0 || maximumAmount > 0 }
+    var minimumLimitMessage: String { String.localizedStringWithFormat(NSLocalizedString("Min: %@", comment: "DashSpend"), fiatFormatter.string(for: minimumAmount) ?? "0.0" ) }
+    var maximumLimitMessage: String { String.localizedStringWithFormat(NSLocalizedString("Max: %@", comment: "DashSpend"), fiatFormatter.string(for: maximumAmount) ?? "0.0" ) }
     var isMixing: Bool { CoinJoinService.shared.mixingState.isInProgress }
     
     init(merchant: ExplorePointOfUse) {
         merchantTitle = merchant.name
         merchantIconUrl = merchant.logoLocation ?? ""
-        savingsFraction = Decimal(merchant.merchant?.savingsBasisPoints ?? 0) / Decimal(10000)
+        savingsFraction = Decimal(merchant.merchant?.toSavingsFraction() ?? 0.0)
+        
+        if let merchantId = merchant.merchant?.merchantId {
+            self.merchantId = merchantId
+        }
     }
     
     func subscribeToUpdates() {
@@ -101,6 +111,70 @@ class DashSpendPayViewModel: ObservableObject {
         }
         
         self.refreshBalance()
+        
+        // Get updated merchant info from CTX API if user is signed in
+        Task {
+            await updateMerchantInfo()
+        }
+    }
+    
+    func purchaseGiftCardAndPay() async throws {
+        isProcessingPayment = true
+        defer { isProcessingPayment = false }
+        
+        let response = try await purchaseGiftCardAPI()
+        
+        // Success! Log the response
+        DSLogger.log("============ GIFT CARD PURCHASE SUCCESSFUL ============")
+        DSLogger.log("Merchant: \(response.merchantName)")
+        DSLogger.log("Amount: \(response.paymentFiatCurrency) \(response.paymentFiatAmount)")
+        DSLogger.log("Dash Amount: \(response.paymentCryptoAmount)")
+        DSLogger.log("Dash Payment URL: \(response.paymentUrls.first?.value ?? "none")")
+        DSLogger.log("Payment ID: \(response.paymentId)")
+        DSLogger.log("Created At: \(response.created)")
+        DSLogger.log("Status: \(response.status)")
+        DSLogger.log("====================================================")
+        
+        // Process the payment using the payment URL
+        guard let paymentUrlString = response.paymentUrls.first?.value else {
+            throw CTXSpendError.paymentProcessingError("No payment URL received")
+        }
+        
+        let transaction = try await sendCoinsService.payWithDashUrl(url: paymentUrlString)
+        
+        // Payment successful - save gift card information
+        DSLogger.log("Payment transaction completed: \(transaction.txHashHexString)")
+        saveGiftCardDummy(txHashData: transaction.txHashData, giftCardId: response.paymentId)
+    }
+    
+    func isUserSignedIn() -> Bool {
+        return ctxSpendService.isUserSignedIn
+    }
+    
+    func contactCTXSupport() {
+        let subject = "CTX Issue: Spending Limit Problem"
+        
+        var body = "Merchant details\n"
+        body += "name: \(merchantTitle)\n"
+        body += "id: \(merchantId)\n"
+        body += "min: \(minimumAmount)\n"
+        body += "max: \(maximumAmount)\n"
+        body += "discount: \(savingsFraction)\n"
+//        body += "denominations type: \(denominationsType)\n" TODO: fixed denoms
+//        body += "denominations: \(denominations)\n"
+        body += "\n"
+
+        body += "Purchase Details\n"
+        body += "amount: \(input)\n"
+        body += "\n"
+        
+        // Add device information
+        body += "Platform: iOS\n"
+        body += "App version: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown")\n"
+        
+        if let emailURL = URL(string: "mailto:\(CTXConstants.supportEmail)?subject=\(subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")&body=\(body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")") {
+            UIApplication.shared.open(emailURL)
+        }
     }
     
     func unsubscribeFromAll() {
@@ -134,5 +208,52 @@ class DashSpendPayViewModel: ObservableObject {
         let allAvailableFunds = isMixing ? coinJoinBalance : account.maxOutputAmount
 
         return dashAmount.plainDashAmount > allAvailableFunds
+    }
+    
+    // MARK: - CTX Integration
+    
+    private func updateMerchantInfo() async {
+        guard !merchantId.isEmpty, ctxSpendService.isUserSignedIn else { return }
+        
+        do {
+            let merchantInfo = try await ctxSpendService.getMerchant(merchantId: merchantId)
+            
+            // Update merchant details
+            savingsFraction = Decimal(merchantInfo.savingsPercentage) / Decimal(10000)
+            
+            if merchantInfo.denominationType == .Range {
+                minimumAmount = Decimal(merchantInfo.minimumCardPurchase)
+                maximumAmount = Decimal(merchantInfo.maximumCardPurchase)
+            }
+            
+            checkAmountForErrors()
+        } catch {
+            DSLogger.log("Failed to get merchant info: \(error)")
+        }
+    }
+    
+    private func purchaseGiftCardAPI() async throws -> GiftCardResponse {
+        guard !merchantId.isEmpty, ctxSpendService.isUserSignedIn else {
+            DSLogger.log("Purchase gift card failed: User not signed in or merchant ID is empty")
+            throw CTXSpendError.unauthorized
+        }
+        
+        DSLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(amount)")
+        
+        let fiatAmountString = String(format: "%.2f", Double(truncating: amount as NSDecimalNumber))
+        DSLogger.log("Making API request to purchase gift card: merchantId=\(merchantId), amount=\(fiatAmountString)USD")
+        
+        return try await ctxSpendService.purchaseGiftCard(
+            merchantId: merchantId,
+            fiatAmount: fiatAmountString,
+            fiatCurrency: "USD",
+            cryptoCurrency: "DASH"
+        )
+    }
+    
+    private func saveGiftCardDummy(txHashData: Data, giftCardId: String) {
+        DSLogger.log("Gift card saved - txId: \(txHashData.hexEncodedString()), giftCardId: \(giftCardId)")
+        
+        // TODO: save dummy to SQLite
     }
 }
