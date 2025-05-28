@@ -19,6 +19,7 @@ import UIKit
 
 class ExploreContentsView: UIView {
     
+    var getTestDashHandler: (() -> Void)?
     var whereToSpendHandler: (() -> Void)?
     var atmHandler: (() -> Void)?
     var stakingHandler: (() -> Void)?
@@ -31,6 +32,10 @@ class ExploreContentsView: UIView {
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupView()
+    }
+    
+    private var isTestnet: Bool {
+        return DWEnvironment.sharedInstance().currentChain.isTestnet()
     }
     
     private func setupView() {
@@ -57,6 +62,18 @@ class ExploreContentsView: UIView {
         buttonsStackView.axis = .vertical
         buttonsStackView.distribution = .equalSpacing
         subContentView.addSubview(buttonsStackView)
+        
+        // Add "Get Test Dash" item if testnet
+        if isTestnet {
+            let getTestDashItem = createItem(
+                image: UIImage(named: "dashCurrency"),
+                title: NSLocalizedString("Get Test Dash", comment: ""),
+                subtitle: NSLocalizedString("Test Dash is free and can be obtained from what is called a faucet.", comment: "")
+            ) { [weak self] in
+                self?.getTestDashHandler?()
+            }
+            buttonsStackView.addArrangedSubview(getTestDashItem)
+        }
         
         let merchantsItem = createItem(
             image: UIImage(named: "image.explore.dash.wheretospend"),

@@ -44,18 +44,31 @@ class ExploreViewController: UIViewController, NavigationFullscreenable {
         super.viewDidLoad()
         
         view.backgroundColor = .dw_darkBlue()
-        
-        // Contents
+        setupLayout()
+    }
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
+    }
+    
+    // MARK: - Layout Setup
+    
+    private func setupLayout() {
         let headerView = ExploreHeaderView()
         headerView.translatesAutoresizingMaskIntoConstraints = false
         headerView.image = UIImage(named: "image.explore.dash.wallet")
         headerView.title = NSLocalizedString("Explore Dash", comment: "")
         headerView.subtitle = NSLocalizedString("Find merchants that accept Dash, where to buy it and how to earn income with it.", comment: "")
+        
         headerView.setContentHuggingPriority(.defaultHigh, for: .vertical)
         
         let contentsView = ExploreContentsView()
         contentsView.translatesAutoresizingMaskIntoConstraints = false
         headerView.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
+        
+        contentsView.getTestDashHandler = { [weak self] in
+            self?.getTestDashAction()
+        }
         
         contentsView.whereToSpendHandler = { [weak self] in
             self?.showWhereToSpendViewController()
@@ -86,13 +99,21 @@ class ExploreViewController: UIViewController, NavigationFullscreenable {
         ])
     }
     
-    override var preferredStatusBarStyle: UIStatusBarStyle {
-        return .lightContent
-    }
-    
     // MARK: - Actions
     
-    @objc private func showAtms() {
+    private func getTestDashAction() {
+        let account = DWEnvironment.sharedInstance().currentAccount
+        
+        if let paymentAddress = account.receiveAddress {
+            UIPasteboard.general.string = paymentAddress
+        }
+        
+        if let url = URL(string: "http://faucet.testnet.networks.dash.org/") {
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        }
+    }
+    
+    private func showAtms() {
         let vc = AtmListViewController()
         vc.payWithDashHandler = { [weak self] in
             guard let self = self else { return }
@@ -105,7 +126,7 @@ class ExploreViewController: UIViewController, NavigationFullscreenable {
         navigationController?.pushViewController(vc, animated: true)
     }
     
-    @objc private func showStakingIfSynced() {
+    private func showStakingIfSynced() {
         if SyncingActivityMonitor.shared.state == .syncDone {
             let vc = CrowdNodeModelObjcWrapper.getRootVC()
             navigationController?.pushViewController(vc, animated: true)
@@ -114,7 +135,7 @@ class ExploreViewController: UIViewController, NavigationFullscreenable {
         }
     }
     
-    @objc private func notifyChainSyncing() {
+    private func notifyChainSyncing() {
         let title = NSLocalizedString("The chain is syncing…", comment: "")
         let message = NSLocalizedString("Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up.", comment: "")
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -137,22 +158,9 @@ class ExploreViewController: UIViewController, NavigationFullscreenable {
         present(alert, animated: true, completion: nil)
     }
     
-    @objc private func buttonAction() {
-        let account = DWEnvironment.sharedInstance().currentAccount
-        
-        guard let paymentAddress = account.receiveAddress else {
-            return
-        }
-        
-        UIPasteboard.general.string = paymentAddress
-        if let url = URL(string: "https://testnet-faucet.dash.org/") {
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
-        }
-    }
-    
     // MARK: - Where to Spend
     
-    @objc public func showWhereToSpendViewController() {
+    private func showWhereToSpendViewController() {
         if UserDefaults.standard.bool(forKey: kMerchantTypesShown) != true {
             let hostingController = UIHostingController(rootView: MerchantTypesDialog { [weak self] in
                 UserDefaults.standard.setValue(true, forKey: kMerchantTypesShown)
