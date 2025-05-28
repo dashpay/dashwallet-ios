@@ -950,16 +950,16 @@
 "Find a user on the Dash Network" = "대시 네트워크에서 사용자를 검색합니다";
 
 /* No comment provided by engineer. */
+"Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept DASH" = "대시 거래를 허용하는 판매자 찾기";
 
 /* No comment provided by engineer. */
+"Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "대시를 받는 판매자를 찾고, 구매처를 확인하고, 수익을 얻는 방법을 확인하세요.";
-
-/* No comment provided by engineer. */
-"Find merchants who accept Dash as payment." = "대시 지불을 받는 상점을 찾아보세요.";
-
-/* No comment provided by engineer. */
-"Find where to buy or sell DASH and other cryptocurrencies for cash." = "어디에서 대시 및 기타 암호화폐를 매수&매도할 수 있는지 찾아보세요.";
 
 /* CrowdNode */
 "First deposit should be more than %@" = "첫 입금은 %@ 이상이어야 합니다";

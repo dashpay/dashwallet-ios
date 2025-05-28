@@ -428,12 +428,12 @@ extension MainTabbarController: UITabBarControllerDelegate {
 
 // MARK: DWExploreTestnetViewControllerDelegate
 
-extension MainTabbarController: DWExploreTestnetViewControllerDelegate {
-    func exploreTestnetViewControllerShowSendPayment(_ controller: DWExploreTestnetViewController) {
+extension MainTabbarController: ExploreViewControllerDelegate {
+    func exploreTestnetViewControllerShowSendPayment(_ controller: ExploreViewController) {
         showPaymentsController(withActivePage: PaymentsViewControllerState.pay)
     }
     
-    func exploreTestnetViewControllerShowReceivePayment(_ controller: DWExploreTestnetViewController) {
+    func exploreTestnetViewControllerShowReceivePayment(_ controller: ExploreViewController) {
         showPaymentsController(withActivePage: PaymentsViewControllerState.receive)
     }
 }

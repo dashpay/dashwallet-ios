@@ -17,7 +17,7 @@
 
 import UIKit
 
-extension HomeViewController: DWLocalCurrencyViewControllerDelegate, DWExploreTestnetViewControllerDelegate {
+extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreViewControllerDelegate {
 
     func performAction(for action: ShortcutAction, sender: UIView?) {
         switch action.type {
@@ -116,7 +116,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, DWExploreTe
     }
 
     private func showExploreDash() {
-        let controller = DWExploreTestnetViewController()
+        let controller = ExploreViewController()
         controller.delegate = self
         let navigationController = BaseNavigationController(rootViewController: controller)
         present(navigationController, animated: true, completion: nil)
@@ -155,11 +155,11 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, DWExploreTe
 
     // MARK: - DWExploreTestnetViewControllerDelegate
 
-    func exploreTestnetViewControllerShowSendPayment(_ controller: DWExploreTestnetViewController) {
+    func exploreTestnetViewControllerShowSendPayment(_ controller: ExploreViewController) {
         delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.pay.rawValue)
     }
 
-    func exploreTestnetViewControllerShowReceivePayment(_ controller: DWExploreTestnetViewController) {
+    func exploreTestnetViewControllerShowReceivePayment(_ controller: ExploreViewController) {
         delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.receive.rawValue)
     }
 }

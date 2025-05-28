@@ -950,16 +950,16 @@
 "Find a user on the Dash Network" = "Βρείτε έναν χρήστη στο Δίκτυο του Dash";
 
 /* No comment provided by engineer. */
+"Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept DASH" = "Βρείτε εμπόρους που δέχονται DASH";
 
 /* No comment provided by engineer. */
+"Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "Βρείτε τους εμπόρους που δέχονται Dash, πού να αγοράσετε και πώς να βγάλετε εισόδημα με αυτό.";
-
-/* No comment provided by engineer. */
-"Find merchants who accept Dash as payment." = "Βρείτε εμπόρους που δέχονται το Dash ως πληρωμή";
-
-/* No comment provided by engineer. */
-"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Βρείτε πού μπορείτε να αγοράσετε ή να πουλήσετε DASH και άλλα κρυπτονομίσματα με μετρητά.";
 
 /* CrowdNode */
 "First deposit should be more than %@" = "Η πρώτη κατάθεση πρέπει να είναι μεγαλύτερη από %@  ";

@@ -950,16 +950,16 @@
 "Find a user on the Dash Network" = "Найти пользователя в сети Dash";
 
 /* No comment provided by engineer. */
+"Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept DASH" = "Найти магазины, где принимают DASH";
 
 /* No comment provided by engineer. */
+"Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "Узнайте, где принимают Dash, где можно купить монеты и как получить доход с их помощью. ";
-
-/* No comment provided by engineer. */
-"Find merchants who accept Dash as payment." = "Найдите места где принимают DASH в качестве оплаты.";
-
-/* No comment provided by engineer. */
-"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Найдите, где купить или продать DASH и другие криптовалюты за наличные.";
 
 /* CrowdNode */
 "First deposit should be more than %@" = "Первый депозит должен быть не менее %@";

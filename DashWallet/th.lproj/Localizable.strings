@@ -950,16 +950,16 @@
 "Find a user on the Dash Network" = "ค้นหาผู้ใช้บนเครือข่าย Dash";
 
 /* No comment provided by engineer. */
+"Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept DASH" = "ค้นหาร้านค้าที่ยอมรับ DASH";
 
 /* No comment provided by engineer. */
+"Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "ค้นหาร้านค้าที่รับ Dash ซื้อได้ที่ไหนและวิธีสร้างรายได้จาก Dash";
-
-/* No comment provided by engineer. */
-"Find merchants who accept Dash as payment." = "ค้นหาร้าค้าที่ยอมรับการชำระเงินด้วย Dash ";
-
-/* No comment provided by engineer. */
-"Find where to buy or sell DASH and other cryptocurrencies for cash." = "ค้นหาสถานที่ซื้อหรือขาย Dash และ คริปโทเคเรนซีอื่น ๆ เป็นเงินสด";
 
 /* CrowdNode */
 "First deposit should be more than %@" = "เงินฝากครั้งแรกควรมากกว่า %@";

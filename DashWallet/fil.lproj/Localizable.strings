@@ -950,16 +950,16 @@
 "Find a user on the Dash Network" = "Maghanap ng gumagamit sa Network ng Dash";
 
 /* No comment provided by engineer. */
+"Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept DASH" = "Maghanap ng mga merchant na tumatanggap ng DASH";
 
 /* No comment provided by engineer. */
+"Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "Maghanap ng mga merchant na tumatanggap ng Dash, kung saan ito bibilhin at kung paano kumita gamit ito.";
-
-/* No comment provided by engineer. */
-"Find merchants who accept Dash as payment." = "Maghanap ng mga merchant na tumatanggap ng Dash bilang bayad.";
-
-/* No comment provided by engineer. */
-"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Hanapin kung saan bibili o magbenta ng DASH at iba pang cryptocurrencies para sa cash.";
 
 /* CrowdNode */
 "First deposit should be more than %@" = "Ang unang deposito ay dapat na higit sa %@";

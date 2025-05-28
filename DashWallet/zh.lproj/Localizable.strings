@@ -950,16 +950,16 @@
 "Find a user on the Dash Network" = "在Dash网络上查找用户";
 
 /* No comment provided by engineer. */
+"Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept DASH" = "查找接受 DASH 支付的商家";
 
 /* No comment provided by engineer. */
+"Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "寻找接受 Dash 的商家, 可以在哪里购买以及如何通过它获得收益.";
-
-/* No comment provided by engineer. */
-"Find merchants who accept Dash as payment." = "查找接受Dash支付方式的商户.";
-
-/* No comment provided by engineer. */
-"Find where to buy or sell DASH and other cryptocurrencies for cash." = "查找在哪里购买或出售Dash和其他加密货币以换取现金.";
 
 /* CrowdNode */
 "First deposit should be more than %@" = "首次存款应超过 %@";
