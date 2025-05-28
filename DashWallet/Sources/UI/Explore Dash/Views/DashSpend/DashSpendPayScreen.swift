@@ -29,7 +29,6 @@ struct DashSpendPayScreen: View {
     @State private var showCustomErrorDialog = false
     @State private var errorMessage = ""
     @State private var errorTitle = ""
-    @State private var successTxId: Data? = nil
     let onPurchaseSuccess: ((Data) -> Void)?
     
     init(merchant: ExplorePointOfUse, justAuthenticated: Bool = false, onPurchaseSuccess: ((Data) -> Void)? = nil) {
@@ -247,12 +246,7 @@ struct DashSpendPayScreen: View {
         Task {
             do {
                 let txId = try await viewModel.purchaseGiftCardAndPay()
-                
-                // Close the confirmation dialog and dismiss the screen
                 showConfirmationDialog = false
-                successTxId = txId
-                
-                // Navigate back to home and show gift card details
                 presentationMode.wrappedValue.dismiss()
                 onPurchaseSuccess?(txId)
             } catch let error as CTXSpendError {

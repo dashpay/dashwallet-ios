@@ -124,17 +124,6 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         
         let response = try await purchaseGiftCardAPI()
         
-        // Success! Log the response
-        DSLogger.log("============ GIFT CARD PURCHASE SUCCESSFUL ============")
-        DSLogger.log("Merchant: \(response.merchantName)")
-        DSLogger.log("Amount: \(response.paymentFiatCurrency) \(response.paymentFiatAmount)")
-        DSLogger.log("Dash Amount: \(response.paymentCryptoAmount)")
-        DSLogger.log("Dash Payment URL: \(response.paymentUrls.first?.value ?? "none")")
-        DSLogger.log("Payment ID: \(response.paymentId)")
-        DSLogger.log("Created At: \(response.created)")
-        DSLogger.log("Status: \(response.status)")
-        DSLogger.log("====================================================")
-        
         // Process the payment using the payment URL
         guard let paymentUrlString = response.paymentUrls.first?.value else {
             throw CTXSpendError.paymentProcessingError("No payment URL received")
