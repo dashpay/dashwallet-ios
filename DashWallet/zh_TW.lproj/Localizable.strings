@@ -1,6 +1,9 @@
 /* No comment provided by engineer. */
 " " = " ";
 
+/* Usernames */
+" of these criteria" = " of these criteria";
+
 /* CrowdNode */
 " Privacy Policy " = "隱私政策";
 
@@ -205,9 +208,6 @@
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "跨所有設備的直觀熟悉的體驗";
 
-/* Invites */
-"an invitation" = "an invitation";
-
 /* CrowdNode */
 "and" = "和";
 
@@ -310,8 +310,8 @@
 /* No comment provided by engineer. */
 "Beta" = "Beta";
 
-/* Validation rule: Between 3 and 24 characters */
-"Between %ld and %ld characters" = "在 %1$ld 和 %2$ld 個字符之間";
+/* Usernames */
+"Between 20 and 23 characters" = "Between 20 and 23 characters";
 
 /* Usernames */
 "Between 3 and 23 characters" = "Between 3 and 23 characters";
@@ -416,9 +416,6 @@
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
 
-/* Choose your Dash username */
-"Choose your" = "選擇你的";
-
 /* No comment provided by engineer. */
 "Choose Your Username" = "選擇你的用戶名";
 
@@ -473,12 +470,6 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "確認 (%1$d%2$@)";
 
-/* Invites */
-"Confirm and pay" = "Confirm and pay";
-
-/* Invites */
-"Confirm invitation" = "Confirm invitation";
-
 /* No comment provided by engineer. */
 "Confirm PIN" = "確認密碼";
 
@@ -521,7 +512,7 @@
 "Contacts" = "通訊錄";
 
 /* Usernames */
-"Contested" = "Contested";
+"Contains numbers 2-9" = "Contains numbers 2-9";
 
 /* No comment provided by engineer. */
 "Continue" = "繼續";
@@ -659,9 +650,6 @@
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "達世幣付款不能低於 %@";
 
-/* No comment provided by engineer. */
-"Dash username" = "達世幣用戶名";
-
 /* Buy Dash */
 "Dash Wallet on this device" = "此設備上的達世幣錢包";
 
@@ -763,8 +751,8 @@
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "例如 johndoe@mail.com";
 
-/* Invites */
-"Each invitation will be funded so that the receiver can quickly create their username on the Dash Network." = "Each invitation will be funded so that the receiver can quickly create their username on the Dash Network.";
+/* No comment provided by engineer. */
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "之前";
@@ -780,9 +768,6 @@
 
 /* Invitation tag placeholder */
 "eg: Dad" = "例如: 爸爸";
-
-/* Input username textfield placeholder */
-"eg: johndoe" = "例如: johndoe";
 
 /* CrowdNode */
 "Email" = "電子郵件";
@@ -1207,8 +1192,8 @@
 /* No comment provided by engineer. */
 "Invitation Created Successfully" = "創建邀請成功";
 
-/* Invites */
-"Invitation fee" = "Invitation fee";
+/* No comment provided by engineer. */
+"Invitation Fee" = "Invitation Fee";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "邀請己被使用";
@@ -1315,9 +1300,6 @@
 
 /* Usernames */
 "Letter, numbers and hyphens only" = "Letter, numbers and hyphens only";
-
-/* Validation rule */
-"Letters, numbers and hyphens only" = "僅限字母、數字和連字符";
 
 /* No comment provided by engineer. */
 "Let’s Get Started" = "讓我們開始吧";
@@ -1493,9 +1475,6 @@
 /* CoinJoin */
 "Multiple hours" = "多小時";
 
-/* Validation rule */
-"Must start and end with a letter or number" = "必須以字母或數字來作為開頭和結尾";
-
 /* No comment provided by engineer. */
 "My Contacts" = "我的通訊錄";
 
@@ -1559,9 +1538,6 @@
 /* No comment provided by engineer. */
 "Node IP" = "節點IP";
 
-/* Usernames */
-"Non-contested" = "Non-contested";
-
 /* adjective, security level */
 "None" = "沒有";
 
@@ -1606,6 +1582,9 @@
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "當 %@ 接受您的請求後，您就可以直接向用戶名付款";
+
+/* Usernames */
+"one" = "one";
 
 /* Voting */
 "One vote left" = "One vote left";
@@ -1903,9 +1882,6 @@
 
 /* No comment provided by engineer. */
 "Redeem your gift card online within seconds or at the cashier." = "在幾秒鐘內在線或在收銀台兌換您的禮品卡。";
-
-/* Button title, Register (username) */
-"Register" = "注冊";
 
 /* No comment provided by engineer. */
 "Register?" = "要注冊嗎?";
@@ -2311,20 +2287,23 @@
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "您選擇的圖像將匿名上傳到 Imgur。";
 
+/* Invites */
+"The invitation was created with un-mixed funds" = "The invitation was created with un-mixed funds";
+
 /* Usernames */
 "The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "您可以發送的最小金額是 %@";
 
-/* Invites */
-"The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen" = "The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen";
-
-/* Invites */
-"The person that you send this invitation to can request any username they want and the network will vote to approve it" = "The person that you send this invitation to can request any username they want and the network will vote to approve it";
-
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
+
+/* Usernames */
+"The username must meet " = "The username must meet ";
+
+/* Usernames */
+"The username must meet these criteria" = "The username must meet these criteria";
 
 /* No comment provided by engineer. */
 "them (Fetching Info)" = "他們 (獲取信息)";
@@ -2340,6 +2319,9 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "在您的通訊錄中沒有與名稱 %@ 匹配的用戶";
+
+/* Usernames */
+"There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are longer than 20 characters and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period." = "There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are longer than 20 characters and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period.";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "將交易歷史記錄匯出到 ZenLedger 時發生錯誤";
@@ -2387,7 +2369,7 @@
 "to Dash Wallet on this device" = "到此設備上的 達世幣錢包";
 
 /* CoinJoin */
-"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@.";
+"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "要開始質押，請在 CrowdNode 上創建一個帳戶或連接到現有帳戶。";
@@ -2568,17 +2550,11 @@
 /* No comment provided by engineer. */
 "Username already found" = "已找到用戶名";
 
-/* No comment provided by engineer. */
-"Username available" = "用戶名可用";
-
 /* Usernames */
 "Username is available" = "Username is available";
 
 /* Usernames */
 "Username request failed" = "Username request failed";
-
-/* No comment provided by engineer. */
-"Username taken" = "用戶名已被使用";
 
 /* Voting */
 "Username voting" = "用戶名稱投票";
@@ -2591,12 +2567,6 @@
 
 /* CrowdNode Portal */
 "Validating address…" = "正在核實位址...";
-
-/* No comment provided by engineer. */
-"Validating username failed" = "驗證用戶名失敗";
-
-/* No comment provided by engineer. */
-"Validating username…" = "正在驗證用戶名";
 
 /* CrowdNode Portal */
 "Verification Required" = "需要驗證";
@@ -2713,6 +2683,9 @@
 "Welcome to DashPay" = "歡迎來到 DashPay";
 
 /* Usernames */
+"What are contested and non-contested usernames?" = "What are contested and non-contested usernames?";
+
+/* Usernames */
 "What is username voting?" = "什麼是用戶名投票？";
 
 /* No comment provided by engineer. */
@@ -2761,9 +2734,6 @@
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "你願意接受這個邀請嗎?";
 
-/* Invites */
-"Would you like to create this invitation?" = "Would you like to create this invitation?";
-
 /* Coinbase */
 "Would you like to make a deposit for your purchase using a linked bank account?" = "您想在關聯的銀行帳戶所存入一筆資金並使用它來為您的購買埋單嗎？";
 
@@ -2803,6 +2773,9 @@
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "您可以採用以下任一格式輸入金鑰 : WIF/base58/base64/hex";
 
+/* Invites */
+"You can only create a non-contested username using this invitation" = "You can only create a non-contested username using this invitation";
+
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "您可以查看有關您的存款、提款和獎勵收入的詳細信息。";
 
@@ -2813,7 +2786,7 @@
 "You cannot claim this invite since you already have a Dash username" = "由於您已經有達世幣用戶名，因此您無法認領此邀請";
 
 /* Usernames */
-"You chose \"%@\" as your username." = "You chose \"%@\" as your username.";
+"You chose “%@” as your username." = "You chose “%@” as your username.";
 
 /* CoinJoin */
 "You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
@@ -2964,9 +2937,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "您的交易已發送，金額應在幾分鐘內顯示在您的錢包中。";
-
-/* Usernames */
-"your username" = "your username";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "您的用戶名 %@ 已在達世幣網絡上成功創建";

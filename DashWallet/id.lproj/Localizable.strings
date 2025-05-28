@@ -1,6 +1,9 @@
 /* No comment provided by engineer. */
 " " = " ";
 
+/* Usernames */
+" of these criteria" = " of these criteria";
+
 /* CrowdNode */
 " Privacy Policy " = "Kebijakan pribadi";
 
@@ -205,9 +208,6 @@
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Pengalaman intuitif dan akrab di semua perangkat Anda";
 
-/* Invites */
-"an invitation" = "an invitation";
-
 /* CrowdNode */
 "and" = "dan";
 
@@ -310,8 +310,8 @@
 /* No comment provided by engineer. */
 "Beta" = "Beta";
 
-/* Validation rule: Between 3 and 24 characters */
-"Between %ld and %ld characters" = "Antara %1$ld dan %2$ld karakter";
+/* Usernames */
+"Between 20 and 23 characters" = "Between 20 and 23 characters";
 
 /* Usernames */
 "Between 3 and 23 characters" = "Between 3 and 23 characters";
@@ -416,9 +416,6 @@
 /* No comment provided by engineer. */
 "Check your connection" = "Periksa koneksi anda";
 
-/* Choose your Dash username */
-"Choose your" = "Pilih Anda";
-
 /* No comment provided by engineer. */
 "Choose Your Username" = "Pilih Nama pengguna";
 
@@ -473,12 +470,6 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "konfirmasi (%1$d%2$@)";
 
-/* Invites */
-"Confirm and pay" = "Confirm and pay";
-
-/* Invites */
-"Confirm invitation" = "Confirm invitation";
-
 /* No comment provided by engineer. */
 "Confirm PIN" = "Pastikan PIN";
 
@@ -521,7 +512,7 @@
 "Contacts" = "Kontak";
 
 /* Usernames */
-"Contested" = "Contested";
+"Contains numbers 2-9" = "Contains numbers 2-9";
 
 /* No comment provided by engineer. */
 "Continue" = "Teruskan";
@@ -659,9 +650,6 @@
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "pembayaran dash tidak boleh kurang dari %@";
 
-/* No comment provided by engineer. */
-"Dash username" = "Nama pengguna Dash";
-
 /* Buy Dash */
 "Dash Wallet on this device" = "Dompet Dash di perangkat ini";
 
@@ -763,8 +751,8 @@
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "misalnya johndoe@mail.com";
 
-/* Invites */
-"Each invitation will be funded so that the receiver can quickly create their username on the Dash Network." = "Each invitation will be funded so that the receiver can quickly create their username on the Dash Network.";
+/* No comment provided by engineer. */
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Sebelumnya";
@@ -780,9 +768,6 @@
 
 /* Invitation tag placeholder */
 "eg: Dad" = "mis: Ayah";
-
-/* Input username textfield placeholder */
-"eg: johndoe" = "misalnya: johndoe";
 
 /* CrowdNode */
 "Email" = "Email";
@@ -1207,8 +1192,8 @@
 /* No comment provided by engineer. */
 "Invitation Created Successfully" = "Undangan Berhasil Dibuat";
 
-/* Invites */
-"Invitation fee" = "Invitation fee";
+/* No comment provided by engineer. */
+"Invitation Fee" = "Invitation Fee";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "Undangan telah digunakan oleh";
@@ -1315,9 +1300,6 @@
 
 /* Usernames */
 "Letter, numbers and hyphens only" = "Letter, numbers and hyphens only";
-
-/* Validation rule */
-"Letters, numbers and hyphens only" = "Hanya huruf, angka, dan tanda hubung";
 
 /* No comment provided by engineer. */
 "Let’s Get Started" = "Ayo Mulai";
@@ -1493,9 +1475,6 @@
 /* CoinJoin */
 "Multiple hours" = "Beberapa jam";
 
-/* Validation rule */
-"Must start and end with a letter or number" = "Harus dimulai dan diakhiri dengan huruf atau angka";
-
 /* No comment provided by engineer. */
 "My Contacts" = "Kontak saya";
 
@@ -1559,9 +1538,6 @@
 /* No comment provided by engineer. */
 "Node IP" = "Node IP";
 
-/* Usernames */
-"Non-contested" = "Non-contested";
-
 /* adjective, security level */
 "None" = "Tidak ada";
 
@@ -1606,6 +1582,9 @@
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Setelah %@ menerima permintaan Anda, Anda dapat Membayar Langsung ke Nama Pengguna";
+
+/* Usernames */
+"one" = "one";
 
 /* Voting */
 "One vote left" = "One vote left";
@@ -1903,9 +1882,6 @@
 
 /* No comment provided by engineer. */
 "Redeem your gift card online within seconds or at the cashier." = "Tukarkan kartu hadiah Anda secara online dalam hitungan detik atau di kasir.";
-
-/* Button title, Register (username) */
-"Register" = "Daftar";
 
 /* No comment provided by engineer. */
 "Register?" = "Daftar?";
@@ -2311,20 +2287,23 @@
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "Gambar yang Anda pilih akan diunggah ke Imgur secara anonim.";
 
+/* Invites */
+"The invitation was created with un-mixed funds" = "The invitation was created with un-mixed funds";
+
 /* Usernames */
 "The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "Jumlah minimum yang dapat Anda kirim adalah %@";
 
-/* Invites */
-"The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen" = "The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen";
-
-/* Invites */
-"The person that you send this invitation to can request any username they want and the network will vote to approve it" = "The person that you send this invitation to can request any username they want and the network will vote to approve it";
-
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
+
+/* Usernames */
+"The username must meet " = "The username must meet ";
+
+/* Usernames */
+"The username must meet these criteria" = "The username must meet these criteria";
 
 /* No comment provided by engineer. */
 "them (Fetching Info)" = "mereka (Mengambil Info)";
@@ -2340,6 +2319,9 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "Tidak ada pengguna yang cocok dengan nama %@ di kontak Anda";
+
+/* Usernames */
+"There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are longer than 20 characters and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period." = "There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are longer than 20 characters and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period.";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "Terjadi kesalahan saat mengekspor riwayat transaksi Anda ke ZenLedger";
@@ -2387,7 +2369,7 @@
 "to Dash Wallet on this device" = "ke Dash Wallet di perangkat ini";
 
 /* CoinJoin */
-"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@.";
+"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "Untuk memulai staking, buat akun di CrowdNode atau hubungkan ke akun yang sudah ada.";
@@ -2568,17 +2550,11 @@
 /* No comment provided by engineer. */
 "Username already found" = "Nama pengguna sudah ditemukan";
 
-/* No comment provided by engineer. */
-"Username available" = "Nama pengguna tersedia";
-
 /* Usernames */
 "Username is available" = "Username is available";
 
 /* Usernames */
 "Username request failed" = "Username request failed";
-
-/* No comment provided by engineer. */
-"Username taken" = "Nama pengguna telah diambil";
 
 /* Voting */
 "Username voting" = "Voting nama pengguna";
@@ -2591,12 +2567,6 @@
 
 /* CrowdNode Portal */
 "Validating address…" = "Memvalidasi alamat…";
-
-/* No comment provided by engineer. */
-"Validating username failed" = "Validasi nama pengguna gagal";
-
-/* No comment provided by engineer. */
-"Validating username…" = "Memvalidasi nama pengguna…";
 
 /* CrowdNode Portal */
 "Verification Required" = "Verifikasi Diperlukan";
@@ -2713,6 +2683,9 @@
 "Welcome to DashPay" = "Selamat datang di DashPay";
 
 /* Usernames */
+"What are contested and non-contested usernames?" = "What are contested and non-contested usernames?";
+
+/* Usernames */
 "What is username voting?" = "Apa itu voting nama pengguna?";
 
 /* No comment provided by engineer. */
@@ -2761,9 +2734,6 @@
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "Apakah Anda ingin menerima undangan?";
 
-/* Invites */
-"Would you like to create this invitation?" = "Would you like to create this invitation?";
-
 /* Coinbase */
 "Would you like to make a deposit for your purchase using a linked bank account?" = "Apakah Anda ingin melakukan deposit untuk pembelian Anda menggunakan rekening bank yang tertaut?";
 
@@ -2803,6 +2773,9 @@
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "Anda dapat memasukkan kunci Anda dalam salah satu format berikut: WIF/base58/base64/hex";
 
+/* Invites */
+"You can only create a non-contested username using this invitation" = "You can only create a non-contested username using this invitation";
+
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "Anda dapat melihat informasi terperinci tentang setoran, penarikan, dan hadiah penghasilan Anda.";
 
@@ -2813,7 +2786,7 @@
 "You cannot claim this invite since you already have a Dash username" = "Anda tidak dapat mengklaim undangan ini karena Anda sudah memiliki nama pengguna Dash";
 
 /* Usernames */
-"You chose \"%@\" as your username." = "You chose \"%@\" as your username.";
+"You chose “%@” as your username." = "You chose “%@” as your username.";
 
 /* CoinJoin */
 "You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
@@ -2964,9 +2937,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Transaksi Anda telah dikirim dan jumlahnya akan muncul di dompet Anda dalam beberapa menit.";
-
-/* Usernames */
-"your username" = "your username";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Nama pengguna anda %@ telah sukses dibuat di jaringan Dash";

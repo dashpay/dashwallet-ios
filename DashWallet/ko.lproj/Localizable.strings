@@ -1,6 +1,9 @@
 /* No comment provided by engineer. */
 " " = " ";
 
+/* Usernames */
+" of these criteria" = " of these criteria";
+
 /* CrowdNode */
 " Privacy Policy " = "개인정보 보호정책";
 
@@ -205,9 +208,6 @@
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "당신의 모든 기기에 걸친 직관적이고 친근한 경험";
 
-/* Invites */
-"an invitation" = "an invitation";
-
 /* CrowdNode */
 "and" = "또한";
 
@@ -310,8 +310,8 @@
 /* No comment provided by engineer. */
 "Beta" = "Beta";
 
-/* Validation rule: Between 3 and 24 characters */
-"Between %ld and %ld characters" = "%1$ld 와 %2$ld 글자 사이";
+/* Usernames */
+"Between 20 and 23 characters" = "Between 20 and 23 characters";
 
 /* Usernames */
 "Between 3 and 23 characters" = "Between 3 and 23 characters";
@@ -416,9 +416,6 @@
 /* No comment provided by engineer. */
 "Check your connection" = "연결을 확인하세요";
 
-/* Choose your Dash username */
-"Choose your" = "다음을 선택하세요";
-
 /* No comment provided by engineer. */
 "Choose Your Username" = "사용자 이름을 선택하세요";
 
@@ -473,12 +470,6 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "확인 (%1$d%2$@)";
 
-/* Invites */
-"Confirm and pay" = "Confirm and pay";
-
-/* Invites */
-"Confirm invitation" = "Confirm invitation";
-
 /* No comment provided by engineer. */
 "Confirm PIN" = "PIN 확인";
 
@@ -521,7 +512,7 @@
 "Contacts" = "연락처";
 
 /* Usernames */
-"Contested" = "Contested";
+"Contains numbers 2-9" = "Contains numbers 2-9";
 
 /* No comment provided by engineer. */
 "Continue" = "계속";
@@ -659,9 +650,6 @@
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "대시 지불은 %@보다 적을 수 없습니다";
 
-/* No comment provided by engineer. */
-"Dash username" = "대시 사용자 이름";
-
 /* Buy Dash */
 "Dash Wallet on this device" = "이 기기의 대시 지갑";
 
@@ -763,8 +751,8 @@
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "예시 johndoe@mail.com";
 
-/* Invites */
-"Each invitation will be funded so that the receiver can quickly create their username on the Dash Network." = "Each invitation will be funded so that the receiver can quickly create their username on the Dash Network.";
+/* No comment provided by engineer. */
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "이전";
@@ -780,9 +768,6 @@
 
 /* Invitation tag placeholder */
 "eg: Dad" = "예시: 아빠";
-
-/* Input username textfield placeholder */
-"eg: johndoe" = "예시: 홍길동";
 
 /* CrowdNode */
 "Email" = "이메일";
@@ -1207,8 +1192,8 @@
 /* No comment provided by engineer. */
 "Invitation Created Successfully" = "초대가 성공적으로 생성되었습니다";
 
-/* Invites */
-"Invitation fee" = "Invitation fee";
+/* No comment provided by engineer. */
+"Invitation Fee" = "Invitation Fee";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "다음에 사용된 초대";
@@ -1315,9 +1300,6 @@
 
 /* Usernames */
 "Letter, numbers and hyphens only" = "Letter, numbers and hyphens only";
-
-/* Validation rule */
-"Letters, numbers and hyphens only" = "글자, 숫자 및 하이픈만 사용할 수 있습니다.";
 
 /* No comment provided by engineer. */
 "Let’s Get Started" = "지금 시작하세요";
@@ -1493,9 +1475,6 @@
 /* CoinJoin */
 "Multiple hours" = "다중 시간";
 
-/* Validation rule */
-"Must start and end with a letter or number" = "시작과 끝은 글자나 숫자여야 합니다";
-
 /* No comment provided by engineer. */
 "My Contacts" = "나의 연락처";
 
@@ -1559,9 +1538,6 @@
 /* No comment provided by engineer. */
 "Node IP" = "노드 IP";
 
-/* Usernames */
-"Non-contested" = "Non-contested";
-
 /* adjective, security level */
 "None" = "없음";
 
@@ -1606,6 +1582,9 @@
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "%@ 님이 당신의 요청을 수락하면 사용자 이름에 직접 지불할 수 있습니다";
+
+/* Usernames */
+"one" = "one";
 
 /* Voting */
 "One vote left" = "One vote left";
@@ -1903,9 +1882,6 @@
 
 /* No comment provided by engineer. */
 "Redeem your gift card online within seconds or at the cashier." = "수초만에 온라인으로, 혹은 카운터에서 기프트 카드를 현금화합니다.";
-
-/* Button title, Register (username) */
-"Register" = "등록";
 
 /* No comment provided by engineer. */
 "Register?" = "등록합니까?";
@@ -2311,20 +2287,23 @@
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "당신이 선택한 이미지는 Imgur에 익명으로 업로드됩니다.";
 
+/* Invites */
+"The invitation was created with un-mixed funds" = "The invitation was created with un-mixed funds";
+
 /* Usernames */
 "The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "송금 가능한 최소 금액은 %@ 입니다";
 
-/* Invites */
-"The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen" = "The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen";
-
-/* Invites */
-"The person that you send this invitation to can request any username they want and the network will vote to approve it" = "The person that you send this invitation to can request any username they want and the network will vote to approve it";
-
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
+
+/* Usernames */
+"The username must meet " = "The username must meet ";
+
+/* Usernames */
+"The username must meet these criteria" = "The username must meet these criteria";
 
 /* No comment provided by engineer. */
 "them (Fetching Info)" = "다른 사람들 (정보 불러오기)";
@@ -2340,6 +2319,9 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "당신의 연락처에 %@ 라는 이름에 맞는 사용자가 존재하지 않습니다";
+
+/* Usernames */
+"There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are longer than 20 characters and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period." = "There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are longer than 20 characters and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period.";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "Zenledger에 거래 내역을 내보내던 중 에러가 발생하였습니다";
@@ -2387,7 +2369,7 @@
 "to Dash Wallet on this device" = "이 기기의 대시 지갑으로";
 
 /* CoinJoin */
-"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@.";
+"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "스테이킹을 시작하려면 크라우드노드에 계정을 만들거나 기존 계정에 연결하세요.";
@@ -2568,17 +2550,11 @@
 /* No comment provided by engineer. */
 "Username already found" = "사용자 이름을 이미 찾았습니다";
 
-/* No comment provided by engineer. */
-"Username available" = "사용할 수 없는 사용자 이름";
-
 /* Usernames */
 "Username is available" = "Username is available";
 
 /* Usernames */
 "Username request failed" = "Username request failed";
-
-/* No comment provided by engineer. */
-"Username taken" = "이미 사용 중인 사용자 이름";
 
 /* Voting */
 "Username voting" = "사용자 이름 투표";
@@ -2591,12 +2567,6 @@
 
 /* CrowdNode Portal */
 "Validating address…" = "주소 확인중...";
-
-/* No comment provided by engineer. */
-"Validating username failed" = "사용자 이름 인증 실패";
-
-/* No comment provided by engineer. */
-"Validating username…" = "사용자 이름 인증 중...";
 
 /* CrowdNode Portal */
 "Verification Required" = "인증이 필요함";
@@ -2713,6 +2683,9 @@
 "Welcome to DashPay" = "대시페이에 오신 것을 환영합니다";
 
 /* Usernames */
+"What are contested and non-contested usernames?" = "What are contested and non-contested usernames?";
+
+/* Usernames */
 "What is username voting?" = "사용자이름 투표란 무엇인가요?";
 
 /* No comment provided by engineer. */
@@ -2761,9 +2734,6 @@
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "초대를 수락하시겠습니까?";
 
-/* Invites */
-"Would you like to create this invitation?" = "Would you like to create this invitation?";
-
 /* Coinbase */
 "Would you like to make a deposit for your purchase using a linked bank account?" = "연결된 은행 계좌를 이용해 구매를 위한 입금 처리를 완료하시겠습니까?";
 
@@ -2803,6 +2773,9 @@
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "다음과 같은 포맷 중 어떤 형태로도 키를 입력할 수 있습니다: WIF/base58/base64/hex";
 
+/* Invites */
+"You can only create a non-contested username using this invitation" = "You can only create a non-contested username using this invitation";
+
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "입금, 출금 및 리워드 수익에 대한 자세한 정보를 확인할 수 있습니다.";
 
@@ -2813,7 +2786,7 @@
 "You cannot claim this invite since you already have a Dash username" = "이미 대시 사용자 이름을 가지고 있어 이 초대를 수락할 수 없습니다.";
 
 /* Usernames */
-"You chose \"%@\" as your username." = "You chose \"%@\" as your username.";
+"You chose “%@” as your username." = "You chose “%@” as your username.";
 
 /* CoinJoin */
 "You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
@@ -2964,9 +2937,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "당신의 거래가 완료되었으며 수 분 이내에 당신의 지갑에 잔액이 표시될 예정입니다.";
-
-/* Usernames */
-"your username" = "your username";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "당신의 사용자 이름인 %@가 대시 네트워크에 성공적으로 생성되었습니다";

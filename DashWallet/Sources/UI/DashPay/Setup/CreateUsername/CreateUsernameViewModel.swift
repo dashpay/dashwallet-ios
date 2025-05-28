@@ -17,22 +17,26 @@
 
 import Combine
 
+private let ALLOW_CONTESTED_USERNAMES_WITHOUT_INVITE = false
+
 struct CreateUsernameUIState {
     var lengthRule: UsernameValidationRuleResult
     var allowedCharactersRule: UsernameValidationRuleResult
     var costRule: UsernameValidationRuleResult
     var usernameBlockedRule: UsernameValidationRuleResult
+    var contestedAllowed: Bool
     var hasInvite: Bool
     var isInvitationMixed: Bool
     var isInvitationForContested: Bool
     var requiredDash: UInt64
     var canContinue: Bool
     
-    init(lengthRule: UsernameValidationRuleResult, allowedCharactersRule: UsernameValidationRuleResult, costRule: UsernameValidationRuleResult, usernameBlockedRule: UsernameValidationRuleResult, hasInvite: Bool, isInvitationMixed: Bool, isInvitationForContested: Bool, requiredDash: UInt64, canContinue: Bool) {
+    init(lengthRule: UsernameValidationRuleResult, allowedCharactersRule: UsernameValidationRuleResult, costRule: UsernameValidationRuleResult, usernameBlockedRule: UsernameValidationRuleResult, contestedAllowed: Bool, hasInvite: Bool, isInvitationMixed: Bool, isInvitationForContested: Bool, requiredDash: UInt64, canContinue: Bool) {
         self.lengthRule = lengthRule
         self.allowedCharactersRule = allowedCharactersRule
         self.costRule = costRule
         self.usernameBlockedRule = usernameBlockedRule
+        self.contestedAllowed = contestedAllowed
         self.hasInvite = hasInvite
         self.isInvitationMixed = isInvitationMixed
         self.isInvitationForContested = isInvitationForContested
@@ -45,6 +49,7 @@ struct CreateUsernameUIState {
         self.allowedCharactersRule = .empty
         self.costRule = .hidden
         self.usernameBlockedRule = .hidden
+        self.contestedAllowed = ALLOW_CONTESTED_USERNAMES_WITHOUT_INVITE
         self.hasInvite = false
         self.isInvitationMixed = false
         self.isInvitationForContested = false
@@ -173,6 +178,7 @@ class CreateUsernameViewModel: ObservableObject {
             uiState.isInvitationMixed = await isInvitationMixed(assetLockTx: tx)
             uiState.isInvitationForContested = await invitationAmount(assetLockTx: tx) >= DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
             uiState.hasInvite = true
+            uiState.contestedAllowed = uiState.isInvitationForContested
             uiState.costRule = .hidden
         }
     }
@@ -219,23 +225,33 @@ class CreateUsernameViewModel: ObservableObject {
             let hasInvite = uiState.hasInvite
             let isMixed = uiState.isInvitationMixed
             let isContested = uiState.isInvitationForContested
+            let contestedAllowed = uiState.contestedAllowed
             
             uiState = CreateUsernameUIState()
             uiState.hasInvite = hasInvite
             uiState.isInvitationMixed = isMixed
             uiState.isInvitationForContested = isContested
+            uiState.contestedAllowed = contestedAllowed
             return
         }
         
         let isContestable = isUsernameContestable(username: username)
-        let isContested = isContestable // TODO: MOCK_DASHPAY
+        // Disable contested usernames if no invite and the constant is false
+        let isContested = if ALLOW_CONTESTED_USERNAMES_WITHOUT_INVITE {
+            isContestable // TODO: MOCK_DASHPAY
+        } else {
+            uiState.hasInvite ? isContestable : false
+        }
         let lengthValid = isLengthValid(username: username)
         let allowedCharactersRuleValid = allowedCharactersRuleValid(username: username)
         let requiredCost = isContested ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME : DWDP_MIN_BALANCE_TO_CREATE_USERNAME
         let balance = DWEnvironment.sharedInstance().currentWallet.balance
         let hasEnoughBalance = balance >= requiredCost
         let isAffordable = uiState.isInvitationForContested || (uiState.hasInvite && !isContested) || hasEnoughBalance
-        let criteriaValid = if uiState.hasInvite && !uiState.isInvitationForContested {
+        
+        // Treat no-invite scenario like non-contested invite for validation rules
+        let shouldUseRelaxedValidation = (uiState.hasInvite && !uiState.isInvitationForContested) || (!uiState.hasInvite && !ALLOW_CONTESTED_USERNAMES_WITHOUT_INVITE)
+        let criteriaValid = if shouldUseRelaxedValidation {
             lengthValid || allowedCharactersRuleValid
         } else {
             lengthValid && allowedCharactersRuleValid
@@ -248,6 +264,7 @@ class CreateUsernameViewModel: ObservableObject {
             allowedCharactersRule: allowedCharactersRuleValid ? .valid : .invalid,
             costRule: costRule,
             usernameBlockedRule: canContinue && isContested ? .loading : .hidden,
+            contestedAllowed: uiState.contestedAllowed,
             hasInvite: uiState.hasInvite,
             isInvitationMixed: uiState.isInvitationMixed,
             isInvitationForContested: uiState.isInvitationForContested,
@@ -305,7 +322,8 @@ class CreateUsernameViewModel: ObservableObject {
     }
     
     private func isLengthValid(username: String) -> Bool {
-        let minLength = uiState.hasInvite && !uiState.isInvitationForContested ? DW_MIN_USERNAME_NONCONTESTED_LENGTH : DW_MIN_USERNAME_LENGTH
+        let shouldUseRelaxedMinLength = (uiState.hasInvite && !uiState.isInvitationForContested) || (!uiState.hasInvite && !ALLOW_CONTESTED_USERNAMES_WITHOUT_INVITE)
+        let minLength = shouldUseRelaxedMinLength ? DW_MIN_USERNAME_NONCONTESTED_LENGTH : DW_MIN_USERNAME_LENGTH
 
         return username.count >= minLength && username.count <= DW_MAX_USERNAME_LENGTH
     }
@@ -315,7 +333,8 @@ class CreateUsernameViewModel: ObservableObject {
         let containsDigits = username.rangeOfCharacter(from: .decimalDigits) != nil
         let startsOrEndsWithHyphen = username.first == "-" || username.last == "-"
 
-        if uiState.hasInvite && !uiState.isInvitationForContested {
+        let shouldUseRelaxedCharacterRules = (uiState.hasInvite && !uiState.isInvitationForContested) || (!uiState.hasInvite && !ALLOW_CONTESTED_USERNAMES_WITHOUT_INVITE)
+        if shouldUseRelaxedCharacterRules {
             return !hasIllegalCharacters && containsDigits && !startsOrEndsWithHyphen
         }
 

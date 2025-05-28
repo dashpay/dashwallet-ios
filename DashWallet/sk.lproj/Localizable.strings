@@ -1,6 +1,9 @@
 /* No comment provided by engineer. */
 " " = " ";
 
+/* Usernames */
+" of these criteria" = " of these criteria";
+
 /* CrowdNode */
 " Privacy Policy " = " Zásady ochrany osobných údajov";
 
@@ -205,9 +208,6 @@
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Intuitívny a známy zážitok vo všetkých vašich zariadeniach";
 
-/* Invites */
-"an invitation" = "an invitation";
-
 /* CrowdNode */
 "and" = "a";
 
@@ -310,8 +310,8 @@
 /* No comment provided by engineer. */
 "Beta" = "Beta";
 
-/* Validation rule: Between 3 and 24 characters */
-"Between %ld and %ld characters" = "Medzi %1$ld a %2$ld znakmi";
+/* Usernames */
+"Between 20 and 23 characters" = "Between 20 and 23 characters";
 
 /* Usernames */
 "Between 3 and 23 characters" = "Between 3 and 23 characters";
@@ -416,9 +416,6 @@
 /* No comment provided by engineer. */
 "Check your connection" = "Skontrolujte pripojenie";
 
-/* Choose your Dash username */
-"Choose your" = "Vybrať vaše";
-
 /* No comment provided by engineer. */
 "Choose Your Username" = "Zvoľte si používateľské meno";
 
@@ -473,12 +470,6 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "Potvrďte (%1$d%2$@)";
 
-/* Invites */
-"Confirm and pay" = "Confirm and pay";
-
-/* Invites */
-"Confirm invitation" = "Confirm invitation";
-
 /* No comment provided by engineer. */
 "Confirm PIN" = "Potvrdiť PIN";
 
@@ -521,7 +512,7 @@
 "Contacts" = "Kontakty";
 
 /* Usernames */
-"Contested" = "Contested";
+"Contains numbers 2-9" = "Contains numbers 2-9";
 
 /* No comment provided by engineer. */
 "Continue" = "Pokračovať";
@@ -659,9 +650,6 @@
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash platby nemôžu byť menšie ako %@";
 
-/* No comment provided by engineer. */
-"Dash username" = "Dash používateľské meno";
-
 /* Buy Dash */
 "Dash Wallet on this device" = "Peňaženka Dash v tomto zariadení";
 
@@ -763,8 +751,8 @@
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "napr. johndoe@mail.com";
 
-/* Invites */
-"Each invitation will be funded so that the receiver can quickly create their username on the Dash Network." = "Each invitation will be funded so that the receiver can quickly create their username on the Dash Network.";
+/* No comment provided by engineer. */
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "pred";
@@ -780,9 +768,6 @@
 
 /* Invitation tag placeholder */
 "eg: Dad" = "napr.: Otec";
-
-/* Input username textfield placeholder */
-"eg: johndoe" = "napr.: mario";
 
 /* CrowdNode */
 "Email" = "Email";
@@ -1207,8 +1192,8 @@
 /* No comment provided by engineer. */
 "Invitation Created Successfully" = "Pozvánka bola úspešne vytvorená";
 
-/* Invites */
-"Invitation fee" = "Invitation fee";
+/* No comment provided by engineer. */
+"Invitation Fee" = "Invitation Fee";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "Pozvanie použité používateľom";
@@ -1315,9 +1300,6 @@
 
 /* Usernames */
 "Letter, numbers and hyphens only" = "Letter, numbers and hyphens only";
-
-/* Validation rule */
-"Letters, numbers and hyphens only" = "Iba písmená, čísla a spojovníky";
 
 /* No comment provided by engineer. */
 "Let’s Get Started" = "Začnime";
@@ -1493,9 +1475,6 @@
 /* CoinJoin */
 "Multiple hours" = "Niekoľko hodín";
 
-/* Validation rule */
-"Must start and end with a letter or number" = "Musí začínať a končiť písmenom alebo číslom";
-
 /* No comment provided by engineer. */
 "My Contacts" = "Moje kontakty";
 
@@ -1559,9 +1538,6 @@
 /* No comment provided by engineer. */
 "Node IP" = "IP uzla";
 
-/* Usernames */
-"Non-contested" = "Non-contested";
-
 /* adjective, security level */
 "None" = "Žiadne";
 
@@ -1606,6 +1582,9 @@
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Hneď ako %@ akceptuje vašu žiadosť, môžete platiť priamo na meno používateľa";
+
+/* Usernames */
+"one" = "one";
 
 /* Voting */
 "One vote left" = "One vote left";
@@ -1903,9 +1882,6 @@
 
 /* No comment provided by engineer. */
 "Redeem your gift card online within seconds or at the cashier." = "Uplatnite svoju darčekovú kartu online v priebehu niekoľkých sekúnd alebo pri pokladni.";
-
-/* Button title, Register (username) */
-"Register" = "Registrovať";
 
 /* No comment provided by engineer. */
 "Register?" = "Registrovať?";
@@ -2311,20 +2287,23 @@
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "Obrázok, ktorý vyberiete, bude anonymne nahraný na Imgur.";
 
+/* Invites */
+"The invitation was created with un-mixed funds" = "The invitation was created with un-mixed funds";
+
 /* Usernames */
 "The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "Minimálna suma, ktorú môžete poslať, je %@";
 
-/* Invites */
-"The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen" = "The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen";
-
-/* Invites */
-"The person that you send this invitation to can request any username they want and the network will vote to approve it" = "The person that you send this invitation to can request any username they want and the network will vote to approve it";
-
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
+
+/* Usernames */
+"The username must meet " = "The username must meet ";
+
+/* Usernames */
+"The username must meet these criteria" = "The username must meet these criteria";
 
 /* No comment provided by engineer. */
 "them (Fetching Info)" = "ich (načítavanie informácií)";
@@ -2340,6 +2319,9 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "Vo vašich kontaktoch neexistujú žiadni používatelia, ktorí sa zhodujú s menom %@ ";
+
+/* Usernames */
+"There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are longer than 20 characters and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period." = "There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are longer than 20 characters and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period.";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "Pri exporte vašej histórie transakcií do ZenLedger sa vyskytla chyba";
@@ -2387,7 +2369,7 @@
 "to Dash Wallet on this device" = "do Dash peňaženky na tomto zariadení";
 
 /* CoinJoin */
-"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@.";
+"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "Ak chcete začať stávkovať, vytvorte si účet na CrowdNode alebo sa pripojte k existujúcemu účtu.";
@@ -2568,17 +2550,11 @@
 /* No comment provided by engineer. */
 "Username already found" = "Používateľské meno sa už našlo";
 
-/* No comment provided by engineer. */
-"Username available" = "Používateľské meno je k dispozícii";
-
 /* Usernames */
 "Username is available" = "Username is available";
 
 /* Usernames */
 "Username request failed" = "Username request failed";
-
-/* No comment provided by engineer. */
-"Username taken" = "Používateľské meno sa už používa";
 
 /* Voting */
 "Username voting" = "Hlasovanie o používateľských menách";
@@ -2591,12 +2567,6 @@
 
 /* CrowdNode Portal */
 "Validating address…" = "Overuje sa adresa…";
-
-/* No comment provided by engineer. */
-"Validating username failed" = "Overenie používateľského mena zlyhalo";
-
-/* No comment provided by engineer. */
-"Validating username…" = "Overuje sa používateľské meno…";
 
 /* CrowdNode Portal */
 "Verification Required" = "Vyžaduje sa overenie";
@@ -2713,6 +2683,9 @@
 "Welcome to DashPay" = "Vitajte v DashPay";
 
 /* Usernames */
+"What are contested and non-contested usernames?" = "What are contested and non-contested usernames?";
+
+/* Usernames */
 "What is username voting?" = "Čo je to hlasovanie o používateľské mená?";
 
 /* No comment provided by engineer. */
@@ -2761,9 +2734,6 @@
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "Chcete prijať pozvanie?";
 
-/* Invites */
-"Would you like to create this invitation?" = "Would you like to create this invitation?";
-
 /* Coinbase */
 "Would you like to make a deposit for your purchase using a linked bank account?" = "Chceli by ste vložiť zálohu za svoj nákup pomocou prepojeného bankového účtu?";
 
@@ -2803,6 +2773,9 @@
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "Váš kľúč môžete zadať v ktoromkoľvek z nasledujúcich formátov: WIF/base58/base64/hex";
 
+/* Invites */
+"You can only create a non-contested username using this invitation" = "You can only create a non-contested username using this invitation";
+
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "Môžete vidieť podrobné informácie o svojich vkladoch, výberoch a zárobkoch z odmien.";
 
@@ -2813,7 +2786,7 @@
 "You cannot claim this invite since you already have a Dash username" = "Túto pozvánku si nemôžete nárokovať, pretože už máte používateľské meno Dash";
 
 /* Usernames */
-"You chose \"%@\" as your username." = "You chose \"%@\" as your username.";
+"You chose “%@” as your username." = "You chose “%@” as your username.";
 
 /* CoinJoin */
 "You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
@@ -2964,9 +2937,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Vaša transakcia bola odoslaná a čiastka by sa mala objaviť vo vašej peňaženke v priebehu niekoľkých minút.";
-
-/* Usernames */
-"your username" = "your username";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Vaše používateľské meno %@ bolo úspešne vytvorené v sieti Dash";

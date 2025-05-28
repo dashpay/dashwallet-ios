@@ -1,6 +1,9 @@
 /* No comment provided by engineer. */
 " " = " ";
 
+/* Usernames */
+" of these criteria" = " of these criteria";
+
 /* CrowdNode */
 " Privacy Policy " = "Privacybeleid";
 
@@ -205,9 +208,6 @@
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Een intuïtieve en vertrouwde ervaring op al je apparaten";
 
-/* Invites */
-"an invitation" = "an invitation";
-
 /* CrowdNode */
 "and" = " en ";
 
@@ -310,8 +310,8 @@
 /* No comment provided by engineer. */
 "Beta" = "Beta";
 
-/* Validation rule: Between 3 and 24 characters */
-"Between %ld and %ld characters" = "Tussen %1$ld en %2$ld karakters";
+/* Usernames */
+"Between 20 and 23 characters" = "Between 20 and 23 characters";
 
 /* Usernames */
 "Between 3 and 23 characters" = "Between 3 and 23 characters";
@@ -416,9 +416,6 @@
 /* No comment provided by engineer. */
 "Check your connection" = "Controleer je verbinding";
 
-/* Choose your Dash username */
-"Choose your" = "Kies je";
-
 /* No comment provided by engineer. */
 "Choose Your Username" = "Kies je gebruikersnaam";
 
@@ -473,12 +470,6 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "Bevestig (%1$d%2$@)";
 
-/* Invites */
-"Confirm and pay" = "Confirm and pay";
-
-/* Invites */
-"Confirm invitation" = "Confirm invitation";
-
 /* No comment provided by engineer. */
 "Confirm PIN" = "Bevestig pin";
 
@@ -521,7 +512,7 @@
 "Contacts" = "Contacten";
 
 /* Usernames */
-"Contested" = "Contested";
+"Contains numbers 2-9" = "Contains numbers 2-9";
 
 /* No comment provided by engineer. */
 "Continue" = "Ga door";
@@ -659,9 +650,6 @@
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash-betalingen mogen niet kleiner zijn dan %@";
 
-/* No comment provided by engineer. */
-"Dash username" = "Dash gebruikersnaam";
-
 /* Buy Dash */
 "Dash Wallet on this device" = "Dash portemonnee op dit apparaat";
 
@@ -763,8 +751,8 @@
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "bijvoorbeeld jan@mail.com";
 
-/* Invites */
-"Each invitation will be funded so that the receiver can quickly create their username on the Dash Network." = "Each invitation will be funded so that the receiver can quickly create their username on the Dash Network.";
+/* No comment provided by engineer. */
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Eerder";
@@ -780,9 +768,6 @@
 
 /* Invitation tag placeholder */
 "eg: Dad" = "bv: Papa";
-
-/* Input username textfield placeholder */
-"eg: johndoe" = "bv: johndoe";
 
 /* CrowdNode */
 "Email" = "E-mail";
@@ -1207,8 +1192,8 @@
 /* No comment provided by engineer. */
 "Invitation Created Successfully" = "Uitnodiging succesvol aangemaakt";
 
-/* Invites */
-"Invitation fee" = "Invitation fee";
+/* No comment provided by engineer. */
+"Invitation Fee" = "Invitation Fee";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "Uitnodiging gebruikt door";
@@ -1315,9 +1300,6 @@
 
 /* Usernames */
 "Letter, numbers and hyphens only" = "Letter, numbers and hyphens only";
-
-/* Validation rule */
-"Letters, numbers and hyphens only" = "Alleen letters, cijfers en koppeltekens";
 
 /* No comment provided by engineer. */
 "Let’s Get Started" = "Laten we beginnen";
@@ -1493,9 +1475,6 @@
 /* CoinJoin */
 "Multiple hours" = "Meerdere uren";
 
-/* Validation rule */
-"Must start and end with a letter or number" = "Moet beginnen en eindigen met een letter of cijfer";
-
 /* No comment provided by engineer. */
 "My Contacts" = "Mijn contacten";
 
@@ -1559,9 +1538,6 @@
 /* No comment provided by engineer. */
 "Node IP" = "Node IP";
 
-/* Usernames */
-"Non-contested" = "Non-contested";
-
 /* adjective, security level */
 "None" = "Geen";
 
@@ -1606,6 +1582,9 @@
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Zodra%@ jouw verzoek accepteert kunt je direct betalen aan Username";
+
+/* Usernames */
+"one" = "one";
 
 /* Voting */
 "One vote left" = "One vote left";
@@ -1903,9 +1882,6 @@
 
 /* No comment provided by engineer. */
 "Redeem your gift card online within seconds or at the cashier." = "Wissel je geschenkbon online in binnen een paar seconden of bij de kassa. ";
-
-/* Button title, Register (username) */
-"Register" = "Registreren";
 
 /* No comment provided by engineer. */
 "Register?" = "Registreren?";
@@ -2311,20 +2287,23 @@
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "De afbeelding die je selecteert, wordt anoniem naar Imgur geüpload.";
 
+/* Invites */
+"The invitation was created with un-mixed funds" = "The invitation was created with un-mixed funds";
+
 /* Usernames */
 "The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "Het minimumbedrag dat je kan verzenden is %@";
 
-/* Invites */
-"The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen" = "The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen";
-
-/* Invites */
-"The person that you send this invitation to can request any username they want and the network will vote to approve it" = "The person that you send this invitation to can request any username they want and the network will vote to approve it";
-
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
+
+/* Usernames */
+"The username must meet " = "The username must meet ";
+
+/* Usernames */
+"The username must meet these criteria" = "The username must meet these criteria";
 
 /* No comment provided by engineer. */
 "them (Fetching Info)" = "hen (Informatie ophalen)";
@@ -2340,6 +2319,9 @@
 
 /* No comment provided by engineer. */
 "There are no users that match with the name %@ in your contacts" = "Er zijn geen gebruikers die overeenkomen met de naam %@ in uw contacten";
+
+/* Usernames */
+"There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are longer than 20 characters and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period." = "There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are longer than 20 characters and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period.";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "Er is een fout opgetreden bij het exporteren van de transactiegeschiedenis naar ZenLedger";
@@ -2387,7 +2369,7 @@
 "to Dash Wallet on this device" = "naar Dash portemonnee op dit apparaat";
 
 /* CoinJoin */
-"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@.";
+"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "Om te beginnen met staking, maak een account aan op CrowdNode of maak verbinding met een bestaande.";
@@ -2568,17 +2550,11 @@
 /* No comment provided by engineer. */
 "Username already found" = "Gebruikersnaam al gevonden";
 
-/* No comment provided by engineer. */
-"Username available" = "Gebruikersnaam beschikbaar";
-
 /* Usernames */
 "Username is available" = "Username is available";
 
 /* Usernames */
 "Username request failed" = "Username request failed";
-
-/* No comment provided by engineer. */
-"Username taken" = "Gebruikersnaam al in gebruik";
 
 /* Voting */
 "Username voting" = "Gebruikersnaam voor stemmen";
@@ -2591,12 +2567,6 @@
 
 /* CrowdNode Portal */
 "Validating address…" = "Adres valideren…";
-
-/* No comment provided by engineer. */
-"Validating username failed" = "Validatie van gebruikersnaam is mislukt";
-
-/* No comment provided by engineer. */
-"Validating username…" = "Gebruikersnaam valideren…";
 
 /* CrowdNode Portal */
 "Verification Required" = "Verificatie vereist";
@@ -2713,6 +2683,9 @@
 "Welcome to DashPay" = "Welkom bij DashPay";
 
 /* Usernames */
+"What are contested and non-contested usernames?" = "What are contested and non-contested usernames?";
+
+/* Usernames */
 "What is username voting?" = "Wat is stemmen met gebruikersnaam?";
 
 /* No comment provided by engineer. */
@@ -2761,9 +2734,6 @@
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "Wil je de uitnodiging accepteren?";
 
-/* Invites */
-"Would you like to create this invitation?" = "Would you like to create this invitation?";
-
 /* Coinbase */
 "Would you like to make a deposit for your purchase using a linked bank account?" = "Wil je de aankoop storten via een gekoppelde bankrekening?";
 
@@ -2803,6 +2773,9 @@
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "Je kunt je sleutel in een van de volgende formaten invoeren: WIF/base58/base64/hex";
 
+/* Invites */
+"You can only create a non-contested username using this invitation" = "You can only create a non-contested username using this invitation";
+
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "Je kunt gedetailleerde informatie zien over uw stortingen, opnames en inkomsten.";
 
@@ -2813,7 +2786,7 @@
 "You cannot claim this invite since you already have a Dash username" = "Je kunt deze uitnodiging niet claimen omdat je al een Dash gebruikersnaam hebt";
 
 /* Usernames */
-"You chose \"%@\" as your username." = "You chose \"%@\" as your username.";
+"You chose “%@” as your username." = "You chose “%@” as your username.";
 
 /* CoinJoin */
 "You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
@@ -2964,9 +2937,6 @@
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "De transactie is verzonden en het bedrag verschijnt binnen een paar minuten in je de portemonnee.";
-
-/* Usernames */
-"your username" = "your username";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Uw gebruikersnaam %@ is met succes aangemaakt op het Dash netwerk";
