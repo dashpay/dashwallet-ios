@@ -196,6 +196,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
 
         let vc = PointOfUseDetailsViewController(pointOfUse: pointOfUse, isShowAllHidden: merchant.type == .online)
         vc.payWithDashHandler = payWithDashHandler
+        vc.onGiftCardPurchased = onGiftCardPurchased
         navigationController?.pushViewController(vc, animated: true)
     }
 

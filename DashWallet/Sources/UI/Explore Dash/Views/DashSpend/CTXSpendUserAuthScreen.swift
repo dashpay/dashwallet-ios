@@ -65,110 +65,110 @@ struct CTXSpendUserAuthScreen: View {
     let onAuthSuccess: () -> Void
     
     var body: some View {
-        ZStack(alignment: .bottom) {
+        VStack(spacing: 0) {
+            // Header
             VStack(spacing: 0) {
-                VStack(spacing: 0) {
-                    HStack {
-                        Button(action: {
-                            presentationMode.wrappedValue.dismiss()
-                        }) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(.primaryText)
-                                .padding(10)
-                        }
-                        
-                        Spacer()
-                        
-                        Text("DashSpend")
-                            .font(.system(size: 14, weight: .semibold))
+                HStack {
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.primaryText)
-                            .frame(maxWidth: .infinity)
-                        
-                        Spacer()
-                        
-                        Color.clear
-                            .frame(width: 44, height: 44)
+                            .padding(10)
                     }
-                    .padding(.top, 5)
-                    .padding(.horizontal, 10)
+                    
+                    Spacer()
+                    
+                    Text("DashSpend")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.primaryText)
+                        .frame(maxWidth: .infinity)
+                    
+                    Spacer()
+                    
+                    Color.clear
+                        .frame(width: 44, height: 44)
                 }
-                
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(authType.screenTitle)
-                                .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.primaryText)
-                            
-                            Text(authType.screenSubtitle)
-                                .font(.system(size: 13))
-                                .foregroundColor(.primaryText)
-                                .lineSpacing(4)
-                        }
-                        .padding(.horizontal, 20)
+                .padding(.top, 5)
+                .padding(.horizontal, 10)
+            }
+            
+            // Content
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(authType.screenTitle)
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(.primaryText)
                         
-                        VStack(spacing: 4) {
-                            TextInput(
-                                label: authType.textInputHint,
-                                text: $viewModel.input,
-                                keyboardType: .emailAddress,
-                                autocapitalization: .never,
-                                isEnabled: authType != .otp,
-                                onSubmit: {
-                                    viewModel.onContinue()
-                                }
-                            ).focused($isTextFieldFocused)
-                            
-                            if viewModel.showError {
-                                Text(viewModel.errorMessage)
-                                    .font(.footnote)
-                                    .foregroundColor(.systemRed)
-                                    .padding(.horizontal, 8)
-                            }
-                        }
-                        .padding(.horizontal, 20)
+                        Text(authType.screenSubtitle)
+                            .font(.system(size: 13))
+                            .foregroundColor(.primaryText)
+                            .lineSpacing(4)
                     }
-                    .padding(.top, 10)
-                }
-                
-                Spacer()
-                
-                VStack {
-                    if authType == .otp {
-                        NumericKeyboardView(
-                            value: $viewModel.input,
-                            showDecimalSeparator: false,
-                            actionButtonText: NSLocalizedString("Continue", comment: ""),
-                            actionEnabled: true,
-                            inProgress: viewModel.isLoading,
-                            actionHandler: {
+                    .padding(.horizontal, 20)
+                    
+                    VStack(spacing: 4) {
+                        TextInput(
+                            label: authType.textInputHint,
+                            text: $viewModel.input,
+                            keyboardType: .emailAddress,
+                            autocapitalization: .never,
+                            isEnabled: authType != .otp,
+                            onSubmit: {
                                 viewModel.onContinue()
                             }
-                        ).frame(maxWidth: .infinity)
-                         .frame(height: UIDevice.isIphone5OrLess ? 290 : 320)
-                         .padding(.horizontal, 20)
-                         .padding(.bottom, 20)
-                    } else {
-                        ZStack(alignment: .center) {
-                            DashButton(
-                                text: viewModel.isLoading ? "" : NSLocalizedString("Continue", comment: "Continue"),
-                                isEnabled: viewModel.isInputValid(authType: authType)
-                            ) {
-                                if !viewModel.isLoading {
-                                    viewModel.onContinue()
-                                }
-                            }
-                            .padding(.horizontal, 20)
-                            
-                            if viewModel.isLoading {
-                                SwiftUI.ProgressView()
-                                    .tint(.white)
-                            }
+                        ).focused($isTextFieldFocused)
+                        
+                        if viewModel.showError {
+                            Text(viewModel.errorMessage)
+                                .font(.footnote)
+                                .foregroundColor(.systemRed)
+                                .padding(.horizontal, 8)
                         }
                     }
+                    .padding(.horizontal, 20)
                 }
-                .padding(.bottom, authType == .otp ? 0 : 20)
+                .padding(.top, 10)
+            }
+            
+            Spacer()
+            
+            // Bottom section with button or keyboard
+            if authType == .otp {
+                NumericKeyboardView(
+                    value: $viewModel.input,
+                    showDecimalSeparator: false,
+                    actionButtonText: NSLocalizedString("Continue", comment: ""),
+                    actionEnabled: true,
+                    inProgress: viewModel.isLoading,
+                    actionHandler: {
+                        viewModel.onContinue()
+                    }
+                )
+                .frame(maxWidth: .infinity)
+                .frame(height: UIDevice.isIphone5OrLess ? 290 : 320)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+            } else {
+                ZStack(alignment: .center) {
+                    DashButton(
+                        text: viewModel.isLoading ? "" : NSLocalizedString("Continue", comment: "Continue"),
+                        isEnabled: viewModel.isInputValid(authType: authType)
+                    ) {
+                        if !viewModel.isLoading {
+                            viewModel.onContinue()
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    
+                    if viewModel.isLoading {
+                        SwiftUI.ProgressView()
+                            .tint(.white)
+                    }
+                }
+                .padding(.bottom, 20)
             }
             
             NavigationLink(
@@ -182,7 +182,6 @@ struct CTXSpendUserAuthScreen: View {
             }
         }
         .background(Color.secondaryBackground)
-        .ignoresSafeArea(.keyboard, edges: .bottom)
         .navigationBarHidden(true)
         .navigationBarBackButtonHidden(true)
         .edgesIgnoringSafeArea(.top)
@@ -210,5 +209,3 @@ struct CTXSpendUserAuthScreen: View {
         }
     }
 }
-
-// TODO: toast should be on the buy screen

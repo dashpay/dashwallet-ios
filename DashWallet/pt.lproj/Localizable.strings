@@ -410,8 +410,8 @@
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Cancelar esta transação não cancela a ordem de negociação. Você receberá DASH em sua conta Coinbase em breve.";
 
-/* No comment provided by engineer. */
-"Card Number" = "Card Number";
+/* DashSpend */
+"Card number" = "Card number";
 
 /* No comment provided by engineer. */
 "Card PIN" = "Card PIN";
@@ -1041,9 +1041,6 @@
 
 /* Explore Dash: Filters */
 "Gift Card" = "Vale-presente";
-
-/* No comment provided by engineer. */
-"Gift Card Details" = "Gift Card Details";
 
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
@@ -1736,8 +1733,8 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "Visualização do pedido";
 
-/* No comment provided by engineer. */
-"Original Purchase Value" = "Original Purchase Value";
+/* DashSpend */
+"Original purchase" = "Original purchase";
 
 /* No comment provided by engineer. */
 "Owner Address" = "Endereço do Proprietário";

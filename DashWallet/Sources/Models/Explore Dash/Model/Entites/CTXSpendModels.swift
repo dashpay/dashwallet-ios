@@ -50,7 +50,7 @@ struct GiftCardResponse: Codable {
     let redeemUrl: String?
     let fiatAmount: String?
     let fiatCurrency: String?
-    let paymentUrls: [String: String]
+    let paymentUrls: [String: String]?
     
     let cardFiatAmount: String?
     let cardFiatCurrency: String?
@@ -58,6 +58,7 @@ struct GiftCardResponse: Codable {
     let merchantName: String?
     let userEmail: String?
     let created: String?
+    let info: MerchantInfo?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -81,6 +82,7 @@ struct GiftCardResponse: Codable {
         case merchantName
         case userEmail
         case created
+        case info
     }
 }
 

@@ -129,7 +129,7 @@ struct DashSpendPayScreen: View {
                     actionEnabled: viewModel.error == nil && !viewModel.showLimits && !viewModel.isLoading && viewModel.hasValidLimits,
                     inProgress: viewModel.isProcessingPayment,
                     actionHandler: {
-                        if !viewModel.isUserSignedIn() {
+                        if !viewModel.isUserSignedIn {
                             showSignInError()
                             return
                         }
@@ -212,6 +212,11 @@ struct DashSpendPayScreen: View {
         }
         .onDisappear {
             viewModel.unsubscribeFromAll()
+        }
+        .onChange(of: viewModel.isUserSignedIn) { isSignedIn in
+            if !isSignedIn {
+                presentationMode.wrappedValue.dismiss()
+            }
         }
         .sheet(isPresented: $showConfirmationDialog) {
             let dialog = BottomSheet(

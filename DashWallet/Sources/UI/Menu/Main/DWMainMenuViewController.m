@@ -248,12 +248,16 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark - DWExploreTestnetViewControllerDelegate
-- (void)exploreTestnetViewControllerShowSendPayment:(DWExploreViewController *)controller {
+- (void)exploreViewControllerShowSendPayment:(DWExploreViewController *)controller {
     [self.delegate showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay];
 }
 
-- (void)exploreTestnetViewControllerShowReceivePayment:(DWExploreViewController *)controller {
+- (void)exploreViewControllerShowReceivePayment:(DWExploreViewController *)controller {
     [self.delegate showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive];
+}
+
+- (void)exploreViewControllerShowGiftCard:(DWExploreViewController *)controller txId:(NSData *)txId {
+    [self.delegate showGiftCard:txId];
 }
 
 #pragma mark - DWRootEditProfileViewControllerDelegate

@@ -18,7 +18,20 @@
 import Foundation
 import Combine
 import UIKit
-import CoreImage.CIFilterBuiltins
+
+struct GiftCardDetailsUIState {
+    var merchantName: String = ""
+    var merchantIconUrl: String? = nil
+    var merchantUrl: String? = nil
+    var formattedPrice: String = "$0.00"
+    var cardNumber: String? = nil
+    var cardPin: String? = nil
+    var barcodeImage: UIImage? = nil
+    var purchaseDate: Date? = nil
+    var isLoadingCardDetails: Bool = false
+    var loadingError: Error? = nil
+    var transaction: DSTransaction? = nil
+}
 
 @MainActor
 class GiftCardDetailsViewModel: ObservableObject {
@@ -30,16 +43,7 @@ class GiftCardDetailsViewModel: ObservableObject {
     private let maxRetries = 3
     
     let txId: Data
-    @Published private(set) var merchantName: String = ""
-    @Published private(set) var merchantIconUrl: String? = nil
-    @Published private(set) var merchantUrl: String? = nil
-    @Published private(set) var formattedPrice: String = "$0.00"
-    @Published private(set) var cardNumber: String? = nil
-    @Published private(set) var cardPin: String? = nil
-    @Published private(set) var barcodeImage: UIImage? = nil
-    @Published private(set) var purchaseDate: Date? = nil
-    @Published private(set) var isLoadingCardDetails: Bool = false
-    @Published private(set) var loadingError: Error? = nil
+    @Published private(set) var uiState = GiftCardDetailsUIState()
     
     private let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -50,7 +54,7 @@ class GiftCardDetailsViewModel: ObservableObject {
     
     init(txId: Data) {
         self.txId = txId
-        loadTransactionDate()
+        loadTransaction()
     }
     
     func startObserving() {
@@ -60,11 +64,11 @@ class GiftCardDetailsViewModel: ObservableObject {
             .sink { [weak self] giftCard in
                 guard let self = self, let card = giftCard else { return }
                 
-                self.merchantName = card.merchantName
-                self.merchantUrl = card.merchantUrl
-                self.formattedPrice = self.currencyFormatter.string(from: card.price as NSDecimalNumber) ?? "$0.00"
-                self.cardNumber = card.number
-                self.cardPin = card.pin
+                self.uiState.merchantName = card.merchantName
+                self.uiState.merchantUrl = card.merchantUrl
+                self.uiState.formattedPrice = self.currencyFormatter.string(from: card.price as NSDecimalNumber) ?? "$0.00"
+                self.uiState.cardNumber = card.number
+                self.uiState.cardPin = card.pin
                 
                 // Generate barcode if we have the value
                 if let barcodeValue = card.barcodeValue {
@@ -88,25 +92,28 @@ class GiftCardDetailsViewModel: ObservableObject {
         stopTicker()
     }
     
-    func logHowToUse() {
-        // TODO: Log analytics event
-        DSLogger.log("DashSpend: User tapped 'How to use' for gift card")
-    }
-    
-    private func loadTransactionDate() {
-        // Get transaction date
-        if let tx = DWEnvironment.sharedInstance().currentWallet.allTransactions.first(where: { transaction in
-            return transaction.txHashData == txId
-        }) {
-            purchaseDate = Date(timeIntervalSince1970: TimeInterval(tx.timestamp))
+    private func loadTransaction() {
+        Task.detached { [weak self] in
+            guard let self = self else { return }
+            
+            let transaction = DWEnvironment.sharedInstance().currentWallet.allTransactions.first { transaction in
+                return transaction.txHashData == self.txId
+            }
+            
+            await MainActor.run {
+                if let tx = transaction {
+                    self.uiState.purchaseDate = Date(timeIntervalSince1970: TimeInterval(tx.timestamp))
+                    self.uiState.transaction = tx
+                }
+            }
         }
     }
     
     private func startTicker() {
         guard tickerTimer == nil else { return }
         
-        isLoadingCardDetails = true
-        loadingError = nil
+        uiState.isLoadingCardDetails = true
+        uiState.loadingError = nil
         
         Task {
             await fetchGiftCardInfo()
@@ -123,20 +130,21 @@ class GiftCardDetailsViewModel: ObservableObject {
     private func stopTicker() {
         tickerTimer?.invalidate()
         tickerTimer = nil
-        isLoadingCardDetails = false
+        uiState.isLoadingCardDetails = false
         retryCount = 0
     }
     
     private func fetchGiftCardInfo() async {
         guard let giftCard = await giftCardsDAO.get(byTxId: txId),
-              let paymentId = giftCard.note,
+              let _ = giftCard.note,
               ctxSpendService.isUserSignedIn else {
             stopTicker()
             return
         }
         
         do {
-            let response = try await ctxSpendService.getGiftCardByTxid(txid: txId.hexEncodedString())
+            let base58TxId = ((txId as NSData).reverse() as NSData).base58String()
+            let response = try await ctxSpendService.getGiftCardByTxid(txid: base58TxId)
             
             switch response.status {
             case "fulfilled":
@@ -164,9 +172,11 @@ class GiftCardDetailsViewModel: ObservableObject {
                 }
                 
             case "rejected":
-                loadingError = CTXSpendError.customError(
-                    NSLocalizedString("Gift card purchase was rejected", comment: "")
-                )
+                await MainActor.run {
+                    self.uiState.loadingError = CTXSpendError.customError(
+                        NSLocalizedString("Gift card purchase was rejected", comment: "")
+                    )
+                }
                 stopTicker()
                 
             default:
@@ -176,7 +186,9 @@ class GiftCardDetailsViewModel: ObservableObject {
         } catch {
             retryCount += 1
             if retryCount >= maxRetries {
-                loadingError = error
+                await MainActor.run {
+                    self.uiState.loadingError = error
+                }
                 stopTicker()
             }
             DSLogger.log("DashSpend: Failed to fetch gift card info: \(error)")
@@ -192,12 +204,12 @@ class GiftCardDetailsViewModel: ObservableObject {
         guard let outputImage = filter.outputImage else { return }
         
         let scaleX = 3.0
-        let scaleY = 3.0
+        let scaleY = 5.0
         let transformedImage = outputImage.transformed(by: CGAffineTransform(scaleX: scaleX, y: scaleY))
         
         let context = CIContext()
         if let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) {
-            barcodeImage = UIImage(cgImage: cgImage)
+            uiState.barcodeImage = UIImage(cgImage: cgImage)
         }
     }
 } 

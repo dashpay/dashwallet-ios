@@ -23,9 +23,15 @@ struct GiftCardDetailsView: View {
     @StateObject private var viewModel: GiftCardDetailsViewModel
     @State private var showHowToUse = false
     @State private var navigationController: UINavigationController? = nil
+    @State private var originalBrightness: CGFloat = -1
+    @State private var openTransaction: Bool = false
+    @Binding var backNavigationRequested: Bool
+    var onShowBackButton: (Bool) -> Void
     
-    init(txId: Data) {
+    init(txId: Data, backNavigationRequested: Binding<Bool>, onShowBackButton: @escaping (Bool) -> Void) {
         _viewModel = StateObject(wrappedValue: GiftCardDetailsViewModel(txId: txId))
+        _backNavigationRequested = backNavigationRequested
+        self.onShowBackButton = onShowBackButton
     }
     
     var body: some View {
@@ -34,7 +40,7 @@ struct GiftCardDetailsView: View {
                 // Merchant header
                 HStack(spacing: 15) {
                     ZStack(alignment: .bottomTrailing) {
-                        if let iconUrl = viewModel.merchantIconUrl {
+                        if let iconUrl = viewModel.uiState.merchantIconUrl {
                             WebImage(url: URL(string: iconUrl))
                                 .resizable()
                                 .indicator(.activity)
@@ -43,7 +49,7 @@ struct GiftCardDetailsView: View {
                                 .frame(width: 48, height: 48)
                                 .clipShape(Circle())
                         } else {
-                            Image(systemName: "gift.circle.fill")
+                            Image("image.explore.dash.wts.payment.gift-card")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 48, height: 48)
@@ -51,8 +57,8 @@ struct GiftCardDetailsView: View {
                         }
                         
                         // Secondary icon
-                        if viewModel.merchantIconUrl != nil {
-                            Image(systemName: "gift.fill")
+                        if viewModel.uiState.merchantIconUrl != nil {
+                            Image("image.explore.dash.wts.payment.gift-card")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 16, height: 16)
@@ -65,12 +71,12 @@ struct GiftCardDetailsView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(viewModel.merchantName)
+                        Text(viewModel.uiState.merchantName)
                             .font(.body2)
                             .fontWeight(.medium)
                             .foregroundColor(.primaryText)
                         
-                        if let date = viewModel.purchaseDate {
+                        if let date = viewModel.uiState.purchaseDate {
                             Text(date, formatter: dateFormatter)
                                 .font(.footnote)
                                 .foregroundColor(.tertiaryText)
@@ -80,34 +86,32 @@ struct GiftCardDetailsView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 25)
-                .padding(.top, 20)
+                .padding(.top, 15)
                 
                 // Gift card info container
                 VStack(spacing: 0) {
                     // Barcode section
-                    if let barcodeImage = viewModel.barcodeImage {
+                    if let barcodeImage = viewModel.uiState.barcodeImage {
                         Image(uiImage: barcodeImage)
                             .resizable()
                             .scaledToFit()
-                            .frame(height: 108)
-                            .padding(.horizontal, 20)
-                            .padding(.top, 15)
+                            .frame(height: 150)
                     } else {
                         ZStack {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.gray)
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.gray50)
                                 .frame(height: 108)
                             
-                            if viewModel.isLoadingCardDetails {
+                            if viewModel.uiState.isLoadingCardDetails {
                                 SwiftUI.ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle())
                                     .scaleEffect(0.8)
-                            } else if viewModel.loadingError != nil {
-                                Text(NSLocalizedString("Failed to load barcode", comment: ""))
+                            } else if viewModel.uiState.loadingError != nil {
+                                Text(NSLocalizedString("Failed to load barcode", comment: "DashSpend"))
                                     .font(.footnote)
                                     .foregroundColor(.systemRed)
                             } else {
-                                Text(NSLocalizedString("Barcode placeholder", comment: ""))
+                                Text(NSLocalizedString("Barcode placeholder", comment: "DashSpend"))
                                     .font(.caption)
                                     .foregroundColor(.tertiaryText)
                             }
@@ -118,43 +122,43 @@ struct GiftCardDetailsView: View {
                     
                     // Original purchase value
                     HStack {
-                        Text(NSLocalizedString("Original Purchase Value", comment: ""))
-                            .font(.caption)
+                        Text(NSLocalizedString("Original purchase", comment: "DashSpend"))
+                            .font(.subheadline)
                             .fontWeight(.medium)
                             .foregroundColor(.tertiaryText)
                         
                         Spacer()
                         
-                        Text(viewModel.formattedPrice)
-                            .font(.caption)
+                        Text(viewModel.uiState.formattedPrice)
+                            .font(.subheadline)
                             .foregroundColor(.primaryText)
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
                     
                     // Check current balance link
-                    if viewModel.merchantUrl != nil {
+                    if let merchantUrl = viewModel.uiState.merchantUrl {
                         Button(action: {
-                            if let url = URL(string: viewModel.merchantUrl!) {
+                            if let url = URL(string: merchantUrl) {
                                 UIApplication.shared.open(url)
                             }
                         }) {
-                            Text(NSLocalizedString("Check current balance", comment: ""))
+                            Text(NSLocalizedString("Check current balance", comment: "DashSpend"))
                                 .font(.footnote)
                                 .fontWeight(.medium)
                                 .foregroundColor(.dashBlue)
                         }
                         .frame(maxWidth: .infinity, alignment: .trailing)
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, 16)
                         .padding(.top, 8)
                     }
                     
                     // Card number and PIN
-                    if viewModel.isLoadingCardDetails {
+                    if viewModel.uiState.isLoadingCardDetails {
                         SwiftUI.ProgressView()
                             .progressViewStyle(CircularProgressViewStyle())
                             .padding(.vertical, 40)
-                    } else if let error = viewModel.loadingError {
+                    } else if let error = viewModel.uiState.loadingError {
                         VStack(spacing: 10) {
                             Text(error.localizedDescription)
                                 .font(.caption)
@@ -164,19 +168,19 @@ struct GiftCardDetailsView: View {
                         }
                         .padding(.vertical, 40)
                     } else {
-                        VStack(spacing: 22) {
+                        VStack(spacing: 15) {
                             // Card number
-                            if let cardNumber = viewModel.cardNumber {
+                            if let cardNumber = viewModel.uiState.cardNumber {
                                 HStack {
-                                    Text(NSLocalizedString("Card Number", comment: ""))
-                                        .font(.caption)
+                                    Text(NSLocalizedString("Card number", comment: "DashSpend"))
+                                        .font(.subheadline)
                                         .fontWeight(.medium)
                                         .foregroundColor(.tertiaryText)
                                     
                                     Spacer()
                                     
                                     Text(cardNumber)
-                                        .font(.caption)
+                                        .font(.subheadline)
                                         .foregroundColor(.primaryText)
                                     
                                     Button(action: {
@@ -186,26 +190,27 @@ struct GiftCardDetailsView: View {
                                         Image("icon_copy_outline")
                                             .resizable()
                                             .scaledToFit()
+                                            .tint(.primaryText)
                                             .frame(width: 20, height: 20)
-                                            .foregroundColor(.dashBlue)
                                     }
-                                    .frame(width: 32, height: 40)
+                                    .frame(width: 28, height: 40)
                                 }
-                                .padding(.horizontal, 20)
+                                .padding(.leading, 20)
+                                .padding(.trailing, 10)
                             }
                             
                             // Card PIN
-                            if let cardPin = viewModel.cardPin {
+                            if let cardPin = viewModel.uiState.cardPin {
                                 HStack {
-                                    Text(NSLocalizedString("Card PIN", comment: ""))
-                                        .font(.caption)
+                                    Text(NSLocalizedString("Card PIN", comment: "DashSpend"))
+                                        .font(.subheadline)
                                         .fontWeight(.medium)
                                         .foregroundColor(.tertiaryText)
                                     
                                     Spacer()
                                     
                                     Text(cardPin)
-                                        .font(.caption)
+                                        .font(.subheadline)
                                         .foregroundColor(.primaryText)
                                     
                                     Button(action: {
@@ -215,12 +220,13 @@ struct GiftCardDetailsView: View {
                                         Image("icon_copy_outline")
                                             .resizable()
                                             .scaledToFit()
+                                            .tint(.primaryText)
                                             .frame(width: 20, height: 20)
-                                            .foregroundColor(.dashBlue)
                                     }
                                     .frame(width: 32, height: 40)
                                 }
-                                .padding(.horizontal, 20)
+                                .padding(.leading, 20)
+                                .padding(.trailing, 10)
                             }
                         }
                         .padding(.top, 22)
@@ -228,17 +234,17 @@ struct GiftCardDetailsView: View {
                     }
                 }
                 .background(Color.secondaryBackground)
-                .cornerRadius(10)
-                .padding(.horizontal, 15)
+                .cornerRadius(12)
+                .padding(.horizontal, 20)
                 .padding(.top, 20)
                 
-                // View transaction details button
                 Button(action: {
-                    navigateToTransactionDetails()
+                    openTransaction = true
+                    onShowBackButton(true)
                 }) {
                     HStack {
-                        Text(NSLocalizedString("View transaction details", comment: ""))
-                            .font(.caption)
+                        Text(NSLocalizedString("View transaction details", comment: "DashSpend"))
+                            .font(.subheadline)
                             .fontWeight(.medium)
                             .foregroundColor(.primaryText)
                         
@@ -250,12 +256,12 @@ struct GiftCardDetailsView: View {
                             .frame(width: 12, height: 12)
                     }
                     .padding(.horizontal, 15)
-                    .padding(.vertical, 17)
-                    .background(Color.dashBlue)
-                    .cornerRadius(10)
+                    .padding(.vertical, 20)
+                    .background(Color.secondaryBackground)
+                    .cornerRadius(12)
                 }
-                .padding(.horizontal, 15)
-                .padding(.top, 15)
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
                 
                 // How to use button
                 if !showHowToUse {
@@ -263,131 +269,107 @@ struct GiftCardDetailsView: View {
                         withAnimation {
                             showHowToUse = true
                         }
-                        viewModel.logHowToUse()
                     }) {
-                        Text(NSLocalizedString("See how to use this gift card", comment: ""))
-                            .font(.body2)
-                            .fontWeight(.medium)
+                        Text(NSLocalizedString("See how to use this gift card", comment: "DashSpend"))
+                            .font(.subtitle1)
                             .foregroundColor(.dashBlue)
                     }
-                    .padding(.top, 20)
+                    .padding(.top, 30)
                 } else {
                     // How to use expanded content
                     VStack(alignment: .leading, spacing: 30) {
-                        Text(NSLocalizedString("How to use your gift card", comment: ""))
-                            .font(.caption)
+                        Text(NSLocalizedString("How to use your gift card", comment: "DashSpend"))
+                            .font(.body2)
                             .fontWeight(.medium)
                             .foregroundColor(.tertiaryText)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.top, 20)
                         
                         // Self-checkout
-                        HStack(alignment: .top, spacing: 25) {
-                            Image(systemName: "qrcode")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 24, height: 24)
-                                .foregroundColor(.dashBlue)
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(NSLocalizedString("Self-checkout", comment: ""))
-                                    .font(.subtitle1)
-                                    .foregroundColor(.primaryText)
-                                
-                                Text(NSLocalizedString("Request assistance and show the barcode on your screen for scanning.", comment: ""))
-                                    .font(.body2)
-                                    .foregroundColor(.tertiaryText)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                        }
+                        FeatureSingleItem(
+                            iconName: .custom("dp_user_generic"),
+                            title: NSLocalizedString("Self-checkout", comment: "DashSpend"),
+                            description: NSLocalizedString("Request assistance and show the barcode on your screen for scanning.", comment: "DashSpend")
+                        )
                         
                         // In store
-                        HStack(alignment: .top, spacing: 25) {
-                            Image(systemName: "storefront")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 24, height: 24)
-                                .foregroundColor(.dashBlue)
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(NSLocalizedString("In store", comment: ""))
-                                    .font(.subtitle1)
-                                    .foregroundColor(.primaryText)
-                                
-                                Text(NSLocalizedString("Tell the cashier that you'd like to pay with a gift card and share the card number and pin.", comment: ""))
-                                    .font(.body2)
-                                    .foregroundColor(.tertiaryText)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                        }
+                        FeatureSingleItem(
+                            iconName: .custom("image.dashspend.shop"),
+                            title: NSLocalizedString("In store", comment: "DashSpend"),
+                            description: NSLocalizedString("Tell the cashier that you'd like to pay with a gift card and share the card number and pin.", comment: "DashSpend")
+                        )
                         
                         // Online
-                        HStack(alignment: .top, spacing: 25) {
-                            Image(systemName: "globe")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 24, height: 24)
-                                .foregroundColor(.dashBlue)
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(NSLocalizedString("Online", comment: ""))
-                                    .font(.subtitle1)
-                                    .foregroundColor(.primaryText)
-                                
-                                Text(NSLocalizedString("In the payment section of your checkout, select \"gift card\" and enter your card number and pin.", comment: ""))
-                                    .font(.body2)
-                                    .foregroundColor(.tertiaryText)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                        }
+                        FeatureSingleItem(
+                            iconName: .custom("image.dashspend.online"),
+                            title: NSLocalizedString("Online", comment: "DashSpend"),
+                            description: NSLocalizedString("In the payment section of your checkout, select \"gift card\" and enter your card number and pin.", comment: "DashSpend")
+                        )
                     }
                     .padding(.horizontal, 15)
                     .padding(.bottom, 35)
                     .background(Color.secondaryBackground)
-                    .cornerRadius(10)
-                    .padding(.horizontal, 15)
+                    .cornerRadius(12)
+                    .padding(.horizontal, 20)
                     .padding(.top, 20)
                 }
                 
                 // Powered by CTX
                 VStack(spacing: 8) {
-                    Text(NSLocalizedString("Powered by", comment: ""))
+                    Text(NSLocalizedString("Powered by", comment: "DashSpend"))
                         .font(.callout)
                         .foregroundColor(.tertiaryText)
                     
-                    Text("CTX")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.dashBlue)
+                    Image("ctx.logo")
+                        .resizable()
+                        .frame(width: 49, height: 18)
                 }
-                .padding(.top, 30)
+                .padding(.top, 34)
                 .padding(.bottom, 40)
+            }
+            
+            if let transaction = viewModel.uiState.transaction {
+                NavigationLink(
+                    destination:
+                        TXDetailVCWrapper(
+                            transaction: transaction,
+                            navigateBack: $backNavigationRequested,
+                            onDismissed: {
+                                onShowBackButton(false)
+                            }
+                        ).navigationBarHidden(true),
+                    isActive: $openTransaction
+                ) {
+                    SwiftUI.EmptyView()
+                }.opacity(0)
             }
         }
         .background(Color.primaryBackground)
         .onAppear {
             viewModel.startObserving()
+            setMaxBrightness(true)
         }
         .onDisappear {
             viewModel.stopObserving()
+            setMaxBrightness(false)
         }
     }
     
-    private func navigateToTransactionDetails() {
-//        // Navigate to transaction details
-//        if let topVC = UIApplication.shared.topViewController() {
-//            let tx = DWEnvironment.sharedInstance().currentWallet.allTransactions.first { transaction in
-//                guard let tx = transaction as? DSTransaction else { return false }
-//                return tx.txHashData == viewModel.txId
-//            }
-//            
-//            if let transaction = tx as? DSTransaction {
-//                let controller = TXDetailViewController()
-//                controller.transaction = transaction
-//                navigationController = UINavigationController(rootViewController: controller)
-//                navigationController?.isModalInPresentation = true
-//                topVC.present(navigationController!, animated: true)
-//            }
-//        }
+    private func setMaxBrightness(_ enable: Bool) {
+        if enable {
+            // Save original brightness
+            if originalBrightness < 0 {
+                originalBrightness = UIScreen.main.brightness
+            }
+
+            UIScreen.main.brightness = 1.0
+        } else {
+            // Restore original brightness
+            if originalBrightness >= 0 {
+                UIScreen.main.brightness = originalBrightness
+                originalBrightness = -1
+            }
+        }
     }
     
     private var dateFormatter: DateFormatter {
@@ -395,8 +377,4 @@ struct GiftCardDetailsView: View {
         formatter.dateFormat = "MMMM dd, yyyy 'at' h:mm a"
         return formatter
     }
-} 
-
-extension Notification.Name {
-    static let showGiftCardDetails = Notification.Name("showGiftCardDetails")
 }

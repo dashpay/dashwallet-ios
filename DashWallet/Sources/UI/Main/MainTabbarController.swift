@@ -344,6 +344,11 @@ extension MainTabbarController: DWMainMenuViewControllerDelegate {
     func mainMenuViewControllerOpenHomeScreen(_ controller: DWMainMenuViewController) {
         selectedIndex = MainTabbarTabs.home.rawValue
     }
+    
+    func showGiftCard(_ txId: Data!) {
+        selectedIndex = MainTabbarTabs.home.rawValue
+        homeController?.showGiftCardDetails(txId: txId)
+    }
 }
 
 // MARK: DWWipeDelegate
@@ -385,9 +390,9 @@ extension MainTabbarController: PaymentsViewControllerDelegate {
     }
 }
 
-// MARK: DWHomeViewControllerDelegate
+// MARK: HomeViewControllerDelegate
 
-extension MainTabbarController: DWHomeViewControllerDelegate {
+extension MainTabbarController: HomeViewControllerDelegate {
     func showPaymentsController(withActivePage pageIndex: NSInteger) {
         showPaymentsController(withActivePage: PaymentsViewControllerState(rawValue: pageIndex)!)
     }
@@ -429,11 +434,15 @@ extension MainTabbarController: UITabBarControllerDelegate {
 // MARK: DWExploreTestnetViewControllerDelegate
 
 extension MainTabbarController: ExploreViewControllerDelegate {
-    func exploreTestnetViewControllerShowSendPayment(_ controller: ExploreViewController) {
+    func exploreViewControllerShowGiftCard(_ controller: ExploreViewController, txId: Data) {
+        homeController?.showGiftCardDetails(txId: txId)
+    }
+    
+    func exploreViewControllerShowSendPayment(_ controller: ExploreViewController) {
         showPaymentsController(withActivePage: PaymentsViewControllerState.pay)
     }
     
-    func exploreTestnetViewControllerShowReceivePayment(_ controller: ExploreViewController) {
+    func exploreViewControllerShowReceivePayment(_ controller: ExploreViewController) {
         showPaymentsController(withActivePage: PaymentsViewControllerState.receive)
     }
 }

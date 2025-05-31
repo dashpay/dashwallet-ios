@@ -158,14 +158,6 @@ extension HomeView: HomeHeaderViewDelegate {
     }
 }
 
-extension HomeView {
-    func showGiftCardDetails(txId: Data) {
-        // This will be called from the presenting controller
-        // Need to pass it to HomeViewContent
-        // TODO
-    }
-}
-
 struct TxPreviewModel: Identifiable, Equatable {
     var id: String
     var title: String
@@ -452,10 +444,20 @@ struct HomeViewContent<Content: View>: View {
 
 struct GiftCardDetailsSheet: View {
     var txId: Data
+    @State private var showBackButton: Bool = false
+    @State private var backNavigationRequested: Bool = false
     
     var body: some View {
-        BottomSheet(title: NSLocalizedString("Gift Card Details", comment: ""), showBackButton: .constant(false)) {
-            GiftCardDetailsView(txId: txId)
+        BottomSheet(showBackButton: $showBackButton, onBackButtonPressed: {
+            backNavigationRequested = true
+        }) {
+            GiftCardDetailsView(
+                txId: txId,
+                backNavigationRequested: $backNavigationRequested,
+                onShowBackButton: { show in
+                    showBackButton = show
+                }
+            )
         }
         .background(Color.primaryBackground)
     }

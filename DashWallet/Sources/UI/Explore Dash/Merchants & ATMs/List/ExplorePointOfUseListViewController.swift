@@ -42,6 +42,7 @@ class ExplorePointOfUseListViewController: UIViewController {
     // Change to Notification instead of chaining the property
     @objc var payWithDashHandler: (() -> Void)?
     @objc var sellDashHandler: (()->())?
+    @objc var onGiftCardPurchased: ((Data)->())?
 
     internal var model: PointOfUseListModel!
     internal var segmentTitles: [String] { model.segmentTitles }
@@ -126,6 +127,7 @@ class ExplorePointOfUseListViewController: UIViewController {
         let vc = PointOfUseDetailsViewController(pointOfUse: pointOfUse)
         vc.payWithDashHandler = payWithDashHandler
         vc.sellDashHandler = sellDashHandler
+        vc.onGiftCardPurchased = onGiftCardPurchased
         navigationController?.pushViewController(vc, animated: true)
     }
 

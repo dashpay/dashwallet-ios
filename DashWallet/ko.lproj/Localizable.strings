@@ -410,8 +410,8 @@
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "이 거래를 취소하더라도 거래 주문은 취소되지 않습니다. 곧 귀하의 코인베이스 계좌로 DASH를 받게 됩니다.";
 
-/* No comment provided by engineer. */
-"Card Number" = "Card Number";
+/* DashSpend */
+"Card number" = "Card number";
 
 /* No comment provided by engineer. */
 "Card PIN" = "Card PIN";
@@ -1041,9 +1041,6 @@
 
 /* Explore Dash: Filters */
 "Gift Card" = "기프트 카드";
-
-/* No comment provided by engineer. */
-"Gift Card Details" = "Gift Card Details";
 
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
@@ -1736,8 +1733,8 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "주문 미리보기";
 
-/* No comment provided by engineer. */
-"Original Purchase Value" = "Original Purchase Value";
+/* DashSpend */
+"Original purchase" = "Original purchase";
 
 /* No comment provided by engineer. */
 "Owner Address" = "소유자 주소";

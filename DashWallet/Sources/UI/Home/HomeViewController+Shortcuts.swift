@@ -18,7 +18,6 @@
 import UIKit
 
 extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreViewControllerDelegate {
-
     func performAction(for action: ShortcutAction, sender: UIView?) {
         switch action.type {
         case .secureWallet:
@@ -155,11 +154,15 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
 
     // MARK: - DWExploreTestnetViewControllerDelegate
 
-    func exploreTestnetViewControllerShowSendPayment(_ controller: ExploreViewController) {
+    func exploreViewControllerShowSendPayment(_ controller: ExploreViewController) {
         delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.pay.rawValue)
     }
 
-    func exploreTestnetViewControllerShowReceivePayment(_ controller: ExploreViewController) {
+    func exploreViewControllerShowReceivePayment(_ controller: ExploreViewController) {
         delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.receive.rawValue)
+    }
+    
+    func exploreViewControllerShowGiftCard(_ controller: ExploreViewController, txId: Data) {
+        showGiftCardDetails(txId: txId)
     }
 }

@@ -74,7 +74,7 @@ extension CTXSpendEndpoint: TargetType, AccessTokenAuthorizable {
         case .refreshToken: return "refresh-token"
         case .purchaseGiftCard: return "gift-cards"
         case .getMerchant(let merchantId): return "merchants/\(merchantId)"
-        case .getGiftCard(let txid): return "gift-cards"
+        case .getGiftCard(_): return "gift-cards"
         }
     }
     

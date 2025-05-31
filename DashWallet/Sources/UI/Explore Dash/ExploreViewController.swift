@@ -25,8 +25,9 @@ private let kExploreHeaderViewHeight: CGFloat = 351.0
 
 @objc(DWExploreViewControllerDelegate)
 protocol ExploreViewControllerDelegate: AnyObject {
-    func exploreTestnetViewControllerShowSendPayment(_ controller: ExploreViewController)
-    func exploreTestnetViewControllerShowReceivePayment(_ controller: ExploreViewController)
+    func exploreViewControllerShowSendPayment(_ controller: ExploreViewController)
+    func exploreViewControllerShowReceivePayment(_ controller: ExploreViewController)
+    func exploreViewControllerShowGiftCard(_ controller: ExploreViewController, txId: Data)
 }
 
 // MARK: - DWExploreTestnetViewController
@@ -117,11 +118,11 @@ class ExploreViewController: UIViewController, NavigationFullscreenable {
         let vc = AtmListViewController()
         vc.payWithDashHandler = { [weak self] in
             guard let self = self else { return }
-            self.delegate?.exploreTestnetViewControllerShowReceivePayment(self)
+            self.delegate?.exploreViewControllerShowReceivePayment(self)
         }
         vc.sellDashHandler = { [weak self] in
             guard let self = self else { return }
-            self.delegate?.exploreTestnetViewControllerShowSendPayment(self)
+            self.delegate?.exploreViewControllerShowSendPayment(self)
         }
         navigationController?.pushViewController(vc, animated: true)
     }
@@ -177,7 +178,12 @@ class ExploreViewController: UIViewController, NavigationFullscreenable {
         let vc = MerchantListViewController()
         vc.payWithDashHandler = { [weak self] in
             guard let self = self else { return }
-            self.delegate?.exploreTestnetViewControllerShowSendPayment(self)
+            self.delegate?.exploreViewControllerShowSendPayment(self)
+        }
+        vc.onGiftCardPurchased = { [weak self] txId in
+            guard let self = self else { return }
+            self.dismiss(animated: true)
+            self.delegate?.exploreViewControllerShowGiftCard(self, txId: txId)
         }
         
         navigationController?.pushViewController(vc, animated: true)

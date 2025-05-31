@@ -28,10 +28,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
     private let sendCoinsService = SendCoinsService()
 
     private var merchantId: String = ""
+    private var merchantUrl: String? = nil
     private(set) var amount: Decimal = 0
     private(set) var savingsFraction: Decimal = 0.0
     @Published private(set) var isLoading = false
     @Published private(set) var isProcessingPayment = false
+    @Published private(set) var isUserSignedIn = false
     
     let currencySymbol: String = {
         let locale = Locale.current as NSLocale
@@ -89,16 +91,28 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
     init(merchant: ExplorePointOfUse) {
         merchantTitle = merchant.name
         merchantIconUrl = merchant.logoLocation ?? ""
+        merchantUrl = merchant.website
         savingsFraction = Decimal(merchant.merchant?.toSavingsFraction() ?? 0.0)
         
         if let merchantId = merchant.merchant?.merchantId {
             self.merchantId = merchantId
         }
+        
+        super.init()
+        
+        // Initialize with current sign-in state
+        isUserSignedIn = ctxSpendService.isUserSignedIn
     }
     
     func subscribeToUpdates() {
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
             .sink { [weak self] _ in self?.refreshBalance() }
+            .store(in: &cancellableBag)
+        
+        ctxSpendService.$isUserSignedIn
+            .sink { [weak self] isSignedIn in
+                self?.isUserSignedIn = isSignedIn
+            }
             .store(in: &cancellableBag)
         
         if CoinJoinService.shared.mixingState.isInProgress {
@@ -125,7 +139,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         let response = try await purchaseGiftCardAPI()
         
         // Process the payment using the payment URL
-        guard let paymentUrlString = response.paymentUrls.first?.value else {
+        guard let paymentUrlString = response.paymentUrls?.first?.value else {
             throw CTXSpendError.paymentProcessingError("No payment URL received")
         }
         
@@ -136,10 +150,6 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         saveGiftCardDummy(txHashData: transaction.txHashData, giftCardId: response.paymentId)
         
         return transaction.txHashData
-    }
-    
-    func isUserSignedIn() -> Bool {
-        return ctxSpendService.isUserSignedIn
     }
     
     func contactCTXSupport() {
@@ -248,7 +258,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         let giftCard = GiftCard(
             txId: txHashData,
             merchantName: merchantTitle,
-            merchantUrl: nil, // TODO: get merchant URL from API
+            merchantUrl: merchantUrl,
             price: amount,
             note: giftCardId // Store payment ID in note field temporarily
         )

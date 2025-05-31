@@ -3025,7 +3025,6 @@
 		C943B5882A40ED4500AF23C5 /* DWUsernameValidationRule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUsernameValidationRule.m; sourceTree = "<group>"; };
 		C943B59A2A40EE4800AF23C5 /* DWNetworkErrorViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNetworkErrorViewController.m; sourceTree = "<group>"; };
 		C943B59B2A40EE4800AF23C5 /* DWNetworkErrorViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNetworkErrorViewController.h; sourceTree = "<group>"; };
-		C94946DE2A25EDA8008A678D /* DWHomeViewControllerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeViewControllerDelegate.h; sourceTree = "<group>"; };
 		C94946DF2A25EE24008A678D /* DWMainMenuViewControllerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMainMenuViewControllerDelegate.h; sourceTree = "<group>"; };
 		C94D98202A4CC78F00F3BEE1 /* DashInputField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashInputField.swift; sourceTree = "<group>"; };
 		C94D98222A4CC85400F3BEE1 /* UIView+Dash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Dash.swift"; sourceTree = "<group>"; };
@@ -4611,7 +4610,6 @@
 				2A2CD6E522F46D1A008C7BC9 /* Models */,
 				2A307CB322E6FA7F00A18347 /* Views */,
 				759A7EA62CFDA6FF009423AD /* UIViewController+DWTxFilter.swift */,
-				C94946DE2A25EDA8008A678D /* DWHomeViewControllerDelegate.h */,
 				75FFD6B72BF47BA20032879E /* HomeViewController.swift */,
 				75FFD6BA2BF48DF80032879E /* HomeViewController+JailbreakCheck.swift */,
 				75FFD6BD2BF491FC0032879E /* HomeViewController+BackupReminder.swift */,
