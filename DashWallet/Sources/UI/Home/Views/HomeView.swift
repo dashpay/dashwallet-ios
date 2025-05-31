@@ -413,10 +413,11 @@ struct HomeViewContent<Content: View>: View {
             }
             .frame(height: 80)
             
-        case .tx(let txItem):
+        case .tx(let txItem, let metadata):
             TransactionPreview(
-                title: txItem.stateTitle,
+                title: metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
+                details: metadata?.details?.isEmpty == false ? metadata?.details : nil,
                 icon: .custom(txItem.iconName),
                 dashAmount: txItem.signedDashAmount,
                 overrideFiatAmount: txItem.fiatAmount
@@ -499,7 +500,7 @@ struct TransactionDetailsSheet: View {
                     showBackButton = show
                 }
             )
-        case .tx(let txItem):
+        case .tx(let txItem, _):
             TXDetailVCWrapper(tx: txItem, navigateBack: $backNavigationRequested)
         }
     }

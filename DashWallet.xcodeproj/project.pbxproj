@@ -578,6 +578,10 @@
 		7545ED5E2DA91F590075F45C /* CTXSpendTermsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7545ED5C2DA91F590075F45C /* CTXSpendTermsScreen.swift */; };
 		7545ED602DA91FC60075F45C /* NumericKeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7545ED5F2DA91FC60075F45C /* NumericKeyboardView.swift */; };
 		7545ED612DA91FC60075F45C /* NumericKeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7545ED5F2DA91FC60075F45C /* NumericKeyboardView.swift */; };
+		7549BE532DEAEA18004F0BAF /* MetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE522DEAEA14004F0BAF /* MetadataProvider.swift */; };
+		7549BE542DEAEA18004F0BAF /* MetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE522DEAEA14004F0BAF /* MetadataProvider.swift */; };
+		7549BE572DEAECB8004F0BAF /* CustomIconMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE562DEAECB0004F0BAF /* CustomIconMetadataProvider.swift */; };
+		7549BE582DEAECB8004F0BAF /* CustomIconMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE562DEAECB0004F0BAF /* CustomIconMetadataProvider.swift */; };
 		754BEA122C0B6BD700E8C93C /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */; };
 		754BEA132C0B6BD700E8C93C /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */; };
 		754C27C72CC3C0B900BA7B9F /* UsernamePrefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754C27C52CC3C0B900BA7B9F /* UsernamePrefs.swift */; };
@@ -2475,6 +2479,8 @@
 		7545ED562DA91AEA0075F45C /* CTXSpendUserAuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTXSpendUserAuthViewModel.swift; sourceTree = "<group>"; };
 		7545ED5C2DA91F590075F45C /* CTXSpendTermsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTXSpendTermsScreen.swift; sourceTree = "<group>"; };
 		7545ED5F2DA91FC60075F45C /* NumericKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumericKeyboardView.swift; sourceTree = "<group>"; };
+		7549BE522DEAEA14004F0BAF /* MetadataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataProvider.swift; sourceTree = "<group>"; };
+		7549BE562DEAECB0004F0BAF /* CustomIconMetadataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomIconMetadataProvider.swift; sourceTree = "<group>"; };
 		754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		754C27C52CC3C0B900BA7B9F /* UsernamePrefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernamePrefs.swift; sourceTree = "<group>"; };
 		754C27CB2CC3C14F00BA7B9F /* FeatureSingleItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureSingleItem.swift; sourceTree = "<group>"; };
@@ -3791,6 +3797,7 @@
 				C9F451FE2A0CE60400825057 /* Home Header View */,
 				2A2CD70B22F97A9D008C7BC9 /* Shortcuts */,
 				2A4E533C22F025ED00E5168A /* Cells */,
+				7549BE522DEAEA14004F0BAF /* MetadataProvider.swift */,
 				C9F452002A0CE6C900825057 /* HomeView.swift */,
 				754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */,
 				751C05DC2D3E39A600475E52 /* TransactionListDataItem.swift */,
@@ -4605,6 +4612,7 @@
 		2A9CEBB622E1FA0000A50237 /* Home */ = {
 			isa = PBXGroup;
 			children = (
+				7549BE552DEAECA5004F0BAF /* Custom Icons */,
 				2A1A60B92674083B003DAC65 /* Syncing Views */,
 				2A913E7223A2EAEF006A2A59 /* Protocols */,
 				2A2CD6E522F46D1A008C7BC9 /* Models */,
@@ -6090,6 +6098,14 @@
 				7545ED5C2DA91F590075F45C /* CTXSpendTermsScreen.swift */,
 			);
 			path = DashSpend;
+			sourceTree = "<group>";
+		};
+		7549BE552DEAECA5004F0BAF /* Custom Icons */ = {
+			isa = PBXGroup;
+			children = (
+				7549BE562DEAECB0004F0BAF /* CustomIconMetadataProvider.swift */,
+			);
+			path = "Custom Icons";
 			sourceTree = "<group>";
 		};
 		754C27C62CC3C0B900BA7B9F /* Usernames */ = {
@@ -8769,6 +8785,7 @@
 				47E94B97296D7D5B000FE68E /* CustodialSwapsViewController.swift in Sources */,
 				2A392568234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m in Sources */,
 				4751136F28D9B50E00223B77 /* CoinbaseInfoViewController.swift in Sources */,
+				7549BE542DEAEA18004F0BAF /* MetadataProvider.swift in Sources */,
 				2A9FFE7E2230FF4600956D5F /* DWSelectorFormCellModel.m in Sources */,
 				FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */,
 				755B4B222B0C903500B844F0 /* DWDateFormatter.swift in Sources */,
@@ -8841,6 +8858,7 @@
 				47305872295C971F004641DA /* UIViewController+AlertPresenting.swift in Sources */,
 				2A858A0F237EE89C0097A7B5 /* DSWatchTransactionDataObject.m in Sources */,
 				47FA3B0229364991008D58DC /* HTTPClient.swift in Sources */,
+				7549BE582DEAECB8004F0BAF /* CustomIconMetadataProvider.swift in Sources */,
 				2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressExtractor.m in Sources */,
 				757111A12CF20ED800A7D452 /* CoinJoinMixingTxSet.swift in Sources */,
 				477F501529531C07003C7508 /* ViewModel+Coinbase.swift in Sources */,
@@ -9456,6 +9474,7 @@
 				C943B51D2A40A54600AF23C5 /* InvitationBottomView.swift in Sources */,
 				C943B32D2A408CED00AF23C5 /* DWAvatarPublicURLViewController.m in Sources */,
 				75AA33D32BF9E18E00F12465 /* Color+DWStyle.swift in Sources */,
+				7549BE532DEAEA18004F0BAF /* MetadataProvider.swift in Sources */,
 				C9D2C76F2A320AA000D15901 /* DWProgressAnimator.mm in Sources */,
 				C943B3192A408CED00AF23C5 /* DWDPUpdateProfileModel.m in Sources */,
 				C9D2C7702A320AA000D15901 /* CrowdNodeModel.swift in Sources */,
@@ -9886,6 +9905,7 @@
 				75EAFBB22B04C057005ABC6A /* CustomHUDView.swift in Sources */,
 				C9D2C8C72A320AA000D15901 /* PaymentsViewController.swift in Sources */,
 				C9D2C8C92A320AA000D15901 /* ServiceDataSource.swift in Sources */,
+				7549BE572DEAECB8004F0BAF /* CustomIconMetadataProvider.swift in Sources */,
 				C9D2C8CA2A320AA000D15901 /* ConverterView.swift in Sources */,
 				C9D2C8CB2A320AA000D15901 /* DWModalBaseAnimation.m in Sources */,
 				C9D2C8CC2A320AA000D15901 /* SpendableTransaction.swift in Sources */,

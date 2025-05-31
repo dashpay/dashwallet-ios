@@ -44,6 +44,7 @@ class HomeViewModel: ObservableObject {
     private var txByHash: [String: TransactionListDataItem] = [:]
     private var crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
     private var coinJoinTxSets: [String: CoinJoinMixingTxSet] = [:] // Grouped by date
+    private var metadataProviders: [MetadataProvider] = []
     
     @Published private(set) var txItems: [TransactionGroup] = []
     @Published var shortcutItems: [ShortcutAction] = []
@@ -103,6 +104,7 @@ class HomeViewModel: ObservableObject {
             self.recalculateHeight()
         }
         
+        self.setupMetadataProviders()
         self.onSyncStateChanged()
         self.recalculateHeight()
         
@@ -174,40 +176,40 @@ class HomeViewModel: ObservableObject {
             self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
             self.coinJoinTxSets = [:]
             
-            var items: [TransactionListDataItem] = transactions.compactMap {
-                Tx.shared.updateRateIfNeeded(for: $0)
-                
-                if self.displayMode == .sent && $0.direction != .sent {
+            var items: [TransactionListDataItem] = transactions.compactMap { tx -> TransactionListDataItem? in
+                Tx.shared.updateRateIfNeeded(for: tx)
+                            
+                if self.displayMode == .sent && tx.direction != .sent {
                     return nil
                 }
-               
-                if self.displayMode == .received && ($0.direction != .received || $0 is DSCoinbaseTransaction) {
+                           
+                if self.displayMode == .received && (tx.direction != .received || tx is DSCoinbaseTransaction) {
                     return nil
                 }
-               
-                if self.displayMode == .rewards && !($0 is DSCoinbaseTransaction) {
+                           
+                if self.displayMode == .rewards && !(tx is DSCoinbaseTransaction) {
                     return nil
                 }
-               
-                if !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: $0) {
+                           
+                if !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: tx) {
                     return nil
                 }
-                
-                if !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: $0) {
+                            
+                if !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: tx) {
                     // CrowdNode transactions will be included below
                     return nil
                 }
 
-                let date = DWDateFormatter.sharedInstance.dateOnly(from: $0.date)
+                let date = DWDateFormatter.sharedInstance.dateOnly(from: tx.date)
                 let coinJoinTxSet = self.coinJoinTxSets[date] ?? CoinJoinMixingTxSet()
                 self.coinJoinTxSets[date] = coinJoinTxSet
-               
-                if coinJoinTxSet.tryInclude(tx: $0) {
+                           
+                if coinJoinTxSet.tryInclude(tx: tx) {
                     // CoinJoin transactions will be included below
                     return nil
                 }
-                
-                return .tx(Transaction(transaction: $0))
+                            
+                return .tx(Transaction(transaction: tx), self.resolveMetadata(for: tx.txHashData))
             }
             
             self.txByHash.removeAll()
@@ -262,7 +264,7 @@ class HomeViewModel: ObservableObject {
             
             Tx.shared.updateRateIfNeeded(for: tx)
             var itemId = tx.txHashHexString
-            var txItem: TransactionListDataItem = .tx(Transaction(transaction: tx))
+            var txItem: TransactionListDataItem = .tx(Transaction(transaction: tx), resolveMetadata(for: tx.txHashData))
             let dateKey = DWDateFormatter.sharedInstance.dateOnly(from: tx.date)
 
             if self.crowdNodeTxSet.tryInclude(tx: tx) {
@@ -283,15 +285,19 @@ class HomeViewModel: ObservableObject {
                 self.txByHash[itemId] = txItem
                 var isChanged = true
                 
-                if case let .tx(existingTx) = existingItem, case let .tx(newTx) = txItem {
-                    isChanged = newTx.state != existingTx.state
+                if case let .tx(existingTx, oldMetadata) = existingItem, case let .tx(newTx, metadata) = txItem {
+                    isChanged = newTx.state != existingTx.state || oldMetadata != metadata
                 }
                 
                 if isChanged {
                     if let groupIndex = self.txItems.firstIndex(where: { $0.id == dateKey }),
                         let itemIndex = self.txItems[groupIndex].items.firstIndex(where: { $0.id == itemId }) {
                         DispatchQueue.main.async {
-                            self.txItems[groupIndex].items[itemIndex] = txItem
+                            let updatedGroup = self.txItems[groupIndex]
+                            var updatedItems = updatedGroup.items
+                            updatedItems[itemIndex] = txItem
+                            updatedGroup.items = updatedItems
+                            self.txItems[groupIndex] = updatedGroup
                         }
                     }
                 }
@@ -361,6 +367,30 @@ class HomeViewModel: ObservableObject {
             return (false, 0)
         }
     }
+    
+    
+    private func resolveMetadata(for txId: Data) -> TxRowMetadata? {
+        var finalMetadata: TxRowMetadata? = nil
+
+        for provider in self.metadataProviders {
+            if let metadata = provider.availableMetadata[txId] {
+                if finalMetadata == nil {
+                    finalMetadata = metadata
+                } else {
+                    if finalMetadata?.title == nil {
+                        finalMetadata?.title = metadata.title
+                    }
+
+                    if finalMetadata?.details == nil {
+                        finalMetadata?.details = metadata.details
+                    }
+                }
+            }
+        }
+
+        print("METADATA: resolved finalMetadata: \(String(describing: finalMetadata))")
+        return finalMetadata
+    }
 }
 
 // MARK: - CoinJoin
@@ -416,6 +446,26 @@ extension HomeViewModel {
     }
 }
 
+// MARK: - Metadata Providers
+
+extension HomeViewModel {
+    private func setupMetadataProviders() {
+//        let privateMemoProvider = PrivateMemoProvider()
+//        privateMemoProvider.metadataUpdated
+//            .receive(on: self.queue)
+//            .sink { [weak self] txHash in
+//                guard let self = self else { return }
+//
+//                let wallet = DWEnvironment.sharedInstance().currentWallet
+//                if let transaction = wallet.transaction(forHash: txHash.withUnsafeBytes { $0.load(as: UInt256.self) }) {
+//                    self.onTransactionStatusChanged(tx: transaction)
+//                }
+//            }
+//            .store(in: &cancellableBag)
+//
+//        self.metadataProviders = [privateMemoProvider]
+    }
+}
 
 // MARK: - Shortcuts
 
