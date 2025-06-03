@@ -17,71 +17,127 @@
 
 import Foundation
 import Combine
+import UIKit
+import CryptoKit
 
 class CustomIconMetadataProvider: MetadataProvider {
+    static let shared = CustomIconMetadataProvider()
+    
     private var cancellableBag = Set<AnyCancellable>()
-    private let iconBitmapDao = iconBitmapDAOImpl.shared
+    private let iconBitmapDao = IconBitmapDAOImpl.shared
     var availableMetadata: [Data : TxRowMetadata] = [:]
     
     let metadataUpdated = PassthroughSubject<Data, Never>()
     
     init() {
         loadMetadata()
-//        self.metadataDao.$lastChange
-//            .receive(on: DispatchQueue.main)
-//            .sink { [weak self] change in
-//                guard let self = self, let change = change else { return }
-//                
-//                switch change {
-//                case .created(let metadata), .updated(let metadata, _):
-//                    onMemoUpdated(metadata: metadata)
-//                    
-//                case .deleted(let metadata):
-//                    availableMetadata.removeValue(forKey: metadata.txHash)
-//                    metadataUpdated.send(metadata.txHash)
-//                    
-//                case .deletedAll:
-//                    for metadata in availableMetadata {
-//                        metadataUpdated.send(metadata.key)
-//                    }
-//                    availableMetadata = [:]
-//                }
-//            }
-//            .store(in: &cancellableBag)
+        
+        iconBitmapDao.observeBitmaps()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] bitmaps in
+                guard let self = self else { return }
+                
+                // Update metadata with new icons
+                for (iconId, iconBitmap) in bitmaps {
+                    if let image = UIImage(data: iconBitmap.imageData) {
+                        // Find transactions that use this icon
+                        for (txHash, metadata) in availableMetadata {
+                            if let customIconId = metadata.customIconId, customIconId == iconId {
+                                var updatedMetadata = metadata
+                                updatedMetadata.icon = image
+                                availableMetadata[txHash] = updatedMetadata
+                                metadataUpdated.send(txHash)
+                            }
+                        }
+                    }
+                }
+            }
+            .store(in: &cancellableBag)
     }
     
     private func loadMetadata() {
-//        let txMetadata = metadataDao.getPrivateMemos()
-//        
-//        for metadata in txMetadata {
-//            var txRowMetadata = availableMetadata[metadata.txHash]
-//            
-//            if txRowMetadata != nil {
-//                txRowMetadata!.details = metadata.memo
-//            } else {
-//                txRowMetadata = TxRowMetadata(
-//                    title: nil,
-//                    details: metadata.memo
-//                )
-//            }
-//            
-//            availableMetadata[metadata.txHash] = txRowMetadata
-//        }
+        // TODO: Load existing metadata if needed
+        // This would typically load from transaction metadata that references icon IDs
     }
     
-//    private func onMemoUpdated(metadata: TransactionMetadata) {
-//        var txRowMetadata = availableMetadata[metadata.txHash]
-//        
-//        if txRowMetadata != nil {
-//            txRowMetadata!.details = metadata.memo
-//        } else {
-//            txRowMetadata = TxRowMetadata(
-//                title: nil,
-//                details: metadata.memo
-//            )
-//        }
-//        
-//        availableMetadata[metadata.txHash] = txRowMetadata
-//        metadataUpdated.send(metadata.txHash)
-//    }
+    func updateIcon(txId: Data, iconUrl: String) {
+        Task {
+            do {
+                guard let url = URL(string: iconUrl) else {
+                    print("Invalid icon URL: \(iconUrl)")
+                    return
+                }
+                
+                let (data, _) = try await URLSession.shared.data(from: url)
+                
+                guard let image = UIImage(data: data) else {
+                    print("Failed to create image from data for URL: \(iconUrl)")
+                    return
+                }
+                
+                // Calculate hash from original image data
+                let imageHash = SHA256.hash(data: data)
+                print("BITMAP: imageHash: \(imageHash)")
+                let hashData = Data(imageHash)
+                
+                let resizedImage = resizeIcon(image: image)
+                guard let resizedImageData = resizedImage.pngData() else {
+                    print("BITMAP: Failed to get PNG data from resized image")
+                    return
+                }
+                
+                print("Resized image data base64: \(resizedImageData.base64EncodedString())")
+                
+                let iconBitmap = IconBitmap(
+                    id: hashData,
+                    imageData: resizedImageData,
+                    originalUrl: iconUrl,
+                    height: Int(resizedImage.size.height),
+                    width: Int(resizedImage.size.width)
+                )
+                
+                await iconBitmapDao.addBitmap(bitmap: iconBitmap)
+                
+                var txRowMetadata = availableMetadata[txId] ?? TxRowMetadata(title: nil, details: nil)
+                txRowMetadata.customIconId = hashData
+                txRowMetadata.icon = resizedImage
+                availableMetadata[txId] = txRowMetadata
+                
+                Task { @MainActor in
+                    self.metadataUpdated.send(txId)
+                }
+            } catch {
+                print("Failed to fetch icon from URL \(iconUrl): \(error)")
+            }
+        }
+    }
+    
+    private func resizeIcon(image: UIImage) -> UIImage {
+        let destSize: CGFloat = 150.0
+        var width = image.size.width
+        var height = image.size.height
+        
+        if width > destSize || height > destSize {
+            if width < height {
+                let scale = destSize / height
+                height = destSize
+                width = width * scale
+            } else if width > height {
+                let scale = destSize / width
+                width = destSize
+                height = height * scale
+            } else {
+                width = destSize
+                height = destSize
+            }
+        }
+        
+        let size = CGSize(width: width, height: height)
+        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
+        image.draw(in: CGRect(origin: .zero, size: size))
+        let resizedImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return resizedImage ?? image
+    }
 }

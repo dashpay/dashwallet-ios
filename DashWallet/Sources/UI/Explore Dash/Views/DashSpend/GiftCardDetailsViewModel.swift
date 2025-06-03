@@ -166,7 +166,6 @@ class GiftCardDetailsViewModel: ObservableObject {
                             format: "CODE128"
                         )
                     }
-                    
                     stopTicker()
                     DSLogger.log("DashSpend: Gift card details fetched successfully")
                 }

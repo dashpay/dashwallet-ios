@@ -25,6 +25,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: defaultCurrency)
     private let ctxSpendService = CTXSpendService.shared
+    private let customIconProvider = CustomIconMetadataProvider.shared
     private let sendCoinsService = SendCoinsService()
 
     private var merchantId: String = ""
@@ -147,6 +148,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         
         // Payment successful - save gift card information
         DSLogger.log("Payment transaction completed: \(transaction.txHashHexString)")
+        // TODO:
+        // transactionMetadata.markGiftCardTransaction(transaction.txId, giftCardMerchant.logoLocation)
+        customIconProvider.updateIcon(txId: transaction.txHashData, iconUrl: merchantIconUrl)
         saveGiftCardDummy(txHashData: transaction.txHashData, giftCardId: response.paymentId)
         
         return transaction.txHashData
@@ -240,9 +244,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         }
         
         DSLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(amount)")
-        
         let fiatAmountString = String(format: "%.2f", Double(truncating: amount as NSDecimalNumber))
-        DSLogger.log("Making API request to purchase gift card: merchantId=\(merchantId), amount=\(fiatAmountString)USD")
         
         return try await ctxSpendService.purchaseGiftCard(
             merchantId: merchantId,

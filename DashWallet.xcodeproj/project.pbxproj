@@ -582,6 +582,12 @@
 		7549BE542DEAEA18004F0BAF /* MetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE522DEAEA14004F0BAF /* MetadataProvider.swift */; };
 		7549BE572DEAECB8004F0BAF /* CustomIconMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE562DEAECB0004F0BAF /* CustomIconMetadataProvider.swift */; };
 		7549BE582DEAECB8004F0BAF /* CustomIconMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE562DEAECB0004F0BAF /* CustomIconMetadataProvider.swift */; };
+		7549BE5A2DEAF50D004F0BAF /* IconBitmap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE592DEAF50D004F0BAF /* IconBitmap.swift */; };
+		7549BE5B2DEAF50D004F0BAF /* IconBitmap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE592DEAF50D004F0BAF /* IconBitmap.swift */; };
+		7549BE5D2DEAF55B004F0BAF /* IconBitmapDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE5C2DEAF55B004F0BAF /* IconBitmapDAO.swift */; };
+		7549BE5E2DEAF55B004F0BAF /* IconBitmapDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE5C2DEAF55B004F0BAF /* IconBitmapDAO.swift */; };
+		7549BE602DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE5F2DEAF628004F0BAF /* AddIconBitmapsTable.swift */; };
+		7549BE612DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE5F2DEAF628004F0BAF /* AddIconBitmapsTable.swift */; };
 		754BEA122C0B6BD700E8C93C /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */; };
 		754BEA132C0B6BD700E8C93C /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */; };
 		754C27C72CC3C0B900BA7B9F /* UsernamePrefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754C27C52CC3C0B900BA7B9F /* UsernamePrefs.swift */; };
@@ -2481,6 +2487,9 @@
 		7545ED5F2DA91FC60075F45C /* NumericKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumericKeyboardView.swift; sourceTree = "<group>"; };
 		7549BE522DEAEA14004F0BAF /* MetadataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataProvider.swift; sourceTree = "<group>"; };
 		7549BE562DEAECB0004F0BAF /* CustomIconMetadataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomIconMetadataProvider.swift; sourceTree = "<group>"; };
+		7549BE592DEAF50D004F0BAF /* IconBitmap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBitmap.swift; sourceTree = "<group>"; };
+		7549BE5C2DEAF55B004F0BAF /* IconBitmapDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBitmapDAO.swift; sourceTree = "<group>"; };
+		7549BE5F2DEAF628004F0BAF /* AddIconBitmapsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddIconBitmapsTable.swift; sourceTree = "<group>"; };
 		754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		754C27C52CC3C0B900BA7B9F /* UsernamePrefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernamePrefs.swift; sourceTree = "<group>"; };
 		754C27CB2CC3C14F00BA7B9F /* FeatureSingleItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureSingleItem.swift; sourceTree = "<group>"; };
@@ -5167,6 +5176,7 @@
 		4709C310287E78BD00B4BD48 /* Migrations */ = {
 			isa = PBXGroup;
 			children = (
+				7549BE5F2DEAF628004F0BAF /* AddIconBitmapsTable.swift */,
 				75D9EBB72DE5CC3A009416A2 /* AddGiftCardsTable.swift */,
 				4709C311287E78BD00B4BD48 /* SeedDB.swift */,
 			);
@@ -5525,6 +5535,8 @@
 			children = (
 				754D020C2D1558EA005CA466 /* GroupedTransactions.swift */,
 				479DBDDC2995168C00F30AF1 /* Transactions.swift */,
+				7549BE592DEAF50D004F0BAF /* IconBitmap.swift */,
+				7549BE5C2DEAF55B004F0BAF /* IconBitmapDAO.swift */,
 			);
 			path = Tx;
 			sourceTree = "<group>";
@@ -8797,6 +8809,7 @@
 				2A913EA823A79AD2006A2A59 /* DWTransactionListDataProviderStub.m in Sources */,
 				0F6EDFC628C896BD000427E7 /* CoinbaseBaseIDForCurrencyResponse.swift in Sources */,
 				759609232C455B2000F3BF04 /* SendIntro.swift in Sources */,
+				7549BE5A2DEAF50D004F0BAF /* IconBitmap.swift in Sources */,
 				47AC8413297822E000BD1B49 /* SpecifyAmountViewController.swift in Sources */,
 				2AFCB9C423BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m in Sources */,
 				75CDD7862C08D61300F433D2 /* DashAmount.swift in Sources */,
@@ -8859,6 +8872,7 @@
 				2A858A0F237EE89C0097A7B5 /* DSWatchTransactionDataObject.m in Sources */,
 				47FA3B0229364991008D58DC /* HTTPClient.swift in Sources */,
 				7549BE582DEAECB8004F0BAF /* CustomIconMetadataProvider.swift in Sources */,
+				7549BE602DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */,
 				2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressExtractor.m in Sources */,
 				757111A12CF20ED800A7D452 /* CoinJoinMixingTxSet.swift in Sources */,
 				477F501529531C07003C7508 /* ViewModel+Coinbase.swift in Sources */,
@@ -8884,6 +8898,7 @@
 				4709C312287E78BD00B4BD48 /* SeedDB.swift in Sources */,
 				2ACCD8F0231ECDE000A96B62 /* DWPinField.m in Sources */,
 				2AD1CEA222DFC80900C99324 /* DWCenteredScrollView.m in Sources */,
+				7549BE5D2DEAF55B004F0BAF /* IconBitmapDAO.swift in Sources */,
 				2A9172C425233DC50024B4C5 /* DWPhraseRepairViewController.m in Sources */,
 				2A44314C22CF8801009BAF7F /* DWBiometricAuthModel.m in Sources */,
 				7527720F2AA9F58E0066557E /* TopperViewModel.swift in Sources */,
@@ -9157,6 +9172,7 @@
 				C943B4EE2A40A54600AF23C5 /* DWStretchyHeaderListCollectionLayout.m in Sources */,
 				75A8C1652AE5726B0042256E /* UsernameRequestsDAO.swift in Sources */,
 				C9D2C6992A320AA000D15901 /* DWStartViewController.m in Sources */,
+				7549BE5B2DEAF50D004F0BAF /* IconBitmap.swift in Sources */,
 				C943B4C02A40A54600AF23C5 /* DWContactsSearchInfoHeaderView.m in Sources */,
 				C9D2C69B2A320AA000D15901 /* DWStartModel.m in Sources */,
 				754495DD2AE91B6300492817 /* GroupedRequestCell.swift in Sources */,
@@ -9170,6 +9186,7 @@
 				C9D2C6A12A320AA000D15901 /* AmountInputControl.swift in Sources */,
 				C9D2C6A22A320AA000D15901 /* DWSegmentSliderFormTableViewCell.m in Sources */,
 				759609212C4553A400F3BF04 /* BuyCreditsViewController.swift in Sources */,
+				7549BE5E2DEAF55B004F0BAF /* IconBitmapDAO.swift in Sources */,
 				C9D2C6A32A320AA000D15901 /* ApiCode.swift in Sources */,
 				75FEC6AF2CE0C58A00F87B48 /* VerifyIdentityScreen.swift in Sources */,
 				C9D2C6A42A320AA000D15901 /* CoinbaseEntryPointModel.swift in Sources */,
@@ -9620,6 +9637,7 @@
 				C943B4F32A40A54600AF23C5 /* DWDPEstablishedContactObject.m in Sources */,
 				C9D2C7E02A320AA000D15901 /* TransactionFilter.swift in Sources */,
 				C9D2C7E22A320AA000D15901 /* CrowdNodeWithdrawalReceivedTx.swift in Sources */,
+				7549BE612DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */,
 				C943B4B62A40A54600AF23C5 /* DWFetchedResultsDataSource.m in Sources */,
 				C9D2C7E32A320AA000D15901 /* PointOfUseListSegmentedCell.swift in Sources */,
 				7513DA892AB17606005D55F6 /* Topper.swift in Sources */,
