@@ -20,68 +20,7 @@ import Combine
 
 class CustomIconMetadataProvider: MetadataProvider {
     private var cancellableBag = Set<AnyCancellable>()
-    private let iconBitmapDao = iconBitmapDAOImpl.shared
     var availableMetadata: [Data : TxRowMetadata] = [:]
     
     let metadataUpdated = PassthroughSubject<Data, Never>()
-    
-    init() {
-        loadMetadata()
-//        self.metadataDao.$lastChange
-//            .receive(on: DispatchQueue.main)
-//            .sink { [weak self] change in
-//                guard let self = self, let change = change else { return }
-//                
-//                switch change {
-//                case .created(let metadata), .updated(let metadata, _):
-//                    onMemoUpdated(metadata: metadata)
-//                    
-//                case .deleted(let metadata):
-//                    availableMetadata.removeValue(forKey: metadata.txHash)
-//                    metadataUpdated.send(metadata.txHash)
-//                    
-//                case .deletedAll:
-//                    for metadata in availableMetadata {
-//                        metadataUpdated.send(metadata.key)
-//                    }
-//                    availableMetadata = [:]
-//                }
-//            }
-//            .store(in: &cancellableBag)
-    }
-    
-    private func loadMetadata() {
-//        let txMetadata = metadataDao.getPrivateMemos()
-//        
-//        for metadata in txMetadata {
-//            var txRowMetadata = availableMetadata[metadata.txHash]
-//            
-//            if txRowMetadata != nil {
-//                txRowMetadata!.details = metadata.memo
-//            } else {
-//                txRowMetadata = TxRowMetadata(
-//                    title: nil,
-//                    details: metadata.memo
-//                )
-//            }
-//            
-//            availableMetadata[metadata.txHash] = txRowMetadata
-//        }
-    }
-    
-//    private func onMemoUpdated(metadata: TransactionMetadata) {
-//        var txRowMetadata = availableMetadata[metadata.txHash]
-//        
-//        if txRowMetadata != nil {
-//            txRowMetadata!.details = metadata.memo
-//        } else {
-//            txRowMetadata = TxRowMetadata(
-//                title: nil,
-//                details: metadata.memo
-//            )
-//        }
-//        
-//        availableMetadata[metadata.txHash] = txRowMetadata
-//        metadataUpdated.send(metadata.txHash)
-//    }
 }
