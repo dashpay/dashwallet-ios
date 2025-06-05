@@ -17,25 +17,43 @@
 
 import Foundation
 import SQLite
+import Combine
 
-// MARK: - TxUserInfoDAO
+// MARK: - Metadata Change Event
+
+enum TransactionMetadataChange {
+    case created(TransactionMetadata)
+    case updated(TransactionMetadata, previousMetadata: TransactionMetadata)
+    case deleted(TransactionMetadata)
+    case deletedAll
+}
+
+// MARK: - TransactionMetadataDAO
 
 protocol TransactionMetadataDAO {
     func create(dto: TransactionMetadata)
-    func get(by hash: Data) -> TransactionMetadata?
+    func get(by hash: Data, ignoreCache: Bool) -> TransactionMetadata?
     func update(dto: TransactionMetadata)
     func delete(dto: TransactionMetadata)
     func deleteAll()
 }
 
-// MARK: - TxUserInfoDAOImpl
+extension TransactionMetadataDAO {
+    func get(by hash: Data) -> TransactionMetadata? {
+        return get(by: hash, ignoreCache: false)
+    }
+}
 
-class TransactionMetadataDAOImpl: NSObject, TransactionMetadataDAO {
+// MARK: - TransactionMetadataDAOImpl
+
+class TransactionMetadataDAOImpl: NSObject, TransactionMetadataDAO, ObservableObject {
     private var db: Connection { DatabaseConnection.shared.db }
     private var cache: [Data: TransactionMetadata] = [:]
 
     private let queue = DispatchQueue(label: "org.dash.infrastructure.queue.transaction-metadata-dao", attributes: .concurrent)
-
+    
+    @Published private(set) var lastChange: TransactionMetadataChange?
+    
     func create(dto: TransactionMetadata) {
         do {
             let transactionMetadata = TransactionMetadata.table.insert(or: .replace,
@@ -43,7 +61,11 @@ class TransactionMetadataDAOImpl: NSObject, TransactionMetadataDAO {
                                                      TransactionMetadata.txCategoryColumn <- dto.taxCategory.rawValue,
                                                      TransactionMetadata.txRateColumn <- dto.rate,
                                                      TransactionMetadata.txRateCurrencyCodeColumn <- dto.rateCurrency,
-                                                     TransactionMetadata.txRateMaximumFractionDigitsColumn <- dto.rateMaximumFractionDigits)
+                                                     TransactionMetadata.txRateMaximumFractionDigitsColumn <- dto.rateMaximumFractionDigits,
+                                                     TransactionMetadata.timestamp <- dto.timestamp,
+                                                     TransactionMetadata.memo <- dto.memo,
+                                                     TransactionMetadata.service <- dto.service,
+                                                     TransactionMetadata.customIconId <- dto.customIconId)
             try db.run(transactionMetadata)
 
         } catch {
@@ -52,6 +74,10 @@ class TransactionMetadataDAOImpl: NSObject, TransactionMetadataDAO {
 
         queue.async(flags: .barrier) { [weak self] in
             self?.cache[dto.txHash] = dto
+            
+            DispatchQueue.main.async {
+                self?.lastChange = .created(dto)
+            }
         }
     }
 
@@ -72,8 +98,8 @@ class TransactionMetadataDAOImpl: NSObject, TransactionMetadataDAO {
         return userInfos
     }
 
-    func get(by hash: Data) -> TransactionMetadata? {
-        if let cached = cachedValue(by: hash) {
+    func get(by hash: Data, ignoreCache: Bool = false) -> TransactionMetadata? {
+        if !ignoreCache, let cached = cachedValue(by: hash) {
             return cached
         }
 
@@ -105,12 +131,77 @@ class TransactionMetadataDAOImpl: NSObject, TransactionMetadataDAO {
     }
 
     func update(dto: TransactionMetadata) {
-        create(dto: dto)
+        guard let existingDto = get(by: dto.txHash) else {
+            create(dto: dto)
+            return
+        }
+        
+        do {
+            var setters: [Setter] = []
+            
+            if dto.taxCategory != .unknown && existingDto.taxCategory != dto.taxCategory {
+                setters.append(TransactionMetadata.txCategoryColumn <- dto.taxCategory.rawValue)
+            }
+            
+            if let rate = dto.rate, existingDto.rate != rate {
+                setters.append(TransactionMetadata.txRateColumn <- rate)
+            }
+            
+            if let rateCurrency = dto.rateCurrency, existingDto.rateCurrency != rateCurrency {
+                setters.append(TransactionMetadata.txRateCurrencyCodeColumn <- rateCurrency)
+            }
+            
+            if let rateMaximumFractionDigits = dto.rateMaximumFractionDigits, existingDto.rateMaximumFractionDigits != rateMaximumFractionDigits {
+                setters.append(TransactionMetadata.txRateMaximumFractionDigitsColumn <- rateMaximumFractionDigits)
+            }
+            
+            if let timestamp = dto.timestamp, existingDto.timestamp != timestamp {
+                setters.append(TransactionMetadata.timestamp <- timestamp)
+            }
+            
+            if let memo = dto.memo, existingDto.memo != memo {
+                setters.append(TransactionMetadata.memo <- memo)
+            }
+            
+            if let service = dto.service, existingDto.service != service {
+                setters.append(TransactionMetadata.service <- service)
+            }
+            
+            if let customIconId = dto.customIconId, existingDto.customIconId != customIconId {
+                setters.append(TransactionMetadata.customIconId <- customIconId)
+            }
+            
+            if !setters.isEmpty {
+                let txUserInfo = TransactionMetadata.table.filter(TransactionMetadata.txHashColumn == dto.txHash)
+                try db.run(txUserInfo.update(setters))
+                
+                // Update cache
+                if let updated = get(by: dto.txHash, ignoreCache: true) {
+                    DispatchQueue.main.async { [weak self] in
+                        self?.lastChange = .updated(updated, previousMetadata: existingDto)
+                    }
+                }
+            }
+        } catch {
+            print(error)
+        }
     }
 
     func delete(dto: TransactionMetadata) {
-        queue.async(flags: .barrier) { [weak self] in
-            self?.cache[dto.txHash] = nil
+        do {
+            let txUserInfo = TransactionMetadata.table.filter(TransactionMetadata.txHashColumn == dto.txHash)
+            try db.run(txUserInfo.delete())
+            
+            queue.async(flags: .barrier) { [weak self] in
+                self?.cache[dto.txHash] = nil
+                
+                // Publish the deleted metadata event
+                DispatchQueue.main.async {
+                    self?.lastChange = .deleted(dto)
+                }
+            }
+        } catch {
+            print(error)
         }
     }
 
@@ -119,6 +210,11 @@ class TransactionMetadataDAOImpl: NSObject, TransactionMetadataDAO {
             try db.run(TransactionMetadata.table.delete())
             queue.async(flags: .barrier) { [weak self] in
                 self?.cache = [:]
+                
+                // Publish the delete all event
+                DispatchQueue.main.async {
+                    self?.lastChange = .deletedAll
+                }
             }
         } catch {
             print(error)

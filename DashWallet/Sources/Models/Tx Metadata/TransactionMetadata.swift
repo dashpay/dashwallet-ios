@@ -66,6 +66,10 @@ struct TransactionMetadata {
     var memo: String?
     var service: String?
     var customIconId: Data?
+    
+    init(txHash: Data) {
+        self.txHash = txHash
+    }
 
     init(txHash: Data, taxCategory: TxMetadataTaxCategory) {
         self.txHash = txHash

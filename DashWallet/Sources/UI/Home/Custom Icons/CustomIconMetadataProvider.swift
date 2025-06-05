@@ -25,6 +25,7 @@ class CustomIconMetadataProvider: MetadataProvider {
     
     private var cancellableBag = Set<AnyCancellable>()
     private let iconBitmapDao = IconBitmapDAOImpl.shared
+    private let metadataDao = TransactionMetadataDAOImpl.shared
     var availableMetadata: [Data : TxRowMetadata] = [:]
     
     let metadataUpdated = PassthroughSubject<Data, Never>()
@@ -41,7 +42,7 @@ class CustomIconMetadataProvider: MetadataProvider {
                 for (iconId, iconBitmap) in bitmaps {
                     if let image = UIImage(data: iconBitmap.imageData) {
                         // Find transactions that use this icon
-                        for (txHash, metadata) in availableMetadata {
+                        for (txHash, metadata) in availableMetadata { // TODO: create new metatada if needed
                             if let customIconId = metadata.customIconId, customIconId == iconId {
                                 var updatedMetadata = metadata
                                 updatedMetadata.icon = image
@@ -86,8 +87,6 @@ class CustomIconMetadataProvider: MetadataProvider {
                     return
                 }
                 
-                print("Resized image data base64: \(resizedImageData.base64EncodedString())")
-                
                 let iconBitmap = IconBitmap(
                     id: hashData,
                     imageData: resizedImageData,
@@ -97,6 +96,10 @@ class CustomIconMetadataProvider: MetadataProvider {
                 )
                 
                 await iconBitmapDao.addBitmap(bitmap: iconBitmap)
+                
+                var metadata = TransactionMetadata(txHash: txId)
+                metadata.customIconId = hashData
+                metadataDao.update(dto: metadata)
                 
                 var txRowMetadata = availableMetadata[txId] ?? TxRowMetadata(title: nil, details: nil)
                 txRowMetadata.customIconId = hashData

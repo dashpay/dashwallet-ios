@@ -5189,6 +5189,7 @@
 			children = (
 				4709C316287EA22600B4BD48 /* DAO */,
 				4709C314287EA11900B4BD48 /* TransactionMetadata.swift */,
+				7549BE592DEAF50D004F0BAF /* IconBitmap.swift */,
 			);
 			path = "Tx Metadata";
 			sourceTree = "<group>";
@@ -5197,6 +5198,7 @@
 			isa = PBXGroup;
 			children = (
 				4709C317287EA23000B4BD48 /* TransactionMetadataDAO.swift */,
+				7549BE5C2DEAF55B004F0BAF /* IconBitmapDAO.swift */,
 			);
 			path = DAO;
 			sourceTree = "<group>";
@@ -5535,8 +5537,6 @@
 			children = (
 				754D020C2D1558EA005CA466 /* GroupedTransactions.swift */,
 				479DBDDC2995168C00F30AF1 /* Transactions.swift */,
-				7549BE592DEAF50D004F0BAF /* IconBitmap.swift */,
-				7549BE5C2DEAF55B004F0BAF /* IconBitmapDAO.swift */,
 			);
 			path = Tx;
 			sourceTree = "<group>";
