@@ -78,12 +78,10 @@ class CustomIconMetadataProvider: MetadataProvider {
                 
                 // Calculate hash from original image data
                 let imageHash = SHA256.hash(data: data)
-                print("BITMAP: imageHash: \(imageHash)")
                 let hashData = Data(imageHash)
                 
                 let resizedImage = resizeIcon(image: image)
                 guard let resizedImageData = resizedImage.pngData() else {
-                    print("BITMAP: Failed to get PNG data from resized image")
                     return
                 }
                 

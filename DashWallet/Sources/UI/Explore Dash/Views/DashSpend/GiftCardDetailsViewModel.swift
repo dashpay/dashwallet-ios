@@ -21,12 +21,12 @@ import UIKit
 
 struct GiftCardDetailsUIState {
     var merchantName: String = ""
-    var merchantIconUrl: String? = nil
     var merchantUrl: String? = nil
     var formattedPrice: String = "$0.00"
     var cardNumber: String? = nil
     var cardPin: String? = nil
     var barcodeImage: UIImage? = nil
+    var merchantIcon: UIImage? = nil
     var purchaseDate: Date? = nil
     var isLoadingCardDetails: Bool = false
     var loadingError: Error? = nil
@@ -38,6 +38,8 @@ class GiftCardDetailsViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     private let ctxSpendService = CTXSpendService.shared
     private let giftCardsDAO = GiftCardsDAOImpl.shared
+    private let customIconDAO = IconBitmapDAOImpl.shared
+    private let txMetadataDAO = TransactionMetadataDAOImpl.shared
     private var tickerTimer: Timer?
     private var retryCount = 0
     private let maxRetries = 3
@@ -84,7 +86,29 @@ class GiftCardDetailsViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
         
-        // TODO: Observe merchant icon from transaction metadata if available
+        self.txMetadataDAO.$lastChange // TODO: what if we open this from home screen
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] change in
+                guard let self = self, let change = change else { return }
+
+                Task {
+                    switch change {
+                    case .created(let metadata), .updated(let metadata, _):
+                        if let customIconId = metadata.customIconId,
+                            let iconBitmap = await self.customIconDAO.getBitmap(id: customIconId) {
+                            guard let image = UIImage(data: iconBitmap.imageData) else {
+                                DSLogger.log("Failed to create image from data for tx icon: \(metadata.txHash.hexEncodedString())")
+                                return
+                            }
+                            
+                            self.uiState.merchantIcon = image
+                        }
+                    default:
+                        break
+                    }
+                }
+            }
+            .store(in: &cancellableBag)
     }
     
     func stopObserving() {
