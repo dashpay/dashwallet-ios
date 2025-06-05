@@ -144,7 +144,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
             throw CTXSpendError.paymentProcessingError("No payment URL received")
         }
         
-        let transaction = try await sendCoinsService.processGiftCardPayment(with: paymentUrlString)
+        let transaction = try await sendCoinsService.payWithDashUrl(url: paymentUrlString)
         
         // Payment successful - save gift card information
         DSLogger.log("Payment transaction completed: \(transaction.txHashHexString)")

@@ -68,9 +68,9 @@ public final class SendCoinsService: NSObject {
         return transaction
     }
 
-    // MARK: - Gift Card Payment Processing
+    // MARK: - BIP70
     
-    func processGiftCardPayment(with paymentUrlString: String) async throws -> DSTransaction {
+    func payWithDashUrl(url paymentUrlString: String) async throws -> DSTransaction {
         // Create payment input from the URL
         guard let paymentUrl = URL(string: paymentUrlString) else {
             throw CTXSpendError.paymentProcessingError("Invalid payment URL")
@@ -140,17 +140,14 @@ extension SendCoinsService: DWPaymentProcessorDelegate {
     }
     
     public func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, details: DSPaymentProtocolDetails?, contactItem: DWDPBasicUserItem?) {
-        // Not needed for gift card payments
         completePayment(transaction: nil, error: CTXSpendError.paymentProcessingError("Request is missing destination"))
     }
     
     public func paymentProcessor(_ processor: DWPaymentProcessor, requestUserActionTitle title: String?, message: String?, actionTitle: String, cancel cancelBlock: (() -> Void)?, actionBlock: (() -> Void)?) {
-        // Auto-confirm for gift card purchases
         actionBlock?()
     }
     
     public func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
-        // Auto-confirm for gift card purchases
         processor.confirmPaymentOutput(paymentOutput)
     }
     
@@ -162,19 +159,11 @@ extension SendCoinsService: DWPaymentProcessorDelegate {
         completePayment(transaction: transaction, error: nil)
     }
     
-    public func paymentProcessor(_ processor: DWPaymentProcessor, displayFileProcessResult result: String) {
-        // Not needed for gift card payments
-    }
+    public func paymentProcessor(_ processor: DWPaymentProcessor, displayFileProcessResult result: String) { }
     
-    public func paymentProcessorDidFinishProcessingFile(_ processor: DWPaymentProcessor) {
-        // Not needed for gift card payments
-    }
+    public func paymentProcessorDidFinishProcessingFile(_ processor: DWPaymentProcessor) { }
     
-    public func paymentProcessor(_ processor: DWPaymentProcessor, showProgressHUDWithMessage message: String?) {
-        // Progress is handled by the UI layer
-    }
+    public func paymentProcessor(_ processor: DWPaymentProcessor, showProgressHUDWithMessage message: String?) { }
     
-    public func paymentInputProcessorHideProgressHUD(_ processor: DWPaymentProcessor) {
-        // Progress is handled by the UI layer
-    }
+    public func paymentInputProcessorHideProgressHUD(_ processor: DWPaymentProcessor) { }
 }
