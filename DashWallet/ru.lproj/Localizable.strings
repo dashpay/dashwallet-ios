@@ -313,6 +313,9 @@
 /* Coinbase/Payment Methods */
 "Bank Wire" = "Банковский перевод";
 
+/* No comment provided by engineer. */
+"Barcode placeholder" = "Barcode placeholder";
+
 /* CrowdNode */
 "Become part of a Dash Masternode with CrowdNode" = "Станьте частью мастерноды Dash вместе с CrowdNode";
 
@@ -407,6 +410,12 @@
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Отмена транзакции не повлияет на торговый ордер. Вскоре DASH поступит на ваш счёт в Coinbase.";
 
+/* DashSpend */
+"Card number" = "Card number";
+
+/* No comment provided by engineer. */
+"Card PIN" = "Card PIN";
+
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "Изменить";
 
@@ -421,6 +430,9 @@
 
 /* CoinJoin */
 "Change to Intermediate" = "Сменить на Средний";
+
+/* No comment provided by engineer. */
+"Check current balance" = "Check current balance";
 
 /* TimeSkew */
 "Check date & time settings" = "Check date & time settings";
@@ -880,6 +892,9 @@
 /* No comment provided by engineer. */
 "Face ID limit" = "Лимит Face ID";
 
+/* No comment provided by engineer. */
+"Failed to load barcode" = "Failed to load barcode";
+
 /* Coinbase */
 "Failed to start auth session" = "Не удалось запустить сеанс авторизации";
 
@@ -935,16 +950,16 @@
 "Find a user on the Dash Network" = "Найти пользователя в сети Dash";
 
 /* No comment provided by engineer. */
+"Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept DASH" = "Найти магазины, где принимают DASH";
 
 /* No comment provided by engineer. */
+"Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "Узнайте, где принимают Dash, где можно купить монеты и как получить доход с их помощью. ";
-
-/* No comment provided by engineer. */
-"Find merchants who accept Dash as payment." = "Найдите места где принимают DASH в качестве оплаты.";
-
-/* No comment provided by engineer. */
-"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Найдите, где купить или продать DASH и другие криптовалюты за наличные.";
 
 /* CrowdNode */
 "First deposit should be more than %@" = "Первый депозит должен быть не менее %@";
@@ -1030,6 +1045,9 @@
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
 
+/* No comment provided by engineer. */
+"Gift card purchase was rejected" = "Gift card purchase was rejected";
+
 /* DashSpend confirmation */
 "Gift card total" = "Gift card total";
 
@@ -1083,6 +1101,9 @@
 
 /* CrowdNode */
 "How to confirm your API Dash address" = "Как подтвердить свой API Dash адрес";
+
+/* No comment provided by engineer. */
+"How to use your gift card" = "How to use your gift card";
 
 /* No comment provided by engineer. */
 "HPMN Operator Keys" = "Ключи идентификаторов Evolution нод";
@@ -1170,6 +1191,12 @@
 
 /* CrowdNode Portal */
 "In process…" = "В процессе...";
+
+/* No comment provided by engineer. */
+"In store" = "In store";
+
+/* No comment provided by engineer. */
+"In the payment section of your checkout, select \"gift card\" and enter your card number and pin." = "In the payment section of your checkout, select \"gift card\" and enter your card number and pin.";
 
 /* No comment provided by engineer. */
 "Income" = "Доходы";
@@ -1706,6 +1733,9 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "Просмотр заказа";
 
+/* DashSpend */
+"Original purchase" = "Original purchase";
+
 /* No comment provided by engineer. */
 "Owner Address" = "Адрес владельца";
 
@@ -1869,6 +1899,9 @@
 "Please write it down" = "Пожалуйста, запишите её";
 
 /* No comment provided by engineer. */
+"Powered by" = "Powered by";
+
+/* No comment provided by engineer. */
 "Preview" = "Preview";
 
 /* No comment provided by engineer. */
@@ -2003,6 +2036,9 @@
 /* No comment provided by engineer. */
 "Request a username and say goodbye to numerical addresses" = "Request a username and say goodbye to numerical addresses";
 
+/* No comment provided by engineer. */
+"Request assistance and show the barcode on your screen for scanning." = "Request assistance and show the barcode on your screen for scanning.";
+
 /* Voting */
 "Request details" = "Узнать подробности";
 
@@ -2124,6 +2160,9 @@
 "Security Level" = "Уровень безопасности";
 
 /* No comment provided by engineer. */
+"See how to use this gift card" = "See how to use this gift card";
+
+/* No comment provided by engineer. */
 "See on Uphold" = "Посмотреть на Uphold";
 
 /* No comment provided by engineer. */
@@ -2147,6 +2186,9 @@
 
 /* Coinbase */
 "Select the coin" = "Выбрать монету";
+
+/* No comment provided by engineer. */
+"Self-checkout" = "Self-checkout";
 
 /* Sell */
 "Sell" = "Продать";
@@ -2365,11 +2407,14 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Категория";
 
+/* No comment provided by engineer. */
+"Tell the cashier that you'd like to pay with a gift card and share the card number and pin." = "Tell the cashier that you'd like to pay with a gift card and share the card number and pin.";
+
 /* Terms & conditions */
 "Terms & conditions" = "Terms & conditions";
 
 /* No comment provided by engineer. */
-"Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Тестовый Dash не обладает никакой ценностью в реальном мире, но вы можете обмениваться этими монетами с другими пользователями DashPay Alpha";
+"Test Dash is free and can be obtained from what is called a faucet." = "Test Dash is free and can be obtained from what is called a faucet.";
 
 /* No comment provided by engineer. */
 "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "Тестовый Dash распространяется бесплатно, его можно получить из так называемого крана.\nСкопируйте адрес с экрана \"Получить\" в вашем кошельке и нажмите на кнопку ниже, чтобы получить Dash.";
@@ -2735,6 +2780,9 @@
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "Посмотреть фразу восстановления";
+
+/* No comment provided by engineer. */
+"View transaction details" = "View transaction details";
 
 /* Voting */
 "Vote for All" = "Голосовать за все";

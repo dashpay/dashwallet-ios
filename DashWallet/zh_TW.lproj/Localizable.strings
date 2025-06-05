@@ -313,6 +313,9 @@
 /* Coinbase/Payment Methods */
 "Bank Wire" = "電匯";
 
+/* No comment provided by engineer. */
+"Barcode placeholder" = "Barcode placeholder";
+
 /* CrowdNode */
 "Become part of a Dash Masternode with CrowdNode" = "通過 CrowdNode 成為達世幣主節點的一部分";
 
@@ -407,6 +410,12 @@
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "取消此交易不會取消交易訂單。您很快就會在您的 Coinbase 帳戶中收到 DASH。";
 
+/* DashSpend */
+"Card number" = "Card number";
+
+/* No comment provided by engineer. */
+"Card PIN" = "Card PIN";
+
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "變更";
 
@@ -421,6 +430,9 @@
 
 /* CoinJoin */
 "Change to Intermediate" = "更改為中階";
+
+/* No comment provided by engineer. */
+"Check current balance" = "Check current balance";
 
 /* TimeSkew */
 "Check date & time settings" = "Check date & time settings";
@@ -880,6 +892,9 @@
 /* No comment provided by engineer. */
 "Face ID limit" = "Face ID 解鎖的限制";
 
+/* No comment provided by engineer. */
+"Failed to load barcode" = "Failed to load barcode";
+
 /* Coinbase */
 "Failed to start auth session" = "無法啟動身份驗證會話";
 
@@ -935,16 +950,16 @@
 "Find a user on the Dash Network" = "在達世幣網絡上查找用戶";
 
 /* No comment provided by engineer. */
+"Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept DASH" = "尋找接受達世幣付款的商家";
 
 /* No comment provided by engineer. */
+"Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "尋找接受達世幣的商家、可以在哪裡購買以及如何透過它賺取收入。";
-
-/* No comment provided by engineer. */
-"Find merchants who accept Dash as payment." = "查找接受達世幣作為付款的商家。";
-
-/* No comment provided by engineer. */
-"Find where to buy or sell DASH and other cryptocurrencies for cash." = "查找在哪裡購買或出售達世幣和其他加密貨幣以換取現金。";
 
 /* CrowdNode */
 "First deposit should be more than %@" = "首次存款應超過 %@";
@@ -1030,6 +1045,9 @@
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
 
+/* No comment provided by engineer. */
+"Gift card purchase was rejected" = "Gift card purchase was rejected";
+
 /* DashSpend confirmation */
 "Gift card total" = "Gift card total";
 
@@ -1083,6 +1101,9 @@
 
 /* CrowdNode */
 "How to confirm your API Dash address" = "如何確認您的 API 達世幣位址";
+
+/* No comment provided by engineer. */
+"How to use your gift card" = "How to use your gift card";
 
 /* No comment provided by engineer. */
 "HPMN Operator Keys" = "Evolution 節點 ID 金鑰";
@@ -1170,6 +1191,12 @@
 
 /* CrowdNode Portal */
 "In process…" = "進行中…";
+
+/* No comment provided by engineer. */
+"In store" = "In store";
+
+/* No comment provided by engineer. */
+"In the payment section of your checkout, select \"gift card\" and enter your card number and pin." = "In the payment section of your checkout, select \"gift card\" and enter your card number and pin.";
 
 /* No comment provided by engineer. */
 "Income" = "收入";
@@ -1706,6 +1733,9 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "訂單預覽";
 
+/* DashSpend */
+"Original purchase" = "Original purchase";
+
 /* No comment provided by engineer. */
 "Owner Address" = "所有者位址";
 
@@ -1869,6 +1899,9 @@
 "Please write it down" = "請寫下來";
 
 /* No comment provided by engineer. */
+"Powered by" = "Powered by";
+
+/* No comment provided by engineer. */
 "Preview" = "Preview";
 
 /* No comment provided by engineer. */
@@ -2003,6 +2036,9 @@
 /* No comment provided by engineer. */
 "Request a username and say goodbye to numerical addresses" = "Request a username and say goodbye to numerical addresses";
 
+/* No comment provided by engineer. */
+"Request assistance and show the barcode on your screen for scanning." = "Request assistance and show the barcode on your screen for scanning.";
+
 /* Voting */
 "Request details" = "索取詳情";
 
@@ -2124,6 +2160,9 @@
 "Security Level" = "安全等級";
 
 /* No comment provided by engineer. */
+"See how to use this gift card" = "See how to use this gift card";
+
+/* No comment provided by engineer. */
 "See on Uphold" = "參見 Uphold";
 
 /* No comment provided by engineer. */
@@ -2147,6 +2186,9 @@
 
 /* Coinbase */
 "Select the coin" = "選擇幣種";
+
+/* No comment provided by engineer. */
+"Self-checkout" = "Self-checkout";
 
 /* Sell */
 "Sell" = "出售";
@@ -2365,11 +2407,14 @@
 /* No comment provided by engineer. */
 "Tax Category" = "稅種";
 
+/* No comment provided by engineer. */
+"Tell the cashier that you'd like to pay with a gift card and share the card number and pin." = "Tell the cashier that you'd like to pay with a gift card and share the card number and pin.";
+
 /* Terms & conditions */
 "Terms & conditions" = "Terms & conditions";
 
 /* No comment provided by engineer. */
-"Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "測試用的達世幣在現實世界中沒有任何價值，但您可以與其他 DashPay Alpha 用戶一起發送和接收它。";
+"Test Dash is free and can be obtained from what is called a faucet." = "Test Dash is free and can be obtained from what is called a faucet.";
 
 /* No comment provided by engineer. */
 "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "測試用的達世幣是免費的，可以從所謂的水龍頭獲得。\n從錢包的接收畫面複製位址，然後點擊下面的按鈕以獲取您的達世幣。";
@@ -2735,6 +2780,9 @@
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "查看恢復詞組";
+
+/* No comment provided by engineer. */
+"View transaction details" = "View transaction details";
 
 /* Voting */
 "Vote for All" = "給所有人投票";

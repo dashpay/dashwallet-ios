@@ -1,6 +1,6 @@
 //
-//  Created by PT
-//  Copyright © 2023 Dash Core Group. All rights reserved.
+//  Created by Andrei Ashikhmin
+//  Copyright © 2025 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,15 +15,12 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+struct TxRowMetadata: Equatable {
+    var title: String?
+    var details: String?
+    // TODO: custom icon
+}
 
-#ifndef DWHomeViewControllerDelegate_h
-#define DWHomeViewControllerDelegate_h
-
-@protocol DWHomeViewControllerDelegate <NSObject>
-
-- (void)showPaymentsControllerWithActivePage:(NSInteger)pageIndex;
-
-@end
-
-#endif /* DWHomeViewControllerDelegate_h */
+protocol MetadataProvider {
+    var availableMetadata: [Data: TxRowMetadata] { get }
+}

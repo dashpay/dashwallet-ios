@@ -313,6 +313,9 @@
 /* Coinbase/Payment Methods */
 "Bank Wire" = "Transferência bancária";
 
+/* No comment provided by engineer. */
+"Barcode placeholder" = "Barcode placeholder";
+
 /* CrowdNode */
 "Become part of a Dash Masternode with CrowdNode" = "Torne-se parte de um Masternode Dash com CrowdNode";
 
@@ -407,6 +410,12 @@
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Cancelar esta transação não cancela a ordem de negociação. Você receberá DASH em sua conta Coinbase em breve.";
 
+/* DashSpend */
+"Card number" = "Card number";
+
+/* No comment provided by engineer. */
+"Card PIN" = "Card PIN";
+
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "Alterar";
 
@@ -421,6 +430,9 @@
 
 /* CoinJoin */
 "Change to Intermediate" = "Mudar para Intermediário";
+
+/* No comment provided by engineer. */
+"Check current balance" = "Check current balance";
 
 /* TimeSkew */
 "Check date & time settings" = "Check date & time settings";
@@ -880,6 +892,9 @@
 /* No comment provided by engineer. */
 "Face ID limit" = "Limite de ID de face";
 
+/* No comment provided by engineer. */
+"Failed to load barcode" = "Failed to load barcode";
+
 /* Coinbase */
 "Failed to start auth session" = "Falha ao iniciar a sessão de autenticação";
 
@@ -935,16 +950,16 @@
 "Find a user on the Dash Network" = "Encontre um usuário na rede Dash";
 
 /* No comment provided by engineer. */
+"Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept DASH" = "Encontrar comerciantes que aceitam DASH.";
 
 /* No comment provided by engineer. */
+"Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "Encontre comerciantes que aceitem Dash, descubra onde comprar e como gerar renda com ele. ";
-
-/* No comment provided by engineer. */
-"Find merchants who accept Dash as payment." = "Encontre comércios que aceitam Dash como pagamento.";
-
-/* No comment provided by engineer. */
-"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Encontre onde comprar ou vender DASH e outras criptomoedas por dinheiro.";
 
 /* CrowdNode */
 "First deposit should be more than %@" = "O primeiro depósito deve ser superior a %@";
@@ -1030,6 +1045,9 @@
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
 
+/* No comment provided by engineer. */
+"Gift card purchase was rejected" = "Gift card purchase was rejected";
+
 /* DashSpend confirmation */
 "Gift card total" = "Gift card total";
 
@@ -1083,6 +1101,9 @@
 
 /* CrowdNode */
 "How to confirm your API Dash address" = "Como confirmar seu endereço de API Dash";
+
+/* No comment provided by engineer. */
+"How to use your gift card" = "How to use your gift card";
 
 /* No comment provided by engineer. */
 "HPMN Operator Keys" = "Chaves de Identificação de Nós Evolution ";
@@ -1170,6 +1191,12 @@
 
 /* CrowdNode Portal */
 "In process…" = "Processando...";
+
+/* No comment provided by engineer. */
+"In store" = "In store";
+
+/* No comment provided by engineer. */
+"In the payment section of your checkout, select \"gift card\" and enter your card number and pin." = "In the payment section of your checkout, select \"gift card\" and enter your card number and pin.";
 
 /* No comment provided by engineer. */
 "Income" = "Receita";
@@ -1706,6 +1733,9 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "Visualização do pedido";
 
+/* DashSpend */
+"Original purchase" = "Original purchase";
+
 /* No comment provided by engineer. */
 "Owner Address" = "Endereço do Proprietário";
 
@@ -1869,6 +1899,9 @@
 "Please write it down" = "Por favor, anote";
 
 /* No comment provided by engineer. */
+"Powered by" = "Powered by";
+
+/* No comment provided by engineer. */
 "Preview" = "Preview";
 
 /* No comment provided by engineer. */
@@ -2003,6 +2036,9 @@
 /* No comment provided by engineer. */
 "Request a username and say goodbye to numerical addresses" = "Request a username and say goodbye to numerical addresses";
 
+/* No comment provided by engineer. */
+"Request assistance and show the barcode on your screen for scanning." = "Request assistance and show the barcode on your screen for scanning.";
+
 /* Voting */
 "Request details" = "Detalhes da solicitação";
 
@@ -2124,6 +2160,9 @@
 "Security Level" = "Nível de Segurança";
 
 /* No comment provided by engineer. */
+"See how to use this gift card" = "See how to use this gift card";
+
+/* No comment provided by engineer. */
 "See on Uphold" = "Veja no Uphold";
 
 /* No comment provided by engineer. */
@@ -2147,6 +2186,9 @@
 
 /* Coinbase */
 "Select the coin" = "Selecione a moeda";
+
+/* No comment provided by engineer. */
+"Self-checkout" = "Self-checkout";
 
 /* Sell */
 "Sell" = "Vender";
@@ -2365,11 +2407,14 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Categoria fiscal";
 
+/* No comment provided by engineer. */
+"Tell the cashier that you'd like to pay with a gift card and share the card number and pin." = "Tell the cashier that you'd like to pay with a gift card and share the card number and pin.";
+
 /* Terms & conditions */
 "Terms & conditions" = "Terms & conditions";
 
 /* No comment provided by engineer. */
-"Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "O Dash de teste não tem valor no mundo real, mas você pode enviá-lo e recebê-lo com outros usuários do DashPay Alpha.";
+"Test Dash is free and can be obtained from what is called a faucet." = "Test Dash is free and can be obtained from what is called a faucet.";
 
 /* No comment provided by engineer. */
 "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "O Dash de teste é gratuito e pode ser obtido através do que é chamado de \"faucet\". Copie um endereço da tela de Recebimento da sua carteira e clique no botão abaixo para obter seu Dash.";
@@ -2735,6 +2780,9 @@
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "Ver Frase de Recuperação";
+
+/* No comment provided by engineer. */
+"View transaction details" = "View transaction details";
 
 /* Voting */
 "Vote for All" = "Votar em todos";

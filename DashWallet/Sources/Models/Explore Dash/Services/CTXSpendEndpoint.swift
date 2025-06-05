@@ -74,7 +74,7 @@ extension CTXSpendEndpoint: TargetType, AccessTokenAuthorizable {
         case .refreshToken: return "refresh-token"
         case .purchaseGiftCard: return "gift-cards"
         case .getMerchant(let merchantId): return "merchants/\(merchantId)"
-        case .getGiftCard(let txid): return "gift-cards"
+        case .getGiftCard(_): return "gift-cards"
         }
     }
     
@@ -99,6 +99,8 @@ extension CTXSpendEndpoint: TargetType, AccessTokenAuthorizable {
             return .requestJSONEncodable(request)
         case .purchaseGiftCard(let request):
             return .requestJSONEncodable(request)
+        case .getGiftCard(let txid):
+            return .requestParameters(parameters: ["txid": txid], encoding: URLEncoding.queryString)
         default:
             return .requestPlain
         }

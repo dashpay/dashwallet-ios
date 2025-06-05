@@ -313,6 +313,9 @@
 /* Coinbase/Payment Methods */
 "Bank Wire" = "Bank Wire";
 
+/* No comment provided by engineer. */
+"Barcode placeholder" = "Barcode placeholder";
+
 /* CrowdNode */
 "Become part of a Dash Masternode with CrowdNode" = "Maging bahagi ng isang Dash Masternode na may CrowdNode";
 
@@ -407,6 +410,12 @@
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Ang pagkansela sa transaksyong ito ay hindi makakansela sa trade order. Makakatanggap ka ng DASH sa iyong Coinbase account sa ilang sandali.";
 
+/* DashSpend */
+"Card number" = "Card number";
+
+/* No comment provided by engineer. */
+"Card PIN" = "Card PIN";
+
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "Baguhin";
 
@@ -421,6 +430,9 @@
 
 /* CoinJoin */
 "Change to Intermediate" = "Baguhin sa Intermediate";
+
+/* No comment provided by engineer. */
+"Check current balance" = "Check current balance";
 
 /* TimeSkew */
 "Check date & time settings" = "Check date & time settings";
@@ -880,6 +892,9 @@
 /* No comment provided by engineer. */
 "Face ID limit" = "Face ID limit";
 
+/* No comment provided by engineer. */
+"Failed to load barcode" = "Failed to load barcode";
+
 /* Coinbase */
 "Failed to start auth session" = "Nabigong simulan ang auth session";
 
@@ -935,16 +950,16 @@
 "Find a user on the Dash Network" = "Maghanap ng gumagamit sa Network ng Dash";
 
 /* No comment provided by engineer. */
+"Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept DASH" = "Maghanap ng mga merchant na tumatanggap ng DASH";
 
 /* No comment provided by engineer. */
+"Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "Maghanap ng mga merchant na tumatanggap ng Dash, kung saan ito bibilhin at kung paano kumita gamit ito.";
-
-/* No comment provided by engineer. */
-"Find merchants who accept Dash as payment." = "Maghanap ng mga merchant na tumatanggap ng Dash bilang bayad.";
-
-/* No comment provided by engineer. */
-"Find where to buy or sell DASH and other cryptocurrencies for cash." = "Hanapin kung saan bibili o magbenta ng DASH at iba pang cryptocurrencies para sa cash.";
 
 /* CrowdNode */
 "First deposit should be more than %@" = "Ang unang deposito ay dapat na higit sa %@";
@@ -1030,6 +1045,9 @@
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
 
+/* No comment provided by engineer. */
+"Gift card purchase was rejected" = "Gift card purchase was rejected";
+
 /* DashSpend confirmation */
 "Gift card total" = "Gift card total";
 
@@ -1083,6 +1101,9 @@
 
 /* CrowdNode */
 "How to confirm your API Dash address" = "Paano kumpirmahin ang iyong API Dash address";
+
+/* No comment provided by engineer. */
+"How to use your gift card" = "How to use your gift card";
 
 /* No comment provided by engineer. */
 "HPMN Operator Keys" = "Mga key ng Evolution Node ID";
@@ -1170,6 +1191,12 @@
 
 /* CrowdNode Portal */
 "In process…" = "Pinoproseso…";
+
+/* No comment provided by engineer. */
+"In store" = "In store";
+
+/* No comment provided by engineer. */
+"In the payment section of your checkout, select \"gift card\" and enter your card number and pin." = "In the payment section of your checkout, select \"gift card\" and enter your card number and pin.";
 
 /* No comment provided by engineer. */
 "Income" = "Kita";
@@ -1706,6 +1733,9 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "Preview ng Order";
 
+/* DashSpend */
+"Original purchase" = "Original purchase";
+
 /* No comment provided by engineer. */
 "Owner Address" = "Address ng may-ari";
 
@@ -1869,6 +1899,9 @@
 "Please write it down" = "Paki-sulat sa ibaba";
 
 /* No comment provided by engineer. */
+"Powered by" = "Powered by";
+
+/* No comment provided by engineer. */
 "Preview" = "Preview";
 
 /* No comment provided by engineer. */
@@ -2003,6 +2036,9 @@
 /* No comment provided by engineer. */
 "Request a username and say goodbye to numerical addresses" = "Request a username and say goodbye to numerical addresses";
 
+/* No comment provided by engineer. */
+"Request assistance and show the barcode on your screen for scanning." = "Request assistance and show the barcode on your screen for scanning.";
+
 /* Voting */
 "Request details" = "Mga detalye ng kahilingan";
 
@@ -2124,6 +2160,9 @@
 "Security Level" = "Lebel ng seguridad";
 
 /* No comment provided by engineer. */
+"See how to use this gift card" = "See how to use this gift card";
+
+/* No comment provided by engineer. */
 "See on Uphold" = "Tingnan sa Uphold";
 
 /* No comment provided by engineer. */
@@ -2147,6 +2186,9 @@
 
 /* Coinbase */
 "Select the coin" = "Piliin ang barya";
+
+/* No comment provided by engineer. */
+"Self-checkout" = "Self-checkout";
 
 /* Sell */
 "Sell" = "magbenta";
@@ -2365,11 +2407,14 @@
 /* No comment provided by engineer. */
 "Tax Category" = "Kategorya ng Buwis";
 
+/* No comment provided by engineer. */
+"Tell the cashier that you'd like to pay with a gift card and share the card number and pin." = "Tell the cashier that you'd like to pay with a gift card and share the card number and pin.";
+
 /* Terms & conditions */
 "Terms & conditions" = "Terms & conditions";
 
 /* No comment provided by engineer. */
-"Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Ang Test Dash ay walang anumang halaga sa totoong mundo ngunit maaari mo itong ipadala at tanggapin kasama ng iba pang mga gumagamit ng DashPay Alpha.";
+"Test Dash is free and can be obtained from what is called a faucet." = "Test Dash is free and can be obtained from what is called a faucet.";
 
 /* No comment provided by engineer. */
 "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "Ang Test Dash ay libre at maaaring makuha mula sa tinatawag na gripo.\nKopyahin ang isang address mula sa Receive screen ng iyong wallet at i-click ang button sa ibaba upang makuha ang iyong Dash.";
@@ -2735,6 +2780,9 @@
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "Ipakita ang recovery phrase";
+
+/* No comment provided by engineer. */
+"View transaction details" = "View transaction details";
 
 /* Voting */
 "Vote for All" = "Bumoto para sa Lahat";

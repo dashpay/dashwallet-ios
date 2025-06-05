@@ -17,7 +17,6 @@
 
 import UIKit
 
-@objc(DWCrowdNodeAPYView)
 class CrowdNodeAPYView: UIView {
 
     override init(frame: CGRect) {

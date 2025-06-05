@@ -27,6 +27,7 @@ class PointOfUseDetailsViewController: UIViewController {
 
     @objc public var payWithDashHandler: (()->())?
     @objc var sellDashHandler: (()->())?
+    @objc var onGiftCardPurchased: ((Data)->())?
 
     private var contentView: UIView!
     private var detailsView: PointOfUseDetailsView!
@@ -225,7 +226,10 @@ extension PointOfUseDetailsViewController {
     
     private func showDashSpendPayScreen(justAuthenticated: Bool = false) {
         let hostingController = UIHostingController(
-            rootView: DashSpendPayScreen(merchant: self.pointOfUse, justAuthenticated: justAuthenticated)
+            rootView: DashSpendPayScreen(merchant: self.pointOfUse, justAuthenticated: justAuthenticated) { [weak self] txId in
+                // Navigate back to home and show gift card details
+                self?.onGiftCardPurchased?(txId)
+            }
         )
         
         self.navigationController?.pushViewController(hostingController, animated: true)

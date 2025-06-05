@@ -181,6 +181,7 @@ struct HomeViewContent<Content: View>: View {
     @State private var navigateToDashPayFlow: Bool = false
     @State private var navigateToCoinJoin: Bool = false
     @State private var skipToCreateUsername: Bool = false
+    @State private var giftCardTxId: Data? = nil
     
     @StateObject var viewModel: HomeViewModel
     #if DASHPAY
@@ -294,6 +295,13 @@ struct HomeViewContent<Content: View>: View {
         .sheet(item: $selectedTxDataItem) { item in
             TransactionDetailsSheet(item: item)
         }
+        .sheet(isPresented: .constant(giftCardTxId != nil), onDismiss: {
+            giftCardTxId = nil
+        }) {
+            if let txId = giftCardTxId {
+                GiftCardDetailsSheet(txId: txId)
+            }
+        }
         #if DASHPAY
         .sheet(isPresented: $shouldShowMixDialog, onDismiss: {
             viewModel.shouldShowMixDashDialog = false
@@ -405,10 +413,11 @@ struct HomeViewContent<Content: View>: View {
             }
             .frame(height: 80)
             
-        case .tx(let txItem):
+        case .tx(let txItem, let metadata):
             TransactionPreview(
-                title: txItem.stateTitle,
+                title: metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
+                details: metadata?.details?.isEmpty == false ? metadata?.details : nil,
                 icon: .custom(txItem.iconName),
                 dashAmount: txItem.signedDashAmount,
                 overrideFiatAmount: txItem.fiatAmount
@@ -432,6 +441,27 @@ struct HomeViewContent<Content: View>: View {
         }
     }
     #endif
+}
+
+struct GiftCardDetailsSheet: View {
+    var txId: Data
+    @State private var showBackButton: Bool = false
+    @State private var backNavigationRequested: Bool = false
+    
+    var body: some View {
+        BottomSheet(showBackButton: $showBackButton, onBackButtonPressed: {
+            backNavigationRequested = true
+        }) {
+            GiftCardDetailsView(
+                txId: txId,
+                backNavigationRequested: $backNavigationRequested,
+                onShowBackButton: { show in
+                    showBackButton = show
+                }
+            )
+        }
+        .background(Color.primaryBackground)
+    }
 }
 
 struct TransactionDetailsSheet: View {
@@ -470,7 +500,7 @@ struct TransactionDetailsSheet: View {
                     showBackButton = show
                 }
             )
-        case .tx(let txItem):
+        case .tx(let txItem, _):
             TXDetailVCWrapper(tx: txItem, navigateBack: $backNavigationRequested)
         }
     }

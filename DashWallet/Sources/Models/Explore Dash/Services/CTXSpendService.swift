@@ -124,9 +124,7 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, Ob
         )
         
         do {
-            let response: GiftCardResponse = try await CTXSpendAPI.shared.request(.purchaseGiftCard(request))
-            DSLogger.log("Gift card purchased successfully: \(response)")
-            return response
+            return try await CTXSpendAPI.shared.request(.purchaseGiftCard(request))
         } catch let error as CTXSpendError {
             DSLogger.log("Gift card purchase failed with CTXSpendError: \(error)")
             throw error

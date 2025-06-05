@@ -1,6 +1,6 @@
 //
-//  Created by Andrew Podkovyrin
-//  Copyright © 2021 Dash Core Group. All rights reserved.
+//  Created by Andrei Ashikhmin
+//  Copyright © 2025 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,19 +15,12 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+import Foundation
+import Combine
 
-NS_ASSUME_NONNULL_BEGIN
-
-
-@interface DWExploreHeaderView : UIStackView
-
-extern CGFloat const kExploreHeaderViewHeight;
-
-@property (nullable, nonatomic, strong) UIImage *image;
-@property (nullable, nonatomic, copy) NSString *title;
-@property (nullable, nonatomic, copy) NSString *subtitle;
-
-@end
-
-NS_ASSUME_NONNULL_END
+class CustomIconMetadataProvider: MetadataProvider {
+    private var cancellableBag = Set<AnyCancellable>()
+    var availableMetadata: [Data : TxRowMetadata] = [:]
+    
+    let metadataUpdated = PassthroughSubject<Data, Never>()
+}

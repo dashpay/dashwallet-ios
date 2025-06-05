@@ -29,12 +29,14 @@ struct DashSpendPayScreen: View {
     @State private var showCustomErrorDialog = false
     @State private var errorMessage = ""
     @State private var errorTitle = ""
+    let onPurchaseSuccess: ((Data) -> Void)?
     
-    init(merchant: ExplorePointOfUse, justAuthenticated: Bool = false) {
+    init(merchant: ExplorePointOfUse, justAuthenticated: Bool = false, onPurchaseSuccess: ((Data) -> Void)? = nil) {
         self.merchant = merchant
         self._viewModel = .init(wrappedValue: DashSpendPayViewModel(merchant: merchant))
         self.justAuthenticated = justAuthenticated
         self.showConfirmToast = false
+        self.onPurchaseSuccess = onPurchaseSuccess
     }
     
     var body: some View {
@@ -127,7 +129,7 @@ struct DashSpendPayScreen: View {
                     actionEnabled: viewModel.error == nil && !viewModel.showLimits && !viewModel.isLoading && viewModel.hasValidLimits,
                     inProgress: viewModel.isProcessingPayment,
                     actionHandler: {
-                        if !viewModel.isUserSignedIn() {
+                        if !viewModel.isUserSignedIn {
                             showSignInError()
                             return
                         }
@@ -211,6 +213,11 @@ struct DashSpendPayScreen: View {
         .onDisappear {
             viewModel.unsubscribeFromAll()
         }
+        .onChange(of: viewModel.isUserSignedIn) { isSignedIn in
+            if !isSignedIn {
+                presentationMode.wrappedValue.dismiss()
+            }
+        }
         .sheet(isPresented: $showConfirmationDialog) {
             let dialog = BottomSheet(
                 title: NSLocalizedString("Confirm", comment: "DashSpend"),
@@ -243,15 +250,10 @@ struct DashSpendPayScreen: View {
     private func purchaseGiftCard() {
         Task {
             do {
-                try await viewModel.purchaseGiftCardAndPay()
-                
-                // Close the confirmation dialog and show success toast
+                let txId = try await viewModel.purchaseGiftCardAndPay()
                 showConfirmationDialog = false
-                showConfirmToast = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    showConfirmToast = false
-                    presentationMode.wrappedValue.dismiss()
-                }
+                presentationMode.wrappedValue.dismiss()
+                onPurchaseSuccess?(txId)
             } catch let error as CTXSpendError {
                 showConfirmationDialog = false
                 errorTitle = NSLocalizedString("Purchase Failed", comment: "DashSpend")

@@ -28,10 +28,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
     private let sendCoinsService = SendCoinsService()
 
     private var merchantId: String = ""
+    private var merchantUrl: String? = nil
     private(set) var amount: Decimal = 0
     private(set) var savingsFraction: Decimal = 0.0
     @Published private(set) var isLoading = false
     @Published private(set) var isProcessingPayment = false
+    @Published private(set) var isUserSignedIn = false
     
     let currencySymbol: String = {
         let locale = Locale.current as NSLocale
@@ -89,16 +91,28 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
     init(merchant: ExplorePointOfUse) {
         merchantTitle = merchant.name
         merchantIconUrl = merchant.logoLocation ?? ""
+        merchantUrl = merchant.website
         savingsFraction = Decimal(merchant.merchant?.toSavingsFraction() ?? 0.0)
         
         if let merchantId = merchant.merchant?.merchantId {
             self.merchantId = merchantId
         }
+        
+        super.init()
+        
+        // Initialize with current sign-in state
+        isUserSignedIn = ctxSpendService.isUserSignedIn
     }
     
     func subscribeToUpdates() {
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
             .sink { [weak self] _ in self?.refreshBalance() }
+            .store(in: &cancellableBag)
+        
+        ctxSpendService.$isUserSignedIn
+            .sink { [weak self] isSignedIn in
+                self?.isUserSignedIn = isSignedIn
+            }
             .store(in: &cancellableBag)
         
         if CoinJoinService.shared.mixingState.isInProgress {
@@ -118,25 +132,14 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         }
     }
     
-    func purchaseGiftCardAndPay() async throws {
+    func purchaseGiftCardAndPay() async throws -> Data {
         isProcessingPayment = true
         defer { isProcessingPayment = false }
         
         let response = try await purchaseGiftCardAPI()
         
-        // Success! Log the response
-        DSLogger.log("============ GIFT CARD PURCHASE SUCCESSFUL ============")
-        DSLogger.log("Merchant: \(response.merchantName)")
-        DSLogger.log("Amount: \(response.paymentFiatCurrency) \(response.paymentFiatAmount)")
-        DSLogger.log("Dash Amount: \(response.paymentCryptoAmount)")
-        DSLogger.log("Dash Payment URL: \(response.paymentUrls.first?.value ?? "none")")
-        DSLogger.log("Payment ID: \(response.paymentId)")
-        DSLogger.log("Created At: \(response.created)")
-        DSLogger.log("Status: \(response.status)")
-        DSLogger.log("====================================================")
-        
         // Process the payment using the payment URL
-        guard let paymentUrlString = response.paymentUrls.first?.value else {
+        guard let paymentUrlString = response.paymentUrls?.first?.value else {
             throw CTXSpendError.paymentProcessingError("No payment URL received")
         }
         
@@ -145,10 +148,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         // Payment successful - save gift card information
         DSLogger.log("Payment transaction completed: \(transaction.txHashHexString)")
         saveGiftCardDummy(txHashData: transaction.txHashData, giftCardId: response.paymentId)
-    }
-    
-    func isUserSignedIn() -> Bool {
-        return ctxSpendService.isUserSignedIn
+        
+        return transaction.txHashData
     }
     
     func contactCTXSupport() {
@@ -254,6 +255,16 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
     private func saveGiftCardDummy(txHashData: Data, giftCardId: String) {
         DSLogger.log("Gift card saved - txId: \(txHashData.hexEncodedString()), giftCardId: \(giftCardId)")
         
-        // TODO: save dummy to SQLite
+        let giftCard = GiftCard(
+            txId: txHashData,
+            merchantName: merchantTitle,
+            merchantUrl: merchantUrl,
+            price: amount,
+            note: giftCardId // Store payment ID in note field temporarily
+        )
+        
+        Task {
+            await GiftCardsDAOImpl.shared.create(dto: giftCard)
+        }
     }
 }
