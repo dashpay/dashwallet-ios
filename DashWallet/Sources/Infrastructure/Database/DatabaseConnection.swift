@@ -70,7 +70,7 @@ extension DatabaseConnection {
     }
 
     static func migrations() -> [Migration] {
-        [SeedDB(), AddGiftCardsTable()]
+        [SeedDB(), AddGiftCardsTable(), AddIconBitmapsTable()]
     }
 
     static func migrationsBundle() -> Bundle {

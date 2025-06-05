@@ -450,7 +450,8 @@ extension HomeViewModel {
 
 extension HomeViewModel {
     private func setupMetadataProviders() {
-//        let privateMemoProvider = PrivateMemoProvider()
+        let customIconProvider = CustomIconMetadataProvider.shared
+        // TODO: update tx icons
 //        privateMemoProvider.metadataUpdated
 //            .receive(on: self.queue)
 //            .sink { [weak self] txHash in
@@ -463,7 +464,7 @@ extension HomeViewModel {
 //            }
 //            .store(in: &cancellableBag)
 //
-//        self.metadataProviders = [privateMemoProvider]
+        self.metadataProviders = [customIconProvider]
     }
 }
 

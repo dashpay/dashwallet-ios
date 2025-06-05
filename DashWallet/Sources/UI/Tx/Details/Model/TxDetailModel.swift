@@ -23,7 +23,7 @@ import Foundation
 class TxDetailModel: NSObject {
     var transaction: Transaction
     var transactionId: String
-    var txTaxCategory: TxUserInfoTaxCategory
+    var txTaxCategory: TxMetadataTaxCategory
 
     var title: String {
         direction.title
@@ -61,11 +61,11 @@ class TxDetailModel: NSObject {
         txTaxCategory = txTaxCategory.nextTaxCategory
         let txHash = transaction.txHashData
 
-        var txUserInfo = transaction.userInfo ?? TxUserInfo(txHash: txHash, taxCategory: txTaxCategory)
+        var txUserInfo = transaction.userInfo ?? TransactionMetadata(txHash: txHash, taxCategory: txTaxCategory)
         txUserInfo.taxCategory = txTaxCategory
 
         // TODO: Move it to Domain layer
-        TxUserInfoDAOImpl.shared.update(dto: txUserInfo)
+        TransactionMetadataDAOImpl.shared.update(dto: txUserInfo)
     }
 
     func copyTransactionIdToPasteboard() -> Bool {

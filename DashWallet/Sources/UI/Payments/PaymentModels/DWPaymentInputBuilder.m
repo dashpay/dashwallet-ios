@@ -124,6 +124,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (DWPaymentInput *)paymentInputWithURL:(NSURL *)url {
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DSPaymentRequest *request = nil;
+    DWPaymentInputSource sourceType = DWPaymentInputSource_URL;
+
     if ([url.scheme isEqualToString:@"pay"]) {
         NSString *path = url.absoluteString;
         if ([path hasPrefix:@"pay:"]) {
@@ -135,7 +137,12 @@ NS_ASSUME_NONNULL_BEGIN
         request = [DSPaymentRequest requestWithURL:url onChain:chain];
     }
 
-    DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_URL];
+    // Check if the request contains a valid Dash address to determine if this is a deep link
+    if (request && [request.paymentAddress isValidDashAddressOnChain:chain]) {
+        sourceType = DWPaymentInputSource_DeepLink;
+    }
+
+    DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:sourceType];
     paymentInput.request = request;
 
     return paymentInput;

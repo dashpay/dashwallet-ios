@@ -20,7 +20,7 @@ import Foundation
 // MARK: - TxUserInfoTaxCategory
 
 @objc
-enum TxUserInfoTaxCategory: Int {
+enum TxMetadataTaxCategory: Int {
     /// Unknown
     case unknown
 
@@ -51,15 +51,15 @@ enum TxUserInfoTaxCategory: Int {
 class Taxes: NSObject {
 
     var addressesUserInfos: AddressUserInfoDAO = AddressUserInfoDAOImpl()
-    var txUserInfos: TxUserInfoDAO = TxUserInfoDAOImpl.shared
+    var txUserInfos: TransactionMetadataDAO = TransactionMetadataDAOImpl.shared
 
     @objc
-    func mark(address: String, with taxCategory: TxUserInfoTaxCategory) {
+    func mark(address: String, with taxCategory: TxMetadataTaxCategory) {
         addressesUserInfos.create(dto: AddressUserInfo(address: address, taxCategory: taxCategory))
     }
 
-    func taxCategory(for tx: DSTransaction) -> TxUserInfoTaxCategory {
-        var taxCategory: TxUserInfoTaxCategory = tx.defaultTaxCategory()
+    func taxCategory(for tx: DSTransaction) -> TxMetadataTaxCategory {
+        var taxCategory: TxMetadataTaxCategory = tx.defaultTaxCategory()
 
         for outputAddress in tx.outputAddresses {
             if let address = outputAddress as? String, let txCategory = self.taxCategory(for: address) {
@@ -80,11 +80,11 @@ class Taxes: NSObject {
         return taxCategory
     }
 
-    func taxCategory(for tx: Transaction) -> TxUserInfoTaxCategory {
+    func taxCategory(for tx: Transaction) -> TxMetadataTaxCategory {
         taxCategory(for: tx.tx)
     }
 
-    func taxCategory(for address: String) -> TxUserInfoTaxCategory? {
+    func taxCategory(for address: String) -> TxMetadataTaxCategory? {
         addressesUserInfos.get(by: address)?.taxCategory
     }
 
