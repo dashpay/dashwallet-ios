@@ -1051,6 +1051,9 @@
 /* DashSpend confirmation */
 "Gift card total" = "Gift card total";
 
+/* DashSpend */
+"Gift card · %@" = "Gift card · %@";
+
 /* No comment provided by engineer. */
 "Go to CrowdNode website" = "Ga naar de website van CrowdNode";
 

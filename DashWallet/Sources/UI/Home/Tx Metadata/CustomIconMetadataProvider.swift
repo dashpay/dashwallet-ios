@@ -26,39 +26,80 @@ class CustomIconMetadataProvider: MetadataProvider {
     private var cancellableBag = Set<AnyCancellable>()
     private let iconBitmapDao = IconBitmapDAOImpl.shared
     private let metadataDao = TransactionMetadataDAOImpl.shared
-    var availableMetadata: [Data : TxRowMetadata] = [:]
     
+    var availableMetadata: [Data: TxRowMetadata] = [:]
     let metadataUpdated = PassthroughSubject<Data, Never>()
     
     init() {
-        loadMetadata()
+        Task {
+            await loadMetadata()
+        }
         
-        iconBitmapDao.observeBitmaps()
+        self.metadataDao.$lastChange
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] bitmaps in
-                guard let self = self else { return }
-                
-                // Update metadata with new icons
-                for (iconId, iconBitmap) in bitmaps {
-                    if let image = UIImage(data: iconBitmap.imageData) {
-                        // Find transactions that use this icon
-                        for (txHash, metadata) in availableMetadata { // TODO: create new metatada if needed
-                            if let customIconId = metadata.customIconId, customIconId == iconId {
-                                var updatedMetadata = metadata
-                                updatedMetadata.icon = image
-                                availableMetadata[txHash] = updatedMetadata
-                                metadataUpdated.send(txHash)
-                            }
-                        }
+            .sink { [weak self] change in
+                guard let self = self, let change = change else { return }
+
+                switch change {
+                case .created(let metadata), .updated(let metadata, _):
+                    Task {
+                        await self.onMetadataUpdated(metadata: metadata)
                     }
+
+                case .deleted(let metadata):
+                    availableMetadata.removeValue(forKey: metadata.txHash)
+                    metadataUpdated.send(metadata.txHash)
+
+                case .deletedAll:
+                    for metadata in availableMetadata {
+                        metadataUpdated.send(metadata.key)
+                    }
+                    availableMetadata = [:]
                 }
             }
             .store(in: &cancellableBag)
     }
     
-    private func loadMetadata() {
-        // TODO: Load existing metadata if needed
-        // This would typically load from transaction metadata that references icon IDs
+    private func loadMetadata() async {
+        let customIcons = metadataDao.getCustomIcons()
+
+        for iconMetadata in customIcons {
+            guard let iconId = iconMetadata.customIconId else { continue }
+            let bitmap = await iconBitmapDao.getBitmap(id: iconId)
+            guard let data = bitmap?.imageData, let icon = UIImage(data: data) else { continue }
+            var txRowMetadata = availableMetadata[iconMetadata.txHash]
+
+            if txRowMetadata != nil {
+                txRowMetadata!.iconId = iconMetadata.customIconId
+                txRowMetadata!.icon = icon
+            } else {
+                txRowMetadata = TxRowMetadata(
+                    iconId: iconMetadata.customIconId,
+                    icon: icon
+                )
+            }
+
+            availableMetadata[iconMetadata.txHash] = txRowMetadata
+        }
+    }
+    
+    private func onMetadataUpdated(metadata: TransactionMetadata) async {
+        guard let iconId = metadata.customIconId else { return }
+        let bitmap = await iconBitmapDao.getBitmap(id: iconId)
+        guard let data = bitmap?.imageData, let icon = UIImage(data: data) else { return }
+        var txRowMetadata = availableMetadata[metadata.txHash]
+
+        if txRowMetadata != nil {
+            txRowMetadata!.details = metadata.memo
+        } else {
+            txRowMetadata = TxRowMetadata(
+                title: nil,
+                details: metadata.memo
+            )
+        }
+
+        availableMetadata[metadata.txHash] = txRowMetadata  
+        metadataUpdated.send(metadata.txHash)
     }
     
     func updateIcon(txId: Data, iconUrl: String) {
@@ -100,7 +141,7 @@ class CustomIconMetadataProvider: MetadataProvider {
                 metadataDao.update(dto: metadata)
                 
                 var txRowMetadata = availableMetadata[txId] ?? TxRowMetadata(title: nil, details: nil)
-                txRowMetadata.customIconId = hashData
+                txRowMetadata.iconId = hashData
                 txRowMetadata.icon = resizedImage
                 availableMetadata[txId] = txRowMetadata
                 

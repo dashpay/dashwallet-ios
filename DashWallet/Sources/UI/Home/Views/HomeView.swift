@@ -418,7 +418,8 @@ struct HomeViewContent<Content: View>: View {
                 title: metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
                 details: metadata?.details?.isEmpty == false ? metadata?.details : nil,
-                icon: .custom(txItem.iconName),
+                icon: metadata?.icon == nil ? .custom(txItem.iconName) : .image(metadata!.icon!, effect: .rounded),
+                secondaryIcon: metadata?.icon == nil ? nil : metadata?.secondaryIcon == nil ? .custom(txItem.iconName) : metadata?.secondaryIcon,
                 dashAmount: txItem.signedDashAmount,
                 overrideFiatAmount: txItem.fiatAmount
             ) {

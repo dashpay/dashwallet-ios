@@ -508,6 +508,10 @@
 		7503643B2C89CFB70029EC0D /* CoinJoinProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */; };
 		7503643E2C89D49A0029EC0D /* CoinJoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7503643D2C89D49A0029EC0D /* CoinJoinService.swift */; };
 		7503643F2C89D49A0029EC0D /* CoinJoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7503643D2C89D49A0029EC0D /* CoinJoinService.swift */; };
+		75050CCE2DF2CB0F00F586D6 /* GiftCardMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75050CCD2DF2CB0E00F586D6 /* GiftCardMetadataProvider.swift */; };
+		75050CCF2DF2CB0F00F586D6 /* GiftCardMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75050CCD2DF2CB0E00F586D6 /* GiftCardMetadataProvider.swift */; };
+		75050CD12DF2FCC200F586D6 /* ServiceName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75050CD02DF2FCBF00F586D6 /* ServiceName.swift */; };
+		75050CD22DF2FCC200F586D6 /* ServiceName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75050CD02DF2FCBF00F586D6 /* ServiceName.swift */; };
 		750CED602C94BFD7000FB837 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750CED5F2C94BFD7000FB837 /* SettingsViewModel.swift */; };
 		750CED612C94BFD7000FB837 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750CED5F2C94BFD7000FB837 /* SettingsViewModel.swift */; };
 		750CEFA12CCA6EA100E87A32 /* TextInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750CEFA02CCA6EA100E87A32 /* TextInput.swift */; };
@@ -2438,6 +2442,8 @@
 		7502A4862AE401EF00ACDDD3 /* UsernameVotingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameVotingViewController.swift; sourceTree = "<group>"; };
 		750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinProgressView.swift; sourceTree = "<group>"; };
 		7503643D2C89D49A0029EC0D /* CoinJoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinService.swift; sourceTree = "<group>"; };
+		75050CCD2DF2CB0E00F586D6 /* GiftCardMetadataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardMetadataProvider.swift; sourceTree = "<group>"; };
+		75050CD02DF2FCBF00F586D6 /* ServiceName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceName.swift; sourceTree = "<group>"; };
 		7509C10E1AF3076100D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		7509C1121AF3720100D03FD5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		750C6CC01B5C8EB60038AAE9 /* el */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = el; path = el.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -4622,7 +4628,7 @@
 		2A9CEBB622E1FA0000A50237 /* Home */ = {
 			isa = PBXGroup;
 			children = (
-				7549BE552DEAECA5004F0BAF /* Custom Icons */,
+				7549BE552DEAECA5004F0BAF /* Tx Metadata */,
 				2A1A60B92674083B003DAC65 /* Syncing Views */,
 				2A913E7223A2EAEF006A2A59 /* Protocols */,
 				2A2CD6E522F46D1A008C7BC9 /* Models */,
@@ -5190,6 +5196,7 @@
 				4709C316287EA22600B4BD48 /* DAO */,
 				4709C314287EA11900B4BD48 /* TransactionMetadata.swift */,
 				7549BE592DEAF50D004F0BAF /* IconBitmap.swift */,
+				75050CD02DF2FCBF00F586D6 /* ServiceName.swift */,
 			);
 			path = "Tx Metadata";
 			sourceTree = "<group>";
@@ -6112,12 +6119,13 @@
 			path = DashSpend;
 			sourceTree = "<group>";
 		};
-		7549BE552DEAECA5004F0BAF /* Custom Icons */ = {
+		7549BE552DEAECA5004F0BAF /* Tx Metadata */ = {
 			isa = PBXGroup;
 			children = (
+				75050CCD2DF2CB0E00F586D6 /* GiftCardMetadataProvider.swift */,
 				7549BE562DEAECB0004F0BAF /* CustomIconMetadataProvider.swift */,
 			);
-			path = "Custom Icons";
+			path = "Tx Metadata";
 			sourceTree = "<group>";
 		};
 		754C27C62CC3C0B900BA7B9F /* Usernames */ = {
@@ -8785,6 +8793,7 @@
 				C956AF2D2A5CEA1F002FAB75 /* SheetViewController.swift in Sources */,
 				C9C1335A2A561FFA00B66651 /* PasteboardContentView.swift in Sources */,
 				2A7A7BD02348A34800451078 /* DWSecurityMenuModel.m in Sources */,
+				75050CCF2DF2CB0F00F586D6 /* GiftCardMetadataProvider.swift in Sources */,
 				C909615929F29C9200002D82 /* KeysOverviewCell.swift in Sources */,
 				2ACCD86E2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m in Sources */,
 				114D16B829828BCC009A124C /* OnlineAccountConfirmationController.swift in Sources */,
@@ -8897,6 +8906,7 @@
 				47AF18082907B7880025803E /* BaseAmountModel.swift in Sources */,
 				4709C312287E78BD00B4BD48 /* SeedDB.swift in Sources */,
 				2ACCD8F0231ECDE000A96B62 /* DWPinField.m in Sources */,
+				75050CD22DF2FCC200F586D6 /* ServiceName.swift in Sources */,
 				2AD1CEA222DFC80900C99324 /* DWCenteredScrollView.m in Sources */,
 				7549BE5D2DEAF55B004F0BAF /* IconBitmapDAO.swift in Sources */,
 				2A9172C425233DC50024B4C5 /* DWPhraseRepairViewController.m in Sources */,
@@ -9283,6 +9293,7 @@
 				C943B58B2A40ED6F00AF23C5 /* DWInputUsernameViewController.m in Sources */,
 				C9D2C6E62A320AA000D15901 /* CrowdNodeEndpoint.swift in Sources */,
 				C9D2C6E72A320AA000D15901 /* ServiceEntryPointModel.swift in Sources */,
+				75050CD12DF2FCC200F586D6 /* ServiceName.swift in Sources */,
 				C943B4B72A40A54600AF23C5 /* DWBaseContactsModel.m in Sources */,
 				C9D2C6E82A320AA000D15901 /* ExploreDash.swift in Sources */,
 				C9D2C6EB2A320AA000D15901 /* UpholdAmountModel.swift in Sources */,
@@ -9463,6 +9474,7 @@
 				C9D2C7602A320AA000D15901 /* DWAppGroupOptions.m in Sources */,
 				C943B5352A40A54600AF23C5 /* DWNotificationsViewController.m in Sources */,
 				C9D2C7612A320AA000D15901 /* DWTransactionListDataItemObject.m in Sources */,
+				75050CCE2DF2CB0F00F586D6 /* GiftCardMetadataProvider.swift in Sources */,
 				C943B3362A408CED00AF23C5 /* DWEditProfileBaseCell.m in Sources */,
 				C930784A2A6AD52400906E4B /* UpholdConfirmTransferModel.swift in Sources */,
 				C9D2C7622A320AA000D15901 /* DWUpholdAPIProvider.m in Sources */,

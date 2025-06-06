@@ -62,6 +62,13 @@ struct ModalDialog: View {
                         .clipShape(Circle())
                         .padding(.top, 12)
                         .padding(.bottom, 16)
+                case .image(let image, let maxHeight):
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 48, height: 48)
+                        .padding(.top, 12)
+                        .padding(.bottom, 16)
                 }
             }
             

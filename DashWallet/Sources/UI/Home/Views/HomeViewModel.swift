@@ -384,6 +384,18 @@ class HomeViewModel: ObservableObject {
                     if finalMetadata?.details == nil {
                         finalMetadata?.details = metadata.details
                     }
+                    
+                    if finalMetadata?.icon == nil {
+                        finalMetadata?.icon = metadata.icon
+                    }
+                    
+                    if finalMetadata?.iconId == nil {
+                        finalMetadata?.iconId = metadata.iconId
+                    }
+                    
+                    if finalMetadata?.secondaryIcon == nil {
+                        finalMetadata?.secondaryIcon = metadata.secondaryIcon
+                    }
                 }
             }
         }
@@ -450,21 +462,23 @@ extension HomeViewModel {
 
 extension HomeViewModel {
     private func setupMetadataProviders() {
-        let customIconProvider = CustomIconMetadataProvider.shared
-        // TODO: update tx icons
-//        privateMemoProvider.metadataUpdated
-//            .receive(on: self.queue)
-//            .sink { [weak self] txHash in
-//                guard let self = self else { return }
-//
-//                let wallet = DWEnvironment.sharedInstance().currentWallet
-//                if let transaction = wallet.transaction(forHash: txHash.withUnsafeBytes { $0.load(as: UInt256.self) }) {
-//                    self.onTransactionStatusChanged(tx: transaction)
-//                }
-//            }
-//            .store(in: &cancellableBag)
-//
-        self.metadataProviders = [customIconProvider]
+        let giftCardMetadata = GiftCardMetadataProvider.shared
+        let customIconMetadata = CustomIconMetadataProvider.shared
+        self.metadataProviders = [giftCardMetadata, customIconMetadata]
+        
+        for provider in self.metadataProviders {
+            provider.metadataUpdated
+                .receive(on: self.queue)
+                .sink { [weak self] txHash in
+                    guard let self = self else { return }
+
+                    let wallet = DWEnvironment.sharedInstance().currentWallet
+                    if let transaction = wallet.transaction(forHash: txHash.withUnsafeBytes { $0.load(as: UInt256.self) }) {
+                        self.onTransactionStatusChanged(tx: transaction)
+                    }
+                }
+                .store(in: &cancellableBag)
+        }
     }
 }
 

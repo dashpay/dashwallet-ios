@@ -1,4 +1,4 @@
-//
+//  
 //  Created by Andrei Ashikhmin
 //  Copyright © 2025 Dash Core Group. All rights reserved.
 //
@@ -15,25 +15,14 @@
 //  limitations under the License.
 //
 
-import UIKit
-import Combine
 
-struct TxRowMetadata: Equatable {
-    var title: String?
-    var details: String?
-    var iconId: Data?
-    var icon: UIImage?
-    var secondaryIcon: IconName?
-    
-    static func == (lhs: TxRowMetadata, rhs: TxRowMetadata) -> Bool {
-        return lhs.title == rhs.title &&
-               lhs.details == rhs.details &&
-               lhs.iconId == rhs.iconId &&
-               lhs.secondaryIcon == rhs.secondaryIcon
-    }
+import Foundation
+
+enum ServiceName: String, CaseIterable {
+    case crowdNode = "crowdnode"
+    case uphold = "uphold"
+    case coinbase = "coinbase"
+    case ctxSpend = "ctxspend"
+    case unknown = "unknown"
 }
 
-protocol MetadataProvider {
-    var availableMetadata: [Data: TxRowMetadata] { get }
-    var metadataUpdated: PassthroughSubject<Data, Never> { get }
-}
