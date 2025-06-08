@@ -310,12 +310,6 @@ extension HomeViewController: HomeViewDelegate {
         let action = ShortcutAction(type: .createUsername)
         performAction(for: action, sender: nil)
     }
-    
-    func homeViewShowTxFilter() {
-        showTxFilter(displayModeCallback: { [weak self] mode in
-            self?.viewModel.displayMode = mode
-        }, shouldShowRewards: true)
-    }
 
     func homeViewShowSyncingStatus() {
         let controller = SyncingAlertViewController()

@@ -22,7 +22,6 @@ import Combine
 // MARK: - HomeViewDelegate
 
 protocol HomeViewDelegate: AnyObject {
-    func homeViewShowTxFilter()
     func homeViewShowSyncingStatus()
     func homeViewShowCoinJoin()
     
@@ -177,6 +176,7 @@ struct TxPreviewModel: Identifiable, Equatable {
 struct HomeViewContent<Content: View>: View {
     @State private var selectedTxDataItem: TransactionListDataItem? = nil
     @State private var shouldShowMixDialog: Bool = false
+    @State private var showFilterDialog: Bool = false
     @State private var shouldShowJoinDashPayInfo: Bool = false
     @State private var navigateToDashPayFlow: Bool = false
     @State private var navigateToCoinJoin: Bool = false
@@ -259,7 +259,7 @@ struct HomeViewContent<Content: View>: View {
                     #endif
                     
                     SyncingHeaderView(onFilterTap: {
-                        delegate?.homeViewShowTxFilter()
+                        showFilterDialog = true
                     }, onSyncTap: {
                         delegate?.homeViewShowSyncingStatus()
                     })
@@ -300,6 +300,20 @@ struct HomeViewContent<Content: View>: View {
         }) {
             if let txId = giftCardTxId {
                 GiftCardDetailsSheet(txId: txId)
+            }
+        }
+        .sheet(isPresented: $showFilterDialog) {
+            let dialog = TransactionFilterDialog(
+                selectedFilter: .constant(viewModel.displayMode),
+                onFilterSelected: { mode in
+                    viewModel.displayMode = mode
+                }
+            )
+            
+            if #available(iOS 16.0, *) {
+                dialog.presentationDetents([.height(350)])
+            } else {
+                dialog
             }
         }
         #if DASHPAY

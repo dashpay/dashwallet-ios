@@ -373,34 +373,35 @@ class HomeViewModel: ObservableObject {
         var finalMetadata: TxRowMetadata? = nil
 
         for provider in self.metadataProviders {
-            if let metadata = provider.availableMetadata[txId] {
-                if finalMetadata == nil {
-                    finalMetadata = metadata
-                } else {
-                    if finalMetadata?.title == nil {
-                        finalMetadata?.title = metadata.title
-                    }
+            // Safely access the provider's metadata
+            let providerMetadata = provider.availableMetadata
+            guard let metadata = providerMetadata[txId] else { continue }
+            
+            if finalMetadata == nil {
+                finalMetadata = metadata
+            } else {
+                if finalMetadata?.title == nil {
+                    finalMetadata?.title = metadata.title
+                }
 
-                    if finalMetadata?.details == nil {
-                        finalMetadata?.details = metadata.details
-                    }
-                    
-                    if finalMetadata?.icon == nil {
-                        finalMetadata?.icon = metadata.icon
-                    }
-                    
-                    if finalMetadata?.iconId == nil {
-                        finalMetadata?.iconId = metadata.iconId
-                    }
-                    
-                    if finalMetadata?.secondaryIcon == nil {
-                        finalMetadata?.secondaryIcon = metadata.secondaryIcon
-                    }
+                if finalMetadata?.details == nil {
+                    finalMetadata?.details = metadata.details
+                }
+                
+                if finalMetadata?.icon == nil {
+                    finalMetadata?.icon = metadata.icon
+                }
+                
+                if finalMetadata?.iconId == nil {
+                    finalMetadata?.iconId = metadata.iconId
+                }
+                
+                if finalMetadata?.secondaryIcon == nil {
+                    finalMetadata?.secondaryIcon = metadata.secondaryIcon
                 }
             }
         }
 
-        print("METADATA: resolved finalMetadata: \(String(describing: finalMetadata))")
         return finalMetadata
     }
 }

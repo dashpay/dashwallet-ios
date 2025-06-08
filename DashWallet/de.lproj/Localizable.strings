@@ -935,7 +935,7 @@
 "Filter" = "Filter";
 
 /* No comment provided by engineer. */
-"Filter Transactions" = "Transaktionen filtern";
+"Filter transactions" = "Filter transactions";
 
 /* No comment provided by engineer. */
 "Filtered by" = "Sortiert nach";
@@ -1041,6 +1041,9 @@
 
 /* Explore Dash: Filters */
 "Gift Card" = "Gutscheinkarte";
+
+/* No comment provided by engineer. */
+"Gift card" = "Gift card";
 
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
@@ -2092,9 +2095,6 @@
 
 /* No comment provided by engineer. */
 "Reward" = "Belohnung";
-
-/* No comment provided by engineer. */
-"Rewards" = "Belohnungen";
 
 /* No comment provided by engineer. */
 "Save" = "Speichern";

@@ -935,7 +935,7 @@
 "Filter" = "Menyaring";
 
 /* No comment provided by engineer. */
-"Filter Transactions" = "Saring Transaksi";
+"Filter transactions" = "Filter transactions";
 
 /* No comment provided by engineer. */
 "Filtered by" = "Difilter menurut";
@@ -1041,6 +1041,9 @@
 
 /* Explore Dash: Filters */
 "Gift Card" = "Kartu ucapan";
+
+/* No comment provided by engineer. */
+"Gift card" = "Gift card";
 
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
@@ -2092,9 +2095,6 @@
 
 /* No comment provided by engineer. */
 "Reward" = "Hadiah";
-
-/* No comment provided by engineer. */
-"Rewards" = "Hadiah";
 
 /* No comment provided by engineer. */
 "Save" = "Simpan";

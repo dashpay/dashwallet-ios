@@ -4,14 +4,13 @@ import UIKit
 struct TransactionFilterDialog: View {
     @Environment(\.presentationMode) private var presentationMode
     @Binding var selectedFilter: HomeTxDisplayMode
-    var shouldShowRewards: Bool
     var onFilterSelected: (HomeTxDisplayMode) -> Void
     
     private let filterOptions: [FilterOption] = [
-        FilterOption(mode: .all, title: NSLocalizedString("All", comment: ""), icon: .system("line.horizontal.3"), color: .dashBlue),
-        FilterOption(mode: .sent, title: NSLocalizedString("Sent", comment: ""), icon: .system("arrow.up"), color: .dashBlue),
-        FilterOption(mode: .received, title: NSLocalizedString("Received", comment: ""), icon: .system("arrow.down"), color: Color.green),
-        FilterOption(mode: .rewards, title: NSLocalizedString("Gift card", comment: ""), icon: .system("gift"), color: Color.orange)
+        FilterOption(mode: .all, title: NSLocalizedString("All", comment: ""), icon: .custom("image.filter.options")),
+        FilterOption(mode: .sent, title: NSLocalizedString("Sent", comment: ""), icon: .custom("tx.item.sent.icon")),
+        FilterOption(mode: .received, title: NSLocalizedString("Received", comment: ""), icon: .custom("tx.item.received.icon")),
+        FilterOption(mode: .rewards, title: NSLocalizedString("Gift card", comment: ""), icon: .custom("image.dashspend.giftcard"))
     ]
     
     var body: some View {
@@ -19,8 +18,8 @@ struct TransactionFilterDialog: View {
             title: NSLocalizedString("Filter transactions", comment: ""),
             showBackButton: .constant(false)
         ) {
-            VStack(spacing: 24) {
-                ForEach(availableFilters) { option in
+            VStack(spacing: 0) {
+                ForEach(filterOptions) { option in
                     FilterOptionRow(
                         option: option,
                         isSelected: option.mode == selectedFilter
@@ -29,26 +28,14 @@ struct TransactionFilterDialog: View {
                         presentationMode.wrappedValue.dismiss()
                     }
                 }
-                
-                Spacer()
             }
+            .padding(.vertical, 6)
+            .background(Color.secondaryBackground)
+            .clipShape(RoundedShape(corners: .allCorners, radii: 12))
             .padding(.horizontal, 20)
-            .padding(.top, 32)
+            .padding(.top, 25)
         }
         .background(Color.primaryBackground)
-    }
-    
-    private var availableFilters: [FilterOption] {
-        var filters = filterOptions.filter { $0.mode != .rewards }
-        
-        if shouldShowRewards {
-            let account = DWEnvironment.sharedInstance().currentAccount
-            if account.hasCoinbaseTransaction {
-                filters.append(filterOptions.first { $0.mode == .rewards }!)
-            }
-        }
-        
-        return filters
     }
 }
 
@@ -57,7 +44,6 @@ struct FilterOption: Identifiable {
     let mode: HomeTxDisplayMode
     let title: String
     let icon: IconName
-    let color: Color
 }
 
 struct FilterOptionRow: View {
@@ -67,48 +53,28 @@ struct FilterOptionRow: View {
     
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 16) {
-                // Icon circle
-                ZStack {
-                    Circle()
-                        .fill(option.color)
-                        .frame(width: 40, height: 40)
-                    
-                    Icon(name: option.icon)
-                        .foregroundColor(.white)
-                        .font(.system(size: 18, weight: .medium))
-                }
+            HStack(alignment: .center, spacing: 16) {
+                Icon(name: option.icon)
+                    .frame(width: 30, height: 30)
+                    .padding(.vertical, 16)
                 
-                // Title
                 Text(option.title)
-                    .font(.system(size: 17, weight: .medium))
+                    .font(.body2)
+                    .fontWeight(.medium)
                     .foregroundColor(.primaryText)
                 
                 Spacer()
                 
-                // Radio button
-                ZStack {
-                    Circle()
-                        .stroke(isSelected ? Color.dashBlue : Color.gray400, lineWidth: 2)
-                        .frame(width: 24, height: 24)
-                    
-                    if isSelected {
-                        Circle()
-                            .fill(Color.dashBlue)
-                            .frame(width: 12, height: 12)
-                    }
-                }
+                Circle()
+                    .stroke(isSelected ? Color.dashBlue : Color.gray300.opacity(0.5), lineWidth: isSelected ? 6 : 2)
+                    .frame(width: isSelected ? 21 : 24, height: isSelected ? 21 : 24)
+                    .padding(.trailing, isSelected ? 2 : 0)
             }
-            .padding(.vertical, 4)
+            .padding(.horizontal, 16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+            .background(Color.clear)
         }
         .buttonStyle(PlainButtonStyle())
     }
 }
-
-#Preview {
-    TransactionFilterDialog(
-        selectedFilter: .constant(.all),
-        shouldShowRewards: true,
-        onFilterSelected: { _ in }
-    )
-} 

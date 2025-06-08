@@ -935,7 +935,7 @@
 "Filter" = "絞り込む";
 
 /* No comment provided by engineer. */
-"Filter Transactions" = "取引を絞り込む";
+"Filter transactions" = "Filter transactions";
 
 /* No comment provided by engineer. */
 "Filtered by" = "で絞り込む";
@@ -1041,6 +1041,9 @@
 
 /* Explore Dash: Filters */
 "Gift Card" = "ギフトカード";
+
+/* No comment provided by engineer. */
+"Gift card" = "Gift card";
 
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
@@ -2092,9 +2095,6 @@
 
 /* No comment provided by engineer. */
 "Reward" = "報酬";
-
-/* No comment provided by engineer. */
-"Rewards" = "報酬";
 
 /* No comment provided by engineer. */
 "Save" = "保存";

@@ -935,7 +935,7 @@
 "Filter" = "กรอง";
 
 /* No comment provided by engineer. */
-"Filter Transactions" = "กรองธุรกรรม";
+"Filter transactions" = "Filter transactions";
 
 /* No comment provided by engineer. */
 "Filtered by" = "กรองโดย";
@@ -1041,6 +1041,9 @@
 
 /* Explore Dash: Filters */
 "Gift Card" = "บัตรของขวัญ";
+
+/* No comment provided by engineer. */
+"Gift card" = "Gift card";
 
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
@@ -2092,9 +2095,6 @@
 
 /* No comment provided by engineer. */
 "Reward" = "รางวัล";
-
-/* No comment provided by engineer. */
-"Rewards" = "รางวัล";
 
 /* No comment provided by engineer. */
 "Save" = "บันทึก";

@@ -935,7 +935,7 @@
 "Filter" = "Lọc";
 
 /* No comment provided by engineer. */
-"Filter Transactions" = "Lọc các giao dịch";
+"Filter transactions" = "Filter transactions";
 
 /* No comment provided by engineer. */
 "Filtered by" = "Filtered by";
@@ -1041,6 +1041,9 @@
 
 /* Explore Dash: Filters */
 "Gift Card" = "Gift Card";
+
+/* No comment provided by engineer. */
+"Gift card" = "Gift card";
 
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
@@ -2092,9 +2095,6 @@
 
 /* No comment provided by engineer. */
 "Reward" = "Phần thưởng";
-
-/* No comment provided by engineer. */
-"Rewards" = "Phần thưởng";
 
 /* No comment provided by engineer. */
 "Save" = "Lưu";

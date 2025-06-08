@@ -935,7 +935,7 @@
 "Filter" = "篩選";
 
 /* No comment provided by engineer. */
-"Filter Transactions" = "過濾交易";
+"Filter transactions" = "Filter transactions";
 
 /* No comment provided by engineer. */
 "Filtered by" = "過濾條件";
@@ -1041,6 +1041,9 @@
 
 /* Explore Dash: Filters */
 "Gift Card" = "禮物卡";
+
+/* No comment provided by engineer. */
+"Gift card" = "Gift card";
 
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
@@ -2092,9 +2095,6 @@
 
 /* No comment provided by engineer. */
 "Reward" = "報酬";
-
-/* No comment provided by engineer. */
-"Rewards" = "報酬";
 
 /* No comment provided by engineer. */
 "Save" = "儲存";
