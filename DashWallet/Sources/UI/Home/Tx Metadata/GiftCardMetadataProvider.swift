@@ -20,15 +20,19 @@ import Combine
 import UIKit
 import CryptoKit
 
-class GiftCardMetadataProvider: MetadataProvider {
+class GiftCardMetadataProvider: MetadataProvider, @unchecked Sendable {
     static let shared = GiftCardMetadataProvider()
     
     private var cancellableBag = Set<AnyCancellable>()
     private let iconBitmapDao = IconBitmapDAOImpl.shared
     private let giftCardDao = GiftCardsDAOImpl.shared
     private let metadataDao = TransactionMetadataDAOImpl.shared
+    private let metadataQueue = DispatchQueue(label: "GiftCardMetadataProvider.metadata", qos: .utility)
     
-    var availableMetadata: [Data: TxRowMetadata] = [:]
+    private var _availableMetadata: [Data: TxRowMetadata] = [:]
+    var availableMetadata: [Data: TxRowMetadata] {
+        return metadataQueue.sync { _availableMetadata }
+    }
     let metadataUpdated = PassthroughSubject<Data, Never>()
     
     init() {
@@ -48,14 +52,19 @@ class GiftCardMetadataProvider: MetadataProvider {
                     }
 
                 case .deleted(let metadata):
-                    availableMetadata.removeValue(forKey: metadata.txHash)
+                    metadataQueue.async { [weak self] in
+                        self?._availableMetadata.removeValue(forKey: metadata.txHash)
+                    }
                     metadataUpdated.send(metadata.txHash)
 
                 case .deletedAll:
-                    for metadata in availableMetadata {
-                        metadataUpdated.send(metadata.key)
+                    let keys = metadataQueue.sync { self._availableMetadata.keys }
+                    for key in keys {
+                        metadataUpdated.send(key)
                     }
-                    availableMetadata = [:]
+                    metadataQueue.async { [weak self] in
+                        self?._availableMetadata = [:]
+                    }
                 }
             }
             .store(in: &cancellableBag)
@@ -65,20 +74,24 @@ class GiftCardMetadataProvider: MetadataProvider {
         let giftCards = await giftCardDao.all()
         
         for giftCard in giftCards {
-            var txRowMetadata = availableMetadata[giftCard.txId]
             let title = String.localizedStringWithFormat(NSLocalizedString("Gift card · %@", comment: "DashSpend"), giftCard.merchantName)
+            
+            metadataQueue.async { [weak self] in
+                guard let self = self else { return }
+                var txRowMetadata = self._availableMetadata[giftCard.txId]
 
-            if txRowMetadata != nil {
-                txRowMetadata!.title = title
-                txRowMetadata!.secondaryIcon = .custom("image.explore.dash.wts.payment.gift-card")
-            } else {
-                txRowMetadata = TxRowMetadata(
-                    title: title,
-                    secondaryIcon: .custom("image.explore.dash.wts.payment.gift-card")
-                )
+                if txRowMetadata != nil {
+                    txRowMetadata!.title = title
+                    txRowMetadata!.secondaryIcon = .custom("image.explore.dash.wts.payment.gift-card")
+                } else {
+                    txRowMetadata = TxRowMetadata(
+                        title: title,
+                        secondaryIcon: .custom("image.explore.dash.wts.payment.gift-card")
+                    )
+                }
+
+                self._availableMetadata[giftCard.txId] = txRowMetadata
             }
-
-            availableMetadata[giftCard.txId] = txRowMetadata
         }
     }
     
@@ -86,15 +99,22 @@ class GiftCardMetadataProvider: MetadataProvider {
         guard let service = metadata.service, service == ServiceName.ctxSpend.rawValue else { return }
         guard let giftCard = await giftCardDao.get(byTxId: metadata.txHash) else { return }
         let title = String.localizedStringWithFormat(NSLocalizedString("Gift card · %@", comment: "DashSpend"), giftCard.merchantName)
-        var txRowMetadata = availableMetadata[metadata.txHash]
         
-        if txRowMetadata != nil {
-            txRowMetadata!.title = title
-        } else {
-            txRowMetadata = TxRowMetadata(title: title)
+        metadataQueue.async { [weak self] in
+            guard let self = self else { return }
+            var txRowMetadata = self._availableMetadata[metadata.txHash]
+            
+            if txRowMetadata != nil {
+                txRowMetadata!.title = title
+            } else {
+                txRowMetadata = TxRowMetadata(title: title)
+            }
+            
+            self._availableMetadata[metadata.txHash] = txRowMetadata
+            
+            DispatchQueue.main.async {
+                self.metadataUpdated.send(metadata.txHash)
+            }
         }
-        
-        availableMetadata[metadata.txHash] = txRowMetadata
-        metadataUpdated.send(metadata.txHash)
     }
 }
