@@ -60,7 +60,8 @@ class GiftCardDetailsViewModel: ObservableObject {
     }
     
     func startObserving() {
-        // Observe gift card changes
+        loadExistingMetadata()
+        
         giftCardsDAO.observeCard(byTxId: txId)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] giftCard in
@@ -86,7 +87,7 @@ class GiftCardDetailsViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
         
-        self.txMetadataDAO.$lastChange // TODO: what if we open this from home screen
+        self.txMetadataDAO.$lastChange
             .receive(on: DispatchQueue.main)
             .sink { [weak self] change in
                 guard let self = self, let change = change else { return }
@@ -94,15 +95,7 @@ class GiftCardDetailsViewModel: ObservableObject {
                 Task {
                     switch change {
                     case .created(let metadata), .updated(let metadata, _):
-                        if let customIconId = metadata.customIconId,
-                            let iconBitmap = await self.customIconDAO.getBitmap(id: customIconId) {
-                            guard let image = UIImage(data: iconBitmap.imageData) else {
-                                DSLogger.log("Failed to create image from data for tx icon: \(metadata.txHash.hexEncodedString())")
-                                return
-                            }
-                            
-                            self.uiState.merchantIcon = image
-                        }
+                        await self.loadIcon(metadata: metadata)
                     default:
                         break
                     }
@@ -215,6 +208,26 @@ class GiftCardDetailsViewModel: ObservableObject {
                 stopTicker()
             }
             DSLogger.log("DashSpend: Failed to fetch gift card info: \(error)")
+        }
+    }
+    
+    private func loadExistingMetadata() {
+        Task {
+            if let metadata = txMetadataDAO.get(by: txId) {
+                await self.loadIcon(metadata: metadata)
+            }
+        }
+    }
+    
+    private func loadIcon(metadata: TransactionMetadata) async {
+        if let customIconId = metadata.customIconId,
+            let iconBitmap = await self.customIconDAO.getBitmap(id: customIconId) {
+            guard let image = UIImage(data: iconBitmap.imageData) else {
+                DSLogger.log("Failed to create image from data for tx icon: \(metadata.txHash.hexEncodedString())")
+                return
+            }
+            
+            self.uiState.merchantIcon = image
         }
     }
     

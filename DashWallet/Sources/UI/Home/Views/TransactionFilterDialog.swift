@@ -3,7 +3,7 @@ import UIKit
 
 struct TransactionFilterDialog: View {
     @Environment(\.presentationMode) private var presentationMode
-    @Binding var selectedFilter: HomeTxDisplayMode
+    let selectedFilter: HomeTxDisplayMode
     var onFilterSelected: (HomeTxDisplayMode) -> Void
     
     private let filterOptions: [FilterOption] = [

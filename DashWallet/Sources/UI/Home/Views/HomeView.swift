@@ -295,16 +295,12 @@ struct HomeViewContent<Content: View>: View {
         .sheet(item: $selectedTxDataItem) { item in
             TransactionDetailsSheet(item: item)
         }
-        .sheet(isPresented: .constant(giftCardTxId != nil), onDismiss: {
-            giftCardTxId = nil
-        }) {
-            if let txId = giftCardTxId {
-                GiftCardDetailsSheet(txId: txId)
-            }
+        .sheet(item: $giftCardTxId) { txId in
+            GiftCardDetailsSheet(txId: txId)
         }
         .sheet(isPresented: $showFilterDialog) {
             let dialog = TransactionFilterDialog(
-                selectedFilter: .constant(viewModel.displayMode),
+                selectedFilter: viewModel.displayMode,
                 onFilterSelected: { mode in
                     viewModel.displayMode = mode
                 }
@@ -437,7 +433,12 @@ struct HomeViewContent<Content: View>: View {
                 dashAmount: txItem.signedDashAmount,
                 overrideFiatAmount: txItem.fiatAmount
             ) {
-                self.selectedTxDataItem = txDataItem
+                // Check if this is a gift card transaction
+                if GiftCardMetadataProvider.shared.availableMetadata[txItem.txHashData] != nil {
+                    self.giftCardTxId = txItem.txHashData
+                } else {
+                    self.selectedTxDataItem = txDataItem
+                }
             }
         }
     }
@@ -518,5 +519,11 @@ struct TransactionDetailsSheet: View {
         case .tx(let txItem, _):
             TXDetailVCWrapper(tx: txItem, navigateBack: $backNavigationRequested)
         }
+    }
+}
+
+extension Data: Identifiable {
+    public var id: String {
+        return self.base64EncodedString()
     }
 }
