@@ -28,6 +28,7 @@ public enum HomeTxDisplayMode: UInt {
     case received
     case sent
     case rewards
+    case giftCard
 }
 
 class HomeViewModel: ObservableObject {
@@ -179,15 +180,7 @@ class HomeViewModel: ObservableObject {
             var items: [TransactionListDataItem] = transactions.compactMap { tx -> TransactionListDataItem? in
                 Tx.shared.updateRateIfNeeded(for: tx)
                             
-                if self.displayMode == .sent && tx.direction != .sent {
-                    return nil
-                }
-                           
-                if self.displayMode == .received && (tx.direction != .received || tx is DSCoinbaseTransaction) {
-                    return nil
-                }
-                           
-                if self.displayMode == .rewards && !(tx is DSCoinbaseTransaction) {
+                if !self.passesFilter(tx: tx, displayMode: self.displayMode) {
                     return nil
                 }
                            
@@ -250,15 +243,7 @@ class HomeViewModel: ObservableObject {
         self.queue.async { [weak self] in
             guard let self = self else { return }
             
-            if self.displayMode == .sent && tx.direction != .sent {
-                return
-            }
-            
-            if self.displayMode == .received && (tx.direction != .received || tx is DSCoinbaseTransaction) {
-                return
-            }
-            
-            if self.displayMode == .rewards && !(tx is DSCoinbaseTransaction) {
+            if !self.passesFilter(tx: tx, displayMode: self.displayMode) {
                 return
             }
             
@@ -367,43 +352,6 @@ class HomeViewModel: ObservableObject {
             return (false, 0)
         }
     }
-    
-    
-    private func resolveMetadata(for txId: Data) -> TxRowMetadata? {
-        var finalMetadata: TxRowMetadata? = nil
-
-        for provider in self.metadataProviders {
-            // Safely access the provider's metadata
-            let providerMetadata = provider.availableMetadata
-            guard let metadata = providerMetadata[txId] else { continue }
-            
-            if finalMetadata == nil {
-                finalMetadata = metadata
-            } else {
-                if finalMetadata?.title == nil {
-                    finalMetadata?.title = metadata.title
-                }
-
-                if finalMetadata?.details == nil {
-                    finalMetadata?.details = metadata.details
-                }
-                
-                if finalMetadata?.icon == nil {
-                    finalMetadata?.icon = metadata.icon
-                }
-                
-                if finalMetadata?.iconId == nil {
-                    finalMetadata?.iconId = metadata.iconId
-                }
-                
-                if finalMetadata?.secondaryIcon == nil {
-                    finalMetadata?.secondaryIcon = metadata.secondaryIcon
-                }
-            }
-        }
-
-        return finalMetadata
-    }
 }
 
 // MARK: - CoinJoin
@@ -459,7 +407,7 @@ extension HomeViewModel {
     }
 }
 
-// MARK: - Metadata Providers
+// MARK: - Metadata
 
 extension HomeViewModel {
     private func setupMetadataProviders() {
@@ -480,6 +428,62 @@ extension HomeViewModel {
                 }
                 .store(in: &cancellableBag)
         }
+    }
+    
+    private func resolveMetadata(for txId: Data) -> TxRowMetadata? {
+        var finalMetadata: TxRowMetadata? = nil
+
+        // Metadata will not be replaced if already found, so in case
+        // of conflicts metadataProviders should be sorted by priority
+        for provider in self.metadataProviders {
+            let providerMetadata = provider.availableMetadata
+            guard let metadata = providerMetadata[txId] else { continue }
+            
+            if finalMetadata == nil {
+                finalMetadata = metadata
+            } else {
+                if finalMetadata?.title == nil {
+                    finalMetadata?.title = metadata.title
+                }
+
+                if finalMetadata?.details == nil {
+                    finalMetadata?.details = metadata.details
+                }
+                
+                if finalMetadata?.icon == nil {
+                    finalMetadata?.icon = metadata.icon
+                }
+                
+                if finalMetadata?.iconId == nil {
+                    finalMetadata?.iconId = metadata.iconId
+                }
+                
+                if finalMetadata?.secondaryIcon == nil {
+                    finalMetadata?.secondaryIcon = metadata.secondaryIcon
+                }
+            }
+        }
+
+        return finalMetadata
+    }
+    
+    private func passesFilter(tx: DSTransaction, displayMode: HomeTxDisplayMode) -> Bool {
+        switch displayMode {
+        case .all:
+            return true
+        case .sent:
+            return tx.direction == .sent
+        case .received:
+            return tx.direction == .received && !(tx is DSCoinbaseTransaction)
+        case .rewards:
+            return tx is DSCoinbaseTransaction
+        case .giftCard:
+            return isGiftCard(tx: tx)
+        }
+    }
+    
+    private func isGiftCard(tx: DSTransaction) -> Bool {
+        return GiftCardMetadataProvider.shared.availableMetadata[tx.txHashData] != nil
     }
 }
 

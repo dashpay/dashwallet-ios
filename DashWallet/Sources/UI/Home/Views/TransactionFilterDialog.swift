@@ -10,7 +10,7 @@ struct TransactionFilterDialog: View {
         FilterOption(mode: .all, title: NSLocalizedString("All", comment: ""), icon: .custom("image.filter.options")),
         FilterOption(mode: .sent, title: NSLocalizedString("Sent", comment: ""), icon: .custom("tx.item.sent.icon")),
         FilterOption(mode: .received, title: NSLocalizedString("Received", comment: ""), icon: .custom("tx.item.received.icon")),
-        FilterOption(mode: .rewards, title: NSLocalizedString("Gift card", comment: ""), icon: .custom("image.dashspend.giftcard"))
+        FilterOption(mode: .giftCard, title: NSLocalizedString("Gift card", comment: ""), icon: .custom("image.dashspend.giftcard"))
     ]
     
     var body: some View {
