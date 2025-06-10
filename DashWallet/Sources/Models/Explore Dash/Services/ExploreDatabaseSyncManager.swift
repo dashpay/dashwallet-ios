@@ -20,7 +20,7 @@ import Foundation
 import SSZipArchive
 
 // TODO: Move it to plist and note in release process
-let gsFilePath = "gs://dash-wallet-firebase.appspot.com/explore/explore-v2.db"
+let gsFilePath = "gs://dash-wallet-firebase.appspot.com/explore/explore-v3.db"
 
 private let fileName = "explore"
 

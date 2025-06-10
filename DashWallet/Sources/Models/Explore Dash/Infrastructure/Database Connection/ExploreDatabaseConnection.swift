@@ -46,7 +46,7 @@ class ExploreDatabaseConnection {
         guard let dbPath = dbPath() else { throw ExploreDatabaseConnectionError.fileNotFound }
 
         do {
-            db = try Connection(nil ?? dbPath)
+            db = try Connection(dbPath)
         } catch {
             print(error)
         }
