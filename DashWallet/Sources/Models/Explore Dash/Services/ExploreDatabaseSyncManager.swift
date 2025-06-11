@@ -135,16 +135,14 @@ extension ExploreDatabaseSyncManager {
     }
 
     private func unzipFile(at path: String, password: String) {
-        // DispatchQueue.global().asyncAfter(deadline: .now() + 10.0) {
-            var error: NSError?
-            let urlToUnzip = self.getDocumentsDirectory()
-            SSZipArchive.unzipFile(atPath: path, toDestination: urlToUnzip.path, preserveAttributes: true, overwrite: true,
-                                   nestedZipLevel: 0, password: password, error: &error, delegate: nil,
-                                   progressHandler: nil) { path, _, _ in
-                NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
-                try? FileManager.default.removeItem(at: URL(fileURLWithPath: path))
-            }
-        // }
+        var error: NSError?
+        let urlToUnzip = self.getDocumentsDirectory()
+        SSZipArchive.unzipFile(atPath: path, toDestination: urlToUnzip.path, preserveAttributes: true, overwrite: true,
+                                nestedZipLevel: 0, password: password, error: &error, delegate: nil,
+                                progressHandler: nil) { path, _, _ in
+            NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
+            try? FileManager.default.removeItem(at: URL(fileURLWithPath: path))
+        }
     }
 
     private func getDocumentsDirectory() -> URL {
