@@ -88,9 +88,9 @@ extension MerchantsListSegment {
         case .online:
             return []
         case .nearby:
-            return [.sortByDistanceOrName, .radius, .locationService]
+            return [.sortByDistanceOrName, .denominationType, .radius, .locationService]
         case .all:
-            return [.sortByDistanceOrName, .territory, .radius, .locationService]
+            return [.sortByDistanceOrName, .denominationType, .territory, .radius, .locationService]
         }
     }
 

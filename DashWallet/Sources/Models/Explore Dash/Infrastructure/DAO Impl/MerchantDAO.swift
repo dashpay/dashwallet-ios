@@ -110,9 +110,21 @@ class MerchantDAO: PointOfUseDAO {
             }
 
             let nameOrdering = name.collate(.nocase).asc
+            let discountOrdering = ExplorePointOfUse.savingPercentage.desc
 
-            if let sortBy, sortBy == .name {
-                query = query.order(nameOrdering)
+            if let sortBy {
+                switch sortBy {
+                case .name:
+                    query = query.order(nameOrdering)
+                case .distance:
+                    if userLocation != nil {
+                        query = query.order([distanceSorting, nameOrdering])
+                    } else {
+                        query = query.order(nameOrdering)
+                    }
+                case .discount:
+                    query = query.order([discountOrdering, nameOrdering])
+                }
             } else if userLocation != nil {
                 query = query.order([distanceSorting, nameOrdering])
             } else if bounds == nil && types.count == 3 {

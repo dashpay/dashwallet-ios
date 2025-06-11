@@ -35,6 +35,8 @@ extension PointOfUseListFilters.SortBy {
             return NSLocalizedString("Sorted by distance", comment: "Explore Dash/Filters")
         case .name:
             return NSLocalizedString("Sorted by name", comment: "Explore Dash/Filters")
+        case .discount:
+            return NSLocalizedString("Sorted by discount", comment: "Explore Dash/Filters")
         }
     }
 }
@@ -46,6 +48,7 @@ struct PointOfUseListFilters: Equatable {
     enum SortBy {
         case distance
         case name
+        case discount
     }
 
     enum Radius: Int {
@@ -80,11 +83,29 @@ struct PointOfUseListFilters: Equatable {
             }
         }
     }
+    
+    enum DenominationType {
+        case fixed
+        case flexible
+        case both
+        
+        var filterItems: [PointOfUseListFilterItem] {
+            switch self {
+            case .fixed:
+                return [.denominationFixed]
+            case .flexible:
+                return [.denominationFlexible]
+            case .both:
+                return [.denominationFixed, .denominationFlexible]
+            }
+        }
+    }
 
     var sortBy: SortBy?
     var merchantPaymentTypes: [ExplorePointOfUse.Merchant.PaymentMethod]?
     var radius: Radius?
     var territory: Territory?
+    var denominationType: DenominationType?
 
     // In meters
     var currentRadius: Double {
@@ -130,7 +151,14 @@ extension PointOfUseListFilters {
         var set: Set<PointOfUseListFilterItem> = []
 
         if let value = sortBy {
-            set.insert(value == .name ? .sortName : .sortDistance)
+            switch value {
+            case .name:
+                set.insert(.sortName)
+            case .distance:
+                set.insert(.sortDistance)
+            case .discount:
+                set.insert(.sortDiscount)
+            }
         }
 
         if let value = merchantPaymentTypes {
@@ -143,6 +171,12 @@ extension PointOfUseListFilters {
         if let value = radius {
             set.insert(value.filterItem)
         }
+        
+        if let value = denominationType {
+            for item in value.filterItems {
+                set.insert(item)
+            }
+        }
 
         return set
     }
@@ -153,8 +187,11 @@ extension PointOfUseListFilters {
 enum PointOfUseListFilterItem: String {
     case sortDistance
     case sortName
+    case sortDiscount
     case paymentTypeDash
     case paymentTypeGiftCard
+    case denominationFixed
+    case denominationFlexible
     case radius1
     case radius5
     case radius20
@@ -166,9 +203,11 @@ enum PointOfUseListFilterItem: String {
     var otherItems: [PointOfUseListFilterItem] {
         switch self {
         case .sortDistance:
-            return [.sortName]
+            return [.sortName, .sortDiscount]
         case .sortName:
-            return [.sortDistance]
+            return [.sortDistance, .sortDiscount]
+        case .sortDiscount:
+            return [.sortDistance, .sortName]
         case .radius1:
             return [.radius5, .radius20, .radius50]
         case .radius5:
@@ -189,9 +228,11 @@ enum PointOfUseListFilterItem: String {
     var itemsToUnselect: [PointOfUseListFilterItem] {
         switch self {
         case .sortDistance:
-            return [.sortName]
+            return [.sortName, .sortDiscount]
         case .sortName:
-            return [.sortDistance]
+            return [.sortDistance, .sortDiscount]
+        case .sortDiscount:
+            return [.sortDistance, .sortName]
         case .radius1:
             return [.radius5, .radius20, .radius50]
         case .radius5:
@@ -219,6 +260,10 @@ enum PointOfUseListFilterItem: String {
             return "image.explore.dash.wts.payment.dash"
         case .paymentTypeGiftCard:
             return "image.explore.dash.wts.payment.gift-card"
+        case .denominationFixed:
+            return "image.explore.dash.wts.payment.gift-card"
+        case .denominationFlexible:
+            return "image.explore.dash.wts.payment.gift-card"
         default: return nil
         }
     }
@@ -229,6 +274,10 @@ enum PointOfUseListFilterItem: String {
             return NSLocalizedString("Dash", comment: "Explore Dash: Filters")
         case .paymentTypeGiftCard:
             return NSLocalizedString("Gift Card", comment: "Explore Dash: Filters")
+        case .denominationFixed:
+            return NSLocalizedString("Fixed amounts", comment: "Explore Dash: Filters")
+        case .denominationFlexible:
+            return NSLocalizedString("Flexible amounts", comment: "Explore Dash: Filters")
         case .radius1:
             if Locale.usesMetricMeasurementSystem {
                 return NSLocalizedString("2 km", comment: "Explore Dash: Filters")
@@ -263,6 +312,8 @@ enum PointOfUseListFilterItem: String {
             return NSLocalizedString("Distance", comment: "Explore Dash: Filters")
         case .sortName:
             return NSLocalizedString("Name", comment: "Explore Dash: Filters")
+        case .sortDiscount:
+            return NSLocalizedString("Discount", comment: "Explore Dash: Filters")
         }
     }
 }
@@ -344,6 +395,10 @@ extension PointOfUseListFiltersModel {
         if selected.contains(.sortDistance) {
             filters.sortBy = .distance
         }
+        
+        if selected.contains(.sortDiscount) {
+            filters.sortBy = .discount
+        }
 
         if selected.contains(.radius1) {
             filters.radius = .one
@@ -368,6 +423,14 @@ extension PointOfUseListFiltersModel {
 
         if let territory = selectedTerritory {
             filters.territory = territory
+        }
+        
+        if selected.contains(.denominationFixed) && selected.contains(.denominationFlexible) {
+            filters.denominationType = .both
+        } else if selected.contains(.denominationFixed) {
+            filters.denominationType = .fixed
+        } else if selected.contains(.denominationFlexible) {
+            filters.denominationType = .flexible
         }
 
         return filters

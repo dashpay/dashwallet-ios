@@ -235,6 +235,9 @@
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Ứng dụng %@ có thể nhận Master Public Key của bạn.  Nó có thể được dùng để theo dõi ví của bạn, nhưng nó không thể dùng để chuyển Dash.";
 
+/* No comment provided by engineer. */
+"Apply" = "Apply";
+
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Are you sure you want to cancel this order?";
 
@@ -279,6 +282,9 @@
 
 /* No comment provided by engineer. */
 "Autohide Balance" = "Tự ẩn số dư";
+
+/* No comment provided by engineer. */
+"Back" = "Back";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Backup" = "Backup";
@@ -967,6 +973,12 @@
 /* CrowdNode */
 "First minimum deposit" = "First minimum deposit";
 
+/* Explore Dash: Filters */
+"Fixed amounts" = "Fixed amounts";
+
+/* Explore Dash: Filters */
+"Flexible amounts" = "Flexible amounts";
+
 /* Usernames */
 "For some reason, the request for the username '%@' has failed." = "For some reason, the request for the username '%@' has failed.";
 
@@ -1053,6 +1065,9 @@
 
 /* DashSpend confirmation */
 "Gift card total" = "Gift card total";
+
+/* Explore Dash/Merchants/Filters */
+"Gift card types" = "Gift card types";
 
 /* DashSpend */
 "Gift card · %@" = "Gift card · %@";
@@ -2151,6 +2166,9 @@
 "Search results for \"" = "Kết quả tìm kiếm cho \"";
 
 /* No comment provided by engineer. */
+"Search territories" = "Search territories";
+
+/* No comment provided by engineer. */
 "Searching for username %@ on the Dash Network" = "Tìm kiếm tên người dùng %@ trên mạng lưới Dash";
 
 /* No comment provided by engineer. */
@@ -2337,6 +2355,9 @@
 
 /* No comment provided by engineer. */
 "Sort Contacts" = "Sắp xếp các liên lạc";
+
+/* Explore Dash/Filters */
+"Sorted by discount" = "Sorted by discount";
 
 /* Explore Dash/Filters */
 "Sorted by distance" = "Sorted by distance";

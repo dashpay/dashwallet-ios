@@ -634,6 +634,14 @@
 		7573C2E12B01103900F4C347 /* VotingFilterItemSelectableCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7573C2E02B01103900F4C347 /* VotingFilterItemSelectableCell.swift */; };
 		7573C2E32B01105F00F4C347 /* MasternodeIPCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7573C2E22B01105F00F4C347 /* MasternodeIPCell.swift */; };
 		7573C2E52B01120B00F4C347 /* MasternodeKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7573C2E42B01120B00F4C347 /* MasternodeKey.swift */; };
+		757422202DF87B5200CB0175 /* MerchantFiltersHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7574221D2DF87B5200CB0175 /* MerchantFiltersHostingController.swift */; };
+		757422212DF87B5200CB0175 /* TerritoryPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7574221F2DF87B5200CB0175 /* TerritoryPickerView.swift */; };
+		757422222DF87B5200CB0175 /* MerchantFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7574221E2DF87B5200CB0175 /* MerchantFiltersView.swift */; };
+		757422232DF87B5200CB0175 /* MerchantFiltersHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7574221D2DF87B5200CB0175 /* MerchantFiltersHostingController.swift */; };
+		757422242DF87B5200CB0175 /* TerritoryPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7574221F2DF87B5200CB0175 /* TerritoryPickerView.swift */; };
+		757422252DF87B5200CB0175 /* MerchantFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7574221E2DF87B5200CB0175 /* MerchantFiltersView.swift */; };
+		757422272DF87B8300CB0175 /* MerchantFiltersViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757422262DF87B8300CB0175 /* MerchantFiltersViewModel.swift */; };
+		757422282DF87B8300CB0175 /* MerchantFiltersViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757422262DF87B8300CB0175 /* MerchantFiltersViewModel.swift */; };
 		757514E02B15D8DE0026AD8E /* VotingConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757514DF2B15D8DE0026AD8E /* VotingConstants.swift */; };
 		757514E22B15DB510026AD8E /* ShadowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757514E12B15DB510026AD8E /* ShadowView.swift */; };
 		757514E32B15DF7C0026AD8E /* ShadowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757514E12B15DB510026AD8E /* ShadowView.swift */; };
@@ -2526,6 +2534,10 @@
 		7573C2E02B01103900F4C347 /* VotingFilterItemSelectableCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingFilterItemSelectableCell.swift; sourceTree = "<group>"; };
 		7573C2E22B01105F00F4C347 /* MasternodeIPCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasternodeIPCell.swift; sourceTree = "<group>"; };
 		7573C2E42B01120B00F4C347 /* MasternodeKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasternodeKey.swift; sourceTree = "<group>"; };
+		7574221D2DF87B5200CB0175 /* MerchantFiltersHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantFiltersHostingController.swift; sourceTree = "<group>"; };
+		7574221E2DF87B5200CB0175 /* MerchantFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantFiltersView.swift; sourceTree = "<group>"; };
+		7574221F2DF87B5200CB0175 /* TerritoryPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerritoryPickerView.swift; sourceTree = "<group>"; };
+		757422262DF87B8300CB0175 /* MerchantFiltersViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantFiltersViewModel.swift; sourceTree = "<group>"; };
 		757514DF2B15D8DE0026AD8E /* VotingConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingConstants.swift; sourceTree = "<group>"; };
 		757514E12B15DB510026AD8E /* ShadowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowView.swift; sourceTree = "<group>"; };
 		757514E42B1735370026AD8E /* JoinDashPayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinDashPayView.swift; sourceTree = "<group>"; };
@@ -5434,6 +5446,9 @@
 				47A50F3C291560ED00C70123 /* Locations List */,
 				47838B80290271020003E8AB /* Model */,
 				47838B7C290133610003E8AB /* PointOfUseListFiltersViewController.swift */,
+				7574221D2DF87B5200CB0175 /* MerchantFiltersHostingController.swift */,
+				7574221E2DF87B5200CB0175 /* MerchantFiltersView.swift */,
+				7574221F2DF87B5200CB0175 /* TerritoryPickerView.swift */,
 			);
 			path = Filters;
 			sourceTree = "<group>";
@@ -5441,6 +5456,7 @@
 		47838B80290271020003E8AB /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				757422262DF87B8300CB0175 /* MerchantFiltersViewModel.swift */,
 				47838B81290271170003E8AB /* PointOfUseListFiltersModel.swift */,
 			);
 			path = Model;
@@ -8693,6 +8709,9 @@
 				47522F502927CB9000EE143E /* SuccessfulOperationStatusViewController.swift in Sources */,
 				47E94B9A296D7F99000FE68E /* CustodialSwapsModel.swift in Sources */,
 				2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */,
+				757422232DF87B5200CB0175 /* MerchantFiltersHostingController.swift in Sources */,
+				757422242DF87B5200CB0175 /* TerritoryPickerView.swift in Sources */,
+				757422252DF87B5200CB0175 /* MerchantFiltersView.swift in Sources */,
 				2A74EFFE2305763F00C475EB /* DWRecoverModel.m in Sources */,
 				2A4431C822D4D92A009BAF7F /* DWCenteredTableView.m in Sources */,
 				2A913E6F23A26663006A2A59 /* DWOnboardingViewController.m in Sources */,
@@ -8769,6 +8788,7 @@
 				2AD1CE8D22DCB3B600C99324 /* DWVerifySeedPhraseModel.m in Sources */,
 				75FFD6C72BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */,
 				C9F42FA629DC092B001BC549 /* ReceiveViewController.swift in Sources */,
+				757422272DF87B8300CB0175 /* MerchantFiltersViewModel.swift in Sources */,
 				118B7A3F29865A3A00FBB6CC /* ConfirmationTransactionQRController.swift in Sources */,
 				47E4B7B7292F85E800CE0EB6 /* Numbers+Dash.swift in Sources */,
 				478C983229433C5700FAA0F0 /* PaymentMethodsController.swift in Sources */,
@@ -9239,6 +9259,7 @@
 				C9D2C6BF2A320AA000D15901 /* FetchingNextPageCell.swift in Sources */,
 				C943B3172A408CED00AF23C5 /* DWErrorUpdatingUserProfileView.m in Sources */,
 				C943B4E32A40A54600AF23C5 /* DWPassthroughStackView.m in Sources */,
+				757422282DF87B8300CB0175 /* MerchantFiltersViewModel.swift in Sources */,
 				C943B32E2A408CED00AF23C5 /* DWAvatarGravatarViewController.m in Sources */,
 				C9D2C6C02A320AA000D15901 /* Transaction.swift in Sources */,
 				C943B3232A408CED00AF23C5 /* DWFaceDetector.m in Sources */,
@@ -9907,6 +9928,9 @@
 				759063EF2C427324002F2AA9 /* DWMainMenuViewController+DashPay.swift in Sources */,
 				C9D2C8B02A320AA000D15901 /* DWPhraseRepairChildViewController.m in Sources */,
 				C9D2C8B12A320AA000D15901 /* SingleInputAddressSelector.swift in Sources */,
+				757422202DF87B5200CB0175 /* MerchantFiltersHostingController.swift in Sources */,
+				757422212DF87B5200CB0175 /* TerritoryPickerView.swift in Sources */,
+				757422222DF87B5200CB0175 /* MerchantFiltersView.swift in Sources */,
 				C943B5382A40A65B00AF23C5 /* DWScrollingViewController.m in Sources */,
 				C9D2C8B22A320AA000D15901 /* CoinbaseAccountAddress.swift in Sources */,
 				754565C82DAA52A000DA4E8E /* CTXSpendAPI.swift in Sources */,

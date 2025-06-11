@@ -25,6 +25,7 @@ typealias Item = PointOfUseListFilterItem
 public enum PointOfUseListFiltersGroup {
     case paymentType
     case sortByDistanceOrName
+    case denominationType
 
     case territory
     case radius
@@ -36,6 +37,8 @@ public enum PointOfUseListFiltersGroup {
             return .paymentType
         case .sortByDistanceOrName:
             return .sortBy
+        case .denominationType:
+            return .denominationType
         case .territory:
             return .location
         case .radius:
@@ -50,7 +53,9 @@ public enum PointOfUseListFiltersGroup {
         case .paymentType:
             return [.paymentTypeDash, .paymentTypeGiftCard]
         case .sortByDistanceOrName:
-            return [.sortDistance, .sortName]
+            return [.sortDistance, .sortName, .sortDiscount]
+        case .denominationType:
+            return [.denominationFlexible, .denominationFixed]
         case .territory:
             return [.location]
         case .locationService:
@@ -88,6 +93,7 @@ class PointOfUseListFiltersViewController: UIViewController {
     enum Section: CaseIterable {
         case paymentType
         case sortBy
+        case denominationType
         case location
         case radius
         case locationService
@@ -97,6 +103,7 @@ class PointOfUseListFiltersViewController: UIViewController {
             switch self {
             case .paymentType: return NSLocalizedString("Payment Type", comment: "Explore Dash/Merchants/Filters")
             case .sortBy: return NSLocalizedString("Sort by", comment: "Explore Dash/Merchants/Filters")
+            case .denominationType: return NSLocalizedString("Gift card types", comment: "Explore Dash/Merchants/Filters")
             case .location: return NSLocalizedString("Location", comment: "")
             case .radius: return NSLocalizedString("Radius", comment: "Explore Dash/Merchants/Filters")
             case .locationService: return NSLocalizedString("Current Location Settings",

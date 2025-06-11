@@ -1,0 +1,277 @@
+//
+//  Created by Claude Code
+//  Copyright © 2025 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+import Foundation
+import Combine
+
+class MerchantFiltersViewModel: ObservableObject {
+    
+    // MARK: - Filter Options
+    
+    @Published var sortByDistance = false
+    @Published var sortByName = false
+    @Published var sortByDiscount = false
+    
+    @Published var payWithDash = false
+    @Published var useGiftCard = false
+    
+    @Published var denominationFixed = false
+    @Published var denominationFlexible = false
+    
+    @Published var selectedRadius: RadiusOption?
+    @Published var selectedTerritory: Territory?
+    
+    @Published var isLocationServiceEnabled = DWLocationManager.shared.isAuthorized
+    
+    // MARK: - Computed Properties
+    
+    var canApply: Bool {
+        hasChanges
+    }
+    
+    var canReset: Bool {
+        hasAnyFiltersApplied || hasChanges
+    }
+    
+    private var hasChanges: Bool {
+        sortByDistance != initialSortByDistance ||
+        sortByName != initialSortByName ||
+        sortByDiscount != initialSortByDiscount ||
+        payWithDash != initialPayWithDash ||
+        useGiftCard != initialUseGiftCard ||
+        denominationFixed != initialDenominationFixed ||
+        denominationFlexible != initialDenominationFlexible ||
+        selectedRadius != initialRadius ||
+        selectedTerritory != initialTerritory
+    }
+    
+    private var hasAnyFiltersApplied: Bool {
+        sortByDistance || sortByName || sortByDiscount ||
+        payWithDash || useGiftCard ||
+        denominationFixed || denominationFlexible ||
+        selectedRadius != nil || selectedTerritory != nil
+    }
+    
+    // MARK: - Initial State
+    
+    private let initialSortByDistance: Bool
+    private let initialSortByName: Bool
+    private let initialSortByDiscount: Bool
+    private let initialPayWithDash: Bool
+    private let initialUseGiftCard: Bool
+    private let initialDenominationFixed: Bool
+    private let initialDenominationFlexible: Bool
+    private let initialRadius: RadiusOption?
+    private let initialTerritory: Territory?
+    
+    // MARK: - Available Options
+    
+    let availableRadiusOptions: [RadiusOption] = [
+        .one, .five, .twenty, .fifty
+    ]
+    
+    var showLocationSettings: Bool
+    var showRadius: Bool
+    var showTerritory: Bool
+    
+    // MARK: - Data Sources
+    
+    var territoriesDataSource: TerritoryDataSource?
+    
+    // MARK: - Initialization
+    
+    init(
+        currentFilters: PointOfUseListFilters?,
+        defaultFilters: PointOfUseListFilters?,
+        showLocationSettings: Bool = false,
+        showRadius: Bool = false,
+        showTerritory: Bool = false,
+        territoriesDataSource: TerritoryDataSource? = nil
+    ) {
+        self.showLocationSettings = showLocationSettings
+        self.showRadius = showRadius
+        self.showTerritory = showTerritory
+        self.territoriesDataSource = territoriesDataSource
+        
+        // Set initial values from current filters
+        let filters = currentFilters ?? defaultFilters
+        
+        self.initialSortByDistance = filters?.sortBy == .distance
+        self.initialSortByName = filters?.sortBy == .name
+        self.initialSortByDiscount = filters?.sortBy == .discount
+        
+        self.initialPayWithDash = filters?.merchantPaymentTypes?.contains(.dash) ?? false
+        self.initialUseGiftCard = filters?.merchantPaymentTypes?.contains(.giftCard) ?? false
+        
+        self.initialDenominationFixed = filters?.denominationType == .fixed || filters?.denominationType == .both
+        self.initialDenominationFlexible = filters?.denominationType == .flexible || filters?.denominationType == .both
+        
+        // Convert PointOfUseListFilters.Radius to RadiusOption
+        if let filtersRadius = filters?.radius {
+            switch filtersRadius {
+            case .one: self.initialRadius = .one
+            case .five: self.initialRadius = .five
+            case .twenty: self.initialRadius = .twenty
+            case .fifty: self.initialRadius = .fifty
+            }
+        } else {
+            self.initialRadius = nil
+        }
+        
+        self.initialTerritory = filters?.territory
+        
+        // Set current values
+        self.sortByDistance = initialSortByDistance
+        self.sortByName = initialSortByName
+        self.sortByDiscount = initialSortByDiscount
+        self.payWithDash = initialPayWithDash
+        self.useGiftCard = initialUseGiftCard
+        self.denominationFixed = initialDenominationFixed
+        self.denominationFlexible = initialDenominationFlexible
+        self.selectedRadius = initialRadius
+        self.selectedTerritory = initialTerritory
+    }
+    
+    // MARK: - Actions
+    
+    func resetFilters() {
+        sortByDistance = false
+        sortByName = false
+        sortByDiscount = false
+        payWithDash = false
+        useGiftCard = false
+        denominationFixed = false
+        denominationFlexible = false
+        selectedRadius = nil
+        selectedTerritory = nil
+    }
+    
+    func toggleSortBy(_ option: SortOption) {
+        // Only one sort option can be selected at a time
+        sortByDistance = (option == .distance)
+        sortByName = (option == .name)
+        sortByDiscount = (option == .discount)
+    }
+    
+    func toggleRadius(_ option: RadiusOption) {
+        if selectedRadius == option {
+            selectedRadius = nil
+        } else {
+            selectedRadius = option
+        }
+    }
+    
+    func buildFilters() -> PointOfUseListFilters? {
+        var filters = PointOfUseListFilters()
+        var hasAnyFilters = false
+        
+        // Sort By
+        if sortByDistance {
+            filters.sortBy = .distance
+            hasAnyFilters = true
+        } else if sortByName {
+            filters.sortBy = .name
+            hasAnyFilters = true
+        } else if sortByDiscount {
+            filters.sortBy = .discount
+            hasAnyFilters = true
+        }
+        
+        // Payment Methods
+        var paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod] = []
+        if payWithDash {
+            paymentMethods.append(.dash)
+        }
+        if useGiftCard {
+            paymentMethods.append(.giftCard)
+        }
+        if !paymentMethods.isEmpty {
+            filters.merchantPaymentTypes = paymentMethods
+            hasAnyFilters = true
+        }
+        
+        // Denomination Type
+        if denominationFixed && denominationFlexible {
+            filters.denominationType = .both
+            hasAnyFilters = true
+        } else if denominationFixed {
+            filters.denominationType = .fixed
+            hasAnyFilters = true
+        } else if denominationFlexible {
+            filters.denominationType = .flexible
+            hasAnyFilters = true
+        }
+        
+        // Radius
+        if let radius = selectedRadius {
+            filters.radius = radius.filtersRadius
+            hasAnyFilters = true
+        }
+        
+        // Territory
+        if let territory = selectedTerritory {
+            filters.territory = territory
+            hasAnyFilters = true
+        }
+        
+        return hasAnyFilters ? filters : nil
+    }
+}
+
+// MARK: - Supporting Types
+
+enum SortOption {
+    case distance
+    case name
+    case discount
+}
+
+enum RadiusOption: Int, CaseIterable, Identifiable {
+    case one = 1
+    case five = 5
+    case twenty = 20
+    case fifty = 50
+    
+    var id: Int { rawValue }
+    
+    var displayText: String {
+        if Locale.usesMetricMeasurementSystem {
+            switch self {
+            case .one: return NSLocalizedString("2 km", comment: "Explore Dash: Filters")
+            case .five: return NSLocalizedString("8 km", comment: "Explore Dash: Filters")
+            case .twenty: return NSLocalizedString("32 km", comment: "Explore Dash: Filters")
+            case .fifty: return NSLocalizedString("80 km", comment: "Explore Dash: Filters")
+            }
+        } else {
+            switch self {
+            case .one: return NSLocalizedString("1 mile", comment: "Explore Dash: Filters")
+            case .five: return NSLocalizedString("5 miles", comment: "Explore Dash: Filters")
+            case .twenty: return NSLocalizedString("20 miles", comment: "Explore Dash: Filters")
+            case .fifty: return NSLocalizedString("50 miles", comment: "Explore Dash: Filters")
+            }
+        }
+    }
+    
+    var filtersRadius: PointOfUseListFilters.Radius {
+        switch self {
+        case .one: return .one
+        case .five: return .five
+        case .twenty: return .twenty
+        case .fifty: return .fifty
+        }
+    }
+}

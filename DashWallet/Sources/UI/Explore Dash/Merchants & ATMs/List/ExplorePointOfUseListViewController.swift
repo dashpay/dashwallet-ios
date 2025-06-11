@@ -17,6 +17,7 @@
 
 import CoreLocation
 import UIKit
+import SwiftUI
 
 private let kExploreWhereToSpendSectionCount = 5
 
@@ -395,16 +396,18 @@ extension ExplorePointOfUseListViewController {
 // MARK: Actions
 extension ExplorePointOfUseListViewController {
     private func showFilters() {
-        let vc = PointOfUseListFiltersViewController.controller()
-        vc.filtersToUse = currentSegment.filterGroups.filter { filter in
+        let filterGroups = currentSegment.filterGroups.filter { filter in
             DWLocationManager.shared.currentLocation != nil || (filter != .sortByDistanceOrName && filter != .radius)
         }
-        vc.territoriesDataSource = currentSegment.territoriesDataSource
+        
+        let vc = MerchantFiltersHostingController.create(
+            for: filterGroups,
+            currentFilters: model.filters,
+            defaultFilters: model.initialFilters,
+            territoriesDataSource: currentSegment.territoriesDataSource
+        )
         vc.delegate = self
-        vc.defaultFilters = model.initialFilters
-        vc.filters = model.filters ?? model.initialFilters
-        let nvc = UINavigationController(rootViewController: vc)
-        present(nvc, animated: true)
+        present(vc, animated: true)
     }
 
     private func updateAppliedFiltersView() {
