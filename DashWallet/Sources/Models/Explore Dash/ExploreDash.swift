@@ -117,10 +117,26 @@ public class ExploreDash {
         removeCurrentDatabaseIfNeeded()
 
         let isFileExists = FileManager.default.fileExists(atPath: destinationPath.path)
-        guard !isFileExists else { return }
+        guard !isFileExists else { 
+            // Check if existing database has old schema and remove it
+            if ExploreDatabaseConnection.hasOldMerchantIdSchema(at: destinationPath) {
+                try? FileManager.default.removeItem(at: destinationPath)
+                // Don't copy bundled database as it also has old schema
+                // Wait for new database to be downloaded
+                return
+            }
+            return 
+        }
 
         guard let dbURL = Bundle.main.url(forResource: "explore", withExtension: "db") else {
             throw ExploreDatabaseConnectionError.fileNotFound
+        }
+        
+        // Check if bundled database has old schema before copying
+        if ExploreDatabaseConnection.hasOldMerchantIdSchema(at: dbURL) {
+            // Don't copy bundled database with old schema
+            // Wait for new database to be downloaded
+            return
         }
 
         try FileManager.default.copyItem(at: dbURL, to: destinationPath)

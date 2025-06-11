@@ -20,7 +20,7 @@ import Foundation
 import SSZipArchive
 
 // TODO: Move it to plist and note in release process
-let gsFilePath = "gs://dash-wallet-firebase.appspot.com/explore/explore-v2.db"
+let gsFilePath = "gs://dash-wallet-firebase.appspot.com/explore/explore-v3.db"
 
 private let fileName = "explore"
 
@@ -135,14 +135,16 @@ extension ExploreDatabaseSyncManager {
     }
 
     private func unzipFile(at path: String, password: String) {
-        var error: NSError?
-        let urlToUnzip = getDocumentsDirectory()
-        SSZipArchive.unzipFile(atPath: path, toDestination: urlToUnzip.path, preserveAttributes: true, overwrite: true,
-                               nestedZipLevel: 0, password: password, error: &error, delegate: nil,
-                               progressHandler: nil) { path, _, _ in
-            NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
-            try? FileManager.default.removeItem(at: URL(fileURLWithPath: path))
-        }
+        // DispatchQueue.global().asyncAfter(deadline: .now() + 10.0) {
+            var error: NSError?
+            let urlToUnzip = self.getDocumentsDirectory()
+            SSZipArchive.unzipFile(atPath: path, toDestination: urlToUnzip.path, preserveAttributes: true, overwrite: true,
+                                   nestedZipLevel: 0, password: password, error: &error, delegate: nil,
+                                   progressHandler: nil) { path, _, _ in
+                NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
+                try? FileManager.default.removeItem(at: URL(fileURLWithPath: path))
+            }
+        // }
     }
 
     private func getDocumentsDirectory() -> URL {
