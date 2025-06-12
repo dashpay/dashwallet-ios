@@ -18,6 +18,20 @@
 import SwiftUI
 import UIKit
 
+protocol PointOfUseListFiltersViewControllerDelegate: AnyObject {
+    func apply(filters: PointOfUseListFilters?)
+}
+
+public enum PointOfUseListFiltersGroup {
+    case paymentType
+    case sortByDistanceOrName
+    case denominationType
+
+    case territory
+    case radius
+    case locationService
+}
+
 class MerchantFiltersHostingController: UIHostingController<MerchantFiltersView> {
     
     weak var delegate: PointOfUseListFiltersViewControllerDelegate?

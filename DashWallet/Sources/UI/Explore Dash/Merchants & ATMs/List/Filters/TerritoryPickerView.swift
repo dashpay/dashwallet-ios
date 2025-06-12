@@ -18,6 +18,8 @@
 import SwiftUI
 import UIKit
 
+typealias Territory = String
+
 struct TerritoryPickerView: View {
     @Environment(\.presentationMode) private var presentationMode
     @State private var territories: [Territory] = []

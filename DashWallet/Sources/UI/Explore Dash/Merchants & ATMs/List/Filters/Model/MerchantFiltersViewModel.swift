@@ -32,7 +32,7 @@ class MerchantFiltersViewModel: ObservableObject {
     @Published var denominationFixed = false
     @Published var denominationFlexible = false
     
-    @Published var selectedRadius: RadiusOption?
+    @Published var selectedRadius: PointOfUseListFilters.Radius?
     @Published var selectedTerritory: Territory?
     
     @Published var isLocationServiceEnabled = DWLocationManager.shared.isAuthorized
@@ -75,12 +75,12 @@ class MerchantFiltersViewModel: ObservableObject {
     private let initialUseGiftCard: Bool
     private let initialDenominationFixed: Bool
     private let initialDenominationFlexible: Bool
-    private let initialRadius: RadiusOption?
+    private let initialRadius: PointOfUseListFilters.Radius?
     private let initialTerritory: Territory?
     
     // MARK: - Available Options
     
-    let availableRadiusOptions: [RadiusOption] = [
+    let availableRadiusOptions: [PointOfUseListFilters.Radius] = [
         .one, .five, .twenty, .fifty
     ]
     
@@ -160,14 +160,14 @@ class MerchantFiltersViewModel: ObservableObject {
         selectedTerritory = nil
     }
     
-    func toggleSortBy(_ option: SortOption) {
+    func toggleSortBy(_ option: PointOfUseListFilters.SortBy) {
         // Only one sort option can be selected at a time
         sortByDistance = (option == .distance)
         sortByName = (option == .name)
         sortByDiscount = (option == .discount)
     }
     
-    func toggleRadius(_ option: RadiusOption) {
+    func toggleRadius(_ option: PointOfUseListFilters.Radius) {
         if selectedRadius == option {
             selectedRadius = nil
         } else {
@@ -218,7 +218,7 @@ class MerchantFiltersViewModel: ObservableObject {
         
         // Radius
         if let radius = selectedRadius {
-            filters.radius = radius.filtersRadius
+            filters.radius = radius
             hasAnyFilters = true
         }
         
@@ -229,49 +229,5 @@ class MerchantFiltersViewModel: ObservableObject {
         }
         
         return hasAnyFilters ? filters : nil
-    }
-}
-
-// MARK: - Supporting Types
-
-enum SortOption {
-    case distance
-    case name
-    case discount
-}
-
-enum RadiusOption: Int, CaseIterable, Identifiable {
-    case one = 1
-    case five = 5
-    case twenty = 20
-    case fifty = 50
-    
-    var id: Int { rawValue }
-    
-    var displayText: String {
-        if Locale.usesMetricMeasurementSystem {
-            switch self {
-            case .one: return NSLocalizedString("2 km", comment: "Explore Dash: Filters")
-            case .five: return NSLocalizedString("8 km", comment: "Explore Dash: Filters")
-            case .twenty: return NSLocalizedString("32 km", comment: "Explore Dash: Filters")
-            case .fifty: return NSLocalizedString("80 km", comment: "Explore Dash: Filters")
-            }
-        } else {
-            switch self {
-            case .one: return NSLocalizedString("1 mile", comment: "Explore Dash: Filters")
-            case .five: return NSLocalizedString("5 miles", comment: "Explore Dash: Filters")
-            case .twenty: return NSLocalizedString("20 miles", comment: "Explore Dash: Filters")
-            case .fifty: return NSLocalizedString("50 miles", comment: "Explore Dash: Filters")
-            }
-        }
-    }
-    
-    var filtersRadius: PointOfUseListFilters.Radius {
-        switch self {
-        case .one: return .one
-        case .five: return .five
-        case .twenty: return .twenty
-        case .fifty: return .fifty
-        }
     }
 }
