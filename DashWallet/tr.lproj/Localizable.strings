@@ -935,7 +935,7 @@
 "Filter" = "Filtre";
 
 /* No comment provided by engineer. */
-"Filter Transactions" = "İşlemleri Filtrele";
+"Filter transactions" = "Filter transactions";
 
 /* No comment provided by engineer. */
 "Filtered by" = "Şuna göre filtrelendi:";
@@ -1042,6 +1042,9 @@
 /* Explore Dash: Filters */
 "Gift Card" = "Hediye Kartı";
 
+/* No comment provided by engineer. */
+"Gift card" = "Gift card";
+
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
 
@@ -1050,6 +1053,9 @@
 
 /* DashSpend confirmation */
 "Gift card total" = "Gift card total";
+
+/* DashSpend */
+"Gift card · %@" = "Gift card · %@";
 
 /* No comment provided by engineer. */
 "Go to CrowdNode website" = "CrowdNode web sitesine gidin";
@@ -2089,9 +2095,6 @@
 
 /* No comment provided by engineer. */
 "Reward" = "Ödül";
-
-/* No comment provided by engineer. */
-"Rewards" = "Ödüller";
 
 /* No comment provided by engineer. */
 "Save" = "Kaydet";

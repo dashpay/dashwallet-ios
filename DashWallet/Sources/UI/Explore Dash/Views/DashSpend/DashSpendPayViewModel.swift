@@ -26,6 +26,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
     private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: defaultCurrency)
     private let ctxSpendService = CTXSpendService.shared
     private let customIconProvider = CustomIconMetadataProvider.shared
+    private let txMetadataDao = TransactionMetadataDAOImpl.shared
     private let sendCoinsService = SendCoinsService()
 
     private var merchantId: String = ""
@@ -148,10 +149,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         
         // Payment successful - save gift card information
         DSLogger.log("Payment transaction completed: \(transaction.txHashHexString)")
-        // TODO:
-        // transactionMetadata.markGiftCardTransaction(transaction.txId, giftCardMerchant.logoLocation)
+        markGiftCardTransaction(txId: transaction.txHashData)
         customIconProvider.updateIcon(txId: transaction.txHashData, iconUrl: merchantIconUrl)
         saveGiftCardDummy(txHashData: transaction.txHashData, giftCardId: response.paymentId)
+        
         
         return transaction.txHashData
     }
@@ -268,5 +269,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         Task {
             await GiftCardsDAOImpl.shared.create(dto: giftCard)
         }
+    }
+    
+    private func markGiftCardTransaction(txId: Data) {
+        var txMetadata = TransactionMetadata(txHash: txId)
+        txMetadata.taxCategory = TxMetadataTaxCategory.expense
+        txMetadata.service = ServiceName.ctxSpend.rawValue
+        txMetadataDao.update(dto: txMetadata)
     }
 }

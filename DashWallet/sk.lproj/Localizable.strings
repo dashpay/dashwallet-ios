@@ -935,7 +935,7 @@
 "Filter" = "Filter platieb";
 
 /* No comment provided by engineer. */
-"Filter Transactions" = "Filtrovať transakcie";
+"Filter transactions" = "Filter transactions";
 
 /* No comment provided by engineer. */
 "Filtered by" = "Filtrované podľa";
@@ -1042,6 +1042,9 @@
 /* Explore Dash: Filters */
 "Gift Card" = "Darčeková karta";
 
+/* No comment provided by engineer. */
+"Gift card" = "Gift card";
+
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
 
@@ -1050,6 +1053,9 @@
 
 /* DashSpend confirmation */
 "Gift card total" = "Gift card total";
+
+/* DashSpend */
+"Gift card · %@" = "Gift card · %@";
 
 /* No comment provided by engineer. */
 "Go to CrowdNode website" = "Prejdite na webovú stránku CrowdNode";
@@ -2089,9 +2095,6 @@
 
 /* No comment provided by engineer. */
 "Reward" = "Odmena";
-
-/* No comment provided by engineer. */
-"Rewards" = "Odmeny";
 
 /* No comment provided by engineer. */
 "Save" = "Uložiť";

@@ -25,6 +25,7 @@ protocol GiftCardsDAO {
     func create(dto: GiftCard) async
     func get(byTxId txId: Data) async -> GiftCard?
     func observeCard(byTxId txId: Data) -> AnyPublisher<GiftCard?, Never>
+    func observeAll() -> AnyPublisher<[GiftCard], Never>
     func update(dto: GiftCard) async
     func updateCardDetails(txId: Data, number: String, pin: String?) async
     func updateBarcode(txId: Data, value: String, format: String) async
@@ -38,8 +39,16 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
     private var db: Connection { DatabaseConnection.shared.db }
     private var cache: [String: GiftCard] = [:]
     private var subjects: [String: CurrentValueSubject<GiftCard?, Never>] = [:]
+    private var allCardsSubject = CurrentValueSubject<[GiftCard], Never>([])
     
     static let shared = GiftCardsDAOImpl()
+    
+    override init() {
+        super.init()
+        Task {
+            await loadAllCards()
+        }
+    }
     
     func create(dto: GiftCard) async {
         do {
@@ -57,6 +66,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
             let key = dto.txId.hexEncodedString()
             self.cache[key] = dto
             self.subjects[key]?.send(dto)
+            updateAllCardsSubject()
         } catch {
             print(error)
         }
@@ -92,6 +102,10 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
         return subjects[key]!.eraseToAnyPublisher()
     }
     
+    func observeAll() -> AnyPublisher<[GiftCard], Never> {
+        return allCardsSubject.eraseToAnyPublisher()
+    }
+    
     func update(dto: GiftCard) async {
         await create(dto: dto)
     }
@@ -120,6 +134,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                 let key = txId.hexEncodedString()
                 cache[key] = updatedCard
                 subjects[key]?.send(updatedCard)
+                updateAllCardsSubject()
             }
         } catch {
             print(error)
@@ -149,6 +164,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                 let key = txId.hexEncodedString()
                 cache[key] = updatedCard
                 subjects[key]?.send(updatedCard)
+                updateAllCardsSubject()
             }
         } catch {
             print(error)
@@ -163,6 +179,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
         do {
             let deleteQuery = GiftCard.table.filter(GiftCard.txId == txId).delete()
             try await execute(deleteQuery)
+            updateAllCardsSubject()
         } catch {
             print(error)
         }
@@ -176,6 +193,21 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
         }
         
         return []
+    }
+    
+    private func loadAllCards() async {
+        let cards = await all()
+        cache.removeAll()
+        for card in cards {
+            let key = card.txId.hexEncodedString()
+            cache[key] = card
+        }
+        updateAllCardsSubject()
+    }
+    
+    private func updateAllCardsSubject() {
+        let allCards = Array(cache.values)
+        allCardsSubject.send(allCards)
     }
 }
 

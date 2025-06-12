@@ -119,6 +119,22 @@ class TransactionMetadataDAOImpl: NSObject, TransactionMetadataDAO, ObservableOb
 
         return nil
     }
+    
+    func getCustomIcons() -> [TransactionMetadata] {
+        let customIconsQuery = TransactionMetadata.table.filter(TransactionMetadata.customIconId != nil)
+        var userInfos: [TransactionMetadata] = []
+
+        do {
+            for txInfo in try db.prepare(customIconsQuery) {
+                let userInfo = TransactionMetadata(row: txInfo)
+                userInfos.append(userInfo)
+            }
+        } catch {
+            print(error)
+        }
+
+        return userInfos
+    }
 
     private func cachedValue(by key: Data) -> TransactionMetadata? {
         var v: TransactionMetadata?

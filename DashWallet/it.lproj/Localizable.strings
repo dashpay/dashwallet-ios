@@ -935,7 +935,7 @@
 "Filter" = "Filtro";
 
 /* No comment provided by engineer. */
-"Filter Transactions" = "Filtra Transazioni";
+"Filter transactions" = "Filter transactions";
 
 /* No comment provided by engineer. */
 "Filtered by" = "Filtrato per";
@@ -1042,6 +1042,9 @@
 /* Explore Dash: Filters */
 "Gift Card" = "Gift Card";
 
+/* No comment provided by engineer. */
+"Gift card" = "Gift card";
+
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
 
@@ -1050,6 +1053,9 @@
 
 /* DashSpend confirmation */
 "Gift card total" = "Gift card total";
+
+/* DashSpend */
+"Gift card · %@" = "Gift card · %@";
 
 /* No comment provided by engineer. */
 "Go to CrowdNode website" = "Vai al sito Web CrowdNode";
@@ -2089,9 +2095,6 @@
 
 /* No comment provided by engineer. */
 "Reward" = "Ricompensa";
-
-/* No comment provided by engineer. */
-"Rewards" = "Ricompense";
 
 /* No comment provided by engineer. */
 "Save" = "Salva";

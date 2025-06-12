@@ -113,7 +113,7 @@ struct MenuItem: View {
             if let icon = icon {
                 ZStack(alignment: .leading) {
                     Icon(name: icon)
-                        .frame(width: 28, height: 28)
+                        .frame(width: 30, height: 30)
                         .padding(0)
                     
                     if let secondaryIcon = secondaryIcon {
@@ -123,7 +123,7 @@ struct MenuItem: View {
                                 Spacer()
                                 Icon(name: secondaryIcon)
                                     .padding(2)
-                                    .frame(width: 18, height: 18)
+                                    .frame(width: 20, height: 20)
                                     .background(Color.secondaryBackground)
                                     .clipShape(.circle)
                                     .offset(x: 2, y: 2)

@@ -56,7 +56,7 @@ struct BottomSheet<Content: View>: View {
                 .padding(.top, 6)
                 
                 Spacer()
-                           
+
                 Button {
                     presentationMode.wrappedValue.dismiss()
                 } label: {

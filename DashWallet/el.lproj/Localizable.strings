@@ -935,7 +935,7 @@
 "Filter" = "Φίλτρο";
 
 /* No comment provided by engineer. */
-"Filter Transactions" = "Φίλτρο Συναλλαγών";
+"Filter transactions" = "Filter transactions";
 
 /* No comment provided by engineer. */
 "Filtered by" = "Φιλτραρισμένο από";
@@ -1042,6 +1042,9 @@
 /* Explore Dash: Filters */
 "Gift Card" = "Δωροκάρτα";
 
+/* No comment provided by engineer. */
+"Gift card" = "Gift card";
+
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
 
@@ -1050,6 +1053,9 @@
 
 /* DashSpend confirmation */
 "Gift card total" = "Gift card total";
+
+/* DashSpend */
+"Gift card · %@" = "Gift card · %@";
 
 /* No comment provided by engineer. */
 "Go to CrowdNode website" = "Μεταβείτε στον ιστότοπο του CrowdNode";
@@ -2089,9 +2095,6 @@
 
 /* No comment provided by engineer. */
 "Reward" = "Ανταμοιβή";
-
-/* No comment provided by engineer. */
-"Rewards" = "Ανταμοιβές";
 
 /* No comment provided by engineer. */
 "Save" = "Αποθήκευση";

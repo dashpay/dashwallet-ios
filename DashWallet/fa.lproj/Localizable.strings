@@ -935,7 +935,7 @@
 "Filter" = "فیلتر";
 
 /* No comment provided by engineer. */
-"Filter Transactions" = "فیلتر تراکنش‌ها";
+"Filter transactions" = "Filter transactions";
 
 /* No comment provided by engineer. */
 "Filtered by" = "Filtered by";
@@ -1042,6 +1042,9 @@
 /* Explore Dash: Filters */
 "Gift Card" = "Gift Card";
 
+/* No comment provided by engineer. */
+"Gift card" = "Gift card";
+
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
 
@@ -1050,6 +1053,9 @@
 
 /* DashSpend confirmation */
 "Gift card total" = "Gift card total";
+
+/* DashSpend */
+"Gift card · %@" = "Gift card · %@";
 
 /* No comment provided by engineer. */
 "Go to CrowdNode website" = "رفتن به وب‌سایت کراودنود";
@@ -2089,9 +2095,6 @@
 
 /* No comment provided by engineer. */
 "Reward" = "Reward";
-
-/* No comment provided by engineer. */
-"Rewards" = "Rewards";
 
 /* No comment provided by engineer. */
 "Save" = "ذخیره";

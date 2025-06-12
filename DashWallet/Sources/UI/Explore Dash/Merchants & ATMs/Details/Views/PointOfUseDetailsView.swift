@@ -21,9 +21,14 @@ import Combine
 
 // MARK: - PointOfUseDetailsView
 
-class PointOfUseDetailsView: UIView {
+class PointOfUseDetailsView: UIView, SyncingActivityMonitorObserver, NetworkReachabilityHandling {
     private var disposeBag = Set<AnyCancellable>()
     private let ctxSpendService = CTXSpendService.shared
+    private let syncMonitor = SyncingActivityMonitor.shared
+    
+    // NetworkReachabilityHandling requirements
+    var networkStatusDidChange: ((NetworkStatus) -> ())?
+    var reachabilityObserver: Any!
     
     public var payWithDashHandler: (()->())?
     public var sellDashHandler: (()->())?
@@ -41,6 +46,7 @@ class PointOfUseDetailsView: UIView {
     var nameLabel: UILabel!
     var subLabel: UILabel!
     var addressLabel: UILabel!
+    private var payButton: ActionButton!
 
     internal let merchant: ExplorePointOfUse
     internal var isShowAllHidden: Bool
@@ -107,6 +113,11 @@ class PointOfUseDetailsView: UIView {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    deinit {
+        syncMonitor.remove(observer: self)
+        stopNetworkMonitoring()
     }
 
     @objc
@@ -185,8 +196,20 @@ class PointOfUseDetailsView: UIView {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isSignedIn in
                 self?.refreshLoginStatus()
+                self?.updateButtonState()
             }
             .store(in: &disposeBag)
+        
+        // Monitor network status
+        networkStatusDidChange = { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.updateButtonState()
+            }
+        }
+        startNetworkMonitoring()
+        
+        // Monitor sync status
+        syncMonitor.add(observer: self)
     }
 }
 
@@ -317,7 +340,7 @@ extension PointOfUseDetailsView {
 
     @objc
     internal func configureBottomButton() {
-        let payButton = ActionButton()
+        payButton = ActionButton()
         payButton.translatesAutoresizingMaskIntoConstraints = false
         payButton.addTarget(self, action: #selector(payAction), for: .touchUpInside)
         containerView.addArrangedSubview(payButton)
@@ -352,6 +375,9 @@ extension PointOfUseDetailsView {
         NSLayoutConstraint.activate([
             payButton.heightAnchor.constraint(equalToConstant: 48),
         ])
+        
+        // Set initial button state
+        updateButtonState()
     }
     
     private static func getEmailText() -> String {
@@ -392,6 +418,32 @@ extension PointOfUseDetailsView {
             loginStatusView.isHidden = false
         } else {
             loginStatusView.isHidden = true
+        }
+    }
+    
+    private func updateButtonState() {
+        guard let payButton = payButton,
+              case .merchant(let m) = merchant.category, 
+              m.paymentMethod == .giftCard else {
+            return
+        }
+        
+        let isActive = merchant.active
+        let isOnline = networkStatus == .online
+        let isSynced = syncMonitor.state == .syncDone
+        
+        payButton.isEnabled = isActive && isOnline && isSynced
+    }
+}
+
+// MARK: - SyncingActivityMonitorObserver
+
+extension PointOfUseDetailsView {
+    func syncingActivityMonitorProgressDidChange(_ progress: Double) { }
+    
+    func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
+        DispatchQueue.main.async { [weak self] in
+            self?.updateButtonState()
         }
     }
 }
