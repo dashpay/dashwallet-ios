@@ -2377,6 +2377,9 @@
 /* No comment provided by engineer. */
 "Sync Failed" = "ซิงค์ล้มเหลว";
 
+/* Explore Dash */
+"Sync in progress… Results may not be complete." = "Sync in progress… Results may not be complete.";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Sync Now" = "ซิงค์ตอนนี้";
 
