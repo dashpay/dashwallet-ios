@@ -20,8 +20,9 @@ struct TransactionFilterDialog: View {
         ) {
             VStack(spacing: 0) {
                 ForEach(filterOptions) { option in
-                    FilterOptionRow(
-                        option: option,
+                    RadioButtonRow(
+                        title: option.title,
+                        icon: option.icon,
                         isSelected: option.mode == selectedFilter
                     ) {
                         onFilterSelected(option.mode)
@@ -46,35 +47,3 @@ struct FilterOption: Identifiable {
     let icon: IconName
 }
 
-struct FilterOptionRow: View {
-    let option: FilterOption
-    let isSelected: Bool
-    let onTap: () -> Void
-    
-    var body: some View {
-        Button(action: onTap) {
-            HStack(alignment: .center, spacing: 16) {
-                Icon(name: option.icon)
-                    .frame(width: 30, height: 30)
-                    .padding(.vertical, 16)
-                
-                Text(option.title)
-                    .font(.body2)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primaryText)
-                
-                Spacer()
-                
-                Circle()
-                    .stroke(isSelected ? Color.dashBlue : Color.gray300.opacity(0.5), lineWidth: isSelected ? 6 : 2)
-                    .frame(width: isSelected ? 21 : 24, height: isSelected ? 21 : 24)
-                    .padding(.trailing, isSelected ? 2 : 0)
-            }
-            .padding(.horizontal, 16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
-            .background(Color.clear)
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}

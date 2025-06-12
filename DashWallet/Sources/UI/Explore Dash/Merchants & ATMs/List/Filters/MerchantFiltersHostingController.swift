@@ -32,7 +32,7 @@ public enum PointOfUseListFiltersGroup {
     case locationService
 }
 
-class MerchantFiltersHostingController: UIHostingController<MerchantFiltersView> {
+class MerchantFiltersHostingController: UIHostingController<NavigationView<MerchantFiltersView>> {
     
     weak var delegate: PointOfUseListFiltersViewControllerDelegate?
     
@@ -55,7 +55,8 @@ class MerchantFiltersHostingController: UIHostingController<MerchantFiltersView>
             delegate?.apply(filters: filters)
         }
         
-        super.init(rootView: filtersView)
+        let navigationView = NavigationView { filtersView }
+        super.init(rootView: navigationView)
         
         // Configure modal presentation
         modalPresentationStyle = .pageSheet

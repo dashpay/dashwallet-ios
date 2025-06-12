@@ -52,7 +52,7 @@ enum MerchantsListSegment: Int {
             showReversedLocation = false
             showMap = false
             dataProvider = OnlineMerchantsDataProvider()
-            showsFilters = false
+            showsFilters = true
             
         case .nearby:
             showLocationServiceSettings = true
@@ -86,7 +86,7 @@ extension MerchantsListSegment {
     var filterGroups: [PointOfUseListFiltersGroup] {
         switch self {
         case .online:
-            return []
+            return [.paymentType, .denominationType]
         case .nearby:
             return [.sortByDistanceOrName, .denominationType, .radius, .locationService]
         case .all:
