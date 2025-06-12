@@ -22,17 +22,17 @@ import SQLite
 
 @objc class AddressUserInfo: NSObject {
     @objc var address: String
-    @objc var taxCategory: TxUserInfoTaxCategory = .unknown
+    @objc var taxCategory: TxMetadataTaxCategory = .unknown
 
     @objc
-    init(address: String, taxCategory: TxUserInfoTaxCategory) {
+    init(address: String, taxCategory: TxMetadataTaxCategory) {
         self.address = address
         self.taxCategory = taxCategory
     }
 
     init(row: Row) {
         address = row[AddressUserInfo.addressColumn]
-        taxCategory = TxUserInfoTaxCategory(rawValue: row[TxUserInfo.txCategoryColumn]) ?? .unknown
+        taxCategory = TxMetadataTaxCategory(rawValue: row[TransactionMetadata.txCategoryColumn]) ?? .unknown
 
         super.init()
     }

@@ -40,10 +40,9 @@ struct GiftCardDetailsView: View {
                 // Merchant header
                 HStack(spacing: 15) {
                     ZStack(alignment: .bottomTrailing) {
-                        if let iconUrl = viewModel.uiState.merchantIconUrl {
-                            WebImage(url: URL(string: iconUrl))
+                        if let icon = viewModel.uiState.merchantIcon {
+                            Image(uiImage: icon)
                                 .resizable()
-                                .indicator(.activity)
                                 .transition(.fade(duration: 0.3))
                                 .scaledToFit()
                                 .frame(width: 48, height: 48)
@@ -53,19 +52,16 @@ struct GiftCardDetailsView: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 48, height: 48)
-                                .foregroundColor(.dashBlue)
                         }
                         
                         // Secondary icon
-                        if viewModel.uiState.merchantIconUrl != nil {
+                        if viewModel.uiState.merchantIcon != nil {
                             Image("image.explore.dash.wts.payment.gift-card")
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 16, height: 16)
-                                .foregroundColor(.dashBlue)
-                                .frame(width: 24, height: 24)
+                                .frame(width: 20, height: 20)
+                                .frame(width: 23, height: 23)
                                 .background(Circle().fill(Color.secondaryBackground))
-                                .overlay(Circle().stroke(Color.secondaryBackground, lineWidth: 2))
                                 .offset(x: 2, y: 2)
                         }
                     }

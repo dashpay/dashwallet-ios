@@ -328,8 +328,8 @@
 		47083B3229892D770010AF71 /* DSTransaction+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47083B3129892D770010AF71 /* DSTransaction+DashWallet.swift */; };
 		4709C30F287E787700B4BD48 /* Migrations.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 4709C30E287E787700B4BD48 /* Migrations.bundle */; };
 		4709C312287E78BD00B4BD48 /* SeedDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C311287E78BD00B4BD48 /* SeedDB.swift */; };
-		4709C315287EA11900B4BD48 /* TxUserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C314287EA11900B4BD48 /* TxUserInfo.swift */; };
-		4709C318287EA23000B4BD48 /* TxUserInfoDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C317287EA23000B4BD48 /* TxUserInfoDAO.swift */; };
+		4709C315287EA11900B4BD48 /* TransactionMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C314287EA11900B4BD48 /* TransactionMetadata.swift */; };
+		4709C318287EA23000B4BD48 /* TransactionMetadataDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C317287EA23000B4BD48 /* TransactionMetadataDAO.swift */; };
 		4709C31E2880247C00B4BD48 /* DSTransaction+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4709C31D2880247C00B4BD48 /* DSTransaction+DashWallet.m */; };
 		4709C31F28818BAE00B4BD48 /* TxDetailModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C31A288020DE00B4BD48 /* TxDetailModel.swift */; };
 		4709C32128818D5400B4BD48 /* Foundation+Bitcoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C32028818D5400B4BD48 /* Foundation+Bitcoin.swift */; };
@@ -582,6 +582,12 @@
 		7549BE542DEAEA18004F0BAF /* MetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE522DEAEA14004F0BAF /* MetadataProvider.swift */; };
 		7549BE572DEAECB8004F0BAF /* CustomIconMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE562DEAECB0004F0BAF /* CustomIconMetadataProvider.swift */; };
 		7549BE582DEAECB8004F0BAF /* CustomIconMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE562DEAECB0004F0BAF /* CustomIconMetadataProvider.swift */; };
+		7549BE5A2DEAF50D004F0BAF /* IconBitmap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE592DEAF50D004F0BAF /* IconBitmap.swift */; };
+		7549BE5B2DEAF50D004F0BAF /* IconBitmap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE592DEAF50D004F0BAF /* IconBitmap.swift */; };
+		7549BE5D2DEAF55B004F0BAF /* IconBitmapDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE5C2DEAF55B004F0BAF /* IconBitmapDAO.swift */; };
+		7549BE5E2DEAF55B004F0BAF /* IconBitmapDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE5C2DEAF55B004F0BAF /* IconBitmapDAO.swift */; };
+		7549BE602DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE5F2DEAF628004F0BAF /* AddIconBitmapsTable.swift */; };
+		7549BE612DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE5F2DEAF628004F0BAF /* AddIconBitmapsTable.swift */; };
 		754BEA122C0B6BD700E8C93C /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */; };
 		754BEA132C0B6BD700E8C93C /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */; };
 		754C27C72CC3C0B900BA7B9F /* UsernamePrefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754C27C52CC3C0B900BA7B9F /* UsernamePrefs.swift */; };
@@ -1064,7 +1070,7 @@
 		C9D2C6D22A320AA000D15901 /* TransactionWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D092905413F00D406C1 /* TransactionWrapper.swift */; };
 		C9D2C6D32A320AA000D15901 /* Transactions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479DBDDC2995168C00F30AF1 /* Transactions.swift */; };
 		C9D2C6D42A320AA000D15901 /* DWRecoverTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFFA2305464C00C475EB /* DWRecoverTextView.m */; };
-		C9D2C6D52A320AA000D15901 /* TxUserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C314287EA11900B4BD48 /* TxUserInfo.swift */; };
+		C9D2C6D52A320AA000D15901 /* TransactionMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C314287EA11900B4BD48 /* TransactionMetadata.swift */; };
 		C9D2C6D62A320AA000D15901 /* ExtendedPublicKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E91AD29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift */; };
 		C9D2C6D82A320AA000D15901 /* AtmListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BDD28C1305E00490F5E /* AtmListViewController.swift */; };
 		C9D2C6D92A320AA000D15901 /* TxDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */; };
@@ -1347,7 +1353,7 @@
 		C9D2C8382A320AA000D15901 /* DWRootModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44313F22CF642C009BAF7F /* DWRootModel.m */; };
 		C9D2C8392A320AA000D15901 /* BaseAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AE28FDAA3300028A8D /* BaseAmountViewController.swift */; };
 		C9D2C83A2A320AA000D15901 /* SendingToView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C982B2942F03500FAA0F0 /* SendingToView.swift */; };
-		C9D2C83B2A320AA000D15901 /* TxUserInfoDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C317287EA23000B4BD48 /* TxUserInfoDAO.swift */; };
+		C9D2C83B2A320AA000D15901 /* TransactionMetadataDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C317287EA23000B4BD48 /* TransactionMetadataDAO.swift */; };
 		C9D2C83C2A320AA000D15901 /* DWModalContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69E223155A0E001B8C90 /* DWModalContentView.m */; };
 		C9D2C83D2A320AA000D15901 /* DWUpholdConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFDFF2230FF2B00956D5F /* DWUpholdConstants.m */; };
 		C9D2C83F2A320AA000D15901 /* CoinbaseSwapeTradeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFA128C896BC000427E7 /* CoinbaseSwapeTradeResponse.swift */; };
@@ -2244,8 +2250,8 @@
 		47083B3129892D770010AF71 /* DSTransaction+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DSTransaction+DashWallet.swift"; sourceTree = "<group>"; };
 		4709C30E287E787700B4BD48 /* Migrations.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Migrations.bundle; sourceTree = "<group>"; };
 		4709C311287E78BD00B4BD48 /* SeedDB.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SeedDB.swift; sourceTree = "<group>"; };
-		4709C314287EA11900B4BD48 /* TxUserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxUserInfo.swift; sourceTree = "<group>"; };
-		4709C317287EA23000B4BD48 /* TxUserInfoDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxUserInfoDAO.swift; sourceTree = "<group>"; };
+		4709C314287EA11900B4BD48 /* TransactionMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMetadata.swift; sourceTree = "<group>"; };
+		4709C317287EA23000B4BD48 /* TransactionMetadataDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMetadataDAO.swift; sourceTree = "<group>"; };
 		4709C31A288020DE00B4BD48 /* TxDetailModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailModel.swift; sourceTree = "<group>"; };
 		4709C31C2880247C00B4BD48 /* DSTransaction+DashWallet.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DSTransaction+DashWallet.h"; sourceTree = "<group>"; };
 		4709C31D2880247C00B4BD48 /* DSTransaction+DashWallet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DSTransaction+DashWallet.m"; sourceTree = "<group>"; };
@@ -2483,6 +2489,9 @@
 		7545ED5F2DA91FC60075F45C /* NumericKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumericKeyboardView.swift; sourceTree = "<group>"; };
 		7549BE522DEAEA14004F0BAF /* MetadataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataProvider.swift; sourceTree = "<group>"; };
 		7549BE562DEAECB0004F0BAF /* CustomIconMetadataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomIconMetadataProvider.swift; sourceTree = "<group>"; };
+		7549BE592DEAF50D004F0BAF /* IconBitmap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBitmap.swift; sourceTree = "<group>"; };
+		7549BE5C2DEAF55B004F0BAF /* IconBitmapDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBitmapDAO.swift; sourceTree = "<group>"; };
+		7549BE5F2DEAF628004F0BAF /* AddIconBitmapsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddIconBitmapsTable.swift; sourceTree = "<group>"; };
 		754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		754C27C52CC3C0B900BA7B9F /* UsernamePrefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernamePrefs.swift; sourceTree = "<group>"; };
 		754C27CB2CC3C14F00BA7B9F /* FeatureSingleItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureSingleItem.swift; sourceTree = "<group>"; };
@@ -4002,6 +4011,7 @@
 				47081194298CF1E3003FCA3D /* Transactions */,
 				11BD737F28E7354200A34022 /* CrowdNode */,
 				479DBDDB2995167800F30AF1 /* Tx */,
+				4709C313287EA10600B4BD48 /* Tx Metadata */,
 				0F6EDF9328C894B9000427E7 /* Coinbase */,
 				47AE8B9328BF873800490F5E /* Explore Dash */,
 				471A2602289ACCD20056B7B2 /* Taxes */,
@@ -5170,25 +5180,28 @@
 		4709C310287E78BD00B4BD48 /* Migrations */ = {
 			isa = PBXGroup;
 			children = (
+				7549BE5F2DEAF628004F0BAF /* AddIconBitmapsTable.swift */,
 				75D9EBB72DE5CC3A009416A2 /* AddGiftCardsTable.swift */,
 				4709C311287E78BD00B4BD48 /* SeedDB.swift */,
 			);
 			path = Migrations;
 			sourceTree = "<group>";
 		};
-		4709C313287EA10600B4BD48 /* Tx */ = {
+		4709C313287EA10600B4BD48 /* Tx Metadata */ = {
 			isa = PBXGroup;
 			children = (
 				4709C316287EA22600B4BD48 /* DAO */,
-				4709C314287EA11900B4BD48 /* TxUserInfo.swift */,
+				4709C314287EA11900B4BD48 /* TransactionMetadata.swift */,
+				7549BE592DEAF50D004F0BAF /* IconBitmap.swift */,
 			);
-			path = Tx;
+			path = "Tx Metadata";
 			sourceTree = "<group>";
 		};
 		4709C316287EA22600B4BD48 /* DAO */ = {
 			isa = PBXGroup;
 			children = (
-				4709C317287EA23000B4BD48 /* TxUserInfoDAO.swift */,
+				4709C317287EA23000B4BD48 /* TransactionMetadataDAO.swift */,
+				7549BE5C2DEAF55B004F0BAF /* IconBitmapDAO.swift */,
 			);
 			path = DAO;
 			sourceTree = "<group>";
@@ -5198,7 +5211,6 @@
 			children = (
 				472D13DD299DF5B5006903F1 /* Services */,
 				471A2603289ACCDD0056B7B2 /* Address */,
-				4709C313287EA10600B4BD48 /* Tx */,
 				471A2609289ACDF70056B7B2 /* Taxes.swift */,
 				75EBAA242BBA9DC2004488E3 /* ZenLedger.swift */,
 			);
@@ -8595,7 +8607,7 @@
 				479DBDDD2995168C00F30AF1 /* Transactions.swift in Sources */,
 				75F3F00D2C48F819004470EA /* RootEditProfileViewController.swift in Sources */,
 				2A74EFFB2305464C00C475EB /* DWRecoverTextView.m in Sources */,
-				4709C315287EA11900B4BD48 /* TxUserInfo.swift in Sources */,
+				4709C315287EA11900B4BD48 /* TransactionMetadata.swift in Sources */,
 				C91E91AE29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift in Sources */,
 				47AE8BFE28C1306000490F5E /* AtmListViewController.swift in Sources */,
 				754D02082D155564005CA466 /* CoinJoinTransaction.swift in Sources */,
@@ -8801,6 +8813,7 @@
 				2A913EA823A79AD2006A2A59 /* DWTransactionListDataProviderStub.m in Sources */,
 				0F6EDFC628C896BD000427E7 /* CoinbaseBaseIDForCurrencyResponse.swift in Sources */,
 				759609232C455B2000F3BF04 /* SendIntro.swift in Sources */,
+				7549BE5A2DEAF50D004F0BAF /* IconBitmap.swift in Sources */,
 				47AC8413297822E000BD1B49 /* SpecifyAmountViewController.swift in Sources */,
 				2AFCB9C423BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m in Sources */,
 				75CDD7862C08D61300F433D2 /* DashAmount.swift in Sources */,
@@ -8864,6 +8877,7 @@
 				2A858A0F237EE89C0097A7B5 /* DSWatchTransactionDataObject.m in Sources */,
 				47FA3B0229364991008D58DC /* HTTPClient.swift in Sources */,
 				7549BE582DEAECB8004F0BAF /* CustomIconMetadataProvider.swift in Sources */,
+				7549BE602DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */,
 				2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressExtractor.m in Sources */,
 				757111A12CF20ED800A7D452 /* CoinJoinMixingTxSet.swift in Sources */,
 				477F501529531C07003C7508 /* ViewModel+Coinbase.swift in Sources */,
@@ -8889,6 +8903,7 @@
 				4709C312287E78BD00B4BD48 /* SeedDB.swift in Sources */,
 				2ACCD8F0231ECDE000A96B62 /* DWPinField.m in Sources */,
 				2AD1CEA222DFC80900C99324 /* DWCenteredScrollView.m in Sources */,
+				7549BE5D2DEAF55B004F0BAF /* IconBitmapDAO.swift in Sources */,
 				2A9172C425233DC50024B4C5 /* DWPhraseRepairViewController.m in Sources */,
 				2A44314C22CF8801009BAF7F /* DWBiometricAuthModel.m in Sources */,
 				7527720F2AA9F58E0066557E /* TopperViewModel.swift in Sources */,
@@ -8934,7 +8949,7 @@
 				47C661AF28FDAA3400028A8D /* BaseAmountViewController.swift in Sources */,
 				478C982C2942F03500FAA0F0 /* SendingToView.swift in Sources */,
 				C94D98232A4CC85400F3BEE1 /* UIView+Dash.swift in Sources */,
-				4709C318287EA23000B4BD48 /* TxUserInfoDAO.swift in Sources */,
+				4709C318287EA23000B4BD48 /* TransactionMetadataDAO.swift in Sources */,
 				2A0C69E323155A0E001B8C90 /* DWModalContentView.m in Sources */,
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,
 				0F6EDFC728C896BD000427E7 /* CoinbaseSwapeTradeResponse.swift in Sources */,
@@ -9162,6 +9177,7 @@
 				C943B4EE2A40A54600AF23C5 /* DWStretchyHeaderListCollectionLayout.m in Sources */,
 				75A8C1652AE5726B0042256E /* UsernameRequestsDAO.swift in Sources */,
 				C9D2C6992A320AA000D15901 /* DWStartViewController.m in Sources */,
+				7549BE5B2DEAF50D004F0BAF /* IconBitmap.swift in Sources */,
 				C943B4C02A40A54600AF23C5 /* DWContactsSearchInfoHeaderView.m in Sources */,
 				C9D2C69B2A320AA000D15901 /* DWStartModel.m in Sources */,
 				754495DD2AE91B6300492817 /* GroupedRequestCell.swift in Sources */,
@@ -9175,6 +9191,7 @@
 				C9D2C6A12A320AA000D15901 /* AmountInputControl.swift in Sources */,
 				C9D2C6A22A320AA000D15901 /* DWSegmentSliderFormTableViewCell.m in Sources */,
 				759609212C4553A400F3BF04 /* BuyCreditsViewController.swift in Sources */,
+				7549BE5E2DEAF55B004F0BAF /* IconBitmapDAO.swift in Sources */,
 				C9D2C6A32A320AA000D15901 /* ApiCode.swift in Sources */,
 				75FEC6AF2CE0C58A00F87B48 /* VerifyIdentityScreen.swift in Sources */,
 				C9D2C6A42A320AA000D15901 /* CoinbaseEntryPointModel.swift in Sources */,
@@ -9247,7 +9264,7 @@
 				C9D2C6D32A320AA000D15901 /* Transactions.swift in Sources */,
 				C9D2C6D42A320AA000D15901 /* DWRecoverTextView.m in Sources */,
 				C943B5012A40A54600AF23C5 /* DWDPGenericItemView.m in Sources */,
-				C9D2C6D52A320AA000D15901 /* TxUserInfo.swift in Sources */,
+				C9D2C6D52A320AA000D15901 /* TransactionMetadata.swift in Sources */,
 				C9D2C6D62A320AA000D15901 /* ExtendedPublicKeysViewController.swift in Sources */,
 				C9D2C6D82A320AA000D15901 /* AtmListViewController.swift in Sources */,
 				C9D2C6D92A320AA000D15901 /* TxDetailViewController.swift in Sources */,
@@ -9626,6 +9643,7 @@
 				C943B4F32A40A54600AF23C5 /* DWDPEstablishedContactObject.m in Sources */,
 				C9D2C7E02A320AA000D15901 /* TransactionFilter.swift in Sources */,
 				C9D2C7E22A320AA000D15901 /* CrowdNodeWithdrawalReceivedTx.swift in Sources */,
+				7549BE612DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */,
 				C943B4B62A40A54600AF23C5 /* DWFetchedResultsDataSource.m in Sources */,
 				C9D2C7E32A320AA000D15901 /* PointOfUseListSegmentedCell.swift in Sources */,
 				7513DA892AB17606005D55F6 /* Topper.swift in Sources */,
@@ -9740,7 +9758,7 @@
 				C9D2C8382A320AA000D15901 /* DWRootModel.m in Sources */,
 				C9D2C8392A320AA000D15901 /* BaseAmountViewController.swift in Sources */,
 				C9D2C83A2A320AA000D15901 /* SendingToView.swift in Sources */,
-				C9D2C83B2A320AA000D15901 /* TxUserInfoDAO.swift in Sources */,
+				C9D2C83B2A320AA000D15901 /* TransactionMetadataDAO.swift in Sources */,
 				C9D2C83C2A320AA000D15901 /* DWModalContentView.m in Sources */,
 				759AFDE02CC63571007072D2 /* JoinDashPayScreen.swift in Sources */,
 				C9D2C83D2A320AA000D15901 /* DWUpholdConstants.m in Sources */,

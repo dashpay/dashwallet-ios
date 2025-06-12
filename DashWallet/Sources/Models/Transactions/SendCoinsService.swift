@@ -140,7 +140,7 @@ extension SendCoinsService: DWPaymentProcessorDelegate {
     }
     
     public func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, details: DSPaymentProtocolDetails?, contactItem: DWDPBasicUserItem?) {
-        completePayment(transaction: nil, error: CTXSpendError.paymentProcessingError("Amount request not supported"))
+        completePayment(transaction: nil, error: CTXSpendError.paymentProcessingError("Request is missing destination"))
     }
     
     public func paymentProcessor(_ processor: DWPaymentProcessor, requestUserActionTitle title: String?, message: String?, actionTitle: String, cancel cancelBlock: (() -> Void)?, actionBlock: (() -> Void)?) {

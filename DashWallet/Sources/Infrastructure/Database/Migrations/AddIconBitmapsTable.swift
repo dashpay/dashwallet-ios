@@ -15,22 +15,20 @@
 //  limitations under the License.
 //
 
-import UIKit
+import Foundation
+import SQLite
+import SQLiteMigrationManager
 
-struct TxRowMetadata: Equatable {
-    var title: String?
-    var details: String?
-    var customIconId: Data?
-    var icon: UIImage?
+struct AddIconBitmapsTable: Migration {
+    var version: Int64 = 20250114130000
     
-    static func == (lhs: TxRowMetadata, rhs: TxRowMetadata) -> Bool {
-        return lhs.title == rhs.title &&
-               lhs.details == rhs.details &&
-               lhs.customIconId == rhs.customIconId
-        // Note: UIImage is not Equatable, so we don't compare icon directly
+    func migrateDatabase(_ db: Connection) throws {
+        try db.run(IconBitmap.table.create(ifNotExists: true) { t in
+            t.column(IconBitmap.id, primaryKey: true)
+            t.column(IconBitmap.imageData)
+            t.column(IconBitmap.originalUrl)
+            t.column(IconBitmap.height)
+            t.column(IconBitmap.width)
+        })
     }
-}
-
-protocol MetadataProvider {
-    var availableMetadata: [Data: TxRowMetadata] { get }
-}
+} 
