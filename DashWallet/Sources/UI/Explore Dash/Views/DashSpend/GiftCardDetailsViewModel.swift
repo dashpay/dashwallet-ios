@@ -62,27 +62,22 @@ class GiftCardDetailsViewModel: ObservableObject {
     func startObserving() {
         loadExistingMetadata()
         
-        giftCardsDAO.observeCard(byTxId: txId)
+        // Load the initial gift card data
+        Task {
+            await loadGiftCard()
+        }
+        
+        // Observe changes to gift card txId
+        giftCardsDAO.giftCardTxIdPublisher
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] giftCard in
-                guard let self = self, let card = giftCard else { return }
+            .sink { [weak self] publishedTxId in
+                guard let self = self,
+                      let publishedTxId = publishedTxId,
+                      publishedTxId == self.txId else { return }
                 
-                self.uiState.merchantName = card.merchantName
-                self.uiState.merchantUrl = card.merchantUrl
-                self.uiState.formattedPrice = self.currencyFormatter.string(from: card.price as NSDecimalNumber) ?? "$0.00"
-                self.uiState.cardNumber = card.number
-                self.uiState.cardPin = card.pin
-                
-                // Generate barcode if we have the value
-                if let barcodeValue = card.barcodeValue {
-                    self.generateBarcode(from: barcodeValue, format: card.barcodeFormat ?? "CODE128")
-                }
-                
-                // If we don't have card details yet but have a note (payment ID), start ticker
-                if card.number == nil && card.note != nil {
-                    self.startTicker()
-                } else {
-                    self.stopTicker()
+                // The gift card for our txId has changed, fetch it
+                Task {
+                    await self.loadGiftCard()
                 }
             }
             .store(in: &cancellableBag)
@@ -122,6 +117,30 @@ class GiftCardDetailsViewModel: ObservableObject {
                     self.uiState.purchaseDate = Date(timeIntervalSince1970: TimeInterval(tx.timestamp))
                     self.uiState.transaction = tx
                 }
+            }
+        }
+    }
+    
+    private func loadGiftCard() async {
+        guard let card = await giftCardsDAO.get(byTxId: txId) else { return }
+        
+        await MainActor.run {
+            self.uiState.merchantName = card.merchantName
+            self.uiState.merchantUrl = card.merchantUrl
+            self.uiState.formattedPrice = self.currencyFormatter.string(from: card.price as NSDecimalNumber) ?? "$0.00"
+            self.uiState.cardNumber = card.number
+            self.uiState.cardPin = card.pin
+            
+            // Generate barcode if we have the value
+            if let barcodeValue = card.barcodeValue {
+                self.generateBarcode(from: barcodeValue, format: card.barcodeFormat ?? "CODE128")
+            }
+            
+            // If we don't have card details yet but have a note (payment ID), start ticker
+            if card.number == nil && card.note != nil {
+                self.startTicker()
+            } else {
+                self.stopTicker()
             }
         }
     }

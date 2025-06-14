@@ -53,6 +53,8 @@ class ExplorePointOfUseListViewController: UIViewController {
     internal var radius = 20 // In miles //Move to model
     internal var mapView: ExploreMapView!
     internal var showMapButton: UIButton!
+    internal var syncBannerView: ExploreSyncBannerView?
+    internal var syncBannerHeightConstraint: NSLayoutConstraint?
 
     internal var contentViewTopLayoutConstraint: NSLayoutConstraint!
     internal var contentView: UIView!
@@ -137,6 +139,9 @@ class ExplorePointOfUseListViewController: UIViewController {
 
         showMapIfNeeded()
         DWLocationManager.shared.add(observer: self)
+        
+        // Check database sync status again in case it changed while navigating
+        checkDatabaseSyncStatus()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -145,6 +150,7 @@ class ExplorePointOfUseListViewController: UIViewController {
         super.viewWillDisappear(animated)
 
         DWLocationManager.shared.remove(observer: self)
+        NotificationCenter.default.removeObserver(self, name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
     }
 
     override func viewDidLoad() {
@@ -185,12 +191,76 @@ class ExplorePointOfUseListViewController: UIViewController {
         }
 
         configureHierarchy()
+        
+        // Check database sync status
+        checkDatabaseSyncStatus()
+        
+        // Observe database sync notifications
+        NotificationCenter.default.addObserver(self, selector: #selector(databaseHasBeenUpdated), name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
     }
 }
 
 extension ExplorePointOfUseListViewController {
     @objc
     internal func configureModel() { }
+    
+    private func checkDatabaseSyncStatus() {
+        // Check if we need to show sync banner
+        // If database doesn't exist or has old schema, show banner
+        let documentsPath = FileManager.documentsDirectoryURL.appendingPathComponent(kExploreDashDatabaseName)
+        let fileExists = FileManager.default.fileExists(atPath: documentsPath.path)
+        
+        // If file doesn't exist or has old schema, show sync banner
+        if !fileExists || ExploreDatabaseConnection.hasOldMerchantIdSchema(at: documentsPath) {
+            showSyncBanner()
+        } else {
+            hideSyncBanner()
+        }
+    }
+    
+    private func showSyncBanner() {
+        guard syncBannerView?.isHidden == true else { return }
+        
+        syncBannerView?.isHidden = false
+        syncBannerHeightConstraint?.constant = 30
+        
+        UIView.animate(withDuration: 0.3) {
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    private func hideSyncBanner() {
+        guard syncBannerView?.isHidden == false else { return }
+        
+        syncBannerHeightConstraint?.constant = 0
+        
+        UIView.animate(withDuration: 0.3) {
+            self.view.layoutIfNeeded()
+        } completion: { _ in
+            self.syncBannerView?.isHidden = true
+        }
+    }
+    
+    @objc private func databaseHasBeenUpdated() {
+        DispatchQueue.main.async { [weak self] in
+            // Database has been updated, hide the sync banner
+            self?.hideSyncBanner()
+            
+            // The database connection needs to be re-established after update
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                guard let self = self else { return }
+                
+                self.model.items = []
+                if let currentProvider = self.model.currentDataProvider {
+                    currentProvider.items = []
+                    currentProvider.currentPage = nil
+                }
+                
+                self.model.refreshItems()
+                self.tableView.reloadData()
+            }
+        }
+    }
 }
 
 // MARK: DWLocationObserver
@@ -307,6 +377,12 @@ extension ExplorePointOfUseListViewController {
         contentView.layer.cornerRadius = 20
         contentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         view.addSubview(contentView)
+        
+        // Add sync banner attached to app bar but overlaying content
+        syncBannerView = ExploreSyncBannerView()
+        syncBannerView?.translatesAutoresizingMaskIntoConstraints = false
+        syncBannerView?.isHidden = true
+        view.addSubview(syncBannerView!)
 
         let stackView = UIStackView()
         stackView.axis = .vertical
@@ -365,6 +441,10 @@ extension ExplorePointOfUseListViewController {
 
         contentViewTopLayoutConstraint = contentView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor,
                                                                           constant: -handlerViewHeight)
+        
+        syncBannerHeightConstraint = syncBannerView!.heightAnchor.constraint(equalToConstant: 0)
+        // Set high z-position to overlay content
+        syncBannerView!.layer.zPosition = 100
 
         NSLayoutConstraint.activate([
             contentViewTopLayoutConstraint,
@@ -372,6 +452,12 @@ extension ExplorePointOfUseListViewController {
             contentView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            
+            // Sync banner constraints - attached to app bar, overlaying content
+            syncBannerView!.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            syncBannerView!.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            syncBannerView!.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            syncBannerHeightConstraint!,
 
             handlerView.heightAnchor.constraint(equalToConstant: handlerViewHeight),
 
