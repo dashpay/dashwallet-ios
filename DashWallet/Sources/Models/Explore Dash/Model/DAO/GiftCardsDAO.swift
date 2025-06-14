@@ -22,9 +22,10 @@ import Combine
 // MARK: - GiftCardsDAO
 
 protocol GiftCardsDAO {
+    var giftCardTxIdPublisher: AnyPublisher<Data?, Never> { get }
+    
     func create(dto: GiftCard) async
     func get(byTxId txId: Data) async -> GiftCard?
-    func observeCard(byTxId txId: Data) -> AnyPublisher<GiftCard?, Never>
     func observeAll() -> AnyPublisher<[GiftCard], Never>
     func update(dto: GiftCard) async
     func updateCardDetails(txId: Data, number: String, pin: String?) async
@@ -38,8 +39,12 @@ protocol GiftCardsDAO {
 class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
     private var db: Connection { DatabaseConnection.shared.db }
     private var cache: [String: GiftCard] = [:]
-    private var subjects: [String: CurrentValueSubject<GiftCard?, Never>] = [:]
+    @Published private var giftCardTxId: Data?
     private var allCardsSubject = CurrentValueSubject<[GiftCard], Never>([])
+    
+    var giftCardTxIdPublisher: AnyPublisher<Data?, Never> {
+        $giftCardTxId.eraseToAnyPublisher()
+    }
     
     static let shared = GiftCardsDAOImpl()
     
@@ -65,7 +70,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
             try await execute(insert)
             let key = dto.txId.hexEncodedString()
             self.cache[key] = dto
-            self.subjects[key]?.send(dto)
+            self.giftCardTxId = dto.txId
             updateAllCardsSubject()
         } catch {
             print(error)
@@ -87,20 +92,6 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
         return nil
     }
     
-    func observeCard(byTxId txId: Data) -> AnyPublisher<GiftCard?, Never> {
-        let key = txId.hexEncodedString()
-        
-        if subjects[key] == nil {
-            subjects[key] = CurrentValueSubject<GiftCard?, Never>(cache[key])
-            
-            Task {
-                let card = await get(byTxId: txId)
-                subjects[key]?.send(card)
-            }
-        }
-        
-        return subjects[key]!.eraseToAnyPublisher()
-    }
     
     func observeAll() -> AnyPublisher<[GiftCard], Never> {
         return allCardsSubject.eraseToAnyPublisher()
@@ -133,7 +124,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                 )
                 let key = txId.hexEncodedString()
                 cache[key] = updatedCard
-                subjects[key]?.send(updatedCard)
+                self.giftCardTxId = txId
                 updateAllCardsSubject()
             }
         } catch {
@@ -163,7 +154,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                 )
                 let key = txId.hexEncodedString()
                 cache[key] = updatedCard
-                subjects[key]?.send(updatedCard)
+                self.giftCardTxId = txId
                 updateAllCardsSubject()
             }
         } catch {
@@ -174,7 +165,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
     func delete(byTxId txId: Data) async {
         let key = txId.hexEncodedString()
         self.cache[key] = nil
-        self.subjects[key]?.send(nil)
+        self.giftCardTxId = txId
         
         do {
             let deleteQuery = GiftCard.table.filter(GiftCard.txId == txId).delete()
