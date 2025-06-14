@@ -150,13 +150,13 @@ class MerchantFiltersViewModel: ObservableObject {
     
     func resetFilters() {
         sortByDistance = false
-        sortByName = false
+        sortByName = true
         sortByDiscount = false
-        payWithDash = false
-        useGiftCard = false
-        denominationFixed = false
-        denominationFlexible = false
-        selectedRadius = nil
+        payWithDash = true
+        useGiftCard = true
+        denominationFixed = true
+        denominationFlexible = true
+        selectedRadius = .twenty
         selectedTerritory = nil
     }
     

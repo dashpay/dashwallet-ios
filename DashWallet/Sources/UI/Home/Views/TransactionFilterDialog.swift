@@ -18,7 +18,7 @@ struct TransactionFilterDialog: View {
             title: NSLocalizedString("Filter transactions", comment: ""),
             showBackButton: .constant(false)
         ) {
-            VStack(spacing: 0) {
+            VStack(spacing: 4) {
                 ForEach(filterOptions) { option in
                     RadioButtonRow(
                         title: option.title,

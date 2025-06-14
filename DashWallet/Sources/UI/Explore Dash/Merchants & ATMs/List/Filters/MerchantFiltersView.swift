@@ -168,17 +168,20 @@ struct MerchantFiltersView: View {
                 .padding(.horizontal, 20)
             }
         }
+        .background(Color.primaryBackground)
         .navigationBarTitle(NSLocalizedString("Filters", comment: "Explore Dash"), displayMode: .inline)
         .navigationBarItems(
             leading: Button(NSLocalizedString("Close", comment: "")) {
                 presentationMode.wrappedValue.dismiss()
             }
+            .font(.system(size: 15, weight: .medium))
             .foregroundColor(.dashBlue),
             trailing: Button(NSLocalizedString("Apply", comment: "")) {
                 let filters = viewModel.buildFilters()
                 onApplyFilters(filters)
                 presentationMode.wrappedValue.dismiss()
             }
+            .font(.system(size: 15, weight: .medium))
             .foregroundColor(viewModel.canApply ? .dashBlue : Color.tertiaryText)
             .disabled(!viewModel.canApply)
         )
@@ -205,9 +208,10 @@ private struct FilterSection<Content: View>: View {
             VStack(spacing: 0) {
                 content()
             }
+            .padding(.vertical, 6)
             .background(Color.secondaryBackground)
             .clipShape(RoundedShape(corners: .allCorners, radii: 12))
-            .padding(.bottom, 24)
+            .padding(.bottom, 20)
         }
     }
 }

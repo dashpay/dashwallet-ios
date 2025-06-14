@@ -52,8 +52,8 @@ struct RadioButtonRow: View {
                     .padding(.trailing, isSelected ? 2 : 0)
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 16)
             .contentShape(Rectangle())
+            .frame(minHeight: 54)
         }
         .buttonStyle(PlainButtonStyle())
     }
