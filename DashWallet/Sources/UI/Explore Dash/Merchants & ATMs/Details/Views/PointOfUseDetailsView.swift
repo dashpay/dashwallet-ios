@@ -483,7 +483,7 @@ final class SavingsTagView: UIView {
     
     private func setupView() {
         label.font = .systemFont(ofSize: 16, weight: .medium)
-        label.textColor = .white
+        label.textColor = UIColor.dw_background()
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         addSubview(label)
