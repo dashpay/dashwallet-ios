@@ -1532,7 +1532,6 @@
 		C9D2C91B2A320AA000D15901 /* TxDetailTaxCategoryCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C720E298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib */; };
 		C9D2C91C2A320AA000D15901 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = 2ADC722723B5547000D9DD37 /* Localizable.stringsdict */; };
 		C9D2C91D2A320AA000D15901 /* ShortcutsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A2CD71722F99CAE008C7BC9 /* ShortcutsView.xib */; };
-		C9D2C91E2A320AA000D15901 /* HomeBalanceView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9F067F329E457790022D958 /* HomeBalanceView.xib */; };
 		C9D2C9202A320AA000D15901 /* TxDetailInfoCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C7212298A1EFC00475CA6 /* TxDetailInfoCell.xib */; };
 		C9D2C9212A320AA000D15901 /* UpholdOTPStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE552230FF4600956D5F /* UpholdOTPStoryboard.storyboard */; };
 		C9D2C9222A320AA000D15901 /* AppAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A4430F122CBD57A009BAF7F /* AppAssets.xcassets */; };
@@ -1570,7 +1569,6 @@
 		C9D2C95E2A386D7E00D15901 /* DWBasePressableControl.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D2C95D2A386D7E00D15901 /* DWBasePressableControl.m */; };
 		C9D2C9652A38733B00D15901 /* DPAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C9D2C9642A38733B00D15901 /* DPAssets.xcassets */; };
 		C9F067F229E4576D0022D958 /* HomeBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F067F129E4576D0022D958 /* HomeBalanceView.swift */; };
-		C9F067F429E543630022D958 /* HomeBalanceView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9F067F329E457790022D958 /* HomeBalanceView.xib */; };
 		C9F42F9F29DA82E5001BC549 /* PayableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */; };
 		C9F42FA129DA95F5001BC549 /* PayTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FA029DA95F5001BC549 /* PayTableViewCell.swift */; };
 		C9F42FA429DBC6E5001BC549 /* PaymentsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FA229DBC183001BC549 /* PaymentsViewController.swift */; };
@@ -3086,7 +3084,6 @@
 		C9D2C95D2A386D7E00D15901 /* DWBasePressableControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWBasePressableControl.m; sourceTree = "<group>"; };
 		C9D2C9642A38733B00D15901 /* DPAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = DPAssets.xcassets; sourceTree = "<group>"; };
 		C9F067F129E4576D0022D958 /* HomeBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeBalanceView.swift; sourceTree = "<group>"; };
-		C9F067F329E457790022D958 /* HomeBalanceView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HomeBalanceView.xib; sourceTree = "<group>"; };
 		C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayableViewController.swift; sourceTree = "<group>"; };
 		C9F42FA029DA95F5001BC549 /* PayTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayTableViewCell.swift; sourceTree = "<group>"; };
 		C9F42FA229DBC183001BC549 /* PaymentsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsViewController.swift; sourceTree = "<group>"; };
@@ -7629,7 +7626,6 @@
 			children = (
 				472D13E7299E4EE7006903F1 /* BalanceModel.swift */,
 				C9F067F129E4576D0022D958 /* HomeBalanceView.swift */,
-				C9F067F329E457790022D958 /* HomeBalanceView.xib */,
 			);
 			path = "Home Balance View";
 			sourceTree = "<group>";
@@ -7986,7 +7982,6 @@
 				2ADC722923B5547000D9DD37 /* Localizable.stringsdict in Resources */,
 				75E2F3C82AA4CF1900C3B458 /* Topper-Info.plist in Resources */,
 				2A2CD71822F99CAE008C7BC9 /* ShortcutsView.xib in Resources */,
-				C9F067F429E543630022D958 /* HomeBalanceView.xib in Resources */,
 				474C7213298A1EFC00475CA6 /* TxDetailInfoCell.xib in Resources */,
 				2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */,
 				2A4430F222CBD57A009BAF7F /* AppAssets.xcassets in Resources */,
@@ -8085,7 +8080,6 @@
 				C9D2C91C2A320AA000D15901 /* Localizable.stringsdict in Resources */,
 				C943B4C12A40A54600AF23C5 /* DWTitleActionHeaderView.xib in Resources */,
 				C9D2C91D2A320AA000D15901 /* ShortcutsView.xib in Resources */,
-				C9D2C91E2A320AA000D15901 /* HomeBalanceView.xib in Resources */,
 				753FDBEE2AECF52B0005EEC3 /* UsernameVoting.storyboard in Resources */,
 				C9D2C9202A320AA000D15901 /* TxDetailInfoCell.xib in Resources */,
 				C9D2C9212A320AA000D15901 /* UpholdOTPStoryboard.storyboard in Resources */,

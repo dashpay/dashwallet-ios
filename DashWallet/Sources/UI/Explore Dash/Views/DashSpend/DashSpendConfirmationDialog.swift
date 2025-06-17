@@ -128,7 +128,7 @@ struct DashSpendConfirmationDialog: View {
                 .padding(.horizontal, 12)
                 .frame(height: 50)
             }
-            .background(Color.white)
+            .background(Color.secondaryBackground)
             .cornerRadius(12)
             .shadow(color: Color.shadow, radius: 10, x: 0, y: 5)
             
