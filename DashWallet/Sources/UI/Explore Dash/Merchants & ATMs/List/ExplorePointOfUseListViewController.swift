@@ -41,7 +41,7 @@ protocol PointOfUseListFiltersViewControllerDelegate: AnyObject {
 
 public enum PointOfUseListFiltersGroup {
     case paymentType
-    case sortByDistanceOrName
+    case sortBy
     case denominationType
 
     case territory
@@ -497,7 +497,7 @@ extension ExplorePointOfUseListViewController {
 extension ExplorePointOfUseListViewController {
     private func showFilters() {
         let filterGroups = currentSegment.filterGroups.filter { filter in
-            DWLocationManager.shared.currentLocation != nil || (filter != .sortByDistanceOrName && filter != .radius)
+            DWLocationManager.shared.currentLocation != nil || (filter != .sortBy && filter != .radius)
         }
         
         let showLocationSettings = filterGroups.contains(.locationService)

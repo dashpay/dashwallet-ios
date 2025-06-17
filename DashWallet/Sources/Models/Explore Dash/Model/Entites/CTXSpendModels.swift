@@ -147,6 +147,6 @@ struct MerchantInfo: Codable {
 }
 
 enum DenominationType: String, Codable {
-    case Range = "range"
+    case Range = "min-max"
     case Fixed = "fixed"
 } 

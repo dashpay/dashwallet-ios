@@ -40,8 +40,7 @@ struct TerritoryPickerView: View {
     }
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
+        VStack(spacing: 0) {
                 // Search Bar
                 HStack {
                     Image(systemName: "magnifyingglass")
@@ -52,7 +51,7 @@ struct TerritoryPickerView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                .background(Color.secondaryBackground)
+                .background(Color.gray400.opacity(0.1))
                 .cornerRadius(10)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
@@ -63,38 +62,69 @@ struct TerritoryPickerView: View {
                         .progressViewStyle(CircularProgressViewStyle())
                     Spacer()
                 } else {
-                    List {
-                        // Current Location Option
-                        TerritoryRowView(
-                            title: NSLocalizedString("Current location", comment: "Explore Dash: Filters"),
-                            isSelected: selectedTerritory == nil
-                        ) {
-                            onTerritorySelected(nil)
-                            presentationMode.wrappedValue.dismiss()
+                    ScrollViewReader { proxy in
+                        ScrollView {
+                            VStack(spacing: 0) {
+                                // Current Location Option
+                                RadioButtonRow(
+                                    title: NSLocalizedString("Current location", comment: "Explore Dash: Filters"),
+                                    icon: .system("location.circle"),
+                                    isSelected: selectedTerritory == nil
+                                ) {
+                                    onTerritorySelected(nil)
+                                    presentationMode.wrappedValue.dismiss()
+                                }
+                                .background(Color.secondaryBackground)
+                                .clipShape(RoundedShape(corners: .allCorners, radii: 12))
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, 8)
+                                .id("current_location")
+                                
+                                // Territory Options
+                                VStack(spacing: 0) {
+                                    ForEach(filteredTerritories, id: \.self) { territory in
+                                        RadioButtonRow(
+                                            title: territory,
+                                            isSelected: selectedTerritory == territory
+                                        ) {
+                                            onTerritorySelected(territory)
+                                            presentationMode.wrappedValue.dismiss()
+                                        }
+                                        .id(territory)
+                                    }
+                                }
+                                .background(Color.secondaryBackground)
+                                .clipShape(RoundedShape(corners: .allCorners, radii: 12))
+                                .padding(.horizontal, 20)
+                            }
                         }
-                        
-                        // Territory Options
-                        ForEach(filteredTerritories, id: \.self) { territory in
-                            TerritoryRowView(
-                                title: territory,
-                                isSelected: selectedTerritory == territory
-                            ) {
-                                onTerritorySelected(territory)
-                                presentationMode.wrappedValue.dismiss()
+                        .onAppear {
+                            // Scroll to selected item after a small delay to ensure the view is loaded
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                withAnimation {
+                                    if let selected = selectedTerritory {
+                                        proxy.scrollTo(selected, anchor: .center)
+                                    } else {
+                                        proxy.scrollTo("current_location", anchor: .center)
+                                    }
+                                }
                             }
                         }
                     }
-                    .listStyle(PlainListStyle())
                 }
-            }
-            .navigationTitle(NSLocalizedString("Location", comment: ""))
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(NSLocalizedString("Back", comment: "")) {
-                        presentationMode.wrappedValue.dismiss()
-                    }
+        }
+        .background(Color.primaryBackground)
+        .navigationTitle(NSLocalizedString("Location", comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.primaryText)
                 }
             }
         }
@@ -123,33 +153,3 @@ struct TerritoryPickerView: View {
     }
 }
 
-private struct TerritoryRowView: View {
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primaryText)
-                
-                Spacer()
-                
-                if isSelected {
-                    Image(systemName: "checkmark")
-                        .foregroundColor(.dashBlue)
-                }
-            }
-            .padding(.vertical, 12)
-            .padding(.horizontal, 16)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(PlainButtonStyle())
-        .listRowBackground(Color.clear)
-        .listRowSeparator(.hidden)
-        .background(Color.secondaryBackground)
-    }
-}

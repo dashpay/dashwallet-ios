@@ -59,7 +59,7 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
                         with filters: PointOfUseListFilters?, offset: Int,
                         completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         dataSource.allMerchants(by: query, in: nil, userPoint: userPoint, paymentMethods: filters?.merchantPaymentTypes,
-                                sortBy: filters?.sortBy, territory: filters?.territory,
+                                sortBy: filters?.sortBy, territory: filters?.territory, denominationType: filters?.denominationType,
                                 offset: offset, completion: completion)
     }
 }
@@ -102,7 +102,7 @@ class NearbyMerchantsDataProvider: PointOfUseDataProvider {
     internal func fetch(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                         with filters: PointOfUseListFilters?, offset: Int,
                         completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        dataSource.nearbyMerchants(by: query, in: bounds, userPoint: userPoint, paymentMethods: filters?.merchantPaymentTypes, sortBy: filters?.sortBy, territory: filters?.territory, offset: offset, completion: completion)
+        dataSource.nearbyMerchants(by: query, in: bounds, userPoint: userPoint, paymentMethods: filters?.merchantPaymentTypes, sortBy: filters?.sortBy, territory: filters?.territory, denominationType: filters?.denominationType, offset: offset, completion: completion)
     }
 }
 
@@ -137,6 +137,6 @@ class OnlineMerchantsDataProvider: PointOfUseDataProvider {
                        with filters: PointOfUseListFilters?, offset: Int,
                        completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         dataSource.onlineMerchants(query: query, onlineOnly: false, paymentMethods: filters?.merchantPaymentTypes,
-                                   sortBy: filters?.sortBy, userPoint: userPoint, offset: offset, completion: completion)
+                                   sortBy: filters?.sortBy, userPoint: userPoint, denominationType: filters?.denominationType, offset: offset, completion: completion)
     }
 }

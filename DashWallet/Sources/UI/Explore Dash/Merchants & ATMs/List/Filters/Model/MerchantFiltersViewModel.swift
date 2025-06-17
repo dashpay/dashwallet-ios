@@ -189,6 +189,56 @@ class MerchantFiltersViewModel: ObservableObject {
         }
     }
     
+    func togglePaymentMethod(_ method: ExplorePointOfUse.Merchant.PaymentMethod) {
+        switch method {
+        case .dash:
+            if payWithDash && !useGiftCard {
+                // If unchecking the last option, check the other one
+                payWithDash = false
+                useGiftCard = true
+            } else {
+                payWithDash.toggle()
+            }
+        case .giftCard:
+            if useGiftCard && !payWithDash {
+                // If unchecking the last option, check the other one
+                useGiftCard = false
+                payWithDash = true
+            } else {
+                useGiftCard.toggle()
+            }
+            // Reset denomination types when gift card is unchecked
+            if !useGiftCard {
+                denominationFixed = true
+                denominationFlexible = true
+            }
+        }
+    }
+    
+    func toggleDenominationType(_ type: PointOfUseListFilters.DenominationType) {
+        switch type {
+        case .flexible:
+            if denominationFlexible && !denominationFixed {
+                // If unchecking the last option, check the other one
+                denominationFlexible = false
+                denominationFixed = true
+            } else {
+                denominationFlexible.toggle()
+            }
+        case .fixed:
+            if denominationFixed && !denominationFlexible {
+                // If unchecking the last option, check the other one
+                denominationFixed = false
+                denominationFlexible = true
+            } else {
+                denominationFixed.toggle()
+            }
+        case .both:
+            // Not used in toggle
+            break
+        }
+    }
+    
     func buildFilters() -> PointOfUseListFilters? {
         var filters = PointOfUseListFilters()
         var hasAnyFilters = false

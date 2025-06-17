@@ -66,7 +66,7 @@ extension AtmListSegmnets {
     }
 
     var filterGroups: [PointOfUseListFiltersGroup] {
-        [.sortByDistanceOrName, .territory, .radius, .locationService]
+        [.sortBy, .territory, .radius, .locationService]
     }
 
     var territories: TerritoryDataSource {

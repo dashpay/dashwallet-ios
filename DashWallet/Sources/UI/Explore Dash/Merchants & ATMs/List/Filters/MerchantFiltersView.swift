@@ -20,6 +20,7 @@ import SwiftUI
 struct MerchantFiltersView: View {
     @StateObject private var viewModel: MerchantFiltersViewModel
     @Environment(\.presentationMode) private var presentationMode
+    @State private var showTerritories: Bool = false
     
     let onApplyFilters: (PointOfUseListFilters?) -> Void
     
@@ -46,30 +47,32 @@ struct MerchantFiltersView: View {
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                LazyVStack(spacing: 0) {
-                    // Sort By Section
-                    FilterSection(title: NSLocalizedString("Sort by", comment: "Explore Dash/Merchants/Filters")) {
-                        RadioButtonRow(
-                            title: NSLocalizedString("Name", comment: "Explore Dash: Filters"),
-                            isSelected: viewModel.sortByName
-                        ) {
-                            viewModel.toggleSortBy(.name)
-                        }
-                        
-                        if viewModel.showSortByDistance {
+                VStack(spacing: 0) {
+                    // Sort By Section - Only show if there are multiple options
+                    if viewModel.showSortByDistance || viewModel.useGiftCard {
+                        FilterSection(title: NSLocalizedString("Sort by", comment: "Explore Dash/Merchants/Filters")) {
                             RadioButtonRow(
-                                title: NSLocalizedString("Distance", comment: "Explore Dash: Filters"),
-                                isSelected: viewModel.sortByDistance
+                                title: NSLocalizedString("Name", comment: "Explore Dash: Filters"),
+                                isSelected: viewModel.sortByName
                             ) {
-                                viewModel.toggleSortBy(.distance)
+                                viewModel.toggleSortBy(.name)
                             }
-                        }
                             
-                        RadioButtonRow(
-                            title: NSLocalizedString("Discount", comment: "Explore Dash: Filters"),
-                            isSelected: viewModel.sortByDiscount
-                        ) {
-                            viewModel.toggleSortBy(.discount)
+                            if viewModel.showSortByDistance {
+                                RadioButtonRow(
+                                    title: NSLocalizedString("Distance", comment: "Explore Dash: Filters"),
+                                    isSelected: viewModel.sortByDistance
+                                ) {
+                                    viewModel.toggleSortBy(.distance)
+                                }
+                            }
+                                
+                            RadioButtonRow(
+                                title: NSLocalizedString("Discount", comment: "Explore Dash: Filters"),
+                                isSelected: viewModel.sortByDiscount
+                            ) {
+                                viewModel.toggleSortBy(.discount)
+                            }
                         }
                     }
                         
@@ -81,7 +84,7 @@ struct MerchantFiltersView: View {
                             isSelected: viewModel.payWithDash,
                             style: .checkbox
                         ) {
-                            viewModel.payWithDash.toggle()
+                            viewModel.togglePaymentMethod(.dash)
                         }
                             
                         RadioButtonRow(
@@ -90,42 +93,40 @@ struct MerchantFiltersView: View {
                             isSelected: viewModel.useGiftCard,
                             style: .checkbox
                         ) {
-                            viewModel.useGiftCard.toggle()
+                            viewModel.togglePaymentMethod(.giftCard)
                         }
                     }
                         
-                    // Gift Card Types Section
-                    FilterSection(title: NSLocalizedString("Gift card types", comment: "Explore Dash/Merchants/Filters")) {
-                        RadioButtonRow(
-                            title: NSLocalizedString("Flexible amounts", comment: "Explore Dash: Filters"),
-                            isSelected: viewModel.denominationFlexible,
-                            style: .checkbox
-                        ) {
-                            viewModel.denominationFlexible.toggle()
-                        }
-                            
-                        RadioButtonRow(
-                            title: NSLocalizedString("Fixed amounts", comment: "Explore Dash: Filters"),
-                            isSelected: viewModel.denominationFixed,
-                            style: .checkbox
-                        ) {
-                            viewModel.denominationFixed.toggle()
+                    // Gift Card Types Section - Only show if Gift Card is selected
+                    if viewModel.useGiftCard {
+                        FilterSection(title: NSLocalizedString("Gift card types", comment: "Explore Dash/Merchants/Filters")) {
+                            RadioButtonRow(
+                                title: NSLocalizedString("Flexible amounts", comment: "Explore Dash: Filters"),
+                                isSelected: viewModel.denominationFlexible,
+                                style: .checkbox
+                            ) {
+                                viewModel.toggleDenominationType(.flexible)
+                            }
+                                
+                            RadioButtonRow(
+                                title: NSLocalizedString("Fixed amounts", comment: "Explore Dash: Filters"),
+                                isSelected: viewModel.denominationFixed,
+                                style: .checkbox
+                            ) {
+                                viewModel.toggleDenominationType(.fixed)
+                            }
                         }
                     }
                         
                     // Location Section
                     if viewModel.showTerritory {
                         FilterSection(title: NSLocalizedString("Location", comment: "")) {
-                            NavigationLink(destination: TerritoryPickerView(
-                                selectedTerritory: viewModel.selectedTerritory,
-                                territoriesDataSource: viewModel.territoriesDataSource
-                            ) { territory in
-                                viewModel.selectedTerritory = territory
-                            }) {
-                                FilterDisclosureItem(
-                                    title: viewModel.selectedTerritory ?? NSLocalizedString("Current location", comment: "Explore Dash: Filters")
-                                )
-                            }
+                            FilterDisclosureItem(
+                                title: viewModel.selectedTerritory ?? NSLocalizedString("Current location", comment: "Explore Dash: Filters"),
+                                action: {
+                                    showTerritories = true
+                                }
+                            )
                         }
                     }
                         
@@ -172,6 +173,17 @@ struct MerchantFiltersView: View {
                     }
                 }
                 .padding(.horizontal, 20)
+                .animation(.easeInOut(duration: 0.3), value: viewModel.useGiftCard)
+                .animation(.easeInOut(duration: 0.3), value: viewModel.showSortByDistance)
+            }
+            
+            NavigationLink(destination: TerritoryPickerView(
+                selectedTerritory: viewModel.selectedTerritory,
+                territoriesDataSource: viewModel.territoriesDataSource
+            ) { territory in
+                viewModel.selectedTerritory = territory
+            }, isActive: $showTerritories) {
+                EmptyView()
             }
         }
         .background(Color.primaryBackground)
