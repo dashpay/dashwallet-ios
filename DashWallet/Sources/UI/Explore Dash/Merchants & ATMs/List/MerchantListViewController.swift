@@ -40,7 +40,7 @@ enum MerchantsListSegment: Int {
         let showReversedLocation: Bool
         let showMap: Bool
         let showLocationServiceSettings: Bool
-        var showsFilters = true
+        var showSortByDistance = true
         var defaultFilters = PointOfUseListFilters()
         defaultFilters.merchantPaymentTypes = [.dash, .giftCard]
         defaultFilters.radius = .twenty
@@ -52,7 +52,7 @@ enum MerchantsListSegment: Int {
             showReversedLocation = false
             showMap = false
             dataProvider = OnlineMerchantsDataProvider()
-            showsFilters = true
+            showSortByDistance = false
             
         case .nearby:
             showLocationServiceSettings = true
@@ -67,7 +67,7 @@ enum MerchantsListSegment: Int {
             dataProvider = AllMerchantsDataProvider()
         }
 
-        return .init(tag: rawValue, title: title, showMap: showMap, showLocationServiceSettings: showLocationServiceSettings, showReversedLocation: showReversedLocation, dataProvider: dataProvider, filterGroups: filterGroups, defaultFilters: defaultFilters, territoriesDataSource: territories, showsFilters: showsFilters)
+        return .init(tag: rawValue, title: title, showMap: showMap, showLocationServiceSettings: showLocationServiceSettings, showReversedLocation: showReversedLocation, dataProvider: dataProvider, filterGroups: filterGroups, territoriesDataSource: territories, showSortByDistance: showSortByDistance)
     }
 }
 
@@ -231,12 +231,6 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
         if DWLocationManager.shared.isAuthorized {
             model.currentSegment = model.segments[MerchantsListSegment.nearby.rawValue]
         }
-    }
-
-    override func refreshFilterCell() {
-        super.refreshFilterCell()
-
-        filterCell?.filterButton.isHidden = !model.currentSegment.showsFilters
     }
 
     override func configureHierarchy() {

@@ -167,9 +167,9 @@ public class ExploreDash {
 
 extension ExploreDash {
     func onlineMerchants(query: String?, onlineOnly: Bool, paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?,
-                         userPoint: CLLocationCoordinate2D?, offset: Int = 0,
+                         sortBy: PointOfUseListFilters.SortBy?, userPoint: CLLocationCoordinate2D?, offset: Int = 0,
                          completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        merchantDAO.onlineMerchants(query: query, onlineOnly: onlineOnly, userPoint: userPoint, paymentMethods: paymentMethods, offset: offset, completion: completion)
+        merchantDAO.onlineMerchants(query: query, onlineOnly: onlineOnly, userPoint: userPoint, sortBy: sortBy, paymentMethods: paymentMethods, offset: offset, completion: completion)
     }
 
     func nearbyMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,

@@ -22,6 +22,8 @@ class MerchantFiltersViewModel: ObservableObject {
     
     // MARK: - Filter Options
     
+    let showSortByDistance: Bool
+    
     @Published var sortByDistance = false
     @Published var sortByName = false
     @Published var sortByDiscount = false
@@ -95,55 +97,67 @@ class MerchantFiltersViewModel: ObservableObject {
     // MARK: - Initialization
     
     init(
-        currentFilters: PointOfUseListFilters?,
-        defaultFilters: PointOfUseListFilters?,
+        filters: PointOfUseListFilters?,
         showLocationSettings: Bool = false,
         showRadius: Bool = false,
         showTerritory: Bool = false,
-        territoriesDataSource: TerritoryDataSource? = nil
+        territoriesDataSource: TerritoryDataSource? = nil,
+        showSortByDistance: Bool = true
     ) {
+        self.showSortByDistance = showSortByDistance
         self.showLocationSettings = showLocationSettings
         self.showRadius = showRadius
         self.showTerritory = showTerritory
         self.territoriesDataSource = territoriesDataSource
         
-        // Set initial values from current filters
-        let filters = currentFilters ?? defaultFilters
-        
-        self.initialSortByDistance = filters?.sortBy == .distance
-        self.initialSortByName = filters?.sortBy == .name
-        self.initialSortByDiscount = filters?.sortBy == .discount
-        
-        self.initialPayWithDash = filters?.merchantPaymentTypes?.contains(.dash) ?? false
-        self.initialUseGiftCard = filters?.merchantPaymentTypes?.contains(.giftCard) ?? false
-        
-        self.initialDenominationFixed = filters?.denominationType == .fixed || filters?.denominationType == .both
-        self.initialDenominationFlexible = filters?.denominationType == .flexible || filters?.denominationType == .both
-        
-        // Convert PointOfUseListFilters.Radius to RadiusOption
-        if let filtersRadius = filters?.radius {
-            switch filtersRadius {
-            case .one: self.initialRadius = .one
-            case .five: self.initialRadius = .five
-            case .twenty: self.initialRadius = .twenty
-            case .fifty: self.initialRadius = .fifty
+        if let filters = filters {
+            self.initialSortByDistance = filters.sortBy == .distance
+            self.initialSortByName = filters.sortBy == .name
+            self.initialSortByDiscount = filters.sortBy == .discount
+            
+            self.initialPayWithDash = filters.merchantPaymentTypes?.contains(.dash) ?? false
+            self.initialUseGiftCard = filters.merchantPaymentTypes?.contains(.giftCard) ?? false
+            
+            self.initialDenominationFixed = filters.denominationType == .fixed || filters.denominationType == .both
+            self.initialDenominationFlexible = filters.denominationType == .flexible || filters.denominationType == .both
+            
+            // Convert PointOfUseListFilters.Radius to RadiusOption
+            if let filtersRadius = filters.radius {
+                switch filtersRadius {
+                case .one: self.initialRadius = .one
+                case .five: self.initialRadius = .five
+                case .twenty: self.initialRadius = .twenty
+                case .fifty: self.initialRadius = .fifty
+                }
+            } else {
+                self.initialRadius = nil
             }
+            
+            self.initialTerritory = filters.territory
+            
+            // Set current values
+            self.sortByDistance = initialSortByDistance
+            self.sortByName = initialSortByName
+            self.sortByDiscount = initialSortByDiscount
+            self.payWithDash = initialPayWithDash
+            self.useGiftCard = initialUseGiftCard
+            self.denominationFixed = initialDenominationFixed
+            self.denominationFlexible = initialDenominationFlexible
+            self.selectedRadius = initialRadius
+            self.selectedTerritory = initialTerritory
         } else {
-            self.initialRadius = nil
+            self.initialSortByDistance = false
+            self.initialSortByName = true
+            self.initialSortByDiscount = false
+            self.initialPayWithDash = true
+            self.initialUseGiftCard = true
+            self.initialDenominationFixed = true
+            self.initialDenominationFlexible = true
+            self.initialRadius = .twenty
+            self.initialTerritory = nil
+            
+            resetFilters()
         }
-        
-        self.initialTerritory = filters?.territory
-        
-        // Set current values
-        self.sortByDistance = initialSortByDistance
-        self.sortByName = initialSortByName
-        self.sortByDiscount = initialSortByDiscount
-        self.payWithDash = initialPayWithDash
-        self.useGiftCard = initialUseGiftCard
-        self.denominationFixed = initialDenominationFixed
-        self.denominationFlexible = initialDenominationFlexible
-        self.selectedRadius = initialRadius
-        self.selectedTerritory = initialTerritory
     }
     
     // MARK: - Actions

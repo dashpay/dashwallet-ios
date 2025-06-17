@@ -137,6 +137,6 @@ class OnlineMerchantsDataProvider: PointOfUseDataProvider {
                        with filters: PointOfUseListFilters?, offset: Int,
                        completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         dataSource.onlineMerchants(query: query, onlineOnly: false, paymentMethods: filters?.merchantPaymentTypes,
-                                   userPoint: userPoint, offset: offset, completion: completion)
+                                   sortBy: filters?.sortBy, userPoint: userPoint, offset: offset, completion: completion)
     }
 }

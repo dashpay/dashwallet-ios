@@ -34,8 +34,7 @@ enum AtmListSegmnets: Int {
         defaultFilters.radius = .twenty
 
         return .init(tag: rawValue, title: title, showMap: true, showLocationServiceSettings: false, showReversedLocation: true,
-                     dataProvider: dataProvider, filterGroups: filterGroups, defaultFilters: defaultFilters,
-                     territoriesDataSource: territories, showsFilters: true)
+                     dataProvider: dataProvider, filterGroups: filterGroups, territoriesDataSource: territories, showSortByDistance: true)
     }
 }
 

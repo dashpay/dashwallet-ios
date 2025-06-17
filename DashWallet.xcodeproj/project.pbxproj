@@ -632,10 +632,8 @@
 		7573C2E12B01103900F4C347 /* VotingFilterItemSelectableCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7573C2E02B01103900F4C347 /* VotingFilterItemSelectableCell.swift */; };
 		7573C2E32B01105F00F4C347 /* MasternodeIPCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7573C2E22B01105F00F4C347 /* MasternodeIPCell.swift */; };
 		7573C2E52B01120B00F4C347 /* MasternodeKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7573C2E42B01120B00F4C347 /* MasternodeKey.swift */; };
-		757422202DF87B5200CB0175 /* MerchantFiltersHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7574221D2DF87B5200CB0175 /* MerchantFiltersHostingController.swift */; };
 		757422212DF87B5200CB0175 /* TerritoryPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7574221F2DF87B5200CB0175 /* TerritoryPickerView.swift */; };
 		757422222DF87B5200CB0175 /* MerchantFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7574221E2DF87B5200CB0175 /* MerchantFiltersView.swift */; };
-		757422232DF87B5200CB0175 /* MerchantFiltersHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7574221D2DF87B5200CB0175 /* MerchantFiltersHostingController.swift */; };
 		757422242DF87B5200CB0175 /* TerritoryPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7574221F2DF87B5200CB0175 /* TerritoryPickerView.swift */; };
 		757422252DF87B5200CB0175 /* MerchantFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7574221E2DF87B5200CB0175 /* MerchantFiltersView.swift */; };
 		757422272DF87B8300CB0175 /* MerchantFiltersViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757422262DF87B8300CB0175 /* MerchantFiltersViewModel.swift */; };
@@ -2524,7 +2522,6 @@
 		7573C2E02B01103900F4C347 /* VotingFilterItemSelectableCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingFilterItemSelectableCell.swift; sourceTree = "<group>"; };
 		7573C2E22B01105F00F4C347 /* MasternodeIPCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasternodeIPCell.swift; sourceTree = "<group>"; };
 		7573C2E42B01120B00F4C347 /* MasternodeKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasternodeKey.swift; sourceTree = "<group>"; };
-		7574221D2DF87B5200CB0175 /* MerchantFiltersHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantFiltersHostingController.swift; sourceTree = "<group>"; };
 		7574221E2DF87B5200CB0175 /* MerchantFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantFiltersView.swift; sourceTree = "<group>"; };
 		7574221F2DF87B5200CB0175 /* TerritoryPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerritoryPickerView.swift; sourceTree = "<group>"; };
 		757422262DF87B8300CB0175 /* MerchantFiltersViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantFiltersViewModel.swift; sourceTree = "<group>"; };
@@ -5434,7 +5431,6 @@
 			isa = PBXGroup;
 			children = (
 				47838B80290271020003E8AB /* Model */,
-				7574221D2DF87B5200CB0175 /* MerchantFiltersHostingController.swift */,
 				7574221E2DF87B5200CB0175 /* MerchantFiltersView.swift */,
 				7574221F2DF87B5200CB0175 /* TerritoryPickerView.swift */,
 			);
@@ -8668,7 +8664,6 @@
 				47522F502927CB9000EE143E /* SuccessfulOperationStatusViewController.swift in Sources */,
 				47E94B9A296D7F99000FE68E /* CustodialSwapsModel.swift in Sources */,
 				2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */,
-				757422232DF87B5200CB0175 /* MerchantFiltersHostingController.swift in Sources */,
 				757422242DF87B5200CB0175 /* TerritoryPickerView.swift in Sources */,
 				757422252DF87B5200CB0175 /* MerchantFiltersView.swift in Sources */,
 				2A74EFFE2305763F00C475EB /* DWRecoverModel.m in Sources */,
@@ -9884,7 +9879,6 @@
 				759063EF2C427324002F2AA9 /* DWMainMenuViewController+DashPay.swift in Sources */,
 				C9D2C8B02A320AA000D15901 /* DWPhraseRepairChildViewController.m in Sources */,
 				C9D2C8B12A320AA000D15901 /* SingleInputAddressSelector.swift in Sources */,
-				757422202DF87B5200CB0175 /* MerchantFiltersHostingController.swift in Sources */,
 				757422212DF87B5200CB0175 /* TerritoryPickerView.swift in Sources */,
 				757422222DF87B5200CB0175 /* MerchantFiltersView.swift in Sources */,
 				C943B5382A40A65B00AF23C5 /* DWScrollingViewController.m in Sources */,

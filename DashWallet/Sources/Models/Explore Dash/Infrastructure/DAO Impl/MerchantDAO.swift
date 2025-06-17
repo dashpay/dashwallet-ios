@@ -156,11 +156,11 @@ class MerchantDAO: PointOfUseDAO {
 }
 
 extension MerchantDAO {
-    func onlineMerchants(query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?,
+    func onlineMerchants(query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?, sortBy: PointOfUseListFilters.SortBy?,
                          paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, offset: Int = 0,
                          completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         items(query: query, bounds: nil, userLocation: userPoint, types: [.online, .onlineAndPhysical],
-              paymentMethods: paymentMethods, sortBy: nil, territory: nil, offset: offset, completion: completion)
+              paymentMethods: paymentMethods, sortBy: sortBy, territory: nil, offset: offset, completion: completion)
     }
 
     func nearbyMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,

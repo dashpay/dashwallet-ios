@@ -25,20 +25,20 @@ struct MerchantFiltersView: View {
     
     init(
         currentFilters: PointOfUseListFilters?,
-        defaultFilters: PointOfUseListFilters?,
         showLocationSettings: Bool = false,
         showRadius: Bool = false,
         showTerritory: Bool = false,
         territoriesDataSource: TerritoryDataSource? = nil,
+        showSortByDistance: Bool = true,
         onApplyFilters: @escaping (PointOfUseListFilters?) -> Void
     ) {
         self._viewModel = StateObject(wrappedValue: MerchantFiltersViewModel(
-            currentFilters: currentFilters,
-            defaultFilters: defaultFilters,
+            filters: currentFilters,
             showLocationSettings: showLocationSettings,
             showRadius: showRadius,
             showTerritory: showTerritory,
-            territoriesDataSource: territoriesDataSource
+            territoriesDataSource: territoriesDataSource,
+            showSortByDistance: showSortByDistance
         ))
         self.onApplyFilters = onApplyFilters
     }
@@ -50,17 +50,19 @@ struct MerchantFiltersView: View {
                     // Sort By Section
                     FilterSection(title: NSLocalizedString("Sort by", comment: "Explore Dash/Merchants/Filters")) {
                         RadioButtonRow(
-                            title: NSLocalizedString("Distance", comment: "Explore Dash: Filters"),
-                            isSelected: viewModel.sortByDistance
-                        ) {
-                            viewModel.toggleSortBy(.distance)
-                        }
-                            
-                        RadioButtonRow(
                             title: NSLocalizedString("Name", comment: "Explore Dash: Filters"),
                             isSelected: viewModel.sortByName
                         ) {
                             viewModel.toggleSortBy(.name)
+                        }
+                        
+                        if viewModel.showSortByDistance {
+                            RadioButtonRow(
+                                title: NSLocalizedString("Distance", comment: "Explore Dash: Filters"),
+                                isSelected: viewModel.sortByDistance
+                            ) {
+                                viewModel.toggleSortBy(.distance)
+                            }
                         }
                             
                         RadioButtonRow(

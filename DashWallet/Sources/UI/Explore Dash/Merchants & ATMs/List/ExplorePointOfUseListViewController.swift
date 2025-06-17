@@ -35,6 +35,20 @@ enum ExplorePointOfUseSections: Int {
     case nextPage
 }
 
+protocol PointOfUseListFiltersViewControllerDelegate: AnyObject {
+    func apply(filters: PointOfUseListFilters?)
+}
+
+public enum PointOfUseListFiltersGroup {
+    case paymentType
+    case sortByDistanceOrName
+    case denominationType
+
+    case territory
+    case radius
+    case locationService
+}
+
 // MARK: - ExplorePointOfUseListViewController
 
 @objc
@@ -486,14 +500,26 @@ extension ExplorePointOfUseListViewController {
             DWLocationManager.shared.currentLocation != nil || (filter != .sortByDistanceOrName && filter != .radius)
         }
         
-        let vc = MerchantFiltersHostingController.create(
-            for: filterGroups,
+        let showLocationSettings = filterGroups.contains(.locationService)
+        let showRadius = filterGroups.contains(.radius) && DWLocationManager.shared.isAuthorized
+        let showTerritory = filterGroups.contains(.territory)
+        
+        let filtersView = MerchantFiltersView(
             currentFilters: model.filters,
-            defaultFilters: model.initialFilters,
-            territoriesDataSource: currentSegment.territoriesDataSource
+            showLocationSettings: showLocationSettings,
+            showRadius: showRadius,
+            showTerritory: showTerritory,
+            territoriesDataSource: currentSegment.territoriesDataSource,
+            showSortByDistance: currentSegment.showSortByDistance
+        ) { [weak self] filters in
+            self?.apply(filters: filters)
+        }
+        
+        let hostingController = UIHostingController(
+            rootView: NavigationView { filtersView }
         )
-        vc.delegate = self
-        present(vc, animated: true)
+        
+        present(hostingController, animated: true)
     }
 
     private func updateAppliedFiltersView() {
