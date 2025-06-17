@@ -76,7 +76,8 @@ struct MerchantFiltersView: View {
                         RadioButtonRow(
                             title: NSLocalizedString("Dash", comment: "Explore Dash: Filters"),
                             icon: .custom("image.explore.dash.wts.payment.dash"),
-                            isSelected: viewModel.payWithDash
+                            isSelected: viewModel.payWithDash,
+                            style: .checkbox
                         ) {
                             viewModel.payWithDash.toggle()
                         }
@@ -84,7 +85,8 @@ struct MerchantFiltersView: View {
                         RadioButtonRow(
                             title: NSLocalizedString("Gift Card", comment: "Explore Dash: Filters"),
                             icon: .custom("image.explore.dash.wts.payment.gift-card"),
-                            isSelected: viewModel.useGiftCard
+                            isSelected: viewModel.useGiftCard,
+                            style: .checkbox
                         ) {
                             viewModel.useGiftCard.toggle()
                         }
@@ -94,14 +96,16 @@ struct MerchantFiltersView: View {
                     FilterSection(title: NSLocalizedString("Gift card types", comment: "Explore Dash/Merchants/Filters")) {
                         RadioButtonRow(
                             title: NSLocalizedString("Flexible amounts", comment: "Explore Dash: Filters"),
-                            isSelected: viewModel.denominationFlexible
+                            isSelected: viewModel.denominationFlexible,
+                            style: .checkbox
                         ) {
                             viewModel.denominationFlexible.toggle()
                         }
                             
                         RadioButtonRow(
                             title: NSLocalizedString("Fixed amounts", comment: "Explore Dash: Filters"),
-                            isSelected: viewModel.denominationFixed
+                            isSelected: viewModel.denominationFixed,
+                            style: .checkbox
                         ) {
                             viewModel.denominationFixed.toggle()
                         }
