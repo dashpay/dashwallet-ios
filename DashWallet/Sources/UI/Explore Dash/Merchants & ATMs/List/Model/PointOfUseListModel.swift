@@ -102,7 +102,7 @@ struct PointOfUseListSegment: Hashable {
     var dataProvider: PointOfUseDataProvider
     var filterGroups: [PointOfUseListFiltersGroup]
     var territoriesDataSource: TerritoryDataSource?
-    var showSortByDistance: Bool
+    var sortOptions: [PointOfUseListFilters.SortBy]
 }
 
 // MARK: - PointOfUseListModel

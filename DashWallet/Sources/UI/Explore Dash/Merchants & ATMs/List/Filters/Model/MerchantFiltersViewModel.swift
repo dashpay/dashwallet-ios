@@ -22,14 +22,29 @@ class MerchantFiltersViewModel: ObservableObject {
     
     // MARK: - Filter Options
     
-    let showSortByDistance: Bool
-    
     @Published var sortByDistance = false
     @Published var sortByName = false
     @Published var sortByDiscount = false
     
     @Published var payWithDash = false
-    @Published var useGiftCard = false
+    @Published var useGiftCard = false {
+        didSet {
+            if useGiftCard {
+                sortOptions = initialSortOptions
+            } else {
+                sortOptions = initialSortOptions.filter { option in
+                    option != .discount
+                }
+                
+                if sortByDiscount {
+                    sortByDiscount = false
+                    sortByName = true
+                }
+            }
+        }
+    }
+    
+    @Published var sortOptions: [PointOfUseListFilters.SortBy]
     
     @Published var denominationFixed = false
     @Published var denominationFlexible = false
@@ -79,6 +94,7 @@ class MerchantFiltersViewModel: ObservableObject {
     private let initialDenominationFlexible: Bool
     private let initialRadius: PointOfUseListFilters.Radius?
     private let initialTerritory: Territory?
+    private let initialSortOptions: [PointOfUseListFilters.SortBy]
     
     // MARK: - Available Options
     
@@ -86,9 +102,11 @@ class MerchantFiltersViewModel: ObservableObject {
         .one, .five, .twenty, .fifty
     ]
     
-    var showLocationSettings: Bool
-    var showRadius: Bool
-    var showTerritory: Bool
+    let showLocationSettings: Bool
+    let showRadius: Bool
+    let showTerritory: Bool
+    let showPaymentTypes: Bool
+    let showGiftCardTypes: Bool
     
     // MARK: - Data Sources
     
@@ -98,17 +116,18 @@ class MerchantFiltersViewModel: ObservableObject {
     
     init(
         filters: PointOfUseListFilters?,
-        showLocationSettings: Bool = false,
-        showRadius: Bool = false,
-        showTerritory: Bool = false,
+        filterGroups: [PointOfUseListFiltersGroup],
         territoriesDataSource: TerritoryDataSource? = nil,
-        showSortByDistance: Bool = true
+        sortOptions: [PointOfUseListFilters.SortBy] = [.name, .distance]
     ) {
-        self.showSortByDistance = showSortByDistance
-        self.showLocationSettings = showLocationSettings
-        self.showRadius = showRadius
-        self.showTerritory = showTerritory
+        self.showLocationSettings = filterGroups.contains(.locationService)
+        self.showRadius = filterGroups.contains(.radius) && DWLocationManager.shared.isAuthorized
+        self.showTerritory = filterGroups.contains(.territory)
+        self.showPaymentTypes = filterGroups.contains(.paymentType)
+        self.showGiftCardTypes = filterGroups.contains(.denominationType)
         self.territoriesDataSource = territoriesDataSource
+        self.initialSortOptions = sortOptions
+        self.sortOptions = sortOptions
         
         if let filters = filters {
             self.initialSortByDistance = filters.sortBy == .distance
@@ -207,6 +226,7 @@ class MerchantFiltersViewModel: ObservableObject {
             } else {
                 useGiftCard.toggle()
             }
+            
             // Reset denomination types when gift card is unchecked
             if !useGiftCard {
                 denominationFixed = true

@@ -500,17 +500,11 @@ extension ExplorePointOfUseListViewController {
             DWLocationManager.shared.currentLocation != nil || (filter != .sortBy && filter != .radius)
         }
         
-        let showLocationSettings = filterGroups.contains(.locationService)
-        let showRadius = filterGroups.contains(.radius) && DWLocationManager.shared.isAuthorized
-        let showTerritory = filterGroups.contains(.territory)
-        
         let filtersView = MerchantFiltersView(
             currentFilters: model.filters,
-            showLocationSettings: showLocationSettings,
-            showRadius: showRadius,
-            showTerritory: showTerritory,
+            filterGroups: currentSegment.filterGroups,
             territoriesDataSource: currentSegment.territoriesDataSource,
-            showSortByDistance: currentSegment.showSortByDistance
+            sortOptions: currentSegment.sortOptions
         ) { [weak self] filters in
             self?.apply(filters: filters)
         }

@@ -63,7 +63,7 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
         model = PointOfUseListModel(segments: [.init(tag: 0, title: "", showMap: true, showLocationServiceSettings: false,
                                                      showReversedLocation: false,
                                                      dataProvider: AllMerchantLocationsDataProvider(pointOfUse: pointOfUse),
-                                                     filterGroups: [], territoriesDataSource: nil, showSortByDistance: true)])
+                                                     filterGroups: [], territoriesDataSource: nil, sortOptions: [.name, .distance, .discount])])
     }
 
     override func configureHierarchy() {

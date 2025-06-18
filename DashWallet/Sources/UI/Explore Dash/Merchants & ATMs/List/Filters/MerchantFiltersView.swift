@@ -26,20 +26,16 @@ struct MerchantFiltersView: View {
     
     init(
         currentFilters: PointOfUseListFilters?,
-        showLocationSettings: Bool = false,
-        showRadius: Bool = false,
-        showTerritory: Bool = false,
+        filterGroups: [PointOfUseListFiltersGroup],
         territoriesDataSource: TerritoryDataSource? = nil,
-        showSortByDistance: Bool = true,
+        sortOptions: [PointOfUseListFilters.SortBy] = [.name, .distance],
         onApplyFilters: @escaping (PointOfUseListFilters?) -> Void
     ) {
         self._viewModel = StateObject(wrappedValue: MerchantFiltersViewModel(
             filters: currentFilters,
-            showLocationSettings: showLocationSettings,
-            showRadius: showRadius,
-            showTerritory: showTerritory,
+            filterGroups: filterGroups,
             territoriesDataSource: territoriesDataSource,
-            showSortByDistance: showSortByDistance
+            sortOptions: sortOptions
         ))
         self.onApplyFilters = onApplyFilters
     }
@@ -49,7 +45,7 @@ struct MerchantFiltersView: View {
             ScrollView {
                 VStack(spacing: 0) {
                     // Sort By Section - Only show if there are multiple options
-                    if viewModel.showSortByDistance || viewModel.useGiftCard {
+                    if viewModel.sortOptions.contains(.distance) || viewModel.useGiftCard {
                         FilterSection(title: NSLocalizedString("Sort by", comment: "Explore Dash/Merchants/Filters")) {
                             RadioButtonRow(
                                 title: NSLocalizedString("Name", comment: "Explore Dash: Filters"),
@@ -58,7 +54,7 @@ struct MerchantFiltersView: View {
                                 viewModel.toggleSortBy(.name)
                             }
                             
-                            if viewModel.showSortByDistance {
+                            if viewModel.sortOptions.contains(.distance) {
                                 RadioButtonRow(
                                     title: NSLocalizedString("Distance", comment: "Explore Dash: Filters"),
                                     isSelected: viewModel.sortByDistance
@@ -67,38 +63,42 @@ struct MerchantFiltersView: View {
                                 }
                             }
                                 
+                            if viewModel.sortOptions.contains(.discount) {
+                                RadioButtonRow(
+                                    title: NSLocalizedString("Discount", comment: "Explore Dash: Filters"),
+                                    isSelected: viewModel.sortByDiscount
+                                ) {
+                                    viewModel.toggleSortBy(.discount)
+                                }
+                            }
+                        }
+                    }
+                    
+                    if viewModel.showPaymentTypes {
+                        // Payment Type Section
+                        FilterSection(title: NSLocalizedString("Payment Type", comment: "Explore Dash/Merchants/Filters")) {
                             RadioButtonRow(
-                                title: NSLocalizedString("Discount", comment: "Explore Dash: Filters"),
-                                isSelected: viewModel.sortByDiscount
+                                title: NSLocalizedString("Dash", comment: "Explore Dash: Filters"),
+                                icon: .custom("image.explore.dash.wts.payment.dash"),
+                                isSelected: viewModel.payWithDash,
+                                style: .checkbox
                             ) {
-                                viewModel.toggleSortBy(.discount)
+                                viewModel.togglePaymentMethod(.dash)
+                            }
+                                
+                            RadioButtonRow(
+                                title: NSLocalizedString("Gift Card", comment: "Explore Dash: Filters"),
+                                icon: .custom("image.explore.dash.wts.payment.gift-card"),
+                                isSelected: viewModel.useGiftCard,
+                                style: .checkbox
+                            ) {
+                                viewModel.togglePaymentMethod(.giftCard)
                             }
                         }
                     }
                         
-                    // Payment Type Section
-                    FilterSection(title: NSLocalizedString("Payment Type", comment: "Explore Dash/Merchants/Filters")) {
-                        RadioButtonRow(
-                            title: NSLocalizedString("Dash", comment: "Explore Dash: Filters"),
-                            icon: .custom("image.explore.dash.wts.payment.dash"),
-                            isSelected: viewModel.payWithDash,
-                            style: .checkbox
-                        ) {
-                            viewModel.togglePaymentMethod(.dash)
-                        }
-                            
-                        RadioButtonRow(
-                            title: NSLocalizedString("Gift Card", comment: "Explore Dash: Filters"),
-                            icon: .custom("image.explore.dash.wts.payment.gift-card"),
-                            isSelected: viewModel.useGiftCard,
-                            style: .checkbox
-                        ) {
-                            viewModel.togglePaymentMethod(.giftCard)
-                        }
-                    }
-                        
                     // Gift Card Types Section - Only show if Gift Card is selected
-                    if viewModel.useGiftCard {
+                    if viewModel.showGiftCardTypes && viewModel.useGiftCard {
                         FilterSection(title: NSLocalizedString("Gift card types", comment: "Explore Dash/Merchants/Filters")) {
                             RadioButtonRow(
                                 title: NSLocalizedString("Flexible amounts", comment: "Explore Dash: Filters"),
@@ -129,9 +129,9 @@ struct MerchantFiltersView: View {
                             )
                         }
                     }
-                        
+                    
                     // Radius Section
-                    if viewModel.showRadius && DWLocationManager.shared.isAuthorized {
+                    if viewModel.showRadius {
                         FilterSection(title: NSLocalizedString("Radius", comment: "Explore Dash/Merchants/Filters")) {
                             ForEach(viewModel.availableRadiusOptions) { option in
                                 RadioButtonRow(
@@ -143,7 +143,7 @@ struct MerchantFiltersView: View {
                             }
                         }
                     }
-                        
+                    
                     // Location Service Settings
                     if viewModel.showLocationSettings && !DWLocationManager.shared.isAuthorized {
                         FilterSection(title: NSLocalizedString("Current Location Settings", comment: "Explore Dash/Merchants/Filters")) {
@@ -174,7 +174,7 @@ struct MerchantFiltersView: View {
                 }
                 .padding(.horizontal, 20)
                 .animation(.easeInOut(duration: 0.3), value: viewModel.useGiftCard)
-                .animation(.easeInOut(duration: 0.3), value: viewModel.showSortByDistance)
+                .animation(.easeInOut(duration: 0.3), value: viewModel.sortOptions)
             }
             
             NavigationLink(destination: TerritoryPickerView(

@@ -40,11 +40,7 @@ enum MerchantsListSegment: Int {
         let showReversedLocation: Bool
         let showMap: Bool
         let showLocationServiceSettings: Bool
-        var showSortByDistance = true
-        var defaultFilters = PointOfUseListFilters()
-        defaultFilters.merchantPaymentTypes = [.dash, .giftCard]
-        defaultFilters.radius = .twenty
-        defaultFilters.sortBy = .distance
+        var sortOptions: [PointOfUseListFilters.SortBy] = [.name, .distance, .discount]
 
         switch self {
         case .online:
@@ -52,7 +48,7 @@ enum MerchantsListSegment: Int {
             showReversedLocation = false
             showMap = false
             dataProvider = OnlineMerchantsDataProvider()
-            showSortByDistance = false
+            sortOptions = [.name, .discount]
             
         case .nearby:
             showLocationServiceSettings = true
@@ -67,7 +63,7 @@ enum MerchantsListSegment: Int {
             dataProvider = AllMerchantsDataProvider()
         }
 
-        return .init(tag: rawValue, title: title, showMap: showMap, showLocationServiceSettings: showLocationServiceSettings, showReversedLocation: showReversedLocation, dataProvider: dataProvider, filterGroups: filterGroups, territoriesDataSource: territories, showSortByDistance: showSortByDistance)
+        return .init(tag: rawValue, title: title, showMap: showMap, showLocationServiceSettings: showLocationServiceSettings, showReversedLocation: showReversedLocation, dataProvider: dataProvider, filterGroups: filterGroups, territoriesDataSource: territories, sortOptions: sortOptions)
     }
 }
 
@@ -86,11 +82,11 @@ extension MerchantsListSegment {
     var filterGroups: [PointOfUseListFiltersGroup] {
         switch self {
         case .online:
-            return [.paymentType, .denominationType]
+            return [.sortBy, .paymentType, .denominationType]
         case .nearby:
-            return [.sortBy, .denominationType, .territory, .radius, .locationService]
+            return [.sortBy, .paymentType, .denominationType, .territory, .radius, .locationService]
         case .all:
-            return [.sortBy, .denominationType, .territory, .radius, .locationService]
+            return [.sortBy, .paymentType, .denominationType, .territory, .radius, .locationService]
         }
     }
 
