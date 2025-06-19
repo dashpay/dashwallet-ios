@@ -208,7 +208,7 @@ struct HomeViewContent<Content: View>: View {
                     }
                     .frame(height: 110)
                     .frame(maxWidth: .infinity)
-                    .background(Color.dashBlue)
+                    .background(Color.navigationBarColor)
                     .padding(.top, 5)
                     .padding(.bottom, -12)
                     

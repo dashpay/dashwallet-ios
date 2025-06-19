@@ -235,6 +235,9 @@
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Aplicação %@gostaria de receber sua chave mestra pública. Isso pode ser usado para manter acompanhamento de sua carteira, ela não pode ser usada para mover seu Dash.";
 
+/* No comment provided by engineer. */
+"Apply" = "Apply";
+
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Tem certeza de que deseja cancelar este pedido?";
 
@@ -967,6 +970,12 @@
 /* CrowdNode */
 "First minimum deposit" = "Primeiro depósito mínimo";
 
+/* Explore Dash: Filters */
+"Fixed amounts" = "Fixed amounts";
+
+/* Explore Dash: Filters */
+"Flexible amounts" = "Flexible amounts";
+
 /* Usernames */
 "For some reason, the request for the username '%@' has failed." = "For some reason, the request for the username '%@' has failed.";
 
@@ -1053,6 +1062,9 @@
 
 /* DashSpend confirmation */
 "Gift card total" = "Gift card total";
+
+/* Explore Dash/Merchants/Filters */
+"Gift card types" = "Gift card types";
 
 /* DashSpend */
 "Gift card · %@" = "Gift card · %@";
@@ -2151,6 +2163,9 @@
 "Search results for \"" = "Pesquisar resultados para \"";
 
 /* No comment provided by engineer. */
+"Search territories" = "Search territories";
+
+/* No comment provided by engineer. */
 "Searching for username %@ on the Dash Network" = "Pesquisar pelo usuário %@ na Rede Dash";
 
 /* No comment provided by engineer. */
@@ -2337,6 +2352,9 @@
 
 /* No comment provided by engineer. */
 "Sort Contacts" = "Ordenar Contatos";
+
+/* Explore Dash/Filters */
+"Sorted by discount" = "Sorted by discount";
 
 /* Explore Dash/Filters */
 "Sorted by distance" = "Ordenado por distância";

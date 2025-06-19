@@ -106,8 +106,12 @@ class GiftCardMetadataProvider: MetadataProvider, @unchecked Sendable {
             
             if txRowMetadata != nil {
                 txRowMetadata!.title = title
+                txRowMetadata!.secondaryIcon = .custom("image.explore.dash.wts.payment.gift-card")
             } else {
-                txRowMetadata = TxRowMetadata(title: title)
+                txRowMetadata = TxRowMetadata(
+                    title: title,
+                    secondaryIcon: .custom("image.explore.dash.wts.payment.gift-card")
+                )
             }
             
             self._availableMetadata[metadata.txHash] = txRowMetadata

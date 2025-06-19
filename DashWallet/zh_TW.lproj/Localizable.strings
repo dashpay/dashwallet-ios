@@ -235,6 +235,9 @@
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "應用程式 %@ 想要取得您的主公鑰。 這可以用來追踪你的錢包結餘，但並不能動用你的達世幣。";
 
+/* No comment provided by engineer. */
+"Apply" = "Apply";
+
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "您確定要取消此訂單嗎?";
 
@@ -967,6 +970,12 @@
 /* CrowdNode */
 "First minimum deposit" = "首次最低存款";
 
+/* Explore Dash: Filters */
+"Fixed amounts" = "Fixed amounts";
+
+/* Explore Dash: Filters */
+"Flexible amounts" = "Flexible amounts";
+
 /* Usernames */
 "For some reason, the request for the username '%@' has failed." = "For some reason, the request for the username '%@' has failed.";
 
@@ -1053,6 +1062,9 @@
 
 /* DashSpend confirmation */
 "Gift card total" = "Gift card total";
+
+/* Explore Dash/Merchants/Filters */
+"Gift card types" = "Gift card types";
 
 /* DashSpend */
 "Gift card · %@" = "Gift card · %@";
@@ -2151,6 +2163,9 @@
 "Search results for \"" = "搜尋結果 \"";
 
 /* No comment provided by engineer. */
+"Search territories" = "Search territories";
+
+/* No comment provided by engineer. */
 "Searching for username %@ on the Dash Network" = "在達世幣網絡中搜尋用戶名 %@ ";
 
 /* No comment provided by engineer. */
@@ -2337,6 +2352,9 @@
 
 /* No comment provided by engineer. */
 "Sort Contacts" = "聯繫人排序";
+
+/* Explore Dash/Filters */
+"Sorted by discount" = "Sorted by discount";
 
 /* Explore Dash/Filters */
 "Sorted by distance" = "按距離排序";

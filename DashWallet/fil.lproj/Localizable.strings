@@ -235,6 +235,9 @@
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Ang application %@ ay gustong makuha ang iyong Master Public Key.  Ito ay maaaring gamitin upang masubaybayan ang iyong pitaka, ito ay hindi maaaring gamitin sa paglipat ng iyong Dash.";
 
+/* No comment provided by engineer. */
+"Apply" = "Apply";
+
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Sigurado ka bang gusto mong kanselahin ang order na ito?";
 
@@ -967,6 +970,12 @@
 /* CrowdNode */
 "First minimum deposit" = "Unang Minimum na Deposito";
 
+/* Explore Dash: Filters */
+"Fixed amounts" = "Fixed amounts";
+
+/* Explore Dash: Filters */
+"Flexible amounts" = "Flexible amounts";
+
 /* Usernames */
 "For some reason, the request for the username '%@' has failed." = "For some reason, the request for the username '%@' has failed.";
 
@@ -1053,6 +1062,9 @@
 
 /* DashSpend confirmation */
 "Gift card total" = "Gift card total";
+
+/* Explore Dash/Merchants/Filters */
+"Gift card types" = "Gift card types";
 
 /* DashSpend */
 "Gift card · %@" = "Gift card · %@";
@@ -2151,6 +2163,9 @@
 "Search results for \"" = "Mga resulta ng paghahanap para sa \"";
 
 /* No comment provided by engineer. */
+"Search territories" = "Search territories";
+
+/* No comment provided by engineer. */
 "Searching for username %@ on the Dash Network" = "Naghahanap ng username %@ sa Network ng Dash";
 
 /* No comment provided by engineer. */
@@ -2337,6 +2352,9 @@
 
 /* No comment provided by engineer. */
 "Sort Contacts" = "Pag-uri-uriin ang mga Contact";
+
+/* Explore Dash/Filters */
+"Sorted by discount" = "Sorted by discount";
 
 /* Explore Dash/Filters */
 "Sorted by distance" = "Inayos ayon sa distansya";

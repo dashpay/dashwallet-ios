@@ -82,7 +82,7 @@ struct HomeBalanceView: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            .background(Color.dashBlue)
+            .background(Color.navigationBarColor)
             .animation(.easeInOut(duration: 0.3), value: viewModel.isBalanceHidden)
             .onTapGesture {
                 viewModel.toggleBalanceVisibility()

@@ -40,11 +40,7 @@ enum MerchantsListSegment: Int {
         let showReversedLocation: Bool
         let showMap: Bool
         let showLocationServiceSettings: Bool
-        var showsFilters = true
-        var defaultFilters = PointOfUseListFilters()
-        defaultFilters.merchantPaymentTypes = [.dash, .giftCard]
-        defaultFilters.radius = .twenty
-        defaultFilters.sortBy = .distance
+        var sortOptions: [PointOfUseListFilters.SortBy] = [.name, .distance, .discount]
 
         switch self {
         case .online:
@@ -52,7 +48,7 @@ enum MerchantsListSegment: Int {
             showReversedLocation = false
             showMap = false
             dataProvider = OnlineMerchantsDataProvider()
-            showsFilters = false
+            sortOptions = [.name, .discount]
             
         case .nearby:
             showLocationServiceSettings = true
@@ -67,7 +63,7 @@ enum MerchantsListSegment: Int {
             dataProvider = AllMerchantsDataProvider()
         }
 
-        return .init(tag: rawValue, title: title, showMap: showMap, showLocationServiceSettings: showLocationServiceSettings, showReversedLocation: showReversedLocation, dataProvider: dataProvider, filterGroups: filterGroups, defaultFilters: defaultFilters, territoriesDataSource: territories, showsFilters: showsFilters)
+        return .init(tag: rawValue, title: title, showMap: showMap, showLocationServiceSettings: showLocationServiceSettings, showReversedLocation: showReversedLocation, dataProvider: dataProvider, filterGroups: filterGroups, territoriesDataSource: territories, sortOptions: sortOptions)
     }
 }
 
@@ -86,11 +82,11 @@ extension MerchantsListSegment {
     var filterGroups: [PointOfUseListFiltersGroup] {
         switch self {
         case .online:
-            return []
+            return [.sortBy, .paymentType, .denominationType]
         case .nearby:
-            return [.sortByDistanceOrName, .radius, .locationService]
+            return [.sortBy, .paymentType, .denominationType, .territory, .radius, .locationService]
         case .all:
-            return [.sortByDistanceOrName, .territory, .radius, .locationService]
+            return [.sortBy, .paymentType, .denominationType, .territory, .radius, .locationService]
         }
     }
 
@@ -231,12 +227,6 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
         if DWLocationManager.shared.isAuthorized {
             model.currentSegment = model.segments[MerchantsListSegment.nearby.rawValue]
         }
-    }
-
-    override func refreshFilterCell() {
-        super.refreshFilterCell()
-
-        filterCell?.filterButton.isHidden = !model.currentSegment.showsFilters
     }
 
     override func configureHierarchy() {

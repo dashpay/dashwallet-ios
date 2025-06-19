@@ -17,6 +17,7 @@
 
 import CoreLocation
 import UIKit
+import SwiftUI
 
 private let kExploreWhereToSpendSectionCount = 5
 
@@ -32,6 +33,20 @@ enum ExplorePointOfUseSections: Int {
     case filters
     case items
     case nextPage
+}
+
+protocol PointOfUseListFiltersViewControllerDelegate: AnyObject {
+    func apply(filters: PointOfUseListFilters?)
+}
+
+public enum PointOfUseListFiltersGroup {
+    case paymentType
+    case sortBy
+    case denominationType
+
+    case territory
+    case radius
+    case locationService
 }
 
 // MARK: - ExplorePointOfUseListViewController
@@ -481,16 +496,24 @@ extension ExplorePointOfUseListViewController {
 // MARK: Actions
 extension ExplorePointOfUseListViewController {
     private func showFilters() {
-        let vc = PointOfUseListFiltersViewController.controller()
-        vc.filtersToUse = currentSegment.filterGroups.filter { filter in
-            DWLocationManager.shared.currentLocation != nil || (filter != .sortByDistanceOrName && filter != .radius)
+        let filterGroups = currentSegment.filterGroups.filter { filter in
+            DWLocationManager.shared.currentLocation != nil || (filter != .sortBy && filter != .radius)
         }
-        vc.territoriesDataSource = currentSegment.territoriesDataSource
-        vc.delegate = self
-        vc.defaultFilters = model.initialFilters
-        vc.filters = model.filters ?? model.initialFilters
-        let nvc = UINavigationController(rootViewController: vc)
-        present(nvc, animated: true)
+        
+        let filtersView = MerchantFiltersView(
+            currentFilters: model.filters,
+            filterGroups: currentSegment.filterGroups,
+            territoriesDataSource: currentSegment.territoriesDataSource,
+            sortOptions: currentSegment.sortOptions
+        ) { [weak self] filters in
+            self?.apply(filters: filters)
+        }
+        
+        let hostingController = UIHostingController(
+            rootView: NavigationView { filtersView }
+        )
+        
+        present(hostingController, animated: true)
     }
 
     private func updateAppliedFiltersView() {

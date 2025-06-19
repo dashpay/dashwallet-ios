@@ -235,6 +235,9 @@
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Додаток %@ хоче отримати ваш основний публічний ключ. Це може бути використане для відстеження вашого гаманця, але не для відправлення ваших Dash.";
 
+/* No comment provided by engineer. */
+"Apply" = "Apply";
+
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Ви впевнені, що хочете скасувати замовлення?";
 
@@ -967,6 +970,12 @@
 /* CrowdNode */
 "First minimum deposit" = "Перший мінімальний депозит";
 
+/* Explore Dash: Filters */
+"Fixed amounts" = "Fixed amounts";
+
+/* Explore Dash: Filters */
+"Flexible amounts" = "Flexible amounts";
+
 /* Usernames */
 "For some reason, the request for the username '%@' has failed." = "For some reason, the request for the username '%@' has failed.";
 
@@ -1053,6 +1062,9 @@
 
 /* DashSpend confirmation */
 "Gift card total" = "Gift card total";
+
+/* Explore Dash/Merchants/Filters */
+"Gift card types" = "Gift card types";
 
 /* DashSpend */
 "Gift card · %@" = "Gift card · %@";
@@ -2151,6 +2163,9 @@
 "Search results for \"" = "Результати пошуку по \"";
 
 /* No comment provided by engineer. */
+"Search territories" = "Search territories";
+
+/* No comment provided by engineer. */
 "Searching for username %@ on the Dash Network" = "Пошук по імені користувача %@ в Dash Network";
 
 /* No comment provided by engineer. */
@@ -2337,6 +2352,9 @@
 
 /* No comment provided by engineer. */
 "Sort Contacts" = "Сортувати контакти";
+
+/* Explore Dash/Filters */
+"Sorted by discount" = "Sorted by discount";
 
 /* Explore Dash/Filters */
 "Sorted by distance" = "Відсортовано за відстанню";
