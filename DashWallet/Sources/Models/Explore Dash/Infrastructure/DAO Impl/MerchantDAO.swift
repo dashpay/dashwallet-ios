@@ -57,7 +57,6 @@ class MerchantDAO: PointOfUseDAO {
             let typeColumn = ExplorePointOfUse.type
             let paymentMethodColumn = ExplorePointOfUse.paymentMethod
             let territoryColumn = ExplorePointOfUse.territory
-            let denominationsTypeColumn = ExplorePointOfUse.denominationsType
 
             var queryFilter = Expression<Bool>(value: true)
 
