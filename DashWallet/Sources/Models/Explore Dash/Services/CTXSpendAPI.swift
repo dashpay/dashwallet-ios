@@ -27,6 +27,11 @@ enum CTXSpendError: Error, LocalizedError {
     case insufficientFunds
     case invalidMerchant
     case invalidAmount
+    case merchantUnavailable
+    case transactionRejected
+    case purchaseLimitExceeded
+    case purchaseLimitBelowMinimum
+    case serverError
     case customError(String)
     case unknown
     case paymentProcessingError(String)
@@ -44,11 +49,21 @@ enum CTXSpendError: Error, LocalizedError {
         case .tokenRefreshFailed:
             return NSLocalizedString("Your session expired", comment: "DashSpend")
         case .insufficientFunds:
-            return NSLocalizedString("Insufficient funds to complete this purchase.", comment: "DashSpend")
+            return NSLocalizedString("Insufficient funds to complete this purchase. Please add more Dash to your wallet or reduce the amount.", comment: "DashSpend")
         case .invalidMerchant:
             return NSLocalizedString("This merchant is currently unavailable.", comment: "DashSpend")
         case .invalidAmount:
             return NSLocalizedString("Invalid amount. Please check merchant limits.", comment: "DashSpend")
+        case .merchantUnavailable:
+            return NSLocalizedString("This merchant is currently unavailable. Please try again later or choose a different merchant.", comment: "DashSpend")
+        case .transactionRejected:
+            return NSLocalizedString("Your transaction was rejected. Please try again or contact support if the problem persists.", comment: "DashSpend")
+        case .purchaseLimitExceeded:
+            return NSLocalizedString("Purchase amount exceeds the maximum limit for this merchant. Please reduce the amount and try again.", comment: "DashSpend")
+        case .purchaseLimitBelowMinimum:
+            return NSLocalizedString("Purchase amount is below the minimum limit for this merchant. Please increase the amount and try again.", comment: "DashSpend")
+        case .serverError:
+            return NSLocalizedString("Server error occurred. Please try again later.", comment: "DashSpend")
         case .customError(let message):
             return message
         case .unknown:
@@ -88,7 +103,13 @@ final class CTXSpendAPI: HTTPClient<CTXSpendEndpoint> {
             if target.path.contains("/api/verify") {
                 throw CTXSpendError.invalidCode
             }
-            throw CTXSpendError.unknown
+            throw CTXSpendError.invalidAmount
+        } catch HTTPClientError.statusCode(let r) where r.statusCode == 409 {
+            throw CTXSpendError.transactionRejected
+        } catch HTTPClientError.statusCode(let r) where r.statusCode == 422 {
+            throw CTXSpendError.invalidAmount
+        } catch HTTPClientError.statusCode(let r) where r.statusCode >= 500 {
+            throw CTXSpendError.serverError
         } catch HTTPClientError.decoder {
             throw CTXSpendError.parsingError
         }

@@ -27,7 +27,7 @@ enum SendAmountError: Error, ColorizedText, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .insufficientMixedFunds: return NSLocalizedString("Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction.", comment: "Send screen")
-        case .insufficientFunds: return NSLocalizedString("Insufficient funds", comment: "Send screen")
+        case .insufficientFunds: return NSLocalizedString("Insufficient funds. Please add more Dash to your wallet or reduce the amount.", comment: "Send screen")
         case .syncingChain: return NSLocalizedString("Wait until wallet is synced to complete the transaction",
                                                      comment: "Send screen")
         }

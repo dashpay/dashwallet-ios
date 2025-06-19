@@ -59,6 +59,7 @@ extension ExplorePointOfUse {
         let deeplink: String?
         let savingsBasisPoints: Int // in basis points 1 = 0.001%
         let denominationsType: String?
+        let redeemType: String?
         
         func toSavingPercentages() -> Double {
             return Double(savingsBasisPoints) / 100
@@ -193,6 +194,7 @@ extension ExplorePointOfUse: RowDecodable {
     static let manufacturer = Expression<String?>("manufacturer")
     static let savingPercentage = Expression<Int>("savingsPercentage")
     static let denominationsType = Expression<String?>("denominationsType")
+    static let redeemType = Expression<String?>("redeemType")
 
     init(row: Row) {
         let name = row[ExplorePointOfUse.name]
@@ -230,8 +232,9 @@ extension ExplorePointOfUse: RowDecodable {
             let deeplink = row[ExplorePointOfUse.deeplink]
             let savingsPercentage = row[ExplorePointOfUse.savingPercentage]
             let denominationsType = row[ExplorePointOfUse.denominationsType]
+            let redeemType = row[ExplorePointOfUse.redeemType]
             category = .merchant(Merchant(merchantId: merchantId, paymentMethod: Merchant.PaymentMethod(rawValue: paymentMethodRaw)!,
-                                          type: type, deeplink: deeplink, savingsBasisPoints: savingsPercentage, denominationsType: denominationsType))
+                                          type: type, deeplink: deeplink, savingsBasisPoints: savingsPercentage, denominationsType: denominationsType, redeemType: redeemType))
         } else if let manufacturer = try? row.get(ExplorePointOfUse.manufacturer) {
             let type: Atm.`Type`! = .init(rawValue: row[ExplorePointOfUse.type])
             category = .atm(Atm(manufacturer: manufacturer, type: type))

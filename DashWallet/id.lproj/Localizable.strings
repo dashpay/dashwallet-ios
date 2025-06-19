@@ -1228,8 +1228,11 @@
 /* No comment provided by engineer. */
 "Insufficient funds" = "Dana tidak mencukupi";
 
-/* CTXSpend error */
-"Insufficient funds to complete this purchase." = "Insufficient funds to complete this purchase.";
+/* DashSpend */
+"Insufficient funds to complete this purchase. Please add more Dash to your wallet or reduce the amount." = "Insufficient funds to complete this purchase. Please add more Dash to your wallet or reduce the amount.";
+
+/* Send screen */
+"Insufficient funds. Please add more Dash to your wallet or reduce the amount." = "Insufficient funds. Please add more Dash to your wallet or reduce the amount.";
 
 /* Send screen */
 "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction." = "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction.";
@@ -1970,6 +1973,12 @@
 /* Coinbase/Buy Dash */
 "Purchase" = "Beli";
 
+/* DashSpend */
+"Purchase amount exceeds the maximum limit for this merchant. Please reduce the amount and try again." = "Purchase amount exceeds the maximum limit for this merchant. Please reduce the amount and try again.";
+
+/* DashSpend */
+"Purchase amount is below the minimum limit for this merchant. Please increase the amount and try again." = "Purchase amount is below the minimum limit for this merchant. Please increase the amount and try again.";
+
 /* Alert title */
 "Purchase Failed" = "Purchase Failed";
 
@@ -2192,9 +2201,15 @@
 /* Buy Sell Dash */
 "Select a service" = "Pilih layanan";
 
+/* DashSpend denomination selection */
+"Select amount" = "Select amount";
+
 /* Block explorer picker
    Block explorer selection title */
 "Select block explorer" = "Select block explorer";
+
+/* DashSpend denomination selection subtitle */
+"Select fixed amount" = "Select fixed amount";
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "Pilih dari galeri";
@@ -2286,6 +2301,9 @@
 
 /* No comment provided by engineer. */
 "Sent to" = "Terkirim ke";
+
+/* DashSpend */
+"Server error occurred. Please try again later." = "Server error occurred. Please try again later.";
 
 /* No comment provided by engineer. */
 "Set a trusted node" = "Tetapkan node tepercaya";
@@ -2479,9 +2497,6 @@
 /* Coinbase */
 "The minimum amount you can send is %@" = "Jumlah minimum yang dapat Anda kirim adalah %@";
 
-/* DashSpend */
-"The purchase limits for this merchant have changed. Please contact CTX Support for more information." = "The purchase limits for this merchant have changed. Please contact CTX Support for more information.";
-
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
 
@@ -2520,6 +2535,9 @@
 
 /* CTXSpend error */
 "This merchant is currently unavailable." = "This merchant is currently unavailable.";
+
+/* DashSpend */
+"This merchant is currently unavailable. Please try again later or choose a different merchant." = "This merchant is currently unavailable. Please try again later or choose a different merchant.";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "PIN ini akan diperlukan untuk membuka kunci aplikasi Anda setiap kali saat Anda menggunakannya.";
@@ -3147,6 +3165,9 @@
 
 /* DashSpend */
 "Your session expired" = "Your session expired";
+
+/* DashSpend */
+"Your transaction was rejected. Please try again or contact support if the problem persists." = "Your transaction was rejected. Please try again or contact support if the problem persists.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Transaksi Anda telah dikirim dan jumlahnya akan muncul di dompet Anda dalam beberapa menit.";

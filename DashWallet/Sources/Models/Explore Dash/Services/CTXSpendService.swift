@@ -135,35 +135,48 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, Ob
                 switch response.statusCode {
                 case 400:
                     if let errorData = try? JSONDecoder().decode(CTXSpendAPIError.self, from: response.data) {
-                        // Check for limit error first
+                        // Check for limit errors first
                         if let fiatAmountErrors = errorData.fields?.fiatAmount,
-                           let firstFiatError = fiatAmountErrors.first,
-                           (firstFiatError == "above threshold" || firstFiatError == "below threshold") {
-                            throw CTXSpendError.customError(NSLocalizedString("The purchase limits for this merchant have changed. Please contact CTX Support for more information.", comment: "DashSpend"))
+                           let firstFiatError = fiatAmountErrors.first {
+                            if firstFiatError == "above threshold" {
+                                throw CTXSpendError.purchaseLimitExceeded
+                            } else if firstFiatError == "below threshold" {
+                                throw CTXSpendError.purchaseLimitBelowMinimum
+                            }
                         }
                         
                         if let firstError = errorData.errors.first {
                             // Look for specific error messages
                             let errorMessage = firstError.message.lowercased()
                             
-                            if errorMessage.contains("insufficient") || errorMessage.contains("funds") {
+                            if errorMessage.contains("insufficient") || errorMessage.contains("funds") || errorMessage.contains("balance") {
                                 throw CTXSpendError.insufficientFunds
+                            } else if errorMessage.contains("merchant") && (errorMessage.contains("unavailable") || errorMessage.contains("disabled") || errorMessage.contains("suspended")) {
+                                throw CTXSpendError.merchantUnavailable
                             } else if errorMessage.contains("merchant") {
                                 throw CTXSpendError.invalidMerchant
-                            } else if errorMessage.contains("amount") || errorMessage.contains("value") {
+                            } else if errorMessage.contains("rejected") || errorMessage.contains("declined") {
+                                throw CTXSpendError.transactionRejected
+                            } else if errorMessage.contains("amount") || errorMessage.contains("value") || errorMessage.contains("limit") {
                                 throw CTXSpendError.invalidAmount
                             }
                             
                             // Custom error with the actual message from API
-                            throw NSError(domain: "CTXSpend", code: 400, userInfo: [NSLocalizedDescriptionKey: firstError.message])
+                            throw CTXSpendError.customError(firstError.message)
                         }
                     }
                 case 401, 403:
                     throw CTXSpendError.unauthorized
                 case 404:
                     throw CTXSpendError.invalidMerchant
+                case 409:
+                    // Conflict - usually means duplicate transaction or similar
+                    throw CTXSpendError.transactionRejected
+                case 422:
+                    // Unprocessable Entity - validation errors
+                    throw CTXSpendError.invalidAmount
                 case 500...599:
-                    throw CTXSpendError.networkError
+                    throw CTXSpendError.serverError
                 default:
                     break
                 }
