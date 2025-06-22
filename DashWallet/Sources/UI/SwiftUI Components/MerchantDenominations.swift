@@ -20,10 +20,10 @@ import SwiftUI
 struct MerchantDenominations: View {
     let denominations: [Int]
     let currency: String = "USD"
-    @Binding var selectedDenomination: Int?
-    let canContinue: Bool = true
-    let onDenominationSelected: (Int) -> Void = { _ in }
-    let onContinue: () -> Void = { }
+    let selectedDenomination: Int?
+    let actionEnabled: Bool
+    let onDenominationSelected: (Int) -> Void
+    let actionHandler: () -> Void
     
     private var numberFormatter: NumberFormatter {
         let formatter = NumberFormatter()
@@ -40,11 +40,11 @@ struct MerchantDenominations: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(NSLocalizedString("Select amount", comment: "DashSpend denomination selection"))
+            Text(NSLocalizedString("Select amount", comment: "DashSpend"))
                 .font(.h5Bold)
                 .foregroundColor(.primaryText)
             
-            Text(NSLocalizedString("Select fixed amount", comment: "DashSpend denomination selection subtitle"))
+            Text(NSLocalizedString("This merchant sells gift cards at fixed prices", comment: "DashSpend"))
                 .font(.body2)
                 .foregroundColor(.secondaryText)
                 .padding(.top, 4)
@@ -68,8 +68,8 @@ struct MerchantDenominations: View {
                 style: .filled,
                 size: .large,
                 stretch: true,
-                isEnabled: selectedDenomination != nil && selectedDenomination != 0 && canContinue,
-                action: onContinue
+                isEnabled: selectedDenomination != nil && selectedDenomination != 0 && actionEnabled,
+                action: actionHandler
             )
             .padding(.top, 20)
         }
@@ -97,7 +97,7 @@ private struct DenominationChip: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 14)
                         .stroke(
-                            isSelected ? Color.dashBlue : Color.gray400,
+                            isSelected ? Color.dashBlue : Color.primaryText.opacity(0.08),
                             lineWidth: 1.5
                         )
                 )

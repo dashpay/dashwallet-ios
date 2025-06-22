@@ -971,7 +971,7 @@
 "First minimum deposit" = "首次最低存款";
 
 /* Explore Dash: Filters */
-"Fixed amounts" = "Fixed amounts";
+"Fixed denominated amounts" = "Fixed denominated amounts";
 
 /* Explore Dash: Filters */
 "Flexible amounts" = "Flexible amounts";
@@ -2208,9 +2208,6 @@
    Block explorer selection title */
 "Select block explorer" = "Select block explorer";
 
-/* DashSpend denomination selection subtitle */
-"Select fixed amount" = "Select fixed amount";
-
 /* No comment provided by engineer. */
 "Select from Gallery" = "從圖庫中選擇";
 
@@ -2538,6 +2535,9 @@
 
 /* DashSpend */
 "This merchant is currently unavailable. Please try again later or choose a different merchant." = "This merchant is currently unavailable. Please try again later or choose a different merchant.";
+
+/* DashSpend */
+"This merchant sells gift cards at fixed prices" = "This merchant sells gift cards at fixed prices";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "每次使用時，都需要使用此密碼來解鎖您的應用程式。";

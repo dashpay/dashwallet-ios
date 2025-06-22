@@ -49,6 +49,17 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
     @Published var minimumAmount: Decimal = 0
     @Published var maximumAmount: Decimal = 0
     @Published var error: Error? = nil
+    @Published var isFixedDenomination: Bool = false
+    @Published var denominations: [Int] = []
+    @Published var selectedDenomination: Int? = nil {
+        didSet {
+            if let denom = selectedDenomination {
+                input = String(denom)
+            } else {
+                input = "0"
+            }
+        }
+    }
     @Published var input: String = "0" {
         didSet {
             // Replace the initial "0" when entering a new digit
@@ -98,6 +109,11 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         
         if let merchantId = merchant.merchant?.merchantId {
             self.merchantId = merchantId
+        }
+        
+        if let denomType = merchant.merchant?.denominationsType {
+            self.isFixedDenomination = denomType == DenominationType.Fixed.rawValue
+            self.denominations = merchant.merchant?.denominations.compactMap { Int($0) } ?? []
         }
         
         super.init()
@@ -153,7 +169,6 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         customIconProvider.updateIcon(txId: transaction.txHashData, iconUrl: merchantIconUrl)
         saveGiftCardDummy(txHashData: transaction.txHashData, giftCardId: response.paymentId)
         
-        
         return transaction.txHashData
     }
     
@@ -166,8 +181,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         body += "min: \(minimumAmount)\n"
         body += "max: \(maximumAmount)\n"
         body += "discount: \(savingsFraction)\n"
-//        body += "denominations type: \(denominationsType)\n" TODO: fixed denoms
-//        body += "denominations: \(denominations)\n"
+        body += "fixed denomination: \(isFixedDenomination)\n"
+        body += "denominations: \(denominations)\n"
         body += "\n"
 
         body += "Purchase Details\n"
@@ -228,8 +243,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
             savingsFraction = Decimal(merchantInfo.savingsPercentage) / Decimal(10000)
             
             if merchantInfo.denominationType == .Range {
+                isFixedDenomination = false
                 minimumAmount = Decimal(merchantInfo.minimumCardPurchase)
                 maximumAmount = Decimal(merchantInfo.maximumCardPurchase)
+            } else {
+                isFixedDenomination = true
+                denominations = merchantInfo.denominations.compactMap { Int($0) }
             }
             
             checkAmountForErrors()

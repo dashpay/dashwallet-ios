@@ -122,27 +122,52 @@ struct DashSpendPayScreen: View {
                 
                 Spacer()
                 
-                NumericKeyboardView(
-                    value: $viewModel.input,
-                    showDecimalSeparator: true,
-                    actionButtonText: NSLocalizedString("Preview", comment: ""),
-                    actionEnabled: viewModel.error == nil && !viewModel.showLimits && !viewModel.isLoading && viewModel.hasValidLimits,
-                    inProgress: viewModel.isProcessingPayment,
-                    actionHandler: {
-                        if !viewModel.isUserSignedIn {
-                            showSignInError()
-                            return
+                if viewModel.isFixedDenomination {
+                    MerchantDenominations(
+                        denominations: viewModel.denominations,
+                        selectedDenomination: viewModel.selectedDenomination,
+                        actionEnabled: viewModel.selectedDenomination != nil && viewModel.error == nil && !viewModel.isLoading,
+                        onDenominationSelected: { denom in
+                            viewModel.selectedDenomination = denom
+                        },
+                        actionHandler: {
+                            if !viewModel.isUserSignedIn {
+                                showSignInError()
+                                return
+                            }
+                            
+                            showConfirmationDialog = true
                         }
-                        
-                        showConfirmationDialog = true
-                    }
-                )
-                .frame(maxWidth: .infinity)
-                .frame(height: 320)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 30)
-                .background(Color.secondaryBackground)
-                .cornerRadius(20)
+                    )
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 20)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 30)
+                    .background(Color.secondaryBackground)
+                    .cornerRadius(20)
+                } else {
+                    NumericKeyboardView(
+                        value: $viewModel.input,
+                        showDecimalSeparator: true,
+                        actionButtonText: NSLocalizedString("Preview", comment: ""),
+                        actionEnabled: viewModel.error == nil && !viewModel.showLimits && !viewModel.isLoading && viewModel.hasValidLimits,
+                        inProgress: viewModel.isProcessingPayment,
+                        actionHandler: {
+                            if !viewModel.isUserSignedIn {
+                                showSignInError()
+                                return
+                            }
+                            
+                            showConfirmationDialog = true
+                        }
+                    )
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 320)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 30)
+                    .background(Color.secondaryBackground)
+                    .cornerRadius(20)
+                }
             }
             
             if justAuthenticated {
