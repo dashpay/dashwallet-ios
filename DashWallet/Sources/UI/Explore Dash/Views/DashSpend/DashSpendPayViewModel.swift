@@ -21,13 +21,17 @@ import Combine
 private let defaultCurrency = kDefaultCurrencyCode
 
 @MainActor
-class DashSpendPayViewModel: NSObject, ObservableObject {
+class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHandling {
     private var cancellableBag = Set<AnyCancellable>()
     private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: defaultCurrency)
     private let ctxSpendService = CTXSpendService.shared
     private let customIconProvider = CustomIconMetadataProvider.shared
     private let txMetadataDao = TransactionMetadataDAOImpl.shared
     private let sendCoinsService = SendCoinsService()
+    
+    // Network monitoring properties
+    var networkStatusDidChange: ((NetworkStatus) -> ())?
+    var reachabilityObserver: Any!
 
     private var merchantId: String = ""
     private var merchantUrl: String? = nil
@@ -120,9 +124,17 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         
         // Initialize with current sign-in state
         isUserSignedIn = ctxSpendService.isUserSignedIn
+        
+        // Set up network status change handler
+        networkStatusDidChange = { [weak self] status in
+            self?.handleNetworkStatusChange(status)
+        }
     }
     
     func subscribeToUpdates() {
+        // Start network monitoring
+        startNetworkMonitoring()
+        
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
             .sink { [weak self] _ in self?.refreshBalance() }
             .store(in: &cancellableBag)
@@ -200,6 +212,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
     
     func unsubscribeFromAll() {
         cancellableBag.removeAll()
+        stopNetworkMonitoring()
     }
     
     private func refreshBalance() {
@@ -207,6 +220,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
     }
     
     private func checkAmountForErrors() {
+        // Check network availability first
+        guard networkStatus == .online else {
+            error = SendAmountError.networkUnavailable
+            return
+        }
+        
         guard DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
             DWEnvironment.sharedInstance().currentChainManager.syncPhase == .synced
         else {
@@ -295,5 +314,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject {
         txMetadata.taxCategory = TxMetadataTaxCategory.expense
         txMetadata.service = ServiceName.ctxSpend.rawValue
         txMetadataDao.update(dto: txMetadata)
+    }
+    
+    private func handleNetworkStatusChange(_ status: NetworkStatus) {
+        // Re-check errors when network status changes
+        checkAmountForErrors()
     }
 }

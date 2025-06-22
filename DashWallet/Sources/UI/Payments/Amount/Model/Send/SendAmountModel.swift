@@ -23,6 +23,7 @@ enum SendAmountError: Error, ColorizedText, LocalizedError {
     case insufficientFunds
     case insufficientMixedFunds
     case syncingChain
+    case networkUnavailable
 
     var errorDescription: String? {
         switch self {
@@ -30,6 +31,7 @@ enum SendAmountError: Error, ColorizedText, LocalizedError {
         case .insufficientFunds: return NSLocalizedString("Insufficient funds. Please add more Dash to your wallet or reduce the amount.", comment: "Send screen")
         case .syncingChain: return NSLocalizedString("Wait until wallet is synced to complete the transaction",
                                                      comment: "Send screen")
+        case .networkUnavailable: return NSLocalizedString("Network Unavailable", comment: "Network Unavailable")
         }
     }
 
@@ -38,6 +40,7 @@ enum SendAmountError: Error, ColorizedText, LocalizedError {
         case .insufficientFunds: return .systemRed
         case .insufficientMixedFunds: return .systemRed
         case .syncingChain: return .secondaryLabel
+        case .networkUnavailable: return .secondaryLabel
         }
     }
 }
