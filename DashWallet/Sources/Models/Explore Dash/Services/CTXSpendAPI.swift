@@ -30,7 +30,6 @@ enum CTXSpendError: Error, LocalizedError {
     case merchantUnavailable
     case transactionRejected
     case purchaseLimitExceeded
-    case purchaseLimitBelowMinimum
     case serverError
     case customError(String)
     case unknown
@@ -49,7 +48,7 @@ enum CTXSpendError: Error, LocalizedError {
         case .tokenRefreshFailed:
             return NSLocalizedString("Your session expired", comment: "DashSpend")
         case .insufficientFunds:
-            return NSLocalizedString("Insufficient funds to complete this purchase. Please add more Dash to your wallet or reduce the amount.", comment: "DashSpend")
+            return NSLocalizedString("You do not have sufficient funds to complete this transaction", comment: "DashSpend")
         case .invalidMerchant:
             return NSLocalizedString("This merchant is currently unavailable.", comment: "DashSpend")
         case .invalidAmount:
@@ -59,9 +58,7 @@ enum CTXSpendError: Error, LocalizedError {
         case .transactionRejected:
             return NSLocalizedString("Your transaction was rejected. Please try again or contact support if the problem persists.", comment: "DashSpend")
         case .purchaseLimitExceeded:
-            return NSLocalizedString("Purchase amount exceeds the maximum limit for this merchant. Please reduce the amount and try again.", comment: "DashSpend")
-        case .purchaseLimitBelowMinimum:
-            return NSLocalizedString("Purchase amount is below the minimum limit for this merchant. Please increase the amount and try again.", comment: "DashSpend")
+            return NSLocalizedString("The purchase limits for this merchant have changed. Please contact CTX Support for more information.", comment: "DashSpend")
         case .serverError:
             return NSLocalizedString("Server error occurred. Please try again later.", comment: "DashSpend")
         case .customError(let message):

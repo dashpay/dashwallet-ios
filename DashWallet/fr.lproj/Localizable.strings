@@ -1228,12 +1228,6 @@
 /* No comment provided by engineer. */
 "Insufficient funds" = "Fonds insuffisants";
 
-/* DashSpend */
-"Insufficient funds to complete this purchase. Please add more Dash to your wallet or reduce the amount." = "Insufficient funds to complete this purchase. Please add more Dash to your wallet or reduce the amount.";
-
-/* Send screen */
-"Insufficient funds. Please add more Dash to your wallet or reduce the amount." = "Insufficient funds. Please add more Dash to your wallet or reduce the amount.";
-
 /* Send screen */
 "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction." = "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction.";
 
@@ -1973,12 +1967,6 @@
 /* Coinbase/Buy Dash */
 "Purchase" = "Achat";
 
-/* DashSpend */
-"Purchase amount exceeds the maximum limit for this merchant. Please reduce the amount and try again." = "Purchase amount exceeds the maximum limit for this merchant. Please reduce the amount and try again.";
-
-/* DashSpend */
-"Purchase amount is below the minimum limit for this merchant. Please increase the amount and try again." = "Purchase amount is below the minimum limit for this merchant. Please increase the amount and try again.";
-
 /* Alert title */
 "Purchase Failed" = "Purchase Failed";
 
@@ -2493,6 +2481,9 @@
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "Le montant minimal que vous pouvez envoyer est %@";
+
+/* DashSpend */
+"The purchase limits for this merchant have changed. Please contact CTX Support for more information." = "The purchase limits for this merchant have changed. Please contact CTX Support for more information.";
 
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
@@ -3012,6 +3003,9 @@
 
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "Vous n'avez aucun contact pour l'instant";
+
+/* DashSpend */
+"You do not have sufficient funds to complete this transaction" = "You do not have sufficient funds to complete this transaction";
 
 /* Coinbase */
 "You don’t have enough balance" = "Vous n'avez pas un solde suffisant";

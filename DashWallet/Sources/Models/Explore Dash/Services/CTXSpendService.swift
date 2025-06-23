@@ -138,10 +138,8 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, Ob
                         // Check for limit errors first
                         if let fiatAmountErrors = errorData.fields?.fiatAmount,
                            let firstFiatError = fiatAmountErrors.first {
-                            if firstFiatError == "above threshold" {
+                            if firstFiatError == "above threshold" || firstFiatError == "below threshold" {
                                 throw CTXSpendError.purchaseLimitExceeded
-                            } else if firstFiatError == "below threshold" {
-                                throw CTXSpendError.purchaseLimitBelowMinimum
                             }
                         }
                         
