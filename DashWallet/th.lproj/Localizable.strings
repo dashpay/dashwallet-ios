@@ -236,7 +236,7 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "แอพพลิเคชั่น %@ ต้องการรับ Master Public Key ของคุณ ซึ่งสามารถใช้ในการติดตามกระเป๋าสตางค์ของคุณได้ แต่ไม่สามารถใช้ในการย้าย Dash ของคุณ";
 
 /* No comment provided by engineer. */
-"Apply" = "Apply";
+"Apply" = "นำมาใช้";
 
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "แน่ใจหรือว่าต้องการยกเลิกคำสั่งซื้อนี้?";
@@ -341,7 +341,7 @@
 "Between Dash Wallet and your Coinbase account" = "ระหว่างกระเป๋าเงิน Dash และบัญชี Coinbase ของคุณ";
 
 /* Voting */
-"Block" = "Block";
+"Block" = "บล็อก";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "กลุ่ม # %1$d of %2$d";
@@ -681,7 +681,7 @@
 "Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "ที่อยู่ Dash ที่กำหนดไว้สำหรับบัญชี CrowdNode ของคุณในกระเป๋าเงิน Dash บนอุปกรณ์นี้";
 
 /* No comment provided by engineer. */
-"Dash balance" = "Dash balance";
+"Dash balance" = "ยอดคงเหลือ Dash";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "ยอดคงเหลือของ Dash บน Coinbase";
@@ -696,7 +696,7 @@
 "Dash username" = "ชื่อผู้ใช้ Dash";
 
 /* DashSpend confirmation */
-"Dash Wallet" = "Dash Wallet";
+"Dash Wallet" = "กระเป๋าเงิน Dash ";
 
 /* Buy Dash */
 "Dash Wallet on this device" = "กระเป๋าเงิน Dash บนอุปกรณ์นี้";
@@ -767,7 +767,7 @@
 "Discount" = "Discount";
 
 /* No comment provided by engineer. */
-"Dismiss" = "Dismiss";
+"Dismiss" = "ยกเลิก";
 
 /* No comment provided by engineer. */
 "Display Name" = "ชื่อที่แสดง";
@@ -803,7 +803,7 @@
 "e.g. johndoe@mail.com" = "ตัวอย่างเช่น johndoe@mail.com";
 
 /* No comment provided by engineer. */
-"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "คำเชิญแต่ละครั้งจะได้รับเงินทุนด้วยจำนวนเงินนี้เพื่อให้ผู้รับสามารถสร้างชื่อผู้ใช้ของพวกเขาได้อย่างรวดเร็วบนเครือข่าย Dash";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "ก่อน";
@@ -1052,7 +1052,7 @@
 "Gift Card" = "บัตรของขวัญ";
 
 /* No comment provided by engineer. */
-"Gift card" = "Gift card";
+"Gift card" = "บัตรของขวัญ";
 
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
@@ -1295,7 +1295,7 @@
 "Invitation Created Successfully" = "คำเชิญที่สร้างขึ้นสำเร็จ";
 
 /* No comment provided by engineer. */
-"Invitation Fee" = "Invitation Fee";
+"Invitation Fee" = "ค่าธรรมเนียมการเชิญ";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "คำเชิญใช้โดย";
@@ -1458,7 +1458,7 @@
 "Log in to your account" = "Log in to your account";
 
 /* Log out button */
-"Log Out" = "Log Out";
+"Log Out" = "ออกจากระบบ";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "ออกจากระบบ Uphold";
@@ -1758,7 +1758,7 @@
 "Owner Keys" = "เจ้าของกุญแจ";
 
 /* DashSpend */
-"Password" = "Password";
+"Password" = "รหัสผ่าน";
 
 /* Usernames */
 "Past link here" = "Past link here";
@@ -1968,7 +1968,7 @@
 "Purchase" = "ซื้อ";
 
 /* Alert title */
-"Purchase Failed" = "Purchase Failed";
+"Purchase Failed" = "การซื้อไม่สำเร็จ";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "ได้รับอย่างรวดเร็ว";
@@ -2142,7 +2142,7 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "การบันทึกภาพจะปรากฏแก่แอพพลิเคชันและอุปกรณ์อื่น ๆ สร้างวลีกู้คืนใหม่และเก็บไว้เป็นความลับ";
 
 /* No comment provided by engineer. */
-"Search" = "Search";
+"Search" = "ค้นหา";
 
 /* No comment provided by engineer. */
 "Search for a contact" = "ค้นหารายชื่อผู้ติดต่อ";
@@ -2399,7 +2399,7 @@
 "Sync Failed" = "ซิงค์ล้มเหลว";
 
 /* Explore Dash */
-"Sync in progress… Results may not be complete." = "Sync in progress… Results may not be complete.";
+"Sync in progress… Results may not be complete." = "กำลังซิงค์... ผลลัพธ์อาจไม่สมบูรณ์";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Sync Now" = "ซิงค์ตอนนี้";
@@ -2570,7 +2570,7 @@
 "to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "ไปยังที่อยู่ Dash ที่กำหนดไว้สำหรับบัญชี CrowdNode ของคุณในกระเป๋าเงิน Dash บนอุปกรณ์นี้";
 
 /* No comment provided by engineer. */
-"Today" = "Today";
+"Today" = "วันนี้";
 
 /* No comment provided by engineer. */
 "Tools" = "เครื่องมือ";
@@ -2951,7 +2951,7 @@
 "Yes" = "ใช่";
 
 /* No comment provided by engineer. */
-"Yesterday" = "Yesterday";
+"Yesterday" = "เมื่อวาน";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "คุณได้รับการยอมรับคำขอการติดต่อจาก %@";
@@ -3005,7 +3005,7 @@
 "You do not have any contacts at the moment" = "คุณไม่มีผู้ติดต่อใด ๆ ในขณะนี้";
 
 /* DashSpend */
-"You do not have sufficient funds to complete this transaction" = "You do not have sufficient funds to complete this transaction";
+"You do not have sufficient funds to complete this transaction" = "คุณมีเงินทุนไม่เพียงพอที่จะดำเนินการทางธุรกรรมได้สำเร็จ";
 
 /* Coinbase */
 "You don’t have enough balance" = "คุณมียอดคงเหลือไม่เพียงพอ";
@@ -3110,7 +3110,7 @@
 "Your CrowdNode account is set up and ready to use!" = "บัญชี CrowdNode ของคุณถูกตั้งค่าและพร้อมใช้งาน!";
 
 /* Crowdnode */
-"Your CrowdNode account was created using these transactions." = "Your CrowdNode account was created using these transactions.";
+"Your CrowdNode account was created using these transactions." = "บัญชี CrowdNode ของคุณถูกสร้างขึ้นโดยใช้ธุรกรรมเหล่านี้";
 
 /* CrowdNode */
 "Your CrowdNode address has been confirmed." = "ที่อยู่ CrowdNode ของคุณได้รับการยืนยันแล้ว";

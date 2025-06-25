@@ -681,7 +681,7 @@
 "Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Dash address designated for your CrowdNode account in the Dash Wallet on this device ";
 
 /* No comment provided by engineer. */
-"Dash balance" = "Dash balance";
+"Dash balance" = "Dash egyenleg";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "Dash balance on Coinbase";
@@ -767,7 +767,7 @@
 "Discount" = "Discount";
 
 /* No comment provided by engineer. */
-"Dismiss" = "Dismiss";
+"Dismiss" = "Elvet";
 
 /* No comment provided by engineer. */
 "Display Name" = "Display Name";
@@ -1458,7 +1458,7 @@
 "Log in to your account" = "Log in to your account";
 
 /* Log out button */
-"Log Out" = "Log Out";
+"Log Out" = "Kijelentkezés";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Kijelentkezés az Uphold-ból";

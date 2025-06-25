@@ -681,7 +681,7 @@
 "Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Dash address designated for your CrowdNode account in the Dash Wallet on this device ";
 
 /* No comment provided by engineer. */
-"Dash balance" = "Dash balance";
+"Dash balance" = "Sold Dash";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "Dash balance on Coinbase";
@@ -767,7 +767,7 @@
 "Discount" = "Discount";
 
 /* No comment provided by engineer. */
-"Dismiss" = "Dismiss";
+"Dismiss" = "Renunță";
 
 /* No comment provided by engineer. */
 "Display Name" = "Display Name";
@@ -1758,7 +1758,7 @@
 "Owner Keys" = "Cheile Proprietarului";
 
 /* DashSpend */
-"Password" = "Password";
+"Password" = "Parolă";
 
 /* Usernames */
 "Past link here" = "Past link here";

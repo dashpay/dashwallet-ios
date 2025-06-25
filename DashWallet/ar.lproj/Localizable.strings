@@ -236,7 +236,7 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "التطبيق %@ ترغب في استلام مفتاحك الرئيسي. هذا يمكن أن تستخدم لتتبع محفظتك ، وهذا لا يمكن أن تستخدم لتحريك داش الخاص بك.";
 
 /* No comment provided by engineer. */
-"Apply" = "Apply";
+"Apply" = "تطبيق";
 
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Are you sure you want to cancel this order?";
@@ -341,7 +341,7 @@
 "Between Dash Wallet and your Coinbase account" = "بين محفظة داش وحساب Coinbase الخاص بك";
 
 /* Voting */
-"Block" = "Block";
+"Block" = "بلوك";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "كتلة # %1$d من %2$d";
@@ -681,7 +681,7 @@
 "Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Dash address designated for your CrowdNode account in the Dash Wallet on this device ";
 
 /* No comment provided by engineer. */
-"Dash balance" = "Dash balance";
+"Dash balance" = "رصيد داش";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "رصيد داش على كوين بيس";
@@ -696,7 +696,7 @@
 "Dash username" = "Dash username";
 
 /* DashSpend confirmation */
-"Dash Wallet" = "Dash Wallet";
+"Dash Wallet" = "محفظة داش";
 
 /* Buy Dash */
 "Dash Wallet on this device" = "محفظة داش على هذا الجهاز";
@@ -767,7 +767,7 @@
 "Discount" = "Discount";
 
 /* No comment provided by engineer. */
-"Dismiss" = "Dismiss";
+"Dismiss" = "تجاهل";
 
 /* No comment provided by engineer. */
 "Display Name" = "Display Name";
@@ -1052,7 +1052,7 @@
 "Gift Card" = "Gift Card";
 
 /* No comment provided by engineer. */
-"Gift card" = "Gift card";
+"Gift card" = "كرت هدية";
 
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
@@ -1458,7 +1458,7 @@
 "Log in to your account" = "Log in to your account";
 
 /* Log out button */
-"Log Out" = "Log Out";
+"Log Out" = "تسجيل الخروج";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "تسجيل الخروج من Uphold";
@@ -1758,7 +1758,7 @@
 "Owner Keys" = "مفاتيح المالك";
 
 /* DashSpend */
-"Password" = "Password";
+"Password" = "كلمة المرور";
 
 /* Usernames */
 "Past link here" = "Past link here";
@@ -1968,7 +1968,7 @@
 "Purchase" = "شراء";
 
 /* Alert title */
-"Purchase Failed" = "Purchase Failed";
+"Purchase Failed" = "الشراء لم ينجح";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "إستقبال سريع";
@@ -2142,7 +2142,7 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "تكون لقطات الشاشة مرئية للتطبيقات والأجهزة الأخرى. إنشاء كلمة الإستراد جديدة والحفاظ على سريتها.";
 
 /* No comment provided by engineer. */
-"Search" = "Search";
+"Search" = "بحث";
 
 /* No comment provided by engineer. */
 "Search for a contact" = "Search for a contact";
@@ -2399,7 +2399,7 @@
 "Sync Failed" = "Sync Failed";
 
 /* Explore Dash */
-"Sync in progress… Results may not be complete." = "Sync in progress… Results may not be complete.";
+"Sync in progress… Results may not be complete." = "المزامنة جارية... قد لا تكون النتائج كاملة.";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Sync Now" = "Sync Now";
@@ -2570,7 +2570,7 @@
 "to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "إلى عنوان Dash المخصص لحساب CrowdNode الخاص بك في Dash Wallet على هذا الجهاز";
 
 /* No comment provided by engineer. */
-"Today" = "Today";
+"Today" = "اليوم";
 
 /* No comment provided by engineer. */
 "Tools" = "ادوات";
@@ -2951,7 +2951,7 @@
 "Yes" = "Yes";
 
 /* No comment provided by engineer. */
-"Yesterday" = "Yesterday";
+"Yesterday" = "في الامس";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "You accepted the contact request from %@";
@@ -3005,7 +3005,7 @@
 "You do not have any contacts at the moment" = "You do not have any contacts at the moment";
 
 /* DashSpend */
-"You do not have sufficient funds to complete this transaction" = "You do not have sufficient funds to complete this transaction";
+"You do not have sufficient funds to complete this transaction" = "ليس لديك رصيد كافي لإتمام هذه المعاملة";
 
 /* Coinbase */
 "You don’t have enough balance" = "ليس لديك رصيد كافي";
@@ -3110,7 +3110,7 @@
 "Your CrowdNode account is set up and ready to use!" = "تم إعداد حساب CrowdNode الخاص بك وهو جاهز للاستخدام!";
 
 /* Crowdnode */
-"Your CrowdNode account was created using these transactions." = "Your CrowdNode account was created using these transactions.";
+"Your CrowdNode account was created using these transactions." = "تم إنشاء حساب CrowdNode الخاص بك باستخدام هذه المعاملات.";
 
 /* CrowdNode */
 "Your CrowdNode address has been confirmed." = "تم تأكيد عنوان CrowdNode الخاص بك.";

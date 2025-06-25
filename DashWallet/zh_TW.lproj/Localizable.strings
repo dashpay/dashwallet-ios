@@ -23,10 +23,10 @@
 "%@ is not allowed to access Touch ID" = "%@ 不允許訪問Touch ID";
 
 /* Credits */
-"%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
+"%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu 聯絡人/ %3$lu 個人資料更新";
 
 /* Voting - multiple keys warning */
-"%d votes will be cast as you have multiple voting keys stored in the wallet" = "%d votes will be cast as you have multiple voting keys stored in the wallet";
+"%d votes will be cast as you have multiple voting keys stored in the wallet" = "%d 由於您的錢包中儲存了多個投票密鑰，因此將進行投票";
 
 /* Voting */
 "%ld duplicates" = "%ld 重複項目";
@@ -155,7 +155,7 @@
 "Advanced" = "進階";
 
 /* CoinJoin */
-"Advanced privacy level requires a reliable internet connection" = "Advanced privacy level requires a reliable internet connection";
+"Advanced privacy level requires a reliable internet connection" = "高級隱私等級需要可靠的網路連接";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "進階的安全性";
@@ -170,7 +170,7 @@
 "Agree" = "同意";
 
 /* TimeSkew */
-"ahead" = "ahead";
+"ahead" = "前面";
 
 /* No comment provided by engineer. */
 "All" = "所有";
@@ -236,7 +236,7 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "應用程式 %@ 想要取得您的主公鑰。 這可以用來追踪你的錢包結餘，但並不能動用你的達世幣。";
 
 /* No comment provided by engineer. */
-"Apply" = "Apply";
+"Apply" = "應用";
 
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "您確定要取消此訂單嗎?";
@@ -260,7 +260,7 @@
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "由於大多數人手頭上沒有 1000 個達世幣，Crowdnode 提供了一項服務，透過匯集會員的存款，他們可以獲得擁有主節點的好處。";
 
 /* DashSpend */
-"at" = "at";
+"at" = "在";
 
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "ATM 搜索在打開定位服務的情況下效果更好";
@@ -323,7 +323,7 @@
 "Become part of a Dash Masternode with CrowdNode" = "通過 CrowdNode 成為達世幣主節點的一部分";
 
 /* TimeSkew */
-"behind" = "behind";
+"behind" = "在後面\nZài hòumiàn";
 
 /* No comment provided by engineer. */
 "Beta" = "Beta";
@@ -332,7 +332,7 @@
 "Between %ld and %ld characters" = "在 %1$ld 和 %2$ld 個字符之間";
 
 /* Usernames */
-"Between 3 and 23 characters" = "Between 3 and 23 characters";
+"Between 3 and 23 characters" = "名稱介乎3 到 23 個字元之間";
 
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase" = "在達世幣錢包和 Coinbase 之間。";
@@ -341,7 +341,7 @@
 "Between Dash Wallet and your Coinbase account" = "在達世幣錢包和您的 Coinbase 帳戶之間";
 
 /* Voting */
-"Block" = "Block";
+"Block" = "區塊";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "%2$d 中 #%1$d 的區塊";
@@ -369,7 +369,7 @@
 "Buy and convert Dash with another crypto" = "用另一種加密貨幣購買和兌換達世幣";
 
 /* No comment provided by engineer. */
-"Buy credits" = "Buy credits";
+"Buy credits" = "購買積分";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "購買達世幣";
@@ -417,7 +417,7 @@
 "Card number" = "Card number";
 
 /* No comment provided by engineer. */
-"Card PIN" = "Card PIN";
+"Card PIN" = "卡密碼";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "變更";
@@ -435,10 +435,10 @@
 "Change to Intermediate" = "更改為中階";
 
 /* No comment provided by engineer. */
-"Check current balance" = "Check current balance";
+"Check current balance" = "檢查當前餘額";
 
 /* TimeSkew */
-"Check date & time settings" = "Check date & time settings";
+"Check date & time settings" = "檢查日期和時間設定";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
@@ -483,16 +483,16 @@
 "CoinJoin" = "CoinJoin";
 
 /* CoinJoin */
-"CoinJoin Collateral Inputs" = "CoinJoin Collateral Inputs";
+"CoinJoin Collateral Inputs" = "CoinJoin 抵押品輸入";
 
 /* CoinJoin */
-"CoinJoin Create Denominations" = "CoinJoin Create Denominations";
+"CoinJoin Create Denominations" = "CoinJoin 建立面額";
 
 /* CoinJoin */
-"CoinJoin Mixing" = "CoinJoin Mixing";
+"CoinJoin Mixing" = "CoinJoin 混合";
 
 /* CoinJoin */
-"CoinJoin Mixing Fee" = "CoinJoin Mixing Fee";
+"CoinJoin Mixing Fee" = "CoinJoin 混合費用";
 
 /* CoinJoin */
 "CoinJoin Send" = "CoinJoin Send";
@@ -533,7 +533,7 @@
 "Contact Coinbase Support" = "聯繫 Coinbase 支援服務";
 
 /* DashSpend */
-"Contact CTX Support" = "Contact CTX Support";
+"Contact CTX Support" = "聯繫CTX客戶服務";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "有聯繫請求等待批准";
@@ -551,7 +551,7 @@
 "Continue" = "繼續";
 
 /* No comment provided by engineer. */
-"Continue Anyway" = "Continue Anyway";
+"Continue Anyway" = "無論如何都要繼續";
 
 /* Coinbase Entry Point */
 "Convert Crypto" = "兌換加密貨幣";
@@ -608,7 +608,7 @@
 "Create Account" = "創建帳號";
 
 /* Create DashSpend account */
-"Create account" = "Create account";
+"Create account" = "創建賬戶";
 
 /* DashSpend account title */
 "Create an account or log into an existing one" = "Create an account or log into an existing one";
@@ -627,7 +627,7 @@
 "Create Online Account" = "創建在線帳戶";
 
 /* Usernames */
-"Create your username" = "Create your username";
+"Create your username" = "建立您的用戶名";
 
 /* No comment provided by engineer. */
 "Create your Username, find friends & family with their usernames and add them to your contacts" = "創建您的用戶名，使用朋友和家人的用戶名來搜索並將他們添加到您的聯絡人列表中";
@@ -648,7 +648,7 @@
 "CrowdNode withdrawal limits" = "CrowdNode 提款限額";
 
 /* No comment provided by engineer. */
-"CrowdNode · Account" = "CrowdNode · Account";
+"CrowdNode · Account" = "CrowdNode · 帳戶";
 
 /* CrowdNode Portal */
 "CrowdNode ➝ DashWallet" = "CrowdNode ➝ 達世幣錢包";
@@ -681,7 +681,7 @@
 "Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "此設備上達世幣錢包中為您的 CrowdNode 帳戶指定的達世幣位址";
 
 /* No comment provided by engineer. */
-"Dash balance" = "Dash balance";
+"Dash balance" = "達世幣結餘";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "Coinbase 上的達世幣結餘";
@@ -696,7 +696,7 @@
 "Dash username" = "達世幣用戶名";
 
 /* DashSpend confirmation */
-"Dash Wallet" = "Dash Wallet";
+"Dash Wallet" = "達世幣錢包";
 
 /* Buy Dash */
 "Dash Wallet on this device" = "此設備上的達世幣錢包";
@@ -723,7 +723,7 @@
 "Default currency, shortcuts, about…" = "預設貨幣，捷徑，關於…";
 
 /* Voting */
-"Default filter setting" = "Default filter setting";
+"Default filter setting" = "預設過濾器設定";
 
 /* Location Service Status */
 "Denied" = "拒絕";
@@ -764,10 +764,10 @@
 "Disconnected" = "斷開連接";
 
 /* DashSpend confirmation */
-"Discount" = "Discount";
+"Discount" = "折扣";
 
 /* No comment provided by engineer. */
-"Dismiss" = "Dismiss";
+"Dismiss" = "取消";
 
 /* No comment provided by engineer. */
 "Display Name" = "顯示名稱";
@@ -803,7 +803,7 @@
 "e.g. johndoe@mail.com" = "例如 johndoe@mail.com";
 
 /* No comment provided by engineer. */
-"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "每個邀請都將獲得該金額的資助，以便接收者可以在達世幣網絡上快速創建他們的用戶名";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "之前";
@@ -848,7 +848,7 @@
 "Enter Recovery Phrase" = "輸入恢復詞組";
 
 /* Enter verification code */
-"Enter verification code" = "Enter verification code";
+"Enter verification code" = "輸入驗證碼";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "在下面輸入您的 2FA 代碼";
@@ -869,7 +869,7 @@
 "Error updating your profile" = "更新您的個人資料時出錯";
 
 /* CoinJoin */
-"Error ·" = "Error ·";
+"Error ·" = "錯誤 ·";
 
 /* No comment provided by engineer. */
 "Exit" = "退出";
@@ -887,7 +887,7 @@
 "Export all transactions" = "匯出所有交易";
 
 /* No comment provided by engineer. */
-"Export CSV" = "Export CSV";
+"Export CSV" = "匯出 CSV";
 
 /* No comment provided by engineer. */
 "Extended Public Keys" = "擴展公鑰";
@@ -971,10 +971,10 @@
 "First minimum deposit" = "首次最低存款";
 
 /* Explore Dash: Filters */
-"Fixed denominated amounts" = "Fixed denominated amounts";
+"Fixed denominated amounts" = "固定金額";
 
 /* Explore Dash: Filters */
-"Flexible amounts" = "Flexible amounts";
+"Flexible amounts" = "彈性的金額";
 
 /* Usernames */
 "For some reason, the request for the username '%@' has failed." = "For some reason, the request for the username '%@' has failed.";
@@ -998,7 +998,7 @@
 "Found potential missing words:\n%@" = "找到潛在的遺漏單詞:\n%@";
 
 /* DashSpend confirmation */
-"From" = "From";
+"From" = "由";
 
 /* from CrowdNode */
 "from CrowdNode" = "來自 CrowdNode";
@@ -1016,7 +1016,7 @@
 "from your Coinbase account" = "從你的 Coinbase 帳戶";
 
 /* CoinJoin */
-"Fully mixed" = "Fully mixed";
+"Fully mixed" = "充分混合";
 
 /* CrowdNode */
 "Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "只需 0.5 Dash，即可從達世幣主節點中的存款中獲得獎勵。";
@@ -1052,7 +1052,7 @@
 "Gift Card" = "禮物卡";
 
 /* No comment provided by engineer. */
-"Gift card" = "Gift card";
+"Gift card" = "禮物卡";
 
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
@@ -1061,10 +1061,10 @@
 "Gift card purchase was rejected" = "Gift card purchase was rejected";
 
 /* DashSpend confirmation */
-"Gift card total" = "Gift card total";
+"Gift card total" = "禮品卡總計";
 
 /* Explore Dash/Merchants/Filters */
-"Gift card types" = "Gift card types";
+"Gift card types" = "禮品卡類型";
 
 /* DashSpend */
 "Gift card · %@" = "Gift card · %@";
@@ -1100,7 +1100,7 @@
 "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "這是在此設備上的達世幣錢包中為您的 CrowdNode 帳戶指定的達世幣位址。";
 
 /* No comment provided by engineer. */
-"Hide" = "Hide";
+"Hide" = "隱藏";
 
 /* adjective, security level */
 "High" = "高";
@@ -1130,10 +1130,10 @@
 "I Accept" = "我接受";
 
 /* No comment provided by engineer. */
-"I accept" = "I accept";
+"I accept" = "我接受";
 
 /* Accept terms checkbox */
-"I accept DashSpend terms and conditions" = "I accept DashSpend terms and conditions";
+"I accept DashSpend terms and conditions" = "我接受 DashSpend 條款和條件";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "我同意如果我丟失恢復密語，我會丟失我的達世幣";
@@ -1211,7 +1211,7 @@
 "In process…" = "進行中…";
 
 /* No comment provided by engineer. */
-"In store" = "In store";
+"In store" = "有存貨";
 
 /* No comment provided by engineer. */
 "In the payment section of your checkout, select \"gift card\" and enter your card number and pin." = "In the payment section of your checkout, select \"gift card\" and enter your card number and pin.";
@@ -1229,7 +1229,7 @@
 "Insufficient funds" = "餘額不足";
 
 /* Send screen */
-"Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction." = "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction.";
+"Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction." = "混合資金不足。等待CoinJoin混合完成或在設定中停用此功能來完成此交易。";
 
 /* No comment provided by engineer. */
 "Insufficient Wallet Balance" = "錢包餘額不足";
@@ -1241,7 +1241,7 @@
 "Intermediate" = "中間的";
 
 /* CoinJoin */
-"Intermediate privacy level requires a reliable internet connection" = "Intermediate privacy level requires a reliable internet connection";
+"Intermediate privacy level requires a reliable internet connection" = "中級隱私等級需要可靠的網路連接";
 
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "內部轉移";
@@ -1295,7 +1295,7 @@
 "Invitation Created Successfully" = "創建邀請成功";
 
 /* No comment provided by engineer. */
-"Invitation Fee" = "Invitation Fee";
+"Invitation Fee" = "邀請費";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "邀請己被使用";
@@ -1340,7 +1340,7 @@
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "將達世幣從 Coinbase 轉帳到此設備上的達世幣錢包最多可能需要 10 分鐘";
 
 /* CoinJoin */
-"It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees" = "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees";
+"It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees" = "建議使用 Wi-Fi 網路以避免產生額外的混合費用";
 
 /* DashSpend */
 "It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash." = "It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.";
@@ -1449,16 +1449,16 @@
 "Locked" = "己鎖定";
 
 /* Log in */
-"Log in" = "Log in";
+"Log in" = "登入";
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "登入到 CrowdNode";
 
 /* DashSpend */
-"Log in to your account" = "Log in to your account";
+"Log in to your account" = "登錄到您的帳戶";
 
 /* Log out button */
-"Log Out" = "Log Out";
+"Log Out" = "登出";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "從Uphold登出";
@@ -1494,10 +1494,10 @@
 "Low to high" = "從低到高";
 
 /* No comment provided by engineer. */
-"Mainnet" = "Mainnet";
+"Mainnet" = "主網";
 
 /* Usernames */
-"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow";
+"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "在知名社交媒體或訊息平台上發布包含上述文字的帖子，以驗證您是所請求用戶名的原始所有者，並貼上下面的鏈接";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "管理 GPS 權限";
@@ -1560,28 +1560,28 @@
 "Mix your Dash Coins" = "Mix your Dash Coins";
 
 /* No comment provided by engineer. */
-"Mixed balance" = "Mixed balance";
+"Mixed balance" = "已混合資金結餘";
 
 /* CoinJoin */
-"Mixing" = "Mixing";
+"Mixing" = "混合";
 
 /* CoinJoin */
 "Mixing Finishing…" = "Mixing Finishing…";
 
 /* CoinJoin */
-"Mixing is only possible with the app open" = "Mixing is only possible with the app open";
+"Mixing is only possible with the app open" = "僅可在應用程式開啟的情況下進行混合";
 
 /* CoinJoin */
-"Mixing Paused ·" = "Mixing Paused ·";
+"Mixing Paused ·" = "混合暫停·";
 
 /* CoinJoin */
-"Mixing Transactions" = "Mixing Transactions";
+"Mixing Transactions" = "混合交易";
 
 /* CoinJoin */
 "Mixing your Dash coins will make your transactions more private" = "混合您的達世幣將使您交易的私隱度更高";
 
 /* CoinJoin */
-"Mixing ·" = "Mixing ·";
+"Mixing ·" = "混合·";
 
 /* No comment provided by engineer. */
 "More" = "更多";
@@ -1668,7 +1668,7 @@
 "No Results Found" = "未找到結果";
 
 /* Voting */
-"No votes left" = "No votes left";
+"No votes left" = "沒有剩餘選票";
 
 /* No comment provided by engineer. */
 "Node IP" = "節點IP";
@@ -1695,7 +1695,7 @@
 "Not Determined" = "尚未決定";
 
 /* CoinJoin */
-"Not started" = "Not started";
+"Not started" = "未開始";
 
 /* No comment provided by engineer. */
 "Not yet used" = "尚未使用";
@@ -1719,7 +1719,7 @@
 "Once %@ accepts your request you can Pay Directly to Username" = "當 %@ 接受您的請求後，您就可以直接向用戶名付款";
 
 /* Voting */
-"One vote left" = "One vote left";
+"One vote left" = "還剩一票";
 
 /* Online */
 "Online" = "在線的";
@@ -1749,7 +1749,7 @@
 "Order Preview" = "訂單預覽";
 
 /* DashSpend */
-"Original purchase" = "Original purchase";
+"Original purchase" = "原先購買";
 
 /* No comment provided by engineer. */
 "Owner Address" = "所有者位址";
@@ -1758,7 +1758,7 @@
 "Owner Keys" = "擁有者公鑰";
 
 /* DashSpend */
-"Password" = "Password";
+"Password" = "密碼";
 
 /* Usernames */
 "Past link here" = "Past link here";
@@ -1914,7 +1914,7 @@
 "Please write it down" = "請寫下來";
 
 /* No comment provided by engineer. */
-"Powered by" = "Powered by";
+"Powered by" = "提供方";
 
 /* No comment provided by engineer. */
 "Preview" = "Preview";
@@ -1968,7 +1968,7 @@
 "Purchase" = "購買";
 
 /* Alert title */
-"Purchase Failed" = "Purchase Failed";
+"Purchase Failed" = "購買失敗";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "快速接收";
@@ -2061,10 +2061,10 @@
 "Request your username" = "申请您的用戶名";
 
 /* Usernames */
-"Requested username has been blocked" = "Requested username has been blocked";
+"Requested username has been blocked" = "請求的使用者名稱已被阻止";
 
 /* Usernames */
-"Requested username has been given to someone else" = "Requested username has been given to someone else";
+"Requested username has been given to someone else" = "請求的用戶名已提供給其他人";
 
 /* An action */
 "Rescan" = "重新掃瞄";
@@ -2088,7 +2088,7 @@
 "Restricted" = "受限制的";
 
 /* Usernames */
-"Results" = "Results";
+"Results" = "結果";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "保留相互交易記錄";
@@ -2109,7 +2109,7 @@
 "Save" = "儲存";
 
 /* DashSpend */
-"Save %.2f%%" = "Save %.2f%%";
+"Save %.2f%%" = "保存%.2f%%";
 
 /* No comment provided by engineer. */
 "Save Changes" = "保存變更";
@@ -2142,7 +2142,7 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "屏幕截圖可以被其他程序或者設備獲得。請生成一個新的恢復詞組並妥善保管。";
 
 /* No comment provided by engineer. */
-"Search" = "Search";
+"Search" = "搜索";
 
 /* No comment provided by engineer. */
 "Search for a contact" = "搜尋聯絡人";
@@ -2190,11 +2190,11 @@
 "Select a service" = "選擇一項服務";
 
 /* DashSpend denomination selection */
-"Select amount" = "Select amount";
+"Select amount" = "選擇金額";
 
 /* Block explorer picker
    Block explorer selection title */
-"Select block explorer" = "Select block explorer";
+"Select block explorer" = "選擇區塊瀏覽器";
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "從圖庫中選擇";
@@ -2206,7 +2206,7 @@
 "Select the coin" = "選擇幣種";
 
 /* No comment provided by engineer. */
-"Self-checkout" = "Self-checkout";
+"Self-checkout" = "自助結帳";
 
 /* Sell */
 "Sell" = "出售";
@@ -2324,7 +2324,7 @@
 "Show Recovery Phrase" = "顯示恢復詞組";
 
 /* Alert title */
-"Sign in required" = "Sign in required";
+"Sign in required" = "需要登入";
 
 /* CrowdNode */
 "Sign the message" = "簽署訊息";
@@ -2345,7 +2345,7 @@
 "Skip" = "略過";
 
 /* Usernames */
-"Some usernames can be blocked" = "Some usernames can be blocked";
+"Some usernames can be blocked" = "某些使用者名稱可能會被阻止";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "出了些問題";
@@ -2384,7 +2384,7 @@
 "Stop Mixing" = "停止混合";
 
 /* Voting */
-"Submit" = "Submit";
+"Submit" = "提交";
 
 /* No comment provided by engineer. */
 "Swept!" = "掃一掃!";
@@ -2399,7 +2399,7 @@
 "Sync Failed" = "同步失敗";
 
 /* Explore Dash */
-"Sync in progress… Results may not be complete." = "Sync in progress… Results may not be complete.";
+"Sync in progress… Results may not be complete." = "同步中...  結果可能不完整。";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Sync Now" = "立即同步";
@@ -2441,13 +2441,13 @@
 "Terms & conditions" = "Terms & conditions";
 
 /* No comment provided by engineer. */
-"Test Dash is free and can be obtained from what is called a faucet." = "Test Dash is free and can be obtained from what is called a faucet.";
+"Test Dash is free and can be obtained from what is called a faucet." = "測試達世幣是免費的，可以透過所謂的「水龍頭」獲得。";
 
 /* No comment provided by engineer. */
 "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "測試用的達世幣是免費的，可以從所謂的水龍頭獲得。\n從錢包的接收畫面複製位址，然後點擊下面的按鈕以獲取您的達世幣。";
 
 /* No comment provided by engineer. */
-"Testnet" = "Testnet";
+"Testnet" = "測試網";
 
 /* No comment provided by engineer. */
 "The chain is syncing…" = "區塊鏈正在同步…";
@@ -2477,7 +2477,7 @@
 "The image you select will be uploaded to Imgur anonymously." = "您選擇的圖像將匿名上傳到 Imgur。";
 
 /* Usernames */
-"The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
+"The link you send will be visible only to the network owners" = "您發送的連結僅對網路所有者可見";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "您可以發送的最小金額是 %@";
@@ -2528,7 +2528,7 @@
 "This merchant is currently unavailable. Please try again later or choose a different merchant." = "This merchant is currently unavailable. Please try again later or choose a different merchant.";
 
 /* DashSpend */
-"This merchant sells gift cards at fixed prices" = "This merchant sells gift cards at fixed prices";
+"This merchant sells gift cards at fixed prices" = "這個商戶以固定價格出售禮品卡";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "每次使用時，都需要使用此密碼來解鎖您的應用程式。";
@@ -2555,13 +2555,13 @@
 "to" = "至";
 
 /* DashSpend confirmation */
-"To" = "To";
+"To" = "到";
 
 /* Coinbase */
 "to Dash Wallet on this device" = "到此設備上的 達世幣錢包";
 
 /* CoinJoin */
-"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
+"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "為了防止其他人看到您的付款對象，建議您在建立使用者名稱之前混合您的餘額。";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "要開始質押，請在 CrowdNode 上創建一個帳戶或連接到現有帳戶。";
@@ -2570,13 +2570,13 @@
 "to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "到此設備上達世幣錢包中為您的 CrowdNode 帳戶指定的達世幣位址";
 
 /* No comment provided by engineer. */
-"Today" = "Today";
+"Today" = "今天";
 
 /* No comment provided by engineer. */
 "Tools" = "工具";
 
 /* No comment provided by engineer. */
-"Top-up your credits to continue making changes to your profile and adding contacts" = "Top-up your credits to continue making changes to your profile and adding contacts";
+"Top-up your credits to continue making changes to your profile and adding contacts" = "充值您的積分以繼續更改您的個人資料並添加聯絡人";
 
 /* Dash Portal */
 "Topper" = "Topper";
@@ -2629,7 +2629,7 @@
 "Turn device passcode on" = "在設備上開啟驗證碼";
 
 /* CoinJoin */
-"Turned off" = "Turned off";
+"Turned off" = "已關閉";
 
 /* Coinbase */
 "Turning this feature on will result a higher battery usage" = "打開此功能將導致更高的電池使用率";
@@ -2668,7 +2668,7 @@
 "Unable to upload your picture. Please try again." = "無法上傳您的圖片。請再試一次。";
 
 /* Voting */
-"Unblock" = "Unblock";
+"Unblock" = "解禁";
 
 /* Voting */
 "Unblocked '%@' username" = "Unblocked '%@' username";
@@ -2749,7 +2749,7 @@
 "Username available" = "用戶名可用";
 
 /* Usernames */
-"Username is available" = "Username is available";
+"Username is available" = "使用者名稱可用";
 
 /* Usernames */
 "Username request failed" = "Username request failed";
@@ -2836,7 +2836,7 @@
 "Voting ends in %dd" = "Voting ends in %dd";
 
 /* Usernames */
-"Voting is only required in some cases" = "Voting is only required in some cases";
+"Voting is only required in some cases" = "僅在某些情況下才需要投票";
 
 /* No comment provided by engineer. */
 "Voting Keys" = "投票公鑰";
@@ -2899,7 +2899,7 @@
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "當交易確認後，另一個錢包的結餘將會消失，並且出於安全原因不應重複使用該錢包。";
 
 /* CoinJoin */
-"When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app." = "When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app.";
+"When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app." = "當您關閉應用程式或鎖定螢幕時，混合過程將停止。當您重新開啟應用程式時，它將恢復。";
 
 /* No comment provided by engineer. */
 "Where to Spend" = "在哪裡消費";
@@ -2951,7 +2951,7 @@
 "Yes" = "是的";
 
 /* No comment provided by engineer. */
-"Yesterday" = "Yesterday";
+"Yesterday" = "昨天";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "您接受了來自 %@ 的聯繫請求";
@@ -2978,7 +2978,7 @@
 "You can change how / when your reward earnings are paid to you." = "您可以更改向您支付獎勵收入的方式/時間。";
 
 /* No comment provided by engineer. */
-"You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance";
+"You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "您可以繼續使用 DashPay 進行付款，但在充值積分之前，您無法更新您的個人資料或添加更多聯絡人";
 
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "您可以採用以下任一格式輸入金鑰 : WIF/base58/base64/hex";
@@ -3005,7 +3005,7 @@
 "You do not have any contacts at the moment" = "您目前沒有任何聯絡人";
 
 /* DashSpend */
-"You do not have sufficient funds to complete this transaction" = "You do not have sufficient funds to complete this transaction";
+"You do not have sufficient funds to complete this transaction" = "您沒有足夠的資金來完成此交易";
 
 /* Coinbase */
 "You don’t have enough balance" = "你沒有足夠的餘額";
@@ -3062,7 +3062,7 @@
 "You only need %@ to join the pool." = "您至少需要 %@ 的金額來參與資金池。";
 
 /* DashSpend confirmation */
-"You pay" = "You pay";
+"You pay" = "你支付";
 
 /* Coinbase */
 "You receive" = "你收到";
@@ -3098,10 +3098,10 @@
 "You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "您將自動收到小額付款，預設情況下它們將被再投資，但是，設置自動提款以接收定期付款也很容易。";
 
 /* No comment provided by engineer. */
-"Your credit balance has been fully depleted" = "Your credit balance has been fully depleted";
+"Your credit balance has been fully depleted" = "您的積分餘額已完全耗盡";
 
 /* No comment provided by engineer. */
-"Your credit balance is low" = "Your credit balance is low";
+"Your credit balance is low" = "您的信用餘額偏低";
 
 /* CrowdNode */
 "Your CrowdNode account is creating…" = "正在創建您的 CrowdNode 帳戶…";
@@ -3110,7 +3110,7 @@
 "Your CrowdNode account is set up and ready to use!" = "您的 CrowdNode 帳戶已設置好並可以使用!";
 
 /* Crowdnode */
-"Your CrowdNode account was created using these transactions." = "Your CrowdNode account was created using these transactions.";
+"Your CrowdNode account was created using these transactions." = "您的 CrowdNode 帳戶是使用這些交易創建的。";
 
 /* CrowdNode */
 "Your CrowdNode address has been confirmed." = "您的 CrowdNode 位址已確認。";
@@ -3125,19 +3125,19 @@
 "Your deposit to CrowdNode is received." = "您對 CrowdNode 的存款已收到了。";
 
 /* TimeSkew */
-"Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin." = "Your device time is %1$@ by %2$d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.";
+"Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin." = "您的設備時間為 %1$@  %2$d 秒。由於這個差異， 您無法使用 CoinJoin。\n\n您裝置上的時間設定需要變更為「自動設定時間」才能使用 CoinJoin。";
 
 /* TimeSkew */
-"Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings." = "Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings.";
+"Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings." = "您的設備時間延遲了 %d 分鐘。由於此問題，您可能無法發送或接收達世幣。\n\n您應該檢查並在必要時更正您的日期、時間和時區設定。";
 
 /* TimeSkew */
-"Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin." = "Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin.";
+"Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin." = "您的設備時間偏差超過 5 秒。由於這種差異，您無法使用 CoinJoin。\n\n使用 CoinJoin 之前，需要將裝置上的時間設定變更為「自動設定時間」。";
 
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "您的電子郵件不會存儲在 DashPay 錢包或任何服務器上。它用於獲取您的 Gravatar 帳戶詳細信息，然後被丟棄。";
 
 /* Email is only used for OTP */
-"Your email is only used to send a one-time password." = "Your email is only used to send a one-time password.";
+"Your email is only used to send a one-time password." = "您的電子郵件僅用於發送一次性密碼。";
 
 /* No comment provided by engineer. */
 "Your invitation from %@ has been already claimed" = "您來自 %@ 的邀請已被認領";

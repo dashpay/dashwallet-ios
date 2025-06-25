@@ -236,7 +236,7 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Aplikace %@ si přeje získat váš hlavní veřejný klíč.\nMůže být použit ke sledování pohybů na peněžence ale nelze ho použít pro přesouvání Dash.";
 
 /* No comment provided by engineer. */
-"Apply" = "Apply";
+"Apply" = "Aplikovat";
 
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Are you sure you want to cancel this order?";
@@ -341,7 +341,7 @@
 "Between Dash Wallet and your Coinbase account" = "Between Dash Wallet and your Coinbase account";
 
 /* Voting */
-"Block" = "Block";
+"Block" = "Blok";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "blok #%1$d z %2$d";
@@ -681,7 +681,7 @@
 "Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Dash address designated for your CrowdNode account in the Dash Wallet on this device ";
 
 /* No comment provided by engineer. */
-"Dash balance" = "Dash balance";
+"Dash balance" = "Dash bilance";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "Dash balance on Coinbase";
@@ -767,7 +767,7 @@
 "Discount" = "Discount";
 
 /* No comment provided by engineer. */
-"Dismiss" = "Dismiss";
+"Dismiss" = "Zavřít";
 
 /* No comment provided by engineer. */
 "Display Name" = "Zobrazované jméno";
@@ -803,7 +803,7 @@
 "e.g. johndoe@mail.com" = "e.g. johndoe@mail.com";
 
 /* No comment provided by engineer. */
-"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Každá pozvánka bude financována touto částkou, aby si příjemce mohl rychle vytvořit uživatelské jméno na Dash Network";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Dřívější";
@@ -1052,7 +1052,7 @@
 "Gift Card" = "Gift Card";
 
 /* No comment provided by engineer. */
-"Gift card" = "Gift card";
+"Gift card" = "Dárkový poukaz";
 
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
@@ -1295,7 +1295,7 @@
 "Invitation Created Successfully" = "Pozvánka byla úspěšně vytvořena";
 
 /* No comment provided by engineer. */
-"Invitation Fee" = "Invitation Fee";
+"Invitation Fee" = "Poplatek za pozvánku";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "Invitation used by";
@@ -1458,7 +1458,7 @@
 "Log in to your account" = "Log in to your account";
 
 /* Log out button */
-"Log Out" = "Log Out";
+"Log Out" = "Odhlásit";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Odhlásit z účtu Uphold";
@@ -1758,7 +1758,7 @@
 "Owner Keys" = "Klíče majitele";
 
 /* DashSpend */
-"Password" = "Password";
+"Password" = "Heslo";
 
 /* Usernames */
 "Past link here" = "Past link here";
@@ -2142,7 +2142,7 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Snímky obrazovky jsou dostupné pro ostatní aplikace a zařízení. Vygenerujte novou frázi pro obnovení a udržujte ji v tajnosti.";
 
 /* No comment provided by engineer. */
-"Search" = "Search";
+"Search" = "Vyhledávání";
 
 /* No comment provided by engineer. */
 "Search for a contact" = "Vyhledat kontakt";
@@ -3005,7 +3005,7 @@
 "You do not have any contacts at the moment" = "You do not have any contacts at the moment";
 
 /* DashSpend */
-"You do not have sufficient funds to complete this transaction" = "You do not have sufficient funds to complete this transaction";
+"You do not have sufficient funds to complete this transaction" = "Nemáte dostatečné prostředky pro uskutečnění této transakce";
 
 /* Coinbase */
 "You don’t have enough balance" = "You don’t have enough balance";

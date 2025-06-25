@@ -23,10 +23,10 @@
 "%@ is not allowed to access Touch ID" = "%@게 터치 ID 접근 권한이 없습니다";
 
 /* Credits */
-"%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
+"%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu 연락처 / %3$lu 프로필 업데이트";
 
 /* Voting - multiple keys warning */
-"%d votes will be cast as you have multiple voting keys stored in the wallet" = "%d votes will be cast as you have multiple voting keys stored in the wallet";
+"%d votes will be cast as you have multiple voting keys stored in the wallet" = "이 지갑에 수 개의 투표 키가 저장되어 있으므로 %d 표가 던져지게 됩니다 ";
 
 /* Voting */
 "%ld duplicates" = "%Id 복사";
@@ -155,7 +155,7 @@
 "Advanced" = "고급";
 
 /* CoinJoin */
-"Advanced privacy level requires a reliable internet connection" = "Advanced privacy level requires a reliable internet connection";
+"Advanced privacy level requires a reliable internet connection" = "향상된 프라이버시 레벨은 신뢰할 수 있는 인터넷 연결이 필요합니다";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "향상된 보안";
@@ -170,7 +170,7 @@
 "Agree" = "동의합니다";
 
 /* TimeSkew */
-"ahead" = "ahead";
+"ahead" = "앞";
 
 /* No comment provided by engineer. */
 "All" = "모두";
@@ -236,7 +236,7 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "어플리케이션 %@ 에서 마스터 공개 키를 수신하고자 합니다. 이것은 지갑을 추적하는데 사용할 수 있으며 대시를 이동하는 데 사용할 수 없습니다.";
 
 /* No comment provided by engineer. */
-"Apply" = "Apply";
+"Apply" = "적용";
 
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "이 주문을 정말 취소하시겠습니까?";
@@ -260,7 +260,7 @@
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "대부분의 사람들이 당장 1000대시를 지니고 있지 않은 만큼, 크라우드노드는 구성원들의 보증금을 모아 마스터노드 소유의 장점을 누릴 수 있도록 하는 서비스를 개설하였습니다.";
 
 /* DashSpend */
-"at" = "at";
+"at" = "이곳에서";
 
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "ATM 검색은 위치 서비스를 사용할 때 더욱 효과적입니다";
@@ -323,7 +323,7 @@
 "Become part of a Dash Masternode with CrowdNode" = "크라우드노드를 통해 대시 마스터노드의 일원이 되세요";
 
 /* TimeSkew */
-"behind" = "behind";
+"behind" = "뒤";
 
 /* No comment provided by engineer. */
 "Beta" = "Beta";
@@ -332,7 +332,7 @@
 "Between %ld and %ld characters" = "%1$ld 와 %2$ld 글자 사이";
 
 /* Usernames */
-"Between 3 and 23 characters" = "Between 3 and 23 characters";
+"Between 3 and 23 characters" = "3에서 23글자 사이";
 
 /* Coinbase Entry Point */
 "Between Dash Wallet and Coinbase" = "대시 지갑과 코인베이스 사이";
@@ -341,7 +341,7 @@
 "Between Dash Wallet and your Coinbase account" = "대시 지갑과 코인베이스 계정간";
 
 /* Voting */
-"Block" = "Block";
+"Block" = "블록";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "%2$d개중 %1$d번째 블록";
@@ -369,7 +369,7 @@
 "Buy and convert Dash with another crypto" = "다른 암호화폐로 대시 구매 및 전환하기";
 
 /* No comment provided by engineer. */
-"Buy credits" = "Buy credits";
+"Buy credits" = "크레딧 구매";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "대시 매수";
@@ -417,7 +417,7 @@
 "Card number" = "Card number";
 
 /* No comment provided by engineer. */
-"Card PIN" = "Card PIN";
+"Card PIN" = "카드 PIN";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "변경";
@@ -435,10 +435,10 @@
 "Change to Intermediate" = "중급으로 변경하기";
 
 /* No comment provided by engineer. */
-"Check current balance" = "Check current balance";
+"Check current balance" = "현재 잔액을 확인하세요";
 
 /* TimeSkew */
-"Check date & time settings" = "Check date & time settings";
+"Check date & time settings" = "날짜 & 시간 설정 확인";
 
 /* No comment provided by engineer. */
 "Check your connection" = "연결을 확인하세요";
@@ -483,16 +483,16 @@
 "CoinJoin" = "코인조인";
 
 /* CoinJoin */
-"CoinJoin Collateral Inputs" = "CoinJoin Collateral Inputs";
+"CoinJoin Collateral Inputs" = "코인조인 담보 입력";
 
 /* CoinJoin */
-"CoinJoin Create Denominations" = "CoinJoin Create Denominations";
+"CoinJoin Create Denominations" = "코인조인 디노미네이션 생성";
 
 /* CoinJoin */
-"CoinJoin Mixing" = "CoinJoin Mixing";
+"CoinJoin Mixing" = "코인조인 믹싱";
 
 /* CoinJoin */
-"CoinJoin Mixing Fee" = "CoinJoin Mixing Fee";
+"CoinJoin Mixing Fee" = "코인조인 믹싱 수수료";
 
 /* CoinJoin */
 "CoinJoin Send" = "CoinJoin Send";
@@ -533,7 +533,7 @@
 "Contact Coinbase Support" = "코인베이스 지원센터에 문의하기";
 
 /* DashSpend */
-"Contact CTX Support" = "Contact CTX Support";
+"Contact CTX Support" = "CTX 지원팀에 문의하기";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "연락처 요청 대기 중";
@@ -551,7 +551,7 @@
 "Continue" = "계속";
 
 /* No comment provided by engineer. */
-"Continue Anyway" = "Continue Anyway";
+"Continue Anyway" = "그래도 계속하기";
 
 /* Coinbase Entry Point */
 "Convert Crypto" = "암호화폐를 환전하세요";
@@ -608,7 +608,7 @@
 "Create Account" = "계정 생성하기";
 
 /* Create DashSpend account */
-"Create account" = "Create account";
+"Create account" = "계정 생성하기";
 
 /* DashSpend account title */
 "Create an account or log into an existing one" = "Create an account or log into an existing one";
@@ -627,7 +627,7 @@
 "Create Online Account" = "온라인 계정 생성하기";
 
 /* Usernames */
-"Create your username" = "Create your username";
+"Create your username" = "당신의 사용자 이름을 생성하세요";
 
 /* No comment provided by engineer. */
 "Create your Username, find friends & family with their usernames and add them to your contacts" = "사용자 이름을 생성하고, 사용자 이름으로 친구와 가족을 찾아 당신의 연락처에 추가하세요.";
@@ -648,7 +648,7 @@
 "CrowdNode withdrawal limits" = "크라우드노드 출금 한도";
 
 /* No comment provided by engineer. */
-"CrowdNode · Account" = "CrowdNode · Account";
+"CrowdNode · Account" = "크라우드노드 · 계정";
 
 /* CrowdNode Portal */
 "CrowdNode ➝ DashWallet" = "크라우드노드 ➝ 대시지갑";
@@ -681,7 +681,7 @@
 "Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "이 기기의 대시 지갑 내 크라우드노드 계정에 지정한 대시 주소";
 
 /* No comment provided by engineer. */
-"Dash balance" = "Dash balance";
+"Dash balance" = "대시 잔고";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "코인베이스의 대시 잔액";
@@ -696,7 +696,7 @@
 "Dash username" = "대시 사용자 이름";
 
 /* DashSpend confirmation */
-"Dash Wallet" = "Dash Wallet";
+"Dash Wallet" = "대시 지갑";
 
 /* Buy Dash */
 "Dash Wallet on this device" = "이 기기의 대시 지갑";
@@ -723,7 +723,7 @@
 "Default currency, shortcuts, about…" = "통화 기본값, 단축키, 관련 정보...";
 
 /* Voting */
-"Default filter setting" = "Default filter setting";
+"Default filter setting" = "디폴트 필터 설정";
 
 /* Location Service Status */
 "Denied" = "거절됨";
@@ -764,10 +764,10 @@
 "Disconnected" = "연결 해제";
 
 /* DashSpend confirmation */
-"Discount" = "Discount";
+"Discount" = "할인";
 
 /* No comment provided by engineer. */
-"Dismiss" = "Dismiss";
+"Dismiss" = "닫기";
 
 /* No comment provided by engineer. */
 "Display Name" = "이름 표시";
@@ -803,7 +803,7 @@
 "e.g. johndoe@mail.com" = "예시 johndoe@mail.com";
 
 /* No comment provided by engineer. */
-"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network";
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "각 초대는 이 금액을 통해 지원되며, 이로써 받는 이가 재빨리 대시 네트워크에 사용자 이름을 생성할 수 있습니다";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "이전";
@@ -848,7 +848,7 @@
 "Enter Recovery Phrase" = "복원 문구를 입력하세요";
 
 /* Enter verification code */
-"Enter verification code" = "Enter verification code";
+"Enter verification code" = "인증 코드 입력";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "아래에 귀하의 2FA 코드를 입력하세요";
@@ -869,7 +869,7 @@
 "Error updating your profile" = "프로필 업데이트 오류";
 
 /* CoinJoin */
-"Error ·" = "Error ·";
+"Error ·" = "오류 ·";
 
 /* No comment provided by engineer. */
 "Exit" = "나가기";
@@ -887,7 +887,7 @@
 "Export all transactions" = "모든 거래 내보내기";
 
 /* No comment provided by engineer. */
-"Export CSV" = "Export CSV";
+"Export CSV" = "CSV 내보내기";
 
 /* No comment provided by engineer. */
 "Extended Public Keys" = "확장된 공개 키";
@@ -971,10 +971,10 @@
 "First minimum deposit" = "첫 번째 최소 입금";
 
 /* Explore Dash: Filters */
-"Fixed denominated amounts" = "Fixed denominated amounts";
+"Fixed denominated amounts" = "고정된 단위 금액";
 
 /* Explore Dash: Filters */
-"Flexible amounts" = "Flexible amounts";
+"Flexible amounts" = "유연한 금액";
 
 /* Usernames */
 "For some reason, the request for the username '%@' has failed." = "For some reason, the request for the username '%@' has failed.";
@@ -998,7 +998,7 @@
 "Found potential missing words:\n%@" = "잠재적 입력되지 않은 단어가 발견되었습니다:\n%@";
 
 /* DashSpend confirmation */
-"From" = "From";
+"From" = "다음으로부터";
 
 /* from CrowdNode */
 "from CrowdNode" = "크라우드노드에서";
@@ -1016,7 +1016,7 @@
 "from your Coinbase account" = "당신의 코인베이스 계좌로부터";
 
 /* CoinJoin */
-"Fully mixed" = "Fully mixed";
+"Fully mixed" = "완전히 믹싱됨";
 
 /* CrowdNode */
 "Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "대시 마스터노드에 최소 보증금 0.5대시로 리워드를 받아보세요.";
@@ -1052,7 +1052,7 @@
 "Gift Card" = "기프트 카드";
 
 /* No comment provided by engineer. */
-"Gift card" = "Gift card";
+"Gift card" = "기프트 카드";
 
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
@@ -1061,10 +1061,10 @@
 "Gift card purchase was rejected" = "Gift card purchase was rejected";
 
 /* DashSpend confirmation */
-"Gift card total" = "Gift card total";
+"Gift card total" = "총 기프트 카드";
 
 /* Explore Dash/Merchants/Filters */
-"Gift card types" = "Gift card types";
+"Gift card types" = "기프트 카드 유형";
 
 /* DashSpend */
 "Gift card · %@" = "Gift card · %@";
@@ -1100,7 +1100,7 @@
 "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "다음은 이 기기의 대시 지갑 내 크라우드노드 계정에 지정된 대시 주소입니다";
 
 /* No comment provided by engineer. */
-"Hide" = "Hide";
+"Hide" = "숨기기";
 
 /* adjective, security level */
 "High" = "높음";
@@ -1130,10 +1130,10 @@
 "I Accept" = "수락합니다";
 
 /* No comment provided by engineer. */
-"I accept" = "I accept";
+"I accept" = "수락합니다";
 
 /* Accept terms checkbox */
-"I accept DashSpend terms and conditions" = "I accept DashSpend terms and conditions";
+"I accept DashSpend terms and conditions" = "DashSpend 이용 약관에 동의합니다.";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "복구 문구를 보유하고 있지 않은 경우 코인을 분실하는 것에 동의합니다.";
@@ -1211,7 +1211,7 @@
 "In process…" = "처리중...";
 
 /* No comment provided by engineer. */
-"In store" = "In store";
+"In store" = "매장";
 
 /* No comment provided by engineer. */
 "In the payment section of your checkout, select \"gift card\" and enter your card number and pin." = "In the payment section of your checkout, select \"gift card\" and enter your card number and pin.";
@@ -1229,7 +1229,7 @@
 "Insufficient funds" = "잔액 부족";
 
 /* Send screen */
-"Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction." = "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction.";
+"Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction." = "믹싱된 잔고가 충분하지 않습니다. 이 거래를 완료하기 위해서는 코인조인 믹싱이 끝날 때까지 기다리거나 설정에서 이 기능을 끄십시오.";
 
 /* No comment provided by engineer. */
 "Insufficient Wallet Balance" = "지갑 잔고 부족";
@@ -1241,7 +1241,7 @@
 "Intermediate" = "중급";
 
 /* CoinJoin */
-"Intermediate privacy level requires a reliable internet connection" = "Intermediate privacy level requires a reliable internet connection";
+"Intermediate privacy level requires a reliable internet connection" = "중간 프라이버시 레벨은 신뢰할 수 있는 인터넷 연결이 필요합니다";
 
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "내부 송금";
@@ -1295,7 +1295,7 @@
 "Invitation Created Successfully" = "초대가 성공적으로 생성되었습니다";
 
 /* No comment provided by engineer. */
-"Invitation Fee" = "Invitation Fee";
+"Invitation Fee" = "초대 수수료";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "다음에 사용된 초대";
@@ -1340,7 +1340,7 @@
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "코인베이스로부터 이 기기의 대시 지갑으로 대시를 옮기는 데에는 최대 10분이 소요될 수 있습니다.";
 
 /* CoinJoin */
-"It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees" = "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees";
+"It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees" = "추가적인 믹싱 수수료 발생을 방지하기 위하여는 Wi-Fi 네트워크에 접속할 것을 권장합니다";
 
 /* DashSpend */
 "It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash." = "It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.";
@@ -1449,16 +1449,16 @@
 "Locked" = "잠김";
 
 /* Log in */
-"Log in" = "Log in";
+"Log in" = "로그인";
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "크라우드노드에 로그인";
 
 /* DashSpend */
-"Log in to your account" = "Log in to your account";
+"Log in to your account" = "당신의 계정에 로그인하세요";
 
 /* Log out button */
-"Log Out" = "Log Out";
+"Log Out" = "로그아웃";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "업홀드에서 로그아웃";
@@ -1494,10 +1494,10 @@
 "Low to high" = "낮음부터 높음";
 
 /* No comment provided by engineer. */
-"Mainnet" = "Mainnet";
+"Mainnet" = "메인넷";
 
 /* Usernames */
-"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow";
+"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "위의 텍스트를 잘 알려진 소셜 미디어나 메시지 플랫폼상에 포스팅하고, 아래의 링크를 붙여 넣음으로써 당신이 요청된 사용자 이름의 진정한 소유주임을 증명하세요";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "GPS 설정 관리하기";
@@ -1560,28 +1560,28 @@
 "Mix your Dash Coins" = "Mix your Dash Coins";
 
 /* No comment provided by engineer. */
-"Mixed balance" = "Mixed balance";
+"Mixed balance" = "믹싱된 잔고";
 
 /* CoinJoin */
-"Mixing" = "Mixing";
+"Mixing" = "믹싱";
 
 /* CoinJoin */
 "Mixing Finishing…" = "Mixing Finishing…";
 
 /* CoinJoin */
-"Mixing is only possible with the app open" = "Mixing is only possible with the app open";
+"Mixing is only possible with the app open" = "믹싱은 어플이 열려있을 때에만 가능합니다";
 
 /* CoinJoin */
-"Mixing Paused ·" = "Mixing Paused ·";
+"Mixing Paused ·" = "믹싱이 멈춰짐 ·";
 
 /* CoinJoin */
-"Mixing Transactions" = "Mixing Transactions";
+"Mixing Transactions" = "거래 믹싱";
 
 /* CoinJoin */
 "Mixing your Dash coins will make your transactions more private" = "대시 코인을 믹싱하면 거래 내역이 보다 보호됩니다.";
 
 /* CoinJoin */
-"Mixing ·" = "Mixing ·";
+"Mixing ·" = "믹싱 ·";
 
 /* No comment provided by engineer. */
 "More" = "더 알아보기";
@@ -1668,7 +1668,7 @@
 "No Results Found" = "결과 없음";
 
 /* Voting */
-"No votes left" = "No votes left";
+"No votes left" = "남은 투표 없음";
 
 /* No comment provided by engineer. */
 "Node IP" = "노드 IP";
@@ -1695,7 +1695,7 @@
 "Not Determined" = "결정되지 않음";
 
 /* CoinJoin */
-"Not started" = "Not started";
+"Not started" = "시작되지 않음";
 
 /* No comment provided by engineer. */
 "Not yet used" = "아직 사용되지 않음";
@@ -1719,7 +1719,7 @@
 "Once %@ accepts your request you can Pay Directly to Username" = "%@ 님이 당신의 요청을 수락하면 사용자 이름에 직접 지불할 수 있습니다";
 
 /* Voting */
-"One vote left" = "One vote left";
+"One vote left" = "한 번의 투표만 남음";
 
 /* Online */
 "Online" = "온라인";
@@ -1749,7 +1749,7 @@
 "Order Preview" = "주문 미리보기";
 
 /* DashSpend */
-"Original purchase" = "Original purchase";
+"Original purchase" = "초기 구매";
 
 /* No comment provided by engineer. */
 "Owner Address" = "소유자 주소";
@@ -1758,7 +1758,7 @@
 "Owner Keys" = "소유자 키";
 
 /* DashSpend */
-"Password" = "Password";
+"Password" = "비밀번호";
 
 /* Usernames */
 "Past link here" = "Past link here";
@@ -1914,7 +1914,7 @@
 "Please write it down" = "적어주세요";
 
 /* No comment provided by engineer. */
-"Powered by" = "Powered by";
+"Powered by" = "제작";
 
 /* No comment provided by engineer. */
 "Preview" = "Preview";
@@ -1968,7 +1968,7 @@
 "Purchase" = "매수하기";
 
 /* Alert title */
-"Purchase Failed" = "Purchase Failed";
+"Purchase Failed" = "매수에 실패하였습니다";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "빠른 송금 수령";
@@ -2061,10 +2061,10 @@
 "Request your username" = "당신의 사용자 이름을 요청하세요";
 
 /* Usernames */
-"Requested username has been blocked" = "Requested username has been blocked";
+"Requested username has been blocked" = "요청된 사용자 이름이 블록되었습니다";
 
 /* Usernames */
-"Requested username has been given to someone else" = "Requested username has been given to someone else";
+"Requested username has been given to someone else" = "요청된 사용자 이름이 다른 사람에게 주어졌습니다";
 
 /* An action */
 "Rescan" = "재스캔";
@@ -2088,7 +2088,7 @@
 "Restricted" = "제한됨";
 
 /* Usernames */
-"Results" = "Results";
+"Results" = "결과";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "상호 거래 내역을 유지합니다";
@@ -2109,7 +2109,7 @@
 "Save" = "저장";
 
 /* DashSpend */
-"Save %.2f%%" = "Save %.2f%%";
+"Save %.2f%%" = "저장하기 %.2f%%";
 
 /* No comment provided by engineer. */
 "Save Changes" = "변경사항 저장";
@@ -2142,7 +2142,7 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "스크린샷은 다른 앱이나 기기에서 볼  수 있습니다. 복원 문구를 새로 만들고 비밀로 간직하세요.";
 
 /* No comment provided by engineer. */
-"Search" = "Search";
+"Search" = "검색";
 
 /* No comment provided by engineer. */
 "Search for a contact" = "연락처 검색";
@@ -2190,11 +2190,11 @@
 "Select a service" = "서비스를 선택하세요";
 
 /* DashSpend denomination selection */
-"Select amount" = "Select amount";
+"Select amount" = "금액 선택하기";
 
 /* Block explorer picker
    Block explorer selection title */
-"Select block explorer" = "Select block explorer";
+"Select block explorer" = "블록 탐색기 선택하기";
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "갤러리에서 선택";
@@ -2206,7 +2206,7 @@
 "Select the coin" = "코인 선택";
 
 /* No comment provided by engineer. */
-"Self-checkout" = "Self-checkout";
+"Self-checkout" = "셀프 계산";
 
 /* Sell */
 "Sell" = "매도";
@@ -2324,7 +2324,7 @@
 "Show Recovery Phrase" = "복원 문구 확인하기";
 
 /* Alert title */
-"Sign in required" = "Sign in required";
+"Sign in required" = "가입이 필요합니다";
 
 /* CrowdNode */
 "Sign the message" = "이 메시지에 서명하기";
@@ -2345,7 +2345,7 @@
 "Skip" = "건너뛰기";
 
 /* Usernames */
-"Some usernames can be blocked" = "Some usernames can be blocked";
+"Some usernames can be blocked" = "어떤 사용자 이름은 블록될 수 있습니다";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "뭔가 잘못되었습니다";
@@ -2384,7 +2384,7 @@
 "Stop Mixing" = "믹싱 중지";
 
 /* Voting */
-"Submit" = "Submit";
+"Submit" = "제출";
 
 /* No comment provided by engineer. */
 "Swept!" = "잔액이 지갑으로 보내졌습니다!";
@@ -2399,7 +2399,7 @@
 "Sync Failed" = "동기화에 실패하였습니다";
 
 /* Explore Dash */
-"Sync in progress… Results may not be complete." = "Sync in progress… Results may not be complete.";
+"Sync in progress… Results may not be complete." = "동기화 중... 결과가 나타나지 않을 수 있습니다.";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Sync Now" = "지금 동기화합니다";
@@ -2441,13 +2441,13 @@
 "Terms & conditions" = "Terms & conditions";
 
 /* No comment provided by engineer. */
-"Test Dash is free and can be obtained from what is called a faucet." = "Test Dash is free and can be obtained from what is called a faucet.";
+"Test Dash is free and can be obtained from what is called a faucet." = "테스트 대시는 무료이며, 파셋이라 불리는 것으로부터 얻을 수 있습니다.";
 
 /* No comment provided by engineer. */
 "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "테스트 대시는 무료이며 파셋이라 불리는 곳으로부터 얻을 수 있습니다\n지갑의 받기 화면에서 주소를 복사하고 아래 버튼을 클릭하여 대시를 받으세요.";
 
 /* No comment provided by engineer. */
-"Testnet" = "Testnet";
+"Testnet" = "테스트넷";
 
 /* No comment provided by engineer. */
 "The chain is syncing…" = "체인 동기화 중...";
@@ -2477,7 +2477,7 @@
 "The image you select will be uploaded to Imgur anonymously." = "당신이 선택한 이미지는 Imgur에 익명으로 업로드됩니다.";
 
 /* Usernames */
-"The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
+"The link you send will be visible only to the network owners" = "당신이 전송한 링크는 대시 네트워크 소유자들만 볼 수 있게 됩니다.";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "송금 가능한 최소 금액은 %@ 입니다";
@@ -2528,7 +2528,7 @@
 "This merchant is currently unavailable. Please try again later or choose a different merchant." = "This merchant is currently unavailable. Please try again later or choose a different merchant.";
 
 /* DashSpend */
-"This merchant sells gift cards at fixed prices" = "This merchant sells gift cards at fixed prices";
+"This merchant sells gift cards at fixed prices" = "이 판매자는 고정된 가격에 기프트 카드를 판매합니다";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "당신이 어플을 언락하실 때마다 이 PIN이 필요합니다.";
@@ -2555,13 +2555,13 @@
 "to" = "다음으로";
 
 /* DashSpend confirmation */
-"To" = "To";
+"To" = "다음으로";
 
 /* Coinbase */
 "to Dash Wallet on this device" = "이 기기의 대시 지갑으로";
 
 /* CoinJoin */
-"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
+"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "당신이 누구에게 송금하는 지를 아무도 알 수 없게 하기 위해서는, 사용자 이름을 만들기 전에 잔고를 믹싱할 것을 권장합니다.";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "스테이킹을 시작하려면 크라우드노드에 계정을 만들거나 기존 계정에 연결하세요.";
@@ -2570,13 +2570,13 @@
 "to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "이 기기의 대시 지갑 내 크라우드노드 계정에 지정한 대시 주소로 송금합니다.";
 
 /* No comment provided by engineer. */
-"Today" = "Today";
+"Today" = "오늘";
 
 /* No comment provided by engineer. */
 "Tools" = "도구";
 
 /* No comment provided by engineer. */
-"Top-up your credits to continue making changes to your profile and adding contacts" = "Top-up your credits to continue making changes to your profile and adding contacts";
+"Top-up your credits to continue making changes to your profile and adding contacts" = "계속해서 프로필을 변경하거나 연락처를 추가하시려면 크레딧을 충전하세요";
 
 /* Dash Portal */
 "Topper" = "토퍼";
@@ -2629,7 +2629,7 @@
 "Turn device passcode on" = "비밀번호 켜기";
 
 /* CoinJoin */
-"Turned off" = "Turned off";
+"Turned off" = "꺼짐";
 
 /* Coinbase */
 "Turning this feature on will result a higher battery usage" = "이 기능을 켜면 더 많은 배터리를 사용하게 됩니다.";
@@ -2668,7 +2668,7 @@
 "Unable to upload your picture. Please try again." = "사진을 업로드할 수 없습니다. 다시 시도하세요.";
 
 /* Voting */
-"Unblock" = "Unblock";
+"Unblock" = "차단 해제";
 
 /* Voting */
 "Unblocked '%@' username" = "Unblocked '%@' username";
@@ -2749,7 +2749,7 @@
 "Username available" = "사용할 수 없는 사용자 이름";
 
 /* Usernames */
-"Username is available" = "Username is available";
+"Username is available" = "사용자이름을 사용할 수 있습니다";
 
 /* Usernames */
 "Username request failed" = "Username request failed";
@@ -2836,7 +2836,7 @@
 "Voting ends in %dd" = "Voting ends in %dd";
 
 /* Usernames */
-"Voting is only required in some cases" = "Voting is only required in some cases";
+"Voting is only required in some cases" = "투표는 일부 경우에만 필요합니다";
 
 /* No comment provided by engineer. */
 "Voting Keys" = "투표 키";
@@ -2899,7 +2899,7 @@
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "거래가 확인되면 다른 지갑은 가치를 가지지 않게 되며, 보안 관련 사유를 위해서는 이를 다시 사용해서는 안됩니다.";
 
 /* CoinJoin */
-"When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app." = "When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app.";
+"When you close the app or lock the screen, the mixing process stops. It will resume when you reopen the app." = "어플을 종료하거나 스크린을 잠그는 경우, 믹싱 과정이 중지됩니다. 어플을 열면 다시 시작됩니다.";
 
 /* No comment provided by engineer. */
 "Where to Spend" = "사용 장소";
@@ -2951,7 +2951,7 @@
 "Yes" = "예";
 
 /* No comment provided by engineer. */
-"Yesterday" = "Yesterday";
+"Yesterday" = "어제";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "%@ 님으로부터의 연락처 요청을 수락하였습니다";
@@ -2978,7 +2978,7 @@
 "You can change how / when your reward earnings are paid to you." = "당신의 리워드 수익을 어떻게 / 언제 받을 것인지 변경할 수 있습니다.";
 
 /* No comment provided by engineer. */
-"You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance";
+"You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "계속해서 지불을 위해 대시페이를 사용할 수 있지만, 크레딧 잔고를 충전하기 전까지는 프로필을 업데이트하거나 더 많은 연락처를 추가할 수 없습니다";
 
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "다음과 같은 포맷 중 어떤 형태로도 키를 입력할 수 있습니다: WIF/base58/base64/hex";
@@ -3005,7 +3005,7 @@
 "You do not have any contacts at the moment" = "현재 연락처에 아무도 없습니다";
 
 /* DashSpend */
-"You do not have sufficient funds to complete this transaction" = "You do not have sufficient funds to complete this transaction";
+"You do not have sufficient funds to complete this transaction" = "이 거래를 완료하기 위해 필요한 자금이 충분하지 않습니다";
 
 /* Coinbase */
 "You don’t have enough balance" = "잔액이 충분하지 않습니다";
@@ -3062,7 +3062,7 @@
 "You only need %@ to join the pool." = "%@만 있으면 풀에 가입할 수 있습니다.";
 
 /* DashSpend confirmation */
-"You pay" = "You pay";
+"You pay" = "금액";
 
 /* Coinbase */
 "You receive" = "다음을 받습니다";
@@ -3098,10 +3098,10 @@
 "You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "당신은 분할된 지불금을 자동적으로 받게 되며, 이 금액은 디폴트로 다시 투자됩니다. 그러나, 쉬운 설정을 통해 지속적으로 이 수익금을 받아 자동 출금할 수도 있습니다.";
 
 /* No comment provided by engineer. */
-"Your credit balance has been fully depleted" = "Your credit balance has been fully depleted";
+"Your credit balance has been fully depleted" = "당신의 크레딧 잔고가 완전히 고갈되었습니다";
 
 /* No comment provided by engineer. */
-"Your credit balance is low" = "Your credit balance is low";
+"Your credit balance is low" = "당신의 크레딧 잔고가 적습니다";
 
 /* CrowdNode */
 "Your CrowdNode account is creating…" = "당신의 크라우드노드 계정을 생성하는 중입니다...";
@@ -3110,7 +3110,7 @@
 "Your CrowdNode account is set up and ready to use!" = "크라우드노드 계정 설정이 완료되어 지금 사용할 수 있습니다!";
 
 /* Crowdnode */
-"Your CrowdNode account was created using these transactions." = "Your CrowdNode account was created using these transactions.";
+"Your CrowdNode account was created using these transactions." = "당신의 크라우드노드 계정은 이들 거래를 사용해 생성되었습니다.";
 
 /* CrowdNode */
 "Your CrowdNode address has been confirmed." = "당신의 크라우드노드 주소가 확인되었습니다.";
@@ -3125,19 +3125,19 @@
 "Your deposit to CrowdNode is received." = "크라우드노드 입금이 완료되었습니다.";
 
 /* TimeSkew */
-"Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin." = "Your device time is %1$@ by %2$d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.";
+"Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin." = "당신의 기기에 설정된 시간이 %2$d 초 차이로 %1$@ 입니다. 이 차이로 인하여 코인조인을 사용할 수 없습니다.\n\n기기의 설정을 \"자동으로 시간 설정\"으로 변경하여 코인조인을 사용하세요.";
 
 /* TimeSkew */
-"Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings." = "Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings.";
+"Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings." = "당신의 기기에 설정된 시간이 %d 분 차이로 다릅니다. 이 문제로 인하여 대시를 보내거나 받을 수 없을 확률이 높습니다.\n\n이 부분을 확인하시고, 필요한 경우 날짜, 시간 및 시간대 설정을 수정하십시오.";
 
 /* TimeSkew */
-"Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin." = "Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin.";
+"Your device time is off by more than 5 seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” before using CoinJoin." = "당신의 기기에 설정된 시간이 5초 이상 잘못되었습니다. 이 차이로 인하여 코인조인을 사용할 수 없습니다.\n\n코인조인을 사용하기 전, 기기의 설정을 \"자동으로 시간 설정\"으로 변경하세요.";
 
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "당신의 이메일은 대시페이 지갑 혹은 다른 어떤 서버에도 저장되지 ㅇ낳습니다. 이는 Gravatar 계정 상세 정보에 한 번 사용될 뿐이며, 그 이후로는 폐기됩니다.";
 
 /* Email is only used for OTP */
-"Your email is only used to send a one-time password." = "Your email is only used to send a one-time password.";
+"Your email is only used to send a one-time password." = "귀하의 이메일은 일회용 비밀번호를 전달하기 위해서만 사용됩니다.";
 
 /* No comment provided by engineer. */
 "Your invitation from %@ has been already claimed" = "%@으로부터의 초대장이 이미 사용되었습니다";
