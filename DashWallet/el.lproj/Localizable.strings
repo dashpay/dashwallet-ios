@@ -491,9 +491,6 @@
 /* CoinJoin */
 "CoinJoin Mixing Fee" = "Προμήθεια ανάμειξης CoinJoin";
 
-/* CoinJoin */
-"CoinJoin Send" = "CoinJoin Send";
-
 /* No comment provided by engineer. */
 "Confirm" = "Επιβεβαίωση";
 

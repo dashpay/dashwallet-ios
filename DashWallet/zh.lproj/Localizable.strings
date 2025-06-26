@@ -491,9 +491,6 @@
 /* CoinJoin */
 "CoinJoin Mixing Fee" = "CoinJoin 混币费用";
 
-/* CoinJoin */
-"CoinJoin Send" = "CoinJoin Send";
-
 /* No comment provided by engineer. */
 "Confirm" = "确认";
 

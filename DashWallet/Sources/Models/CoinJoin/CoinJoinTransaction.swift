@@ -33,8 +33,6 @@ class CoinJoinTransaction: Transaction {
             NSLocalizedString("CoinJoin Mixing Fee", comment: "CoinJoin")
         case CoinJoinTransactionType_Mixing:
             NSLocalizedString("CoinJoin Mixing", comment: "CoinJoin")
-        case CoinJoinTransactionType_Send:
-            NSLocalizedString("CoinJoin Send", comment: "CoinJoin")
         default:
             ""
         }

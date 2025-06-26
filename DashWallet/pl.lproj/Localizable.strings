@@ -491,9 +491,6 @@
 /* CoinJoin */
 "CoinJoin Mixing Fee" = "Opłata za mieszanie funduszy za pomocą CoinJoin";
 
-/* CoinJoin */
-"CoinJoin Send" = "CoinJoin Send";
-
 /* No comment provided by engineer. */
 "Confirm" = "Potwierdź";
 

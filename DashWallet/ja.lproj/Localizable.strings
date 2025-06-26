@@ -491,9 +491,6 @@
 /* CoinJoin */
 "CoinJoin Mixing Fee" = "CoinJoinのミキシング料";
 
-/* CoinJoin */
-"CoinJoin Send" = "CoinJoin Send";
-
 /* No comment provided by engineer. */
 "Confirm" = "確認する";
 

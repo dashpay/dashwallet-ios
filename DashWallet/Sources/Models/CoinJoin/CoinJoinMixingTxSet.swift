@@ -84,7 +84,7 @@ final class CoinJoinMixingTxSet: GroupedTransactions, TransactionWrapper {
         
         let type = DSCoinJoinWrapper.coinJoinTxType(for: tx, account: account)
         
-        if type == CoinJoinTransactionType_None {
+        if type == CoinJoinTransactionType_None || type == CoinJoinTransactionType_Send {
             txMapLock.unlock()
             return false
         }
