@@ -325,9 +325,6 @@
 /* TimeSkew */
 "behind" = "πίσω ";
 
-/* No comment provided by engineer. */
-"Beta" = "Beta";
-
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "Ενδιάμεσα σε %1$ld και %2$ld χαρακτήρες";
 

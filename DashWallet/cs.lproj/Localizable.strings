@@ -325,9 +325,6 @@
 /* TimeSkew */
 "behind" = "behind";
 
-/* No comment provided by engineer. */
-"Beta" = "Beta";
-
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "Od %1$ld do %2$ld znaků";
 

@@ -325,9 +325,6 @@
 /* TimeSkew */
 "behind" = "sa huli";
 
-/* No comment provided by engineer. */
-"Beta" = "Beta";
-
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "Sa pagitan ng %1$ld at %2$ld karakter";
 

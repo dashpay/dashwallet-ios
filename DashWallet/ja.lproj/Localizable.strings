@@ -325,9 +325,6 @@
 /* TimeSkew */
 "behind" = "下回る";
 
-/* No comment provided by engineer. */
-"Beta" = "Beta";
-
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "%1$ld～%2$ld文字";
 

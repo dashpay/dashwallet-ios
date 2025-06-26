@@ -325,9 +325,6 @@
 /* TimeSkew */
 "behind" = "behind";
 
-/* No comment provided by engineer. */
-"Beta" = "Beta";
-
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "ระหว่าง %1$ld and %2$ld ตัวอักษร";
 

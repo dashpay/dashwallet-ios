@@ -325,9 +325,6 @@
 /* TimeSkew */
 "behind" = "отстаёт";
 
-/* No comment provided by engineer. */
-"Beta" = "Beta";
-
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "От %1$ld до %2$ld символов";
 

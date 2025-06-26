@@ -325,9 +325,6 @@
 /* TimeSkew */
 "behind" = "dibelakang";
 
-/* No comment provided by engineer. */
-"Beta" = "Beta";
-
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "Antara %1$ld dan %2$ld karakter";
 

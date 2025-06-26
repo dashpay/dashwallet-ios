@@ -325,9 +325,6 @@
 /* TimeSkew */
 "behind" = "后面";
 
-/* No comment provided by engineer. */
-"Beta" = "Beta";
-
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "在 %1$ld 和 %2$ld 个字符之间";
 

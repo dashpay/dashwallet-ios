@@ -325,9 +325,6 @@
 /* TimeSkew */
 "behind" = "pozadu";
 
-/* No comment provided by engineer. */
-"Beta" = "Beta";
-
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "Medzi %1$ld a %2$ld znakmi";
 
