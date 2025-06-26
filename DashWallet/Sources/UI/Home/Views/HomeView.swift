@@ -132,9 +132,9 @@ final class HomeView: UIView {
         
         if status?.state == .done || completed {
             let identity = model.dashPayModel.blockchainIdentity
-            let notificaitonAmount = model.dashPayModel.unreadNotificationsCount
+            let notificationAmount = model.dashPayModel.unreadNotificationsCount
             
-            delegate?.homeView(self, didUpdateProfile: identity, unreadNotifications: notificaitonAmount)
+            delegate?.homeView(self, didUpdateProfile: identity, unreadNotifications: notificationAmount)
         } else {
             delegate?.homeView(self, didUpdateProfile: nil, unreadNotifications: 0)
         }

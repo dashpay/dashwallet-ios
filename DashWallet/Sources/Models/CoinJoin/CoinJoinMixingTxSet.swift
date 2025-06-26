@@ -16,19 +16,19 @@
 //
 
 final class CoinJoinMixingTxSet: GroupedTransactions, TransactionWrapper {
-    override var title: String {
+    var title: String {
         NSLocalizedString("Mixing Transactions", comment: "CoinJoin")
     }
     
-    override var iconName: String {
+    var iconName: String {
         "tx.item.coinjoin.icon"
     }
     
-    override var infoText: String {
+    var infoText: String {
         NSLocalizedString("You Dash was mixed using these transactions.", comment: "CoinJoin")
     }
     
-    override var fiatAmount: String {
+    var fiatAmount: String {
         (try? CurrencyExchanger.shared.convertDash(amount: (UInt64(abs(amount))).dashAmount, to: App.fiatCurrency).formattedFiatAmount) ??
             NSLocalizedString("Updating Price", comment: "Updating Price")
     }
@@ -37,15 +37,23 @@ final class CoinJoinMixingTxSet: GroupedTransactions, TransactionWrapper {
     private let account = DWEnvironment.sharedInstance().currentAccount
     private let amountQueue = DispatchQueue(label: "CoinJoinMixingSet.amount", qos: .utility)
     private let amountLock = NSLock()
+    private let txMapLock = NSLock()
     private var _amount: Int64 = 0
-    override var amount: Int64 {
+    var amount: Int64 {
         return _amount
     }
 
-    var transactionMap: [Data: Transaction] = [:]
-    override var transactions: [Transaction] {
+    private var _transactionMap: [Data: Transaction] = [:]
+    var transactionMap: [Data: Transaction] {
+        txMapLock.lock()
+        defer { txMapLock.unlock() }
+        return _transactionMap
+    }
+    var transactions: [Transaction] {
         get {
-            return transactionMap.values.map { $0 }.sorted { tx1, tx2 in
+            txMapLock.lock()
+            defer { txMapLock.unlock() }
+            return _transactionMap.values.map { $0 }.sorted { tx1, tx2 in
                 tx1.date > tx2.date
             }
         }
@@ -63,10 +71,13 @@ final class CoinJoinMixingTxSet: GroupedTransactions, TransactionWrapper {
     @discardableResult
     func tryInclude(tx: DSTransaction) -> Bool {
         let txHashData = tx.txHashData
-        let existing = transactionMap[txHashData] as? CoinJoinTransaction
+        
+        txMapLock.lock()
+        let existing = _transactionMap[txHashData] as? CoinJoinTransaction
         
         if existing != nil {
-            transactionMap[txHashData] = CoinJoinTransaction(transaction: tx, type: existing!.type)
+            _transactionMap[txHashData] = CoinJoinTransaction(transaction: tx, type: existing!.type)
+            txMapLock.unlock()
             // Already included, return true
             return true
         }
@@ -74,16 +85,22 @@ final class CoinJoinMixingTxSet: GroupedTransactions, TransactionWrapper {
         let type = DSCoinJoinWrapper.coinJoinTxType(for: tx, account: account)
         
         if type == CoinJoinTransactionType_None {
+            txMapLock.unlock()
             return false
         }
         
-        if transactions.isEmpty {
+        let isEmpty = _transactionMap.isEmpty
+        txMapLock.unlock()
+        
+        if isEmpty {
             groupDay = tx.date
         } else if !Calendar.current.isDate(tx.date, inSameDayAs: groupDay) {
             return false
         }
         
-        transactionMap[txHashData] = CoinJoinTransaction(transaction: tx, type: type)
+        txMapLock.lock()
+        _transactionMap[txHashData] = CoinJoinTransaction(transaction: tx, type: type)
+        txMapLock.unlock()
             
         amountQueue.async { [weak self] in
             guard let self = self else { return }

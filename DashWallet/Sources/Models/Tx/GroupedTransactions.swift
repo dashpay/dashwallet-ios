@@ -15,11 +15,11 @@
 //  limitations under the License.
 //
 
-class GroupedTransactions {
-    var title: String { "" }
-    var iconName: String { "" }
-    var infoText: String { "" }
-    var fiatAmount: String { "" }
-    var amount: Int64 { 0 }
-    var transactions: [Transaction] { [] }
+protocol GroupedTransactions {
+    var title: String { get }
+    var iconName: String { get }
+    var infoText: String { get }
+    var fiatAmount: String { get }
+    var amount: Int64 { get }
+    var transactions: [Transaction] { get }
 }
