@@ -27,6 +27,10 @@ enum CTXSpendError: Error, LocalizedError {
     case insufficientFunds
     case invalidMerchant
     case invalidAmount
+    case merchantUnavailable
+    case transactionRejected
+    case purchaseLimitExceeded
+    case serverError
     case customError(String)
     case unknown
     case paymentProcessingError(String)
@@ -44,11 +48,19 @@ enum CTXSpendError: Error, LocalizedError {
         case .tokenRefreshFailed:
             return NSLocalizedString("Your session expired", comment: "DashSpend")
         case .insufficientFunds:
-            return NSLocalizedString("Insufficient funds to complete this purchase.", comment: "DashSpend")
+            return NSLocalizedString("You do not have sufficient funds to complete this transaction", comment: "DashSpend")
         case .invalidMerchant:
             return NSLocalizedString("This merchant is currently unavailable.", comment: "DashSpend")
         case .invalidAmount:
             return NSLocalizedString("Invalid amount. Please check merchant limits.", comment: "DashSpend")
+        case .merchantUnavailable:
+            return NSLocalizedString("This merchant is currently unavailable. Please try again later or choose a different merchant.", comment: "DashSpend")
+        case .transactionRejected:
+            return NSLocalizedString("Your transaction was rejected. Please try again or contact support if the problem persists.", comment: "DashSpend")
+        case .purchaseLimitExceeded:
+            return NSLocalizedString("The purchase limits for this merchant have changed. Please contact CTX Support for more information.", comment: "DashSpend")
+        case .serverError:
+            return NSLocalizedString("Server error occurred. Please try again later.", comment: "DashSpend")
         case .customError(let message):
             return message
         case .unknown:
@@ -88,7 +100,13 @@ final class CTXSpendAPI: HTTPClient<CTXSpendEndpoint> {
             if target.path.contains("/api/verify") {
                 throw CTXSpendError.invalidCode
             }
-            throw CTXSpendError.unknown
+            throw CTXSpendError.invalidAmount
+        } catch HTTPClientError.statusCode(let r) where r.statusCode == 409 {
+            throw CTXSpendError.transactionRejected
+        } catch HTTPClientError.statusCode(let r) where r.statusCode == 422 {
+            throw CTXSpendError.invalidAmount
+        } catch HTTPClientError.statusCode(let r) where r.statusCode >= 500 {
+            throw CTXSpendError.serverError
         } catch HTTPClientError.decoder {
             throw CTXSpendError.parsingError
         }

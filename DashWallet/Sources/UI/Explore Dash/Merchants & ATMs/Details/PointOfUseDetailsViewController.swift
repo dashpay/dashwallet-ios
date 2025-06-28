@@ -22,7 +22,7 @@ import SwiftUI
 // MARK: - PointOfUseDetailsViewController
 
 class PointOfUseDetailsViewController: UIViewController {
-    internal let pointOfUse: ExplorePointOfUse
+    internal var pointOfUse: ExplorePointOfUse
     internal let isShowAllHidden: Bool
 
     @objc public var payWithDashHandler: (()->())?
@@ -55,7 +55,7 @@ class PointOfUseDetailsViewController: UIViewController {
         super.viewDidLoad()
         title = pointOfUse.name
         configureHierarchy()
-        tryRefreshCtxToken()
+        refreshTokenAndMerchantInfo()
     }
 }
 
@@ -235,13 +235,25 @@ extension PointOfUseDetailsViewController {
         self.navigationController?.pushViewController(hostingController, animated: true)
     }
     
-    private func tryRefreshCtxToken() {
+    private func refreshTokenAndMerchantInfo() {
         Task {
-            do {
-                try await CTXSpendService.shared.refreshToken()
-            } catch CTXSpendError.tokenRefreshFailed {
-                await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: NSLocalizedString("Your session expired", comment: "DashSpend"), textBlock1: NSLocalizedString("It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.", comment: "DashSpend"), positiveButtonText: NSLocalizedString("Dismiss", comment: ""))
+            if try await tryRefreshCtxToken(), let merchantId = pointOfUse.merchant?.merchantId {
+                let merchantInfo = try await CTXSpendService.shared.getMerchant(merchantId: merchantId)
+                pointOfUse = pointOfUse.updatingMerchant(
+                    denominationsType: merchantInfo.denominationsType,
+                    denominations: merchantInfo.denominations.compactMap { Int($0) }
+                )
             }
+        }
+    }
+    
+    private func tryRefreshCtxToken() async throws -> Bool {
+        do {
+            try await CTXSpendService.shared.refreshToken()
+            return true
+        } catch CTXSpendError.tokenRefreshFailed {
+            await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: NSLocalizedString("Your session expired", comment: "DashSpend"), textBlock1: NSLocalizedString("It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.", comment: "DashSpend"), positiveButtonText: NSLocalizedString("Dismiss", comment: ""))
+            return false
         }
     }
 }
@@ -289,4 +301,41 @@ extension ExplorePointOfUse {
 extension UIHostingController: NavigationBarDisplayable {
     var isBackButtonHidden: Bool { true }
     var isNavigationBarHidden: Bool { true }
+}
+
+extension ExplorePointOfUse {
+    func updatingMerchant(denominationsType: String?, denominations: [Int]) -> ExplorePointOfUse {
+        guard case .merchant(let currentMerchant) = category else { return self }
+        
+        let updatedMerchant = ExplorePointOfUse.Merchant(
+            merchantId: currentMerchant.merchantId,
+            paymentMethod: currentMerchant.paymentMethod,
+            type: currentMerchant.type,
+            deeplink: currentMerchant.deeplink,
+            savingsBasisPoints: currentMerchant.savingsBasisPoints,
+            denominationsType: denominationsType,
+            denominations: denominations,
+            redeemType: currentMerchant.redeemType
+        )
+        
+        return ExplorePointOfUse(
+            id: id,
+            name: name,
+            category: .merchant(updatedMerchant),
+            active: active,
+            city: city,
+            territory: territory,
+            address1: address1,
+            address2: address2,
+            address3: address3,
+            address4: address4,
+            latitude: latitude,
+            longitude: longitude,
+            website: website,
+            phone: phone,
+            logoLocation: logoLocation,
+            coverImage: coverImage,
+            source: source
+        )
+    }
 }

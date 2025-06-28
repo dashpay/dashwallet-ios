@@ -971,7 +971,7 @@
 "First minimum deposit" = "ฝากขั้นต่ำครั้งแรก";
 
 /* Explore Dash: Filters */
-"Fixed amounts" = "Fixed amounts";
+"Fixed denominated amounts" = "Fixed denominated amounts";
 
 /* Explore Dash: Filters */
 "Flexible amounts" = "Flexible amounts";
@@ -1227,9 +1227,6 @@
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "ยอดเงินไม่เพียงพอ";
-
-/* CTXSpend error */
-"Insufficient funds to complete this purchase." = "Insufficient funds to complete this purchase.";
 
 /* Send screen */
 "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction." = "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction.";
@@ -2192,6 +2189,9 @@
 /* Buy Sell Dash */
 "Select a service" = "เลือกบริการ";
 
+/* DashSpend denomination selection */
+"Select amount" = "Select amount";
+
 /* Block explorer picker
    Block explorer selection title */
 "Select block explorer" = "Select block explorer";
@@ -2286,6 +2286,9 @@
 
 /* No comment provided by engineer. */
 "Sent to" = "ส่งไปยัง";
+
+/* DashSpend */
+"Server error occurred. Please try again later." = "Server error occurred. Please try again later.";
 
 /* No comment provided by engineer. */
 "Set a trusted node" = "ติดตั้ง node ที่เชื่อถือได้";
@@ -2520,6 +2523,12 @@
 
 /* CTXSpend error */
 "This merchant is currently unavailable." = "This merchant is currently unavailable.";
+
+/* DashSpend */
+"This merchant is currently unavailable. Please try again later or choose a different merchant." = "This merchant is currently unavailable. Please try again later or choose a different merchant.";
+
+/* DashSpend */
+"This merchant sells gift cards at fixed prices" = "This merchant sells gift cards at fixed prices";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "ต้องใช้ PIN นี้เพื่อปลดล็อคแอพของคุณทุกครั้งที่ใช้";
@@ -2995,6 +3004,9 @@
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "คุณไม่มีผู้ติดต่อใด ๆ ในขณะนี้";
 
+/* DashSpend */
+"You do not have sufficient funds to complete this transaction" = "You do not have sufficient funds to complete this transaction";
+
 /* Coinbase */
 "You don’t have enough balance" = "คุณมียอดคงเหลือไม่เพียงพอ";
 
@@ -3147,6 +3159,9 @@
 
 /* DashSpend */
 "Your session expired" = "Your session expired";
+
+/* DashSpend */
+"Your transaction was rejected. Please try again or contact support if the problem persists." = "Your transaction was rejected. Please try again or contact support if the problem persists.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "ธุรกรรมของคุณถูกส่งแล้วและจำนวนเงินจะปรากฏใน wallet ของคุณในอีกไม่กี่นาที";

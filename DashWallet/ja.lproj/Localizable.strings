@@ -971,7 +971,7 @@
 "First minimum deposit" = "初回最低入金額";
 
 /* Explore Dash: Filters */
-"Fixed amounts" = "Fixed amounts";
+"Fixed denominated amounts" = "Fixed denominated amounts";
 
 /* Explore Dash: Filters */
 "Flexible amounts" = "Flexible amounts";
@@ -1227,9 +1227,6 @@
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "資金不足";
-
-/* CTXSpend error */
-"Insufficient funds to complete this purchase." = "Insufficient funds to complete this purchase.";
 
 /* Send screen */
 "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction." = "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction.";
@@ -2192,6 +2189,9 @@
 /* Buy Sell Dash */
 "Select a service" = "サービスを選択する";
 
+/* DashSpend denomination selection */
+"Select amount" = "Select amount";
+
 /* Block explorer picker
    Block explorer selection title */
 "Select block explorer" = "Select block explorer";
@@ -2286,6 +2286,9 @@
 
 /* No comment provided by engineer. */
 "Sent to" = "へ送金済み";
+
+/* DashSpend */
+"Server error occurred. Please try again later." = "Server error occurred. Please try again later.";
 
 /* No comment provided by engineer. */
 "Set a trusted node" = "信頼できるノードを設定する";
@@ -2520,6 +2523,12 @@
 
 /* CTXSpend error */
 "This merchant is currently unavailable." = "This merchant is currently unavailable.";
+
+/* DashSpend */
+"This merchant is currently unavailable. Please try again later or choose a different merchant." = "This merchant is currently unavailable. Please try again later or choose a different merchant.";
+
+/* DashSpend */
+"This merchant sells gift cards at fixed prices" = "This merchant sells gift cards at fixed prices";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "このアプリをアンロックして使用するときは必ずこのPINが必要となります";
@@ -2995,6 +3004,9 @@
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "現在、連絡先がありません";
 
+/* DashSpend */
+"You do not have sufficient funds to complete this transaction" = "You do not have sufficient funds to complete this transaction";
+
 /* Coinbase */
 "You don’t have enough balance" = "残高が不足しています";
 
@@ -3147,6 +3159,9 @@
 
 /* DashSpend */
 "Your session expired" = "Your session expired";
+
+/* DashSpend */
+"Your transaction was rejected. Please try again or contact support if the problem persists." = "Your transaction was rejected. Please try again or contact support if the problem persists.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "あなたの取引は送られたので、数分内にその金額がウォレットに表示されるでしょう";

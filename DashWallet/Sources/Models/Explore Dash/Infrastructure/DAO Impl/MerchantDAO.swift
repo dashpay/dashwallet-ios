@@ -57,7 +57,6 @@ class MerchantDAO: PointOfUseDAO {
             let typeColumn = ExplorePointOfUse.type
             let paymentMethodColumn = ExplorePointOfUse.paymentMethod
             let territoryColumn = ExplorePointOfUse.territory
-            let denominationsTypeColumn = ExplorePointOfUse.denominationsType
 
             var queryFilter = Expression<Bool>(value: true)
 
@@ -72,6 +71,10 @@ class MerchantDAO: PointOfUseDAO {
             if let methods = paymentMethods {
                 queryFilter = queryFilter && methods.map { $0.rawValue }.contains(paymentMethodColumn)
             }
+            
+            // Filter out URL-based redemption merchants (not supported)
+            // Using literal expression to handle cases where redeemType column might not exist
+            queryFilter = queryFilter && Expression<Bool>(literal: "(redeemType IS NULL OR redeemType != 'url')")
             
             // Add denomination type filter (only applies to gift card merchants)
             if let denominationType = denominationType {

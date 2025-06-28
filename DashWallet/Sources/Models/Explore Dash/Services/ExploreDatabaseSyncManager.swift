@@ -126,22 +126,39 @@ extension ExploreDatabaseSyncManager {
                 self?.syncState = .error(date, e)
             } else {
                 try? data?.write(to: urlToSave)
-                self?.exploreDatabaseLastSyncTimestamp = now
-                self?.exploreDatabaseLastVersion = timeIntervalMillesecond / 1000
-                self?.syncState = .synced(date)
-                self?.unzipFile(at: urlToSave.path, password: checksum)
+                
+                Task {
+                    do {
+                        try await self?.unzipFile(at: urlToSave.path, password: checksum)
+                        self?.exploreDatabaseLastSyncTimestamp = now
+                        self?.exploreDatabaseLastVersion = timeIntervalMillesecond / 1000
+                        self?.syncState = .synced(date)
+                        
+                        NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
+                        try? FileManager.default.removeItem(at: URL(fileURLWithPath: urlToSave.path))
+                    } catch {
+                        DSLogger.log("ExploreDash: failed to open DB archive: \(String(describing: error))")
+                        self?.syncState = .error(Date(), error)
+                    }
+                }
             }
         }
     }
 
-    private func unzipFile(at path: String, password: String) {
-        var error: NSError?
+    private func unzipFile(at path: String, password: String) async throws {
         let urlToUnzip = self.getDocumentsDirectory()
-        SSZipArchive.unzipFile(atPath: path, toDestination: urlToUnzip.path, preserveAttributes: true, overwrite: true,
-                                nestedZipLevel: 0, password: password, error: &error, delegate: nil,
-                                progressHandler: nil) { path, _, _ in
-            NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
-            try? FileManager.default.removeItem(at: URL(fileURLWithPath: path))
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            SSZipArchive.unzipFile(atPath: path, toDestination: urlToUnzip.path, preserveAttributes: true, overwrite: true,
+                                    nestedZipLevel: 0, password: password, error: nil, delegate: nil,
+                                    progressHandler: nil) { path, success, error in
+                if success {
+                    continuation.resume()
+                } else {
+                    let errorToThrow = error ?? NSError(domain: "ExploreDatabaseSyncManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to unzip archive"])
+                    continuation.resume(throwing: errorToThrow)
+                }
+            }
         }
     }
 

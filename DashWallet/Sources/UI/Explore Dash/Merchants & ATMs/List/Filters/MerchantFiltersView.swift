@@ -109,7 +109,7 @@ struct MerchantFiltersView: View {
                             }
                                 
                             RadioButtonRow(
-                                title: NSLocalizedString("Fixed amounts", comment: "Explore Dash: Filters"),
+                                title: NSLocalizedString("Fixed denominated amounts", comment: "Explore Dash: Filters"),
                                 isSelected: viewModel.denominationFixed,
                                 style: .checkbox
                             ) {
