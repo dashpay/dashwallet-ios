@@ -325,9 +325,6 @@
 /* TimeSkew */
 "behind" = "behind";
 
-/* No comment provided by engineer. */
-"Beta" = "Beta";
-
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
 
@@ -493,9 +490,6 @@
 
 /* CoinJoin */
 "CoinJoin Mixing Fee" = "CoinJoin Mixing Fee";
-
-/* CoinJoin */
-"CoinJoin Send" = "CoinJoin Send";
 
 /* No comment provided by engineer. */
 "Confirm" = "Bekräfta";
@@ -767,7 +761,7 @@
 "Discount" = "Discount";
 
 /* No comment provided by engineer. */
-"Dismiss" = "Dismiss";
+"Dismiss" = "Avsluta";
 
 /* No comment provided by engineer. */
 "Display Name" = "Display Name";
@@ -1458,7 +1452,7 @@
 "Log in to your account" = "Log in to your account";
 
 /* Log out button */
-"Log Out" = "Log Out";
+"Log Out" = "Logga ut";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Log out from Uphold";

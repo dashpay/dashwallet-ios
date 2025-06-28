@@ -325,9 +325,6 @@
 /* TimeSkew */
 "behind" = "behind";
 
-/* No comment provided by engineer. */
-"Beta" = "Beta";
-
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "Between %1$ld and %2$ld characters";
 
@@ -341,7 +338,7 @@
 "Between Dash Wallet and your Coinbase account" = "Between Dash Wallet and your Coinbase account";
 
 /* Voting */
-"Block" = "Block";
+"Block" = "Блок";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "блок #%1$d от %2$d";
@@ -493,9 +490,6 @@
 
 /* CoinJoin */
 "CoinJoin Mixing Fee" = "CoinJoin Mixing Fee";
-
-/* CoinJoin */
-"CoinJoin Send" = "CoinJoin Send";
 
 /* No comment provided by engineer. */
 "Confirm" = "Потвърди";
@@ -681,7 +675,7 @@
 "Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Dash address designated for your CrowdNode account in the Dash Wallet on this device ";
 
 /* No comment provided by engineer. */
-"Dash balance" = "Dash balance";
+"Dash balance" = "Dash баланс";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "Dash balance on Coinbase";
@@ -767,7 +761,7 @@
 "Discount" = "Discount";
 
 /* No comment provided by engineer. */
-"Dismiss" = "Dismiss";
+"Dismiss" = "Отхвърляне";
 
 /* No comment provided by engineer. */
 "Display Name" = "Display Name";
@@ -1458,7 +1452,7 @@
 "Log in to your account" = "Log in to your account";
 
 /* Log out button */
-"Log Out" = "Log Out";
+"Log Out" = "Излез от профила";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Излез от Uphold";
@@ -1494,7 +1488,7 @@
 "Low to high" = "Low to high";
 
 /* No comment provided by engineer. */
-"Mainnet" = "Mainnet";
+"Mainnet" = "Основна мрежа";
 
 /* Usernames */
 "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow";
@@ -1758,7 +1752,7 @@
 "Owner Keys" = "Ключове на собственика";
 
 /* DashSpend */
-"Password" = "Password";
+"Password" = "Парола";
 
 /* Usernames */
 "Past link here" = "Past link here";
@@ -2447,7 +2441,7 @@
 "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash.";
 
 /* No comment provided by engineer. */
-"Testnet" = "Testnet";
+"Testnet" = "Тестова мрежа";
 
 /* No comment provided by engineer. */
 "The chain is syncing…" = "The chain is syncing…";
@@ -3005,7 +2999,7 @@
 "You do not have any contacts at the moment" = "You do not have any contacts at the moment";
 
 /* DashSpend */
-"You do not have sufficient funds to complete this transaction" = "You do not have sufficient funds to complete this transaction";
+"You do not have sufficient funds to complete this transaction" = "Нямате достатъчно средства за да извършите тази транзакция";
 
 /* Coinbase */
 "You don’t have enough balance" = "You don’t have enough balance";

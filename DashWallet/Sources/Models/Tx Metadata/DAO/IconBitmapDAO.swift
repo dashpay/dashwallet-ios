@@ -19,6 +19,21 @@ import Foundation
 import SQLite
 import Combine
 
+#if !swift(>=5.9)
+// Provide `withLock` helper for older Swift toolchains to use scoped locking.
+extension NSLock {
+    /// Executes `body` while holding the lock, ensuring the lock is always released.
+    /// - Returns: The value returned by `body`.
+    /// - Throws: Rethrows anything thrown by `body`.
+    @discardableResult
+    func withLock<T>(_ body: () throws -> T) rethrows -> T {
+        lock()
+        defer { unlock() }
+        return try body()
+    }
+}
+#endif
+
 // MARK: - IconBitmapDAO
 
 protocol IconBitmapDAO {
@@ -33,6 +48,8 @@ protocol IconBitmapDAO {
 class IconBitmapDAOImpl: NSObject, IconBitmapDAO {
     private var db: Connection { DatabaseConnection.shared.db }
     private var cache: [String: IconBitmap] = [:]
+    /// Synchronizes access to `cache` to avoid data races when called from multiple threads/queues.
+    private let cacheLock = NSLock()
     private var bitmapsSubject = CurrentValueSubject<[Data: IconBitmap], Never>([:])
     
     static let shared = IconBitmapDAOImpl()
@@ -54,7 +71,7 @@ class IconBitmapDAOImpl: NSObject, IconBitmapDAO {
                                                 IconBitmap.width <- bitmap.width)
             try await execute(insert)
             let key = bitmap.id.hexEncodedString()
-            cache[key] = bitmap
+            cacheLock.withLock { cache[key] = bitmap }
             updateBitmapsSubject()
         } catch {
             print("IconBitmapDAO addBitmap error: \(error)")
@@ -69,7 +86,7 @@ class IconBitmapDAOImpl: NSObject, IconBitmapDAO {
             let bitmap = results.first
             if let bitmap = bitmap {
                 let key = id.hexEncodedString()
-                cache[key] = bitmap
+                cacheLock.withLock { cache[key] = bitmap }
             }
             return bitmap
         } catch {
@@ -87,7 +104,7 @@ class IconBitmapDAOImpl: NSObject, IconBitmapDAO {
         do {
             let deleteQuery = IconBitmap.table.delete()
             try await execute(deleteQuery)
-            cache.removeAll()
+            cacheLock.withLock { cache.removeAll() }
             updateBitmapsSubject()
         } catch {
             print("IconBitmapDAO clear error: \(error)")
@@ -97,10 +114,12 @@ class IconBitmapDAOImpl: NSObject, IconBitmapDAO {
     private func loadAllBitmaps() async {
         do {
             let bitmaps: [IconBitmap] = try await prepare(IconBitmap.table)
-            cache.removeAll()
-            for bitmap in bitmaps {
-                let key = bitmap.id.hexEncodedString()
-                cache[key] = bitmap
+            cacheLock.withLock {
+                cache.removeAll()
+                for bitmap in bitmaps {
+                    let key = bitmap.id.hexEncodedString()
+                    cache[key] = bitmap
+                }
             }
             updateBitmapsSubject()
         } catch {
@@ -109,7 +128,9 @@ class IconBitmapDAOImpl: NSObject, IconBitmapDAO {
     }
     
     private func updateBitmapsSubject() {
-        let bitmapsDict = cache.reduce(into: [Data: IconBitmap]()) { result, item in
+        let cachedCopy = cacheLock.withLock { cache }
+
+        let bitmapsDict = cachedCopy.reduce(into: [Data: IconBitmap]()) { result, item in
             if let data = Data(hex: item.key) {
                 result[data] = item.value
             }
