@@ -46,6 +46,7 @@ class MerchantDAO: PointOfUseDAO {
                paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?,
                sortBy: PointOfUseListFilters.SortBy?,
                territory: Territory?,
+               denominationType: PointOfUseListFilters.DenominationType?,
                offset: Int,
                completion: @escaping (Swift.Result<PaginationResult<Item>, Error>) -> Void) {
         serialQueue.async { [weak self] in
@@ -69,6 +70,25 @@ class MerchantDAO: PointOfUseDAO {
             // Add payment methods
             if let methods = paymentMethods {
                 queryFilter = queryFilter && methods.map { $0.rawValue }.contains(paymentMethodColumn)
+            }
+            
+            // Filter out URL-based redemption merchants (not supported)
+            // Using literal expression to handle cases where redeemType column might not exist
+            queryFilter = queryFilter && Expression<Bool>(literal: "(redeemType IS NULL OR redeemType != 'url')")
+            
+            // Add denomination type filter (only applies to gift card merchants)
+            if let denominationType = denominationType {
+                switch denominationType {
+                case .fixed:
+                    // Include all dash merchants OR gift card merchants with "fixed" denomination
+                    queryFilter = queryFilter && (paymentMethodColumn == "dash" || Expression<Bool>(literal: "denominationsType = 'fixed'"))
+                case .flexible:
+                    // Include all dash merchants OR gift card merchants with "min-max" denomination
+                    queryFilter = queryFilter && (paymentMethodColumn == "dash" || Expression<Bool>(literal: "denominationsType = 'min-max'"))
+                case .both:
+                    // No additional filter needed - include all
+                    break
+                }
             }
 
             if let territory {
@@ -110,9 +130,21 @@ class MerchantDAO: PointOfUseDAO {
             }
 
             let nameOrdering = name.collate(.nocase).asc
+            let discountOrdering = ExplorePointOfUse.savingPercentage.desc
 
-            if let sortBy, sortBy == .name {
-                query = query.order(nameOrdering)
+            if let sortBy {
+                switch sortBy {
+                case .name:
+                    query = query.order(nameOrdering)
+                case .distance:
+                    if userLocation != nil {
+                        query = query.order([distanceSorting, nameOrdering])
+                    } else {
+                        query = query.order(nameOrdering)
+                    }
+                case .discount:
+                    query = query.order([discountOrdering, nameOrdering])
+                }
             } else if userLocation != nil {
                 query = query.order([distanceSorting, nameOrdering])
             } else if bounds == nil && types.count == 3 {
@@ -144,28 +176,28 @@ class MerchantDAO: PointOfUseDAO {
 }
 
 extension MerchantDAO {
-    func onlineMerchants(query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?,
-                         paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, offset: Int = 0,
+    func onlineMerchants(query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?, sortBy: PointOfUseListFilters.SortBy?,
+                         paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
                          completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         items(query: query, bounds: nil, userLocation: userPoint, types: [.online, .onlineAndPhysical],
-              paymentMethods: paymentMethods, sortBy: nil, territory: nil, offset: offset, completion: completion)
+              paymentMethods: paymentMethods, sortBy: sortBy, territory: nil, denominationType: denominationType, offset: offset, completion: completion)
     }
 
     func nearbyMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
-                         paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, offset: Int = 0,
+                         paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
                          completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         items(query: query, bounds: bounds, userLocation: userPoint, types: [.physical, .onlineAndPhysical],
-              paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, offset: offset, completion: completion)
+              paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, denominationType: denominationType, offset: offset, completion: completion)
     }
 
     func allMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
-                      paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, offset: Int = 0,
+                      paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
                       completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        items(query: query, bounds: bounds, userLocation: userPoint, types: [.online, .onlineAndPhysical, .physical], paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, offset: offset,
+        items(query: query, bounds: bounds, userLocation: userPoint, types: [.online, .onlineAndPhysical, .physical], paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, denominationType: denominationType, offset: offset,
               completion: completion)
     }
 
-    func allLocations(for merchantId: Int64, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
+    func allLocations(for merchantId: String, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                       completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }

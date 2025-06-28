@@ -19,12 +19,17 @@ import UIKit
 import SwiftUI
 import Combine
 
+@objc(DWHomeViewControllerDelegate)
+protocol HomeViewControllerDelegate: AnyObject {
+    func showPaymentsController(withActivePage pageIndex: Int)
+}
+
 class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     private var cancellableBag = Set<AnyCancellable>()
     var model: DWHomeProtocol!
     var viewModel: HomeViewModel!
     private var homeView: HomeView!
-    weak var delegate: (DWHomeViewControllerDelegate & DWWipeDelegate)?
+    weak var delegate: (HomeViewControllerDelegate & DWWipeDelegate)?
 
     #if DASHPAY
     var isBackButtonHidden: Bool = false
@@ -209,6 +214,14 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         present(nvc, animated: true, completion: nil)
     }
     
+    func showGiftCardDetails(txId: Data) {
+        let hostingController = UIHostingController(rootView: 
+            GiftCardDetailsSheet(txId: txId).background(Color.primaryBackground)
+        )
+        
+        present(hostingController, animated: true, completion: nil)
+    }
+    
     private func configureObservers() {
         viewModel.$showTimeSkewAlertDialog
             .sink { [weak self] showTimeSkew in
@@ -296,12 +309,6 @@ extension HomeViewController: HomeViewDelegate {
     func homeViewRequestUsername() {
         let action = ShortcutAction(type: .createUsername)
         performAction(for: action, sender: nil)
-    }
-    
-    func homeViewShowTxFilter() {
-        showTxFilter(displayModeCallback: { [weak self] mode in
-            self?.viewModel.displayMode = mode
-        }, shouldShowRewards: true)
     }
 
     func homeViewShowSyncingStatus() {

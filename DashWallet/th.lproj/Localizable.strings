@@ -115,14 +115,17 @@
 /* No comment provided by engineer. */
 "Accept" = "ยอมรับ";
 
+/* Explore */
+"Accept Dash directly" = "Accept Dash directly";
+
+/* DashSpend */
+"Accept terms and\nconditions" = "Accept terms and\nconditions";
+
 /* CrowdNode */
 "Accept Terms Of Use" = "ยอมรับข้อกำหนดการใช้งาน";
 
 /* CrowdNode */
 "Accepting terms of use…" = "ยอมรับข้อกำหนดการใช้งาน ...";
-
-/* No comment provided by engineer. */
-"Accepts DASH directly" = "ยอมรับ DASH โดยตรง";
 
 /* CrowdNode */
 "Account Recovery" = "การกู้คืนบัญชี";
@@ -202,11 +205,14 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "จำนวนเงินที่ส่ง";
 
+/* An error occurred */
+"An error occurred" = "An error occurred";
+
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "ประสบการณ์ที่ใช้งานง่ายและคุ้นเคย";
 
-/* Invites */
-"an invitation" = "an invitation";
+/* CTXSpend error */
+"An unknown error occurred. Please try again later." = "An unknown error occurred. Please try again later.";
 
 /* CrowdNode */
 "and" = "และ";
@@ -229,6 +235,9 @@
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "แอพพลิเคชั่น %@ ต้องการรับ Master Public Key ของคุณ ซึ่งสามารถใช้ในการติดตามกระเป๋าสตางค์ของคุณได้ แต่ไม่สามารถใช้ในการย้าย Dash ของคุณ";
 
+/* No comment provided by engineer. */
+"Apply" = "นำมาใช้";
+
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "แน่ใจหรือว่าต้องการยกเลิกคำสั่งซื้อนี้?";
 
@@ -250,6 +259,9 @@
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "เนื่องจากคนส่วนใหญ่ไม่มี 1000 Dash อยู่ในมืออย่างแน่นอน Crowdnode จึงได้ให้บริการโดยรวบรวมเงินฝากจากสมาชิก พวกเขาสามารถบรรลุผลประโยชน์ของการเป็นเจ้าของ Masternode";
 
+/* DashSpend */
+"at" = "at";
+
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "การค้นหา ATM ทำงานได้ดีขึ้นเมื่อเปิดใช้บริการสถานที่";
 
@@ -258,6 +270,9 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "ไม่สามารตรวจสอบสิทธิ์ได้";
+
+/* Authorization error message */
+"Authorization error. Please try logging in again." = "Authorization error. Please try logging in again.";
 
 /* Location Service Status */
 "Authorized" = "ได้รับอนุญาต";
@@ -301,14 +316,14 @@
 /* Coinbase/Payment Methods */
 "Bank Wire" = "การโอนเงินผ่านทางธนาคาร ";
 
+/* No comment provided by engineer. */
+"Barcode placeholder" = "Barcode placeholder";
+
 /* CrowdNode */
 "Become part of a Dash Masternode with CrowdNode" = "เป็นส่วนหนึ่งของ Dash มาสเตอร์โหนด กับ CrowdNode";
 
 /* TimeSkew */
 "behind" = "behind";
-
-/* No comment provided by engineer. */
-"Beta" = "Beta";
 
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "ระหว่าง %1$ld and %2$ld ตัวอักษร";
@@ -323,7 +338,7 @@
 "Between Dash Wallet and your Coinbase account" = "ระหว่างกระเป๋าเงิน Dash และบัญชี Coinbase ของคุณ";
 
 /* Voting */
-"Block" = "Block";
+"Block" = "บล็อก";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "กลุ่ม # %1$d of %2$d";
@@ -347,9 +362,6 @@
 /* Buy a Gift Card */
 "Buy a Gift Card" = "ซื้อบัตรของขวัญ";
 
-/* No comment provided by engineer. */
-"Buy a gift card with Dash." = "ซื้อบัตรของขวัญด้วย Dash";
-
 /* Dash Service Overview */
 "Buy and convert Dash with another crypto" = "ซื้อและแลกเปลี่ยน Dash ด้วยคริปโตอื่น ๆ";
 
@@ -364,6 +376,9 @@
 
 /* Dash Portal */
 "Buy Dash · No account needed" = "ซื้อ Dash · ไม่ต้องใช้บัญชี";
+
+/* DashSpend */
+"Buy gift card" = "Buy gift card";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "ซื้อบัตรของขวัญด้วย Dash ของคุณ";
@@ -395,6 +410,12 @@
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "การยกเลิกธุรกรรมนี้ไม่ได้ยกเลิกคำสั่งซื้อขาย คุณจะได้รับ Dash ในบัญชี Coinbase ของคุณในไม่ช้า";
 
+/* DashSpend */
+"Card number" = "Card number";
+
+/* No comment provided by engineer. */
+"Card PIN" = "Card PIN";
+
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "เปลี่ยนแปลง";
 
@@ -410,11 +431,17 @@
 /* CoinJoin */
 "Change to Intermediate" = "เปลี่ยนเป็นระดับกลาง";
 
+/* No comment provided by engineer. */
+"Check current balance" = "Check current balance";
+
 /* TimeSkew */
 "Check date & time settings" = "Check date & time settings";
 
 /* No comment provided by engineer. */
 "Check your connection" = "ตรวจสอบการเชื่อมต่อ";
+
+/* DashSpend */
+"Check your email and enter the verification code." = "Check your email and enter the verification code.";
 
 /* Choose your Dash username */
 "Choose your" = "เลือกของคุณ";
@@ -464,20 +491,11 @@
 /* CoinJoin */
 "CoinJoin Mixing Fee" = "CoinJoin Mixing Fee";
 
-/* CoinJoin */
-"CoinJoin Send" = "CoinJoin Send";
-
 /* No comment provided by engineer. */
 "Confirm" = "ยืนยัน";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "ยืนยัน (%1$d%2$@)";
-
-/* Invites */
-"Confirm and pay" = "Confirm and pay";
-
-/* Invites */
-"Confirm invitation" = "Confirm invitation";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "ยืนยัน PIN";
@@ -508,6 +526,9 @@
    Coinbase Two Factor Auth */
 "Contact Coinbase Support" = "ติดต่อฝ่ายสนับสนุน Coinbase";
 
+/* DashSpend */
+"Contact CTX Support" = "Contact CTX Support";
+
 /* No comment provided by engineer. */
 "Contact Request Pending" = "คำขอติดต่อรอดำเนินการ";
 
@@ -519,9 +540,6 @@
 
 /* No comment provided by engineer. */
 "Contacts" = "ติดต่อ";
-
-/* Usernames */
-"Contested" = "Contested";
 
 /* No comment provided by engineer. */
 "Continue" = "ดำเนินการต่อ";
@@ -583,11 +601,20 @@
 /* CrowdNode */
 "Create Account" = "สร้างบัญชี";
 
+/* Create DashSpend account */
+"Create account" = "Create account";
+
+/* DashSpend account title */
+"Create an account or log into an existing one" = "Create an account or log into an existing one";
+
 /* CrowdNode */
 "Create an online CrowdNode account" = "สร้างบัญชี CrowdNode ออนไลน์";
 
 /* No comment provided by engineer. */
 "Create invitation" = "สร้างคำเชิญ";
+
+/* Create new account */
+"Create new account" = "Create new account";
 
 /* CrowdNode
    CrowdNode Portal */
@@ -648,7 +675,7 @@
 "Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "ที่อยู่ Dash ที่กำหนดไว้สำหรับบัญชี CrowdNode ของคุณในกระเป๋าเงิน Dash บนอุปกรณ์นี้";
 
 /* No comment provided by engineer. */
-"Dash balance" = "Dash balance";
+"Dash balance" = "ยอดคงเหลือ Dash";
 
 /* Coinbase Entry Point */
 "Dash balance on Coinbase" = "ยอดคงเหลือของ Dash บน Coinbase";
@@ -661,6 +688,9 @@
 
 /* No comment provided by engineer. */
 "Dash username" = "ชื่อผู้ใช้ Dash";
+
+/* DashSpend confirmation */
+"Dash Wallet" = "กระเป๋าเงิน Dash ";
 
 /* Buy Dash */
 "Dash Wallet on this device" = "กระเป๋าเงิน Dash บนอุปกรณ์นี้";
@@ -727,8 +757,11 @@
    Coinbase Entry Point */
 "Disconnected" = "ตัดการเชื่อมต่อ";
 
+/* DashSpend confirmation */
+"Discount" = "Discount";
+
 /* No comment provided by engineer. */
-"Dismiss" = "Dismiss";
+"Dismiss" = "ยกเลิก";
 
 /* No comment provided by engineer. */
 "Display Name" = "ชื่อที่แสดง";
@@ -763,8 +796,8 @@
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "ตัวอย่างเช่น johndoe@mail.com";
 
-/* Invites */
-"Each invitation will be funded so that the receiver can quickly create their username on the Dash Network." = "Each invitation will be funded so that the receiver can quickly create their username on the Dash Network.";
+/* No comment provided by engineer. */
+"Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "คำเชิญแต่ละครั้งจะได้รับเงินทุนด้วยจำนวนเงินนี้เพื่อให้ผู้รับสามารถสร้างชื่อผู้ใช้ของพวกเขาได้อย่างรวดเร็วบนเครือข่าย Dash";
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "ก่อน";
@@ -808,6 +841,9 @@
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "ใส่วลีกู้คืน";
 
+/* Enter verification code */
+"Enter verification code" = "Enter verification code";
+
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "ป้อนรหัส 2FA ของคุณด้านล่าง";
 
@@ -819,6 +855,9 @@
 
 /* No comment provided by engineer. */
 "Error" = "ผิดพลาด";
+
+/* CTXSpend error */
+"Error processing server response. Please try again later." = "Error processing server response. Please try again later.";
 
 /* No comment provided by engineer. */
 "Error updating your profile" = "ข้อผิดพลาดในการอัปเดตโปรไฟล์ของคุณ";
@@ -849,6 +888,9 @@
 
 /* No comment provided by engineer. */
 "Face ID limit" = "ขีดจำกัด Face ID";
+
+/* No comment provided by engineer. */
+"Failed to load barcode" = "Failed to load barcode";
 
 /* Coinbase */
 "Failed to start auth session" = "ไม่สามารถเริ่มเซสชันการรับรองความถูกต้องได้";
@@ -890,7 +932,7 @@
 "Filter" = "กรอง";
 
 /* No comment provided by engineer. */
-"Filter Transactions" = "กรองธุรกรรม";
+"Filter transactions" = "Filter transactions";
 
 /* No comment provided by engineer. */
 "Filtered by" = "กรองโดย";
@@ -902,28 +944,31 @@
 "Filters" = "ตัวกรอง";
 
 /* No comment provided by engineer. */
-"Find a merchant." = "ค้นหาร้านค้า";
+"Find a user on the Dash Network" = "ค้นหาผู้ใช้บนเครือข่าย Dash";
 
 /* No comment provided by engineer. */
-"Find a user on the Dash Network" = "ค้นหาผู้ใช้บนเครือข่าย Dash";
+"Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
 
 /* No comment provided by engineer. */
 "Find merchants that accept DASH" = "ค้นหาร้านค้าที่ยอมรับ DASH";
 
 /* No comment provided by engineer. */
+"Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
+
+/* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "ค้นหาร้านค้าที่รับ Dash ซื้อได้ที่ไหนและวิธีสร้างรายได้จาก Dash";
-
-/* No comment provided by engineer. */
-"Find merchants who accept Dash as payment." = "ค้นหาร้าค้าที่ยอมรับการชำระเงินด้วย Dash ";
-
-/* No comment provided by engineer. */
-"Find where to buy or sell DASH and other cryptocurrencies for cash." = "ค้นหาสถานที่ซื้อหรือขาย Dash และ คริปโทเคเรนซีอื่น ๆ เป็นเงินสด";
 
 /* CrowdNode */
 "First deposit should be more than %@" = "เงินฝากครั้งแรกควรมากกว่า %@";
 
 /* CrowdNode */
 "First minimum deposit" = "ฝากขั้นต่ำครั้งแรก";
+
+/* Explore Dash: Filters */
+"Fixed denominated amounts" = "Fixed denominated amounts";
+
+/* Explore Dash: Filters */
+"Flexible amounts" = "Flexible amounts";
 
 /* Usernames */
 "For some reason, the request for the username '%@' has failed." = "For some reason, the request for the username '%@' has failed.";
@@ -945,6 +990,9 @@
 
 /* No comment provided by engineer. */
 "Found potential missing words:\n%@" = "พบคำที่หายไปที่อาจเกิดขึ้น:\n%@";
+
+/* DashSpend confirmation */
+"From" = "From";
 
 /* from CrowdNode */
 "from CrowdNode" = "จาก CrowdNode";
@@ -998,6 +1046,24 @@
 "Gift Card" = "บัตรของขวัญ";
 
 /* No comment provided by engineer. */
+"Gift card" = "บัตรของขวัญ";
+
+/* DashSpend */
+"Gift card purchase successful" = "Gift card purchase successful";
+
+/* No comment provided by engineer. */
+"Gift card purchase was rejected" = "Gift card purchase was rejected";
+
+/* DashSpend confirmation */
+"Gift card total" = "Gift card total";
+
+/* Explore Dash/Merchants/Filters */
+"Gift card types" = "Gift card types";
+
+/* DashSpend */
+"Gift card · %@" = "Gift card · %@";
+
+/* No comment provided by engineer. */
 "Go to CrowdNode website" = "ไปที่เว็บไซต์ CrowdNode";
 
 /* No comment provided by engineer. */
@@ -1049,7 +1115,7 @@
 "How to confirm your API Dash address" = "วิธียืนยันที่อยู่ API Dash ของคุณ";
 
 /* No comment provided by engineer. */
-"How to Use a Gift Card" = "การใช้บัตรของขวัญ";
+"How to use your gift card" = "How to use your gift card";
 
 /* No comment provided by engineer. */
 "HPMN Operator Keys" = "วิวัฒนาการรหัส Node ID";
@@ -1059,6 +1125,9 @@
 
 /* No comment provided by engineer. */
 "I accept" = "I accept";
+
+/* Accept terms checkbox */
+"I accept DashSpend terms and conditions" = "I accept DashSpend terms and conditions";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "ฉันยอมรับที่ฉันจะสูญเสียเหรียญของฉันถ้าฉันไม่มีวลีกู้คืน";
@@ -1136,6 +1205,12 @@
 "In process…" = "อยู่ในระหว่างการดำเนินงาน…";
 
 /* No comment provided by engineer. */
+"In store" = "In store";
+
+/* No comment provided by engineer. */
+"In the payment section of your checkout, select \"gift card\" and enter your card number and pin." = "In the payment section of your checkout, select \"gift card\" and enter your card number and pin.";
+
+/* No comment provided by engineer. */
 "Income" = "รายได้";
 
 /* CrowdNode */
@@ -1177,6 +1252,9 @@
 /* Balance */
 "Invalid amount" = "จำนวนเงินไม่ถูกต้อง";
 
+/* CTXSpend error */
+"Invalid amount. Please check merchant limits." = "Invalid amount. Please check merchant limits.";
+
 /* No comment provided by engineer. */
 "Invalid Dash address" = "ที่อยู่ Dash ไม่ถูกต้อง";
 
@@ -1195,6 +1273,9 @@
 /* No comment provided by engineer. */
 "Invalid QR Code" = "QR Code ไม่ถูกต้อง";
 
+/* CTXSpend error */
+"Invalid verification code. Please try again." = "Invalid verification code. Please try again.";
+
 /* No comment provided by engineer. */
 "Invitation" = "คำเชิญ";
 
@@ -1207,8 +1288,8 @@
 /* No comment provided by engineer. */
 "Invitation Created Successfully" = "คำเชิญที่สร้างขึ้นสำเร็จ";
 
-/* Invites */
-"Invitation fee" = "Invitation fee";
+/* No comment provided by engineer. */
+"Invitation Fee" = "ค่าธรรมเนียมการเชิญ";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "คำเชิญใช้โดย";
@@ -1255,6 +1336,9 @@
 /* CoinJoin */
 "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees" = "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees";
 
+/* DashSpend */
+"It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash." = "It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.";
+
 /* Coinbase */
 "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "เป็นเรื่องยากมากสำหรับผู้ใช้ระดับสูงที่มีความเชี่ยวชาญทางเทคนิคทุกระดับในการพิจารณาประวัติการทำธุรกรรมของคุณ";
 
@@ -1294,9 +1378,6 @@
 
 /* Explore Dash */
 "Last server update" = "อัปเดตเซิร์ฟเวอร์ล่าสุด";
-
-/* No comment provided by engineer. */
-"Learn More" = "เรียนรู้เพิ่มเติม";
 
 /* Info Screen */
 "Learn More..." = "เรียนรู้เพิ่มเติม...";
@@ -1361,11 +1442,29 @@
 /* No comment provided by engineer. */
 "Locked" = "ล็อค";
 
+/* Log in */
+"Log in" = "Log in";
+
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "ลงชื่อเข้าใช้ CrowdNode";
 
+/* DashSpend */
+"Log in to your account" = "Log in to your account";
+
+/* Log out button */
+"Log Out" = "ออกจากระบบ";
+
 /* No comment provided by engineer. */
 "Log out from Uphold" = "ออกจากระบบ Uphold";
+
+/* Logged in status */
+"Logged in" = "Logged in";
+
+/* DashSpend */
+"Logged in as %@" = "Logged in as %@";
+
+/* DashSpend */
+"Logged in to DashSpend account" = "Logged in to DashSpend account";
 
 /* No comment provided by engineer. */
 "Login with Face ID" = "เข้าสู่ระบบด้วย Face ID";
@@ -1427,6 +1526,9 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "สูงสุด";
 
+/* DashSpend */
+"Max: %@" = "Max: %@";
+
 /* Usernames */
 "Maximum 75 characters" = "Maximum 75 characters";
 
@@ -1441,6 +1543,9 @@
 
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "การค้นหาร้านค้าทำงานได้ดีขึ้นเมื่อเปิดการใช้งานบริการสถานที่";
+
+/* DashSpend */
+"Min: %@" = "Min: %@";
 
 /* CoinJoin */
 "Mix coins" = "Mix coins";
@@ -1511,6 +1616,9 @@
 /* No comment provided by engineer. */
 "Network" = "เครือข่าย";
 
+/* CTXSpend error */
+"Network error. Please check your connection and try again." = "Network error. Please check your connection and try again.";
+
 /* No comment provided by engineer. */
 "Network fee" = "ค่าธรรมเนียมเครือข่าย";
 
@@ -1559,9 +1667,6 @@
 /* No comment provided by engineer. */
 "Node IP" = "โหนด IP";
 
-/* Usernames */
-"Non-contested" = "Non-contested";
-
 /* adjective, security level */
 "None" = "ไม่มี";
 
@@ -1576,9 +1681,6 @@
 
 /* Usernames */
 "Not a valid URL" = "Not a valid URL";
-
-/* No comment provided by engineer. */
-"Not all of the stores accept DASH directly, but you can buy a gift card with your Dash." = "ไม่ใช่ร้านค้าทั้งหมดที่ยอมรับ Dash โดยตรง แต่คุณสามารถซื้อบัตรของขวัญด้วย Dash ของคุณ";
 
 /* Fiat amount */
 "Not available" = "ไม่สามารถใช้ได้";
@@ -1600,6 +1702,9 @@
 
 /* No comment provided by engineer. */
 "OK" = "ตกลง";
+
+/* No comment provided by engineer. */
+"Ok" = "Ok";
 
 /* Voting */
 "Old to new" = "เก่าไปใหม่";
@@ -1637,11 +1742,17 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "คำสั่งซื้อตัวอย่าง";
 
+/* DashSpend */
+"Original purchase" = "Original purchase";
+
 /* No comment provided by engineer. */
 "Owner Address" = "ที่อยู่เจ้าของ";
 
 /* No comment provided by engineer. */
 "Owner Keys" = "เจ้าของกุญแจ";
+
+/* DashSpend */
+"Password" = "รหัสผ่าน";
 
 /* Usernames */
 "Past link here" = "Past link here";
@@ -1673,9 +1784,6 @@
 /* No comment provided by engineer. */
 "Pay with Ease" = "ชำระเงินได้อย่างง่ายดาย";
 
-/* No comment provided by engineer. */
-"Pay with the DASH Wallet." = "จ่ายด้วยกระเป๋าเงิน DASH ";
-
 /* 1 out of 4 in the Paying Animation */
 "Paying" = "กำลังชำระเงิน";
 
@@ -1688,8 +1796,14 @@
 /* 4 out of 4 in the Paying Animation */
 "Paying..." = "กำลังชำระเงิน";
 
+/* No comment provided by engineer. */
+"Payment failed" = "Payment failed";
+
 /* Coinbase/Buy Dash */
 "Payment method" = "วิธีการชำระเงิน";
+
+/* CTXSpend error */
+"Payment processing error: %@" = "Payment processing error: %@";
 
 /* Explore Dash/Merchants/Filters */
 "Payment Type" = "ประเภทการชำระเงิน";
@@ -1763,6 +1877,9 @@
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "โปรดวางมือถือของคุณใกล้กับอุปกรณ์ NFC";
 
+/* CTXSpend error */
+"Please sign in to your DashSpend account." = "Please sign in to your DashSpend account.";
+
 /* No comment provided by engineer. */
 "Please tap on the words from your recovery phrase in the right order" = "โปรดแตะที่คำจากวลีการกู้คืนของคุณในลำดับที่ถูกต้อง";
 
@@ -1789,6 +1906,12 @@
 
 /* No comment provided by engineer. */
 "Please write it down" = "กรุณาเขียนลงไป";
+
+/* No comment provided by engineer. */
+"Powered by" = "Powered by";
+
+/* No comment provided by engineer. */
+"Preview" = "Preview";
 
 /* No comment provided by engineer. */
 "Preview Invitation" = "คำเชิญดูตัวอย่าง";
@@ -1837,6 +1960,9 @@
 
 /* Coinbase/Buy Dash */
 "Purchase" = "ซื้อ";
+
+/* Alert title */
+"Purchase Failed" = "การซื้อไม่สำเร็จ";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "ได้รับอย่างรวดเร็ว";
@@ -1901,9 +2027,6 @@
 /* No comment provided by engineer. */
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "วลีการกู้คืนต้องมี 12, 15, 18, 21 หรือ 24 ค";
 
-/* No comment provided by engineer. */
-"Redeem your gift card online within seconds or at the cashier." = "แลกบัตรของขวัญของคุณทางออนไลน์ภายในไม่กี่วินาทีหรือที่แคชเชียร์";
-
 /* Button title, Register (username) */
 "Register" = "ลงทะเบียน";
 
@@ -1921,6 +2044,9 @@
 
 /* No comment provided by engineer. */
 "Request a username and say goodbye to numerical addresses" = "Request a username and say goodbye to numerical addresses";
+
+/* No comment provided by engineer. */
+"Request assistance and show the barcode on your screen for scanning." = "Request assistance and show the barcode on your screen for scanning.";
 
 /* Voting */
 "Request details" = "ขอรายละเอียด";
@@ -1974,10 +2100,10 @@
 "Reward" = "รางวัล";
 
 /* No comment provided by engineer. */
-"Rewards" = "รางวัล";
-
-/* No comment provided by engineer. */
 "Save" = "บันทึก";
+
+/* DashSpend */
+"Save %.2f%%" = "Save %.2f%%";
 
 /* No comment provided by engineer. */
 "Save Changes" = "บันทึกการเปลี่ยนแปลง";
@@ -2010,7 +2136,7 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "การบันทึกภาพจะปรากฏแก่แอพพลิเคชันและอุปกรณ์อื่น ๆ สร้างวลีกู้คืนใหม่และเก็บไว้เป็นความลับ";
 
 /* No comment provided by engineer. */
-"Search" = "Search";
+"Search" = "ค้นหา";
 
 /* No comment provided by engineer. */
 "Search for a contact" = "ค้นหารายชื่อผู้ติดต่อ";
@@ -2028,6 +2154,9 @@
 "Search results for \"" = "ผลการค้นหาสำหรับ \"";
 
 /* No comment provided by engineer. */
+"Search territories" = "Search territories";
+
+/* No comment provided by engineer. */
 "Searching for username %@ on the Dash Network" = "กำลังหาชื่อผู้ใช้ %@ บนเครือข่าย Dash";
 
 /* No comment provided by engineer. */
@@ -2038,6 +2167,9 @@
 
 /* No comment provided by engineer. */
 "Security Level" = "เลเวลความปลอดภัย";
+
+/* No comment provided by engineer. */
+"See how to use this gift card" = "See how to use this gift card";
 
 /* No comment provided by engineer. */
 "See on Uphold" = "เปิดดูที่ Uphold";
@@ -2051,6 +2183,9 @@
 /* Buy Sell Dash */
 "Select a service" = "เลือกบริการ";
 
+/* DashSpend denomination selection */
+"Select amount" = "Select amount";
+
 /* Block explorer picker
    Block explorer selection title */
 "Select block explorer" = "Select block explorer";
@@ -2063,6 +2198,9 @@
 
 /* Coinbase */
 "Select the coin" = "เลือกเหรียญ";
+
+/* No comment provided by engineer. */
+"Self-checkout" = "Self-checkout";
 
 /* Sell */
 "Sell" = "ขาย";
@@ -2143,6 +2281,9 @@
 /* No comment provided by engineer. */
 "Sent to" = "ส่งไปยัง";
 
+/* DashSpend */
+"Server error occurred. Please try again later." = "Server error occurred. Please try again later.";
+
 /* No comment provided by engineer. */
 "Set a trusted node" = "ติดตั้ง node ที่เชื่อถือได้";
 
@@ -2176,6 +2317,9 @@
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "แสดงวลีกู้คืน";
 
+/* Alert title */
+"Sign in required" = "Sign in required";
+
 /* CrowdNode */
 "Sign the message" = "ลงชื่อเข้าใช้ข้อความ";
 
@@ -2205,6 +2349,9 @@
 
 /* No comment provided by engineer. */
 "Sort Contacts" = "เรียงลำดับที่ผู้ติดต่อ";
+
+/* Explore Dash/Filters */
+"Sorted by discount" = "Sorted by discount";
 
 /* Explore Dash/Filters */
 "Sorted by distance" = "จัดเรียงตามระยะทาง";
@@ -2245,6 +2392,9 @@
 /* No comment provided by engineer. */
 "Sync Failed" = "ซิงค์ล้มเหลว";
 
+/* Explore Dash */
+"Sync in progress… Results may not be complete." = "กำลังซิงค์... ผลลัพธ์อาจไม่สมบูรณ์";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Sync Now" = "ซิงค์ตอนนี้";
 
@@ -2279,7 +2429,13 @@
 "Tax Category" = "หมวดภาษี";
 
 /* No comment provided by engineer. */
-"Test Dash doesn’t have any value in the real world but you can send and receive it with other DashPay Alpha users." = "Test Dash ไม่มีค่าใดๆ ในโลกแห่งความเป็นจริง แต่คุณสามารถส่งและรับกับผู้ใช้ DashPay Alpha คนอื่นๆ ได้";
+"Tell the cashier that you'd like to pay with a gift card and share the card number and pin." = "Tell the cashier that you'd like to pay with a gift card and share the card number and pin.";
+
+/* Terms & conditions */
+"Terms & conditions" = "Terms & conditions";
+
+/* No comment provided by engineer. */
+"Test Dash is free and can be obtained from what is called a faucet." = "Test Dash is free and can be obtained from what is called a faucet.";
 
 /* No comment provided by engineer. */
 "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash." = "Test Dash นั้นฟรีและสามารถรับได้จากสิ่งที่เรียกว่า faucet\nคัดลอกที่อยู่จากหน้าจอรับของกระเป๋าเงินของคุณ และคลิกที่ปุ่มด้านล่างเพื่อรับ Dash ของคุณ";
@@ -2308,6 +2464,9 @@
 /* Voting */
 "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter.";
 
+/* Explore */
+"The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps.";
+
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "รูปภาพที่คุณเลือกจะถูกอัปโหลดไปยัง Imgur โดยไม่ระบุชื่อ";
 
@@ -2317,11 +2476,8 @@
 /* Coinbase */
 "The minimum amount you can send is %@" = "จำนวนเงินขั้นต่ำที่คุณสามารถส่งได้คือ %@";
 
-/* Invites */
-"The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen" = "The person that you send this invitation to can request a username that has a number 2-9, is more than 20 characters or that has a hyphen";
-
-/* Invites */
-"The person that you send this invitation to can request any username they want and the network will vote to approve it" = "The person that you send this invitation to can request any username they want and the network will vote to approve it";
+/* DashSpend */
+"The purchase limits for this merchant have changed. Please contact CTX Support for more information." = "The purchase limits for this merchant have changed. Please contact CTX Support for more information.";
 
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
@@ -2359,6 +2515,15 @@
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "ขั้นตอนพิเศษนี้แสดงให้เห็นว่าคุณพยายามทำธุรกรรม";
 
+/* CTXSpend error */
+"This merchant is currently unavailable." = "This merchant is currently unavailable.";
+
+/* DashSpend */
+"This merchant is currently unavailable. Please try again later or choose a different merchant." = "This merchant is currently unavailable. Please try again later or choose a different merchant.";
+
+/* DashSpend */
+"This merchant sells gift cards at fixed prices" = "This merchant sells gift cards at fixed prices";
+
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "ต้องใช้ PIN นี้เพื่อปลดล็อคแอพของคุณทุกครั้งที่ใช้";
 
@@ -2383,11 +2548,14 @@
 /* Send Screen: to address */
 "to" = "ถึง";
 
+/* DashSpend confirmation */
+"To" = "To";
+
 /* Coinbase */
 "to Dash Wallet on this device" = "เพื่อกระเป๋า Dash บนอุปกรณ์นี้";
 
 /* CoinJoin */
-"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create %@.";
+"To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username." = "To help prevent other people from seeing who you make payments to, it is recommended to mix your balance before you create your username.";
 
 /* CrowdNode */
 "To start staking, create an account on CrowdNode or connect to an existing one." = "ในการเริ่มการ stakingให้สร้างบัญชีบน CrowdNode หรือเชื่อมต่อกับบัญชีที่มีอยู่";
@@ -2396,7 +2564,7 @@
 "to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "ไปยังที่อยู่ Dash ที่กำหนดไว้สำหรับบัญชี CrowdNode ของคุณในกระเป๋าเงิน Dash บนอุปกรณ์นี้";
 
 /* No comment provided by engineer. */
-"Today" = "Today";
+"Today" = "วันนี้";
 
 /* No comment provided by engineer. */
 "Tools" = "เครื่องมือ";
@@ -2412,6 +2580,9 @@
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "ขีดจำกัด Touch ID";
+
+/* No comment provided by engineer. */
+"Transaction cancelled" = "Transaction cancelled";
 
 /* CrowdNode */
 "Transaction History" = "ประวัติการทำรายการ";
@@ -2637,6 +2808,9 @@
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "ดูวลีกู้คืน";
 
+/* No comment provided by engineer. */
+"View transaction details" = "View transaction details";
+
 /* Voting */
 "Vote for All" = "โหวตให้ทุกคน";
 
@@ -2692,10 +2866,10 @@
 "We couldn’t withdraw from your CrowdNode account." = "เราไม่สามารถถอนตัวจากบัญชี CrowdNode ของคุณได้";
 
 /* No comment provided by engineer. */
-"We have 2 types of merchants" = "เรามีร้านค้า 2 ประเภท";
-
-/* No comment provided by engineer. */
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "ตรวจพบว่า Dashwallet เกิดข้อผิดพลาดระหว่างการย้ายข้อมูล การสแกน Blockchain ใหม่อีกครั้งจะช่วยแก้ปัญหานี้หรือคุณอาจจะต้องลองอีกครั้ง  ควรทำการสแกนซ้ำโดยใช้ wifi โดยจะใช้เวลาประมาณครึ่งชั่วโมง  เงินของคุณจะสามารถใช้ได้เมื่อกระบวนการซิงค์เสร็จสมบูรณ์";
+
+/* Explore */
+"We have two types of merchants" = "We have two types of merchants";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "อัพเกรด";
@@ -2761,9 +2935,6 @@
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "คุณต้องการยอมรับคำเชิญหรือไม่?";
 
-/* Invites */
-"Would you like to create this invitation?" = "Would you like to create this invitation?";
-
 /* Coinbase */
 "Would you like to make a deposit for your purchase using a linked bank account?" = "คุณต้องการฝากเงินสำหรับการซื้อของคุณโดยใช้บัญชีธนาคารที่เชื่อมโยงหรือไม่?";
 
@@ -2774,7 +2945,7 @@
 "Yes" = "ใช่";
 
 /* No comment provided by engineer. */
-"Yesterday" = "Yesterday";
+"Yesterday" = "เมื่อวาน";
 
 /* No comment provided by engineer. */
 "You accepted the contact request from %@" = "คุณได้รับการยอมรับคำขอการติดต่อจาก %@";
@@ -2784,6 +2955,9 @@
 
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "คุณกำลังจะล้างวอลเล็ทนี้จากอุปกรณ์นี้ เงินทุนที่เกี่ยวข้องกับกระเป๋าเงินนี้สามารถเรียกคืนได้หากคุณมีวลีกู้คืนของคุณ";
+
+/* DashSpend */
+"You are buying a %@ gift card for %@ (%d%% discount)" = "You are buying a %1$@ gift card for %2$@ (%3$d%% discount)";
 
 /* No comment provided by engineer. */
 "You can always delete the image uploaded, as long as you have access to this wallet." = "คุณสามารถลบภาพที่อัปโหลดได้เสมอตราบใดที่คุณสามารถเข้าถึงกระเป๋าเงินนี้ได้";
@@ -2803,6 +2977,9 @@
 /* Voting */
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "คุณสามารถป้อนคีย์ของคุณในรูปแบบใดๆ ต่อไปนี้: WIF/base58/base64/hex";
 
+/* Explore */
+"You can pay with Dash at the cashier." = "You can pay with Dash at the cashier.";
+
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "คุณสามารถดูข้อมูลโดยละเอียดเกี่ยวกับเงินฝากการถอนและรางวัลของคุณ";
 
@@ -2813,13 +2990,16 @@
 "You cannot claim this invite since you already have a Dash username" = "คุณไม่สามารถเรียกร้องคำเชิญนี้ได้เนื่องจากคุณมีชื่อผู้ใช้ DASH อยู่แล้ว";
 
 /* Usernames */
-"You chose \"%@\" as your username." = "You chose \"%@\" as your username.";
+"You chose “%@” as your username." = "You chose “%@” as your username.";
 
 /* CoinJoin */
 "You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
 
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "คุณไม่มีผู้ติดต่อใด ๆ ในขณะนี้";
+
+/* DashSpend */
+"You do not have sufficient funds to complete this transaction" = "คุณมีเงินทุนไม่เพียงพอที่จะดำเนินการทางธุรกรรมได้สำเร็จ";
 
 /* Coinbase */
 "You don’t have enough balance" = "คุณมียอดคงเหลือไม่เพียงพอ";
@@ -2866,11 +3046,17 @@
 /* Usernames */
 "You need to have more than %@ Dash to create a username" = "You need to have more than %@ Dash to create a username";
 
+/* DashSpend */
+"You need to sign in to DashSpend to purchase gift cards." = "You need to sign in to DashSpend to purchase gift cards.";
+
 /* CrowdNode */
 "You need to wait 5 minutes before initiating another withdrawal" = "You need to wait 5 minutes before initiating another withdrawal";
 
 /* CrowdNode */
 "You only need %@ to join the pool." = "คุณต้องใช้เพียงแค่ %@ เพื่อเข้าร่วมใน pool";
+
+/* DashSpend confirmation */
+"You pay" = "You pay";
 
 /* Coinbase */
 "You receive" = "คุณได้รับ";
@@ -2918,7 +3104,7 @@
 "Your CrowdNode account is set up and ready to use!" = "บัญชี CrowdNode ของคุณถูกตั้งค่าและพร้อมใช้งาน!";
 
 /* Crowdnode */
-"Your CrowdNode account was created using these transactions." = "Your CrowdNode account was created using these transactions.";
+"Your CrowdNode account was created using these transactions." = "บัญชี CrowdNode ของคุณถูกสร้างขึ้นโดยใช้ธุรกรรมเหล่านี้";
 
 /* CrowdNode */
 "Your CrowdNode address has been confirmed." = "ที่อยู่ CrowdNode ของคุณได้รับการยืนยันแล้ว";
@@ -2944,6 +3130,9 @@
 /* No comment provided by engineer. */
 "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded." = "อีเมลของคุณไม่ได้ถูกเก็บไว้ในกระเป๋าเงิน DashpPay หรือบนเซิร์ฟเวอร์ใด ๆ มันถูกใช้หนึ่งครั้งเพื่อรับรายละเอียดบัญชี Gravatar  ของคุณแล้วทิ้ง";
 
+/* Email is only used for OTP */
+"Your email is only used to send a one-time password." = "Your email is only used to send a one-time password.";
+
 /* No comment provided by engineer. */
 "Your invitation from %@ has been already claimed" = "คำเชิญของคุณจาก %@ ได้รับการเคลมแล้ว ";
 
@@ -2962,11 +3151,14 @@
 /* Usernames */
 "Your request was cancelled" = "Your request was cancelled";
 
+/* DashSpend */
+"Your session expired" = "Your session expired";
+
+/* DashSpend */
+"Your transaction was rejected. Please try again or contact support if the problem persists." = "Your transaction was rejected. Please try again or contact support if the problem persists.";
+
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "ธุรกรรมของคุณถูกส่งแล้วและจำนวนเงินจะปรากฏใน wallet ของคุณในอีกไม่กี่นาที";
-
-/* Usernames */
-"your username" = "your username";
 
 /* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "ชื่อผู้ใช้ของคุณ %@ ได้รับการสร้างที่ประสบความสำเร็จบนเครือข่าย Dash";
@@ -2988,3 +3180,6 @@
 
 /* No comment provided by engineer. */
 "ZenLedger" = "ZenLedger";
+
+/* Savings percentage */
+"~%.0f%%" = "~%.0f%%";

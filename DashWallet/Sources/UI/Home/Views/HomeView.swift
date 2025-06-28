@@ -22,7 +22,6 @@ import Combine
 // MARK: - HomeViewDelegate
 
 protocol HomeViewDelegate: AnyObject {
-    func homeViewShowTxFilter()
     func homeViewShowSyncingStatus()
     func homeViewShowCoinJoin()
     
@@ -133,9 +132,9 @@ final class HomeView: UIView {
         
         if status?.state == .done || completed {
             let identity = model.dashPayModel.blockchainIdentity
-            let notificaitonAmount = model.dashPayModel.unreadNotificationsCount
+            let notificationAmount = model.dashPayModel.unreadNotificationsCount
             
-            delegate?.homeView(self, didUpdateProfile: identity, unreadNotifications: notificaitonAmount)
+            delegate?.homeView(self, didUpdateProfile: identity, unreadNotifications: notificationAmount)
         } else {
             delegate?.homeView(self, didUpdateProfile: nil, unreadNotifications: 0)
         }
@@ -177,10 +176,12 @@ struct TxPreviewModel: Identifiable, Equatable {
 struct HomeViewContent<Content: View>: View {
     @State private var selectedTxDataItem: TransactionListDataItem? = nil
     @State private var shouldShowMixDialog: Bool = false
+    @State private var showFilterDialog: Bool = false
     @State private var shouldShowJoinDashPayInfo: Bool = false
     @State private var navigateToDashPayFlow: Bool = false
     @State private var navigateToCoinJoin: Bool = false
     @State private var skipToCreateUsername: Bool = false
+    @State private var giftCardTxId: Data? = nil
     
     @StateObject var viewModel: HomeViewModel
     #if DASHPAY
@@ -207,7 +208,7 @@ struct HomeViewContent<Content: View>: View {
                     }
                     .frame(height: 110)
                     .frame(maxWidth: .infinity)
-                    .background(Color.dashBlue)
+                    .background(Color.navigationBarColor)
                     .padding(.top, 5)
                     .padding(.bottom, -12)
                     
@@ -258,7 +259,7 @@ struct HomeViewContent<Content: View>: View {
                     #endif
                     
                     SyncingHeaderView(onFilterTap: {
-                        delegate?.homeViewShowTxFilter()
+                        showFilterDialog = true
                     }, onSyncTap: {
                         delegate?.homeViewShowSyncingStatus()
                     })
@@ -293,6 +294,23 @@ struct HomeViewContent<Content: View>: View {
         }
         .sheet(item: $selectedTxDataItem) { item in
             TransactionDetailsSheet(item: item)
+        }
+        .sheet(item: $giftCardTxId) { txId in
+            GiftCardDetailsSheet(txId: txId)
+        }
+        .sheet(isPresented: $showFilterDialog) {
+            let dialog = TransactionFilterDialog(
+                selectedFilter: viewModel.displayMode,
+                onFilterSelected: { mode in
+                    viewModel.displayMode = mode
+                }
+            )
+            
+            if #available(iOS 16.0, *) {
+                dialog.presentationDetents([.height(350)])
+            } else {
+                dialog
+            }
         }
         #if DASHPAY
         .sheet(isPresented: $shouldShowMixDialog, onDismiss: {
@@ -405,15 +423,22 @@ struct HomeViewContent<Content: View>: View {
             }
             .frame(height: 80)
             
-        case .tx(let txItem):
+        case .tx(let txItem, let metadata):
             TransactionPreview(
-                title: txItem.stateTitle,
+                title: metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
-                icon: .custom(txItem.iconName),
+                details: metadata?.details?.isEmpty == false ? metadata?.details : nil,
+                icon: metadata?.icon == nil ? .custom(txItem.iconName) : .image(metadata!.icon!, effect: .rounded),
+                secondaryIcon: metadata?.icon == nil ? nil : metadata?.secondaryIcon == nil ? .custom(txItem.iconName) : metadata?.secondaryIcon,
                 dashAmount: txItem.signedDashAmount,
                 overrideFiatAmount: txItem.fiatAmount
             ) {
-                self.selectedTxDataItem = txDataItem
+                // Check if this is a gift card transaction
+                if GiftCardMetadataProvider.shared.availableMetadata[txItem.txHashData] != nil {
+                    self.giftCardTxId = txItem.txHashData
+                } else {
+                    self.selectedTxDataItem = txDataItem
+                }
             }
         }
     }
@@ -432,6 +457,27 @@ struct HomeViewContent<Content: View>: View {
         }
     }
     #endif
+}
+
+struct GiftCardDetailsSheet: View {
+    var txId: Data
+    @State private var showBackButton: Bool = false
+    @State private var backNavigationRequested: Bool = false
+    
+    var body: some View {
+        BottomSheet(showBackButton: $showBackButton, onBackButtonPressed: {
+            backNavigationRequested = true
+        }) {
+            GiftCardDetailsView(
+                txId: txId,
+                backNavigationRequested: $backNavigationRequested,
+                onShowBackButton: { show in
+                    showBackButton = show
+                }
+            )
+        }
+        .background(Color.primaryBackground)
+    }
 }
 
 struct TransactionDetailsSheet: View {
@@ -470,8 +516,14 @@ struct TransactionDetailsSheet: View {
                     showBackButton = show
                 }
             )
-        case .tx(let txItem):
+        case .tx(let txItem, _):
             TXDetailVCWrapper(tx: txItem, navigateBack: $backNavigationRequested)
         }
+    }
+}
+
+extension Data: Identifiable {
+    public var id: String {
+        return self.base64EncodedString()
     }
 }

@@ -146,9 +146,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWMainMenuViewController.h"
 #import "DWWipeDelegate.h"
 #import "DWPayModel.h"
-#import "DWHomeViewControllerDelegate.h"
 #import "DWMainMenuViewControllerDelegate.h"
-#import "DWExploreTestnetViewController.h"
 
 //MARK: Home
 #import "DWHomeModel.h"

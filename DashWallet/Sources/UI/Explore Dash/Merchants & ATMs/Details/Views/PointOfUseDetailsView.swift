@@ -17,13 +17,24 @@
 
 import MapKit
 import UIKit
+import Combine
 
 // MARK: - PointOfUseDetailsView
 
-class PointOfUseDetailsView: UIView {
-    @objc public var payWithDashHandler: (()->())?
-    @objc public var sellDashHandler: (()->())?
-    @objc public var showAllLocationsActionBlock: (() -> ())?
+class PointOfUseDetailsView: UIView, SyncingActivityMonitorObserver, NetworkReachabilityHandling {
+    private var disposeBag = Set<AnyCancellable>()
+    private let ctxSpendService = CTXSpendService.shared
+    private let syncMonitor = SyncingActivityMonitor.shared
+    
+    // NetworkReachabilityHandling requirements
+    var networkStatusDidChange: ((NetworkStatus) -> ())?
+    var reachabilityObserver: Any!
+    
+    public var payWithDashHandler: (()->())?
+    public var sellDashHandler: (()->())?
+    public var dashSpendAuthHandler: (()->())?
+    public var buyGiftCardHandler: (()->())?
+    public var showAllLocationsActionBlock: (() -> ())?
 
     var containerView: UIStackView!
     var headerContainerView: UIStackView!
@@ -35,9 +46,60 @@ class PointOfUseDetailsView: UIView {
     var nameLabel: UILabel!
     var subLabel: UILabel!
     var addressLabel: UILabel!
+    private var payButton: ActionButton!
 
     internal let merchant: ExplorePointOfUse
     internal var isShowAllHidden: Bool
+    
+    private let emailLabel: UILabel = {
+        let emailLabel = UILabel()
+        emailLabel.translatesAutoresizingMaskIntoConstraints = false
+        emailLabel.text = getEmailText()
+        emailLabel.font = .dw_font(forTextStyle: .footnote)
+        emailLabel.textColor = .dw_secondaryText()
+        emailLabel.textAlignment = .right
+        
+        return emailLabel
+    }()
+    
+    private lazy var loginStatusView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        
+        emailLabel.lineBreakMode = .byTruncatingHead
+        
+        let logoutButton = UIButton(type: .system)
+        logoutButton.translatesAutoresizingMaskIntoConstraints = false
+        logoutButton.setTitle(NSLocalizedString("Log Out", comment: ""), for: .normal)
+        logoutButton.addTarget(self, action: #selector(logoutAction), for: .touchUpInside)
+        
+        if let buttonTitle = logoutButton.titleLabel {
+            let attributeString = NSMutableAttributedString(string: buttonTitle.text!)
+            attributeString.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: NSRange(location: 0, length: attributeString.length))
+            attributeString.addAttribute(.foregroundColor, value: UIColor.dw_secondaryText(), range: NSRange(location: 0, length: attributeString.length))
+            logoutButton.setAttributedTitle(attributeString, for: .normal)
+        }
+        
+        logoutButton.setTitleColor(.dw_secondaryText(), for: .normal)
+        logoutButton.tintColor = .dw_secondaryText()
+        
+        view.addSubview(emailLabel)
+        view.addSubview(logoutButton)
+        
+        NSLayoutConstraint.activate([
+            emailLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            emailLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            emailLabel.trailingAnchor.constraint(equalTo: logoutButton.leadingAnchor, constant: -8),
+            
+            logoutButton.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            logoutButton.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            logoutButton.widthAnchor.constraint(lessThanOrEqualToConstant: 100),
+
+            view.heightAnchor.constraint(equalToConstant: 20)
+        ])
+        
+        return view
+    }()
 
     public init(merchant: ExplorePointOfUse, isShowAllHidden: Bool = false) {
         self.isShowAllHidden = isShowAllHidden
@@ -46,10 +108,16 @@ class PointOfUseDetailsView: UIView {
         super.init(frame: .zero)
 
         configureHierarchy()
+        configureObservers()
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    deinit {
+        syncMonitor.remove(observer: self)
+        stopNetworkMonitoring()
     }
 
     @objc
@@ -86,6 +154,12 @@ class PointOfUseDetailsView: UIView {
         if case .merchant(let m) = merchant.category, let deeplink = m.deeplink, let url = URL(string: deeplink),
            UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url)
+        } else if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
+            if ctxSpendService.isUserSignedIn {
+                buyGiftCardHandler?()
+            } else {
+                dashSpendAuthHandler?()
+            }
         } else {
             payWithDashHandler?()
         }
@@ -117,10 +191,25 @@ class PointOfUseDetailsView: UIView {
         configureBottomButton()
     }
 
-    override func layoutSubviews() {
-        super.layoutSubviews()
-
-        containerView.setNeedsLayout()
+    private func configureObservers() {
+        ctxSpendService.$isUserSignedIn
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isSignedIn in
+                self?.refreshLoginStatus()
+                self?.updateButtonState()
+            }
+            .store(in: &disposeBag)
+        
+        // Monitor network status
+        networkStatusDidChange = { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.updateButtonState()
+            }
+        }
+        startNetworkMonitoring()
+        
+        // Monitor sync status
+        syncMonitor.add(observer: self)
     }
 }
 
@@ -251,10 +340,12 @@ extension PointOfUseDetailsView {
 
     @objc
     internal func configureBottomButton() {
-        let payButton = ActionButton()
+        payButton = ActionButton()
         payButton.translatesAutoresizingMaskIntoConstraints = false
         payButton.addTarget(self, action: #selector(payAction), for: .touchUpInside)
         containerView.addArrangedSubview(payButton)
+        containerView.addArrangedSubview(loginStatusView)
+        refreshLoginStatus()
 
         if case .merchant(let m) = merchant.category {
             if m.paymentMethod == .giftCard {
@@ -262,12 +353,19 @@ extension PointOfUseDetailsView {
                 payButton.setImage(UIImage(named: "image.explore.dash.gift-card"), for: .normal)
                 payButton.accentColor = .dw_orange()
 
-                if let deeplink = m.deeplink, let url = URL(string: deeplink) {
-                    payButton.isEnabled = UIApplication.shared.canOpenURL(url)
-                } else {
-                    payButton.isEnabled = false
-                }
+                if m.savingsBasisPoints > 0 {
+                    let savingsTag = SavingsTagView()
+                    savingsTag.backgroundColor = .clear
+                    savingsTag.translatesAutoresizingMaskIntoConstraints = false
+                    savingsTag.setText(String(format: NSLocalizedString("Save %.2f%%", comment: "DashSpend"), m.toSavingPercentages()))
+                    containerView.addSubview(savingsTag)
 
+                    NSLayoutConstraint.activate([
+                        savingsTag.trailingAnchor.constraint(equalTo: payButton.trailingAnchor, constant: -30),
+                        savingsTag.bottomAnchor.constraint(equalTo: payButton.topAnchor, constant: 13),
+                        savingsTag.heightAnchor.constraint(equalToConstant: 26),
+                    ])
+                }
             } else {
                 payButton.setTitle(NSLocalizedString("Pay with Dash", comment: "Pay with Dash"), for: .normal)
                 payButton.setImage(UIImage(named: "image.explore.dash.circle"), for: .normal)
@@ -277,6 +375,76 @@ extension PointOfUseDetailsView {
         NSLayoutConstraint.activate([
             payButton.heightAnchor.constraint(equalToConstant: 48),
         ])
+        
+        // Set initial button state
+        updateButtonState()
+    }
+    
+    private static func getEmailText() -> String {
+        if let email = CTXSpendService.shared.userEmail, !email.isEmpty {
+            let maskedEmail = maskEmail(email)
+            return String.localizedStringWithFormat(NSLocalizedString("Logged in as %@", comment: "DashSpend"), maskedEmail)
+        } else {
+            return NSLocalizedString("Logged in", comment: "")
+        }
+    }
+    
+    private static func maskEmail(_ email: String) -> String {
+        let components = email.components(separatedBy: "@")
+        guard components.count == 2 else { return email }
+        
+        let username = components[0]
+        let domain = components[1]
+        
+        if username.count <= 1 {
+            return "******@\(domain)"
+        }
+        
+        let firstChar = String(username.prefix(1))
+        return "\(firstChar)******@\(domain)"
+    }
+    
+    @objc
+    func logoutAction() {
+        ctxSpendService.logout()
+        loginStatusView.isHidden = true
+    }
+    
+    func refreshLoginStatus() {
+        if ctxSpendService.isUserSignedIn,
+            case .merchant(let m) = merchant.category,
+            m.paymentMethod == .giftCard {
+            emailLabel.text = PointOfUseDetailsView.getEmailText()
+            loginStatusView.isHidden = false
+        } else {
+            loginStatusView.isHidden = true
+        }
+    }
+    
+    private func updateButtonState() {
+        guard let payButton = payButton,
+              case .merchant(let m) = merchant.category, 
+              m.paymentMethod == .giftCard else {
+            return
+        }
+        
+        let isActive = merchant.active
+        let isOnline = networkStatus == .online
+        let isSynced = syncMonitor.state == .syncDone
+        
+        payButton.isEnabled = isActive && isOnline && isSynced
+    }
+}
+
+// MARK: - SyncingActivityMonitorObserver
+
+extension PointOfUseDetailsView {
+    func syncingActivityMonitorProgressDidChange(_ progress: Double) { }
+    
+    func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
+        DispatchQueue.main.async { [weak self] in
+            self?.updateButtonState()
+        }
     }
 }
 
@@ -295,5 +463,56 @@ final class VerticalButton: TintedButton {
         updatedConfiguration.titleAlignment = .center
         updatedConfiguration.imagePadding = 3
         self.configuration = updatedConfiguration
+    }
+}
+
+// MARK: - SavingsTagView
+
+final class SavingsTagView: UIView {
+    private let label = UILabel()
+    private let tailSize: CGFloat = 8
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupView()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func setupView() {
+        label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.textColor = UIColor.dw_background()
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(label)
+        
+        NSLayoutConstraint.activate([
+            label.topAnchor.constraint(equalTo: topAnchor),
+            label.bottomAnchor.constraint(equalTo: bottomAnchor),
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
+        ])
+    }
+    
+    func setText(_ text: String) {
+        label.text = text
+    }
+    
+    override func draw(_ rect: CGRect) {
+        let path = UIBezierPath()
+        
+        let mainRect = rect.inset(by: UIEdgeInsets(top: 0, left: tailSize, bottom: 0, right: 0))
+        let roundedRect = UIBezierPath(roundedRect: mainRect, cornerRadius: 4)
+        path.append(roundedRect)
+
+        path.move(to: CGPoint(x: tailSize, y: 3))
+        path.addLine(to: CGPoint(x: 0, y: rect.midY))
+        path.addLine(to: CGPoint(x: tailSize, y: rect.midY))
+        path.close()
+        
+        UIColor.dw_label().withAlphaComponent(0.7).setFill()
+        path.fill()
     }
 }

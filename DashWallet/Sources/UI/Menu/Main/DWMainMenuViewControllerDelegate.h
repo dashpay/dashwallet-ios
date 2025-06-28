@@ -25,6 +25,7 @@
 - (void)mainMenuViewControllerImportPrivateKey:(DWMainMenuViewController *)controller;
 - (void)mainMenuViewControllerOpenHomeScreen:(DWMainMenuViewController *)controller;
 - (void)showPaymentsControllerWithActivePage:(NSInteger)pageIndex;
+- (void)showGiftCard:(NSData *)txId;
 
 @end
 

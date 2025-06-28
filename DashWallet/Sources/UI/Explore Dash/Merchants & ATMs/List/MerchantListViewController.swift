@@ -18,6 +18,7 @@
 import CoreLocation
 import MapKit
 import UIKit
+import SwiftUI
 
 // MARK: - MerchantsListSegment
 
@@ -39,11 +40,7 @@ enum MerchantsListSegment: Int {
         let showReversedLocation: Bool
         let showMap: Bool
         let showLocationServiceSettings: Bool
-        var showsFilters = true
-        var defaultFilters = PointOfUseListFilters()
-        defaultFilters.merchantPaymentTypes = [.dash, .giftCard]
-        defaultFilters.radius = .twenty
-        defaultFilters.sortBy = .distance
+        var sortOptions: [PointOfUseListFilters.SortBy] = [.name, .distance, .discount]
 
         switch self {
         case .online:
@@ -51,7 +48,7 @@ enum MerchantsListSegment: Int {
             showReversedLocation = false
             showMap = false
             dataProvider = OnlineMerchantsDataProvider()
-            showsFilters = false
+            sortOptions = [.name, .discount]
             
         case .nearby:
             showLocationServiceSettings = true
@@ -66,7 +63,7 @@ enum MerchantsListSegment: Int {
             dataProvider = AllMerchantsDataProvider()
         }
 
-        return .init(tag: rawValue, title: title, showMap: showMap, showLocationServiceSettings: showLocationServiceSettings, showReversedLocation: showReversedLocation, dataProvider: dataProvider, filterGroups: filterGroups, defaultFilters: defaultFilters, territoriesDataSource: territories, showsFilters: showsFilters)
+        return .init(tag: rawValue, title: title, showMap: showMap, showLocationServiceSettings: showLocationServiceSettings, showReversedLocation: showReversedLocation, dataProvider: dataProvider, filterGroups: filterGroups, territoriesDataSource: territories, sortOptions: sortOptions)
     }
 }
 
@@ -85,11 +82,11 @@ extension MerchantsListSegment {
     var filterGroups: [PointOfUseListFiltersGroup] {
         switch self {
         case .online:
-            return []
+            return [.sortBy, .paymentType, .denominationType]
         case .nearby:
-            return [.sortByDistanceOrName, .radius, .locationService]
+            return [.sortBy, .paymentType, .denominationType, .territory, .radius, .locationService]
         case .all:
-            return [.sortByDistanceOrName, .territory, .radius, .locationService]
+            return [.sortBy, .paymentType, .denominationType, .territory, .radius, .locationService]
         }
     }
 
@@ -103,6 +100,8 @@ extension MerchantsListSegment {
 @objc
 class MerchantListViewController: ExplorePointOfUseListViewController {
 
+    private var infoButton: UIBarButtonItem!
+    
     override var locationServicePopupTitle: String {
         NSLocalizedString("Merchant search works better with Location Services turned on.", comment: "")
     }
@@ -193,6 +192,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
 
         let vc = PointOfUseDetailsViewController(pointOfUse: pointOfUse, isShowAllHidden: merchant.type == .online)
         vc.payWithDashHandler = payWithDashHandler
+        vc.onGiftCardPurchased = onGiftCardPurchased
         navigationController?.pushViewController(vc, animated: true)
     }
 
@@ -229,12 +229,6 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
         }
     }
 
-    override func refreshFilterCell() {
-        super.refreshFilterCell()
-
-        filterCell?.filterButton.isHidden = !model.currentSegment.showsFilters
-    }
-
     override func configureHierarchy() {
         title = NSLocalizedString("Where to Spend", comment: "");
 
@@ -245,6 +239,8 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        setupInfoButton()
 
         model.itemsDidChange = { [weak self] in
             guard let wSelf = self else { return }
@@ -272,6 +268,17 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
     }
+    
+    private func setupInfoButton() {
+        let infoImage = UIImage(systemName: "info.circle")?.withRenderingMode(.alwaysOriginal).withTintColor(.systemBlue)
+        infoButton = UIBarButtonItem(image: infoImage, style: .plain, target: self, action: #selector(infoButtonAction))
+        navigationItem.rightBarButtonItem = infoButton
+    }
+    
+    @objc
+    func infoButtonAction() {
+        let hostingController = UIHostingController(rootView: MerchantTypesDialog())
+        hostingController.setDetent(640)
+        self.present(hostingController, animated: true)
+    }
 }
-
-

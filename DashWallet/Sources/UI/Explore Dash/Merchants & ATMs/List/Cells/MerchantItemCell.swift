@@ -22,6 +22,7 @@ import UIKit
 
 class MerchantItemCell: PointOfUseItemCell {
     private var paymentTypeIconView: UIImageView!
+    private var savingsLabel: UILabel!
 
     override func update(with pointOfUse: ExplorePointOfUse) {
         super.update(with: pointOfUse)
@@ -43,12 +44,27 @@ class MerchantItemCell: PointOfUseItemCell {
         let isGiftCard = merchant.paymentMethod == .giftCard
         let paymentIconName = isGiftCard ? "image.explore.dash.wts.payment.gift-card" : "image.explore.dash.wts.payment.dash";
         paymentTypeIconView.image = UIImage(named: paymentIconName)
+        
+        if merchant.savingsBasisPoints > 0 {
+            savingsLabel.isHidden = false
+            savingsLabel.text = String(format: NSLocalizedString("~%.0f%%", comment: "Savings percentage"), merchant.toSavingPercentages())
+        } else {
+            savingsLabel.isHidden = true
+        }
     }
 }
 
 extension MerchantItemCell {
     override func configureHierarchy() {
         super.configureHierarchy()
+
+        savingsLabel = UILabel()
+        savingsLabel.translatesAutoresizingMaskIntoConstraints = false
+        savingsLabel.font = .systemFont(ofSize: 14, weight: .medium)
+        savingsLabel.textColor = .dw_secondaryText()
+        savingsLabel.isHidden = true
+        savingsLabel.textAlignment = .right
+        mainStackView.addArrangedSubview(savingsLabel)
 
         paymentTypeIconView = UIImageView(image: UIImage(named: "image.explore.dash.wts.payment.dash"))
         paymentTypeIconView.translatesAutoresizingMaskIntoConstraints = false

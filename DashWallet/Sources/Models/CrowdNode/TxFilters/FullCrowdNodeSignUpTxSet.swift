@@ -16,19 +16,19 @@
 //
 
 final class FullCrowdNodeSignUpTxSet: GroupedTransactions, TransactionWrapper {
-    override var title: String {
+    var title: String {
         NSLocalizedString("CrowdNode · Account", comment: "CrowdNode")
     }
     
-    override var iconName: String {
+    var iconName: String {
         "tx.item.cn.icon"
     }
     
-    override var infoText: String {
+    var infoText: String {
         NSLocalizedString("Your CrowdNode account was created using these transactions.", comment: "Crowdnode")
     }
     
-    override var fiatAmount: String {
+    var fiatAmount: String {
         (try? CurrencyExchanger.shared.convertDash(amount: UInt64(abs(amount)).dashAmount, to: App.fiatCurrency).formattedFiatAmount) ??
             NSLocalizedString("Updating Price", comment: "Updating Price")
     }
@@ -37,20 +37,31 @@ final class FullCrowdNodeSignUpTxSet: GroupedTransactions, TransactionWrapper {
     private let savedAccountAddress = CrowdNodeDefaults.shared.accountAddress
     private let januaryFirst2022 = 1640995200.0 // Safe to assume there weren't any CrowdNode accounts before this point
     private var matchedFilters: [CoinsToAddressTxFilter] = []
+    private let txMapLock = NSLock()
 
-    var transactionMap: [Data: Transaction] = [:]
-    override var transactions: [Transaction] {
+    private var _transactionMap: [Data: Transaction] = [:]
+    var transactionMap: [Data: Transaction] {
+        txMapLock.lock()
+        defer { txMapLock.unlock() }
+        return _transactionMap
+    }
+    
+    var transactions: [Transaction] {
         get {
-            return transactionMap.values.map { $0 }.sorted { tx1, tx2 in
+            txMapLock.lock()
+            defer { txMapLock.unlock() }
+            return _transactionMap.values.map { $0 }.sorted { tx1, tx2 in
                 tx1.date > tx2.date
             }
         }
     }
-    private(set) var _amount: Int64 = 0
-    override var amount: Int64 { _amount }
+    private var _amount: Int64 = 0
+    var amount: Int64 { _amount }
     
     var isComplete: Bool {
-        transactionMap.count == 5
+        txMapLock.lock()
+        defer { txMapLock.unlock() }
+        return _transactionMap.count == 5
     }
 
     var welcomeToApiResponse: CoinsToAddressTxFilter? {
@@ -85,11 +96,14 @@ final class FullCrowdNodeSignUpTxSet: GroupedTransactions, TransactionWrapper {
 
         let txHashData = tx.txHashData
 
-        if transactionMap[txHashData] != nil {
-            transactionMap[txHashData] = Transaction(transaction: tx)
+        txMapLock.lock()
+        if _transactionMap[txHashData] != nil {
+            _transactionMap[txHashData] = Transaction(transaction: tx)
+            txMapLock.unlock()
             // Already included, return true
             return true
         }
+        txMapLock.unlock()
 
         var crowdNodeTxFilters = [
             CrowdNodeRequest(requestCode: ApiCode.signUp),
@@ -103,7 +117,10 @@ final class FullCrowdNodeSignUpTxSet: GroupedTransactions, TransactionWrapper {
         }
 
         if let matchedFilter = crowdNodeTxFilters.first(where: { $0.matches(tx: tx) }) {
-            transactionMap[txHashData] = Transaction(transaction: tx)
+            txMapLock.lock()
+            _transactionMap[txHashData] = Transaction(transaction: tx)
+            txMapLock.unlock()
+            
             matchedFilters.append(matchedFilter)
             
             let dashAmount = tx.dashAmount

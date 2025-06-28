@@ -23,8 +23,12 @@ struct TextInput: View {
     let label: String
     @Binding var text: String
     var isError: Bool = false
+    var keyboardType: UIKeyboardType = .default
+    var autocapitalization: TextInputAutocapitalization? = .sentences
+    var isEnabled: Bool = true
     var trailingIcon: Image?
     var trailingAction: (() -> Void)?
+    var onSubmit: (() -> Void)?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -37,10 +41,16 @@ struct TextInput: View {
                     .animation(.spring(response: 0.2, dampingFraction: 0.8), value: isFocused || !text.isEmpty)
                 
                 TextField("", text: $text)
+                    .keyboardType(keyboardType)
+                    .textInputAutocapitalization(autocapitalization)
                     .focused($isFocused)
                     .autocorrectionDisabled(true)
                     .font(.body2)
                     .padding(.top, 15)
+                    .disabled(!isEnabled)
+                    .onSubmit {
+                        onSubmit?()
+                    }
 
                 HStack {
                     Spacer()
@@ -114,14 +124,20 @@ struct TextInput: View {
     }
 }
 
-
 // Preview
 struct TextInput_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: 20) {
             TextInput(label: "Username", text: .constant(""))
             TextInput(label: "Password", text: .constant("password"))
-            TextInput(label: "Email", text: .constant("user@example.com"), isError: true)
+            TextInput(
+                label: "Email", 
+                text: .constant("user@example.com"), 
+                isError: true,
+                onSubmit: {
+                    print("Submit pressed on email field")
+                }
+            )
         }
         .padding()
     }

@@ -43,7 +43,7 @@ struct ModalDialog: View {
         VStack {
             if let icon = icon {
                 switch icon {
-                case .custom(let name):
+                case .custom(let name, let maxHeight):
                     Image(name)
                         .resizable()
                         .scaledToFit()
@@ -60,6 +60,13 @@ struct ModalDialog: View {
                         .foregroundColor(.white)
                         .background(iconBackgroundColor(for: style))
                         .clipShape(Circle())
+                        .padding(.top, 12)
+                        .padding(.bottom, 16)
+                case .image(let image, let maxHeight):
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 48, height: 48)
                         .padding(.top, 12)
                         .padding(.bottom, 16)
                 }

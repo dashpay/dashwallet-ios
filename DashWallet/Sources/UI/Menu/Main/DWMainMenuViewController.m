@@ -21,7 +21,6 @@
 #import <MessageUI/MessageUI.h>
 
 #import "DWAboutModel.h"
-#import "DWExploreTestnetViewController.h"
 #import "DWGlobalOptions.h"
 #import "DWMainMenuModel.h"
 #import "DWSecurityMenuViewController.h"
@@ -38,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWMainMenuViewController () <DWMainMenuContentViewDelegate,
                                         DWToolsMenuViewControllerDelegate,
                                         DWSettingsMenuViewControllerDelegate,
-                                        DWExploreTestnetViewControllerDelegate,
+                                        DWExploreViewControllerDelegate,
                                         DWRootEditProfileViewControllerDelegate,
                                         MFMailComposeViewControllerDelegate>
 
@@ -138,7 +137,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWMainMenuItemType_Explore: {
-            DWExploreTestnetViewController *controller = [[DWExploreTestnetViewController alloc] init];
+            DWExploreViewController *controller = [[DWExploreViewController alloc] init];
             controller.delegate = self;
             DWNavigationController *nvc = [[DWNavigationController alloc] initWithRootViewController:controller];
             [self presentViewController:nvc animated:YES completion:nil];
@@ -249,12 +248,16 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark - DWExploreTestnetViewControllerDelegate
-- (void)exploreTestnetViewControllerShowSendPayment:(DWExploreTestnetViewController *)controller {
+- (void)exploreViewControllerShowSendPayment:(DWExploreViewController *)controller {
     [self.delegate showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay];
 }
 
-- (void)exploreTestnetViewControllerShowReceivePayment:(DWExploreTestnetViewController *)controller {
+- (void)exploreViewControllerShowReceivePayment:(DWExploreViewController *)controller {
     [self.delegate showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive];
+}
+
+- (void)exploreViewControllerShowGiftCard:(DWExploreViewController *)controller txId:(NSData *)txId {
+    [self.delegate showGiftCard:txId];
 }
 
 #pragma mark - DWRootEditProfileViewControllerDelegate

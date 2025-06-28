@@ -20,7 +20,7 @@ import Foundation
 import SSZipArchive
 
 // TODO: Move it to plist and note in release process
-let gsFilePath = "gs://dash-wallet-firebase.appspot.com/explore/explore.db"
+let gsFilePath = "gs://dash-wallet-firebase.appspot.com/explore/explore-v3.db"
 
 private let fileName = "explore"
 
@@ -87,10 +87,9 @@ public class ExploreDatabaseSyncManager {
             }
 
             let timeInterval = timeIntervalMillesecond/1000
-            let savedTs = wSelf.exploreDatabaseLastSyncTimestamp
-            wSelf.exploreDatabaseLastVersion = timeInterval
+            let installedVersion = wSelf.exploreDatabaseLastVersion
 
-            guard timeInterval > savedTs else {
+            guard timeInterval > installedVersion else {
                 wSelf.syncState = .synced(Date())
                 return
             }
@@ -110,7 +109,8 @@ public class ExploreDatabaseSyncManager {
 extension ExploreDatabaseSyncManager {
     private func downloadDatabase(metadata: StorageMetadata) {
         guard let timestamp = metadata.customMetadata?[timestampKey],
-              let checksum = metadata.customMetadata?[checksumKey] else {
+              let checksum = metadata.customMetadata?[checksumKey],
+              let timeIntervalMillesecond = TimeInterval(timestamp) else {
             syncState = .error(Date(), nil)
             return
         }
@@ -120,27 +120,45 @@ extension ExploreDatabaseSyncManager {
 
         storageRef.getData(maxSize: metadata.size) { [weak self] data, error in
             let date = Date()
-            let timestamp = date.timeIntervalSince1970
+            let now = date.timeIntervalSince1970
 
             if let e = error {
                 self?.syncState = .error(date, e)
             } else {
                 try? data?.write(to: urlToSave)
-                self?.exploreDatabaseLastSyncTimestamp = timestamp
-                self?.syncState = .synced(date)
-                self?.unzipFile(at: urlToSave.path, password: checksum)
+                
+                Task {
+                    do {
+                        try await self?.unzipFile(at: urlToSave.path, password: checksum)
+                        self?.exploreDatabaseLastSyncTimestamp = now
+                        self?.exploreDatabaseLastVersion = timeIntervalMillesecond / 1000
+                        self?.syncState = .synced(date)
+                        
+                        NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
+                        try? FileManager.default.removeItem(at: URL(fileURLWithPath: urlToSave.path))
+                    } catch {
+                        DSLogger.log("ExploreDash: failed to open DB archive: \(String(describing: error))")
+                        self?.syncState = .error(Date(), error)
+                    }
+                }
             }
         }
     }
 
-    private func unzipFile(at path: String, password: String) {
-        var error: NSError?
-        let urlToUnzip = getDocumentsDirectory()
-        SSZipArchive.unzipFile(atPath: path, toDestination: urlToUnzip.path, preserveAttributes: true, overwrite: true,
-                               nestedZipLevel: 0, password: password, error: &error, delegate: nil,
-                               progressHandler: nil) { path, _, _ in
-            NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
-            try? FileManager.default.removeItem(at: URL(fileURLWithPath: path))
+    private func unzipFile(at path: String, password: String) async throws {
+        let urlToUnzip = self.getDocumentsDirectory()
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            SSZipArchive.unzipFile(atPath: path, toDestination: urlToUnzip.path, preserveAttributes: true, overwrite: true,
+                                    nestedZipLevel: 0, password: password, error: nil, delegate: nil,
+                                    progressHandler: nil) { path, success, error in
+                if success {
+                    continuation.resume()
+                } else {
+                    let errorToThrow = error ?? NSError(domain: "ExploreDatabaseSyncManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to unzip archive"])
+                    continuation.resume(throwing: errorToThrow)
+                }
+            }
         }
     }
 

@@ -17,15 +17,17 @@
 
 import MapKit
 import UIKit
+import SwiftUI
 
 // MARK: - PointOfUseDetailsViewController
 
 class PointOfUseDetailsViewController: UIViewController {
-    internal let pointOfUse: ExplorePointOfUse
+    internal var pointOfUse: ExplorePointOfUse
     internal let isShowAllHidden: Bool
 
     @objc public var payWithDashHandler: (()->())?
     @objc var sellDashHandler: (()->())?
+    @objc var onGiftCardPurchased: ((Data)->())?
 
     private var contentView: UIView!
     private var detailsView: PointOfUseDetailsView!
@@ -53,6 +55,7 @@ class PointOfUseDetailsViewController: UIViewController {
         super.viewDidLoad()
         title = pointOfUse.name
         configureHierarchy()
+        refreshTokenAndMerchantInfo()
     }
 }
 
@@ -136,6 +139,13 @@ extension PointOfUseDetailsViewController {
             vc.sellDashHandler = wSelf.sellDashHandler
             wSelf.navigationController?.pushViewController(vc, animated: true)
         }
+        detailsView.buyGiftCardHandler = { [weak self] in
+            self?.showDashSpendPayScreen()
+        }
+        detailsView.dashSpendAuthHandler = { [weak self] in
+            self?.showCTXSpendLoginInfo()
+        }
+        
         detailsView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(detailsView)
 
@@ -165,8 +175,87 @@ extension PointOfUseDetailsViewController {
             return nil
         }
     }
+}
 
 
+// Mark: DashSpend
+
+extension PointOfUseDetailsViewController {
+    private func showCTXSpendLoginInfo() {
+        let swiftUIView = CTXSpendLoginInfoView(
+            onCreateNewAccount: { [weak self] in
+                self?.dismiss(animated: true) {
+                    self?.showCTXSpendTerms()
+                }
+            },
+            onLogIn: { [weak self] in
+                self?.dismiss(animated: true) {
+                    self?.showCTXSpendAuth(authType: .signIn)
+                }
+            },
+            onTermsAndConditions: {
+                UIApplication.shared.open(URL(string: CTXConstants.ctxGiftCardAgreementUrl)!, options: [:], completionHandler: nil)
+            }
+        )
+        let hostingController = UIHostingController(rootView: swiftUIView)
+        hostingController.setDetent(450)
+        self.present(hostingController, animated: true)
+    }
+    
+    private func showCTXSpendTerms() {
+        let hostingController = UIHostingController(
+            rootView: CTXSpendTermsScreen {
+                self.navigationController?.popToViewController(ofType: PointOfUseDetailsViewController.self, animated: false)
+                self.showDashSpendPayScreen(justAuthenticated: true)
+            }
+        )
+        hostingController.modalPresentationStyle = .fullScreen
+        self.navigationController?.pushViewController(hostingController, animated: true)
+    }
+
+    private func showCTXSpendAuth(authType: CTXSpendUserAuthType) {
+        let hostingController = UIHostingController(
+            rootView: CTXSpendUserAuthScreen(authType: authType) {
+                self.navigationController?.popViewController(animated: false)
+                self.showDashSpendPayScreen(justAuthenticated: true)
+            }
+        )
+        
+        self.navigationController?.pushViewController(hostingController, animated: true)
+    }
+    
+    private func showDashSpendPayScreen(justAuthenticated: Bool = false) {
+        let hostingController = UIHostingController(
+            rootView: DashSpendPayScreen(merchant: self.pointOfUse, justAuthenticated: justAuthenticated) { [weak self] txId in
+                // Navigate back to home and show gift card details
+                self?.onGiftCardPurchased?(txId)
+            }
+        )
+        
+        self.navigationController?.pushViewController(hostingController, animated: true)
+    }
+    
+    private func refreshTokenAndMerchantInfo() {
+        Task {
+            if try await tryRefreshCtxToken(), let merchantId = pointOfUse.merchant?.merchantId {
+                let merchantInfo = try await CTXSpendService.shared.getMerchant(merchantId: merchantId)
+                pointOfUse = pointOfUse.updatingMerchant(
+                    denominationsType: merchantInfo.denominationsType,
+                    denominations: merchantInfo.denominations.compactMap { Int($0) }
+                )
+            }
+        }
+    }
+    
+    private func tryRefreshCtxToken() async throws -> Bool {
+        do {
+            try await CTXSpendService.shared.refreshToken()
+            return true
+        } catch CTXSpendError.tokenRefreshFailed {
+            await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: NSLocalizedString("Your session expired", comment: "DashSpend"), textBlock1: NSLocalizedString("It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.", comment: "DashSpend"), positiveButtonText: NSLocalizedString("Dismiss", comment: ""))
+            return false
+        }
+    }
 }
 
 
@@ -206,5 +295,47 @@ extension ExplorePointOfUse {
         case .unknown:
             return nil
         }
+    }
+}
+
+extension UIHostingController: NavigationBarDisplayable {
+    var isBackButtonHidden: Bool { true }
+    var isNavigationBarHidden: Bool { true }
+}
+
+extension ExplorePointOfUse {
+    func updatingMerchant(denominationsType: String?, denominations: [Int]) -> ExplorePointOfUse {
+        guard case .merchant(let currentMerchant) = category else { return self }
+        
+        let updatedMerchant = ExplorePointOfUse.Merchant(
+            merchantId: currentMerchant.merchantId,
+            paymentMethod: currentMerchant.paymentMethod,
+            type: currentMerchant.type,
+            deeplink: currentMerchant.deeplink,
+            savingsBasisPoints: currentMerchant.savingsBasisPoints,
+            denominationsType: denominationsType,
+            denominations: denominations,
+            redeemType: currentMerchant.redeemType
+        )
+        
+        return ExplorePointOfUse(
+            id: id,
+            name: name,
+            category: .merchant(updatedMerchant),
+            active: active,
+            city: city,
+            territory: territory,
+            address1: address1,
+            address2: address2,
+            address3: address3,
+            address4: address4,
+            latitude: latitude,
+            longitude: longitude,
+            website: website,
+            phone: phone,
+            logoLocation: logoLocation,
+            coverImage: coverImage,
+            source: source
+        )
     }
 }

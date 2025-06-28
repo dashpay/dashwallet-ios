@@ -229,7 +229,7 @@ struct SettingsMenuContent: View {
                         title: cjItem.title,
                         subtitleView: AnyView(CoinJoinSubtitle(cjItem)),
                         icon: .custom("image.coinjoin.menu"),
-                        badgeText: NSLocalizedString("Beta", comment: ""),
+                        badgeText: nil,
                         action: cjItem.action
                     )
                 } else {

@@ -21,6 +21,7 @@ struct SendIntro<Content: View>: View {
     @State private var balanceHidden: Bool = true
     
     var title: String
+    var preposition: String = NSLocalizedString("to", comment: "Send Screen")
     var destination: String? = nil
     var dashBalance: UInt64? = nil
     var balanceLabel: String? = nil
@@ -30,18 +31,19 @@ struct SendIntro<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(title)
-                .font(.largeTitle)
+                .font(.title)
                 .fontWeight(.bold)
             
             if let destination = destination {
                 HStack(spacing: 2) {
-                    Text(NSLocalizedString("to", comment: "Send Screen: to address"))
+                    Text(preposition)
                         .font(.subheadline)
+                    avatarView()
+                        .padding(.leading, 2)
+                        .frame(width: 20, height: 20)
                     Text(destination)
                         .font(.subheadline)
                         .padding(.leading, 2)
-                    avatarView()
-                        .frame(width: 20, height: 20)
                 }
                 .padding(.top, 4)
                 .padding(.bottom, 2)

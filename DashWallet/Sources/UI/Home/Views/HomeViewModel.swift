@@ -28,6 +28,7 @@ public enum HomeTxDisplayMode: UInt {
     case received
     case sent
     case rewards
+    case giftCard
 }
 
 class HomeViewModel: ObservableObject {
@@ -44,6 +45,7 @@ class HomeViewModel: ObservableObject {
     private var txByHash: [String: TransactionListDataItem] = [:]
     private var crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
     private var coinJoinTxSets: [String: CoinJoinMixingTxSet] = [:] // Grouped by date
+    private var metadataProviders: [MetadataProvider] = []
     
     @Published private(set) var txItems: [TransactionGroup] = []
     @Published var shortcutItems: [ShortcutAction] = []
@@ -103,6 +105,7 @@ class HomeViewModel: ObservableObject {
             self.recalculateHeight()
         }
         
+        self.setupMetadataProviders()
         self.onSyncStateChanged()
         self.recalculateHeight()
         
@@ -174,40 +177,32 @@ class HomeViewModel: ObservableObject {
             self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
             self.coinJoinTxSets = [:]
             
-            var items: [TransactionListDataItem] = transactions.compactMap {
-                Tx.shared.updateRateIfNeeded(for: $0)
-                
-                if self.displayMode == .sent && $0.direction != .sent {
+            var items: [TransactionListDataItem] = transactions.compactMap { tx -> TransactionListDataItem? in
+                Tx.shared.updateRateIfNeeded(for: tx)
+                            
+                if !self.passesFilter(tx: tx, displayMode: self.displayMode) {
                     return nil
                 }
-               
-                if self.displayMode == .received && ($0.direction != .received || $0 is DSCoinbaseTransaction) {
+                           
+                if !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: tx) {
                     return nil
                 }
-               
-                if self.displayMode == .rewards && !($0 is DSCoinbaseTransaction) {
-                    return nil
-                }
-               
-                if !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: $0) {
-                    return nil
-                }
-                
-                if !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: $0) {
+                            
+                if !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: tx) {
                     // CrowdNode transactions will be included below
                     return nil
                 }
 
-                let date = DWDateFormatter.sharedInstance.dateOnly(from: $0.date)
+                let date = DWDateFormatter.sharedInstance.dateOnly(from: tx.date)
                 let coinJoinTxSet = self.coinJoinTxSets[date] ?? CoinJoinMixingTxSet()
                 self.coinJoinTxSets[date] = coinJoinTxSet
-               
-                if coinJoinTxSet.tryInclude(tx: $0) {
+                           
+                if coinJoinTxSet.tryInclude(tx: tx) {
                     // CoinJoin transactions will be included below
                     return nil
                 }
-                
-                return .tx(Transaction(transaction: $0))
+                            
+                return .tx(Transaction(transaction: tx), self.resolveMetadata(for: tx.txHashData))
             }
             
             self.txByHash.removeAll()
@@ -248,21 +243,13 @@ class HomeViewModel: ObservableObject {
         self.queue.async { [weak self] in
             guard let self = self else { return }
             
-            if self.displayMode == .sent && tx.direction != .sent {
-                return
-            }
-            
-            if self.displayMode == .received && (tx.direction != .received || tx is DSCoinbaseTransaction) {
-                return
-            }
-            
-            if self.displayMode == .rewards && !(tx is DSCoinbaseTransaction) {
+            if !self.passesFilter(tx: tx, displayMode: self.displayMode) {
                 return
             }
             
             Tx.shared.updateRateIfNeeded(for: tx)
             var itemId = tx.txHashHexString
-            var txItem: TransactionListDataItem = .tx(Transaction(transaction: tx))
+            var txItem: TransactionListDataItem = .tx(Transaction(transaction: tx), resolveMetadata(for: tx.txHashData))
             let dateKey = DWDateFormatter.sharedInstance.dateOnly(from: tx.date)
 
             if self.crowdNodeTxSet.tryInclude(tx: tx) {
@@ -283,15 +270,19 @@ class HomeViewModel: ObservableObject {
                 self.txByHash[itemId] = txItem
                 var isChanged = true
                 
-                if case let .tx(existingTx) = existingItem, case let .tx(newTx) = txItem {
-                    isChanged = newTx.state != existingTx.state
+                if case let .tx(existingTx, oldMetadata) = existingItem, case let .tx(newTx, metadata) = txItem {
+                    isChanged = newTx.state != existingTx.state || oldMetadata != metadata
                 }
                 
                 if isChanged {
                     if let groupIndex = self.txItems.firstIndex(where: { $0.id == dateKey }),
                         let itemIndex = self.txItems[groupIndex].items.firstIndex(where: { $0.id == itemId }) {
                         DispatchQueue.main.async {
-                            self.txItems[groupIndex].items[itemIndex] = txItem
+                            let updatedGroup = self.txItems[groupIndex]
+                            var updatedItems = updatedGroup.items
+                            updatedItems[itemIndex] = txItem
+                            updatedGroup.items = updatedItems
+                            self.txItems[groupIndex] = updatedGroup
                         }
                     }
                 }
@@ -416,6 +407,85 @@ extension HomeViewModel {
     }
 }
 
+// MARK: - Metadata
+
+extension HomeViewModel {
+    private func setupMetadataProviders() {
+        let giftCardMetadata = GiftCardMetadataProvider.shared
+        let customIconMetadata = CustomIconMetadataProvider.shared
+        self.metadataProviders = [giftCardMetadata, customIconMetadata]
+        
+        for provider in self.metadataProviders {
+            provider.metadataUpdated
+                .receive(on: self.queue)
+                .sink { [weak self] txHash in
+                    guard let self = self else { return }
+
+                    let wallet = DWEnvironment.sharedInstance().currentWallet
+                    if let transaction = wallet.transaction(forHash: txHash.withUnsafeBytes { $0.load(as: UInt256.self) }) {
+                        self.onTransactionStatusChanged(tx: transaction)
+                    }
+                }
+                .store(in: &cancellableBag)
+        }
+    }
+    
+    private func resolveMetadata(for txId: Data) -> TxRowMetadata? {
+        var finalMetadata: TxRowMetadata? = nil
+
+        // Metadata will not be replaced if already found, so in case
+        // of conflicts metadataProviders should be sorted by priority
+        for provider in self.metadataProviders {
+            let providerMetadata = provider.availableMetadata
+            guard let metadata = providerMetadata[txId] else { continue }
+            
+            if finalMetadata == nil {
+                finalMetadata = metadata
+            } else {
+                if finalMetadata?.title == nil {
+                    finalMetadata?.title = metadata.title
+                }
+
+                if finalMetadata?.details == nil {
+                    finalMetadata?.details = metadata.details
+                }
+                
+                if finalMetadata?.icon == nil {
+                    finalMetadata?.icon = metadata.icon
+                }
+                
+                if finalMetadata?.iconId == nil {
+                    finalMetadata?.iconId = metadata.iconId
+                }
+                
+                if finalMetadata?.secondaryIcon == nil {
+                    finalMetadata?.secondaryIcon = metadata.secondaryIcon
+                }
+            }
+        }
+
+        return finalMetadata
+    }
+    
+    private func passesFilter(tx: DSTransaction, displayMode: HomeTxDisplayMode) -> Bool {
+        switch displayMode {
+        case .all:
+            return true
+        case .sent:
+            return tx.direction == .sent
+        case .received:
+            return tx.direction == .received && !(tx is DSCoinbaseTransaction)
+        case .rewards:
+            return tx is DSCoinbaseTransaction
+        case .giftCard:
+            return isGiftCard(tx: tx)
+        }
+    }
+    
+    private func isGiftCard(tx: DSTransaction) -> Bool {
+        return GiftCardMetadataProvider.shared.availableMetadata[tx.txHashData] != nil
+    }
+}
 
 // MARK: - Shortcuts
 
