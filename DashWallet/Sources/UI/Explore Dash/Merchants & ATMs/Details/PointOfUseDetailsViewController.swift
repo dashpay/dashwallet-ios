@@ -218,7 +218,7 @@ extension PointOfUseDetailsViewController {
 
     private func showDashSpendAuth(authType: DashSpendUserAuthType, provider: GiftCardProvider) {
         let hostingController = UIHostingController(
-            rootView: DashSpendUserAuthScreen(authType: authType) {
+            rootView: DashSpendUserAuthScreen(authType: authType, provider: provider) {
                 self.navigationController?.popViewController(animated: false)
                 self.showDashSpendPayScreen(provider: provider, justAuthenticated: true)
             }
@@ -241,7 +241,7 @@ extension PointOfUseDetailsViewController {
     private func refreshTokenAndMerchantInfo() {
         Task {
             if try await tryRefreshCtxToken(), let merchantId = pointOfUse.merchant?.merchantId {
-                let merchantInfo = try await CTXSpendService.shared.getMerchant(merchantId: merchantId)
+                let merchantInfo = try await CTXSpendRepository.shared.getMerchant(merchantId: merchantId)
                 pointOfUse = pointOfUse.updatingMerchant(
                     denominationsType: merchantInfo.denominationsType,
                     denominations: merchantInfo.denominations.compactMap { Int($0) }
@@ -252,7 +252,7 @@ extension PointOfUseDetailsViewController {
     
     private func tryRefreshCtxToken() async throws -> Bool {
         do {
-            try await CTXSpendService.shared.refreshToken()
+            try await CTXSpendRepository.shared.refreshToken()
             return true
         } catch CTXSpendError.tokenRefreshFailed {
             await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: NSLocalizedString("Your session expired", comment: "DashSpend"), textBlock1: NSLocalizedString("It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.", comment: "DashSpend"), positiveButtonText: NSLocalizedString("Dismiss", comment: ""))

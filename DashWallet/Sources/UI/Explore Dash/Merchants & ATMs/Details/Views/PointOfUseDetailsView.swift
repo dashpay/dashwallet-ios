@@ -23,7 +23,8 @@ import Combine
 
 class PointOfUseDetailsView: UIView, SyncingActivityMonitorObserver, NetworkReachabilityHandling {
     private var disposeBag = Set<AnyCancellable>()
-    private let ctxSpendService = CTXSpendService.shared
+    private let ctxSpendRepository = CTXSpendRepository.shared
+    private let piggyCardsService = PiggyCardsRepository.shared
     private let syncMonitor = SyncingActivityMonitor.shared
     
     // NetworkReachabilityHandling requirements
@@ -194,7 +195,15 @@ class PointOfUseDetailsView: UIView, SyncingActivityMonitorObserver, NetworkReac
     }
 
     private func configureObservers() {
-        ctxSpendService.$isUserSignedIn
+        ctxSpendRepository.$isUserSignedIn
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isSignedIn in
+                self?.refreshLoginStatus()
+                self?.updateButtonState()
+            }
+            .store(in: &disposeBag)
+        
+        piggyCardsService.$isUserSignedIn
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isSignedIn in
                 self?.refreshLoginStatus()
@@ -418,7 +427,13 @@ extension PointOfUseDetailsView {
     }
     
     private static func getEmailText() -> String {
-        if let email = CTXSpendService.shared.userEmail, !email.isEmpty {
+        // Check CTXSpend first
+        if let email = CTXSpendRepository.shared.userEmail, !email.isEmpty {
+            let maskedEmail = maskEmail(email)
+            return String.localizedStringWithFormat(NSLocalizedString("Logged in as %@", comment: "DashSpend"), maskedEmail)
+        }
+        // Then check PiggyCards
+        else if let email = PiggyCardsRepository.shared.userEmail, !email.isEmpty {
             let maskedEmail = maskEmail(email)
             return String.localizedStringWithFormat(NSLocalizedString("Logged in as %@", comment: "DashSpend"), maskedEmail)
         } else {
@@ -443,14 +458,18 @@ extension PointOfUseDetailsView {
     
     @objc
     func logoutAction() {
-        ctxSpendService.logout()
+        if selectedProvider == .ctx {
+            ctxSpendRepository.logout()
+        } else {
+            piggyCardsService.logout()
+        }
         loginStatusView.isHidden = true
     }
     
     func refreshLoginStatus() {
-        if ctxSpendService.isUserSignedIn,
-            case .merchant(let m) = merchant.category,
-            m.paymentMethod == .giftCard {
+        if case .merchant(let m) = merchant.category,
+            m.paymentMethod == .giftCard,
+            (ctxSpendRepository.isUserSignedIn || piggyCardsService.isUserSignedIn) {
             emailLabel.text = PointOfUseDetailsView.getEmailText()
             loginStatusView.isHidden = false
         } else {

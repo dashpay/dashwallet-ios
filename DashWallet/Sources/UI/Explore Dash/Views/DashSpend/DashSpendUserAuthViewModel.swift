@@ -27,7 +27,7 @@ class DashSpendUserAuthViewModel: ObservableObject {
     @Published var screenType: DashSpendUserAuthType = .createAccount
     @Published var isUserSignedIn: Bool = false
     
-    private let service = CTXSpendService.shared
+    private let service = CTXSpendRepository.shared
     
     func setup(screenType: DashSpendUserAuthType) {
         self.isUserSignedIn = service.isUserSignedIn

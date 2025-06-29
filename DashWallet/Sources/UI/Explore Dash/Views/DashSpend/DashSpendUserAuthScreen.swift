@@ -62,6 +62,7 @@ struct DashSpendUserAuthScreen: View {
     @State private var navigateToOtp: Bool = false
     
     let authType: DashSpendUserAuthType
+    let provider: GiftCardProvider
     let onAuthSuccess: () -> Void
     
     var body: some View {
@@ -174,6 +175,7 @@ struct DashSpendUserAuthScreen: View {
             NavigationLink(
                 destination: DashSpendUserAuthScreen(
                     authType: .otp,
+                    provider: provider,
                     onAuthSuccess: onAuthSuccess
                 ).navigationBarHidden(true),
                 isActive: $navigateToOtp

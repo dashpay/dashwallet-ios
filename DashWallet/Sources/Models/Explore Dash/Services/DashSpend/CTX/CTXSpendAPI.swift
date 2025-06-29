@@ -71,13 +71,8 @@ enum CTXSpendError: Error, LocalizedError {
     }
 }
 
-protocol CTXSpendAPIAccessTokenProvider: AnyObject {
-    var accessToken: String? { get }
-    var refreshToken: String? { get }
-}
-
 final class CTXSpendAPI: HTTPClient<CTXSpendEndpoint> {
-    weak var ctxSpendAPIAccessTokenProvider: CTXSpendAPIAccessTokenProvider!
+    weak var ctxSpendAPIAccessTokenProvider: CTXSpendTokenProvider!
     
     override func request(_ target: CTXSpendEndpoint) async throws {
         do {
@@ -146,11 +141,11 @@ final class CTXSpendAPI: HTTPClient<CTXSpendEndpoint> {
     
     static var shared = CTXSpendAPI()
     
-    static func initialize(with ctxSpendAPIAccessTokenProvider: CTXSpendAPIAccessTokenProvider) {
+    static func initialize(with ctxSpendAPIAccessTokenProvider: CTXSpendTokenProvider) {
         shared.initialize(with: ctxSpendAPIAccessTokenProvider)
     }
     
-    private func initialize(with ctxSpendAPIAccessTokenProvider: CTXSpendAPIAccessTokenProvider) {
+    private func initialize(with ctxSpendAPIAccessTokenProvider: CTXSpendTokenProvider) {
         accessTokenProvider = { [weak ctxSpendAPIAccessTokenProvider] in
             ctxSpendAPIAccessTokenProvider!.accessToken
         }

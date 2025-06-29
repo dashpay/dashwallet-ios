@@ -24,7 +24,7 @@ private let defaultCurrency = kDefaultCurrencyCode
 class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHandling {
     private var cancellableBag = Set<AnyCancellable>()
     private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: defaultCurrency)
-    private let ctxSpendService = CTXSpendService.shared
+    private let ctxSpendRepository = CTXSpendRepository.shared
     private let giftCardProvider: GiftCardProvider
     private let customIconProvider = CustomIconMetadataProvider.shared
     private let txMetadataDao = TransactionMetadataDAOImpl.shared
@@ -141,7 +141,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             .sink { [weak self] _ in self?.refreshBalance() }
             .store(in: &cancellableBag)
         
-        ctxSpendService.$isUserSignedIn
+        ctxSpendRepository.$isUserSignedIn
             .sink { [weak self] isSignedIn in
                 self?.isUserSignedIn = isSignedIn
             }
@@ -258,7 +258,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         guard !merchantId.isEmpty, giftCardProvider.isUserSignedIn() else { return }
         
         do {
-            let merchantInfo = try await ctxSpendService.getMerchant(merchantId: merchantId)
+            let merchantInfo = try await ctxSpendRepository.getMerchant(merchantId: merchantId)
             
             // Update merchant details
             savingsFraction = Decimal(merchantInfo.savingsPercentage) / Decimal(10000)
@@ -287,7 +287,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         DSLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(amount)")
         let fiatAmountString = String(format: "%.2f", Double(truncating: amount as NSDecimalNumber))
         
-        return try await ctxSpendService.purchaseGiftCard(
+        return try await ctxSpendRepository.purchaseGiftCard(
             merchantId: merchantId,
             fiatAmount: fiatAmountString,
             fiatCurrency: "USD",

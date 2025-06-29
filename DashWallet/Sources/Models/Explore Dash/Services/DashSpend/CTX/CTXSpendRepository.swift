@@ -18,8 +18,8 @@
 import Foundation
 import Combine
 
-class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, ObservableObject {
-    public static let shared: CTXSpendService = .init()
+class CTXSpendRepository: CTXSpendTokenProvider, ObservableObject {
+    public static let shared: CTXSpendRepository = .init()
     private let userDefaults = UserDefaults.standard
     
     private enum Keys {

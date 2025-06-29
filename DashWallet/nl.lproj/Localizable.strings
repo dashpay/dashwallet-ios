@@ -211,6 +211,9 @@
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Een intuïtieve en vertrouwde ervaring op al je apparaten";
 
+/* No comment provided by engineer. */
+"An unknown error occurred." = "An unknown error occurred.";
+
 /* CTXSpend error */
 "An unknown error occurred. Please try again later." = "An unknown error occurred. Please try again later.";
 
@@ -1127,7 +1130,7 @@
 "I accept" = "Ik accepteer";
 
 /* Accept terms checkbox */
-"I accept DashSpend terms and conditions" = "Ik accepteer de algemene voorwaarden van DashSpend";
+"I accept %@ terms and conditions" = "I accept %@ terms and conditions";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Ik ga akkoord dat ik mijn munten kwijt raak als ik de herstelzin niet meer bezit";
@@ -1222,6 +1225,9 @@
 /* No comment provided by engineer. */
 "Insufficient funds" = "Ontoereikende fondsen";
 
+/* No comment provided by engineer. */
+"Insufficient funds for this purchase." = "Insufficient funds for this purchase.";
+
 /* Send screen */
 "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction." = "Onvoldoende gemengd saldo. Wacht tot de CoinJoin mix is voltooid of schakel deze functie uit in de instellingen om deze transactie te voltooien.";
 
@@ -1261,6 +1267,9 @@
 /* CrowdNode Online */
 "Invalid Email" = "Ongeldig emailadres";
 
+/* No comment provided by engineer. */
+"Invalid email or password." = "Invalid email or password.";
+
 /* Invalid Amount Input */
 "Invalid Input" = "Ongeldige invoer";
 
@@ -1269,6 +1278,9 @@
 
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Ongeldig betalingsverzoek";
+
+/* No comment provided by engineer. */
+"Invalid purchase amount." = "Invalid purchase amount.";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Ongeldige QR-code";
@@ -1616,6 +1628,9 @@
 /* No comment provided by engineer. */
 "Network" = "Netwerk";
 
+/* No comment provided by engineer. */
+"Network connection error. Please try again." = "Network connection error. Please try again.";
+
 /* CTXSpend error */
 "Network error. Please check your connection and try again." = "Network error. Please check your connection and try again.";
 
@@ -1961,6 +1976,12 @@
 /* Coinbase/Buy Dash */
 "Purchase" = "Aanschaffen";
 
+/* No comment provided by engineer. */
+"Purchase amount exceeds the limit for this gift card." = "Purchase amount exceeds the limit for this gift card.";
+
+/* No comment provided by engineer. */
+"Purchase amount is below the minimum for this gift card." = "Purchase amount is below the minimum for this gift card.";
+
 /* Alert title */
 "Purchase Failed" = "Aankoop mislukt";
 
@@ -2285,6 +2306,9 @@
 "Server error occurred. Please try again later." = "Server error occurred. Please try again later.";
 
 /* No comment provided by engineer. */
+"Server error. Please try again later." = "Server error. Please try again later.";
+
+/* No comment provided by engineer. */
 "Set a trusted node" = "stel een vertrouwde node in";
 
 /* No comment provided by engineer. */
@@ -2521,6 +2545,12 @@
 /* DashSpend */
 "This merchant is currently unavailable. Please try again later or choose a different merchant." = "This merchant is currently unavailable. Please try again later or choose a different merchant.";
 
+/* No comment provided by engineer. */
+"This merchant is not available." = "This merchant is not available.";
+
+/* No comment provided by engineer. */
+"This merchant is temporarily unavailable." = "This merchant is temporarily unavailable.";
+
 /* DashSpend */
 "This merchant sells gift cards at fixed prices" = " Deze winkelier verkoopt cadeaubonnen tegen vaste prijzen";
 
@@ -2589,6 +2619,9 @@
 
 /* No comment provided by engineer. */
 "Transaction id" = "Transactie id";
+
+/* No comment provided by engineer. */
+"Transaction was rejected. Please try again." = "Transaction was rejected. Please try again.";
 
 /* A verb, button title. */
 "Transfer" = "overdracht";
@@ -3046,6 +3079,9 @@
 /* Usernames */
 "You need to have more than %@ Dash to create a username" = "You need to have more than %@ Dash to create a username";
 
+/* No comment provided by engineer. */
+"You need to log in to continue." = "You need to log in to continue.";
+
 /* DashSpend */
 "You need to sign in to DashSpend to purchase gift cards." = "You need to sign in to DashSpend to purchase gift cards.";
 
@@ -3153,6 +3189,9 @@
 
 /* DashSpend */
 "Your session expired" = "Your session expired";
+
+/* No comment provided by engineer. */
+"Your session expired. Please log in again." = "Your session expired. Please log in again.";
 
 /* DashSpend */
 "Your transaction was rejected. Please try again or contact support if the problem persists." = "Your transaction was rejected. Please try again or contact support if the problem persists.";
