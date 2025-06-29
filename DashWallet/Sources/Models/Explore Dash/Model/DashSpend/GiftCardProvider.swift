@@ -58,11 +58,11 @@ enum GiftCardProvider: CaseIterable {
     }
     
     func isUserSignedIn() -> Bool {
-        switch self {
-        case .ctx:
-            return CTXSpendRepository.shared.isUserSignedIn
-        case .piggyCards:
-            return PiggyCardsRepository.shared.isUserSignedIn
-        }
+        let repository = DashSpendRepositoryFactory.shared.create(provider: self)
+        return repository.isUserSignedIn
+    }
+    
+    func getRepository() -> any DashSpendRepository {
+        return DashSpendRepositoryFactory.shared.create(provider: self)
     }
 }

@@ -18,7 +18,8 @@
 import Foundation
 import Combine
 
-class CTXSpendRepository: CTXSpendTokenProvider, ObservableObject {
+
+class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
     public static let shared: CTXSpendRepository = .init()
     private let userDefaults = UserDefaults.standard
     

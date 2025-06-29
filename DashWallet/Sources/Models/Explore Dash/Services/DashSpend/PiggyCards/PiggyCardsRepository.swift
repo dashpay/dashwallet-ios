@@ -18,7 +18,7 @@
 import Foundation
 import Combine
 
-class PiggyCardsRepository: PiggyCardsTokenProvider, ObservableObject {
+class PiggyCardsRepository: PiggyCardsTokenProvider, DashSpendRepository {
     public static let shared: PiggyCardsRepository = .init()
     private let userDefaults = UserDefaults.standard
     
@@ -58,9 +58,15 @@ class PiggyCardsRepository: PiggyCardsTokenProvider, ObservableObject {
         isUserSignedIn = token != nil && !token!.isEmpty
     }
     
-    func signUp(firstName: String, lastName: String, email: String, country: String) async throws -> Bool {
+    func signIn(email: String) async throws -> Bool {
+        return try await signUp(email: email)
+    }
+    
+    func signUp(email: String) async throws -> Bool {
         do {
-            let response: PiggyCardsSignupResponse = try await PiggyCardsAPI.shared.request(.signup(firstName: firstName, lastName: lastName, email: email, country: country))
+            let response: PiggyCardsSignupResponse = try await PiggyCardsAPI.shared.request(
+                .signup(firstName: "", lastName: "", email: email, country: "US")
+            )
             
             KeychainService.save(key: Keys.email, data: email)
             if let userId = response.userId {
