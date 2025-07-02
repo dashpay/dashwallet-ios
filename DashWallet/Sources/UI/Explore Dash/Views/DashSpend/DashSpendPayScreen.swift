@@ -22,6 +22,7 @@ struct DashSpendPayScreen: View {
     @Environment(\.presentationMode) private var presentationMode
     @StateObject private var viewModel: DashSpendPayViewModel
     let merchant: ExplorePointOfUse
+    let provider: GiftCardProvider
     @State var justAuthenticated: Bool
     @State var showConfirmToast: Bool
     @State private var showConfirmationDialog = false
@@ -31,9 +32,10 @@ struct DashSpendPayScreen: View {
     @State private var errorTitle = ""
     let onPurchaseSuccess: ((Data) -> Void)?
     
-    init(merchant: ExplorePointOfUse, justAuthenticated: Bool = false, onPurchaseSuccess: ((Data) -> Void)? = nil) {
+    init(merchant: ExplorePointOfUse, provider: GiftCardProvider = .ctx, justAuthenticated: Bool = false, onPurchaseSuccess: ((Data) -> Void)? = nil) {
         self.merchant = merchant
-        self._viewModel = .init(wrappedValue: DashSpendPayViewModel(merchant: merchant))
+        self.provider = provider
+        self._viewModel = .init(wrappedValue: DashSpendPayViewModel(merchant: merchant, provider: provider))
         self.justAuthenticated = justAuthenticated
         self.showConfirmToast = false
         self.onPurchaseSuccess = onPurchaseSuccess

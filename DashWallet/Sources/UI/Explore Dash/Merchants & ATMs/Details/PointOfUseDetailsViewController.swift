@@ -139,11 +139,11 @@ extension PointOfUseDetailsViewController {
             vc.sellDashHandler = wSelf.sellDashHandler
             wSelf.navigationController?.pushViewController(vc, animated: true)
         }
-        detailsView.buyGiftCardHandler = { [weak self] in
-            self?.showDashSpendPayScreen()
+        detailsView.buyGiftCardHandler = { [weak self] provider in
+            self?.showDashSpendPayScreen(provider: provider)
         }
-        detailsView.dashSpendAuthHandler = { [weak self] in
-            self?.showCTXSpendLoginInfo()
+        detailsView.dashSpendAuthHandler = { [weak self] provider in
+            self?.showDashSpendLoginInfo(provider: provider)
         }
         
         detailsView.translatesAutoresizingMaskIntoConstraints = false
@@ -181,20 +181,23 @@ extension PointOfUseDetailsViewController {
 // Mark: DashSpend
 
 extension PointOfUseDetailsViewController {
-    private func showCTXSpendLoginInfo() {
-        let swiftUIView = CTXSpendLoginInfoView(
+    // TODO: This is a temporary UI element for testing/selecting between services
+    // Will be removed once service selection is finalized
+    private func showDashSpendLoginInfo(provider: GiftCardProvider) {
+        let swiftUIView = DashSpendLoginInfoView(
+            provider: provider,
             onCreateNewAccount: { [weak self] in
                 self?.dismiss(animated: true) {
-                    self?.showCTXSpendTerms()
+                    self?.showDashSpendTerms(provider: provider)
                 }
             },
             onLogIn: { [weak self] in
                 self?.dismiss(animated: true) {
-                    self?.showCTXSpendAuth(authType: .signIn)
+                    self?.showDashSpendAuth(authType: .signIn, provider: provider)
                 }
             },
             onTermsAndConditions: {
-                UIApplication.shared.open(URL(string: CTXConstants.ctxGiftCardAgreementUrl)!, options: [:], completionHandler: nil)
+                UIApplication.shared.open(URL(string: provider.termsUrl)!, options: [:], completionHandler: nil)
             }
         )
         let hostingController = UIHostingController(rootView: swiftUIView)
@@ -202,31 +205,31 @@ extension PointOfUseDetailsViewController {
         self.present(hostingController, animated: true)
     }
     
-    private func showCTXSpendTerms() {
+    private func showDashSpendTerms(provider: GiftCardProvider) {
         let hostingController = UIHostingController(
-            rootView: CTXSpendTermsScreen {
+            rootView: DashSpendTermsScreen(provider: provider) {
                 self.navigationController?.popToViewController(ofType: PointOfUseDetailsViewController.self, animated: false)
-                self.showDashSpendPayScreen(justAuthenticated: true)
+                self.showDashSpendPayScreen(provider: provider, justAuthenticated: true)
             }
         )
         hostingController.modalPresentationStyle = .fullScreen
         self.navigationController?.pushViewController(hostingController, animated: true)
     }
 
-    private func showCTXSpendAuth(authType: CTXSpendUserAuthType) {
+    private func showDashSpendAuth(authType: DashSpendUserAuthType, provider: GiftCardProvider) {
         let hostingController = UIHostingController(
-            rootView: CTXSpendUserAuthScreen(authType: authType) {
+            rootView: DashSpendUserAuthScreen(authType: authType) {
                 self.navigationController?.popViewController(animated: false)
-                self.showDashSpendPayScreen(justAuthenticated: true)
+                self.showDashSpendPayScreen(provider: provider, justAuthenticated: true)
             }
         )
         
         self.navigationController?.pushViewController(hostingController, animated: true)
     }
     
-    private func showDashSpendPayScreen(justAuthenticated: Bool = false) {
+    private func showDashSpendPayScreen(provider: GiftCardProvider, justAuthenticated: Bool = false) {
         let hostingController = UIHostingController(
-            rootView: DashSpendPayScreen(merchant: self.pointOfUse, justAuthenticated: justAuthenticated) { [weak self] txId in
+            rootView: DashSpendPayScreen(merchant: self.pointOfUse, provider: provider, justAuthenticated: justAuthenticated) { [weak self] txId in
                 // Navigate back to home and show gift card details
                 self?.onGiftCardPurchased?(txId)
             }

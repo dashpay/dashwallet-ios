@@ -646,7 +646,7 @@
             <color red="0.45882352941176469" green="0.50196078431372548" blue="0.54117647058823526" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <systemColor name="systemPinkColor">
-            <color red="1" green="0.17647058823529413" blue="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.1764705882" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

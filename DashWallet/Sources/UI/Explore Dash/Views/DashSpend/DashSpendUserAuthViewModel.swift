@@ -19,17 +19,17 @@ import Foundation
 import Combine
 
 @MainActor
-class CTXSpendUserAuthViewModel: ObservableObject {
+class DashSpendUserAuthViewModel: ObservableObject {
     @Published var input = ""
     @Published var isLoading = false
     @Published var showError = false
     @Published var errorMessage = ""
-    @Published var screenType: CTXSpendUserAuthType = .createAccount
+    @Published var screenType: DashSpendUserAuthType = .createAccount
     @Published var isUserSignedIn: Bool = false
     
     private let service = CTXSpendService.shared
     
-    func setup(screenType: CTXSpendUserAuthType) {
+    func setup(screenType: DashSpendUserAuthType) {
         self.isUserSignedIn = service.isUserSignedIn
         self.screenType = screenType
     }
@@ -68,7 +68,7 @@ class CTXSpendUserAuthViewModel: ObservableObject {
         }
     }
     
-    func isInputValid(authType: CTXSpendUserAuthType) -> Bool {
+    func isInputValid(authType: DashSpendUserAuthType) -> Bool {
         if authType == .otp {
             return !input.isEmpty
         }

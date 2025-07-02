@@ -18,7 +18,7 @@
 import SwiftUI
 import Combine
 
-enum CTXSpendUserAuthType {
+enum DashSpendUserAuthType {
     case createAccount
     case signIn
     case otp
@@ -55,13 +55,13 @@ enum CTXSpendUserAuthType {
     }
 }
 
-struct CTXSpendUserAuthScreen: View {
+struct DashSpendUserAuthScreen: View {
     @Environment(\.presentationMode) private var presentationMode
-    @StateObject private var viewModel = CTXSpendUserAuthViewModel()
+    @StateObject private var viewModel = DashSpendUserAuthViewModel()
     @FocusState private var isTextFieldFocused: Bool
     @State private var navigateToOtp: Bool = false
     
-    let authType: CTXSpendUserAuthType
+    let authType: DashSpendUserAuthType
     let onAuthSuccess: () -> Void
     
     var body: some View {
@@ -172,7 +172,7 @@ struct CTXSpendUserAuthScreen: View {
             }
             
             NavigationLink(
-                destination: CTXSpendUserAuthScreen(
+                destination: DashSpendUserAuthScreen(
                     authType: .otp,
                     onAuthSuccess: onAuthSuccess
                 ).navigationBarHidden(true),

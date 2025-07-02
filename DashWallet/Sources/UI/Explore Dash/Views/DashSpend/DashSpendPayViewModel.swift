@@ -25,6 +25,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private var cancellableBag = Set<AnyCancellable>()
     private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: defaultCurrency)
     private let ctxSpendService = CTXSpendService.shared
+    private let giftCardProvider: GiftCardProvider
     private let customIconProvider = CustomIconMetadataProvider.shared
     private let txMetadataDao = TransactionMetadataDAOImpl.shared
     private let sendCoinsService = SendCoinsService()
@@ -105,7 +106,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     var maximumLimitMessage: String { String.localizedStringWithFormat(NSLocalizedString("Max: %@", comment: "DashSpend"), fiatFormatter.string(for: maximumAmount) ?? "0.0" ) }
     var isMixing: Bool { CoinJoinService.shared.mixingState.isInProgress }
     
-    init(merchant: ExplorePointOfUse) {
+    init(merchant: ExplorePointOfUse, provider: GiftCardProvider = .ctx) {
+        self.giftCardProvider = provider
         merchantTitle = merchant.name
         merchantIconUrl = merchant.logoLocation ?? ""
         merchantUrl = merchant.website
@@ -123,7 +125,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         super.init()
         
         // Initialize with current sign-in state
-        isUserSignedIn = ctxSpendService.isUserSignedIn
+        isUserSignedIn = provider.isUserSignedIn()
         
         // Set up network status change handler
         networkStatusDidChange = { [weak self] status in
@@ -185,7 +187,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
     
     func contactCTXSupport() {
-        let subject = "CTX Issue: Spending Limit Problem"
+        let subject = "\(giftCardProvider.displayName) Issue: Spending Limit Problem"
         
         var body = "Merchant details\n"
         body += "name: \(merchantTitle)\n"
@@ -205,7 +207,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         body += "Platform: iOS\n"
         body += "App version: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown")\n"
         
-        if let emailURL = URL(string: "mailto:\(CTXConstants.supportEmail)?subject=\(subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")&body=\(body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")") {
+        if let emailURL = URL(string: "mailto:\(giftCardProvider.supportEmail)?subject=\(subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")&body=\(body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")") {
             UIApplication.shared.open(emailURL)
         }
     }
@@ -253,7 +255,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     // MARK: - CTX Integration
     
     private func updateMerchantInfo() async {
-        guard !merchantId.isEmpty, ctxSpendService.isUserSignedIn else { return }
+        guard !merchantId.isEmpty, giftCardProvider.isUserSignedIn() else { return }
         
         do {
             let merchantInfo = try await ctxSpendService.getMerchant(merchantId: merchantId)
@@ -277,7 +279,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
     
     private func purchaseGiftCardAPI() async throws -> GiftCardResponse {
-        guard !merchantId.isEmpty, ctxSpendService.isUserSignedIn else {
+        guard !merchantId.isEmpty, giftCardProvider.isUserSignedIn() else {
             DSLogger.log("Purchase gift card failed: User not signed in or merchant ID is empty")
             throw CTXSpendError.unauthorized
         }

@@ -32,8 +32,8 @@ class PointOfUseDetailsView: UIView, SyncingActivityMonitorObserver, NetworkReac
     
     public var payWithDashHandler: (()->())?
     public var sellDashHandler: (()->())?
-    public var dashSpendAuthHandler: (()->())?
-    public var buyGiftCardHandler: (()->())?
+    public var dashSpendAuthHandler: ((GiftCardProvider)->())?
+    public var buyGiftCardHandler: ((GiftCardProvider)->())?
     public var showAllLocationsActionBlock: (() -> ())?
 
     var containerView: UIStackView!
@@ -47,6 +47,8 @@ class PointOfUseDetailsView: UIView, SyncingActivityMonitorObserver, NetworkReac
     var subLabel: UILabel!
     var addressLabel: UILabel!
     private var payButton: ActionButton!
+    private var piggyCardsCheckbox: UISwitch?
+    private var selectedProvider: GiftCardProvider = .piggyCards
 
     internal let merchant: ExplorePointOfUse
     internal var isShowAllHidden: Bool
@@ -155,10 +157,10 @@ class PointOfUseDetailsView: UIView, SyncingActivityMonitorObserver, NetworkReac
            UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url)
         } else if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
-            if ctxSpendService.isUserSignedIn {
-                buyGiftCardHandler?()
+            if selectedProvider.isUserSignedIn() {
+                buyGiftCardHandler?(selectedProvider)
             } else {
-                dashSpendAuthHandler?()
+                dashSpendAuthHandler?(selectedProvider)
             }
         } else {
             payWithDashHandler?()
@@ -340,6 +342,11 @@ extension PointOfUseDetailsView {
 
     @objc
     internal func configureBottomButton() {
+        // Add PiggyCards checkbox for CTXSpend merchants (temporary UI element)
+        if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
+            configurePiggyCardsCheckbox()
+        }
+        
         payButton = ActionButton()
         payButton.translatesAutoresizingMaskIntoConstraints = false
         payButton.addTarget(self, action: #selector(payAction), for: .touchUpInside)
@@ -378,6 +385,36 @@ extension PointOfUseDetailsView {
         
         // Set initial button state
         updateButtonState()
+    }
+    
+    private func configurePiggyCardsCheckbox() {
+        // TODO: This is a temporary UI element for testing PiggyCards
+        // Change to false to enable service selection
+        
+        let checkboxContainer = UIStackView()
+        checkboxContainer.axis = .horizontal
+        checkboxContainer.spacing = 8
+        checkboxContainer.alignment = .center
+        
+        piggyCardsCheckbox = UISwitch()
+        piggyCardsCheckbox?.isOn = true
+        piggyCardsCheckbox?.addTarget(self, action: #selector(piggyCardsCheckboxTapped), for: .touchUpInside)
+        
+        let label = UILabel()
+        label.text = "Open PiggyCards"
+        label.font = .dw_font(forTextStyle: .footnote)
+        label.textColor = .dw_secondaryText()
+        
+        checkboxContainer.addArrangedSubview(piggyCardsCheckbox!)
+        checkboxContainer.addArrangedSubview(label)
+        checkboxContainer.addArrangedSubview(UIView()) // Spacer
+        
+        containerView.addArrangedSubview(checkboxContainer)
+    }
+    
+    @objc
+    private func piggyCardsCheckboxTapped() {
+        selectedProvider = piggyCardsCheckbox?.isOn == true ? .piggyCards : .ctx
     }
     
     private static func getEmailText() -> String {

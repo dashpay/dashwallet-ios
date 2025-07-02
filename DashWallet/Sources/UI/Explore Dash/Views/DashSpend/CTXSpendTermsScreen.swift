@@ -17,13 +17,14 @@
 
 import SwiftUI
 
-struct CTXSpendTermsScreen: View {
+struct DashSpendTermsScreen: View {
     @Environment(\.presentationMode) private var presentationMode
     @State private var isTermsAccepted: Bool = false
     @State private var hasViewedTerms: Bool = false
     @State private var shouldShakeLink: Bool = false
     @State private var navigateToCreateAccount: Bool = false
     
+    let provider: GiftCardProvider
     let onAuthSuccess: () -> Void
     
     var body: some View {
@@ -53,7 +54,7 @@ struct CTXSpendTermsScreen: View {
                         label: NSLocalizedString("Terms & conditions", comment: "Terms & conditions"),
                         labelIcon: .custom("external.link"),
                         linkAction: {
-                            UIApplication.shared.open(URL(string: CTXConstants.ctxGiftCardAgreementUrl)!, options: [:], completionHandler: nil)
+                            UIApplication.shared.open(URL(string: provider.termsUrl)!, options: [:], completionHandler: nil)
                             hasViewedTerms = true
                             shouldShakeLink = false
                         },
@@ -116,7 +117,7 @@ struct CTXSpendTermsScreen: View {
         .edgesIgnoringSafeArea(.top)
         
         NavigationLink(
-            destination: CTXSpendUserAuthScreen(
+            destination: DashSpendUserAuthScreen(
                 authType: .createAccount,
                 onAuthSuccess: onAuthSuccess
             ).navigationBarHidden(true),
