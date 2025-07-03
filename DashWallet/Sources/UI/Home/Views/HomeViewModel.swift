@@ -385,7 +385,7 @@ extension HomeViewModel {
     
     private func refreshCoinJoinItem() {
         self.coinJoinItem = CoinJoinMenuItemModel(
-            title: NSLocalizedString(self.coinJoinService.mixingState == .finishing ? "Mixing Finishing…" : "Mixing", comment: "CoinJoin"),
+            title: self.coinJoinService.mixingState == .finishing ? NSLocalizedString("Mixing Finishing…", comment: "CoinJoin") : NSLocalizedString("Mixing", comment: "CoinJoin"),
             isOn: coinJoinService.mixingState.isInProgress,
             state: coinJoinService.mixingState,
             progress: coinJoinService.progress.progress,

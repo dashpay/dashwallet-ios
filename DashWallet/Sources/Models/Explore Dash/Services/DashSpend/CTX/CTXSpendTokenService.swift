@@ -72,7 +72,7 @@ class CTXSpendTokenService {
                 // Clear tokens on refresh failure
                 tokenProvider.clearTokensOnRefreshFailure()
                 
-                throw CTXSpendError.tokenRefreshFailed
+                throw DashSpendError.tokenRefreshFailed
             }
         }
         

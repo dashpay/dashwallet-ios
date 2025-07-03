@@ -15,10 +15,15 @@
 //  limitations under the License.
 //
 
+import Combine
+
 protocol DashSpendRepository: ObservableObject {
     var isUserSignedIn: Bool { get }
-    var userEmail: String? { get }
+    var isUserSignedInPublisher: AnyPublisher<Bool, Never> { get }
+    var userEmailPublisher: AnyPublisher<String?, Never> { get }
     
-    func signIn(email: String) async throws -> Bool
+    func signUp(email: String) async throws -> Bool
+    func login(email: String) async throws -> Bool
+    func verifyEmail(code: String) async throws -> Bool
     func logout()
 }

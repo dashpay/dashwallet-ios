@@ -21,20 +21,26 @@ import Combine
 @MainActor
 class DashSpendUserAuthViewModel: ObservableObject {
     @Published var input = ""
-    @Published var isLoading = false
-    @Published var showError = false
-    @Published var errorMessage = ""
-    @Published var screenType: DashSpendUserAuthType = .createAccount
-    @Published var isUserSignedIn: Bool = false
+    @Published private(set) var isLoading = false
+    @Published private(set) var showError = false
+    @Published private(set) var errorMessage = ""
+    @Published var screenType: DashSpendUserAuthType
+    @Published private(set) var isUserSignedIn: Bool = false
+    private let provider: GiftCardProvider
     
-    private let service = CTXSpendRepository.shared
+    private let repositories: [GiftCardProvider: any DashSpendRepository] = [
+        GiftCardProvider.ctx : CTXSpendRepository.shared,
+        GiftCardProvider.piggyCards : PiggyCardsRepository.shared
+    ]
     
-    func setup(screenType: DashSpendUserAuthType) {
-        self.isUserSignedIn = service.isUserSignedIn
+    init(provider: GiftCardProvider, screenType: DashSpendUserAuthType) {
         self.screenType = screenType
+        self.provider = provider
+        self.isUserSignedIn = repositories[provider]?.isUserSignedIn == true
     }
     
     func onContinue() {
+        guard let repository = repositories[provider] else { return }
         isLoading = true
         showError = false
         
@@ -42,26 +48,22 @@ class DashSpendUserAuthViewModel: ObservableObject {
             do {
                 switch screenType {
                 case .createAccount, .signIn:
-                    if try await service.signIn(email: input) {
+                    if try await repository.login(email: input) {
                         screenType = .otp
                     }
                 case .otp:
-                    if try await service.verifyEmail(code: input) {
+                    if try await repository.verifyEmail(code: input) {
                         isUserSignedIn = true
                     }
                 }
-            } catch CTXSpendError.invalidCode {
-                showError = true
-                errorMessage = NSLocalizedString("The code is incorrect. Please check and try again!", comment: "DashSpend")
-            } catch CTXSpendError.networkError {
-                showError = true
-                errorMessage = NSLocalizedString("Please check your network connection", comment: "")
-            } catch CTXSpendError.unauthorized {
-                showError = true
-                errorMessage = NSLocalizedString("Authorization error. Please try logging in again.", comment: "DashSpend")
             } catch {
                 showError = true
-                errorMessage = NSLocalizedString("An error occurred", comment: "")
+                
+                if let dashSpendError = error as? DashSpendError {
+                    errorMessage = dashSpendError.errorDescription ?? NSLocalizedString("An error occurred", comment: "")
+                } else {
+                    errorMessage = error.localizedDescription.isEmpty ? NSLocalizedString("An error occurred", comment: "") : error.localizedDescription
+                }
             }
             
             isLoading = false
@@ -81,7 +83,7 @@ class DashSpendUserAuthViewModel: ObservableObject {
     }
     
     func logout() {
-        service.logout()
+        repositories[provider]?.logout()
     }
 }
 

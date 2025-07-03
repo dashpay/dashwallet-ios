@@ -93,7 +93,7 @@ public struct VerifyIdentityScreen: View {
                     .padding(.top, 1)
                 
                 TextInput(
-                    label: NSLocalizedString("Past link here", comment: "Usernames"),
+                    label: NSLocalizedString("Paste link here", comment: "Usernames"),
                     text: $link,
                     isError: isInputError
                 ).padding(.top, 7)

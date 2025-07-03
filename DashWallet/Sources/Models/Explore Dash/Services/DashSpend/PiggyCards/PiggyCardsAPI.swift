@@ -19,8 +19,6 @@ import Foundation
 import Moya
 
 final class PiggyCardsAPI: HTTPClient<PiggyCardsEndpoint> {
-    weak var piggyCardsTokenProvider: PiggyCardsTokenProvider!
-    
     override func request(_ target: PiggyCardsEndpoint) async throws {
         do {
             try checkAccessTokenIfNeeded(for: target)
@@ -40,7 +38,7 @@ final class PiggyCardsAPI: HTTPClient<PiggyCardsEndpoint> {
             return try await super.request(target)
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 400 {
             if target.path.contains("/verify-otp") {
-                throw PiggyCardsError.invalidOtp
+                throw DashSpendError.invalidCode
             }
             
             throw HTTPClientError.statusCode(r)
@@ -49,36 +47,29 @@ final class PiggyCardsAPI: HTTPClient<PiggyCardsEndpoint> {
     
     static let shared = PiggyCardsAPI()
     
-    static func initialize(with tokenProvider: PiggyCardsTokenProvider) {
-        shared.initialize(with: tokenProvider)
+    static func initialize() {
+        shared.initialize()
     }
     
-    private func initialize(with tokenProvider: PiggyCardsTokenProvider) {
-        accessTokenProvider = { [weak tokenProvider] in
-            tokenProvider?.accessToken
+    private func initialize() {
+        accessTokenProvider = {
+            PiggyCardsTokenService.shared.accessToken
         }
-        self.piggyCardsTokenProvider = tokenProvider
     }
     
     private func handleUnauthorizedError(for target: PiggyCardsEndpoint) async throws {
         DSLogger.log("PiggyCards: Got 401, attempting to refresh access token")
-        
-        if let _ = piggyCardsTokenProvider?.refreshToken {
-            try await PiggyCardsTokenService.shared.refreshAccessToken()
-        } else {
-            DSLogger.log("PiggyCards: No refresh token available, user needs to log in")
-            throw PiggyCardsError.unauthorized
-        }
+        try await PiggyCardsTokenService.shared.refreshAccessToken()
     }
     
     private func checkAccessTokenIfNeeded(for target: PiggyCardsEndpoint) throws {
         switch target {
-        case .signup, .login, .verifyOtp, .refreshToken:
+        case .signup, .login, .verifyOtp:
             return
         default:
-            if piggyCardsTokenProvider?.accessToken == nil {
+            if PiggyCardsTokenService.shared.accessToken == nil {
                 DSLogger.log("PiggyCards: No access token available for protected endpoint")
-                throw PiggyCardsError.unauthorized
+                throw DashSpendError.unauthorized
             }
         }
     }

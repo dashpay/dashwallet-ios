@@ -16,8 +16,9 @@
 //
 
 class PiggyCardsConstants {
-    // TODO: Update with actual PiggyCards API URL
-    static let baseURI = "https://api.piggy.cards/v1/"
+    // TODO: prod "https://api.piggy.cards/dash/v1/"
+    static let baseURI = "https://apidev.piggy.cards/dash/v1/"
+    
     static let termsAndConditionsUrl = "https://piggy.cards/index.php?route=information/information&information_id=5"
     // TODO: Confirm correct support email
     static let supportEmail = "support@piggy.cards"

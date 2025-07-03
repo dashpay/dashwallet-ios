@@ -254,7 +254,7 @@ extension PointOfUseDetailsViewController {
         do {
             try await CTXSpendRepository.shared.refreshToken()
             return true
-        } catch CTXSpendError.tokenRefreshFailed {
+        } catch DashSpendError.tokenRefreshFailed {
             await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: NSLocalizedString("Your session expired", comment: "DashSpend"), textBlock1: NSLocalizedString("It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.", comment: "DashSpend"), positiveButtonText: NSLocalizedString("Dismiss", comment: ""))
             return false
         }

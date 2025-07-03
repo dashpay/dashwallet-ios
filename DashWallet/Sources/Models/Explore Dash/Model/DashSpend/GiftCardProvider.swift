@@ -56,13 +56,4 @@ enum GiftCardProvider: CaseIterable {
             return PiggyCardsConstants.supportEmail
         }
     }
-    
-    func isUserSignedIn() -> Bool {
-        let repository = DashSpendRepositoryFactory.shared.create(provider: self)
-        return repository.isUserSignedIn
-    }
-    
-    func getRepository() -> any DashSpendRepository {
-        return DashSpendRepositoryFactory.shared.create(provider: self)
-    }
 }

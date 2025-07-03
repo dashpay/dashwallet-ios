@@ -57,13 +57,20 @@ enum DashSpendUserAuthType {
 
 struct DashSpendUserAuthScreen: View {
     @Environment(\.presentationMode) private var presentationMode
-    @StateObject private var viewModel = DashSpendUserAuthViewModel()
+    @ObservedObject private var viewModel: DashSpendUserAuthViewModel
     @FocusState private var isTextFieldFocused: Bool
     @State private var navigateToOtp: Bool = false
     
     let authType: DashSpendUserAuthType
     let provider: GiftCardProvider
     let onAuthSuccess: () -> Void
+    
+    init(authType: DashSpendUserAuthType, provider: GiftCardProvider, onAuthSuccess: @escaping () -> Void) {
+        self.authType = authType
+        self.provider = provider
+        self.onAuthSuccess = onAuthSuccess
+        self.viewModel = DashSpendUserAuthViewModel(provider: provider, screenType: authType)
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -188,7 +195,7 @@ struct DashSpendUserAuthScreen: View {
         .navigationBarBackButtonHidden(true)
         .edgesIgnoringSafeArea(.top)
         .onAppear {
-            viewModel.setup(screenType: authType)
+            viewModel.screenType = authType
             
             if authType != .otp {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

@@ -23,10 +23,9 @@ private let kBaseURL = URL(string: PiggyCardsConstants.baseURI)!
 // MARK: - PiggyCardsEndpoint
 
 public enum PiggyCardsEndpoint {
-    case signup(firstName: String, lastName: String, email: String, country: String)
-    case login(email: String)
+    case signup(firstName: String, lastName: String, email: String, country: String, state: String?)
+    case login(userId: String, password: String)
     case verifyOtp(email: String, otp: String)
-    case refreshToken(refreshToken: String)
     case purchaseGiftCard(PiggyCardsPurchaseRequest)
     case getMerchant(String)
     case getGiftCard(String)
@@ -37,7 +36,7 @@ public enum PiggyCardsEndpoint {
 extension PiggyCardsEndpoint: TargetType, AccessTokenAuthorizable {
     public var authorizationType: Moya.AuthorizationType? {
         switch self {
-        case .signup, .login, .verifyOtp, .refreshToken:
+        case .signup, .login, .verifyOtp:
             return nil
         default:
             return .bearer
@@ -50,19 +49,18 @@ extension PiggyCardsEndpoint: TargetType, AccessTokenAuthorizable {
     
     public var path: String {
         switch self {
-        case .signup: return "auth/signup"
-        case .login: return "auth/login"
-        case .verifyOtp: return "auth/verify-otp"
-        case .refreshToken: return "auth/refresh"
-        case .purchaseGiftCard: return "gift-cards/purchase"
+        case .signup: return "signup"
+        case .login: return "login"
+        case .verifyOtp: return "verify-otp"
+        case .purchaseGiftCard: return "orders"
         case .getMerchant(let merchantId): return "merchants/\(merchantId)"
-        case .getGiftCard(let txid): return "gift-cards/\(txid)"
+        case .getGiftCard(let txid): return "gift-cards/\(txid)" // TODO: no such path
         }
     }
     
     public var method: Moya.Method {
         switch self {
-        case .signup, .login, .verifyOtp, .refreshToken, .purchaseGiftCard:
+        case .signup, .login, .verifyOtp, .purchaseGiftCard:
             return .post
         default:
             return .get
@@ -71,17 +69,15 @@ extension PiggyCardsEndpoint: TargetType, AccessTokenAuthorizable {
     
     public var task: Moya.Task {
         switch self {
-        case .signup(let firstName, let lastName, let email, let country):
-            let signupRequest = PiggyCardsSignupRequest(firstName: firstName, lastName: lastName, email: email, country: country)
+        case .signup(let firstName, let lastName, let email, let country, let state):
+            let signupRequest = PiggyCardsSignupRequest(firstName: firstName, lastName: lastName, email: email, country: country, state: state)
             return .requestJSONEncodable(signupRequest)
-        case .login(let email):
-            let loginRequest = PiggyCardsLoginRequest(email: email)
+        case .login(let userId, let password):
+            let loginRequest = PiggyCardsLoginRequest(userId: userId, password: password)
             return .requestJSONEncodable(loginRequest)
         case .verifyOtp(let email, let otp):
             let verifyRequest = PiggyCardsVerifyOtpRequest(email: email, otp: otp)
             return .requestJSONEncodable(verifyRequest)
-        case .refreshToken(let refreshToken):
-            return .requestParameters(parameters: ["refresh_token": refreshToken], encoding: JSONEncoding.default)
         case .purchaseGiftCard(let request):
             return .requestJSONEncodable(request)
         default:

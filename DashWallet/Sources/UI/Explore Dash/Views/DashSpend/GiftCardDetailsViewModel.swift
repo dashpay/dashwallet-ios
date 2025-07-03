@@ -208,7 +208,7 @@ class GiftCardDetailsViewModel: ObservableObject {
                 
             case "rejected":
                 await MainActor.run {
-                    self.uiState.loadingError = CTXSpendError.customError(
+                    self.uiState.loadingError = DashSpendError.customError(
                         NSLocalizedString("Gift card purchase was rejected", comment: "")
                     )
                 }

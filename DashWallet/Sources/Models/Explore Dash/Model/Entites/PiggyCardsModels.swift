@@ -24,22 +24,41 @@ struct PiggyCardsSignupRequest: Codable {
     let lastName: String
     let email: String
     let country: String
+    let state: String?
     
     enum CodingKeys: String, CodingKey {
         case firstName = "first_name"
         case lastName = "last_name"
         case email
         case country
+        case state
     }
 }
 
 struct PiggyCardsLoginRequest: Codable {
-    let email: String
+    let userId: String
+    let password: String
+}
+
+struct PiggyCardsLoginResponse: Codable {
+    let accessToken: String
+    let tokenType: String
+    let expiresIn: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case accessToken = "access_token"
+        case tokenType = "token_type"
+        case expiresIn = "expires_in"
+    }
 }
 
 struct PiggyCardsVerifyOtpRequest: Codable {
     let email: String
     let otp: String
+}
+
+struct PiggyCardsVerifyOtpResponse: Codable {
+    let generatedPassword: String
 }
 
 public struct PiggyCardsPurchaseRequest: Codable {
@@ -59,28 +78,10 @@ public struct PiggyCardsPurchaseRequest: Codable {
 // MARK: - Response Models
 
 struct PiggyCardsSignupResponse: Codable {
-    let success: Bool
-    let message: String?
     let userId: String?
     
     enum CodingKeys: String, CodingKey {
-        case success
-        case message
-        case userId = "user_id"
-    }
-}
-
-struct PiggyCardsAuthResponse: Codable {
-    let accessToken: String
-    let refreshToken: String
-    let tokenType: String
-    let expiresIn: Int
-    
-    enum CodingKeys: String, CodingKey {
-        case accessToken = "access_token"
-        case refreshToken = "refresh_token"
-        case tokenType = "token_type"
-        case expiresIn = "expires_in"
+        case userId = "userId"
     }
 }
 
@@ -154,57 +155,4 @@ struct PiggyCardsAPIError: Codable {
 struct PiggyCardsAPIErrorDetail: Codable {
     let code: String
     let message: String
-}
-
-enum PiggyCardsError: LocalizedError {
-    case networkError
-    case unauthorized
-    case invalidCredentials
-    case invalidOtp
-    case tokenRefreshFailed
-    case insufficientFunds
-    case invalidMerchant
-    case merchantUnavailable
-    case invalidAmount
-    case transactionRejected
-    case purchaseLimitExceeded
-    case purchaseLimitBelowMinimum
-    case serverError
-    case unknown
-    case customError(String)
-    
-    var errorDescription: String? {
-        switch self {
-        case .networkError:
-            return NSLocalizedString("Network connection error. Please try again.", comment: "")
-        case .unauthorized:
-            return NSLocalizedString("You need to log in to continue.", comment: "")
-        case .invalidCredentials:
-            return NSLocalizedString("Invalid email or password.", comment: "")
-        case .invalidOtp:
-            return NSLocalizedString("Invalid verification code. Please try again.", comment: "")
-        case .tokenRefreshFailed:
-            return NSLocalizedString("Your session expired. Please log in again.", comment: "")
-        case .insufficientFunds:
-            return NSLocalizedString("Insufficient funds for this purchase.", comment: "")
-        case .invalidMerchant:
-            return NSLocalizedString("This merchant is not available.", comment: "")
-        case .merchantUnavailable:
-            return NSLocalizedString("This merchant is temporarily unavailable.", comment: "")
-        case .invalidAmount:
-            return NSLocalizedString("Invalid purchase amount.", comment: "")
-        case .transactionRejected:
-            return NSLocalizedString("Transaction was rejected. Please try again.", comment: "")
-        case .purchaseLimitExceeded:
-            return NSLocalizedString("Purchase amount exceeds the limit for this gift card.", comment: "")
-        case .purchaseLimitBelowMinimum:
-            return NSLocalizedString("Purchase amount is below the minimum for this gift card.", comment: "")
-        case .serverError:
-            return NSLocalizedString("Server error. Please try again later.", comment: "")
-        case .unknown:
-            return NSLocalizedString("An unknown error occurred.", comment: "")
-        case .customError(let message):
-            return message
-        }
-    }
 }

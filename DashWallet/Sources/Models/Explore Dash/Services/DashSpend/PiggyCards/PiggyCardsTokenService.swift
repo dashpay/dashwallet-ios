@@ -17,21 +17,12 @@
 
 import Foundation
 
-protocol PiggyCardsTokenProvider: AnyObject {
-    var accessToken: String? { get }
-    var refreshToken: String? { get }
-    func updateTokens(accessToken: String, refreshToken: String)
-    func clearTokensOnRefreshFailure()
-}
-
 final class PiggyCardsTokenService {
     static let shared = PiggyCardsTokenService()
     private var isRefreshing = false
     
-    weak var tokenProvider: PiggyCardsTokenProvider?
-    
-    private init() {
-        self.tokenProvider = PiggyCardsRepository.shared
+    var accessToken: String? {
+        KeychainService.load(key: PiggyCardsRepository.Keys.accessToken)
     }
     
     func refreshAccessToken() async throws {
@@ -42,26 +33,33 @@ final class PiggyCardsTokenService {
         
         isRefreshing = true
         defer { isRefreshing = false }
-        
-        guard let refreshToken = tokenProvider?.refreshToken else {
-            DSLogger.log("PiggyCards: No refresh token available")
-            tokenProvider?.clearTokensOnRefreshFailure()
-            throw PiggyCardsError.tokenRefreshFailed
-        }
-        
+
         do {
-            let response: PiggyCardsAuthResponse = try await PiggyCardsAPI.shared.request(.refreshToken(refreshToken: refreshToken))
-            
-            tokenProvider?.updateTokens(
-                accessToken: response.accessToken,
-                refreshToken: response.refreshToken
-            )
-            
-            DSLogger.log("PiggyCards: Successfully refreshed access token")
+            if try await performAutoLogin() {
+                DSLogger.log("PiggyCards: Successfully refreshed access token")
+            } else {
+                DSLogger.log("PiggyCards: Failed to refresh token, accessToken is empty")
+                throw DashSpendError.tokenRefreshFailed
+            }
         } catch {
             DSLogger.log("PiggyCards: Failed to refresh token: \(error)")
-            tokenProvider?.clearTokensOnRefreshFailure()
-            throw PiggyCardsError.tokenRefreshFailed
+            throw DashSpendError.tokenRefreshFailed
+        }
+    }
+    
+    func performAutoLogin() async throws -> Bool {
+        let userId = KeychainService.load(key: PiggyCardsRepository.Keys.userId)
+        let password = KeychainService.load(key: PiggyCardsRepository.Keys.password)
+
+        if let userId = userId, let password = password {
+            let response: PiggyCardsLoginResponse = try await PiggyCardsAPI.shared.request(.login(userId: userId, password: password))
+            KeychainService.save(key: PiggyCardsRepository.Keys.accessToken, data: response.accessToken)
+            let expiresAt = Date().addingTimeInterval(TimeInterval(response.expiresIn))
+            UserDefaults.standard.set(expiresAt.timeIntervalSince1970, forKey: PiggyCardsRepository.Keys.tokenExpiresAt)
+
+            return !response.accessToken.isEmpty
+        } else {
+            return false
         }
     }
 }

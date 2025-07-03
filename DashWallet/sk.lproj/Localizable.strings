@@ -205,14 +205,11 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "Odoslaná suma";
 
-/* An error occurred */
+/* No comment provided by engineer. */
 "An error occurred" = "An error occurred";
 
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Intuitívny a známy zážitok vo všetkých vašich zariadeniach";
-
-/* No comment provided by engineer. */
-"An unknown error occurred." = "An unknown error occurred.";
 
 /* CTXSpend error */
 "An unknown error occurred. Please try again later." = "An unknown error occurred. Please try again later.";
@@ -273,9 +270,6 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Autentifikácia nie je k dispozícii";
-
-/* Authorization error message */
-"Authorization error. Please try logging in again." = "Authorization error. Please try logging in again.";
 
 /* Location Service Status */
 "Authorized" = "Autorizované";
@@ -1225,9 +1219,6 @@
 /* No comment provided by engineer. */
 "Insufficient funds" = "Nedostatok prostriedkov";
 
-/* No comment provided by engineer. */
-"Insufficient funds for this purchase." = "Insufficient funds for this purchase.";
-
 /* Send screen */
 "Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction." = "Nedostatočné zmiešané prostriedky. Počkajte, kým sa miešanie CoinJoin dokončí, alebo pre dokončenie tejto transakcie túto funkciu zakážte v nastaveniach .";
 
@@ -1278,9 +1269,6 @@
 
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Neplatná žiadosť o platbu:";
-
-/* No comment provided by engineer. */
-"Invalid purchase amount." = "Invalid purchase amount.";
 
 /* No comment provided by engineer. */
 "Invalid QR Code" = "Neplatný QR kód";
@@ -1628,9 +1616,6 @@
 /* No comment provided by engineer. */
 "Network" = "Sieť";
 
-/* No comment provided by engineer. */
-"Network connection error. Please try again." = "Network connection error. Please try again.";
-
 /* CTXSpend error */
 "Network error. Please check your connection and try again." = "Network error. Please check your connection and try again.";
 
@@ -1770,7 +1755,7 @@
 "Password" = "Heslo";
 
 /* Usernames */
-"Past link here" = "Past link here";
+"Paste link here" = "Paste link here";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "Vložte URL vášho obrázku";
@@ -1975,12 +1960,6 @@
 
 /* Coinbase/Buy Dash */
 "Purchase" = "Nákup";
-
-/* No comment provided by engineer. */
-"Purchase amount exceeds the limit for this gift card." = "Purchase amount exceeds the limit for this gift card.";
-
-/* No comment provided by engineer. */
-"Purchase amount is below the minimum for this gift card." = "Purchase amount is below the minimum for this gift card.";
 
 /* Alert title */
 "Purchase Failed" = "Nákup zlyhal";
@@ -2306,9 +2285,6 @@
 "Server error occurred. Please try again later." = "Server error occurred. Please try again later.";
 
 /* No comment provided by engineer. */
-"Server error. Please try again later." = "Server error. Please try again later.";
-
-/* No comment provided by engineer. */
 "Set a trusted node" = "Nastaviť dôveryhodný uzol";
 
 /* No comment provided by engineer. */
@@ -2545,12 +2521,6 @@
 /* DashSpend */
 "This merchant is currently unavailable. Please try again later or choose a different merchant." = "This merchant is currently unavailable. Please try again later or choose a different merchant.";
 
-/* No comment provided by engineer. */
-"This merchant is not available." = "This merchant is not available.";
-
-/* No comment provided by engineer. */
-"This merchant is temporarily unavailable." = "This merchant is temporarily unavailable.";
-
 /* DashSpend */
 "This merchant sells gift cards at fixed prices" = "Tento obchodník predáva darčekové karty za fixné ceny";
 
@@ -2619,9 +2589,6 @@
 
 /* No comment provided by engineer. */
 "Transaction id" = "Id transakcie";
-
-/* No comment provided by engineer. */
-"Transaction was rejected. Please try again." = "Transaction was rejected. Please try again.";
 
 /* A verb, button title. */
 "Transfer" = "Presun";
@@ -3079,9 +3046,6 @@
 /* Usernames */
 "You need to have more than %@ Dash to create a username" = "You need to have more than %@ Dash to create a username";
 
-/* No comment provided by engineer. */
-"You need to log in to continue." = "You need to log in to continue.";
-
 /* DashSpend */
 "You need to sign in to DashSpend to purchase gift cards." = "You need to sign in to DashSpend to purchase gift cards.";
 
@@ -3189,9 +3153,6 @@
 
 /* DashSpend */
 "Your session expired" = "Your session expired";
-
-/* No comment provided by engineer. */
-"Your session expired. Please log in again." = "Your session expired. Please log in again.";
 
 /* DashSpend */
 "Your transaction was rejected. Please try again or contact support if the problem persists." = "Your transaction was rejected. Please try again or contact support if the problem persists.";
