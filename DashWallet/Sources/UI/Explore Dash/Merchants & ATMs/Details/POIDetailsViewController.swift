@@ -19,9 +19,9 @@ import MapKit
 import UIKit
 import SwiftUI
 
-// MARK: - PointOfUseDetailsViewController
+// MARK: - POIDetailsViewController
 
-class PointOfUseDetailsViewController: UIViewController {
+class POIDetailsViewController: UIViewController {
     internal var pointOfUse: ExplorePointOfUse
     internal let isShowAllHidden: Bool
 
@@ -30,7 +30,7 @@ class PointOfUseDetailsViewController: UIViewController {
     @objc var onGiftCardPurchased: ((Data)->())?
 
     private var contentView: UIView!
-    private var detailsView: PointOfUseDetailsView!
+    private var detailsView: UIView!
     private var mapView: ExploreMapView!
 
     public init(pointOfUse: ExplorePointOfUse, isShowAllHidden: Bool = true) {
@@ -59,7 +59,7 @@ class PointOfUseDetailsViewController: UIViewController {
     }
 }
 
-extension PointOfUseDetailsViewController {
+extension POIDetailsViewController {
     @objc
     func payAction() {
         payWithDashHandler?()
@@ -128,22 +128,26 @@ extension PointOfUseDetailsViewController {
     }
 
     private func showDetailsView() {
-        detailsView = detailsView(for: pointOfUse)
-        detailsView.payWithDashHandler = payWithDashHandler
-        detailsView.sellDashHandler = sellDashHandler
-        detailsView.showAllLocationsActionBlock = { [weak self] in
-            guard let wSelf = self else { return }
+        guard let view = detailsView(for: pointOfUse) else { return }
+        detailsView = view
+        
+        if let hostingView = detailsView as? POIDetailsHostingView {
+            hostingView.payWithDashHandler = payWithDashHandler
+            hostingView.sellDashHandler = sellDashHandler
+            hostingView.showAllLocationsActionBlock = { [weak self] in
+                guard let wSelf = self else { return }
 
-            let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse)
-            vc.payWithDashHandler = wSelf.payWithDashHandler
-            vc.sellDashHandler = wSelf.sellDashHandler
-            wSelf.navigationController?.pushViewController(vc, animated: true)
-        }
-        detailsView.buyGiftCardHandler = { [weak self] provider in
-            self?.showDashSpendPayScreen(provider: provider)
-        }
-        detailsView.dashSpendAuthHandler = { [weak self] provider in
-            self?.showDashSpendLoginInfo(provider: provider)
+                let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse)
+                vc.payWithDashHandler = wSelf.payWithDashHandler
+                vc.sellDashHandler = wSelf.sellDashHandler
+                wSelf.navigationController?.pushViewController(vc, animated: true)
+            }
+            hostingView.buyGiftCardHandler = { [weak self] provider in
+                self?.showDashSpendPayScreen(provider: provider)
+            }
+            hostingView.dashSpendAuthHandler = { [weak self] provider in
+                self?.showDashSpendLoginInfo(provider: provider)
+            }
         }
         
         detailsView.translatesAutoresizingMaskIntoConstraints = false
@@ -164,13 +168,11 @@ extension PointOfUseDetailsViewController {
     }
 }
 
-extension PointOfUseDetailsViewController {
-    func detailsView(for pointOfUse: ExplorePointOfUse) -> PointOfUseDetailsView? {
+extension POIDetailsViewController {
+    func detailsView(for pointOfUse: ExplorePointOfUse) -> UIView? {
         switch pointOfUse.category {
-        case .merchant:
-            return PointOfUseDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
-        case .atm:
-            return AtmDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
+        case .merchant, .atm:
+            return POIDetailsHostingView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
         case .unknown:
             return nil
         }
@@ -180,7 +182,7 @@ extension PointOfUseDetailsViewController {
 
 // Mark: DashSpend
 
-extension PointOfUseDetailsViewController {
+extension POIDetailsViewController {
     // TODO: This is a temporary UI element for testing/selecting between services
     // Will be removed once service selection is finalized
     private func showDashSpendLoginInfo(provider: GiftCardProvider) {
@@ -208,7 +210,7 @@ extension PointOfUseDetailsViewController {
     private func showDashSpendTerms(provider: GiftCardProvider) {
         let hostingController = UIHostingController(
             rootView: DashSpendTermsScreen(provider: provider) {
-                self.navigationController?.popToViewController(ofType: PointOfUseDetailsViewController.self, animated: false)
+                self.navigationController?.popToViewController(ofType: POIDetailsViewController.self, animated: false)
                 self.showDashSpendPayScreen(provider: provider, justAuthenticated: true)
             }
         )

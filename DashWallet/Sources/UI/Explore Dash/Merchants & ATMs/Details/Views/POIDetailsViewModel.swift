@@ -16,9 +16,10 @@
 //
 
 import Combine
+import Foundation
 
 @MainActor
-class MerchantDetailsViewModel: ObservableObject {
+class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, NetworkReachabilityHandling {
     private var cancellableBag = Set<AnyCancellable>()
     
     private let repositories: [GiftCardProvider: any DashSpendRepository] = [
@@ -26,8 +27,16 @@ class MerchantDetailsViewModel: ObservableObject {
         GiftCardProvider.piggyCards : PiggyCardsRepository.shared
     ]
     
+    private let syncMonitor = SyncingActivityMonitor.shared
+    
+    // NetworkReachabilityHandling requirements
+    var networkStatusDidChange: ((NetworkStatus) -> ())?
+    var reachabilityObserver: Any!
+    
     @Published private(set) var userEmail: String? = nil
     @Published private(set) var isUserSignedIn = false
+    @Published private(set) var networkStatus: NetworkStatus = .offline
+    @Published private(set) var syncState: SyncingActivityMonitor.State = .unknown
     
     func observeDashSpendState(provider: GiftCardProvider?) {
         cancellableBag.removeAll()
@@ -48,5 +57,38 @@ class MerchantDetailsViewModel: ObservableObject {
     
     func logout(provider: GiftCardProvider) {
         repositories[provider]?.logout()
+    }
+    
+    init() {
+        setupObservers()
+    }
+    
+    deinit {
+        syncMonitor.remove(observer: self)
+        stopNetworkMonitoring()
+    }
+    
+    private func setupObservers() {
+        // Monitor network status
+        networkStatusDidChange = { [weak self] status in
+            Task { @MainActor in
+                self?.networkStatus = status
+            }
+        }
+        startNetworkMonitoring()
+        
+        // Monitor sync status
+        syncMonitor.add(observer: self)
+        syncState = syncMonitor.state
+    }
+    
+    // MARK: - SyncingActivityMonitorObserver
+    
+    nonisolated func syncingActivityMonitorProgressDidChange(_ progress: Double) { }
+    
+    nonisolated func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
+        Task { @MainActor in
+            self.syncState = state
+        }
     }
 }
