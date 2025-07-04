@@ -54,6 +54,8 @@ struct POIDetailsView: View {
                 actionButtonsView
             }
             
+            Spacer()
+            
             if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
                 piggyCardsToggle
             }

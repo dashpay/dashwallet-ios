@@ -30,7 +30,6 @@ class POIDetailsViewController: UIViewController {
     @objc var onGiftCardPurchased: ((Data)->())?
 
     private var contentView: UIView!
-    private var detailsView: UIView!
     private var mapView: ExploreMapView!
 
     public init(pointOfUse: ExplorePointOfUse, isShowAllHidden: Bool = true) {
@@ -47,7 +46,7 @@ class POIDetailsViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
-        mapView?.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: mapView.frame.height - detailsView.frame.height - 10,
+        mapView?.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: mapView.frame.height - contentView.frame.height - 10,
                                              right: 0)
     }
 
@@ -128,36 +127,37 @@ extension POIDetailsViewController {
     }
 
     private func showDetailsView() {
-        guard let view = detailsView(for: pointOfUse) else { return }
-        detailsView = view
+        if case .unknown = pointOfUse.category { return }
         
-        if let hostingView = detailsView as? POIDetailsHostingView {
-            hostingView.payWithDashHandler = payWithDashHandler
-            hostingView.sellDashHandler = sellDashHandler
-            hostingView.showAllLocationsActionBlock = { [weak self] in
-                guard let wSelf = self else { return }
+        var detailsView = POIDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
+        detailsView.payWithDashHandler = payWithDashHandler
+        detailsView.sellDashHandler = sellDashHandler
+        detailsView.showAllLocationsActionBlock = { [weak self] in
+            guard let wSelf = self else { return }
 
-                let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse)
-                vc.payWithDashHandler = wSelf.payWithDashHandler
-                vc.sellDashHandler = wSelf.sellDashHandler
-                wSelf.navigationController?.pushViewController(vc, animated: true)
-            }
-            hostingView.buyGiftCardHandler = { [weak self] provider in
-                self?.showDashSpendPayScreen(provider: provider)
-            }
-            hostingView.dashSpendAuthHandler = { [weak self] provider in
-                self?.showDashSpendLoginInfo(provider: provider)
-            }
+            let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse)
+            vc.payWithDashHandler = wSelf.payWithDashHandler
+            vc.sellDashHandler = wSelf.sellDashHandler
+            wSelf.navigationController?.pushViewController(vc, animated: true)
+        }
+        detailsView.buyGiftCardHandler = { [weak self] provider in
+            self?.showDashSpendPayScreen(provider: provider)
+        }
+        detailsView.dashSpendAuthHandler = { [weak self] provider in
+            self?.showDashSpendLoginInfo(provider: provider)
         }
         
-        detailsView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(detailsView)
-
+        let hostingController = UIHostingController(rootView: detailsView)
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        
+        contentView.addSubview(hostingController.view)
+        guard let hostingView = hostingController.view else { return }
+    
         NSLayoutConstraint.activate([
-            detailsView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            detailsView.bottomAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.bottomAnchor),
-            detailsView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            detailsView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            hostingView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            hostingView.bottomAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.bottomAnchor),
+            hostingView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            hostingView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
         ])
     }
 
@@ -165,17 +165,6 @@ extension POIDetailsViewController {
         showMapIfNeeded()
         prepareContentView()
         showDetailsView()
-    }
-}
-
-extension POIDetailsViewController {
-    func detailsView(for pointOfUse: ExplorePointOfUse) -> UIView? {
-        switch pointOfUse.category {
-        case .merchant, .atm:
-            return POIDetailsHostingView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
-        case .unknown:
-            return nil
-        }
     }
 }
 

@@ -777,9 +777,7 @@
 		75F3EF4C2E13D1670092A0D9 /* PiggyCardsTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F3EF4A2E13D1670092A0D9 /* PiggyCardsTokenService.swift */; };
 		75F3EF4E2E1553BF0092A0D9 /* DashSpendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F3EF4D2E1553BB0092A0D9 /* DashSpendError.swift */; };
 		75F3EF4F2E1553BF0092A0D9 /* DashSpendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F3EF4D2E1553BB0092A0D9 /* DashSpendError.swift */; };
-		75F3EF552E16AD060092A0D9 /* POIDetailsHostingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F3EF532E16AD060092A0D9 /* POIDetailsHostingView.swift */; };
 		75F3EF562E16AD060092A0D9 /* POIDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F3EF542E16AD060092A0D9 /* POIDetailsView.swift */; };
-		75F3EF572E16AD060092A0D9 /* POIDetailsHostingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F3EF532E16AD060092A0D9 /* POIDetailsHostingView.swift */; };
 		75F3EF582E16AD060092A0D9 /* POIDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F3EF542E16AD060092A0D9 /* POIDetailsView.swift */; };
 		75F3F00D2C48F819004470EA /* RootEditProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759063EC2C42687F002F2AA9 /* RootEditProfileViewController.swift */; };
 		75F51AAD2ABD8C800057B499 /* IntegrationViewController+Uphold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */; };
@@ -2643,7 +2641,6 @@
 		75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		75F3EF4A2E13D1670092A0D9 /* PiggyCardsTokenService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsTokenService.swift; sourceTree = "<group>"; };
 		75F3EF4D2E1553BB0092A0D9 /* DashSpendError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendError.swift; sourceTree = "<group>"; };
-		75F3EF532E16AD060092A0D9 /* POIDetailsHostingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POIDetailsHostingView.swift; sourceTree = "<group>"; };
 		75F3EF542E16AD060092A0D9 /* POIDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POIDetailsView.swift; sourceTree = "<group>"; };
 		75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Uphold.swift"; sourceTree = "<group>"; };
 		75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Coinbase.swift"; sourceTree = "<group>"; };
@@ -5862,7 +5859,6 @@
 		47AE8C1628C63F9400490F5E /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				75F3EF532E16AD060092A0D9 /* POIDetailsHostingView.swift */,
 				75F3EF542E16AD060092A0D9 /* POIDetailsView.swift */,
 				753CE9D72E12B6F9004A0A13 /* POIDetailsViewModel.swift */,
 			);
@@ -9176,7 +9172,6 @@
 				4751CAD92970509600F63AC4 /* ConvertCryptoOrderPreviewViews.swift in Sources */,
 				75E2F3CA2AA4D1B900C3B458 /* Topper.swift in Sources */,
 				2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */,
-				75F3EF552E16AD060092A0D9 /* POIDetailsHostingView.swift in Sources */,
 				75F3EF562E16AD060092A0D9 /* POIDetailsView.swift in Sources */,
 				757AEBD22E1131A1007BE8B4 /* PiggyCardsAPI.swift in Sources */,
 				757AEBD42E1131A1007BE8B4 /* PiggyCardsRepository.swift in Sources */,
@@ -9958,7 +9953,6 @@
 				C943B5062A40A54600AF23C5 /* UICollectionView+DWDPItemDequeue.m in Sources */,
 				C9D2C8A02A320AA000D15901 /* SendCoinsService.swift in Sources */,
 				C9D2C8A12A320AA000D15901 /* ShortcutAction.swift in Sources */,
-				75F3EF572E16AD060092A0D9 /* POIDetailsHostingView.swift in Sources */,
 				75F3EF582E16AD060092A0D9 /* POIDetailsView.swift in Sources */,
 				C956AF112A5B592E002FAB75 /* UIButton+Dash.swift in Sources */,
 				C9D2C8A22A320AA000D15901 /* DWModalChevronView.m in Sources */,
