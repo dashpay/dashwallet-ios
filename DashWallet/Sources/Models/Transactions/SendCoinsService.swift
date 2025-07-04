@@ -73,7 +73,7 @@ public final class SendCoinsService: NSObject {
     func payWithDashUrl(url paymentUrlString: String) async throws -> DSTransaction {
         // Create payment input from the URL
         guard let paymentUrl = URL(string: paymentUrlString) else {
-            throw CTXSpendError.paymentProcessingError("Invalid payment URL")
+            throw DashSpendError.paymentProcessingError("Invalid payment URL")
         }
         
         // Use the existing payment infrastructure
@@ -82,7 +82,7 @@ public final class SendCoinsService: NSObject {
         
         // If we have a BIP70 payment request URL, we need to fetch it first
         guard paymentInput.request?.r != nil else {
-            throw CTXSpendError.paymentProcessingError("Invalid payment request")
+            throw DashSpendError.paymentProcessingError("Invalid payment request")
         }
         
         return try await fetchAndProcessPaymentRequest(paymentInput: paymentInput)
@@ -116,7 +116,7 @@ public final class SendCoinsService: NSObject {
         } else if let transaction = transaction {
             continuation.resume(returning: transaction)
         } else {
-            continuation.resume(throwing: CTXSpendError.paymentProcessingError("No transaction returned"))
+            continuation.resume(throwing: DashSpendError.paymentProcessingError("No transaction returned"))
         }
     }
 }
@@ -140,7 +140,7 @@ extension SendCoinsService: DWPaymentProcessorDelegate {
     }
     
     public func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, details: DSPaymentProtocolDetails?, contactItem: DWDPBasicUserItem?) {
-        completePayment(transaction: nil, error: CTXSpendError.paymentProcessingError("Request is missing destination"))
+        completePayment(transaction: nil, error: DashSpendError.paymentProcessingError("Request is missing destination"))
     }
     
     public func paymentProcessor(_ processor: DWPaymentProcessor, requestUserActionTitle title: String?, message: String?, actionTitle: String, cancel cancelBlock: (() -> Void)?, actionBlock: (() -> Void)?) {

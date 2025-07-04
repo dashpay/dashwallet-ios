@@ -114,22 +114,13 @@ final class SyncingAlertContentView: UIView {
             let model = SyncingActivityMonitor.shared.model;
             let kind = model.kind;
             if kind == .headers {
-                subtitleLabel.text = localized(
-                    template: "header #%d of %d",
-                    model.lastTerminalBlockHeight,
-                    model.estimatedBlockHeight)
+                subtitleLabel.text = String(format: NSLocalizedString("header #%d of %d", comment: ""), model.lastTerminalBlockHeight, model.estimatedBlockHeight)
             } else if kind == .masternodes {
                 let masternodeListsReceived = model.masternodeListSyncInfo.retrievalQueueCount
                 let masternodeListsTotal = model.masternodeListSyncInfo.retrievalQueueMaxAmount
-                subtitleLabel.text = localized(
-                    template: "masternode list #%d of %d",
-                    masternodeListsReceived > masternodeListsTotal ? 0 : masternodeListsTotal - masternodeListsTotal,
-                    masternodeListsTotal)
+                subtitleLabel.text = String(format: NSLocalizedString("masternode list #%d of %d", comment: ""), masternodeListsReceived > masternodeListsTotal ? 0 : masternodeListsTotal - masternodeListsTotal, masternodeListsTotal)
             } else {
-                subtitleLabel.text = localized(
-                    template: "block #%d of %d",
-                    model.lastSyncBlockHeight,
-                    model.estimatedBlockHeight)
+                subtitleLabel.text = String(format: NSLocalizedString("block #%d of %d", comment: ""), model.lastSyncBlockHeight, model.estimatedBlockHeight)
             }
 
         case .syncFailed:
@@ -167,17 +158,6 @@ final class SyncingAlertContentView: UIView {
 
     func hideAnimation() {
         syncingImageView.layer.removeAllAnimations()
-    }
-    
-    private func localized(
-        template: String,
-        _ arguments: any CVarArg...
-    ) -> String {
-        String(
-            format: NSLocalizedString(
-                template,
-                comment: ""),
-            arguments)
     }
 
     private func addChainObserver(_ aName: NSNotification.Name?, _ aSelector: Selector) {

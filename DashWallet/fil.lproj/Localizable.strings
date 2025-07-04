@@ -205,7 +205,7 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "Halagang ipinadala";
 
-/* An error occurred */
+/* No comment provided by engineer. */
 "An error occurred" = "An error occurred";
 
 /* No comment provided by engineer. */
@@ -270,9 +270,6 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Hindi magagamit ang pagpapatunay";
-
-/* Authorization error message */
-"Authorization error. Please try logging in again." = "Authorization error. Please try logging in again.";
 
 /* Location Service Status */
 "Authorized" = "Awtorisado";
@@ -1127,7 +1124,7 @@
 "I accept" = "Tinatanggap Ko";
 
 /* Accept terms checkbox */
-"I accept DashSpend terms and conditions" = "Tinatanggap ko ang mga tuntunin at kundisyon ng DashSpend";
+"I accept %@ terms and conditions" = "I accept %@ terms and conditions";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Tinatanggap ko na mawawala ko ang aking mga barya kung sakaling hindi ko na maalala ang recovery phrase";
@@ -1260,6 +1257,9 @@
 
 /* CrowdNode Online */
 "Invalid Email" = "Hindi wastong email";
+
+/* No comment provided by engineer. */
+"Invalid email or password." = "Invalid email or password.";
 
 /* Invalid Amount Input */
 "Invalid Input" = "Di-wastong Input";
@@ -1755,7 +1755,7 @@
 "Password" = "Password";
 
 /* Usernames */
-"Past link here" = "Past link here";
+"Paste link here" = "Paste link here";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "I-paste ang URL ng iyong larawan";

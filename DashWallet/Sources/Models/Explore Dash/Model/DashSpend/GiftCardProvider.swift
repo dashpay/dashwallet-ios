@@ -53,17 +53,7 @@ enum GiftCardProvider: CaseIterable {
         case .ctx:
             return CTXConstants.supportEmail
         case .piggyCards:
-            return "" // TODO: Confirm correct support email
-        }
-    }
-    
-    func isUserSignedIn() -> Bool {
-        switch self {
-        case .ctx:
-            return CTXSpendService.shared.isUserSignedIn
-        case .piggyCards:
-            // TODO: Implement PiggyCards authentication
-            return false
+            return PiggyCardsConstants.supportEmail
         }
     }
 }

@@ -83,7 +83,7 @@ struct DashSpendTermsScreen: View {
                             }
                         }
                         
-                        Text(NSLocalizedString("I accept DashSpend terms and conditions", comment: "Accept terms checkbox"))
+                        Text(String(format: NSLocalizedString("I accept %@ terms and conditions", comment: "Accept terms checkbox"), provider.displayName))
                             .font(.system(size: 14))
                             .foregroundColor(.primaryText)
                             
@@ -117,10 +117,13 @@ struct DashSpendTermsScreen: View {
         .edgesIgnoringSafeArea(.top)
         
         NavigationLink(
-            destination: DashSpendUserAuthScreen(
-                authType: .createAccount,
-                onAuthSuccess: onAuthSuccess
-            ).navigationBarHidden(true),
+            destination: Group {
+                DashSpendUserAuthScreen(
+                    authType: .createAccount,
+                    provider: provider,
+                    onAuthSuccess: onAuthSuccess
+                ).navigationBarHidden(true)
+            },
             isActive: $navigateToCreateAccount
         ) {
             EmptyView()

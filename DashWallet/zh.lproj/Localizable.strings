@@ -205,7 +205,7 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "发送数额";
 
-/* An error occurred */
+/* No comment provided by engineer. */
 "An error occurred" = "An error occurred";
 
 /* No comment provided by engineer. */
@@ -270,9 +270,6 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "身份验证不可用";
-
-/* Authorization error message */
-"Authorization error. Please try logging in again." = "Authorization error. Please try logging in again.";
 
 /* Location Service Status */
 "Authorized" = "已授权";
@@ -1127,7 +1124,7 @@
 "I accept" = "我同意";
 
 /* Accept terms checkbox */
-"I accept DashSpend terms and conditions" = "我接受 DashSpend 条款和条件";
+"I accept %@ terms and conditions" = "I accept %@ terms and conditions";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "我同意如果我丢失助记词, 我会丢失我的Dash";
@@ -1260,6 +1257,9 @@
 
 /* CrowdNode Online */
 "Invalid Email" = "无效的电子邮箱";
+
+/* No comment provided by engineer. */
+"Invalid email or password." = "Invalid email or password.";
 
 /* Invalid Amount Input */
 "Invalid Input" = "无效输入";
@@ -1755,7 +1755,7 @@
 "Password" = "密码";
 
 /* Usernames */
-"Past link here" = "Past link here";
+"Paste link here" = "Paste link here";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "粘贴您的图片链接";

@@ -281,10 +281,10 @@ struct DashSpendPayScreen: View {
                 showConfirmationDialog = false
                 presentationMode.wrappedValue.dismiss()
                 onPurchaseSuccess?(txId)
-            } catch let error as CTXSpendError {
+            } catch let error as DashSpendError {
                 showConfirmationDialog = false
                 errorTitle = NSLocalizedString("Purchase Failed", comment: "DashSpend")
-                errorMessage = error.localizedDescription
+                errorMessage = error.errorDescription ?? NSLocalizedString("Error", comment: "")
                 
                 if case .customError = error {
                     showCustomErrorDialog = true
@@ -295,7 +295,7 @@ struct DashSpendPayScreen: View {
                 DSLogger.log("Gift card purchase failed with CTXSpendError: \(error)")
             } catch {
                 showConfirmationDialog = false
-                errorTitle = NSLocalizedString("Error", comment: "")
+                errorTitle = !error.localizedDescription.isEmpty ? error.localizedDescription : NSLocalizedString("Error", comment: "")
                 errorMessage = error.localizedDescription
                 showErrorDialog = true
                 

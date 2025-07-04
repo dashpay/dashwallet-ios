@@ -205,7 +205,7 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "Ilość wysłana";
 
-/* An error occurred */
+/* No comment provided by engineer. */
 "An error occurred" = "An error occurred";
 
 /* No comment provided by engineer. */
@@ -270,9 +270,6 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Autoryzacja jest niedostępna";
-
-/* Authorization error message */
-"Authorization error. Please try logging in again." = "Authorization error. Please try logging in again.";
 
 /* Location Service Status */
 "Authorized" = "Autoryzowany";
@@ -1127,7 +1124,7 @@
 "I accept" = "Akceptuję";
 
 /* Accept terms checkbox */
-"I accept DashSpend terms and conditions" = "Akceptuję regulamin DashSpend";
+"I accept %@ terms and conditions" = "I accept %@ terms and conditions";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Akceptuję to, że stracę wszystkie moje monety jeśli nie będę miał frazy do odzyskiwania porfela";
@@ -1260,6 +1257,9 @@
 
 /* CrowdNode Online */
 "Invalid Email" = "Email jest niepoprawny";
+
+/* No comment provided by engineer. */
+"Invalid email or password." = "Invalid email or password.";
 
 /* Invalid Amount Input */
 "Invalid Input" = "Niewłaściwe kwoty.";
@@ -1755,7 +1755,7 @@
 "Password" = "Hasło";
 
 /* Usernames */
-"Past link here" = "Past link here";
+"Paste link here" = "Paste link here";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "Wklej URL swojego obrazka ";
