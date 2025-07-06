@@ -392,9 +392,6 @@
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "この端末を初期化すると、この端末の資金にアクセスできなくなります。 端末の初期化は復元パスフレーズへのアクセス権がなくなり、PINコードも忘れてしまった場合にのみ実施して下さい。";
 
-/* Call */
-"Call" = "呼び出す";
-
 /* No comment provided by engineer. */
 "Cancel" = "キャンセルする";
 
@@ -741,9 +738,6 @@
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "端末が危険な状態です！！！\nどの脱獄アプリからでも、他のあらゆるアプリのキーチェーンのデータへアクセスが可能です（そしてあなたのDashを簡単に盗めます）。直ちにこのウォレットを完全削除して、安全な端末にて復元して下さい。";
 
-/* Direction */
-"Direction" = "操作方法";
-
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Coinbaseのアカウントを切断する";
 
@@ -960,6 +954,9 @@
 
 /* CrowdNode */
 "First minimum deposit" = "初回最低入金額";
+
+/* DashSpend */
+"Fixed amounts" = "Fixed amounts";
 
 /* Explore Dash: Filters */
 "Fixed denominated amounts" = "固定した指定通貨の金額";
@@ -1451,8 +1448,8 @@
 /* DashSpend */
 "Log in to your account" = "アカウントにログインする";
 
-/* Log out button */
-"Log Out" = "ログアウトする";
+/* No comment provided by engineer. */
+"Log out" = "Log out";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Upholdからログアウトする";
@@ -1836,6 +1833,9 @@
 "Personalize" = "カスタマイズする";
 
 /* No comment provided by engineer. */
+"Phone" = "Phone";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "お支払いにはPINが必要です";
 
 /* Coinbase/Buy Dash */
@@ -1945,6 +1945,9 @@
 
 /* Usernames */
 "Prove your identity" = "お客様の身元を証明する";
+
+/* No comment provided by engineer. */
+"Provider" = "Provider";
 
 /* No comment provided by engineer. */
 "Provider Address" = "プロバイダーアドレス";
@@ -2102,9 +2105,6 @@
 /* No comment provided by engineer. */
 "Save" = "保存";
 
-/* DashSpend */
-"Save %.2f%%" = "%.2f%%をセーブする";
-
 /* No comment provided by engineer. */
 "Save Changes" = "変更を保存する";
 
@@ -2192,6 +2192,9 @@
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "ギャラリーから選択する";
+
+/* No comment provided by engineer. */
+"Select gift card provider" = "Select gift card provider";
 
 /* CoinJoin */
 "Select mixing level" = "ミキシングレベルを選択する";
@@ -2304,6 +2307,9 @@
 
 /* Receive screen */
 "Share address" = "アドレスをシェアする";
+
+/* No comment provided by engineer. */
+"Show all locations (10)" = "Show all locations (10)";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "クリップボードのコンテンツを表示する";
@@ -2508,9 +2514,6 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "このアプリはオープンソースです: ";
-
-/* This ATM is located in the */
-"This ATM is located in the" = "このATMは";
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "この追加ステップは、お客様が本当に取引を行おうとしていることを証明するために行われます。";
@@ -2795,9 +2798,6 @@
 
 /* No comment provided by engineer. */
 "View All" = "全てを見る";
-
-/* View all locations */
-"View all locations" = "全ての拠点を見る";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "エクスプローラーで表示";

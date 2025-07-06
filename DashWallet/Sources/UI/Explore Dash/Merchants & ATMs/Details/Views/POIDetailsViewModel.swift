@@ -17,9 +17,10 @@
 
 import Combine
 import Foundation
+import CoreLocation
 
 @MainActor
-class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, NetworkReachabilityHandling {
+class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, NetworkReachabilityHandling, DWLocationObserver {
     private var cancellableBag = Set<AnyCancellable>()
     
     private let repositories: [GiftCardProvider: any DashSpendRepository] = [
@@ -28,6 +29,7 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
     ]
     
     private let syncMonitor = SyncingActivityMonitor.shared
+    private let merchant: ExplorePointOfUse
     
     // NetworkReachabilityHandling requirements
     var networkStatusDidChange: ((NetworkStatus) -> ())?
@@ -37,6 +39,18 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
     @Published private(set) var isUserSignedIn = false
     @Published private(set) var networkStatus: NetworkStatus = .offline
     @Published private(set) var syncState: SyncingActivityMonitor.State = .unknown
+    @Published private(set) var distanceText: String? = nil
+    @Published private(set) var supportedProviders: [GiftCardProvider: Bool] = [:]
+    @Published private(set) var selectedProvider: GiftCardProvider? = nil
+    @Published private(set) var showProviderPicker: Bool = false
+    
+    init(merchant: ExplorePointOfUse) {
+        self.merchant = merchant
+        
+        setupProviders()
+        setupObservers()
+        updateDistance()
+    }
     
     func observeDashSpendState(provider: GiftCardProvider?) {
         cancellableBag.removeAll()
@@ -55,17 +69,35 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
             .store(in: &cancellableBag)
     }
     
-    func logout(provider: GiftCardProvider) {
-        repositories[provider]?.logout()
+    func selectProvider(_ provider: GiftCardProvider) {
+        selectedProvider = provider
+        observeDashSpendState(provider: provider)
     }
     
-    init() {
-        setupObservers()
+    // MARK: - DWLocationObserver
+    
+    nonisolated func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation) {
+        Task { @MainActor in
+            self.updateDistance()
+        }
+    }
+    
+    nonisolated func locationManagerDidChangeCurrentReversedLocation(_ manager: DWLocationManager) { }
+    
+    nonisolated func locationManagerDidChangeServiceAvailability(_ manager: DWLocationManager) {
+        Task { @MainActor in
+            self.updateDistance()
+        }
+    }
+    
+    func logout(provider: GiftCardProvider) {
+        repositories[provider]?.logout()
     }
     
     deinit {
         syncMonitor.remove(observer: self)
         stopNetworkMonitoring()
+        DWLocationManager.shared.remove(observer: self)
     }
     
     private func setupObservers() {
@@ -80,6 +112,58 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
         // Monitor sync status
         syncMonitor.add(observer: self)
         syncState = syncMonitor.state
+        
+        // Monitor location changes
+        DWLocationManager.shared.add(observer: self)
+    }
+    
+    private func updateDistance() {
+        guard let currentLocation = DWLocationManager.shared.currentLocation,
+              DWLocationManager.shared.isAuthorized,
+              let latitude = merchant.latitude,
+              let longitude = merchant.longitude else {
+            distanceText = nil
+            return
+        }
+        
+        let distance = CLLocation(latitude: latitude, longitude: longitude)
+            .distance(from: currentLocation)
+        let measurement = Measurement(value: floor(distance), unit: UnitLength.meters)
+        distanceText = ExploreDash.distanceFormatter.string(from: measurement)
+    }
+    
+    private func setupProviders() {
+        // TODO: temp - randomly determine provider configuration
+        guard case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard else {
+            return
+        }
+        
+        let random = Int.random(in: 0...2)
+        
+        switch random {
+        case 0: // Multiple providers
+            supportedProviders[.ctx] = merchant.merchant?.denominationsType == DenominationType.Fixed.rawValue
+            supportedProviders[.piggyCards] = false
+            selectedProvider = .ctx
+            showProviderPicker = true
+        case 1: // Only CTX
+            supportedProviders[.ctx] = merchant.merchant?.denominationsType == DenominationType.Fixed.rawValue
+            selectedProvider = .ctx
+            showProviderPicker = false
+        case 2: // Only PiggyCards
+            supportedProviders[.piggyCards] = merchant.merchant?.denominationsType == DenominationType.Fixed.rawValue
+            selectedProvider = .piggyCards
+            showProviderPicker = false
+        default:
+            supportedProviders[.ctx] = merchant.merchant?.denominationsType == DenominationType.Fixed.rawValue
+            selectedProvider = .ctx
+            showProviderPicker = false
+        }
+        
+        // Start observing the selected provider
+        if let selectedProvider = selectedProvider {
+            observeDashSpendState(provider: selectedProvider)
+        }
     }
     
     // MARK: - SyncingActivityMonitorObserver

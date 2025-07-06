@@ -392,9 +392,6 @@
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Με την εκκαθάριση αυτής της συσκευής δεν θα έχετε πλέον πρόσβαση στα χρήματα αυτής της συσκευής. Αυτό θα πρέπει να γίνει μόνο εάν δεν έχετε πλέον πρόσβαση στη φράση πρόσβασης και έχετε ξεχάσει και τον κωδικό PIN.";
 
-/* Call */
-"Call" = "Κλήση";
-
 /* No comment provided by engineer. */
 "Cancel" = "Ακύρωση";
 
@@ -741,9 +738,6 @@
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "Η ΑΣΦΑΛΕΙΑ ΤΗΣ ΣΥΣΚΕΥΗΣ ΕΧΕΙ ΤΕΘΕΙ ΣΕ ΚΙΝΔΥΝΟ\nΟποιαδήποτε 'σπασμένη' εφαρμογή μπορεί να έχει πρόσβαση σε οποιαδήποτε άλλης εφαρμογής τα δεδομένα (και να κλέψει τα Dash σας). Καθαρίστε το πορτοφόλι σας άμεσα και επαναφέρετε το σε μια ασφαλή συσκευή.";
 
-/* Direction */
-"Direction" = "Κατεύθυνση";
-
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Αποσύνδεση λογαριασμού Coinbase";
 
@@ -960,6 +954,9 @@
 
 /* CrowdNode */
 "First minimum deposit" = "Πρώτη ελάχιστη κατάθεση";
+
+/* DashSpend */
+"Fixed amounts" = "Fixed amounts";
 
 /* Explore Dash: Filters */
 "Fixed denominated amounts" = "Ποσά σε σταθερές μονάδες";
@@ -1451,8 +1448,8 @@
 /* DashSpend */
 "Log in to your account" = "Συνδεθείτε στο λογαριασμό σας";
 
-/* Log out button */
-"Log Out" = "Αποσύνδεση";
+/* No comment provided by engineer. */
+"Log out" = "Log out";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Αποσύνδεση από το Uphold";
@@ -1836,6 +1833,9 @@
 "Personalize" = "Εξατομίκευση";
 
 /* No comment provided by engineer. */
+"Phone" = "Phone";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Το PIN είναι πάντα απαραίτητο για να πραγματοποιήσετε μια πληρωμή";
 
 /* Coinbase/Buy Dash */
@@ -1945,6 +1945,9 @@
 
 /* Usernames */
 "Prove your identity" = "Αποδείξτε την ταυτότητα σας";
+
+/* No comment provided by engineer. */
+"Provider" = "Provider";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Διεύθυνση Παρόχου";
@@ -2102,9 +2105,6 @@
 /* No comment provided by engineer. */
 "Save" = "Αποθήκευση";
 
-/* DashSpend */
-"Save %.2f%%" = "Aποθήκευση %.2f%%";
-
 /* No comment provided by engineer. */
 "Save Changes" = "Αποθήκευση αλλαγών";
 
@@ -2192,6 +2192,9 @@
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "Επιλέξτε από την Συλλογή";
+
+/* No comment provided by engineer. */
+"Select gift card provider" = "Select gift card provider";
 
 /* CoinJoin */
 "Select mixing level" = "Επιλέξτε επίπεδο ανάμειξης";
@@ -2304,6 +2307,9 @@
 
 /* Receive screen */
 "Share address" = "Διαμοιρασμός διεύθυνσης";
+
+/* No comment provided by engineer. */
+"Show all locations (10)" = "Show all locations (10)";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "Εμφάνιση περιεχομένου στο πρόχειρο";
@@ -2508,9 +2514,6 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Αυτή η εφαρμογή είναι ανοικτού κώδικα";
-
-/* This ATM is located in the */
-"This ATM is located in the" = "Αυτό το ΑΤΜ βρίσκεται στο";
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "Αυτό το επιπλέον βήμα δείχνει ότι πραγματικά προσπαθείτε να κάνετε μια συναλλαγή.";
@@ -2795,9 +2798,6 @@
 
 /* No comment provided by engineer. */
 "View All" = "Προβολή Όλων";
-
-/* View all locations */
-"View all locations" = "Δείτε όλες τις τοποθεσίες";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Προβολή στον Explorer";

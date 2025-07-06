@@ -392,9 +392,6 @@
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Door dit apparaat schoon te vegen heb je geen toegang meer tot het geld op dit apparaat. Dit zou alleen gedaan moeten worden als je de herstelzin hebt verloren en ook de pincode kwijt bent.";
 
-/* Call */
-"Call" = "Bel";
-
 /* No comment provided by engineer. */
 "Cancel" = "Annuleer";
 
@@ -741,9 +738,6 @@
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "BEVEILIGING VAN HET APPARAAT IN GEVAAR\nEen 'jailbreak'-app heeft toegang tot de sleutelhanger van andere apps (en de mogelijkheid om je dash te stelen). Verwijder deze portemonnee direct en herstel op een veilig apparaat.";
 
-/* Direction */
-"Direction" = "Richting";
-
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Koppel Coinbase account los";
 
@@ -960,6 +954,9 @@
 
 /* CrowdNode */
 "First minimum deposit" = "Eerste minimale storting";
+
+/* DashSpend */
+"Fixed amounts" = "Fixed amounts";
 
 /* Explore Dash: Filters */
 "Fixed denominated amounts" = " Vastgestelde bedragen";
@@ -1451,8 +1448,8 @@
 /* DashSpend */
 "Log in to your account" = "Log in op je account";
 
-/* Log out button */
-"Log Out" = "Log uit";
+/* No comment provided by engineer. */
+"Log out" = "Log out";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Bij Uphold uitloggen";
@@ -1836,6 +1833,9 @@
 "Personalize" = "Personaliseer";
 
 /* No comment provided by engineer. */
+"Phone" = "Phone";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "De PIN is altijd vereist om een betaling uit te voeren";
 
 /* Coinbase/Buy Dash */
@@ -1945,6 +1945,9 @@
 
 /* Usernames */
 "Prove your identity" = "Bewijs je identiteit";
+
+/* No comment provided by engineer. */
+"Provider" = "Provider";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Provider adres";
@@ -2102,9 +2105,6 @@
 /* No comment provided by engineer. */
 "Save" = "Opslaan";
 
-/* DashSpend */
-"Save %.2f%%" = "Bespaar %.2f%%";
-
 /* No comment provided by engineer. */
 "Save Changes" = "Wijzigingen opslaan";
 
@@ -2192,6 +2192,9 @@
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "Kies uit galerij";
+
+/* No comment provided by engineer. */
+"Select gift card provider" = "Select gift card provider";
 
 /* CoinJoin */
 "Select mixing level" = "Selecteer mix niveau";
@@ -2304,6 +2307,9 @@
 
 /* Receive screen */
 "Share address" = "Deel adres";
+
+/* No comment provided by engineer. */
+"Show all locations (10)" = "Show all locations (10)";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "Toon inhoud op het klembord";
@@ -2508,9 +2514,6 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Deze app is open source:";
-
-/* This ATM is located in the */
-"This ATM is located in the" = "Deze geldautomaat is te vinden in de";
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "Deze extra stap laat zien dat jij het bent die een transactie probeert te doen.";
@@ -2795,9 +2798,6 @@
 
 /* No comment provided by engineer. */
 "View All" = "Bekijk alles";
-
-/* View all locations */
-"View all locations" = "Bekijk alle locaties";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Bekijk in Explorer";

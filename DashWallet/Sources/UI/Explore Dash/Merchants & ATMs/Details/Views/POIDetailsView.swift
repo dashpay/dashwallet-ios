@@ -20,9 +20,7 @@ import MapKit
 import SDWebImageSwiftUI
 
 struct POIDetailsView: View {
-    @StateObject private var viewModel = POIDetailsViewModel()
-    @State private var selectedProvider: GiftCardProvider = .piggyCards
-    @State private var usePiggyCards = true
+    @StateObject private var viewModel: POIDetailsViewModel
     
     let merchant: ExplorePointOfUse
     let isShowAllHidden: Bool
@@ -37,44 +35,77 @@ struct POIDetailsView: View {
     init(merchant: ExplorePointOfUse, isShowAllHidden: Bool = false) {
         self.merchant = merchant
         self.isShowAllHidden = isShowAllHidden
+        
+        self._viewModel = StateObject(wrappedValue: POIDetailsViewModel(merchant: merchant))
     }
     
     var body: some View {
-        VStack(spacing: 20) {
-            headerView
-            
-            if case .atm = merchant.category {
-                atmButtonsView
-                separatorView
+        ScrollView {
+            VStack(spacing: 0) {
+                VStack(spacing: 20) {
+                    headerView
+                    
+                    if case .atm = merchant.category {
+                        atmButtonsView
+                        separatorView
+                    }
+                    
+                    if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
+                        if viewModel.showProviderPicker {
+                            providerSectionView
+                        } else {
+                            singleProviderInfoView
+                        }
+                    }
+                    
+                    if case .merchant = merchant.category {
+                        bottomButtonView
+                        loginStatusView
+                    }
+                }
+                .padding(20)
+                .background(Color.secondaryBackground)
+                .cornerRadius(12)
+                
+                // Location and contact info card
+                if shouldShowLocationView || hasContactInfo {
+                    VStack(spacing: 2) {
+                        if shouldShowLocationView {
+                            locationCardView
+                        }
+                        
+                        if let phone = merchant.phone, !phone.isEmpty {
+                            phoneCardView
+                        }
+                        
+                        if merchant.website != nil {
+                            websiteCardView
+                        }
+                    }
+                    .padding(10)
+                    .background(Color.secondaryBackground)
+                    .cornerRadius(12)
+                    .padding(.top, 16)
+                }
+                
+                // Show all locations button
+                if !isShowAllHidden && shouldShowLocationView {
+                    showAllLocationsButton
+                        .padding(.top, 16)
+                }
+                
+                Spacer()
             }
-            
-            locationView
-            
-            if case .merchant = merchant.category {
-                actionButtonsView
-            }
-            
-            Spacer()
-            
-            if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
-                piggyCardsToggle
-            }
-            
-            if case .merchant = merchant.category {
-                bottomButtonView
-                loginStatusView
-            }
-        }
-        .padding(15)
-        .onAppear {
-            viewModel.observeDashSpendState(provider: selectedProvider)
+            .padding(.horizontal, 20)
+            .padding(.top, 10)
+            .padding(.bottom, 60)
         }
     }
     
     // MARK: - Header View
     
     private var headerView: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 20) {
             // Logo
             Group {
                 if let logoUrl = merchant.logoLocation, let url = URL(string: logoUrl) {
@@ -88,17 +119,17 @@ struct POIDetailsView: View {
                 }
             }
             .frame(width: 50, height: 50)
-            .clipShape(RoundedRectangle(cornerRadius: 25))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
             
             // Name and subtitle
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(merchant.title ?? "")
-                    .font(.headline)
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.primaryText)
                 
                 if let subtitle = merchant.subtitle {
                     Text(subtitle)
-                        .font(.footnote)
+                        .font(.system(size: 13))
                         .foregroundColor(.secondaryText)
                 }
             }
@@ -107,158 +138,205 @@ struct POIDetailsView: View {
         }
     }
     
-    // MARK: - Location View
+    // MARK: - Location Views
     
-    @ViewBuilder
-    private var locationView: some View {
-        if case .atm = merchant.category {
-            atmLocationView
-        } else {
-            merchantLocationView
-        }
+    private var hasContactInfo: Bool {
+        (merchant.phone != nil && !merchant.phone!.isEmpty) || merchant.website != nil
     }
     
-    private var merchantLocationView: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            Text(merchant.address1 ?? "")
-                .font(.body)
-                .foregroundColor(.primaryText)
-                .fixedSize(horizontal: false, vertical: true)
+    private var locationCardView: some View {
+        HStack(spacing: 20) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(NSLocalizedString("Address", comment: "Explore Dash"))
+                    .font(.caption)
+                    .foregroundColor(.secondaryText)
+                
+                Text(merchant.address1 ?? "")
+                    .font(.body2)
+                    .foregroundColor(.primaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+                
+                if let distanceText = viewModel.distanceText {
+                    Text(distanceText)
+                        .font(.caption)
+                        .foregroundColor(.secondaryText)
+                }
+            }
             
-            if !isShowAllHidden {
-                Button(action: {
-                    showAllLocationsActionBlock?()
-                }) {
-                    Text(NSLocalizedString("View all locations", comment: ""))
+            Spacer()
+            
+            if merchant.showMap {
+                Button(action: directionAction) {
+                    Image(systemName: "arrow.triangle.turn.up.right.circle.fill")
+                        .font(.system(size: 22))
                         .foregroundColor(.dashBlue)
                 }
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .padding(.horizontal, 10)
     }
     
-    private var atmLocationView: some View {
-        HStack(alignment: .top, spacing: 15) {
-            // Cover image
-            if let coverImage = merchant.coverImage, let url = URL(string: coverImage) {
-                WebImage(url: url)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 88, height: 50)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-            
-            VStack(alignment: .leading, spacing: 5) {
+    private var phoneCardView: some View {
+        Button(action: callAction) {
+            HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(NSLocalizedString("This ATM is located in the", comment: ""))
-                        .font(.footnote)
+                    Text(NSLocalizedString("Phone", comment: ""))
+                        .font(.caption)
                         .foregroundColor(.secondaryText)
                     
-                    Text(merchant.name)
-                        .font(.headline)
-                        .foregroundColor(.primaryText)
+                    Text(merchant.phone ?? "")
+                        .font(.body2)
+                        .foregroundColor(.dashBlue)
                 }
                 
-                Text(merchant.address1 ?? "")
-                    .font(.body)
+                Spacer()
+            }
+            .padding(12)
+            .padding(.horizontal, 10)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    private var websiteCardView: some View {
+        Button(action: websiteAction) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(NSLocalizedString("Website", comment: ""))
+                        .font(.caption)
+                        .foregroundColor(.secondaryText)
+                            
+                    Text(merchant.website ?? "merchant.com")
+                        .font(.body2)
+                        .foregroundColor(.dashBlue)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                }
+                
+                Spacer()
+            }
+            .padding(12)
+            .padding(.horizontal, 8)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    private var showAllLocationsButton: some View {
+        Button(action: {
+            showAllLocationsActionBlock?()
+        }) {
+            HStack {
+                Text(NSLocalizedString("Show all locations (10)", comment: "")) // TODO
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.primaryText)
-                    .fixedSize(horizontal: false, vertical: true)
                 
-                // Distance if available
-                if let currentLocation = DWLocationManager.shared.currentLocation, 
-                   DWLocationManager.shared.isAuthorized,
-                   let latitude = merchant.latitude,
-                   let longitude = merchant.longitude {
-                    HStack(spacing: 5) {
-                        Image("image.explore.dash.distance")
-                        
-                        let distance = CLLocation(latitude: latitude, longitude: longitude)
-                            .distance(from: currentLocation)
-                        Text(ExploreDash.distanceFormatter.string(from: Measurement(value: floor(distance), unit: UnitLength.meters)))
-                            .font(.footnote)
-                            .foregroundColor(.secondaryText)
-                        
-                        Spacer()
-                    }
-                }
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondaryText)
             }
-            
-            Spacer(minLength: 0)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 20)
+            .background(Color.secondaryBackground)
+            .cornerRadius(12)
+            .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
         }
+        .buttonStyle(PlainButtonStyle())
     }
     
-    // MARK: - Action Buttons
     
-    private var actionButtonsView: some View {
-        HStack(spacing: 8) {
-            if let phone = merchant.phone, !phone.isEmpty {
-                ActionButtonView(
-                    title: NSLocalizedString("Call", comment: ""),
-                    icon: .system("phone.circle.fill"),
-                    action: callAction
-                )
-            }
-            
-            if merchant.showMap {
-                ActionButtonView(
-                    title: NSLocalizedString("Direction", comment: ""),
-                    icon: .system("arrow.triangle.turn.up.right.circle.fill"),
-                    action: directionAction
-                )
-            }
-            
-            if merchant.website != nil {
-                ActionButtonView(
-                    title: NSLocalizedString("Website", comment: ""),
-                    icon: .system("safari.fill"),
-                    action: websiteAction
-                )
-            }
-        }
-        .frame(height: 51)
-    }
+    // MARK: - Provider Section Views
     
-    // MARK: - PiggyCards Toggle
-    
-    private var piggyCardsToggle: some View {
-        HStack {
-            Toggle("", isOn: $usePiggyCards)
-                .labelsHidden()
-                .onChange(of: usePiggyCards) { newValue in
-                    selectedProvider = newValue ? .piggyCards : .ctx
-                    viewModel.observeDashSpendState(provider: selectedProvider)
-                }
-            
-            Text("Open PiggyCards")
-                .font(.footnote)
+    private var providerSectionView: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(NSLocalizedString("Select gift card provider", comment: "DashSpend"))
+                .font(.caption)
                 .foregroundColor(.secondaryText)
+                .padding(.horizontal, 16)
             
-            Spacer()
+            VStack(spacing: 8) {
+                ForEach(Array(viewModel.supportedProviders.keys), id: \.self) { provider in
+                    let isFixedDenom = viewModel.supportedProviders[provider] ?? false
+                    RadioButtonRow(
+                        title: provider.displayName,
+                        subtitle: isFixedDenom ? NSLocalizedString("Fixed amounts", comment: "DashSpend") : NSLocalizedString("Flexible amounts", comment: "DashSpend"),
+                        isSelected: viewModel.selectedProvider == provider,
+                        style: .radio
+                    ) {
+                        viewModel.selectProvider(provider)
+                    }
+                    .background(viewModel.selectedProvider == provider ? Color.dashBlue.opacity(0.05) : Color.clear)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(viewModel.selectedProvider == provider ? Color.dashBlue : Color.secondaryText.opacity(0.2), lineWidth: 1)
+                    )
+                    .cornerRadius(12)
+                }
+            }
+            .padding(6)
+            .background(Color.secondaryBackground)
+            .cornerRadius(12)
         }
+    }
+    
+    
+    private var singleProviderInfoView: some View {
+        HStack(spacing: 20) {
+            infoBox(
+                icon: "image.giftcard.black",
+                title: NSLocalizedString("Provider", comment: "DashSpend"),
+                value: viewModel.selectedProvider?.displayName ?? "",
+                tintColor: .primaryText
+            )
+            
+            if case .merchant(let m) = merchant.category, m.savingsBasisPoints > 0 {
+                infoBox(
+                    icon: "image.discount",
+                    title: NSLocalizedString("Save", comment: ""),
+                    value: String(format: "%.0f%%", m.toSavingPercentages()),
+                    tintColor: .systemYellow
+                )
+            }
+        }
+    }
+    
+    private func infoBox(icon: String, title: String, value: String, tintColor: Color) -> some View {
+        HStack(spacing: 10) {
+            Image(icon)
+                .resizable()
+                .frame(width: 18, height: 18)
+                .foregroundColor(tintColor)
+            
+            VStack(alignment: .leading, spacing: 0) {
+                Text(title)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.primaryText)
+                
+                Text(value)
+                    .font(.system(size: 13))
+                    .foregroundColor(.primaryText)
+            }
+        }
+        .padding(.horizontal, 10)
+        .frame(height: 48)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(tintColor.opacity(0.1))
+        .cornerRadius(10)
     }
     
     // MARK: - Bottom Button
     
     private var bottomButtonView: some View {
-        ZStack(alignment: .topTrailing) {
-            DashButton(
-                text: buttonTitle,
-                leadingIcon: buttonIcon,
-                style: .filled,
-                size: .large,
-                isEnabled: isButtonEnabled,
-                action: payAction
-            )
-            .overrideBackgroundColor(buttonTintColor)
-            
-            // Savings tag
-            if case .merchant(let m) = merchant.category, 
-               m.paymentMethod == .giftCard,
-               m.savingsBasisPoints > 0 {
-                SavingsTagSwiftUI(text: String(format: NSLocalizedString("Save %.2f%%", comment: ""), m.toSavingPercentages()))
-                    .offset(x: -30, y: -13)
-            }
-        }
+        DashButton(
+            text: buttonTitle,
+            leadingIcon: buttonIcon,
+            style: .filled,
+            size: .large,
+            isEnabled: isButtonEnabled,
+            action: payAction
+        )
+        .overrideBackgroundColor(buttonTintColor)
     }
     
     // MARK: - Login Status View
@@ -268,18 +346,20 @@ struct POIDetailsView: View {
         if case .merchant(let m) = merchant.category, 
            m.paymentMethod == .giftCard,
            viewModel.isUserSignedIn {
-            HStack {
-                Text(emailText)
-                    .font(.footnote)
+            HStack(spacing: 6) {
+                Text(providerLoginText)
+                    .font(.system(size: 13))
                     .foregroundColor(.secondaryText)
                     .lineLimit(1)
                     .truncationMode(.head)
                 
                 Button(action: {
-                    viewModel.logout(provider: selectedProvider)
+                    if let selectedProvider = viewModel.selectedProvider {
+                        viewModel.logout(provider: selectedProvider)
+                    }
                 }) {
-                    Text(NSLocalizedString("Log Out", comment: ""))
-                        .font(.footnote)
+                    Text(NSLocalizedString("Log out", comment: ""))
+                        .font(.system(size: 13))
                         .foregroundColor(.secondaryText)
                         .underline()
                 }
@@ -289,6 +369,20 @@ struct POIDetailsView: View {
     }
     
     // MARK: - Computed Properties
+    
+    private var shouldShowLocationView: Bool {
+        // Show location for ATMs
+        if case .atm = merchant.category {
+            return true
+        }
+        
+        // Show location for physical or online+physical merchants
+        if case .merchant(let m) = merchant.category {
+            return m.type != .online
+        }
+        
+        return false
+    }
     
     private var buttonTitle: String {
         if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
@@ -300,7 +394,7 @@ struct POIDetailsView: View {
     
     private var buttonIcon: IconName {
         if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
-            return .custom("image.explore.dash.gift-card", maxHeight: 20)
+            return .custom("image.explore.dash.wts.card.orange", maxHeight: 20)
         } else {
             return .custom("image.explore.dash.circle", maxHeight: 20)
         }
@@ -324,12 +418,13 @@ struct POIDetailsView: View {
                viewModel.syncState == .syncDone
     }
     
-    private var emailText: String {
+    private var providerLoginText: String {
+        let providerName = viewModel.selectedProvider?.displayName ?? ""
         if let email = viewModel.userEmail, !email.isEmpty {
             let maskedEmail = maskEmail(email)
-            return String.localizedStringWithFormat(NSLocalizedString("Logged in as %@", comment: ""), maskedEmail)
+            return "\(providerName): " + String.localizedStringWithFormat(NSLocalizedString("Logged in as %@", comment: ""), maskedEmail)
         } else {
-            return NSLocalizedString("Logged in", comment: "")
+            return "\(providerName): " + NSLocalizedString("Logged in", comment: "")
         }
     }
     
@@ -376,7 +471,8 @@ struct POIDetailsView: View {
         if case .merchant(let m) = merchant.category, let deeplink = m.deeplink, let url = URL(string: deeplink),
            UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url)
-        } else if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
+        } else if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard,
+                  let selectedProvider = viewModel.selectedProvider {
             if viewModel.isUserSignedIn {
                 buyGiftCardHandler?(selectedProvider)
             } else {
@@ -418,61 +514,3 @@ struct POIDetailsView: View {
             .frame(height: 1/UIScreen.main.scale)
     }
 }
-
-
-// MARK: - Action Button View
-
-private struct ActionButtonView: View {
-    let title: String
-    let icon: IconName
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 3) {
-                Icon(name: icon)
-                    .font(.system(size: 20))
-                    .foregroundColor(.dashBlue)
-                
-                Text(title)
-                    .font(.caption)
-                    .foregroundColor(.dashBlue)
-            }
-            .frame(maxWidth: .infinity)
-        }
-    }
-}
-
-// MARK: - Savings Tag View
-
-private struct SavingsTagSwiftUI: View {
-    let text: String
-    
-    var body: some View {
-        Canvas { context, size in
-            let path = Path { path in
-                // Main rectangle with tail
-                let mainRect = CGRect(x: 8, y: 0, width: size.width - 8, height: size.height)
-                path.addRoundedRect(in: mainRect, cornerSize: CGSize(width: 4, height: 4))
-                
-                // Tail
-                path.move(to: CGPoint(x: 8, y: 3))
-                path.addLine(to: CGPoint(x: 0, y: size.height / 2))
-                path.addLine(to: CGPoint(x: 8, y: size.height / 2))
-                path.closeSubpath()
-            }
-            
-            context.fill(path, with: .color(Color.primaryText.opacity(0.7)))
-            
-            // Draw text
-            let textRect = CGRect(x: 20, y: 0, width: size.width - 32, height: size.height)
-            context.draw(Text(text)
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.primaryBackground), 
-                in: textRect)
-        }
-        .frame(height: 26)
-        .fixedSize()
-    }
-}
-

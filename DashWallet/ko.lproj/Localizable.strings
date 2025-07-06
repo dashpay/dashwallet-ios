@@ -392,9 +392,6 @@
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "이 기기를 삭제하면 더 이상 이 기기의 금액에 액세스할 수 없습니다. 이 작업은 더 이상 암호 문장에 접근할 수 없고 PIN 코드도 분실한 경우에만 실행하십시오.";
 
-/* Call */
-"Call" = "콜";
-
 /* No comment provided by engineer. */
 "Cancel" = "취소";
 
@@ -741,9 +738,6 @@
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "기기 보안이 손상되었습니다\n어떤 '탈옥' 어플이든 다른 어플의 주요 체인 데이터에 접근할 수 있습니다 (당신의 대시가 도난당할 수 있습니다). 이 지갑을 즉시 삭제하시고 안전한 기기에서 지갑을 복구하십시오.";
 
-/* Direction */
-"Direction" = "명령";
-
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "코인베이스 계정 연결 해제";
 
@@ -960,6 +954,9 @@
 
 /* CrowdNode */
 "First minimum deposit" = "첫 번째 최소 입금";
+
+/* DashSpend */
+"Fixed amounts" = "Fixed amounts";
 
 /* Explore Dash: Filters */
 "Fixed denominated amounts" = "고정된 단위 금액";
@@ -1451,8 +1448,8 @@
 /* DashSpend */
 "Log in to your account" = "당신의 계정에 로그인하세요";
 
-/* Log out button */
-"Log Out" = "로그아웃";
+/* No comment provided by engineer. */
+"Log out" = "Log out";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "업홀드에서 로그아웃";
@@ -1836,6 +1833,9 @@
 "Personalize" = "개인화";
 
 /* No comment provided by engineer. */
+"Phone" = "Phone";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "지불을 처리하기 위해서는 언제나 PIN이 필요합니다";
 
 /* Coinbase/Buy Dash */
@@ -1945,6 +1945,9 @@
 
 /* Usernames */
 "Prove your identity" = "당신의 신원을 증명하세요";
+
+/* No comment provided by engineer. */
+"Provider" = "Provider";
 
 /* No comment provided by engineer. */
 "Provider Address" = "공급자 주소";
@@ -2102,9 +2105,6 @@
 /* No comment provided by engineer. */
 "Save" = "저장";
 
-/* DashSpend */
-"Save %.2f%%" = "저장하기 %.2f%%";
-
 /* No comment provided by engineer. */
 "Save Changes" = "변경사항 저장";
 
@@ -2192,6 +2192,9 @@
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "갤러리에서 선택";
+
+/* No comment provided by engineer. */
+"Select gift card provider" = "Select gift card provider";
 
 /* CoinJoin */
 "Select mixing level" = "믹싱 수준 선택";
@@ -2304,6 +2307,9 @@
 
 /* Receive screen */
 "Share address" = "주소 공유하기";
+
+/* No comment provided by engineer. */
+"Show all locations (10)" = "Show all locations (10)";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "클립보드 내용 보이기";
@@ -2508,9 +2514,6 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "이 어플은 오픈 소스입니다:";
-
-/* This ATM is located in the */
-"This ATM is located in the" = "이 ATM은 다음의 장소에 위치합니다";
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "이 추가적 단계를 통해 거래를 시도하는 것이 본인임을 확인합니다.";
@@ -2795,9 +2798,6 @@
 
 /* No comment provided by engineer. */
 "View All" = "모두 보기";
-
-/* View all locations */
-"View all locations" = "모든 장소 보기";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "탐색기에서 보기";

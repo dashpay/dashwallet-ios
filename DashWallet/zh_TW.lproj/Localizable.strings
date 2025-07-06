@@ -392,9 +392,6 @@
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "通過擦洗此設備，您將無法再使用此設備上的資金。 只有在您無法再訪問密碼詞組並忘記密碼時，才應該這樣做。";
 
-/* Call */
-"Call" = "稱呼";
-
 /* No comment provided by engineer. */
 "Cancel" = "取消";
 
@@ -741,9 +738,6 @@
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "設備的安全性已經受到損害\n任何'越獄'的應用程序可以訪問任何其他應用程序的數據鑰匙扣 (和竊取你的達世幣的)。立即清除這個錢包並在安全的裝置上恢復數據。";
 
-/* Direction */
-"Direction" = "方向";
-
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "斷開 Coinbase 帳戶的連接";
 
@@ -960,6 +954,9 @@
 
 /* CrowdNode */
 "First minimum deposit" = "首次最低存款";
+
+/* DashSpend */
+"Fixed amounts" = "Fixed amounts";
 
 /* Explore Dash: Filters */
 "Fixed denominated amounts" = "固定金額";
@@ -1451,8 +1448,8 @@
 /* DashSpend */
 "Log in to your account" = "登錄到您的帳戶";
 
-/* Log out button */
-"Log Out" = "登出";
+/* No comment provided by engineer. */
+"Log out" = "Log out";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "從Uphold登出";
@@ -1836,6 +1833,9 @@
 "Personalize" = "個性化";
 
 /* No comment provided by engineer. */
+"Phone" = "Phone";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "總是需要輸入密碼才能進行付款";
 
 /* Coinbase/Buy Dash */
@@ -1945,6 +1945,9 @@
 
 /* Usernames */
 "Prove your identity" = "證明您的身份";
+
+/* No comment provided by engineer. */
+"Provider" = "Provider";
 
 /* No comment provided by engineer. */
 "Provider Address" = "提供者位址";
@@ -2102,9 +2105,6 @@
 /* No comment provided by engineer. */
 "Save" = "儲存";
 
-/* DashSpend */
-"Save %.2f%%" = "保存%.2f%%";
-
 /* No comment provided by engineer. */
 "Save Changes" = "保存變更";
 
@@ -2192,6 +2192,9 @@
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "從圖庫中選擇";
+
+/* No comment provided by engineer. */
+"Select gift card provider" = "Select gift card provider";
 
 /* CoinJoin */
 "Select mixing level" = "選擇混合級別";
@@ -2304,6 +2307,9 @@
 
 /* Receive screen */
 "Share address" = "分享位址";
+
+/* No comment provided by engineer. */
+"Show all locations (10)" = "Show all locations (10)";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "顯示剪貼板中的內容";
@@ -2508,9 +2514,6 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "這個程式是開源的:";
-
-/* This ATM is located in the */
-"This ATM is located in the" = "該自動櫃員機位於";
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "這個額外的步驟用來證明真的是你在嘗試進行交易。";
@@ -2795,9 +2798,6 @@
 
 /* No comment provided by engineer. */
 "View All" = "查看全部";
-
-/* View all locations */
-"View all locations" = "查看所有位置";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "在瀏覽器中查看";

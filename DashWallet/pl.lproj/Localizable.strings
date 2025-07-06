@@ -392,9 +392,6 @@
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Jeśli wyczyścisz to urządzenie, stracisz dostęp do funduszy na tym urządzeniu. Tę czynność możesz rozważyć jedynie, gdy nie masz dostępu do frazy odzyskiwania portfela oraz pinu. ";
 
-/* Call */
-"Call" = "Zadzwoń";
-
 /* No comment provided by engineer. */
 "Cancel" = "Anuluj";
 
@@ -741,9 +738,6 @@
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "BEZPIECZEŃSTWO URZĄDZENIA ZŁAMANE\nKażda aplikacja \"jailbreak\" ma dostęp do twoich kluczy w innych aplikacjach (i może ukraść twoje Dashe). Natychmiast wyczyść ten portfel i przywróć na bezpiecznym urządzeniu.";
 
-/* Direction */
-"Direction" = "Kierunek";
-
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Rozłącz Konto Coinbase";
 
@@ -960,6 +954,9 @@
 
 /* CrowdNode */
 "First minimum deposit" = "Pierwszy minimalny depozyt";
+
+/* DashSpend */
+"Fixed amounts" = "Fixed amounts";
 
 /* Explore Dash: Filters */
 "Fixed denominated amounts" = "Stałe kwoty denominowane";
@@ -1451,8 +1448,8 @@
 /* DashSpend */
 "Log in to your account" = "Zaloguj się do twojego konta";
 
-/* Log out button */
-"Log Out" = "Wyloguj";
+/* No comment provided by engineer. */
+"Log out" = "Log out";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Wyloguj z Uphold";
@@ -1836,6 +1833,9 @@
 "Personalize" = "Spersonalizuj";
 
 /* No comment provided by engineer. */
+"Phone" = "Phone";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN jest zawsze wymagany by dokonać płatności";
 
 /* Coinbase/Buy Dash */
@@ -1945,6 +1945,9 @@
 
 /* Usernames */
 "Prove your identity" = "Udowodnij swoją tożsamość";
+
+/* No comment provided by engineer. */
+"Provider" = "Provider";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Dostawca Adresu";
@@ -2102,9 +2105,6 @@
 /* No comment provided by engineer. */
 "Save" = "Zapisz";
 
-/* DashSpend */
-"Save %.2f%%" = "Zachowaj %.2f%%";
-
 /* No comment provided by engineer. */
 "Save Changes" = "Zapisz Zmiany";
 
@@ -2192,6 +2192,9 @@
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "Wybierz z Galeri";
+
+/* No comment provided by engineer. */
+"Select gift card provider" = "Select gift card provider";
 
 /* CoinJoin */
 "Select mixing level" = "Wybierz poziom mieszania";
@@ -2304,6 +2307,9 @@
 
 /* Receive screen */
 "Share address" = "Udostępnij Adres";
+
+/* No comment provided by engineer. */
+"Show all locations (10)" = "Show all locations (10)";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "Pokaz zawartość schowka";
@@ -2508,9 +2514,6 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Ta aplikacja jest open source:";
-
-/* This ATM is located in the */
-"This ATM is located in the" = "Ten bankomat znajduje się w";
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "Ten dodatkowy krok potwierdza, że to naprawdę ty dokonujesz  tej transakcji. ";
@@ -2795,9 +2798,6 @@
 
 /* No comment provided by engineer. */
 "View All" = "Zobacz wszystkie";
-
-/* View all locations */
-"View all locations" = "Zobacz wszyskie miejsca";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Zobacz na Eksplorerze";

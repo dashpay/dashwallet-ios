@@ -392,9 +392,6 @@
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Vyčistením tohto zariadenia už nebudete mať prístup k prostriedkom na tomto zariadení. Toto by sa malo robiť len vtedy, ak už nemáte prístup k vašej prístupovej fráze a zabudli ste aj váš PIN kód.";
 
-/* Call */
-"Call" = "Volať";
-
 /* No comment provided by engineer. */
 "Cancel" = "Zrušiť";
 
@@ -741,9 +738,6 @@
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "ZABEZPEČENIE ZARIADENIA KOMPROMITOVANÉ\nKaždá \"jailbreak\" aplikácia môže pristupovať k údajom o kľúčových reťazcoch každej inej aplikácie (a ukradnúť vaše Dash). Zmažte urýchlene túto peňaženku a obnovte zabezpečenie zariadenia.";
 
-/* Direction */
-"Direction" = "Smer";
-
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Odpojte Coinbase účet";
 
@@ -960,6 +954,9 @@
 
 /* CrowdNode */
 "First minimum deposit" = "Prvý minimálny vklad";
+
+/* DashSpend */
+"Fixed amounts" = "Fixed amounts";
 
 /* Explore Dash: Filters */
 "Fixed denominated amounts" = "Fixné denominované sumy";
@@ -1451,8 +1448,8 @@
 /* DashSpend */
 "Log in to your account" = "Prihlásiť sa do svojho účtu";
 
-/* Log out button */
-"Log Out" = "Odhlásiť";
+/* No comment provided by engineer. */
+"Log out" = "Log out";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Odhlásiť s Upholdu";
@@ -1836,6 +1833,9 @@
 "Personalize" = "Prispôsobiť";
 
 /* No comment provided by engineer. */
+"Phone" = "Phone";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Na vykonanie platby je vždy potrebný PIN";
 
 /* Coinbase/Buy Dash */
@@ -1945,6 +1945,9 @@
 
 /* Usernames */
 "Prove your identity" = "Preukážte svoju identitu";
+
+/* No comment provided by engineer. */
+"Provider" = "Provider";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Adresa poskytovateľa";
@@ -2102,9 +2105,6 @@
 /* No comment provided by engineer. */
 "Save" = "Uložiť";
 
-/* DashSpend */
-"Save %.2f%%" = "Uložiť %.2f%%";
-
 /* No comment provided by engineer. */
 "Save Changes" = "Uložiť zmeny";
 
@@ -2192,6 +2192,9 @@
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "Vybrať z galérie";
+
+/* No comment provided by engineer. */
+"Select gift card provider" = "Select gift card provider";
 
 /* CoinJoin */
 "Select mixing level" = "Zvoliť úroveň miešania";
@@ -2304,6 +2307,9 @@
 
 /* Receive screen */
 "Share address" = "Zdieľať adresu";
+
+/* No comment provided by engineer. */
+"Show all locations (10)" = "Show all locations (10)";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "Zobraziť obsah v schránke";
@@ -2508,9 +2514,6 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Táto aplikácia má otvorený zdrojový kód:";
-
-/* This ATM is located in the */
-"This ATM is located in the" = "Tento bankomat sa nachádza v";
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "Tento dodatočný krok potvrdzuje, že ste to skutočne vy kto sa pokúša uskutočniť transakciu.";
@@ -2795,9 +2798,6 @@
 
 /* No comment provided by engineer. */
 "View All" = "Zobraziť všetko";
-
-/* View all locations */
-"View all locations" = "Zobraziť všetky miesta";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Zobraziť v prehliadači";

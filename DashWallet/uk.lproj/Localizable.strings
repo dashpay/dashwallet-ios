@@ -392,9 +392,6 @@
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Видаливши гаманець, у вас більше не буде доступу до коштів на цьому пристрої. Цю дію слід здійснювати лише в тому випадку, якщо у вас більше немає доступу до вашої кодової фрази і ви забули свій PIN.";
 
-/* Call */
-"Call" = "Зателефонувати";
-
 /* No comment provided by engineer. */
 "Cancel" = "Відміна";
 
@@ -741,9 +738,6 @@
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "БЕЗПЕКА ПРИСТРОЮ ПІД ЗАГРОЗОЮ\nБудь-який «jailbreak» додаток може отримати доступ до ваших приватних ключів (і вкрасти ваші Dash). Негайно видаліть цей гаманець та відновіть його на довіреному пристрої.";
 
-/* Direction */
-"Direction" = "Напрямок";
-
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "ВІдключити обліковий запис Coinbase";
 
@@ -960,6 +954,9 @@
 
 /* CrowdNode */
 "First minimum deposit" = "Перший мінімальний депозит";
+
+/* DashSpend */
+"Fixed amounts" = "Fixed amounts";
 
 /* Explore Dash: Filters */
 "Fixed denominated amounts" = "Fixed denominated amounts";
@@ -1451,8 +1448,8 @@
 /* DashSpend */
 "Log in to your account" = "Увійти в свій аккаунт";
 
-/* Log out button */
-"Log Out" = "Вийти";
+/* No comment provided by engineer. */
+"Log out" = "Log out";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Вийти з Uphold";
@@ -1836,6 +1833,9 @@
 "Personalize" = "Персоналізація";
 
 /* No comment provided by engineer. */
+"Phone" = "Phone";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Для здійснення платежу завжди потрібен PIN-код";
 
 /* Coinbase/Buy Dash */
@@ -1945,6 +1945,9 @@
 
 /* Usernames */
 "Prove your identity" = "Підтвердьте свою особу";
+
+/* No comment provided by engineer. */
+"Provider" = "Provider";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Адреса провайдера";
@@ -2102,9 +2105,6 @@
 /* No comment provided by engineer. */
 "Save" = "Зберегти";
 
-/* DashSpend */
-"Save %.2f%%" = "Зберегти %.2f%%";
-
 /* No comment provided by engineer. */
 "Save Changes" = "Зберегти зміни";
 
@@ -2192,6 +2192,9 @@
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "Вибрати із галереї";
+
+/* No comment provided by engineer. */
+"Select gift card provider" = "Select gift card provider";
 
 /* CoinJoin */
 "Select mixing level" = "Виберіть рівень змішування";
@@ -2304,6 +2307,9 @@
 
 /* Receive screen */
 "Share address" = "Поділитися адресою";
+
+/* No comment provided by engineer. */
+"Show all locations (10)" = "Show all locations (10)";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "Показати вміст у буфері обміну";
@@ -2508,9 +2514,6 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Це програма з відкритим кодом:";
-
-/* This ATM is located in the */
-"This ATM is located in the" = "Цей банкомат розташований в";
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "Цей додатковий крок показує, що справді ви намагаєтеся здійснити транзакцію.";
@@ -2795,9 +2798,6 @@
 
 /* No comment provided by engineer. */
 "View All" = "Переглянути все";
-
-/* View all locations */
-"View all locations" = "Переглянути всі локації";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Переглянути в Explorer";

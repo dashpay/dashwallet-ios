@@ -392,9 +392,6 @@
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Dengan menghapus perangkat ini, Anda tidak lagi memiliki akses ke dana di perangkat ini. Ini hanya boleh dilakukan jika Anda tidak lagi memiliki akses ke kata sandi Anda dan lupa kode PIN Anda.";
 
-/* Call */
-"Call" = "Panggil";
-
 /* No comment provided by engineer. */
 "Cancel" = "Batalkan";
 
@@ -741,9 +738,6 @@
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "KEAMANAN PERANGKAT MEMBAHAYAKAN\nAplikasi 'jailbreak' apa pun dapat mengakses data keychain aplikasi lain (dan mencuri Dash Anda). Bersihkan dompet ini segera dan kembalikan pada perangkat yang aman.";
 
-/* Direction */
-"Direction" = "Arah";
-
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Putuskan Sambungan Akun Coinbase";
 
@@ -960,6 +954,9 @@
 
 /* CrowdNode */
 "First minimum deposit" = "Setoran minimum pertama";
+
+/* DashSpend */
+"Fixed amounts" = "Fixed amounts";
 
 /* Explore Dash: Filters */
 "Fixed denominated amounts" = "Jumlah denominasi tetap";
@@ -1451,8 +1448,8 @@
 /* DashSpend */
 "Log in to your account" = "Masuk ke akun anda";
 
-/* Log out button */
-"Log Out" = "Keluar";
+/* No comment provided by engineer. */
+"Log out" = "Log out";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Keluar dari Uphold";
@@ -1836,6 +1833,9 @@
 "Personalize" = "Personalisasi";
 
 /* No comment provided by engineer. */
+"Phone" = "Phone";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN selalu diperlukan untuk melakukan pembayaran";
 
 /* Coinbase/Buy Dash */
@@ -1945,6 +1945,9 @@
 
 /* Usernames */
 "Prove your identity" = "Buktikan identitas anda";
+
+/* No comment provided by engineer. */
+"Provider" = "Provider";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Alamat Penyedia";
@@ -2102,9 +2105,6 @@
 /* No comment provided by engineer. */
 "Save" = "Simpan";
 
-/* DashSpend */
-"Save %.2f%%" = "Simpan %.2f%%";
-
 /* No comment provided by engineer. */
 "Save Changes" = "Simpan Perubahan";
 
@@ -2192,6 +2192,9 @@
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "Pilih dari galeri";
+
+/* No comment provided by engineer. */
+"Select gift card provider" = "Select gift card provider";
 
 /* CoinJoin */
 "Select mixing level" = "Pilih level mixing";
@@ -2304,6 +2307,9 @@
 
 /* Receive screen */
 "Share address" = "Bagikan alamat";
+
+/* No comment provided by engineer. */
+"Show all locations (10)" = "Show all locations (10)";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "Tunjukkan konten dalam clipboard";
@@ -2508,9 +2514,6 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Aplikasi ini adalah open source:";
-
-/* This ATM is located in the */
-"This ATM is located in the" = "ATM ini terletak di";
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "Langkah ekstra ini menunjukkan bahwa Anda benar-benar mencoba melakukan transaksi.";
@@ -2795,9 +2798,6 @@
 
 /* No comment provided by engineer. */
 "View All" = "Lihat semua";
-
-/* View all locations */
-"View all locations" = "Lihat semua lokasi";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Lihat di Explorer";

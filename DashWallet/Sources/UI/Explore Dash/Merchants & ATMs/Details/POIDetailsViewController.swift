@@ -110,6 +110,7 @@ extension POIDetailsViewController {
             contentView.layer.cornerRadius = 20.0
             contentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
             constraint = [
+                contentView.heightAnchor.constraint(equalToConstant: UIDevice.isIphone5OrLess ? 300 : 450),
                 contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
                 contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                 contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -148,6 +149,7 @@ extension POIDetailsViewController {
         }
         
         let hostingController = UIHostingController(rootView: detailsView)
+        hostingController.view.backgroundColor = .dw_secondaryBackground()
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         
         contentView.addSubview(hostingController.view)
@@ -172,8 +174,6 @@ extension POIDetailsViewController {
 // Mark: DashSpend
 
 extension POIDetailsViewController {
-    // TODO: This is a temporary UI element for testing/selecting between services
-    // Will be removed once service selection is finalized
     private func showDashSpendLoginInfo(provider: GiftCardProvider) {
         let swiftUIView = DashSpendLoginInfoView(
             provider: provider,
