@@ -40,66 +40,64 @@ struct POIDetailsView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                VStack(spacing: 20) {
-                    headerView
-                    
-                    if case .atm = merchant.category {
-                        atmButtonsView
-                        separatorView
-                    }
-                    
-                    if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
-                        if viewModel.showProviderPicker {
-                            providerSectionView
-                        } else {
-                            singleProviderInfoView
-                        }
-                    }
-                    
-                    if case .merchant = merchant.category {
-                        bottomButtonView
-                        loginStatusView
+        VStack(spacing: 0) {
+            VStack(spacing: 20) {
+                headerView
+                
+                if case .atm = merchant.category {
+                    atmButtonsView
+                    separatorView
+                }
+                
+                if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
+                    if viewModel.showProviderPicker {
+                        providerSectionView
+                    } else {
+                        singleProviderInfoView
                     }
                 }
-                .padding(20)
+                
+                if case .merchant = merchant.category {
+                    bottomButtonView
+                    loginStatusView
+                }
+            }
+            .padding(20)
+            .background(Color.secondaryBackground)
+            .cornerRadius(12)
+            
+            // Location and contact info card
+            if shouldShowLocationView || hasContactInfo {
+                VStack(spacing: 2) {
+                    if shouldShowLocationView {
+                        locationCardView
+                    }
+                    
+                    if let phone = merchant.phone, !phone.isEmpty {
+                        phoneCardView
+                    }
+                    
+                    if merchant.website != nil {
+                        websiteCardView
+                    }
+                }
+                .padding(10)
                 .background(Color.secondaryBackground)
                 .cornerRadius(12)
-                
-                // Location and contact info card
-                if shouldShowLocationView || hasContactInfo {
-                    VStack(spacing: 2) {
-                        if shouldShowLocationView {
-                            locationCardView
-                        }
-                        
-                        if let phone = merchant.phone, !phone.isEmpty {
-                            phoneCardView
-                        }
-                        
-                        if merchant.website != nil {
-                            websiteCardView
-                        }
-                    }
-                    .padding(10)
-                    .background(Color.secondaryBackground)
-                    .cornerRadius(12)
-                    .padding(.top, 16)
-                }
-                
-                // Show all locations button
-                if !isShowAllHidden && shouldShowLocationView {
-                    showAllLocationsButton
-                        .padding(.top, 16)
-                }
-                
-                Spacer()
+                .padding(.top, 16)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 10)
-            .padding(.bottom, 60)
+            
+            // Show all locations button
+            if !isShowAllHidden && shouldShowLocationView {
+                showAllLocationsButton
+                    .padding(.top, 16)
+            }
+            
+            Spacer()
         }
+        .padding(.horizontal, 20)
+        .padding(.top, 10)
+        .padding(.bottom, 20)
     }
     
     // MARK: - Header View
