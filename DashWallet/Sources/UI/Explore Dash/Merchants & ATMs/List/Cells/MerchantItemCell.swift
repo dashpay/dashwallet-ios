@@ -29,8 +29,10 @@ class MerchantItemCell: PointOfUseItemCell {
 
         guard let merchant = pointOfUse.merchant else { return }
 
-        if let currentLocation = DWLocationManager.shared.currentLocation,
-           DWLocationManager.shared.isAuthorized, merchant.type != .online {
+        if merchant.type == .online {
+            subLabel.isHidden = true
+        } else if let currentLocation = DWLocationManager.shared.currentLocation,
+                  DWLocationManager.shared.isAuthorized {
             subLabel.isHidden = false
             let distance = CLLocation(latitude: pointOfUse.latitude!, longitude: pointOfUse.longitude!)
                 .distance(from: currentLocation)

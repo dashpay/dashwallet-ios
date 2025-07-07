@@ -132,7 +132,6 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
                 locationOffCell = itemCell
             } else {
                 let cell = super.tableView(tableView, cellForRowAt: indexPath) as! PointOfUseItemCell
-                cell.subLabel.isHidden = currentSegment == .online
                 return cell
             }
         default:
