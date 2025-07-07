@@ -2308,8 +2308,8 @@
 /* Receive screen */
 "Share address" = "Udostępnij Adres";
 
-/* No comment provided by engineer. */
-"Show all locations (10)" = "Show all locations (10)";
+/* Explore Dash */
+"Show all locations" = "Show all locations";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "Pokaz zawartość schowka";

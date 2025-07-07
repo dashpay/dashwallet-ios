@@ -149,10 +149,26 @@ struct POIDetailsView: View {
                     .font(.caption)
                     .foregroundColor(.secondaryText)
                 
-                Text(merchant.address1 ?? "")
-                    .font(.body2)
-                    .foregroundColor(.primaryText)
-                    .fixedSize(horizontal: false, vertical: true)
+                if merchant.address1?.isEmpty == false {
+                    Text(merchant.address1 ?? "")
+                        .font(.body2)
+                        .foregroundColor(.primaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                
+                if merchant.address2?.isEmpty == false {
+                    Text(merchant.address2 ?? "")
+                        .font(.body2)
+                        .foregroundColor(.primaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                
+                if merchant.address3?.isEmpty == false {
+                    Text(merchant.address3 ?? "")
+                        .font(.body2)
+                        .foregroundColor(.primaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 
                 if let distanceText = viewModel.distanceText {
                     Text(distanceText)
@@ -224,7 +240,7 @@ struct POIDetailsView: View {
             showAllLocationsActionBlock?()
         }) {
             HStack {
-                Text(NSLocalizedString("Show all locations (10)", comment: "")) // TODO
+                Text(NSLocalizedString("Show all locations", comment: "Explore Dash"))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.primaryText)
                 

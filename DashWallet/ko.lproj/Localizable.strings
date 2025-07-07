@@ -2308,8 +2308,8 @@
 /* Receive screen */
 "Share address" = "주소 공유하기";
 
-/* No comment provided by engineer. */
-"Show all locations (10)" = "Show all locations (10)";
+/* Explore Dash */
+"Show all locations" = "Show all locations";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "클립보드 내용 보이기";
