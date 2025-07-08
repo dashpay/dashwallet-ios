@@ -35,7 +35,7 @@ Install the following dependencies:
 - **cbindgen**
 - **rust**
 
-> **Note:** cmake higher than 3.5.0 might cause issues with building. Version 3.28.3 is tested and works.
+> **Note:** cmake 4.0.0 or higher might cause issues with building. Version 3.28.3 is tested and works.
 > 
 > Download from: https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-macos-universal.dmg
 
