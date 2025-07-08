@@ -1448,8 +1448,8 @@
 /* DashSpend */
 "Log in to your account" = "Log in to your account";
 
-/* No comment provided by engineer. */
-"Log out" = "Log out";
+/* Log out button */
+"Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Log out from Uphold";

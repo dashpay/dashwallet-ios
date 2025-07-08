@@ -205,7 +205,7 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "보낸 금액";
 
-/* No comment provided by engineer. */
+/* An error occurred */
 "An error occurred" = "An error occurred";
 
 /* No comment provided by engineer. */
@@ -1255,7 +1255,7 @@
 /* CrowdNode Online */
 "Invalid Email" = "유효하지 않은 이메일";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Invalid email or password." = "Invalid email or password.";
 
 /* Invalid Amount Input */
@@ -1448,8 +1448,8 @@
 /* DashSpend */
 "Log in to your account" = "당신의 계정에 로그인하세요";
 
-/* No comment provided by engineer. */
-"Log out" = "Log out";
+/* Log out button */
+"Log Out" = "로그아웃";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "업홀드에서 로그아웃";
@@ -1946,7 +1946,7 @@
 /* Usernames */
 "Prove your identity" = "당신의 신원을 증명하세요";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Provider" = "Provider";
 
 /* No comment provided by engineer. */
@@ -2193,7 +2193,7 @@
 /* No comment provided by engineer. */
 "Select from Gallery" = "갤러리에서 선택";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Select gift card provider" = "Select gift card provider";
 
 /* CoinJoin */

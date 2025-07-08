@@ -372,7 +372,7 @@ struct POIDetailsView: View {
                         viewModel.logout(provider: selectedProvider)
                     }
                 }) {
-                    Text(NSLocalizedString("Log out", comment: ""))
+                    Text(NSLocalizedString("Log Out", comment: "Log out button"))
                         .font(.system(size: 13))
                         .foregroundColor(.secondaryText)
                         .underline()

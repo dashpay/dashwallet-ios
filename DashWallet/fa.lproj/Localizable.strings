@@ -205,7 +205,7 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "مبلغ ارسالی";
 
-/* No comment provided by engineer. */
+/* An error occurred */
 "An error occurred" = "An error occurred";
 
 /* No comment provided by engineer. */
@@ -1255,7 +1255,7 @@
 /* CrowdNode Online */
 "Invalid Email" = "Invalid Email";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Invalid email or password." = "Invalid email or password.";
 
 /* Invalid Amount Input */
@@ -1448,8 +1448,8 @@
 /* DashSpend */
 "Log in to your account" = "ورود به حساب شما";
 
-/* No comment provided by engineer. */
-"Log out" = "Log out";
+/* Log out button */
+"Log Out" = "خروج";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "خروج از آپهولد";
@@ -1946,7 +1946,7 @@
 /* Usernames */
 "Prove your identity" = "هویت‌تان را اثبات کنید";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Provider" = "Provider";
 
 /* No comment provided by engineer. */
@@ -2193,7 +2193,7 @@
 /* No comment provided by engineer. */
 "Select from Gallery" = "انتخاب از گالری";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Select gift card provider" = "Select gift card provider";
 
 /* CoinJoin */

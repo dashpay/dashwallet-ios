@@ -205,7 +205,7 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "จำนวนเงินที่ส่ง";
 
-/* No comment provided by engineer. */
+/* An error occurred */
 "An error occurred" = "An error occurred";
 
 /* No comment provided by engineer. */
@@ -1255,7 +1255,7 @@
 /* CrowdNode Online */
 "Invalid Email" = "อีเมลไม่ถูกต้อง";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Invalid email or password." = "Invalid email or password.";
 
 /* Invalid Amount Input */
@@ -1448,8 +1448,8 @@
 /* DashSpend */
 "Log in to your account" = "Log in to your account";
 
-/* No comment provided by engineer. */
-"Log out" = "Log out";
+/* Log out button */
+"Log Out" = "ออกจากระบบ";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "ออกจากระบบ Uphold";
@@ -1946,7 +1946,7 @@
 /* Usernames */
 "Prove your identity" = "Prove your identity";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Provider" = "Provider";
 
 /* No comment provided by engineer. */
@@ -2193,7 +2193,7 @@
 /* No comment provided by engineer. */
 "Select from Gallery" = "เลือกจากแกลเลอรี่";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Select gift card provider" = "Select gift card provider";
 
 /* CoinJoin */

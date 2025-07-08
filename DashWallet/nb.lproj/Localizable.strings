@@ -205,7 +205,7 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "Amount Sent";
 
-/* No comment provided by engineer. */
+/* An error occurred */
 "An error occurred" = "An error occurred";
 
 /* No comment provided by engineer. */
@@ -752,7 +752,7 @@
 "Discount" = "Discount";
 
 /* No comment provided by engineer. */
-"Dismiss" = "Dismiss";
+"Dismiss" = "Lukk";
 
 /* No comment provided by engineer. */
 "Display Name" = "Display Name";
@@ -1255,7 +1255,7 @@
 /* CrowdNode Online */
 "Invalid Email" = "Invalid Email";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Invalid email or password." = "Invalid email or password.";
 
 /* Invalid Amount Input */
@@ -1448,8 +1448,8 @@
 /* DashSpend */
 "Log in to your account" = "Log in to your account";
 
-/* No comment provided by engineer. */
-"Log out" = "Log out";
+/* Log out button */
+"Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Log out from Uphold";
@@ -1946,7 +1946,7 @@
 /* Usernames */
 "Prove your identity" = "Prove your identity";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Provider" = "Provider";
 
 /* No comment provided by engineer. */
@@ -2193,7 +2193,7 @@
 /* No comment provided by engineer. */
 "Select from Gallery" = "Select from Gallery";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Select gift card provider" = "Select gift card provider";
 
 /* CoinJoin */
