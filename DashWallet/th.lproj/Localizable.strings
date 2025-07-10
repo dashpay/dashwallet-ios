@@ -205,7 +205,7 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "จำนวนเงินที่ส่ง";
 
-/* No comment provided by engineer. */
+/* An error occurred */
 "An error occurred" = "An error occurred";
 
 /* No comment provided by engineer. */
@@ -391,9 +391,6 @@
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "การกำจัดอุปกรณ์นี้คุณจะไม่สามารถเข้าถึงเงินทุนในอุปกรณ์นี้ได้อีกต่อไป สิ่งนี้ควรจะทำเฉพาะในกรณีที่คุณไม่จำเป็นต้องเข้าถึงข้อความรหัสผ่านของคุณและยังลืมรหัส PIN ของคุณอีกด้วย";
-
-/* Call */
-"Call" = "โทร";
 
 /* No comment provided by engineer. */
 "Cancel" = "ยกเลิก";
@@ -741,9 +738,6 @@
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "อุปกรณ์รักษาความปลอดภัยที่ถูกบุกรุก\n'jailbreak' แอพพลิเคชั่นต่าง ๆ สามารถเข้าถึงข้อมูลของแอพพลิเคชั่นอื่นได้ (และสามารถขโมย dash ของคุณได้) กำจัดกระเป๋าสตางค์นี้โดยทันที และกู้คืนบนอุปกรณ์ที่ปลอดภัย";
 
-/* Direction */
-"Direction" = "แนวทางการควบคุม";
-
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "ตัดการเชื่อมต่อบัญชี Coinbase";
 
@@ -960,6 +954,9 @@
 
 /* CrowdNode */
 "First minimum deposit" = "ฝากขั้นต่ำครั้งแรก";
+
+/* DashSpend */
+"Fixed amounts" = "Fixed amounts";
 
 /* Explore Dash: Filters */
 "Fixed denominated amounts" = "Fixed denominated amounts";
@@ -1258,7 +1255,7 @@
 /* CrowdNode Online */
 "Invalid Email" = "อีเมลไม่ถูกต้อง";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Invalid email or password." = "Invalid email or password.";
 
 /* Invalid Amount Input */
@@ -1836,6 +1833,9 @@
 "Personalize" = "ทำให้เป็นส่วนตัว";
 
 /* No comment provided by engineer. */
+"Phone" = "Phone";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "ต้องระบุ PIN ทุกครั้งเพื่อชำระเงิน";
 
 /* Coinbase/Buy Dash */
@@ -1945,6 +1945,9 @@
 
 /* Usernames */
 "Prove your identity" = "Prove your identity";
+
+/* DashSpend */
+"Provider" = "Provider";
 
 /* No comment provided by engineer. */
 "Provider Address" = "ที่อยู่ผู้จัดหา";
@@ -2102,9 +2105,6 @@
 /* No comment provided by engineer. */
 "Save" = "บันทึก";
 
-/* DashSpend */
-"Save %.2f%%" = "Save %.2f%%";
-
 /* No comment provided by engineer. */
 "Save Changes" = "บันทึกการเปลี่ยนแปลง";
 
@@ -2192,6 +2192,9 @@
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "เลือกจากแกลเลอรี่";
+
+/* DashSpend */
+"Select gift card provider" = "Select gift card provider";
 
 /* CoinJoin */
 "Select mixing level" = "เลือกระดับการผสม";
@@ -2304,6 +2307,9 @@
 
 /* Receive screen */
 "Share address" = "แบ่งปันที่อยู่";
+
+/* Explore Dash */
+"Show all locations" = "Show all locations";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "แสดงเนื้อหาในคลิปบอร์ด";
@@ -2508,9 +2514,6 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "แอพพลิเคชั่นนี้คือ ซอฟต์แวร์ที่เปิดเผยหลักการหรือแหล่งที่มาของเทคโนโลยีของซอฟต์แวร์นั้นให้บุคคลภายนอกได้ใช้ ภายใต้เงื่อนไขบางประการที่เปิดโอกาสให้ผู้ใช้ทำการแก้ไข ดัดแปลงและเผยแพร่ซอร์สโค้ดได้ ภายใต้เงื่อนไขทางข้อตกลงทางกฎหมาย";
-
-/* This ATM is located in the */
-"This ATM is located in the" = "ตู้เอทีเอ็มนี้ตั้งอยู่ใน";
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "ขั้นตอนพิเศษนี้แสดงให้เห็นว่าคุณพยายามทำธุรกรรม";
@@ -2795,9 +2798,6 @@
 
 /* No comment provided by engineer. */
 "View All" = "ดูทั้งหมด";
-
-/* View all locations */
-"View all locations" = "ดูสถานที่ทั้งหมด";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "ดูใน Explorer";

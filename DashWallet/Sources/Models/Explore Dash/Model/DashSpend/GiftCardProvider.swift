@@ -24,7 +24,7 @@ enum GiftCardProvider: CaseIterable {
     var displayName: String {
         switch self {
         case .ctx:
-            return "CTXSpend"
+            return "CTX"
         case .piggyCards:
             return "PiggyCards"
         }

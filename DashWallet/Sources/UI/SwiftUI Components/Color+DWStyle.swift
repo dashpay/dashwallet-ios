@@ -50,6 +50,8 @@ extension Color {
         Color("SystemYellowColor")
     }
     
+//    #FFC043
+    
     static var gray300: Color {
         Color("Gray300")
     }

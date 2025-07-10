@@ -116,10 +116,10 @@
 "Accept" = "Terima";
 
 /* Explore */
-"Accept Dash directly" = "Accept Dash directly";
+"Accept Dash directly" = "Terima Dash secara langsung";
 
 /* DashSpend */
-"Accept terms and\nconditions" = "Accept terms and\nconditions";
+"Accept terms and\nconditions" = "Terima syarat dan\nkondisi";
 
 /* CrowdNode */
 "Accept Terms Of Use" = "Terima Ketentuan Penggunaan";
@@ -205,14 +205,14 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "Jumlah Dikirim";
 
-/* No comment provided by engineer. */
-"An error occurred" = "An error occurred";
+/* An error occurred */
+"An error occurred" = "Terjadi kesalahan";
 
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "Pengalaman intuitif dan akrab di semua perangkat Anda";
 
 /* CTXSpend error */
-"An unknown error occurred. Please try again later." = "An unknown error occurred. Please try again later.";
+"An unknown error occurred. Please try again later." = "Terjadi kesalahan yang tidak diketahui. Silakan coba lagi nanti.";
 
 /* CrowdNode */
 "and" = "dan";
@@ -221,7 +221,7 @@
 "Any funds that have been mixed will be combined with your un mixed funds" = "Dana apa pun yang sudah tercampur akan digabungkan dengan dana Anda yang belum tercampur";
 
 /* Usernames */
-"Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved";
+"Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Nama pengguna apa pun yang memiliki angka 2-9, lebih dari 20 karakter atau yang memiliki tanda hubung akan disetujui secara otomatis";
 
 /* Coinbase/Payment Methods */
 "Apple Pay" = "Apple Pay";
@@ -254,7 +254,7 @@
 "Are you sure?" = "Apakah anda yakin?";
 
 /* Voting */
-"As a masternode owner you can vote to approve requested usernames before users will be able to create it.\nYou can block the creation of the usernames that you feel inappropriate." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.\nYou can block the creation of the usernames that you feel inappropriate.";
+"As a masternode owner you can vote to approve requested usernames before users will be able to create it.\nYou can block the creation of the usernames that you feel inappropriate." = "Sebagai pemilik masternode, Anda dapat memberikan suara untuk menyetujui nama pengguna yang diminta sebelum pengguna dapat membuatnya. Anda dapat memblokir pembuatan nama pengguna yang menurut Anda tidak pantas.";
 
 /* CrowdNode */
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "Karena kebanyakan orang tidak memiliki 1000 Dash, Crowdnode telah membuat layanan di mana, dengan mengumpulkan simpanan dari anggota, mereka dapat memperoleh keuntungan dari memiliki Masternode.";
@@ -314,7 +314,7 @@
 "Bank Wire" = "Transfer antar bank";
 
 /* No comment provided by engineer. */
-"Barcode placeholder" = "Barcode placeholder";
+"Barcode placeholder" = "Pengganti kode batang";
 
 /* CrowdNode */
 "Become part of a Dash Masternode with CrowdNode" = "Menjadi bagian dari Masternode Dash dengan CrowdNode";
@@ -344,7 +344,7 @@
 "Block #%d of %d" = "Blok #%1$d dari %2$d";
 
 /* Voting */
-"Blocked '%@' username" = "Blocked '%@' username";
+"Blocked '%@' username" = "Nama pengguna '%@' diblokir";
 
 /* Buy
    buy */
@@ -375,7 +375,7 @@
 "Buy Dash · No account needed" = "Beli Dash · Tidak memerlukan akun";
 
 /* DashSpend */
-"Buy gift card" = "Buy gift card";
+"Buy gift card" = "Beli kartu hadiah";
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash" = "Beli kartu hadiah dengan Dash Anda";
@@ -392,9 +392,6 @@
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Dengan menghapus perangkat ini, Anda tidak lagi memiliki akses ke dana di perangkat ini. Ini hanya boleh dilakukan jika Anda tidak lagi memiliki akses ke kata sandi Anda dan lupa kode PIN Anda.";
 
-/* Call */
-"Call" = "Panggil";
-
 /* No comment provided by engineer. */
 "Cancel" = "Batalkan";
 
@@ -408,7 +405,7 @@
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Membatalkan transaksi ini tidak membatalkan pesanan perdagangan. Anda akan segera menerima DASH di akun Coinbase Anda.";
 
 /* DashSpend */
-"Card number" = "Card number";
+"Card number" = "Nomor kartu";
 
 /* No comment provided by engineer. */
 "Card PIN" = "PIN kartu";
@@ -438,7 +435,7 @@
 "Check your connection" = "Periksa koneksi anda";
 
 /* DashSpend */
-"Check your email and enter the verification code." = "Check your email and enter the verification code.";
+"Check your email and enter the verification code." = "Periksa email anda dan masukkan kode verifikasi.";
 
 /* Choose your Dash username */
 "Choose your" = "Pilih Anda";
@@ -560,7 +557,7 @@
 "Copy Logs" = "Salin Log";
 
 /* No comment provided by engineer. */
-"Copy text" = "Copy text";
+"Copy text" = "Salin teks";
 
 /* No comment provided by engineer. */
 "Copyright © 2023 Dash Core" = "Hak Cipta © 2023 Dash Core";
@@ -602,7 +599,7 @@
 "Create account" = "Buat akun";
 
 /* DashSpend account title */
-"Create an account or log into an existing one" = "Create an account or log into an existing one";
+"Create an account or log into an existing one" = "Buat akun atau masuk ke akun yang sudah ada";
 
 /* CrowdNode */
 "Create an online CrowdNode account" = "Buat akun CrowdNode online";
@@ -611,7 +608,7 @@
 "Create invitation" = "Buat undangan";
 
 /* Create new account */
-"Create new account" = "Create new account";
+"Create new account" = "Buat akun baru";
 
 /* CrowdNode
    CrowdNode Portal */
@@ -741,9 +738,6 @@
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "KEAMANAN PERANGKAT MEMBAHAYAKAN\nAplikasi 'jailbreak' apa pun dapat mengakses data keychain aplikasi lain (dan mencuri Dash Anda). Bersihkan dompet ini segera dan kembalikan pada perangkat yang aman.";
 
-/* Direction */
-"Direction" = "Arah";
-
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Putuskan Sambungan Akun Coinbase";
 
@@ -788,7 +782,7 @@
 "Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "Karena kendala peraturan, Anda tidak dapat menggunakan fitur Coinbase saat Anda berada di Inggris";
 
 /* Usernames */
-"Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username." = "Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username.";
+"Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username." = "Karena proses pemungutan suara, Dash Network telah memutuskan untuk memberikan nama pengguna '%@' kepada orang lain. Silakan coba lagi dengan meminta nama pengguna lain.";
 
 /* CrowdNode */
 "e.g. johndoe@mail.com" = "misalnya johndoe@mail.com";
@@ -806,7 +800,7 @@
 "Edit Profile" = "Sunting profil";
 
 /* No comment provided by engineer. */
-"Edit profile" = "Edit profile";
+"Edit profile" = "Sunting profil";
 
 /* Invitation tag placeholder */
 "eg: Dad" = "mis: Ayah";
@@ -854,7 +848,7 @@
 "Error" = "Kesalahan";
 
 /* CTXSpend error */
-"Error processing server response. Please try again later." = "Error processing server response. Please try again later.";
+"Error processing server response. Please try again later." = "Kesalahan memproses respon server. Silahkan coba lagi nanti.";
 
 /* No comment provided by engineer. */
 "Error updating your profile" = "Terjadi kesalahan saat memperbarui profil Anda";
@@ -887,7 +881,7 @@
 "Face ID limit" = "Identitas wajah terbatas";
 
 /* No comment provided by engineer. */
-"Failed to load barcode" = "Failed to load barcode";
+"Failed to load barcode" = "Gagal memuat kode batang";
 
 /* Coinbase */
 "Failed to start auth session" = "Gagal memulai sesi autentikasi";
@@ -929,7 +923,7 @@
 "Filter" = "Menyaring";
 
 /* No comment provided by engineer. */
-"Filter transactions" = "Filter transactions";
+"Filter transactions" = "Saring transaksi";
 
 /* No comment provided by engineer. */
 "Filtered by" = "Difilter menurut";
@@ -944,13 +938,13 @@
 "Find a user on the Dash Network" = "Temukan pengguna di Jaringan Dash";
 
 /* No comment provided by engineer. */
-"Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
+"Find ATMs where you can buy or sell Dash." = "Temukan ATM dimana anda dapat membeli atau menjual Dash.";
 
 /* No comment provided by engineer. */
 "Find merchants that accept DASH" = "Temukan toko yang menerima Dash";
 
 /* No comment provided by engineer. */
-"Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
+"Find merchants that accept Dash payments." = "Temukan pedagang yang menerima pembayaran Dash.";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "Temukan pedagang yang menerima Dash, tempat membelinya, dan cara memperoleh penghasilan dengannya.";
@@ -961,6 +955,9 @@
 /* CrowdNode */
 "First minimum deposit" = "Setoran minimum pertama";
 
+/* DashSpend */
+"Fixed amounts" = "Fixed amounts";
+
 /* Explore Dash: Filters */
 "Fixed denominated amounts" = "Jumlah denominasi tetap";
 
@@ -968,13 +965,13 @@
 "Flexible amounts" = "Jumlah yang fleksibel";
 
 /* Usernames */
-"For some reason, the request for the username '%@' has failed." = "For some reason, the request for the username '%@' has failed.";
+"For some reason, the request for the username '%@' has failed." = "Untuk sejumlah alasan, permintaan untuk nama pengguna '%@' telah gagal.";
 
 /* Coinbase */
 "For your security, you have been signed out." = "Demi keamanan Anda, Anda telah keluar.";
 
 /* No comment provided by engineer. */
-"Forget about long crypto addresses, create the username, find friends and add them to your contacts" = "Forget about long crypto addresses, create the username, find friends and add them to your contacts";
+"Forget about long crypto addresses, create the username, find friends and add them to your contacts" = "Lupakan alamat kripto yang panjang, buat nama pengguna, temukan teman dan tambahkan mereka ke kontak Anda";
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Lupa PIN?";
@@ -1028,7 +1025,7 @@
 "Get Started" = "Memulai";
 
 /* Usernames */
-"Get started by setting up your profile picture and other information." = "Get started by setting up your profile picture and other information.";
+"Get started by setting up your profile picture and other information." = "Mulailah dengan menyiapkan gambar profil dan informasi lainnya.";
 
 /* No comment provided by engineer. */
 "Get Test Dash" = "Dapatkan Tes Dash";
@@ -1046,10 +1043,10 @@
 "Gift card" = "Kartu Hadiah";
 
 /* DashSpend */
-"Gift card purchase successful" = "Gift card purchase successful";
+"Gift card purchase successful" = "Pembelian kartu hadiah berhasil";
 
 /* No comment provided by engineer. */
-"Gift card purchase was rejected" = "Gift card purchase was rejected";
+"Gift card purchase was rejected" = "Pembelian kartu hadiah ditolak";
 
 /* DashSpend confirmation */
 "Gift card total" = "Total kartu hadiah";
@@ -1058,7 +1055,7 @@
 "Gift card types" = "Tipe kartu hadiah";
 
 /* DashSpend */
-"Gift card · %@" = "Gift card · %@";
+"Gift card · %@" = "Kartu hadiah · %@";
 
 /* No comment provided by engineer. */
 "Go to CrowdNode website" = "Buka situs web CrowdNode";
@@ -1073,7 +1070,7 @@
 "Grant GPS permissions so we can show you locations near you." = "Berikan izin GPS sehingga kami dapat menunjukkan lokasi di dekat Anda.";
 
 /* Voting */
-"Has blocked votes" = "Has blocked votes";
+"Has blocked votes" = "Telah memblokir suara";
 
 /* Username has requested to be your friend */
 "has requested to be your friend" = "telah meminta untuk menjadi temanmu";
@@ -1112,7 +1109,7 @@
 "How to confirm your API Dash address" = "Bagaimana cara mengonfirmasi API alamat Dash Anda";
 
 /* No comment provided by engineer. */
-"How to use your gift card" = "How to use your gift card";
+"How to use your gift card" = "Cara menggunakan kartu hadiah Anda";
 
 /* No comment provided by engineer. */
 "HPMN Operator Keys" = "Kunci Evolution Node ID";
@@ -1136,7 +1133,7 @@
 "I have approved" = "Saya telah menyetujui";
 
 /* Voting */
-"I have not voted" = "I have not voted";
+"I have not voted" = "Saya belum memilih";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "Saya telah mencatat";
@@ -1145,7 +1142,7 @@
 "Identity" = "Identitas";
 
 /* Usernames */
-"If enough of the network feels that a username is inappropriate, they can block it" = "If enough of the network feels that a username is inappropriate, they can block it";
+"If enough of the network feels that a username is inappropriate, they can block it" = "Jika cukup banyak jaringan yang merasa bahwa nama pengguna tidak pantas, mereka dapat memblokirnya";
 
 /* Usernames */
 "If somebody else requests the same username as you, we will let the network decide whom to give this username" = "Jika orang lain meminta nama pengguna yang sama dengan Anda, kami akan membiarkan jaringan memutuskan siapa yang akan memberikan nama pengguna tersebut";
@@ -1205,7 +1202,7 @@
 "In store" = "Di toko";
 
 /* No comment provided by engineer. */
-"In the payment section of your checkout, select \"gift card\" and enter your card number and pin." = "In the payment section of your checkout, select \"gift card\" and enter your card number and pin.";
+"In the payment section of your checkout, select \"gift card\" and enter your card number and pin." = "Di bagian pembayaran pada kasir Anda, pilih \"kartu hadiah\" dan masukkan nomor kartu dan pin Anda.";
 
 /* No comment provided by engineer. */
 "Income" = "Pemasukan";
@@ -1250,7 +1247,7 @@
 "Invalid amount" = "Jumlah tidak valid";
 
 /* CTXSpend error */
-"Invalid amount. Please check merchant limits." = "Invalid amount. Please check merchant limits.";
+"Invalid amount. Please check merchant limits." = "Jumlah tidak valid. Harap periksa batas pedagang.";
 
 /* No comment provided by engineer. */
 "Invalid Dash address" = "Alamat Dash Salah";
@@ -1258,7 +1255,7 @@
 /* CrowdNode Online */
 "Invalid Email" = "Email tidak valid";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Invalid email or password." = "Invalid email or password.";
 
 /* Invalid Amount Input */
@@ -1274,7 +1271,7 @@
 "Invalid QR Code" = "Kode QR tidak valid";
 
 /* CTXSpend error */
-"Invalid verification code. Please try again." = "Invalid verification code. Please try again.";
+"Invalid verification code. Please try again." = "Kode verifikasi tidak valid. Silakan coba lagi.";
 
 /* No comment provided by engineer. */
 "Invitation" = "Undangan";
@@ -1319,7 +1316,7 @@
 "Invite your friends and family to the Dash Network" = "Undang teman dan keluarga Anda ke Jaringan Dash";
 
 /* No comment provided by engineer. */
-"iOS Dash Wallet: %@ Reported issue" = "iOS Dash Wallet: %@ Reported issue";
+"iOS Dash Wallet: %@ Reported issue" = "iOS Dash Wallet: %@ masalah yang dilaporkan";
 
 /* CrowdNode */
 "It can take a minute for your balance to be updated." = "Diperlukan waktu satu menit untuk memperbarui saldo Anda.";
@@ -1337,7 +1334,7 @@
 "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees" = "Disarankan untuk menggunakan jaringan Wi-Fi untuk menghindari biaya mixing tambahan";
 
 /* DashSpend */
-"It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash." = "It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.";
+"It looks like you haven’t used DashSpend in a while. For security reasons, you’ve been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash." = "Sepertinya Anda sudah lama tidak menggunakan DashSpend. Demi alasan keamanan, Anda telah keluar dari akun.\n\nHarap masuk lagi untuk terus mencari tempat untuk membelanjakan Dash Anda.";
 
 /* Coinbase */
 "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "Akan sangat sulit bagi pengguna tingkat lanjut dengan tingkat keahlian teknis apa pun untuk menentukan riwayat transaksi Anda";
@@ -1395,7 +1392,7 @@
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Biarkan teman dan keluarga Anda bergabung dengan Dash Network. Ajak mereka ke dunia perbankan sosial.";
 
 /* Usernames */
-"Letter, numbers and hyphens only" = "Letter, numbers and hyphens only";
+"Letter, numbers and hyphens only" = "Hanya huruf, angka dan tanda hubung";
 
 /* Validation rule */
 "Letters, numbers and hyphens only" = "Hanya huruf, angka, dan tanda hubung";
@@ -1458,13 +1455,13 @@
 "Log out from Uphold" = "Keluar dari Uphold";
 
 /* Logged in status */
-"Logged in" = "Logged in";
+"Logged in" = "Masuk";
 
 /* DashSpend */
-"Logged in as %@" = "Logged in as %@";
+"Logged in as %@" = "Masuk sebagai %@";
 
 /* DashSpend */
-"Logged in to DashSpend account" = "Logged in to DashSpend account";
+"Logged in to DashSpend account" = "Masuk ke akun DashSpend";
 
 /* No comment provided by engineer. */
 "Login with Face ID" = "Masuk dengan Pengenal Wajah";
@@ -1527,7 +1524,7 @@
 "Max" = "Max";
 
 /* DashSpend */
-"Max: %@" = "Max: %@";
+"Max: %@" = "Maks: %@";
 
 /* Usernames */
 "Maximum 75 characters" = "Maksimum 75 karakter";
@@ -1548,10 +1545,10 @@
 "Min: %@" = "Min: %@";
 
 /* CoinJoin */
-"Mix coins" = "Mix coins";
+"Mix coins" = "Mix koin";
 
 /* CoinJoin */
-"Mix your Dash Coins" = "Mix your Dash Coins";
+"Mix your Dash Coins" = "Mix koin Dash anda";
 
 /* No comment provided by engineer. */
 "Mixed balance" = "Saldo Tercampur";
@@ -1560,7 +1557,7 @@
 "Mixing" = "Pencampuran";
 
 /* CoinJoin */
-"Mixing Finishing…" = "Mixing Finishing…";
+"Mixing Finishing…" = "Mixing Akhir...";
 
 /* CoinJoin */
 "Mixing is only possible with the app open" = "Pencampuran hanya dapat dilakukan dengan membuka aplikasi";
@@ -1617,7 +1614,7 @@
 "Network" = "Jaringan";
 
 /* CTXSpend error */
-"Network error. Please check your connection and try again." = "Network error. Please check your connection and try again.";
+"Network error. Please check your connection and try again." = "Kesalahan jaringan. Periksa koneksi anda dan coba lagi.";
 
 /* No comment provided by engineer. */
 "Network fee" = "Biaya jaringan";
@@ -1755,7 +1752,7 @@
 "Password" = "Kata sandi";
 
 /* Usernames */
-"Paste link here" = "Paste link here";
+"Paste link here" = "Tempel tautan disini";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "Tempel URL gambar Anda";
@@ -1797,13 +1794,13 @@
 "Paying..." = "Membayar...";
 
 /* No comment provided by engineer. */
-"Payment failed" = "Payment failed";
+"Payment failed" = "Pembayaran gagal";
 
 /* Coinbase/Buy Dash */
 "Payment method" = "Metode pembayaran";
 
 /* CTXSpend error */
-"Payment processing error: %@" = "Payment processing error: %@";
+"Payment processing error: %@" = "Kesalahan pemrosesan pembayaran: %@";
 
 /* Explore Dash/Merchants/Filters */
 "Payment Type" = "Tipe Pembayaran";
@@ -1836,6 +1833,9 @@
 "Personalize" = "Personalisasi";
 
 /* No comment provided by engineer. */
+"Phone" = "Phone";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN selalu diperlukan untuk melakukan pembayaran";
 
 /* Coinbase/Buy Dash */
@@ -1866,10 +1866,10 @@
 "Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Harap dicatat bahwa email tidak disimpan oleh Dompet Dash dan hanya dikirim ke CrowdNode";
 
 /* Usernames */
-"Please note that the username can NOT be changed once it is registered." = "Please note that the username can NOT be changed once it is registered.";
+"Please note that the username can NOT be changed once it is registered." = "Harap dicatat bahwa nama pengguna TIDAK DAPAT diubah setelah didaftarkan.";
 
 /* Usernames */
-"Please note that you will not be able to change it in future" = "Please note that you will not be able to change it in future";
+"Please note that you will not be able to change it in future" = "Harap dicatat bahwa Anda tidak akan dapat mengubahnya di masa mendatang";
 
 /* Leftover balance warning */
 "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "Harap diperhatikan, Anda tidak akan dapat menarik dana Anda dari CowdNode ke dompet ini sampai Anda menambah saldo ke %@ Dash.";
@@ -1878,7 +1878,7 @@
 "Please place your phone near NFC device." = "Silakan letakkan ponsel Anda di dekat perangkat NFC.";
 
 /* CTXSpend error */
-"Please sign in to your DashSpend account." = "Please sign in to your DashSpend account.";
+"Please sign in to your DashSpend account." = "Silahkan masuk ke akun DashSpend anda.";
 
 /* No comment provided by engineer. */
 "Please tap on the words from your recovery phrase in the right order" = "Ketuk kata-kata dari frasa pemulihan Anda dalam urutan yang benar";
@@ -1911,7 +1911,7 @@
 "Powered by" = "Didukung Oleh";
 
 /* No comment provided by engineer. */
-"Preview" = "Preview";
+"Preview" = "Pratinjau";
 
 /* No comment provided by engineer. */
 "Preview Invitation" = "Pratinjau Undangan";
@@ -1945,6 +1945,9 @@
 
 /* Usernames */
 "Prove your identity" = "Buktikan identitas anda";
+
+/* DashSpend */
+"Provider" = "Provider";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Alamat Penyedia";
@@ -2043,10 +2046,10 @@
 "Report an Issue" = "Laporkan masalah";
 
 /* No comment provided by engineer. */
-"Request a username and say goodbye to numerical addresses" = "Request a username and say goodbye to numerical addresses";
+"Request a username and say goodbye to numerical addresses" = "Minta nama pengguna dan ucapkan selamat tinggal pada alamat numerik";
 
 /* No comment provided by engineer. */
-"Request assistance and show the barcode on your screen for scanning." = "Request assistance and show the barcode on your screen for scanning.";
+"Request assistance and show the barcode on your screen for scanning." = "Minta bantuan dan tunjukkan kode batang di layar Anda untuk dipindai.";
 
 /* Voting */
 "Request details" = "Detail Permintaan";
@@ -2102,9 +2105,6 @@
 /* No comment provided by engineer. */
 "Save" = "Simpan";
 
-/* DashSpend */
-"Save %.2f%%" = "Simpan %.2f%%";
-
 /* No comment provided by engineer. */
 "Save Changes" = "Simpan Perubahan";
 
@@ -2154,7 +2154,7 @@
 "Search results for \"" = "Hasil pencarian \"";
 
 /* No comment provided by engineer. */
-"Search territories" = "Search territories";
+"Search territories" = "Wilayah pencarian";
 
 /* No comment provided by engineer. */
 "Searching for username %@ on the Dash Network" = "Mencari nama pengguna %@ di jaringan Dash";
@@ -2169,7 +2169,7 @@
 "Security Level" = "Tingkat keamanan";
 
 /* No comment provided by engineer. */
-"See how to use this gift card" = "See how to use this gift card";
+"See how to use this gift card" = "Lihat cara menggunakan kartu hadiah ini";
 
 /* No comment provided by engineer. */
 "See on Uphold" = "Lihat di Uphold";
@@ -2192,6 +2192,9 @@
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "Pilih dari galeri";
+
+/* DashSpend */
+"Select gift card provider" = "Select gift card provider";
 
 /* CoinJoin */
 "Select mixing level" = "Pilih level mixing";
@@ -2282,7 +2285,7 @@
 "Sent to" = "Terkirim ke";
 
 /* DashSpend */
-"Server error occurred. Please try again later." = "Server error occurred. Please try again later.";
+"Server error occurred. Please try again later." = "Terjadi kesalahan server. Silakan coba lagi nanti.";
 
 /* No comment provided by engineer. */
 "Set a trusted node" = "Tetapkan node tepercaya";
@@ -2304,6 +2307,9 @@
 
 /* Receive screen */
 "Share address" = "Bagikan alamat";
+
+/* Explore Dash */
+"Show all locations" = "Show all locations";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "Tunjukkan konten dalam clipboard";
@@ -2351,7 +2357,7 @@
 "Sort Contacts" = "Urutkan kontak";
 
 /* Explore Dash/Filters */
-"Sorted by discount" = "Sorted by discount";
+"Sorted by discount" = "Diurutkan berdasarkan diskon";
 
 /* Explore Dash/Filters */
 "Sorted by distance" = "Diurutkan berdasarkan jarak";
@@ -2429,10 +2435,10 @@
 "Tax Category" = "Kategori Pajak";
 
 /* No comment provided by engineer. */
-"Tell the cashier that you'd like to pay with a gift card and share the card number and pin." = "Tell the cashier that you'd like to pay with a gift card and share the card number and pin.";
+"Tell the cashier that you'd like to pay with a gift card and share the card number and pin." = "Beritahu kasir bahwa Anda ingin membayar dengan kartu hadiah dan berikan nomor kartu dan pin.";
 
 /* Terms & conditions */
-"Terms & conditions" = "Terms & conditions";
+"Terms & conditions" = "Syarat dan kondisi";
 
 /* No comment provided by engineer. */
 "Test Dash is free and can be obtained from what is called a faucet." = "Test Dash gratis dan dapat diperoleh melalui apa yang disebut faucet.";
@@ -2450,22 +2456,22 @@
 "The code is incorrect. Please check and try again!" = "Kode tidak benar. Silakan periksa dan coba lagi!";
 
 /* Usernames */
-"The Dash network has to vote to approve some usernames before they are created" = "The Dash network has to vote to approve some usernames before they are created";
+"The Dash network has to vote to approve some usernames before they are created" = "Jaringan Dash harus memberikan suara untuk menyetujui beberapa nama pengguna sebelum dibuat";
 
 /* CrowdNode */
 "The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "Dash Network digerakkan oleh sejumlah Masternode yang merupakan bagian penting dalam memfasilitasi pembayaran.";
 
 /* Usernames */
-"The Dash network will vote on this username. We will notify you of the results on March 14, 2024." = "The Dash network will vote on this username. We will notify you of the results on March 14, 2024.";
+"The Dash network will vote on this username. We will notify you of the results on March 14, 2024." = "Jaringan Dash akan memberikan suara pada nama pengguna ini. Kami akan memberi tahu Anda hasilnya pada tanggal 14 Maret 2024.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Dash berhasil disimpan ke akun Coinbase Anda. Namun terjadi masalah saat mentransfernya ke Dash Wallet di perangkat ini.";
 
 /* Voting */
-"The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter.";
+"The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "Filter default hanya menampilkan nama pengguna duplikat yang BELUM Anda pilih, tetapi Anda dapat melihat dan memilih nama pengguna yang diperebutkan dengan mengubah filter.";
 
 /* Explore */
-"The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps.";
+"The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "Yang pertama menerima Dash secara langsung. Yang lainnya menerima kartu hadiah yang dapat Anda beli dengan Dash dengan jumlah yang sama dengan jumlah pembelian Anda dalam dua ketukan.";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "Gambar yang Anda pilih akan diunggah ke Imgur secara anonim.";
@@ -2477,10 +2483,10 @@
 "The minimum amount you can send is %@" = "Jumlah minimum yang dapat Anda kirim adalah %@";
 
 /* DashSpend */
-"The purchase limits for this merchant have changed. Please contact CTX Support for more information." = "The purchase limits for this merchant have changed. Please contact CTX Support for more information.";
+"The purchase limits for this merchant have changed. Please contact CTX Support for more information." = "Batasan pembelian untuk pedagang ini telah berubah. Silakan hubungi Dukungan CTX untuk informasi lebih lanjut.";
 
 /* Usernames */
-"The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
+"The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "Nama pengguna '%@' telah diblokir oleh jaringan Dash. Silahkan mencoba kembali dengan meminta nama pengguna lain.";
 
 /* No comment provided by engineer. */
 "them (Fetching Info)" = "mereka (Mengambil Info)";
@@ -2509,17 +2515,14 @@
 /* No comment provided by engineer. */
 "This app is open source:" = "Aplikasi ini adalah open source:";
 
-/* This ATM is located in the */
-"This ATM is located in the" = "ATM ini terletak di";
-
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "Langkah ekstra ini menunjukkan bahwa Anda benar-benar mencoba melakukan transaksi.";
 
 /* CTXSpend error */
-"This merchant is currently unavailable." = "This merchant is currently unavailable.";
+"This merchant is currently unavailable." = "Pedagang saat ini tidak tersedia.";
 
 /* DashSpend */
-"This merchant is currently unavailable. Please try again later or choose a different merchant." = "This merchant is currently unavailable. Please try again later or choose a different merchant.";
+"This merchant is currently unavailable. Please try again later or choose a different merchant." = "Pedagang ini saat ini tidak tersedia. Silakan coba lagi nanti atau pilih pedagang lain.";
 
 /* DashSpend */
 "This merchant sells gift cards at fixed prices" = "Pedagang ini menjual kartu hadiah dengan harga tetap";
@@ -2534,10 +2537,10 @@
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "Ini mewakili Persentase Hasil Tahunan saat ini dari Masternode penuh dikurangi biaya CrowdNode 15%. Ini bukan tingkat pengembalian yang dijamin dan dapat naik atau turun berdasarkan ukuran  CrowdNode pool dan harga Dash.";
 
 /* Usernames */
-"This username is already created by someone else" = "This username is already created by someone else";
+"This username is already created by someone else" = "Nama pengguna ini telah dibuat oleh orang lain";
 
 /* Usernames */
-"This username is blocked by the Dash Network" = "This username is blocked by the Dash Network";
+"This username is blocked by the Dash Network" = "Nama pengguna ini diblokir oleh Jaringan Dash";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Dompet ini tidak kosong atau sinkronisasi belum selesai, Anda tidak dapat menghapusnya tanpa frasa pemulihan";
@@ -2665,7 +2668,7 @@
 "Unblock" = "buka blokir";
 
 /* Voting */
-"Unblocked '%@' username" = "Unblocked '%@' username";
+"Unblocked '%@' username" = "Nama pengguna '%@' tidak diblokir";
 
 /* No comment provided by engineer. */
 "Unknown" = "Tidak diketahui";
@@ -2695,7 +2698,7 @@
 "Upgrade" = "Tingkatkan";
 
 /* No comment provided by engineer. */
-"Upgrade to DashPay" = "Upgrade to DashPay";
+"Upgrade to DashPay" = "Tingkatkan ke DashPay";
 
 /* No comment provided by engineer. */
 "Upgrade to Evolution" = "Tingkatkan ke Evolusi";
@@ -2734,7 +2737,7 @@
 "Username" = "Nama pengguna";
 
 /* Usernames */
-"Username %@ has been requested on the Dash network. After the voting ends (%@) we will notify you about its results" = "Username %1$@ has been requested on the Dash network. After the voting ends (%2$@) we will notify you about its results";
+"Username %@ has been requested on the Dash network. After the voting ends (%@) we will notify you about its results" = "Nama pengguna %1$@ telah diminta di jaringan Dash. Setelah pemungutan suara berakhir (%2$@) kami akan memberitahukan Anda tentang hasilnya";
 
 /* No comment provided by engineer. */
 "Username already found" = "Nama pengguna sudah ditemukan";
@@ -2746,7 +2749,7 @@
 "Username is available" = "Nama pengguna tersedia";
 
 /* Usernames */
-"Username request failed" = "Username request failed";
+"Username request failed" = "Permintaan nama pengguna gagal";
 
 /* No comment provided by engineer. */
 "Username taken" = "Nama pengguna telah diambil";
@@ -2796,9 +2799,6 @@
 /* No comment provided by engineer. */
 "View All" = "Lihat semua";
 
-/* View all locations */
-"View all locations" = "Lihat semua lokasi";
-
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Lihat di Explorer";
 
@@ -2809,7 +2809,7 @@
 "View Recovery Phrase" = "Lihat frasa pemulihan";
 
 /* No comment provided by engineer. */
-"View transaction details" = "View transaction details";
+"View transaction details" = "Lihat Detail Transaksi";
 
 /* Voting */
 "Vote for All" = "Pilih untuk semua";
@@ -2827,7 +2827,7 @@
 "Voting Address" = "Alamat pemungutan suara";
 
 /* Voting */
-"Voting ends in %dd" = "Voting ends in %dd";
+"Voting ends in %dd" = "Pemungutan suara berakhir dalam %dh";
 
 /* Usernames */
 "Voting is only required in some cases" = "Pemungutan suara hanya diperlukan dalam beberapa kasus";
@@ -2869,7 +2869,7 @@
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Kami telah mendeteksi bahwa Dash Wallet macet selama migrasi. Memindai ulang blockchain akan menyelesaikan masalah ini atau Anda dapat mencoba lagi. Pemindaian ulang sebaiknya dilakukan pada wifi dan akan memakan waktu hingga setengah jam. Dana Anda akan tersedia setelah proses sinkronisasi selesai.";
 
 /* Explore */
-"We have two types of merchants" = "We have two types of merchants";
+"We have two types of merchants" = "Kami memiliki dua jenis pedagang";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Kami meningkatkan";
@@ -2957,7 +2957,7 @@
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Anda akan menghapus dompet ini dari perangkat ini. Dana yang terkait dengan dompet ini hanya dapat diambil jika Anda memiliki frasa pemulihan.";
 
 /* DashSpend */
-"You are buying a %@ gift card for %@ (%d%% discount)" = "You are buying a %1$@ gift card for %2$@ (%3$d%% discount)";
+"You are buying a %@ gift card for %@ (%d%% discount)" = "Anda membeli %1$@ kartu hadiah untuk %2$@(%3$d%% diskon)";
 
 /* No comment provided by engineer. */
 "You can always delete the image uploaded, as long as you have access to this wallet." = "Anda selalu dapat menghapus gambar yang diunggah, selama Anda memiliki akses ke dompet ini.";
@@ -2978,7 +2978,7 @@
 "You can enter your key in any of the following formats: WIF/base58/base64/hex" = "Anda dapat memasukkan kunci Anda dalam salah satu format berikut: WIF/base58/base64/hex";
 
 /* Explore */
-"You can pay with Dash at the cashier." = "You can pay with Dash at the cashier.";
+"You can pay with Dash at the cashier." = "Anda dapat membayar dengan Dash di kasir.";
 
 /* CrowdNode */
 "You can see detailed information about your deposits, withdrawals and reward earnings." = "Anda dapat melihat informasi terperinci tentang setoran, penarikan, dan hadiah penghasilan Anda.";
@@ -2990,10 +2990,10 @@
 "You cannot claim this invite since you already have a Dash username" = "Anda tidak dapat mengklaim undangan ini karena Anda sudah memiliki nama pengguna Dash";
 
 /* Usernames */
-"You chose “%@” as your username." = "You chose “%@” as your username.";
+"You chose “%@” as your username." = "Anda memilih \"%@\" sebagai nama pengguna anda.";
 
 /* CoinJoin */
-"You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
+"You Dash was mixed using these transactions." = "Dash Anda di Mix menggunakan transaksi ini.";
 
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "Anda tidak memiliki kontak saat ini";
@@ -3008,13 +3008,13 @@
 "You exceeded the authorization limit on Coinbase." = "Anda melampaui batas otorisasi di Coinbase.";
 
 /* Usernames */
-"You have %@ Dash.\nSome usernames cost up to %@ Dash." = "You have %1$@ Dash.\nSome usernames cost up to %2$@ Dash.";
+"You have %@ Dash.\nSome usernames cost up to %@ Dash." = "Anda mempunyai %1$@ Dash.\nBeberapa nama pengguna berharga hingga %2$@ Dash.";
 
 /* Voting */
-"You have already voted for this username %ld times. You can only cast one more vote for this username." = "You have already voted for this username %ld times. You can only cast one more vote for this username.";
+"You have already voted for this username %ld times. You can only cast one more vote for this username." = "Anda sudah memberikan suara untuk nama pengguna ini %ld kali. Anda hanya dapat memberikan suara satu kali lagi untuk nama pengguna ini.";
 
 /* Voting */
-"You have already voted for this username %ld times. You cannot vote for it anymore." = "You have already voted for this username %ld times. You cannot vote for it anymore.";
+"You have already voted for this username %ld times. You cannot vote for it anymore." = "Anda telah memilih nama pengguna ini %ld kali. Anda tidak dapat memilihnya lagi.";
 
 /* No comment provided by engineer. */
 "You have been invited by %@. Start using Dash cryptocurrency." = "Anda telah diundang oleh %@. Mulai gunakan cryptocurrency Dash.";
@@ -3041,13 +3041,13 @@
 "You need at least %@ on your Dash Wallet" = "Anda membutuhkan setidaknya %@ dash di  Wallet Anda";
 
 /* Usernames */
-"You need to have more %@ Dash to create this username" = "You need to have more %@ Dash to create this username";
+"You need to have more %@ Dash to create this username" = "Anda harus mempunyai lebih dari %@ Dash untuk membuat nama pengguna ini";
 
 /* Usernames */
-"You need to have more than %@ Dash to create a username" = "You need to have more than %@ Dash to create a username";
+"You need to have more than %@ Dash to create a username" = "Anda harus mempunyai lebih dari %@ Dash untuk membuat nama pengguna";
 
 /* DashSpend */
-"You need to sign in to DashSpend to purchase gift cards." = "You need to sign in to DashSpend to purchase gift cards.";
+"You need to sign in to DashSpend to purchase gift cards." = "Anda harus masuk ke DashSpend untuk membeli kartu hadiah.";
 
 /* CrowdNode */
 "You need to wait 5 minutes before initiating another withdrawal" = "Anda harus menunggu 5 menit sebelum memulai penarikan lainnya";
@@ -3152,10 +3152,10 @@
 "Your request was cancelled" = "Permintaan anda telah dibatalkan";
 
 /* DashSpend */
-"Your session expired" = "Your session expired";
+"Your session expired" = "Sesi anda telah kedaluwarsa";
 
 /* DashSpend */
-"Your transaction was rejected. Please try again or contact support if the problem persists." = "Your transaction was rejected. Please try again or contact support if the problem persists.";
+"Your transaction was rejected. Please try again or contact support if the problem persists." = "Transaksi Anda ditolak. Silakan coba lagi atau hubungi dukungan jika masalah masih berlanjut.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Transaksi Anda telah dikirim dan jumlahnya akan muncul di dompet Anda dalam beberapa menit.";
@@ -3167,7 +3167,7 @@
 "Your username %@ is being created on the Dash Network" = "Nama pengguna anda %@ sedang dibuat di Dash Network";
 
 /* Usernames */
-"Your username has been successfully created" = "Your username has been successfully created";
+"Your username has been successfully created" = "Nama pengguna Anda telah berhasil dibuat";
 
 /* No comment provided by engineer. */
 "Your vote was cancelled" = "Pilihan anda telah dibatalkan";

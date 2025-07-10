@@ -205,7 +205,7 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "Halagang ipinadala";
 
-/* No comment provided by engineer. */
+/* An error occurred */
 "An error occurred" = "An error occurred";
 
 /* No comment provided by engineer. */
@@ -391,9 +391,6 @@
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Sa pag-wipe nitong device hindi mo na maaaring ma-access ang iyong pondo sa device na ito. Ito ay maaari mo lamang gawin kung wala ka na talagang access sa iyong passphrase at nakalimutan mo na rin ang iyong PIN code.";
-
-/* Call */
-"Call" = "Tumawag";
 
 /* No comment provided by engineer. */
 "Cancel" = "I-cancel";
@@ -741,9 +738,6 @@
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAnumang 'jailbreak' app ay maaaring maka-access ng app's keychain data (at nakawin ang iyong Dash). I-wipe kaagad itong pitaka at i-restore sa ligtas na device.";
 
-/* Direction */
-"Direction" = "Direksyon";
-
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Idiskonekta ang Coinbase Account";
 
@@ -960,6 +954,9 @@
 
 /* CrowdNode */
 "First minimum deposit" = "Unang Minimum na Deposito";
+
+/* DashSpend */
+"Fixed amounts" = "Fixed amounts";
 
 /* Explore Dash: Filters */
 "Fixed denominated amounts" = "Mga nakapirming halaga";
@@ -1258,7 +1255,7 @@
 /* CrowdNode Online */
 "Invalid Email" = "Hindi wastong email";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Invalid email or password." = "Invalid email or password.";
 
 /* Invalid Amount Input */
@@ -1836,6 +1833,9 @@
 "Personalize" = "I-personalize";
 
 /* No comment provided by engineer. */
+"Phone" = "Phone";
+
+/* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Ang PIN ay laging kailangan sa pagbabayad.";
 
 /* Coinbase/Buy Dash */
@@ -1945,6 +1945,9 @@
 
 /* Usernames */
 "Prove your identity" = "Patunayan ang iyong pagkakakilanlan";
+
+/* DashSpend */
+"Provider" = "Provider";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Address ng tagapagbigay ng serbisyo";
@@ -2102,9 +2105,6 @@
 /* No comment provided by engineer. */
 "Save" = "I-save";
 
-/* DashSpend */
-"Save %.2f%%" = "Makatipid ng %.2f%%";
-
 /* No comment provided by engineer. */
 "Save Changes" = "I-save ang mga pagbabago";
 
@@ -2192,6 +2192,9 @@
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "Pumili mula sa Gallery";
+
+/* DashSpend */
+"Select gift card provider" = "Select gift card provider";
 
 /* CoinJoin */
 "Select mixing level" = "Piliin ang antas ng paghahalo";
@@ -2304,6 +2307,9 @@
 
 /* Receive screen */
 "Share address" = "Ibahagi ang address";
+
+/* Explore Dash */
+"Show all locations" = "Show all locations";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "Ipakita ang nilalaman sa clipboard";
@@ -2508,9 +2514,6 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Ang app na ito ay open source";
-
-/* This ATM is located in the */
-"This ATM is located in the" = "Ang ATM na ito ay matatagpuan sa";
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "Ipinapakita ng karagdagang hakbang na ito na ikaw talaga ang sumusubok na gumawa ng transaksyon.";
@@ -2795,9 +2798,6 @@
 
 /* No comment provided by engineer. */
 "View All" = "Tingnan lahat";
-
-/* View all locations */
-"View all locations" = "Tingnan ang lahat ng lokasyon";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Tingnan sa Explorer";

@@ -141,7 +141,7 @@ class ExplorePointOfUseListViewController: UIViewController {
 
     // MARK: life cycle
     internal func show(pointOfUse: ExplorePointOfUse) {
-        let vc = PointOfUseDetailsViewController(pointOfUse: pointOfUse)
+        let vc = POIDetailsViewController(pointOfUse: pointOfUse)
         vc.payWithDashHandler = payWithDashHandler
         vc.sellDashHandler = sellDashHandler
         vc.onGiftCardPurchased = onGiftCardPurchased
