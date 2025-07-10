@@ -198,7 +198,7 @@ class MerchantDAO: PointOfUseDAO {
                 for (index, item) in items.enumerated() {
                     if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
                         let providersQuery = """
-                            SELECT provider FROM gift_card_providers 
+                            SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers 
                             WHERE merchantId = '\(merchant.merchantId)'
                         """
                         
@@ -207,8 +207,14 @@ class MerchantDAO: PointOfUseDAO {
                             var providers: [ExplorePointOfUse.Merchant.GiftCardProviderInfo] = []
                             
                             for row in rows {
-                                if let providerId = row[0] as? String {
-                                    providers.append(ExplorePointOfUse.Merchant.GiftCardProviderInfo(providerId: providerId))
+                                if let providerId = row[0] as? String,
+                                   let savingsPercentage = row[1] as? Int64,
+                                   let denominationsType = row[2] as? String {
+                                    providers.append(ExplorePointOfUse.Merchant.GiftCardProviderInfo(
+                                        providerId: providerId,
+                                        savingsPercentage: Int(savingsPercentage),
+                                        denominationsType: denominationsType
+                                    ))
                                 }
                             }
                             

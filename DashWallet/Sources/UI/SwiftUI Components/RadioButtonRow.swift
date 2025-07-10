@@ -26,14 +26,16 @@ struct RadioButtonRow: View {
     
     let title: String
     let subtitle: String?
+    let trailingText: String?
     let icon: IconName?
     let isSelected: Bool
     let style: Style
     let action: () -> Void
     
-    init(title: String, subtitle: String? = nil, icon: IconName? = nil, isSelected: Bool, style: Style = .radio, action: @escaping () -> Void) {
+    init(title: String, subtitle: String? = nil, trailingText: String? = nil, icon: IconName? = nil, isSelected: Bool, style: Style = .radio, action: @escaping () -> Void) {
         self.title = title
         self.subtitle = subtitle
+        self.trailingText = trailingText
         self.icon = icon
         self.isSelected = isSelected
         self.style = style
@@ -62,6 +64,13 @@ struct RadioButtonRow: View {
                 }
                 
                 Spacer()
+                
+                if let trailingText = trailingText {
+                    Text(trailingText)
+                        .font(.body2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.primaryText)
+                }
                 
                 switch style {
                 case .radio:

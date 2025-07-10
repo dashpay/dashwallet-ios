@@ -271,10 +271,14 @@ struct POIDetailsView: View {
             
             VStack(spacing: 8) {
                 ForEach(Array(viewModel.supportedProviders.keys), id: \.self) { provider in
-                    let isFixedDenom = viewModel.supportedProviders[provider] ?? false
+                    let providerData = viewModel.supportedProviders[provider] ?? (isFixed: false, discount: 0)
+                    let isFixedDenom = providerData.isFixed
+                    let discount = providerData.discount
+                    
                     RadioButtonRow(
                         title: provider.displayName,
                         subtitle: isFixedDenom ? NSLocalizedString("Fixed amounts", comment: "DashSpend") : NSLocalizedString("Flexible amounts", comment: "DashSpend"),
+                        trailingText: discount > 0 ? String(format: "-%.0f%%", Double(discount) / 100.0) : nil,
                         isSelected: viewModel.selectedProvider == provider,
                         style: .radio
                     ) {
@@ -304,11 +308,13 @@ struct POIDetailsView: View {
                 tintColor: .primaryText
             )
             
-            if case .merchant(let m) = merchant.category, m.savingsBasisPoints > 0 {
+            if let selectedProvider = viewModel.selectedProvider,
+               let providerData = viewModel.supportedProviders[selectedProvider],
+               providerData.discount > 0 {
                 infoBox(
                     icon: "image.discount",
                     title: NSLocalizedString("Save", comment: ""),
-                    value: String(format: "%.0f%%", m.toSavingPercentages()),
+                    value: String(format: "%.0f%%", Double(providerData.discount) / 100.0),
                     tintColor: .systemYellow
                 )
             }

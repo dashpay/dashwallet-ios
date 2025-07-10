@@ -40,7 +40,7 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
     @Published private(set) var networkStatus: NetworkStatus = .offline
     @Published private(set) var syncState: SyncingActivityMonitor.State = .unknown
     @Published private(set) var distanceText: String? = nil
-    @Published private(set) var supportedProviders: [GiftCardProvider: Bool] = [:]
+    @Published private(set) var supportedProviders: [GiftCardProvider: (isFixed: Bool, discount: Int)] = [:]
     @Published private(set) var selectedProvider: GiftCardProvider? = nil
     @Published private(set) var showProviderPicker: Bool = false
     
@@ -138,19 +138,20 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
         }
         
         // Get gift card providers from the merchant data
-        let providers = m.giftCardProviders.compactMap { $0.provider }
-        let isFixedDenomination = m.denominationsType == DenominationType.Fixed.rawValue
-        
-        // Set up supported providers based on what's in the database
-        for provider in providers {
-            supportedProviders[provider] = isFixedDenomination
+        for providerInfo in m.giftCardProviders {
+            guard let provider = providerInfo.provider else { continue }
+            
+            let isFixed = providerInfo.denominationsType == DenominationType.Fixed.rawValue
+            let discount = providerInfo.savingsPercentage
+            
+            supportedProviders[provider] = (isFixed: isFixed, discount: discount)
         }
         
         // Determine if we need to show the provider picker
-        showProviderPicker = providers.count > 1
+        showProviderPicker = supportedProviders.count > 1
         
         // Select the first available provider
-        selectedProvider = providers.first
+        selectedProvider = supportedProviders.keys.first
         
         // Start observing the selected provider
         if let selectedProvider = selectedProvider {

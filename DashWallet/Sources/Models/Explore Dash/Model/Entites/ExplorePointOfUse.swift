@@ -37,9 +37,13 @@ extension ExplorePointOfUse {
         struct GiftCardProviderInfo {
             let providerId: String
             let provider: GiftCardProvider?
+            let savingsPercentage: Int
+            let denominationsType: String
             
-            init(providerId: String) {
+            init(providerId: String, savingsPercentage: Int = 0, denominationsType: String = "") {
                 self.providerId = providerId
+                self.savingsPercentage = savingsPercentage
+                self.denominationsType = denominationsType
                 switch providerId.lowercased() {
                 case "ctx":
                     self.provider = .ctx
