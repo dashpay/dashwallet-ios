@@ -644,6 +644,12 @@
 /* No comment provided by engineer. */
 "CSV Export" = "CSVのエクスポート";
 
+/* Explore Dash/Filters */
+"CTX gift card" = "CTX gift card";
+
+/* Explore Dash: Filters */
+"CTX gift cards" = "CTX gift cards";
+
 /* Crowdnode */
 "Current APY = %@" = "現在のAPY = %@";
 
@@ -1035,9 +1041,6 @@
 
 /* CrowdNode */
 "Getting started with CrowdNode" = "CrowdNodeではじめる";
-
-/* Explore Dash: Filters */
-"Gift Card" = "ギフトカード";
 
 /* No comment provided by engineer. */
 "Gift card" = "ギフトカード";
@@ -1802,9 +1805,6 @@
 /* CTXSpend error */
 "Payment processing error: %@" = "決済処理エラー: %@";
 
-/* Explore Dash/Merchants/Filters */
-"Payment Type" = "支払い方法";
-
 /* No comment provided by engineer. */
 "Payments made directly to addresses won’t be retained in activity." = "アドレスに直接支払われたものは、アクティビティに保持されません。";
 
@@ -1834,6 +1834,12 @@
 
 /* No comment provided by engineer. */
 "Phone" = "Phone";
+
+/* Explore Dash: Filters */
+"Piggy Cards gift cards" = "Piggy Cards gift cards";
+
+/* Explore Dash/Filters */
+"PiggyCards gift card" = "PiggyCards gift card";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "お支払いにはPINが必要です";
@@ -2371,6 +2377,9 @@
 /* No comment provided by engineer. */
 "Spending Confirmation" = "支出の確認";
 
+/* Explore Dash/Merchants/Filters */
+"Spending options" = "Spending options";
+
 /* No comment provided by engineer. */
 "Staking" = "ステーキング";
 
@@ -2720,9 +2729,6 @@
 
 /* No comment provided by engineer. */
 "Uploading your picture to the network" = "ネットワークに写真をアップロード中";
-
-/* Explore Dash/Filters */
-"Use gift card" = "ギフトカードを使用する";
 
 /* No comment provided by engineer. */
 "Used" = "使用済み";

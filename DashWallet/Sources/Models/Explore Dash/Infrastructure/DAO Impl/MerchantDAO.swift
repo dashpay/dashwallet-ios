@@ -43,7 +43,7 @@ class MerchantDAO: PointOfUseDAO {
                bounds: ExploreMapBounds?,
                userLocation: CLLocationCoordinate2D?,
                types: [ExplorePointOfUse.Merchant.`Type`],
-               paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?,
+               paymentMethods: [PointOfUseListFilters.SpendingOptions]?,
                sortBy: PointOfUseListFilters.SortBy?,
                territory: Territory?,
                denominationType: PointOfUseListFilters.DenominationType?,
@@ -69,7 +69,17 @@ class MerchantDAO: PointOfUseDAO {
 
             // Add payment methods
             if let methods = paymentMethods {
-                queryFilter = queryFilter && methods.map { $0.rawValue }.contains(paymentMethodColumn)
+                var tempMethods: [ExplorePointOfUse.Merchant.PaymentMethod] = []
+                
+                if methods.contains(PointOfUseListFilters.SpendingOptions.dash) {
+                    tempMethods.append(ExplorePointOfUse.Merchant.PaymentMethod.dash)
+                }
+                
+                if methods.contains(PointOfUseListFilters.SpendingOptions.ctx) || methods.contains(PointOfUseListFilters.SpendingOptions.piggyCards) {
+                    tempMethods.append(ExplorePointOfUse.Merchant.PaymentMethod.giftCard)
+                }
+                
+                queryFilter = queryFilter && tempMethods.map { $0.rawValue }.contains(paymentMethodColumn)
             }
             
             // Filter out URL-based redemption merchants (not supported)
@@ -177,21 +187,21 @@ class MerchantDAO: PointOfUseDAO {
 
 extension MerchantDAO {
     func onlineMerchants(query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?, sortBy: PointOfUseListFilters.SortBy?,
-                         paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
+                         paymentMethods: [PointOfUseListFilters.SpendingOptions]?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
                          completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         items(query: query, bounds: nil, userLocation: userPoint, types: [.online, .onlineAndPhysical],
               paymentMethods: paymentMethods, sortBy: sortBy, territory: nil, denominationType: denominationType, offset: offset, completion: completion)
     }
 
     func nearbyMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
-                         paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
+                         paymentMethods: [PointOfUseListFilters.SpendingOptions]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
                          completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         items(query: query, bounds: bounds, userLocation: userPoint, types: [.physical, .onlineAndPhysical],
               paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, denominationType: denominationType, offset: offset, completion: completion)
     }
 
     func allMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
-                      paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
+                      paymentMethods: [PointOfUseListFilters.SpendingOptions]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
                       completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         items(query: query, bounds: bounds, userLocation: userPoint, types: [.online, .onlineAndPhysical, .physical], paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, denominationType: denominationType, offset: offset,
               completion: completion)
@@ -257,6 +267,22 @@ extension MerchantDAO {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }
             do {
+                // Print first 2 rows from gift_card_providers table
+                let giftCardProvidersQuery = "SELECT * FROM gift_card_providers LIMIT 2"
+                do {
+                    let rows = try wSelf.connection.db.prepare(giftCardProvidersQuery)
+                    print("=== First 2 rows from gift_card_providers table ===")
+                    for (index, row) in rows.enumerated() {
+                        print("Row \(index + 1):")
+                        for (columnIndex, value) in row.enumerated() {
+                            print("  Column \(columnIndex): \(value ?? "NULL")")
+                        }
+                    }
+                    print("=== End of gift_card_providers data ===")
+                } catch {
+                    print("Error reading gift_card_providers table: \(error)")
+                }
+                
                 let items: [Territory] = try wSelf.connection.execute(query: query)
                 self?.cachedTerritories = items
                 completion(.success(items))
@@ -267,5 +293,3 @@ extension MerchantDAO {
         }
     }
 }
-
-

@@ -644,6 +644,12 @@
 /* No comment provided by engineer. */
 "CSV Export" = "CSV 내보내기";
 
+/* Explore Dash/Filters */
+"CTX gift card" = "CTX gift card";
+
+/* Explore Dash: Filters */
+"CTX gift cards" = "CTX gift cards";
+
 /* Crowdnode */
 "Current APY = %@" = "현재 APY = %@";
 
@@ -1035,9 +1041,6 @@
 
 /* CrowdNode */
 "Getting started with CrowdNode" = "크라우드노드 시작하기";
-
-/* Explore Dash: Filters */
-"Gift Card" = "기프트 카드";
 
 /* No comment provided by engineer. */
 "Gift card" = "기프트 카드";
@@ -1802,9 +1805,6 @@
 /* CTXSpend error */
 "Payment processing error: %@" = "Payment processing error: %@";
 
-/* Explore Dash/Merchants/Filters */
-"Payment Type" = "지불 유형";
-
 /* No comment provided by engineer. */
 "Payments made directly to addresses won’t be retained in activity." = "주소로 직접 지불된 경우 활동에서 나타나지 않습니다.";
 
@@ -1834,6 +1834,12 @@
 
 /* No comment provided by engineer. */
 "Phone" = "Phone";
+
+/* Explore Dash: Filters */
+"Piggy Cards gift cards" = "Piggy Cards gift cards";
+
+/* Explore Dash/Filters */
+"PiggyCards gift card" = "PiggyCards gift card";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "지불을 처리하기 위해서는 언제나 PIN이 필요합니다";
@@ -2371,6 +2377,9 @@
 /* No comment provided by engineer. */
 "Spending Confirmation" = "승인 보내는 중";
 
+/* Explore Dash/Merchants/Filters */
+"Spending options" = "Spending options";
+
 /* No comment provided by engineer. */
 "Staking" = "스테이킹";
 
@@ -2720,9 +2729,6 @@
 
 /* No comment provided by engineer. */
 "Uploading your picture to the network" = "당신의 사진을 네트워크에 업로드 중입니다";
-
-/* Explore Dash/Filters */
-"Use gift card" = "기프트 카드 사용";
 
 /* No comment provided by engineer. */
 "Used" = "사용됨";

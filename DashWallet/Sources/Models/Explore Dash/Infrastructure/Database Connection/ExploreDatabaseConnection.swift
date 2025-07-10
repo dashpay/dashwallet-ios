@@ -31,7 +31,7 @@ let kExploreDashDatabaseName = "explore.db"
 // MARK: - ExploreDatabaseConnection
 
 class ExploreDatabaseConnection {
-    private var db: Connection!
+    var db: Connection!
 
     init() {
         NotificationCenter.default.addObserver(forName: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification,

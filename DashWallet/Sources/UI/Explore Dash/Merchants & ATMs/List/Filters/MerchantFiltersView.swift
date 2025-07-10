@@ -45,7 +45,7 @@ struct MerchantFiltersView: View {
             ScrollView {
                 VStack(spacing: 0) {
                     // Sort By Section - Only show if there are multiple options
-                    if viewModel.sortOptions.contains(.distance) || viewModel.useGiftCard {
+                    if viewModel.sortOptions.contains(.distance) || viewModel.ctxGiftCards || viewModel.piggyGiftCards {
                         FilterSection(title: NSLocalizedString("Sort by", comment: "Explore Dash/Merchants/Filters")) {
                             RadioButtonRow(
                                 title: NSLocalizedString("Name", comment: "Explore Dash: Filters"),
@@ -76,29 +76,38 @@ struct MerchantFiltersView: View {
                     
                     if viewModel.showPaymentTypes {
                         // Payment Type Section
-                        FilterSection(title: NSLocalizedString("Payment Type", comment: "Explore Dash/Merchants/Filters")) {
+                        FilterSection(title: NSLocalizedString("Spending options", comment: "Explore Dash/Merchants/Filters")) {
                             RadioButtonRow(
                                 title: NSLocalizedString("Dash", comment: "Explore Dash: Filters"),
-                                icon: .custom("image.explore.dash.wts.payment.dash"),
+                                icon: .custom("dashCurrency", maxHeight: 20),
                                 isSelected: viewModel.payWithDash,
                                 style: .checkbox
                             ) {
                                 viewModel.togglePaymentMethod(.dash)
                             }
-                                
+                            
                             RadioButtonRow(
-                                title: NSLocalizedString("Gift Card", comment: "Explore Dash: Filters"),
-                                icon: .custom("image.explore.dash.wts.payment.gift-card"),
-                                isSelected: viewModel.useGiftCard,
+                                title: NSLocalizedString("CTX gift cards", comment: "Explore Dash: Filters"),
+                                icon: .custom("ctx.logo"),
+                                isSelected: viewModel.ctxGiftCards,
                                 style: .checkbox
                             ) {
-                                viewModel.togglePaymentMethod(.giftCard)
+                                viewModel.togglePaymentMethod(.ctx)
+                            }
+                            
+                            RadioButtonRow(
+                                title: NSLocalizedString("Piggy Cards gift cards", comment: "Explore Dash: Filters"),
+                                icon: .custom("piggycards.logo.small"),
+                                isSelected: viewModel.piggyGiftCards,
+                                style: .checkbox
+                            ) {
+                                viewModel.togglePaymentMethod(.piggyCards)
                             }
                         }
                     }
                         
                     // Gift Card Types Section - Only show if Gift Card is selected
-                    if viewModel.showGiftCardTypes && viewModel.useGiftCard {
+                    if viewModel.showGiftCardTypes && (viewModel.ctxGiftCards || viewModel.piggyGiftCards) {
                         FilterSection(title: NSLocalizedString("Gift card types", comment: "Explore Dash/Merchants/Filters")) {
                             RadioButtonRow(
                                 title: NSLocalizedString("Flexible amounts", comment: "Explore Dash: Filters"),
@@ -173,7 +182,7 @@ struct MerchantFiltersView: View {
                     }
                 }
                 .padding(.horizontal, 20)
-                .animation(.easeInOut(duration: 0.3), value: viewModel.useGiftCard)
+                .animation(.easeInOut(duration: 0.3), value: viewModel.ctxGiftCards)
                 .animation(.easeInOut(duration: 0.3), value: viewModel.sortOptions)
             }
             

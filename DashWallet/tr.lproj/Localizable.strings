@@ -644,6 +644,12 @@
 /* No comment provided by engineer. */
 "CSV Export" = "CSV Dışa Aktarma";
 
+/* Explore Dash/Filters */
+"CTX gift card" = "CTX gift card";
+
+/* Explore Dash: Filters */
+"CTX gift cards" = "CTX gift cards";
+
 /* Crowdnode */
 "Current APY = %@" = "Mevcut YFG = %@";
 
@@ -1035,9 +1041,6 @@
 
 /* CrowdNode */
 "Getting started with CrowdNode" = "CrowdNode'a başlayın";
-
-/* Explore Dash: Filters */
-"Gift Card" = "Hediye Kartı";
 
 /* No comment provided by engineer. */
 "Gift card" = "Hediye Kartı";
@@ -1802,9 +1805,6 @@
 /* CTXSpend error */
 "Payment processing error: %@" = "Payment processing error: %@";
 
-/* Explore Dash/Merchants/Filters */
-"Payment Type" = "Ödeme türü";
-
 /* No comment provided by engineer. */
 "Payments made directly to addresses won’t be retained in activity." = "Doğrudan adreslere yapılan ödemeler etkinlikte tutulmaz.";
 
@@ -1834,6 +1834,12 @@
 
 /* No comment provided by engineer. */
 "Phone" = "Phone";
+
+/* Explore Dash: Filters */
+"Piggy Cards gift cards" = "Piggy Cards gift cards";
+
+/* Explore Dash/Filters */
+"PiggyCards gift card" = "PiggyCards gift card";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Ödeme yapmak için her zaman PIN gereklidir";
@@ -2371,6 +2377,9 @@
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Harcama Onayı";
 
+/* Explore Dash/Merchants/Filters */
+"Spending options" = "Spending options";
+
 /* No comment provided by engineer. */
 "Staking" = "Staking";
 
@@ -2720,9 +2729,6 @@
 
 /* No comment provided by engineer. */
 "Uploading your picture to the network" = "Resminizi ağa yükleme";
-
-/* Explore Dash/Filters */
-"Use gift card" = "Hediye kartı kullan";
 
 /* No comment provided by engineer. */
 "Used" = "Kullanıldı";

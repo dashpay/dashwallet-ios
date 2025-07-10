@@ -644,6 +644,12 @@
 /* No comment provided by engineer. */
 "CSV Export" = "Експорт CSV";
 
+/* Explore Dash/Filters */
+"CTX gift card" = "CTX gift card";
+
+/* Explore Dash: Filters */
+"CTX gift cards" = "CTX gift cards";
+
 /* Crowdnode */
 "Current APY = %@" = "Поточний APY = %@";
 
@@ -1035,9 +1041,6 @@
 
 /* CrowdNode */
 "Getting started with CrowdNode" = "Початок роботи з CrowdNode";
-
-/* Explore Dash: Filters */
-"Gift Card" = "Подарункова карта";
 
 /* No comment provided by engineer. */
 "Gift card" = "Подарункова карта";
@@ -1802,9 +1805,6 @@
 /* CTXSpend error */
 "Payment processing error: %@" = "Помилка обробки платежу: %@";
 
-/* Explore Dash/Merchants/Filters */
-"Payment Type" = "Типа платежу";
-
 /* No comment provided by engineer. */
 "Payments made directly to addresses won’t be retained in activity." = "Платежі, здійснені безпосередньо на адреси, не будуть збережені.";
 
@@ -1834,6 +1834,12 @@
 
 /* No comment provided by engineer. */
 "Phone" = "Phone";
+
+/* Explore Dash: Filters */
+"Piggy Cards gift cards" = "Piggy Cards gift cards";
+
+/* Explore Dash/Filters */
+"PiggyCards gift card" = "PiggyCards gift card";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Для здійснення платежу завжди потрібен PIN-код";
@@ -2371,6 +2377,9 @@
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Підтвердження витрат";
 
+/* Explore Dash/Merchants/Filters */
+"Spending options" = "Spending options";
+
 /* No comment provided by engineer. */
 "Staking" = "Стейкінг";
 
@@ -2720,9 +2729,6 @@
 
 /* No comment provided by engineer. */
 "Uploading your picture to the network" = "Завантаження вашого фото в мережу";
-
-/* Explore Dash/Filters */
-"Use gift card" = "Використати подарункову картку";
 
 /* No comment provided by engineer. */
 "Used" = "Використано";

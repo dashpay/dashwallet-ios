@@ -644,6 +644,12 @@
 /* No comment provided by engineer. */
 "CSV Export" = "導出到CSV檔案";
 
+/* Explore Dash/Filters */
+"CTX gift card" = "CTX gift card";
+
+/* Explore Dash: Filters */
+"CTX gift cards" = "CTX gift cards";
+
 /* Crowdnode */
 "Current APY = %@" = "目前的年利率 = %@";
 
@@ -1035,9 +1041,6 @@
 
 /* CrowdNode */
 "Getting started with CrowdNode" = "開始使用 CrowdNode";
-
-/* Explore Dash: Filters */
-"Gift Card" = "禮物卡";
 
 /* No comment provided by engineer. */
 "Gift card" = "禮物卡";
@@ -1802,9 +1805,6 @@
 /* CTXSpend error */
 "Payment processing error: %@" = "處理付款時出錯: %@";
 
-/* Explore Dash/Merchants/Filters */
-"Payment Type" = "支付方式";
-
 /* No comment provided by engineer. */
 "Payments made directly to addresses won’t be retained in activity." = "直接向位址支付的款項不會保留在活動中。";
 
@@ -1834,6 +1834,12 @@
 
 /* No comment provided by engineer. */
 "Phone" = "Phone";
+
+/* Explore Dash: Filters */
+"Piggy Cards gift cards" = "Piggy Cards gift cards";
+
+/* Explore Dash/Filters */
+"PiggyCards gift card" = "PiggyCards gift card";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "總是需要輸入密碼才能進行付款";
@@ -2371,6 +2377,9 @@
 /* No comment provided by engineer. */
 "Spending Confirmation" = "支付確認";
 
+/* Explore Dash/Merchants/Filters */
+"Spending options" = "Spending options";
+
 /* No comment provided by engineer. */
 "Staking" = "質押";
 
@@ -2720,9 +2729,6 @@
 
 /* No comment provided by engineer. */
 "Uploading your picture to the network" = "將您的圖片上傳到網絡";
-
-/* Explore Dash/Filters */
-"Use gift card" = "使用禮品卡";
 
 /* No comment provided by engineer. */
 "Used" = "用過的";
