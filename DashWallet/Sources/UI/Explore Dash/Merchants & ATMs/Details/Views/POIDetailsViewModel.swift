@@ -133,32 +133,24 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
     }
     
     private func setupProviders() {
-        // TODO: temp - randomly determine provider configuration
         guard case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard else {
             return
         }
         
-        let random = Int.random(in: 0...2)
+        // Get gift card providers from the merchant data
+        let providers = m.giftCardProviders.compactMap { $0.provider }
+        let isFixedDenomination = m.denominationsType == DenominationType.Fixed.rawValue
         
-        switch random {
-        case 0: // Multiple providers
-            supportedProviders[.ctx] = merchant.merchant?.denominationsType == DenominationType.Fixed.rawValue
-            supportedProviders[.piggyCards] = false
-            selectedProvider = .ctx
-            showProviderPicker = true
-        case 1: // Only CTX
-            supportedProviders[.ctx] = merchant.merchant?.denominationsType == DenominationType.Fixed.rawValue
-            selectedProvider = .ctx
-            showProviderPicker = false
-        case 2: // Only PiggyCards
-            supportedProviders[.piggyCards] = merchant.merchant?.denominationsType == DenominationType.Fixed.rawValue
-            selectedProvider = .piggyCards
-            showProviderPicker = false
-        default:
-            supportedProviders[.ctx] = merchant.merchant?.denominationsType == DenominationType.Fixed.rawValue
-            selectedProvider = .ctx
-            showProviderPicker = false
+        // Set up supported providers based on what's in the database
+        for provider in providers {
+            supportedProviders[provider] = isFixedDenomination
         }
+        
+        // Determine if we need to show the provider picker
+        showProviderPicker = providers.count > 1
+        
+        // Select the first available provider
+        selectedProvider = providers.first
         
         // Start observing the selected provider
         if let selectedProvider = selectedProvider {

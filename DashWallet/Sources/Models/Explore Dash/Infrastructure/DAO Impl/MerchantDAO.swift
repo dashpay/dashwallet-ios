@@ -75,11 +75,28 @@ class MerchantDAO: PointOfUseDAO {
                     tempMethods.append(ExplorePointOfUse.Merchant.PaymentMethod.dash)
                 }
                 
-                if methods.contains(PointOfUseListFilters.SpendingOptions.ctx) || methods.contains(PointOfUseListFilters.SpendingOptions.piggyCards) {
+                let hasCTX = methods.contains(PointOfUseListFilters.SpendingOptions.ctx)
+                let hasPiggy = methods.contains(PointOfUseListFilters.SpendingOptions.piggyCards)
+                
+                if hasCTX || hasPiggy {
                     tempMethods.append(ExplorePointOfUse.Merchant.PaymentMethod.giftCard)
                 }
                 
                 queryFilter = queryFilter && tempMethods.map { $0.rawValue }.contains(paymentMethodColumn)
+                
+                // If only specific gift card providers are selected (not both), add merchantId filter
+                if !methods.contains(PointOfUseListFilters.SpendingOptions.dash) && (hasCTX != hasPiggy) {
+                    var providerList: [String] = []
+                    if hasCTX {
+                        providerList.append("'CTX'")
+                    }
+                    if hasPiggy {
+                        providerList.append("'PiggyCards'")
+                    }
+                    
+                    let providerString = providerList.joined(separator: ", ")
+                    queryFilter = queryFilter && Expression<Bool>(literal: "merchantId IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider IN (\(providerString)))")
+                }
             }
             
             // Filter out URL-based redemption merchants (not supported)
@@ -175,7 +192,70 @@ class MerchantDAO: PointOfUseDAO {
             query = query.limit(pageLimit, offset: offset)
 
             do {
-                let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
+                var items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
+                
+                // Fetch gift card providers for each merchant that accepts gift cards
+                for (index, item) in items.enumerated() {
+                    if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
+                        let providersQuery = """
+                            SELECT provider FROM gift_card_providers 
+                            WHERE merchantId = '\(merchant.merchantId)'
+                        """
+                        
+                        do {
+                            let rows = try wSelf.connection.db.prepare(providersQuery)
+                            var providers: [ExplorePointOfUse.Merchant.GiftCardProviderInfo] = []
+                            
+                            for row in rows {
+                                if let providerId = row[0] as? String {
+                                    providers.append(ExplorePointOfUse.Merchant.GiftCardProviderInfo(providerId: providerId))
+                                }
+                            }
+                            
+                            if !providers.isEmpty {
+                                // Create updated merchant with providers
+                                let updatedMerchant = ExplorePointOfUse.Merchant(
+                                    merchantId: merchant.merchantId,
+                                    paymentMethod: merchant.paymentMethod,
+                                    type: merchant.type,
+                                    deeplink: merchant.deeplink,
+                                    savingsBasisPoints: merchant.savingsBasisPoints,
+                                    denominationsType: merchant.denominationsType,
+                                    denominations: merchant.denominations,
+                                    redeemType: merchant.redeemType,
+                                    giftCardProviders: providers
+                                )
+                                
+                                // Create updated ExplorePointOfUse
+                                let updatedItem = ExplorePointOfUse(
+                                    id: item.id,
+                                    name: item.name,
+                                    category: .merchant(updatedMerchant),
+                                    active: item.active,
+                                    city: item.city,
+                                    territory: item.territory,
+                                    address1: item.address1,
+                                    address2: item.address2,
+                                    address3: item.address3,
+                                    address4: item.address4,
+                                    latitude: item.latitude,
+                                    longitude: item.longitude,
+                                    website: item.website,
+                                    phone: item.phone,
+                                    logoLocation: item.logoLocation,
+                                    coverImage: item.coverImage,
+                                    source: item.source
+                                )
+                                
+                                items[index] = updatedItem
+                            }
+                        } catch {
+                            // If we can't fetch providers, just continue with empty providers
+                            print("Error fetching gift card providers for merchant \(merchant.merchantId): \(error)")
+                        }
+                    }
+                }
+                
                 completion(.success(PaginationResult(items: items, offset: offset)))
             } catch {
                 print(error)
@@ -267,22 +347,6 @@ extension MerchantDAO {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }
             do {
-                // Print first 2 rows from gift_card_providers table
-                let giftCardProvidersQuery = "SELECT * FROM gift_card_providers LIMIT 2"
-                do {
-                    let rows = try wSelf.connection.db.prepare(giftCardProvidersQuery)
-                    print("=== First 2 rows from gift_card_providers table ===")
-                    for (index, row) in rows.enumerated() {
-                        print("Row \(index + 1):")
-                        for (columnIndex, value) in row.enumerated() {
-                            print("  Column \(columnIndex): \(value ?? "NULL")")
-                        }
-                    }
-                    print("=== End of gift_card_providers data ===")
-                } catch {
-                    print("Error reading gift_card_providers table: \(error)")
-                }
-                
                 let items: [Territory] = try wSelf.connection.execute(query: query)
                 self?.cachedTerritories = items
                 completion(.success(items))

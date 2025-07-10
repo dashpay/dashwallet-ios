@@ -44,7 +44,7 @@ struct MerchantFiltersView: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 0) {
-                    // Sort By Section - Only show if there are multiple options
+                    // Sort By Section - Only show if there are multipele options
                     if viewModel.sortOptions.contains(.distance) || viewModel.ctxGiftCards || viewModel.piggyGiftCards {
                         FilterSection(title: NSLocalizedString("Sort by", comment: "Explore Dash/Merchants/Filters")) {
                             RadioButtonRow(
