@@ -644,6 +644,12 @@
 /* No comment provided by engineer. */
 "CSV Export" = "CSV exporteren";
 
+/* Explore Dash/Filters */
+"CTX gift card" = "CTX gift card";
+
+/* Explore Dash: Filters */
+"CTX gift cards" = "CTX gift cards";
+
 /* Crowdnode */
 "Current APY = %@" = "Huidige jaarlijks rendement = %@";
 
@@ -1035,9 +1041,6 @@
 
 /* CrowdNode */
 "Getting started with CrowdNode" = "Aan de slag met CrowdNode";
-
-/* Explore Dash: Filters */
-"Gift Card" = "Cadeaukaart";
 
 /* No comment provided by engineer. */
 "Gift card" = "Geschenkbon";
@@ -1802,9 +1805,6 @@
 /* CTXSpend error */
 "Payment processing error: %@" = "verwerkingsfout betaling: %@";
 
-/* Explore Dash/Merchants/Filters */
-"Payment Type" = "Betalingswijze";
-
 /* No comment provided by engineer. */
 "Payments made directly to addresses won’t be retained in activity." = "Betalingen die rechtstreeks aan adressen worden gedaan, worden niet bewaard in activiteitsoverzicht.";
 
@@ -1834,6 +1834,12 @@
 
 /* No comment provided by engineer. */
 "Phone" = "Phone";
+
+/* Explore Dash: Filters */
+"Piggy Cards gift cards" = "Piggy Cards gift cards";
+
+/* Explore Dash/Filters */
+"PiggyCards gift card" = "PiggyCards gift card";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "De PIN is altijd vereist om een betaling uit te voeren";
@@ -2371,6 +2377,9 @@
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Bevestiging van de uitgaven";
 
+/* Explore Dash/Merchants/Filters */
+"Spending options" = "Spending options";
+
 /* No comment provided by engineer. */
 "Staking" = "Staking";
 
@@ -2720,9 +2729,6 @@
 
 /* No comment provided by engineer. */
 "Uploading your picture to the network" = "Foto uploaden naar het netwerk";
-
-/* Explore Dash/Filters */
-"Use gift card" = "gebruik cadeaukaart";
 
 /* No comment provided by engineer. */
 "Used" = "Gebruikt";

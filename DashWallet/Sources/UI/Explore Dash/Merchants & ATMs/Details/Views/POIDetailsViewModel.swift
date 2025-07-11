@@ -40,7 +40,7 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
     @Published private(set) var networkStatus: NetworkStatus = .offline
     @Published private(set) var syncState: SyncingActivityMonitor.State = .unknown
     @Published private(set) var distanceText: String? = nil
-    @Published private(set) var supportedProviders: [GiftCardProvider: Bool] = [:]
+    @Published private(set) var supportedProviders: [GiftCardProvider: (isFixed: Bool, discount: Int)] = [:]
     @Published private(set) var selectedProvider: GiftCardProvider? = nil
     @Published private(set) var showProviderPicker: Bool = false
     
@@ -133,32 +133,25 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
     }
     
     private func setupProviders() {
-        // TODO: temp - randomly determine provider configuration
         guard case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard else {
             return
         }
         
-        let random = Int.random(in: 0...2)
-        
-        switch random {
-        case 0: // Multiple providers
-            supportedProviders[.ctx] = merchant.merchant?.denominationsType == DenominationType.Fixed.rawValue
-            supportedProviders[.piggyCards] = false
-            selectedProvider = .ctx
-            showProviderPicker = true
-        case 1: // Only CTX
-            supportedProviders[.ctx] = merchant.merchant?.denominationsType == DenominationType.Fixed.rawValue
-            selectedProvider = .ctx
-            showProviderPicker = false
-        case 2: // Only PiggyCards
-            supportedProviders[.piggyCards] = merchant.merchant?.denominationsType == DenominationType.Fixed.rawValue
-            selectedProvider = .piggyCards
-            showProviderPicker = false
-        default:
-            supportedProviders[.ctx] = merchant.merchant?.denominationsType == DenominationType.Fixed.rawValue
-            selectedProvider = .ctx
-            showProviderPicker = false
+        // Get gift card providers from the merchant data
+        for providerInfo in m.giftCardProviders {
+            guard let provider = providerInfo.provider else { continue }
+            
+            let isFixed = providerInfo.denominationsType == DenominationType.Fixed.rawValue
+            let discount = providerInfo.savingsPercentage
+            
+            supportedProviders[provider] = (isFixed: isFixed, discount: discount)
         }
+        
+        // Determine if we need to show the provider picker
+        showProviderPicker = supportedProviders.count > 1
+        
+        // Select the first available provider
+        selectedProvider = supportedProviders.keys.first
         
         // Start observing the selected provider
         if let selectedProvider = selectedProvider {

@@ -166,20 +166,20 @@ public class ExploreDash {
 }
 
 extension ExploreDash {
-    func onlineMerchants(query: String?, onlineOnly: Bool, paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?,
+    func onlineMerchants(query: String?, onlineOnly: Bool, paymentMethods: [PointOfUseListFilters.SpendingOptions]?,
                          sortBy: PointOfUseListFilters.SortBy?, userPoint: CLLocationCoordinate2D?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
                          completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         merchantDAO.onlineMerchants(query: query, onlineOnly: onlineOnly, userPoint: userPoint, sortBy: sortBy, paymentMethods: paymentMethods, denominationType: denominationType, offset: offset, completion: completion)
     }
 
     func nearbyMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
-                         paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
+                         paymentMethods: [PointOfUseListFilters.SpendingOptions]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
                          completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         merchantDAO.nearbyMerchants(by: query, in: bounds, userPoint: userPoint, paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, denominationType: denominationType, offset: offset, completion: completion)
     }
 
     func allMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
-                      paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?,
+                      paymentMethods: [PointOfUseListFilters.SpendingOptions]?,
                       sortBy: PointOfUseListFilters.SortBy?,
                       territory: Territory?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
                       completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {

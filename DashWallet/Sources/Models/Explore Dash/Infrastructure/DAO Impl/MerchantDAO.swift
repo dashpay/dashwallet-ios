@@ -43,7 +43,7 @@ class MerchantDAO: PointOfUseDAO {
                bounds: ExploreMapBounds?,
                userLocation: CLLocationCoordinate2D?,
                types: [ExplorePointOfUse.Merchant.`Type`],
-               paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?,
+               paymentMethods: [PointOfUseListFilters.SpendingOptions]?,
                sortBy: PointOfUseListFilters.SortBy?,
                territory: Territory?,
                denominationType: PointOfUseListFilters.DenominationType?,
@@ -69,7 +69,34 @@ class MerchantDAO: PointOfUseDAO {
 
             // Add payment methods
             if let methods = paymentMethods {
-                queryFilter = queryFilter && methods.map { $0.rawValue }.contains(paymentMethodColumn)
+                var tempMethods: [ExplorePointOfUse.Merchant.PaymentMethod] = []
+                
+                if methods.contains(PointOfUseListFilters.SpendingOptions.dash) {
+                    tempMethods.append(ExplorePointOfUse.Merchant.PaymentMethod.dash)
+                }
+                
+                let hasCTX = methods.contains(PointOfUseListFilters.SpendingOptions.ctx)
+                let hasPiggy = methods.contains(PointOfUseListFilters.SpendingOptions.piggyCards)
+                
+                if hasCTX || hasPiggy {
+                    tempMethods.append(ExplorePointOfUse.Merchant.PaymentMethod.giftCard)
+                }
+                
+                queryFilter = queryFilter && tempMethods.map { $0.rawValue }.contains(paymentMethodColumn)
+                
+                // If only specific gift card providers are selected (not both), add merchantId filter
+                if !methods.contains(PointOfUseListFilters.SpendingOptions.dash) && (hasCTX != hasPiggy) {
+                    var providerList: [String] = []
+                    if hasCTX {
+                        providerList.append("'CTX'")
+                    }
+                    if hasPiggy {
+                        providerList.append("'PiggyCards'")
+                    }
+                    
+                    let providerString = providerList.joined(separator: ", ")
+                    queryFilter = queryFilter && Expression<Bool>(literal: "merchantId IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider IN (\(providerString)))")
+                }
             }
             
             // Filter out URL-based redemption merchants (not supported)
@@ -165,7 +192,76 @@ class MerchantDAO: PointOfUseDAO {
             query = query.limit(pageLimit, offset: offset)
 
             do {
-                let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
+                var items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
+                
+                // Fetch gift card providers for each merchant that accepts gift cards
+                for (index, item) in items.enumerated() {
+                    if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
+                        let providersQuery = """
+                            SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers 
+                            WHERE merchantId = '\(merchant.merchantId)'
+                        """
+                        
+                        do {
+                            let rows = try wSelf.connection.db.prepare(providersQuery)
+                            var providers: [ExplorePointOfUse.Merchant.GiftCardProviderInfo] = []
+                            
+                            for row in rows {
+                                if let providerId = row[0] as? String,
+                                   let savingsPercentage = row[1] as? Int64,
+                                   let denominationsType = row[2] as? String {
+                                    providers.append(ExplorePointOfUse.Merchant.GiftCardProviderInfo(
+                                        providerId: providerId,
+                                        savingsPercentage: Int(savingsPercentage),
+                                        denominationsType: denominationsType
+                                    ))
+                                }
+                            }
+                            
+                            if !providers.isEmpty {
+                                // Create updated merchant with providers
+                                let updatedMerchant = ExplorePointOfUse.Merchant(
+                                    merchantId: merchant.merchantId,
+                                    paymentMethod: merchant.paymentMethod,
+                                    type: merchant.type,
+                                    deeplink: merchant.deeplink,
+                                    savingsBasisPoints: merchant.savingsBasisPoints,
+                                    denominationsType: merchant.denominationsType,
+                                    denominations: merchant.denominations,
+                                    redeemType: merchant.redeemType,
+                                    giftCardProviders: providers
+                                )
+                                
+                                // Create updated ExplorePointOfUse
+                                let updatedItem = ExplorePointOfUse(
+                                    id: item.id,
+                                    name: item.name,
+                                    category: .merchant(updatedMerchant),
+                                    active: item.active,
+                                    city: item.city,
+                                    territory: item.territory,
+                                    address1: item.address1,
+                                    address2: item.address2,
+                                    address3: item.address3,
+                                    address4: item.address4,
+                                    latitude: item.latitude,
+                                    longitude: item.longitude,
+                                    website: item.website,
+                                    phone: item.phone,
+                                    logoLocation: item.logoLocation,
+                                    coverImage: item.coverImage,
+                                    source: item.source
+                                )
+                                
+                                items[index] = updatedItem
+                            }
+                        } catch {
+                            // If we can't fetch providers, just continue with empty providers
+                            print("Error fetching gift card providers for merchant \(merchant.merchantId): \(error)")
+                        }
+                    }
+                }
+                
                 completion(.success(PaginationResult(items: items, offset: offset)))
             } catch {
                 print(error)
@@ -177,21 +273,21 @@ class MerchantDAO: PointOfUseDAO {
 
 extension MerchantDAO {
     func onlineMerchants(query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?, sortBy: PointOfUseListFilters.SortBy?,
-                         paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
+                         paymentMethods: [PointOfUseListFilters.SpendingOptions]?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
                          completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         items(query: query, bounds: nil, userLocation: userPoint, types: [.online, .onlineAndPhysical],
               paymentMethods: paymentMethods, sortBy: sortBy, territory: nil, denominationType: denominationType, offset: offset, completion: completion)
     }
 
     func nearbyMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
-                         paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
+                         paymentMethods: [PointOfUseListFilters.SpendingOptions]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
                          completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         items(query: query, bounds: bounds, userLocation: userPoint, types: [.physical, .onlineAndPhysical],
               paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, denominationType: denominationType, offset: offset, completion: completion)
     }
 
     func allMerchants(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
-                      paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
+                      paymentMethods: [PointOfUseListFilters.SpendingOptions]?, sortBy: PointOfUseListFilters.SortBy?, territory: Territory?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
                       completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         items(query: query, bounds: bounds, userLocation: userPoint, types: [.online, .onlineAndPhysical, .physical], paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, denominationType: denominationType, offset: offset,
               completion: completion)
@@ -267,5 +363,3 @@ extension MerchantDAO {
         }
     }
 }
-
-

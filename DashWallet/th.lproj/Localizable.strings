@@ -644,6 +644,12 @@
 /* No comment provided by engineer. */
 "CSV Export" = "ส่งออก CSV ";
 
+/* Explore Dash/Filters */
+"CTX gift card" = "CTX gift card";
+
+/* Explore Dash: Filters */
+"CTX gift cards" = "CTX gift cards";
+
 /* Crowdnode */
 "Current APY = %@" = "APY ปัจจุบัน = %@";
 
@@ -1035,9 +1041,6 @@
 
 /* CrowdNode */
 "Getting started with CrowdNode" = "เริ่มต้นใช้งาน CrowdNode";
-
-/* Explore Dash: Filters */
-"Gift Card" = "บัตรของขวัญ";
 
 /* No comment provided by engineer. */
 "Gift card" = "บัตรของขวัญ";
@@ -1802,9 +1805,6 @@
 /* CTXSpend error */
 "Payment processing error: %@" = "Payment processing error: %@";
 
-/* Explore Dash/Merchants/Filters */
-"Payment Type" = "ประเภทการชำระเงิน";
-
 /* No comment provided by engineer. */
 "Payments made directly to addresses won’t be retained in activity." = "การชำระเงินโดยตรงไปยังที่อยู่จะไม่ถูกเก็บไว้ในกิจกรรม";
 
@@ -1834,6 +1834,12 @@
 
 /* No comment provided by engineer. */
 "Phone" = "Phone";
+
+/* Explore Dash: Filters */
+"Piggy Cards gift cards" = "Piggy Cards gift cards";
+
+/* Explore Dash/Filters */
+"PiggyCards gift card" = "PiggyCards gift card";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "ต้องระบุ PIN ทุกครั้งเพื่อชำระเงิน";
@@ -2371,6 +2377,9 @@
 /* No comment provided by engineer. */
 "Spending Confirmation" = "การยืนยันการใช้จ่าย";
 
+/* Explore Dash/Merchants/Filters */
+"Spending options" = "Spending options";
+
 /* No comment provided by engineer. */
 "Staking" = "Staking";
 
@@ -2720,9 +2729,6 @@
 
 /* No comment provided by engineer. */
 "Uploading your picture to the network" = "การอัปโหลดรูปภาพของคุณไปยังเครือข่าย";
-
-/* Explore Dash/Filters */
-"Use gift card" = "ใช้บัตรของขวัญ";
 
 /* No comment provided by engineer. */
 "Used" = "ใช้แล้ว";

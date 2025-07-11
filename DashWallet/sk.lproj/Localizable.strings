@@ -644,6 +644,12 @@
 /* No comment provided by engineer. */
 "CSV Export" = "Export CSV";
 
+/* Explore Dash/Filters */
+"CTX gift card" = "CTX gift card";
+
+/* Explore Dash: Filters */
+"CTX gift cards" = "CTX gift cards";
+
 /* Crowdnode */
 "Current APY = %@" = "Aktuálne zhodnotenie = %@";
 
@@ -1035,9 +1041,6 @@
 
 /* CrowdNode */
 "Getting started with CrowdNode" = "Začíname s CrowdNode";
-
-/* Explore Dash: Filters */
-"Gift Card" = "Darčeková karta";
 
 /* No comment provided by engineer. */
 "Gift card" = "Darčeková karta";
@@ -1802,9 +1805,6 @@
 /* CTXSpend error */
 "Payment processing error: %@" = "Chyba spracovania platby: %@";
 
-/* Explore Dash/Merchants/Filters */
-"Payment Type" = "Typ platby";
-
 /* No comment provided by engineer. */
 "Payments made directly to addresses won’t be retained in activity." = "Platby uskutočnené priamo na adresy nebudú zachované v aktivite.";
 
@@ -1834,6 +1834,12 @@
 
 /* No comment provided by engineer. */
 "Phone" = "Phone";
+
+/* Explore Dash: Filters */
+"Piggy Cards gift cards" = "Piggy Cards gift cards";
+
+/* Explore Dash/Filters */
+"PiggyCards gift card" = "PiggyCards gift card";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Na vykonanie platby je vždy potrebný PIN";
@@ -2371,6 +2377,9 @@
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Potvrdenie minutia";
 
+/* Explore Dash/Merchants/Filters */
+"Spending options" = "Spending options";
+
 /* No comment provided by engineer. */
 "Staking" = "Stávkovanie";
 
@@ -2720,9 +2729,6 @@
 
 /* No comment provided by engineer. */
 "Uploading your picture to the network" = "Nahrajte svoj obrázok do siete";
-
-/* Explore Dash/Filters */
-"Use gift card" = "Použiť darčekovú kartu";
 
 /* No comment provided by engineer. */
 "Used" = "Použité";

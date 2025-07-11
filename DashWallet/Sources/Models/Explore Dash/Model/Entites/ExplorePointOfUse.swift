@@ -33,6 +33,27 @@ extension ExplorePointOfUse: Hashable {
 
 extension ExplorePointOfUse {
     struct Merchant {
+        
+        struct GiftCardProviderInfo {
+            let providerId: String
+            let provider: GiftCardProvider?
+            let savingsPercentage: Int
+            let denominationsType: String
+            
+            init(providerId: String, savingsPercentage: Int = 0, denominationsType: String = "") {
+                self.providerId = providerId
+                self.savingsPercentage = savingsPercentage
+                self.denominationsType = denominationsType
+                switch providerId.lowercased() {
+                case "ctx":
+                    self.provider = .ctx
+                case "piggycards", "piggy cards":
+                    self.provider = .piggyCards
+                default:
+                    self.provider = nil
+                }
+            }
+        }
 
         enum PaymentMethod: String {
             case dash
@@ -61,8 +82,9 @@ extension ExplorePointOfUse {
         let denominationsType: String?
         let denominations: [Int]
         let redeemType: String?
+        let giftCardProviders: [GiftCardProviderInfo]
         
-        init(merchantId: String, paymentMethod: PaymentMethod, type: `Type`, deeplink: String?, savingsBasisPoints: Int, denominationsType: String?, denominations: [Int] = [], redeemType: String?) {
+        init(merchantId: String, paymentMethod: PaymentMethod, type: `Type`, deeplink: String?, savingsBasisPoints: Int, denominationsType: String?, denominations: [Int] = [], redeemType: String?, giftCardProviders: [GiftCardProviderInfo] = []) {
             self.merchantId = merchantId
             self.paymentMethod = paymentMethod
             self.type = type
@@ -71,6 +93,7 @@ extension ExplorePointOfUse {
             self.denominationsType = denominationsType
             self.denominations = denominations
             self.redeemType = redeemType
+            self.giftCardProviders = giftCardProviders
         }
         
         func toSavingPercentages() -> Double {
@@ -246,7 +269,7 @@ extension ExplorePointOfUse: RowDecodable {
             let denominationsType = row[ExplorePointOfUse.denominationsType]
             let redeemType = row[ExplorePointOfUse.redeemType]
             category = .merchant(Merchant(merchantId: merchantId, paymentMethod: Merchant.PaymentMethod(rawValue: paymentMethodRaw)!,
-                                          type: type, deeplink: deeplink, savingsBasisPoints: savingsPercentage, denominationsType: denominationsType, denominations: [], redeemType: redeemType))
+                                          type: type, deeplink: deeplink, savingsBasisPoints: savingsPercentage, denominationsType: denominationsType, denominations: [], redeemType: redeemType, giftCardProviders: []))
         } else if let manufacturer = try? row.get(ExplorePointOfUse.manufacturer) {
             let type: Atm.`Type`! = .init(rawValue: row[ExplorePointOfUse.type])
             category = .atm(Atm(manufacturer: manufacturer, type: type))

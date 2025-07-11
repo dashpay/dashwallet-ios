@@ -27,20 +27,14 @@ class MerchantFiltersViewModel: ObservableObject {
     @Published var sortByDiscount = false
     
     @Published var payWithDash = false
-    @Published var useGiftCard = false {
+    @Published var ctxGiftCards = false {
         didSet {
-            if useGiftCard {
-                sortOptions = initialSortOptions
-            } else {
-                sortOptions = initialSortOptions.filter { option in
-                    option != .discount
-                }
-                
-                if sortByDiscount {
-                    sortByDiscount = false
-                    sortByName = true
-                }
-            }
+            refreshSortOptions()
+        }
+    }
+    @Published var piggyGiftCards = false {
+        didSet {
+            refreshSortOptions()
         }
     }
     
@@ -69,7 +63,8 @@ class MerchantFiltersViewModel: ObservableObject {
         sortByName != initialSortByName ||
         sortByDiscount != initialSortByDiscount ||
         payWithDash != initialPayWithDash ||
-        useGiftCard != initialUseGiftCard ||
+        ctxGiftCards != initialCtxGiftCard ||
+        piggyGiftCards != initialPiggyGiftCard ||
         denominationFixed != initialDenominationFixed ||
         denominationFlexible != initialDenominationFlexible ||
         selectedRadius != initialRadius ||
@@ -78,7 +73,7 @@ class MerchantFiltersViewModel: ObservableObject {
     
     private var hasAnyFiltersApplied: Bool {
         sortByDistance || sortByName || sortByDiscount ||
-        payWithDash || useGiftCard ||
+        payWithDash || ctxGiftCards || piggyGiftCards ||
         denominationFixed || denominationFlexible ||
         selectedRadius != nil || selectedTerritory != nil
     }
@@ -89,7 +84,8 @@ class MerchantFiltersViewModel: ObservableObject {
     private let initialSortByName: Bool
     private let initialSortByDiscount: Bool
     private let initialPayWithDash: Bool
-    private let initialUseGiftCard: Bool
+    private let initialCtxGiftCard: Bool
+    private let initialPiggyGiftCard: Bool
     private let initialDenominationFixed: Bool
     private let initialDenominationFlexible: Bool
     private let initialRadius: PointOfUseListFilters.Radius?
@@ -135,7 +131,8 @@ class MerchantFiltersViewModel: ObservableObject {
             self.initialSortByDiscount = filters.sortBy == .discount
             
             self.initialPayWithDash = filters.merchantPaymentTypes?.contains(.dash) ?? false
-            self.initialUseGiftCard = filters.merchantPaymentTypes?.contains(.giftCard) ?? false
+            self.initialCtxGiftCard = filters.merchantPaymentTypes?.contains(.ctx) ?? false
+            self.initialPiggyGiftCard = filters.merchantPaymentTypes?.contains(.piggyCards) ?? false
             
             self.initialDenominationFixed = filters.denominationType == .fixed || filters.denominationType == .both
             self.initialDenominationFlexible = filters.denominationType == .flexible || filters.denominationType == .both
@@ -153,23 +150,15 @@ class MerchantFiltersViewModel: ObservableObject {
             }
             
             self.initialTerritory = filters.territory
-            
             // Set current values
-            self.sortByDistance = initialSortByDistance
-            self.sortByName = initialSortByName
-            self.sortByDiscount = initialSortByDiscount
-            self.payWithDash = initialPayWithDash
-            self.useGiftCard = initialUseGiftCard
-            self.denominationFixed = initialDenominationFixed
-            self.denominationFlexible = initialDenominationFlexible
-            self.selectedRadius = initialRadius
-            self.selectedTerritory = initialTerritory
+            resetFilters()
         } else {
             self.initialSortByDistance = false
             self.initialSortByName = true
             self.initialSortByDiscount = false
             self.initialPayWithDash = true
-            self.initialUseGiftCard = true
+            self.initialCtxGiftCard = true
+            self.initialPiggyGiftCard = true
             self.initialDenominationFixed = true
             self.initialDenominationFlexible = true
             self.initialRadius = .twenty
@@ -182,15 +171,16 @@ class MerchantFiltersViewModel: ObservableObject {
     // MARK: - Actions
     
     func resetFilters() {
-        sortByDistance = false
-        sortByName = true
-        sortByDiscount = false
-        payWithDash = true
-        useGiftCard = true
-        denominationFixed = true
-        denominationFlexible = true
-        selectedRadius = .twenty
-        selectedTerritory = nil
+        self.sortByDistance = initialSortByDistance
+        self.sortByName = initialSortByName
+        self.sortByDiscount = initialSortByDiscount
+        self.payWithDash = initialPayWithDash
+        self.ctxGiftCards = initialCtxGiftCard
+        self.piggyGiftCards = initialPiggyGiftCard
+        self.denominationFixed = initialDenominationFixed
+        self.denominationFlexible = initialDenominationFlexible
+        self.selectedRadius = initialRadius
+        self.selectedTerritory = initialTerritory
     }
     
     func toggleSortBy(_ option: PointOfUseListFilters.SortBy) {
@@ -208,30 +198,42 @@ class MerchantFiltersViewModel: ObservableObject {
         }
     }
     
-    func togglePaymentMethod(_ method: ExplorePointOfUse.Merchant.PaymentMethod) {
+    func togglePaymentMethod(_ method: PointOfUseListFilters.SpendingOptions) {
         switch method {
         case .dash:
-            if payWithDash && !useGiftCard {
-                // If unchecking the last option, check the other one
+            if payWithDash && !ctxGiftCards && !piggyGiftCards {
+                // If unchecking the last option, check the other ones
                 payWithDash = false
-                useGiftCard = true
+                ctxGiftCards = true
+                piggyGiftCards = true
             } else {
                 payWithDash.toggle()
             }
-        case .giftCard:
-            if useGiftCard && !payWithDash {
+        case .ctx:
+            if ctxGiftCards && !payWithDash && !piggyGiftCards {
                 // If unchecking the last option, check the other one
-                useGiftCard = false
+                ctxGiftCards = false
+                piggyGiftCards = false
                 payWithDash = true
             } else {
-                useGiftCard.toggle()
+                ctxGiftCards.toggle()
             }
             
-            // Reset denomination types when gift card is unchecked
-            if !useGiftCard {
-                denominationFixed = true
-                denominationFlexible = true
+        case .piggyCards:
+            if piggyGiftCards && !ctxGiftCards && !payWithDash {
+                // If unchecking the last option, check the other one
+                ctxGiftCards = false
+                piggyGiftCards = false
+                payWithDash = true
+            } else {
+                piggyGiftCards.toggle()
             }
+        }
+        
+        // Reset denomination types when gift card is unchecked
+        if !ctxGiftCards && !piggyGiftCards {
+            denominationFixed = true
+            denominationFlexible = true
         }
     }
     
@@ -276,12 +278,15 @@ class MerchantFiltersViewModel: ObservableObject {
         }
         
         // Payment Methods
-        var paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod] = []
+        var paymentMethods: [PointOfUseListFilters.SpendingOptions] = []
         if payWithDash {
             paymentMethods.append(.dash)
         }
-        if useGiftCard {
-            paymentMethods.append(.giftCard)
+        if ctxGiftCards {
+            paymentMethods.append(.ctx)
+        }
+        if piggyGiftCards {
+            paymentMethods.append(.piggyCards)
         }
         if !paymentMethods.isEmpty {
             filters.merchantPaymentTypes = paymentMethods
@@ -313,5 +318,20 @@ class MerchantFiltersViewModel: ObservableObject {
         }
         
         return hasAnyFilters ? filters : nil
+    }
+    
+    private func refreshSortOptions() {
+        if ctxGiftCards || piggyGiftCards {
+            sortOptions = initialSortOptions
+        } else {
+            sortOptions = initialSortOptions.filter { option in
+                option != .discount
+            }
+            
+            if sortByDiscount {
+                sortByDiscount = false
+                sortByName = true
+            }
+        }
     }
 }

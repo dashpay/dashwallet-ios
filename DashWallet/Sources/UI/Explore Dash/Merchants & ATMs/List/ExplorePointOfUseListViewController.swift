@@ -496,10 +496,6 @@ extension ExplorePointOfUseListViewController {
 // MARK: Actions
 extension ExplorePointOfUseListViewController {
     private func showFilters() {
-        let filterGroups = currentSegment.filterGroups.filter { filter in
-            DWLocationManager.shared.currentLocation != nil || (filter != .sortBy && filter != .radius)
-        }
-        
         let filtersView = MerchantFiltersView(
             currentFilters: model.filters,
             filterGroups: currentSegment.filterGroups,

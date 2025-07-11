@@ -644,6 +644,12 @@
 /* No comment provided by engineer. */
 "CSV Export" = "CSV Export";
 
+/* Explore Dash/Filters */
+"CTX gift card" = "CTX gift card";
+
+/* Explore Dash: Filters */
+"CTX gift cards" = "CTX gift cards";
+
 /* Crowdnode */
 "Current APY = %@" = "Kasalukuyang APY = %@";
 
@@ -1035,9 +1041,6 @@
 
 /* CrowdNode */
 "Getting started with CrowdNode" = "Pagsisimula sa CrowdNode";
-
-/* Explore Dash: Filters */
-"Gift Card" = "Gift card";
 
 /* No comment provided by engineer. */
 "Gift card" = "Gift card";
@@ -1802,9 +1805,6 @@
 /* CTXSpend error */
 "Payment processing error: %@" = "Payment processing error: %@";
 
-/* Explore Dash/Merchants/Filters */
-"Payment Type" = "Uri ng Pagbabayad";
-
 /* No comment provided by engineer. */
 "Payments made directly to addresses won’t be retained in activity." = "Ang mga pagbabayad na direktang ginawa sa mga address ay hindi pananatilihin sa aktibidad.";
 
@@ -1834,6 +1834,12 @@
 
 /* No comment provided by engineer. */
 "Phone" = "Phone";
+
+/* Explore Dash: Filters */
+"Piggy Cards gift cards" = "Piggy Cards gift cards";
+
+/* Explore Dash/Filters */
+"PiggyCards gift card" = "PiggyCards gift card";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "Ang PIN ay laging kailangan sa pagbabayad.";
@@ -2371,6 +2377,9 @@
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Kumpirmasyon ng nagastos";
 
+/* Explore Dash/Merchants/Filters */
+"Spending options" = "Spending options";
+
 /* No comment provided by engineer. */
 "Staking" = "Staking";
 
@@ -2720,9 +2729,6 @@
 
 /* No comment provided by engineer. */
 "Uploading your picture to the network" = "Pag-upload ng iyong larawan sa network";
-
-/* Explore Dash/Filters */
-"Use gift card" = "Gumamit ng gift card";
 
 /* No comment provided by engineer. */
 "Used" = "Nagamit";
