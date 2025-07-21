@@ -259,7 +259,7 @@ struct SettingsMenuContent: View {
     @ViewBuilder
     private func CoinJoinSubtitle(_ cjItem: CoinJoinMenuItemModel) -> some View {
         if cjItem.isOn {
-            CoinJoinProgressInfo(state: cjItem.state, progress: cjItem.progress, mixed: cjItem.mixed, total: cjItem.total, textColor: .tertiaryText, font: .caption)
+            CoinJoinProgressInfo(state: cjItem.state, progress: cjItem.progress, mixed: cjItem.mixed, total: cjItem.total, showBalance: !viewModel.isBalanceHidden, textColor: .tertiaryText, font: .caption)
                 .padding(.top, 2)
         } else {
             Text(NSLocalizedString("Turned off", comment: "CoinJoin"))

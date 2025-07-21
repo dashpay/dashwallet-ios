@@ -27,7 +27,7 @@ enum HomeBalanceViewState: Int {
 // MARK: - HomeBalanceView
 
 struct HomeBalanceView: View {
-    @StateObject private var viewModel = BalanceModel()
+    @ObservedObject var viewModel: BalanceModel
     @State private var opacity: Double = 0.3
     var onLongPress: () -> Void
     
