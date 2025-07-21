@@ -362,11 +362,11 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWFilterHeaderViewDelegate
 
 - (void)filterHeaderView:(DWFilterHeaderView *)view filterButtonAction:(UIView *)sender {
-    [self
-        showTxFilterWithDisplayModeCallback:^(DWHomeTxDisplayMode mode) {
-            self.displayMode = mode;
-        }
-                          shouldShowRewards:NO];
+    [TransactionFilterDialogPresenter presentFrom:self
+                                   selectedFilter:self.displayMode
+                                 onFilterSelected:^(DWHomeTxDisplayMode mode) {
+                                     self.displayMode = mode;
+                                 }];
 }
 
 - (void)filterHeaderView:(DWFilterHeaderView *)view infoButtonAction:(UIView *)sender {
@@ -498,6 +498,8 @@ NS_ASSUME_NONNULL_END
             NSAssert(NO, @"Not implemented here");
             return nil;
     }
+
+    return nil;
 }
 
 @end

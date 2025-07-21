@@ -307,3 +307,22 @@ extension VotingFiltersViewController.DataSource {
         return identifier
     }
 }
+
+// MARK: - FilterItemResetCell
+
+class FilterItemResetCell: UITableViewCell {
+    @IBOutlet var resetLabel: UILabel!
+
+    var isEnabled = true {
+        didSet {
+            resetLabel.textColor = isEnabled ? .dw_red() : .dw_secondaryText()
+        }
+    }
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+
+        resetLabel.isUserInteractionEnabled = false
+        resetLabel.text = NSLocalizedString("Reset Filters", comment: "Explore Dash")
+    }
+}
