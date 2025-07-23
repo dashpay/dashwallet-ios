@@ -359,6 +359,9 @@
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "Купить и продать";
 
+/* No comment provided by engineer. */
+"Buy & sell Dash" = "Buy & sell Dash";
+
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Купить подарочную карту";
 
@@ -597,6 +600,9 @@
 
 /* Usernames */
 "Create a username" = "Создать имя пользователя";
+
+/* No comment provided by engineer. */
+"Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
 
 /* CrowdNode */
 "Create Account" = "Создать аккаунт";
@@ -2381,6 +2387,9 @@
 "Submit" = "Отправить";
 
 /* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "Переведено!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2822,6 +2831,9 @@
 
 /* Voting */
 "Votes: Low to high" = "Голоса: По возрастанию";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Адрес голосования";

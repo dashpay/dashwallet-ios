@@ -219,7 +219,7 @@ struct MenuItem: View {
         }
         .contentShape(Rectangle())
         .padding(10)
-        .frame(maxWidth: .infinity, minHeight: 66)
+        .frame(maxWidth: .infinity)
         .onTapGesture {
             if showToggle {
                 isToggled.toggle()

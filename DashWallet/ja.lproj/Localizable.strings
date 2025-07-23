@@ -359,6 +359,9 @@
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "Dashを売買する";
 
+/* No comment provided by engineer. */
+"Buy & sell Dash" = "Buy & sell Dash";
+
 /* Buy a Gift Card */
 "Buy a Gift Card" = "ギフトカードを購入する";
 
@@ -597,6 +600,9 @@
 
 /* Usernames */
 "Create a username" = "ユーザー名を作成する";
+
+/* No comment provided by engineer. */
+"Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
 
 /* CrowdNode */
 "Create Account" = "アカウントの作成";
@@ -2381,6 +2387,9 @@
 "Submit" = "提出する";
 
 /* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "スイープしました!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2822,6 +2831,9 @@
 
 /* Voting */
 "Votes: Low to high" = "投票数：低から高";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = " 投票のアドレス";

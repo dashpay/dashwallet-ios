@@ -74,13 +74,14 @@ class SettingsViewModel: ObservableObject {
             MenuItemModel(
                 title: NSLocalizedString("Local Currency", comment: ""),
                 subtitle: model.localCurrencyCode,
-                showChevron: true,
+                icon: .custom("image.currency", maxHeight: 22),
                 action: { [weak self] in
                     self?.navigationDestination = .currencySelector
                 }
             ),
             MenuItemModel(
                 title: NSLocalizedString("Enable Receive Notifications", comment: ""),
+                icon: .custom("image.notifications", maxHeight: 22),
                 showToggle: true,
                 isToggled: model.notificationsEnabled,
                 action: { [weak self] in
@@ -90,21 +91,21 @@ class SettingsViewModel: ObservableObject {
             MenuItemModel(
                 title: NSLocalizedString("Network", comment: ""),
                 subtitle: model.networkName,
-                showChevron: true,
+                icon: .custom("image.rescan", maxHeight: 22),
                 action: { [weak self] in
                     self?.navigationDestination = .network
                 }
             ),
             MenuItemModel(
                 title: NSLocalizedString("Rescan Blockchain", comment: ""),
-                showChevron: true,
+                icon: .custom("image.rescan", maxHeight: 22),
                 action: { [weak self] in
                     self?.navigationDestination = .rescan
                 }
             ),
             MenuItemModel(
                 title: NSLocalizedString("About", comment: ""),
-                showChevron: true,
+                icon: .custom("image.about", maxHeight: 22),
                 action: { [weak self] in
                     self?.navigationDestination = .about
                 }

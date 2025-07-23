@@ -359,6 +359,9 @@
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "대시 매수 & 매도";
 
+/* No comment provided by engineer. */
+"Buy & sell Dash" = "Buy & sell Dash";
+
 /* Buy a Gift Card */
 "Buy a Gift Card" = "기프트 카드 구매";
 
@@ -597,6 +600,9 @@
 
 /* Usernames */
 "Create a username" = "사용자이름 생성하기";
+
+/* No comment provided by engineer. */
+"Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
 
 /* CrowdNode */
 "Create Account" = "계정 생성하기";
@@ -2381,6 +2387,9 @@
 "Submit" = "제출";
 
 /* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "잔액이 지갑으로 보내졌습니다!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2822,6 +2831,9 @@
 
 /* Voting */
 "Votes: Low to high" = "투표: 낮음부터 높음";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "투표 주소";

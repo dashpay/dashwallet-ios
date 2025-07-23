@@ -19,15 +19,13 @@ import UIKit
 import SwiftUI
 import Combine
 
-@objc(DWSettingsMenuViewControllerDelegate)
 protocol SettingsMenuViewControllerDelegate: AnyObject {
     func settingsMenuViewControllerDidRescanBlockchain(_ controller: SettingsMenuViewController)
 }
 
-@objc(DWSettingsMenuViewController)
 class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControllerDelegate {
     
-    @objc weak var delegate: SettingsMenuViewControllerDelegate?
+    weak var delegate: SettingsMenuViewControllerDelegate?
     
     private lazy var model: DWSettingsMenuModel = DWSettingsMenuModel()
     private lazy var viewModel: SettingsViewModel = SettingsViewModel(model: model)
@@ -222,38 +220,43 @@ struct SettingsMenuContent: View {
     @StateObject var viewModel: SettingsViewModel
 
     var body: some View {
-        List(viewModel.items) { item in
-            Group {
-                if let cjItem = item as? CoinJoinMenuItemModel {
-                    MenuItem(
-                        title: cjItem.title,
-                        subtitleView: AnyView(CoinJoinSubtitle(cjItem)),
-                        icon: .custom("image.coinjoin.menu"),
-                        badgeText: nil,
-                        action: cjItem.action
-                    )
-                } else {
-                    MenuItem(
-                        title: item.title,
-                        subtitle: item.subtitle,
-                        details: item.details,
-                        icon: item.icon,
-                        showInfo: item.showInfo,
-                        showChevron: item.showChevron,
-                        showToggle: item.showToggle,
-                        isToggled: item.isToggled,
-                        action: item.action
-                    )
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(spacing: 0) {
+                ForEach(viewModel.items) { item in
+                    if let cjItem = item as? CoinJoinMenuItemModel {
+                        MenuItem(
+                            title: cjItem.title,
+                            subtitleView: AnyView(CoinJoinSubtitle(cjItem)),
+                            icon: .custom("image.coinjoin.menu", maxHeight: 22),
+                            badgeText: nil,
+                            action: cjItem.action
+                        )
+                        .frame(minHeight: 60)
+                    } else {
+                        MenuItem(
+                            title: item.title,
+                            subtitle: item.subtitle,
+                            details: item.details,
+                            icon: item.icon,
+                            showInfo: item.showInfo,
+                            showChevron: false,
+                            showToggle: item.showToggle,
+                            isToggled: item.isToggled,
+                            action: item.action
+                        )
+                        .frame(minHeight: 60)
+                    }
                 }
             }
+            .padding(.vertical, 5)
             .background(Color.secondaryBackground)
-            .cornerRadius(8)
-            .shadow(color: .shadow, radius: 10, x: 0, y: 5)
-            .listRowSeparator(.hidden)
-            .listRowBackground(Color.clear)
+            .cornerRadius(12)
+            .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
+            
+            Spacer()
         }
-        .listStyle(.plain)
-        .background(Color.clear)
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
     }
     
     @ViewBuilder

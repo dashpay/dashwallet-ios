@@ -359,6 +359,9 @@
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "買賣達世幣";
 
+/* No comment provided by engineer. */
+"Buy & sell Dash" = "Buy & sell Dash";
+
 /* Buy a Gift Card */
 "Buy a Gift Card" = "購買禮品卡";
 
@@ -597,6 +600,9 @@
 
 /* Usernames */
 "Create a username" = "創建一個用戶名稱";
+
+/* No comment provided by engineer. */
+"Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
 
 /* CrowdNode */
 "Create Account" = "創建帳號";
@@ -2381,6 +2387,9 @@
 "Submit" = "提交";
 
 /* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "掃一掃!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2822,6 +2831,9 @@
 
 /* Voting */
 "Votes: Low to high" = "得票數：從低到高";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "投票位址";

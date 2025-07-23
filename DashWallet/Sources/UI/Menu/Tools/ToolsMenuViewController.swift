@@ -18,14 +18,12 @@
 import UIKit
 import SwiftUI
 
-@objc(DWToolsMenuViewControllerDelegate)
 protocol ToolsMenuViewControllerDelegate: AnyObject {
     func toolsMenuViewControllerImportPrivateKey(_ controller: ToolsMenuViewController)
 }
 
-@objc(DWToolsMenuViewController)
 class ToolsMenuViewController: UIViewController, DWImportWalletInfoViewControllerDelegate {
-    @objc weak var delegate: ToolsMenuViewControllerDelegate?
+    weak var delegate: ToolsMenuViewControllerDelegate?
     
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
@@ -45,28 +43,28 @@ class ToolsMenuViewController: UIViewController, DWImportWalletInfoViewControlle
         let items = [
             MenuItemModel(
                 title: NSLocalizedString("Import Private Key", comment: ""),
-                showChevron: true,
+                icon: .custom("image.import.private.key", maxHeight: 22),
                 action: { [weak self] in
                     self?.showImportPrivateKey()
                 }
             ),
             MenuItemModel(
                 title: NSLocalizedString("Extended Public Keys", comment: ""),
-                showChevron: true,
+                icon: .custom("image.extend.public.key", maxHeight: 22),
                 action: { [weak self] in
                     self?.showExtendedPublicKeys()
                 }
             ),
             MenuItemModel(
                 title: NSLocalizedString("Show Masternode Keys", comment: ""),
-                showChevron: true,
+                icon: .custom("image.masternode.keys", maxHeight: 22),
                 action: { [weak self] in
                     self?.showMasternodeKeys()
                 }
             ),
             MenuItemModel(
                 title: NSLocalizedString("CSV Export", comment: ""),
-                showChevron: true,
+                icon: .custom("image.csv.export", maxHeight: 22),
                 action: { [weak self] in
                     self?.askToExportTransactionsInCSV()
                 }
@@ -74,8 +72,7 @@ class ToolsMenuViewController: UIViewController, DWImportWalletInfoViewControlle
             MenuItemModel(
                 title: NSLocalizedString("ZenLedger", comment: ""),
                 subtitle: NSLocalizedString("Simplify your crypto taxes", comment: ""),
-                icon: .custom("zenledger"),
-                showChevron: true
+                icon: .custom("zenledger")
             )
         ]
         
@@ -175,31 +172,57 @@ struct ToolsMenuContent: View {
     var onOpenSafari: (String) -> Void
 
     var body: some View {
-        List(items) { item in
-            MenuItem(
-                title: item.title,
-                subtitle: item.subtitle,
-                details: item.details,
-                icon: item.icon,
-                showInfo: item.showInfo,
-                showChevron: item.showChevron,
-                isToggled: item.isToggled,
-                action: {
-                    if item == items.last {
-                        showZenLedgerSheet = true
-                    } else {
-                        item.action?()
-                    }
+        VStack(alignment: .leading, spacing: 16) {
+            // First group - all items except ZenLedger
+            VStack(spacing: 0) {
+                ForEach(items.dropLast(), id: \.self) { item in
+                    MenuItem(
+                        title: item.title,
+                        subtitle: item.subtitle,
+                        details: item.details,
+                        icon: item.icon,
+                        showInfo: item.showInfo,
+                        showChevron: false,
+                        isToggled: item.isToggled,
+                        action: {
+                            item.action?()
+                        }
+                    )
+                    .frame(minHeight: 60)
                 }
-            )
+            }
+            .padding(.vertical, 5)
             .background(Color.secondaryBackground)
-            .cornerRadius(8)
-            .shadow(color: .shadow, radius: 10, x: 0, y: 5)
-            .listRowSeparator(.hidden)
-            .listRowBackground(Color.clear)
+            .cornerRadius(12)
+            .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
+            
+            // Second group - ZenLedger
+            if let zenLedgerItem = items.last {
+                VStack(spacing: 0) {
+                    MenuItem(
+                        title: zenLedgerItem.title,
+                        subtitle: zenLedgerItem.subtitle,
+                        details: zenLedgerItem.details,
+                        icon: zenLedgerItem.icon,
+                        showInfo: zenLedgerItem.showInfo,
+                        showChevron: false,
+                        isToggled: zenLedgerItem.isToggled,
+                        action: {
+                            showZenLedgerSheet = true
+                        }
+                    )
+                    .frame(minHeight: 60)
+                }
+                .padding(.vertical, 5)
+                .background(Color.secondaryBackground)
+                .cornerRadius(12)
+                .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
+            }
+            
+            Spacer()
         }
-        .listStyle(.plain)
-        .background(Color.clear)
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
         .sheet(isPresented: $showZenLedgerSheet, onDismiss: {
             if let link = safariLink {
                 safariLink = nil

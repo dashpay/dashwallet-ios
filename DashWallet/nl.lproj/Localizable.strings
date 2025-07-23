@@ -359,6 +359,9 @@
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "Koop & verkoop Dash";
 
+/* No comment provided by engineer. */
+"Buy & sell Dash" = "Buy & sell Dash";
+
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Koop een geschenkbon";
 
@@ -597,6 +600,9 @@
 
 /* Usernames */
 "Create a username" = "Maak een gebruikersnaam";
+
+/* No comment provided by engineer. */
+"Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
 
 /* CrowdNode */
 "Create Account" = "Maak account aan";
@@ -2381,6 +2387,9 @@
 "Submit" = "Indienen";
 
 /* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "Geveegd!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2822,6 +2831,9 @@
 
 /* Voting */
 "Votes: Low to high" = "Stemmen: van laag naar hoog";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Stem adres";

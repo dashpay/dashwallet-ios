@@ -143,10 +143,8 @@ static const bool _SNAPSHOT = 0;
 #import "DSChain+DashWallet.h"
 
 //MARK: Tabbar
-#import "DWMainMenuViewController.h"
 #import "DWWipeDelegate.h"
 #import "DWPayModel.h"
-#import "DWMainMenuViewControllerDelegate.h"
 
 //MARK: Home
 #import "DWHomeModel.h"
@@ -167,6 +165,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWSharedUIConstants.h"
 #import "DWUserProfileContainerView.h"
 #import "DWDashPayReadyProtocol.h"
+#import "DWSecurityMenuViewController.h"
 
 //MARK: Onboarding
 #import "DWTransactionStub.h"
