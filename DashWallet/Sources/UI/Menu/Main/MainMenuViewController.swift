@@ -176,7 +176,7 @@ class MainMenuViewController: UIViewController {
     }
     
     @objc private func showSecurity() {
-        let controller = DWSecurityMenuViewController()
+        let controller = SecurityMenuViewController()
         controller.delegate = delegate
         navigationController?.pushViewController(controller, animated: true)
     }
