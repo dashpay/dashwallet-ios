@@ -357,9 +357,6 @@
 "Buy & Sell" = "Comprar y Vender";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Comprar y Vender Dash";
-
-/* No comment provided by engineer. */
 "Buy & sell Dash" = "Buy & sell Dash";
 
 /* Buy a Gift Card */
@@ -505,9 +502,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Confirmando";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Conectar con exchanges de terceros";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Conecta tus billeteras criptográficas a la plataforma ZenLedger. Obten más información y comienza con tus transacciones de Dash Wallet.";
@@ -718,9 +712,6 @@
 
 /* Voting */
 "Date: Old to new" = "Fecha: Viejo a nuevo";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Moneda predeterminada, atajos, acerca...";
 
 /* Voting */
 "Default filter setting" = "Configuración de filtro predeterminada";
@@ -954,9 +945,6 @@
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
-
-/* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Encuentra comerciantes que acepten DASH";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
@@ -1195,9 +1183,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Barrer billetera de papel";
 
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Importar llave privada, exportar CSV...";
-
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Además de la comisión de Coinbase mostrada, incluimos un diferencial en el precio. Cuando usas Comercio avanzado, no se incluye el margen porque estás interactuando directamente con el libro de pedidos.\n\nLos mercados de criptomonedas son volátiles y esto nos permite fijar temporalmente un precio para la ejecución de operaciones.";
 
@@ -1393,9 +1378,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Avísame cuando esté listo";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Deja que tus amigos y familiares se unan a Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Deja que sus amigos y familiares se unan a la red de Dash. Invítalos al mundo de la banca social.";
@@ -2810,9 +2792,6 @@
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Ver en el explorador";
-
-/* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Ver frase de recuperación, hacer backup...";
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "Ver frase de recuperación";

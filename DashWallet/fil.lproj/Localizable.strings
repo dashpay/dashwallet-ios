@@ -357,9 +357,6 @@
 "Buy & Sell" = "Bili At Benta";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Bumili at magbenta ng Dash";
-
-/* No comment provided by engineer. */
 "Buy & sell Dash" = "Buy & sell Dash";
 
 /* Buy a Gift Card */
@@ -505,9 +502,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Kinukumpirma";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Ikonekta sa mga third party na palitan";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Ikonekta ang iyong mga crypto wallet sa platform ng ZenLedger. Matuto pa at magsimula sa iyong mga transaksyon sa Dash Wallet.";
@@ -718,9 +712,6 @@
 
 /* Voting */
 "Date: Old to new" = "Petsa: Luma sa bago";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Default na pananalapi, shortcuts, about...";
 
 /* Voting */
 "Default filter setting" = "Default na setting ng filter";
@@ -954,9 +945,6 @@
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
-
-/* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Maghanap ng mga merchant na tumatanggap ng DASH";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
@@ -1195,9 +1183,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "I-import ang private key";
 
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Mag-import ng pribadong key, Mag-export ng CSV...";
-
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Bilang karagdagan sa ipinapakitang bayad sa Coinbase, nagsasama kami ng spread sa presyo. Kapag gumagamit ng Advanced Trade, walang spread na kasama dahil direktang nakikipag-ugnayan ka sa order book.\n\nAng mga merkado ng Cryptocurrency ay pabagu-bago, at nagbibigay-daan ito sa amin na pansamantalang i-lock ang isang presyo para sa pagpapatupad ng kalakalan.";
 
@@ -1393,9 +1378,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Ipaalam sa akin kung kailan ito tapos";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Hayaan ang iyong mga kaibigan at pamilya na sumali sa Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Hayaan ang iyong mga kaibigan at pamilya na sumali sa Dash Network. Anyayahan sila sa mundo ng social banking.";
@@ -2810,9 +2792,6 @@
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Tingnan sa Explorer";
-
-/* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Ipakita ang passphrase, backup wallet…";
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "Ipakita ang recovery phrase";

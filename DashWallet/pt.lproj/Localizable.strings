@@ -357,9 +357,6 @@
 "Buy & Sell" = "Comprar &amp; Vender";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Comprar & Vender Dash";
-
-/* No comment provided by engineer. */
 "Buy & sell Dash" = "Buy & sell Dash";
 
 /* Buy a Gift Card */
@@ -505,9 +502,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Confirmando";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Conectar com exchange de terceiros";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Conecte suas carteiras de criptomoedas à plataforma ZenLedger. Saiba mais e comece com suas transações da carteira Dash.";
@@ -718,9 +712,6 @@
 
 /* Voting */
 "Date: Old to new" = "Data: Da mais antiga para a mais recente";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Moeda padrão, atalhos, sobre...";
 
 /* Voting */
 "Default filter setting" = "Configuração de filtro padrão";
@@ -954,9 +945,6 @@
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
-
-/* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Encontrar comerciantes que aceitam DASH.";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
@@ -1195,9 +1183,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Importar Chave Privada";
 
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Importar chave privada, Exportar CSV...";
-
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Além da taxa Coinbase exibida, nós incluímos um spread no preço. Ao usar o Advanced Trade, nenhum spread é incluído porque você está interagindo diretamente com o livro de pedidos.\n\nOs mercados de criptomoedas são voláteis e isso nos permite bloquear temporariamente um preço para a execução da negociação.";
 
@@ -1393,9 +1378,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Me avise quando estiver pronto";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Deixe seus amigos e familiares se juntarem ao Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Deixe seus amigos e familiares se juntarem à Rede Dash. Convide-os para o mundo do banco social.";
@@ -2810,9 +2792,6 @@
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Ver no Explorador";
-
-/* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Ver frase de recuperação, fazer backup...";
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "Ver Frase de Recuperação";

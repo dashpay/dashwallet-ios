@@ -357,9 +357,6 @@
 "Buy & Sell" = "Acheter & vendre";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Acheter & vendre des dashs";
-
-/* No comment provided by engineer. */
 "Buy & sell Dash" = "Buy & sell Dash";
 
 /* Buy a Gift Card */
@@ -505,9 +502,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Confirmation…";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Se connecter aux plateformes de change tierces";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Connectez vos portefeuilles crypto à la plateforme ZenLedger. En savoir plus et se lancer avec vos transactions Dash Wallet.";
@@ -718,9 +712,6 @@
 
 /* Voting */
 "Date: Old to new" = "Date : ancienne à récente";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Monnaie par défaut, raccourcis, à propos…";
 
 /* Voting */
 "Default filter setting" = "Réglage de filtre par défaut";
@@ -954,9 +945,6 @@
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
-
-/* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Trouver des vendeurs qui acceptent Dash";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
@@ -1195,9 +1183,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Importer une clé privée";
 
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Importer une clé privée, exporter CSV…";
-
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "En plus des frais Coinbase affichés, nous incluons un écart dans le prix. En utilisant le mode avancé de trading, aucun écart n'est inclus car vous intervenez directement sur le registre d'ordres.\n\nLes marchés cryptomonétaires sont volatiles, et cela nous permet de verrouiller temporairement un cours pour l'exécution du trading.";
 
@@ -1393,9 +1378,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Prévenez-moi quand c'est fait";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Permet à vos amis et votre famille de rejoindre Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Permet à vos amis et votre famille de rejoindre le réseau Dash. Invitez-les dans le monde de banque sociale.";
@@ -2810,9 +2792,6 @@
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Voir dans l'explorateur";
-
-/* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Voir la phrase de récupération, sauvegarder le portefeuille…";
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "Voir la phrase de récupération";

@@ -357,9 +357,6 @@
 "Buy & Sell" = "Αγορά και Πώληση";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Αγορά και Πώληση Dash";
-
-/* No comment provided by engineer. */
 "Buy & sell Dash" = "Buy & sell Dash";
 
 /* Buy a Gift Card */
@@ -505,9 +502,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Επιβεβαίωση";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Συνδεθείτε με ανταλλακτήρια τρίτων";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Συνδέστε τα πορτοφόλια σας με την πλατφόρμα ZenLedger. Μάθετε περισσότερα και ξεκινήστε τις συναλλαγές σας με το Dash Wallet.";
@@ -718,9 +712,6 @@
 
 /* Voting */
 "Date: Old to new" = "Ημερομηνία: Παλαιά προς νέα";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Προεπιλεγμένο νόμισμα, συντομεύσεις, σχετικά με...";
 
 /* Voting */
 "Default filter setting" = "Προεπιλεγμένη ρύθμιση φίλτρου";
@@ -954,9 +945,6 @@
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
-
-/* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Βρείτε εμπόρους που δέχονται DASH";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
@@ -1195,9 +1183,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Εισάγετε το ιδιωτικό κλειδί";
 
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Εισαγωγή ιδιωτικού κλειδιού, εξαγωγή CSV...";
-
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Εκτός από την εμφανιζόμενη αμοιβή της Coinbase, συμπεριλαμβάνουμε στην τιμή ένα spread. Όταν χρησιμοποιείτε το Advanced Trade, δεν περιλαμβάνεται spread, επειδή αλληλεπιδράτε απευθείας με το βιβλίο εντολών.\n\nΟι αγορές κρυπτονομισμάτων είναι ευμετάβλητες και αυτό μας επιτρέπει να κλειδώσουμε προσωρινά μια τιμή για την εκτέλεση των συναλλαγών.";
 
@@ -1393,9 +1378,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Ενημερώστε με όταν ολοκληρωθεί";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Αφήστε τους φίλους και τους συγγενείς σας να συμμετάσχουν στο Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Αφήστε τους φίλους και την συγγενείς σας να ενταχθούν στο Dash Network. Προσκαλέστε τους στον κόσμο της κοινωνικής τραπεζικής.";
@@ -2810,9 +2792,6 @@
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Προβολή στον Explorer";
-
-/* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Προβολή φράσης πρόσβασης, εφεδρικού πορτοφολιού ...";
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "Προβολή Φράσης Ανάκτησης";

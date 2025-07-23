@@ -357,9 +357,6 @@
 "Buy & Sell" = "Купити &amp; Продати";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Купити & Продати Dash";
-
-/* No comment provided by engineer. */
 "Buy & sell Dash" = "Buy & sell Dash";
 
 /* Buy a Gift Card */
@@ -505,9 +502,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Підтвердження";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Підключитися до сторонніх бірж";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Підключіть свої криптогаманці до платформи ZenLedger. Дізнайтеся більше та розпочніть роботу з транзакціями Dash Wallet.";
@@ -718,9 +712,6 @@
 
 /* Voting */
 "Date: Old to new" = "Дата: від старої до нової";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Валюта за замовчуванням, ярлики, про програму.";
 
 /* Voting */
 "Default filter setting" = "Налаштування фільтра за замовчуванням";
@@ -954,9 +945,6 @@
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
-
-/* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Знайдіть продавців, які приймають DASH";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
@@ -1195,9 +1183,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Імпорт ключа";
 
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Імпорт приватного ключа, експорт CSV…";
-
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "На додаток до відображеної комісії Coinbase ми включаємо спред у ціну. Під час використання Advanced Trade спред не включається, оскільки ви взаємодієте безпосередньо з книгою замовлень. \n\nКриптовалютні ринки нестабільні, що дозволяє нам тимчасово зафіксувати ціну на здійснення торгів.";
 
@@ -1393,9 +1378,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Повідомити, коли буде готово";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Нехай ваші друзі та родина приєднаються до Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Дозвольте своїм друзям і родині приєднатися до Dash Network. Запросіть їх у світ соціального банкінгу.";
@@ -2810,9 +2792,6 @@
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Переглянути в Explorer";
-
-/* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Показати кодову фразу, зробити резервну копію гаманця.";
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "Переглянути фразу відновлення";

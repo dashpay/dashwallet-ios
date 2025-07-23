@@ -357,9 +357,6 @@
 "Buy & Sell" = "Kopen & verkopen";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Koop & verkoop Dash";
-
-/* No comment provided by engineer. */
 "Buy & sell Dash" = "Buy & sell Dash";
 
 /* Buy a Gift Card */
@@ -505,9 +502,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Aan het bevestigen";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Verbind met beurzen van derden";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Verbind je crypto portemonnees met het ZenLedger platform. Kom meer te weten en ga aan de slag met je Dash portemonnee transacties.";
@@ -718,9 +712,6 @@
 
 /* Voting */
 "Date: Old to new" = "Datum: Oud naar nieuw";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Standaard valuta, snelkoppelingen, over... ";
 
 /* Voting */
 "Default filter setting" = "Standaard filterinstelling";
@@ -954,9 +945,6 @@
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
-
-/* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Vind winkeliers die Dash accepteren";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
@@ -1195,9 +1183,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Importeer prive-sleutel";
 
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Privésleutel importeren, CSV exporteren...";
-
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Naast de getoonde Coinbase fee, nemen we een spread mee in de prijs. Bij gebruik van Advanced Trade optie is er geen spread inbegrepen omdat je rechtstreeks met het orderboek communiceert.\n\nCryptocurrency-markten zijn volatiel en dit stelt ons in staat om tijdelijk een prijs vast te leggen voor de uitvoering van transacties.";
 
@@ -1393,9 +1378,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Laat me weten wanneer het klaar is";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Laat je vrienden en familie lid worden van Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Laat je vrienden en familie lid worden van het Dash Netwerk. Nodig ze uit in de wereld van sociaal bankieren.";
@@ -2810,9 +2792,6 @@
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Bekijk in Explorer";
-
-/* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Bekijk wachtwoord, maak backup portemonnee ...";
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "Toon herstelzin";

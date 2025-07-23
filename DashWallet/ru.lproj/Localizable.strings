@@ -357,9 +357,6 @@
 "Buy & Sell" = "Купить и Продать";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Купить и продать";
-
-/* No comment provided by engineer. */
 "Buy & sell Dash" = "Buy & sell Dash";
 
 /* Buy a Gift Card */
@@ -505,9 +502,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Подтверждается";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Использовать сторонние биржи";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Подключите свои криптокошельки к платформе ZenLedger. Узнайте больше и начните с транзакций в Dash Wallet.";
@@ -718,9 +712,6 @@
 
 /* Voting */
 "Date: Old to new" = "По дате: Сначала старые";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Валюта по умолчанию, ссылки, о программе…";
 
 /* Voting */
 "Default filter setting" = "Настройки фильтра по умолчанию";
@@ -954,9 +945,6 @@
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
-
-/* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Найти магазины, где принимают DASH";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
@@ -1195,9 +1183,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Импорт ключа";
 
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Импортировать приватный ключ, Выгрузить CSV…";
-
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Помимо отображённой комиссии Coinbase, мы учитываем небольшой разброс цены. При работе в режиме Продвинутой Торговли разброс цены не учитывается, потому что вы работаете напрямую с портфелем заказов. \n\nКриптовалютным рынкам свойственна волатильность, и таким образом мы временно замораживаем цену для совершения сделки. ";
 
@@ -1393,9 +1378,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Сообщить, когда будет готово";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Пусть ваши друзья и семья присоединятся к Dash.";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Пусть ваши друзья и семья присоединятся к сети Dash. Пригласите их в мир социального банкинга.";
@@ -2810,9 +2792,6 @@
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Посмотреть в Explorer";
-
-/* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Показать кодовую фразу, сделать резервную копию кошелька...";
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "Посмотреть фразу восстановления";

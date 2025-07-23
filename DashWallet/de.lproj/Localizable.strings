@@ -357,9 +357,6 @@
 "Buy & Sell" = "Kaufe & Verkaufe";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Kaufe & Verkaufe Dash";
-
-/* No comment provided by engineer. */
 "Buy & sell Dash" = "Buy & sell Dash";
 
 /* Buy a Gift Card */
@@ -505,9 +502,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Bestätige";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Mit Drittanbieter-Börsen verknüpfen";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Verbinde deine Krypto-Wallets mit der Zenledger Plattform. Lerne mehr darüber und beginne mit deinen Transaktionen in der Dash Wallet.";
@@ -718,9 +712,6 @@
 
 /* Voting */
 "Date: Old to new" = "Datum: Alt nach neu";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Standardwährung, Shortcuts, über...";
 
 /* Voting */
 "Default filter setting" = "Standardmäßige Filtereinstellung";
@@ -954,9 +945,6 @@
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
-
-/* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Finde Händler die DASH akzeptieren";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
@@ -1195,9 +1183,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Privaten Schlüssel importieren";
 
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Private Key importieren, CSV exportieren...";
-
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Zusätzlich zu den angezeigten Coinbase-Gebühren wird ein Spread in den Preis eingerechnet. Bei der Verwendung von Advanced Trade ist kein Spread enthalten, da Sie direkt mit dem Orderbuch interagieren.\n\nDie Märkte für Kryptowährungen sind volatil, und dies ermöglicht es uns, vorübergehend einen Preis für die Handelsausführung festzulegen.";
 
@@ -1393,9 +1378,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Benachrichtige mich, wenn dies abgeschlossen ist";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Lass deine Freunde und Familie bei Dash mitmachen";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Lass deine Freunde und Familie bei Dash mitmachen. Lade sie zur Welt des Social Banking ein.";
@@ -2810,9 +2792,6 @@
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Im Explorer ansehen";
-
-/* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Passphrase anzeigen, Wallet sichern...";
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "Wiederherstellungsphrase ansehen";

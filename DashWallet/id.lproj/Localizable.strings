@@ -357,9 +357,6 @@
 "Buy & Sell" = "Beli & Jual";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Beli & Jual Dash";
-
-/* No comment provided by engineer. */
 "Buy & sell Dash" = "Buy & sell Dash";
 
 /* Buy a Gift Card */
@@ -505,9 +502,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Mengkonfirmasikan";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Terhubung dengan pertukaran pihak ketiga";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Hubungkan dompet crypto anda ke platform Zenledger. Pelajari lebih lanjut dan mulai dengan transaksi Domept Dash.";
@@ -718,9 +712,6 @@
 
 /* Voting */
 "Date: Old to new" = "Tanggal: Lama ke baru";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Mata uang standar, pintasan, tentang ...";
 
 /* Voting */
 "Default filter setting" = "Pengaturan filter default";
@@ -954,9 +945,6 @@
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
-
-/* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Temukan toko yang menerima Dash";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
@@ -1195,9 +1183,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Impor kunci pribadi";
 
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Impor kunci pribadi, Ekspor CSV…";
-
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Selain biaya Coinbase yang ditampilkan, kami menyertakan Spread harga. Saat menggunakan Advanced Trade, tidak ada spread yang disertakan karena Anda berinteraksi langsung dengan buku pesanan.\n\nPasar Cryptocurrency tidak stabil, dan ini memungkinkan kami mengunci sementara harga untuk eksekusi perdagangan.";
 
@@ -1393,9 +1378,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Beri tahu saya jika sudah selesai";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Biarkan teman dan keluarga Anda bergabung dengan Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Biarkan teman dan keluarga Anda bergabung dengan Dash Network. Ajak mereka ke dunia perbankan sosial.";
@@ -2810,9 +2792,6 @@
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Lihat di Explorer";
-
-/* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Lihat frasa sandi, cadangkan domept...";
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "Lihat frasa pemulihan";

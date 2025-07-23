@@ -357,9 +357,6 @@
 "Buy & Sell" = "購買 & 出售";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "買賣達世幣";
-
-/* No comment provided by engineer. */
 "Buy & sell Dash" = "Buy & sell Dash";
 
 /* Buy a Gift Card */
@@ -505,9 +502,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "確認中";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "與第三方交易所連結";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "將您的加密錢包連接到 ZenLedger 平台。了解更多並開始使用您的達世幣錢包交易。";
@@ -718,9 +712,6 @@
 
 /* Voting */
 "Date: Old to new" = "日期：從舊到新";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "預設貨幣，捷徑，關於…";
 
 /* Voting */
 "Default filter setting" = "預設過濾器設定";
@@ -954,9 +945,6 @@
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
-
-/* No comment provided by engineer. */
-"Find merchants that accept DASH" = "尋找接受達世幣付款的商家";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
@@ -1195,9 +1183,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "導入私鑰";
 
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "導入私鑰，導出 CSV…";
-
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "除了顯示的 Coinbase 費用外，我們還在價格中包含了價差。使用 Advanced Trade 時，不包括點差，因為您直接在訂單簿上進行交易。\n\n加密貨幣市場波動較大，這使我們能夠暫時鎖定交易執行的價格。";
 
@@ -1393,9 +1378,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "完成時通知我";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "讓您的朋友和家人加入達世幣網絡";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "讓您的朋友和家人加入達世幣網絡。邀請他們進入社交銀行的世界。";
@@ -2810,9 +2792,6 @@
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "在瀏覽器中查看";
-
-/* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "查看恢復詞組, 備份錢包…";
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "查看恢復詞組";

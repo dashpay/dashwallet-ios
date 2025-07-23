@@ -357,9 +357,6 @@
 "Buy & Sell" = "Kúpiť a predať";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Kúpiť a predať Dash";
-
-/* No comment provided by engineer. */
 "Buy & sell Dash" = "Buy & sell Dash";
 
 /* Buy a Gift Card */
@@ -505,9 +502,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Potvrdzuje sa";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Spojiť s burzami tretích strán";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Pripojte svoje kryptopeňaženky k platforme ZenLedger. Získajte viac informácií a začnite s Dash Wallet transakciami.";
@@ -718,9 +712,6 @@
 
 /* Voting */
 "Date: Old to new" = "Dátum: Od najstarších";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Predvolená mena, skratky, o programe...";
 
 /* Voting */
 "Default filter setting" = "Predvolené nastavenie filtra";
@@ -954,9 +945,6 @@
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
-
-/* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Nájdite obchodníkov, ktorí akceptujú DASH";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
@@ -1195,9 +1183,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Importovať privátny kľúč";
 
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Importovať privátny kľúč, exportovať CSV…";
-
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Okrem zobrazeného Coinbase poplatku, sa do ceny započítavame aj rozptyl. Pri používaní pokročilého obchodovania nie je zahrnutý žiadny rozptyl, pretože interagujete priamo s knihou objednávok.\n\nTrhy s kryptomenami sú volatilné, čo nám umožňuje dočasne uzamknúť cenu na vykonanie obchodu.";
 
@@ -1393,9 +1378,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Informovať ma keď bude hotovo";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Nechajte svojich priateľov a rodinu aby sa pripojili k Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Nechajte svojich priateľov a rodinu aby sa pripojili k sieti Dash. Pozvite ich do sveta sociálneho bankovníctva.";
@@ -2810,9 +2792,6 @@
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Zobraziť v prehliadači";
-
-/* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Zobraziť prístupové heslo, zálohovať peňaženku...";
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "Zobraziť frázu pre obnovenie";

@@ -357,9 +357,6 @@
 "Buy & Sell" = "ซื้อ ขาย";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "ซื้อ & ขาย Dash";
-
-/* No comment provided by engineer. */
 "Buy & sell Dash" = "Buy & sell Dash";
 
 /* Buy a Gift Card */
@@ -505,9 +502,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "กำลังยืนยัน";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "เชื่อมต่อกับการแลกเปลี่ยนของบุคคลที่สาม";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.";
@@ -718,9 +712,6 @@
 
 /* Voting */
 "Date: Old to new" = "วันที่: เก่าไปใหม่";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "สกุลเงินเริ่มต้น, ทางลัด, เกี่ยวกับ...";
 
 /* Voting */
 "Default filter setting" = "Default filter setting";
@@ -954,9 +945,6 @@
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
-
-/* No comment provided by engineer. */
-"Find merchants that accept DASH" = "ค้นหาร้านค้าที่ยอมรับ DASH";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
@@ -1195,9 +1183,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "นำเข้ากุญแจส่วนตัว";
 
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "นำเข้าคีย์ส่วนตัวส่งออก CSV ...";
-
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "นอกเหนือจากค่าธรรมเนียม Coinbase ที่แสดงแล้วเรายังรวมถึงสเปรดในราคา เมื่อใช้การค้าขั้นสูงจะไม่มีการแพร่กระจายเนื่องจากคุณมีปฏิสัมพันธ์โดยตรงกับหนังสือสั่งซื้อ\n\nตลาด cryptocurrency มีความผันผวนและสิ่งนี้ช่วยให้เราสามารถล็อคราคาสำหรับการดำเนินการทางการค้าชั่วคราว";
 
@@ -1393,9 +1378,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "แจ้งให้ฉันทราบเมื่อเสร็จแล้ว";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "ให้เพื่อนและครอบครัวของคุณเข้าร่วม Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "ให้เพื่อนและครอบครัวของคุณเข้าร่วมเครือข่าย Dash เชิญพวกเขาเข้าสู่โลกของธนาคารเพื่อสังคม";
@@ -2810,9 +2792,6 @@
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "ดูใน Explorer";
-
-/* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "ดูวลี, สำรองวอลเล็ท...";
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "ดูวลีกู้คืน";
