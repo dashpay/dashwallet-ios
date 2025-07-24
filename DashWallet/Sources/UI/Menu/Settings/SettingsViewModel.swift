@@ -33,6 +33,10 @@ class SettingsViewModel: ObservableObject {
     @Published var items: [MenuItemModel] = []
     @Published private(set) var navigationDestination: SettingsNavDest = .none
     
+    var isBalanceHidden: Bool {
+        DWGlobalOptions.sharedInstance().balanceHidden
+    }
+    
     init(model: DWSettingsMenuModel) {
         self.model = model
         refreshMenuItems()
