@@ -17,6 +17,7 @@
 
 import Foundation
 import Combine
+import LocalAuthentication
 
 enum SecurityMenuNavigationDestination {
     case viewRecoveryPhrase
@@ -32,12 +33,20 @@ class SecurityMenuViewModel: ObservableObject {
     @Published var biometricsEnabled = false
     @Published var balanceHidden = false
     
-    let model = DWSecurityMenuModel()
+    private let biometricAuthModel = DWBiometricAuthModel()
+    private let authenticationManager = DSAuthenticationManager.sharedInstance()
+    
+    let hasTouchID: Bool
+    let hasFaceID: Bool
     
     init() {
+        let biometryType = biometricAuthModel.biometryType
+        hasTouchID = biometryType == .touchID
+        hasFaceID = biometryType == .faceID
+        
         setupItems()
-        biometricsEnabled = model.biometricsEnabled
-        balanceHidden = model.balanceHidden
+        biometricsEnabled = DWGlobalOptions.sharedInstance().biometricAuthEnabled
+        balanceHidden = DWGlobalOptions.sharedInstance().balanceHidden
     }
     
     private func setupItems() {
@@ -59,9 +68,9 @@ class SecurityMenuViewModel: ObservableObject {
             }
         ))
         
-        if model.hasTouchID || model.hasFaceID {
-            let title = model.hasTouchID ? NSLocalizedString("Enable Touch ID", comment: "") : NSLocalizedString("Enable Face ID", comment: "")
-            let iconName = model.hasTouchID ? "image.touch.id" : "image.face.id"
+        if hasTouchID || hasFaceID {
+            let title = hasTouchID ? NSLocalizedString("Enable Touch ID", comment: "") : NSLocalizedString("Enable Face ID", comment: "")
+            let iconName = hasTouchID ? "image.touch.id" : "image.face.id"
             menuItems.append(MenuItemModel(
                 title: title,
                 icon: .custom(iconName, maxHeight: 22),
@@ -83,7 +92,8 @@ class SecurityMenuViewModel: ObservableObject {
             action: { [weak self] in
                 guard let self = self else { return }
                 let newValue = !self.balanceHidden
-                self.model.balanceHidden = newValue
+                DWGlobalOptions.sharedInstance().balanceHidden = newValue
+                self.balanceHidden = newValue
             }
         ))
         
@@ -107,7 +117,7 @@ class SecurityMenuViewModel: ObservableObject {
     }
     
     private func toggleBiometrics(_ enabled: Bool) {
-        model.setBiometricsEnabled(enabled) { [weak self] success in
+        setBiometricsEnabled(enabled) { [weak self] success in
             DispatchQueue.main.async {
                 if !success {
                     // Revert the toggle
@@ -127,8 +137,56 @@ class SecurityMenuViewModel: ObservableObject {
         }
     }
     
+    private func setBiometricsEnabled(_ enabled: Bool, completion: @escaping (Bool) -> Void) {
+        authenticationManager.authenticate(
+            withPrompt: nil,
+            usingBiometricAuthentication: false,
+            alertIfLockout: true
+        ) { [weak self] authenticatedOrSuccess, usedBiometrics, cancelled in
+            guard let self = self else {
+                completion(false)
+                return
+            }
+            
+            if authenticatedOrSuccess {
+                if enabled {
+                    self.biometricAuthModel.enableBiometricAuth { success in
+                        if success {
+                            DWGlobalOptions.sharedInstance().biometricAuthEnabled = true
+                            let limit = DW_DEFAULT_BIOMETRICS_SPENDING_LIMIT
+                            self.authenticationManager.setBiometricSpendingLimitIfAuthenticated(limit)
+                        }
+                        completion(success)
+                    }
+                } else {
+                    DWGlobalOptions.sharedInstance().biometricAuthEnabled = false
+                    self.authenticationManager.setBiometricSpendingLimitIfAuthenticated(0)
+                    completion(true)
+                }
+            } else {
+                completion(false)
+            }
+        }
+    }
+    
     func resetNavigation() {
         navigationDestination = nil
         showBiometricsAlert = false
+    }
+    
+    func changePinContinueBlock(_ continueBlock: @escaping (Bool) -> Void) {
+        authenticationManager.authenticate(
+            withPrompt: nil,
+            usingBiometricAuthentication: false,
+            alertIfLockout: true
+        ) { authenticated, usedBiometrics, cancelled in
+            self.authenticationManager.didAuthenticate = false
+            continueBlock(authenticated)
+        }
+    }
+    
+    func setupNewPin(_ pin: String) {
+        let success = authenticationManager.setupNewPin(pin)
+        assert(success, "Pin setup failed")
     }
 }

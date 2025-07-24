@@ -101,7 +101,7 @@ class SecurityMenuViewController: UIViewController {
     }
     
     private func changePinAction() {
-        viewModel.model.changePinContinue { [weak self] allowed in
+        viewModel.changePinContinueBlock { [weak self] allowed in
             guard allowed else { return }
             
             let controller = DWSetPinViewController(intent: .changePin)
@@ -142,10 +142,10 @@ class SecurityMenuViewController: UIViewController {
         let titleString: String
         let messageString: String
         
-        if viewModel.model.hasTouchID {
+        if viewModel.hasTouchID {
             titleString = String(format: NSLocalizedString("%@ is not allowed to access Touch ID", comment: ""), displayName)
             messageString = NSLocalizedString("Allow Touch ID access in Settings", comment: "")
-        } else if viewModel.model.hasFaceID {
+        } else if viewModel.hasFaceID {
             titleString = String(format: NSLocalizedString("%@ is not allowed to access Face ID", comment: ""), displayName)
             messageString = NSLocalizedString("Allow Face ID access in Settings", comment: "")
         } else {
