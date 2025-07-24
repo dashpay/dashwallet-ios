@@ -1003,6 +1003,9 @@
 /* Coinbase */
 "from your Coinbase account" = "从您的 Coinbase 账户";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "充分混币";
 
@@ -2055,6 +2058,9 @@
 "Rescan Blockchain" = "重新扫描区块链";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "重置";
 
 /* Explore Dash: Filters */
@@ -2071,6 +2077,9 @@
 
 /* Usernames */
 "Results" = "结果";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "保留相互交易记录";

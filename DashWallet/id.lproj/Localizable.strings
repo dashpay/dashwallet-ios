@@ -1003,6 +1003,9 @@
 /* Coinbase */
 "from your Coinbase account" = "dari akun Coinbase Anda";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "Tercampur sepenuhnya";
 
@@ -2055,6 +2058,9 @@
 "Rescan Blockchain" = "Piindai ulang blockchain";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "Atur-ulang";
 
 /* Explore Dash: Filters */
@@ -2071,6 +2077,9 @@
 
 /* Usernames */
 "Results" = "Hasil";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Simpan Sejarah Transaksi Bersama";

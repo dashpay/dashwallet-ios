@@ -1003,6 +1003,9 @@
 /* Coinbase */
 "from your Coinbase account" = "당신의 코인베이스 계좌로부터";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "완전히 믹싱됨";
 
@@ -2055,6 +2058,9 @@
 "Rescan Blockchain" = "블록체인 재스캔";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "리셋";
 
 /* Explore Dash: Filters */
@@ -2071,6 +2077,9 @@
 
 /* Usernames */
 "Results" = "결과";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "상호 거래 내역을 유지합니다";

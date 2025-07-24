@@ -1003,6 +1003,9 @@
 /* Coinbase */
 "from your Coinbase account" = "з вашого акаунта Coinbase";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "Повністю змішано";
 
@@ -2055,6 +2058,9 @@
 "Rescan Blockchain" = "Пересканувати блокчейн";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "Скидання";
 
 /* Explore Dash: Filters */
@@ -2071,6 +2077,9 @@
 
 /* Usernames */
 "Results" = "Результати";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Зберігати взаємну історію транзакцій";

@@ -26,6 +26,7 @@ enum SecurityMenuNavigationDestination {
     case resetWallet
 }
 
+@MainActor
 class SecurityMenuViewModel: ObservableObject {
     @Published var navigationDestination: SecurityMenuNavigationDestination?
     @Published var showBiometricsAlert = false

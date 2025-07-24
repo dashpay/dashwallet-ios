@@ -16,6 +16,7 @@
 //
 
 import Combine
+import UIKit
 
 enum SettingsNavDest {
     case coinjoin
@@ -26,15 +27,25 @@ enum SettingsNavDest {
     case none
 }
 
-class SettingsViewModel: ObservableObject {
+@MainActor
+class SettingsMenuViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     private let coinJoinService = CoinJoinService.shared
-    private var model: DWSettingsMenuModel
+    
     @Published var items: [MenuItemModel] = []
     @Published private(set) var navigationDestination: SettingsNavDest = .none
+    @Published var notificationsEnabled: Bool
     
-    init(model: DWSettingsMenuModel) {
-        self.model = model
+    var networkName: String {
+        return DWEnvironment.sharedInstance().currentChain.name
+    }
+    
+    var localCurrencyCode: String {
+        return CurrencyExchangerObjcWrapper.localCurrencyCode
+    }
+    
+    init() {
+        self.notificationsEnabled = DWGlobalOptions.sharedInstance().localNotificationsEnabled
         refreshMenuItems()
         setupCoinJoinObservers()
     }
@@ -73,7 +84,7 @@ class SettingsViewModel: ObservableObject {
         self.items = [
             MenuItemModel(
                 title: NSLocalizedString("Local Currency", comment: ""),
-                subtitle: model.localCurrencyCode,
+                subtitle: localCurrencyCode,
                 icon: .custom("image.currency", maxHeight: 22),
                 action: { [weak self] in
                     self?.navigationDestination = .currencySelector
@@ -83,14 +94,17 @@ class SettingsViewModel: ObservableObject {
                 title: NSLocalizedString("Enable Receive Notifications", comment: ""),
                 icon: .custom("image.notifications", maxHeight: 22),
                 showToggle: true,
-                isToggled: model.notificationsEnabled,
+                isToggled: notificationsEnabled,
                 action: { [weak self] in
-                    self?.model.notificationsEnabled.toggle()
+                    guard let self = self else { return }
+                    self.notificationsEnabled.toggle()
+                    DWGlobalOptions.sharedInstance().localNotificationsEnabled = self.notificationsEnabled
+                    self.refreshMenuItems()
                 }
             ),
             MenuItemModel(
                 title: NSLocalizedString("Network", comment: ""),
-                subtitle: model.networkName,
+                subtitle: networkName,
                 icon: .custom("image.rescan", maxHeight: 22),
                 action: { [weak self] in
                     self?.navigationDestination = .network
@@ -135,5 +149,56 @@ class SettingsViewModel: ObservableObject {
             )
         ])
         #endif
+    }
+    
+    // MARK: - Network Switching
+    
+    func switchToMainnet() async -> Bool {
+        return await DWEnvironment.sharedInstance().switchToMainnet()
+    }
+    
+    func switchToTestnet() async -> Bool {
+        return await DWEnvironment.sharedInstance().switchToTestnet()
+    }
+    
+    func switchToEvonet() async -> Bool {
+        return await DWEnvironment.sharedInstance().switchToEvonet()
+    }
+    
+    // MARK: - Blockchain Rescan Actions
+    
+    func rescanTransactions() {
+        DWGlobalOptions.sharedInstance().isResyncingWallet = true
+        let chainManager = DWEnvironment.sharedInstance().currentChainManager
+        chainManager.syncBlocksRescan()
+    }
+    
+    func fullResync() {
+        DWGlobalOptions.sharedInstance().isResyncingWallet = true
+        let chainManager = DWEnvironment.sharedInstance().currentChainManager
+        chainManager.masternodeListAndBlocksRescan()
+    }
+    
+    #if DEBUG
+    func resyncMasternodeList() {
+        DWGlobalOptions.sharedInstance().isResyncingWallet = true
+        let chainManager = DWEnvironment.sharedInstance().currentChainManager
+        chainManager.masternodeListRescan()
+    }
+    #endif
+    
+    // MARK: - CSV Report Generation
+    
+    func generateCSVReport() async throws -> (fileName: String, file: URL) {
+        try await withCheckedThrowingContinuation { continuation in
+            TaxReportGenerator.generateCSVReport(
+                completionHandler: { fileName, file in
+                    continuation.resume(returning: (fileName, file))
+                },
+                errorHandler: { error in
+                    continuation.resume(throwing: error)
+                }
+            )
+        }
     }
 }

@@ -1003,6 +1003,9 @@
 /* Coinbase */
 "from your Coinbase account" = "από τον λογαριασμό σας στην Coinbase";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "Πλήρως αναμεμειγμένα";
 
@@ -2055,6 +2058,9 @@
 "Rescan Blockchain" = "Επανασάρωση του blockchain";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "Επαναφορά";
 
 /* Explore Dash: Filters */
@@ -2071,6 +2077,9 @@
 
 /* Usernames */
 "Results" = "Αποτελέσματα";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Διατήρηση Ιστορικού Αμοιβαίων Συναλλαγών";

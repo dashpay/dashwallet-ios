@@ -182,7 +182,6 @@
 		2A7A7BAE234770C900451078 /* DWCaptureSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BAD234770C900451078 /* DWCaptureSessionManager.m */; };
 		2A7A7BC92347E0D700451078 /* DWBaseFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BC82347E0D700451078 /* DWBaseFormTableViewCell.m */; };
 		2A7A7BD62348CB6600451078 /* SettingsMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BD52348CB6600451078 /* SettingsMenuViewController.swift */; };
-		2A7A7BD92348CB7300451078 /* DWSettingsMenuModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BD82348CB7300451078 /* DWSettingsMenuModel.m */; };
 		2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */; };
 		2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */; };
 		2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */; };
@@ -502,8 +501,8 @@
 		75050CCF2DF2CB0F00F586D6 /* GiftCardMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75050CCD2DF2CB0E00F586D6 /* GiftCardMetadataProvider.swift */; };
 		75050CD12DF2FCC200F586D6 /* ServiceName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75050CD02DF2FCBF00F586D6 /* ServiceName.swift */; };
 		75050CD22DF2FCC200F586D6 /* ServiceName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75050CD02DF2FCBF00F586D6 /* ServiceName.swift */; };
-		750CED602C94BFD7000FB837 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750CED5F2C94BFD7000FB837 /* SettingsViewModel.swift */; };
-		750CED612C94BFD7000FB837 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750CED5F2C94BFD7000FB837 /* SettingsViewModel.swift */; };
+		750CED602C94BFD7000FB837 /* SettingsMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750CED5F2C94BFD7000FB837 /* SettingsMenuViewModel.swift */; };
+		750CED612C94BFD7000FB837 /* SettingsMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750CED5F2C94BFD7000FB837 /* SettingsMenuViewModel.swift */; };
 		750CEFA12CCA6EA100E87A32 /* TextInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750CEFA02CCA6EA100E87A32 /* TextInput.swift */; };
 		750CEFA22CCA6EA100E87A32 /* TextInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750CEFA02CCA6EA100E87A32 /* TextInput.swift */; };
 		750CEFA42CCA713300E87A32 /* CreateUsernameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750CEFA32CCA712E00E87A32 /* CreateUsernameViewController.swift */; };
@@ -1339,7 +1338,6 @@
 		C9D2C81E2A320AA000D15901 /* DWGlobalOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CEAA22E18F1800C99324 /* DWGlobalOptions.m */; };
 		C9D2C81F2A320AA000D15901 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4430E622CBB6EC009BAF7F /* AppDelegate.m */; };
 		C9D2C8202A320AA000D15901 /* SendReceivePageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C917023E29D44E0B008C034D /* SendReceivePageController.swift */; };
-		C9D2C8212A320AA000D15901 /* DWSettingsMenuModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BD82348CB7300451078 /* DWSettingsMenuModel.m */; };
 		C9D2C8232A320AA000D15901 /* BaseNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A2C6E28DC457000AD1420 /* BaseNavigationController.swift */; };
 		C9D2C8242A320AA000D15901 /* UIViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CDEECB294A2BAD008AE06D /* UIViewController+Coinbase.swift */; };
 		C9D2C8262A320AA000D15901 /* CSVBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E0299E1F2F006903F1 /* CSVBuilder.swift */; };
@@ -1955,8 +1953,6 @@
 		2A7A7BC72347E0D700451078 /* DWBaseFormTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseFormTableViewCell.h; sourceTree = "<group>"; };
 		2A7A7BC82347E0D700451078 /* DWBaseFormTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseFormTableViewCell.m; sourceTree = "<group>"; };
 		2A7A7BD52348CB6600451078 /* SettingsMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenuViewController.swift; sourceTree = "<group>"; };
-		2A7A7BD72348CB7300451078 /* DWSettingsMenuModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSettingsMenuModel.h; sourceTree = "<group>"; };
-		2A7A7BD82348CB7300451078 /* DWSettingsMenuModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSettingsMenuModel.m; sourceTree = "<group>"; };
 		2A7A7C14234B763600451078 /* DWLocalCurrencyViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyViewController.h; sourceTree = "<group>"; };
 		2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyViewController.m; sourceTree = "<group>"; };
 		2A7A7C1B234B771400451078 /* DWLocalCurrencyModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyModel.h; sourceTree = "<group>"; };
@@ -2430,7 +2426,7 @@
 		7509C10E1AF3076100D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		7509C1121AF3720100D03FD5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		750C6CC01B5C8EB60038AAE9 /* el */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = el; path = el.lproj/Localizable.strings; sourceTree = "<group>"; };
-		750CED5F2C94BFD7000FB837 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
+		750CED5F2C94BFD7000FB837 /* SettingsMenuViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenuViewModel.swift; sourceTree = "<group>"; };
 		750CEFA02CCA6EA100E87A32 /* TextInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextInput.swift; sourceTree = "<group>"; };
 		750CEFA32CCA712E00E87A32 /* CreateUsernameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateUsernameViewController.swift; sourceTree = "<group>"; };
 		7511E8CB1AE5FF240025F1B3 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; lineEnding = 0; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
@@ -4213,10 +4209,8 @@
 			children = (
 				2A7A7C13234B761700451078 /* LocalCurrency */,
 				2A8F420A21BEE69E00858B91 /* About */,
-				2A7A7BD72348CB7300451078 /* DWSettingsMenuModel.h */,
-				2A7A7BD82348CB7300451078 /* DWSettingsMenuModel.m */,
 				2A7A7BD52348CB6600451078 /* SettingsMenuViewController.swift */,
-				750CED5F2C94BFD7000FB837 /* SettingsViewModel.swift */,
+				750CED5F2C94BFD7000FB837 /* SettingsMenuViewModel.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -8523,7 +8517,7 @@
 				75FFD6BB2BF48DF80032879E /* HomeViewController+JailbreakCheck.swift in Sources */,
 				477F50102950A55A003C7508 /* Coinbase+Error.swift in Sources */,
 				2A63003F2327B4BB00827825 /* DWPaymentOutput+DWView.m in Sources */,
-				750CED602C94BFD7000FB837 /* SettingsViewModel.swift in Sources */,
+				750CED602C94BFD7000FB837 /* SettingsMenuViewModel.swift in Sources */,
 				75D5D5342CC928630049ED7B /* UIHostingController+DashWallet.swift in Sources */,
 				2ACD53EE234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m in Sources */,
 				11860923297598B400279FCC /* AddressStatus.swift in Sources */,
@@ -8852,7 +8846,6 @@
 				75D2B4A12D9D28AC00228DB0 /* BlockExplorerSelectionView.swift in Sources */,
 				C917023F29D44E0B008C034D /* SendReceivePageController.swift in Sources */,
 				753FD7E22CA44BDD00B7751F /* CoinJoinProgress.swift in Sources */,
-				2A7A7BD92348CB7300451078 /* DWSettingsMenuModel.m in Sources */,
 				753E46E82DE1E24300A3FF2A /* CTXSpendModels.swift in Sources */,
 				752D03AD2E2F758B00B88784 /* MainMenuViewModel.swift in Sources */,
 				752D03AF2E2F758B00B88784 /* MainMenuView.swift in Sources */,
@@ -9300,7 +9293,7 @@
 				C9D2C7152A320AA000D15901 /* DWBasePayViewController.m in Sources */,
 				C943B4AC2A40A54600AF23C5 /* DWContactsViewController.m in Sources */,
 				C9D2C7162A320AA000D15901 /* CrowdNodeTransferModel.swift in Sources */,
-				750CED612C94BFD7000FB837 /* SettingsViewModel.swift in Sources */,
+				750CED612C94BFD7000FB837 /* SettingsMenuViewModel.swift in Sources */,
 				C9D2C7172A320AA000D15901 /* DWSetPinViewController.m in Sources */,
 				C943B3322A408CED00AF23C5 /* DWProfileDisplayNameCellModel.m in Sources */,
 				C9D2C7182A320AA000D15901 /* ConfirmOrderController.swift in Sources */,
@@ -9665,7 +9658,6 @@
 				C9D2C81E2A320AA000D15901 /* DWGlobalOptions.m in Sources */,
 				C9D2C81F2A320AA000D15901 /* AppDelegate.m in Sources */,
 				C9D2C8202A320AA000D15901 /* SendReceivePageController.swift in Sources */,
-				C9D2C8212A320AA000D15901 /* DWSettingsMenuModel.m in Sources */,
 				C943B5242A40A54600AF23C5 /* UIColor+DWDashPay.m in Sources */,
 				C943B4E82A40A54600AF23C5 /* DWProfileTxsFetchedDataSource.m in Sources */,
 				C9D2C8232A320AA000D15901 /* BaseNavigationController.swift in Sources */,

@@ -24,6 +24,8 @@ static const bool _SNAPSHOT = 0;
 #import "DSKeyManager.h"
 #import "BigIntTypes.h"
 #import "NSString+Dash.h"
+#import "DSChainManager.h"
+#import "DSChain.h"
 
 //MARK: DashWallet
 #import "DWEnvironment.h"
@@ -152,7 +154,6 @@ static const bool _SNAPSHOT = 0;
 #import "DSAuthenticationManager.h"
 #import "DSAuthenticationManager+Private.h"
 #import "DWSecureWalletDelegate.h"
-#import "DWSettingsMenuModel.h"
 #import "DWBasePayViewController.h"
 #import "DWHomeProtocol.h"
 

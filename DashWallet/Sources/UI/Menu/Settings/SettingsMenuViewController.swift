@@ -23,12 +23,76 @@ protocol SettingsMenuViewControllerDelegate: AnyObject {
     func settingsMenuViewControllerDidRescanBlockchain(_ controller: SettingsMenuViewController)
 }
 
+extension SettingsMenuViewController {
+    // Static helper method for presenting rescan options from other view controllers
+    static func presentRescanBlockchainAction(from controller: UIViewController,
+                                            sourceView: UIView,
+                                            sourceRect: CGRect,
+                                            completion: ((Bool) -> Void)? = nil) {
+        let actionSheet = UIAlertController(
+            title: NSLocalizedString("Rescan Blockchain", comment: ""),
+            message: nil,
+            preferredStyle: .actionSheet
+        )
+        
+        let viewModel = SettingsMenuViewModel()
+        
+        let rescanAction = UIAlertAction(
+            title: NSLocalizedString("Rescan Transactions (Suggested)", comment: ""),
+            style: .default
+        ) { _ in
+            viewModel.rescanTransactions()
+            completion?(true)
+        }
+        
+        let rescanMNLAndBlocksAction = UIAlertAction(
+            title: NSLocalizedString("Full Resync", comment: ""),
+            style: .default
+        ) { _ in
+            viewModel.fullResync()
+            completion?(true)
+        }
+        
+        #if DEBUG
+        let rescanMNLAction = UIAlertAction(
+            title: NSLocalizedString("Resync Masternode List", comment: ""),
+            style: .default
+        ) { _ in
+            viewModel.resyncMasternodeList()
+            completion?(true)
+        }
+        #endif
+        
+        let cancelAction = UIAlertAction(
+            title: NSLocalizedString("Cancel", comment: ""),
+            style: .cancel
+        ) { _ in
+            completion?(false)
+        }
+        
+        actionSheet.addAction(rescanAction)
+        actionSheet.addAction(rescanMNLAndBlocksAction)
+        
+        #if DEBUG
+        actionSheet.addAction(rescanMNLAction)
+        #endif
+        
+        actionSheet.addAction(cancelAction)
+        
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            actionSheet.popoverPresentationController?.sourceView = sourceView
+            actionSheet.popoverPresentationController?.sourceRect = sourceRect
+        }
+        
+        controller.present(actionSheet, animated: true, completion: nil)
+    }
+}
+
 class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControllerDelegate {
     
     weak var delegate: SettingsMenuViewControllerDelegate?
     
-    private lazy var model: DWSettingsMenuModel = DWSettingsMenuModel()
-    private lazy var viewModel: SettingsViewModel = SettingsViewModel(model: model)
+    private lazy var viewModel: SettingsMenuViewModel = SettingsMenuViewModel()
     private var cancellables = Set<AnyCancellable>()
     
     init() {
@@ -106,17 +170,23 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
         let actionSheet = UIAlertController(title: NSLocalizedString("Network", comment: ""), message: nil, preferredStyle: .actionSheet)
         
         let mainnetAction = UIAlertAction(title: NSLocalizedString("Mainnet", comment: ""), style: .default) { [weak self] _ in
-            DWSettingsMenuModel.switchToMainnet { success in
+            Task {
+                let success = await self?.viewModel.switchToMainnet() ?? false
                 if success {
-                    self?.updateView()
+                    await MainActor.run {
+                        self?.updateView()
+                    }
                 }
             }
         }
         
         let testnetAction = UIAlertAction(title: NSLocalizedString("Testnet", comment: ""), style: .default) { [weak self] _ in
-            DWSettingsMenuModel.switchToTestnet { success in
+            Task {
+                let success = await self?.viewModel.switchToTestnet() ?? false
                 if success {
-                    self?.updateView()
+                    await MainActor.run {
+                        self?.updateView()
+                    }
                 }
             }
         }
@@ -164,31 +234,87 @@ class SettingsMenuViewController: UIViewController, DWLocalCurrencyViewControlle
     }
     
     private func rescanBlockchainAction() {
-        DWSettingsMenuModel.rescanBlockchainAction(from: self, sourceView: view, sourceRect: view.bounds) { [weak self] confirmed in
-            if confirmed {
-                self?.delegate?.settingsMenuViewControllerDidRescanBlockchain(self!)
-            }
+        let actionSheet = UIAlertController(
+            title: NSLocalizedString("Rescan Blockchain", comment: ""),
+            message: nil,
+            preferredStyle: .actionSheet
+        )
+        
+        let rescanAction = UIAlertAction(
+            title: NSLocalizedString("Rescan Transactions (Suggested)", comment: ""),
+            style: .default
+        ) { [weak self] _ in
+            self?.viewModel.rescanTransactions()
+            self?.delegate?.settingsMenuViewControllerDidRescanBlockchain(self!)
         }
+        
+        let rescanMNLAndBlocksAction = UIAlertAction(
+            title: NSLocalizedString("Full Resync", comment: ""),
+            style: .default
+        ) { [weak self] _ in
+            self?.viewModel.fullResync()
+            self?.delegate?.settingsMenuViewControllerDidRescanBlockchain(self!)
+        }
+        
+        #if DEBUG
+        let rescanMNLAction = UIAlertAction(
+            title: NSLocalizedString("Resync Masternode List", comment: ""),
+            style: .default
+        ) { [weak self] _ in
+            self?.viewModel.resyncMasternodeList()
+            self?.delegate?.settingsMenuViewControllerDidRescanBlockchain(self!)
+        }
+        #endif
+        
+        let cancelAction = UIAlertAction(
+            title: NSLocalizedString("Cancel", comment: ""),
+            style: .cancel,
+            handler: nil
+        )
+        
+        actionSheet.addAction(rescanAction)
+        actionSheet.addAction(rescanMNLAndBlocksAction)
+        
+        #if DEBUG
+        actionSheet.addAction(rescanMNLAction)
+        #endif
+        
+        actionSheet.addAction(cancelAction)
+        
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            actionSheet.popoverPresentationController?.sourceView = view
+            actionSheet.popoverPresentationController?.sourceRect = view.bounds
+        }
+        
+        present(actionSheet, animated: true, completion: nil)
     }
     
     private func exportTransactionsInCSV() {
         view.dw_showProgressHUD(withMessage: NSLocalizedString("Generating CSV Report", comment: ""))
         
-        DWSettingsMenuModel.generateCSVReport { [weak self] fileName, file in
-            self?.view.dw_hideProgressHUD()
-            
-            let activityViewController = UIActivityViewController(activityItems: [file], applicationActivities: nil)
-            activityViewController.setValue(fileName, forKey: "subject")
-            
-            if UIDevice.current.userInterfaceIdiom == .pad {
-                activityViewController.popoverPresentationController?.sourceView = self?.view
-                activityViewController.popoverPresentationController?.sourceRect = self?.view.bounds ?? .zero
+        Task {
+            do {
+                let (fileName, file) = try await viewModel.generateCSVReport()
+                
+                await MainActor.run {
+                    self.view.dw_hideProgressHUD()
+                    
+                    let activityViewController = UIActivityViewController(activityItems: [file], applicationActivities: nil)
+                    activityViewController.setValue(fileName, forKey: "subject")
+                    
+                    if UIDevice.current.userInterfaceIdiom == .pad {
+                        activityViewController.popoverPresentationController?.sourceView = self.view
+                        activityViewController.popoverPresentationController?.sourceRect = self.view.bounds
+                    }
+                    
+                    self.present(activityViewController, animated: true, completion: nil)
+                }
+            } catch {
+                await MainActor.run {
+                    self.view.dw_hideProgressHUD()
+                    self.dw_displayErrorModally(error)
+                }
             }
-            
-            self?.present(activityViewController, animated: true, completion: nil)
-        } errorHandler: { [weak self] error in
-            self?.view.dw_hideProgressHUD()
-            self?.dw_displayErrorModally(error)
         }
     }
     
@@ -217,7 +343,7 @@ extension SettingsMenuViewController {
 }
 
 struct SettingsMenuContent: View {
-    @StateObject var viewModel: SettingsViewModel
+    @StateObject var viewModel: SettingsMenuViewModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
