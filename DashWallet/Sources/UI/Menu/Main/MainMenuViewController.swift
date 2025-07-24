@@ -167,15 +167,25 @@ class MainMenuViewController: UIViewController {
     }
     
     @objc private func showSecurity() {
-        let controller = UIHostingController(rootView: SecurityScreen(vc: navigationController!))
+        guard let navigationController = navigationController else { return }
+        
+        let controller = UIHostingController(rootView: SecurityScreen(vc: navigationController))
         controller.hidesBottomBarWhenPushed = true
-        navigationController?.pushViewController(controller, animated: true)
+        navigationController.pushViewController(controller, animated: true)
     }
     
     @objc private func showSettings() {
-        let controller = SettingsMenuViewController()
-        controller.delegate = self
-        navigationController?.pushViewController(controller, animated: true)
+        guard let navigationController = navigationController else { return }
+        
+        let screen = SettingsScreen(vc: navigationController, onDidRescan: {
+            navigationController.popToRootViewController(animated: false)
+            if let mainMenuDelegate = self.delegate as? MainMenuViewControllerDelegate {
+                mainMenuDelegate.mainMenuViewControllerOpenHomeScreen(self)
+            }
+        })
+        let controller = UIHostingController(rootView: screen)
+        controller.hidesBottomBarWhenPushed = true
+        navigationController.pushViewController(controller, animated: true)
     }
     
     @objc private func showTools() {
@@ -275,17 +285,6 @@ extension MainMenuViewController: ToolsMenuViewControllerDelegate {
         navigationController?.popToRootViewController(animated: false)
         if let mainMenuDelegate = delegate as? MainMenuViewControllerDelegate {
             mainMenuDelegate.mainMenuViewControllerImportPrivateKey(self)
-        }
-    }
-}
-
-// MARK: - DWSettingsMenuViewControllerDelegate
-
-extension MainMenuViewController: SettingsMenuViewControllerDelegate {
-    func settingsMenuViewControllerDidRescanBlockchain(_ controller: SettingsMenuViewController) {
-        navigationController?.popToRootViewController(animated: false)
-        if let mainMenuDelegate = delegate as? MainMenuViewControllerDelegate {
-            mainMenuDelegate.mainMenuViewControllerOpenHomeScreen(self)
         }
     }
 }

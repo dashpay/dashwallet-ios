@@ -2392,9 +2392,6 @@
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "同步中… 结果可能不完整.";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "立刻同步";
-
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "已与当前Dash钱包同步";
 

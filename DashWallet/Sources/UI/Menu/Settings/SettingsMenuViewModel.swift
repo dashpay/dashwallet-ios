@@ -18,13 +18,13 @@
 import Combine
 import UIKit
 
-enum SettingsNavDest {
+enum SettingsMenuNavigationDestination {
     case coinjoin
     case currencySelector
     case network
     case rescan
     case about
-    case none
+    case exportCSV
 }
 
 @MainActor
@@ -33,8 +33,10 @@ class SettingsMenuViewModel: ObservableObject {
     private let coinJoinService = CoinJoinService.shared
     
     @Published var items: [MenuItemModel] = []
-    @Published private(set) var navigationDestination: SettingsNavDest = .none
+    @Published var navigationDestination: SettingsMenuNavigationDestination?
     @Published var notificationsEnabled: Bool
+    @Published var showCSVExportActivity = false
+    @Published var csvExportData: (fileName: String, file: URL)?
     
     var networkName: String {
         return DWEnvironment.sharedInstance().currentChain.name
@@ -51,7 +53,9 @@ class SettingsMenuViewModel: ObservableObject {
     }
     
     func resetNavigation() {
-        self.navigationDestination = .none
+        navigationDestination = nil
+        showCSVExportActivity = false
+        csvExportData = nil
     }
     
     private func setupCoinJoinObservers() {
@@ -154,7 +158,7 @@ class SettingsMenuViewModel: ObservableObject {
     // MARK: - Network Switching
     
     func switchToMainnet() async -> Bool {
-        return await DWEnvironment.sharedInstance().switchToMainnet()
+        await DWEnvironment.sharedInstance().switchToMainnet()
     }
     
     func switchToTestnet() async -> Bool {
@@ -162,7 +166,7 @@ class SettingsMenuViewModel: ObservableObject {
     }
     
     func switchToEvonet() async -> Bool {
-        return await DWEnvironment.sharedInstance().switchToEvonet()
+        await DWEnvironment.sharedInstance().switchToEvonet()
     }
     
     // MARK: - Blockchain Rescan Actions
@@ -200,5 +204,11 @@ class SettingsMenuViewModel: ObservableObject {
                 }
             )
         }
+    }
+    
+    func exportCSV() async throws {
+        let result = try await generateCSVReport()
+        csvExportData = result
+        showCSVExportActivity = true
     }
 }

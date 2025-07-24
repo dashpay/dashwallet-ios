@@ -2392,9 +2392,6 @@
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "กำลังซิงค์... ผลลัพธ์อาจไม่สมบูรณ์";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "ซิงค์ตอนนี้";
-
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "ซิงค์กับกระเป๋าเงิน Dash ปัจจุบัน";
 

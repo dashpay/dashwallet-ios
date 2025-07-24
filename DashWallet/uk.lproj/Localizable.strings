@@ -2392,9 +2392,6 @@
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "Триває синхронізація... Результати можуть бути неповними.";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "Синхронізувати зараз";
-
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "Синхронізовано з Dash Wallet";
 

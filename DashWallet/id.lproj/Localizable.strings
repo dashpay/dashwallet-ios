@@ -2392,9 +2392,6 @@
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "Sinkronisasi sedang berlangsung... Hasil mungkin tidak lengkap.";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "Sinkronkan Sekarang";
-
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "Disinkronkan dengan Dompet Dash saat ini";
 

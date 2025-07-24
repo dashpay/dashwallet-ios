@@ -2392,9 +2392,6 @@
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "Kasalukuyang isinasagawa ang pag-sync... Maaaring hindi kumpleto ang resulta.";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "I-sync ngayon";
-
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "Naka-sync sa kasalukuyang Dash Wallet";
 

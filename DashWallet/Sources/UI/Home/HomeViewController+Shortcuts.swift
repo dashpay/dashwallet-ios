@@ -28,8 +28,6 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
             delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.enterAddress.rawValue)
         case .buySellDash:
             buySellDashAction()
-        case .syncNow:
-            SettingsMenuViewController.presentRescanBlockchainAction(from: self, sourceView: sender!, sourceRect: sender!.bounds, completion: nil)
         case .payWithNFC:
             performNFCReadingAction()
         case .localCurrency:
@@ -38,13 +36,11 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
             showImportPrivateKey()
         case .switchToTestnet:
             Task {
-                let settingsViewModel = SettingsMenuViewModel()
-                _ = await settingsViewModel.switchToTestnet()
+                await DWEnvironment.sharedInstance().switchToTestnet()
             }
         case .switchToMainnet:
             Task {
-                let settingsViewModel = SettingsMenuViewModel()
-                _ = await settingsViewModel.switchToMainnet()
+                await DWEnvironment.sharedInstance().switchToMainnet()
             }
         case .reportAnIssue:
             break
