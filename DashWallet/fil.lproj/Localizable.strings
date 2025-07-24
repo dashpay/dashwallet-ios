@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ ay nagpadala sa iyo ng isang kahilingan sa pakikipag-ugnay";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ ay hindi pinahihintulutang i-access ang Face ID";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ ay hindi pinahihintulutang i-access ang kamera";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ ay hindi pinahihintulutang i-access ang Touch ID";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu mga contact / %3$lu mga update sa profile";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Payagang i-access ang camera sa Settings";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Payagang i-access ang Face ID sa Settings";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Payagan ang pagpapadala ng lahat ng mga transaksyon mula sa Dash Wallet sa Zenledger?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Payagang i-access ang Touch ID sa Settings";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Halaga sa Dash";
@@ -336,6 +330,9 @@
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Sa pagitan ng Dash Wallet at ng iyong Coinbase account";
+
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
 
 /* Voting */
 "Block" = "Block";

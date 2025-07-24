@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ が連絡先リクエストを送信しました";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ はFace IDへのアクセスが許可されていません";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ はカメラへのアクセスが許可されていません";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@はTouch IDへのアクセスが許可されていません";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu の連絡先 / %3$lu のプロフィール更新";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "端末設定でカメラへのアクセスを許可する";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "端末設定でFace IDへのアクセスを許可する";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "DashウォレットからZenledgerに全ての取引の送信を許可しますか。";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "端末設定でTouch IDへのアクセスを許可する";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "金額(Dash)";
@@ -336,6 +330,9 @@
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "DashウォレットとCoinbaseアカウント間";
+
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
 
 /* Voting */
 "Block" = "ブロック";

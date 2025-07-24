@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ vous a envoyé une demande de contact";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ n'est pas autorisé à accéder à Face ID";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ n'est pas autorisé à accéder à l'appareil photo";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ n'est pas autorisé à accéder à Touch ID";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu mises à jour de profil";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Permettre l'accès à la caméra dans Réglages";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Permettre l'accès à Face ID dans Réglages";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Autoriser l'envoi de toutes les transactions depuis Dash Wallet vers ZenLedger ?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Permettre l'accès à Touch ID dans Réglages";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Montant en dashs";
@@ -336,6 +330,9 @@
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Entre Dash Wallet et votre compte Coinbase";
+
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
 
 /* Voting */
 "Block" = "Bloc";

@@ -175,13 +175,12 @@ class SecurityMenuViewModel: ObservableObject {
         showBiometricsAlert = false
     }
     
-    func changePinContinueBlock(_ continueBlock: @escaping (Bool) -> Void) {
+    func authenticate(_ continueBlock: @escaping (Bool) -> Void) {
         authenticationManager.authenticate(
             withPrompt: nil,
             usingBiometricAuthentication: false,
             alertIfLockout: true
-        ) { authenticated, usedBiometrics, cancelled in
-            self.authenticationManager.didAuthenticate = false
+        ) { authenticated, _, _ in
             continueBlock(authenticated)
         }
     }

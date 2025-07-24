@@ -19,12 +19,11 @@ import UIKit
 import SwiftUI
 import MessageUI
 
-@objc(DWMainMenuViewController) 
 class MainMenuViewController: UIViewController {
     
     // MARK: - Properties
     
-    @objc weak var delegate: DWWipeDelegate?
+    weak var delegate: DWWipeDelegate?
     
     private var viewModel: MainMenuViewModel!
     private var hostingController: UIHostingController<MainMenuView>!
@@ -38,7 +37,7 @@ class MainMenuViewController: UIViewController {
     
     // MARK: - Initialization
     
-    @objc override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         #if DASHPAY
         self.receiveModel = nil
         self.dashPayReady = nil
@@ -47,11 +46,10 @@ class MainMenuViewController: UIViewController {
         #endif
         
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
-        setupViewController()
     }
     
     #if DASHPAY
-    @objc init(dashPayModel: DWDashPayProtocol,
+    init(dashPayModel: DWDashPayProtocol,
                receiveModel: DWReceiveModelProtocol,
                dashPayReady: DWDashPayReadyProtocol,
                userProfileModel: CurrentUserProfileModel) {
@@ -61,18 +59,11 @@ class MainMenuViewController: UIViewController {
         self.userProfileModel = userProfileModel
         
         super.init(nibName: nil, bundle: nil)
-        setupViewController()
     }
     #endif
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    // MARK: - Setup
-    
-    private func setupViewController() {
-//        title = NSLocalizedString("More", comment: "") todo
     }
     
     // MARK: - View Lifecycle
@@ -176,8 +167,8 @@ class MainMenuViewController: UIViewController {
     }
     
     @objc private func showSecurity() {
-        let controller = SecurityMenuViewController()
-        controller.delegate = delegate
+        let controller = UIHostingController(rootView: SecurityScreen(vc: navigationController!))
+        controller.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(controller, animated: true)
     }
     

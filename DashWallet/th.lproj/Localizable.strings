@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ ยอมรับคำขอติดต่อของคุณ";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ ไม่สามารถเข้าถึง Face ID";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ ไม่สามารถเข้าถึงกล้องถ่ายรูป";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ ไม่สามารถเข้าถึง Touch ID";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "อนุญาตให้เข้าถึงกล้องถ่ายรูปในการตั้งค่า";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "อนุญาตให้เข้าถึง Face ID ในการตั้งค่า";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Allow sending all transactions from Dash Wallet to Zenledger?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "อนุญาตให้เข้าถึง Touch ID ในการตั้งค่า";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "จำนวนเงินใน Dash";
@@ -336,6 +330,9 @@
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "ระหว่างกระเป๋าเงิน Dash และบัญชี Coinbase ของคุณ";
+
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
 
 /* Voting */
 "Block" = "บล็อก";

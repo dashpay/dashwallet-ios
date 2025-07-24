@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ надіслав вам запит на додавання в контакти";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ не має доступу до Face ID";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ не має доступу до камери";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ не має доступу до Touch ID";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@  ~ %2$lu контактів / %3$lu оновлень профілю";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Дозволити доступ до камери в налаштуваннях";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Дозволити доступ до Face ID в налаштуваннях";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Дозволити надсилати всі транзакції з Dash Wallet до Zenledger?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Дозволити доступ до Touch ID в налаштуваннях";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Сума в Dash";
@@ -336,6 +330,9 @@
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Між Dash Wallet і вашим Coinbase акаунтом";
+
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
 
 /* Voting */
 "Block" = "Блок";

@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ telah mengirim anda permintaan kontak";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ tidak diizinkan mengakses Pengenal Wajah";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ tidak diizinkan mengakses kamera";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ tidak diizinkan mengakses Pengenal Sentuh";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu kontak / %3$lu pembaruan profil";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Izinkan akses kamera di Pengaturan";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Izinkan akses Pengenal Wajah di Pengaturan";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Izinkan mengirim semua transaksi dari dompet Dash ke Zenledger?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Izinkan akses Pengenal Sentuh di Pengaturan";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Jumlah dalam Dash";
@@ -336,6 +330,9 @@
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Antara Dash Wallet dan akun Coinbase Anda";
+
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
 
 /* Voting */
 "Block" = "Blok";

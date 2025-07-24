@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ vám poslal žiadosť na kontakt";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ nemá povolený prístup k Face ID";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ nemá povolený prístup ku kamere";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ nemá povolený prístup k Touch ID";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu kontakty / %3$lu aktualizácie profilu";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Povoliť prístup ku kamere v nastaveniach";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Povoliť prístup k Face ID v nastaveniach";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Povoliť odosielanie všetkých transakcií z Dash Wallet do Zenledgeru?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Povoliť prístup k Touch ID v nastaveniach";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Suma v Dash";
@@ -336,6 +330,9 @@
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Medzi Dash peňaženkou a vaším účtom na Coinbase";
+
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
 
 /* Voting */
 "Block" = "Blok";

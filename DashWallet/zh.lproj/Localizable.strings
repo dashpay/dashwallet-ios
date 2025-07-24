@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@向您发送了朋友申请";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ 不被允许访问脸部识别";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@不被允许访问照相机";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ 不被允许访问指纹识别";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu 联系人/ %3$lu 个人资料更新";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "在设置中允许访问照相机";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "在设置中允许访问脸部识别";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "允许将所有交易从 Dash 钱包发送到 Zenledger?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "在设置中允许访问指纹识别";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Dash 金额";
@@ -336,6 +330,9 @@
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "在Dash钱包和您的Coinbase账户之间";
+
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
 
 /* Voting */
 "Block" = "区块";

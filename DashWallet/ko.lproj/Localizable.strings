@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ 님이 당신에게 연락처 요청을 보냈습니다";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@에 페이스 ID 접근 권한이 없습니다";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@에 카메라 접근 권한이 없습니다";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@게 터치 ID 접근 권한이 없습니다";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu 연락처 / %3$lu 프로필 업데이트";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "설정에서 카메라 접근을 허용";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "설정에서 페이스 ID 접근을 허용";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "대시 지갑의 모든 거래를 Zenledger로 보내시겠습니까?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "설정에서 터치 ID 접근을 허용";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "대시 금액";
@@ -336,6 +330,9 @@
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "대시 지갑과 코인베이스 계정간";
+
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
 
 /* Voting */
 "Block" = "블록";
