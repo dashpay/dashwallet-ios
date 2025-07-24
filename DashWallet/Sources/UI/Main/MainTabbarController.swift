@@ -337,11 +337,11 @@ extension MainTabbarController {
 // MARK: MainMenuViewControllerDelegate
 
 extension MainTabbarController: MainMenuViewControllerDelegate {
-    func mainMenuViewControllerImportPrivateKey(_ controller: UIViewController) {
+    func mainMenuViewControllerImportPrivateKey() {
         performScanQRCodeAction()
     }
     
-    func mainMenuViewControllerOpenHomeScreen(_ controller: UIViewController) {
+    func mainMenuViewControllerOpenHomeScreen() {
         selectedIndex = MainTabbarTabs.home.rawValue
     }
     

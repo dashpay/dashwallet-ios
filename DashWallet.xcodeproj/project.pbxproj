@@ -531,10 +531,8 @@
 		752772122AAA1CE30066557E /* Coinbase-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752772112AAA1CE30066557E /* Coinbase-Info.plist */; };
 		752C3ED22B1AF19C00F46CD3 /* BuySellPortal.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C9FAABB42AB793CE00878224 /* BuySellPortal.storyboard */; };
 		752D03A92E2F758B00B88784 /* MainMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752D03A82E2F758B00B88784 /* MainMenuViewModel.swift */; };
-		752D03AB2E2F758B00B88784 /* MainMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752D03A62E2F758B00B88784 /* MainMenuView.swift */; };
 		752D03AC2E2F758B00B88784 /* MainMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752D03A72E2F758B00B88784 /* MainMenuViewController.swift */; };
 		752D03AD2E2F758B00B88784 /* MainMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752D03A82E2F758B00B88784 /* MainMenuViewModel.swift */; };
-		752D03AF2E2F758B00B88784 /* MainMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752D03A62E2F758B00B88784 /* MainMenuView.swift */; };
 		752D03B02E2F758B00B88784 /* MainMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752D03A72E2F758B00B88784 /* MainMenuViewController.swift */; };
 		752D03B22E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752D03B12E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift */; };
 		752D03B32E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752D03B12E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift */; };
@@ -2448,7 +2446,6 @@
 		7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedTopperAssets.swift; sourceTree = "<group>"; };
 		7527720E2AA9F58E0066557E /* TopperViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopperViewModel.swift; sourceTree = "<group>"; };
 		752772112AAA1CE30066557E /* Coinbase-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Coinbase-Info.plist"; sourceTree = "<group>"; };
-		752D03A62E2F758B00B88784 /* MainMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuView.swift; sourceTree = "<group>"; };
 		752D03A72E2F758B00B88784 /* MainMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuViewController.swift; sourceTree = "<group>"; };
 		752D03A82E2F758B00B88784 /* MainMenuViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuViewModel.swift; sourceTree = "<group>"; };
 		752D03B12E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuViewControllerDelegate.swift; sourceTree = "<group>"; };
@@ -4188,7 +4185,6 @@
 		2A7A7BC52347DF7100451078 /* Main */ = {
 			isa = PBXGroup;
 			children = (
-				752D03A62E2F758B00B88784 /* MainMenuView.swift */,
 				752D03A72E2F758B00B88784 /* MainMenuViewController.swift */,
 				752D03A82E2F758B00B88784 /* MainMenuViewModel.swift */,
 				752D03B12E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift */,
@@ -8853,7 +8849,6 @@
 				753FD7E22CA44BDD00B7751F /* CoinJoinProgress.swift in Sources */,
 				753E46E82DE1E24300A3FF2A /* CTXSpendModels.swift in Sources */,
 				752D03AD2E2F758B00B88784 /* MainMenuViewModel.swift in Sources */,
-				752D03AF2E2F758B00B88784 /* MainMenuView.swift in Sources */,
 				752D03B02E2F758B00B88784 /* MainMenuViewController.swift in Sources */,
 				478A2C7228DC909C00AD1420 /* BaseNavigationController.swift in Sources */,
 				47CDEECC294A2BAD008AE06D /* UIViewController+Coinbase.swift in Sources */,
@@ -9241,7 +9236,6 @@
 				C9D2C6F32A320AA000D15901 /* ExploreDatabaseConnection.swift in Sources */,
 				C9D2C6F42A320AA000D15901 /* WithdrawalLimitsController.swift in Sources */,
 				752D03A92E2F758B00B88784 /* MainMenuViewModel.swift in Sources */,
-				752D03AB2E2F758B00B88784 /* MainMenuView.swift in Sources */,
 				752D03AC2E2F758B00B88784 /* MainMenuViewController.swift in Sources */,
 				C943B31B2A408CED00AF23C5 /* DWUpdatingUserProfileView.m in Sources */,
 				C9D2C6F52A320AA000D15901 /* CoinbaseTransactionResponse.swift in Sources */,

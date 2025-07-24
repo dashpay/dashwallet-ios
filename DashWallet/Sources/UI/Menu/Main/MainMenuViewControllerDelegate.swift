@@ -18,8 +18,8 @@
 import Foundation
 
 protocol MainMenuViewControllerDelegate: AnyObject {
-    func mainMenuViewControllerImportPrivateKey(_ controller: UIViewController)
-    func mainMenuViewControllerOpenHomeScreen(_ controller: UIViewController)
+    func mainMenuViewControllerImportPrivateKey()
+    func mainMenuViewControllerOpenHomeScreen()
     func showPaymentsController(withActivePage pageIndex: Int)
     func showGiftCard(_ txId: Data)
 }

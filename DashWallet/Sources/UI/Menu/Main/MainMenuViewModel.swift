@@ -18,6 +18,24 @@
 import SwiftUI
 import Combine
 
+enum MainMenuNavigationDestination {
+    case buySellPortal
+    case explore
+    case security
+    case settings
+    case tools
+    case support
+    #if DASHPAY
+    case invite
+    case voting
+    case editProfile
+    case showRequestDetails
+    case showMixDashDialog
+    case showDashPayInfo
+    case joinDashPay
+    #endif
+}
+
 protocol MainMenuViewModelDelegate: AnyObject {
     func mainMenuViewModelImportPrivateKey()
     func mainMenuViewModelOpenHomeScreen()
@@ -31,6 +49,7 @@ class MainMenuViewModel: ObservableObject {
     // MARK: - Published Properties
     
     @Published var menuSections: [MenuSection] = []
+    @Published var navigationDestination: MainMenuNavigationDestination?
     
     // MARK: - Dependencies
     
@@ -98,34 +117,29 @@ class MainMenuViewModel: ObservableObject {
     func handleMenuAction(_ item: MenuItemType) {
         switch item {
         case .joinDashPay:
-            handleJoinDashPay()
+            // This will be handled by the JoinDashPayView integration
+            break
         case .buySellDash:
             handleBuySellDash()
         case .explore:
-            handleExplore()
+            navigationDestination = .explore
         case .security:
-            handleSecurity()
+            navigationDestination = .security
         case .settings:
-            handleSettings()
+            navigationDestination = .settings
         case .tools:
-            handleTools()
+            navigationDestination = .tools
         case .support:
-            handleSupport()
+            navigationDestination = .support
         #if DASHPAY
         case .invite:
-            handleInvite()
+            navigationDestination = .invite
         case .voting:
-            handleVoting()
+            navigationDestination = .voting
         #endif
         }
     }
-    
-    private func handleJoinDashPay() {
-        #if DASHPAY
-        // This will be handled by the JoinDashPayView integration
-        #endif
-    }
-    
+
     private func handleBuySellDash() {
         DSAuthenticationManager.sharedInstance().authenticate(
             withPrompt: nil,
@@ -133,40 +147,38 @@ class MainMenuViewModel: ObservableObject {
             alertIfLockout: true
         ) { [weak self] authenticated, usedBiometrics, cancelled in
             if authenticated {
-                NotificationCenter.default.post(name: .showBuySellPortal, object: nil)
+                self?.navigationDestination = .buySellPortal
             }
         }
     }
     
-    private func handleExplore() {
-        NotificationCenter.default.post(name: .showExplore, object: nil)
-    }
-    
-    private func handleSecurity() {
-        NotificationCenter.default.post(name: .showSecurity, object: nil)
-    }
-    
-    private func handleSettings() {
-        NotificationCenter.default.post(name: .showSettings, object: nil)
-    }
-    
-    private func handleTools() {
-        NotificationCenter.default.post(name: .showTools, object: nil)
-    }
-    
-    private func handleSupport() {
-        NotificationCenter.default.post(name: .showSupport, object: nil)
-    }
+    // MARK: - DashPay Navigation Methods
     
     #if DASHPAY
-    private func handleInvite() {
-        NotificationCenter.default.post(name: .showInvite, object: nil)
+    func showEditProfile() {
+        navigationDestination = .editProfile
     }
     
-    private func handleVoting() {
-        NotificationCenter.default.post(name: .showVoting, object: nil)
+    func showRequestDetails() {
+        navigationDestination = .showRequestDetails
+    }
+    
+    func showMixDashDialog() {
+        navigationDestination = .showMixDashDialog
+    }
+    
+    func showDashPayInfo() {
+        navigationDestination = .showDashPayInfo
+    }
+    
+    func joinDashPay() {
+        navigationDestination = .joinDashPay
     }
     #endif
+    
+    func resetNavigation() {
+        navigationDestination = nil
+    }
     
     func updateModel() {
         #if DASHPAY
@@ -273,17 +285,3 @@ enum MenuItemType: CaseIterable {
     }
 }
 
-// MARK: - Notification Names
-
-extension Notification.Name {
-    static let showBuySellPortal = Notification.Name("showBuySellPortal")
-    static let showExplore = Notification.Name("showExplore")
-    static let showSecurity = Notification.Name("showSecurity")
-    static let showSettings = Notification.Name("showSettings")
-    static let showTools = Notification.Name("showTools")
-    static let showSupport = Notification.Name("showSupport")
-    #if DASHPAY
-    static let showInvite = Notification.Name("showInvite")
-    static let showVoting = Notification.Name("showVoting")
-    #endif
-}

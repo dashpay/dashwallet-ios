@@ -18,18 +18,14 @@
 import UIKit
 
 #if DASHPAY
-@objc(DWRootEditProfileViewControllerDelegate)
 protocol RootEditProfileViewControllerDelegate: AnyObject {
     func editProfileViewController(_ controller: RootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?)
     func editProfileViewControllerDidCancel(_ controller: RootEditProfileViewController)
 }
 
-@objc(DWRootEditProfileViewController)
 class RootEditProfileViewController: ActionButtonViewController, DWEditProfileViewControllerDelegate, DWSaveAlertViewControllerDelegate, NavigationBarDisplayable {
     
     var isBackButtonHidden: Bool = false
-    
-    @objc
     weak var delegate: RootEditProfileViewControllerDelegate?
     private var editController: DWEditProfileViewController!
     var blockchainIdentity: DSBlockchainIdentity? {
@@ -110,6 +106,5 @@ class RootEditProfileViewController: ActionButtonViewController, DWEditProfileVi
     }
 }
 #else
-@objc(DWRootEditProfileViewControllerDelegate)
 protocol RootEditProfileViewControllerDelegate: AnyObject { }
 #endif

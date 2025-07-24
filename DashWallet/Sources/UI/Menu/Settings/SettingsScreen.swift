@@ -170,7 +170,7 @@ struct SettingsScreen: View {
         } else {
             nextVC = CoinJoinInfoViewController.controller()
         }
-        
+        nextVC.hidesBottomBarWhenPushed = true
         vc.pushViewController(nextVC, animated: true)
     }
     
