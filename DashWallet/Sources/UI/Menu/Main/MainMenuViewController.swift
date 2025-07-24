@@ -189,9 +189,19 @@ class MainMenuViewController: UIViewController {
     }
     
     @objc private func showTools() {
-        let controller = ToolsMenuViewController()
-        controller.delegate = self
-        navigationController?.pushViewController(controller, animated: true)
+        guard let navigationController = navigationController else { return }
+        let screen = ToolsMenuScreen(vc: navigationController, onImportPrivateKey: { [weak self] in
+            guard let self = self else { return }
+            
+            navigationController.popToRootViewController(animated: false)
+            if let mainMenuDelegate = delegate as? MainMenuViewControllerDelegate {
+                mainMenuDelegate.mainMenuViewControllerImportPrivateKey(self)
+            }
+        })
+        
+        let controller = UIHostingController(rootView: screen)
+        controller.hidesBottomBarWhenPushed = true
+        navigationController.pushViewController(controller, animated: true)
     }
     
     @objc private func showSupport() {
@@ -276,17 +286,6 @@ class MainMenuViewController: UIViewController {
         navigationController?.pushViewController(controller, animated: true)
     }
     #endif
-}
-
-// MARK: - DWToolsMenuViewControllerDelegate
-
-extension MainMenuViewController: ToolsMenuViewControllerDelegate {
-    func toolsMenuViewControllerImportPrivateKey(_ controller: ToolsMenuViewController) {
-        navigationController?.popToRootViewController(animated: false)
-        if let mainMenuDelegate = delegate as? MainMenuViewControllerDelegate {
-            mainMenuDelegate.mainMenuViewControllerImportPrivateKey(self)
-        }
-    }
 }
 
 // MARK: - DWExploreViewControllerDelegate

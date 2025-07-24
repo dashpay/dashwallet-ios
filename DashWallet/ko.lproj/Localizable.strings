@@ -1012,9 +1012,6 @@
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "확장된 공개 키를 생성합니까?";
 
-/* No comment provided by engineer. */
-"Generating CSV Report" = "CSV 보고서 생성중";
-
 /* Coinbase/Convert Crypto */
 "Get Quote" = "견적 받기";
 

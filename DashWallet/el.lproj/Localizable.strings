@@ -1012,9 +1012,6 @@
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Δημιουργία Εκτεταμένου Δημόσιου Κλειδιού";
 
-/* No comment provided by engineer. */
-"Generating CSV Report" = "Δημιουργία αναφοράς CSV";
-
 /* Coinbase/Convert Crypto */
 "Get Quote" = "Αποκτήστε προσφορά";
 

@@ -1012,9 +1012,6 @@
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "สร้างขยายกุญแจสาธารณะหรือไม่";
 
-/* No comment provided by engineer. */
-"Generating CSV Report" = "สร้างรายงาน CSV";
-
 /* Coinbase/Convert Crypto */
 "Get Quote" = "รับใบเสนอราคา";
 

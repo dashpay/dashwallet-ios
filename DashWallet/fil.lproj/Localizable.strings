@@ -1012,9 +1012,6 @@
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Bumuo ng pinalawig na mga public keys?";
 
-/* No comment provided by engineer. */
-"Generating CSV Report" = "Pagbuo ng CSV Report";
-
 /* Coinbase/Convert Crypto */
 "Get Quote" = "Kumuha ng Quote";
 

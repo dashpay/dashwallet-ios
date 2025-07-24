@@ -1012,9 +1012,6 @@
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "拡張されたパブリックキーを作成しますか。";
 
-/* No comment provided by engineer. */
-"Generating CSV Report" = "CSVレポートの作成";
-
 /* Coinbase/Convert Crypto */
 "Get Quote" = "見積もりを得る";
 

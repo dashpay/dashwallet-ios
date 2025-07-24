@@ -542,6 +542,8 @@
 		752F81992E30F55E00ADA76D /* SecurityMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752F81972E30F55E00ADA76D /* SecurityMenuViewModel.swift */; };
 		752F819A2E30F55E00ADA76D /* SecurityScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752F81962E30F55E00ADA76D /* SecurityScreen.swift */; };
 		752F819B2E30F55E00ADA76D /* SecurityMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752F81972E30F55E00ADA76D /* SecurityMenuViewModel.swift */; };
+		752F81A92E323FDB00ADA76D /* ToolsMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752F81A82E323FD000ADA76D /* ToolsMenuViewModel.swift */; };
+		752F81AA2E323FDB00ADA76D /* ToolsMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752F81A82E323FD000ADA76D /* ToolsMenuViewModel.swift */; };
 		75303FE52AE7B70500870D8B /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75303FE42AE7B70500870D8B /* CrowdNode.storyboard */; };
 		75303FE62AE7B70500870D8B /* CrowdNode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75303FE42AE7B70500870D8B /* CrowdNode.storyboard */; };
 		7531308D2B47EC910069C9B7 /* UpholdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7531308C2B47EC910069C9B7 /* UpholdClient.swift */; };
@@ -620,8 +622,8 @@
 		755E6DFE2A99E7A000A42870 /* DWInvitationSetupState.m in Sources */ = {isa = PBXBuildFile; fileRef = 755E6DFC2A99E7A000A42870 /* DWInvitationSetupState.m */; };
 		756557B52CE84FFA0060348D /* FeeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756557B42CE84FF70060348D /* FeeInfo.swift */; };
 		756557B62CE84FFA0060348D /* FeeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756557B42CE84FF70060348D /* FeeInfo.swift */; };
-		7566F4832BB6949E005238D2 /* ToolsMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4822BB69498005238D2 /* ToolsMenuViewController.swift */; };
-		7566F4842BB6949E005238D2 /* ToolsMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4822BB69498005238D2 /* ToolsMenuViewController.swift */; };
+		7566F4832BB6949E005238D2 /* ToolsMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */; };
+		7566F4842BB6949E005238D2 /* ToolsMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */; };
 		7566F48A2BB6CAF2005238D2 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4892BB6CAF2005238D2 /* MenuItem.swift */; };
 		7566F48B2BB6CAF2005238D2 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4892BB6CAF2005238D2 /* MenuItem.swift */; };
 		7569D6832DE6DA6800768BFF /* ExploreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7569D6822DE6DA6800768BFF /* ExploreViewController.swift */; };
@@ -2452,6 +2454,7 @@
 		752D03B12E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuViewControllerDelegate.swift; sourceTree = "<group>"; };
 		752F81962E30F55E00ADA76D /* SecurityScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScreen.swift; sourceTree = "<group>"; };
 		752F81972E30F55E00ADA76D /* SecurityMenuViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityMenuViewModel.swift; sourceTree = "<group>"; };
+		752F81A82E323FD000ADA76D /* ToolsMenuViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsMenuViewModel.swift; sourceTree = "<group>"; };
 		75303FE42AE7B70500870D8B /* CrowdNode.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = CrowdNode.storyboard; sourceTree = "<group>"; };
 		7531308C2B47EC910069C9B7 /* UpholdClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpholdClient.swift; sourceTree = "<group>"; };
 		753130902B47EE920069C9B7 /* UpholdCapability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpholdCapability.swift; sourceTree = "<group>"; };
@@ -2499,7 +2502,7 @@
 		755E6DFC2A99E7A000A42870 /* DWInvitationSetupState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWInvitationSetupState.m; sourceTree = "<group>"; };
 		755E6DFD2A99E7A000A42870 /* DWInvitationSetupState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInvitationSetupState.h; sourceTree = "<group>"; };
 		756557B42CE84FF70060348D /* FeeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeInfo.swift; sourceTree = "<group>"; };
-		7566F4822BB69498005238D2 /* ToolsMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsMenuViewController.swift; sourceTree = "<group>"; };
+		7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsMenuScreen.swift; sourceTree = "<group>"; };
 		7566F4892BB6CAF2005238D2 /* MenuItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuItem.swift; sourceTree = "<group>"; };
 		7569D6822DE6DA6800768BFF /* ExploreViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreViewController.swift; sourceTree = "<group>"; };
 		7569D6852DE6DB1B00768BFF /* ExploreHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreHeaderView.swift; sourceTree = "<group>"; };
@@ -4222,7 +4225,8 @@
 				2A8DBA772630A6BE009094BD /* ExtendedKeys */,
 				2A10EB322358994400C38B61 /* ImportWallet */,
 				FB3FF0B0222641210059A9A5 /* Masternode Keys */,
-				7566F4822BB69498005238D2 /* ToolsMenuViewController.swift */,
+				7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */,
+				752F81A82E323FD000ADA76D /* ToolsMenuViewModel.swift */,
 			);
 			path = Tools;
 			sourceTree = "<group>";
@@ -8660,6 +8664,7 @@
 				114D16B629812730009A124C /* OnlineAccountDetailsController.swift in Sources */,
 				C9F451E92A0BDAE700825057 /* UIApplication+DashWallet.swift in Sources */,
 				110D1784298E68A8005BEB30 /* OnlineAccountInfoController.swift in Sources */,
+				752F81AA2E323FDB00ADA76D /* ToolsMenuViewModel.swift in Sources */,
 				470AE1882926600A001A0514 /* PaymentController.swift in Sources */,
 				751C05DE2D3E39A800475E52 /* TransactionListDataItem.swift in Sources */,
 				2ADB396C242615C200A6F898 /* CALayer+MBAnimationPersistence.m in Sources */,
@@ -9021,7 +9026,7 @@
 				47B30D80291123D30080C326 /* SendAmountViewController.swift in Sources */,
 				47CF46A1296540EF0067B6EE /* AccountService.swift in Sources */,
 				47C6E6E7291A90B3003FEDF2 /* ListHandlerView.swift in Sources */,
-				7566F4832BB6949E005238D2 /* ToolsMenuViewController.swift in Sources */,
+				7566F4832BB6949E005238D2 /* ToolsMenuScreen.swift in Sources */,
 				754D020E2D1558EB005CA466 /* GroupedTransactions.swift in Sources */,
 				11BD738128E7356100A34022 /* CrowdNode.swift in Sources */,
 				47AE8B9F28BFAD8200490F5E /* SQLite+ExloreDash.swift in Sources */,
@@ -9512,7 +9517,7 @@
 				C9D2C7AB2A320AA000D15901 /* DWBaseFormTableViewCell.m in Sources */,
 				C9D2C7AC2A320AA000D15901 /* AccountCell.swift in Sources */,
 				C9D2C7AD2A320AA000D15901 /* DWTransactionListDataProviderStub.m in Sources */,
-				7566F4842BB6949E005238D2 /* ToolsMenuViewController.swift in Sources */,
+				7566F4842BB6949E005238D2 /* ToolsMenuScreen.swift in Sources */,
 				C943B33A2A408CED00AF23C5 /* DWUploadAvatarModel.m in Sources */,
 				C943B3392A408CED00AF23C5 /* DWUploadAvatarViewController.m in Sources */,
 				759609242C455B2000F3BF04 /* SendIntro.swift in Sources */,
@@ -9879,6 +9884,7 @@
 				757514E02B15D8DE0026AD8E /* VotingConstants.swift in Sources */,
 				C943B51E2A40A54600AF23C5 /* InvitationTopView.swift in Sources */,
 				C9D2C8D52A320AA000D15901 /* AccountService.swift in Sources */,
+				752F81A92E323FDB00ADA76D /* ToolsMenuViewModel.swift in Sources */,
 				C9D2C8D62A320AA000D15901 /* ListHandlerView.swift in Sources */,
 				C943B5152A40A54600AF23C5 /* DWInvitationTableViewCell.m in Sources */,
 				C9D2C8D82A320AA000D15901 /* CrowdNode.swift in Sources */,

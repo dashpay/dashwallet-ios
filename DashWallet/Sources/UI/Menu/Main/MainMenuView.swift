@@ -167,35 +167,6 @@ extension Notification.Name {
     #endif
 }
 
-// MARK: - MenuItemType Hashable
-
-extension MenuItemType: Hashable {
-    func hash(into hasher: inout Hasher) {
-        switch self {
-        case .joinDashPay:
-            hasher.combine("joinDashPay")
-        case .buySellDash:
-            hasher.combine("buySellDash")
-        case .explore:
-            hasher.combine("explore")
-        case .security:
-            hasher.combine("security")
-        case .settings:
-            hasher.combine("settings")
-        case .tools:
-            hasher.combine("tools")
-        case .support:
-            hasher.combine("support")
-        #if DASHPAY
-        case .invite:
-            hasher.combine("invite")
-        case .voting:
-            hasher.combine("voting")
-        #endif
-        }
-    }
-}
-
 #Preview {
     #if DASHPAY
     let viewModel = MainMenuViewModel(

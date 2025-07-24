@@ -1012,9 +1012,6 @@
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "生成扩展公钥?";
 
-/* No comment provided by engineer. */
-"Generating CSV Report" = "正在生成 CSV 报告";
-
 /* Coinbase/Convert Crypto */
 "Get Quote" = "获得报价";
 

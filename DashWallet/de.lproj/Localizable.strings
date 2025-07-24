@@ -1012,9 +1012,6 @@
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Erweiterten öffentlichen Schlüssel generieren?";
 
-/* No comment provided by engineer. */
-"Generating CSV Report" = "CSV-Bericht erstellen";
-
 /* Coinbase/Convert Crypto */
 "Get Quote" = "Angebot einholen";
 
