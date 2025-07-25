@@ -141,9 +141,9 @@ class MerchantDAO: PointOfUseDAO {
                 let exp =
                     Expression<Bool>(literal: "(latitude - \(anchorLatitude))*(latitude - \(anchorLatitude)) + (longitude - \(anchorLongitude))*(longitude - \(anchorLongitude)) = MIN((latitude - \(anchorLatitude))*(latitude - \(anchorLatitude)) + (longitude - \(anchorLongitude))*(longitude - \(anchorLongitude)))")
 
-                query = query.group([ExplorePointOfUse.source, ExplorePointOfUse.merchantId], having: exp)
+                query = query.group([ExplorePointOfUse.merchantId], having: exp)
             } else {
-                query = query.group([ExplorePointOfUse.source, ExplorePointOfUse.merchantId])
+                query = query.group([ExplorePointOfUse.merchantId])
             }
 
             var distanceSorting = Expression<Bool>(value: true)
