@@ -113,7 +113,7 @@ class SettingsMenuViewModel: ObservableObject {
             MenuItemModel(
                 title: NSLocalizedString("Network", comment: ""),
                 subtitle: networkName,
-                icon: .custom("image.rescan", maxHeight: 22),
+                icon: .custom("image.network.monitor", maxHeight: 22),
                 action: { [weak self] in
                     self?.navigationDestination = .network
                 }

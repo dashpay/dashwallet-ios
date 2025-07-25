@@ -21,21 +21,6 @@ private let kVotingEnabled = "votingEnabledKey"
 private let kIsVotingInfoShown = "votingInfoShownKey"
 private let kVotingPanelClosed = "votingPanelWasClosedKey"
 
-// MARK: - ObjcWrapper
-
-@objc
-class VotingPrefsWrapper: NSObject {
-    @objc
-    class func getIsEnabled() -> Bool {
-        VotingPrefs.shared.votingEnabled
-    }
-    
-    @objc
-    class func setIsEnabled(value: Bool) {
-        VotingPrefs.shared.votingEnabled = value
-    }
-}
-
 // MARK: - VotingPrefs
 
 class VotingPrefs {

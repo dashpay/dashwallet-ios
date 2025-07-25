@@ -28,11 +28,6 @@ enum MainMenuNavigationDestination {
     #if DASHPAY
     case invite
     case voting
-    case editProfile
-    case showRequestDetails
-    case showMixDashDialog
-    case showDashPayInfo
-    case joinDashPay
     #endif
 }
 
@@ -93,12 +88,20 @@ class MainMenuViewModel: ObservableObject {
         ]))
         
         // Settings section
-        sections.append(MenuSection(items: [
+        var settingsItems: [MenuItemType] = [
             .security,
             .settings,
             .tools,
             .support
-        ]))
+        ]
+        
+        #if DASHPAY
+        if VotingPrefs.shared.votingEnabled {
+            settingsItems.append(.voting)
+        }
+        #endif
+        
+        sections.append(MenuSection(items: settingsItems))
         
         self.menuSections = sections
     }
@@ -139,30 +142,6 @@ class MainMenuViewModel: ObservableObject {
             }
         }
     }
-    
-    // MARK: - DashPay Navigation Methods
-    
-    #if DASHPAY
-    func showEditProfile() {
-        navigationDestination = .editProfile
-    }
-    
-    func showRequestDetails() {
-        navigationDestination = .showRequestDetails
-    }
-    
-    func showMixDashDialog() {
-        navigationDestination = .showMixDashDialog
-    }
-    
-    func showDashPayInfo() {
-        navigationDestination = .showDashPayInfo
-    }
-    
-    func joinDashPay() {
-        navigationDestination = .joinDashPay
-    }
-    #endif
     
     func resetNavigation() {
         navigationDestination = nil
@@ -226,9 +205,9 @@ enum MenuItemType: CaseIterable {
             return .custom("image.support", maxHeight: 22)
         #if DASHPAY
         case .invite:
-            return .custom("invite", maxHeight: 22)
+            return .custom("menu_invite", maxHeight: 22)
         case .voting:
-            return .custom("voting", maxHeight: 22)
+            return .custom("menu_voting", maxHeight: 22)
         #endif
         }
     }

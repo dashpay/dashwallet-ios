@@ -4189,9 +4189,9 @@
 		2A7A7BC52347DF7100451078 /* Main */ = {
 			isa = PBXGroup;
 			children = (
+				752D03B12E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift */,
 				752D03A72E2F758B00B88784 /* MainMenuViewController.swift */,
 				752D03A82E2F758B00B88784 /* MainMenuViewModel.swift */,
-				752D03B12E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";

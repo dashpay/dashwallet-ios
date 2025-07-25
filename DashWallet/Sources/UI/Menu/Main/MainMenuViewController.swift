@@ -146,6 +146,8 @@ struct MainMenuView: View {
     @State private var openSettings: Bool = false
     @State private var showTools: Bool = false
     @State private var showSecurity: Bool = false
+    @State private var showMixDialog: Bool = false
+    @State private var showDashPayInfo: Bool = false
     
     #if DASHPAY
     let joinDPViewModel = JoinDashPayViewModel(initialState: .none)
@@ -176,7 +178,6 @@ struct MainMenuView: View {
                 .padding(.top, 10)
                 
                 #if DASHPAY
-                // Join DashPay section (if needed)
                 if viewModel.userProfileModel?.showJoinDashpay == true {
                     JoinDashPayView(
                         viewModel: joinDPViewModel,
@@ -188,9 +189,6 @@ struct MainMenuView: View {
                         },
                         onDismissButton: { state in
                             joinDPViewModel.markAsDismissed()
-                        },
-                        onSizeChange: { size in
-                            // Handle size changes if needed
                         }
                     )
                     .padding(.horizontal, 18)
@@ -204,7 +202,7 @@ struct MainMenuView: View {
                     }
                 }
                 
-                Spacer(minLength: 60) // Bottom padding for tab bar
+                Spacer(minLength: 60)
             }
             
             NavigationLink(
@@ -241,15 +239,49 @@ struct MainMenuView: View {
         .onReceive(viewModel.$navigationDestination) { destination in
             handleNavigation(destination)
         }
+        .sheet(isPresented: $showMixDialog) {
+            let dialog = MixDashDialog(
+                positiveAction: {
+                    let controller = CoinJoinLevelsViewController.controller(isFullScreen: false)
+                    controller.hidesBottomBarWhenPushed = true
+                    self.vc.pushViewController(controller, animated: true)
+                },
+                negativeAction: {
+                    if UsernamePrefs.shared.joinDashPayInfoShown {
+                        self.joinDashPay()
+                    } else {
+                        UsernamePrefs.shared.joinDashPayInfoShown = true
+                        showDashPayInfo = true
+                    }
+                }
+            )
+            
+            if #available(iOS 16.0, *) {
+                dialog.presentationDetents([.height(250)])
+            } else {
+                dialog
+            }
+        }
+        .sheet(isPresented: $showDashPayInfo) {
+            let dialog = JoinDashPayInfoDialog {
+                self.joinDashPay()
+            }
+            
+            if #available(iOS 16.0, *) {
+                dialog.presentationDetents([.height(600)])
+            } else {
+                dialog
+            }
+        }
     }
     
     #if DASHPAY
     private func handleJoinDashPayTap(state: JoinDashPayState) {
         switch state {
         case .registered:
-            viewModel.showEditProfile()
+            editProfile()
         case .voting:
-            viewModel.showRequestDetails()
+            showRequestDetails()
         case .none:
             handleJoinButtonAction()
         default:
@@ -262,7 +294,7 @@ struct MainMenuView: View {
         case .blocked, .failed, .contested:
             handleJoinButtonAction()
         default:
-            viewModel.showEditProfile()
+            editProfile()
             joinDPViewModel.markAsDismissed()
         }
     }
@@ -272,11 +304,11 @@ struct MainMenuView: View {
         let shouldShowDashPayInfo = !UsernamePrefs.shared.joinDashPayInfoShown
         
         if shouldShowMixDashDialog {
-            viewModel.showMixDashDialog()
+            showMixDialog = true
         } else if shouldShowDashPayInfo {
-            viewModel.showDashPayInfo()
+            showDashPayInfo = true
         } else {
-            viewModel.joinDashPay()
+            joinDashPay()
         }
     }
     #endif
@@ -300,16 +332,6 @@ struct MainMenuView: View {
             showInvite()
         case .voting:
             showVoting()
-        case .editProfile:
-            editProfile()
-        case .showRequestDetails:
-            showRequestDetails()
-        case .showMixDashDialog:
-            showMixDashDialog()
-        case .showDashPayInfo:
-            showDashPayInfo()
-        case .joinDashPay:
-            joinDashPay()
         #endif
         case .none:
             return
@@ -361,38 +383,6 @@ struct MainMenuView: View {
         let controller = RequestDetailsViewController.controller()
         controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
-    }
-    
-    private func showMixDashDialog() {
-        let swiftUIView = MixDashDialog(
-            positiveAction: {
-                let controller = CoinJoinLevelsViewController.controller(isFullScreen: false)
-                controller.hidesBottomBarWhenPushed = true
-                self.vc.pushViewController(controller, animated: true)
-            },
-            negativeAction: {
-                if UsernamePrefs.shared.joinDashPayInfoShown {
-                    self.joinDashPay()
-                } else {
-                    UsernamePrefs.shared.joinDashPayInfoShown = true
-                    self.showDashPayInfo()
-                }
-            }
-        )
-        
-        let hostingController = UIHostingController(rootView: swiftUIView)
-        hostingController.setDetent(260)
-        vc.present(hostingController, animated: true)
-    }
-    
-    private func showDashPayInfo() {
-        let swiftUIView = JoinDashPayInfoDialog {
-            self.joinDashPay()
-        }
-        
-        let hostingController = UIHostingController(rootView: swiftUIView)
-        hostingController.setDetent(600)
-        vc.present(hostingController, animated: true)
     }
     
     private func joinDashPay() {
@@ -457,7 +447,7 @@ struct MenuItemView: View {
 // MARK: - DelegateInternal
 
 extension MainMenuView {
-    class DelegateInternal: NSObject {
+    class DelegateInternal: NSObject, RootEditProfileViewControllerDelegate, ExploreViewControllerDelegate {
         private weak var delegate: MainMenuViewControllerDelegate?
         private weak var wipeDelegate: DWWipeDelegate?
         private let viewModel: MainMenuViewModel
@@ -487,37 +477,33 @@ extension MainMenuView {
         func showGiftCard(_ txId: Data) {
             delegate?.showGiftCard(txId)
         }
-    }
-}
-
-extension MainMenuView.DelegateInternal: ExploreViewControllerDelegate {
-    func exploreViewControllerShowSendPayment(_ controller: ExploreViewController) {
-        showPaymentsController(withActivePage: PaymentsViewControllerState.pay.rawValue)
-    }
-    
-    func exploreViewControllerShowReceivePayment(_ controller: ExploreViewController) {
-        showPaymentsController(withActivePage: PaymentsViewControllerState.receive.rawValue)
-    }
-    
-    func exploreViewControllerShowGiftCard(_ controller: ExploreViewController, txId: Data) {
-        showGiftCard(txId)
-    }
-}
-
-#if DASHPAY
-extension MainMenuView.DelegateInternal: RootEditProfileViewControllerDelegate {
-    func editProfileViewController(_ controller: RootEditProfileViewController,
-                                 updateDisplayName rawDisplayName: String,
-                                 aboutMe rawAboutMe: String,
-                                 avatarURLString: String?) {
+        
+        func exploreViewControllerShowSendPayment(_ controller: ExploreViewController) {
+            showPaymentsController(withActivePage: PaymentsViewControllerState.pay.rawValue)
+        }
+        
+        func exploreViewControllerShowReceivePayment(_ controller: ExploreViewController) {
+            showPaymentsController(withActivePage: PaymentsViewControllerState.receive.rawValue)
+        }
+        
+        func exploreViewControllerShowGiftCard(_ controller: ExploreViewController, txId: Data) {
+            showGiftCard(txId)
+        }
+        
         #if DASHPAY
-        viewModel.userProfileModel?.updateModel.update(withDisplayName: rawDisplayName, aboutMe: rawAboutMe, avatarURLString: avatarURLString)
+        func editProfileViewController(_ controller: RootEditProfileViewController,
+                                     updateDisplayName rawDisplayName: String,
+                                     aboutMe rawAboutMe: String,
+                                     avatarURLString: String?) {
+            #if DASHPAY
+            viewModel.userProfileModel?.updateModel.update(withDisplayName: rawDisplayName, aboutMe: rawAboutMe, avatarURLString: avatarURLString)
+            #endif
+            controller.dismiss(animated: true)
+        }
+        
+        func editProfileViewControllerDidCancel(_ controller: RootEditProfileViewController) {
+            controller.dismiss(animated: true)
+        }
         #endif
-        controller.dismiss(animated: true)
-    }
-    
-    func editProfileViewControllerDidCancel(_ controller: RootEditProfileViewController) {
-        controller.dismiss(animated: true)
     }
 }
-#endif
