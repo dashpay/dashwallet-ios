@@ -25,8 +25,7 @@ class MainMenuViewController: UIViewController {
     
     weak var delegate: DWWipeDelegate?
     
-    var viewModel: MainMenuViewModel!
-    private var hostingController: UIHostingController<MainMenuView>!
+    private var hostingController: UIHostingController<MianMenuScreen>!
     
     #if DASHPAY
     private let receiveModel: DWReceiveModelProtocol?
@@ -78,12 +77,6 @@ class MainMenuViewController: UIViewController {
         // Navigation is now handled in SwiftUI
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        navigationItem.largeTitleDisplayMode = .never
-        viewModel.buildMenuSections()
-    }
-    
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
     }
@@ -92,22 +85,26 @@ class MainMenuViewController: UIViewController {
     
     private func setupSwiftUIView() {
         #if DASHPAY
-        viewModel = MainMenuViewModel(
+        let swiftUIView = MianMenuScreen(
+            vc: navigationController!,
+            delegate: delegate as? MainMenuViewControllerDelegate,
+            wipeDelegate: delegate,
             dashPayModel: dashPayModel,
-            receiveModel: receiveModel,
             dashPayReady: dashPayReady,
             userProfileModel: userProfileModel
-        )
+        ) {
+            self.presentSupportEmailController()
+        }
         #else
-        viewModel = MainMenuViewModel()
-        #endif
-        
         let swiftUIView = MainMenuView(
             vc: navigationController!,
-            viewModel: viewModel,
             delegate: delegate as? MainMenuViewControllerDelegate,
             wipeDelegate: delegate
-        )
+        ) {
+            self.presentSupportEmailController()
+        }
+        #endif
+        
         hostingController = UIHostingController(rootView: swiftUIView)
         
         addChild(hostingController)
@@ -122,12 +119,6 @@ class MainMenuViewController: UIViewController {
             hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
-    
-    // MARK: - Support Email (keeping as requested)
-    
-    override func presentSupportEmailController() {
-        // TODO: Implementation kept as requested - to be handled later
-    }
 }
 
 
@@ -139,29 +130,67 @@ extension MainMenuViewController: MFMailComposeViewControllerDelegate {
     }
 }
 
-struct MainMenuView: View {
+struct MianMenuScreen: View {
     private let vc: UINavigationController
     private let delegateInternal: DelegateInternal
-    @StateObject private var viewModel: MainMenuViewModel
+    private let onContactSupport: () -> ()
+    
+    @ObservedObject private var viewModel: MainMenuViewModel
     @State private var openSettings: Bool = false
     @State private var showTools: Bool = false
     @State private var showSecurity: Bool = false
     @State private var showMixDialog: Bool = false
     @State private var showDashPayInfo: Bool = false
+    @State private var showCreditsPurchasedToast: Bool = false
     
     #if DASHPAY
-    let joinDPViewModel = JoinDashPayViewModel(initialState: .none)
-    #endif
+    private let joinDPViewModel = JoinDashPayViewModel(initialState: .none)
     
-    init(vc: UINavigationController, viewModel: MainMenuViewModel, delegate: MainMenuViewControllerDelegate? = nil, wipeDelegate: DWWipeDelegate? = nil) {
+    init(
+        vc: UINavigationController,
+        delegate: MainMenuViewControllerDelegate? = nil,
+        wipeDelegate: DWWipeDelegate? = nil,
+        dashPayModel: DWDashPayProtocol? = nil,
+        dashPayReady: DWDashPayReadyProtocol? = nil,
+        userProfileModel: CurrentUserProfileModel? = nil,
+        onContactSupport: @escaping () -> ()
+    ) {
         self.vc = vc
-        self._viewModel = StateObject(wrappedValue: viewModel)
+        self.onContactSupport = onContactSupport
+        let viewModel = MainMenuViewModel(
+            dashPayModel: dashPayModel,
+            dashPayReady: dashPayReady,
+            userProfileModel: userProfileModel
+        )
+        self.delegateInternal = DelegateInternal(
+            delegate: delegate,
+            wipeDelegate: wipeDelegate,
+            viewModel: viewModel,
+            showCreditsWarning: { [weak viewModel] heading, message in
+                viewModel?.showCreditsWarning(heading: heading, message: message)
+            }
+        )
+        self.viewModel = viewModel
+    }
+    #else
+    
+    init(
+        vc: UINavigationController,
+        delegate: MainMenuViewControllerDelegate? = nil,
+        wipeDelegate: DWWipeDelegate? = nil,
+        onContactSupport: @escaping () -> ()
+    ) {
+        self.vc = vc
+        self.onContactSupport = onContactSupport
+        self.viewModel = MainMenuViewModel()
         self.delegateInternal = DelegateInternal(
             delegate: delegate,
             wipeDelegate: wipeDelegate,
             viewModel: viewModel
         )
     }
+    #endif
+    
     
     var body: some View {
         ScrollView {
@@ -203,6 +232,39 @@ struct MainMenuView: View {
                 }
                 
                 Spacer(minLength: 60)
+            }
+            
+            if showCreditsPurchasedToast {
+                ToastView(
+                    text: NSLocalizedString("Successful purchase", comment: ""),
+                    icon: .system("checkmark.circle.fill")
+                )
+                .frame(height: 20)
+                .padding(.bottom, 30)
+            }
+            
+            if viewModel.showCreditsWarning {
+                ModalDialog(
+                    style: .warning, 
+                    icon: .system("exclamationmark.triangle.fill"), 
+                    heading: viewModel.creditsWarningHeading,
+                    textBlock1: viewModel.creditsWarningMessage,
+                    positiveButtonText: NSLocalizedString("Buy credits", comment: ""),
+                    positiveButtonAction: {
+                        let viewController = BuyCreditsViewController {
+                            self.showCreditsPurchasedToast = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                self.showCreditsPurchasedToast = false
+                            }
+                        }
+                        let navigationController = BaseNavigationController(rootViewController: viewController)
+                        vc.present(navigationController, animated: true)
+                    },
+                    negativeButtonText: NSLocalizedString("Maybe later", comment: "")
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.black.opacity(0.7))
+                .edgesIgnoringSafeArea(.all)
             }
             
             NavigationLink(
@@ -326,7 +388,7 @@ struct MainMenuView: View {
         case .tools:
             showTools = true
         case .support:
-            break // TODO
+            onContactSupport()
         #if DASHPAY
         case .invite:
             showInvite()
@@ -444,18 +506,18 @@ struct MenuItemView: View {
     }
 }
 
-// MARK: - DelegateInternal
-
-extension MainMenuView {
+extension MianMenuScreen {
     class DelegateInternal: NSObject, RootEditProfileViewControllerDelegate, ExploreViewControllerDelegate {
         private weak var delegate: MainMenuViewControllerDelegate?
         private weak var wipeDelegate: DWWipeDelegate?
         private let viewModel: MainMenuViewModel
+        private let showCreditsWarning: (String, String) -> Void
         
-        init(delegate: MainMenuViewControllerDelegate?, wipeDelegate: DWWipeDelegate?, viewModel: MainMenuViewModel) {
+        init(delegate: MainMenuViewControllerDelegate?, wipeDelegate: DWWipeDelegate?, viewModel: MainMenuViewModel, showCreditsWarning: @escaping (String, String) -> Void) {
             self.delegate = delegate
             self.wipeDelegate = wipeDelegate
             self.viewModel = viewModel
+            self.showCreditsWarning = showCreditsWarning
         }
         
         func mainMenuViewControllerOpenHomeScreen() {
@@ -497,6 +559,24 @@ extension MainMenuView {
                                      avatarURLString: String?) {
             #if DASHPAY
             viewModel.userProfileModel?.updateModel.update(withDisplayName: rawDisplayName, aboutMe: rawAboutMe, avatarURLString: avatarURLString)
+            
+            if MOCK_DASHPAY.boolValue {
+                BuyCreditsModel.currentCredits -= 0.25
+                let heading: String
+                let message: String
+                
+                if BuyCreditsModel.currentCredits <= 0 {
+                    heading = NSLocalizedString("Your credit balance has been fully depleted", comment: "")
+                    message = NSLocalizedString("You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance", comment: "")
+                } else if BuyCreditsModel.currentCredits <= 0.25 {
+                    heading = NSLocalizedString("Your credit balance is low", comment: "")
+                    message = NSLocalizedString("Top-up your credits to continue making changes to your profile and adding contacts", comment: "")
+                } else {
+                    return
+                }
+                
+                showCreditsWarning(heading, message)
+            }
             #endif
             controller.dismiss(animated: true)
         }

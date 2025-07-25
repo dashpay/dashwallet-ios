@@ -41,15 +41,13 @@ protocol MainMenuViewModelDelegate: AnyObject {
 @MainActor
 class MainMenuViewModel: ObservableObject {
     
-    // MARK: - Published Properties
-    
     @Published var menuSections: [MenuSection] = []
     @Published var navigationDestination: MainMenuNavigationDestination?
-    
-    // MARK: - Dependencies
+    @Published var showCreditsWarning: Bool = false
+    @Published var creditsWarningHeading: String = ""
+    @Published var creditsWarningMessage: String = ""
     
     #if DASHPAY
-    let receiveModel: DWReceiveModelProtocol?
     let dashPayReady: DWDashPayReadyProtocol?
     let dashPayModel: DWDashPayProtocol?
     let userProfileModel: CurrentUserProfileModel?
@@ -57,15 +55,11 @@ class MainMenuViewModel: ObservableObject {
     
     weak var delegate: MainMenuViewModelDelegate?
     
-    // MARK: - Initialization
-    
     #if DASHPAY
     init(dashPayModel: DWDashPayProtocol? = nil,
-         receiveModel: DWReceiveModelProtocol? = nil,
          dashPayReady: DWDashPayReadyProtocol? = nil,
          userProfileModel: CurrentUserProfileModel? = nil) {
         self.dashPayModel = dashPayModel
-        self.receiveModel = receiveModel
         self.dashPayReady = dashPayReady
         self.userProfileModel = userProfileModel
         buildMenuSections()
@@ -145,6 +139,12 @@ class MainMenuViewModel: ObservableObject {
     
     func resetNavigation() {
         navigationDestination = nil
+    }
+    
+    func showCreditsWarning(heading: String, message: String) {
+        creditsWarningHeading = heading
+        creditsWarningMessage = message
+        showCreditsWarning = true
     }
 }
 
