@@ -592,9 +592,6 @@
 /* Usernames */
 "Create a username" = "Créer un nom d'utilisateur";
 
-/* No comment provided by engineer. */
-"Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
-
 /* CrowdNode */
 "Create Account" = "Créer un compte";
 
@@ -2370,6 +2367,9 @@
 
 /* Voting */
 "Submit" = "Valider";
+
+/* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
 
 /* No comment provided by engineer. */
 "Support" = "Support";

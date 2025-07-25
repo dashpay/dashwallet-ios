@@ -592,9 +592,6 @@
 /* Usernames */
 "Create a username" = "創建一個用戶名稱";
 
-/* No comment provided by engineer. */
-"Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
-
 /* CrowdNode */
 "Create Account" = "創建帳號";
 
@@ -2370,6 +2367,9 @@
 
 /* Voting */
 "Submit" = "提交";
+
+/* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
 
 /* No comment provided by engineer. */
 "Support" = "Support";

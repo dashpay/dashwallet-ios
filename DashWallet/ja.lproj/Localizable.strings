@@ -592,9 +592,6 @@
 /* Usernames */
 "Create a username" = "ユーザー名を作成する";
 
-/* No comment provided by engineer. */
-"Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
-
 /* CrowdNode */
 "Create Account" = "アカウントの作成";
 
@@ -2370,6 +2367,9 @@
 
 /* Voting */
 "Submit" = "提出する";
+
+/* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
 
 /* No comment provided by engineer. */
 "Support" = "Support";

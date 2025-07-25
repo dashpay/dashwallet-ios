@@ -41,7 +41,7 @@ protocol MainMenuViewModelDelegate: AnyObject {
 @MainActor
 class MainMenuViewModel: ObservableObject {
     
-    @Published var menuSections: [MenuSection] = []
+    @Published var items: [MenuItemModel] = []
     @Published var navigationDestination: MainMenuNavigationDestination?
     @Published var showCreditsWarning: Bool = false
     @Published var creditsWarningHeading: String = ""
@@ -73,57 +73,79 @@ class MainMenuViewModel: ObservableObject {
     // MARK: - Menu Building
     
     func buildMenuSections() {
-        var sections: [MenuSection] = []
+        var allItems: [MenuItemModel] = []
         
-        // Main services section
-        sections.append(MenuSection(items: [
-            .buySellDash,
-            .explore
-        ]))
+        // Buy & Sell Dash
+        allItems.append(MenuItemModel(
+            title: NSLocalizedString("Buy & sell Dash", comment: ""),
+            icon: .custom("image.buy.and.sell", maxHeight: 22),
+            action: { [weak self] in
+                self?.handleBuySellDash()
+            }
+        ))
         
-        // Settings section
-        var settingsItems: [MenuItemType] = [
-            .security,
-            .settings,
-            .tools,
-            .support
-        ]
+        // Explore
+        allItems.append(MenuItemModel(
+            title: NSLocalizedString("Explore", comment: ""),
+            icon: .custom("image.explore", maxHeight: 22),
+            action: { [weak self] in
+                self?.navigationDestination = .explore
+            }
+        ))
+        
+        // Security
+        allItems.append(MenuItemModel(
+            title: NSLocalizedString("Security", comment: ""),
+            icon: .custom("image.security", maxHeight: 22),
+            action: { [weak self] in
+                self?.navigationDestination = .security
+            }
+        ))
+        
+        // Settings
+        allItems.append(MenuItemModel(
+            title: NSLocalizedString("Settings", comment: ""),
+            icon: .custom("image.settings", maxHeight: 22),
+            action: { [weak self] in
+                self?.navigationDestination = .settings
+            }
+        ))
+        
+        // Tools
+        allItems.append(MenuItemModel(
+            title: NSLocalizedString("Tools", comment: ""),
+            icon: .custom("image.tools", maxHeight: 22),
+            action: { [weak self] in
+                self?.navigationDestination = .tools
+            }
+        ))
+        
+        // Support
+        allItems.append(MenuItemModel(
+            title: NSLocalizedString("Support", comment: ""),
+            icon: .custom("image.support", maxHeight: 22),
+            action: { [weak self] in
+                self?.navigationDestination = .support
+            }
+        ))
         
         #if DASHPAY
+        // Voting
         if VotingPrefs.shared.votingEnabled {
-            settingsItems.append(.voting)
+            allItems.append(MenuItemModel(
+                title: NSLocalizedString("Voting", comment: ""),
+                icon: .custom("menu_voting", maxHeight: 22),
+                action: { [weak self] in
+                    self?.navigationDestination = .voting
+                }
+            ))
         }
         #endif
         
-        sections.append(MenuSection(items: settingsItems))
-        
-        self.menuSections = sections
+        self.items = allItems
     }
     
     // MARK: - Actions
-    
-    func handleMenuAction(_ item: MenuItemType) {
-        switch item {
-        case .buySellDash:
-            handleBuySellDash()
-        case .explore:
-            navigationDestination = .explore
-        case .security:
-            navigationDestination = .security
-        case .settings:
-            navigationDestination = .settings
-        case .tools:
-            navigationDestination = .tools
-        case .support:
-            navigationDestination = .support
-        #if DASHPAY
-        case .invite:
-            navigationDestination = .invite
-        case .voting:
-            navigationDestination = .voting
-        #endif
-        }
-    }
 
     private func handleBuySellDash() {
         DSAuthenticationManager.sharedInstance().authenticate(
@@ -147,69 +169,3 @@ class MainMenuViewModel: ObservableObject {
         showCreditsWarning = true
     }
 }
-
-// MARK: - Data Models
-
-struct MenuSection {
-    let items: [MenuItemType]
-}
-
-enum MenuItemType: CaseIterable {
-    case buySellDash
-    case explore
-    case security
-    case settings
-    case tools
-    case support
-    #if DASHPAY
-    case invite
-    case voting
-    #endif
-    
-    var title: String {
-        switch self {
-        case .buySellDash:
-            return NSLocalizedString("Buy & sell Dash", comment: "")
-        case .explore:
-            return NSLocalizedString("Explore", comment: "")
-        case .security:
-            return NSLocalizedString("Security", comment: "")
-        case .settings:
-            return NSLocalizedString("Settings", comment: "")
-        case .tools:
-            return NSLocalizedString("Tools", comment: "")
-        case .support:
-            return NSLocalizedString("Support", comment: "")
-        #if DASHPAY
-        case .invite:
-            return NSLocalizedString("Invite", comment: "")
-        case .voting:
-            return NSLocalizedString("Voting", comment: "")
-        #endif
-        }
-    }
-    
-    var iconName: IconName {
-        switch self {
-        case .buySellDash:
-            return .custom("image.buy.and.sell", maxHeight: 22)
-        case .explore:
-            return .custom("image.explore", maxHeight: 22)
-        case .security:
-            return .custom("image.security", maxHeight: 22)
-        case .settings:
-            return .custom("image.settings", maxHeight: 22)
-        case .tools:
-            return .custom("image.tools", maxHeight: 22)
-        case .support:
-            return .custom("image.support", maxHeight: 22)
-        #if DASHPAY
-        case .invite:
-            return .custom("menu_invite", maxHeight: 22)
-        case .voting:
-            return .custom("menu_voting", maxHeight: 22)
-        #endif
-        }
-    }
-}
-

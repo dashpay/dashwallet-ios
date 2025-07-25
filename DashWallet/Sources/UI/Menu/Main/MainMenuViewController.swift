@@ -25,7 +25,7 @@ class MainMenuViewController: UIViewController {
     
     weak var delegate: DWWipeDelegate?
     
-    private var hostingController: UIHostingController<MianMenuScreen>!
+    private var hostingController: UIHostingController<MainMenuScreen>!
     
     #if DASHPAY
     private let receiveModel: DWReceiveModelProtocol?
@@ -85,7 +85,7 @@ class MainMenuViewController: UIViewController {
     
     private func setupSwiftUIView() {
         #if DASHPAY
-        let swiftUIView = MianMenuScreen(
+        let swiftUIView = MainMenuScreen(
             vc: navigationController!,
             delegate: delegate as? MainMenuViewControllerDelegate,
             wipeDelegate: delegate,
@@ -130,7 +130,7 @@ extension MainMenuViewController: MFMailComposeViewControllerDelegate {
     }
 }
 
-struct MianMenuScreen: View {
+struct MainMenuScreen: View {
     private let vc: UINavigationController
     private let delegateInternal: DelegateInternal
     private let onContactSupport: () -> ()
@@ -224,12 +224,49 @@ struct MianMenuScreen: View {
                 }
                 #endif
                 
-                // Menu sections
-                ForEach(Array(viewModel.menuSections.enumerated()), id: \.offset) { index, section in
-                    MenuSectionView(section: section) { menuItem in
-                        viewModel.handleMenuAction(menuItem)
+                // Menu items grouped in sections
+                VStack(spacing: 16) {
+                    // First group - main services (first 2 items)
+                    if viewModel.items.count >= 2 {
+                        VStack(spacing: 0) {
+                            ForEach(viewModel.items.prefix(2)) { item in
+                                MenuItem(
+                                    title: item.title,
+                                    subtitle: item.subtitle,
+                                    icon: item.icon,
+                                    showChevron: false,
+                                    action: item.action
+                                )
+                                .frame(minHeight: 60)
+                            }
+                        }
+                        .padding(.vertical, 5)
+                        .background(Color.secondaryBackground)
+                        .cornerRadius(12)
+                        .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
+                    }
+                    
+                    // Second group - settings items (remaining items)
+                    if viewModel.items.count > 2 {
+                        VStack(spacing: 0) {
+                            ForEach(viewModel.items.dropFirst(2)) { item in
+                                MenuItem(
+                                    title: item.title,
+                                    subtitle: item.subtitle,
+                                    icon: item.icon,
+                                    showChevron: false,
+                                    action: item.action
+                                )
+                                .frame(minHeight: 60)
+                            }
+                        }
+                        .padding(.vertical, 5)
+                        .background(Color.secondaryBackground)
+                        .cornerRadius(12)
+                        .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
                     }
                 }
+                .padding(.horizontal, 20)
                 
                 Spacer(minLength: 60)
             }
@@ -471,42 +508,8 @@ struct MianMenuScreen: View {
     #endif
 }
 
-struct MenuSectionView: View {
-    let section: MenuSection
-    let onMenuItemTap: (MenuItemType) -> Void
-    
-    var body: some View {
-        VStack(spacing: 0) {
-            ForEach(section.items, id: \.self) { item in
-                MenuItemView(item: item) {
-                    onMenuItemTap(item)
-                }
-            }
-        }
-        .padding(.vertical, 5)
-        .background(Color.secondaryBackground)
-        .cornerRadius(12)
-        .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
-        .padding(.horizontal, 20)
-    }
-}
 
-struct MenuItemView: View {
-    let item: MenuItemType
-    let action: () -> Void
-    
-    var body: some View {
-        MenuItem(
-            title: item.title,
-            subtitle: nil,
-            icon: item.iconName,
-            showChevron: false,
-            action: action
-        )
-    }
-}
-
-extension MianMenuScreen {
+extension MainMenuScreen {
     class DelegateInternal: NSObject, RootEditProfileViewControllerDelegate, ExploreViewControllerDelegate {
         private weak var delegate: MainMenuViewControllerDelegate?
         private weak var wipeDelegate: DWWipeDelegate?
