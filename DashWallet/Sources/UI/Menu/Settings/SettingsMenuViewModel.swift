@@ -46,6 +46,10 @@ class SettingsMenuViewModel: ObservableObject {
         return CurrencyExchangerObjcWrapper.localCurrencyCode
     }
     
+    var isBalanceHidden: Bool {
+        DWGlobalOptions.sharedInstance().balanceHidden
+    }
+    
     init() {
         self.notificationsEnabled = DWGlobalOptions.sharedInstance().localNotificationsEnabled
         refreshMenuItems()

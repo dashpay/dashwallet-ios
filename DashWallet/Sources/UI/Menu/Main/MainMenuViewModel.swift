@@ -83,17 +83,8 @@ class MainMenuViewModel: ObservableObject {
     
     // MARK: - Menu Building
     
-    private func buildMenuSections() {
+    func buildMenuSections() {
         var sections: [MenuSection] = []
-        
-        // DashPay section (if enabled and not registered)
-        #if DASHPAY
-        if userProfileModel?.showJoinDashpay == true {
-            sections.append(MenuSection(items: [
-                .joinDashPay
-            ]))
-        }
-        #endif
         
         // Main services section
         sections.append(MenuSection(items: [
@@ -116,9 +107,6 @@ class MainMenuViewModel: ObservableObject {
     
     func handleMenuAction(_ item: MenuItemType) {
         switch item {
-        case .joinDashPay:
-            // This will be handled by the JoinDashPayView integration
-            break
         case .buySellDash:
             handleBuySellDash()
         case .explore:
@@ -179,15 +167,6 @@ class MainMenuViewModel: ObservableObject {
     func resetNavigation() {
         navigationDestination = nil
     }
-    
-    func updateModel() {
-        #if DASHPAY
-        let invitationsEnabled = DWGlobalOptions.sharedInstance().dpInvitationFlowEnabled && (userProfileModel?.blockchainIdentity != nil)
-        let isVotingEnabled = VotingPrefsWrapper.getIsEnabled()
-        #endif
-        
-        buildMenuSections()
-    }
 }
 
 // MARK: - Data Models
@@ -197,7 +176,6 @@ struct MenuSection {
 }
 
 enum MenuItemType: CaseIterable {
-    case joinDashPay
     case buySellDash
     case explore
     case security
@@ -211,8 +189,6 @@ enum MenuItemType: CaseIterable {
     
     var title: String {
         switch self {
-        case .joinDashPay:
-            return NSLocalizedString("Join DashPay", comment: "")
         case .buySellDash:
             return NSLocalizedString("Buy & sell Dash", comment: "")
         case .explore:
@@ -234,35 +210,8 @@ enum MenuItemType: CaseIterable {
         }
     }
     
-    var subtitle: String? {
-        switch self {
-        case .joinDashPay:
-            return NSLocalizedString("Create a username and say goodbye to numerical addresses", comment: "")
-        case .buySellDash:
-            return nil
-        case .explore:
-            return nil
-        case .security:
-            return nil
-        case .settings:
-            return nil
-        case .tools:
-            return nil
-        case .support:
-            return nil
-        #if DASHPAY
-        case .invite:
-            return nil
-        case .voting:
-            return nil
-        #endif
-        }
-    }
-    
     var iconName: IconName {
         switch self {
-        case .joinDashPay:
-            return .custom("account", maxHeight: 22)
         case .buySellDash:
             return .custom("image.buy.and.sell", maxHeight: 22)
         case .explore:

@@ -81,15 +81,11 @@ class MainMenuViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationItem.largeTitleDisplayMode = .never
-        viewModel.updateModel()
+        viewModel.buildMenuSections()
     }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
-    }
-    
-    deinit {
-        // No longer needed since navigation is in SwiftUI
     }
     
     // MARK: - SwiftUI Setup
@@ -198,7 +194,6 @@ struct MainMenuView: View {
                         }
                     )
                     .padding(.horizontal, 18)
-                    .padding(.bottom, 20)
                 }
                 #endif
                 
@@ -241,7 +236,7 @@ struct MainMenuView: View {
         }
         .background(Color.primaryBackground)
         .onAppear {
-            viewModel.updateModel()
+            viewModel.buildMenuSections()
         }
         .onReceive(viewModel.$navigationDestination) { destination in
             handleNavigation(destination)
@@ -299,7 +294,7 @@ struct MainMenuView: View {
         case .tools:
             showTools = true
         case .support:
-            break // Skip as requested
+            break // TODO
         #if DASHPAY
         case .invite:
             showInvite()
@@ -338,7 +333,7 @@ struct MainMenuView: View {
         let controller = ExploreViewController()
         controller.delegate = delegateInternal
         let navigationController = BaseNavigationController(rootViewController: controller)
-        vc.pushViewController(navigationController, animated: true)
+        vc.present(navigationController, animated: true)
     }
     
     #if DASHPAY
@@ -451,7 +446,7 @@ struct MenuItemView: View {
     var body: some View {
         MenuItem(
             title: item.title,
-            subtitle: item.subtitle,
+            subtitle: nil,
             icon: item.iconName,
             showChevron: false,
             action: action
