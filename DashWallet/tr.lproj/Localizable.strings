@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ size bir talep gönderdi";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ Yüz Kimliğine erişim izni verilmiyor";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ kameraya erişmesi için izin verilmedi";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ Dokunmatik Kimliğe erişim izni verilmiyor";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Ayarlardan kamera erişimine izin ver";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Ayarlardan Yüz Kimliğine erişim izni ver";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Tüm işlemlerin Dash Cüzdanından Zenledger'a gönderilmesine izin verilsin mi?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Ayarlardan Dokunmatik Kimliğe erişim izni ver";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Dash'teki Tutar";
@@ -337,6 +331,9 @@
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Dash Cüzdanı ile Coinbase hesabınız arasında";
 
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
+
 /* Voting */
 "Block" = "Blok";
 
@@ -357,7 +354,7 @@
 "Buy & Sell" = "Al & Sat";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Dash Al & Sat";
+"Buy & Sell Dash" = "Buy & Sell Dash";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Hediye Kartı Satın Alın";
@@ -502,9 +499,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Onaylanıyor";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Üçüncü parti borsalara bağlanın";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Kripto cüzdanlarınızı ZenLedger platformuna bağlayın. Daha fazlasını öğrenin ve Dash Cüzdan işlemlerinize başlayın.";
@@ -712,9 +706,6 @@
 
 /* Voting */
 "Date: Old to new" = "Tarih: Eskiden yeniye";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Varsayılan para birimi, kısayollar, hakkında…";
 
 /* Voting */
 "Default filter setting" = "Default filter setting";
@@ -950,9 +941,6 @@
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
 
 /* No comment provided by engineer. */
-"Find merchants that accept DASH" = "DASH'i kabul eden satıcıları bulun";
-
-/* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
 
 /* No comment provided by engineer. */
@@ -1009,6 +997,9 @@
 /* Coinbase */
 "from your Coinbase account" = "Coinbase hesabınızdan";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "Fully mixed";
 
@@ -1017,9 +1008,6 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Genişletilmiş umumi anahtarlar oluşturulsun mu?";
-
-/* No comment provided by engineer. */
-"Generating CSV Report" = "CSV Raporu Oluşturma";
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "Teklif Al";
@@ -1188,9 +1176,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Özel Anahtarı İçe Aktar";
-
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Özel anahtarı içe aktar, CSV'yi dışa aktar…";
 
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Görüntülenen Coinbase ücretine ek olarak, fiyata bir makas dahil ediyoruz. Advanced Trade'i kullanırken, emir defteriyle doğrudan etkileşime girdiğiniz için herhangi bir makas ilave edilmez.\n\nKripto para piyasaları değişkendir ve bu, alım satımın yürütülmesi için geçici olarak bir fiyat belirlememize olanak tanır.";
@@ -1387,9 +1372,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Bittiğinde bana haber ver";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Arkadaşlarınızın ve ailenizin Dash'e katılmasına izin verin";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Arkadaşlarınızın ve ailenizin Dash Ağı'na katılmasına izin verin. Onları sosyal bankacılık dünyasına davet edin.";
@@ -2067,6 +2049,9 @@
 "Rescan Blockchain" = "Blok Zincirini Tekrar Tara";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "Yeniden Başlat";
 
 /* Explore Dash: Filters */
@@ -2083,6 +2068,9 @@
 
 /* Usernames */
 "Results" = "Sonuçlar";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Karşılıklı İşlem Geçmişini Saklayın";
@@ -2381,6 +2369,12 @@
 "Submit" = "Submit";
 
 /* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
+
+/* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "Tarandı!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2394,9 +2388,6 @@
 
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "Senkronizasyon devam ediyor... Sonuçlar tamamlanmayabilir.";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "Şimdi Senkronize Et";
 
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "Mevcut Dash Cüzdanı ile senkronize edildi";
@@ -2803,9 +2794,6 @@
 "View in Block Explorer" = "Gezginde görüntüle";
 
 /* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Kurtarma sözcük grubunu göster, cüzdanı yedekle...";
-
-/* No comment provided by engineer. */
 "View Recovery Phrase" = "Kurtarma Sözcük Grubunu Göster";
 
 /* No comment provided by engineer. */
@@ -2822,6 +2810,9 @@
 
 /* Voting */
 "Votes: Low to high" = "Oylar: Düşükten yükseğe";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Oy Verme Adresi";

@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ 已向您發送了聯繫請求";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ 不允許訪問Face ID";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ 不允許使用照相";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ 不允許訪問Touch ID";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu 聯絡人/ %3$lu 個人資料更新";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "在設置中允許攝像頭訪問";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "在設置中允許Face ID訪問";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "允許將所有交易從達世幣錢包發送到 Zenledger 嗎？";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "在設置中允許Touch ID訪問";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "達世幣金額";
@@ -337,6 +331,9 @@
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "在達世幣錢包和您的 Coinbase 帳戶之間";
 
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
+
 /* Voting */
 "Block" = "區塊";
 
@@ -357,7 +354,7 @@
 "Buy & Sell" = "購買 & 出售";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "買賣達世幣";
+"Buy & Sell Dash" = "Buy & Sell Dash";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "購買禮品卡";
@@ -502,9 +499,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "確認中";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "與第三方交易所連結";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "將您的加密錢包連接到 ZenLedger 平台。了解更多並開始使用您的達世幣錢包交易。";
@@ -712,9 +706,6 @@
 
 /* Voting */
 "Date: Old to new" = "日期：從舊到新";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "預設貨幣，捷徑，關於…";
 
 /* Voting */
 "Default filter setting" = "預設過濾器設定";
@@ -950,9 +941,6 @@
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
 
 /* No comment provided by engineer. */
-"Find merchants that accept DASH" = "尋找接受達世幣付款的商家";
-
-/* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
 
 /* No comment provided by engineer. */
@@ -1009,6 +997,9 @@
 /* Coinbase */
 "from your Coinbase account" = "從你的 Coinbase 帳戶";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "充分混合";
 
@@ -1017,9 +1008,6 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "要生成擴展的公共密鑰嗎?";
-
-/* No comment provided by engineer. */
-"Generating CSV Report" = "正在生成 CSV 報告";
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "獲得報價";
@@ -1188,9 +1176,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "導入私鑰";
-
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "導入私鑰，導出 CSV…";
 
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "除了顯示的 Coinbase 費用外，我們還在價格中包含了價差。使用 Advanced Trade 時，不包括點差，因為您直接在訂單簿上進行交易。\n\n加密貨幣市場波動較大，這使我們能夠暫時鎖定交易執行的價格。";
@@ -1387,9 +1372,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "完成時通知我";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "讓您的朋友和家人加入達世幣網絡";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "讓您的朋友和家人加入達世幣網絡。邀請他們進入社交銀行的世界。";
@@ -2067,6 +2049,9 @@
 "Rescan Blockchain" = "重新掃瞄區塊鏈";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "重設";
 
 /* Explore Dash: Filters */
@@ -2083,6 +2068,9 @@
 
 /* Usernames */
 "Results" = "結果";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "保留相互交易記錄";
@@ -2381,6 +2369,12 @@
 "Submit" = "提交";
 
 /* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
+
+/* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "掃一掃!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2394,9 +2388,6 @@
 
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "同步中...  結果可能不完整。";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "立即同步";
 
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "與當前達世幣錢包同步";
@@ -2803,9 +2794,6 @@
 "View in Block Explorer" = "在瀏覽器中查看";
 
 /* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "查看恢復詞組, 備份錢包…";
-
-/* No comment provided by engineer. */
 "View Recovery Phrase" = "查看恢復詞組";
 
 /* No comment provided by engineer. */
@@ -2822,6 +2810,9 @@
 
 /* Voting */
 "Votes: Low to high" = "得票數：從低到高";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "投票位址";

@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ telah mengirim anda permintaan kontak";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ tidak diizinkan mengakses Pengenal Wajah";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ tidak diizinkan mengakses kamera";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ tidak diizinkan mengakses Pengenal Sentuh";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu kontak / %3$lu pembaruan profil";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Izinkan akses kamera di Pengaturan";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Izinkan akses Pengenal Wajah di Pengaturan";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Izinkan mengirim semua transaksi dari dompet Dash ke Zenledger?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Izinkan akses Pengenal Sentuh di Pengaturan";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Jumlah dalam Dash";
@@ -337,6 +331,9 @@
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Antara Dash Wallet dan akun Coinbase Anda";
 
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
+
 /* Voting */
 "Block" = "Blok";
 
@@ -357,7 +354,7 @@
 "Buy & Sell" = "Beli & Jual";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Beli & Jual Dash";
+"Buy & Sell Dash" = "Buy & Sell Dash";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Beli Kartu Hadiah";
@@ -502,9 +499,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Mengkonfirmasikan";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Terhubung dengan pertukaran pihak ketiga";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Hubungkan dompet crypto anda ke platform Zenledger. Pelajari lebih lanjut dan mulai dengan transaksi Domept Dash.";
@@ -712,9 +706,6 @@
 
 /* Voting */
 "Date: Old to new" = "Tanggal: Lama ke baru";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Mata uang standar, pintasan, tentang ...";
 
 /* Voting */
 "Default filter setting" = "Pengaturan filter default";
@@ -950,9 +941,6 @@
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
 
 /* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Temukan toko yang menerima Dash";
-
-/* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
 
 /* No comment provided by engineer. */
@@ -1009,6 +997,9 @@
 /* Coinbase */
 "from your Coinbase account" = "dari akun Coinbase Anda";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "Tercampur sepenuhnya";
 
@@ -1017,9 +1008,6 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Hasilkan kunci publik yang diperluas?";
-
-/* No comment provided by engineer. */
-"Generating CSV Report" = "Membuat Laporan CSV";
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "Dapatkan Penawaran";
@@ -1188,9 +1176,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Impor kunci pribadi";
-
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Impor kunci pribadi, Ekspor CSV…";
 
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Selain biaya Coinbase yang ditampilkan, kami menyertakan Spread harga. Saat menggunakan Advanced Trade, tidak ada spread yang disertakan karena Anda berinteraksi langsung dengan buku pesanan.\n\nPasar Cryptocurrency tidak stabil, dan ini memungkinkan kami mengunci sementara harga untuk eksekusi perdagangan.";
@@ -1387,9 +1372,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Beri tahu saya jika sudah selesai";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Biarkan teman dan keluarga Anda bergabung dengan Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Biarkan teman dan keluarga Anda bergabung dengan Dash Network. Ajak mereka ke dunia perbankan sosial.";
@@ -2067,6 +2049,9 @@
 "Rescan Blockchain" = "Piindai ulang blockchain";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "Atur-ulang";
 
 /* Explore Dash: Filters */
@@ -2083,6 +2068,9 @@
 
 /* Usernames */
 "Results" = "Hasil";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Simpan Sejarah Transaksi Bersama";
@@ -2381,6 +2369,12 @@
 "Submit" = "Kirim";
 
 /* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
+
+/* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "bersihkan!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2394,9 +2388,6 @@
 
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "Sinkronisasi sedang berlangsung... Hasil mungkin tidak lengkap.";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "Sinkronkan Sekarang";
 
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "Disinkronkan dengan Dompet Dash saat ini";
@@ -2803,9 +2794,6 @@
 "View in Block Explorer" = "Lihat di Explorer";
 
 /* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Lihat frasa sandi, cadangkan domept...";
-
-/* No comment provided by engineer. */
 "View Recovery Phrase" = "Lihat frasa pemulihan";
 
 /* No comment provided by engineer. */
@@ -2822,6 +2810,9 @@
 
 /* Voting */
 "Votes: Low to high" = "Votes: Rendah ke tinggi";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Alamat pemungutan suara";

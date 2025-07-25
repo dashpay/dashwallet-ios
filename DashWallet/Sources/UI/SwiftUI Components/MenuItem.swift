@@ -32,7 +32,7 @@ struct MenuItem: View {
     var dashAmount: Int64? = nil
     var overrideFiatAmount: String? = nil
     var showToggle: Bool = false
-    @State var isToggled: Bool = false
+    @State private var isToggled: Bool = false
     var action: (() -> Void)? = nil
 
     init(title: String,
@@ -109,108 +109,117 @@ struct MenuItem: View {
     }
     
     var body: some View {
-        HStack(spacing: 4) {
-            if let icon = icon {
-                ZStack(alignment: .leading) {
-                    Icon(name: icon)
-                        .frame(width: 30, height: 30)
-                        .padding(0)
-                    
-                    if let secondaryIcon = secondaryIcon {
-                        VStack {
-                            Spacer()
-                            HStack {
+        Button(action: {
+            if showToggle {
+                isToggled.toggle()
+            } else {
+                action?()
+            }
+        }) {
+            HStack(spacing: 4) {
+                if let icon = icon {
+                    ZStack(alignment: .leading) {
+                        Icon(name: icon)
+                            .frame(width: 30, height: 30)
+                            .padding(0)
+                        
+                        if let secondaryIcon = secondaryIcon {
+                            VStack {
                                 Spacer()
-                                Icon(name: secondaryIcon)
-                                    .padding(2)
-                                    .frame(width: 20, height: 20)
-                                    .background(Color.secondaryBackground)
-                                    .clipShape(.circle)
-                                    .offset(x: 2, y: 2)
+                                HStack {
+                                    Spacer()
+                                    Icon(name: secondaryIcon)
+                                        .padding(2)
+                                        .frame(width: 20, height: 20)
+                                        .background(Color.secondaryBackground)
+                                        .clipShape(.circle)
+                                        .offset(x: 2, y: 2)
+                                }
                             }
                         }
                     }
-                }
-                .frame(width: 36, height: 36)
-            }
-            
-            VStack(alignment: .leading, spacing: 0) {
-                if let topText = topText {
-                    Text(topText)
-                        .font(.caption)
-                        .lineSpacing(3)
-                        .foregroundColor(.tertiaryText)
-                        .padding(.leading, 4)
-                        .padding(.bottom, 2)
+                    .frame(width: 36, height: 36)
                 }
                 
-                HStack(spacing: 6) {
-                    Text(title)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .lineSpacing(3)
-                        .foregroundColor(.primaryText)
-                    
-                    if showInfo {
-                        Image(systemName: "info.circle.fill")
-                            .foregroundColor(.gray300)
-                            .imageScale(.small)
-                    }
-
-                    Spacer()
-
-                    if let badgeText = badgeText {
-                        Text(badgeText)
+                VStack(alignment: .leading, spacing: 0) {
+                    if let topText = topText {
+                        Text(topText)
                             .font(.caption)
-                            .foregroundColor(.systemYellow)
-                            .padding(.vertical, 4)
-                            .padding(.horizontal, 8)
-                            .background(Color.systemYellow.opacity(0.2))
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .lineSpacing(3)
+                            .foregroundColor(.tertiaryText)
+                            .padding(.leading, 4)
+                            .padding(.bottom, 2)
+                    }
+                    
+                    HStack(spacing: 6) {
+                        Text(title)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .lineSpacing(3)
+                            .foregroundColor(.primaryText)
+                        
+                        if showInfo {
+                            Image(systemName: "info.circle.fill")
+                                .foregroundColor(.gray300)
+                                .imageScale(.small)
+                        }
+                        
+                        Spacer()
+                        
+                        if let badgeText = badgeText {
+                            Text(badgeText)
+                                .font(.caption)
+                                .foregroundColor(.systemYellow)
+                                .padding(.vertical, 4)
+                                .padding(.horizontal, 8)
+                                .background(Color.systemYellow.opacity(0.2))
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, 4)
+                    
+                    if let subtitle = subtitleView {
+                        subtitle
+                    }
+                    
+                    if let details = details {
+                        Text(details)
+                            .font(.caption)
+                            .lineSpacing(3)
+                            .foregroundColor(.tertiaryText)
+                            .padding(.leading, 4)
+                            .padding(.top, 2)
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 4)
+                .frame(maxWidth: .infinity)
                 
-                if let subtitle = subtitleView {
-                    subtitle
+                if showToggle {
+                    Toggle(isOn: $isToggled) { }
+                        .tint(Color.dashBlue)
+                        .scaleEffect(0.75)
+                        .frame(maxWidth: 60)
                 }
                 
-                if let details = details {
-                    Text(details)
-                        .font(.caption)
-                        .lineSpacing(3)
-                        .foregroundColor(.tertiaryText)
-                        .padding(.leading, 4)
-                        .padding(.top, 2)
-                }
-            }
-            .frame(maxWidth: .infinity)
-
-            if showToggle {
-                Toggle(isOn: $isToggled) { }
-                    .tint(Color.dashBlue)
-                    .scaleEffect(0.75)
-                    .frame(maxWidth: 60)
-            }
-            
-            if showChevron {
-                Image(systemName: "chevron.right")
-                    .imageScale(.small)
-                    .foregroundColor(Color.gray)
-                    .padding(.trailing, 10)
-            } else {
-                VStack(alignment: .trailing) {
-                    if let dashAmount = dashAmount {
-                        DashAmount(amount: dashAmount)
-                        
-                        if dashAmount != 0 && dashAmount != Int64.max && dashAmount != Int64.min {
-                            if let overriden = overrideFiatAmount {
-                                Text(overriden)
-                                    .font(.caption)
-                                    .foregroundColor(.secondaryText)
-                            } else {
-                                FormattedFiatText(from: dashAmount)
+                if showChevron {
+                    Image(systemName: "chevron.right")
+                        .imageScale(.small)
+                        .foregroundColor(Color.gray)
+                        .padding(.trailing, 10)
+                } else {
+                    VStack(alignment: .trailing) {
+                        if let dashAmount = dashAmount {
+                            DashAmount(amount: dashAmount)
+                                .foregroundColor(.primaryText)
+                            
+                            if dashAmount != 0 && dashAmount != Int64.max && dashAmount != Int64.min {
+                                if let overriden = overrideFiatAmount {
+                                    Text(overriden)
+                                        .font(.caption)
+                                        .foregroundColor(.secondaryText)
+                                } else {
+                                    FormattedFiatText(from: dashAmount)
+                                }
                             }
                         }
                     }
@@ -219,12 +228,8 @@ struct MenuItem: View {
         }
         .contentShape(Rectangle())
         .padding(10)
-        .frame(maxWidth: .infinity, minHeight: 66)
-        .onTapGesture {
-            if showToggle {
-                isToggled.toggle()
-            }
-            
+        .frame(maxWidth: .infinity)
+        .onChange(of: isToggled) { newValue in
             action?()
         }
     }

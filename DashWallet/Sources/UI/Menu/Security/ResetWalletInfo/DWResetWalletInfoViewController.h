@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWWipeDelegate> delegate;
 
-+ (instancetype)controller;
++ (instancetype)controller NS_SWIFT_NAME(make());
 
 @end
 

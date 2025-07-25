@@ -17,7 +17,7 @@
 
 import SwiftUI
 
-class MenuItemModel: Identifiable, Equatable {
+class MenuItemModel: Identifiable, Equatable, Hashable {
     let id = UUID()
     
     var title: String
@@ -25,25 +25,27 @@ class MenuItemModel: Identifiable, Equatable {
     var details: String? = nil
     var icon: IconName? = nil
     var showInfo: Bool = false
-    var showChevron: Bool = false
     var showToggle: Bool = false
-    @State var isToggled: Bool = false
+    var isToggled: Bool = false
     var action: (() -> Void)? = nil
     
-    init(title: String, subtitle: String? = nil, details: String? = nil, icon: IconName? = nil, showInfo: Bool = false, showChevron: Bool = false, showToggle: Bool = false, isToggled: Bool = false, action: (() -> Void)? = nil) {
+    init(title: String, subtitle: String? = nil, details: String? = nil, icon: IconName? = nil, showInfo: Bool = false, showToggle: Bool = false, isToggled: Bool = false, action: (() -> Void)? = nil) {
         self.title = title
         self.subtitle = subtitle
         self.details = details
         self.icon = icon
         self.showInfo = showInfo
-        self.showChevron = showChevron
         self.showToggle = showToggle
-        self._isToggled = State<Bool>.init(initialValue: isToggled)
+        self.isToggled = isToggled
         self.action = action
     }
     
     static func == (lhs: MenuItemModel, rhs: MenuItemModel) -> Bool {
         lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }
 

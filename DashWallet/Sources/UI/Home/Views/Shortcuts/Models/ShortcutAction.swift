@@ -25,7 +25,6 @@ enum ShortcutActionType: Int {
     case scanToPay
     case payToAddress
     case buySellDash
-    case syncNow
     case payWithNFC
     case localCurrency
     case importPrivateKey
@@ -57,11 +56,6 @@ extension ShortcutActionType {
             return image
         case .buySellDash:
             guard let image = UIImage(named: "shortcut_buySellDash") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .syncNow:
-            guard let image = UIImage(named: "shortcut_syncNow") else {
                 fatalError("Image not found for shortcut type: \(self)")
             }
             return image
@@ -120,9 +114,6 @@ extension ShortcutActionType {
                                      comment: "Translate it as short as possible! (24 symbols max)")
         case .buySellDash:
             return NSLocalizedString("Buy & Sell",
-                                     comment: "Translate it as short as possible! (24 symbols max)")
-        case .syncNow:
-            return NSLocalizedString("Sync Now",
                                      comment: "Translate it as short as possible! (24 symbols max)")
         case .payWithNFC:
             return NSLocalizedString("Send with NFC",
