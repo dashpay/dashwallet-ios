@@ -77,7 +77,7 @@ class MainMenuViewModel: ObservableObject {
         
         // Buy & Sell Dash
         allItems.append(MenuItemModel(
-            title: NSLocalizedString("Buy & sell Dash", comment: ""),
+            title: NSLocalizedString("Buy & Sell Dash", comment: ""),
             icon: .custom("image.buy.and.sell", maxHeight: 22),
             action: { [weak self] in
                 self?.handleBuySellDash()
