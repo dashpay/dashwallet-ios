@@ -96,7 +96,7 @@ class MainMenuViewController: UIViewController {
             self.presentSupportEmailController()
         }
         #else
-        let swiftUIView = MainMenuView(
+        let swiftUIView = MainMenuScreen(
             vc: navigationController!,
             delegate: delegate as? MainMenuViewControllerDelegate,
             wipeDelegate: delegate
@@ -182,12 +182,14 @@ struct MainMenuScreen: View {
     ) {
         self.vc = vc
         self.onContactSupport = onContactSupport
-        self.viewModel = MainMenuViewModel()
+        let viewModel = MainMenuViewModel()
         self.delegateInternal = DelegateInternal(
             delegate: delegate,
             wipeDelegate: wipeDelegate,
-            viewModel: viewModel
+            viewModel: viewModel,
+            showCreditsWarning: { _, _ in }
         )
+        self.viewModel = viewModel
     }
     #endif
     
@@ -204,7 +206,7 @@ struct MainMenuScreen: View {
                     Spacer()
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 10)
+                .padding(.top, 5)
                 
                 #if DASHPAY
                 if viewModel.userProfileModel?.showJoinDashpay == true {
@@ -280,6 +282,7 @@ struct MainMenuScreen: View {
                 .padding(.bottom, 30)
             }
             
+            #if DASHPAY
             if viewModel.showCreditsWarning {
                 ModalDialog(
                     style: .warning, 
@@ -303,6 +306,7 @@ struct MainMenuScreen: View {
                 .background(Color.black.opacity(0.7))
                 .edgesIgnoringSafeArea(.all)
             }
+            #endif
             
             NavigationLink(
                 destination: SettingsScreen(vc: vc, onDidRescan: {
@@ -325,7 +329,7 @@ struct MainMenuScreen: View {
             }
             
             NavigationLink(
-                destination: SecurityScreen(vc: vc),
+                destination: SecurityMenuScreen(vc: vc),
                 isActive: $showSecurity
             ) {
                 EmptyView()
@@ -338,6 +342,7 @@ struct MainMenuScreen: View {
         .onReceive(viewModel.$navigationDestination) { destination in
             handleNavigation(destination)
         }
+        #if DASHPAY
         .sheet(isPresented: $showMixDialog) {
             let dialog = MixDashDialog(
                 positiveAction: {
@@ -372,6 +377,7 @@ struct MainMenuScreen: View {
                 dialog
             }
         }
+        #endif
     }
     
     #if DASHPAY

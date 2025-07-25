@@ -36,9 +36,39 @@ struct ToolsMenuScreen: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // First group - all items except ZenLedger  
-            VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
+            // Back button
+            HStack {
+                Button(action: {
+                    vc.popViewController(animated: true)
+                }) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.black)
+                        .frame(width: 36, height: 36)
+                        .overlay(
+                            Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1)
+                        )
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 5)
+            .padding(.top, 10)
+            
+            // Header
+            HStack {
+                Text(NSLocalizedString("Tools", comment: ""))
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primaryText)
+                Spacer()
+            }
+            .padding(.top, 30)
+            .padding(.bottom, 20)
+            
+            VStack(alignment: .leading, spacing: 16) {
+                // First group - all items except ZenLedger  
+                VStack(spacing: 0) {
                 ForEach(viewModel.items.dropLast()) { item in
                     MenuItem(
                         title: item.title,
@@ -78,13 +108,12 @@ struct ToolsMenuScreen: View {
                 .cornerRadius(12)
                 .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
             }
-            
-            Spacer()
+                Spacer()
+            }
         }
         .padding(.horizontal, 20)
-        .padding(.top, 16)
         .background(Color.primaryBackground)
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarHidden(true)
         .onReceive(viewModel.$navigationDestination) { destination in
             handleNavigation(destination)
         }

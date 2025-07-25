@@ -18,7 +18,7 @@
 import SwiftUI
 import UIKit
 
-struct SecurityScreen: View {
+struct SecurityMenuScreen: View {
     private let vc: UINavigationController
     private let delegateInternal: DelegateInternal
     
@@ -34,6 +34,35 @@ struct SecurityScreen: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            // Back button
+            HStack {
+                Button(action: {
+                    vc.popViewController(animated: true)
+                }) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.black)
+                        .frame(width: 36, height: 36)
+                        .overlay(
+                            Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1)
+                        )
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 5)
+            .padding(.top, 10)
+            
+            // Header
+            HStack {
+                Text(NSLocalizedString("Security", comment: ""))
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primaryText)
+                Spacer()
+            }
+            .padding(.top, 30)
+            .padding(.bottom, 20)
+            
             VStack(spacing: 0) {
                 ForEach(viewModel.items) { item in
                     MenuItem(
@@ -58,9 +87,8 @@ struct SecurityScreen: View {
             Spacer()
         }
         .padding(.horizontal, 20)
-        .padding(.top, 16)
         .background(Color.primaryBackground)
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarHidden(true)
         .onReceive(viewModel.$navigationDestination) { destination in
             handleNavigation(destination)
         }
@@ -86,6 +114,7 @@ struct SecurityScreen: View {
                     model.getOrCreateNewWallet()
                     let controller = DWPreviewSeedPhraseViewController(model: model)
                     controller.delegate = delegateInternal
+                    controller.hidesBottomBarWhenPushed = true
                     self.vc.pushViewController(controller, animated: true)
                 }
             }
@@ -94,6 +123,7 @@ struct SecurityScreen: View {
                 if authenticated {
                     let controller = DWSetPinViewController(intent: .changePin)
                     controller.delegate = delegateInternal
+                    controller.hidesBottomBarWhenPushed = true
                     self.vc.pushViewController(controller, animated: true)
                 }
             }
@@ -141,7 +171,7 @@ struct SecurityScreen: View {
     }
 }
 
-extension SecurityScreen {
+extension SecurityMenuScreen {
     class DelegateInternal: NSObject, DWSecureWalletDelegate, DWSetPinViewControllerDelegate, DWWipeDelegate {
         let onHide: () -> ()
         

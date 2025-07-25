@@ -72,6 +72,7 @@ final class BalanceModel: ObservableObject {
         }
 
         options.userHasBalance = balanceValue > 0
+        isBalanceHidden = DWGlobalOptions.sharedInstance().balanceHidden
     }
     
     func toggleBalanceVisibility() {

@@ -44,10 +44,10 @@ class SecurityMenuViewModel: ObservableObject {
         let biometryType = biometricAuthModel.biometryType
         hasTouchID = biometryType == .touchID
         hasFaceID = biometryType == .faceID
-        
-        setupItems()
         biometricsEnabled = DWGlobalOptions.sharedInstance().biometricAuthEnabled
         balanceHidden = DWGlobalOptions.sharedInstance().balanceHidden
+        
+        setupItems()
     }
     
     private func setupItems() {

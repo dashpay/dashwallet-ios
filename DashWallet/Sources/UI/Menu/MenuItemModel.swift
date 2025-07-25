@@ -26,7 +26,7 @@ class MenuItemModel: Identifiable, Equatable, Hashable {
     var icon: IconName? = nil
     var showInfo: Bool = false
     var showToggle: Bool = false
-    @State var isToggled: Bool = false
+    var isToggled: Bool = false
     var action: (() -> Void)? = nil
     
     init(title: String, subtitle: String? = nil, details: String? = nil, icon: IconName? = nil, showInfo: Bool = false, showToggle: Bool = false, isToggled: Bool = false, action: (() -> Void)? = nil) {
@@ -36,7 +36,7 @@ class MenuItemModel: Identifiable, Equatable, Hashable {
         self.icon = icon
         self.showInfo = showInfo
         self.showToggle = showToggle
-        self._isToggled = State<Bool>.init(initialValue: isToggled)
+        self.isToggled = isToggled
         self.action = action
     }
     

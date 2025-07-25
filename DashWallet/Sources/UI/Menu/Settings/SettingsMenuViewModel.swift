@@ -54,6 +54,7 @@ class SettingsMenuViewModel: ObservableObject {
         self.notificationsEnabled = DWGlobalOptions.sharedInstance().localNotificationsEnabled
         refreshMenuItems()
         setupCoinJoinObservers()
+        setupCurrencyChangeObserver()
     }
     
     func resetNavigation() {
@@ -81,6 +82,15 @@ class SettingsMenuViewModel: ObservableObject {
         
         coinJoinService.$mixingState
             .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshMenuItems()
+            }
+            .store(in: &cancellableBag)
+    }
+    
+    private func setupCurrencyChangeObserver() {
+        NotificationCenter.default.publisher(for: Notification.Name.fiatCurrencyDidChange)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.refreshMenuItems()
