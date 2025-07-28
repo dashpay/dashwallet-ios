@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@向您发送了朋友申请";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ 不被允许访问脸部识别";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@不被允许访问照相机";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ 不被允许访问指纹识别";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu 联系人/ %3$lu 个人资料更新";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "在设置中允许访问照相机";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "在设置中允许访问脸部识别";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "允许将所有交易从 Dash 钱包发送到 Zenledger?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "在设置中允许访问指纹识别";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Dash 金额";
@@ -337,6 +331,9 @@
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "在Dash钱包和您的Coinbase账户之间";
 
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
+
 /* Voting */
 "Block" = "区块";
 
@@ -357,7 +354,7 @@
 "Buy & Sell" = "购买 & 出售";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "买 & 卖 Dash";
+"Buy & Sell Dash" = "Buy & Sell Dash";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "购买礼品卡";
@@ -502,9 +499,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "确认中";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "与第三方交易所连接";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "将您的加密数字货币钱包连接至 ZenLedger 平台. 了解更多信息并开始使用您的 Dash 钱包进行交易.";
@@ -712,9 +706,6 @@
 
 /* Voting */
 "Date: Old to new" = "日期: 从旧到新";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "默认货币, 快捷方式, 关于...";
 
 /* Voting */
 "Default filter setting" = "默认过滤器设置";
@@ -950,9 +941,6 @@
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
 
 /* No comment provided by engineer. */
-"Find merchants that accept DASH" = "查找接受 DASH 支付的商家";
-
-/* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
 
 /* No comment provided by engineer. */
@@ -1009,6 +997,9 @@
 /* Coinbase */
 "from your Coinbase account" = "从您的 Coinbase 账户";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "充分混币";
 
@@ -1017,9 +1008,6 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "生成扩展公钥?";
-
-/* No comment provided by engineer. */
-"Generating CSV Report" = "正在生成 CSV 报告";
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "获得报价";
@@ -1188,9 +1176,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "导入私钥";
-
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "导入私钥, 导出 CSV...";
 
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "除了显示的 Coinbase费用外, 我们还包括价格差. 当使用高级交易时将不包括差价, 因为您正在直接与订单簿直接交互.\n\n加密货币市场变化无常, 这使我们能够暂时锁定交易执行的价格.";
@@ -1387,9 +1372,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "完成后通知我";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "让您的朋友和家人加入Dash网络";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "让您的朋友和家人加入Dash网络. 邀请他们进入社交银行的世界.";
@@ -2067,6 +2049,9 @@
 "Rescan Blockchain" = "重新扫描区块链";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "重置";
 
 /* Explore Dash: Filters */
@@ -2083,6 +2068,9 @@
 
 /* Usernames */
 "Results" = "结果";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "保留相互交易记录";
@@ -2381,6 +2369,12 @@
 "Submit" = "提交";
 
 /* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
+
+/* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "已清除!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2394,9 +2388,6 @@
 
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "同步中… 结果可能不完整.";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "立刻同步";
 
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "已与当前Dash钱包同步";
@@ -2803,9 +2794,6 @@
 "View in Block Explorer" = "在浏览器中查看";
 
 /* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "查看密码, 备份钱包...";
-
-/* No comment provided by engineer. */
 "View Recovery Phrase" = "查看助记词";
 
 /* No comment provided by engineer. */
@@ -2822,6 +2810,9 @@
 
 /* Voting */
 "Votes: Low to high" = "投票: 从低到高";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "投票者地址";

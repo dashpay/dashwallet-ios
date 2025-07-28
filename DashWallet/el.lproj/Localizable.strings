@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ σας έστειλε αίτημα επαφής";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ δεν επιτρέπεται να έχετε πρόσβαση στο Face ID";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ δεν επιτρέπεται να έχετε πρόσβαση στην κάμερα";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ δεν επιτρέπεται να έχετε πρόσβαση στο Touch ID";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@~ %2$lu επαφές /  %3$lu ενημερώσεις προφίλ";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Επιτρέψτε πρόσβαση της κάμερας στις Ρυθμίσεις";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Επιτρέψτε πρόσβαση του Face ID στις Ρυθμίσεις";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Να επιτρέπεται η αποστολή όλων των συναλλαγών από το Dash Wallet στο Zenledger;";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Επιτρέψτε πρόσβαση του Touch ID στις Ρυθμίσεις";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Ποσό σε Dash";
@@ -337,6 +331,9 @@
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Μεταξύ του Dash Wallet και του λογαριασμού σας στην Coinbase.";
 
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
+
 /* Voting */
 "Block" = "Μπλόκ";
 
@@ -357,7 +354,7 @@
 "Buy & Sell" = "Αγορά και Πώληση";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Αγορά και Πώληση Dash";
+"Buy & Sell Dash" = "Buy & Sell Dash";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Αγοράστε μια δωροκάρτα";
@@ -502,9 +499,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Επιβεβαίωση";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Συνδεθείτε με ανταλλακτήρια τρίτων";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Συνδέστε τα πορτοφόλια σας με την πλατφόρμα ZenLedger. Μάθετε περισσότερα και ξεκινήστε τις συναλλαγές σας με το Dash Wallet.";
@@ -712,9 +706,6 @@
 
 /* Voting */
 "Date: Old to new" = "Ημερομηνία: Παλαιά προς νέα";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Προεπιλεγμένο νόμισμα, συντομεύσεις, σχετικά με...";
 
 /* Voting */
 "Default filter setting" = "Προεπιλεγμένη ρύθμιση φίλτρου";
@@ -950,9 +941,6 @@
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
 
 /* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Βρείτε εμπόρους που δέχονται DASH";
-
-/* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
 
 /* No comment provided by engineer. */
@@ -1009,6 +997,9 @@
 /* Coinbase */
 "from your Coinbase account" = "από τον λογαριασμό σας στην Coinbase";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "Πλήρως αναμεμειγμένα";
 
@@ -1017,9 +1008,6 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Δημιουργία Εκτεταμένου Δημόσιου Κλειδιού";
-
-/* No comment provided by engineer. */
-"Generating CSV Report" = "Δημιουργία αναφοράς CSV";
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "Αποκτήστε προσφορά";
@@ -1188,9 +1176,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Εισάγετε το ιδιωτικό κλειδί";
-
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Εισαγωγή ιδιωτικού κλειδιού, εξαγωγή CSV...";
 
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Εκτός από την εμφανιζόμενη αμοιβή της Coinbase, συμπεριλαμβάνουμε στην τιμή ένα spread. Όταν χρησιμοποιείτε το Advanced Trade, δεν περιλαμβάνεται spread, επειδή αλληλεπιδράτε απευθείας με το βιβλίο εντολών.\n\nΟι αγορές κρυπτονομισμάτων είναι ευμετάβλητες και αυτό μας επιτρέπει να κλειδώσουμε προσωρινά μια τιμή για την εκτέλεση των συναλλαγών.";
@@ -1387,9 +1372,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Ενημερώστε με όταν ολοκληρωθεί";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Αφήστε τους φίλους και τους συγγενείς σας να συμμετάσχουν στο Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Αφήστε τους φίλους και την συγγενείς σας να ενταχθούν στο Dash Network. Προσκαλέστε τους στον κόσμο της κοινωνικής τραπεζικής.";
@@ -2067,6 +2049,9 @@
 "Rescan Blockchain" = "Επανασάρωση του blockchain";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "Επαναφορά";
 
 /* Explore Dash: Filters */
@@ -2083,6 +2068,9 @@
 
 /* Usernames */
 "Results" = "Αποτελέσματα";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Διατήρηση Ιστορικού Αμοιβαίων Συναλλαγών";
@@ -2381,6 +2369,12 @@
 "Submit" = "Υποβολή";
 
 /* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
+
+/* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "Σαρώθηκε";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2394,9 +2388,6 @@
 
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "Συγχρονισμός σε εξέλιξη... Τα αποτελέσματα μπορεί να μην είναι πλήρη.";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "Συγχρονισμός Τώρα";
 
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "Συγχρονισμένο με το τρέχον Dash Wallet";
@@ -2803,9 +2794,6 @@
 "View in Block Explorer" = "Προβολή στον Explorer";
 
 /* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Προβολή φράσης πρόσβασης, εφεδρικού πορτοφολιού ...";
-
-/* No comment provided by engineer. */
 "View Recovery Phrase" = "Προβολή Φράσης Ανάκτησης";
 
 /* No comment provided by engineer. */
@@ -2822,6 +2810,9 @@
 
 /* Voting */
 "Votes: Low to high" = "Ψήφοι: Χαμηλές προς υψηλές";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Διεύθυνση Ψήφου";

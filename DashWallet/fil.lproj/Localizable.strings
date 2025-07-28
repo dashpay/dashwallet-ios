@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ ay nagpadala sa iyo ng isang kahilingan sa pakikipag-ugnay";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ ay hindi pinahihintulutang i-access ang Face ID";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ ay hindi pinahihintulutang i-access ang kamera";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ ay hindi pinahihintulutang i-access ang Touch ID";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu mga contact / %3$lu mga update sa profile";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Payagang i-access ang camera sa Settings";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Payagang i-access ang Face ID sa Settings";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Payagan ang pagpapadala ng lahat ng mga transaksyon mula sa Dash Wallet sa Zenledger?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Payagang i-access ang Touch ID sa Settings";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Halaga sa Dash";
@@ -337,6 +331,9 @@
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Sa pagitan ng Dash Wallet at ng iyong Coinbase account";
 
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
+
 /* Voting */
 "Block" = "Block";
 
@@ -357,7 +354,7 @@
 "Buy & Sell" = "Bili At Benta";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Bumili at magbenta ng Dash";
+"Buy & Sell Dash" = "Buy & Sell Dash";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Bumili ng Gift Card";
@@ -502,9 +499,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Kinukumpirma";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Ikonekta sa mga third party na palitan";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Ikonekta ang iyong mga crypto wallet sa platform ng ZenLedger. Matuto pa at magsimula sa iyong mga transaksyon sa Dash Wallet.";
@@ -712,9 +706,6 @@
 
 /* Voting */
 "Date: Old to new" = "Petsa: Luma sa bago";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Default na pananalapi, shortcuts, about...";
 
 /* Voting */
 "Default filter setting" = "Default na setting ng filter";
@@ -950,9 +941,6 @@
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
 
 /* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Maghanap ng mga merchant na tumatanggap ng DASH";
-
-/* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
 
 /* No comment provided by engineer. */
@@ -1009,6 +997,9 @@
 /* Coinbase */
 "from your Coinbase account" = "mula sa iyong Coinbase account";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "Ganap na Nahalo";
 
@@ -1017,9 +1008,6 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Bumuo ng pinalawig na mga public keys?";
-
-/* No comment provided by engineer. */
-"Generating CSV Report" = "Pagbuo ng CSV Report";
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "Kumuha ng Quote";
@@ -1188,9 +1176,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "I-import ang private key";
-
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Mag-import ng pribadong key, Mag-export ng CSV...";
 
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Bilang karagdagan sa ipinapakitang bayad sa Coinbase, nagsasama kami ng spread sa presyo. Kapag gumagamit ng Advanced Trade, walang spread na kasama dahil direktang nakikipag-ugnayan ka sa order book.\n\nAng mga merkado ng Cryptocurrency ay pabagu-bago, at nagbibigay-daan ito sa amin na pansamantalang i-lock ang isang presyo para sa pagpapatupad ng kalakalan.";
@@ -1387,9 +1372,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Ipaalam sa akin kung kailan ito tapos";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Hayaan ang iyong mga kaibigan at pamilya na sumali sa Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Hayaan ang iyong mga kaibigan at pamilya na sumali sa Dash Network. Anyayahan sila sa mundo ng social banking.";
@@ -2067,6 +2049,9 @@
 "Rescan Blockchain" = "Muling i-scan ang blockchain ";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "I-reset";
 
 /* Explore Dash: Filters */
@@ -2083,6 +2068,9 @@
 
 /* Usernames */
 "Results" = "Mga resulta";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Panatlihin ang Kasaysayan ng Kapwang Transaksyon";
@@ -2381,6 +2369,12 @@
 "Submit" = "Isumite";
 
 /* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
+
+/* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "Tangayin!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2394,9 +2388,6 @@
 
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "Kasalukuyang isinasagawa ang pag-sync... Maaaring hindi kumpleto ang resulta.";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "I-sync ngayon";
 
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "Naka-sync sa kasalukuyang Dash Wallet";
@@ -2803,9 +2794,6 @@
 "View in Block Explorer" = "Tingnan sa Explorer";
 
 /* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Ipakita ang passphrase, backup wallet…";
-
-/* No comment provided by engineer. */
 "View Recovery Phrase" = "Ipakita ang recovery phrase";
 
 /* No comment provided by engineer. */
@@ -2822,6 +2810,9 @@
 
 /* Voting */
 "Votes: Low to high" = "Mga Boto: Mababa hanggang mataas";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Address ng pagboto";

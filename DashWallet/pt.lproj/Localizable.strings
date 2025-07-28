@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ lhe enviou uma solicitação de contato";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ não tem permissão para acessar Face ID";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ não tem permissão para acessar a câmera";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ não tem permissão para acessar Touch ID";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contatos / %3$lu atualizações de perfil";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Permita o uso da câmera em Configurações";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Permita o acesso a Face ID em Configurações";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Permitir enviar todas as transações da Carteira Dash para o Zenledger?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Permita o acesso a Touch ID em Configurações";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Quantidade em Dash";
@@ -337,6 +331,9 @@
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Entre Carteira Dash e sua conta Coinbase";
 
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
+
 /* Voting */
 "Block" = "Bloquear";
 
@@ -357,7 +354,7 @@
 "Buy & Sell" = "Comprar &amp; Vender";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Comprar & Vender Dash";
+"Buy & Sell Dash" = "Buy & Sell Dash";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Comprar um Cartão Presente";
@@ -502,9 +499,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Confirmando";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Conectar com exchange de terceiros";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Conecte suas carteiras de criptomoedas à plataforma ZenLedger. Saiba mais e comece com suas transações da carteira Dash.";
@@ -712,9 +706,6 @@
 
 /* Voting */
 "Date: Old to new" = "Data: Da mais antiga para a mais recente";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Moeda padrão, atalhos, sobre...";
 
 /* Voting */
 "Default filter setting" = "Configuração de filtro padrão";
@@ -950,9 +941,6 @@
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
 
 /* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Encontrar comerciantes que aceitam DASH.";
-
-/* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
 
 /* No comment provided by engineer. */
@@ -1009,6 +997,9 @@
 /* Coinbase */
 "from your Coinbase account" = "da sua conta Coinbase";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "Totalmente misturado";
 
@@ -1017,9 +1008,6 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Gerar chaves públicas estendidas?";
-
-/* No comment provided by engineer. */
-"Generating CSV Report" = "Gerando relatório CSV";
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "Obter cotação";
@@ -1188,9 +1176,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Importar Chave Privada";
-
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Importar chave privada, Exportar CSV...";
 
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Além da taxa Coinbase exibida, nós incluímos um spread no preço. Ao usar o Advanced Trade, nenhum spread é incluído porque você está interagindo diretamente com o livro de pedidos.\n\nOs mercados de criptomoedas são voláteis e isso nos permite bloquear temporariamente um preço para a execução da negociação.";
@@ -1387,9 +1372,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Me avise quando estiver pronto";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Deixe seus amigos e familiares se juntarem ao Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Deixe seus amigos e familiares se juntarem à Rede Dash. Convide-os para o mundo do banco social.";
@@ -2067,6 +2049,9 @@
 "Rescan Blockchain" = "Rescan Blockchain";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "Resetar";
 
 /* Explore Dash: Filters */
@@ -2083,6 +2068,9 @@
 
 /* Usernames */
 "Results" = "Resultados";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Reter Histórico de Transações Mútuas";
@@ -2381,6 +2369,12 @@
 "Submit" = "Enviar";
 
 /* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
+
+/* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "Varrido!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2394,9 +2388,6 @@
 
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "Sincronização em andamento... Os resultados podem não estar completos.";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "Sincronizar Agora";
 
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "Sincronizado com a Carteira Dash atual";
@@ -2803,9 +2794,6 @@
 "View in Block Explorer" = "Ver no Explorador";
 
 /* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Ver frase de recuperação, fazer backup...";
-
-/* No comment provided by engineer. */
 "View Recovery Phrase" = "Ver Frase de Recuperação";
 
 /* No comment provided by engineer. */
@@ -2822,6 +2810,9 @@
 
 /* Voting */
 "Votes: Low to high" = "Votos: Do mais baixo para o mais alto";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Endereço de Votação";

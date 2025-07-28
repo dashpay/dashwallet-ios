@@ -105,6 +105,7 @@ struct GroupedTransactionsScreen: View {
                                     self.currentTag = txItem.txHashHexString
                                     onShowBackButton(true)
                                 }
+                                .frame(minHeight: 66)
                             }
                         }
                     }

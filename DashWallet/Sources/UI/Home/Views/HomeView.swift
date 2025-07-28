@@ -442,6 +442,7 @@ struct HomeViewContent<Content: View>: View {
                     self.selectedTxDataItem = txDataItem
                 }
             }
+            .frame(minHeight: 66)
         }
     }
     

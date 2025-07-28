@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@отправил вам запрос на добавление в контакты";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ запрещен доступ к Face ID";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ запрещен доступ к камере";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ запрещен доступ к Touch ID";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu контактов / %3$lu обновлений профиля";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Разрешить доступ к камере в Настройках";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Разрешить доступ к Face ID в Настройках";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Разрешить переcылать все транзакции из Dash Wallet в Zenledger?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Разрешить доступ к Touch ID в Настройках";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Сумма в Dash";
@@ -337,6 +331,9 @@
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Между Dash Wallet и вашим аккаунтом Coinbase";
 
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
+
 /* Voting */
 "Block" = "Блок";
 
@@ -357,7 +354,7 @@
 "Buy & Sell" = "Купить и Продать";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Купить и продать";
+"Buy & Sell Dash" = "Buy & Sell Dash";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Купить подарочную карту";
@@ -502,9 +499,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Подтверждается";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Использовать сторонние биржи";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Подключите свои криптокошельки к платформе ZenLedger. Узнайте больше и начните с транзакций в Dash Wallet.";
@@ -712,9 +706,6 @@
 
 /* Voting */
 "Date: Old to new" = "По дате: Сначала старые";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Валюта по умолчанию, ссылки, о программе…";
 
 /* Voting */
 "Default filter setting" = "Настройки фильтра по умолчанию";
@@ -950,9 +941,6 @@
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
 
 /* No comment provided by engineer. */
-"Find merchants that accept DASH" = "Найти магазины, где принимают DASH";
-
-/* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
 
 /* No comment provided by engineer. */
@@ -1009,6 +997,9 @@
 /* Coinbase */
 "from your Coinbase account" = "с аккаунта Coinbase";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "Полностью перемешано";
 
@@ -1017,9 +1008,6 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Создать расширенный публичный ключ?";
-
-/* No comment provided by engineer. */
-"Generating CSV Report" = "Создание отчёта в CSV";
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "Получить Quote";
@@ -1188,9 +1176,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Импорт ключа";
-
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Импортировать приватный ключ, Выгрузить CSV…";
 
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Помимо отображённой комиссии Coinbase, мы учитываем небольшой разброс цены. При работе в режиме Продвинутой Торговли разброс цены не учитывается, потому что вы работаете напрямую с портфелем заказов. \n\nКриптовалютным рынкам свойственна волатильность, и таким образом мы временно замораживаем цену для совершения сделки. ";
@@ -1387,9 +1372,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Сообщить, когда будет готово";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Пусть ваши друзья и семья присоединятся к Dash.";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Пусть ваши друзья и семья присоединятся к сети Dash. Пригласите их в мир социального банкинга.";
@@ -2067,6 +2049,9 @@
 "Rescan Blockchain" = "Пересинхронизировать блокчейн";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "Сбросить";
 
 /* Explore Dash: Filters */
@@ -2083,6 +2068,9 @@
 
 /* Usernames */
 "Results" = "Результаты";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Хранить историю взаимных транзакций";
@@ -2381,6 +2369,12 @@
 "Submit" = "Отправить";
 
 /* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
+
+/* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "Переведено!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2394,9 +2388,6 @@
 
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "Синхронизация… Результаты могут быть неполными.";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "Синхронизировать";
 
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "Синхронизирован с активным Dash Wallet";
@@ -2803,9 +2794,6 @@
 "View in Block Explorer" = "Посмотреть в Explorer";
 
 /* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Показать кодовую фразу, сделать резервную копию кошелька...";
-
-/* No comment provided by engineer. */
 "View Recovery Phrase" = "Посмотреть фразу восстановления";
 
 /* No comment provided by engineer. */
@@ -2822,6 +2810,9 @@
 
 /* Voting */
 "Votes: Low to high" = "Голоса: По возрастанию";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Адрес голосования";
