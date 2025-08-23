@@ -90,7 +90,7 @@ extension TxDetailModel {
                 return URL(string: "https://insight.dash.org/insight/tx/\(transactionId)")
             }
         case .blockchair:
-            return URL(string: "https://blockchair.com/dash/transaction/\(transactionId)")
+            return URL(string: "https://blockchair.com/dash/transaction/\(transactionId)?brand=dash")
         }
         
         return nil
