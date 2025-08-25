@@ -2984,7 +2984,7 @@
 "You chose “%@” as your username." = "You chose “%@” as your username.";
 
 /* CoinJoin */
-"You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
+"Your Dash was mixed using these transactions." = "Your Dash was mixed using these transactions.";
 
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "Jak na razie nie masz żadnych kontaktów. ";

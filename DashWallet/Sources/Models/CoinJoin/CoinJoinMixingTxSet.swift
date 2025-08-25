@@ -25,7 +25,7 @@ final class CoinJoinMixingTxSet: GroupedTransactions, TransactionWrapper {
     }
     
     var infoText: String {
-        NSLocalizedString("You Dash was mixed using these transactions.", comment: "CoinJoin")
+        NSLocalizedString("Your Dash was mixed using these transactions.", comment: "CoinJoin") // MO-720 BEF
     }
     
     var fiatAmount: String {
