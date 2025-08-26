@@ -106,6 +106,16 @@ post_install do |installer|
       end
     end
   end
+  
+  # Fix gRPC-Core template syntax issue with newer Xcode
+  grpc_file = 'Pods/gRPC-Core/src/core/lib/promise/detail/basic_seq.h'
+  if File.exist?(grpc_file)
+    # Make file writable before modifying
+    File.chmod(0644, grpc_file)
+    text = File.read(grpc_file)
+    new_contents = text.gsub(/Traits::template CallSeqFactory/, 'Traits::CallSeqFactory')
+    File.write(grpc_file, new_contents)
+  end
 
   # update info about current DashSync version
   # the command runs in the background after 1 sec, when `pod install` updates Podfile.lock
