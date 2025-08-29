@@ -138,3 +138,23 @@ If you want to make modifications to dash-shared-core, follow these steps:
    ```ruby
    pod 'DashSharedCore', :path => '../dash-shared-core/'
    ```
+
+### Issue 4: Bad CPU type in executable
+The protoc compiler that is part of dapi-grpc-pod-installer is for intel chips.  You will need to have Rosetta installed
+allow this protoc compiler to run.
+
+```
+> FETCH_HEAD /bin/bash: line 10: dapi-grpc-pod-installer/Pods/!ProtoCompiler/protoc: Bad CPU type in executable
+```
+```bash
+softwareupdate --install-rosetta --agree-to-license
+pod deintegrate
+
+# uninstall cocoapods 
+sudo gem uninstall cocoapods 
+
+# Install CocoaPods natively for Apple Silicon, but the correct version 1.15.2 
+sudo arch -arm64 gem install cocoapods -v 1.15.2
+
+pod install --verbose
+```
