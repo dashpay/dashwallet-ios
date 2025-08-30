@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ が連絡先リクエストを送信しました";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ はFace IDへのアクセスが許可されていません";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ はカメラへのアクセスが許可されていません";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@はTouch IDへのアクセスが許可されていません";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu の連絡先 / %3$lu のプロフィール更新";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "端末設定でカメラへのアクセスを許可する";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "端末設定でFace IDへのアクセスを許可する";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "DashウォレットからZenledgerに全ての取引の送信を許可しますか。";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "端末設定でTouch IDへのアクセスを許可する";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "金額(Dash)";
@@ -334,6 +328,9 @@
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "DashウォレットとCoinbaseアカウント間";
 
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
+
 /* Voting */
 "Block" = "ブロック";
 
@@ -354,7 +351,7 @@
 "Buy & Sell" = "売買";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Dashを売買する";
+"Buy & Sell Dash" = "Buy & Sell Dash";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "ギフトカードを購入する";
@@ -496,9 +493,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "確認中";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "サードパーティーの取引所に接続する";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "お手持ちのクリプトウォレットをZenLedgerのプラットフォームと紐づけましょう。詳細をご確認の上、Dashウォレットの取引を始めましょう。";
@@ -712,9 +706,6 @@
 
 /* Voting */
 "Date: Old to new" = "日付：古い順";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "初期設定の通貨、ショートカット、...について";
 
 /* Voting */
 "Default filter setting" = "デフォルトのフィルター設定";
@@ -1009,6 +1000,9 @@
 /* Coinbase */
 "from your Coinbase account" = "Coinbaseアカウントから";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "完全にミキシングされました";
 
@@ -1017,9 +1011,6 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "拡張されたパブリックキーを作成しますか。";
-
-/* No comment provided by engineer. */
-"Generating CSV Report" = "CSVレポートの作成";
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "見積もりを得る";
@@ -1185,9 +1176,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "プライベートキーをインポート";
-
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "プライベートキーのインポート、CSVのエクスポート...";
 
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "表示されているCoinbaseの手数料に加え、スプレッドも価格に含まれています。アドバンスドトレードを利用する場合、注文帳簿と直接連動をするため、スプレッドは含まれません。\n\n仮想通貨市場は変動が激しいため、取引執行時の価格を一時的に固定できます。";
@@ -1387,9 +1375,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "完了したらお知らせください";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "友達や家族を誘ってDashに参加しましょう";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "友達や家族をDashネットワークに招待しましょう。ソーシャルバンクの世界へご招待します。";
@@ -2076,6 +2061,9 @@
 "Rescan Blockchain" = "ブロックチェーンの再スキャン";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "リセット";
 
 /* Explore Dash: Filters */
@@ -2092,6 +2080,9 @@
 
 /* Usernames */
 "Results" = "結果";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "双方の取引履歴を保持する";
@@ -2396,6 +2387,12 @@
 "Submit" = "提出する";
 
 /* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
+
+/* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "スイープしました!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2409,9 +2406,6 @@
 
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "同期中... 入力結果が完了していない可能性があります。";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "すぐに同期する";
 
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "現在使用しているDash Walletと同期";
@@ -2809,9 +2803,6 @@
 "View in Block Explorer" = "エクスプローラーで表示";
 
 /* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "パスフレーズを表示して、ウォレットをバックアップ ...";
-
-/* No comment provided by engineer. */
 "View Recovery Phrase" = "復元フレーズを表示する";
 
 /* No comment provided by engineer. */
@@ -2828,6 +2819,9 @@
 
 /* Voting */
 "Votes: Low to high" = "投票数：低から高";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = " 投票のアドレス";
@@ -2999,7 +2993,7 @@
 "You chose “%@” as your username." = "「%@」をユーザー名に選択しました";
 
 /* CoinJoin */
-"You Dash was mixed using these transactions." = "これらの取引を使用してDashをミキシングしました";
+"Your Dash was mixed using these transactions." = "これらの取引を使用してDashをミキシングしました";
 
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "現在、連絡先がありません";

@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ 님이 당신에게 연락처 요청을 보냈습니다";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@에 페이스 ID 접근 권한이 없습니다";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@에 카메라 접근 권한이 없습니다";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@게 터치 ID 접근 권한이 없습니다";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu 연락처 / %3$lu 프로필 업데이트";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "설정에서 카메라 접근을 허용";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "설정에서 페이스 ID 접근을 허용";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "대시 지갑의 모든 거래를 Zenledger로 보내시겠습니까?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "설정에서 터치 ID 접근을 허용";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "대시 금액";
@@ -334,6 +328,9 @@
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "대시 지갑과 코인베이스 계정간";
 
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
+
 /* Voting */
 "Block" = "블록";
 
@@ -354,7 +351,7 @@
 "Buy & Sell" = "매수 & 매도";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "대시 매수 & 매도";
+"Buy & Sell Dash" = "Buy & Sell Dash";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "기프트 카드 구매";
@@ -496,9 +493,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "확인 중";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "제3자 거래소에 연결";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "당신의 암호화폐 지갑을 Zenledger 플랫폼에 연결하세요. 자세한 내용을 확인하시고 대시 지갑 거래를 통해 지금 시작하세요.";
@@ -712,9 +706,6 @@
 
 /* Voting */
 "Date: Old to new" = "날짜: 과거부터 현재";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "통화 기본값, 단축키, 관련 정보...";
 
 /* Voting */
 "Default filter setting" = "디폴트 필터 설정";
@@ -947,9 +938,6 @@
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
 
 /* No comment provided by engineer. */
-"Find merchants that accept DASH" = "대시 거래를 허용하는 판매자 찾기";
-
-/* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
 
 /* No comment provided by engineer. */
@@ -1009,6 +997,9 @@
 /* Coinbase */
 "from your Coinbase account" = "당신의 코인베이스 계좌로부터";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "완전히 믹싱됨";
 
@@ -1017,9 +1008,6 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "확장된 공개 키를 생성합니까?";
-
-/* No comment provided by engineer. */
-"Generating CSV Report" = "CSV 보고서 생성중";
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "견적 받기";
@@ -1185,9 +1173,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "개인 키 불러오기";
-
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "개인 키 가져오기, CSV 내보내기...";
 
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "금액에는 표시된 코인베이스 수수료 외에도 스프레드가 포함되었습니다. 향상된 거래 기능을 사용하는 경우에는 주문장과 직접 상호작용 하므로 스프레드가 포함되지 않습니다.\n\n암호화폐 시장은 변동성이 높기 때문에, 거래 수행을 위해서는 가격을 일시적으로 고정하게 됩니다.";
@@ -1387,9 +1372,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "완료되면 알려주세요";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "당신의 친구와 가족이 대시에 가입하도록 도와주세요";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "당신의 친구와 가족들이 대시 네트워크에 가입하도록 도와주고, 소셜 뱅킹의 세계에 초대해보세요.";
@@ -2076,6 +2058,9 @@
 "Rescan Blockchain" = "블록체인 재스캔";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "리셋";
 
 /* Explore Dash: Filters */
@@ -2092,6 +2077,9 @@
 
 /* Usernames */
 "Results" = "결과";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "상호 거래 내역을 유지합니다";
@@ -2396,6 +2384,12 @@
 "Submit" = "제출";
 
 /* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
+
+/* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "잔액이 지갑으로 보내졌습니다!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2409,9 +2403,6 @@
 
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "동기화 중... 결과가 나타나지 않을 수 있습니다.";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "지금 동기화합니다";
 
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "현재 대시 지갑과 동기화됨";
@@ -2809,9 +2800,6 @@
 "View in Block Explorer" = "탐색기에서 보기";
 
 /* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "비밀문구, 백업 지갑 보기....";
-
-/* No comment provided by engineer. */
 "View Recovery Phrase" = "복구 문구 확인";
 
 /* No comment provided by engineer. */
@@ -2828,6 +2816,9 @@
 
 /* Voting */
 "Votes: Low to high" = "투표: 낮음부터 높음";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "투표 주소";
@@ -2999,7 +2990,7 @@
 "You chose “%@” as your username." = "You chose “%@” as your username.";
 
 /* CoinJoin */
-"You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
+"Your Dash was mixed using these transactions." = "Your Dash was mixed using these transactions.";
 
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "현재 연락처에 아무도 없습니다";

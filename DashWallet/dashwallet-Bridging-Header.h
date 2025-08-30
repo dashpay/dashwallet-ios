@@ -24,6 +24,8 @@ static const bool _SNAPSHOT = 0;
 #import "DSKeyManager.h"
 #import "BigIntTypes.h"
 #import "NSString+Dash.h"
+#import "DSChainManager.h"
+#import "DSChain.h"
 
 //MARK: DashWallet
 #import "DWEnvironment.h"
@@ -132,6 +134,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWGetStartedContentViewController.h"
 #import "DWDashPayContactsUpdater.h"
 #import "DWDPUpdateProfileModel.h"
+#import "DWInvitationHistoryViewController.h"
 #endif
 
 //MARK: CrowdNode
@@ -143,17 +146,15 @@ static const bool _SNAPSHOT = 0;
 #import "DSChain+DashWallet.h"
 
 //MARK: Tabbar
-#import "DWMainMenuViewController.h"
 #import "DWWipeDelegate.h"
 #import "DWPayModel.h"
-#import "DWMainMenuViewControllerDelegate.h"
 
 //MARK: Home
 #import "DWHomeModel.h"
 #import "DWRecoverViewController.h"
 #import "DSAuthenticationManager.h"
+#import "DSAuthenticationManager+Private.h"
 #import "DWSecureWalletDelegate.h"
-#import "DWSettingsMenuModel.h"
 #import "DWBasePayViewController.h"
 #import "DWHomeProtocol.h"
 
@@ -161,12 +162,21 @@ static const bool _SNAPSHOT = 0;
 #import "UIViewController+DWDisplayError.h"
 #import "DWFormTableViewController.h"
 #import "DWAboutViewController.h"
-#import "DWMainMenuModel.h"
 #import "DWCurrentUserProfileView.h"
-#import "DWMainMenuTableViewCell.h"
 #import "DWSharedUIConstants.h"
 #import "DWUserProfileContainerView.h"
 #import "DWDashPayReadyProtocol.h"
+#import "DWSetPinViewController.h"
+#import "DWAdvancedSecurityViewController.h"
+#import "DWBiometricAuthModel.h"
+#import "DWAdvancedSecurityModel.h"
+#import "DWResetWalletInfoViewController.h"
+#import "DWPreviewSeedPhraseModel.h"
+#import "DWPreviewSeedPhraseViewController.h"
+#import "DWSecureWalletDelegate.h"
+#if SNAPSHOT
+#import "DWDemoAdvancedSecurityViewController.h"
+#endif
 
 //MARK: Onboarding
 #import "DWTransactionStub.h"

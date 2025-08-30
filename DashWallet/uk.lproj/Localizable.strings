@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ надіслав вам запит на додавання в контакти";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ не має доступу до Face ID";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ не має доступу до камери";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ не має доступу до Touch ID";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@  ~ %2$lu контактів / %3$lu оновлень профілю";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Дозволити доступ до камери в налаштуваннях";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Дозволити доступ до Face ID в налаштуваннях";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Дозволити надсилати всі транзакції з Dash Wallet до Zenledger?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Дозволити доступ до Touch ID в налаштуваннях";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Сума в Dash";
@@ -334,6 +328,9 @@
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Між Dash Wallet і вашим Coinbase акаунтом";
 
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
+
 /* Voting */
 "Block" = "Блок";
 
@@ -354,7 +351,7 @@
 "Buy & Sell" = "Купити &amp; Продати";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Купити & Продати Dash";
+"Buy & Sell Dash" = "Buy & Sell Dash";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Купити подарункову карту";
@@ -496,9 +493,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Підтвердження";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Підключитися до сторонніх бірж";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Підключіть свої криптогаманці до платформи ZenLedger. Дізнайтеся більше та розпочніть роботу з транзакціями Dash Wallet.";
@@ -712,9 +706,6 @@
 
 /* Voting */
 "Date: Old to new" = "Дата: від старої до нової";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Валюта за замовчуванням, ярлики, про програму.";
 
 /* Voting */
 "Default filter setting" = "Налаштування фільтра за замовчуванням";
@@ -1009,6 +1000,9 @@
 /* Coinbase */
 "from your Coinbase account" = "з вашого акаунта Coinbase";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "Повністю змішано";
 
@@ -1017,9 +1011,6 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Згенерувати розширені відкриті ключі?";
-
-/* No comment provided by engineer. */
-"Generating CSV Report" = "Створення звіту CSV";
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "Отримати пропозицію";
@@ -1185,9 +1176,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Імпорт ключа";
-
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Імпорт приватного ключа, експорт CSV…";
 
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "На додаток до відображеної комісії Coinbase ми включаємо спред у ціну. Під час використання Advanced Trade спред не включається, оскільки ви взаємодієте безпосередньо з книгою замовлень. \n\nКриптовалютні ринки нестабільні, що дозволяє нам тимчасово зафіксувати ціну на здійснення торгів.";
@@ -1387,9 +1375,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Повідомити, коли буде готово";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Нехай ваші друзі та родина приєднаються до Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Дозвольте своїм друзям і родині приєднатися до Dash Network. Запросіть їх у світ соціального банкінгу.";
@@ -2076,6 +2061,9 @@
 "Rescan Blockchain" = "Пересканувати блокчейн";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "Скидання";
 
 /* Explore Dash: Filters */
@@ -2092,6 +2080,9 @@
 
 /* Usernames */
 "Results" = "Результати";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Зберігати взаємну історію транзакцій";
@@ -2396,6 +2387,12 @@
 "Submit" = "Надіслати";
 
 /* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
+
+/* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "Переведено!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2409,9 +2406,6 @@
 
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "Триває синхронізація... Результати можуть бути неповними.";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "Синхронізувати зараз";
 
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "Синхронізовано з Dash Wallet";
@@ -2809,9 +2803,6 @@
 "View in Block Explorer" = "Переглянути в Explorer";
 
 /* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Показати кодову фразу, зробити резервну копію гаманця.";
-
-/* No comment provided by engineer. */
 "View Recovery Phrase" = "Переглянути фразу відновлення";
 
 /* No comment provided by engineer. */
@@ -2828,6 +2819,9 @@
 
 /* Voting */
 "Votes: Low to high" = "Голоси: від низького до високого";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Адреса голосування";
@@ -2999,7 +2993,7 @@
 "You chose “%@” as your username." = "Ви обрали “%@” як своє ім’я користувача.";
 
 /* CoinJoin */
-"You Dash was mixed using these transactions." = "Ваш Dash було міксовано за допомогою цих транзакцій.";
+"Your Dash was mixed using these transactions." = "Ваш Dash було міксовано за допомогою цих транзакцій.";
 
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "На даний момент у вас немає контактів";

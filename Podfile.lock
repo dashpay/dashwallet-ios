@@ -698,6 +698,7 @@ PODS:
   - LoggerAPI (1.9.200):
     - Logging (~> 1.1)
   - Logging (1.4.0)
+  - lottie-ios (4.5.2)
   - MBProgressHUD (1.1.0)
   - MMSegmentSlider (1.0.3)
   - Moya (15.0.0):
@@ -744,6 +745,7 @@ DEPENDENCIES:
   - Firebase/DynamicLinks
   - FirebaseStorage (= 8.15.0)
   - KVO-MVVM (= 0.5.6)
+  - lottie-ios (= 4.5.2)
   - MBProgressHUD (= 1.1.0)
   - MMSegmentSlider (from `https://github.com/podkovyrin/MMSegmentSlider`, commit `2d91366`)
   - Moya (~> 15.0)
@@ -788,6 +790,7 @@ SPEC REPOS:
     - KVO-MVVM
     - LoggerAPI
     - Logging
+    - lottie-ios
     - MBProgressHUD
     - Moya
     - nanopb
@@ -855,6 +858,7 @@ SPEC CHECKSUMS:
   KVO-MVVM: 756673a8e837d7f27ff904fe2883e225e261d8ac
   LoggerAPI: ad9c4a6f1e32f518fdb43a1347ac14d765ab5e3d
   Logging: beeb016c9c80cf77042d62e83495816847ef108b
+  lottie-ios: 96784afc26ea031d3e2b6cae342a4b8915072489
   MBProgressHUD: e7baa36a220447d8aeb12769bf0585582f3866d9
   MMSegmentSlider: db7ee0d6eb2eefbd511179195bf288ff2cebac0a
   Moya: 138f0573e53411fb3dc17016add0b748dfbd78ee
@@ -872,6 +876,6 @@ SPEC CHECKSUMS:
   TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: 0de5c53042a507abba409fff574e1de4efce4a2b
+PODFILE CHECKSUM: da5ccce4236e1a2a19ad094c1ab26f7b5b9e8737
 
 COCOAPODS: 1.15.2

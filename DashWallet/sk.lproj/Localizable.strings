@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ vám poslal žiadosť na kontakt";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ nemá povolený prístup k Face ID";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ nemá povolený prístup ku kamere";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ nemá povolený prístup k Touch ID";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu kontakty / %3$lu aktualizácie profilu";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Povoliť prístup ku kamere v nastaveniach";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Povoliť prístup k Face ID v nastaveniach";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Povoliť odosielanie všetkých transakcií z Dash Wallet do Zenledgeru?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Povoliť prístup k Touch ID v nastaveniach";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Suma v Dash";
@@ -334,6 +328,9 @@
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Medzi Dash peňaženkou a vaším účtom na Coinbase";
 
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
+
 /* Voting */
 "Block" = "Blok";
 
@@ -354,7 +351,7 @@
 "Buy & Sell" = "Kúpiť a predať";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Kúpiť a predať Dash";
+"Buy & Sell Dash" = "Buy & Sell Dash";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Kúpiť darčekovú kartu";
@@ -496,9 +493,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "Potvrdzuje sa";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Spojiť s burzami tretích strán";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Pripojte svoje kryptopeňaženky k platforme ZenLedger. Získajte viac informácií a začnite s Dash Wallet transakciami.";
@@ -712,9 +706,6 @@
 
 /* Voting */
 "Date: Old to new" = "Dátum: Od najstarších";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Predvolená mena, skratky, o programe...";
 
 /* Voting */
 "Default filter setting" = "Predvolené nastavenie filtra";
@@ -1009,6 +1000,9 @@
 /* Coinbase */
 "from your Coinbase account" = "z vášho Coinbase účtu";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "Plne zmiešané";
 
@@ -1017,9 +1011,6 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Generovať rozšírené verejné kľúče?";
-
-/* No comment provided by engineer. */
-"Generating CSV Report" = "Generovanie CSV správy";
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "Získajte ponuku";
@@ -1185,9 +1176,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Importovať privátny kľúč";
-
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Importovať privátny kľúč, exportovať CSV…";
 
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Okrem zobrazeného Coinbase poplatku, sa do ceny započítavame aj rozptyl. Pri používaní pokročilého obchodovania nie je zahrnutý žiadny rozptyl, pretože interagujete priamo s knihou objednávok.\n\nTrhy s kryptomenami sú volatilné, čo nám umožňuje dočasne uzamknúť cenu na vykonanie obchodu.";
@@ -1387,9 +1375,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Informovať ma keď bude hotovo";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Nechajte svojich priateľov a rodinu aby sa pripojili k Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Nechajte svojich priateľov a rodinu aby sa pripojili k sieti Dash. Pozvite ich do sveta sociálneho bankovníctva.";
@@ -2076,6 +2061,9 @@
 "Rescan Blockchain" = "Znova prehľadať reťazec blokov";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "Obnoviť";
 
 /* Explore Dash: Filters */
@@ -2092,6 +2080,9 @@
 
 /* Usernames */
 "Results" = "Výsledky";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Zachovať históriu vzájomných transakcií";
@@ -2396,6 +2387,12 @@
 "Submit" = "Odoslať";
 
 /* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
+
+/* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "Načítať!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2409,9 +2406,6 @@
 
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "Prebieha synchronizácia… Výsledky nemusia byť úplné.";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "Synchronizovať teraz";
 
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "Synchronizované s aktuálnou Dash peňaženkou ";
@@ -2809,9 +2803,6 @@
 "View in Block Explorer" = "Zobraziť v prehliadači";
 
 /* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Zobraziť prístupové heslo, zálohovať peňaženku...";
-
-/* No comment provided by engineer. */
 "View Recovery Phrase" = "Zobraziť frázu pre obnovenie";
 
 /* No comment provided by engineer. */
@@ -2828,6 +2819,9 @@
 
 /* Voting */
 "Votes: Low to high" = "Hlasy: od najmenších";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Adresa pre hlasovanie";
@@ -2999,7 +2993,7 @@
 "You chose “%@” as your username." = "Ako používateľské meno ste si zvolili „%@“.";
 
 /* CoinJoin */
-"You Dash was mixed using these transactions." = "You Dash bol zmiešaný s použitím týchto transakcií.";
+"Your Dash was mixed using these transactions." = "Your Dash bol zmiešaný s použitím týchto transakcií.";
 
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "Momentálne nemáte žiadne kontakty";

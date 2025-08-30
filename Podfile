@@ -19,6 +19,7 @@ target 'dashwallet' do
   pod 'SDWebImageSwiftUI', '3.1.3', :modular_headers => true
   pod 'Moya', '~> 15.0'
   pod 'SwiftJWT', '3.6.200'
+  pod 'lottie-ios', '4.5.2'
   # Debugging purposes
   #  pod 'Reveal-SDK', :configurations => ['Debug']
   
@@ -44,6 +45,7 @@ target 'dashpay' do
   pod 'Moya', '~> 15.0'
   pod 'SwiftJWT', '3.6.200'
   pod 'TOCropViewController', '2.6.1'
+  pod 'lottie-ios', '4.5.2'
 
   # Debugging purposes
   #  pod 'Reveal-SDK', :configurations => ['Debug']
@@ -103,6 +105,16 @@ post_install do |installer|
         config.build_settings['HEADER_SEARCH_PATHS'] = '"${PODS_ROOT}/Headers/Private" "${PODS_ROOT}/Headers/Private/secp256k1_dash" "${PODS_ROOT}/Headers/Public" "${PODS_ROOT}/Headers/Public/secp256k1_dash" "${PODS_ROOT}/secp256k1_dash"'
       end
     end
+  end
+  
+  # Fix gRPC-Core template syntax issue with newer Xcode
+  grpc_file = 'Pods/gRPC-Core/src/core/lib/promise/detail/basic_seq.h'
+  if File.exist?(grpc_file)
+    # Make file writable before modifying
+    File.chmod(0644, grpc_file)
+    text = File.read(grpc_file)
+    new_contents = text.gsub(/Traits::template CallSeqFactory/, 'Traits::CallSeqFactory')
+    File.write(grpc_file, new_contents)
   end
 
   # update info about current DashSync version

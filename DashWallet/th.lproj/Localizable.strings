@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ ยอมรับคำขอติดต่อของคุณ";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ ไม่สามารถเข้าถึง Face ID";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ ไม่สามารถเข้าถึงกล้องถ่ายรูป";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ ไม่สามารถเข้าถึง Touch ID";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "อนุญาตให้เข้าถึงกล้องถ่ายรูปในการตั้งค่า";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "อนุญาตให้เข้าถึง Face ID ในการตั้งค่า";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Allow sending all transactions from Dash Wallet to Zenledger?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "อนุญาตให้เข้าถึง Touch ID ในการตั้งค่า";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "จำนวนเงินใน Dash";
@@ -334,6 +328,9 @@
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "ระหว่างกระเป๋าเงิน Dash และบัญชี Coinbase ของคุณ";
 
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
+
 /* Voting */
 "Block" = "บล็อก";
 
@@ -354,7 +351,7 @@
 "Buy & Sell" = "ซื้อ ขาย";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "ซื้อ & ขาย Dash";
+"Buy & Sell Dash" = "Buy & Sell Dash";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "ซื้อบัตรของขวัญ";
@@ -496,9 +493,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "กำลังยืนยัน";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "เชื่อมต่อกับการแลกเปลี่ยนของบุคคลที่สาม";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.";
@@ -712,9 +706,6 @@
 
 /* Voting */
 "Date: Old to new" = "วันที่: เก่าไปใหม่";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "สกุลเงินเริ่มต้น, ทางลัด, เกี่ยวกับ...";
 
 /* Voting */
 "Default filter setting" = "Default filter setting";
@@ -947,9 +938,6 @@
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
 
 /* No comment provided by engineer. */
-"Find merchants that accept DASH" = "ค้นหาร้านค้าที่ยอมรับ DASH";
-
-/* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
 
 /* No comment provided by engineer. */
@@ -1009,6 +997,9 @@
 /* Coinbase */
 "from your Coinbase account" = "จากบัญชี Coinbase ของคุณ";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "Fully mixed";
 
@@ -1017,9 +1008,6 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "สร้างขยายกุญแจสาธารณะหรือไม่";
-
-/* No comment provided by engineer. */
-"Generating CSV Report" = "สร้างรายงาน CSV";
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "รับใบเสนอราคา";
@@ -1185,9 +1173,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "นำเข้ากุญแจส่วนตัว";
-
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "นำเข้าคีย์ส่วนตัวส่งออก CSV ...";
 
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "นอกเหนือจากค่าธรรมเนียม Coinbase ที่แสดงแล้วเรายังรวมถึงสเปรดในราคา เมื่อใช้การค้าขั้นสูงจะไม่มีการแพร่กระจายเนื่องจากคุณมีปฏิสัมพันธ์โดยตรงกับหนังสือสั่งซื้อ\n\nตลาด cryptocurrency มีความผันผวนและสิ่งนี้ช่วยให้เราสามารถล็อคราคาสำหรับการดำเนินการทางการค้าชั่วคราว";
@@ -1387,9 +1372,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "แจ้งให้ฉันทราบเมื่อเสร็จแล้ว";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "ให้เพื่อนและครอบครัวของคุณเข้าร่วม Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "ให้เพื่อนและครอบครัวของคุณเข้าร่วมเครือข่าย Dash เชิญพวกเขาเข้าสู่โลกของธนาคารเพื่อสังคม";
@@ -2076,6 +2058,9 @@
 "Rescan Blockchain" = "สแกน blockchain อีกครั้ง";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "ตั้งค่า";
 
 /* Explore Dash: Filters */
@@ -2092,6 +2077,9 @@
 
 /* Usernames */
 "Results" = "Results";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "เก็บประวัติการทำธุรกรรมร่วมกัน";
@@ -2396,6 +2384,12 @@
 "Submit" = "Submit";
 
 /* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
+
+/* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "ลบล้าง";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2409,9 +2403,6 @@
 
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "กำลังซิงค์... ผลลัพธ์อาจไม่สมบูรณ์";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "ซิงค์ตอนนี้";
 
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "ซิงค์กับกระเป๋าเงิน Dash ปัจจุบัน";
@@ -2809,9 +2800,6 @@
 "View in Block Explorer" = "ดูใน Explorer";
 
 /* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "ดูวลี, สำรองวอลเล็ท...";
-
-/* No comment provided by engineer. */
 "View Recovery Phrase" = "ดูวลีกู้คืน";
 
 /* No comment provided by engineer. */
@@ -2828,6 +2816,9 @@
 
 /* Voting */
 "Votes: Low to high" = "โหวต: ต่ำไปสูง";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "ที่อยู่ซึ่งใช้ในการออกเสียงลงคะแนน";
@@ -2999,7 +2990,7 @@
 "You chose “%@” as your username." = "You chose “%@” as your username.";
 
 /* CoinJoin */
-"You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
+"Your Dash was mixed using these transactions." = "Your Dash was mixed using these transactions.";
 
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "คุณไม่มีผู้ติดต่อใด ๆ ในขณะนี้";

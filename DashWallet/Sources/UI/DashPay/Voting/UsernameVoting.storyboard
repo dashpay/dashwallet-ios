@@ -37,7 +37,7 @@
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JF6-R9-5jD">
                                                 <rect key="frame" x="15" y="9" width="26" height="26"/>
                                                 <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_filter_horizontal" translatesAutoresizingMaskIntoConstraints="NO" id="XWQ-um-xyq">
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_filter_button" translatesAutoresizingMaskIntoConstraints="NO" id="XWQ-um-xyq">
                                                         <rect key="frame" x="8" y="8.6666666666666288" width="10" height="9"/>
                                                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <constraints>
@@ -620,7 +620,7 @@
     <resources>
         <image name="icon_checkbox_square" width="20" height="20"/>
         <image name="icon_checkbox_square_checked" width="20" height="20"/>
-        <image name="icon_filter_horizontal" width="12" height="10.666666984558105"/>
+        <image name="icon_filter_button" width="13" height="11.666666984558105"/>
         <image name="plus.rounded" width="15" height="15.333333015441895"/>
         <image name="radio.button.checked" width="22" height="22"/>
         <image name="radio.button.unchecked" width="22" height="22"/>

@@ -183,9 +183,10 @@ struct HomeViewContent<Content: View>: View {
     @State private var skipToCreateUsername: Bool = false
     @State private var giftCardTxId: Data? = nil
     
-    @StateObject var viewModel: HomeViewModel
+    @ObservedObject var viewModel: HomeViewModel
+    @ObservedObject private var balanceModel = BalanceModel()
     #if DASHPAY
-    @StateObject var joinDPViewModel: JoinDashPayViewModel
+    @ObservedObject var joinDPViewModel: JoinDashPayViewModel
     #endif
     weak var delegate: HomeViewDelegate?
     weak var shortcutsDelegate: ShortcutsActionDelegate?
@@ -202,7 +203,7 @@ struct HomeViewContent<Content: View>: View {
                     .padding(EdgeInsets(top: -topOverscrollSize, leading: 0, bottom: 0, trailing: 0))
                 
                 LazyVStack(pinnedViews: [.sectionHeaders]) {
-                    HomeBalanceView {
+                    HomeBalanceView(viewModel: balanceModel) {
                         let action = ShortcutAction(type: .localCurrency)
                         shortcutsDelegate?.shortcutsView(didSelectAction: action, sender: nil)
                     }
@@ -220,7 +221,8 @@ struct HomeViewContent<Content: View>: View {
                             state: viewModel.coinJoinItem.state,
                             progress: viewModel.coinJoinItem.progress,
                             mixed: viewModel.coinJoinItem.mixed,
-                            total: viewModel.coinJoinItem.total
+                            total: viewModel.coinJoinItem.total,
+                            showBalance: !balanceModel.isBalanceHidden
                         )
                         .padding(.horizontal, 15)
                         .id(viewModel.coinJoinItem.id)
@@ -440,6 +442,7 @@ struct HomeViewContent<Content: View>: View {
                     self.selectedTxDataItem = txDataItem
                 }
             }
+            .frame(minHeight: 66)
         }
     }
     

@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@ ti ha inviato una richiesta di contatto";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ non hai dato il permesso alla videocamera";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ non ha il permesso di accedere alla videocamera";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ non hai dato il permesso al sensore biometrico digitale";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contatti / %3$lu aggiornamenti del profilo";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Abilita l'accesso alla videocamera in Impostazioni->Privacy->Fotocamera";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Consenti accesso Face ID in Impostazioni";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Consentire l'invio di tutte le transazioni da Dash Wallet a Zenledger?";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Consenti accesso Touch ID in Impostazioni";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Importo in Dash";
@@ -334,6 +328,9 @@
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "Tra Dash Wallet e il tuo account Coinbase";
 
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
+
 /* Voting */
 "Block" = "Blocchi";
 
@@ -354,7 +351,7 @@
 "Buy & Sell" = "Compra & Vendi";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Compra & Vendi Dash";
+"Buy & Sell Dash" = "Buy & Sell Dash";
 
 /* Buy a Gift Card */
 "Buy a Gift Card" = "Acquista una carta regalo ";
@@ -496,9 +493,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "In Conferma";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "Connetti a Exchanges esterni";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Collega i tuoi portafogli crittografici alla piattaforma ZenLedger. Scopri di più e inizia con le transazioni del tuo Dash Wallet.";
@@ -712,9 +706,6 @@
 
 /* Voting */
 "Date: Old to new" = "Data: dal Vecchio al nuovo";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Valuta predefinita, scorciatoie, riguardo ...";
 
 /* Voting */
 "Default filter setting" = "Impostazione del filtro predefinita";
@@ -1009,6 +1000,9 @@
 /* Coinbase */
 "from your Coinbase account" = "dal tuo conto Coinbase";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "Completamente miscelato";
 
@@ -1017,9 +1011,6 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Generare chiavi pubbliche estese?";
-
-/* No comment provided by engineer. */
-"Generating CSV Report" = "Generazione rapporto CSV";
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "Ottieni preventivo";
@@ -1185,9 +1176,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Importa chiave privata";
-
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Importa chiave privata, Esporta CSV...";
 
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Oltre alla commissione Coinbase visualizzata, includiamo uno spread nel prezzo. Quando si utilizza Advanced Trade, non è incluso nessuno spread perché si interagisce direttamente con il portafoglio ordini.\n\nI mercati delle criptovalute sono volatili e questo ci consente di bloccare temporaneamente un prezzo per l'esecuzione degli scambi.";
@@ -1387,9 +1375,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Fammi sapere quando è fatto";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Consenti ai tuoi amici e familiari di unirsi a Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Consenti ai tuoi amici e familiari di unirsi alla Dash Network. Invitali nel mondo del social banking.";
@@ -2076,6 +2061,9 @@
 "Rescan Blockchain" = "Riscansione blockchain";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "Reset";
 
 /* Explore Dash: Filters */
@@ -2092,6 +2080,9 @@
 
 /* Usernames */
 "Results" = "Risultati";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Conserva la cronologia delle transazioni reciproche";
@@ -2396,6 +2387,12 @@
 "Submit" = "Invia";
 
 /* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
+
+/* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "Pulito!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2409,9 +2406,6 @@
 
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "Sincronizzazione in corso... I risultati potrebbero non essere completi.";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "Sincronizza Ora";
 
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "Sincronizzato con l'attuale Dash Wallet";
@@ -2809,9 +2803,6 @@
 "View in Block Explorer" = "Visualizza su Explorer";
 
 /* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "Visualizza passphrase,  di backup del portafoglio ...";
-
-/* No comment provided by engineer. */
 "View Recovery Phrase" = "Visualizza la frase di recupero";
 
 /* No comment provided by engineer. */
@@ -2828,6 +2819,9 @@
 
 /* Voting */
 "Votes: Low to high" = "Voti: da basso a alto";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Indirizzo di voto";
@@ -2999,7 +2993,7 @@
 "You chose “%@” as your username." = "Hai scelto “%@” come tuo nome utente.";
 
 /* CoinJoin */
-"You Dash was mixed using these transactions." = "I tuoi Dash sono stati mixati utilizzando queste transazioni.";
+"Your Dash was mixed using these transactions." = "I tuoi Dash sono stati mixati utilizzando queste transazioni.";
 
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "Non hai nessun contatto al momento";

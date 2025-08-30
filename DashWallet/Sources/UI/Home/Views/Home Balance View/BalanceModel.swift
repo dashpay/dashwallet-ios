@@ -25,7 +25,7 @@ final class BalanceModel: ObservableObject {
     
     @Published private(set) var state = SyncingActivityMonitor.shared.state
     @Published private(set) var value: UInt64 = 0
-    @Published private(set) var isBalanceHidden: Bool {
+    @Published var isBalanceHidden: Bool {
         didSet {
             DWGlobalOptions.sharedInstance().balanceHidden = isBalanceHidden
         }
@@ -72,6 +72,7 @@ final class BalanceModel: ObservableObject {
         }
 
         options.userHasBalance = balanceValue > 0
+        isBalanceHidden = DWGlobalOptions.sharedInstance().balanceHidden
     }
     
     func toggleBalanceVisibility() {

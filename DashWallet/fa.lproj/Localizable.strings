@@ -14,13 +14,13 @@
 "%@ has sent you a contact request" = "%@درخواستی برایتان برای ارتباط فرستاد";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ is not allowed to access Face ID";
+"%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ is not allowed to access the camera";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ is not allowed to access Touch ID";
+"%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
@@ -187,14 +187,8 @@
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Allow camera access in Settings";
 
-/* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Allow Face ID access in Settings";
-
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "اجازه ارسال همه تراکنش‌‌ها از دش والت به ذن‌لجر را می‌دهید؟ ";
-
-/* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Allow Touch ID access in Settings";
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "مبلغ بر حسب دش";
@@ -333,6 +327,9 @@
 
 /* Dash Service Overview */
 "Between Dash Wallet and your Coinbase account" = "بین داش والت و حساب کوین‌بیس شما";
+
+/* No comment provided by engineer. */
+"Biometrics Access Required" = "Biometrics Access Required";
 
 /* Voting */
 "Block" = "بلاک";
@@ -496,9 +493,6 @@
 
 /* No comment provided by engineer. */
 "Confirming" = "در حال تائید";
-
-/* No comment provided by engineer. */
-"Connect with third party exchanges" = "ارتباط با صرافی‌های طرف سوم";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "کیف‌های پول‌تان را به پلتفرم ذن‌لجر متصل کنید. اطلاعات بیشتر و آغاز به کار با تراکنش‌هایتان در دش والت";
@@ -712,9 +706,6 @@
 
 /* Voting */
 "Date: Old to new" = "Date: Old to new";
-
-/* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "واحد پول پیش‌فرض، میان‌برها، درباره...";
 
 /* Voting */
 "Default filter setting" = "تنظیمات پیش‌فرض فیلتر";
@@ -947,9 +938,6 @@
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
 
 /* No comment provided by engineer. */
-"Find merchants that accept DASH" = "فروشنده‌ای بیابید که دش می‌پذیرد";
-
-/* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Find merchants that accept Dash payments.";
 
 /* No comment provided by engineer. */
@@ -1009,6 +997,9 @@
 /* Coinbase */
 "from your Coinbase account" = "from your Coinbase account";
 
+/* No comment provided by engineer. */
+"Full Resync" = "Full Resync";
+
 /* CoinJoin */
 "Fully mixed" = "Fully mixed";
 
@@ -1017,9 +1008,6 @@
 
 /* No comment provided by engineer. */
 "Generate extended public keys?" = "Generate extended public keys?";
-
-/* No comment provided by engineer. */
-"Generating CSV Report" = "Generating CSV Report";
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "دریافت قیمت تخمینی";
@@ -1185,9 +1173,6 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "وارد کردن کلید خصوصی";
-
-/* No comment provided by engineer. */
-"Import private key, Export CSV…" = "Import private key, Export CSV…";
 
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution.";
@@ -1387,9 +1372,6 @@
 
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Let me know when it’s done";
-
-/* No comment provided by engineer. */
-"Let your friends and family to join Dash" = "Let your friends and family to join Dash";
 
 /* No comment provided by engineer. */
 "Let your friends and family to join the Dash Network. Invite them to the world of social banking." = "Let your friends and family to join the Dash Network. Invite them to the world of social banking.";
@@ -2076,6 +2058,9 @@
 "Rescan Blockchain" = "اسکن دوباره بلاکچین";
 
 /* No comment provided by engineer. */
+"Rescan Transactions (Suggested)" = "Rescan Transactions (Suggested)";
+
+/* No comment provided by engineer. */
 "Reset" = "بازنشانی";
 
 /* Explore Dash: Filters */
@@ -2092,6 +2077,9 @@
 
 /* Usernames */
 "Results" = "نتایج";
+
+/* No comment provided by engineer. */
+"Resync Masternode List" = "Resync Masternode List";
 
 /* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
 "Retain Mutual Transaction History" = "Retain Mutual Transaction History";
@@ -2396,6 +2384,12 @@
 "Submit" = "ثبت";
 
 /* No comment provided by engineer. */
+"Successful purchase" = "Successful purchase";
+
+/* No comment provided by engineer. */
+"Support" = "Support";
+
+/* No comment provided by engineer. */
 "Swept!" = "Swept!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -2409,9 +2403,6 @@
 
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "فرآیند همزمان‌سازی در جریان است...نتایج شاید کامل نباشد. ";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "Sync Now";
 
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "همزمان‌سازی با دش والت کنونی";
@@ -2809,9 +2800,6 @@
 "View in Block Explorer" = "View in Explorer";
 
 /* No comment provided by engineer. */
-"View passphrase, backup wallet…" = "مشاهده گذرواژه، کیف پول پشتیبان ...";
-
-/* No comment provided by engineer. */
 "View Recovery Phrase" = "مشاهده عبارت بازیابی";
 
 /* No comment provided by engineer. */
@@ -2828,6 +2816,9 @@
 
 /* Voting */
 "Votes: Low to high" = "Votes: Low to high";
+
+/* No comment provided by engineer. */
+"Voting" = "Voting";
 
 /* No comment provided by engineer. */
 "Voting Address" = "Voting Address";
@@ -2999,7 +2990,7 @@
 "You chose “%@” as your username." = "You chose “%@” as your username.";
 
 /* CoinJoin */
-"You Dash was mixed using these transactions." = "You Dash was mixed using these transactions.";
+"Your Dash was mixed using these transactions." = "Your Dash was mixed using these transactions.";
 
 /* No comment provided by engineer. */
 "You do not have any contacts at the moment" = "You do not have any contacts at the moment";

@@ -1,6 +1,20 @@
 import SwiftUI
 import UIKit
 
+@objc
+class TransactionFilterDialogPresenter: NSObject {
+    @objc static func present(from viewController: UIViewController, selectedFilter: HomeTxDisplayMode, onFilterSelected: @escaping (HomeTxDisplayMode) -> Void) {
+        let dialog = TransactionFilterDialog(
+            selectedFilter: selectedFilter,
+            onFilterSelected: onFilterSelected
+        )
+        
+        let hostingController = UIHostingController(rootView: dialog)
+        hostingController.setDetent(350)
+        viewController.present(hostingController, animated: true)
+    }
+}
+
 struct TransactionFilterDialog: View {
     @Environment(\.presentationMode) private var presentationMode
     let selectedFilter: HomeTxDisplayMode
