@@ -71,7 +71,7 @@ class SecurityMenuViewModel: ObservableObject {
         
         if hasTouchID || hasFaceID {
             let title = hasTouchID ? NSLocalizedString("Enable Touch ID", comment: "") : NSLocalizedString("Enable Face ID", comment: "")
-            let iconName = hasTouchID ? "image.touch.id" : "image.face.id"
+            let iconName = hasTouchID ? "image.touch.id" : "Image.face.id"
             menuItems.append(MenuItemModel(
                 title: title,
                 icon: .custom(iconName, maxHeight: 22),
