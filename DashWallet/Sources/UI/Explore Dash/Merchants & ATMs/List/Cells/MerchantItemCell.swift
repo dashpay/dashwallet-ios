@@ -32,9 +32,10 @@ class MerchantItemCell: PointOfUseItemCell {
 
         // Display distance under merchant name on search screen as per original implementation
         if let currentLocation = DWLocationManager.shared.currentLocation,
-           DWLocationManager.shared.isAuthorized, merchant.type != .online {
+           DWLocationManager.shared.isAuthorized, merchant.type != .online,
+           let latitude = pointOfUse.latitude, let longitude = pointOfUse.longitude {
             subLabel.isHidden = false
-            let distance = CLLocation(latitude: pointOfUse.latitude!, longitude: pointOfUse.longitude!)
+            let distance = CLLocation(latitude: latitude, longitude: longitude)
                 .distance(from: currentLocation)
             let distanceText: String = ExploreDash.distanceFormatter
                 .string(from: Measurement(value: floor(distance), unit: UnitLength.meters))

@@ -49,8 +49,11 @@ class PointOfUseDetailsViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
-        mapView?.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: mapView.frame.height - detailsView.frame.height - 10,
-                                             right: 0)
+        // Prevent crash when mapView or detailsView is nil
+        if let mapView = mapView, let detailsView = detailsView {
+            mapView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: mapView.frame.height - detailsView.frame.height - 10,
+                                               right: 0)
+        }
     }
 
     override func viewDidLoad() {
@@ -289,7 +292,12 @@ extension PointOfUseDetailsViewController {
     }
 
     private func showDetailsView() {
-        detailsView = detailsView(for: pointOfUse)
+        guard let createdDetailsView = detailsView(for: pointOfUse) else {
+            print("Warning: Failed to create detailsView for pointOfUse category: \(pointOfUse.category)")
+            return
+        }
+        
+        detailsView = createdDetailsView
         detailsView.payWithDashHandler = payWithDashHandler
         detailsView.sellDashHandler = sellDashHandler
         detailsView.showAllLocationsActionBlock = { [weak self] in
