@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "gift-card-icon.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

@@ -86,7 +86,7 @@ class ExploreMapView: UIView {
     }
 
     var initialCenterLocation: CLLocation?
-    var centerRadius: Double = 20
+    var centerRadius: Double = 1 // 1-mile radius as requested
     var contentInset: UIEdgeInsets = .zero {
         didSet {
             mapView.layoutMargins = contentInset

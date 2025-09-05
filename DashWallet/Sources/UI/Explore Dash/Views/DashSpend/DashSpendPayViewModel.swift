@@ -55,6 +55,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     @Published var error: Error? = nil
     @Published var isFixedDenomination: Bool = false
     @Published var denominations: [Int] = []
+    @Published var isMerchantEnabled: Bool = true
     @Published var selectedDenomination: Int? = nil {
         didSet {
             if let denom = selectedDenomination {
@@ -260,6 +261,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             
             // Update merchant details
             savingsFraction = Decimal(merchantInfo.savingsPercentage) / Decimal(10000)
+            isMerchantEnabled = merchantInfo.enabled
             
             if merchantInfo.denominationType == .Range {
                 isFixedDenomination = false

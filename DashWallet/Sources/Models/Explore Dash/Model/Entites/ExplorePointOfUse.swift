@@ -61,8 +61,9 @@ extension ExplorePointOfUse {
         let denominationsType: String?
         let denominations: [Int]
         let redeemType: String?
+        let enabled: Bool?
         
-        init(merchantId: String, paymentMethod: PaymentMethod, type: `Type`, deeplink: String?, savingsBasisPoints: Int, denominationsType: String?, denominations: [Int] = [], redeemType: String?) {
+        init(merchantId: String, paymentMethod: PaymentMethod, type: `Type`, deeplink: String?, savingsBasisPoints: Int, denominationsType: String?, denominations: [Int] = [], redeemType: String?, enabled: Bool? = nil) {
             self.merchantId = merchantId
             self.paymentMethod = paymentMethod
             self.type = type
@@ -71,6 +72,7 @@ extension ExplorePointOfUse {
             self.denominationsType = denominationsType
             self.denominations = denominations
             self.redeemType = redeemType
+            self.enabled = enabled
         }
         
         func toSavingPercentages() -> Double {

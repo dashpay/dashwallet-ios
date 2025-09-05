@@ -32,6 +32,8 @@ class PointOfUseDetailsViewController: UIViewController {
     private var contentView: UIView!
     private var detailsView: PointOfUseDetailsView!
     private var mapView: ExploreMapView!
+    private var contentViewTopConstraint: NSLayoutConstraint?
+    private var showMapButton: UIButton!
 
     public init(pointOfUse: ExplorePointOfUse, isShowAllHidden: Bool = true) {
         self.pointOfUse = pointOfUse
@@ -54,12 +56,26 @@ class PointOfUseDetailsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = pointOfUse.name
+        setupInfoButton()
         configureHierarchy()
         refreshTokenAndMerchantInfo()
     }
 }
 
 extension PointOfUseDetailsViewController {
+    private func setupInfoButton() {
+        let infoImage = UIImage(systemName: "info.circle")?.withRenderingMode(.alwaysOriginal).withTintColor(.systemBlue)
+        let infoButton = UIBarButtonItem(image: infoImage, style: .plain, target: self, action: #selector(infoButtonAction))
+        navigationItem.rightBarButtonItem = infoButton
+    }
+    
+    @objc
+    func infoButtonAction() {
+        let hostingController = UIHostingController(rootView: MerchantTypesDialog())
+        hostingController.setDetent(640)
+        present(hostingController, animated: true)
+    }
+    
     @objc
     func payAction() {
         payWithDashHandler?()
@@ -67,16 +83,143 @@ extension PointOfUseDetailsViewController {
 
     @objc
     func callAction() {
-        guard let phone = pointOfUse.phone else { return }
-        guard let url = URL(string: "telprompt://\(phone)") else { return }
+        guard let phone = pointOfUse.phone, !phone.isEmpty else { return }
+        // Extract only digits for phone call
+        let digits = phone.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
+        guard !digits.isEmpty else { return }
+        
+        // Use telprompt: to directly open phone app (tel: shows options)
+        let urlString = "telprompt:\(digits)"
+        guard let url = URL(string: urlString) else { return }
+        
+        // Check if device can open the URL
+        guard UIApplication.shared.canOpenURL(url) else { return }
 
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
+    }
+    
+    @objc
+    private func handlePanGesture(_ sender: UIPanGestureRecognizer) {
+        print("DEBUG: Pan gesture triggered - state: \(sender.state.rawValue)")
+        guard let contentViewTopConstraint = contentViewTopConstraint else { 
+            print("DEBUG: contentViewTopConstraint is nil!")
+            return 
+        }
+        
+        let translatedPoint: CGPoint = sender.translation(in: view)
+        let currentY = contentViewTopConstraint.constant
+        
+        switch sender.state {
+        case .changed:
+            // Only handle vertical movement and constrain within bounds
+            let newY = currentY + translatedPoint.y
+            
+            // Constrain movement between closed position and maximum expanded position
+            let screenHeight = view.frame.size.height
+            let kDefaultClosedMapPosition = screenHeight * 0.75 // Mostly closed (more map visible) 
+            let kDefaultBottomHalfPosition = screenHeight * 0.5 - 72 // Default position higher by about an inch
+            let kDefaultOpenedMapPosition = screenHeight * 0.2 // Mostly open (less map visible, more content)
+            // Allow dragging between open position (top) and closed position (bottom)
+            let maxY = kDefaultClosedMapPosition // Don't allow dragging below closed position
+            let minY = kDefaultOpenedMapPosition // Don't allow dragging above open position
+            
+            contentViewTopConstraint.constant = max(minY, min(maxY, newY))
+            sender.setTranslation(.zero, in: view)
+            
+        case .ended:
+            let velocityInView = sender.velocity(in: view)
+            let velocityY: CGFloat = velocityInView.y
+            let finalCurrentY = contentViewTopConstraint.constant
+            let screenHeight = view.frame.size.height
+            let kDefaultClosedMapPosition = screenHeight * 0.75 // Mostly closed (more map visible)
+            let kDefaultBottomHalfPosition = screenHeight * 0.5 - 72 // Higher by about an inch
+            let kDefaultOpenedMapPosition = screenHeight * 0.2
+            
+            var finalY: CGFloat
+            
+            if velocityY > 300 {
+                // Fast downward swipe - snap to closed position (more map visible)
+                finalY = kDefaultClosedMapPosition
+            } else if velocityY < -300 {
+                // Fast upward swipe - snap to open position (less map visible)
+                finalY = kDefaultOpenedMapPosition
+            } else {
+                // No strong velocity, snap to nearest position based on current position
+                let midPoint1 = (kDefaultOpenedMapPosition + kDefaultBottomHalfPosition) / 2
+                let midPoint2 = (kDefaultBottomHalfPosition + kDefaultClosedMapPosition) / 2
+                
+                if finalCurrentY < midPoint1 {
+                    finalY = kDefaultOpenedMapPosition
+                } else if finalCurrentY < midPoint2 {
+                    finalY = kDefaultBottomHalfPosition
+                } else {
+                    finalY = kDefaultClosedMapPosition
+                }
+            }
+            
+            UIView.animate(withDuration: 0.3, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut) {
+                contentViewTopConstraint.constant = finalY
+                self.view.layoutIfNeeded()
+            } completion: { [weak self] _ in
+                // Map button visibility update removed since button is removed
+                // self?.updateMapButtonVisibility()
+            }
+            
+        default:
+            break
+        }
     }
 
     @objc
     func websiteAction() {
         guard let website = pointOfUse.website, let url = URL(string: website) else { return }
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
+    }
+    
+    private func setupMapButton() {
+        showMapButton = UIButton(type: .custom)
+        showMapButton.translatesAutoresizingMaskIntoConstraints = false
+        showMapButton.isHidden = true // Initially hidden
+        showMapButton.tintColor = .white
+        showMapButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
+        showMapButton.addTarget(self, action: #selector(showMapAction), for: .touchUpInside)
+        showMapButton.setImage(UIImage(systemName: "map.fill"), for: .normal)
+        showMapButton.setTitle(NSLocalizedString("Map", comment: ""), for: .normal)
+        showMapButton.layer.masksToBounds = true
+        showMapButton.layer.cornerRadius = 20
+        showMapButton.layer.backgroundColor = UIColor.black.cgColor
+        contentView.addSubview(showMapButton)
+        
+        let showMapButtonWidth: CGFloat = 92
+        let showMapButtonHeight: CGFloat = 40
+        
+        NSLayoutConstraint.activate([
+            showMapButton.widthAnchor.constraint(equalToConstant: showMapButtonWidth),
+            showMapButton.heightAnchor.constraint(equalToConstant: showMapButtonHeight),
+            showMapButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            showMapButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -15),
+        ])
+    }
+    
+    @objc
+    private func showMapAction() {
+        // Animate to show more map (closed position)
+        let kDefaultClosedMapPosition: CGFloat = 100.0
+        guard let contentViewTopConstraint = contentViewTopConstraint else { return }
+        
+        UIView.animate(withDuration: 0.3, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut) {
+            contentViewTopConstraint.constant = kDefaultClosedMapPosition
+            self.view.layoutIfNeeded()
+        }
+        
+        updateMapButtonVisibility()
+    }
+    
+    private func updateMapButtonVisibility() {
+        guard let contentViewTopConstraint = contentViewTopConstraint else { return }
+        // Show map button when content is mostly expanded (less map visible)
+        let shouldShow = contentViewTopConstraint.constant > 350
+        showMapButton.isHidden = !shouldShow
     }
 
     private func showMapIfNeeded() {
@@ -110,7 +253,15 @@ extension PointOfUseDetailsViewController {
             contentView.layer.masksToBounds = true
             contentView.layer.cornerRadius = 20.0
             contentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+            
+            // Create the top constraint and store reference to it
+            // Start higher than bottom half by about an inch (72 points)
+            let screenHeight = UIScreen.main.bounds.height
+            let kDefaultBottomHalfPosition = screenHeight * 0.5 - 72 // Higher by about an inch - 72 // Higher by about an inch
+            contentViewTopConstraint = contentView.topAnchor.constraint(equalTo: view.topAnchor, constant: kDefaultBottomHalfPosition)
+            
             constraint = [
+                contentViewTopConstraint!,
                 contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
                 contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                 contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -151,10 +302,18 @@ extension PointOfUseDetailsViewController {
 
         NSLayoutConstraint.activate([
             detailsView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            detailsView.bottomAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.bottomAnchor),
+            // Remove bottom constraint to prevent compression - let content maintain natural height
             detailsView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             detailsView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
         ])
+        
+        // Add pan gesture to handle grabber dragging - only for map view
+        // Attach to specific grabber area, not entire view
+        if pointOfUse.showMap {
+            detailsView.setupGrabberPanGesture(target: self, action: #selector(handlePanGesture(_:)))
+            // Map button removed as requested
+            // setupMapButton()
+        }
     }
 
     private func configureHierarchy() {
@@ -241,7 +400,8 @@ extension PointOfUseDetailsViewController {
                 let merchantInfo = try await CTXSpendService.shared.getMerchant(merchantId: merchantId)
                 pointOfUse = pointOfUse.updatingMerchant(
                     denominationsType: merchantInfo.denominationsType,
-                    denominations: merchantInfo.denominations.compactMap { Int($0) }
+                    denominations: merchantInfo.denominations.compactMap { Int($0) },
+                    enabled: merchantInfo.enabled
                 )
             }
         }
@@ -304,7 +464,7 @@ extension UIHostingController: NavigationBarDisplayable {
 }
 
 extension ExplorePointOfUse {
-    func updatingMerchant(denominationsType: String?, denominations: [Int]) -> ExplorePointOfUse {
+    func updatingMerchant(denominationsType: String?, denominations: [Int], enabled: Bool? = nil) -> ExplorePointOfUse {
         guard case .merchant(let currentMerchant) = category else { return self }
         
         let updatedMerchant = ExplorePointOfUse.Merchant(
@@ -315,7 +475,8 @@ extension ExplorePointOfUse {
             savingsBasisPoints: currentMerchant.savingsBasisPoints,
             denominationsType: denominationsType,
             denominations: denominations,
-            redeemType: currentMerchant.redeemType
+            redeemType: currentMerchant.redeemType,
+            enabled: enabled ?? currentMerchant.enabled
         )
         
         return ExplorePointOfUse(
