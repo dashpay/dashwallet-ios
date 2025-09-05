@@ -993,7 +993,7 @@ extension PointOfUseDetailsView {
         }
 
         // Comprehensive debug logging for merchant fields investigation
-        if self.merchant.name.lowercased().contains("gamestop") || self.merchant.name.lowercased().contains("spotify") {
+        if self.merchant.name.lowercased().contains("gamestop") || self.merchant.name.lowercased().contains("spotify") || self.merchant.name.lowercased().contains("buffalo") {
             print("🎯 MERCHANT DEBUG: \(self.merchant.name)")
             print("   merchantId: '\(merchant.merchantId)'")
             print("   paymentMethod: '\(merchant.paymentMethod)'")
@@ -1003,6 +1003,9 @@ extension PointOfUseDetailsView {
             print("   denominationsType: '\(merchant.denominationsType ?? "nil")'")
             print("   denominations: '\(merchant.denominations)'")
             print("   redeemType: '\(merchant.redeemType ?? "nil")'")
+            print("   enabled: '\(merchant.enabled?.description ?? "nil")'")
+            print("   self.merchant.active: '\(self.merchant.active)'")
+            print("   isEnabled: '\(isEnabled)'")
             print("   ----------")
         }
 

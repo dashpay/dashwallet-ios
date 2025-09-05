@@ -408,13 +408,35 @@ extension PointOfUseDetailsViewController {
         Task {
             if try await tryRefreshCtxToken(), let merchantId = pointOfUse.merchant?.merchantId {
                 let merchantInfo = try await CTXSpendService.shared.getMerchant(merchantId: merchantId)
+                
+                // Debug logging for CTX merchant info
+                if pointOfUse.name.lowercased().contains("buffalo") || pointOfUse.name.lowercased().contains("gamestop") {
+                    print("🎯 CTX MERCHANT INFO DEBUG: \(pointOfUse.name)")
+                    print("   CTX enabled: \(merchantInfo.enabled)")
+                    print("   Local active: \(pointOfUse.active)")
+                    print("   Will update view with enabled: \(merchantInfo.enabled)")
+                }
+                
                 pointOfUse = pointOfUse.updatingMerchant(
                     denominationsType: merchantInfo.denominationsType,
                     denominations: merchantInfo.denominations.compactMap { Int($0) },
                     enabled: merchantInfo.enabled
                 )
+                
+                // Update the view with the new merchant information
+                await MainActor.run {
+                    refreshDetailsViewWithUpdatedMerchant()
+                }
             }
         }
+    }
+    
+    private func refreshDetailsViewWithUpdatedMerchant() {
+        // Remove the old details view
+        detailsView?.removeFromSuperview()
+        
+        // Recreate with updated merchant data
+        showDetailsView()
     }
     
     private func tryRefreshCtxToken() async throws -> Bool {
