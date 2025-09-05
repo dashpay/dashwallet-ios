@@ -56,7 +56,7 @@ class PointOfUseDetailsView: UIView, SyncingActivityMonitorObserver, NetworkReac
     private let emailLabel: UILabel = {
         let emailLabel = UILabel()
         emailLabel.translatesAutoresizingMaskIntoConstraints = false
-        emailLabel.text = getEmailText()
+        emailLabel.text = PointOfUseDetailsView.getEmailText()
         emailLabel.font = .dw_font(forTextStyle: .caption1) // Smaller font per Figma
         emailLabel.textColor = .dw_secondaryText()
         emailLabel.textAlignment = .left // Left align to prevent truncation
@@ -811,8 +811,6 @@ extension PointOfUseDetailsView {
     }
 
 
-
-    @objc
 
     private static func getEmailText() -> String {
         if let email = CTXSpendService.shared.userEmail, !email.isEmpty {

@@ -267,7 +267,7 @@ extension PointOfUseDetailsViewController {
             // Create the top constraint and store reference to it
             // Start higher than bottom half by about an inch (72 points)
             let screenHeight = UIScreen.main.bounds.height
-            let kDefaultBottomHalfPosition = screenHeight * 0.5 - 72 // Higher by about an inch - 72 // Higher by about an inch
+            let kDefaultBottomHalfPosition = screenHeight * 0.5 - 72 // Higher by about an inch
             contentViewTopConstraint = contentView.topAnchor.constraint(equalTo: view.topAnchor, constant: kDefaultBottomHalfPosition)
             
             constraint = [

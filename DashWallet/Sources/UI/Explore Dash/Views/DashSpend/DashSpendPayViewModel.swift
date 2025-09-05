@@ -291,6 +291,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             throw CTXSpendError.unauthorized
         }
         
+        // Additional server-side check for merchant availability
+        guard isMerchantEnabled else {
+            DSLogger.log("Purchase blocked: merchant disabled")
+            throw CTXSpendError.paymentProcessingError("Merchant temporarily unavailable")
+        }
+        
         DSLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(amount)")
         let fiatAmountString = String(format: "%.2f", Double(truncating: amount as NSDecimalNumber))
         
