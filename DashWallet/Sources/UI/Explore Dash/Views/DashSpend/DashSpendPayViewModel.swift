@@ -167,6 +167,11 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         isProcessingPayment = true
         defer { isProcessingPayment = false }
         
+        // Check if merchant is enabled before attempting purchase
+        guard isMerchantEnabled else {
+            throw CTXSpendError.merchantUnavailable
+        }
+        
         let response = try await purchaseGiftCardAPI()
         
         // Process the payment using the payment URL
@@ -275,6 +280,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             checkAmountForErrors()
         } catch {
             DSLogger.log("Failed to get merchant info: \(error)")
+            // Set merchant as disabled if we can't fetch info
+            isMerchantEnabled = false
         }
     }
     

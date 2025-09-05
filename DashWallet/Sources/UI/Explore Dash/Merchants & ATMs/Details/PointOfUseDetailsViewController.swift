@@ -172,7 +172,17 @@ extension PointOfUseDetailsViewController {
 
     @objc
     func websiteAction() {
-        guard let website = pointOfUse.website, let url = URL(string: website) else { return }
+        guard let website = pointOfUse.website else { return }
+        
+        // Normalize URL by adding https scheme if missing
+        let normalizedWebsite: String
+        if website.hasPrefix("http://") || website.hasPrefix("https://") {
+            normalizedWebsite = website
+        } else {
+            normalizedWebsite = "https://" + website
+        }
+        
+        guard let url = URL(string: normalizedWebsite) else { return }
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
     
