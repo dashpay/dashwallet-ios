@@ -23,16 +23,19 @@ import UIKit
 class MerchantItemCell: PointOfUseItemCell {
     private var paymentTypeIconView: UIImageView!
     private var savingsLabel: UILabel!
+    private var distanceLabel: UILabel!
 
     override func update(with pointOfUse: ExplorePointOfUse) {
         super.update(with: pointOfUse)
 
         guard let merchant = pointOfUse.merchant else { return }
 
+        // Display distance under merchant name on search screen as per original implementation
         if let currentLocation = DWLocationManager.shared.currentLocation,
-           DWLocationManager.shared.isAuthorized, merchant.type != .online {
+           DWLocationManager.shared.isAuthorized, merchant.type != .online,
+           let latitude = pointOfUse.latitude, let longitude = pointOfUse.longitude {
             subLabel.isHidden = false
-            let distance = CLLocation(latitude: pointOfUse.latitude!, longitude: pointOfUse.longitude!)
+            let distance = CLLocation(latitude: latitude, longitude: longitude)
                 .distance(from: currentLocation)
             let distanceText: String = ExploreDash.distanceFormatter
                 .string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
@@ -40,6 +43,9 @@ class MerchantItemCell: PointOfUseItemCell {
         } else {
             subLabel.isHidden = true
         }
+        
+        // Hide separate distance label since we're using subLabel
+        distanceLabel.isHidden = true
 
         let isGiftCard = merchant.paymentMethod == .giftCard
         let paymentIconName = isGiftCard ? "image.explore.dash.wts.payment.gift-card" : "image.explore.dash.wts.payment.dash";
@@ -57,6 +63,15 @@ class MerchantItemCell: PointOfUseItemCell {
 extension MerchantItemCell {
     override func configureHierarchy() {
         super.configureHierarchy()
+
+        // Distance label (separate from merchant name)
+        distanceLabel = UILabel()
+        distanceLabel.translatesAutoresizingMaskIntoConstraints = false
+        distanceLabel.font = .systemFont(ofSize: 12, weight: .regular)
+        distanceLabel.textColor = .dw_tertiaryText()
+        distanceLabel.isHidden = true
+        distanceLabel.textAlignment = .right
+        mainStackView.addArrangedSubview(distanceLabel)
 
         savingsLabel = UILabel()
         savingsLabel.translatesAutoresizingMaskIntoConstraints = false

@@ -55,6 +55,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     @Published var error: Error? = nil
     @Published var isFixedDenomination: Bool = false
     @Published var denominations: [Int] = []
+    @Published var isMerchantEnabled: Bool = true
     @Published var selectedDenomination: Int? = nil {
         didSet {
             if let denom = selectedDenomination {
@@ -166,6 +167,11 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         isProcessingPayment = true
         defer { isProcessingPayment = false }
         
+        // Check if merchant is enabled before attempting purchase
+        guard isMerchantEnabled else {
+            throw CTXSpendError.merchantUnavailable
+        }
+        
         let response = try await purchaseGiftCardAPI()
         
         // Process the payment using the payment URL
@@ -260,6 +266,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             
             // Update merchant details
             savingsFraction = Decimal(merchantInfo.savingsPercentage) / Decimal(10000)
+            isMerchantEnabled = merchantInfo.enabled
             
             if merchantInfo.denominationType == .Range {
                 isFixedDenomination = false
@@ -273,6 +280,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             checkAmountForErrors()
         } catch {
             DSLogger.log("Failed to get merchant info: \(error)")
+            // Set merchant as disabled if we can't fetch info
+            isMerchantEnabled = false
         }
     }
     
@@ -280,6 +289,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         guard !merchantId.isEmpty, ctxSpendService.isUserSignedIn else {
             DSLogger.log("Purchase gift card failed: User not signed in or merchant ID is empty")
             throw CTXSpendError.unauthorized
+        }
+        
+        // Additional server-side check for merchant availability
+        guard isMerchantEnabled else {
+            DSLogger.log("Purchase blocked: merchant disabled")
+            throw CTXSpendError.paymentProcessingError("Merchant temporarily unavailable")
         }
         
         DSLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(amount)")

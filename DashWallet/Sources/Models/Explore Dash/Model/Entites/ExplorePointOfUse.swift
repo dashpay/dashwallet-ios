@@ -61,8 +61,10 @@ extension ExplorePointOfUse {
         let denominationsType: String?
         let denominations: [Int]
         let redeemType: String?
+        /// CTX "enabled" flag. If nil, the state is unknown (fallback to local "active").
+        let enabled: Bool?
         
-        init(merchantId: String, paymentMethod: PaymentMethod, type: `Type`, deeplink: String?, savingsBasisPoints: Int, denominationsType: String?, denominations: [Int] = [], redeemType: String?) {
+        init(merchantId: String, paymentMethod: PaymentMethod, type: `Type`, deeplink: String?, savingsBasisPoints: Int, denominationsType: String?, denominations: [Int] = [], redeemType: String?, enabled: Bool? = nil) {
             self.merchantId = merchantId
             self.paymentMethod = paymentMethod
             self.type = type
@@ -71,6 +73,7 @@ extension ExplorePointOfUse {
             self.denominationsType = denominationsType
             self.denominations = denominations
             self.redeemType = redeemType
+            self.enabled = enabled
         }
         
         func toSavingPercentages() -> Double {
@@ -79,6 +82,11 @@ extension ExplorePointOfUse {
         
         func toSavingsFraction() -> Double {
             return Double(savingsBasisPoints) / 10000
+        }
+        
+        /// Returns true if the merchant is enabled, falling back to the provided active status if CTX enabled state is unknown.
+        func isEnabled(fallbackActive: Bool) -> Bool {
+            return enabled ?? fallbackActive
         }
     }
 

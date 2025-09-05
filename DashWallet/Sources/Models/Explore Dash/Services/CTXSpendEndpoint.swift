@@ -46,6 +46,7 @@ public enum CTXSpendEndpoint {
     case login(email: String)
     case verifyEmail(email: String, code: String)
     case refreshToken(RefreshTokenRequest)
+    case logout
     case purchaseGiftCard(PurchaseGiftCardRequest)
     case getMerchant(String)
     case getGiftCard(String)
@@ -72,6 +73,7 @@ extension CTXSpendEndpoint: TargetType, AccessTokenAuthorizable {
         case .login: return "login"
         case .verifyEmail: return "verify-email"
         case .refreshToken: return "refresh-token"
+        case .logout: return "logout"
         case .purchaseGiftCard: return "gift-cards"
         case .getMerchant(let merchantId): return "merchants/\(merchantId)"
         case .getGiftCard(_): return "gift-cards"
@@ -80,7 +82,7 @@ extension CTXSpendEndpoint: TargetType, AccessTokenAuthorizable {
     
     public var method: Moya.Method {
         switch self {
-        case .login, .verifyEmail, .refreshToken, .purchaseGiftCard:
+        case .login, .verifyEmail, .refreshToken, .logout, .purchaseGiftCard:
             return .post
         default:
             return .get

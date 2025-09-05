@@ -22,7 +22,7 @@ import SwiftUI
 private let kExploreWhereToSpendSectionCount = 5
 
 private let kHandlerHeight: CGFloat = 24.0
-internal let kDefaultOpenedMapPosition: CGFloat = 260.0
+internal let kDefaultOpenedMapPosition: CGFloat = 320.0 // Max 50% of screen height
 private let kDefaultClosedMapPosition: CGFloat = -kHandlerHeight
 
 // MARK: - ExplorePointOfUseSections
@@ -64,7 +64,7 @@ class ExplorePointOfUseListViewController: UIViewController {
     internal var currentSegment: PointOfUseListSegment { model.currentSegment }
     internal var items: [ExplorePointOfUse] { model.items }
 
-    internal var radius = 20 // In miles //Move to model
+    internal var radius = 5 // In miles - 5 mile radius as requested
     internal var mapView: ExploreMapView!
     internal var showMapButton: UIButton!
     internal var syncBannerView: ExploreSyncBannerView?
@@ -531,34 +531,51 @@ extension ExplorePointOfUseListViewController {
     @objc
     private func moveAction(sender: UIPanGestureRecognizer) {
         let translatedPoint: CGPoint = sender.translation(in: view)
+        let currentY = contentViewTopLayoutConstraint.constant
 
-        contentViewTopLayoutConstraint.constant += translatedPoint.x
-        contentViewTopLayoutConstraint.constant += translatedPoint.y
+        switch sender.state {
+        case .changed:
+            // Only handle vertical movement and constrain within bounds
+            let newY = currentY + translatedPoint.y
+            
+            // Constrain movement between closed position and maximum expanded position
+            let maxY = view.frame.size.height * 0.8 // Allow dragging down to 80% of screen
+            let minY = kDefaultClosedMapPosition // Don't allow dragging above closed position
+            
+            contentViewTopLayoutConstraint.constant = max(minY, min(maxY, newY))
+            sender.setTranslation(.zero, in: view)
 
-        sender.setTranslation(.zero, in: view)
-
-        if sender.state == .ended {
+        case .ended:
             let velocityInView = sender.velocity(in: view)
-            let velocityY: CGFloat = 0.2*velocityInView.y
-            var finalY: CGFloat = contentViewTopLayoutConstraint.constant + velocityY
+            let velocityY: CGFloat = velocityInView.y
+            let finalCurrentY = contentViewTopLayoutConstraint.constant
+            var finalY: CGFloat
 
-            if finalY < kDefaultOpenedMapPosition/2 {
-                finalY = kDefaultClosedMapPosition
-            } else if finalY > view.frame.size.height/2 {
-                finalY = mapView.frame.size.height - kHandlerHeight
-            } else {
+            // Determine final position based on velocity and current position
+            if velocityY > 800 { // Fast downward swipe - show more map
                 finalY = kDefaultOpenedMapPosition
+            } else if velocityY < -800 { // Fast upward swipe - hide map
+                finalY = kDefaultClosedMapPosition
+            } else {
+                // Slow movement - snap to nearest position
+                let midPoint = (kDefaultOpenedMapPosition + kDefaultClosedMapPosition) / 2
+                finalY = finalCurrentY > midPoint ? kDefaultOpenedMapPosition : kDefaultClosedMapPosition
             }
 
-            let animationDuration: CGFloat = (abs(velocityY)*0.0002)+0.2;
+            let animationDuration: TimeInterval = 0.3
 
-            UIView.animate(withDuration: animationDuration, delay: 0, options: .curveEaseOut) {
+            UIView.animate(withDuration: animationDuration, delay: 0, 
+                          usingSpringWithDamping: 0.8, initialSpringVelocity: 0, 
+                          options: .curveEaseOut) {
                 self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - finalY, right: 0)
                 self.contentViewTopLayoutConstraint.constant = finalY
                 self.view.layoutIfNeeded()
             } completion: { _ in
                 self.updateShowMapButtonVisibility()
             }
+
+        default:
+            break
         }
     }
 
