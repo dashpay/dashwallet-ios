@@ -41,7 +41,7 @@ struct SecurityMenuScreen: View {
                 }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.black)
+                        .foregroundColor(.primary)
                         .frame(width: 36, height: 36)
                         .overlay(
                             Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1)
