@@ -49,8 +49,11 @@ class PointOfUseDetailsViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
-        mapView?.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: mapView.frame.height - detailsView.frame.height - 10,
-                                             right: 0)
+        // Prevent crash when mapView or detailsView is nil
+        if let mapView = mapView, let detailsView = detailsView {
+            mapView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: mapView.frame.height - detailsView.frame.height - 10,
+                                               right: 0)
+        }
     }
 
     override func viewDidLoad() {
@@ -172,7 +175,17 @@ extension PointOfUseDetailsViewController {
 
     @objc
     func websiteAction() {
-        guard let website = pointOfUse.website, let url = URL(string: website) else { return }
+        guard let website = pointOfUse.website else { return }
+        
+        // Normalize URL by adding https scheme if missing
+        let normalizedWebsite: String
+        if website.hasPrefix("http://") || website.hasPrefix("https://") {
+            normalizedWebsite = website
+        } else {
+            normalizedWebsite = "https://" + website
+        }
+        
+        guard let url = URL(string: normalizedWebsite) else { return }
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
     
@@ -257,7 +270,7 @@ extension PointOfUseDetailsViewController {
             // Create the top constraint and store reference to it
             // Start higher than bottom half by about an inch (72 points)
             let screenHeight = UIScreen.main.bounds.height
-            let kDefaultBottomHalfPosition = screenHeight * 0.5 - 72 // Higher by about an inch - 72 // Higher by about an inch
+            let kDefaultBottomHalfPosition = screenHeight * 0.5 - 72 // Higher by about an inch
             contentViewTopConstraint = contentView.topAnchor.constraint(equalTo: view.topAnchor, constant: kDefaultBottomHalfPosition)
             
             constraint = [
@@ -279,7 +292,12 @@ extension PointOfUseDetailsViewController {
     }
 
     private func showDetailsView() {
-        detailsView = detailsView(for: pointOfUse)
+        guard let createdDetailsView = detailsView(for: pointOfUse) else {
+            print("Warning: Failed to create detailsView for pointOfUse category: \(pointOfUse.category)")
+            return
+        }
+        
+        detailsView = createdDetailsView
         detailsView.payWithDashHandler = payWithDashHandler
         detailsView.sellDashHandler = sellDashHandler
         detailsView.showAllLocationsActionBlock = { [weak self] in
@@ -398,13 +416,35 @@ extension PointOfUseDetailsViewController {
         Task {
             if try await tryRefreshCtxToken(), let merchantId = pointOfUse.merchant?.merchantId {
                 let merchantInfo = try await CTXSpendService.shared.getMerchant(merchantId: merchantId)
+                
+                // Debug logging for CTX merchant info
+                if pointOfUse.name.lowercased().contains("buffalo") || pointOfUse.name.lowercased().contains("gamestop") {
+                    print("🎯 CTX MERCHANT INFO DEBUG: \(pointOfUse.name)")
+                    print("   CTX enabled: \(merchantInfo.enabled)")
+                    print("   Local active: \(pointOfUse.active)")
+                    print("   Will update view with enabled: \(merchantInfo.enabled)")
+                }
+                
                 pointOfUse = pointOfUse.updatingMerchant(
                     denominationsType: merchantInfo.denominationsType,
                     denominations: merchantInfo.denominations.compactMap { Int($0) },
                     enabled: merchantInfo.enabled
                 )
+                
+                // Update the view with the new merchant information
+                await MainActor.run {
+                    refreshDetailsViewWithUpdatedMerchant()
+                }
             }
         }
+    }
+    
+    private func refreshDetailsViewWithUpdatedMerchant() {
+        // Remove the old details view
+        detailsView?.removeFromSuperview()
+        
+        // Recreate with updated merchant data
+        showDetailsView()
     }
     
     private func tryRefreshCtxToken() async throws -> Bool {
