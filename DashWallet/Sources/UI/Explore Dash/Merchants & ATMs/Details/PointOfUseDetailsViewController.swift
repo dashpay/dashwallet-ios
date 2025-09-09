@@ -24,6 +24,7 @@ import SwiftUI
 class PointOfUseDetailsViewController: UIViewController {
     internal var pointOfUse: ExplorePointOfUse
     internal let isShowAllHidden: Bool
+    private let currentFilters: PointOfUseListFilters?
 
     @objc public var payWithDashHandler: (()->())?
     @objc var sellDashHandler: (()->())?
@@ -35,9 +36,10 @@ class PointOfUseDetailsViewController: UIViewController {
     private var contentViewTopConstraint: NSLayoutConstraint?
     private var showMapButton: UIButton!
 
-    public init(pointOfUse: ExplorePointOfUse, isShowAllHidden: Bool = true) {
+    public init(pointOfUse: ExplorePointOfUse, isShowAllHidden: Bool = true, currentFilters: PointOfUseListFilters? = nil) {
         self.pointOfUse = pointOfUse
         self.isShowAllHidden = isShowAllHidden
+        self.currentFilters = currentFilters
 
         super.init(nibName: nil, bundle: nil)
     }
@@ -303,7 +305,7 @@ extension PointOfUseDetailsViewController {
         detailsView.showAllLocationsActionBlock = { [weak self] in
             guard let wSelf = self else { return }
 
-            let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse)
+            let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse, currentFilters: wSelf.currentFilters)
             vc.payWithDashHandler = wSelf.payWithDashHandler
             vc.sellDashHandler = wSelf.sellDashHandler
             wSelf.navigationController?.pushViewController(vc, animated: true)
@@ -345,7 +347,7 @@ extension PointOfUseDetailsViewController {
     func detailsView(for pointOfUse: ExplorePointOfUse) -> PointOfUseDetailsView? {
         switch pointOfUse.category {
         case .merchant:
-            return PointOfUseDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
+            return PointOfUseDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden, currentFilters: currentFilters)
         case .atm:
             return AtmDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
         case .unknown:

@@ -22,9 +22,11 @@ import UIKit
 @objc
 class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
     private let pointOfUse: ExplorePointOfUse
+    private let currentFilters: PointOfUseListFilters?
 
-    init(pointOfUse: ExplorePointOfUse) {
+    init(pointOfUse: ExplorePointOfUse, currentFilters: PointOfUseListFilters? = nil) {
         self.pointOfUse = pointOfUse
+        self.currentFilters = currentFilters
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -46,8 +48,12 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
         }
 
         switch section {
-        case .filters, .search, .segments:
+        case .segments:
+            // Hide segments since we only have one data provider
             return 0
+        case .filters, .search:
+            // Keep these visible for proper UI layout
+            return super.tableView(tableView, numberOfRowsInSection: section.rawValue)
         default:
             return super.tableView(tableView, numberOfRowsInSection: section.rawValue)
         }
@@ -62,7 +68,7 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
     override func configureModel() {
         model = PointOfUseListModel(segments: [.init(tag: 0, title: "", showMap: true, showLocationServiceSettings: false,
                                                      showReversedLocation: false,
-                                                     dataProvider: AllMerchantLocationsDataProvider(pointOfUse: pointOfUse),
+                                                     dataProvider: AllMerchantLocationsDataProvider(pointOfUse: pointOfUse, currentFilters: currentFilters),
                                                      filterGroups: [], territoriesDataSource: nil, sortOptions: [.name, .distance, .discount])])
     }
 

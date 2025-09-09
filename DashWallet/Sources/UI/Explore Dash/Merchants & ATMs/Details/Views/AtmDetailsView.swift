@@ -23,7 +23,7 @@ class AtmDetailsView: PointOfUseDetailsView {
         // Create first block with header and ATM buttons (no CTX section)
         let firstBlock = UIView()
         firstBlock.translatesAutoresizingMaskIntoConstraints = false
-        firstBlock.backgroundColor = .white // Pure white as per Figma
+        firstBlock.backgroundColor = .dw_secondaryBackground()
         firstBlock.layer.cornerRadius = 12
         
         containerView.addArrangedSubview(firstBlock)
@@ -56,7 +56,7 @@ class AtmDetailsView: PointOfUseDetailsView {
             let sellButton = ActionButton()
             sellButton.translatesAutoresizingMaskIntoConstraints = false
             sellButton.addTarget(self, action: #selector(sellAction), for: .touchUpInside)
-            sellButton.setTitle(NSLocalizedString("Sell Dash", comment: "Buy Dash"), for: .normal)
+            sellButton.setTitle(NSLocalizedString("Sell Dash", comment: "Sell Dash"), for: .normal)
             sellButton.accentColor = .dw_dashBlue()
             buttonsStackView.addArrangedSubview(sellButton)
         }

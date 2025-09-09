@@ -190,7 +190,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
     override func show(pointOfUse: ExplorePointOfUse) {
         guard let merchant = pointOfUse.merchant else { return }
 
-        let vc = PointOfUseDetailsViewController(pointOfUse: pointOfUse, isShowAllHidden: merchant.type == .online)
+        let vc = PointOfUseDetailsViewController(pointOfUse: pointOfUse, isShowAllHidden: merchant.type == .online, currentFilters: model.filters)
         vc.payWithDashHandler = payWithDashHandler
         vc.onGiftCardPurchased = onGiftCardPurchased
         navigationController?.pushViewController(vc, animated: true)

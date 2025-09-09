@@ -52,6 +52,8 @@ class PointOfUseDetailsView: UIView, SyncingActivityMonitorObserver, NetworkReac
 
     internal let merchant: ExplorePointOfUse
     internal var isShowAllHidden: Bool
+    private let currentFilters: PointOfUseListFilters?
+    private var locationCount: Int = 1
 
     private let emailLabel: UILabel = {
         let emailLabel = UILabel()
@@ -107,14 +109,18 @@ class PointOfUseDetailsView: UIView, SyncingActivityMonitorObserver, NetworkReac
         return view
     }()
 
-    public init(merchant: ExplorePointOfUse, isShowAllHidden: Bool = false) {
+    public init(merchant: ExplorePointOfUse, isShowAllHidden: Bool = false, currentFilters: PointOfUseListFilters? = nil) {
         self.isShowAllHidden = isShowAllHidden
         self.merchant = merchant
+        self.currentFilters = currentFilters
 
         super.init(frame: .zero)
 
         configureHierarchy()
         configureObservers()
+        
+        // Fetch actual location count asynchronously
+        fetchLocationCount()
     }
 
     required init?(coder: NSCoder) {
@@ -419,46 +425,9 @@ extension PointOfUseDetailsView {
             contactStack.bottomAnchor.constraint(equalTo: contactBlock.bottomAnchor, constant: -6)
         ])
 
-        // Create third white block for "Show all locations"
+        // Create "Show all locations" section with initial count, will be updated after fetch
         if !isShowAllHidden {
-            let showAllBlock = UIView()
-            showAllBlock.translatesAutoresizingMaskIntoConstraints = false
-            showAllBlock.backgroundColor = .white // Pure white as per Figma
-            showAllBlock.layer.cornerRadius = 12
-            containerView.addArrangedSubview(showAllBlock)
-
-            let showAllButton = UIButton()
-            showAllButton.translatesAutoresizingMaskIntoConstraints = false
-            // TODO: Get actual location count from data source
-        let locationCount = getLocationCount()
-        showAllButton.setTitle(String.localizedStringWithFormat(NSLocalizedString("Show all locations (%d)", comment: "Show all locations with count"), locationCount), for: .normal)
-            showAllButton.setTitleColor(.dw_label(), for: .normal)  // Black text
-            showAllButton.titleLabel?.font = .dw_font(forTextStyle: .footnote)
-            showAllButton.contentHorizontalAlignment = .left
-            showAllButton.addTarget(self, action: #selector(showAllLocationsAction), for: .touchUpInside)
-
-            // Add chevron arrow
-            let chevronImage = UIImage(systemName: "chevron.right")
-            let chevronImageView = UIImageView(image: chevronImage)
-            chevronImageView.translatesAutoresizingMaskIntoConstraints = false
-            chevronImageView.tintColor = .dw_tertiaryText()
-
-            showAllBlock.addSubview(showAllButton)
-            showAllBlock.addSubview(chevronImageView)
-
-            NSLayoutConstraint.activate([
-                showAllButton.topAnchor.constraint(equalTo: showAllBlock.topAnchor, constant: 14),
-                showAllButton.leadingAnchor.constraint(equalTo: showAllBlock.leadingAnchor, constant: 10),
-                showAllButton.bottomAnchor.constraint(equalTo: showAllBlock.bottomAnchor, constant: -14),
-                showAllButton.trailingAnchor.constraint(equalTo: chevronImageView.leadingAnchor, constant: -10),
-
-                chevronImageView.centerYAnchor.constraint(equalTo: showAllBlock.centerYAnchor),
-                chevronImageView.trailingAnchor.constraint(equalTo: showAllBlock.trailingAnchor, constant: -10),
-                chevronImageView.widthAnchor.constraint(equalToConstant: 8),
-                chevronImageView.heightAnchor.constraint(equalToConstant: 13),
-
-                showAllBlock.heightAnchor.constraint(equalToConstant: 46)
-            ])
+            createShowAllLocationsSection()
         }
     }
 
@@ -592,10 +561,161 @@ extension PointOfUseDetailsView {
     }
 
     private func getLocationCount() -> Int {
-        // TODO: This should be injected from the parent view controller or data source
-        // For now, return a placeholder value + 1 to include the current location.
-        // The actual implementation should come from the data source that knows how many locations this merchant has
-        return 11 // 10 + 1 for current location, as requested
+        print("DEBUG_FETCH_RESULTS: getLocationCount() called, returning: \(locationCount)")
+        return locationCount
+    }
+    
+    private func fetchLocationCount() {
+        // Debug logging for ALL merchants to help identify the issue
+        print("DEBUG_FETCH_COUNT: Starting location fetch for merchant: '\(merchant.name)'")
+        print("DEBUG_FETCH_COUNT: pointOfUseId: '\(merchant.pointOfUseId)'")
+        if let merchantData = merchant.merchant {
+            print("DEBUG_FETCH_COUNT: merchantId: '\(merchantData.merchantId)'")
+        }
+        print("DEBUG_FETCH_COUNT: merchant.active: \(merchant.active)")
+        
+        // Debug the current filter radius being used
+        let filterRadius = currentFilters?.currentRadius ?? 32000
+        print("DEBUG_FETCH_COUNT: Using radius: \(filterRadius) meters (\(filterRadius / 1609.34) miles)")
+        if let filterRadiusEnum = currentFilters?.radius {
+            print("DEBUG_FETCH_COUNT: Filter radius setting: \(filterRadiusEnum.displayText)")
+        }
+        
+        // Fetch the actual location count from the data source
+        // Use current user location and create bounds to respect distance filters
+        let userPoint = DWLocationManager.shared.isAuthorized ? DWLocationManager.shared.currentLocation?.coordinate : nil
+        let bounds: ExploreMapBounds?
+        if let userLocation = userPoint {
+            // Use the same approach as the main merchant list - create bounds using MKCircle
+            // Use the current filter radius if available, otherwise default to kDefaultRadius (20 miles)
+            let radiusInMeters: Double = filterRadius
+            let circle = MKCircle(center: userLocation, radius: radiusInMeters)
+            bounds = ExploreMapBounds(rect: circle.boundingMapRect)
+        } else {
+            bounds = nil
+        }
+        
+        // Use the exact same logic as AllMerchantLocationsDataProvider
+        // Check location permissions and set bounds accordingly 
+        var finalBounds = bounds
+        var finalUserPoint = userPoint
+        
+        if DWLocationManager.shared.needsAuthorization || (DWLocationManager.shared.isAuthorized && (bounds == nil || userPoint == nil)) {
+            // If location permission is needed or no location available, AllMerchantLocationsDataProvider returns empty
+            print("DEBUG_FETCH_RESULTS: Location not available, setting count to 0")
+            self.locationCount = 0
+            self.updateShowAllLocationsButton()
+            return
+        } else if DWLocationManager.shared.isPermissionDenied {
+            finalBounds = nil
+            finalUserPoint = nil
+        }
+        
+        // Use the same call as AllMerchantLocationsDataProvider
+        ExploreDash.shared.allLocations(for: merchant.pointOfUseId, in: finalBounds, userPoint: finalUserPoint) { [weak self] result in
+            switch result {
+            case .success(let paginationResult):
+                DispatchQueue.main.async {
+                    // allLocations already returns only locations for this merchant, so no filtering needed
+                    // Filter only for active locations to match what "Show all locations" displays
+                    let activeLocations = paginationResult.items.filter { $0.active }
+                    
+                    // Debug logging 
+                    if let strongSelf = self {
+                        print("DEBUG_FETCH_RESULTS: Results for '\(strongSelf.merchant.name)'")
+                        print("DEBUG_FETCH_RESULTS: Total GameStop locations: \(paginationResult.items.count)")
+                        print("DEBUG_FETCH_RESULTS: Active GameStop locations: \(activeLocations.count)")
+                        let inactiveLocations = paginationResult.items.filter { !$0.active }
+                        print("DEBUG_FETCH_RESULTS: Inactive GameStop locations: \(inactiveLocations.count)")
+                    }
+                    
+                    // Use the count of active locations (this should match what "Show all locations" shows)
+                    let newCount = activeLocations.count
+                    print("DEBUG_FETCH_RESULTS: Setting locationCount to \(newCount)")
+                    self?.locationCount = newCount
+                    print("DEBUG_FETCH_RESULTS: locationCount after assignment: \(self?.locationCount ?? -1)")
+                    self?.updateShowAllLocationsButton()
+                    print("DEBUG_FETCH_RESULTS: locationCount after updateShowAllLocationsButton: \(self?.locationCount ?? -1)")
+                }
+            case .failure(let error):
+                // Log error but keep default count of 1
+                DSLogger.log("Failed to fetch location count: \(error)")
+            }
+        }
+    }
+    
+    private func updateShowAllLocationsButton() {
+        // Find and update the "Show all locations" button text
+        // This is called after the location count is fetched
+        print("DEBUG_FETCH_RESULTS: updateShowAllLocationsButton called with locationCount: \(locationCount)")
+        guard !isShowAllHidden, let containerView = containerView else { 
+            print("DEBUG_FETCH_RESULTS: Guard failed - isShowAllHidden: \(isShowAllHidden), containerView exists: \(containerView != nil)")
+            return 
+        }
+        
+        print("DEBUG_FETCH_RESULTS: Container has \(containerView.arrangedSubviews.count) arranged subviews")
+        
+        // Find the show all locations block (should be the last arranged subview)
+        if let showAllBlock = containerView.arrangedSubviews.last {
+            print("DEBUG_FETCH_RESULTS: Found show all block with \(showAllBlock.subviews.count) subviews")
+            
+            // Find the button within the block
+            for (index, subview) in showAllBlock.subviews.enumerated() {
+                print("DEBUG_FETCH_RESULTS: Checking subview \(index): \(type(of: subview))")
+                if let button = subview as? UIButton {
+                    let newTitle = String.localizedStringWithFormat(
+                        NSLocalizedString("Show all locations (%d)", comment: "Show all locations with count"), 
+                        locationCount
+                    )
+                    print("DEBUG_FETCH_RESULTS: Updating button title to: \(newTitle)")
+                    button.setTitle(newTitle, for: .normal)
+                    break
+                }
+            }
+        } else {
+            print("DEBUG_FETCH_RESULTS: No show all block found in container")
+        }
+    }
+    
+    private func createShowAllLocationsSection() {
+        guard !isShowAllHidden, let containerView = containerView else { return }
+        
+        let showAllBlock = UIView()
+        showAllBlock.translatesAutoresizingMaskIntoConstraints = false
+        showAllBlock.backgroundColor = .white // Pure white as per Figma
+        showAllBlock.layer.cornerRadius = 12
+        containerView.addArrangedSubview(showAllBlock)
+
+        let showAllButton = UIButton()
+        showAllButton.translatesAutoresizingMaskIntoConstraints = false
+        showAllButton.setTitle(String.localizedStringWithFormat(NSLocalizedString("Show all locations (%d)", comment: "Show all locations with count"), locationCount), for: .normal)
+        showAllButton.setTitleColor(.dw_label(), for: .normal)  // Black text
+        showAllButton.titleLabel?.font = .dw_font(forTextStyle: .footnote)
+        showAllButton.contentHorizontalAlignment = .left
+        showAllButton.addTarget(self, action: #selector(showAllLocationsAction), for: .touchUpInside)
+
+        // Add chevron arrow
+        let chevronImage = UIImage(systemName: "chevron.right")
+        let chevronImageView = UIImageView(image: chevronImage)
+        chevronImageView.translatesAutoresizingMaskIntoConstraints = false
+        chevronImageView.tintColor = .dw_tertiaryText()
+
+        showAllBlock.addSubview(showAllButton)
+        showAllBlock.addSubview(chevronImageView)
+
+        NSLayoutConstraint.activate([
+            showAllButton.topAnchor.constraint(equalTo: showAllBlock.topAnchor, constant: 14),
+            showAllButton.leadingAnchor.constraint(equalTo: showAllBlock.leadingAnchor, constant: 10),
+            showAllButton.bottomAnchor.constraint(equalTo: showAllBlock.bottomAnchor, constant: -14),
+            showAllButton.trailingAnchor.constraint(equalTo: chevronImageView.leadingAnchor, constant: -10),
+
+            chevronImageView.centerYAnchor.constraint(equalTo: showAllBlock.centerYAnchor),
+            chevronImageView.trailingAnchor.constraint(equalTo: showAllBlock.trailingAnchor, constant: -10),
+            chevronImageView.widthAnchor.constraint(equalToConstant: 8),
+            chevronImageView.heightAnchor.constraint(equalToConstant: 13),
+
+            showAllBlock.heightAnchor.constraint(equalToConstant: 46)
+        ])
     }
 
     private func createWebsiteSection(website: String) -> UIView {
