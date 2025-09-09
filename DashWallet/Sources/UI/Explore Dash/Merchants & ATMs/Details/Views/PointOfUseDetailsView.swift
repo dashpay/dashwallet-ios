@@ -575,11 +575,20 @@ extension PointOfUseDetailsView {
         print("DEBUG_FETCH_COUNT: merchant.active: \(merchant.active)")
         
         // Debug the current filter radius being used
-        let filterRadius = currentFilters?.currentRadius ?? 32000
-        print("DEBUG_FETCH_COUNT: Using radius: \(filterRadius) meters (\(filterRadius / 1609.34) miles)")
+        let kDefaultRadiusMeters: Double = 32000 // 20 miles default
+        let kMetersToMilesConversion: Double = 1609.34
+        let filterRadius = currentFilters?.currentRadius ?? kDefaultRadiusMeters
+        print("DEBUG_FETCH_COUNT: Using radius: \(filterRadius) meters (\(filterRadius / kMetersToMilesConversion) miles)")
         if let filterRadiusEnum = currentFilters?.radius {
             print("DEBUG_FETCH_COUNT: Filter radius setting: \(filterRadiusEnum.displayText)")
         }
+        
+        // Debug location manager status
+        print("DEBUG_FETCH_COUNT: Location manager status:")
+        print("DEBUG_FETCH_COUNT:   needsAuthorization: \(DWLocationManager.shared.needsAuthorization)")
+        print("DEBUG_FETCH_COUNT:   isAuthorized: \(DWLocationManager.shared.isAuthorized)")
+        print("DEBUG_FETCH_COUNT:   isPermissionDenied: \(DWLocationManager.shared.isPermissionDenied)")
+        print("DEBUG_FETCH_COUNT:   currentLocation available: \(DWLocationManager.shared.currentLocation != nil)")
         
         // Fetch the actual location count from the data source
         // Use current user location and create bounds to respect distance filters
@@ -600,15 +609,26 @@ extension PointOfUseDetailsView {
         var finalBounds = bounds
         var finalUserPoint = userPoint
         
-        if DWLocationManager.shared.needsAuthorization || (DWLocationManager.shared.isAuthorized && (bounds == nil || userPoint == nil)) {
-            // If location permission is needed or no location available, AllMerchantLocationsDataProvider returns empty
-            print("DEBUG_FETCH_RESULTS: Location not available, setting count to 0")
-            self.locationCount = 0
-            self.updateShowAllLocationsButton()
-            return
-        } else if DWLocationManager.shared.isPermissionDenied {
+        if DWLocationManager.shared.isPermissionDenied || DWLocationManager.shared.needsAuthorization {
+            // When location is denied/not authorized, fetch all locations globally (no bounds filter)
+            print("DEBUG_FETCH_RESULTS: Location denied/not authorized, fetching all locations globally")
             finalBounds = nil
             finalUserPoint = nil
+        } else if DWLocationManager.shared.isAuthorized && (bounds == nil || userPoint == nil) {
+            // Location is authorized but current location not available yet, fetch all globally
+            print("DEBUG_FETCH_RESULTS: Location authorized but not available yet, fetching all locations globally")
+            finalBounds = nil
+            finalUserPoint = nil
+        }
+        
+        // Debug final parameters being used
+        print("DEBUG_FETCH_COUNT: Final API call parameters:")
+        print("DEBUG_FETCH_COUNT:   pointOfUseId: '\(merchant.pointOfUseId)'")
+        print("DEBUG_FETCH_COUNT:   finalBounds: \(finalBounds != nil ? "set" : "nil")")
+        if let userPoint = finalUserPoint {
+            print("DEBUG_FETCH_COUNT:   finalUserPoint: (\(userPoint.latitude), \(userPoint.longitude))")
+        } else {
+            print("DEBUG_FETCH_COUNT:   finalUserPoint: nil")
         }
         
         // Use the same call as AllMerchantLocationsDataProvider
@@ -639,7 +659,13 @@ extension PointOfUseDetailsView {
                 }
             case .failure(let error):
                 // Log error but keep default count of 1
+                print("DEBUG_FETCH_RESULTS: API call failed with error: \(error)")
                 DSLogger.log("Failed to fetch location count: \(error)")
+                DispatchQueue.main.async {
+                    // Set count to 1 as fallback when API fails
+                    self?.locationCount = 1
+                    self?.updateShowAllLocationsButton()
+                }
             }
         }
     }

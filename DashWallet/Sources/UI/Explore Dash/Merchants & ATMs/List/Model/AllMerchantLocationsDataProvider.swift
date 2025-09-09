@@ -38,13 +38,8 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
         // Use currentFilters if available, otherwise fall back to provided filters
         let filtersToUse = currentFilters ?? filters
 
-        if DWLocationManager.shared
-            .needsAuthorization || (DWLocationManager.shared.isAuthorized && (finalBounds == nil || finalUserPoint == nil)) {
-            items = []
-            currentPage = nil
-            completion(.success(items))
-            return
-        } else if DWLocationManager.shared.isPermissionDenied {
+        if DWLocationManager.shared.isPermissionDenied || DWLocationManager.shared.needsAuthorization {
+            // When location is denied/not authorized, show all locations globally (no bounds filter)
             finalBounds = nil
             finalUserPoint = nil
         } else if DWLocationManager.shared.isAuthorized, let userLocation = DWLocationManager.shared.currentLocation {
@@ -57,6 +52,10 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
                 let rect = circle.boundingMapRect
                 finalBounds = ExploreMapBounds(rect: rect)
             }
+        } else {
+            // Location is authorized but current location not available yet, show all globally
+            finalBounds = nil
+            finalUserPoint = nil
         }
 
         if lastQuery == query && !items.isEmpty && lastBounds == finalBounds {

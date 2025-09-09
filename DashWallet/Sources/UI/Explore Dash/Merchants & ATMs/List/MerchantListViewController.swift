@@ -107,7 +107,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
     }
 
     override var locationServicePopupDetails: String {
-        NSLocalizedString("Your location is used to show your position on the map, merchants in the selected redius and improve search results.",
+        NSLocalizedString("Your location is used to show your position on the map, merchants in the selected radius and improve search results.",
                           comment: "")
     }
 
