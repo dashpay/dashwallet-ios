@@ -106,7 +106,8 @@ class ExploreMapView: UIView {
     private var mapView: MKMapView!
 
     var mapBounds: ExploreMapBounds {
-        mapBounds(with: 32000)
+        // Return the actual visible bounds of the map
+        .init(rect: mapView.visibleMapRect)
     }
 
     func mapBounds(with radius: Double) -> ExploreMapBounds {

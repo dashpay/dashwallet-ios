@@ -53,6 +53,7 @@ class PointOfUseDetailsView: UIView, SyncingActivityMonitorObserver, NetworkReac
     internal let merchant: ExplorePointOfUse
     internal var isShowAllHidden: Bool
     private let currentFilters: PointOfUseListFilters?
+    private let currentMapBounds: ExploreMapBounds?
     private var locationCount: Int = 1
 
     private let emailLabel: UILabel = {
@@ -109,10 +110,11 @@ class PointOfUseDetailsView: UIView, SyncingActivityMonitorObserver, NetworkReac
         return view
     }()
 
-    public init(merchant: ExplorePointOfUse, isShowAllHidden: Bool = false, currentFilters: PointOfUseListFilters? = nil) {
+    public init(merchant: ExplorePointOfUse, isShowAllHidden: Bool = false, currentFilters: PointOfUseListFilters? = nil, currentMapBounds: ExploreMapBounds? = nil) {
         self.isShowAllHidden = isShowAllHidden
         self.merchant = merchant
         self.currentFilters = currentFilters
+        self.currentMapBounds = currentMapBounds
 
         super.init(frame: .zero)
 
@@ -591,17 +593,23 @@ extension PointOfUseDetailsView {
         print("DEBUG_FETCH_COUNT:   currentLocation available: \(DWLocationManager.shared.currentLocation != nil)")
         
         // Fetch the actual location count from the data source
-        // Use current user location and create bounds to respect distance filters
+        // Use current map bounds if available (from map interaction), otherwise fall back to filter radius
         let userPoint = DWLocationManager.shared.isAuthorized ? DWLocationManager.shared.currentLocation?.coordinate : nil
         let bounds: ExploreMapBounds?
-        if let userLocation = userPoint {
-            // Use the same approach as the main merchant list - create bounds using MKCircle
-            // Use the current filter radius if available, otherwise default to kDefaultRadius (20 miles)
+        
+        if let mapBounds = currentMapBounds {
+            // Use the current visible map bounds (when user has zoomed/panned the map)
+            bounds = mapBounds
+            print("DEBUG_FETCH_COUNT: Using current map bounds from user interaction")
+        } else if let userLocation = userPoint {
+            // Fall back to filter radius approach when no map bounds available
             let radiusInMeters: Double = filterRadius
             let circle = MKCircle(center: userLocation, radius: radiusInMeters)
             bounds = ExploreMapBounds(rect: circle.boundingMapRect)
+            print("DEBUG_FETCH_COUNT: Using filter radius: \(filterRadius) meters")
         } else {
             bounds = nil
+            print("DEBUG_FETCH_COUNT: No bounds or user location available")
         }
         
         // Use the exact same logic as AllMerchantLocationsDataProvider

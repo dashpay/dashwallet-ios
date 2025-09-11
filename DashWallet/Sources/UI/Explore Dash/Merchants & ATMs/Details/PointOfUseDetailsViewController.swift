@@ -25,6 +25,7 @@ class PointOfUseDetailsViewController: UIViewController {
     internal var pointOfUse: ExplorePointOfUse
     internal let isShowAllHidden: Bool
     private let currentFilters: PointOfUseListFilters?
+    private let currentMapBounds: ExploreMapBounds?
 
     @objc public var payWithDashHandler: (()->())?
     @objc var sellDashHandler: (()->())?
@@ -36,10 +37,11 @@ class PointOfUseDetailsViewController: UIViewController {
     private var contentViewTopConstraint: NSLayoutConstraint?
     private var showMapButton: UIButton!
 
-    public init(pointOfUse: ExplorePointOfUse, isShowAllHidden: Bool = true, currentFilters: PointOfUseListFilters? = nil) {
+    public init(pointOfUse: ExplorePointOfUse, isShowAllHidden: Bool = true, currentFilters: PointOfUseListFilters? = nil, currentMapBounds: ExploreMapBounds? = nil) {
         self.pointOfUse = pointOfUse
         self.isShowAllHidden = isShowAllHidden
         self.currentFilters = currentFilters
+        self.currentMapBounds = currentMapBounds
 
         super.init(nibName: nil, bundle: nil)
     }
@@ -122,7 +124,7 @@ extension PointOfUseDetailsViewController {
             // Constrain movement between closed position and maximum expanded position
             let screenHeight = view.frame.size.height
             let kDefaultClosedMapPosition = screenHeight * 0.75 // Mostly closed (more map visible) 
-            let kDefaultBottomHalfPosition = screenHeight * 0.5 - 72 // Default position higher by about an inch
+            let kDefaultBottomHalfPosition = screenHeight * 0.35 // Default position to show content including button
             let kDefaultOpenedMapPosition = screenHeight * 0.2 // Mostly open (less map visible, more content)
             // Allow dragging between open position (top) and closed position (bottom)
             let maxY = kDefaultClosedMapPosition // Don't allow dragging below closed position
@@ -137,7 +139,7 @@ extension PointOfUseDetailsViewController {
             let finalCurrentY = contentViewTopConstraint.constant
             let screenHeight = view.frame.size.height
             let kDefaultClosedMapPosition = screenHeight * 0.75 // Mostly closed (more map visible)
-            let kDefaultBottomHalfPosition = screenHeight * 0.5 - 72 // Higher by about an inch
+            let kDefaultBottomHalfPosition = screenHeight * 0.35 // Default position to show content including button
             let kDefaultOpenedMapPosition = screenHeight * 0.2
             
             var finalY: CGFloat
@@ -270,9 +272,9 @@ extension PointOfUseDetailsViewController {
             contentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
             
             // Create the top constraint and store reference to it
-            // Start higher than bottom half by about an inch (72 points)
+            // Position to ensure "Show all locations" button is fully visible at bottom
             let screenHeight = UIScreen.main.bounds.height
-            let kDefaultBottomHalfPosition = screenHeight * 0.5 - 72 // Higher by about an inch
+            let kDefaultBottomHalfPosition = screenHeight * 0.35 // Position higher to show more content including button
             contentViewTopConstraint = contentView.topAnchor.constraint(equalTo: view.topAnchor, constant: kDefaultBottomHalfPosition)
             
             constraint = [
@@ -305,7 +307,7 @@ extension PointOfUseDetailsViewController {
         detailsView.showAllLocationsActionBlock = { [weak self] in
             guard let wSelf = self else { return }
 
-            let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse, currentFilters: wSelf.currentFilters)
+            let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse, currentFilters: wSelf.currentFilters, currentMapBounds: wSelf.currentMapBounds)
             vc.payWithDashHandler = wSelf.payWithDashHandler
             vc.sellDashHandler = wSelf.sellDashHandler
             wSelf.navigationController?.pushViewController(vc, animated: true)
@@ -347,7 +349,7 @@ extension PointOfUseDetailsViewController {
     func detailsView(for pointOfUse: ExplorePointOfUse) -> PointOfUseDetailsView? {
         switch pointOfUse.category {
         case .merchant:
-            return PointOfUseDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden, currentFilters: currentFilters)
+            return PointOfUseDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden, currentFilters: currentFilters, currentMapBounds: currentMapBounds)
         case .atm:
             return AtmDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
         case .unknown:

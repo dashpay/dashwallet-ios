@@ -23,10 +23,12 @@ import UIKit
 class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
     private let pointOfUse: ExplorePointOfUse
     private let currentFilters: PointOfUseListFilters?
+    private let currentMapBounds: ExploreMapBounds?
 
-    init(pointOfUse: ExplorePointOfUse, currentFilters: PointOfUseListFilters? = nil) {
+    init(pointOfUse: ExplorePointOfUse, currentFilters: PointOfUseListFilters? = nil, currentMapBounds: ExploreMapBounds? = nil) {
         self.pointOfUse = pointOfUse
         self.currentFilters = currentFilters
+        self.currentMapBounds = currentMapBounds
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -68,7 +70,7 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
     override func configureModel() {
         model = PointOfUseListModel(segments: [.init(tag: 0, title: "", showMap: true, showLocationServiceSettings: false,
                                                      showReversedLocation: false,
-                                                     dataProvider: AllMerchantLocationsDataProvider(pointOfUse: pointOfUse, currentFilters: currentFilters),
+                                                     dataProvider: AllMerchantLocationsDataProvider(pointOfUse: pointOfUse, currentFilters: currentFilters, currentMapBounds: currentMapBounds),
                                                      filterGroups: [], territoriesDataSource: nil, sortOptions: [.name, .distance, .discount])])
     }
 

@@ -141,7 +141,7 @@ class ExplorePointOfUseListViewController: UIViewController {
 
     // MARK: life cycle
     internal func show(pointOfUse: ExplorePointOfUse) {
-        let vc = PointOfUseDetailsViewController(pointOfUse: pointOfUse, isShowAllHidden: true, currentFilters: model.filters)
+        let vc = PointOfUseDetailsViewController(pointOfUse: pointOfUse, isShowAllHidden: true, currentFilters: model.filters, currentMapBounds: model.currentMapBounds)
         vc.payWithDashHandler = payWithDashHandler
         vc.sellDashHandler = sellDashHandler
         vc.onGiftCardPurchased = onGiftCardPurchased
@@ -592,7 +592,8 @@ extension ExplorePointOfUseListViewController {
 extension ExplorePointOfUseListViewController: ExploreMapViewDelegate {
     func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleBounds bounds: ExploreMapBounds) {
         refreshFilterCell()
-        model.currentMapBounds = mapView.mapBounds(with: model.currentRadius)
+        // Use the actual visible map bounds instead of filter radius
+        model.currentMapBounds = bounds
         model.refreshItems()
     }
 

@@ -22,10 +22,12 @@ import MapKit
 class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
     private let pointOfUse: ExplorePointOfUse
     private let currentFilters: PointOfUseListFilters?
+    private let currentMapBounds: ExploreMapBounds?
 
-    init(pointOfUse: ExplorePointOfUse, currentFilters: PointOfUseListFilters? = nil) {
+    init(pointOfUse: ExplorePointOfUse, currentFilters: PointOfUseListFilters? = nil, currentMapBounds: ExploreMapBounds? = nil) {
         self.pointOfUse = pointOfUse
         self.currentFilters = currentFilters
+        self.currentMapBounds = currentMapBounds
         super.init()
     }
 
@@ -42,8 +44,12 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
             // When location is denied/not authorized, show all locations globally (no bounds filter)
             finalBounds = nil
             finalUserPoint = nil
+        } else if let mapBounds = currentMapBounds {
+            // Use the current visible map bounds (when user has zoomed/panned the map)
+            finalBounds = mapBounds
+            finalUserPoint = DWLocationManager.shared.currentLocation?.coordinate
         } else if DWLocationManager.shared.isAuthorized, let userLocation = DWLocationManager.shared.currentLocation {
-            // Calculate bounds based on current filter radius to match the count calculation
+            // Fall back to filter radius approach when no map bounds available
             finalUserPoint = userLocation.coordinate
             
             if let filtersToUse = filtersToUse {
