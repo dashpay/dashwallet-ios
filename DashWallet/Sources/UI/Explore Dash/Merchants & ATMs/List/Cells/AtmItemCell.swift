@@ -33,12 +33,14 @@ class AtmItemCell: PointOfUseItemCell {
         subLabel.isHidden = false
 
         if let currentLocation = DWLocationManager.shared.currentLocation,
-           DWLocationManager.shared.isAuthorized {
-            let distance = CLLocation(latitude: pointOfUse.latitude!, longitude: pointOfUse.longitude!)
+           DWLocationManager.shared.isAuthorized,
+           let latitude = pointOfUse.latitude,
+           let longitude = pointOfUse.longitude {
+            let distance = CLLocation(latitude: latitude, longitude: longitude)
                 .distance(from: currentLocation)
             let distanceText: String = ExploreDash.distanceFormatter
                 .string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
-            subLabel.text = "\(distanceText) • \(pointOfUse.source!)"
+            subLabel.text = "\(distanceText) • \(pointOfUse.source ?? "")"
         } else {
             subLabel.text = pointOfUse.source
         }

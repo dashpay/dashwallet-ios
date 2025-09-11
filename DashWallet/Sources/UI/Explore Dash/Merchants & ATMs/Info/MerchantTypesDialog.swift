@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2025 Dash Core Group. All rights reserved.
 //
@@ -20,7 +20,7 @@ import SwiftUI
 public struct MerchantTypesDialog: View {
     @Environment(\.presentationMode) private var presentationMode
     var action: (() -> Void)? = nil
-    
+
     public var body: some View {
         BottomSheet(showBackButton: .constant(false)) {
             TextIntro(

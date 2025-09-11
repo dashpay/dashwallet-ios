@@ -25,19 +25,19 @@ class AtmDetailsView: PointOfUseDetailsView {
         firstBlock.translatesAutoresizingMaskIntoConstraints = false
         firstBlock.backgroundColor = .dw_secondaryBackground()
         firstBlock.layer.cornerRadius = 12
-        
+
         containerView.addArrangedSubview(firstBlock)
-        
+
         let firstBlockStack = UIStackView()
         firstBlockStack.translatesAutoresizingMaskIntoConstraints = false
         firstBlockStack.axis = .vertical
         firstBlockStack.spacing = 16
         firstBlock.addSubview(firstBlockStack)
-        
+
         // Header section
         let headerSection = createHeaderSection()
         firstBlockStack.addArrangedSubview(headerSection)
-        
+
         // ATM Buttons section
         let buttonsStackView = UIStackView()
         buttonsStackView.spacing = 5
@@ -60,7 +60,7 @@ class AtmDetailsView: PointOfUseDetailsView {
             sellButton.accentColor = .dw_dashBlue()
             buttonsStackView.addArrangedSubview(sellButton)
         }
-        
+
         NSLayoutConstraint.activate([
             payButton.heightAnchor.constraint(equalToConstant: 48),
             firstBlockStack.topAnchor.constraint(equalTo: firstBlock.topAnchor, constant: 16),

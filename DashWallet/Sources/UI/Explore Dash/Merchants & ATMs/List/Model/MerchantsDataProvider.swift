@@ -93,7 +93,11 @@ class NearbyMerchantsDataProvider: PointOfUseDataProvider {
     }
 
     override func nextPage(completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
-        fetch(by: lastQuery, in: lastBounds!, userPoint: lastUserPoint, with: lastFilters,
+        guard let lastBounds = lastBounds else {
+            completion(.failure(NSError(domain: "MerchantsDataProvider", code: -1, userInfo: [NSLocalizedDescriptionKey: "No bounds available for pagination"])))
+            return
+        }
+        fetch(by: lastQuery, in: lastBounds, userPoint: lastUserPoint, with: lastFilters,
               offset: nextOffset) { [weak self] result in
             self?.handle(result: result, appending: true, completion: completion)
         }

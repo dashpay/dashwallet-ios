@@ -18,7 +18,7 @@
 import UIKit
 
 class ExploreSyncBannerView: UIView {
-    
+
     private let label: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -29,22 +29,22 @@ class ExploreSyncBannerView: UIView {
         label.numberOfLines = 1
         return label
     }()
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
     }
-    
+
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupView()
     }
-    
+
     private func setupView() {
         backgroundColor = .dw_dashBlue()
-        
+
         addSubview(label)
-        
+
         NSLayoutConstraint.activate([
             label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),

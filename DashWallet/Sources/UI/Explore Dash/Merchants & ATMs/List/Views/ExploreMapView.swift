@@ -139,7 +139,12 @@ class ExploreMapView: UIView {
     public func show(merchants: [ExplorePointOfUse]) {
         if shownMerchantsAnnotations.isEmpty {
             let newAnnotations = merchants
-                .map { MerchantAnnotation(merchant: $0, location: .init(latitude: $0.latitude!, longitude: $0.longitude!)) }
+                .compactMap { merchant -> MerchantAnnotation? in
+                    guard let latitude = merchant.latitude, let longitude = merchant.longitude else {
+                        return nil
+                    }
+                    return MerchantAnnotation(merchant: merchant, location: .init(latitude: latitude, longitude: longitude))
+                }
             shownMerchantsAnnotations = newAnnotations
             mapView.addAnnotations(newAnnotations)
         } else {
@@ -148,7 +153,12 @@ class ExploreMapView: UIView {
 
                 let currentAnnotations = Set(wSelf.shownMerchantsAnnotations)
                 let newMerchants = Set(merchants
-                    .map { MerchantAnnotation(merchant: $0, location: .init(latitude: $0.latitude!, longitude: $0.longitude!)) })
+                    .compactMap { merchant -> MerchantAnnotation? in
+                        guard let latitude = merchant.latitude, let longitude = merchant.longitude else {
+                            return nil
+                        }
+                        return MerchantAnnotation(merchant: merchant, location: .init(latitude: latitude, longitude: longitude))
+                    })
 
                 let toAdd = newMerchants.subtracting(currentAnnotations)
                 let toDelete = currentAnnotations.subtracting(newMerchants)

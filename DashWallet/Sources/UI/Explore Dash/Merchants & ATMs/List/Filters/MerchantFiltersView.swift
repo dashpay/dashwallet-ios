@@ -21,9 +21,9 @@ struct MerchantFiltersView: View {
     @StateObject private var viewModel: MerchantFiltersViewModel
     @Environment(\.presentationMode) private var presentationMode
     @State private var showTerritories: Bool = false
-    
+
     let onApplyFilters: (PointOfUseListFilters?) -> Void
-    
+
     init(
         currentFilters: PointOfUseListFilters?,
         filterGroups: [PointOfUseListFiltersGroup],
@@ -39,7 +39,7 @@ struct MerchantFiltersView: View {
         ))
         self.onApplyFilters = onApplyFilters
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
@@ -53,7 +53,7 @@ struct MerchantFiltersView: View {
                             ) {
                                 viewModel.toggleSortBy(.name)
                             }
-                            
+
                             if viewModel.sortOptions.contains(.distance) {
                                 RadioButtonRow(
                                     title: NSLocalizedString("Distance", comment: "Explore Dash: Filters"),
@@ -62,7 +62,7 @@ struct MerchantFiltersView: View {
                                     viewModel.toggleSortBy(.distance)
                                 }
                             }
-                                
+
                             if viewModel.sortOptions.contains(.discount) {
                                 RadioButtonRow(
                                     title: NSLocalizedString("Discount", comment: "Explore Dash: Filters"),
@@ -73,7 +73,7 @@ struct MerchantFiltersView: View {
                             }
                         }
                     }
-                    
+
                     if viewModel.showPaymentTypes {
                         // Payment Type Section
                         FilterSection(title: NSLocalizedString("Payment Type", comment: "Explore Dash/Merchants/Filters")) {
@@ -85,7 +85,7 @@ struct MerchantFiltersView: View {
                             ) {
                                 viewModel.togglePaymentMethod(.dash)
                             }
-                                
+
                             RadioButtonRow(
                                 title: NSLocalizedString("Gift Card", comment: "Explore Dash: Filters"),
                                 icon: .custom("image.explore.dash.wts.payment.gift-card"),
@@ -96,7 +96,7 @@ struct MerchantFiltersView: View {
                             }
                         }
                     }
-                        
+
                     // Gift Card Types Section - Only show if Gift Card is selected
                     if viewModel.showGiftCardTypes && viewModel.useGiftCard {
                         FilterSection(title: NSLocalizedString("Gift card types", comment: "Explore Dash/Merchants/Filters")) {
@@ -107,7 +107,7 @@ struct MerchantFiltersView: View {
                             ) {
                                 viewModel.toggleDenominationType(.flexible)
                             }
-                                
+
                             RadioButtonRow(
                                 title: NSLocalizedString("Fixed denominated amounts", comment: "Explore Dash: Filters"),
                                 isSelected: viewModel.denominationFixed,
@@ -117,7 +117,7 @@ struct MerchantFiltersView: View {
                             }
                         }
                     }
-                        
+
                     // Location Section
                     if viewModel.showTerritory {
                         FilterSection(title: NSLocalizedString("Location", comment: "")) {
@@ -129,7 +129,7 @@ struct MerchantFiltersView: View {
                             )
                         }
                     }
-                    
+
                     // Radius Section
                     if viewModel.showRadius {
                         FilterSection(title: NSLocalizedString("Radius", comment: "Explore Dash/Merchants/Filters")) {
@@ -143,7 +143,7 @@ struct MerchantFiltersView: View {
                             }
                         }
                     }
-                    
+
                     // Location Service Settings
                     if viewModel.showLocationSettings && !DWLocationManager.shared.isAuthorized {
                         FilterSection(title: NSLocalizedString("Current Location Settings", comment: "Explore Dash/Merchants/Filters")) {
@@ -156,7 +156,7 @@ struct MerchantFiltersView: View {
                             }
                         }
                     }
-                        
+
                     // Reset Filters
                     FilterSection(title: nil) {
                         Button(action: {
@@ -176,7 +176,7 @@ struct MerchantFiltersView: View {
                 .animation(.easeInOut(duration: 0.3), value: viewModel.useGiftCard)
                 .animation(.easeInOut(duration: 0.3), value: viewModel.sortOptions)
             }
-            
+
             NavigationLink(destination: TerritoryPickerView(
                 selectedTerritory: viewModel.selectedTerritory,
                 territoriesDataSource: viewModel.territoriesDataSource
@@ -211,7 +211,7 @@ struct MerchantFiltersView: View {
 private struct FilterSection<Content: View>: View {
     let title: String?
     @ViewBuilder let content: () -> Content
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if let title = title {
@@ -222,7 +222,7 @@ private struct FilterSection<Content: View>: View {
                     .padding(.leading, 15)
                     .padding(.vertical, 12)
             }
-            
+
             VStack(spacing: 0) {
                 content()
             }
@@ -238,21 +238,21 @@ private struct FilterSection<Content: View>: View {
 private struct FilterDisclosureItem: View {
     let title: String
     let action: (() -> Void)?
-    
+
     init(title: String, action: (() -> Void)? = nil) {
         self.title = title
         self.action = action
     }
-    
+
     var body: some View {
         HStack {
             Text(title)
                 .font(.body2)
                 .fontWeight(.medium)
                 .foregroundColor(.primaryText)
-            
+
             Spacer()
-            
+
             Image(systemName: "chevron.right")
                 .foregroundColor(.gray)
                 .imageScale(.small)

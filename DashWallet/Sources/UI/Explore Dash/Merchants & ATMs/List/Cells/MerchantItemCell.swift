@@ -43,14 +43,14 @@ class MerchantItemCell: PointOfUseItemCell {
         } else {
             subLabel.isHidden = true
         }
-        
+
         // Hide separate distance label since we're using subLabel
         distanceLabel.isHidden = true
 
         let isGiftCard = merchant.paymentMethod == .giftCard
         let paymentIconName = isGiftCard ? "image.explore.dash.wts.payment.gift-card" : "image.explore.dash.wts.payment.dash";
-        paymentTypeIconView.image = UIImage(named: paymentIconName)
-        
+        paymentTypeIconView.image = UIImage(named: paymentIconName)?.withRenderingMode(.alwaysTemplate)
+
         if merchant.savingsBasisPoints > 0 {
             savingsLabel.isHidden = false
             savingsLabel.text = String(format: NSLocalizedString("~%.0f%%", comment: "Savings percentage"), merchant.toSavingPercentages())

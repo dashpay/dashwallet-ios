@@ -75,14 +75,14 @@ extension PointOfUseDetailsViewController {
         let infoButton = UIBarButtonItem(image: infoImage, style: .plain, target: self, action: #selector(infoButtonAction))
         navigationItem.rightBarButtonItem = infoButton
     }
-    
+
     @objc
     func infoButtonAction() {
         let hostingController = UIHostingController(rootView: MerchantTypesDialog())
         hostingController.setDetent(640)
         present(hostingController, animated: true)
     }
-    
+
     @objc
     func payAction() {
         payWithDashHandler?()
@@ -94,45 +94,45 @@ extension PointOfUseDetailsViewController {
         // Extract only digits for phone call
         let digits = phone.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
         guard !digits.isEmpty else { return }
-        
+
         // Use telprompt: to directly open phone app (tel: shows options)
         let urlString = "telprompt:\(digits)"
         guard let url = URL(string: urlString) else { return }
-        
+
         // Check if device can open the URL
         guard UIApplication.shared.canOpenURL(url) else { return }
 
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
-    
+
     @objc
     private func handlePanGesture(_ sender: UIPanGestureRecognizer) {
         print("DEBUG: Pan gesture triggered - state: \(sender.state.rawValue)")
-        guard let contentViewTopConstraint = contentViewTopConstraint else { 
+        guard let contentViewTopConstraint = contentViewTopConstraint else {
             print("DEBUG: contentViewTopConstraint is nil!")
-            return 
+            return
         }
-        
+
         let translatedPoint: CGPoint = sender.translation(in: view)
         let currentY = contentViewTopConstraint.constant
-        
+
         switch sender.state {
         case .changed:
             // Only handle vertical movement and constrain within bounds
             let newY = currentY + translatedPoint.y
-            
+
             // Constrain movement between closed position and maximum expanded position
             let screenHeight = view.frame.size.height
-            let kDefaultClosedMapPosition = screenHeight * 0.75 // Mostly closed (more map visible) 
+            let kDefaultClosedMapPosition = screenHeight * 0.75 // Mostly closed (more map visible)
             let kDefaultBottomHalfPosition = screenHeight * 0.35 // Default position to show content including button
             let kDefaultOpenedMapPosition = screenHeight * 0.2 // Mostly open (less map visible, more content)
             // Allow dragging between open position (top) and closed position (bottom)
             let maxY = kDefaultClosedMapPosition // Don't allow dragging below closed position
             let minY = kDefaultOpenedMapPosition // Don't allow dragging above open position
-            
+
             contentViewTopConstraint.constant = max(minY, min(maxY, newY))
             sender.setTranslation(.zero, in: view)
-            
+
         case .ended:
             let velocityInView = sender.velocity(in: view)
             let velocityY: CGFloat = velocityInView.y
@@ -141,9 +141,9 @@ extension PointOfUseDetailsViewController {
             let kDefaultClosedMapPosition = screenHeight * 0.75 // Mostly closed (more map visible)
             let kDefaultBottomHalfPosition = screenHeight * 0.35 // Default position to show content including button
             let kDefaultOpenedMapPosition = screenHeight * 0.2
-            
+
             var finalY: CGFloat
-            
+
             if velocityY > 300 {
                 // Fast downward swipe - snap to closed position (more map visible)
                 finalY = kDefaultClosedMapPosition
@@ -154,7 +154,7 @@ extension PointOfUseDetailsViewController {
                 // No strong velocity, snap to nearest position based on current position
                 let midPoint1 = (kDefaultOpenedMapPosition + kDefaultBottomHalfPosition) / 2
                 let midPoint2 = (kDefaultBottomHalfPosition + kDefaultClosedMapPosition) / 2
-                
+
                 if finalCurrentY < midPoint1 {
                     finalY = kDefaultOpenedMapPosition
                 } else if finalCurrentY < midPoint2 {
@@ -163,7 +163,7 @@ extension PointOfUseDetailsViewController {
                     finalY = kDefaultClosedMapPosition
                 }
             }
-            
+
             UIView.animate(withDuration: 0.3, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut) {
                 contentViewTopConstraint.constant = finalY
                 self.view.layoutIfNeeded()
@@ -171,7 +171,7 @@ extension PointOfUseDetailsViewController {
                 // Map button visibility update removed since button is removed
                 // self?.updateMapButtonVisibility()
             }
-            
+
         default:
             break
         }
@@ -180,7 +180,7 @@ extension PointOfUseDetailsViewController {
     @objc
     func websiteAction() {
         guard let website = pointOfUse.website else { return }
-        
+
         // Normalize URL by adding https scheme if missing
         let normalizedWebsite: String
         if website.hasPrefix("http://") || website.hasPrefix("https://") {
@@ -188,11 +188,11 @@ extension PointOfUseDetailsViewController {
         } else {
             normalizedWebsite = "https://" + website
         }
-        
+
         guard let url = URL(string: normalizedWebsite) else { return }
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
-    
+
     private func setupMapButton() {
         showMapButton = UIButton(type: .custom)
         showMapButton.translatesAutoresizingMaskIntoConstraints = false
@@ -206,10 +206,10 @@ extension PointOfUseDetailsViewController {
         showMapButton.layer.cornerRadius = 20
         showMapButton.layer.backgroundColor = UIColor.black.cgColor
         contentView.addSubview(showMapButton)
-        
+
         let showMapButtonWidth: CGFloat = 92
         let showMapButtonHeight: CGFloat = 40
-        
+
         NSLayoutConstraint.activate([
             showMapButton.widthAnchor.constraint(equalToConstant: showMapButtonWidth),
             showMapButton.heightAnchor.constraint(equalToConstant: showMapButtonHeight),
@@ -217,21 +217,21 @@ extension PointOfUseDetailsViewController {
             showMapButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -15),
         ])
     }
-    
+
     @objc
     private func showMapAction() {
         // Animate to show more map (closed position)
         let kDefaultClosedMapPosition: CGFloat = 100.0
         guard let contentViewTopConstraint = contentViewTopConstraint else { return }
-        
+
         UIView.animate(withDuration: 0.3, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut) {
             contentViewTopConstraint.constant = kDefaultClosedMapPosition
             self.view.layoutIfNeeded()
         }
-        
+
         updateMapButtonVisibility()
     }
-    
+
     private func updateMapButtonVisibility() {
         guard let contentViewTopConstraint = contentViewTopConstraint else { return }
         // Show map button when content is mostly expanded (less map visible)
@@ -244,8 +244,10 @@ extension PointOfUseDetailsViewController {
 
         mapView = ExploreMapView()
         mapView.show(merchants: [pointOfUse])
-        mapView.centerRadius = 5
-        mapView.initialCenterLocation = .init(latitude: pointOfUse.latitude!, longitude: pointOfUse.longitude!)
+        mapView.centerRadius = 1
+        if let latitude = pointOfUse.latitude, let longitude = pointOfUse.longitude {
+            mapView.initialCenterLocation = .init(latitude: latitude, longitude: longitude)
+        }
         mapView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mapView)
 
@@ -270,13 +272,13 @@ extension PointOfUseDetailsViewController {
             contentView.layer.masksToBounds = true
             contentView.layer.cornerRadius = 20.0
             contentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-            
+
             // Create the top constraint and store reference to it
             // Position to ensure "Show all locations" button is fully visible at bottom
             let screenHeight = UIScreen.main.bounds.height
             let kDefaultBottomHalfPosition = screenHeight * 0.35 // Position higher to show more content including button
             contentViewTopConstraint = contentView.topAnchor.constraint(equalTo: view.topAnchor, constant: kDefaultBottomHalfPosition)
-            
+
             constraint = [
                 contentViewTopConstraint!,
                 contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -300,7 +302,7 @@ extension PointOfUseDetailsViewController {
             print("Warning: Failed to create detailsView for pointOfUse category: \(pointOfUse.category)")
             return
         }
-        
+
         detailsView = createdDetailsView
         detailsView.payWithDashHandler = payWithDashHandler
         detailsView.sellDashHandler = sellDashHandler
@@ -318,7 +320,7 @@ extension PointOfUseDetailsViewController {
         detailsView.dashSpendAuthHandler = { [weak self] in
             self?.showCTXSpendLoginInfo()
         }
-        
+
         detailsView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(detailsView)
 
@@ -328,7 +330,7 @@ extension PointOfUseDetailsViewController {
             detailsView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             detailsView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
         ])
-        
+
         // Add pan gesture to handle grabber dragging - only for map view
         // Attach to specific grabber area, not entire view
         if pointOfUse.showMap {
@@ -382,7 +384,7 @@ extension PointOfUseDetailsViewController {
         hostingController.setDetent(450)
         self.present(hostingController, animated: true)
     }
-    
+
     private func showCTXSpendTerms() {
         let hostingController = UIHostingController(
             rootView: CTXSpendTermsScreen {
@@ -401,10 +403,10 @@ extension PointOfUseDetailsViewController {
                 self.showDashSpendPayScreen(justAuthenticated: true)
             }
         )
-        
+
         self.navigationController?.pushViewController(hostingController, animated: true)
     }
-    
+
     private func showDashSpendPayScreen(justAuthenticated: Bool = false) {
         let hostingController = UIHostingController(
             rootView: DashSpendPayScreen(merchant: self.pointOfUse, justAuthenticated: justAuthenticated) { [weak self] txId in
@@ -412,15 +414,15 @@ extension PointOfUseDetailsViewController {
                 self?.onGiftCardPurchased?(txId)
             }
         )
-        
+
         self.navigationController?.pushViewController(hostingController, animated: true)
     }
-    
+
     private func refreshTokenAndMerchantInfo() {
         Task {
             if try await tryRefreshCtxToken(), let merchantId = pointOfUse.merchant?.merchantId {
                 let merchantInfo = try await CTXSpendService.shared.getMerchant(merchantId: merchantId)
-                
+
                 // Debug logging for CTX merchant info
                 if pointOfUse.name.lowercased().contains("buffalo") || pointOfUse.name.lowercased().contains("gamestop") {
                     print("🎯 CTX MERCHANT INFO DEBUG: \(pointOfUse.name)")
@@ -428,13 +430,13 @@ extension PointOfUseDetailsViewController {
                     print("   Local active: \(pointOfUse.active)")
                     print("   Will update view with enabled: \(merchantInfo.enabled)")
                 }
-                
+
                 pointOfUse = pointOfUse.updatingMerchant(
                     denominationsType: merchantInfo.denominationsType,
                     denominations: merchantInfo.denominations.compactMap { Int($0) },
                     enabled: merchantInfo.enabled
                 )
-                
+
                 // Update the view with the new merchant information
                 await MainActor.run {
                     refreshDetailsViewWithUpdatedMerchant()
@@ -442,15 +444,15 @@ extension PointOfUseDetailsViewController {
             }
         }
     }
-    
+
     private func refreshDetailsViewWithUpdatedMerchant() {
         // Remove the old details view
         detailsView?.removeFromSuperview()
-        
+
         // Recreate with updated merchant data
         showDetailsView()
     }
-    
+
     private func tryRefreshCtxToken() async throws -> Bool {
         do {
             try await CTXSpendService.shared.refreshToken()
@@ -486,8 +488,9 @@ extension ExplorePointOfUse {
         case .merchant(let m):
             if m.type == .online {
                 return NSLocalizedString("Online Merchant", comment: "Online Merchant")
-            } else if let currentLocation = DWLocationManager.shared.currentLocation, DWLocationManager.shared.isAuthorized {
-                let distance = CLLocation(latitude: latitude!, longitude: longitude!).distance(from: currentLocation)
+            } else if let currentLocation = DWLocationManager.shared.currentLocation, DWLocationManager.shared.isAuthorized,
+                      let latitude = latitude, let longitude = longitude {
+                let distance = CLLocation(latitude: latitude, longitude: longitude).distance(from: currentLocation)
                 let distanceString = ExploreDash.distanceFormatter
                     .string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
                 return "\(distanceString) · Physical Merchant" + (m.type == .onlineAndPhysical ? ", Online" : "")
@@ -510,7 +513,7 @@ extension UIHostingController: NavigationBarDisplayable {
 extension ExplorePointOfUse {
     func updatingMerchant(denominationsType: String?, denominations: [Int], enabled: Bool? = nil) -> ExplorePointOfUse {
         guard case .merchant(let currentMerchant) = category else { return self }
-        
+
         let updatedMerchant = ExplorePointOfUse.Merchant(
             merchantId: currentMerchant.merchantId,
             paymentMethod: currentMerchant.paymentMethod,
@@ -522,7 +525,7 @@ extension ExplorePointOfUse {
             redeemType: currentMerchant.redeemType,
             enabled: enabled ?? currentMerchant.enabled
         )
-        
+
         return ExplorePointOfUse(
             id: id,
             name: name,

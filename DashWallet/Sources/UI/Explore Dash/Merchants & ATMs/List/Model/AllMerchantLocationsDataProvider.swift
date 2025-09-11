@@ -36,7 +36,7 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
                         completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         var finalBounds = bounds
         var finalUserPoint = userPoint
-        
+
         // Use currentFilters if available, otherwise fall back to provided filters
         let filtersToUse = currentFilters ?? filters
 
@@ -51,7 +51,7 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
         } else if DWLocationManager.shared.isAuthorized, let userLocation = DWLocationManager.shared.currentLocation {
             // Fall back to filter radius approach when no map bounds available
             finalUserPoint = userLocation.coordinate
-            
+
             if let filtersToUse = filtersToUse {
                 let radiusInMeters = filtersToUse.currentRadius
                 let circle = MKCircle(center: userLocation.coordinate, radius: radiusInMeters)

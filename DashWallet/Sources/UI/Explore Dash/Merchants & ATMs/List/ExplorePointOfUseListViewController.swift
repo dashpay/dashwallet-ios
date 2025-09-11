@@ -64,7 +64,6 @@ class ExplorePointOfUseListViewController: UIViewController {
     internal var currentSegment: PointOfUseListSegment { model.currentSegment }
     internal var items: [ExplorePointOfUse] { model.items }
 
-    internal var radius = 5 // In miles - 5 mile radius as requested
     internal var mapView: ExploreMapView!
     internal var showMapButton: UIButton!
     internal var syncBannerView: ExploreSyncBannerView?
@@ -153,7 +152,7 @@ class ExplorePointOfUseListViewController: UIViewController {
 
         showMapIfNeeded()
         DWLocationManager.shared.add(observer: self)
-        
+
         // Check database sync status again in case it changed while navigating
         checkDatabaseSyncStatus()
     }
@@ -205,10 +204,10 @@ class ExplorePointOfUseListViewController: UIViewController {
         }
 
         configureHierarchy()
-        
+
         // Check database sync status
         checkDatabaseSyncStatus()
-        
+
         // Observe database sync notifications
         NotificationCenter.default.addObserver(self, selector: #selector(databaseHasBeenUpdated), name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
     }
@@ -217,13 +216,13 @@ class ExplorePointOfUseListViewController: UIViewController {
 extension ExplorePointOfUseListViewController {
     @objc
     internal func configureModel() { }
-    
+
     private func checkDatabaseSyncStatus() {
         // Check if we need to show sync banner
         // If database doesn't exist or has old schema, show banner
         let documentsPath = FileManager.documentsDirectoryURL.appendingPathComponent(kExploreDashDatabaseName)
         let fileExists = FileManager.default.fileExists(atPath: documentsPath.path)
-        
+
         // If file doesn't exist or has old schema, show sync banner
         if !fileExists || ExploreDatabaseConnection.hasOldMerchantIdSchema(at: documentsPath) {
             showSyncBanner()
@@ -231,45 +230,45 @@ extension ExplorePointOfUseListViewController {
             hideSyncBanner()
         }
     }
-    
+
     private func showSyncBanner() {
         guard syncBannerView?.isHidden == true else { return }
-        
+
         syncBannerView?.isHidden = false
         syncBannerHeightConstraint?.constant = 30
-        
+
         UIView.animate(withDuration: 0.3) {
             self.view.layoutIfNeeded()
         }
     }
-    
+
     private func hideSyncBanner() {
         guard syncBannerView?.isHidden == false else { return }
-        
+
         syncBannerHeightConstraint?.constant = 0
-        
+
         UIView.animate(withDuration: 0.3) {
             self.view.layoutIfNeeded()
         } completion: { _ in
             self.syncBannerView?.isHidden = true
         }
     }
-    
+
     @objc private func databaseHasBeenUpdated() {
         DispatchQueue.main.async { [weak self] in
             // Database has been updated, hide the sync banner
             self?.hideSyncBanner()
-            
+
             // The database connection needs to be re-established after update
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                 guard let self = self else { return }
-                
+
                 self.model.items = []
                 if let currentProvider = self.model.currentDataProvider {
                     currentProvider.items = []
                     currentProvider.currentPage = nil
                 }
-                
+
                 self.model.refreshItems()
                 self.tableView.reloadData()
             }
@@ -391,7 +390,7 @@ extension ExplorePointOfUseListViewController {
         contentView.layer.cornerRadius = 20
         contentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         view.addSubview(contentView)
-        
+
         // Add sync banner attached to app bar but overlaying content
         syncBannerView = ExploreSyncBannerView()
         syncBannerView?.translatesAutoresizingMaskIntoConstraints = false
@@ -455,7 +454,7 @@ extension ExplorePointOfUseListViewController {
 
         contentViewTopLayoutConstraint = contentView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor,
                                                                           constant: -handlerViewHeight)
-        
+
         syncBannerHeightConstraint = syncBannerView!.heightAnchor.constraint(equalToConstant: 0)
         // Set high z-position to overlay content
         syncBannerView!.layer.zPosition = 100
@@ -466,7 +465,7 @@ extension ExplorePointOfUseListViewController {
             contentView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            
+
             // Sync banner constraints - attached to app bar, overlaying content
             syncBannerView!.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             syncBannerView!.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -499,7 +498,7 @@ extension ExplorePointOfUseListViewController {
         let filterGroups = currentSegment.filterGroups.filter { filter in
             DWLocationManager.shared.currentLocation != nil || (filter != .sortBy && filter != .radius)
         }
-        
+
         let filtersView = MerchantFiltersView(
             currentFilters: model.filters,
             filterGroups: currentSegment.filterGroups,
@@ -508,11 +507,11 @@ extension ExplorePointOfUseListViewController {
         ) { [weak self] filters in
             self?.apply(filters: filters)
         }
-        
+
         let hostingController = UIHostingController(
             rootView: NavigationView { filtersView }
         )
-        
+
         present(hostingController, animated: true)
     }
 
@@ -537,11 +536,11 @@ extension ExplorePointOfUseListViewController {
         case .changed:
             // Only handle vertical movement and constrain within bounds
             let newY = currentY + translatedPoint.y
-            
+
             // Constrain movement between closed position and maximum expanded position
             let maxY = view.frame.size.height * 0.8 // Allow dragging down to 80% of screen
             let minY = kDefaultClosedMapPosition // Don't allow dragging above closed position
-            
+
             contentViewTopLayoutConstraint.constant = max(minY, min(maxY, newY))
             sender.setTranslation(.zero, in: view)
 
@@ -564,8 +563,8 @@ extension ExplorePointOfUseListViewController {
 
             let animationDuration: TimeInterval = 0.3
 
-            UIView.animate(withDuration: animationDuration, delay: 0, 
-                          usingSpringWithDamping: 0.8, initialSpringVelocity: 0, 
+            UIView.animate(withDuration: animationDuration, delay: 0,
+                          usingSpringWithDamping: 0.8, initialSpringVelocity: 0,
                           options: .curveEaseOut) {
                 self.mapView.contentInset = .init(top: 0, left: 0, bottom: self.mapView.frame.height - finalY, right: 0)
                 self.contentViewTopLayoutConstraint.constant = finalY

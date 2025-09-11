@@ -19,13 +19,13 @@ import Foundation
 import Combine
 
 class MerchantFiltersViewModel: ObservableObject {
-    
+
     // MARK: - Filter Options
-    
+
     @Published var sortByDistance = false
     @Published var sortByName = false
     @Published var sortByDiscount = false
-    
+
     @Published var payWithDash = false
     @Published var useGiftCard = false {
         didSet {
@@ -35,7 +35,7 @@ class MerchantFiltersViewModel: ObservableObject {
                 sortOptions = initialSortOptions.filter { option in
                     option != .discount
                 }
-                
+
                 if sortByDiscount {
                     sortByDiscount = false
                     sortByName = true
@@ -43,27 +43,27 @@ class MerchantFiltersViewModel: ObservableObject {
             }
         }
     }
-    
+
     @Published var sortOptions: [PointOfUseListFilters.SortBy]
-    
+
     @Published var denominationFixed = false
     @Published var denominationFlexible = false
-    
+
     @Published var selectedRadius: PointOfUseListFilters.Radius?
     @Published var selectedTerritory: Territory?
-    
+
     @Published var isLocationServiceEnabled = DWLocationManager.shared.isAuthorized
-    
+
     // MARK: - Computed Properties
-    
+
     var canApply: Bool {
         hasChanges
     }
-    
+
     var canReset: Bool {
         hasAnyFiltersApplied || hasChanges
     }
-    
+
     private var hasChanges: Bool {
         sortByDistance != initialSortByDistance ||
         sortByName != initialSortByName ||
@@ -75,16 +75,16 @@ class MerchantFiltersViewModel: ObservableObject {
         selectedRadius != initialRadius ||
         selectedTerritory != initialTerritory
     }
-    
+
     private var hasAnyFiltersApplied: Bool {
         sortByDistance || sortByName || sortByDiscount ||
         payWithDash || useGiftCard ||
         denominationFixed || denominationFlexible ||
         selectedRadius != nil || selectedTerritory != nil
     }
-    
+
     // MARK: - Initial State
-    
+
     private let initialSortByDistance: Bool
     private let initialSortByName: Bool
     private let initialSortByDiscount: Bool
@@ -95,25 +95,25 @@ class MerchantFiltersViewModel: ObservableObject {
     private let initialRadius: PointOfUseListFilters.Radius?
     private let initialTerritory: Territory?
     private let initialSortOptions: [PointOfUseListFilters.SortBy]
-    
+
     // MARK: - Available Options
-    
+
     let availableRadiusOptions: [PointOfUseListFilters.Radius] = [
         .one, .five, .twenty, .fifty
     ]
-    
+
     let showLocationSettings: Bool
     let showRadius: Bool
     let showTerritory: Bool
     let showPaymentTypes: Bool
     let showGiftCardTypes: Bool
-    
+
     // MARK: - Data Sources
-    
+
     var territoriesDataSource: TerritoryDataSource?
-    
+
     // MARK: - Initialization
-    
+
     init(
         filters: PointOfUseListFilters?,
         filterGroups: [PointOfUseListFiltersGroup],
@@ -128,18 +128,18 @@ class MerchantFiltersViewModel: ObservableObject {
         self.territoriesDataSource = territoriesDataSource
         self.initialSortOptions = sortOptions
         self.sortOptions = sortOptions
-        
+
         if let filters = filters {
             self.initialSortByDistance = filters.sortBy == .distance
             self.initialSortByName = filters.sortBy == .name
             self.initialSortByDiscount = filters.sortBy == .discount
-            
+
             self.initialPayWithDash = filters.merchantPaymentTypes?.contains(.dash) ?? false
             self.initialUseGiftCard = filters.merchantPaymentTypes?.contains(.giftCard) ?? false
-            
+
             self.initialDenominationFixed = filters.denominationType == .fixed || filters.denominationType == .both
             self.initialDenominationFlexible = filters.denominationType == .flexible || filters.denominationType == .both
-            
+
             // Convert PointOfUseListFilters.Radius to RadiusOption
             if let filtersRadius = filters.radius {
                 switch filtersRadius {
@@ -151,9 +151,9 @@ class MerchantFiltersViewModel: ObservableObject {
             } else {
                 self.initialRadius = nil
             }
-            
+
             self.initialTerritory = filters.territory
-            
+
             // Set current values
             self.sortByDistance = initialSortByDistance
             self.sortByName = initialSortByName
@@ -174,13 +174,13 @@ class MerchantFiltersViewModel: ObservableObject {
             self.initialDenominationFlexible = true
             self.initialRadius = .twenty
             self.initialTerritory = nil
-            
+
             resetFilters()
         }
     }
-    
+
     // MARK: - Actions
-    
+
     func resetFilters() {
         sortByDistance = false
         sortByName = true
@@ -192,14 +192,14 @@ class MerchantFiltersViewModel: ObservableObject {
         selectedRadius = .twenty
         selectedTerritory = nil
     }
-    
+
     func toggleSortBy(_ option: PointOfUseListFilters.SortBy) {
         // Only one sort option can be selected at a time
         sortByDistance = (option == .distance)
         sortByName = (option == .name)
         sortByDiscount = (option == .discount)
     }
-    
+
     func toggleRadius(_ option: PointOfUseListFilters.Radius) {
         if selectedRadius == option {
             selectedRadius = nil
@@ -207,7 +207,7 @@ class MerchantFiltersViewModel: ObservableObject {
             selectedRadius = option
         }
     }
-    
+
     func togglePaymentMethod(_ method: ExplorePointOfUse.Merchant.PaymentMethod) {
         switch method {
         case .dash:
@@ -226,7 +226,7 @@ class MerchantFiltersViewModel: ObservableObject {
             } else {
                 useGiftCard.toggle()
             }
-            
+
             // Reset denomination types when gift card is unchecked
             if !useGiftCard {
                 denominationFixed = true
@@ -234,7 +234,7 @@ class MerchantFiltersViewModel: ObservableObject {
             }
         }
     }
-    
+
     func toggleDenominationType(_ type: PointOfUseListFilters.DenominationType) {
         switch type {
         case .flexible:
@@ -258,11 +258,11 @@ class MerchantFiltersViewModel: ObservableObject {
             break
         }
     }
-    
+
     func buildFilters() -> PointOfUseListFilters? {
         var filters = PointOfUseListFilters()
         var hasAnyFilters = false
-        
+
         // Sort By
         if sortByDistance {
             filters.sortBy = .distance
@@ -274,7 +274,7 @@ class MerchantFiltersViewModel: ObservableObject {
             filters.sortBy = .discount
             hasAnyFilters = true
         }
-        
+
         // Payment Methods
         var paymentMethods: [ExplorePointOfUse.Merchant.PaymentMethod] = []
         if payWithDash {
@@ -287,7 +287,7 @@ class MerchantFiltersViewModel: ObservableObject {
             filters.merchantPaymentTypes = paymentMethods
             hasAnyFilters = true
         }
-        
+
         // Denomination Type
         if denominationFixed && denominationFlexible {
             filters.denominationType = .both
@@ -299,19 +299,19 @@ class MerchantFiltersViewModel: ObservableObject {
             filters.denominationType = .flexible
             hasAnyFilters = true
         }
-        
+
         // Radius
         if let radius = selectedRadius {
             filters.radius = radius
             hasAnyFilters = true
         }
-        
+
         // Territory
         if let territory = selectedTerritory {
             filters.territory = territory
             hasAnyFilters = true
         }
-        
+
         return hasAnyFilters ? filters : nil
     }
 }

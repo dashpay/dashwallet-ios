@@ -120,7 +120,7 @@ class PointOfUseDetailsView: UIView, SyncingActivityMonitorObserver, NetworkReac
 
         configureHierarchy()
         configureObservers()
-        
+
         // Fetch actual location count asynchronously
         fetchLocationCount()
     }
@@ -355,7 +355,7 @@ extension PointOfUseDetailsView {
         payButton.addTarget(self, action: #selector(payAction), for: .touchUpInside)
         payButton.setTitle(NSLocalizedString("Buy a gift card", comment: "Buy a gift card"), for: .normal)
         // Try the payment gift card icon that should match Figma
-        payButton.setImage(UIImage(named: "gift-card-icon"), for: .normal)
+        payButton.setImage(UIImage(named: "gift-card-icon")?.withRenderingMode(.alwaysTemplate), for: .normal)
         payButton.accentColor = .dw_orange()
 
         // Configure icon size and text font
@@ -566,7 +566,7 @@ extension PointOfUseDetailsView {
         print("DEBUG_FETCH_RESULTS: getLocationCount() called, returning: \(locationCount)")
         return locationCount
     }
-    
+
     private func fetchLocationCount() {
         // Debug logging for ALL merchants to help identify the issue
         print("DEBUG_FETCH_COUNT: Starting location fetch for merchant: '\(merchant.name)'")
@@ -575,28 +575,27 @@ extension PointOfUseDetailsView {
             print("DEBUG_FETCH_COUNT: merchantId: '\(merchantData.merchantId)'")
         }
         print("DEBUG_FETCH_COUNT: merchant.active: \(merchant.active)")
-        
+
         // Debug the current filter radius being used
-        let kDefaultRadiusMeters: Double = 32000 // 20 miles default
         let kMetersToMilesConversion: Double = 1609.34
-        let filterRadius = currentFilters?.currentRadius ?? kDefaultRadiusMeters
+        let filterRadius = currentFilters?.currentRadius ?? kDefaultRadius
         print("DEBUG_FETCH_COUNT: Using radius: \(filterRadius) meters (\(filterRadius / kMetersToMilesConversion) miles)")
         if let filterRadiusEnum = currentFilters?.radius {
             print("DEBUG_FETCH_COUNT: Filter radius setting: \(filterRadiusEnum.displayText)")
         }
-        
+
         // Debug location manager status
         print("DEBUG_FETCH_COUNT: Location manager status:")
         print("DEBUG_FETCH_COUNT:   needsAuthorization: \(DWLocationManager.shared.needsAuthorization)")
         print("DEBUG_FETCH_COUNT:   isAuthorized: \(DWLocationManager.shared.isAuthorized)")
         print("DEBUG_FETCH_COUNT:   isPermissionDenied: \(DWLocationManager.shared.isPermissionDenied)")
         print("DEBUG_FETCH_COUNT:   currentLocation available: \(DWLocationManager.shared.currentLocation != nil)")
-        
+
         // Fetch the actual location count from the data source
         // Use current map bounds if available (from map interaction), otherwise fall back to filter radius
         let userPoint = DWLocationManager.shared.isAuthorized ? DWLocationManager.shared.currentLocation?.coordinate : nil
         let bounds: ExploreMapBounds?
-        
+
         if let mapBounds = currentMapBounds {
             // Use the current visible map bounds (when user has zoomed/panned the map)
             bounds = mapBounds
@@ -611,12 +610,12 @@ extension PointOfUseDetailsView {
             bounds = nil
             print("DEBUG_FETCH_COUNT: No bounds or user location available")
         }
-        
+
         // Use the exact same logic as AllMerchantLocationsDataProvider
-        // Check location permissions and set bounds accordingly 
+        // Check location permissions and set bounds accordingly
         var finalBounds = bounds
         var finalUserPoint = userPoint
-        
+
         if DWLocationManager.shared.isPermissionDenied || DWLocationManager.shared.needsAuthorization {
             // When location is denied/not authorized, fetch all locations globally (no bounds filter)
             print("DEBUG_FETCH_RESULTS: Location denied/not authorized, fetching all locations globally")
@@ -628,7 +627,7 @@ extension PointOfUseDetailsView {
             finalBounds = nil
             finalUserPoint = nil
         }
-        
+
         // Debug final parameters being used
         print("DEBUG_FETCH_COUNT: Final API call parameters:")
         print("DEBUG_FETCH_COUNT:   pointOfUseId: '\(merchant.pointOfUseId)'")
@@ -638,7 +637,7 @@ extension PointOfUseDetailsView {
         } else {
             print("DEBUG_FETCH_COUNT:   finalUserPoint: nil")
         }
-        
+
         // Use the same call as AllMerchantLocationsDataProvider
         ExploreDash.shared.allLocations(for: merchant.pointOfUseId, in: finalBounds, userPoint: finalUserPoint) { [weak self] result in
             switch result {
@@ -647,8 +646,8 @@ extension PointOfUseDetailsView {
                     // allLocations already returns only locations for this merchant, so no filtering needed
                     // Filter only for active locations to match what "Show all locations" displays
                     let activeLocations = paginationResult.items.filter { $0.active }
-                    
-                    // Debug logging 
+
+                    // Debug logging
                     if let strongSelf = self {
                         print("DEBUG_FETCH_RESULTS: Results for '\(strongSelf.merchant.name)'")
                         print("DEBUG_FETCH_RESULTS: Total GameStop locations: \(paginationResult.items.count)")
@@ -656,7 +655,7 @@ extension PointOfUseDetailsView {
                         let inactiveLocations = paginationResult.items.filter { !$0.active }
                         print("DEBUG_FETCH_RESULTS: Inactive GameStop locations: \(inactiveLocations.count)")
                     }
-                    
+
                     // Use the count of active locations (this should match what "Show all locations" shows)
                     let newCount = activeLocations.count
                     print("DEBUG_FETCH_RESULTS: Setting locationCount to \(newCount)")
@@ -677,28 +676,28 @@ extension PointOfUseDetailsView {
             }
         }
     }
-    
+
     private func updateShowAllLocationsButton() {
         // Find and update the "Show all locations" button text
         // This is called after the location count is fetched
         print("DEBUG_FETCH_RESULTS: updateShowAllLocationsButton called with locationCount: \(locationCount)")
-        guard !isShowAllHidden, let containerView = containerView else { 
+        guard !isShowAllHidden, let containerView = containerView else {
             print("DEBUG_FETCH_RESULTS: Guard failed - isShowAllHidden: \(isShowAllHidden), containerView exists: \(containerView != nil)")
-            return 
+            return
         }
-        
+
         print("DEBUG_FETCH_RESULTS: Container has \(containerView.arrangedSubviews.count) arranged subviews")
-        
+
         // Find the show all locations block (should be the last arranged subview)
         if let showAllBlock = containerView.arrangedSubviews.last {
             print("DEBUG_FETCH_RESULTS: Found show all block with \(showAllBlock.subviews.count) subviews")
-            
+
             // Find the button within the block
             for (index, subview) in showAllBlock.subviews.enumerated() {
                 print("DEBUG_FETCH_RESULTS: Checking subview \(index): \(type(of: subview))")
                 if let button = subview as? UIButton {
                     let newTitle = String.localizedStringWithFormat(
-                        NSLocalizedString("Show all locations (%d)", comment: "Show all locations with count"), 
+                        NSLocalizedString("Show all locations (%d)", comment: "Show all locations with count"),
                         locationCount
                     )
                     print("DEBUG_FETCH_RESULTS: Updating button title to: \(newTitle)")
@@ -710,10 +709,10 @@ extension PointOfUseDetailsView {
             print("DEBUG_FETCH_RESULTS: No show all block found in container")
         }
     }
-    
+
     private func createShowAllLocationsSection() {
         guard !isShowAllHidden, let containerView = containerView else { return }
-        
+
         let showAllBlock = UIView()
         showAllBlock.translatesAutoresizingMaskIntoConstraints = false
         showAllBlock.backgroundColor = .white // Pure white as per Figma

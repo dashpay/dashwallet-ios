@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWUpholdMainnetConstants
 
 + (NSString *)authorizeURLFormat {
-    return @"https://wallet.uphold.com/authorize/c184650d0cb44e73d8e5cb2021753a721c41f74a?scope=accounts:read%%20cards:read%%20cards:write%%20transactions:deposit%%20transactions:read%%20transactions:transfer:application%%20transactions:transfer:others%%20transactions:transfer:self%%20transactions:withdraw%%20transactions:commit:otp%%20user:read&state=%@";
+    return @"";
 }
 
 + (NSString *)baseURLString {
@@ -30,23 +30,24 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (NSString *)clientID {
-    return @"c184650d0cb44e73d8e5cb2021753a721c41f74a";
+    return @"";
 }
 
 + (NSString *)clientSecret {
-    return @"da72feee8236f7709df6d0c235a8896ad45f2a91";
+    return @"";
 }
 
 + (NSString *)buyCardURLFormat {
-    return @"https://wallet.uphold.com/dashboard/cards/%@/add";
+    return @"https://uphold.com/dashboard/cards/%@/add";
 }
 
 + (NSString *)transactionURLFormat {
-    return @"https://wallet.uphold.com/reserve/transactions/%@";
+    return @"https://uphold.com/reserve/transactions/%@";
 }
 
 + (NSString *)logoutURLString {
-    return @"https://wallet.uphold.com/dashboard";
+    return @"https://uphold.com/";
+
 }
 
 @end

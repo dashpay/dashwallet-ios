@@ -49,7 +49,7 @@ enum MerchantsListSegment: Int {
             showMap = false
             dataProvider = OnlineMerchantsDataProvider()
             sortOptions = [.name, .discount]
-            
+
         case .nearby:
             showLocationServiceSettings = true
             showReversedLocation = true
@@ -101,7 +101,7 @@ extension MerchantsListSegment {
 class MerchantListViewController: ExplorePointOfUseListViewController {
 
     private var infoButton: UIBarButtonItem!
-    
+
     override var locationServicePopupTitle: String {
         NSLocalizedString("Merchant search works better with Location Services turned on.", comment: "")
     }
@@ -239,7 +239,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         setupInfoButton()
 
         model.itemsDidChange = { [weak self] in
@@ -268,13 +268,13 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
     }
-    
+
     private func setupInfoButton() {
         let infoImage = UIImage(systemName: "info.circle")?.withRenderingMode(.alwaysOriginal).withTintColor(.systemBlue)
         infoButton = UIBarButtonItem(image: infoImage, style: .plain, target: self, action: #selector(infoButtonAction))
         navigationItem.rightBarButtonItem = infoButton
     }
-    
+
     @objc
     func infoButtonAction() {
         let hostingController = UIHostingController(rootView: MerchantTypesDialog())

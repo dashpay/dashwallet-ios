@@ -25,11 +25,11 @@ struct TerritoryPickerView: View {
     @State private var territories: [Territory] = []
     @State private var isLoading = true
     @State private var searchText = ""
-    
+
     let selectedTerritory: Territory?
     let territoriesDataSource: TerritoryDataSource?
     let onTerritorySelected: (Territory?) -> Void
-    
+
     private var filteredTerritories: [Territory] {
         if searchText.isEmpty {
             return territories
@@ -38,14 +38,14 @@ struct TerritoryPickerView: View {
             territory.localizedCaseInsensitiveContains(searchText)
         }
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
                 // Search Bar
                 HStack {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.gray)
-                    
+
                     TextField(NSLocalizedString("Search territories", comment: ""), text: $searchText)
                         .textFieldStyle(PlainTextFieldStyle())
                 }
@@ -55,7 +55,7 @@ struct TerritoryPickerView: View {
                 .cornerRadius(10)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
-                
+
                 if isLoading {
                     Spacer()
                     SwiftUI.ProgressView()
@@ -79,7 +79,7 @@ struct TerritoryPickerView: View {
                                 .padding(.horizontal, 20)
                                 .padding(.bottom, 8)
                                 .id("current_location")
-                                
+
                                 // Territory Options
                                 VStack(spacing: 0) {
                                     ForEach(filteredTerritories, id: \.self) { territory in
@@ -132,13 +132,13 @@ struct TerritoryPickerView: View {
             loadTerritories()
         }
     }
-    
+
     private func loadTerritories() {
         guard let dataSource = territoriesDataSource else {
             isLoading = false
             return
         }
-        
+
         dataSource { result in
             DispatchQueue.main.async {
                 isLoading = false

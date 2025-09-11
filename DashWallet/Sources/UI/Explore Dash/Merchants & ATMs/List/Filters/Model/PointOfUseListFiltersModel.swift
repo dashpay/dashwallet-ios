@@ -69,9 +69,9 @@ struct PointOfUseListFilters: Equatable {
                 return 80000
             }
         }
-        
+
         var id: Int { rawValue }
-        
+
         var displayText: String {
             if Locale.usesMetricMeasurementSystem {
                 switch self {
@@ -90,7 +90,7 @@ struct PointOfUseListFilters: Equatable {
             }
         }
     }
-    
+
     enum DenominationType {
         case fixed
         case flexible
