@@ -107,9 +107,7 @@ extension PointOfUseDetailsViewController {
 
     @objc
     private func handlePanGesture(_ sender: UIPanGestureRecognizer) {
-        print("DEBUG: Pan gesture triggered - state: \(sender.state.rawValue)")
         guard let contentViewTopConstraint = contentViewTopConstraint else {
-            print("DEBUG: contentViewTopConstraint is nil!")
             return
         }
 
@@ -424,12 +422,6 @@ extension PointOfUseDetailsViewController {
                 let merchantInfo = try await CTXSpendService.shared.getMerchant(merchantId: merchantId)
 
                 // Debug logging for CTX merchant info
-                if pointOfUse.name.lowercased().contains("buffalo") || pointOfUse.name.lowercased().contains("gamestop") {
-                    print("🎯 CTX MERCHANT INFO DEBUG: \(pointOfUse.name)")
-                    print("   CTX enabled: \(merchantInfo.enabled)")
-                    print("   Local active: \(pointOfUse.active)")
-                    print("   Will update view with enabled: \(merchantInfo.enabled)")
-                }
 
                 pointOfUse = pointOfUse.updatingMerchant(
                     denominationsType: merchantInfo.denominationsType,

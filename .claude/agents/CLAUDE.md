@@ -156,7 +156,7 @@ bartycrouch update
 ## Dependencies and Requirements
 
 ### Required Tools
-- Xcode 11+
+- Xcode 16+
 - CocoaPods (`gem install cocoapods`)
 - iOS 14.0+ deployment target
 - Rust toolchain (for DashSync integration)
