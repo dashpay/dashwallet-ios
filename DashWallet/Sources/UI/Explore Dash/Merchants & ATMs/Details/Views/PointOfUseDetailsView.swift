@@ -137,31 +137,24 @@ class PointOfUseDetailsView: UIView, SyncingActivityMonitorObserver, NetworkReac
 
     @objc func callAction() {
         guard let phone = merchant.phone, !phone.isEmpty else { return }
-        print("DEBUG: Original phone: \(phone)")
 
         // Extract only digits for phone call
         let digits = phone.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
         guard !digits.isEmpty else { return }
-        print("DEBUG: Extracted digits: \(digits)")
 
         // Use telprompt: to directly open phone app (tel: shows options)
         let urlString = "telprompt:\(digits)"
-        print("DEBUG: URL string: \(urlString)")
 
         guard let url = URL(string: urlString) else {
-            print("DEBUG: Failed to create URL")
             return
         }
 
         // Check if device can open the URL
         guard UIApplication.shared.canOpenURL(url) else {
-            print("DEBUG: Cannot open URL - phone not available")
             return
         }
 
-        print("DEBUG: Opening URL: \(url)")
         UIApplication.shared.open(url, options: [:], completionHandler: { success in
-            print("DEBUG: URL open result: \(success)")
         })
     }
 
@@ -563,33 +556,21 @@ extension PointOfUseDetailsView {
     }
 
     private func getLocationCount() -> Int {
-        print("DEBUG_FETCH_RESULTS: getLocationCount() called, returning: \(locationCount)")
         return locationCount
     }
 
     private func fetchLocationCount() {
         // Debug logging for ALL merchants to help identify the issue
-        print("DEBUG_FETCH_COUNT: Starting location fetch for merchant: '\(merchant.name)'")
-        print("DEBUG_FETCH_COUNT: pointOfUseId: '\(merchant.pointOfUseId)'")
         if let merchantData = merchant.merchant {
-            print("DEBUG_FETCH_COUNT: merchantId: '\(merchantData.merchantId)'")
         }
-        print("DEBUG_FETCH_COUNT: merchant.active: \(merchant.active)")
 
         // Debug the current filter radius being used
         let kMetersToMilesConversion: Double = 1609.34
         let filterRadius = currentFilters?.currentRadius ?? kDefaultRadius
-        print("DEBUG_FETCH_COUNT: Using radius: \(filterRadius) meters (\(filterRadius / kMetersToMilesConversion) miles)")
         if let filterRadiusEnum = currentFilters?.radius {
-            print("DEBUG_FETCH_COUNT: Filter radius setting: \(filterRadiusEnum.displayText)")
         }
 
         // Debug location manager status
-        print("DEBUG_FETCH_COUNT: Location manager status:")
-        print("DEBUG_FETCH_COUNT:   needsAuthorization: \(DWLocationManager.shared.needsAuthorization)")
-        print("DEBUG_FETCH_COUNT:   isAuthorized: \(DWLocationManager.shared.isAuthorized)")
-        print("DEBUG_FETCH_COUNT:   isPermissionDenied: \(DWLocationManager.shared.isPermissionDenied)")
-        print("DEBUG_FETCH_COUNT:   currentLocation available: \(DWLocationManager.shared.currentLocation != nil)")
 
         // Fetch the actual location count from the data source
         // Use current map bounds if available (from map interaction), otherwise fall back to filter radius
@@ -599,16 +580,13 @@ extension PointOfUseDetailsView {
         if let mapBounds = currentMapBounds {
             // Use the current visible map bounds (when user has zoomed/panned the map)
             bounds = mapBounds
-            print("DEBUG_FETCH_COUNT: Using current map bounds from user interaction")
         } else if let userLocation = userPoint {
             // Fall back to filter radius approach when no map bounds available
             let radiusInMeters: Double = filterRadius
             let circle = MKCircle(center: userLocation, radius: radiusInMeters)
             bounds = ExploreMapBounds(rect: circle.boundingMapRect)
-            print("DEBUG_FETCH_COUNT: Using filter radius: \(filterRadius) meters")
         } else {
             bounds = nil
-            print("DEBUG_FETCH_COUNT: No bounds or user location available")
         }
 
         // Use the exact same logic as AllMerchantLocationsDataProvider
@@ -618,24 +596,17 @@ extension PointOfUseDetailsView {
 
         if DWLocationManager.shared.isPermissionDenied || DWLocationManager.shared.needsAuthorization {
             // When location is denied/not authorized, fetch all locations globally (no bounds filter)
-            print("DEBUG_FETCH_RESULTS: Location denied/not authorized, fetching all locations globally")
             finalBounds = nil
             finalUserPoint = nil
         } else if DWLocationManager.shared.isAuthorized && (bounds == nil || userPoint == nil) {
             // Location is authorized but current location not available yet, fetch all globally
-            print("DEBUG_FETCH_RESULTS: Location authorized but not available yet, fetching all locations globally")
             finalBounds = nil
             finalUserPoint = nil
         }
 
         // Debug final parameters being used
-        print("DEBUG_FETCH_COUNT: Final API call parameters:")
-        print("DEBUG_FETCH_COUNT:   pointOfUseId: '\(merchant.pointOfUseId)'")
-        print("DEBUG_FETCH_COUNT:   finalBounds: \(finalBounds != nil ? "set" : "nil")")
         if let userPoint = finalUserPoint {
-            print("DEBUG_FETCH_COUNT:   finalUserPoint: (\(userPoint.latitude), \(userPoint.longitude))")
         } else {
-            print("DEBUG_FETCH_COUNT:   finalUserPoint: nil")
         }
 
         // Use the same call as AllMerchantLocationsDataProvider
@@ -649,24 +620,16 @@ extension PointOfUseDetailsView {
 
                     // Debug logging
                     if let strongSelf = self {
-                        print("DEBUG_FETCH_RESULTS: Results for '\(strongSelf.merchant.name)'")
-                        print("DEBUG_FETCH_RESULTS: Total GameStop locations: \(paginationResult.items.count)")
-                        print("DEBUG_FETCH_RESULTS: Active GameStop locations: \(activeLocations.count)")
                         let inactiveLocations = paginationResult.items.filter { !$0.active }
-                        print("DEBUG_FETCH_RESULTS: Inactive GameStop locations: \(inactiveLocations.count)")
                     }
 
                     // Use the count of active locations (this should match what "Show all locations" shows)
                     let newCount = activeLocations.count
-                    print("DEBUG_FETCH_RESULTS: Setting locationCount to \(newCount)")
                     self?.locationCount = newCount
-                    print("DEBUG_FETCH_RESULTS: locationCount after assignment: \(self?.locationCount ?? -1)")
                     self?.updateShowAllLocationsButton()
-                    print("DEBUG_FETCH_RESULTS: locationCount after updateShowAllLocationsButton: \(self?.locationCount ?? -1)")
                 }
             case .failure(let error):
                 // Log error but keep default count of 1
-                print("DEBUG_FETCH_RESULTS: API call failed with error: \(error)")
                 DSLogger.log("Failed to fetch location count: \(error)")
                 DispatchQueue.main.async {
                     // Set count to 1 as fallback when API fails
@@ -680,33 +643,26 @@ extension PointOfUseDetailsView {
     private func updateShowAllLocationsButton() {
         // Find and update the "Show all locations" button text
         // This is called after the location count is fetched
-        print("DEBUG_FETCH_RESULTS: updateShowAllLocationsButton called with locationCount: \(locationCount)")
         guard !isShowAllHidden, let containerView = containerView else {
-            print("DEBUG_FETCH_RESULTS: Guard failed - isShowAllHidden: \(isShowAllHidden), containerView exists: \(containerView != nil)")
             return
         }
 
-        print("DEBUG_FETCH_RESULTS: Container has \(containerView.arrangedSubviews.count) arranged subviews")
 
         // Find the show all locations block (should be the last arranged subview)
         if let showAllBlock = containerView.arrangedSubviews.last {
-            print("DEBUG_FETCH_RESULTS: Found show all block with \(showAllBlock.subviews.count) subviews")
 
             // Find the button within the block
             for (index, subview) in showAllBlock.subviews.enumerated() {
-                print("DEBUG_FETCH_RESULTS: Checking subview \(index): \(type(of: subview))")
                 if let button = subview as? UIButton {
                     let newTitle = String.localizedStringWithFormat(
                         NSLocalizedString("Show all locations (%d)", comment: "Show all locations with count"),
                         locationCount
                     )
-                    print("DEBUG_FETCH_RESULTS: Updating button title to: \(newTitle)")
                     button.setTitle(newTitle, for: .normal)
                     break
                 }
             }
         } else {
-            print("DEBUG_FETCH_RESULTS: No show all block found in container")
         }
     }
 
@@ -1147,19 +1103,6 @@ extension PointOfUseDetailsView {
 
         // Comprehensive debug logging for merchant fields investigation
         if self.merchant.name.lowercased().contains("gamestop") || self.merchant.name.lowercased().contains("spotify") || self.merchant.name.lowercased().contains("buffalo") {
-            print("🎯 MERCHANT DEBUG: \(self.merchant.name)")
-            print("   merchantId: '\(merchant.merchantId)'")
-            print("   paymentMethod: '\(merchant.paymentMethod)'")
-            print("   type: '\(merchant.type)'")
-            print("   deeplink: '\(merchant.deeplink ?? "nil")'")
-            print("   savingsBasisPoints: '\(merchant.savingsBasisPoints)'")
-            print("   denominationsType: '\(merchant.denominationsType ?? "nil")'")
-            print("   denominations: '\(merchant.denominations)'")
-            print("   redeemType: '\(merchant.redeemType ?? "nil")'")
-            print("   enabled: '\(merchant.enabled?.description ?? "nil")'")
-            print("   self.merchant.active: '\(self.merchant.active)'")
-            print("   isEnabled: '\(isEnabled)'")
-            print("   ----------")
         }
 
         // Use denominationsType field to determine if amounts are fixed or flexible
@@ -1168,25 +1111,19 @@ extension PointOfUseDetailsView {
 
             // Debug denominationsType for GameStop specifically
             if self.merchant.name.lowercased().contains("gamestop") {
-                print("🎯 GAMESTOP DENOMINATIONS TYPE DEBUG:")
-                print("   Original denominationsType: '\(denominationsType)'")
-                print("   Lowercased denominationsType: '\(lowercasedType)'")
             }
 
             switch lowercasedType {
             case "fixed":
                 if self.merchant.name.lowercased().contains("gamestop") {
-                    print("   → Matched 'fixed' case - returning Fixed amounts")
                 }
                 return NSLocalizedString("Fixed amounts", comment: "DashSpend")
             case "flexible", "min-max":
                 if self.merchant.name.lowercased().contains("gamestop") {
-                    print("   → Matched 'flexible'/'min-max' case - returning Flexible amounts")
                 }
                 return NSLocalizedString("Flexible amounts", comment: "DashSpend")
             default:
                 if self.merchant.name.lowercased().contains("gamestop") {
-                    print("   → Matched 'default' case - returning Fixed amounts")
                 }
                 return NSLocalizedString("Fixed amounts", comment: "DashSpend")
             }
@@ -1237,15 +1174,12 @@ extension PointOfUseDetailsView {
 
     func setupGrabberPanGesture(target: Any, action: Selector) {
         guard let grabberContainer = grabberContainer else {
-            print("DEBUG: grabberContainer is nil!")
             return
         }
-        print("DEBUG: Setting up pan gesture on grabber container")
         let panRecognizer = UIPanGestureRecognizer(target: target, action: action)
         panRecognizer.minimumNumberOfTouches = 1
         panRecognizer.maximumNumberOfTouches = 1
         grabberContainer.addGestureRecognizer(panRecognizer)
-        print("DEBUG: Pan gesture added to grabber container")
     }
 
 }
