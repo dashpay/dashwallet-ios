@@ -88,8 +88,15 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, Ob
     }
     
     func logout() {
-        // Clear local tokens (logout API does not exist)
+        // Attempt to revoke token on server before clearing local storage
         Task {
+            do {
+                try await CTXSpendAPI.shared.request(.logout)
+            } catch {
+                DSLogger.log("Logout API call failed: \(error). Proceeding with local cleanup.")
+            }
+            
+            // Always clear local tokens regardless of server response
             await MainActor.run {
                 KeychainService.delete(key: Keys.accessToken)
                 KeychainService.delete(key: Keys.refreshToken)
