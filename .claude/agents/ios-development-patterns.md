@@ -1057,4 +1057,214 @@ struct MerchantListView: View {
 }
 ```
 
-This documentation should significantly reduce common mistakes and improve development efficiency for future iOS sessions on the DashWallet project.
+## Legacy Integration Patterns (From DEVELOPMENT-PATTERNS.md)
+
+### Protocol-Oriented Programming (Legacy Codebase)
+**Context**: Existing codebase uses protocols extensively for dependency injection
+
+```objc
+// Objective-C protocol example (Legacy)
+@protocol DWHomeProtocol <NSObject>
+- (void)updateBalance:(uint64_t)balance;
+- (void)showTransactionDetail:(DSTransaction *)transaction;
+@end
+```
+
+```swift
+// Swift protocol example (Modern)
+protocol CurrencyExchangerProtocol {
+    func exchangeRate(for currency: String) async throws -> Double
+    func convertToFiat(amount: UInt64, currency: String) -> String
+}
+```
+
+### Base View Controller Pattern (Legacy)
+**For existing UIKit code only - DO NOT create new UIKit ViewControllers**
+```swift
+class BaseViewController: UIViewController, ErrorPresentable, NetworkReachabilityObservable {
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupBaseConfiguration()
+        observeNetworkReachability()
+    }
+
+    func setupBaseConfiguration() {
+        // Common setup for all view controllers
+        view.backgroundColor = UIColor.dw_background()
+        setupNavigationBar()
+    }
+
+    func showError(_ error: Error) {
+        // Standardized error presentation
+        let alert = errorAlert(for: error)
+        present(alert, animated: true)
+    }
+}
+```
+
+### Custom View Pattern (Legacy)
+**For existing components only - new components should use SwiftUI**
+```swift
+class CustomComponentView: UIView {
+    // MARK: - UI Components
+    private lazy var titleLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.dw_mediumFont(ofSize: 16)
+        label.textColor = UIColor.dw_primaryText()
+        return label
+    }()
+
+    // MARK: - Initialization
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupView()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupView()
+    }
+
+    // MARK: - Setup
+    private func setupView() {
+        addSubview(titleLabel)
+        setupConstraints()
+        applyStyle()
+    }
+
+    private func setupConstraints() {
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor)
+        ])
+    }
+}
+```
+
+### Testing Patterns (Enhanced)
+
+#### Mock Objects Pattern
+```swift
+class MockRatesProvider: RatesProvider {
+    var shouldReturnError = false
+    var mockRates: [String: Double] = [:]
+
+    func fetchRates() async throws -> [String: Double] {
+        if shouldReturnError {
+            throw RatesError.networkError
+        }
+        return mockRates
+    }
+}
+
+class CurrencyExchangerTests: XCTestCase {
+    var sut: CurrencyExchanger!
+    var mockProvider: MockRatesProvider!
+
+    override func setUp() {
+        super.setUp()
+        mockProvider = MockRatesProvider()
+        sut = CurrencyExchanger(provider: mockProvider)
+    }
+
+    func testSuccessfulRateFetch() async throws {
+        // Given
+        mockProvider.mockRates = ["USD": 25.50]
+
+        // When
+        let rate = try await sut.exchangeRate(for: "USD")
+
+        // Then
+        XCTAssertEqual(rate, 25.50)
+    }
+}
+```
+
+### External Service Integration Patterns (Legacy)
+```swift
+protocol ExternalServiceProtocol {
+    associatedtype AuthType
+    associatedtype ResponseType
+
+    func authenticate(_ auth: AuthType) async throws
+    func performRequest<T: Codable>(_ endpoint: APIEndpoint) async throws -> T
+}
+
+class ExternalService: ExternalServiceProtocol {
+    private let httpClient: HTTPClient<APIResponse>
+    private var authToken: String?
+
+    func authenticate(_ credentials: Credentials) async throws {
+        let response = try await httpClient.post("/auth", body: credentials)
+        self.authToken = response.token
+    }
+
+    func performRequest<T: Codable>(_ endpoint: APIEndpoint) async throws -> T {
+        guard let token = authToken else {
+            throw ServiceError.notAuthenticated
+        }
+
+        return try await httpClient.request(endpoint, headers: ["Authorization": "Bearer \(token)"])
+    }
+}
+```
+
+## Code Organization Patterns (Enhanced)
+
+### Feature-Based Organization
+```
+UI/
+├── Home/
+│   ├── HomeView.swift              # SwiftUI View (NEW)
+│   ├── HomeViewModel.swift         # ViewModel (NEW)
+│   ├── HomeViewController.swift    # Legacy UIKit (EXISTING)
+│   ├── Models/
+│   └── Views/
+├── Payments/
+│   ├── PaymentView.swift           # SwiftUI (NEW)
+│   ├── PaymentViewModel.swift      # ViewModel (NEW)
+│   ├── Pay/
+│   ├── Receive/
+│   └── ScanQR/
+└── DashPay/
+    ├── DashPayView.swift           # SwiftUI (NEW)
+    ├── DashPayViewModel.swift      # ViewModel (NEW)
+    ├── Contacts/
+    ├── Profile/
+    └── Voting/
+```
+
+### Conditional Compilation (Updated)
+**Enhanced with real-world patterns from PiggyCards feature hiding**
+
+```swift
+// Complex conditional compilation patterns
+#if DASHPAY
+    // DashPay-specific functionality
+    func setupDashPayFeatures() {
+        // Implementation
+    }
+#endif
+
+// Feature flag with enum cases
+enum Features: CaseIterable {
+    case dashPay
+    #if PIGGYCARDS_ENABLED
+    case piggyCards
+    #endif
+}
+
+// Safe repository initialization
+private let repositories: [Provider: Repository] = {
+    var dict: [Provider: Repository] = [.ctx: CTXRepository.shared]
+    #if PIGGYCARDS_ENABLED
+    dict[.piggyCards] = PiggyCardsRepository.shared
+    #endif
+    return dict
+}()
+```
+
+This documentation should significantly reduce common mistakes and improve development efficiency for future iOS sessions on the DashWallet project, combining modern SwiftUI-first development with comprehensive legacy integration patterns.
