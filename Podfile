@@ -83,7 +83,11 @@ post_install do |installer|
 
     # fixes warnings about unsupported Deployment Target in Xcode
     target.build_configurations.each do |config|
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+      if target.platform_name == :ios
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+      elsif target.platform_name == :watchos
+        config.build_settings['WATCHOS_DEPLOYMENT_TARGET'] = '4.0'
+      end
 
     end
 
