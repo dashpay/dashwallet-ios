@@ -614,4 +614,257 @@ swift test_swiftui_file.swift
 swift -D PIGGYCARDS_ENABLED test_swiftui_file.swift
 ```
 
-This safety patterns guide should help prevent the most common crashes and compilation issues encountered in iOS/Swift development on the DashWallet project.
+## SwiftUI-First Development Safety
+
+### Architecture Safety Requirements
+
+#### ⚠️ MANDATORY: SwiftUI-First Architecture
+**Critical Policy**: All new screens MUST use SwiftUI-first architecture. UIKit is only allowed for thin wrapper components.
+
+```swift
+// ✅ REQUIRED - SwiftUI View + ViewModel
+struct MerchantDetailView: View {
+    @StateObject private var viewModel = MerchantDetailViewModel()
+
+    var body: some View {
+        VStack {
+            Text(viewModel.merchantName)
+            // SwiftUI content
+        }
+        .onAppear { viewModel.loadMerchant() }
+    }
+}
+
+@MainActor
+class MerchantDetailViewModel: ObservableObject {
+    @Published var merchantName: String = ""
+
+    func loadMerchant() {
+        // Business logic
+    }
+}
+```
+
+```swift
+// ❌ PROHIBITED - New UIViewController with UI logic
+class MerchantDetailViewController: UIViewController {
+    @IBOutlet weak var nameLabel: UILabel!
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // UI setup logic - PROHIBITED for new screens
+    }
+}
+```
+
+#### ⚠️ UIKit Integration Safety (When Required)
+**Only For**: Camera, complex gestures, third-party library integration
+
+```swift
+// ✅ ACCEPTABLE - Thin UIKit wrapper for specific needs
+struct CameraView: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {
+        // Minimal updates only
+    }
+}
+
+// Usage in SwiftUI
+struct ProfileView: View {
+    var body: some View {
+        VStack {
+            CameraView() // Thin wrapper when needed
+                .frame(height: 300)
+        }
+    }
+}
+```
+
+### SwiftUI State Management Safety
+
+#### ⚠️ @Published vs @State Usage
+**Critical Pattern**: Use appropriate property wrappers for data flow
+
+```swift
+// ✅ SAFE - ViewModel with @Published for complex logic
+@MainActor
+class AuthenticationViewModel: ObservableObject {
+    @Published var email: String = ""
+    @Published var isLoading: Bool = false
+    @Published var errorMessage: String = ""
+
+    func login() async {
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            try await authService.login(email: email)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+}
+
+// Usage
+struct LoginView: View {
+    @StateObject private var viewModel = AuthenticationViewModel()
+
+    var body: some View {
+        VStack {
+            TextField("Email", text: $viewModel.email)
+
+            if viewModel.isLoading {
+                ProgressView()
+            } else {
+                Button("Login") {
+                    Task { await viewModel.login() }
+                }
+            }
+        }
+    }
+}
+```
+
+```swift
+// ✅ SAFE - Simple @State for local UI state
+struct ToggleView: View {
+    @State private var isToggled = false // Local UI state only
+
+    var body: some View {
+        Toggle("Setting", isOn: $isToggled)
+    }
+}
+```
+
+#### ⚠️ Navigation Safety in SwiftUI
+**Critical Pattern**: Use proper navigation patterns, avoid force unwraps
+
+```swift
+// ✅ SAFE - Proper NavigationStack usage
+struct MerchantListView: View {
+    @State private var selectedMerchant: Merchant?
+
+    var body: some View {
+        NavigationStack {
+            List(merchants) { merchant in
+                NavigationLink(value: merchant) {
+                    MerchantRowView(merchant: merchant)
+                }
+            }
+            .navigationDestination(for: Merchant.self) { merchant in
+                MerchantDetailView(merchant: merchant)
+            }
+        }
+    }
+}
+```
+
+```swift
+// ❌ DANGEROUS - Force unwrapping in navigation
+struct BadNavigationView: View {
+    var body: some View {
+        NavigationLink(destination: MerchantDetailView(merchant: selectedMerchant!)) {
+            // Will crash if selectedMerchant is nil
+        }
+    }
+}
+```
+
+### SwiftUI Async/Await Safety
+
+#### ⚠️ Task Management in SwiftUI
+**Critical Pattern**: Proper task lifecycle management
+
+```swift
+// ✅ SAFE - Proper async/await with cancellation
+struct DataLoadingView: View {
+    @StateObject private var viewModel = DataViewModel()
+
+    var body: some View {
+        VStack {
+            if viewModel.isLoading {
+                ProgressView()
+            } else {
+                DataContentView(data: viewModel.data)
+            }
+        }
+        .task {
+            await viewModel.loadData()
+        }
+    }
+}
+
+@MainActor
+class DataViewModel: ObservableObject {
+    @Published var data: [DataItem] = []
+    @Published var isLoading = false
+
+    func loadData() async {
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            let loadedData = try await dataService.fetchData()
+            self.data = loadedData
+        } catch {
+            // Handle error appropriately
+            print("Failed to load data: \(error)")
+        }
+    }
+}
+```
+
+```swift
+// ❌ DANGEROUS - Unmanaged tasks and force unwrapping
+struct BadAsyncView: View {
+    @State var data: [DataItem]!
+
+    var body: some View {
+        List(data) { item in // Will crash if data is nil
+            Text(item.name)
+        }
+        .onAppear {
+            Task {
+                data = try! await dataService.fetchData() // Will crash on network error
+            }
+        }
+    }
+}
+```
+
+### Prohibited Patterns Checklist
+
+#### ❌ NEVER Create These in New Code:
+- [ ] New Storyboard files (.storyboard)
+- [ ] New XIB files (.xib)
+- [ ] UIViewController subclasses with UI layout code
+- [ ] @IBOutlet and @IBAction declarations
+- [ ] Segue-based navigation
+- [ ] UITableViewController or UICollectionViewController with hardcoded cells
+- [ ] Auto Layout constraints in code for new screens
+
+#### ✅ ALWAYS Use These Patterns:
+- [ ] SwiftUI Views with proper property wrappers
+- [ ] @StateObject for ViewModels, @State for local UI state
+- [ ] NavigationStack and navigationDestination for navigation
+- [ ] .task modifier for async operations
+- [ ] Proper error handling with do-catch blocks
+- [ ] Guard statements instead of force unwrapping
+
+### SwiftUI Compilation Safety Checklist
+
+Before committing SwiftUI code:
+- [ ] All @Published properties are in @MainActor classes
+- [ ] No force unwraps in View body computations
+- [ ] Async operations use proper Task management
+- [ ] Navigation uses type-safe patterns (NavigationStack, navigationDestination)
+- [ ] ViewModels are properly marked @MainActor
+- [ ] State management uses appropriate property wrappers (@State, @StateObject, @ObservedObject)
+- [ ] No UIKit view controllers with UI logic (thin wrappers only)
+
+This safety patterns guide should help prevent the most common crashes and compilation issues encountered in iOS/Swift development on the DashWallet project, with mandatory SwiftUI-first architecture requirements.

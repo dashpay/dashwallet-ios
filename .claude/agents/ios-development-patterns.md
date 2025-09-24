@@ -2,6 +2,58 @@
 
 This agent specializes in iOS development patterns, data architecture, and integration workflows specific to the DashWallet project. It provides guidance based on real development sessions and common pitfalls to help future development sessions work more efficiently.
 
+## 🎯 MANDATORY UI Development Policy
+
+### SwiftUI-First Architecture
+**CRITICAL**: All new UI components MUST be implemented using SwiftUI. Do NOT create new UIKit ViewControllers, Storyboards, or XIB files.
+
+#### ✅ Required Pattern for New UI
+```swift
+// 1. SwiftUI View (UI only)
+struct NewFeatureView: View {
+    @StateObject private var viewModel: NewFeatureViewModel
+
+    var body: some View {
+        // SwiftUI declarative UI
+    }
+}
+
+// 2. ObservableObject ViewModel (Business Logic)
+@MainActor
+class NewFeatureViewModel: ObservableObject {
+    @Published var state: ViewState = .loading
+
+    private let repository: FeatureRepository
+
+    func loadData() {
+        // Business logic implementation
+    }
+}
+
+// 3. Thin UIKit wrapper ONLY if needed for navigation integration
+class NewFeatureHostingController: UIHostingController<NewFeatureView> {
+    init() {
+        let viewModel = NewFeatureViewModel()
+        let swiftUIView = NewFeatureView(viewModel: viewModel)
+        super.init(rootView: swiftUIView)
+    }
+}
+```
+
+#### ❌ Prohibited Patterns
+- Creating new `.storyboard` files
+- Creating new `.xib` files
+- Subclassing `UIViewController` for UI logic
+- Using Interface Builder for new components
+- Implementing UI logic directly in UIKit ViewControllers
+
+### Architecture Enforcement
+When implementing any new feature:
+1. **Start with SwiftUI View** - Define the UI declaratively
+2. **Create ViewModel** - Handle business logic and state management
+3. **Use Repository Pattern** - Keep data access separate
+4. **Add UIKit wrapper** - ONLY if existing navigation requires it
+
 ## Database Architecture Understanding
 
 ### Key Database Concepts
@@ -717,5 +769,292 @@ private var hasChanges: Bool {
 3. **Boolean Expression Errors**: Split complex expressions with conditional variables
 4. **Repository Missing**: Ensure conditional compilation covers both declaration and usage
 5. **Filter Logic Inconsistency**: Always provide fallback values for disabled features
+
+## SwiftUI Development Patterns (MANDATORY for New UI)
+
+### MVVM Architecture with SwiftUI
+
+#### View-ViewModel Binding Patterns
+```swift
+// Views should be stateless and delegate all business logic to ViewModels
+struct MerchantListView: View {
+    @StateObject private var viewModel = MerchantListViewModel()
+    @State private var searchText = ""
+
+    var body: some View {
+        NavigationStack {
+            List(viewModel.filteredMerchants) { merchant in
+                MerchantRowView(merchant: merchant)
+                    .onTapGesture {
+                        viewModel.selectMerchant(merchant)
+                    }
+            }
+            .searchable(text: $searchText)
+            .onChange(of: searchText) { _, newValue in
+                viewModel.filterMerchants(by: newValue)
+            }
+            .refreshable {
+                await viewModel.refreshData()
+            }
+            .task {
+                await viewModel.loadInitialData()
+            }
+            .alert("Error", isPresented: $viewModel.hasError) {
+                Button("Retry") { viewModel.retryLastAction() }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text(viewModel.errorMessage)
+            }
+        }
+    }
+}
+```
+
+#### ViewModel State Management
+```swift
+@MainActor
+class MerchantListViewModel: ObservableObject {
+    @Published var merchants: [Merchant] = []
+    @Published var filteredMerchants: [Merchant] = []
+    @Published var isLoading = false
+    @Published var hasError = false
+    @Published var errorMessage = ""
+
+    private let merchantRepository: MerchantRepository
+    private let locationService: LocationService
+
+    init(merchantRepository: MerchantRepository = .shared) {
+        self.merchantRepository = merchantRepository
+        self.locationService = LocationService.shared
+    }
+
+    func loadInitialData() async {
+        isLoading = true
+
+        do {
+            merchants = try await merchantRepository.fetchMerchants()
+            filteredMerchants = merchants
+        } catch {
+            handleError(error)
+        }
+
+        isLoading = false
+    }
+
+    func filterMerchants(by searchText: String) {
+        filteredMerchants = searchText.isEmpty ?
+            merchants : merchants.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    }
+
+    private func handleError(_ error: Error) {
+        hasError = true
+        errorMessage = error.localizedDescription
+    }
+}
+```
+
+### Navigation Patterns
+
+#### SwiftUI Navigation (Preferred)
+```swift
+// Use NavigationStack for programmatic navigation
+struct MainNavigationView: View {
+    var body: some View {
+        NavigationStack {
+            MerchantListView()
+                .navigationDestination(for: Merchant.self) { merchant in
+                    MerchantDetailsView(merchant: merchant)
+                }
+                .navigationDestination(for: PaymentRequest.self) { request in
+                    PaymentView(request: request)
+                }
+        }
+    }
+}
+```
+
+#### UIKit Integration Bridge
+```swift
+// Extension for pushing SwiftUI views from UIKit contexts
+extension UINavigationController {
+    func pushSwiftUIView<Content: View>(
+        _ view: Content,
+        title: String? = nil,
+        hidesBottomBar: Bool = false
+    ) {
+        let hostingController = UIHostingController(rootView: view)
+        hostingController.title = title
+        hostingController.hidesBottomBarWhenPushed = hidesBottomBar
+        pushViewController(hostingController, animated: true)
+    }
+
+    func presentSwiftUIView<Content: View>(
+        _ view: Content,
+        style: UIModalPresentationStyle = .pageSheet
+    ) {
+        let hostingController = UIHostingController(rootView: view)
+        hostingController.modalPresentationStyle = style
+        present(hostingController, animated: true)
+    }
+}
+```
+
+### Data Flow Patterns
+
+#### Repository Integration
+```swift
+// ViewModels should use repositories, not direct API calls
+class PaymentViewModel: ObservableObject {
+    @Published var paymentState: PaymentState = .idle
+
+    private let paymentRepository: PaymentRepository
+    private let walletService: WalletService
+
+    init(
+        paymentRepository: PaymentRepository = .shared,
+        walletService: WalletService = .shared
+    ) {
+        self.paymentRepository = paymentRepository
+        self.walletService = walletService
+    }
+
+    func processPayment(_ request: PaymentRequest) async {
+        paymentState = .processing
+
+        do {
+            let transaction = try await paymentRepository.createTransaction(request)
+            let result = try await walletService.broadcastTransaction(transaction)
+            paymentState = .completed(result)
+        } catch {
+            paymentState = .failed(error)
+        }
+    }
+}
+```
+
+#### Combine Integration for Reactive Updates
+```swift
+class MerchantViewModel: ObservableObject {
+    @Published var merchant: Merchant?
+    @Published var isOnline = false
+
+    private var cancellables = Set<AnyCancellable>()
+    private let networkMonitor: NetworkMonitor
+
+    init(merchantId: String) {
+        self.networkMonitor = NetworkMonitor.shared
+
+        // React to network changes
+        networkMonitor.$isConnected
+            .assign(to: \.isOnline, on: self)
+            .store(in: &cancellables)
+
+        // Auto-refresh when coming back online
+        networkMonitor.$isConnected
+            .filter { $0 == true }
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    await self?.refreshMerchantData()
+                }
+            }
+            .store(in: &cancellables)
+    }
+}
+```
+
+### UI Component Patterns
+
+#### Reusable SwiftUI Components
+```swift
+// Create reusable components instead of duplicating UI code
+struct MerchantRowView: View {
+    let merchant: Merchant
+
+    var body: some View {
+        HStack {
+            AsyncImage(url: merchant.logoURL) { image in
+                image.resizable()
+            } placeholder: {
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+            }
+            .frame(width: 50, height: 50)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(merchant.name)
+                    .font(.headline)
+
+                Text(merchant.category)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            if merchant.hasDiscount {
+                DiscountBadge(percentage: merchant.discountPercentage)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+}
+```
+
+### State Management Best Practices
+
+#### Loading States
+```swift
+enum ViewState<T> {
+    case idle
+    case loading
+    case loaded(T)
+    case error(Error)
+}
+
+struct ContentView<Data>: View where Data: Hashable {
+    let state: ViewState<Data>
+    let content: (Data) -> AnyView
+    let retry: () -> Void
+
+    var body: some View {
+        switch state {
+        case .idle:
+            Color.clear
+                .onAppear { retry() }
+
+        case .loading:
+            ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+        case .loaded(let data):
+            content(data)
+
+        case .error(let error):
+            ErrorView(error: error, retry: retry)
+        }
+    }
+}
+```
+
+### Performance Patterns
+
+#### Efficient List Updates
+```swift
+// Use proper identifiers for list performance
+struct MerchantListView: View {
+    @StateObject private var viewModel: MerchantListViewModel
+
+    var body: some View {
+        List {
+            ForEach(viewModel.merchants) { merchant in
+                MerchantRowView(merchant: merchant)
+                    .id(merchant.id) // Explicit ID for performance
+            }
+        }
+        .animation(.default, value: viewModel.merchants)
+    }
+}
+```
 
 This documentation should significantly reduce common mistakes and improve development efficiency for future iOS sessions on the DashWallet project.

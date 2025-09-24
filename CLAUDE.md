@@ -135,6 +135,143 @@ bartycrouch update
 - **Coordinator Pattern**: `DWAppRootViewController` manages app navigation flow
 - **Repository Pattern**: Data Access Objects (DAOs) for database operations
 
+## UI Development Guidelines (CRITICAL)
+
+### 🎯 SwiftUI-First Development Policy
+**MANDATORY**: All new UI components MUST be built with SwiftUI. Do NOT create new UIKit ViewControllers or Storyboards.
+
+#### ✅ Preferred Approach
+```swift
+// New screens should be SwiftUI views with ViewModels
+struct MerchantDetailsView: View {
+    @StateObject private var viewModel: MerchantDetailsViewModel
+
+    var body: some View {
+        VStack {
+            // SwiftUI implementation
+        }
+    }
+}
+
+class MerchantDetailsViewModel: ObservableObject {
+    @Published var merchant: Merchant
+    // Business logic here
+}
+```
+
+#### 🔄 UIKit Integration (When Required)
+Only create thin UIViewController wrappers when integrating with existing UIKit navigation:
+
+```swift
+// Thin wrapper for UIKit integration
+class MerchantDetailsHostingController: UIHostingController<MerchantDetailsView> {
+    init(merchant: Merchant) {
+        let viewModel = MerchantDetailsViewModel(merchant: merchant)
+        let swiftUIView = MerchantDetailsView(viewModel: viewModel)
+        super.init(rootView: swiftUIView)
+    }
+}
+```
+
+#### ❌ Prohibited Patterns
+- **NO new Storyboard files** - Storyboards are legacy and should not be extended
+- **NO new XIB files** - Use SwiftUI declarative syntax instead
+- **NO UIViewController subclasses with UI logic** - Use hosting controllers only as thin wrappers
+- **NO Interface Builder** - All UI should be programmatic via SwiftUI
+
+### SwiftUI Architecture Patterns
+
+#### View-ViewModel Separation
+```swift
+// Views should be lightweight and delegate to ViewModels
+struct PaymentView: View {
+    @StateObject private var viewModel: PaymentViewModel
+
+    var body: some View {
+        // UI only - no business logic
+        Form {
+            Section("Amount") {
+                TextField("Enter amount", text: $viewModel.amount)
+            }
+
+            Button("Send Payment") {
+                viewModel.processPayment()
+            }
+            .disabled(viewModel.isProcessing)
+        }
+        .alert("Error", isPresented: $viewModel.hasError) {
+            Button("OK") {}
+        } message: {
+            Text(viewModel.errorMessage)
+        }
+    }
+}
+```
+
+#### State Management
+```swift
+// ViewModels handle state and business logic
+@MainActor
+class PaymentViewModel: ObservableObject {
+    @Published var amount: String = ""
+    @Published var isProcessing: Bool = false
+    @Published var hasError: Bool = false
+    @Published var errorMessage: String = ""
+
+    private let paymentService: PaymentService
+
+    func processPayment() {
+        // Business logic implementation
+    }
+}
+```
+
+### Navigation Patterns
+
+#### SwiftUI Navigation
+Use SwiftUI's navigation system for new screens:
+
+```swift
+NavigationStack {
+    MerchantListView()
+        .navigationDestination(for: Merchant.self) { merchant in
+            MerchantDetailsView(merchant: merchant)
+        }
+}
+```
+
+#### Legacy UIKit Integration
+When interfacing with existing UIKit navigation:
+
+```swift
+extension UINavigationController {
+    func pushSwiftUIView<Content: View>(_ view: Content) {
+        let hostingController = UIHostingController(rootView: view)
+        pushViewController(hostingController, animated: true)
+    }
+}
+```
+
+### Migration Guidelines
+
+#### Existing UIKit Code
+- **Maintain existing UIKit code** but don't extend it
+- **Gradually replace** UIKit screens with SwiftUI equivalents when updating
+- **Extract business logic** from existing ViewControllers into ViewModels that can be reused with SwiftUI
+
+#### Data Binding
+Use Combine for reactive data flow between services and SwiftUI:
+
+```swift
+class DataService: ObservableObject {
+    @Published var merchants: [Merchant] = []
+
+    func fetchMerchants() {
+        // API call that updates @Published properties
+    }
+}
+```
+
 ## Important Files
 
 ### Configuration
