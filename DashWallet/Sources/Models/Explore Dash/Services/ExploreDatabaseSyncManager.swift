@@ -19,9 +19,6 @@ import Firebase
 import Foundation
 import SSZipArchive
 
-// TODO: Move it to plist and note in release process
-let gsFilePath = "gs://dash-wallet-firebase.appspot.com/explore/explore-v4-testnet.db"
-
 private let fileName = "explore"
 
 private let timestampKey = "Data-Timestamp"
@@ -57,7 +54,16 @@ public class ExploreDatabaseSyncManager {
 
     init() {
         syncState = .inititialing
-        storageRef = storage.reference(forURL: gsFilePath)
+
+        // Initialize storageRef with computed database path
+        let databasePath: String
+        if DWEnvironment.sharedInstance().currentChain.isMainnet() {
+            databasePath = "gs://dash-wallet-firebase.appspot.com/explore/explore-v4.db"
+        } else {
+            databasePath = "gs://dash-wallet-firebase.appspot.com/explore/explore-v4-testnet.db"
+        }
+
+        storageRef = storage.reference(forURL: databasePath)
     }
 
     public func start() {
