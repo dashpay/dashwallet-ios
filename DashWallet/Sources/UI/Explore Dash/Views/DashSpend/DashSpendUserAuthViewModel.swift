@@ -28,10 +28,15 @@ class DashSpendUserAuthViewModel: ObservableObject {
     @Published private(set) var isUserSignedIn: Bool = false
     private let provider: GiftCardProvider
     
-    private let repositories: [GiftCardProvider: any DashSpendRepository] = [
-        GiftCardProvider.ctx : CTXSpendRepository.shared,
-        GiftCardProvider.piggyCards : PiggyCardsRepository.shared
-    ]
+    private let repositories: [GiftCardProvider: any DashSpendRepository] = {
+        var dict: [GiftCardProvider: any DashSpendRepository] = [
+            .ctx: CTXSpendRepository.shared
+        ]
+        #if PIGGYCARDS_ENABLED
+        dict[.piggyCards] = PiggyCardsRepository.shared
+        #endif
+        return dict
+    }()
     
     init(provider: GiftCardProvider, screenType: DashSpendUserAuthType) {
         self.screenType = screenType

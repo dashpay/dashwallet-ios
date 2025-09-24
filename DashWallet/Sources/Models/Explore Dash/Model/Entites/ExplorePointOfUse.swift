@@ -47,8 +47,10 @@ extension ExplorePointOfUse {
                 switch providerId.lowercased() {
                 case "ctx":
                     self.provider = .ctx
+                #if PIGGYCARDS_ENABLED
                 case "piggycards", "piggy cards":
                     self.provider = .piggyCards
+                #endif
                 default:
                     self.provider = nil
                 }

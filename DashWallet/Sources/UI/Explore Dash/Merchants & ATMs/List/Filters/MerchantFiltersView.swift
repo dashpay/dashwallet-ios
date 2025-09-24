@@ -39,13 +39,36 @@ struct MerchantFiltersView: View {
         ))
         self.onApplyFilters = onApplyFilters
     }
-    
+
+    // Helper computed properties for conditional compilation
+    private var shouldShowSortOptions: Bool {
+        if viewModel.sortOptions.contains(.distance) || viewModel.ctxGiftCards {
+            return true
+        }
+        #if PIGGYCARDS_ENABLED
+        return viewModel.piggyGiftCards
+        #else
+        return false
+        #endif
+    }
+
+    private var shouldShowGiftCardTypes: Bool {
+        if viewModel.showGiftCardTypes && viewModel.ctxGiftCards {
+            return true
+        }
+        #if PIGGYCARDS_ENABLED
+        return viewModel.showGiftCardTypes && viewModel.piggyGiftCards
+        #else
+        return false
+        #endif
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 0) {
                     // Sort By Section - Only show if there are multipele options
-                    if viewModel.sortOptions.contains(.distance) || viewModel.ctxGiftCards || viewModel.piggyGiftCards {
+                    if shouldShowSortOptions {
                         FilterSection(title: NSLocalizedString("Sort by", comment: "Explore Dash/Merchants/Filters")) {
                             RadioButtonRow(
                                 title: NSLocalizedString("Name", comment: "Explore Dash: Filters"),
@@ -95,6 +118,8 @@ struct MerchantFiltersView: View {
                                 viewModel.togglePaymentMethod(.ctx)
                             }
                             
+
+                            #if PIGGYCARDS_ENABLED
                             RadioButtonRow(
                                 title: NSLocalizedString("Piggy Cards gift cards", comment: "Explore Dash: Filters"),
                                 icon: .custom("piggycards.logo.small"),
@@ -103,11 +128,12 @@ struct MerchantFiltersView: View {
                             ) {
                                 viewModel.togglePaymentMethod(.piggyCards)
                             }
+                            #endif
                         }
                     }
                         
                     // Gift Card Types Section - Only show if Gift Card is selected
-                    if viewModel.showGiftCardTypes && (viewModel.ctxGiftCards || viewModel.piggyGiftCards) {
+                    if shouldShowGiftCardTypes {
                         FilterSection(title: NSLocalizedString("Gift card types", comment: "Explore Dash/Merchants/Filters")) {
                             RadioButtonRow(
                                 title: NSLocalizedString("Flexible amounts", comment: "Explore Dash: Filters"),

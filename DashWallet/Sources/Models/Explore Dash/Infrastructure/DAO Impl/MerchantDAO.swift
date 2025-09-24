@@ -76,23 +76,29 @@ class MerchantDAO: PointOfUseDAO {
                 }
                 
                 let hasCTX = methods.contains(PointOfUseListFilters.SpendingOptions.ctx)
+                #if PIGGYCARDS_ENABLED
                 let hasPiggy = methods.contains(PointOfUseListFilters.SpendingOptions.piggyCards)
-                
+                #else
+                let hasPiggy = false
+                #endif
+
                 if hasCTX || hasPiggy {
                     tempMethods.append(ExplorePointOfUse.Merchant.PaymentMethod.giftCard)
                 }
-                
+
                 queryFilter = queryFilter && tempMethods.map { $0.rawValue }.contains(paymentMethodColumn)
-                
+
                 // If only specific gift card providers are selected (not both), add merchantId filter
                 if !methods.contains(PointOfUseListFilters.SpendingOptions.dash) && (hasCTX != hasPiggy) {
                     var providerList: [String] = []
                     if hasCTX {
                         providerList.append("'CTX'")
                     }
+                    #if PIGGYCARDS_ENABLED
                     if hasPiggy {
                         providerList.append("'PiggyCards'")
                     }
+                    #endif
                     
                     let providerString = providerList.joined(separator: ", ")
                     queryFilter = queryFilter && Expression<Bool>(literal: "merchantId IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider IN (\(providerString)))")

@@ -32,11 +32,13 @@ class MerchantFiltersViewModel: ObservableObject {
             refreshSortOptions()
         }
     }
+    #if PIGGYCARDS_ENABLED
     @Published var piggyGiftCards = false {
         didSet {
             refreshSortOptions()
         }
     }
+    #endif
     
     @Published var sortOptions: [PointOfUseListFilters.SortBy]
     
@@ -59,23 +61,34 @@ class MerchantFiltersViewModel: ObservableObject {
     }
     
     private var hasChanges: Bool {
-        sortByDistance != initialSortByDistance ||
-        sortByName != initialSortByName ||
-        sortByDiscount != initialSortByDiscount ||
-        payWithDash != initialPayWithDash ||
-        ctxGiftCards != initialCtxGiftCard ||
-        piggyGiftCards != initialPiggyGiftCard ||
-        denominationFixed != initialDenominationFixed ||
-        denominationFlexible != initialDenominationFlexible ||
-        selectedRadius != initialRadius ||
-        selectedTerritory != initialTerritory
+        let baseChanges = sortByDistance != initialSortByDistance ||
+            sortByName != initialSortByName ||
+            sortByDiscount != initialSortByDiscount ||
+            payWithDash != initialPayWithDash ||
+            ctxGiftCards != initialCtxGiftCard ||
+            denominationFixed != initialDenominationFixed ||
+            denominationFlexible != initialDenominationFlexible ||
+            selectedRadius != initialRadius ||
+            selectedTerritory != initialTerritory
+
+        #if PIGGYCARDS_ENABLED
+        return baseChanges || piggyGiftCards != initialPiggyGiftCard
+        #else
+        return baseChanges
+        #endif
     }
     
     private var hasAnyFiltersApplied: Bool {
-        sortByDistance || sortByName || sortByDiscount ||
-        payWithDash || ctxGiftCards || piggyGiftCards ||
-        denominationFixed || denominationFlexible ||
-        selectedRadius != nil || selectedTerritory != nil
+        let baseFilters = sortByDistance || sortByName || sortByDiscount ||
+            payWithDash || ctxGiftCards ||
+            denominationFixed || denominationFlexible ||
+            selectedRadius != nil || selectedTerritory != nil
+
+        #if PIGGYCARDS_ENABLED
+        return baseFilters || piggyGiftCards
+        #else
+        return baseFilters
+        #endif
     }
     
     // MARK: - Initial State
@@ -85,7 +98,9 @@ class MerchantFiltersViewModel: ObservableObject {
     private let initialSortByDiscount: Bool
     private let initialPayWithDash: Bool
     private let initialCtxGiftCard: Bool
+    #if PIGGYCARDS_ENABLED
     private let initialPiggyGiftCard: Bool
+    #endif
     private let initialDenominationFixed: Bool
     private let initialDenominationFlexible: Bool
     private let initialRadius: PointOfUseListFilters.Radius?
@@ -132,7 +147,9 @@ class MerchantFiltersViewModel: ObservableObject {
             
             self.initialPayWithDash = filters.merchantPaymentTypes?.contains(.dash) ?? false
             self.initialCtxGiftCard = filters.merchantPaymentTypes?.contains(.ctx) ?? false
+            #if PIGGYCARDS_ENABLED
             self.initialPiggyGiftCard = filters.merchantPaymentTypes?.contains(.piggyCards) ?? false
+            #endif
             
             self.initialDenominationFixed = filters.denominationType == .fixed || filters.denominationType == .both
             self.initialDenominationFlexible = filters.denominationType == .flexible || filters.denominationType == .both
@@ -158,7 +175,9 @@ class MerchantFiltersViewModel: ObservableObject {
             self.initialSortByDiscount = false
             self.initialPayWithDash = true
             self.initialCtxGiftCard = true
+            #if PIGGYCARDS_ENABLED
             self.initialPiggyGiftCard = true
+            #endif
             self.initialDenominationFixed = true
             self.initialDenominationFlexible = true
             self.initialRadius = .twenty
@@ -176,7 +195,9 @@ class MerchantFiltersViewModel: ObservableObject {
         self.sortByDiscount = initialSortByDiscount
         self.payWithDash = initialPayWithDash
         self.ctxGiftCards = initialCtxGiftCard
+        #if PIGGYCARDS_ENABLED
         self.piggyGiftCards = initialPiggyGiftCard
+        #endif
         self.denominationFixed = initialDenominationFixed
         self.denominationFlexible = initialDenominationFlexible
         self.selectedRadius = initialRadius
@@ -201,24 +222,43 @@ class MerchantFiltersViewModel: ObservableObject {
     func togglePaymentMethod(_ method: PointOfUseListFilters.SpendingOptions) {
         switch method {
         case .dash:
-            if payWithDash && !ctxGiftCards && !piggyGiftCards {
+            let isLastOption: Bool
+            #if PIGGYCARDS_ENABLED
+            isLastOption = payWithDash && !ctxGiftCards && !piggyGiftCards
+            #else
+            isLastOption = payWithDash && !ctxGiftCards
+            #endif
+
+            if isLastOption {
                 // If unchecking the last option, check the other ones
                 payWithDash = false
                 ctxGiftCards = true
+                #if PIGGYCARDS_ENABLED
                 piggyGiftCards = true
+                #endif
             } else {
                 payWithDash.toggle()
             }
         case .ctx:
-            if ctxGiftCards && !payWithDash && !piggyGiftCards {
+            let isLastOption: Bool
+            #if PIGGYCARDS_ENABLED
+            isLastOption = ctxGiftCards && !payWithDash && !piggyGiftCards
+            #else
+            isLastOption = ctxGiftCards && !payWithDash
+            #endif
+
+            if isLastOption {
                 // If unchecking the last option, check the other one
                 ctxGiftCards = false
+                #if PIGGYCARDS_ENABLED
                 piggyGiftCards = false
+                #endif
                 payWithDash = true
             } else {
                 ctxGiftCards.toggle()
             }
             
+        #if PIGGYCARDS_ENABLED
         case .piggyCards:
             if piggyGiftCards && !ctxGiftCards && !payWithDash {
                 // If unchecking the last option, check the other one
@@ -228,10 +268,18 @@ class MerchantFiltersViewModel: ObservableObject {
             } else {
                 piggyGiftCards.toggle()
             }
+        #endif
         }
         
         // Reset denomination types when gift card is unchecked
-        if !ctxGiftCards && !piggyGiftCards {
+        let noGiftCardsSelected: Bool
+        #if PIGGYCARDS_ENABLED
+        noGiftCardsSelected = !ctxGiftCards && !piggyGiftCards
+        #else
+        noGiftCardsSelected = !ctxGiftCards
+        #endif
+
+        if noGiftCardsSelected {
             denominationFixed = true
             denominationFlexible = true
         }
@@ -285,9 +333,11 @@ class MerchantFiltersViewModel: ObservableObject {
         if ctxGiftCards {
             paymentMethods.append(.ctx)
         }
+        #if PIGGYCARDS_ENABLED
         if piggyGiftCards {
             paymentMethods.append(.piggyCards)
         }
+        #endif
         if !paymentMethods.isEmpty {
             filters.merchantPaymentTypes = paymentMethods
             hasAnyFilters = true
@@ -321,13 +371,20 @@ class MerchantFiltersViewModel: ObservableObject {
     }
     
     private func refreshSortOptions() {
-        if ctxGiftCards || piggyGiftCards {
+        let hasGiftCards: Bool
+        #if PIGGYCARDS_ENABLED
+        hasGiftCards = ctxGiftCards || piggyGiftCards
+        #else
+        hasGiftCards = ctxGiftCards
+        #endif
+
+        if hasGiftCards {
             sortOptions = initialSortOptions
         } else {
             sortOptions = initialSortOptions.filter { option in
                 option != .discount
             }
-            
+
             if sortByDiscount {
                 sortByDiscount = false
                 sortByName = true

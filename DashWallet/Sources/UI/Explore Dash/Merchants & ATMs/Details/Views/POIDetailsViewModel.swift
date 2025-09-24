@@ -23,10 +23,15 @@ import CoreLocation
 class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, NetworkReachabilityHandling, DWLocationObserver {
     private var cancellableBag = Set<AnyCancellable>()
     
-    private let repositories: [GiftCardProvider: any DashSpendRepository] = [
-        GiftCardProvider.ctx : CTXSpendRepository.shared,
-        GiftCardProvider.piggyCards : PiggyCardsRepository.shared
-    ]
+    private let repositories: [GiftCardProvider: any DashSpendRepository] = {
+        var dict: [GiftCardProvider: any DashSpendRepository] = [
+            .ctx: CTXSpendRepository.shared
+        ]
+        #if PIGGYCARDS_ENABLED
+        dict[.piggyCards] = PiggyCardsRepository.shared
+        #endif
+        return dict
+    }()
     
     private let syncMonitor = SyncingActivityMonitor.shared
     private let merchant: ExplorePointOfUse
