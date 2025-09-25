@@ -108,6 +108,11 @@ class MerchantDAO: PointOfUseDAO {
             // Filter out URL-based redemption merchants (not supported)
             // Using literal expression to handle cases where redeemType column might not exist
             queryFilter = queryFilter && Expression<Bool>(literal: "(redeemType IS NULL OR redeemType != 'url')")
+
+            // Filter out PiggyCards-only merchants when PIGGYCARDS_ENABLED is not defined
+            #if !PIGGYCARDS_ENABLED
+            queryFilter = queryFilter && Expression<Bool>(literal: "merchantId NOT IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider = 'PiggyCards' AND merchantId NOT IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider != 'PiggyCards'))")
+            #endif
             
             // Add denomination type filter (only applies to gift card merchants)
             if let denominationType = denominationType {
