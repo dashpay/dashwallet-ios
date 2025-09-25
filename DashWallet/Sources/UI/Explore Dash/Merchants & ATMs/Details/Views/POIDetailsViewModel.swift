@@ -18,6 +18,7 @@
 import Combine
 import Foundation
 import CoreLocation
+import MapKit
 
 @MainActor
 class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, NetworkReachabilityHandling, DWLocationObserver {
@@ -48,13 +49,15 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
     @Published private(set) var supportedProviders: [GiftCardProvider: (isFixed: Bool, discount: Int)] = [:]
     @Published private(set) var selectedProvider: GiftCardProvider? = nil
     @Published private(set) var showProviderPicker: Bool = false
+    @Published private(set) var locationCount: Int = 0
     
     init(merchant: ExplorePointOfUse) {
         self.merchant = merchant
-        
+
         setupProviders()
         setupObservers()
         updateDistance()
+        fetchLocationCount()
     }
     
     func observeDashSpendState(provider: GiftCardProvider?) {
@@ -164,10 +167,31 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
         }
     }
     
+    private func fetchLocationCount() {
+        guard let currentLocation = DWLocationManager.shared.currentLocation else {
+            locationCount = 0
+            return
+        }
+
+        // Create bounds using default radius around current location
+        let bounds = ExploreMapBounds(rect: MKCircle(center: currentLocation.coordinate, radius: kDefaultRadius).boundingMapRect)
+
+        ExploreDash.shared.allLocations(for: merchant.pointOfUseId, in: bounds, userPoint: currentLocation.coordinate) { [weak self] result in
+            Task { @MainActor in
+                switch result {
+                case .success(let locations):
+                    self?.locationCount = locations.items.count
+                case .failure(_):
+                    self?.locationCount = 0
+                }
+            }
+        }
+    }
+
     // MARK: - SyncingActivityMonitorObserver
-    
+
     nonisolated func syncingActivityMonitorProgressDidChange(_ progress: Double) { }
-    
+
     nonisolated func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
         Task { @MainActor in
             self.syncState = state

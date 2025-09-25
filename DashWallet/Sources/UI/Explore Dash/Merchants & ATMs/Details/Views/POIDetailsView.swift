@@ -240,12 +240,12 @@ struct POIDetailsView: View {
             showAllLocationsActionBlock?()
         }) {
             HStack {
-                Text(NSLocalizedString("Show all locations", comment: "Explore Dash"))
+                Text(viewModel.locationCount > 0 ? "\(NSLocalizedString("Show all locations", comment: "Explore Dash")) (\(viewModel.locationCount))" : NSLocalizedString("Show all locations", comment: "Explore Dash"))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.primaryText)
-                
+
                 Spacer()
-                
+
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13))
                     .foregroundColor(.secondaryText)
@@ -300,48 +300,31 @@ struct POIDetailsView: View {
     
     
     private var singleProviderInfoView: some View {
-        HStack(spacing: 20) {
-            infoBox(
-                icon: "image.giftcard.black",
-                title: NSLocalizedString("Provider", comment: "DashSpend"),
-                value: viewModel.selectedProvider?.displayName ?? "",
-                tintColor: .primaryText
-            )
-            
+        HStack {
+            Text(viewModel.selectedProvider?.displayName ?? "")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.primaryText)
+
+            if let selectedProvider = viewModel.selectedProvider,
+               let providerData = viewModel.supportedProviders[selectedProvider] {
+                Text(providerData.isFixed ? NSLocalizedString("Fixed amounts", comment: "DashSpend") : NSLocalizedString("Flexible amounts", comment: "DashSpend"))
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondaryText)
+            }
+
+            Spacer()
+
             if let selectedProvider = viewModel.selectedProvider,
                let providerData = viewModel.supportedProviders[selectedProvider],
                providerData.discount > 0 {
-                infoBox(
-                    icon: "image.discount",
-                    title: NSLocalizedString("Save", comment: ""),
-                    value: String(format: "%.0f%%", Double(providerData.discount) / 100.0),
-                    tintColor: .systemYellow
-                )
-            }
-        }
-    }
-    
-    private func infoBox(icon: String, title: String, value: String, tintColor: Color) -> some View {
-        HStack(spacing: 10) {
-            Image(icon)
-                .resizable()
-                .frame(width: 18, height: 18)
-                .foregroundColor(tintColor)
-            
-            VStack(alignment: .leading, spacing: 0) {
-                Text(title)
+                Text(String(format: "-%.0f%%", Double(providerData.discount) / 100.0))
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.primaryText)
-                
-                Text(value)
-                    .font(.system(size: 13))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.systemYellow)
             }
         }
-        .padding(.horizontal, 10)
-        .frame(height: 48)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(tintColor.opacity(0.1))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color.gray.opacity(0.1))
         .cornerRadius(10)
     }
     
