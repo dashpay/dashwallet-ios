@@ -52,12 +52,19 @@ public class ExploreDatabaseSyncManager {
     var syncState: State
     var lastServerUpdateDate: Date { Date(timeIntervalSince1970: exploreDatabaseLastVersion) }
 
+    // Network-specific filename to prevent mainnet/testnet database conflicts
+    private var networkSpecificFileName: String {
+        let isMainnet = DWEnvironment.sharedInstance().currentChain.isMainnet()
+        return isMainnet ? "explore-mainnet" : "explore-testnet"
+    }
+
     init() {
         syncState = .inititialing
 
         // Initialize storageRef with computed database path
         let databasePath: String
-        if DWEnvironment.sharedInstance().currentChain.isMainnet() {
+        let isMainnet = DWEnvironment.sharedInstance().currentChain.isMainnet()
+        if isMainnet {
             databasePath = "gs://dash-wallet-firebase.appspot.com/explore/explore-v4.db"
         } else {
             databasePath = "gs://dash-wallet-firebase.appspot.com/explore/explore-v4-testnet.db"
@@ -122,7 +129,7 @@ extension ExploreDatabaseSyncManager {
         }
 
         syncState = .syncing
-        let urlToSave = getDocumentsDirectory().appendingPathComponent("\(fileName)-\(timestamp).zip")
+        let urlToSave = getDocumentsDirectory().appendingPathComponent("\(networkSpecificFileName)-\(timestamp).zip")
 
         storageRef.getData(maxSize: metadata.size) { [weak self] data, error in
             let date = Date()
@@ -139,7 +146,7 @@ extension ExploreDatabaseSyncManager {
                         self?.exploreDatabaseLastSyncTimestamp = now
                         self?.exploreDatabaseLastVersion = timeIntervalMillesecond / 1000
                         self?.syncState = .synced(date)
-                        
+
                         NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
                         try? FileManager.default.removeItem(at: URL(fileURLWithPath: urlToSave.path))
                     } catch {
@@ -178,22 +185,33 @@ private let kExploreDatabaseLastSyncTimestampKey = "kExploreDatabaseLastSyncTime
 private let kExploreDatabaseLastVersion = "kExploreDatabaseLastVersion"
 
 extension ExploreDatabaseSyncManager {
+    // Network-specific UserDefaults keys
+    private var syncTimestampKey: String {
+        let isMainnet = DWEnvironment.sharedInstance().currentChain.isMainnet()
+        return isMainnet ? "kExploreDatabaseLastSyncTimestampKey_Mainnet" : "kExploreDatabaseLastSyncTimestampKey_Testnet"
+    }
+
+    private var versionKey: String {
+        let isMainnet = DWEnvironment.sharedInstance().currentChain.isMainnet()
+        return isMainnet ? "kExploreDatabaseLastVersion_Mainnet" : "kExploreDatabaseLastVersion_Testnet"
+    }
+
     var exploreDatabaseLastSyncTimestamp: TimeInterval {
         set {
-            UserDefaults.standard.setValue(newValue, forKey: kExploreDatabaseLastSyncTimestampKey)
+            UserDefaults.standard.setValue(newValue, forKey: syncTimestampKey)
         }
         get {
-            let value = UserDefaults.standard.double(forKey: kExploreDatabaseLastSyncTimestampKey)
+            let value = UserDefaults.standard.double(forKey: syncTimestampKey)
             return value == 0 ? bundleExploreDatabaseSyncTime : value
         }
     }
 
     var exploreDatabaseLastVersion: TimeInterval {
         set {
-            UserDefaults.standard.setValue(newValue, forKey: kExploreDatabaseLastVersion)
+            UserDefaults.standard.setValue(newValue, forKey: versionKey)
         }
         get {
-            let value = UserDefaults.standard.double(forKey: kExploreDatabaseLastVersion)
+            let value = UserDefaults.standard.double(forKey: versionKey)
             return value == 0 ? bundleExploreDatabaseSyncTime : value
         }
     }
