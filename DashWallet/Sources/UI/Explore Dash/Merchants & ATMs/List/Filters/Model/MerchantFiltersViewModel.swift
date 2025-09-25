@@ -125,12 +125,16 @@ class MerchantFiltersViewModel: ObservableObject {
     
     // MARK: - Initialization
     
+    let currentSegment: PointOfUseListSegment?
+
     init(
         filters: PointOfUseListFilters?,
         filterGroups: [PointOfUseListFiltersGroup],
         territoriesDataSource: TerritoryDataSource? = nil,
-        sortOptions: [PointOfUseListFilters.SortBy] = [.name, .distance]
+        sortOptions: [PointOfUseListFilters.SortBy] = [.name, .distance],
+        currentSegment: PointOfUseListSegment? = nil
     ) {
+        self.currentSegment = currentSegment
         self.showLocationSettings = filterGroups.contains(.locationService)
         self.showRadius = filterGroups.contains(.radius) && DWLocationManager.shared.isAuthorized
         self.showTerritory = filterGroups.contains(.territory)
@@ -167,8 +171,20 @@ class MerchantFiltersViewModel: ObservableObject {
             }
             
             self.initialTerritory = filters.territory
-            // Set current values
-            resetFilters()
+
+            // Set current values to match initial state (from existing filters)
+            self.sortByDistance = initialSortByDistance
+            self.sortByName = initialSortByName
+            self.sortByDiscount = initialSortByDiscount
+            self.payWithDash = initialPayWithDash
+            self.ctxGiftCards = initialCtxGiftCard
+            #if PIGGYCARDS_ENABLED
+            self.piggyGiftCards = initialPiggyGiftCard
+            #endif
+            self.denominationFixed = initialDenominationFixed
+            self.denominationFlexible = initialDenominationFlexible
+            self.selectedRadius = initialRadius
+            self.selectedTerritory = initialTerritory
         } else {
             self.initialSortByDistance = false
             self.initialSortByName = true
@@ -182,26 +198,29 @@ class MerchantFiltersViewModel: ObservableObject {
             self.initialDenominationFlexible = true
             self.initialRadius = .twenty
             self.initialTerritory = nil
-            
+
             resetFilters()
         }
+
+        // Ensure sort options are refreshed based on current gift card settings
+        refreshSortOptions()
     }
     
     // MARK: - Actions
     
     func resetFilters() {
-        self.sortByDistance = initialSortByDistance
-        self.sortByName = initialSortByName
-        self.sortByDiscount = initialSortByDiscount
-        self.payWithDash = initialPayWithDash
-        self.ctxGiftCards = initialCtxGiftCard
+        sortByDistance = false
+        sortByName = true
+        sortByDiscount = false
+        payWithDash = true
+        ctxGiftCards = true
         #if PIGGYCARDS_ENABLED
-        self.piggyGiftCards = initialPiggyGiftCard
+        piggyGiftCards = true
         #endif
-        self.denominationFixed = initialDenominationFixed
-        self.denominationFlexible = initialDenominationFlexible
-        self.selectedRadius = initialRadius
-        self.selectedTerritory = initialTerritory
+        denominationFixed = true
+        denominationFlexible = true
+        selectedRadius = .twenty
+        selectedTerritory = nil
     }
     
     func toggleSortBy(_ option: PointOfUseListFilters.SortBy) {
@@ -212,11 +231,11 @@ class MerchantFiltersViewModel: ObservableObject {
     }
     
     func toggleRadius(_ option: PointOfUseListFilters.Radius) {
-        if selectedRadius == option {
-            selectedRadius = nil
-        } else {
+        // Don't allow unselecting the current radius - user must always have a radius selected
+        if selectedRadius != option {
             selectedRadius = option
         }
+        // If user tries to unselect current radius, keep it selected (do nothing)
     }
     
     func togglePaymentMethod(_ method: PointOfUseListFilters.SpendingOptions) {
@@ -371,24 +390,7 @@ class MerchantFiltersViewModel: ObservableObject {
     }
     
     private func refreshSortOptions() {
-        let hasGiftCards: Bool
-        #if PIGGYCARDS_ENABLED
-        hasGiftCards = ctxGiftCards || piggyGiftCards
-        #else
-        hasGiftCards = ctxGiftCards
-        #endif
-
-        if hasGiftCards {
-            sortOptions = initialSortOptions
-        } else {
-            sortOptions = initialSortOptions.filter { option in
-                option != .discount
-            }
-
-            if sortByDiscount {
-                sortByDiscount = false
-                sortByName = true
-            }
-        }
+        // Always show all initial sort options - discount is available regardless of gift card selection
+        sortOptions = initialSortOptions
     }
 }

@@ -223,9 +223,29 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
             MerchantsListSegment.nearby.pointOfUseListSegment,
             MerchantsListSegment.all.pointOfUseListSegment,
         ])
+
+        // Set the current segment FIRST, then apply defaults based on that segment
         if DWLocationManager.shared.isAuthorized {
             model.currentSegment = model.segments[MerchantsListSegment.nearby.rawValue]
         }
+
+        // Now set defaults based on the ACTUAL current segment
+        let defaultSortBy: PointOfUseListFilters.SortBy = currentSegment.tag == MerchantsListSegment.nearby.rawValue ? .distance : .name
+
+        var defaultPaymentTypes: [PointOfUseListFilters.SpendingOptions] = [.dash, .ctx]
+        #if PIGGYCARDS_ENABLED
+        defaultPaymentTypes.append(.piggyCards)
+        #endif
+
+        let defaultFilters = PointOfUseListFilters(
+            sortBy: defaultSortBy,
+            merchantPaymentTypes: defaultPaymentTypes, // Default to all available payment types
+            radius: .twenty, // Default radius
+            territory: nil,
+            denominationType: .both // Default to both fixed and flexible
+        )
+
+        model.apply(filters: defaultFilters)
     }
 
     override func configureHierarchy() {

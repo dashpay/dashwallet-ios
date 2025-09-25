@@ -24,6 +24,8 @@ import SwiftUI
 class POIDetailsViewController: UIViewController {
     internal var pointOfUse: ExplorePointOfUse
     internal let isShowAllHidden: Bool
+    private let searchRadius: Double?
+    internal let currentFilters: PointOfUseListFilters?
 
     @objc public var payWithDashHandler: (()->())?
     @objc var sellDashHandler: (()->())?
@@ -33,9 +35,12 @@ class POIDetailsViewController: UIViewController {
     private var mapView: ExploreMapView!
     private let defaultBottomSheetHeight: CGFloat = 450
 
-    public init(pointOfUse: ExplorePointOfUse, isShowAllHidden: Bool = true) {
+    public init(pointOfUse: ExplorePointOfUse, isShowAllHidden: Bool = true, searchRadius: Double? = nil, currentFilters: PointOfUseListFilters? = nil) {
         self.pointOfUse = pointOfUse
         self.isShowAllHidden = isShowAllHidden
+        self.searchRadius = searchRadius
+        self.currentFilters = currentFilters
+        print("🔍 POIDetailsViewController.init: searchRadius=\(String(describing: searchRadius)), currentFilters=\(String(describing: currentFilters))")
 
         super.init(nibName: nil, bundle: nil)
     }
@@ -56,6 +61,7 @@ class POIDetailsViewController: UIViewController {
         configureHierarchy()
         refreshTokenAndMerchantInfo()
     }
+
 }
 
 extension POIDetailsViewController {
@@ -156,13 +162,22 @@ extension POIDetailsViewController {
     private func showDetailsView() {
         if case .unknown = pointOfUse.category { return }
         
-        var detailsView = POIDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
+        // Get current search radius from parent controller if available
+        let effectiveRadius: Double
+        if let parentVC = navigationController?.viewControllers.dropLast().last as? ExplorePointOfUseListViewController {
+            effectiveRadius = parentVC.model.filters?.currentRadius ?? searchRadius ?? kDefaultRadius
+        } else {
+            effectiveRadius = searchRadius ?? kDefaultRadius
+        }
+
+        var detailsView = POIDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden, searchRadius: effectiveRadius)
         detailsView.payWithDashHandler = payWithDashHandler
         detailsView.sellDashHandler = sellDashHandler
         detailsView.showAllLocationsActionBlock = { [weak self] in
             guard let wSelf = self else { return }
 
-            let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse)
+            // Use the same effective radius for both POIDetailsView and AllMerchantLocationsViewController
+            let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse, searchRadius: effectiveRadius, currentFilters: wSelf.currentFilters)
             vc.payWithDashHandler = wSelf.payWithDashHandler
             vc.sellDashHandler = wSelf.sellDashHandler
             wSelf.navigationController?.pushViewController(vc, animated: true)
@@ -309,11 +324,6 @@ extension ExplorePointOfUse {
         case .merchant(let m):
             if m.type == .online {
                 return NSLocalizedString("Online Merchant", comment: "Online Merchant")
-            } else if let currentLocation = DWLocationManager.shared.currentLocation, DWLocationManager.shared.isAuthorized {
-                let distance = CLLocation(latitude: latitude!, longitude: longitude!).distance(from: currentLocation)
-                let distanceString = ExploreDash.distanceFormatter
-                    .string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
-                return "\(distanceString) · Physical Merchant" + (m.type == .onlineAndPhysical ? ", Online" : "")
             } else {
                 return m.type == .onlineAndPhysical ? "Physical Merchant, Online" : "Physical Merchant"
             }

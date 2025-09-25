@@ -24,6 +24,7 @@ struct POIDetailsView: View {
     
     let merchant: ExplorePointOfUse
     let isShowAllHidden: Bool
+    let searchRadius: Double?
     
     // Action handlers
     var payWithDashHandler: (() -> Void)?
@@ -32,11 +33,12 @@ struct POIDetailsView: View {
     var buyGiftCardHandler: ((GiftCardProvider) -> Void)?
     var showAllLocationsActionBlock: (() -> Void)?
     
-    init(merchant: ExplorePointOfUse, isShowAllHidden: Bool = false) {
+    init(merchant: ExplorePointOfUse, isShowAllHidden: Bool = false, searchRadius: Double? = nil) {
         self.merchant = merchant
         self.isShowAllHidden = isShowAllHidden
-        
-        self._viewModel = StateObject(wrappedValue: POIDetailsViewModel(merchant: merchant))
+        self.searchRadius = searchRadius
+
+        self._viewModel = StateObject(wrappedValue: POIDetailsViewModel(merchant: merchant, searchRadius: searchRadius))
     }
     
     var body: some View {
@@ -58,6 +60,7 @@ struct POIDetailsView: View {
                 }
                 
                 if case .merchant = merchant.category {
+                    countryRestrictionView
                     bottomButtonView
                     loginStatusView
                 }
@@ -148,28 +151,37 @@ struct POIDetailsView: View {
                 Text(NSLocalizedString("Address", comment: "Explore Dash"))
                     .font(.caption)
                     .foregroundColor(.secondaryText)
-                
+
                 if merchant.address1?.isEmpty == false {
                     Text(merchant.address1 ?? "")
                         .font(.body2)
                         .foregroundColor(.primaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                
+
                 if merchant.address2?.isEmpty == false {
                     Text(merchant.address2 ?? "")
                         .font(.body2)
                         .foregroundColor(.primaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                
+
                 if merchant.address3?.isEmpty == false {
                     Text(merchant.address3 ?? "")
                         .font(.body2)
                         .foregroundColor(.primaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                
+
+                // Show city and territory (town/state)
+                let cityAndTerritory = [merchant.city, merchant.territory].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", ")
+                if !cityAndTerritory.isEmpty {
+                    Text(cityAndTerritory)
+                        .font(.body2)
+                        .foregroundColor(.primaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
                 if let distanceText = viewModel.distanceText {
                     Text(distanceText)
                         .font(.caption)
@@ -199,7 +211,7 @@ struct POIDetailsView: View {
                         .font(.caption)
                         .foregroundColor(.secondaryText)
                     
-                    Text(merchant.phone ?? "")
+                    Text(viewModel.formattedPhoneNumber ?? merchant.phone ?? "")
                         .font(.body2)
                         .foregroundColor(.dashBlue)
                 }
@@ -301,15 +313,17 @@ struct POIDetailsView: View {
     
     private var singleProviderInfoView: some View {
         HStack {
-            Text(viewModel.selectedProvider?.displayName ?? "")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.primaryText)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(viewModel.selectedProvider?.displayName ?? "")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.primaryText)
 
-            if let selectedProvider = viewModel.selectedProvider,
-               let providerData = viewModel.supportedProviders[selectedProvider] {
-                Text(providerData.isFixed ? NSLocalizedString("Fixed amounts", comment: "DashSpend") : NSLocalizedString("Flexible amounts", comment: "DashSpend"))
-                    .font(.system(size: 13))
-                    .foregroundColor(.secondaryText)
+                if let selectedProvider = viewModel.selectedProvider,
+                   let providerData = viewModel.supportedProviders[selectedProvider] {
+                    Text(providerData.isFixed ? NSLocalizedString("Fixed amounts", comment: "DashSpend") : NSLocalizedString("Flexible amounts", comment: "DashSpend"))
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondaryText)
+                }
             }
 
             Spacer()
@@ -319,7 +333,7 @@ struct POIDetailsView: View {
                providerData.discount > 0 {
                 Text(String(format: "-%.0f%%", Double(providerData.discount) / 100.0))
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.systemYellow)
+                    .foregroundColor(.primaryText)
             }
         }
         .padding(.horizontal, 16)
@@ -328,8 +342,21 @@ struct POIDetailsView: View {
         .cornerRadius(10)
     }
     
+    // MARK: - Country Restriction View
+
+    @ViewBuilder
+    private var countryRestrictionView: some View {
+        if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
+            Text(NSLocalizedString("This card works only in the United States.", comment: "DashSpend"))
+                .font(.system(size: 13))
+                .foregroundColor(.secondaryText)
+                .multilineTextAlignment(.center)
+                .padding(.bottom, 8)
+        }
+    }
+
     // MARK: - Bottom Button
-    
+
     private var bottomButtonView: some View {
         DashButton(
             text: buttonTitle,

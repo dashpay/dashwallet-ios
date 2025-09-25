@@ -43,7 +43,7 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
             userPoint = nil
         }
 
-        if lastQuery == query && !items.isEmpty && lastBounds == bounds {
+        if lastQuery == query && !items.isEmpty && lastBounds == bounds && lastFilters == filters {
             completion(.success(items))
             return
         }
@@ -51,20 +51,34 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
         lastQuery = query
         lastUserPoint = userPoint
         lastBounds = bounds
+        lastFilters = filters
 
-        fetch(by: query, in: bounds, userPoint: userPoint, offset: 0) { [weak self] result in
+        fetch(by: query, in: bounds, userPoint: userPoint, with: filters, offset: 0) { [weak self] result in
             self?.handle(result: result, completion: completion)
         }
     }
 
     override func nextPage(completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
-        fetch(by: lastQuery, in: lastBounds, userPoint: lastUserPoint, offset: nextOffset) { [weak self] result in
+        fetch(by: lastQuery, in: lastBounds, userPoint: lastUserPoint, with: lastFilters, offset: nextOffset) { [weak self] result in
             self?.handle(result: result, appending: true, completion: completion)
         }
     }
 
-    private func fetch(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, offset: Int,
+    private func fetch(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, with filters: PointOfUseListFilters?, offset: Int,
                        completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        dataSource.allLocations(for: pointOfUse.pointOfUseId, in: bounds, userPoint: userPoint, completion: completion)
+        print("🔍 AllMerchantLocationsDataProvider.fetch: for merchant \(pointOfUse.name ?? "unknown")")
+        print("🔍 AllMerchantLocationsDataProvider.fetch: bounds=\(String(describing: bounds))")
+        print("🔍 AllMerchantLocationsDataProvider.fetch: userPoint=\(String(describing: userPoint))")
+        print("🔍 AllMerchantLocationsDataProvider.fetch: filters.radius=\(String(describing: filters?.radius))")
+
+        dataSource.allLocations(for: pointOfUse.pointOfUseId, in: bounds, userPoint: userPoint) { result in
+            switch result {
+            case .success(let locations):
+                print("🔍 AllMerchantLocationsDataProvider.fetch: Found \(locations.items.count) locations")
+            case .failure(let error):
+                print("🔍 AllMerchantLocationsDataProvider.fetch: Error - \(error)")
+            }
+            completion(result)
+        }
     }
 }

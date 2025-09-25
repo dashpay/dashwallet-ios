@@ -36,6 +36,7 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
     
     private let syncMonitor = SyncingActivityMonitor.shared
     private let merchant: ExplorePointOfUse
+    private var currentSearchRadius: Double = kDefaultRadius
     
     // NetworkReachabilityHandling requirements
     var networkStatusDidChange: ((NetworkStatus) -> ())?
@@ -50,9 +51,18 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
     @Published private(set) var selectedProvider: GiftCardProvider? = nil
     @Published private(set) var showProviderPicker: Bool = false
     @Published private(set) var locationCount: Int = 0
+
+    var formattedPhoneNumber: String? {
+        guard let phone = merchant.phone, !phone.isEmpty else { return nil }
+        return formatPhoneNumber(phone)
+    }
     
-    init(merchant: ExplorePointOfUse) {
+    init(merchant: ExplorePointOfUse, searchRadius: Double? = nil) {
         self.merchant = merchant
+
+        if let radius = searchRadius {
+            self.currentSearchRadius = radius
+        }
 
         setupProviders()
         setupObservers()
@@ -167,25 +177,57 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
         }
     }
     
+    func updateSearchRadius(_ radius: Double) {
+        currentSearchRadius = radius
+        fetchLocationCount()
+    }
+
     private func fetchLocationCount() {
         guard let currentLocation = DWLocationManager.shared.currentLocation else {
             locationCount = 0
+            print("🔍 POIDetailsViewModel.fetchLocationCount: No current location")
             return
         }
 
-        // Create bounds using default radius around current location
-        let bounds = ExploreMapBounds(rect: MKCircle(center: currentLocation.coordinate, radius: kDefaultRadius).boundingMapRect)
+        // Create bounds using current search radius around current location
+        let bounds = ExploreMapBounds(rect: MKCircle(center: currentLocation.coordinate, radius: currentSearchRadius).boundingMapRect)
+
+        print("🔍 POIDetailsViewModel.fetchLocationCount: Using radius=\(currentSearchRadius) for merchant \(merchant.name ?? "unknown")")
 
         ExploreDash.shared.allLocations(for: merchant.pointOfUseId, in: bounds, userPoint: currentLocation.coordinate) { [weak self] result in
             Task { @MainActor in
                 switch result {
                 case .success(let locations):
-                    self?.locationCount = locations.items.count
-                case .failure(_):
+                    let count = locations.items.count
+                    self?.locationCount = count
+                    print("🔍 POIDetailsViewModel.fetchLocationCount: Found \(count) locations")
+                case .failure(let error):
                     self?.locationCount = 0
+                    print("🔍 POIDetailsViewModel.fetchLocationCount: Error - \(error)")
                 }
             }
         }
+    }
+
+    private func formatPhoneNumber(_ phoneNumber: String) -> String {
+        // Remove all non-numeric characters
+        let digits = phoneNumber.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
+
+        // Format as US phone number if it has 10 digits
+        if digits.count == 10 {
+            let areaCode = String(digits.prefix(3))
+            let exchange = String(digits.dropFirst(3).prefix(3))
+            let number = String(digits.suffix(4))
+            return "+\(areaCode) \(exchange) \(number)"
+        } else if digits.count == 11 && digits.hasPrefix("1") {
+            let areaCode = String(digits.dropFirst().prefix(3))
+            let exchange = String(digits.dropFirst(4).prefix(3))
+            let number = String(digits.suffix(4))
+            return "+\(areaCode) \(exchange) \(number)"
+        }
+
+        // Return original if can't format
+        return phoneNumber
     }
 
     // MARK: - SyncingActivityMonitorObserver

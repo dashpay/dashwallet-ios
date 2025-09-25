@@ -29,27 +29,23 @@ struct MerchantFiltersView: View {
         filterGroups: [PointOfUseListFiltersGroup],
         territoriesDataSource: TerritoryDataSource? = nil,
         sortOptions: [PointOfUseListFilters.SortBy] = [.name, .distance],
+        currentSegment: PointOfUseListSegment? = nil,
         onApplyFilters: @escaping (PointOfUseListFilters?) -> Void
     ) {
         self._viewModel = StateObject(wrappedValue: MerchantFiltersViewModel(
             filters: currentFilters,
             filterGroups: filterGroups,
             territoriesDataSource: territoriesDataSource,
-            sortOptions: sortOptions
+            sortOptions: sortOptions,
+            currentSegment: currentSegment
         ))
         self.onApplyFilters = onApplyFilters
     }
 
     // Helper computed properties for conditional compilation
     private var shouldShowSortOptions: Bool {
-        if viewModel.sortOptions.contains(.distance) || viewModel.ctxGiftCards {
-            return true
-        }
-        #if PIGGYCARDS_ENABLED
-        return viewModel.piggyGiftCards
-        #else
-        return false
-        #endif
+        // Show sort options if there are multiple options available
+        return viewModel.sortOptions.count > 1
     }
 
     private var shouldShowGiftCardTypes: Bool {

@@ -141,7 +141,8 @@ class ExplorePointOfUseListViewController: UIViewController {
 
     // MARK: life cycle
     internal func show(pointOfUse: ExplorePointOfUse) {
-        let vc = POIDetailsViewController(pointOfUse: pointOfUse)
+        let currentRadius = model.filters?.currentRadius ?? kDefaultRadius
+        let vc = POIDetailsViewController(pointOfUse: pointOfUse, searchRadius: currentRadius, currentFilters: model.filters)
         vc.payWithDashHandler = payWithDashHandler
         vc.sellDashHandler = sellDashHandler
         vc.onGiftCardPurchased = onGiftCardPurchased
@@ -359,7 +360,7 @@ extension ExplorePointOfUseListViewController {
 
         let appliedFilters = UIBarButtonItem(customView: appliedFiltersStackView)
         let filter = UIBarButtonItem(image: .init(systemName: "line.3.horizontal.decrease.circle.fill"), style: .plain,
-                                     target: self, action: nil)
+                                     target: self, action: #selector(showFiltersAction))
         filter.tintColor = .dw_dashBlue()
 
         let fakeFilter = UIBarButtonItem(image: .init(systemName: "line.3.horizontal.decrease.circle.fill"), style: .plain,
@@ -496,11 +497,47 @@ extension ExplorePointOfUseListViewController {
 // MARK: Actions
 extension ExplorePointOfUseListViewController {
     private func showFilters() {
+        // Ensure the sort option is valid for current segment
+        var effectiveFilters = model.filters
+        let segmentSortOptions = currentSegment.sortOptions
+        let defaultSortBy: PointOfUseListFilters.SortBy = currentSegment.tag == MerchantsListSegment.nearby.rawValue ? .distance : .name
+
+        // If current sort is not available in this segment, use segment default
+        if let currentSort = effectiveFilters?.sortBy, !segmentSortOptions.contains(currentSort) {
+            effectiveFilters = PointOfUseListFilters(
+                sortBy: defaultSortBy,
+                merchantPaymentTypes: effectiveFilters?.merchantPaymentTypes,
+                radius: effectiveFilters?.radius,
+                territory: effectiveFilters?.territory,
+                denominationType: effectiveFilters?.denominationType
+            )
+        } else if effectiveFilters?.sortBy == nil {
+            // No sort set at all, use defaults
+            if effectiveFilters == nil {
+                effectiveFilters = PointOfUseListFilters(
+                    sortBy: defaultSortBy,
+                    merchantPaymentTypes: nil,
+                    radius: nil,
+                    territory: nil,
+                    denominationType: nil
+                )
+            } else {
+                effectiveFilters = PointOfUseListFilters(
+                    sortBy: defaultSortBy,
+                    merchantPaymentTypes: effectiveFilters?.merchantPaymentTypes,
+                    radius: effectiveFilters?.radius,
+                    territory: effectiveFilters?.territory,
+                    denominationType: effectiveFilters?.denominationType
+                )
+            }
+        }
+
         let filtersView = MerchantFiltersView(
-            currentFilters: model.filters,
+            currentFilters: effectiveFilters,
             filterGroups: currentSegment.filterGroups,
             territoriesDataSource: currentSegment.territoriesDataSource,
-            sortOptions: currentSegment.sortOptions
+            sortOptions: currentSegment.sortOptions,
+            currentSegment: currentSegment
         ) { [weak self] filters in
             self?.apply(filters: filters)
         }
@@ -514,14 +551,20 @@ extension ExplorePointOfUseListViewController {
 
     private func updateAppliedFiltersView() {
         let str = model.appliedFiltersLocalizedString
-        appliedFiltersLabel.text = str
-        let isHidden = str == nil
-        navigationController?.setToolbarHidden(isHidden, animated: false)
+        // Show default filter text when no custom filters are applied
+        appliedFiltersLabel.text = str ?? NSLocalizedString("Default filters applied", comment: "Explore Dash")
+        // Always show the toolbar so users can access filters
+        navigationController?.setToolbarHidden(false, animated: false)
     }
 
     @objc
     private func showMapAction() {
         showMap()
+    }
+
+    @objc
+    private func showFiltersAction() {
+        showFilters()
     }
 
     @objc
@@ -570,8 +613,17 @@ extension ExplorePointOfUseListViewController {
 
 extension ExplorePointOfUseListViewController: ExploreMapViewDelegate {
     func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleBounds bounds: ExploreMapBounds) {
+        // Don't update bounds if AllMerchantLocationsViewController is currently active
+        if let navController = navigationController,
+           navController.viewControllers.last is AllMerchantLocationsViewController {
+            print("🔍 ExplorePointOfUseListViewController:617 - Skipping bounds update, AllMerchantLocationsViewController is active")
+            return
+        }
+
         refreshFilterCell()
-        model.currentMapBounds = mapView.mapBounds(with: model.currentRadius)
+        let newBounds = mapView.mapBounds(with: model.currentRadius)
+        print("🔍 ExplorePointOfUseListViewController:617 - Setting currentMapBounds to \(String(describing: newBounds)) with radius \(model.currentRadius) on model \(Unmanaged.passUnretained(model).toOpaque())")
+        model.currentMapBounds = newBounds
         model.refreshItems()
     }
 
@@ -751,7 +803,10 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
 
 extension ExplorePointOfUseListViewController: PointOfUseListFiltersViewControllerDelegate {
     func apply(filters: PointOfUseListFilters?) {
-        model.currentMapBounds = mapView.mapBounds(with: filters?.currentRadius ?? kDefaultRadius)
+        let radiusToUse = filters?.currentRadius ?? kDefaultRadius
+        let newBounds = mapView.mapBounds(with: radiusToUse)
+        print("🔍 ExplorePointOfUseListViewController:797 - Setting currentMapBounds to \(String(describing: newBounds)) with radius \(radiusToUse)")
+        model.currentMapBounds = newBounds
         model.apply(filters: filters)
         updateAppliedFiltersView()
         refreshView()

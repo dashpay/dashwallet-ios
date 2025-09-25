@@ -50,6 +50,15 @@ class PointOfUseDataProvider {
     internal var lastBounds: ExploreMapBounds?
     internal var lastFilters: PointOfUseListFilters?
 
+    func clearCache() {
+        items = []
+        currentPage = nil
+        lastQuery = nil
+        lastUserPoint = nil
+        lastBounds = nil
+        lastFilters = nil
+    }
+
     init() {
         dataSource = ExploreDash.shared
     }
@@ -195,6 +204,7 @@ final class PointOfUseListModel {
 
 extension PointOfUseListModel {
     public func refreshItems() {
+        print("🔍 PointOfUseListModel.refreshItems: Called with bounds=\(String(describing: currentMapBounds))")
         _fetch(query: lastQuery)
     }
 
@@ -206,6 +216,8 @@ extension PointOfUseListModel {
     internal func _fetch(query: String?) {
         let segment = currentSegment
         isFetching = true
+        print("🔍 PointOfUseListModel._fetch: Using bounds=\(String(describing: currentMapBounds)) on model \(Unmanaged.passUnretained(self).toOpaque())")
+        print("🔍 PointOfUseListModel._fetch: Using filters.radius=\(String(describing: filters?.radius))")
         currentDataProvider?
             .items(query: query, in: currentMapBounds, userPoint: userCoordinates, with: filters) { [weak self] result in
                 guard self?.currentSegment == segment else { return }
