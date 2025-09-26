@@ -618,6 +618,148 @@ extension Merchant {
 4. **Implement proper error handling** for all network operations
 5. **Follow reactive programming patterns** with Combine for UI updates
 
+## Location-Based Query Patterns (Critical Fix from Recent Session)
+
+### Radius Filtering Architecture
+
+#### The Two-Stage Filtering Pattern
+Location-based queries in the app MUST implement a two-stage filtering approach:
+
+1. **Rectangular Bounds Filtering** (SQL Query Optimization)
+   - Uses min/max latitude/longitude for initial database filtering
+   - Reduces the dataset size for performance
+
+2. **Circular Distance Filtering** (Accuracy)
+   - Uses `CLLocation.distance(from:)` for great-circle calculations
+   - Ensures results are within the true circular radius
+
+#### Critical Bug Pattern (Fixed)
+**Issue**: "Show all locations" button showed locations outside the 20-mile radius filter
+
+**Root Cause Analysis**:
+```swift
+// ❌ INCORRECT: Only rectangular filtering
+func allLocations(by query: String, in bounds: ExploreMapBounds, userPoint: CLLocation?) -> [Merchant] {
+    // This only filtered by rectangular bounds (lines 512-519 in MerchantDAO.swift)
+    let sql = """
+        SELECT * FROM merchant
+        WHERE latitude BETWEEN \(bounds.minLat) AND \(bounds.maxLat)
+        AND longitude BETWEEN \(bounds.minLng) AND \(bounds.maxLng)
+    """
+    return executeQuery(sql)
+}
+```
+
+**Correct Implementation**:
+```swift
+// ✅ CORRECT: Both rectangular AND circular filtering
+func allLocations(by query: String, in bounds: ExploreMapBounds, userPoint: CLLocation?) -> [Merchant] {
+    // Stage 1: Rectangular bounds (SQL optimization)
+    let sql = """
+        SELECT * FROM merchant
+        WHERE latitude BETWEEN \(bounds.minLat) AND \(bounds.maxLat)
+        AND longitude BETWEEN \(bounds.minLng) AND \(bounds.maxLng)
+    """
+    var merchants = executeQuery(sql)
+
+    // Stage 2: Circular distance filtering (accuracy)
+    if let userPoint = userPoint {
+        let radius = calculateRadiusFromBounds(bounds)
+
+        merchants = merchants.filter { merchant in
+            guard let lat = merchant.latitude, let lng = merchant.longitude else {
+                print("🎯 Filtering out merchant with nil coordinates: \(merchant.name)")
+                return false
+            }
+
+            let distance = CLLocation(latitude: lat, longitude: lng).distance(from: userPoint)
+            let isWithinRadius = distance <= radius
+
+            if !isWithinRadius {
+                print("🎯 Filtering out \(merchant.name): distance \(distance)m > radius \(radius)m")
+            }
+
+            return isWithinRadius
+        }
+    }
+
+    return merchants
+}
+```
+
+#### Distance Calculation Best Practices
+
+1. **Always Use CLLocation for Distance**:
+   ```swift
+   // ✅ CORRECT: Great-circle distance calculation
+   let distance = CLLocation(latitude: lat1, longitude: lng1)
+                    .distance(from: CLLocation(latitude: lat2, longitude: lng2))
+
+   // ❌ AVOID: Mathematical approximations
+   let distance = sqrt(pow(lat2 - lat1, 2) + pow(lng2 - lng1, 2)) * someConstant
+   ```
+
+2. **Radius Conversion from Bounds**:
+   ```swift
+   func calculateRadiusFromBounds(_ bounds: ExploreMapBounds, userPoint: CLLocation) -> Double {
+       // Calculate the actual circular radius from rectangular bounds
+       let neLoc = CLLocation(latitude: bounds.maxLat, longitude: bounds.maxLng)
+       let swLoc = CLLocation(latitude: bounds.minLat, longitude: bounds.minLng)
+
+       // Use the smaller of the two distances to ensure circular coverage
+       let neDistance = userPoint.distance(from: neLoc)
+       let swDistance = userPoint.distance(from: swLoc)
+
+       return min(neDistance, swDistance)
+   }
+   ```
+
+3. **Debug Logging Pattern**:
+   ```swift
+   // Use emoji markers for easy filtering
+   print("🎯 Distance filtering: \(merchantName)")
+   print("🎯   User location: \(userPoint.coordinate)")
+   print("🎯   Merchant location: (\(lat), \(lng))")
+   print("🎯   Distance: \(distance)m, Radius: \(radius)m")
+   print("🎯   Include: \(distance <= radius)")
+   ```
+
+#### Architecture Components
+
+**Data Flow Hierarchy**:
+1. **AllMerchantLocationsDataProvider** → Creates circular bounds from radius filters
+2. **MerchantDAO.items** → Applies proper circular filtering for main lists
+3. **MerchantDAO.allLocations** → Now also applies proper circular filtering
+
+**Key Classes and Methods**:
+- `MerchantDAO.swift` (lines 540-566): Fixed `allLocations` implementation
+- `AllMerchantLocationsDataProvider.swift`: Creates bounds from radius
+- `ExploreMapBounds`: Handles coordinate region calculations
+
+#### Testing Distance Filtering
+
+```swift
+func testRadiusFiltering() {
+    // Test case from actual bug fix
+    let userLocation = CLLocation(latitude: 37.7749, longitude: -122.4194) // San Francisco
+    let radius = 32186.88 // 20 miles in meters
+
+    let testMerchants = [
+        ("Within Radius", 37.7849, -122.4094, true),  // ~1.4km away
+        ("On Edge", 37.9649, -122.4194, true),       // ~20 miles away
+        ("Outside Radius", 38.0000, -122.4194, false) // ~25 miles away
+    ]
+
+    for (name, lat, lng, shouldInclude) in testMerchants {
+        let distance = CLLocation(latitude: lat, longitude: lng).distance(from: userLocation)
+        let isIncluded = distance <= radius
+
+        XCTAssertEqual(isIncluded, shouldInclude,
+                      "\(name) at distance \(distance)m should\(shouldInclude ? "" : " not") be included")
+    }
+}
+```
+
 ## Feature Flag Architecture (Updated from Current Session)
 
 ### Gift Card Provider System Architecture

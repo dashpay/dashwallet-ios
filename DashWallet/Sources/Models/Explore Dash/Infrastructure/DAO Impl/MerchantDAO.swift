@@ -508,7 +508,6 @@ extension MerchantDAO {
 
             queryFilter = queryFilter && Expression<Bool>(merchantIdColumn == merchantId)
 
-
             if let bounds {
                 let boundsFilter = Expression<Bool>(literal: "latitude > \(bounds.swCoordinate.latitude)") &&
                     Expression<Bool>(literal: "latitude < \(bounds.neCoordinate.latitude)") &&
@@ -521,7 +520,6 @@ extension MerchantDAO {
             var query = merchantTable
                 .select(merchantTable[*])
                 .filter(queryFilter)
-
 
             var distanceSorting = Expression<Bool>(value: true)
 
@@ -536,7 +534,37 @@ extension MerchantDAO {
             query = query.order(distanceSorting)
 
             do {
-                let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
+                var items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
+                print("🔍 MerchantDAO.allLocations: Found \(items.count) locations for merchant \(merchantId)")
+
+                // Apply circular distance filtering if we have bounds and a user location
+                // This ensures that "Show all locations" respects radius filtering from the Nearby tab
+                if let bounds = bounds, let userLocation = userPoint {
+                    let userCLLocation = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
+
+                    // Calculate the radius from the bounds diagonal divided by √2
+                    // Since bounds are square around a circle, diagonal = 2 * radius
+                    let latDiff = bounds.neCoordinate.latitude - bounds.swCoordinate.latitude
+                    let lonDiff = bounds.neCoordinate.longitude - bounds.swCoordinate.longitude
+                    let boundsRadius = min(latDiff, lonDiff) * 111000 / 2 // Convert degrees to meters, divide by 2
+                    let filterRadius = boundsRadius
+
+                    print("🎯 MerchantDAO.allLocations: Applying circular distance filter with radius=\(filterRadius)m (\(filterRadius/1609.34) miles)")
+
+                    let initialCount = items.count
+                    items = items.filter { item in
+                        guard let lat = item.latitude, let lon = item.longitude else { return false }
+                        let distance = userCLLocation.distance(from: CLLocation(latitude: lat, longitude: lon))
+                        let isWithinRadius = distance <= filterRadius
+                        if !isWithinRadius {
+                            print("🎯 MerchantDAO.allLocations: Filtering out '\(item.name)' at \(distance/1609.34) miles (outside \(filterRadius/1609.34) mile radius)")
+                        }
+                        return isWithinRadius
+                    }
+
+                    print("🎯 MerchantDAO.allLocations: After circular distance filtering: \(items.count) locations remain (was \(initialCount))")
+                }
+
                 completion(.success(PaginationResult(items: items, offset: Int.max)))
             } catch {
                 print(error)

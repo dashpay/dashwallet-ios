@@ -114,12 +114,40 @@ let newItems = merchants.compactMap { merchant -> MerchantAnnotation? in
 
 ## Map and Location Safety Patterns
 
+### Critical Distance Filtering Pattern (Fixed in Recent Session)
+**Bug**: "Show all locations" included merchants outside radius filter
+**Lesson**: Always apply BOTH rectangular bounds AND circular distance filtering
+
+```swift
+// ❌ DANGEROUS: Only rectangular bounds filtering
+func getMerchantsInBounds(_ bounds: ExploreMapBounds) -> [Merchant] {
+    return database.query("SELECT * WHERE lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?",
+                         bounds.minLat, bounds.maxLat, bounds.minLng, bounds.maxLng)
+}
+
+// ✅ SAFE: Two-stage filtering for accuracy
+func getMerchantsInRadius(_ bounds: ExploreMapBounds, userLocation: CLLocation) -> [Merchant] {
+    // Stage 1: Rectangular bounds (SQL optimization)
+    let boundsFiltered = database.query("SELECT * WHERE lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?",
+                                       bounds.minLat, bounds.maxLat, bounds.minLng, bounds.maxLng)
+
+    // Stage 2: Circular distance filtering (accuracy)
+    let radius = calculateRadiusFromBounds(bounds, userLocation: userLocation)
+
+    return boundsFiltered.filter { merchant in
+        guard let lat = merchant.latitude, let lng = merchant.longitude else { return false }
+        let distance = CLLocation(latitude: lat, longitude: lng).distance(from: userLocation)
+        return distance <= radius
+    }
+}
+```
+
 ### CLLocationCoordinate2D Handling
 ```swift
 // Safe coordinate validation
 extension CLLocationCoordinate2D {
     var isValid: Bool {
-        return CLLocationCoordinate2DIsValid(self) && 
+        return CLLocationCoordinate2DIsValid(self) &&
                latitude != 0 && longitude != 0
     }
 }
@@ -207,9 +235,43 @@ extension ExploreDash {
 class ExploreMapView {
     // ✅ Use constant instead of hardcoded value
     var centerRadius: Double = ExploreDash.merchantDetailZoomRadius / 1609.34 // Convert to miles
-    
+
     // ❌ Avoid inconsistent hardcoded values
     // var centerRadius: Double = 5 // Inconsistent with requirements
+}
+```
+
+### Distance Filtering Debug Patterns (From Recent Bug Fix)
+```swift
+// Effective debug logging for distance filtering issues
+extension MerchantDAO {
+    func debugDistanceFiltering(merchant: Merchant, userLocation: CLLocation, radius: Double) {
+        guard let lat = merchant.latitude, let lng = merchant.longitude else {
+            print("🎯 Merchant '\(merchant.name)' has nil coordinates - filtering out")
+            return
+        }
+
+        let merchantLocation = CLLocation(latitude: lat, longitude: lng)
+        let distance = merchantLocation.distance(from: userLocation)
+        let isIncluded = distance <= radius
+
+        // Detailed debug output with emoji markers for easy log filtering
+        print("🎯 Distance Filter Check: \(merchant.name)")
+        print("🎯   User: \(userLocation.coordinate.latitude), \(userLocation.coordinate.longitude)")
+        print("🎯   Merchant: \(lat), \(lng)")
+        print("🎯   Distance: \(String(format: "%.2f", distance))m")
+        print("🎯   Radius: \(String(format: "%.2f", radius))m")
+        print("🎯   Result: \(isIncluded ? "✅ INCLUDED" : "❌ FILTERED OUT")")
+    }
+}
+
+// Usage in actual filtering code
+merchants = merchants.filter { merchant in
+    let isIncluded = checkDistance(merchant, from: userLocation, within: radius)
+    #if DEBUG
+    debugDistanceFiltering(merchant: merchant, userLocation: userLocation, radius: radius)
+    #endif
+    return isIncluded
 }
 ```
 

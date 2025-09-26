@@ -491,6 +491,31 @@ The app implements sophisticated map-based filtering where:
 - `currentMapBounds` parameter flows through view hierarchy
 - Priority: map bounds > filter radius > default radius
 
+#### Critical Distance Filtering Pattern (Fixed in Recent Session)
+**Issue**: "Show all locations" incorrectly included locations outside radius filter
+**Root Cause**: `MerchantDAO.allLocations` only applied rectangular bounds filtering instead of circular distance filtering
+**Solution**: Apply both rectangular bounds (SQL optimization) AND circular distance filtering (accuracy)
+
+```swift
+// CORRECT PATTERN: Always apply both filters for location-based queries
+func allLocations(by query: String, in bounds: ExploreMapBounds, userPoint: CLLocation?) -> [Location] {
+    // Step 1: Rectangular bounds filtering (SQL optimization)
+    let boundsFiltered = filterByBounds(bounds)
+
+    // Step 2: Circular distance filtering (accuracy)
+    guard let userPoint = userPoint else { return boundsFiltered }
+
+    let radius = bounds.calculateRadiusFromBounds() // Convert bounds to meters
+    return boundsFiltered.filter { location in
+        guard let lat = location.latitude, let lng = location.longitude else { return false }
+        let distance = CLLocation(latitude: lat, longitude: lng).distance(from: userPoint)
+        return distance <= radius
+    }
+}
+```
+
+**Key Insight**: Rectangular bounds from map view don't guarantee circular radius compliance. Always use `CLLocation.distance(from:)` for accurate great-circle distance calculations.
+
 ### Key Safety Patterns
 - Always validate `CLLocationCoordinate2D.isValid` before use
 - Implement fallback chains for CTX API data
