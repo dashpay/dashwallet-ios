@@ -61,6 +61,7 @@ enum MerchantsListSegment: Int {
             showReversedLocation = false
             showMap = true
             dataProvider = AllMerchantsDataProvider()
+            sortOptions = [.name, .discount]
         }
 
         return .init(tag: rawValue, title: title, showMap: showMap, showLocationServiceSettings: showLocationServiceSettings, showReversedLocation: showReversedLocation, dataProvider: dataProvider, filterGroups: filterGroups, territoriesDataSource: territories, sortOptions: sortOptions)
@@ -86,7 +87,7 @@ extension MerchantsListSegment {
         case .nearby:
             return [.sortBy, .paymentType, .denominationType, .territory, .radius, .locationService]
         case .all:
-            return [.sortBy, .paymentType, .denominationType, .territory, .radius, .locationService]
+            return [.sortBy, .paymentType, .denominationType]
         }
     }
 
@@ -189,7 +190,19 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
     override func show(pointOfUse: ExplorePointOfUse) {
         guard let merchant = pointOfUse.merchant else { return }
 
-        let vc = POIDetailsViewController(pointOfUse: pointOfUse, isShowAllHidden: merchant.type == .online)
+        print("🔍🔍🔍 MerchantListViewController.show: CALLED for merchant '\(pointOfUse.name)'")
+        print("🔍🔍🔍 MerchantListViewController.show: currentSegment.tag=\(currentSegment.tag), title='\(currentSegment.title)'")
+        print("🔍🔍🔍 MerchantListViewController.show: model has \(model.segments.count) segments")
+
+        // Pass appropriate search radius and filters based on current segment
+        let isAllTab = currentSegment.tag == 2
+        let searchRadius: Double? = isAllTab ? Double.greatestFiniteMagnitude : model.filters?.currentRadius
+        print("🔍🔍🔍 MerchantListViewController.show: isAllTab=\(isAllTab)")
+        print("🔍🔍🔍 MerchantListViewController.show: model.filters?.currentRadius=\(String(describing: model.filters?.currentRadius))")
+        print("🔍🔍🔍 MerchantListViewController.show: searchRadius=\(String(describing: searchRadius))")
+        print("🔍🔍🔍 MerchantListViewController.show: model.filters.radius=\(String(describing: model.filters?.radius))")
+
+        let vc = POIDetailsViewController(pointOfUse: pointOfUse, isShowAllHidden: merchant.type == .online, searchRadius: searchRadius, currentFilters: model.filters)
         vc.payWithDashHandler = payWithDashHandler
         vc.onGiftCardPurchased = onGiftCardPurchased
         navigationController?.pushViewController(vc, animated: true)
@@ -218,19 +231,40 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
     }
 
     override func configureModel() {
+        print("🔍🔍🔍 MerchantListViewController.configureModel: CALLED")
+        print("🔍🔍🔍 MerchantListViewController.configureModel: Location authorized: \(DWLocationManager.shared.isAuthorized)")
+        print("🔍🔍🔍 MerchantListViewController.configureModel: Location permission denied: \(DWLocationManager.shared.isPermissionDenied)")
+        print("🔍🔍🔍 MerchantListViewController.configureModel: Location needs authorization: \(DWLocationManager.shared.needsAuthorization)")
+
         model = PointOfUseListModel(segments: [
             MerchantsListSegment.online.pointOfUseListSegment,
             MerchantsListSegment.nearby.pointOfUseListSegment,
             MerchantsListSegment.all.pointOfUseListSegment,
         ])
 
-        // Set the current segment FIRST, then apply defaults based on that segment
-        if DWLocationManager.shared.isAuthorized {
-            model.currentSegment = model.segments[MerchantsListSegment.nearby.rawValue]
+        print("🔍🔍🔍 MerchantListViewController.configureModel: Created model with \(model.segments.count) segments")
+        for (index, segment) in model.segments.enumerated() {
+            print("🔍🔍🔍 MerchantListViewController.configureModel: Segment[\(index)]: tag=\(segment.tag), title='\(segment.title)'")
         }
 
+        // Determine which segment should be default based on location permission
+        let defaultSegmentIndex: Int
+        if DWLocationManager.shared.isAuthorized {
+            defaultSegmentIndex = MerchantsListSegment.nearby.rawValue
+        } else {
+            defaultSegmentIndex = MerchantsListSegment.online.rawValue
+        }
+
+        print("🔍🔍🔍 MerchantListViewController.configureModel: defaultSegmentIndex=\(defaultSegmentIndex)")
+
+        // Set the current segment FIRST, then apply defaults based on that segment
+        model.currentSegment = model.segments[defaultSegmentIndex]
+
+        print("🔍🔍🔍 MerchantListViewController.configureModel: Set currentSegment to tag=\(model.currentSegment.tag), title='\(model.currentSegment.title)'")
+
         // Now set defaults based on the ACTUAL current segment
-        let defaultSortBy: PointOfUseListFilters.SortBy = currentSegment.tag == MerchantsListSegment.nearby.rawValue ? .distance : .name
+        let defaultSortBy: PointOfUseListFilters.SortBy = defaultSegmentIndex == MerchantsListSegment.nearby.rawValue ? .distance : .name
+        print("🔍🔍🔍 MerchantListViewController.configureModel: defaultSegmentIndex=\(defaultSegmentIndex), defaultSortBy=\(defaultSortBy)")
 
         var defaultPaymentTypes: [PointOfUseListFilters.SpendingOptions] = [.dash, .ctx]
         #if PIGGYCARDS_ENABLED
@@ -246,6 +280,14 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
         )
 
         model.apply(filters: defaultFilters)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        // Ensure filter status is visible on initial load
+        print("🔍 MerchantListViewController.viewWillAppear: Updating applied filters view")
+        updateAppliedFiltersView()
     }
 
     override func configureHierarchy() {

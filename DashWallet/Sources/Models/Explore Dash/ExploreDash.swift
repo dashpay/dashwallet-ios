@@ -82,6 +82,8 @@ public class ExploreDash {
         var formatter = MeasurementFormatter()
         formatter.locale = Locale.current
         formatter.unitOptions = .naturalScale
+        formatter.numberFormatter.maximumFractionDigits = 1
+        formatter.numberFormatter.minimumFractionDigits = 1
         return formatter
     }()
 

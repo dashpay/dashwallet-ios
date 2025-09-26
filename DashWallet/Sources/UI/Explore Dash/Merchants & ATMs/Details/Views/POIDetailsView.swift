@@ -90,8 +90,8 @@ struct POIDetailsView: View {
                 .padding(.top, 16)
             }
             
-            // Show all locations button
-            if !isShowAllHidden && shouldShowLocationView {
+            // Show all locations button (only if more than 1 location)
+            if !isShowAllHidden && shouldShowLocationView && viewModel.locationCount > 1 {
                 showAllLocationsButton
                     .padding(.top, 16)
             }

@@ -41,6 +41,7 @@ class POIDetailsViewController: UIViewController {
         self.searchRadius = searchRadius
         self.currentFilters = currentFilters
         print("🔍 POIDetailsViewController.init: searchRadius=\(String(describing: searchRadius)), currentFilters=\(String(describing: currentFilters))")
+        print("🔍 POIDetailsViewController.init: Will use searchRadius=\(String(describing: searchRadius)) for POI view model")
 
         super.init(nibName: nil, bundle: nil)
     }
@@ -164,10 +165,16 @@ extension POIDetailsViewController {
         
         // Get current search radius from parent controller if available
         let effectiveRadius: Double
-        if let parentVC = navigationController?.viewControllers.dropLast().last as? ExplorePointOfUseListViewController {
+        if let searchRadius = searchRadius, searchRadius == Double.greatestFiniteMagnitude {
+            // If explicit infinite radius is passed (from All tab), use that
+            effectiveRadius = searchRadius
+            print("🔍 POIDetailsViewController: Using infinite searchRadius=\(effectiveRadius)")
+        } else if let parentVC = navigationController?.viewControllers.dropLast().last as? ExplorePointOfUseListViewController {
             effectiveRadius = parentVC.model.filters?.currentRadius ?? searchRadius ?? kDefaultRadius
+            print("🔍 POIDetailsViewController: Using parent radius=\(effectiveRadius)")
         } else {
             effectiveRadius = searchRadius ?? kDefaultRadius
+            print("🔍 POIDetailsViewController: Using fallback radius=\(effectiveRadius)")
         }
 
         var detailsView = POIDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden, searchRadius: effectiveRadius)
@@ -176,8 +183,15 @@ extension POIDetailsViewController {
         detailsView.showAllLocationsActionBlock = { [weak self] in
             guard let wSelf = self else { return }
 
-            // Use the same effective radius for both POIDetailsView and AllMerchantLocationsViewController
-            let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse, searchRadius: effectiveRadius, currentFilters: wSelf.currentFilters)
+            // Check if we're coming from the "All" tab (tag = 2)
+            let isFromAllTab = (wSelf.navigationController?.viewControllers.dropLast().last as? ExplorePointOfUseListViewController)?.currentSegment.tag == 2
+
+            // For "All" tab, don't apply radius filtering - show all locations for the merchant
+            // For other tabs (Online, Nearby), use the current radius filtering
+            let searchRadiusToUse = isFromAllTab ? Double.greatestFiniteMagnitude : effectiveRadius
+            print("🔍 POIDetailsViewController.showAllLocationsActionBlock: isFromAllTab=\(isFromAllTab), using searchRadius=\(searchRadiusToUse)")
+
+            let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse, searchRadius: searchRadiusToUse, currentFilters: wSelf.currentFilters)
             vc.payWithDashHandler = wSelf.payWithDashHandler
             vc.sellDashHandler = wSelf.sellDashHandler
             wSelf.navigationController?.pushViewController(vc, animated: true)

@@ -183,6 +183,29 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
     }
 
     private func fetchLocationCount() {
+        // Check if we should ignore radius filtering (when coming from "All" tab)
+        let shouldIgnoreRadius = currentSearchRadius == Double.greatestFiniteMagnitude
+        print("🔍 POIDetailsViewModel.fetchLocationCount: shouldIgnoreRadius=\(shouldIgnoreRadius), radius=\(currentSearchRadius)")
+
+        if shouldIgnoreRadius {
+            // For "All" tab: Get total location count without any radius filtering
+            ExploreDash.shared.allLocations(for: merchant.pointOfUseId, in: nil, userPoint: nil) { [weak self] result in
+                Task { @MainActor in
+                    switch result {
+                    case .success(let locations):
+                        let count = locations.items.count
+                        self?.locationCount = count
+                        print("🔍 POIDetailsViewModel.fetchLocationCount: Found \(count) total locations (no radius filter)")
+                    case .failure(let error):
+                        self?.locationCount = 0
+                        print("🔍 POIDetailsViewModel.fetchLocationCount: Error - \(error)")
+                    }
+                }
+            }
+            return
+        }
+
+        // For other tabs: Apply radius filtering as before
         guard let currentLocation = DWLocationManager.shared.currentLocation else {
             locationCount = 0
             print("🔍 POIDetailsViewModel.fetchLocationCount: No current location")

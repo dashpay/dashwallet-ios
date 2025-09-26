@@ -75,7 +75,30 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
         // Apply the current filters from parent screen if available
         if let filters = currentFilters {
             print("🔍 AllMerchantLocationsViewController.configureModel: Applying currentFilters \(filters)")
-            model.apply(filters: filters)
+
+            // AllMerchantLocationsViewController should ALWAYS show all locations regardless of radius
+            print("🔍 AllMerchantLocationsViewController.configureModel: Removing radius filter to show all locations")
+
+            // Sort by distance if location authorized, otherwise use the current sort from filters
+            let sortBy: PointOfUseListFilters.SortBy
+            if DWLocationManager.shared.isAuthorized && searchRadius == Double.greatestFiniteMagnitude {
+                // Only force distance sorting for All tab (infinite radius)
+                sortBy = .distance
+                print("🔍 AllMerchantLocationsViewController.configureModel: All tab + location authorized - using distance sort")
+            } else {
+                // Keep the existing sort from filters for other tabs
+                sortBy = filters.sortBy ?? .name
+                print("🔍 AllMerchantLocationsViewController.configureModel: Using existing sort: \(String(describing: sortBy))")
+            }
+
+            let modifiedFilters = PointOfUseListFilters(
+                sortBy: sortBy,
+                merchantPaymentTypes: filters.merchantPaymentTypes,
+                radius: nil, // Always remove radius filter to show ALL locations
+                territory: filters.territory,
+                denominationType: filters.denominationType
+            )
+            model.apply(filters: modifiedFilters)
         } else {
             print("🔍 AllMerchantLocationsViewController.configureModel: No currentFilters to apply")
         }
@@ -109,7 +132,18 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
     }
 
     private func updateMapBounds() {
-        // Get current radius from the parent if it exists, otherwise use stored radius
+        // Check if we should ignore radius filtering (when coming from "All" tab)
+        let shouldIgnoreRadius = searchRadius == Double.greatestFiniteMagnitude
+        print("🔍 AllMerchantLocationsViewController.updateMapBounds: shouldIgnoreRadius=\(shouldIgnoreRadius), searchRadius=\(searchRadius)")
+
+        if shouldIgnoreRadius {
+            // For "All" tab: Don't apply any radius filtering - show all locations for this merchant
+            model.currentMapBounds = nil
+            print("🔍 AllMerchantLocationsViewController.updateMapBounds: Set bounds to nil for All tab (no radius filtering)")
+            return
+        }
+
+        // For other tabs (Nearby): Apply radius filtering as before
         let currentRadius: Double
 
         let allVCs = navigationController?.viewControllers ?? []
@@ -150,7 +184,6 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
         print("🔍 AllMerchantLocationsViewController.updateMapBounds: Set bounds with radius \(currentRadius) on model \(Unmanaged.passUnretained(model).toOpaque())")
         print("🔍 AllMerchantLocationsViewController.updateMapBounds: OLD bounds=\(String(describing: oldBounds))")
         print("🔍 AllMerchantLocationsViewController.updateMapBounds: NEW bounds=\(String(describing: bounds))")
-
     }
 
     override func configureHierarchy() {

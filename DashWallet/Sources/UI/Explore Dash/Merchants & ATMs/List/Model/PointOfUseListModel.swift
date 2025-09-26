@@ -128,7 +128,21 @@ final class PointOfUseListModel {
     var segmentTitles: [String] { segments.map { $0.title } }
 
     internal var dataProviders: [PointOfUseListSegment: PointOfUseDataProvider] = [:]
-    var filters: PointOfUseListFilters?
+    private var segmentFilters: [PointOfUseListSegment: PointOfUseListFilters] = [:]
+
+    var filters: PointOfUseListFilters? {
+        get {
+            return segmentFilters[currentSegment]
+        }
+        set {
+            print("🔍🔍🔍 PointOfUseListModel.filters setter: Setting filters for segment \(currentSegment.tag) to \(String(describing: newValue?.sortBy))")
+            if let newValue = newValue {
+                segmentFilters[currentSegment] = newValue
+            } else {
+                segmentFilters.removeValue(forKey: currentSegment)
+            }
+        }
+    }
 
     var currentSegment: PointOfUseListSegment {
         didSet {
@@ -140,7 +154,17 @@ final class PointOfUseListModel {
 
     var currentMapBounds: ExploreMapBounds?
 
-    var userCoordinates: CLLocationCoordinate2D? { DWLocationManager.shared.currentLocation?.coordinate }
+    var userCoordinates: CLLocationCoordinate2D? {
+        let location = DWLocationManager.shared.currentLocation
+        let coords = location?.coordinate
+        if let location = location {
+            print("🔍🔍🔍 PointOfUseListModel.userCoordinates: \(String(describing: coords))")
+            print("🔍🔍🔍 PointOfUseListModel.userCoordinates: accuracy=\(location.horizontalAccuracy)m, age=\(location.timestamp.timeIntervalSinceNow)s")
+        } else {
+            print("🔍🔍🔍 PointOfUseListModel.userCoordinates: nil")
+        }
+        return coords
+    }
 
     var hasNextPage: Bool {
         !isFetching && (currentDataProvider?.hasNextPage ?? false)
@@ -188,8 +212,26 @@ final class PointOfUseListModel {
     }
 
     func apply(filters: PointOfUseListFilters?) {
+        print("🔍🔍🔍 PointOfUseListModel.apply: CALLED with filters=\(String(describing: filters))")
+        print("🔍🔍🔍 PointOfUseListModel.apply: filters?.sortBy=\(String(describing: filters?.sortBy))")
+        print("🔍🔍🔍 PointOfUseListModel.apply: currentSegment.tag=\(currentSegment.tag), title='\(currentSegment.title)'")
+        if let existingFilters = self.filters {
+            print("🔍🔍🔍 PointOfUseListModel.apply: REPLACING existing filters sortBy=\(String(describing: existingFilters.sortBy))")
+        } else {
+            print("🔍🔍🔍 PointOfUseListModel.apply: NO existing filters to replace")
+        }
+
         self.filters = filters
+
+        if let updatedFilters = self.filters {
+            print("🔍🔍🔍 PointOfUseListModel.apply: SET filters sortBy=\(String(describing: updatedFilters.sortBy))")
+        } else {
+            print("🔍🔍🔍 PointOfUseListModel.apply: SET filters to nil")
+        }
+
+        print("🔍🔍🔍 PointOfUseListModel.apply: About to call refreshItems()")
         refreshItems()
+        print("🔍🔍🔍 PointOfUseListModel.apply: COMPLETED")
     }
 
     func resetFilters() {

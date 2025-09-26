@@ -57,7 +57,38 @@ class MerchantFiltersViewModel: ObservableObject {
     }
     
     var canReset: Bool {
-        hasAnyFiltersApplied || hasChanges
+        !isAtDefaultSettings
+    }
+
+    private var isAtDefaultSettings: Bool {
+        // Check if current settings match what resetFilters() would set
+        let isNearbySegment = currentSegment?.tag == 1
+        let defaultSortByDistance = isNearbySegment
+        let defaultSortByName = !isNearbySegment
+        let defaultSortByDiscount = false
+        let defaultPayWithDash = true
+        let defaultCtxGiftCards = true
+        let defaultDenominationFixed = true
+        let defaultDenominationFlexible = true
+        let defaultRadius = PointOfUseListFilters.Radius.twenty
+        let defaultTerritory: Territory? = nil
+
+        let baseSame = sortByDistance == defaultSortByDistance &&
+            sortByName == defaultSortByName &&
+            sortByDiscount == defaultSortByDiscount &&
+            payWithDash == defaultPayWithDash &&
+            ctxGiftCards == defaultCtxGiftCards &&
+            denominationFixed == defaultDenominationFixed &&
+            denominationFlexible == defaultDenominationFlexible &&
+            selectedRadius == defaultRadius &&
+            selectedTerritory == defaultTerritory
+
+        #if PIGGYCARDS_ENABLED
+        let defaultPiggyGiftCards = true
+        return baseSame && piggyGiftCards == defaultPiggyGiftCards
+        #else
+        return baseSame
+        #endif
     }
     
     private var hasChanges: Bool {
@@ -209,8 +240,11 @@ class MerchantFiltersViewModel: ObservableObject {
     // MARK: - Actions
     
     func resetFilters() {
-        sortByDistance = false
-        sortByName = true
+        // Set default sort based on current segment
+        // Tag 1 = nearby (should default to distance), others = name
+        let isNearbySegment = currentSegment?.tag == 1
+        sortByDistance = isNearbySegment
+        sortByName = !isNearbySegment
         sortByDiscount = false
         payWithDash = true
         ctxGiftCards = true
