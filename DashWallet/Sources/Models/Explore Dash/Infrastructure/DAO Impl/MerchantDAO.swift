@@ -154,6 +154,51 @@ class MerchantDAO: PointOfUseDAO {
                 // Use a post-processing approach instead of complex SQL
                 // First get all matching locations, then filter to closest per merchant in Swift
 
+                // FAMOUS DAVE'S DEBUG: Let's check what locations exist in the DB for Famous Dave's before any filtering
+                do {
+                    let famousDavesDebugQuery = merchantTable
+                        .select(merchantTable[*])
+                        .filter(nameColumn.like("%Famous Dave's%"))
+                        .order(nameColumn)
+
+                    let famousDavesLocations: [ExplorePointOfUse] = try wSelf.connection.execute(query: famousDavesDebugQuery)
+                    print("🔍🔍🔍 FAMOUS DAVE'S DEBUG: Found \(famousDavesLocations.count) Famous Dave's locations in DB total:")
+                    for (index, location) in famousDavesLocations.enumerated() {
+                        if let userLocation = userLocation {
+                            let distance = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
+                                .distance(from: CLLocation(latitude: location.latitude, longitude: location.longitude)) / 1609.34
+                            let merchant = location.merchant
+                            print("🔍🔍🔍 FAMOUS DAVE'S DEBUG: [\(index)] \(location.name) - \(String(format: "%.1f", distance)) miles - redeemType:\(String(describing: merchant?.redeemType)) - lat:\(location.latitude), lng:\(location.longitude)")
+                        } else {
+                            let merchant = location.merchant
+                            print("🔍🔍🔍 FAMOUS DAVE'S DEBUG: [\(index)] \(location.name) - redeemType:\(String(describing: merchant?.redeemType)) - lat:\(location.latitude), lng:\(location.longitude)")
+                        }
+                    }
+                } catch {
+                    print("🔍🔍🔍 FAMOUS DAVE'S DEBUG: Error fetching all Famous Dave's locations: \(error)")
+                }
+
+                // FAMOUS DAVE'S DEBUG: Test the redemption type filter specifically
+                do {
+                    let redeemTypeFilter = Expression<Bool>(literal: "(redeemType IS NULL OR redeemType != 'url')")
+                    let famousDavesWithRedeemFilter = merchantTable
+                        .select(merchantTable[*])
+                        .filter(nameColumn.like("%Famous Dave's%") && redeemTypeFilter)
+                        .order(nameColumn)
+
+                    let famousDavesAfterRedeemFilter: [ExplorePointOfUse] = try wSelf.connection.execute(query: famousDavesWithRedeemFilter)
+                    print("🔍🔍🔍 FAMOUS DAVE'S DEBUG: After redemption type filter: \(famousDavesAfterRedeemFilter.count) locations")
+                    for (index, location) in famousDavesAfterRedeemFilter.enumerated() {
+                        if let userLocation = userLocation {
+                            let distance = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
+                                .distance(from: CLLocation(latitude: location.latitude, longitude: location.longitude)) / 1609.34
+                            print("🔍🔍🔍 FAMOUS DAVE'S DEBUG: AFTER REDEEM FILTER [\(index)] \(location.name) - \(String(format: "%.1f", distance)) miles")
+                        }
+                    }
+                } catch {
+                    print("🔍🔍🔍 FAMOUS DAVE'S DEBUG: Error testing redemption filter: \(error)")
+                }
+
                 // Execute the query to get all matching locations (without grouping)
                 let allLocationsQuery = query.limit(1000) // Increase limit to get more locations
                 print("🔍🔍🔍 MerchantDAO.items: Fetching all locations (up to 1000) for closest location processing")
@@ -161,6 +206,19 @@ class MerchantDAO: PointOfUseDAO {
                 do {
                     var allItems: [ExplorePointOfUse] = try wSelf.connection.execute(query: allLocationsQuery)
                     print("🔍🔍🔍 MerchantDAO.items: Found \(allItems.count) total locations before closest location processing")
+
+                    // FAMOUS DAVE'S DEBUG: Check which Famous Dave's locations made it through the filtering
+                    let famousDavesAfterFiltering = allItems.filter { $0.name.contains("Famous Dave's") }
+                    print("🔍🔍🔍 FAMOUS DAVE'S DEBUG: After filtering, found \(famousDavesAfterFiltering.count) Famous Dave's locations:")
+                    for (index, location) in famousDavesAfterFiltering.enumerated() {
+                        if let userLocation = userLocation {
+                            let distance = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
+                                .distance(from: CLLocation(latitude: location.latitude, longitude: location.longitude)) / 1609.34
+                            print("🔍🔍🔍 FAMOUS DAVE'S DEBUG: AFTER FILTER [\(index)] \(location.name) - \(String(format: "%.1f", distance)) miles")
+                        } else {
+                            print("🔍🔍🔍 FAMOUS DAVE'S DEBUG: AFTER FILTER [\(index)] \(location.name)")
+                        }
+                    }
 
                     // Fetch gift card providers for each merchant that accepts gift cards
                     for (index, item) in allItems.enumerated() {
