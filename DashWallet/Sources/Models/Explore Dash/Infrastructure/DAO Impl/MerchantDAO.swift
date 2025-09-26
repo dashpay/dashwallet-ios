@@ -484,9 +484,6 @@ extension MerchantDAO {
 
             queryFilter = queryFilter && Expression<Bool>(merchantIdColumn == merchantId)
 
-            // Apply the same redemption type filter as the main items() method for consistency
-            // Filter out URL-based redemption merchants (not supported)
-            queryFilter = queryFilter && Expression<Bool>(literal: "(redeemType IS NULL OR redeemType != 'url')")
 
             if let bounds {
                 let boundsFilter = Expression<Bool>(literal: "latitude > \(bounds.swCoordinate.latitude)") &&
