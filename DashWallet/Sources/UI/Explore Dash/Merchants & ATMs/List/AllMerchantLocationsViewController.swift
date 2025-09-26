@@ -132,58 +132,11 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
     }
 
     private func updateMapBounds() {
-        // Check if we should ignore radius filtering (when coming from "All" tab)
-        let shouldIgnoreRadius = searchRadius == Double.greatestFiniteMagnitude
-        print("🔍 AllMerchantLocationsViewController.updateMapBounds: shouldIgnoreRadius=\(shouldIgnoreRadius), searchRadius=\(searchRadius)")
-
-        if shouldIgnoreRadius {
-            // For "All" tab: Don't apply any radius filtering - show all locations for this merchant
-            model.currentMapBounds = nil
-            print("🔍 AllMerchantLocationsViewController.updateMapBounds: Set bounds to nil for All tab (no radius filtering)")
-            return
-        }
-
-        // For other tabs (Nearby): Apply radius filtering as before
-        let currentRadius: Double
-
-        let allVCs = navigationController?.viewControllers ?? []
-        let dropLastVCs = allVCs.dropLast()
-        let potentialParent = dropLastVCs.last
-        print("🔍 AllMerchantLocationsViewController.updateMapBounds: navigationController has \(allVCs.count) VCs")
-        print("🔍 AllMerchantLocationsViewController.updateMapBounds: dropLast gives us \(dropLastVCs.count) VCs")
-        print("🔍 AllMerchantLocationsViewController.updateMapBounds: potentialParent is \(String(describing: potentialParent))")
-
-        if let poiDetailsVC = potentialParent as? POIDetailsViewController {
-            // Get the radius from POI Details VC (which has the current filter state)
-            currentRadius = poiDetailsVC.currentFilters?.currentRadius ?? searchRadius
-            print("🔍 AllMerchantLocationsViewController.updateMapBounds: Got radius \(currentRadius) from POIDetailsViewController (currentFilters.radius=\(String(describing: poiDetailsVC.currentFilters?.currentRadius)), searchRadius=\(searchRadius))")
-        } else if let parentVC = potentialParent as? ExplorePointOfUseListViewController {
-            currentRadius = parentVC.model.filters?.currentRadius ?? searchRadius
-            print("🔍 AllMerchantLocationsViewController.updateMapBounds: Got radius \(currentRadius) from ExplorePointOfUseListViewController (parentRadius=\(String(describing: parentVC.model.filters?.currentRadius)), searchRadius=\(searchRadius))")
-        } else {
-            currentRadius = searchRadius
-            print("🔍 AllMerchantLocationsViewController.updateMapBounds: No parent VC, using searchRadius \(searchRadius)")
-        }
-
-        // Use the same bounds calculation as POIDetailsViewModel
-        guard let currentLocation = DWLocationManager.shared.currentLocation else {
-            model.currentMapBounds = nil
-            print("🔍 AllMerchantLocationsViewController.updateMapBounds: No current location")
-            return
-        }
-
-        // Create bounds using current search radius around current location (same as POIDetailsViewModel)
-        let circle = MKCircle(center: currentLocation.coordinate, radius: currentRadius)
-        let boundingRect = circle.boundingMapRect
-        print("🔍 AllMerchantLocationsViewController.updateMapBounds: MKCircle radius=\(currentRadius) center=\(currentLocation.coordinate)")
-        print("🔍 AllMerchantLocationsViewController.updateMapBounds: boundingMapRect=\(boundingRect)")
-
-        let bounds = ExploreMapBounds(rect: boundingRect)
-        let oldBounds = model.currentMapBounds
-        model.currentMapBounds = bounds
-        print("🔍 AllMerchantLocationsViewController.updateMapBounds: Set bounds with radius \(currentRadius) on model \(Unmanaged.passUnretained(model).toOpaque())")
-        print("🔍 AllMerchantLocationsViewController.updateMapBounds: OLD bounds=\(String(describing: oldBounds))")
-        print("🔍 AllMerchantLocationsViewController.updateMapBounds: NEW bounds=\(String(describing: bounds))")
+        // AllMerchantLocationsViewController should ALWAYS show all locations for a merchant
+        // regardless of which tab the user came from. The "Show All Locations" screen
+        // is specifically designed to show ALL locations without radius filtering.
+        print("🔍 AllMerchantLocationsViewController.updateMapBounds: Always showing all locations (no radius filtering)")
+        model.currentMapBounds = nil
     }
 
     override func configureHierarchy() {

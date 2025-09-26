@@ -233,19 +233,11 @@ class MerchantDAO: PointOfUseDAO {
                     // Apply distance filtering if we have bounds (which indicates radius filtering is intended)
                     // The bounds are created as a bounding rectangle around a circle, but we want true circular filtering
                     if let bounds = bounds {
-                        // Calculate the radius that was likely used to create these bounds
-                        // The bounds represent a square around a circle, so we can estimate the original radius
-                        let boundsWidth = bounds.neCoordinate.longitude - bounds.swCoordinate.longitude
-                        let boundsHeight = bounds.neCoordinate.latitude - bounds.swCoordinate.latitude
-                        let centerLat = (bounds.swCoordinate.latitude + bounds.neCoordinate.latitude) / 2
-                        let centerLng = (bounds.swCoordinate.longitude + bounds.neCoordinate.longitude) / 2
+                        // Use the exact radius from the filters instead of estimating from bounds
+                        // The bounds were created from a known radius (like 32000m for 20 miles)
+                        let filterRadius = filters?.currentRadius ?? 32000 // Default to 20 miles in meters
 
-                        // Convert coordinate differences to meters to estimate radius
-                        let centerLocation = CLLocation(latitude: centerLat, longitude: centerLng)
-                        let eastLocation = CLLocation(latitude: centerLat, longitude: centerLng + boundsWidth / 2)
-                        let estimatedRadius = centerLocation.distance(from: eastLocation)
-
-                        print("🔍🔍🔍 MerchantDAO.items: Applying circular distance filter with estimatedRadius=\(estimatedRadius)m (\(estimatedRadius/1609.34) miles)")
+                        print("🔍🔍🔍 MerchantDAO.items: Applying circular distance filter with filterRadius=\(filterRadius)m (\(filterRadius/1609.34) miles)")
 
                         // Filter items by actual circular distance from user location
                         let userLocation = CLLocation(latitude: anchorLatitude, longitude: anchorLongitude)
@@ -253,7 +245,7 @@ class MerchantDAO: PointOfUseDAO {
                         allItems = allItems.filter { item in
                             guard let lat = item.latitude, let lon = item.longitude else { return false }
                             let distance = userLocation.distance(from: CLLocation(latitude: lat, longitude: lon))
-                            return distance <= estimatedRadius
+                            return distance <= filterRadius
                         }
 
                         print("🔍🔍🔍 MerchantDAO.items: After circular distance filtering: \(allItems.count) locations remain (was \(initialCount))")
