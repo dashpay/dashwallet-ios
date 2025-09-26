@@ -76,12 +76,15 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
         if let filters = currentFilters {
             print("🔍 AllMerchantLocationsViewController.configureModel: Applying currentFilters \(filters)")
 
-            // AllMerchantLocationsViewController should ALWAYS show all locations regardless of radius
-            print("🔍 AllMerchantLocationsViewController.configureModel: Removing radius filter to show all locations")
+            // Determine if we should remove radius filter based on source tab
+            let isFromAllTab = searchRadius == Double.greatestFiniteMagnitude
+            let shouldRemoveRadius = isFromAllTab
+
+            print("🎯 AllMerchantLocationsViewController: isFromAllTab=\(isFromAllTab), shouldRemoveRadius=\(shouldRemoveRadius)")
 
             // Sort by distance if location authorized, otherwise use the current sort from filters
             let sortBy: PointOfUseListFilters.SortBy
-            if DWLocationManager.shared.isAuthorized && searchRadius == Double.greatestFiniteMagnitude {
+            if DWLocationManager.shared.isAuthorized && isFromAllTab {
                 // Only force distance sorting for All tab (infinite radius)
                 sortBy = .distance
                 print("🔍 AllMerchantLocationsViewController.configureModel: All tab + location authorized - using distance sort")
@@ -94,7 +97,7 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
             let modifiedFilters = PointOfUseListFilters(
                 sortBy: sortBy,
                 merchantPaymentTypes: filters.merchantPaymentTypes,
-                radius: nil, // Always remove radius filter to show ALL locations
+                radius: shouldRemoveRadius ? nil : filters.radius, // Only remove radius for All tab
                 territory: filters.territory,
                 denominationType: filters.denominationType
             )

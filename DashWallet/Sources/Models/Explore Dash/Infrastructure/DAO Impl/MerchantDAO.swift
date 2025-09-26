@@ -233,9 +233,12 @@ class MerchantDAO: PointOfUseDAO {
                     // Apply distance filtering if we have bounds (which indicates radius filtering is intended)
                     // The bounds are created as a bounding rectangle around a circle, but we want true circular filtering
                     if let bounds = bounds {
-                        // Use the exact radius from the filters instead of estimating from bounds
-                        // The bounds were created from a known radius (like 32000m for 20 miles)
-                        let filterRadius = filters?.currentRadius ?? 32000 // Default to 20 miles in meters
+                        // Calculate the radius from the bounds diagonal divided by √2
+                        // Since bounds are square around a circle, diagonal = 2 * radius
+                        let latDiff = bounds.neCoordinate.latitude - bounds.swCoordinate.latitude
+                        let lonDiff = bounds.neCoordinate.longitude - bounds.swCoordinate.longitude
+                        let boundsRadius = min(latDiff, lonDiff) * 111000 / 2 // Convert degrees to meters, divide by 2
+                        let filterRadius = boundsRadius
 
                         print("🔍🔍🔍 MerchantDAO.items: Applying circular distance filter with filterRadius=\(filterRadius)m (\(filterRadius/1609.34) miles)")
 

@@ -17,6 +17,7 @@
 
 import CoreLocation
 import Foundation
+import MapKit
 
 class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
     private let pointOfUse: ExplorePointOfUse
@@ -29,22 +30,22 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                         with filters: PointOfUseListFilters?,
                         completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
-        print("🔍🔍🔍 AllMerchantLocationsDataProvider.items: CALLED")
-        print("🔍🔍🔍 AllMerchantLocationsDataProvider.items: bounds=\(String(describing: bounds))")
-        print("🔍🔍🔍 AllMerchantLocationsDataProvider.items: userPoint=\(String(describing: userPoint))")
-        print("🔍🔍🔍 AllMerchantLocationsDataProvider.items: filters.radius=\(String(describing: filters?.radius))")
-        print("🔍🔍🔍 AllMerchantLocationsDataProvider.items: needsAuth=\(DWLocationManager.shared.needsAuthorization), isAuth=\(DWLocationManager.shared.isAuthorized), isPermissionDenied=\(DWLocationManager.shared.isPermissionDenied)")
-
         var bounds = bounds
         var userPoint = userPoint
 
-        // Special handling for infinite radius (All tab showing all locations)
-        // When filters.radius is nil AND bounds is nil, treat as "show all locations" request
-        let isShowAllLocationsRequest = bounds == nil && filters?.radius == nil
-        print("🔍🔍🔍 AllMerchantLocationsDataProvider.items: isShowAllLocationsRequest=\(isShowAllLocationsRequest)")
+        // Handle "Show all locations" requests differently based on whether we have radius filtering
+        let hasRadiusFilter = filters?.radius != nil
+        let isShowAllLocationsWithRadius = bounds == nil && hasRadiusFilter && userPoint != nil
+        let isShowAllLocationsGlobally = bounds == nil && !hasRadiusFilter
 
-        if isShowAllLocationsRequest {
-            print("🔍🔍🔍 AllMerchantLocationsDataProvider.items: Show all locations mode - setting bounds to nil")
+        if isShowAllLocationsWithRadius {
+            print("🎯 NEARBY-RADIUS-FIX: bounds=nil, radius=\(filters?.radius?.meters ?? 0)m, userPoint=\(userPoint != nil)")
+            if let radius = filters?.radius, let userLocation = userPoint {
+                let circularBounds = MKCircle(center: userLocation, radius: radius.meters)
+                bounds = ExploreMapBounds(rect: circularBounds.boundingMapRect)
+            }
+        } else if isShowAllLocationsGlobally {
+            print("🎯 ALL-TAB-GLOBAL: bounds=nil, no radius filter")
             bounds = nil
             // Keep userPoint for distance sorting if filters require it
             if filters?.sortBy == .distance {
