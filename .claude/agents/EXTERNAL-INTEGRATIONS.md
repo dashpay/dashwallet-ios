@@ -618,7 +618,9 @@ struct ServiceAuthView: View {
         VStack {
             if viewModel.showingWebAuth {
                 WebAuthWrapper(authURL: viewModel.authURL) { result in
-                    await viewModel.handleAuthResult(result)
+                    Task {
+                        await viewModel.handleAuthResult(result)
+                    }
                 }
             } else {
                 AuthenticatedServiceView()

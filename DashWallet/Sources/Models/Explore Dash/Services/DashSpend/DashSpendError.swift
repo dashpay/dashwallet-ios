@@ -32,8 +32,8 @@ enum DashSpendError: Error, LocalizedError {
     case customError(String)
     case unknown
     case paymentProcessingError(String)
-    
-    public var errorDescription: String? {
+
+    var errorDescription: String? {
         switch self {
         case .networkError:
             return NSLocalizedString("Network error. Please check your connection and try again.", comment: "DashSpend")

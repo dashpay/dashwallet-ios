@@ -6,17 +6,17 @@ This document provides specific guidance for AI developers working with the Dash
 
 ### Understanding the Codebase
 1. **Read CLAUDE.md first** - Essential context about build commands and architecture
-2. **Review PROJECTFUNCTIONS.md** - Key APIs and function references
+2. **Review .claude/agents/PROJECT-FUNCTIONS.md** - Key APIs and function references
 3. **Study DEVELOPMENT-PATTERNS.md** - Coding conventions and architectural patterns
 4. **Check EXTERNAL-INTEGRATIONS.md** - Third-party service integration patterns
 
 ### Key Files for AI Development
 ```
 Essential Files to Understand:
-├── CLAUDE.md                     # Main development guide
-├── PROJECTFUNCTIONS.md           # API and function reference
-├── DEVELOPMENT-PATTERNS.md       # Code patterns and conventions  
-├── EXTERNAL-INTEGRATIONS.md      # Third-party integration guide
+├── CLAUDE.md                              # Main development guide
+├── .claude/agents/PROJECT-FUNCTIONS.md    # API and function reference
+├── DEVELOPMENT-PATTERNS.md                # Code patterns and conventions
+├── EXTERNAL-INTEGRATIONS.md               # Third-party integration guide
 ├── Podfile                       # Dependencies and build configuration
 ├── DashWallet/Sources/
 │   ├── Application/App.swift     # App lifecycle and utilities

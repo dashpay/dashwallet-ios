@@ -183,7 +183,12 @@ class MerchantDAO: PointOfUseDAO {
                             """
 
                             do {
-                                let rows = try wSelf.connection.db.prepare(providersQuery)
+                                guard let db = wSelf.connection.db else {
+                                    print("Error: Database connection is nil for merchant \(merchant.merchantId)")
+                                    continue
+                                }
+
+                                let rows = try db.prepare(providersQuery)
                                 var providers: [ExplorePointOfUse.Merchant.GiftCardProviderInfo] = []
 
                                 for row in rows {
@@ -395,12 +400,17 @@ class MerchantDAO: PointOfUseDAO {
                 for (index, item) in items.enumerated() {
                     if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
                         let providersQuery = """
-                            SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers 
+                            SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers
                             WHERE merchantId = '\(merchant.merchantId)'
                         """
-                        
+
                         do {
-                            let rows = try wSelf.connection.db.prepare(providersQuery)
+                            guard let db = wSelf.connection.db else {
+                                print("Error: Database connection is nil for merchant \(merchant.merchantId)")
+                                continue
+                            }
+
+                            let rows = try db.prepare(providersQuery)
                             var providers: [ExplorePointOfUse.Merchant.GiftCardProviderInfo] = []
                             
                             for row in rows {
