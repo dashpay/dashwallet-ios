@@ -282,14 +282,37 @@ extension ExplorePointOfUseListViewController {
 
 extension ExplorePointOfUseListViewController: DWLocationObserver {
     func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation) {
+        // Set the map center first
         mapView.setCenter(location, animated: false)
+
+        // Update the model's map bounds to match the new center
+        if model.showMap {
+            let radiusToUse = model.filters?.currentRadius ?? kDefaultRadius
+            let newBounds = mapView.mapBounds(with: radiusToUse)
+            model.currentMapBounds = newBounds
+        }
+
+        // If we're on the nearby tab and the model shows map, refresh the search with the new location
+        if currentSegment.tag == MerchantsListSegment.nearby.rawValue && model.showMap {
+            model.fetch(query: nil)
+        }
     }
 
     func locationManagerDidChangeServiceAvailability(_ manager: DWLocationManager) {
         if model.showMap {
             updateMapVisibility()
             mapView.showUserLocationInCenter(animated: false)
-            model.fetch(query: nil)
+
+            // Only fetch if we have location authorization and a current location
+            if manager.isAuthorized {
+                if let currentLocation = manager.currentLocation {
+                    model.fetch(query: nil)
+                } else {
+                    // Location will be updated via locationManagerDidChangeCurrentLocation which will trigger the fetch
+                }
+            } else {
+                model.fetch(query: nil)
+            }
         }
     }
 
@@ -605,21 +628,16 @@ extension ExplorePointOfUseListViewController {
         let segment = model.segments[index]
         model.currentSegment = segment
 
-        print("🔍🔍🔍 ExplorePointOfUseListViewController.segmentedControlDidChange: Switched to segment \(index), tag=\(segment.tag)")
-
         // Only set default filters if this segment has never been visited before
         if model.filters == nil {
-            print("🔍🔍🔍 ExplorePointOfUseListViewController.segmentedControlDidChange: No existing filters for segment \(segment.tag), setting defaults")
             resetFiltersToDefaults(for: segment)
         } else {
-            print("🔍🔍🔍 ExplorePointOfUseListViewController.segmentedControlDidChange: Segment \(segment.tag) has existing filters: \(String(describing: model.filters?.sortBy))")
             // Just refresh the view with existing filters for this segment
             refreshView()
         }
 
         // Request location permission immediately when switching to Nearby tab (tag=1)
         if segment.tag == 1 && DWLocationManager.shared.needsAuthorization {
-            print("🔍🔍🔍 ExplorePointOfUseListViewController.segmentedControlDidChange: Requesting location permission for Nearby tab")
             PointOfUseLocationServicePopup
                 .show(in: view, title: locationServicePopupTitle, details: locationServicePopupDetails) {
                     DWLocationManager.shared.requestAuthorization()
@@ -628,11 +646,8 @@ extension ExplorePointOfUseListViewController {
     }
 
     private func resetFiltersToDefaults(for segment: PointOfUseListSegment) {
-        print("🔍🔍🔍 ExplorePointOfUseListViewController.resetFiltersToDefaults: CALLED for segment.tag=\(segment.tag)")
-
         // Determine default sort for this segment
         let defaultSortBy: PointOfUseListFilters.SortBy = segment.tag == 1 ? .distance : .name // tag 1 = nearby, others = name
-        print("🔍🔍🔍 ExplorePointOfUseListViewController.resetFiltersToDefaults: segment.tag=\(segment.tag), defaultSortBy=\(defaultSortBy)")
 
         // Create new filters with segment-specific defaults
         var defaultPaymentTypes: [PointOfUseListFilters.SpendingOptions] = [.dash, .ctx]
@@ -648,13 +663,10 @@ extension ExplorePointOfUseListViewController {
             denominationType: .both
         )
 
-        print("🔍🔍🔍 ExplorePointOfUseListViewController.resetFiltersToDefaults: Created defaultFilters with sortBy=\(defaultFilters.sortBy)")
-        print("🔍🔍🔍 ExplorePointOfUseListViewController.resetFiltersToDefaults: About to call model.apply")
         model.apply(filters: defaultFilters)
 
         // Update the filter status display
         updateAppliedFiltersView()
-        print("🔍🔍🔍 ExplorePointOfUseListViewController.resetFiltersToDefaults: COMPLETED")
     }
 }
 
@@ -665,13 +677,11 @@ extension ExplorePointOfUseListViewController: ExploreMapViewDelegate {
         // Don't update bounds if AllMerchantLocationsViewController is currently active
         if let navController = navigationController,
            navController.viewControllers.last is AllMerchantLocationsViewController {
-            print("🔍 ExplorePointOfUseListViewController:617 - Skipping bounds update, AllMerchantLocationsViewController is active")
             return
         }
 
         refreshFilterCell()
         let newBounds = mapView.mapBounds(with: model.currentRadius)
-        print("🔍 ExplorePointOfUseListViewController:617 - Setting currentMapBounds to \(String(describing: newBounds)) with radius \(model.currentRadius) on model \(Unmanaged.passUnretained(model).toOpaque())")
         model.currentMapBounds = newBounds
         model.refreshItems()
     }
@@ -852,39 +862,19 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
 
 extension ExplorePointOfUseListViewController: PointOfUseListFiltersViewControllerDelegate {
     func apply(filters: PointOfUseListFilters?) {
-        print("🔍🔍🔍 ExplorePointOfUseListViewController.apply: CALLED with filters=\(String(describing: filters))")
-        print("🔍🔍🔍 ExplorePointOfUseListViewController.apply: filters?.sortBy=\(String(describing: filters?.sortBy))")
-        print("🔍🔍🔍 ExplorePointOfUseListViewController.apply: currentSegment.tag=\(currentSegment.tag), title='\(currentSegment.title)'")
-        if let existingFilters = model.filters {
-            print("🔍🔍🔍 ExplorePointOfUseListViewController.apply: EXISTING model filters sortBy=\(String(describing: existingFilters.sortBy))")
-        } else {
-            print("🔍🔍🔍 ExplorePointOfUseListViewController.apply: NO existing model filters")
-        }
-
         let radiusToUse = filters?.currentRadius ?? kDefaultRadius
         let newBounds = mapView.mapBounds(with: radiusToUse)
-        print("🔍🔍🔍 ExplorePointOfUseListViewController.apply: Setting currentMapBounds to \(String(describing: newBounds)) with radius \(radiusToUse)")
         model.currentMapBounds = newBounds
 
-        print("🔍🔍🔍 ExplorePointOfUseListViewController.apply: About to call model.apply with filters")
         model.apply(filters: filters)
-
-        if let updatedFilters = model.filters {
-            print("🔍🔍🔍 ExplorePointOfUseListViewController.apply: AFTER model.apply - filters sortBy=\(String(describing: updatedFilters.sortBy))")
-        } else {
-            print("🔍🔍🔍 ExplorePointOfUseListViewController.apply: AFTER model.apply - NO filters")
-        }
 
         updateAppliedFiltersView()
         refreshView()
-        print("🔍🔍🔍 ExplorePointOfUseListViewController.apply: COMPLETED")
     }
 
     func refreshView() {
-        print("🔍🔍🔍 ExplorePointOfUseListViewController.refreshView: CALLED")
         refreshFilterCell()
         updateMapVisibility()
         updateShowMapButtonVisibility()
-        print("🔍🔍🔍 ExplorePointOfUseListViewController.refreshView: COMPLETED")
     }
 }

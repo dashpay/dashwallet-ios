@@ -58,17 +58,9 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
     override func fetch(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                         with filters: PointOfUseListFilters?, offset: Int,
                         completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        print("🔍 AllMerchantsDataProvider.fetch: sortBy=\(String(describing: filters?.sortBy)), query=\(String(describing: query))")
         dataSource.allMerchants(by: query, in: bounds, userPoint: userPoint, paymentMethods: filters?.merchantPaymentTypes,
                                 sortBy: filters?.sortBy, territory: filters?.territory, denominationType: filters?.denominationType,
                                 offset: offset) { result in
-            switch result {
-            case .success(let paginationResult):
-                let merchants = paginationResult.items
-                print("🔍 AllMerchantsDataProvider.fetch: Found \(merchants.count) merchants, first merchant: \(merchants.first?.name ?? "none")")
-            case .failure(let error):
-                print("🔍 AllMerchantsDataProvider.fetch: Error - \(error)")
-            }
             completion(result)
         }
     }
@@ -112,21 +104,7 @@ class NearbyMerchantsDataProvider: PointOfUseDataProvider {
     internal func fetch(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                         with filters: PointOfUseListFilters?, offset: Int,
                         completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        print("🔍🔍🔍 NearbyMerchantsDataProvider.fetch: userPoint=\(String(describing: userPoint))")
-        print("🔍🔍🔍 NearbyMerchantsDataProvider.fetch: bounds=\(String(describing: bounds))")
-        print("🔍🔍🔍 NearbyMerchantsDataProvider.fetch: sortBy=\(String(describing: filters?.sortBy))")
-
         dataSource.nearbyMerchants(by: query, in: bounds, userPoint: userPoint, paymentMethods: filters?.merchantPaymentTypes, sortBy: filters?.sortBy, territory: filters?.territory, denominationType: filters?.denominationType, offset: offset) { result in
-            switch result {
-            case .success(let paginationResult):
-                let merchants = paginationResult.items
-                print("🔍🔍🔍 NearbyMerchantsDataProvider.fetch: Found \(merchants.count) merchants")
-                for (index, merchant) in merchants.prefix(5).enumerated() {
-                    print("🔍🔍🔍 NearbyMerchantsDataProvider.fetch: [\(index)] \(merchant.name) at (\(merchant.latitude ?? 0), \(merchant.longitude ?? 0))")
-                }
-            case .failure(let error):
-                print("🔍🔍🔍 NearbyMerchantsDataProvider.fetch: Error - \(error)")
-            }
             completion(result)
         }
     }
@@ -162,16 +140,8 @@ class OnlineMerchantsDataProvider: PointOfUseDataProvider {
     private func fetch(by query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?,
                        with filters: PointOfUseListFilters?, offset: Int,
                        completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        print("🔍 OnlineMerchantsDataProvider.fetch: onlineOnly=\(onlineOnly), sortBy=\(String(describing: filters?.sortBy)), query=\(String(describing: query))")
         dataSource.onlineMerchants(query: query, onlineOnly: onlineOnly, paymentMethods: filters?.merchantPaymentTypes,
                                    sortBy: filters?.sortBy, userPoint: userPoint, denominationType: filters?.denominationType, offset: offset) { result in
-            switch result {
-            case .success(let paginationResult):
-                let merchants = paginationResult.items
-                print("🔍 OnlineMerchantsDataProvider.fetch: Found \(merchants.count) merchants, first merchant: \(merchants.first?.name ?? "none")")
-            case .failure(let error):
-                print("🔍 OnlineMerchantsDataProvider.fetch: Error - \(error)")
-            }
             completion(result)
         }
     }

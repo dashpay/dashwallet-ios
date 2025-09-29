@@ -135,7 +135,6 @@ final class PointOfUseListModel {
             return segmentFilters[currentSegment]
         }
         set {
-            print("🔍🔍🔍 PointOfUseListModel.filters setter: Setting filters for segment \(currentSegment.tag) to \(String(describing: newValue?.sortBy))")
             if let newValue = newValue {
                 segmentFilters[currentSegment] = newValue
             } else {
@@ -156,14 +155,7 @@ final class PointOfUseListModel {
 
     var userCoordinates: CLLocationCoordinate2D? {
         let location = DWLocationManager.shared.currentLocation
-        let coords = location?.coordinate
-        if let location = location {
-            print("🔍🔍🔍 PointOfUseListModel.userCoordinates: \(String(describing: coords))")
-            print("🔍🔍🔍 PointOfUseListModel.userCoordinates: accuracy=\(location.horizontalAccuracy)m, age=\(location.timestamp.timeIntervalSinceNow)s")
-        } else {
-            print("🔍🔍🔍 PointOfUseListModel.userCoordinates: nil")
-        }
-        return coords
+        return location?.coordinate
     }
 
     var hasNextPage: Bool {
@@ -212,26 +204,8 @@ final class PointOfUseListModel {
     }
 
     func apply(filters: PointOfUseListFilters?) {
-        print("🔍🔍🔍 PointOfUseListModel.apply: CALLED with filters=\(String(describing: filters))")
-        print("🔍🔍🔍 PointOfUseListModel.apply: filters?.sortBy=\(String(describing: filters?.sortBy))")
-        print("🔍🔍🔍 PointOfUseListModel.apply: currentSegment.tag=\(currentSegment.tag), title='\(currentSegment.title)'")
-        if let existingFilters = self.filters {
-            print("🔍🔍🔍 PointOfUseListModel.apply: REPLACING existing filters sortBy=\(String(describing: existingFilters.sortBy))")
-        } else {
-            print("🔍🔍🔍 PointOfUseListModel.apply: NO existing filters to replace")
-        }
-
         self.filters = filters
-
-        if let updatedFilters = self.filters {
-            print("🔍🔍🔍 PointOfUseListModel.apply: SET filters sortBy=\(String(describing: updatedFilters.sortBy))")
-        } else {
-            print("🔍🔍🔍 PointOfUseListModel.apply: SET filters to nil")
-        }
-
-        print("🔍🔍🔍 PointOfUseListModel.apply: About to call refreshItems()")
         refreshItems()
-        print("🔍🔍🔍 PointOfUseListModel.apply: COMPLETED")
     }
 
     func resetFilters() {
@@ -246,7 +220,6 @@ final class PointOfUseListModel {
 
 extension PointOfUseListModel {
     public func refreshItems() {
-        print("🔍 PointOfUseListModel.refreshItems: Called with bounds=\(String(describing: currentMapBounds))")
         _fetch(query: lastQuery)
     }
 
@@ -258,8 +231,6 @@ extension PointOfUseListModel {
     internal func _fetch(query: String?) {
         let segment = currentSegment
         isFetching = true
-        print("🔍 PointOfUseListModel._fetch: Using bounds=\(String(describing: currentMapBounds)) on model \(Unmanaged.passUnretained(self).toOpaque())")
-        print("🔍 PointOfUseListModel._fetch: Using filters.radius=\(String(describing: filters?.radius))")
         currentDataProvider?
             .items(query: query, in: currentMapBounds, userPoint: userCoordinates, with: filters) { [weak self] result in
                 guard self?.currentSegment == segment else { return }

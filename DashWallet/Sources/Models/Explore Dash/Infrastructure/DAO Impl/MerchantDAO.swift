@@ -132,10 +132,21 @@ class MerchantDAO: PointOfUseDAO {
             if let territory {
                 queryFilter = queryFilter && territoryColumn.like(territory)
             } else if let bounds {
-                var boundsFilter = Expression<Bool>(literal: "latitude > \(bounds.swCoordinate.latitude)") &&
-                    Expression<Bool>(literal: "latitude < \(bounds.neCoordinate.latitude)") &&
-                    Expression<Bool>(literal: "longitude > \(bounds.swCoordinate.longitude)") &&
-                    Expression<Bool>(literal: "longitude < \(bounds.neCoordinate.longitude)")
+                // Make the rectangular bounds more generous to ensure we don't exclude locations
+                // that should be within the circular radius. Add 50% buffer to each dimension.
+                let latBuffer = (bounds.neCoordinate.latitude - bounds.swCoordinate.latitude) * 0.5
+                let lonBuffer = (bounds.neCoordinate.longitude - bounds.swCoordinate.longitude) * 0.5
+
+                let expandedSWLat = bounds.swCoordinate.latitude - latBuffer
+                let expandedNELat = bounds.neCoordinate.latitude + latBuffer
+                let expandedSWLon = bounds.swCoordinate.longitude - lonBuffer
+                let expandedNELon = bounds.neCoordinate.longitude + lonBuffer
+
+
+                var boundsFilter = Expression<Bool>(literal: "latitude > \(expandedSWLat)") &&
+                    Expression<Bool>(literal: "latitude < \(expandedNELat)") &&
+                    Expression<Bool>(literal: "longitude > \(expandedSWLon)") &&
+                    Expression<Bool>(literal: "longitude < \(expandedNELon)")
 
                 if types.contains(.online) {
                     boundsFilter = boundsFilter || Expression<Bool>(literal: "type = 'online'")
@@ -150,18 +161,14 @@ class MerchantDAO: PointOfUseDAO {
 
             // For each merchant, we want to show only the closest location when userLocation is available
             if let anchorLatitude = userLocation?.latitude, let anchorLongitude = userLocation?.longitude {
-                print("🔍🔍🔍 MerchantDAO.items: Using closest location logic for userLocation=(\(anchorLatitude), \(anchorLongitude))")
                 // Use a post-processing approach instead of complex SQL
                 // First get all matching locations, then filter to closest per merchant in Swift
 
-
                 // Execute the query to get all matching locations (without grouping)
                 let allLocationsQuery = query.limit(1000) // Increase limit to get more locations
-                print("🔍🔍🔍 MerchantDAO.items: Fetching all locations (up to 1000) for closest location processing")
 
                 do {
                     var allItems: [ExplorePointOfUse] = try wSelf.connection.execute(query: allLocationsQuery)
-                    print("🔍🔍🔍 MerchantDAO.items: Found \(allItems.count) total locations before closest location processing")
 
                     // Fetch gift card providers for each merchant that accepts gift cards
                     for (index, item) in allItems.enumerated() {
@@ -240,18 +247,13 @@ class MerchantDAO: PointOfUseDAO {
                         let boundsRadius = min(latDiff, lonDiff) * 111000 / 2 // Convert degrees to meters, divide by 2
                         let filterRadius = boundsRadius
 
-                        print("🔍🔍🔍 MerchantDAO.items: Applying circular distance filter with filterRadius=\(filterRadius)m (\(filterRadius/1609.34) miles)")
-
                         // Filter items by actual circular distance from user location
                         let userLocation = CLLocation(latitude: anchorLatitude, longitude: anchorLongitude)
-                        let initialCount = allItems.count
                         allItems = allItems.filter { item in
                             guard let lat = item.latitude, let lon = item.longitude else { return false }
                             let distance = userLocation.distance(from: CLLocation(latitude: lat, longitude: lon))
                             return distance <= filterRadius
                         }
-
-                        print("🔍🔍🔍 MerchantDAO.items: After circular distance filtering: \(allItems.count) locations remain (was \(initialCount))")
                     }
 
                     // Group locations by merchant and find closest location for each merchant
@@ -266,11 +268,6 @@ class MerchantDAO: PointOfUseDAO {
                         let locationCoord = CLLocation(latitude: lat, longitude: lon)
                         let distance = userCoord.distance(from: locationCoord)
 
-                        // Special logging for Famous Dave's to debug the 10.9 mile issue
-                        if merchant.merchantId == "245443ee-ac84-4ed6-a0a7-def312894bc3" {
-                            print("🔍🔍🔍 MerchantDAO.items: FAMOUS DAVE'S location at (\(lat), \(lon)) = \(distance/1609.34) miles, name='\(item.name)'")
-                        }
-
                         if let existingItem = merchantToClosestLocation[merchant.merchantId],
                            let existingLat = existingItem.latitude,
                            let existingLon = existingItem.longitude {
@@ -278,24 +275,13 @@ class MerchantDAO: PointOfUseDAO {
                             let existingDistance = userCoord.distance(from: existingLocationCoord)
 
                             if distance < existingDistance {
-                                if merchant.merchantId == "245443ee-ac84-4ed6-a0a7-def312894bc3" {
-                                    print("🔍🔍🔍 MerchantDAO.items: FAMOUS DAVE'S Updated closest location: \(distance/1609.34) miles (was \(existingDistance/1609.34) miles)")
-                                } else {
-                                    print("🔍🔍🔍 MerchantDAO.items: Updated closest location for \(merchant.merchantId): \(distance/1609.34) miles (was \(existingDistance/1609.34) miles)")
-                                }
                                 merchantToClosestLocation[merchant.merchantId] = item
                             }
                         } else {
-                            if merchant.merchantId == "245443ee-ac84-4ed6-a0a7-def312894bc3" {
-                                print("🔍🔍🔍 MerchantDAO.items: FAMOUS DAVE'S First location: \(distance/1609.34) miles")
-                            } else {
-                                print("🔍🔍🔍 MerchantDAO.items: First location for \(merchant.merchantId): \(distance/1609.34) miles")
-                            }
                             merchantToClosestLocation[merchant.merchantId] = item
                         }
                     }
 
-                    print("🔍🔍🔍 MerchantDAO.items: After closest location processing: \(merchantToClosestLocation.count) unique merchants")
 
                     // Convert back to array and apply sorting
                     var items = Array(merchantToClosestLocation.values)
@@ -476,7 +462,6 @@ extension MerchantDAO {
         // When onlineOnly is true, only include pure online merchants
         // When onlineOnly is false, include both online and onlineAndPhysical merchants
         let types: [ExplorePointOfUse.Merchant.`Type`] = onlineOnly ? [.online] : [.online, .onlineAndPhysical]
-        print("🔍 MerchantDAO.onlineMerchants: onlineOnly=\(onlineOnly), types=\(types)")
 
         items(query: query, bounds: nil, userLocation: userPoint, types: types,
               paymentMethods: paymentMethods, sortBy: sortBy, territory: nil, denominationType: denominationType, offset: offset, completion: completion)
@@ -509,10 +494,21 @@ extension MerchantDAO {
             queryFilter = queryFilter && Expression<Bool>(merchantIdColumn == merchantId)
 
             if let bounds {
-                let boundsFilter = Expression<Bool>(literal: "latitude > \(bounds.swCoordinate.latitude)") &&
-                    Expression<Bool>(literal: "latitude < \(bounds.neCoordinate.latitude)") &&
-                    Expression<Bool>(literal: "longitude > \(bounds.swCoordinate.longitude)") &&
-                    Expression<Bool>(literal: "longitude < \(bounds.neCoordinate.longitude)")
+                // Make the rectangular bounds more generous to ensure we don't exclude locations
+                // that should be within the circular radius. Add 50% buffer to each dimension.
+                let latBuffer = (bounds.neCoordinate.latitude - bounds.swCoordinate.latitude) * 0.5
+                let lonBuffer = (bounds.neCoordinate.longitude - bounds.swCoordinate.longitude) * 0.5
+
+                let expandedSWLat = bounds.swCoordinate.latitude - latBuffer
+                let expandedNELat = bounds.neCoordinate.latitude + latBuffer
+                let expandedSWLon = bounds.swCoordinate.longitude - lonBuffer
+                let expandedNELon = bounds.neCoordinate.longitude + lonBuffer
+
+
+                let boundsFilter = Expression<Bool>(literal: "latitude > \(expandedSWLat)") &&
+                    Expression<Bool>(literal: "latitude < \(expandedNELat)") &&
+                    Expression<Bool>(literal: "longitude > \(expandedSWLon)") &&
+                    Expression<Bool>(literal: "longitude < \(expandedNELon)")
 
                 queryFilter = queryFilter && boundsFilter
             }
@@ -535,7 +531,6 @@ extension MerchantDAO {
 
             do {
                 var items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
-                print("🔍 MerchantDAO.allLocations: Found \(items.count) locations for merchant \(merchantId)")
 
                 // Apply circular distance filtering if we have bounds and a user location
                 // This ensures that "Show all locations" respects radius filtering from the Nearby tab

@@ -49,24 +49,19 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
             bounds = nil
             // Keep userPoint for distance sorting if filters require it
             if filters?.sortBy == .distance {
-                print("🔍🔍🔍 AllMerchantLocationsDataProvider.items: Keeping userPoint for distance sorting")
             } else {
-                print("🔍🔍🔍 AllMerchantLocationsDataProvider.items: Setting userPoint to nil (no distance sorting)")
                 userPoint = nil
             }
         } else {
             // Original logic for other cases
             let allowNilBounds = bounds == nil && userPoint == nil
-            print("🔍🔍🔍 AllMerchantLocationsDataProvider.items: allowNilBounds=\(allowNilBounds)")
 
             if DWLocationManager.shared.needsAuthorization || (DWLocationManager.shared.isAuthorized && !allowNilBounds && (bounds == nil || userPoint == nil)) {
-                print("🔍🔍🔍 AllMerchantLocationsDataProvider.items: RETURNING EMPTY - authorization or bounds issue")
                 items = []
                 currentPage = nil
                 completion(.success(items))
                 return
             } else if DWLocationManager.shared.isPermissionDenied {
-                print("🔍🔍🔍 AllMerchantLocationsDataProvider.items: Permission denied, setting bounds/userPoint to nil")
                 bounds = nil
                 userPoint = nil
             }
@@ -95,18 +90,8 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
 
     private func fetch(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, with filters: PointOfUseListFilters?, offset: Int,
                        completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        print("🔍 AllMerchantLocationsDataProvider.fetch: for merchant \(pointOfUse.name)")
-        print("🔍 AllMerchantLocationsDataProvider.fetch: bounds=\(String(describing: bounds))")
-        print("🔍 AllMerchantLocationsDataProvider.fetch: userPoint=\(String(describing: userPoint))")
-        print("🔍 AllMerchantLocationsDataProvider.fetch: filters.radius=\(String(describing: filters?.radius))")
 
         dataSource.allLocations(for: pointOfUse.pointOfUseId, in: bounds, userPoint: userPoint) { result in
-            switch result {
-            case .success(let locations):
-                print("🔍 AllMerchantLocationsDataProvider.fetch: Found \(locations.items.count) locations")
-            case .failure(let error):
-                print("🔍 AllMerchantLocationsDataProvider.fetch: Error - \(error)")
-            }
             completion(result)
         }
     }

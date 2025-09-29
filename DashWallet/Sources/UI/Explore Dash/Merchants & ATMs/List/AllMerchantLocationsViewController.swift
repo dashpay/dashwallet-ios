@@ -65,16 +65,13 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
     }
 
     override func configureModel() {
-        print("🔍 AllMerchantLocationsViewController.configureModel: Creating new model")
         model = PointOfUseListModel(segments: [.init(tag: 0, title: "", showMap: true, showLocationServiceSettings: false,
                                                      showReversedLocation: false,
                                                      dataProvider: AllMerchantLocationsDataProvider(pointOfUse: pointOfUse),
                                                      filterGroups: [], territoriesDataSource: nil, sortOptions: [.name, .distance, .discount])])
-        print("🔍 AllMerchantLocationsViewController.configureModel: Created model \(Unmanaged.passUnretained(model).toOpaque())")
 
         // Apply the current filters from parent screen if available
         if let filters = currentFilters {
-            print("🔍 AllMerchantLocationsViewController.configureModel: Applying currentFilters \(filters)")
 
             // Determine if we should remove radius filter based on source tab
             let isFromAllTab = searchRadius == Double.greatestFiniteMagnitude
@@ -87,11 +84,9 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
             if DWLocationManager.shared.isAuthorized && isFromAllTab {
                 // Only force distance sorting for All tab (infinite radius)
                 sortBy = .distance
-                print("🔍 AllMerchantLocationsViewController.configureModel: All tab + location authorized - using distance sort")
             } else {
                 // Keep the existing sort from filters for other tabs
                 sortBy = filters.sortBy ?? .name
-                print("🔍 AllMerchantLocationsViewController.configureModel: Using existing sort: \(String(describing: sortBy))")
             }
 
             let modifiedFilters = PointOfUseListFilters(
@@ -103,7 +98,6 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
             )
             model.apply(filters: modifiedFilters)
         } else {
-            print("🔍 AllMerchantLocationsViewController.configureModel: No currentFilters to apply")
         }
     }
 
@@ -114,7 +108,6 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
         updateMapBounds()
 
         // Trigger initial data fetch
-        print("🔍 AllMerchantLocationsViewController.viewDidLoad: Triggering initial data fetch")
         model.refreshItems()
     }
 
@@ -128,7 +121,6 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
         model.currentSegment.dataProvider.clearCache()
 
         // Trigger data fetch with new bounds
-        print("🔍 AllMerchantLocationsViewController.viewWillAppear: Triggering data fetch with new bounds")
         model.refreshItems()
 
         refreshView()
@@ -138,7 +130,6 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
         // AllMerchantLocationsViewController should ALWAYS show all locations for a merchant
         // regardless of which tab the user came from. The "Show All Locations" screen
         // is specifically designed to show ALL locations without radius filtering.
-        print("🔍 AllMerchantLocationsViewController.updateMapBounds: Always showing all locations (no radius filtering)")
         model.currentMapBounds = nil
     }
 

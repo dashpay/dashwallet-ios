@@ -185,7 +185,6 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
     private func fetchLocationCount() {
         // Check if we should ignore radius filtering (when coming from "All" tab)
         let shouldIgnoreRadius = currentSearchRadius == Double.greatestFiniteMagnitude
-        print("🔍 POIDetailsViewModel.fetchLocationCount: shouldIgnoreRadius=\(shouldIgnoreRadius), radius=\(currentSearchRadius)")
 
         if shouldIgnoreRadius {
             // For "All" tab: Get total location count without any radius filtering
@@ -195,10 +194,8 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
                     case .success(let locations):
                         let count = locations.items.count
                         self?.locationCount = count
-                        print("🔍 POIDetailsViewModel.fetchLocationCount: Found \(count) total locations (no radius filter)")
                     case .failure(let error):
                         self?.locationCount = 0
-                        print("🔍 POIDetailsViewModel.fetchLocationCount: Error - \(error)")
                     }
                 }
             }
@@ -208,14 +205,12 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
         // For other tabs: Apply radius filtering as before
         guard let currentLocation = DWLocationManager.shared.currentLocation else {
             locationCount = 0
-            print("🔍 POIDetailsViewModel.fetchLocationCount: No current location")
             return
         }
 
         // Create bounds using current search radius around current location
         let bounds = ExploreMapBounds(rect: MKCircle(center: currentLocation.coordinate, radius: currentSearchRadius).boundingMapRect)
 
-        print("🔍 POIDetailsViewModel.fetchLocationCount: Using radius=\(currentSearchRadius) for merchant \(merchant.name ?? "unknown")")
 
         ExploreDash.shared.allLocations(for: merchant.pointOfUseId, in: bounds, userPoint: currentLocation.coordinate) { [weak self] result in
             Task { @MainActor in
@@ -223,10 +218,8 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
                 case .success(let locations):
                     let count = locations.items.count
                     self?.locationCount = count
-                    print("🔍 POIDetailsViewModel.fetchLocationCount: Found \(count) locations")
                 case .failure(let error):
                     self?.locationCount = 0
-                    print("🔍 POIDetailsViewModel.fetchLocationCount: Error - \(error)")
                 }
             }
         }
