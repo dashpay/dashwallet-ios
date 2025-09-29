@@ -53,7 +53,7 @@ struct DashSpendTermsScreen: View {
                         title: NSLocalizedString("Accept terms and\nconditions", comment: "DashSpend"),
                         label: NSLocalizedString("Terms & conditions", comment: "Terms & conditions"),
                         labelIcon: .custom("external.link"),
-                        linkAction: { [weak self] in
+                        linkAction: {
                             guard let url = URL(string: provider.termsUrl),
                                   UIApplication.shared.canOpenURL(url) else {
                                 return
@@ -61,8 +61,8 @@ struct DashSpendTermsScreen: View {
 
                             UIApplication.shared.open(url, options: [:]) { success in
                                 if success {
-                                    self?.hasViewedTerms = true
-                                    self?.shouldShakeLink = false
+                                    hasViewedTerms = true
+                                    shouldShakeLink = false
                                 }
                             }
                         },
