@@ -516,6 +516,316 @@ func allLocations(by query: String, in bounds: ExploreMapBounds, userPoint: CLLo
 
 **Key Insight**: Rectangular bounds from map view don't guarantee circular radius compliance. Always use `CLLocation.distance(from:)` for accurate great-circle distance calculations.
 
+## Location-Based Search Architecture (Critical Lessons from Production Bugs)
+
+> **Critical Bug Fixed**: Users experienced inconsistent merchant distances when first granting location permissions. The root cause was NOT a timing issue but a fundamental mismatch between rectangular SQL bounds filtering and circular radius expectations. Solution: Always expand rectangular bounds by 50% when used for circular searches.
+
+### The Rectangular Bounds vs Circular Radius Problem
+
+#### Issue Discovered
+When users first grant location permissions and enter the nearby tab, incorrect merchant distances and totals were displayed. The "closest merchants" algorithm produced inconsistent results depending on timing of map bounds updates.
+
+#### Root Cause Analysis
+1. **Database Query Optimization**: SQL queries use rectangular bounds filtering for performance (indexed lat/lon columns)
+2. **Accuracy Requirement**: Users expect circular radius filtering (e.g., "within 20 miles")
+3. **The Mismatch**: Rectangular bounds from SQL can exclude locations that fall within the circular radius
+4. **Timing Dependency**: Different map bounds at different times return different datasets from database
+
+#### The Solution: Generous Bounds with Precise Filtering
+```swift
+// CRITICAL: Expand rectangular bounds by 50% to ensure all potential locations are included
+func calculateExpandedBounds(from bounds: ExploreMapBounds) -> ExploreMapBounds {
+    let centerLat = (bounds.minLatitude + bounds.maxLatitude) / 2
+    let centerLon = (bounds.minLongitude + bounds.maxLongitude) / 2
+    let latSpan = (bounds.maxLatitude - bounds.minLatitude) * 1.5  // 50% buffer
+    let lonSpan = (bounds.maxLongitude - bounds.minLongitude) * 1.5  // 50% buffer
+
+    return ExploreMapBounds(
+        minLatitude: centerLat - latSpan / 2,
+        maxLatitude: centerLat + latSpan / 2,
+        minLongitude: centerLon - lonSpan / 2,
+        maxLongitude: centerLon + lonSpan / 2
+    )
+}
+```
+
+#### Key Principles
+1. **Performance vs Accuracy Trade-off**: Use generous rectangular bounds for SQL performance, then apply precise circular filtering in memory
+2. **Consistency Over Timing**: Ensure search results don't depend on when map bounds are set
+3. **Buffer Zones**: Always add safety margins to rectangular bounds when they'll be used for circular searches
+
+### iOS Location Permission & Timing Issues
+
+#### Common Timing Scenarios
+1. **First Launch**: No location permission → User grants → Location becomes available → Map bounds update
+2. **Permission Already Granted**: Location available immediately → Map bounds set with location
+3. **Permission Denied then Granted**: Stale bounds → Permission granted → New bounds with location
+
+#### Debugging Strategy
+```swift
+// Add comprehensive debug logging with emoji prefixes for easy filtering
+print("🔍 SEARCH DEBUG - Starting location search")
+print("🔍 SEARCH DEBUG - User location: \(userLocation?.coordinate ?? CLLocationCoordinate2D())")
+print("🔍 SEARCH DEBUG - Map bounds: \(currentMapBounds)")
+print("🔍 SEARCH DEBUG - Radius: \(radius) meters")
+print("🔍 SEARCH DEBUG - Results count: \(results.count)")
+```
+
+#### Best Practices
+1. **Always Log Timing**: Include timestamps in debug logs to identify race conditions
+2. **Log All Inputs**: User location, bounds, radius, and filter settings
+3. **Log Intermediate Results**: Database query results before and after filtering
+4. **Use Emoji Prefixes**: Makes filtering logs easier (🔍 for search, 📍 for location, 🗺️ for map)
+
+## Debugging Best Practices
+
+### Debug Message Management
+
+#### The Performance Impact Problem
+During debugging sessions, it's common to add extensive print statements. However:
+- **Issue Found**: 100+ debug print statements can significantly impact app performance
+- **User Impact**: Scrolling becomes janky, animations stutter
+- **Memory Impact**: Console buffer can grow large with verbose logging
+
+#### Debug Message Strategy
+```swift
+// Use conditional compilation for debug messages
+#if DEBUG
+private let debugEnabled = true
+#else
+private let debugEnabled = false
+#endif
+
+private func debugLog(_ message: String) {
+    guard debugEnabled else { return }
+    print("🔍 \(Date()) - \(message)")
+}
+```
+
+#### Cleanup Guidelines
+1. **Search Before Release**: Search for `print("` statements before any release
+2. **Use Debug Flags**: Wrap debugging code in `#if DEBUG` blocks
+3. **Remove Empty Switch Cases**: When cleaning debug messages from switch statements, ensure cases have content:
+
+```swift
+// ❌ BAD: Empty switch case causes syntax error
+switch action {
+case .search:
+    // Removed debug print - NOW EMPTY!
+case .filter:
+    applyFilter()
+}
+
+// ✅ GOOD: Add break or remove the case entirely
+switch action {
+case .search:
+    break  // Explicitly do nothing
+case .filter:
+    applyFilter()
+}
+```
+
+### Performance vs Debugging Balance
+
+#### Strategic Debug Points
+Focus debug logging on:
+1. **State Transitions**: Location permission changes, view lifecycle
+2. **Data Flow Boundaries**: API calls, database queries, UI updates
+3. **Error Conditions**: Failed requests, invalid data
+4. **Critical Calculations**: Distance filtering, coordinate transformations
+
+#### Production-Safe Debugging
+```swift
+// Use os_log for production-safe logging
+import os.log
+
+private let logger = Logger(subsystem: "com.dashwallet", category: "LocationSearch")
+
+func performSearch() {
+    logger.debug("Starting search with bounds: \(bounds)")
+    // Only logged in debug builds, stripped in release
+}
+```
+
+## Merchant Search Architecture (Critical Lessons)
+
+### All Tab vs Nearby Tab: Different Query Strategies
+
+The merchant search has three tabs with fundamentally different requirements:
+1. **Online Tab**: Online merchants only (no location filtering)
+2. **Nearby Tab**: Physical merchants within radius (location-based filtering)
+3. **All Tab**: ALL merchants regardless of location (no location filtering)
+
+#### Critical Design Decision: userLocation Parameter
+
+**The Problem**: `MerchantDAO.items()` has two query paths:
+1. **With userLocation**: In-memory grouping to find closest location per merchant (for Nearby tab)
+2. **Without userLocation**: Pure SQL query with SQL-based sorting (for All/Online tabs)
+
+**The Solution**: Different tabs must pass appropriate parameters:
+```swift
+// ✅ All Tab: No location filtering needed
+class AllMerchantsDataProvider {
+    override func items(...) {
+        // Pass nil for bounds AND userPoint to use SQL-based sorting
+        fetch(by: query, in: nil, userPoint: nil, with: filters, ...)
+    }
+}
+
+// ✅ Nearby Tab: Location-based filtering needed
+class NearbyMerchantsDataProvider {
+    override func items(...) {
+        // Pass both bounds and userPoint for distance-based grouping
+        fetch(by: query, in: bounds, userPoint: userPoint, with: filters, ...)
+    }
+}
+```
+
+#### Why This Matters
+
+**When userLocation is provided**, the code:
+1. Fetches all matching records
+2. Groups by merchantId to find closest location
+3. Requires valid lat/lon coordinates (filters out online merchants)
+4. Applies in-memory sorting
+
+**When userLocation is nil**, the code:
+1. Uses SQL GROUP BY for efficiency
+2. Applies SQL ORDER BY for sorting
+3. Includes merchants without coordinates (online merchants)
+4. More efficient for large result sets
+
+### In-Memory Grouping: Handling Online Merchants
+
+When using the in-memory grouping path (userLocation provided), online merchants don't have coordinates. The code must handle this:
+
+```swift
+// ✅ CORRECT: Handle online merchants separately
+for item in allItems {
+    guard let merchant = item.merchant else { continue }
+
+    // Online merchants don't have coordinates
+    if item.latitude == nil || item.longitude == nil {
+        if merchantToClosestLocation[merchant.merchantId] == nil {
+            merchantToClosestLocation[merchant.merchantId] = item
+        }
+        continue
+    }
+
+    // Physical merchants: find closest location
+    let distance = calculateDistance(...)
+    // ... grouping logic
+}
+```
+
+## Database Query Optimization Patterns
+
+### The SQL Performance vs Accuracy Dilemma
+
+#### Problem Statement
+- **SQL Indexes**: Database has indexes on latitude and longitude for fast rectangular queries
+- **User Expectation**: "Show me merchants within 20 miles" expects circular radius
+- **Mathematical Reality**: Rectangular bounds ≠ Circular area
+
+#### Anti-Pattern (Causes Inconsistent Results)
+```swift
+// ❌ BAD: Tight rectangular bounds miss valid locations
+func searchNearby(center: CLLocation, radius: Double) -> [Location] {
+    let bounds = calculateTightBounds(center: center, radius: radius)
+    return database.query("SELECT * WHERE lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?",
+                         bounds.minLat, bounds.maxLat, bounds.minLon, bounds.maxLon)
+}
+```
+
+#### Correct Pattern (Consistent Results)
+```swift
+// ✅ GOOD: Generous bounds ensure all potential matches are included
+func searchNearby(center: CLLocation, radius: Double) -> [Location] {
+    // Step 1: Calculate bounds with 50% buffer for SQL query
+    let expandedBounds = calculateExpandedBounds(center: center, radius: radius * 1.5)
+
+    // Step 2: Get all potential matches from database
+    let candidates = database.query("SELECT * WHERE lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?",
+                                   expandedBounds.minLat, expandedBounds.maxLat,
+                                   expandedBounds.minLon, expandedBounds.maxLon)
+
+    // Step 3: Apply precise circular filtering in memory
+    return candidates.filter { location in
+        let distance = location.distance(from: center)
+        return distance <= radius
+    }
+}
+```
+
+### Query Optimization Checklist
+- [ ] Are rectangular bounds expanded sufficiently for circular searches?
+- [ ] Is circular filtering applied after SQL queries?
+- [ ] Are database indexes being utilized effectively?
+- [ ] Is the two-step filter pattern documented in code comments?
+
+## Swift Code Quality Patterns
+
+### Force Unwrapping Safety
+
+#### Location Coordinate Handling
+```swift
+// ❌ DANGEROUS: Force unwrapping can crash
+let lat = location.latitude!
+let lon = location.longitude!
+
+// ✅ SAFE: Guard with meaningful fallback
+guard let lat = location.latitude,
+      let lon = location.longitude else {
+    logger.warning("Skipping location with missing coordinates")
+    return nil
+}
+```
+
+### Compiler Error Solutions
+
+#### Generic Type Inference
+```swift
+// ❌ Compilation fails with "Generic parameter could not be inferred"
+let annotations = merchants.compactMap { merchant in
+    createAnnotation(for: merchant)
+}
+
+// ✅ Add explicit return type to help compiler
+let annotations = merchants.compactMap { merchant -> MerchantAnnotation? in
+    createAnnotation(for: merchant)
+}
+```
+
+#### SwiftUI ViewBuilder Conditionals
+```swift
+// ❌ "buildExpression unavailable" error
+var body: some View {
+    if showMap
+    #if MAPS_ENABLED
+    || forceShowMap
+    #endif
+    {
+        MapView()
+    }
+}
+
+// ✅ Use computed property for complex conditions
+private var shouldShowMap: Bool {
+    if showMap { return true }
+    #if MAPS_ENABLED
+    return forceShowMap
+    #else
+    return false
+    #endif
+}
+
+var body: some View {
+    if shouldShowMap {
+        MapView()
+    }
+}
+```
+
 ### Key Safety Patterns
 - Always validate `CLLocationCoordinate2D.isValid` before use
 - Implement fallback chains for CTX API data
@@ -523,8 +833,76 @@ func allLocations(by query: String, in bounds: ExploreMapBounds, userPoint: CLLo
 - Test coordinate edge cases thoroughly in unit tests
 
 ### Code Review Checklist
-- [ ] Search for `!` force unwraps in location/coordinate handling  
+- [ ] Search for `!` force unwraps in location/coordinate handling
 - [ ] Verify template images use proper rendering mode
 - [ ] Check radius constants are consistent across codebase
 - [ ] Ensure compactMap closures have explicit types if needed
 - [ ] Remove unused properties that create inconsistency
+- [ ] Verify debug print statements are wrapped in `#if DEBUG`
+- [ ] Check that rectangular bounds have sufficient buffer for circular searches
+- [ ] Confirm two-step filtering (SQL then precise) is properly implemented
+
+## Architectural Lessons Learned
+
+### Debugging Complex iOS Location Issues
+
+#### Initial Misdiagnosis Pattern
+When debugging location-based issues, avoid jumping to conclusions about timing/race conditions. The debugging session revealed:
+1. **Initial Hypothesis**: Race condition between location permissions and data loading
+2. **Evidence Gathering**: Added comprehensive logging to trace execution flow
+3. **Discovery**: Both code paths had correct location data, but different map bounds
+4. **Root Cause**: Architectural mismatch between rectangular and circular filtering
+
+#### Systematic Debugging Approach
+1. **Log Everything First**: Before forming hypotheses, add comprehensive logging
+2. **Compare Working vs Non-Working**: Find cases where it works and compare inputs
+3. **Question Assumptions**: "Different results" doesn't always mean "race condition"
+4. **Look for Architectural Issues**: Sometimes the bug is in the design, not the timing
+
+### Performance Optimization Trade-offs
+
+#### When Performance Optimizations Cause Bugs
+The rectangular bounds SQL optimization was correct for performance but incorrect for user expectations:
+- **Performance Win**: Using indexed lat/lon columns for fast queries
+- **Accuracy Loss**: Rectangular bounds don't match circular radius expectations
+- **User Impact**: Inconsistent results that appear random but aren't
+
+#### The Right Balance
+1. **Use Database Indexes**: Keep the performance optimization
+2. **Add Safety Margins**: Expand bounds to ensure completeness
+3. **Filter Precisely in Memory**: Apply exact business logic after retrieval
+4. **Document the Pattern**: Make the two-step process explicit in code
+
+### Code Cleanup Best Practices
+
+#### Debug Code Management
+From cleaning up 100+ debug statements:
+1. **Performance Impact**: Debug prints in UI code cause visible performance issues
+2. **Maintenance Burden**: Debug code makes real logic harder to follow
+3. **Compilation Errors**: Removing prints can leave invalid syntax (empty switch cases)
+4. **Solution**: Use conditional compilation and logging frameworks
+
+#### Cleanup Strategy
+```swift
+// Before cleanup: Identify patterns
+// Search for: print("
+// Count occurrences: 100+ found
+
+// During cleanup: Preserve functionality
+// - Don't just delete lines
+// - Check for empty blocks
+// - Maintain code logic
+
+// After cleanup: Verify compilation
+// - Build the project
+// - Run the app
+// - Check for warnings
+```
+
+### Key Architectural Insights
+
+1. **Separate Concerns**: Database optimization and business logic should be separate layers
+2. **Make Assumptions Explicit**: If using rectangular bounds for circular searches, document why
+3. **Test Edge Cases**: Location permission flows have many states - test them all
+4. **Log Strategically**: Not everything, but key decision points and data transformations
+5. **Clean as You Go**: Don't let debug code accumulate; remove it before committing

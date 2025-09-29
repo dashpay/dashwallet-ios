@@ -29,29 +29,18 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
         lastBounds = bounds
         lastFilters = filters
 
-        if DWLocationManager.shared.isPermissionDenied || DWLocationManager.shared.needsAuthorization {
-            fetch(by: query, in: nil, userPoint: nil, with: filters, offset: 0) { [weak self] result in
-                self?.handle(result: result, completion: completion)
-            }
-        } else if let bounds {
-            fetch(by: query, in: bounds, userPoint: userPoint, with: filters, offset: 0) { [weak self] result in
-                self?.handle(result: result, completion: completion)
-            }
-
-        } else {
-            items = []
-            currentPage = nil
-            completion(.success(items))
+        // ALL TAB: Never filter by bounds or location - show ALL merchants regardless of location
+        // Don't pass userPoint to avoid the in-memory grouping path (which filters out online merchants)
+        fetch(by: query, in: nil, userPoint: nil, with: filters, offset: 0) { [weak self] result in
+            self?.handle(result: result, completion: completion)
         }
     }
 
     override func nextPage(completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
-        if DWLocationManager.shared.isPermissionDenied {
-            fetch(by: lastQuery, in: nil, userPoint: nil, with: lastFilters, offset: nextOffset) { [weak self] result in
-                self?.handle(result: result, completion: completion)
-            }
-        } else {
-            super.nextPage(completion: completion)
+        // ALL TAB: Never filter by bounds or location - show ALL merchants
+        // Don't pass userPoint to avoid the in-memory grouping path
+        fetch(by: lastQuery, in: nil, userPoint: nil, with: lastFilters, offset: nextOffset) { [weak self] result in
+            self?.handle(result: result, completion: completion)
         }
     }
 

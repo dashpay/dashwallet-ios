@@ -70,11 +70,11 @@ class MerchantDAO: PointOfUseDAO {
             // Add payment methods
             if let methods = paymentMethods {
                 var tempMethods: [ExplorePointOfUse.Merchant.PaymentMethod] = []
-                
+
                 if methods.contains(PointOfUseListFilters.SpendingOptions.dash) {
                     tempMethods.append(ExplorePointOfUse.Merchant.PaymentMethod.dash)
                 }
-                
+
                 let hasCTX = methods.contains(PointOfUseListFilters.SpendingOptions.ctx)
                 #if PIGGYCARDS_ENABLED
                 let hasPiggy = methods.contains(PointOfUseListFilters.SpendingOptions.piggyCards)
@@ -142,17 +142,21 @@ class MerchantDAO: PointOfUseDAO {
                 let expandedSWLon = bounds.swCoordinate.longitude - lonBuffer
                 let expandedNELon = bounds.neCoordinate.longitude + lonBuffer
 
-
-                var boundsFilter = Expression<Bool>(literal: "latitude > \(expandedSWLat)") &&
+                // Build the bounds filter for physical locations
+                let physicalBoundsFilter = Expression<Bool>(literal: "latitude > \(expandedSWLat)") &&
                     Expression<Bool>(literal: "latitude < \(expandedNELat)") &&
                     Expression<Bool>(literal: "longitude > \(expandedSWLon)") &&
                     Expression<Bool>(literal: "longitude < \(expandedNELon)")
 
+                // If we're querying for online merchants (e.g., "All" tab), include them regardless of bounds
+                // Online merchants don't have physical locations so they shouldn't be filtered by bounds
                 if types.contains(.online) {
-                    boundsFilter = boundsFilter || Expression<Bool>(literal: "type = 'online'")
+                    let boundsFilter = physicalBoundsFilter || Expression<Bool>(literal: "type = 'online'")
+                    queryFilter = queryFilter && boundsFilter
+                } else {
+                    // For nearby tab (physical only), just use the bounds filter
+                    queryFilter = queryFilter && physicalBoundsFilter
                 }
-
-                queryFilter = queryFilter && boundsFilter
             }
 
             var query = merchantTable
@@ -261,10 +265,19 @@ class MerchantDAO: PointOfUseDAO {
                     var merchantToClosestLocation: [String: ExplorePointOfUse] = [:]
 
                     for item in allItems {
-                        guard let merchant = item.merchant,
-                              let lat = item.latitude,
-                              let lon = item.longitude else { continue }
+                        guard let merchant = item.merchant else { continue }
 
+                        // Handle online merchants (no coordinates) separately
+                        if item.latitude == nil || item.longitude == nil {
+                            // Online merchants don't have coordinates, just include them once
+                            if merchantToClosestLocation[merchant.merchantId] == nil {
+                                merchantToClosestLocation[merchant.merchantId] = item
+                            }
+                            continue
+                        }
+
+                        let lat = item.latitude!
+                        let lon = item.longitude!
                         let locationCoord = CLLocation(latitude: lat, longitude: lon)
                         let distance = userCoord.distance(from: locationCoord)
 
