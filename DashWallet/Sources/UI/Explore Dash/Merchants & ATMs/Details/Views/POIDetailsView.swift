@@ -21,24 +21,26 @@ import SDWebImageSwiftUI
 
 struct POIDetailsView: View {
     @StateObject private var viewModel: POIDetailsViewModel
-    
+
     let merchant: ExplorePointOfUse
     let isShowAllHidden: Bool
     let searchRadius: Double?
-    
+    let searchCenterCoordinate: CLLocationCoordinate2D?
+
     // Action handlers
     var payWithDashHandler: (() -> Void)?
     var sellDashHandler: (() -> Void)?
     var dashSpendAuthHandler: ((GiftCardProvider) -> Void)?
     var buyGiftCardHandler: ((GiftCardProvider) -> Void)?
     var showAllLocationsActionBlock: (() -> Void)?
-    
-    init(merchant: ExplorePointOfUse, isShowAllHidden: Bool = false, searchRadius: Double? = nil) {
+
+    init(merchant: ExplorePointOfUse, isShowAllHidden: Bool = false, searchRadius: Double? = nil, searchCenterCoordinate: CLLocationCoordinate2D? = nil) {
         self.merchant = merchant
         self.isShowAllHidden = isShowAllHidden
         self.searchRadius = searchRadius
+        self.searchCenterCoordinate = searchCenterCoordinate
 
-        self._viewModel = StateObject(wrappedValue: POIDetailsViewModel(merchant: merchant, searchRadius: searchRadius))
+        self._viewModel = StateObject(wrappedValue: POIDetailsViewModel(merchant: merchant, searchRadius: searchRadius, searchCenterCoordinate: searchCenterCoordinate))
     }
     
     var body: some View {

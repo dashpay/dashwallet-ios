@@ -25,6 +25,7 @@ class POIDetailsViewController: UIViewController {
     internal var pointOfUse: ExplorePointOfUse
     internal let isShowAllHidden: Bool
     private let searchRadius: Double?
+    private let searchCenterCoordinate: CLLocationCoordinate2D?
     internal let currentFilters: PointOfUseListFilters?
 
     @objc public var payWithDashHandler: (()->())?
@@ -35,10 +36,11 @@ class POIDetailsViewController: UIViewController {
     private var mapView: ExploreMapView!
     private let defaultBottomSheetHeight: CGFloat = 450
 
-    public init(pointOfUse: ExplorePointOfUse, isShowAllHidden: Bool = true, searchRadius: Double? = nil, currentFilters: PointOfUseListFilters? = nil) {
+    public init(pointOfUse: ExplorePointOfUse, isShowAllHidden: Bool = true, searchRadius: Double? = nil, searchCenterCoordinate: CLLocationCoordinate2D? = nil, currentFilters: PointOfUseListFilters? = nil) {
         self.pointOfUse = pointOfUse
         self.isShowAllHidden = isShowAllHidden
         self.searchRadius = searchRadius
+        self.searchCenterCoordinate = searchCenterCoordinate
         self.currentFilters = currentFilters
 
         super.init(nibName: nil, bundle: nil)
@@ -172,7 +174,7 @@ extension POIDetailsViewController {
             effectiveRadius = searchRadius ?? kDefaultRadius
         }
 
-        var detailsView = POIDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden, searchRadius: effectiveRadius)
+        var detailsView = POIDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden, searchRadius: effectiveRadius, searchCenterCoordinate: searchCenterCoordinate)
         detailsView.payWithDashHandler = payWithDashHandler
         detailsView.sellDashHandler = sellDashHandler
         detailsView.showAllLocationsActionBlock = { [weak self] in
@@ -185,7 +187,7 @@ extension POIDetailsViewController {
             // For other tabs (Online, Nearby), use the current radius filtering
             let searchRadiusToUse = isFromAllTab ? Double.greatestFiniteMagnitude : effectiveRadius
 
-            let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse, searchRadius: searchRadiusToUse, currentFilters: wSelf.currentFilters)
+            let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse, searchRadius: searchRadiusToUse, searchCenterCoordinate: wSelf.searchCenterCoordinate, currentFilters: wSelf.currentFilters)
             vc.payWithDashHandler = wSelf.payWithDashHandler
             vc.sellDashHandler = wSelf.sellDashHandler
             wSelf.navigationController?.pushViewController(vc, animated: true)

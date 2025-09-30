@@ -282,18 +282,31 @@ extension ExplorePointOfUseListViewController {
 
 extension ExplorePointOfUseListViewController: DWLocationObserver {
     func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation) {
+        print("🔍 LOCATION: GPS location changed to \(location.coordinate.latitude), \(location.coordinate.longitude)")
+
         // Set the map center first
         mapView.setCenter(location, animated: false)
+        print("🔍 LOCATION: Set map center to GPS location")
+
+        // Clear search center to use actual GPS location
+        model.searchCenterCoordinate = nil
+        print("🔍 LOCATION: Cleared searchCenterCoordinate - will use GPS")
 
         // Update the model's map bounds to match the new center
         if model.showMap {
             let radiusToUse = model.filters?.currentRadius ?? kDefaultRadius
+
+            // Update the map view's search radius
+            mapView.searchRadius = radiusToUse
+
             let newBounds = mapView.mapBounds(with: radiusToUse)
             model.currentMapBounds = newBounds
+            print("🔍 LOCATION: Updated map bounds with radius \(radiusToUse)")
         }
 
         // If we're on the nearby tab and the model shows map, refresh the search with the new location
         if currentSegment.tag == MerchantsListSegment.nearby.rawValue && model.showMap {
+            print("🔍 LOCATION: Fetching merchants for new GPS location")
             model.fetch(query: nil)
         }
     }
@@ -680,9 +693,24 @@ extension ExplorePointOfUseListViewController: ExploreMapViewDelegate {
             return
         }
 
+        print("🔍 MAP: Map region changed")
+        print("🔍 MAP: Center = \(mapView.centerCoordinate.latitude), \(mapView.centerCoordinate.longitude)")
+        print("🔍 MAP: Current radius = \(model.currentRadius) meters")
+
         refreshFilterCell()
+
+        // Update the search radius on the map view to match current filter
+        mapView.searchRadius = model.currentRadius
+
+        // Update the search center to the map center (not the device GPS location)
+        model.searchCenterCoordinate = mapView.centerCoordinate
+
+        // Get bounds based on the current filter radius and new center location
         let newBounds = mapView.mapBounds(with: model.currentRadius)
+        print("🔍 MAP: New bounds NE=(\(newBounds.neCoordinate.latitude), \(newBounds.neCoordinate.longitude)), SW=(\(newBounds.swCoordinate.latitude), \(newBounds.swCoordinate.longitude))")
+
         model.currentMapBounds = newBounds
+        print("🔍 MAP: Calling refreshItems()")
         model.refreshItems()
     }
 
@@ -759,6 +787,8 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
             let itemCell: PointOfUseItemCell = tableView
                 .dequeueReusableCell(withIdentifier: PointOfUseItemCell.reuseIdentifier,
                                      for: indexPath) as! PointOfUseItemCell
+            // Pass search center coordinate to cell for accurate distance calculations
+            itemCell.searchCenterCoordinate = model.searchCenterCoordinate
             itemCell.update(with: merchant)
             cell = itemCell;
         case .nextPage:
@@ -863,6 +893,10 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
 extension ExplorePointOfUseListViewController: PointOfUseListFiltersViewControllerDelegate {
     func apply(filters: PointOfUseListFilters?) {
         let radiusToUse = filters?.currentRadius ?? kDefaultRadius
+
+        // Update the map view's search radius
+        mapView.searchRadius = radiusToUse
+
         let newBounds = mapView.mapBounds(with: radiusToUse)
         model.currentMapBounds = newBounds
 

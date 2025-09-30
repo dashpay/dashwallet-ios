@@ -17,25 +17,28 @@
 
 import MapKit
 
-extension MerchantAnnotation {
-    static func ==(lhs: MerchantAnnotation, rhs: MerchantAnnotation) -> Bool {
-        lhs.hashValue == rhs.hashValue
-    }
-}
-
 // MARK: - MerchantAnnotation
 
 class MerchantAnnotation: MKPointAnnotation {
     var merchant: ExplorePointOfUse
 
-    override var hash: Int {
-        merchant.hashValue
-    }
-
     init(merchant: ExplorePointOfUse, location: CLLocationCoordinate2D) {
         self.merchant = merchant
         super.init()
         coordinate = location
+    }
+
+    // Override hash to use merchant ID for consistent hashing
+    override var hash: Int {
+        merchant.id.hashValue
+    }
+
+    // Override isEqual for Set comparison
+    override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? MerchantAnnotation else {
+            return false
+        }
+        return merchant.id == other.merchant.id
     }
 }
 

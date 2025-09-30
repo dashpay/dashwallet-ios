@@ -24,11 +24,13 @@ import UIKit
 class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
     private let pointOfUse: ExplorePointOfUse
     private let searchRadius: Double
+    private let searchCenterCoordinate: CLLocationCoordinate2D?
     private let currentFilters: PointOfUseListFilters?
 
-    init(pointOfUse: ExplorePointOfUse, searchRadius: Double = kDefaultRadius, currentFilters: PointOfUseListFilters? = nil) {
+    init(pointOfUse: ExplorePointOfUse, searchRadius: Double = kDefaultRadius, searchCenterCoordinate: CLLocationCoordinate2D? = nil, currentFilters: PointOfUseListFilters? = nil) {
         self.pointOfUse = pointOfUse
         self.searchRadius = searchRadius
+        self.searchCenterCoordinate = searchCenterCoordinate
         self.currentFilters = currentFilters
         super.init(nibName: nil, bundle: nil)
     }
@@ -69,6 +71,9 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
                                                      showReversedLocation: false,
                                                      dataProvider: AllMerchantLocationsDataProvider(pointOfUse: pointOfUse),
                                                      filterGroups: [], territoriesDataSource: nil, sortOptions: [.name, .distance, .discount])])
+
+        // Set the search center coordinate if provided (from panned map)
+        model.searchCenterCoordinate = searchCenterCoordinate
 
         // Apply the current filters from parent screen if available
         if let filters = currentFilters {

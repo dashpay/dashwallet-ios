@@ -37,7 +37,8 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
     private let syncMonitor = SyncingActivityMonitor.shared
     private let merchant: ExplorePointOfUse
     private var currentSearchRadius: Double = kDefaultRadius
-    
+    private var searchCenterCoordinate: CLLocationCoordinate2D?
+
     // NetworkReachabilityHandling requirements
     var networkStatusDidChange: ((NetworkStatus) -> ())?
     var reachabilityObserver: Any!
@@ -57,8 +58,9 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
         return formatPhoneNumber(phone)
     }
     
-    init(merchant: ExplorePointOfUse, searchRadius: Double? = nil) {
+    init(merchant: ExplorePointOfUse, searchRadius: Double? = nil, searchCenterCoordinate: CLLocationCoordinate2D? = nil) {
         self.merchant = merchant
+        self.searchCenterCoordinate = searchCenterCoordinate
 
         if let radius = searchRadius {
             self.currentSearchRadius = radius
@@ -203,12 +205,20 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
         }
 
         // For other tabs: Apply radius filtering as before
-        guard let currentLocation = DWLocationManager.shared.currentLocation else {
+        // Use search center if available (when user panned the map), otherwise use GPS location
+        let locationToUse: CLLocation?
+        if let searchCenter = searchCenterCoordinate {
+            locationToUse = CLLocation(latitude: searchCenter.latitude, longitude: searchCenter.longitude)
+        } else {
+            locationToUse = DWLocationManager.shared.currentLocation
+        }
+
+        guard let currentLocation = locationToUse else {
             locationCount = 0
             return
         }
 
-        // Create bounds using current search radius around current location
+        // Create bounds using current search radius around the search location
         let bounds = ExploreMapBounds(rect: MKCircle(center: currentLocation.coordinate, radius: currentSearchRadius).boundingMapRect)
 
 
