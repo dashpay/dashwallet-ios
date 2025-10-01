@@ -244,12 +244,12 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
             let areaCode = String(digits.prefix(3))
             let exchange = String(digits.dropFirst(3).prefix(3))
             let number = String(digits.suffix(4))
-            return "+\(areaCode) \(exchange) \(number)"
+            return "+1 \(areaCode) \(exchange) \(number)"
         } else if digits.count == 11 && digits.hasPrefix("1") {
             let areaCode = String(digits.dropFirst().prefix(3))
             let exchange = String(digits.dropFirst(4).prefix(3))
             let number = String(digits.suffix(4))
-            return "+\(areaCode) \(exchange) \(number)"
+            return "+1 \(areaCode) \(exchange) \(number)"
         }
 
         // Return original if can't format

@@ -583,6 +583,79 @@ extension MerchantDAO {
                     print("🎯 MerchantDAO.allLocations: After circular distance filtering: \(items.count) locations remain (was \(initialCount))")
                 }
 
+                // Fetch gift card provider information for gift card merchants
+                for (index, item) in items.enumerated() {
+                    if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
+                        let providersQuery = """
+                            SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers
+                            WHERE merchantId = '\(merchant.merchantId)'
+                        """
+
+                        do {
+                            guard let db = wSelf.connection.db else {
+                                print("Error: Database connection is nil for merchant \(merchant.merchantId)")
+                                continue
+                            }
+
+                            let rows = try db.prepare(providersQuery)
+                            var providers: [ExplorePointOfUse.Merchant.GiftCardProviderInfo] = []
+
+                            for row in rows {
+                                if let providerId = row[0] as? String,
+                                   let savingsPercentage = row[1] as? Int64,
+                                   let denominationsType = row[2] as? String {
+                                    providers.append(ExplorePointOfUse.Merchant.GiftCardProviderInfo(
+                                        providerId: providerId,
+                                        savingsPercentage: Int(savingsPercentage),
+                                        denominationsType: denominationsType
+                                    ))
+                                }
+                            }
+
+                            if !providers.isEmpty {
+                                // Create updated merchant with providers
+                                let updatedMerchant = ExplorePointOfUse.Merchant(
+                                    merchantId: merchant.merchantId,
+                                    paymentMethod: merchant.paymentMethod,
+                                    type: merchant.type,
+                                    deeplink: merchant.deeplink,
+                                    savingsBasisPoints: merchant.savingsBasisPoints,
+                                    denominationsType: merchant.denominationsType,
+                                    denominations: merchant.denominations,
+                                    redeemType: merchant.redeemType,
+                                    giftCardProviders: providers
+                                )
+
+                                // Create updated ExplorePointOfUse
+                                let updatedItem = ExplorePointOfUse(
+                                    id: item.id,
+                                    name: item.name,
+                                    category: .merchant(updatedMerchant),
+                                    active: item.active,
+                                    city: item.city,
+                                    territory: item.territory,
+                                    address1: item.address1,
+                                    address2: item.address2,
+                                    address3: item.address3,
+                                    address4: item.address4,
+                                    latitude: item.latitude,
+                                    longitude: item.longitude,
+                                    website: item.website,
+                                    phone: item.phone,
+                                    logoLocation: item.logoLocation,
+                                    coverImage: item.coverImage,
+                                    source: item.source
+                                )
+
+                                items[index] = updatedItem
+                            }
+                        } catch {
+                            // If we can't fetch providers, just continue with empty providers
+                            print("Error fetching gift card providers for merchant \(merchant.merchantId): \(error)")
+                        }
+                    }
+                }
+
                 completion(.success(PaginationResult(items: items, offset: Int.max)))
             } catch {
                 print(error)

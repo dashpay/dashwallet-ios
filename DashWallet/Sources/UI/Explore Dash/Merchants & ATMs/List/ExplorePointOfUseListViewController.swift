@@ -142,7 +142,7 @@ class ExplorePointOfUseListViewController: UIViewController {
     // MARK: life cycle
     internal func show(pointOfUse: ExplorePointOfUse) {
         let currentRadius = model.filters?.currentRadius ?? kDefaultRadius
-        let vc = POIDetailsViewController(pointOfUse: pointOfUse, searchRadius: currentRadius, currentFilters: model.filters)
+        let vc = POIDetailsViewController(pointOfUse: pointOfUse, searchRadius: currentRadius, searchCenterCoordinate: model.searchCenterCoordinate, currentFilters: model.filters)
         vc.payWithDashHandler = payWithDashHandler
         vc.sellDashHandler = sellDashHandler
         vc.onGiftCardPurchased = onGiftCardPurchased
