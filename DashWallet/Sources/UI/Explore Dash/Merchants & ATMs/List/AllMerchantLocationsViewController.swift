@@ -17,14 +17,21 @@
 
 import CoreLocation
 import Foundation
+import MapKit
 import UIKit
 
 @objc
 class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
     private let pointOfUse: ExplorePointOfUse
+    private let searchRadius: Double
+    private let searchCenterCoordinate: CLLocationCoordinate2D?
+    private let currentFilters: PointOfUseListFilters?
 
-    init(pointOfUse: ExplorePointOfUse) {
+    init(pointOfUse: ExplorePointOfUse, searchRadius: Double = kDefaultRadius, searchCenterCoordinate: CLLocationCoordinate2D? = nil, currentFilters: PointOfUseListFilters? = nil) {
         self.pointOfUse = pointOfUse
+        self.searchRadius = searchRadius
+        self.searchCenterCoordinate = searchCenterCoordinate
+        self.currentFilters = currentFilters
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -64,6 +71,71 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
                                                      showReversedLocation: false,
                                                      dataProvider: AllMerchantLocationsDataProvider(pointOfUse: pointOfUse),
                                                      filterGroups: [], territoriesDataSource: nil, sortOptions: [.name, .distance, .discount])])
+
+        // Set the search center coordinate if provided (from panned map)
+        model.searchCenterCoordinate = searchCenterCoordinate
+
+        // Apply the current filters from parent screen if available
+        if let filters = currentFilters {
+
+            // Determine if we should remove radius filter based on source tab
+            let isFromAllTab = searchRadius == Double.greatestFiniteMagnitude
+            let shouldRemoveRadius = isFromAllTab
+
+            print("🎯 AllMerchantLocationsViewController: isFromAllTab=\(isFromAllTab), shouldRemoveRadius=\(shouldRemoveRadius)")
+
+            // Sort by distance if location authorized, otherwise use the current sort from filters
+            let sortBy: PointOfUseListFilters.SortBy
+            if DWLocationManager.shared.isAuthorized && isFromAllTab {
+                // Only force distance sorting for All tab (infinite radius)
+                sortBy = .distance
+            } else {
+                // Keep the existing sort from filters for other tabs
+                sortBy = filters.sortBy ?? .name
+            }
+
+            let modifiedFilters = PointOfUseListFilters(
+                sortBy: sortBy,
+                merchantPaymentTypes: filters.merchantPaymentTypes,
+                radius: shouldRemoveRadius ? nil : filters.radius, // Only remove radius for All tab
+                territory: filters.territory,
+                denominationType: filters.denominationType
+            )
+            model.apply(filters: modifiedFilters)
+        } else {
+        }
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Initial setup of map bounds
+        updateMapBounds()
+
+        // Trigger initial data fetch
+        model.refreshItems()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        // Update map bounds FIRST to get the latest radius
+        updateMapBounds()
+
+        // Clear cache and refresh data to reflect any filter changes
+        model.currentSegment.dataProvider.clearCache()
+
+        // Trigger data fetch with new bounds
+        model.refreshItems()
+
+        refreshView()
+    }
+
+    private func updateMapBounds() {
+        // AllMerchantLocationsViewController should ALWAYS show all locations for a merchant
+        // regardless of which tab the user came from. The "Show All Locations" screen
+        // is specifically designed to show ALL locations without radius filtering.
+        model.currentMapBounds = nil
     }
 
     override func configureHierarchy() {
@@ -74,5 +146,4 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
         contentViewTopLayoutConstraint.constant = kDefaultOpenedMapPosition
         tableView.register(MerchantItemCell.self, forCellReuseIdentifier: MerchantItemCell.reuseIdentifier)
     }
-
 }

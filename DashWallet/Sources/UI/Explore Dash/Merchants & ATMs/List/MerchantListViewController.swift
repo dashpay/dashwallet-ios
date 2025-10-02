@@ -61,6 +61,7 @@ enum MerchantsListSegment: Int {
             showReversedLocation = false
             showMap = true
             dataProvider = AllMerchantsDataProvider()
+            sortOptions = [.name, .discount]
         }
 
         return .init(tag: rawValue, title: title, showMap: showMap, showLocationServiceSettings: showLocationServiceSettings, showReversedLocation: showReversedLocation, dataProvider: dataProvider, filterGroups: filterGroups, territoriesDataSource: territories, sortOptions: sortOptions)
@@ -86,7 +87,7 @@ extension MerchantsListSegment {
         case .nearby:
             return [.sortBy, .paymentType, .denominationType, .territory, .radius, .locationService]
         case .all:
-            return [.sortBy, .paymentType, .denominationType, .territory, .radius, .locationService]
+            return [.sortBy, .paymentType, .denominationType]
         }
     }
 
@@ -132,7 +133,6 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
                 locationOffCell = itemCell
             } else {
                 let cell = super.tableView(tableView, cellForRowAt: indexPath) as! PointOfUseItemCell
-                cell.subLabel.isHidden = currentSegment == .online
                 return cell
             }
         default:
@@ -190,7 +190,11 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
     override func show(pointOfUse: ExplorePointOfUse) {
         guard let merchant = pointOfUse.merchant else { return }
 
-        let vc = PointOfUseDetailsViewController(pointOfUse: pointOfUse, isShowAllHidden: merchant.type == .online)
+        // Pass appropriate search radius and filters based on current segment
+        let isAllTab = currentSegment.tag == 2
+        let searchRadius: Double? = isAllTab ? Double.greatestFiniteMagnitude : model.filters?.currentRadius
+
+        let vc = POIDetailsViewController(pointOfUse: pointOfUse, isShowAllHidden: merchant.type == .online, searchRadius: searchRadius, searchCenterCoordinate: model.searchCenterCoordinate, currentFilters: model.filters)
         vc.payWithDashHandler = payWithDashHandler
         vc.onGiftCardPurchased = onGiftCardPurchased
         navigationController?.pushViewController(vc, animated: true)
@@ -224,8 +228,93 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
             MerchantsListSegment.nearby.pointOfUseListSegment,
             MerchantsListSegment.all.pointOfUseListSegment,
         ])
+
+        // Determine which segment should be default based on location permission
+        let defaultSegmentIndex: Int
         if DWLocationManager.shared.isAuthorized {
-            model.currentSegment = model.segments[MerchantsListSegment.nearby.rawValue]
+            defaultSegmentIndex = MerchantsListSegment.nearby.rawValue
+        } else {
+            defaultSegmentIndex = MerchantsListSegment.online.rawValue
+        }
+
+        // Set the current segment FIRST, then apply defaults based on that segment
+        model.currentSegment = model.segments[defaultSegmentIndex]
+
+        // Now set defaults based on the ACTUAL current segment
+        let defaultSortBy: PointOfUseListFilters.SortBy = defaultSegmentIndex == MerchantsListSegment.nearby.rawValue ? .distance : .name
+
+        var defaultPaymentTypes: [PointOfUseListFilters.SpendingOptions] = [.dash, .ctx]
+        #if PIGGYCARDS_ENABLED
+        defaultPaymentTypes.append(.piggyCards)
+        #endif
+
+        let defaultFilters = PointOfUseListFilters(
+            sortBy: defaultSortBy,
+            merchantPaymentTypes: defaultPaymentTypes, // Default to all available payment types
+            radius: .twenty, // Default radius
+            territory: nil,
+            denominationType: .both // Default to both fixed and flexible
+        )
+
+        // Set filters but don't fetch yet - wait for map bounds to be set
+        model.filters = defaultFilters
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        print("🔍 VIEW: viewWillAppear called")
+        print("🔍 VIEW: Current GPS location = \(DWLocationManager.shared.currentLocation?.coordinate.latitude ?? 0), \(DWLocationManager.shared.currentLocation?.coordinate.longitude ?? 0)")
+        print("🔍 VIEW: Current searchCenterCoordinate = \(model.searchCenterCoordinate?.latitude ?? 0), \(model.searchCenterCoordinate?.longitude ?? 0)")
+
+        // Check if we're coming from within the same screen (e.g., returning from merchant detail)
+        // vs. entering the screen fresh (e.g., switching from home screen or another tab)
+        let isReturningFromWithinFlow = model.searchCenterCoordinate != nil
+
+        // Only recenter to GPS if entering the screen fresh
+        if !isReturningFromWithinFlow {
+            print("🔍 VIEW: No search center set, will recenter to GPS")
+            // If we have a GPS location and are on Nearby tab, update map center and fetch
+            if let gpsLocation = DWLocationManager.shared.currentLocation,
+               currentSegment.tag == MerchantsListSegment.nearby.rawValue,
+               model.showMap {
+                print("🔍 VIEW: Setting map center to GPS location: \(gpsLocation.coordinate.latitude), \(gpsLocation.coordinate.longitude)")
+
+                // Set initialCenterLocation so mapViewDidFinishLoadingMap will use the correct location
+                mapView.initialCenterLocation = gpsLocation
+                mapView.setCenter(gpsLocation, animated: false)
+
+                print("🔍 VIEW: After setCenter, mapView.centerCoordinate = \(mapView.centerCoordinate.latitude), \(mapView.centerCoordinate.longitude)")
+
+                let radiusToUse = model.filters?.currentRadius ?? kDefaultRadius
+                mapView.searchRadius = radiusToUse
+
+                // Use GPS location directly instead of relying on mapView.centerCoordinate
+                let newBounds = ExploreMapBounds(rect: MKCircle(center: gpsLocation.coordinate, radius: radiusToUse).boundingMapRect)
+                print("🔍 VIEW: Created bounds from GPS location - NE=(\(newBounds.neCoordinate.latitude), \(newBounds.neCoordinate.longitude)), SW=(\(newBounds.swCoordinate.latitude), \(newBounds.swCoordinate.longitude))")
+                model.currentMapBounds = newBounds
+
+                print("🔍 VIEW: Refreshing items with GPS location")
+                model.fetch(query: nil)
+            }
+        } else {
+            print("🔍 VIEW: Returning from within flow, preserving panned location at (\(model.searchCenterCoordinate!.latitude), \(model.searchCenterCoordinate!.longitude))")
+        }
+
+        // Ensure filter status is visible on initial load
+        updateAppliedFiltersView()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        // Clear search center coordinate when actually leaving the screen
+        // (not when navigating to a child view like merchant detail)
+        if isMovingFromParent || isBeingDismissed {
+            print("🔍 VIEW: viewWillDisappear - leaving screen, clearing searchCenterCoordinate")
+            model.searchCenterCoordinate = nil
+        } else {
+            print("🔍 VIEW: viewWillDisappear - navigating to child view, preserving searchCenterCoordinate")
         }
     }
 

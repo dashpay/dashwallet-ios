@@ -27,6 +27,7 @@ class PointOfUseItemCell: UITableViewCell {
     private var nameLabel: UILabel!
     var subLabel: UILabel!
     var mainStackView: UIStackView!
+    var searchCenterCoordinate: CLLocationCoordinate2D?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)

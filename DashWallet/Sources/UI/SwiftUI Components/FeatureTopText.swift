@@ -81,7 +81,7 @@ struct WiggleModifier: ViewModifier {
     
     func body(content: Content) -> some View {
         content
-            .offset(x: isAnimating ? -10 : 0)
+            .offset(x: isAnimating ? -20 : 0)
             .onChange(of: trigger) { newValue in
                 guard newValue else { return }
                 withAnimation(.easeInOut(duration: 0.05).repeatCount(3)) {

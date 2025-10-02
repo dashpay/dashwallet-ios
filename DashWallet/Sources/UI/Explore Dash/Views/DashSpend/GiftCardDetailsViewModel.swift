@@ -36,7 +36,7 @@ struct GiftCardDetailsUIState {
 @MainActor
 class GiftCardDetailsViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
-    private let ctxSpendService = CTXSpendService.shared
+    private let ctxSpendRepository = CTXSpendRepository.shared
     private let giftCardsDAO = GiftCardsDAOImpl.shared
     private let customIconDAO = IconBitmapDAOImpl.shared
     private let txMetadataDAO = TransactionMetadataDAOImpl.shared
@@ -173,14 +173,14 @@ class GiftCardDetailsViewModel: ObservableObject {
     private func fetchGiftCardInfo() async {
         guard let giftCard = await giftCardsDAO.get(byTxId: txId),
               let _ = giftCard.note,
-              ctxSpendService.isUserSignedIn else {
+              ctxSpendRepository.isUserSignedIn else {
             stopTicker()
             return
         }
         
         do {
             let base58TxId = ((txId as NSData).reverse() as NSData).base58String()
-            let response = try await ctxSpendService.getGiftCardByTxid(txid: base58TxId)
+            let response = try await ctxSpendRepository.getGiftCardByTxid(txid: base58TxId)
             
             switch response.status {
             case "fulfilled":
@@ -208,7 +208,7 @@ class GiftCardDetailsViewModel: ObservableObject {
                 
             case "rejected":
                 await MainActor.run {
-                    self.uiState.loadingError = CTXSpendError.customError(
+                    self.uiState.loadingError = DashSpendError.customError(
                         NSLocalizedString("Gift card purchase was rejected", comment: "")
                     )
                 }

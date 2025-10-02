@@ -1,4 +1,4 @@
-//
+//  
 //  Created by Andrei Ashikhmin
 //  Copyright © 2025 Dash Core Group. All rights reserved.
 //
@@ -15,8 +15,16 @@
 //  limitations under the License.
 //
 
-class CTXConstants {
-    static let baseURI = "https://spend.ctx.com/"
-    static let ctxGiftCardAgreementUrl = "https://ctx.com/gift-card-agreement/"
-    static let supportEmail = "support@ctx.com"
+import Combine
+
+@MainActor
+protocol DashSpendRepository: ObservableObject {
+    var isUserSignedIn: Bool { get }
+    var isUserSignedInPublisher: AnyPublisher<Bool, Never> { get }
+    var userEmailPublisher: AnyPublisher<String?, Never> { get }
+
+    func signUp(email: String) async throws -> Bool
+    func login(email: String) async throws -> Bool
+    func verifyEmail(code: String) async throws -> Bool
+    func logout()
 }

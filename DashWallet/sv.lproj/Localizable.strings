@@ -265,9 +265,6 @@
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Authentication is unvailable";
 
-/* Authorization error message */
-"Authorization error. Please try logging in again." = "Authorization error. Please try logging in again.";
-
 /* Location Service Status */
 "Authorized" = "Authorized";
 
@@ -391,9 +388,6 @@
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code.";
-
-/* Call */
-"Call" = "Call";
 
 /* No comment provided by engineer. */
 "Cancel" = "Ångra";
@@ -644,6 +638,12 @@
 /* No comment provided by engineer. */
 "CSV Export" = "CSV Export";
 
+/* Explore Dash/Filters */
+"CTX gift card" = "CTX gift card";
+
+/* Explore Dash: Filters */
+"CTX gift cards" = "CTX gift cards";
+
 /* Crowdnode */
 "Current APY = %@" = "Current APY = %@";
 
@@ -734,9 +734,6 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.";
-
-/* Direction */
-"Direction" = "Direction";
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Disconnect Coinbase Account";
@@ -952,6 +949,9 @@
 /* CrowdNode */
 "First minimum deposit" = "First minimum deposit";
 
+/* DashSpend */
+"Fixed amounts" = "Fixed amounts";
+
 /* Explore Dash: Filters */
 "Fixed denominated amounts" = "Fixed denominated amounts";
 
@@ -1029,9 +1029,6 @@
 
 /* CrowdNode */
 "Getting started with CrowdNode" = "Getting started with CrowdNode";
-
-/* Explore Dash: Filters */
-"Gift Card" = "Gift Card";
 
 /* No comment provided by engineer. */
 "Gift card" = "Gift card";
@@ -1115,7 +1112,7 @@
 "I accept" = "I accept";
 
 /* Accept terms checkbox */
-"I accept DashSpend terms and conditions" = "I accept DashSpend terms and conditions";
+"I accept %@ terms and conditions" = "I accept %@ terms and conditions";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "I accept that I will lose my coins if I no longer possess the recovery phrase";
@@ -1245,6 +1242,9 @@
 
 /* CrowdNode Online */
 "Invalid Email" = "Invalid Email";
+
+/* DashSpend */
+"Invalid email or password." = "Invalid email or password.";
 
 /* Invalid Amount Input */
 "Invalid Input" = "Invalid Input";
@@ -1737,7 +1737,7 @@
 "Password" = "Password";
 
 /* Usernames */
-"Past link here" = "Past link here";
+"Paste link here" = "Paste link here";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "Paste your image URL";
@@ -1787,9 +1787,6 @@
 /* CTXSpend error */
 "Payment processing error: %@" = "Payment processing error: %@";
 
-/* Explore Dash/Merchants/Filters */
-"Payment Type" = "Payment Type";
-
 /* No comment provided by engineer. */
 "Payments made directly to addresses won’t be retained in activity." = "Payments made directly to addresses won’t be retained in activity.";
 
@@ -1816,6 +1813,15 @@
 
 /* No comment provided by engineer. */
 "Personalize" = "Personalize";
+
+/* No comment provided by engineer. */
+"Phone" = "Phone";
+
+/* Explore Dash: Filters */
+"Piggy Cards gift cards" = "Piggy Cards gift cards";
+
+/* Explore Dash/Filters */
+"PiggyCards gift card" = "PiggyCards gift card";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN is always required to make a payment";
@@ -1927,6 +1933,9 @@
 
 /* Usernames */
 "Prove your identity" = "Prove your identity";
+
+/* DashSpend */
+"Provider" = "Provider";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Provider Address";
@@ -2090,9 +2099,6 @@
 /* No comment provided by engineer. */
 "Save" = "Spara";
 
-/* DashSpend */
-"Save %.2f%%" = "Save %.2f%%";
-
 /* No comment provided by engineer. */
 "Save Changes" = "Save Changes";
 
@@ -2180,6 +2186,9 @@
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "Select from Gallery";
+
+/* DashSpend */
+"Select gift card provider" = "Select gift card provider";
 
 /* CoinJoin */
 "Select mixing level" = "Select mixing level";
@@ -2293,6 +2302,9 @@
 /* Receive screen */
 "Share address" = "Share address";
 
+/* Explore Dash */
+"Show all locations" = "Show all locations";
+
 /* Enter Address Screen */
 "Show content in the clipboard" = "Show content in the clipboard";
 
@@ -2352,6 +2364,9 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Spending Confirmation";
+
+/* Explore Dash/Merchants/Filters */
+"Spending options" = "Spending options";
 
 /* No comment provided by engineer. */
 "Staking" = "Staking";
@@ -2499,9 +2514,6 @@
 
 /* No comment provided by engineer. */
 "This app is open source:" = "This app is open source:";
-
-/* This ATM is located in the */
-"This ATM is located in the" = "This ATM is located in the";
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "This extra step shows it’s really you trying to make a transaction.";
@@ -2709,9 +2721,6 @@
 /* No comment provided by engineer. */
 "Uploading your picture to the network" = "Uploading your picture to the network";
 
-/* Explore Dash/Filters */
-"Use gift card" = "Use gift card";
-
 /* No comment provided by engineer. */
 "Used" = "Used";
 
@@ -2786,9 +2795,6 @@
 
 /* No comment provided by engineer. */
 "View All" = "View All";
-
-/* View all locations */
-"View all locations" = "View all locations";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "View in Explorer";

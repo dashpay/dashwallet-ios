@@ -18,7 +18,7 @@
 import SwiftUI
 import Combine
 
-enum CTXSpendUserAuthType {
+enum DashSpendUserAuthType {
     case createAccount
     case signIn
     case otp
@@ -55,14 +55,22 @@ enum CTXSpendUserAuthType {
     }
 }
 
-struct CTXSpendUserAuthScreen: View {
+struct DashSpendUserAuthScreen: View {
     @Environment(\.presentationMode) private var presentationMode
-    @StateObject private var viewModel = CTXSpendUserAuthViewModel()
+    @ObservedObject private var viewModel: DashSpendUserAuthViewModel
     @FocusState private var isTextFieldFocused: Bool
     @State private var navigateToOtp: Bool = false
     
-    let authType: CTXSpendUserAuthType
+    let authType: DashSpendUserAuthType
+    let provider: GiftCardProvider
     let onAuthSuccess: () -> Void
+    
+    init(authType: DashSpendUserAuthType, provider: GiftCardProvider, onAuthSuccess: @escaping () -> Void) {
+        self.authType = authType
+        self.provider = provider
+        self.onAuthSuccess = onAuthSuccess
+        self.viewModel = DashSpendUserAuthViewModel(provider: provider, screenType: authType)
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -172,8 +180,9 @@ struct CTXSpendUserAuthScreen: View {
             }
             
             NavigationLink(
-                destination: CTXSpendUserAuthScreen(
+                destination: DashSpendUserAuthScreen(
                     authType: .otp,
+                    provider: provider,
                     onAuthSuccess: onAuthSuccess
                 ).navigationBarHidden(true),
                 isActive: $navigateToOtp
@@ -186,7 +195,7 @@ struct CTXSpendUserAuthScreen: View {
         .navigationBarBackButtonHidden(true)
         .edgesIgnoringSafeArea(.top)
         .onAppear {
-            viewModel.setup(screenType: authType)
+            viewModel.screenType = authType
             
             if authType != .otp {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

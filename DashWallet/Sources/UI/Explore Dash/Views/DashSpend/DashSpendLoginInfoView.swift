@@ -17,7 +17,8 @@
 
 import SwiftUI
 
-struct CTXSpendLoginInfoView: View {
+struct DashSpendLoginInfoView: View {
+    let provider: GiftCardProvider
     let onCreateNewAccount: () -> Void
     let onLogIn: () -> Void
     let onTermsAndConditions: () -> Void
@@ -27,7 +28,7 @@ struct CTXSpendLoginInfoView: View {
         BottomSheet(showBackButton: .constant(false)) {
             VStack {
                 TextIntro(
-                    icon: .custom("ctx.logo", maxHeight: 60),
+                    icon: .custom(provider.logoName, maxHeight: 60),
                     inProgress: $inProgress
                 ) {
                     FeatureTopText(
@@ -59,7 +60,8 @@ struct CTXSpendLoginInfoView: View {
 }
 
 #Preview {
-    CTXSpendLoginInfoView(
+    DashSpendLoginInfoView(
+        provider: .ctx,
         onCreateNewAccount: {},
         onLogIn: {},
         onTermsAndConditions: {}

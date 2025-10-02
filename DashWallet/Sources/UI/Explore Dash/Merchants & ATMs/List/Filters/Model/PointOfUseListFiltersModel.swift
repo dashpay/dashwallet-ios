@@ -17,17 +17,6 @@
 
 import Foundation
 
-extension ExplorePointOfUse.Merchant.PaymentMethod {
-    var filterLocalizedString: String {
-        switch self {
-        case .dash:
-            return NSLocalizedString("Pay with Dash", comment: "Explore Dash/Filters")
-        case .giftCard:
-            return NSLocalizedString("Use gift card", comment: "Explore Dash/Filters")
-        }
-    }
-}
-
 extension PointOfUseListFilters.SortBy {
     var filterLocalizedString: String {
         switch self {
@@ -44,6 +33,27 @@ extension PointOfUseListFilters.SortBy {
 // MARK: - PointOfUseListFilters
 
 struct PointOfUseListFilters: Equatable {
+    
+    enum SpendingOptions {
+        case dash
+        case ctx
+        #if PIGGYCARDS_ENABLED
+        case piggyCards
+        #endif
+
+        var filterLocalizedString: String {
+            switch self {
+            case .dash:
+                return NSLocalizedString("Pay with Dash", comment: "Explore Dash/Filters")
+            case .ctx:
+                return NSLocalizedString("CTX gift card", comment: "Explore Dash/Filters")
+            #if PIGGYCARDS_ENABLED
+            case .piggyCards:
+                return NSLocalizedString("PiggyCards gift card", comment: "Explore Dash/Filters")
+            #endif
+            }
+        }
+    }
 
     enum SortBy {
         case distance
@@ -98,7 +108,7 @@ struct PointOfUseListFilters: Equatable {
     }
 
     var sortBy: SortBy?
-    var merchantPaymentTypes: [ExplorePointOfUse.Merchant.PaymentMethod]?
+    var merchantPaymentTypes: [SpendingOptions]?
     var radius: Radius?
     var territory: Territory?
     var denominationType: DenominationType?

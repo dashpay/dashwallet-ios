@@ -18,8 +18,9 @@
 import Foundation
 import Combine
 
-class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, ObservableObject {
-    public static let shared: CTXSpendService = .init()
+
+class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
+    public static let shared: CTXSpendRepository = .init()
     private let userDefaults = UserDefaults.standard
     
     private enum Keys {
@@ -37,15 +38,21 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, Ob
         return KeychainService.load(key: Keys.refreshToken)
     }
     
-    var userEmail: String? {
-        KeychainService.load(key: Keys.email)
+    @Published private(set) var userEmail: String? = nil
+    @Published private(set) var isUserSignedIn = false
+    
+    var userEmailPublisher: AnyPublisher<String?, Never> {
+        $userEmail.eraseToAnyPublisher()
     }
     
-    @Published private(set) var isUserSignedIn = false
+    var isUserSignedInPublisher: AnyPublisher<Bool, Never> {
+        $isUserSignedIn.eraseToAnyPublisher()
+    }
     
     init() {
         CTXSpendAPI.initialize(with: self)
         updateSignInState()
+        updateEmailState()
     }
     
     private func updateSignInState() {
@@ -53,10 +60,19 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, Ob
         isUserSignedIn = token != nil && !token!.isEmpty
     }
     
-    func signIn(email: String) async throws -> Bool {
+    private func updateEmailState() {
+        userEmail = KeychainService.load(key: Keys.email)
+    }
+    
+    func login(email: String) async throws -> Bool {
+        return try await signUp(email: email)
+    }
+    
+    func signUp(email: String) async throws -> Bool {
         do {
             try await CTXSpendAPI.shared.request(.login(email: email))
             KeychainService.save(key: Keys.email, data: email)
+            updateEmailState()
             
             if userDefaults.string(forKey: Keys.deviceUUID) == nil {
                 userDefaults.set(UUID().uuidString, forKey: Keys.deviceUUID)
@@ -71,7 +87,7 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, Ob
     func verifyEmail(code: String) async throws -> Bool {
         guard let email = userEmail else {
             DSLogger.log("CTX: email is missing while trying to verify")
-            throw CTXSpendError.unknown
+            throw DashSpendError.unknown
         }
         
         do {
@@ -93,6 +109,7 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, Ob
         KeychainService.delete(key: Keys.email)
         userDefaults.removeObject(forKey: Keys.deviceUUID)
         updateSignInState()
+        updateEmailState()
     }
     
     // MARK: - Token Management
@@ -125,7 +142,7 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, Ob
         
         do {
             return try await CTXSpendAPI.shared.request(.purchaseGiftCard(request))
-        } catch let error as CTXSpendError {
+        } catch let error as DashSpendError {
             DSLogger.log("Gift card purchase failed with CTXSpendError: \(error)")
             throw error
         } catch let error as HTTPClientError {
@@ -139,7 +156,7 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, Ob
                         if let fiatAmountErrors = errorData.fields?.fiatAmount,
                            let firstFiatError = fiatAmountErrors.first {
                             if firstFiatError == "above threshold" || firstFiatError == "below threshold" {
-                                throw CTXSpendError.purchaseLimitExceeded
+                                throw DashSpendError.purchaseLimitExceeded
                             }
                         }
                         
@@ -148,42 +165,42 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, Ob
                             let errorMessage = firstError.message.lowercased()
                             
                             if errorMessage.contains("insufficient") || errorMessage.contains("funds") || errorMessage.contains("balance") {
-                                throw CTXSpendError.insufficientFunds
+                                throw DashSpendError.insufficientFunds
                             } else if errorMessage.contains("merchant") && (errorMessage.contains("unavailable") || errorMessage.contains("disabled") || errorMessage.contains("suspended")) {
-                                throw CTXSpendError.merchantUnavailable
+                                throw DashSpendError.merchantUnavailable
                             } else if errorMessage.contains("merchant") {
-                                throw CTXSpendError.invalidMerchant
+                                throw DashSpendError.invalidMerchant
                             } else if errorMessage.contains("rejected") || errorMessage.contains("declined") {
-                                throw CTXSpendError.transactionRejected
+                                throw DashSpendError.transactionRejected
                             } else if errorMessage.contains("amount") || errorMessage.contains("value") || errorMessage.contains("limit") {
-                                throw CTXSpendError.invalidAmount
+                                throw DashSpendError.invalidAmount
                             }
                             
                             // Custom error with the actual message from API
-                            throw CTXSpendError.customError(firstError.message)
+                            throw DashSpendError.customError(firstError.message)
                         }
                     }
                 case 401, 403:
-                    throw CTXSpendError.unauthorized
+                    throw DashSpendError.unauthorized
                 case 404:
-                    throw CTXSpendError.invalidMerchant
+                    throw DashSpendError.invalidMerchant
                 case 409:
                     // Conflict - usually means duplicate transaction or similar
-                    throw CTXSpendError.transactionRejected
+                    throw DashSpendError.transactionRejected
                 case 422:
                     // Unprocessable Entity - validation errors
-                    throw CTXSpendError.invalidAmount
+                    throw DashSpendError.invalidAmount
                 case 500...599:
-                    throw CTXSpendError.serverError
+                    throw DashSpendError.serverError
                 default:
                     break
                 }
             }
             
-            throw CTXSpendError.unknown
+            throw DashSpendError.unknown
         } catch {
             DSLogger.log("Gift card purchase failed with error: \(error)")
-            throw CTXSpendError.networkError
+            throw DashSpendError.networkError
         }
     }
     
@@ -191,7 +208,7 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, Ob
         do {
             let response: MerchantResponse = try await CTXSpendAPI.shared.request(.getMerchant(merchantId))
             return response
-        } catch let error as CTXSpendError {
+        } catch let error as DashSpendError {
             DSLogger.log("Failed to get merchant with CTXSpendError: \(error)")
             throw error
         } catch let error as HTTPClientError {
@@ -200,20 +217,20 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, Ob
             if case .statusCode(let response) = error {
                 switch response.statusCode {
                 case 401, 403:
-                    throw CTXSpendError.unauthorized
+                    throw DashSpendError.unauthorized
                 case 404:
-                    throw CTXSpendError.invalidMerchant
+                    throw DashSpendError.invalidMerchant
                 case 500...599:
-                    throw CTXSpendError.networkError
+                    throw DashSpendError.networkError
                 default:
                     break
                 }
             }
             
-            throw CTXSpendError.unknown
+            throw DashSpendError.unknown
         } catch {
             DSLogger.log("Failed to get merchant with error: \(error)")
-            throw CTXSpendError.networkError
+            throw DashSpendError.networkError
         }
     }
     
@@ -228,11 +245,11 @@ class CTXSpendService: CTXSpendAPIAccessTokenProvider, CTXSpendTokenProvider, Ob
     // MARK: - Helper Methods
     
     private func mapError(_ error: Error) -> Error {
-        if let ctxError = error as? CTXSpendError {
+        if let ctxError = error as? DashSpendError {
             return ctxError
         }
         
-        return CTXSpendError.networkError
+        return DashSpendError.networkError
     }
 }
 

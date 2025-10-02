@@ -17,13 +17,14 @@
 
 import SwiftUI
 
-struct CTXSpendTermsScreen: View {
+struct DashSpendTermsScreen: View {
     @Environment(\.presentationMode) private var presentationMode
     @State private var isTermsAccepted: Bool = false
     @State private var hasViewedTerms: Bool = false
     @State private var shouldShakeLink: Bool = false
     @State private var navigateToCreateAccount: Bool = false
     
+    let provider: GiftCardProvider
     let onAuthSuccess: () -> Void
     
     var body: some View {
@@ -53,9 +54,17 @@ struct CTXSpendTermsScreen: View {
                         label: NSLocalizedString("Terms & conditions", comment: "Terms & conditions"),
                         labelIcon: .custom("external.link"),
                         linkAction: {
-                            UIApplication.shared.open(URL(string: CTXConstants.ctxGiftCardAgreementUrl)!, options: [:], completionHandler: nil)
-                            hasViewedTerms = true
-                            shouldShakeLink = false
+                            guard let url = URL(string: provider.termsUrl),
+                                  UIApplication.shared.canOpenURL(url) else {
+                                return
+                            }
+
+                            UIApplication.shared.open(url, options: [:]) { success in
+                                if success {
+                                    hasViewedTerms = true
+                                    shouldShakeLink = false
+                                }
+                            }
                         },
                         shakeLabel: shouldShakeLink
                     )
@@ -82,7 +91,7 @@ struct CTXSpendTermsScreen: View {
                             }
                         }
                         
-                        Text(NSLocalizedString("I accept DashSpend terms and conditions", comment: "Accept terms checkbox"))
+                        Text(String(format: NSLocalizedString("I accept %@ terms and conditions", comment: "Accept terms checkbox"), provider.displayName))
                             .font(.system(size: 14))
                             .foregroundColor(.primaryText)
                             
@@ -116,10 +125,13 @@ struct CTXSpendTermsScreen: View {
         .edgesIgnoringSafeArea(.top)
         
         NavigationLink(
-            destination: CTXSpendUserAuthScreen(
-                authType: .createAccount,
-                onAuthSuccess: onAuthSuccess
-            ).navigationBarHidden(true),
+            destination: Group {
+                DashSpendUserAuthScreen(
+                    authType: .createAccount,
+                    provider: provider,
+                    onAuthSuccess: onAuthSuccess
+                ).navigationBarHidden(true)
+            },
             isActive: $navigateToCreateAccount
         ) {
             EmptyView()

@@ -43,8 +43,10 @@ class DWLocationManager: NSObject {
 
     @objc var currentLocation: CLLocation? {
         didSet {
-            reverseCurrentLocation()
-            observers.forEach { $0.locationManagerDidChangeCurrentLocation(self, location: currentLocation!) }
+            if let location = currentLocation {
+                reverseCurrentLocation()
+                observers.forEach { $0.locationManagerDidChangeCurrentLocation(self, location: location) }
+            }
         }
     }
 
@@ -149,7 +151,6 @@ extension DWLocationManager: CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
-
         currentLocation = location
     }
 

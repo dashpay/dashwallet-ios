@@ -25,13 +25,17 @@ struct RadioButtonRow: View {
     }
     
     let title: String
+    let subtitle: String?
+    let trailingText: String?
     let icon: IconName?
     let isSelected: Bool
     let style: Style
     let action: () -> Void
     
-    init(title: String, icon: IconName? = nil, isSelected: Bool, style: Style = .radio, action: @escaping () -> Void) {
+    init(title: String, subtitle: String? = nil, trailingText: String? = nil, icon: IconName? = nil, isSelected: Bool, style: Style = .radio, action: @escaping () -> Void) {
         self.title = title
+        self.subtitle = subtitle
+        self.trailingText = trailingText
         self.icon = icon
         self.isSelected = isSelected
         self.style = style
@@ -46,12 +50,27 @@ struct RadioButtonRow: View {
                         .frame(width: 30, height: 30)
                 }
                 
-                Text(title)
-                    .font(.body2)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primaryText)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(title)
+                        .font(.body2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.primaryText)
+                    
+                    if let subtitle = subtitle {
+                        Text(subtitle)
+                            .font(.caption)
+                            .foregroundColor(.secondaryText)
+                    }
+                }
                 
                 Spacer()
+                
+                if let trailingText = trailingText {
+                    Text(trailingText)
+                        .font(.body2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.primaryText)
+                }
                 
                 switch style {
                 case .radio:
@@ -67,7 +86,7 @@ struct RadioButtonRow: View {
             }
             .padding(.horizontal, 16)
             .contentShape(Rectangle())
-            .frame(minHeight: 54)
+            .frame(minHeight: subtitle != nil ? 60 : 54)
         }
         .buttonStyle(PlainButtonStyle())
     }

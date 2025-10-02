@@ -29,16 +29,29 @@ class MerchantItemCell: PointOfUseItemCell {
 
         guard let merchant = pointOfUse.merchant else { return }
 
-        if let currentLocation = DWLocationManager.shared.currentLocation,
-           DWLocationManager.shared.isAuthorized, merchant.type != .online {
-            subLabel.isHidden = false
-            let distance = CLLocation(latitude: pointOfUse.latitude!, longitude: pointOfUse.longitude!)
-                .distance(from: currentLocation)
-            let distanceText: String = ExploreDash.distanceFormatter
-                .string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
-            subLabel.text = distanceText
-        } else {
+        if merchant.type == .online {
             subLabel.isHidden = true
+        } else {
+            // Use search center coordinate if available (when map is panned), otherwise use GPS
+            let locationForDistance: CLLocation?
+            if let searchCenter = searchCenterCoordinate {
+                locationForDistance = CLLocation(latitude: searchCenter.latitude, longitude: searchCenter.longitude)
+            } else if DWLocationManager.shared.isAuthorized {
+                locationForDistance = DWLocationManager.shared.currentLocation
+            } else {
+                locationForDistance = nil
+            }
+
+            if let currentLocation = locationForDistance {
+                subLabel.isHidden = false
+                let distance = CLLocation(latitude: pointOfUse.latitude!, longitude: pointOfUse.longitude!)
+                    .distance(from: currentLocation)
+                let distanceText: String = ExploreDash.distanceFormatter
+                    .string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
+                subLabel.text = distanceText
+            } else {
+                subLabel.isHidden = true
+            }
         }
 
         let isGiftCard = merchant.paymentMethod == .giftCard
