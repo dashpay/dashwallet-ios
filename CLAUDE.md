@@ -290,6 +290,29 @@ class DataService: ObservableObject {
 - `Migrations.bundle/`: SQL migration files
 - Schema changes require new migration files with timestamps
 
+### Files That Get Unintentionally Modified
+
+⚠️ **DWUpholdMainnetConstants.m** - This file frequently gets whitespace changes (extra blank lines) that should not be committed.
+
+**When working with git:**
+- Before committing, always check if this file has changes: `git status`
+- If it appears modified with only whitespace changes, restore it: `git restore DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m`
+- Only commit changes to this file if you've intentionally modified the actual Uphold API constants
+
+⚠️ **Info.plist files** - These files should use `$(MARKETING_VERSION)` variable, not hardcoded version strings.
+
+**Version Management:**
+- **NEVER** edit version numbers directly in Info.plist files
+- **ALWAYS** update the version in Xcode project settings instead:
+  - Open the project in Xcode
+  - Select the target you want to update (dashwallet, dashpay, TodayExtension, WatchApp, etc.)
+  - Go to "General" tab
+  - Update the "Marketing Version" field under "Identity"
+  - This updates the `MARKETING_VERSION` build setting which propagates to that target's Info.plist file
+  - Repeat for each target that needs the version update
+- If Info.plist files show changes with hardcoded versions (e.g., `<string>8.4.2</string>` instead of `<string>$(MARKETING_VERSION)</string>`), revert them
+- **Note:** All targets in this project use `$(MARKETING_VERSION)` for version management, not hardcoded strings
+
 ## Dependencies and Requirements
 
 ### Required Tools
