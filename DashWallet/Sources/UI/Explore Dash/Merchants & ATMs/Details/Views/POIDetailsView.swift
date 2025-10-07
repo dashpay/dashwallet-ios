@@ -21,22 +21,26 @@ import SDWebImageSwiftUI
 
 struct POIDetailsView: View {
     @StateObject private var viewModel: POIDetailsViewModel
-    
+
     let merchant: ExplorePointOfUse
     let isShowAllHidden: Bool
-    
+    let searchRadius: Double?
+    let searchCenterCoordinate: CLLocationCoordinate2D?
+
     // Action handlers
     var payWithDashHandler: (() -> Void)?
     var sellDashHandler: (() -> Void)?
     var dashSpendAuthHandler: ((GiftCardProvider) -> Void)?
     var buyGiftCardHandler: ((GiftCardProvider) -> Void)?
     var showAllLocationsActionBlock: (() -> Void)?
-    
-    init(merchant: ExplorePointOfUse, isShowAllHidden: Bool = false) {
+
+    init(merchant: ExplorePointOfUse, isShowAllHidden: Bool = false, searchRadius: Double? = nil, searchCenterCoordinate: CLLocationCoordinate2D? = nil) {
         self.merchant = merchant
         self.isShowAllHidden = isShowAllHidden
-        
-        self._viewModel = StateObject(wrappedValue: POIDetailsViewModel(merchant: merchant))
+        self.searchRadius = searchRadius
+        self.searchCenterCoordinate = searchCenterCoordinate
+
+        self._viewModel = StateObject(wrappedValue: POIDetailsViewModel(merchant: merchant, searchRadius: searchRadius, searchCenterCoordinate: searchCenterCoordinate))
     }
     
     var body: some View {
@@ -58,6 +62,7 @@ struct POIDetailsView: View {
                 }
                 
                 if case .merchant = merchant.category {
+                    countryRestrictionView
                     bottomButtonView
                     loginStatusView
                 }
@@ -87,8 +92,8 @@ struct POIDetailsView: View {
                 .padding(.top, 16)
             }
             
-            // Show all locations button
-            if !isShowAllHidden && shouldShowLocationView {
+            // Show all locations button (only if more than 1 location)
+            if !isShowAllHidden && shouldShowLocationView && viewModel.locationCount > 1 {
                 showAllLocationsButton
                     .padding(.top, 16)
             }
@@ -148,28 +153,37 @@ struct POIDetailsView: View {
                 Text(NSLocalizedString("Address", comment: "Explore Dash"))
                     .font(.caption)
                     .foregroundColor(.secondaryText)
-                
+
                 if merchant.address1?.isEmpty == false {
                     Text(merchant.address1 ?? "")
                         .font(.body2)
                         .foregroundColor(.primaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                
+
                 if merchant.address2?.isEmpty == false {
                     Text(merchant.address2 ?? "")
                         .font(.body2)
                         .foregroundColor(.primaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                
+
                 if merchant.address3?.isEmpty == false {
                     Text(merchant.address3 ?? "")
                         .font(.body2)
                         .foregroundColor(.primaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                
+
+                // Show city and territory (town/state)
+                let cityAndTerritory = [merchant.city, merchant.territory].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", ")
+                if !cityAndTerritory.isEmpty {
+                    Text(cityAndTerritory)
+                        .font(.body2)
+                        .foregroundColor(.primaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
                 if let distanceText = viewModel.distanceText {
                     Text(distanceText)
                         .font(.caption)
@@ -199,7 +213,7 @@ struct POIDetailsView: View {
                         .font(.caption)
                         .foregroundColor(.secondaryText)
                     
-                    Text(merchant.phone ?? "")
+                    Text(viewModel.formattedPhoneNumber ?? merchant.phone ?? "")
                         .font(.body2)
                         .foregroundColor(.dashBlue)
                 }
@@ -240,12 +254,12 @@ struct POIDetailsView: View {
             showAllLocationsActionBlock?()
         }) {
             HStack {
-                Text(NSLocalizedString("Show all locations", comment: "Explore Dash"))
+                Text(viewModel.locationCount > 0 ? "\(NSLocalizedString("Show all locations", comment: "Explore Dash")) (\(viewModel.locationCount))" : NSLocalizedString("Show all locations", comment: "Explore Dash"))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.primaryText)
-                
+
                 Spacer()
-                
+
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13))
                     .foregroundColor(.secondaryText)
@@ -300,53 +314,51 @@ struct POIDetailsView: View {
     
     
     private var singleProviderInfoView: some View {
-        HStack(spacing: 20) {
-            infoBox(
-                icon: "image.giftcard.black",
-                title: NSLocalizedString("Provider", comment: "DashSpend"),
-                value: viewModel.selectedProvider?.displayName ?? "",
-                tintColor: .primaryText
-            )
-            
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(viewModel.selectedProvider?.displayName ?? "")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.primaryText)
+
+                if let selectedProvider = viewModel.selectedProvider,
+                   let providerData = viewModel.supportedProviders[selectedProvider] {
+                    Text(providerData.isFixed ? NSLocalizedString("Fixed amounts", comment: "DashSpend") : NSLocalizedString("Flexible amounts", comment: "DashSpend"))
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondaryText)
+                }
+            }
+
+            Spacer()
+
             if let selectedProvider = viewModel.selectedProvider,
                let providerData = viewModel.supportedProviders[selectedProvider],
                providerData.discount > 0 {
-                infoBox(
-                    icon: "image.discount",
-                    title: NSLocalizedString("Save", comment: ""),
-                    value: String(format: "%.0f%%", Double(providerData.discount) / 100.0),
-                    tintColor: .systemYellow
-                )
-            }
-        }
-    }
-    
-    private func infoBox(icon: String, title: String, value: String, tintColor: Color) -> some View {
-        HStack(spacing: 10) {
-            Image(icon)
-                .resizable()
-                .frame(width: 18, height: 18)
-                .foregroundColor(tintColor)
-            
-            VStack(alignment: .leading, spacing: 0) {
-                Text(title)
+                Text(String(format: "-%.0f%%", Double(providerData.discount) / 100.0))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.primaryText)
-                
-                Text(value)
-                    .font(.system(size: 13))
-                    .foregroundColor(.primaryText)
             }
         }
-        .padding(.horizontal, 10)
-        .frame(height: 48)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(tintColor.opacity(0.1))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color.gray.opacity(0.1))
         .cornerRadius(10)
     }
     
+    // MARK: - Country Restriction View
+
+    @ViewBuilder
+    private var countryRestrictionView: some View {
+        if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
+            Text(NSLocalizedString("This card works only in the United States.", comment: "DashSpend"))
+                .font(.system(size: 13))
+                .foregroundColor(.secondaryText)
+                .multilineTextAlignment(.center)
+                .padding(.bottom, 8)
+        }
+    }
+
     // MARK: - Bottom Button
-    
+
     private var bottomButtonView: some View {
         DashButton(
             text: buttonTitle,

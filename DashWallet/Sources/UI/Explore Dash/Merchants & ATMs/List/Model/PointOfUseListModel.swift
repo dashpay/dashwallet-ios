@@ -50,6 +50,15 @@ class PointOfUseDataProvider {
     internal var lastBounds: ExploreMapBounds?
     internal var lastFilters: PointOfUseListFilters?
 
+    func clearCache() {
+        items = []
+        currentPage = nil
+        lastQuery = nil
+        lastUserPoint = nil
+        lastBounds = nil
+        lastFilters = nil
+    }
+
     init() {
         dataSource = ExploreDash.shared
     }
@@ -119,7 +128,20 @@ final class PointOfUseListModel {
     var segmentTitles: [String] { segments.map { $0.title } }
 
     internal var dataProviders: [PointOfUseListSegment: PointOfUseDataProvider] = [:]
-    var filters: PointOfUseListFilters?
+    private var segmentFilters: [PointOfUseListSegment: PointOfUseListFilters] = [:]
+
+    var filters: PointOfUseListFilters? {
+        get {
+            return segmentFilters[currentSegment]
+        }
+        set {
+            if let newValue = newValue {
+                segmentFilters[currentSegment] = newValue
+            } else {
+                segmentFilters.removeValue(forKey: currentSegment)
+            }
+        }
+    }
 
     var currentSegment: PointOfUseListSegment {
         didSet {
@@ -131,7 +153,20 @@ final class PointOfUseListModel {
 
     var currentMapBounds: ExploreMapBounds?
 
-    var userCoordinates: CLLocationCoordinate2D? { DWLocationManager.shared.currentLocation?.coordinate }
+    // The center coordinate for searching - typically the map center
+    var searchCenterCoordinate: CLLocationCoordinate2D?
+
+    var userCoordinates: CLLocationCoordinate2D? {
+        // Use the search center if available (map center when panning)
+        // Otherwise fall back to device's GPS location
+        if let searchCenter = searchCenterCoordinate {
+            print("🔍 MODEL: Using searchCenterCoordinate = \(searchCenter.latitude), \(searchCenter.longitude)")
+            return searchCenter
+        }
+        let location = DWLocationManager.shared.currentLocation
+        print("🔍 MODEL: Using device GPS location = \(location?.coordinate.latitude ?? 0), \(location?.coordinate.longitude ?? 0)")
+        return location?.coordinate
+    }
 
     var hasNextPage: Bool {
         !isFetching && (currentDataProvider?.hasNextPage ?? false)

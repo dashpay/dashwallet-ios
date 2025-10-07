@@ -30,10 +30,15 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private let txMetadataDao = TransactionMetadataDAOImpl.shared
     private let sendCoinsService = SendCoinsService()
     
-    private let repository: [GiftCardProvider: any DashSpendRepository] = [
-        GiftCardProvider.ctx : CTXSpendRepository.shared,
-        GiftCardProvider.piggyCards : PiggyCardsRepository.shared
-    ]
+    private let repository: [GiftCardProvider: any DashSpendRepository] = {
+        var dict: [GiftCardProvider: any DashSpendRepository] = [
+            .ctx: CTXSpendRepository.shared
+        ]
+        #if PIGGYCARDS_ENABLED
+        dict[.piggyCards] = PiggyCardsRepository.shared
+        #endif
+        return dict
+    }()
     
     // Network monitoring properties
     var networkStatusDidChange: ((NetworkStatus) -> ())?

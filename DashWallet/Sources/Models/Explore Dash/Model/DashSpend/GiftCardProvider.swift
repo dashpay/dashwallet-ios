@@ -19,41 +19,51 @@ import Foundation
 
 enum GiftCardProvider: CaseIterable {
     case ctx
+    #if PIGGYCARDS_ENABLED
     case piggyCards
-    
+    #endif
+
     var displayName: String {
         switch self {
         case .ctx:
             return "CTX"
+        #if PIGGYCARDS_ENABLED
         case .piggyCards:
             return "PiggyCards"
+        #endif
         }
     }
-    
+
     var logoName: String {
         switch self {
         case .ctx:
             return "ctx.logo"
+        #if PIGGYCARDS_ENABLED
         case .piggyCards:
             return "piggycards.logo"
+        #endif
         }
     }
-    
+
     var termsUrl: String {
         switch self {
         case .ctx:
             return CTXConstants.termsAndConditionsUrl
+        #if PIGGYCARDS_ENABLED
         case .piggyCards:
             return "https://piggy.cards/index.php?route=information/information&information_id=5"
+        #endif
         }
     }
-    
+
     var supportEmail: String {
         switch self {
         case .ctx:
             return CTXConstants.supportEmail
+        #if PIGGYCARDS_ENABLED
         case .piggyCards:
             return PiggyCardsConstants.supportEmail
+        #endif
         }
     }
 }

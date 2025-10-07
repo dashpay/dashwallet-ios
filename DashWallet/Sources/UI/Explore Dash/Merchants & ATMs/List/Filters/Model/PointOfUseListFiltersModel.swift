@@ -37,16 +37,20 @@ struct PointOfUseListFilters: Equatable {
     enum SpendingOptions {
         case dash
         case ctx
+        #if PIGGYCARDS_ENABLED
         case piggyCards
-        
+        #endif
+
         var filterLocalizedString: String {
             switch self {
             case .dash:
                 return NSLocalizedString("Pay with Dash", comment: "Explore Dash/Filters")
             case .ctx:
                 return NSLocalizedString("CTX gift card", comment: "Explore Dash/Filters")
+            #if PIGGYCARDS_ENABLED
             case .piggyCards:
                 return NSLocalizedString("PiggyCards gift card", comment: "Explore Dash/Filters")
+            #endif
             }
         }
     }

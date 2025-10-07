@@ -26,16 +26,20 @@ class DashSpendRepositoryFactory {
         switch provider {
         case .ctx:
             return createCTXSpendRepository()
+        #if PIGGYCARDS_ENABLED
         case .piggyCards:
             return createPiggyCardsRepository()
+        #endif
         }
     }
-    
+
     private func createCTXSpendRepository() -> CTXSpendRepository {
         return CTXSpendRepository.shared
     }
-    
+
+    #if PIGGYCARDS_ENABLED
     private func createPiggyCardsRepository() -> PiggyCardsRepository {
         return PiggyCardsRepository.shared
     }
+    #endif
 }

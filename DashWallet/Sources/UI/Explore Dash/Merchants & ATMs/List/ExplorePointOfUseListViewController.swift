@@ -141,7 +141,8 @@ class ExplorePointOfUseListViewController: UIViewController {
 
     // MARK: life cycle
     internal func show(pointOfUse: ExplorePointOfUse) {
-        let vc = POIDetailsViewController(pointOfUse: pointOfUse)
+        let currentRadius = model.filters?.currentRadius ?? kDefaultRadius
+        let vc = POIDetailsViewController(pointOfUse: pointOfUse, searchRadius: currentRadius, searchCenterCoordinate: model.searchCenterCoordinate, currentFilters: model.filters)
         vc.payWithDashHandler = payWithDashHandler
         vc.sellDashHandler = sellDashHandler
         vc.onGiftCardPurchased = onGiftCardPurchased
@@ -281,14 +282,50 @@ extension ExplorePointOfUseListViewController {
 
 extension ExplorePointOfUseListViewController: DWLocationObserver {
     func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation) {
+        print("🔍 LOCATION: GPS location changed to \(location.coordinate.latitude), \(location.coordinate.longitude)")
+
+        // Set the map center first
         mapView.setCenter(location, animated: false)
+        print("🔍 LOCATION: Set map center to GPS location")
+
+        // Clear search center to use actual GPS location
+        model.searchCenterCoordinate = nil
+        print("🔍 LOCATION: Cleared searchCenterCoordinate - will use GPS")
+
+        // Update the model's map bounds to match the new center
+        if model.showMap {
+            let radiusToUse = model.filters?.currentRadius ?? kDefaultRadius
+
+            // Update the map view's search radius
+            mapView.searchRadius = radiusToUse
+
+            let newBounds = mapView.mapBounds(with: radiusToUse)
+            model.currentMapBounds = newBounds
+            print("🔍 LOCATION: Updated map bounds with radius \(radiusToUse)")
+        }
+
+        // If we're on the nearby tab and the model shows map, refresh the search with the new location
+        if currentSegment.tag == MerchantsListSegment.nearby.rawValue && model.showMap {
+            print("🔍 LOCATION: Fetching merchants for new GPS location")
+            model.fetch(query: nil)
+        }
     }
 
     func locationManagerDidChangeServiceAvailability(_ manager: DWLocationManager) {
         if model.showMap {
             updateMapVisibility()
             mapView.showUserLocationInCenter(animated: false)
-            model.fetch(query: nil)
+
+            // Only fetch if we have location authorization and a current location
+            if manager.isAuthorized {
+                if let currentLocation = manager.currentLocation {
+                    model.fetch(query: nil)
+                } else {
+                    // Location will be updated via locationManagerDidChangeCurrentLocation which will trigger the fetch
+                }
+            } else {
+                model.fetch(query: nil)
+            }
         }
     }
 
@@ -359,7 +396,7 @@ extension ExplorePointOfUseListViewController {
 
         let appliedFilters = UIBarButtonItem(customView: appliedFiltersStackView)
         let filter = UIBarButtonItem(image: .init(systemName: "line.3.horizontal.decrease.circle.fill"), style: .plain,
-                                     target: self, action: nil)
+                                     target: self, action: #selector(showFiltersAction))
         filter.tintColor = .dw_dashBlue()
 
         let fakeFilter = UIBarButtonItem(image: .init(systemName: "line.3.horizontal.decrease.circle.fill"), style: .plain,
@@ -496,11 +533,47 @@ extension ExplorePointOfUseListViewController {
 // MARK: Actions
 extension ExplorePointOfUseListViewController {
     private func showFilters() {
+        // Ensure the sort option is valid for current segment
+        var effectiveFilters = model.filters
+        let segmentSortOptions = currentSegment.sortOptions
+        let defaultSortBy: PointOfUseListFilters.SortBy = currentSegment.tag == MerchantsListSegment.nearby.rawValue ? .distance : .name
+
+        // If current sort is not available in this segment, use segment default
+        if let currentSort = effectiveFilters?.sortBy, !segmentSortOptions.contains(currentSort) {
+            effectiveFilters = PointOfUseListFilters(
+                sortBy: defaultSortBy,
+                merchantPaymentTypes: effectiveFilters?.merchantPaymentTypes,
+                radius: effectiveFilters?.radius,
+                territory: effectiveFilters?.territory,
+                denominationType: effectiveFilters?.denominationType
+            )
+        } else if effectiveFilters?.sortBy == nil {
+            // No sort set at all, use defaults
+            if effectiveFilters == nil {
+                effectiveFilters = PointOfUseListFilters(
+                    sortBy: defaultSortBy,
+                    merchantPaymentTypes: nil,
+                    radius: nil,
+                    territory: nil,
+                    denominationType: nil
+                )
+            } else {
+                effectiveFilters = PointOfUseListFilters(
+                    sortBy: defaultSortBy,
+                    merchantPaymentTypes: effectiveFilters?.merchantPaymentTypes,
+                    radius: effectiveFilters?.radius,
+                    territory: effectiveFilters?.territory,
+                    denominationType: effectiveFilters?.denominationType
+                )
+            }
+        }
+
         let filtersView = MerchantFiltersView(
-            currentFilters: model.filters,
+            currentFilters: effectiveFilters,
             filterGroups: currentSegment.filterGroups,
             territoriesDataSource: currentSegment.territoriesDataSource,
-            sortOptions: currentSegment.sortOptions
+            sortOptions: currentSegment.sortOptions,
+            currentSegment: currentSegment
         ) { [weak self] filters in
             self?.apply(filters: filters)
         }
@@ -512,16 +585,22 @@ extension ExplorePointOfUseListViewController {
         present(hostingController, animated: true)
     }
 
-    private func updateAppliedFiltersView() {
+    internal func updateAppliedFiltersView() {
         let str = model.appliedFiltersLocalizedString
-        appliedFiltersLabel.text = str
-        let isHidden = str == nil
-        navigationController?.setToolbarHidden(isHidden, animated: false)
+        // Show default filter text when no custom filters are applied
+        appliedFiltersLabel.text = str ?? NSLocalizedString("Default filters applied", comment: "Explore Dash")
+        // Always show the toolbar so users can access filters
+        navigationController?.setToolbarHidden(false, animated: false)
     }
 
     @objc
     private func showMapAction() {
         showMap()
+    }
+
+    @objc
+    private func showFiltersAction() {
+        showFilters()
     }
 
     @objc
@@ -562,7 +641,45 @@ extension ExplorePointOfUseListViewController {
         let segment = model.segments[index]
         model.currentSegment = segment
 
-        refreshView()
+        // Only set default filters if this segment has never been visited before
+        if model.filters == nil {
+            resetFiltersToDefaults(for: segment)
+        } else {
+            // Just refresh the view with existing filters for this segment
+            refreshView()
+        }
+
+        // Request location permission immediately when switching to Nearby tab (tag=1)
+        if segment.tag == 1 && DWLocationManager.shared.needsAuthorization {
+            PointOfUseLocationServicePopup
+                .show(in: view, title: locationServicePopupTitle, details: locationServicePopupDetails) {
+                    DWLocationManager.shared.requestAuthorization()
+                }
+        }
+    }
+
+    private func resetFiltersToDefaults(for segment: PointOfUseListSegment) {
+        // Determine default sort for this segment
+        let defaultSortBy: PointOfUseListFilters.SortBy = segment.tag == 1 ? .distance : .name // tag 1 = nearby, others = name
+
+        // Create new filters with segment-specific defaults
+        var defaultPaymentTypes: [PointOfUseListFilters.SpendingOptions] = [.dash, .ctx]
+        #if PIGGYCARDS_ENABLED
+        defaultPaymentTypes.append(.piggyCards)
+        #endif
+
+        let defaultFilters = PointOfUseListFilters(
+            sortBy: defaultSortBy,
+            merchantPaymentTypes: defaultPaymentTypes,
+            radius: .twenty,
+            territory: nil,
+            denominationType: .both
+        )
+
+        model.apply(filters: defaultFilters)
+
+        // Update the filter status display
+        updateAppliedFiltersView()
     }
 }
 
@@ -570,8 +687,30 @@ extension ExplorePointOfUseListViewController {
 
 extension ExplorePointOfUseListViewController: ExploreMapViewDelegate {
     func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleBounds bounds: ExploreMapBounds) {
+        // Don't update bounds if AllMerchantLocationsViewController is currently active
+        if let navController = navigationController,
+           navController.viewControllers.last is AllMerchantLocationsViewController {
+            return
+        }
+
+        print("🔍 MAP: Map region changed")
+        print("🔍 MAP: Center = \(mapView.centerCoordinate.latitude), \(mapView.centerCoordinate.longitude)")
+        print("🔍 MAP: Current radius = \(model.currentRadius) meters")
+
         refreshFilterCell()
-        model.currentMapBounds = mapView.mapBounds(with: model.currentRadius)
+
+        // Update the search radius on the map view to match current filter
+        mapView.searchRadius = model.currentRadius
+
+        // Update the search center to the map center (not the device GPS location)
+        model.searchCenterCoordinate = mapView.centerCoordinate
+
+        // Get bounds based on the current filter radius and new center location
+        let newBounds = mapView.mapBounds(with: model.currentRadius)
+        print("🔍 MAP: New bounds NE=(\(newBounds.neCoordinate.latitude), \(newBounds.neCoordinate.longitude)), SW=(\(newBounds.swCoordinate.latitude), \(newBounds.swCoordinate.longitude))")
+
+        model.currentMapBounds = newBounds
+        print("🔍 MAP: Calling refreshItems()")
         model.refreshItems()
     }
 
@@ -648,6 +787,8 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
             let itemCell: PointOfUseItemCell = tableView
                 .dequeueReusableCell(withIdentifier: PointOfUseItemCell.reuseIdentifier,
                                      for: indexPath) as! PointOfUseItemCell
+            // Pass search center coordinate to cell for accurate distance calculations
+            itemCell.searchCenterCoordinate = model.searchCenterCoordinate
             itemCell.update(with: merchant)
             cell = itemCell;
         case .nextPage:
@@ -751,8 +892,16 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
 
 extension ExplorePointOfUseListViewController: PointOfUseListFiltersViewControllerDelegate {
     func apply(filters: PointOfUseListFilters?) {
-        model.currentMapBounds = mapView.mapBounds(with: filters?.currentRadius ?? kDefaultRadius)
+        let radiusToUse = filters?.currentRadius ?? kDefaultRadius
+
+        // Update the map view's search radius
+        mapView.searchRadius = radiusToUse
+
+        let newBounds = mapView.mapBounds(with: radiusToUse)
+        model.currentMapBounds = newBounds
+
         model.apply(filters: filters)
+
         updateAppliedFiltersView()
         refreshView()
     }

@@ -24,6 +24,9 @@ import SwiftUI
 class POIDetailsViewController: UIViewController {
     internal var pointOfUse: ExplorePointOfUse
     internal let isShowAllHidden: Bool
+    private let searchRadius: Double?
+    private let searchCenterCoordinate: CLLocationCoordinate2D?
+    internal let currentFilters: PointOfUseListFilters?
 
     @objc public var payWithDashHandler: (()->())?
     @objc var sellDashHandler: (()->())?
@@ -33,9 +36,12 @@ class POIDetailsViewController: UIViewController {
     private var mapView: ExploreMapView!
     private let defaultBottomSheetHeight: CGFloat = 450
 
-    public init(pointOfUse: ExplorePointOfUse, isShowAllHidden: Bool = true) {
+    public init(pointOfUse: ExplorePointOfUse, isShowAllHidden: Bool = true, searchRadius: Double? = nil, searchCenterCoordinate: CLLocationCoordinate2D? = nil, currentFilters: PointOfUseListFilters? = nil) {
         self.pointOfUse = pointOfUse
         self.isShowAllHidden = isShowAllHidden
+        self.searchRadius = searchRadius
+        self.searchCenterCoordinate = searchCenterCoordinate
+        self.currentFilters = currentFilters
 
         super.init(nibName: nil, bundle: nil)
     }
@@ -56,6 +62,7 @@ class POIDetailsViewController: UIViewController {
         configureHierarchy()
         refreshTokenAndMerchantInfo()
     }
+
 }
 
 extension POIDetailsViewController {
@@ -156,13 +163,31 @@ extension POIDetailsViewController {
     private func showDetailsView() {
         if case .unknown = pointOfUse.category { return }
         
-        var detailsView = POIDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden)
+        // Get current search radius from parent controller if available
+        let effectiveRadius: Double
+        if let searchRadius = searchRadius, searchRadius == Double.greatestFiniteMagnitude {
+            // If explicit infinite radius is passed (from All tab), use that
+            effectiveRadius = searchRadius
+        } else if let parentVC = navigationController?.viewControllers.dropLast().last as? ExplorePointOfUseListViewController {
+            effectiveRadius = parentVC.model.filters?.currentRadius ?? searchRadius ?? kDefaultRadius
+        } else {
+            effectiveRadius = searchRadius ?? kDefaultRadius
+        }
+
+        var detailsView = POIDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden, searchRadius: effectiveRadius, searchCenterCoordinate: searchCenterCoordinate)
         detailsView.payWithDashHandler = payWithDashHandler
         detailsView.sellDashHandler = sellDashHandler
         detailsView.showAllLocationsActionBlock = { [weak self] in
             guard let wSelf = self else { return }
 
-            let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse)
+            // Check if we're coming from the "All" tab (tag = 2)
+            let isFromAllTab = (wSelf.navigationController?.viewControllers.dropLast().last as? ExplorePointOfUseListViewController)?.currentSegment.tag == 2
+
+            // For "All" tab, don't apply radius filtering - show all locations for the merchant
+            // For other tabs (Online, Nearby), use the current radius filtering
+            let searchRadiusToUse = isFromAllTab ? Double.greatestFiniteMagnitude : effectiveRadius
+
+            let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse, searchRadius: searchRadiusToUse, searchCenterCoordinate: wSelf.searchCenterCoordinate, currentFilters: wSelf.currentFilters)
             vc.payWithDashHandler = wSelf.payWithDashHandler
             vc.sellDashHandler = wSelf.sellDashHandler
             wSelf.navigationController?.pushViewController(vc, animated: true)
@@ -309,11 +334,6 @@ extension ExplorePointOfUse {
         case .merchant(let m):
             if m.type == .online {
                 return NSLocalizedString("Online Merchant", comment: "Online Merchant")
-            } else if let currentLocation = DWLocationManager.shared.currentLocation, DWLocationManager.shared.isAuthorized {
-                let distance = CLLocation(latitude: latitude!, longitude: longitude!).distance(from: currentLocation)
-                let distanceString = ExploreDash.distanceFormatter
-                    .string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
-                return "\(distanceString) · Physical Merchant" + (m.type == .onlineAndPhysical ? ", Online" : "")
             } else {
                 return m.type == .onlineAndPhysical ? "Physical Merchant, Online" : "Physical Merchant"
             }

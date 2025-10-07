@@ -18,19 +18,27 @@
 import Combine
 import Foundation
 import CoreLocation
+import MapKit
 
 @MainActor
 class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, NetworkReachabilityHandling, DWLocationObserver {
     private var cancellableBag = Set<AnyCancellable>()
     
-    private let repositories: [GiftCardProvider: any DashSpendRepository] = [
-        GiftCardProvider.ctx : CTXSpendRepository.shared,
-        GiftCardProvider.piggyCards : PiggyCardsRepository.shared
-    ]
+    private let repositories: [GiftCardProvider: any DashSpendRepository] = {
+        var dict: [GiftCardProvider: any DashSpendRepository] = [
+            .ctx: CTXSpendRepository.shared
+        ]
+        #if PIGGYCARDS_ENABLED
+        dict[.piggyCards] = PiggyCardsRepository.shared
+        #endif
+        return dict
+    }()
     
     private let syncMonitor = SyncingActivityMonitor.shared
     private let merchant: ExplorePointOfUse
-    
+    private var currentSearchRadius: Double = kDefaultRadius
+    private var searchCenterCoordinate: CLLocationCoordinate2D?
+
     // NetworkReachabilityHandling requirements
     var networkStatusDidChange: ((NetworkStatus) -> ())?
     var reachabilityObserver: Any!
@@ -43,13 +51,25 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
     @Published private(set) var supportedProviders: [GiftCardProvider: (isFixed: Bool, discount: Int)] = [:]
     @Published private(set) var selectedProvider: GiftCardProvider? = nil
     @Published private(set) var showProviderPicker: Bool = false
+    @Published private(set) var locationCount: Int = 0
+
+    var formattedPhoneNumber: String? {
+        guard let phone = merchant.phone, !phone.isEmpty else { return nil }
+        return formatPhoneNumber(phone)
+    }
     
-    init(merchant: ExplorePointOfUse) {
+    init(merchant: ExplorePointOfUse, searchRadius: Double? = nil, searchCenterCoordinate: CLLocationCoordinate2D? = nil) {
         self.merchant = merchant
-        
+        self.searchCenterCoordinate = searchCenterCoordinate
+
+        if let radius = searchRadius {
+            self.currentSearchRadius = radius
+        }
+
         setupProviders()
         setupObservers()
         updateDistance()
+        fetchLocationCount()
     }
     
     func observeDashSpendState(provider: GiftCardProvider?) {
@@ -159,10 +179,87 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
         }
     }
     
+    func updateSearchRadius(_ radius: Double) {
+        currentSearchRadius = radius
+        fetchLocationCount()
+    }
+
+    private func fetchLocationCount() {
+        // Check if we should ignore radius filtering (when coming from "All" tab)
+        let shouldIgnoreRadius = currentSearchRadius == Double.greatestFiniteMagnitude
+
+        if shouldIgnoreRadius {
+            // For "All" tab: Get total location count without any radius filtering
+            ExploreDash.shared.allLocations(for: merchant.pointOfUseId, in: nil, userPoint: nil) { [weak self] result in
+                Task { @MainActor in
+                    switch result {
+                    case .success(let locations):
+                        let count = locations.items.count
+                        self?.locationCount = count
+                    case .failure(let error):
+                        self?.locationCount = 0
+                    }
+                }
+            }
+            return
+        }
+
+        // For other tabs: Apply radius filtering as before
+        // Use search center if available (when user panned the map), otherwise use GPS location
+        let locationToUse: CLLocation?
+        if let searchCenter = searchCenterCoordinate {
+            locationToUse = CLLocation(latitude: searchCenter.latitude, longitude: searchCenter.longitude)
+        } else {
+            locationToUse = DWLocationManager.shared.currentLocation
+        }
+
+        guard let currentLocation = locationToUse else {
+            locationCount = 0
+            return
+        }
+
+        // Create bounds using current search radius around the search location
+        let bounds = ExploreMapBounds(rect: MKCircle(center: currentLocation.coordinate, radius: currentSearchRadius).boundingMapRect)
+
+
+        ExploreDash.shared.allLocations(for: merchant.pointOfUseId, in: bounds, userPoint: currentLocation.coordinate) { [weak self] result in
+            Task { @MainActor in
+                switch result {
+                case .success(let locations):
+                    let count = locations.items.count
+                    self?.locationCount = count
+                case .failure(let error):
+                    self?.locationCount = 0
+                }
+            }
+        }
+    }
+
+    private func formatPhoneNumber(_ phoneNumber: String) -> String {
+        // Remove all non-numeric characters
+        let digits = phoneNumber.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
+
+        // Format as US phone number if it has 10 digits
+        if digits.count == 10 {
+            let areaCode = String(digits.prefix(3))
+            let exchange = String(digits.dropFirst(3).prefix(3))
+            let number = String(digits.suffix(4))
+            return "+1 \(areaCode) \(exchange) \(number)"
+        } else if digits.count == 11 && digits.hasPrefix("1") {
+            let areaCode = String(digits.dropFirst().prefix(3))
+            let exchange = String(digits.dropFirst(4).prefix(3))
+            let number = String(digits.suffix(4))
+            return "+1 \(areaCode) \(exchange) \(number)"
+        }
+
+        // Return original if can't format
+        return phoneNumber
+    }
+
     // MARK: - SyncingActivityMonitorObserver
-    
+
     nonisolated func syncingActivityMonitorProgressDidChange(_ progress: Double) { }
-    
+
     nonisolated func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
         Task { @MainActor in
             self.syncState = state

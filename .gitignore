@@ -47,3 +47,7 @@ TODO.md
 */Coinbase-Info.plist
 */ZenLedger-Info.plist
 CLAUDE.md
+
+# SQLite temporary files
+*.db-shm
+*.db-wal

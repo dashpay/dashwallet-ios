@@ -54,9 +54,17 @@ struct DashSpendTermsScreen: View {
                         label: NSLocalizedString("Terms & conditions", comment: "Terms & conditions"),
                         labelIcon: .custom("external.link"),
                         linkAction: {
-                            UIApplication.shared.open(URL(string: provider.termsUrl)!, options: [:], completionHandler: nil)
-                            hasViewedTerms = true
-                            shouldShakeLink = false
+                            guard let url = URL(string: provider.termsUrl),
+                                  UIApplication.shared.canOpenURL(url) else {
+                                return
+                            }
+
+                            UIApplication.shared.open(url, options: [:]) { success in
+                                if success {
+                                    hasViewedTerms = true
+                                    shouldShakeLink = false
+                                }
+                            }
                         },
                         shakeLabel: shouldShakeLink
                     )
