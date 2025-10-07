@@ -52,23 +52,26 @@ struct RefreshTokenResponse: Codable {
 }
 
 struct GiftCardResponse: Codable {
+    // Required fields
     let id: String
     let status: String // unpaid, paid, fulfilled, rejected
+    let paymentId: String
+
+    // Optional fields
     let barcodeUrl: String?
     let cardNumber: String?
     let cardPin: String?
-    
+
     let cryptoAmount: String?
     let cryptoCurrency: String?
-    let paymentCryptoNetwork: String
-    let paymentId: String
-    let percentDiscount: String
-    let rate: String
+    let paymentCryptoNetwork: String?
+    let percentDiscount: String?
+    let rate: String?
     let redeemUrl: String?
     let fiatAmount: String?
     let fiatCurrency: String?
     let paymentUrls: [String: String]?
-    
+
     let cardFiatAmount: String?
     let cardFiatCurrency: String?
     let userId: String?
