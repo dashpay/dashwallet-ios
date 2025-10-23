@@ -385,6 +385,27 @@ The project expects sibling directories:
 
 ## Special Considerations
 
+### Network Switching (Testnet/Mainnet)
+**Important**: External API endpoints must switch dynamically when changing between testnet and mainnet without requiring app restart.
+
+#### CTX API Configuration
+- **Mainnet**: `https://spend.ctx.com/`
+- **Testnet**: `http://staging.spend.ctx.com/`
+- The endpoint URL is computed dynamically in `CTXSpendEndpoint.baseURL` property
+- **Never cache the base URL** as a constant - it must be evaluated on each request to ensure the correct network endpoint is used
+
+**Implementation Pattern**:
+```swift
+// ❌ WRONG - Caches URL at initialization
+private let kBaseURL = URL(string: CTXConstants.baseURI)!
+public var baseURL: URL { return kBaseURL }
+
+// ✅ CORRECT - Computes URL dynamically
+public var baseURL: URL {
+    return URL(string: CTXConstants.baseURI)!
+}
+```
+
 ### DashPay Features
 - Conditional compilation with `#if DASHPAY`
 - Username registration and management
