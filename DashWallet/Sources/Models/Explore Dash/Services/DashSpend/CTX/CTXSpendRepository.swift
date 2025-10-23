@@ -139,15 +139,16 @@ class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
             fiatAmount: fiatAmount,
             merchantId: merchantId
         )
-        
+
         do {
-            return try await CTXSpendAPI.shared.request(.purchaseGiftCard(request))
+            let response: GiftCardResponse = try await CTXSpendAPI.shared.request(.purchaseGiftCard(request))
+            return response
         } catch let error as DashSpendError {
             DSLogger.log("Gift card purchase failed with CTXSpendError: \(error)")
             throw error
         } catch let error as HTTPClientError {
             DSLogger.log("Gift card purchase failed with HTTPClientError: \(error)")
-            
+
             if case .statusCode(let response) = error {
                 switch response.statusCode {
                 case 400:
@@ -159,11 +160,11 @@ class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
                                 throw DashSpendError.purchaseLimitExceeded
                             }
                         }
-                        
+
                         if let firstError = errorData.errors.first {
                             // Look for specific error messages
                             let errorMessage = firstError.message.lowercased()
-                            
+
                             if errorMessage.contains("insufficient") || errorMessage.contains("funds") || errorMessage.contains("balance") {
                                 throw DashSpendError.insufficientFunds
                             } else if errorMessage.contains("merchant") && (errorMessage.contains("unavailable") || errorMessage.contains("disabled") || errorMessage.contains("suspended")) {
@@ -175,7 +176,7 @@ class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
                             } else if errorMessage.contains("amount") || errorMessage.contains("value") || errorMessage.contains("limit") {
                                 throw DashSpendError.invalidAmount
                             }
-                            
+
                             // Custom error with the actual message from API
                             throw DashSpendError.customError(firstError.message)
                         }
@@ -185,10 +186,8 @@ class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
                 case 404:
                     throw DashSpendError.invalidMerchant
                 case 409:
-                    // Conflict - usually means duplicate transaction or similar
                     throw DashSpendError.transactionRejected
                 case 422:
-                    // Unprocessable Entity - validation errors
                     throw DashSpendError.invalidAmount
                 case 500...599:
                     throw DashSpendError.serverError
@@ -196,7 +195,7 @@ class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
                     break
                 }
             }
-            
+
             throw DashSpendError.unknown
         } catch {
             DSLogger.log("Gift card purchase failed with error: \(error)")

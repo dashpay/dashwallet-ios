@@ -15,8 +15,23 @@
 //  limitations under the License.
 //
 
+import Foundation
+
 class CTXConstants {
-    static let baseURI = "https://spend.ctx.com/"
+    /// Returns the appropriate CTX API base URL based on the current network
+    /// - Mainnet: https://spend.ctx.com/
+    /// - Testnet: http://staging.spend.ctx.com/
+    static var baseURI: String {
+        let environment = DWEnvironment.sharedInstance()
+        let isTestnet = environment.currentChain.isTestnet()
+
+        if isTestnet {
+            return "http://staging.spend.ctx.com/"
+        } else {
+            return "https://spend.ctx.com/"
+        }
+    }
+
     static let termsAndConditionsUrl = "https://ctx.com/gift-card-agreement/"
     static let supportEmail = "support@ctx.com"
 }

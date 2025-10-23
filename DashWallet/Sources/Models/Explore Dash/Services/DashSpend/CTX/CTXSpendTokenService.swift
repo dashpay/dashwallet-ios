@@ -44,38 +44,40 @@ class CTXSpendTokenService {
             try await task.value
             return
         }
-        
-        guard let tokenProvider = tokenProvider,
-              let refreshToken = tokenProvider.refreshToken,
-              !refreshToken.isEmpty else {
+
+        guard let tokenProvider = tokenProvider else {
             return
         }
-        
+
+        guard let refreshToken = tokenProvider.refreshToken, !refreshToken.isEmpty else {
+            return
+        }
+
         tokenRefreshTask = Task {
             defer {
                 tokenRefreshTask = nil
             }
-            
+
             DSLogger.log("CTXSpend: Attempting to refresh access token")
-            
+
             do {
                 let request = RefreshTokenRequest(refreshToken: refreshToken)
                 let response: RefreshTokenResponse = try await CTXSpendAPI.shared.requestDirectly(.refreshToken(request))
-                
+
                 // Update tokens through the service
                 tokenProvider.updateTokens(accessToken: response.accessToken, refreshToken: response.refreshToken)
-                
+
                 DSLogger.log("CTXSpend: Token refresh successful")
             } catch {
                 DSLogger.log("CTXSpend: Token refresh failed: \(error)")
-                
+
                 // Clear tokens on refresh failure
                 tokenProvider.clearTokensOnRefreshFailure()
-                
+
                 throw DashSpendError.tokenRefreshFailed
             }
         }
-        
+
         try await tokenRefreshTask!.value
     }
 } 

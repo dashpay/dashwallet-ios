@@ -56,7 +56,7 @@ public enum CTXSpendEndpoint {
 extension CTXSpendEndpoint: TargetType, AccessTokenAuthorizable {
     public var authorizationType: Moya.AuthorizationType? {
         switch self {
-        case .login, .verifyEmail, .refreshToken:
+        case .login, .verifyEmail, .refreshToken, .getMerchant:
             return nil
         default:
             return .bearer
