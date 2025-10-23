@@ -312,10 +312,17 @@ class DataService: ObservableObject {
 
 ⚠️ **DWUpholdMainnetConstants.m** - This file frequently gets whitespace changes (extra blank lines) that should not be committed.
 
+**Root Cause:** The Xcode project has a build phase script called "Run Script - clang-format" that automatically formats all Objective-C files (*.h, *.m, *.mm) during builds. This script adds an unwanted blank line after the return statement in the `logoutURLString` method.
+
 **When working with git:**
 - Before committing, always check if this file has changes: `git status`
 - If it appears modified with only whitespace changes, restore it: `git restore DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m`
 - Only commit changes to this file if you've intentionally modified the actual Uphold API constants
+
+**To prevent this issue:**
+- Option 1: Disable the "Run Script - clang-format" build phase in Xcode temporarily while working
+- Option 2: Add the file to a `.clang-format-ignore` file (if supported by your clang-format version)
+- Option 3: Fix the formatting in the source file to match clang-format's expectations (not recommended as it may break existing code style)
 
 ⚠️ **Info.plist files** - These files should use `$(MARKETING_VERSION)` variable, not hardcoded version strings.
 

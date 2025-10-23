@@ -8140,7 +8140,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\n\necho \"Reformatting code with clang-format\"\n\nfunction formatObjCFiles() {\n    find \"$1\" -name '*.h' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.m' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.mm' -print0 | xargs -0 clang-format -i -style=file\n}\n\nif which clang-format >/dev/null; then\n    for SUBDIR in DashWallet/Sources\n    do\n        formatObjCFiles $SUBDIR\n    done\n    \n    formatObjCFiles TodayExtension\n    formatObjCFiles Shared/Sources\nelse\n    echo \"warning: clang-format not installed, install it by running `brew install clang-format`\"\nfi\n";
+			shellScript = "#!/bin/bash\n\necho \"Reformatting code with clang-format\"\n\nfunction formatObjCFiles() {\n    find \"$1\" -name '*.h' -not -path \"*/DWUpholdMainnetConstants.m\" -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.m' -not -path \"*/DWUpholdMainnetConstants.m\" -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.mm' -not -path \"*/DWUpholdMainnetConstants.m\" -print0 | xargs -0 clang-format -i -style=file\n}\n\nif which clang-format >/dev/null; then\n    for SUBDIR in DashWallet/Sources\n    do\n        formatObjCFiles $SUBDIR\n    done\n    \n    formatObjCFiles TodayExtension\n    formatObjCFiles Shared/Sources\nelse\n    echo \"warning: clang-format not installed, install it by running `brew install clang-format`\"\nfi\n";
 		};
 		2A858A15237EED350097A7B5 /* Swift Format */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -8418,7 +8418,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\n\necho \"Reformatting code with clang-format\"\n\nfunction formatObjCFiles() {\n    find \"$1\" -name '*.h' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.m' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.mm' -print0 | xargs -0 clang-format -i -style=file\n}\n\nif which clang-format >/dev/null; then\n    for SUBDIR in DashWallet/Sources\n    do\n        formatObjCFiles $SUBDIR\n    done\n    \n    formatObjCFiles TodayExtension\n    formatObjCFiles Shared/Sources\nelse\n    echo \"warning: clang-format not installed, install it by running `brew install clang-format`\"\nfi\n";
+			shellScript = "#!/bin/bash\n\necho \"Reformatting code with clang-format\"\n\nfunction formatObjCFiles() {\n    find \"$1\" -name '*.h' -not -path \"*/DWUpholdMainnetConstants.m\" -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.m' -not -path \"*/DWUpholdMainnetConstants.m\" -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.mm' -not -path \"*/DWUpholdMainnetConstants.m\" -print0 | xargs -0 clang-format -i -style=file\n}\n\nif which clang-format >/dev/null; then\n    for SUBDIR in DashWallet/Sources\n    do\n        formatObjCFiles $SUBDIR\n    done\n    \n    formatObjCFiles TodayExtension\n    formatObjCFiles Shared/Sources\nelse\n    echo \"warning: clang-format not installed, install it by running `brew install clang-format`\"\nfi\n";
 		};
 		C9D2C6922A320AA000D15901 /* Run Script - bartycrouch */ = {
 			isa = PBXShellScriptBuildPhase;
