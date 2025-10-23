@@ -298,7 +298,18 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             throw DashSpendError.unauthorized
         }
 
-        let fiatAmountString = String(format: "%.2f", Double(truncating: amount as NSDecimalNumber))
+        // Use locale-invariant formatter to ensure consistent decimal formatting
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        formatter.decimalSeparator = "."
+        formatter.usesGroupingSeparator = false
+
+        // Round to 2 decimal places without converting to Double
+        let roundedAmount = NSDecimalNumber(decimal: amount)
+        let fiatAmountString = formatter.string(from: roundedAmount) ?? "0.00"
 
         DSLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(amount)")
 

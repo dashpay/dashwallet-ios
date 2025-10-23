@@ -342,8 +342,17 @@ class DataService: ObservableObject {
 - When updating versions programmatically (e.g., via script or direct editing of project.pbxproj):
   - Search for ALL occurrences of `MARKETING_VERSION` in the project.pbxproj file
   - Update ALL entries to the new version (there are typically 20+ entries across all configurations)
-  - Verify no old versions remain: `grep "MARKETING_VERSION" DashWallet.xcodeproj/project.pbxproj | grep -v "NEW_VERSION"`
-- **Before pushing to GitHub**: Always ensure all MARKETING_VERSION entries are updated to prevent incomplete version bumps
+  - **Verification**: Ensure all MARKETING_VERSION entries are updated to the target version (replace X.Y.Z with your version):
+    ```bash
+    # Method 1: Check for any entries that don't match the target version
+    # This should return nothing if all versions are correctly updated
+    grep "MARKETING_VERSION" DashWallet.xcodeproj/project.pbxproj | grep -v "MARKETING_VERSION = X.Y.Z;"
+
+    # Method 2: Count distinct version values (should be exactly 1)
+    grep -o "MARKETING_VERSION = [^;]*" DashWallet.xcodeproj/project.pbxproj | sort -u | wc -l
+    # Expected output: 1
+    ```
+- **Before pushing to GitHub**: Always verify all MARKETING_VERSION entries match your target version to prevent incomplete version bumps
 
 ## Dependencies and Requirements
 
