@@ -331,6 +331,20 @@ class DataService: ObservableObject {
 - If Info.plist files show changes with hardcoded versions (e.g., `<string>8.4.2</string>` instead of `<string>$(MARKETING_VERSION)</string>`), revert them
 - **Note:** All targets in this project use `$(MARKETING_VERSION)` for version management, not hardcoded strings
 
+**IMPORTANT: When Updating Versions for Release:**
+- **ALL targets must be updated to the same version** to maintain consistency
+- The project has multiple targets that ALL need version updates:
+  - dashwallet (main app)
+  - dashpay (DashPay-enabled version)
+  - TodayExtension (Today widget)
+  - WatchApp (Apple Watch app)
+  - WatchApp Extension
+- When updating versions programmatically (e.g., via script or direct editing of project.pbxproj):
+  - Search for ALL occurrences of `MARKETING_VERSION` in the project.pbxproj file
+  - Update ALL entries to the new version (there are typically 20+ entries across all configurations)
+  - Verify no old versions remain: `grep "MARKETING_VERSION" DashWallet.xcodeproj/project.pbxproj | grep -v "NEW_VERSION"`
+- **Before pushing to GitHub**: Always ensure all MARKETING_VERSION entries are updated to prevent incomplete version bumps
+
 ## Dependencies and Requirements
 
 ### Required Tools

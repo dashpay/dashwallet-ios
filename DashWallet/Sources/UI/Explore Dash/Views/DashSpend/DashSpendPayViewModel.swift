@@ -172,52 +172,30 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
     
     func purchaseGiftCardAndPay() async throws -> Data {
-        print("🎁 Starting gift card purchase flow")
-        print("🎁 Merchant: \(merchantTitle) (ID: \(merchantId))")
-        print("🎁 Amount: \(amount) \(kDefaultCurrencyCode)")
-
         isProcessingPayment = true
         defer { isProcessingPayment = false }
 
         do {
-            print("🎁 Calling purchaseGiftCardAPI()...")
             let response = try await purchaseGiftCardAPI()
-            print("🎁 Purchase API response received")
-            print("🎁   - Status: \(response.status)")
-            print("🎁   - Payment ID: \(response.paymentId)")
-            print("🎁   - Gift Card ID: \(response.id)")
-            print("🎁   - Payment URLs count: \(response.paymentUrls?.count ?? 0)")
 
             // Process the payment using the payment URL
             guard let paymentUrls = response.paymentUrls else {
-                print("🎁 ERROR: No payment URLs in response")
                 throw DashSpendError.paymentProcessingError("No payment URLs received")
             }
 
-            print("🎁 Payment URLs: \(paymentUrls)")
-
             guard let paymentUrlString = paymentUrls.first?.value else {
-                print("🎁 ERROR: Payment URLs dictionary is empty")
                 throw DashSpendError.paymentProcessingError("No payment URL received")
             }
 
-            print("🎁 Processing payment with URL: \(paymentUrlString)")
             let transaction = try await sendCoinsService.payWithDashUrl(url: paymentUrlString)
 
             // Payment successful - save gift card information
-            print("🎁 Payment transaction completed: \(transaction.txHashHexString)")
             markGiftCardTransaction(txId: transaction.txHashData)
             customIconProvider.updateIcon(txId: transaction.txHashData, iconUrl: merchantIconUrl)
             saveGiftCardDummy(txHashData: transaction.txHashData, giftCardId: response.paymentId)
 
-            print("🎁 Gift card purchase flow completed successfully")
             return transaction.txHashData
         } catch {
-            print("🎁 ERROR: Purchase failed with error: \(error)")
-            print("🎁 Error type: \(type(of: error))")
-            if let dashSpendError = error as? DashSpendError {
-                print("🎁 DashSpendError details: \(dashSpendError)")
-            }
             throw error
         }
     }
@@ -315,22 +293,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
     
     private func purchaseGiftCardAPI() async throws -> GiftCardResponse {
-        print("🎁 purchaseGiftCardAPI() called")
-        print("🎁   - merchantId: \(merchantId)")
-        print("🎁   - isUserSignedIn: \(repository[provider]?.isUserSignedIn ?? false)")
-
         guard !merchantId.isEmpty, repository[provider]?.isUserSignedIn == true else {
-            print("🎁 ERROR: Authorization check failed")
             DSLogger.log("Purchase gift card failed: User not signed in or merchant ID is empty")
             throw DashSpendError.unauthorized
         }
 
         let fiatAmountString = String(format: "%.2f", Double(truncating: amount as NSDecimalNumber))
-        print("🎁 Sending purchase request:")
-        print("🎁   - merchantId: \(merchantId)")
-        print("🎁   - fiatAmount: \(fiatAmountString)")
-        print("🎁   - fiatCurrency: USD")
-        print("🎁   - cryptoCurrency: DASH")
 
         DSLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(amount)")
 
@@ -341,10 +309,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 fiatCurrency: "USD",
                 cryptoCurrency: "DASH"
             )
-            print("🎁 Purchase API call succeeded")
             return response
         } catch {
-            print("🎁 ERROR: Purchase API call failed: \(error)")
             throw error
         }
     }

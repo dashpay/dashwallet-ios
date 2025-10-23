@@ -304,7 +304,7 @@ struct POIDetailsView: View {
 
                 if let selectedProvider = viewModel.selectedProvider,
                    let providerData = viewModel.supportedProviders[selectedProvider] {
-                    Text(providerStatusText(isFixed: providerData.isFixed))
+                    Text(providerStatusText(for: selectedProvider, isFixed: providerData.isFixed))
                         .font(.system(size: 13))
                         .foregroundColor(.secondaryText)
                 }
@@ -335,7 +335,7 @@ struct POIDetailsView: View {
 
         RadioButtonRow(
             title: provider.displayName,
-            subtitle: providerStatusText(isFixed: providerData.isFixed),
+            subtitle: providerStatusText(for: provider, isFixed: providerData.isFixed),
             trailingText: discount > 0 ? String(format: "-%.0f%%", Double(discount) / 100.0) : nil,
             isSelected: viewModel.selectedProvider == provider,
             style: .radio
@@ -350,12 +350,15 @@ struct POIDetailsView: View {
         .cornerRadius(12)
     }
 
-    private func providerStatusText(isFixed: Bool) -> String {
-        if !viewModel.merchantEnabled {
+    private func providerStatusText(for provider: GiftCardProvider, isFixed: Bool) -> String {
+        // Check provider-specific availability
+        // For CTX provider, check if merchant is enabled
+        if provider == .ctx && !viewModel.merchantEnabled {
             return NSLocalizedString("Temporarily unavailable", comment: "DashSpend")
-        } else {
-            return isFixed ? NSLocalizedString("Fixed amounts", comment: "DashSpend") : NSLocalizedString("Flexible amounts", comment: "DashSpend")
         }
+
+        // For other providers or when merchant is enabled, show denomination type
+        return isFixed ? NSLocalizedString("Fixed amounts", comment: "DashSpend") : NSLocalizedString("Flexible amounts", comment: "DashSpend")
     }
 
     // MARK: - Country Restriction View
