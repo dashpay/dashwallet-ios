@@ -108,11 +108,14 @@ extension CTXSpendEndpoint: TargetType, AccessTokenAuthorizable {
     
     public var headers: [String: String]? {
         var headers = ["Content-Type": "application/json"]
-        
+
+        // Add client identifier for CTX API tracking
+        headers["X-Client-Id"] = "dcg_ios"
+
         if let lang = Locale.current.languageCode {
             headers["Accept-Language"] = lang
         }
-        
+
         return headers
     }
 }
