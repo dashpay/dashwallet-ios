@@ -350,6 +350,97 @@ class DataService: ObservableObject {
 }
 ```
 
+## Icon and Asset Management Guidelines
+
+### SVG Support and Usage
+iOS supports SVG files directly in image assets since iOS 13/Xcode 12. **Always prefer SVG over PNG** for new icons when available.
+
+#### ✅ Correct SVG Implementation
+```json
+// Contents.json for SVG icons
+{
+  "images" : [
+    {
+      "filename" : "icon.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  },
+  "properties" : {
+    "preserves-vector-representation" : true,
+    "template-rendering-intent" : "template"
+  }
+}
+```
+
+**Key Properties:**
+- `preserves-vector-representation`: Ensures SVG scales perfectly at any size
+- `template-rendering-intent`: Allows icon to adapt to app's tint colors
+
+#### Icon Asset Location
+- **Shortcut icons**: `/DashWallet/Resources/AppAssets.xcassets/Shortcuts/`
+- **Explore Dash icons**: `/DashWallet/Resources/AppAssets.xcassets/Explore Dash/`
+- **General app icons**: `/DashWallet/Resources/AppAssets.xcassets/`
+
+### Home Screen Shortcut Bar Implementation
+
+The shortcut bar displays different button combinations based on wallet state:
+
+#### Four Shortcut States
+1. **Zero balance + Not verified passphrase**: Backup, Receive, Buy & Sell, Spend
+2. **Zero balance + Verified passphrase**: Receive, Send, Buy & Sell, Spend
+3. **Has balance + Verified passphrase**: Receive, Send, Scan, Spend
+4. **Has balance + Not verified passphrase**: Backup, Receive, Send, Spend
+
+#### Implementation Files
+- **Shortcut logic**: `HomeViewModel.swift` - `reloadShortcuts()` method
+- **Action types**: `ShortcutAction.swift` - enum definitions and icon mappings
+- **Action handlers**: `HomeViewController+Shortcuts.swift` - navigation logic
+- **UI component**: `ShortcutsView.swift` - collection view display
+
+#### Adding New Shortcut Icons
+1. Add the case to `ShortcutActionType` enum
+2. Map the icon name in the `icon` computed property
+3. Add localized title in the `title` computed property
+4. Implement action handler in `HomeViewController+Shortcuts.swift`
+5. Update `reloadShortcuts()` logic if needed
+
+### Icon Implementation Best Practices
+
+#### When Updating Icons from Figma
+1. **Check for existing icons first** - Many icons already exist in the project
+   ```bash
+   # Search for existing icons
+   find /path/to/project -name "*.svg" -o -name "*.png" | grep -i "icon_name"
+   ```
+
+2. **Use SVG directly from Figma** - Don't convert to PNG unnecessarily
+   - Download SVG from Figma localhost server
+   - Save directly to appropriate imageset folder
+   - Update Contents.json to reference SVG
+
+3. **Verify icon usage** - Always test that the correct icon appears
+   - Wrong icons often indicate using placeholder or copied assets
+   - Check that imageset name matches the one referenced in code
+
+4. **Clean up old assets** - Remove unused PNG files when replacing with SVG
+   ```bash
+   rm -f /path/to/imageset/*.png
+   ```
+
+### Common Icon Issues and Solutions
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Wrong icon displayed | Using placeholder/copied assets | Replace with actual icon from design |
+| Icon not appearing | Missing imageset or wrong name | Verify imageset exists and name matches code |
+| Icon wrong color | Not using template rendering | Add `"template-rendering-intent": "template"` |
+| Icon blurry | Using PNG instead of SVG | Replace with SVG for vector scaling |
+| Icon too large/small | Fixed size constraints | Use SVG with `preserves-vector-representation` |
+
 ## Important Files
 
 ### Configuration
