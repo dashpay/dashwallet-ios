@@ -998,3 +998,256 @@ From cleaning up 100+ debug statements:
 3. **Test Edge Cases**: Location permission flows have many states - test them all
 4. **Log Strategically**: Not everything, but key decision points and data transformations
 5. **Clean as You Go**: Don't let debug code accumulate; remove it before committing
+
+## CTX/DashSpend API Integration
+
+### Overview
+The app integrates with CTX (now DashSpend) for gift card purchases and merchant discounts. This integration has several environment-specific differences and critical implementation patterns that must be followed.
+
+### API Environment Differences
+
+#### Base URLs
+- **Production**: `https://spend.ctx.com/`
+- **Staging/TestNet**: `https://staging.spend.ctx.com/` (NOT http - must use HTTPS)
+
+**Critical Implementation Note**: The staging URL was incorrectly documented as HTTP in some places. It MUST use HTTPS:
+```swift
+// ❌ WRONG - Will cause SSL errors
+static let stagingBaseURI = "http://staging.spend.ctx.com/"
+
+// ✅ CORRECT - Proper HTTPS endpoint
+static let stagingBaseURI = "https://staging.spend.ctx.com/"
+```
+
+#### Field Name Differences
+The staging and production APIs return different field names for the same data:
+
+**Discount Percentage Field**:
+- **Production**: `savingsPercentage` (number, e.g., 10)
+- **Staging**: `userDiscount` (number, e.g., 10)
+
+```swift
+// Handle both field names with fallback chain
+let discountPercentage = json["savingsPercentage"] as? Double
+    ?? json["userDiscount"] as? Double
+    ?? 0.0
+```
+
+#### Authentication Requirements
+**getMerchant Endpoint** (`/api/v1/merchants/{id}`):
+- **Production**: No authentication required (public endpoint)
+- **Staging**: Requires `Authorization` header with user token
+
+```swift
+func getMerchant(id: String) async throws -> Merchant {
+    var headers = defaultHeaders
+
+    // Staging requires authentication, production doesn't
+    if isStaging {
+        headers["Authorization"] = "Bearer \(userToken)"
+    }
+
+    return try await request(endpoint: .getMerchant(id: id), headers: headers)
+}
+```
+
+#### Response Structure Differences
+
+**Gift Card Fetch Endpoint** (`/api/v1/purchases/gift_cards/{txid}`):
+
+Production returns a single gift card object:
+```json
+{
+    "uuid": "abc123",
+    "claimCode": "CLAIM123",
+    "pin": "1234",
+    "amount": 25.00
+}
+```
+
+Staging returns a paginated response:
+```json
+{
+    "data": [
+        {
+            "uuid": "abc123",
+            "claimCode": "CLAIM123",
+            "pin": "1234",
+            "amount": 25.00
+        }
+    ],
+    "meta": {
+        "total": 1,
+        "page": 1
+    }
+}
+```
+
+Implementation pattern:
+```swift
+func parseGiftCardResponse(json: [String: Any]) -> GiftCard? {
+    // Check for paginated response (staging)
+    if let dataArray = json["data"] as? [[String: Any]],
+       let firstCard = dataArray.first {
+        return GiftCard(json: firstCard)
+    }
+
+    // Direct object (production)
+    if let uuid = json["uuid"] as? String {
+        return GiftCard(json: json)
+    }
+
+    return nil
+}
+```
+
+### Common Issues and Solutions
+
+#### Issue 1: CTX-Only Discount Display
+**Problem**: Merchants show incorrect discounts when CTX discounts differ from PiggyCards discounts.
+
+**Root Cause**: The database contains duplicate merchant rows (one per provider), but UI was showing combined data.
+
+**Solution**: Filter by provider when fetching merchant details:
+```swift
+// ❌ WRONG - Returns multiple rows, causes incorrect discount display
+let query = "SELECT * FROM merchants WHERE merchant_id = ?"
+
+// ✅ CORRECT - Filter by active provider
+let provider: String = {
+    #if PIGGYCARDS_ENABLED
+    return userPreference // Could be "ctx" or "piggyCards"
+    #else
+    return "ctx" // Only CTX available
+    #endif
+}()
+let query = "SELECT * FROM gift_card_providers WHERE merchant_id = ? AND provider = ?"
+```
+
+#### Issue 2: Transaction ID vs Gift Card UUID
+**Problem**: Confusion about which ID to use for fetching gift cards.
+
+**Key Understanding**:
+- The API uses the blockchain **transaction ID (txid)** to fetch gift cards
+- NOT the gift card's internal UUID
+- The txid is what gets stored when a purchase is made
+
+```swift
+// ❌ WRONG - Using gift card UUID
+let endpoint = "/api/v1/purchases/gift_cards/\(giftCard.uuid)"
+
+// ✅ CORRECT - Using transaction ID
+let endpoint = "/api/v1/purchases/gift_cards/\(transaction.txid)"
+```
+
+#### Issue 3: Denomination Type Source
+**Problem**: Incorrect denomination type (fixed vs variable) displayed for gift cards.
+
+**Root Cause**: Denomination type was being read from the wrong table.
+
+**Solution**: Use `gift_card_providers` table, not `merchant` table:
+```swift
+// The gift_card_providers table has the correct denomination_type per provider
+struct GiftCardProvider {
+    let merchantId: Int64
+    let provider: String
+    let denominationType: String // "fixed" or "variable"
+    let minAmount: Double?
+    let maxAmount: Double?
+    let denominations: [Double]? // For fixed denomination cards
+}
+```
+
+### Database Considerations
+
+#### Multi-Provider Architecture
+The database stores duplicate merchant data to support multiple gift card providers:
+
+```sql
+-- Each merchant can have multiple provider entries
+CREATE TABLE gift_card_providers (
+    merchant_id INTEGER,
+    provider TEXT, -- 'ctx' or 'piggyCards'
+    denomination_type TEXT, -- 'fixed' or 'variable'
+    discount_percentage REAL,
+    -- Provider-specific data
+);
+
+-- When PIGGYCARDS_ENABLED is not defined, always filter by provider = 'ctx'
+```
+
+#### Provider Filtering Pattern
+```swift
+class MerchantDAO {
+    private var activeProvider: String {
+        #if PIGGYCARDS_ENABLED
+        // User can switch providers
+        return UserDefaults.standard.string(forKey: "selectedProvider") ?? "ctx"
+        #else
+        // Only CTX available
+        return "ctx"
+        #endif
+    }
+
+    func fetchMerchant(id: Int64) -> Merchant? {
+        // Always include provider filter to avoid duplicate/wrong data
+        let query = """
+            SELECT * FROM gift_card_providers
+            WHERE merchant_id = ? AND provider = ?
+        """
+        return database.query(query, id, activeProvider)
+    }
+}
+```
+
+### Testing Guidelines
+
+#### Environment Setup
+1. **Switching Environments**: Use Xcode schemes (Debug vs TestNet) to switch between staging and production
+2. **API Mocking**: Use Charles Proxy or similar to inspect actual API responses
+3. **Database State**: Clear app data when switching providers to avoid stale cache
+
+#### Test Scenarios
+Critical test cases for CTX integration:
+
+1. **Discount Display**:
+   - Verify correct discount percentage shows (staging: `userDiscount`, production: `savingsPercentage`)
+   - Ensure CTX-only discounts display when PiggyCards is disabled
+
+2. **Gift Card Purchase Flow**:
+   - Test with both fixed and variable denomination cards
+   - Verify transaction ID is used for fetching, not gift card UUID
+   - Check proper response parsing for both paginated (staging) and direct (production) responses
+
+3. **Network Environment Switching**:
+   - Switch between TestNet and MainNet in Settings
+   - Verify API endpoints update without app restart
+   - Confirm HTTPS is used for staging environment
+
+4. **Provider Filtering**:
+   - When PIGGYCARDS_ENABLED is undefined, verify only CTX data is shown
+   - Check that database queries include proper provider filtering
+
+#### Debug Headers
+The API requires specific headers for proper operation:
+
+```swift
+struct CTXAPIHeaders {
+    static func defaultHeaders(for network: Network) -> [String: String] {
+        return [
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "X-Client-Id": clientId, // Required for API tracking
+            "X-Device-Platform": "iOS",
+            "X-App-Version": appVersion
+        ]
+    }
+}
+```
+
+### Key Implementation Files
+- `CTXEndpoint.swift` - API endpoint definitions and base URL computation
+- `CTXService.swift` - Main service layer for CTX API interactions
+- `CTXConstants.swift` - Environment-specific constants
+- `MerchantDAO.swift` - Database queries with provider filtering
+- `GiftCardProvider.swift` - Data model for provider-specific merchant data

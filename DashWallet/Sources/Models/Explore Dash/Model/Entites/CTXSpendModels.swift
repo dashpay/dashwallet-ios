@@ -111,27 +111,45 @@ struct MerchantResponse: Codable {
     let name: String
     let logoUrl: String
     let enabled: Bool
-    let savingsPercentage: Int
+
+    // Support both production (savingsPercentage) and staging (userDiscount) field names
+    let savingsPercentage: Int?  // Production API field
+    let userDiscount: Int?        // Staging API field
+
     let denominationsType: String
     let denominations: [String]
-    let cachedLocationCount: Int
+
+    // Support both production (cachedLocationCount) and staging (locationCount) field names
+    let cachedLocationCount: Int?  // Production API field
+    let locationCount: Int?        // Staging API field
+
     let mapPinUrl: String
     let type: String
     let redeemType: String
     let info: MerchantInfo
     let cardImageUrl: String
     let currency: String
-    
+
+    // Computed property to get discount value from either field
+    var discount: Int {
+        return savingsPercentage ?? userDiscount ?? 0
+    }
+
+    // Computed property to get location count from either field
+    var locationCountValue: Int {
+        return cachedLocationCount ?? locationCount ?? 0
+    }
+
     var minimumCardPurchase: Double {
         guard denominations.count >= 1, let min = Double(denominations[0]) else { return 0.0 }
         return min
     }
-    
+
     var maximumCardPurchase: Double {
         guard denominations.count >= 2, let max = Double(denominations[1]) else { return 0.0 }
         return max
     }
-    
+
     var denominationType: DenominationType {
         switch denominationsType {
         case "min-max":

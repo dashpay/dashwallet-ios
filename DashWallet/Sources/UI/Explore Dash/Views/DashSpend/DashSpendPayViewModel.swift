@@ -121,19 +121,86 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         merchantTitle = merchant.name
         merchantIconUrl = merchant.logoLocation ?? ""
         merchantUrl = merchant.website
-        savingsFraction = Decimal(merchant.merchant?.toSavingsFraction() ?? 0.0)
-        
-        if let merchantId = merchant.merchant?.merchantId {
-            self.merchantId = merchantId
+
+        // Store initial savings fraction in a local variable
+        var initialSavingsFraction = Decimal(merchant.merchant?.toSavingsFraction() ?? 0.0)
+
+        let merchantIdValue = merchant.merchant?.merchantId ?? ""
+        if !merchantIdValue.isEmpty {
+            merchantId = merchantIdValue
         }
-        
-        if let denomType = merchant.merchant?.denominationsType {
-            self.isFixedDenomination = denomType == DenominationType.Fixed.rawValue
-            self.denominations = merchant.merchant?.denominations.compactMap { Int($0) } ?? []
+
+        // DEBUG: Log initialization data
+        DSLogger.log("🔍 DashSpendPayViewModel.init - merchant: \(merchant.name), provider: \(provider)")
+        DSLogger.log("🔍 DashSpendPayViewModel.init - merchantId: \(merchantIdValue)")
+        DSLogger.log("🔍 DashSpendPayViewModel.init - merchant.denominations from DB: \(merchant.merchant?.denominations ?? [])")
+        DSLogger.log("🔍 DashSpendPayViewModel.init - merchant.denominationsType from DB: \(merchant.merchant?.denominationsType ?? "nil")")
+        DSLogger.log("🔍 DashSpendPayViewModel.init - giftCardProviders count: \(merchant.merchant?.giftCardProviders.count ?? 0)")
+
+        // Use the denomination type from the selected provider, not from the merchant table
+        var providerDenominationType: String? = nil
+        if let giftCardProviders = merchant.merchant?.giftCardProviders {
+            // Find the provider info for the selected provider
+            DSLogger.log("🔍 DashSpendPayViewModel.init - Looking for provider: \(provider) in \(giftCardProviders.count) providers")
+            for providerInfo in giftCardProviders {
+                let providerName = providerInfo.provider?.displayName ?? "nil"
+                DSLogger.log("🔍   Provider: \(providerName), denominationsType: \(providerInfo.denominationsType)")
+            }
+
+            if let providerInfo = giftCardProviders.first(where: { $0.provider == provider }) {
+                providerDenominationType = providerInfo.denominationsType
+                // Update savings fraction from the provider-specific discount
+                initialSavingsFraction = Decimal(providerInfo.savingsPercentage) / Decimal(10000)
+                DSLogger.log("🔍 DashSpendPayViewModel.init - Found CTX provider info: denominationsType=\(providerInfo.denominationsType), savings=\(providerInfo.savingsPercentage)")
+            } else {
+                DSLogger.log("🔍 DashSpendPayViewModel.init - CTX provider info NOT found")
+            }
+        }
+
+        // Fall back to merchant's denominationsType if provider info not found
+        let denomType = providerDenominationType ?? merchant.merchant?.denominationsType
+        DSLogger.log("🔍 DashSpendPayViewModel.init - Final denomType: \(denomType ?? "nil")")
+
+        // Create local variables to store values before super.init()
+        var tempIsFixedDenomination = false
+        var tempMinimumAmount: Decimal = 0
+        var tempMaximumAmount: Decimal = 0
+        var tempDenominations: [Int] = []
+
+        if let denomType = denomType {
+            tempIsFixedDenomination = denomType == DenominationType.Fixed.rawValue
+            DSLogger.log("🔍 DashSpendPayViewModel.init - isFixedDenomination: \(tempIsFixedDenomination)")
+
+            if denomType == DenominationType.Range.rawValue {
+                // For Range type (min-max), set minimum and maximum amounts from denominations
+                // Note: denominations array is empty from database, will be populated by API
+                let denominationValues = merchant.merchant?.denominations ?? []
+                DSLogger.log("🔍 DashSpendPayViewModel.init - Range type with denomination values: \(denominationValues)")
+                if denominationValues.count >= 1 {
+                    tempMinimumAmount = Decimal(denominationValues[0])
+                }
+                if denominationValues.count >= 2 {
+                    tempMaximumAmount = Decimal(denominationValues[1])
+                }
+                DSLogger.log("🔍 DashSpendPayViewModel.init - Set min: \(tempMinimumAmount), max: \(tempMaximumAmount)")
+            } else if denomType == DenominationType.Fixed.rawValue {
+                // For Fixed type, store the denominations array
+                // Note: denominations array is empty from database, will be populated by API
+                tempDenominations = merchant.merchant?.denominations ?? []
+                DSLogger.log("🔍 DashSpendPayViewModel.init - Fixed type with denominations: \(tempDenominations)")
+            }
+            // If denomType is unknown or empty, leave everything at defaults
         }
         
         super.init()
-        
+
+        // Now assign the computed values to instance properties
+        savingsFraction = initialSavingsFraction
+        isFixedDenomination = tempIsFixedDenomination
+        minimumAmount = tempMinimumAmount
+        maximumAmount = tempMaximumAmount
+        denominations = tempDenominations
+
         // Set up network status change handler
         networkStatusDidChange = { [weak self] status in
             self?.handleNetworkStatusChange(status)
@@ -187,7 +254,16 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 throw DashSpendError.paymentProcessingError("No payment URL received")
             }
 
-            let transaction = try await sendCoinsService.payWithDashUrl(url: paymentUrlString)
+            DSLogger.log("🔍 purchaseGiftCardAndPay - Processing payment URL: \(paymentUrlString)")
+
+            let transaction: DSTransaction
+            do {
+                transaction = try await sendCoinsService.payWithDashUrl(url: paymentUrlString)
+                DSLogger.log("🔍 purchaseGiftCardAndPay - Payment successful, txId: \(transaction.txHashData.hexEncodedString())")
+            } catch {
+                DSLogger.log("🔍 purchaseGiftCardAndPay - Payment failed: \(error)")
+                throw error
+            }
 
             // Payment successful - save gift card information
             markGiftCardTransaction(txId: transaction.txHashData)
@@ -269,26 +345,45 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     // MARK: - CTX Integration
     
     private func updateMerchantInfo() async {
-        guard !merchantId.isEmpty, repository[provider]?.isUserSignedIn == true else { return }
-        
+        guard !merchantId.isEmpty, repository[provider]?.isUserSignedIn == true else {
+            DSLogger.log("🔍 updateMerchantInfo - Skipped: merchantId=\(merchantId), isSignedIn=\(repository[provider]?.isUserSignedIn ?? false)")
+            return
+        }
+
+        DSLogger.log("🔍 updateMerchantInfo - Starting for merchantId: \(merchantId)")
+
         do {
             let merchantInfo = try await ctxSpendRepository.getMerchant(merchantId: merchantId)
-            
+
+            DSLogger.log("🔍 updateMerchantInfo - API Response received:")
+            DSLogger.log("🔍   denominationsType: \(merchantInfo.denominationsType)")
+            DSLogger.log("🔍   denominations (raw): \(merchantInfo.denominations)")
+            DSLogger.log("🔍   denominationType enum: \(merchantInfo.denominationType)")
+            DSLogger.log("🔍   minimumCardPurchase: \(merchantInfo.minimumCardPurchase)")
+            DSLogger.log("🔍   maximumCardPurchase: \(merchantInfo.maximumCardPurchase)")
+            DSLogger.log("🔍   discount: \(merchantInfo.discount)")
+
             // Update merchant details
-            savingsFraction = Decimal(merchantInfo.savingsPercentage) / Decimal(10000)
-            
+            // Use the discount property which handles both savingsPercentage and userDiscount
+            savingsFraction = Decimal(merchantInfo.discount) / Decimal(10000)
+
             if merchantInfo.denominationType == .Range {
+                DSLogger.log("🔍 updateMerchantInfo - Setting Range type values")
                 isFixedDenomination = false
                 minimumAmount = Decimal(merchantInfo.minimumCardPurchase)
                 maximumAmount = Decimal(merchantInfo.maximumCardPurchase)
+                DSLogger.log("🔍 updateMerchantInfo - Updated min: \(minimumAmount), max: \(maximumAmount)")
             } else {
+                DSLogger.log("🔍 updateMerchantInfo - Setting Fixed type values")
                 isFixedDenomination = true
                 denominations = merchantInfo.denominations.compactMap { Int($0) }
+                DSLogger.log("🔍 updateMerchantInfo - Updated denominations: \(denominations)")
             }
-            
+
             checkAmountForErrors()
+            DSLogger.log("🔍 updateMerchantInfo - Update completed successfully")
         } catch {
-            DSLogger.log("Failed to get merchant info: \(error)")
+            DSLogger.log("🔍 updateMerchantInfo - Failed to get merchant info: \(error)")
         }
     }
     

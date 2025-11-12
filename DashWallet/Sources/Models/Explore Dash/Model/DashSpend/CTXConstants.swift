@@ -25,11 +25,15 @@ class CTXConstants {
         let environment = DWEnvironment.sharedInstance()
         let isTestnet = environment.currentChain.isTestnet()
 
+        let url: String
         if isTestnet {
-            return "http://staging.spend.ctx.com/"
+            url = "https://staging.spend.ctx.com/"  // Changed from http to https
         } else {
-            return "https://spend.ctx.com/"
+            url = "https://spend.ctx.com/"
         }
+
+        DSLogger.log("🔍 CTXConstants.baseURI - isTestnet: \(isTestnet), URL: \(url)")
+        return url
     }
 
     static let termsAndConditionsUrl = "https://ctx.com/gift-card-agreement/"
