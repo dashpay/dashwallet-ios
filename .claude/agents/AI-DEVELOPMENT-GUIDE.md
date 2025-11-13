@@ -2,6 +2,42 @@
 
 This document provides specific guidance for AI developers working with the Dash Wallet iOS codebase, including common tasks, troubleshooting patterns, and development workflows.
 
+## 🚨 CRITICAL: Git Commit and Push Policy
+
+**NEVER commit or push changes without explicit user permission.**
+
+### Rules:
+1. **Make code changes** as requested by the user
+2. **Show the user what was changed** using `git diff` or by explaining the changes
+3. **WAIT for explicit permission** before running `git commit` or `git push`
+4. **Never assume** the user wants changes committed just because they asked for code changes
+
+### Acceptable workflow:
+```
+User: "Fix the JSON parsing to be less strict"
+AI: [Makes changes to code files]
+AI: "I've updated CTXSpendModels.swift to make these fields optional: ..."
+AI: [Shows diff or explains changes]
+AI: [STOPS and WAITS - does NOT commit]
+
+User: "Please commit and push these changes"
+AI: [NOW commits and pushes]
+```
+
+### Unacceptable workflow:
+```
+User: "Fix the JSON parsing"
+AI: [Makes changes]
+AI: [Commits without asking] ❌ WRONG
+AI: [Pushes without asking] ❌ WRONG
+```
+
+**Exception**: Only commit/push without asking if the user's message explicitly includes phrases like:
+- "commit these changes"
+- "push to github"
+- "create a commit"
+- "commit and push"
+
 ## Getting Started for AI Developers
 
 ### Understanding the Codebase

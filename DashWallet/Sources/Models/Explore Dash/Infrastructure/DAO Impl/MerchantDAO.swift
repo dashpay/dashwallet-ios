@@ -177,10 +177,18 @@ class MerchantDAO: PointOfUseDAO {
                     // Fetch gift card providers for each merchant that accepts gift cards
                     for (index, item) in allItems.enumerated() {
                         if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
+                            // Only fetch CTX providers when PiggyCards is disabled
+                            #if PIGGYCARDS_ENABLED
                             let providersQuery = """
                                 SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers
                                 WHERE merchantId = '\(merchant.merchantId)'
                             """
+                            #else
+                            let providersQuery = """
+                                SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers
+                                WHERE merchantId = '\(merchant.merchantId)' AND provider = 'CTX'
+                            """
+                            #endif
 
                             do {
                                 guard let db = wSelf.connection.db else {
@@ -399,10 +407,18 @@ class MerchantDAO: PointOfUseDAO {
                 // Fetch gift card providers for each merchant that accepts gift cards
                 for (index, item) in items.enumerated() {
                     if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
+                        // Only fetch CTX providers when PiggyCards is disabled
+                        #if PIGGYCARDS_ENABLED
                         let providersQuery = """
                             SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers
                             WHERE merchantId = '\(merchant.merchantId)'
                         """
+                        #else
+                        let providersQuery = """
+                            SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers
+                            WHERE merchantId = '\(merchant.merchantId)' AND provider = 'CTX'
+                        """
+                        #endif
 
                         do {
                             guard let db = wSelf.connection.db else {
@@ -586,10 +602,18 @@ extension MerchantDAO {
                 // Fetch gift card provider information for gift card merchants
                 for (index, item) in items.enumerated() {
                     if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
+                        // Only fetch CTX providers when PiggyCards is disabled
+                        #if PIGGYCARDS_ENABLED
                         let providersQuery = """
                             SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers
                             WHERE merchantId = '\(merchant.merchantId)'
                         """
+                        #else
+                        let providersQuery = """
+                            SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers
+                            WHERE merchantId = '\(merchant.merchantId)' AND provider = 'CTX'
+                        """
+                        #endif
 
                         do {
                             guard let db = wSelf.connection.db else {

@@ -28,6 +28,19 @@ final class CTXSpendAPI: HTTPClient<CTXSpendEndpoint> {
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
             try await handleUnauthorizedError(for: target)
             try await super.request(target)
+        } catch HTTPClientError.statusCode(let r) where r.statusCode == 400 {
+            if target.path.contains("/api/verify") {
+                throw DashSpendError.invalidCode
+            }
+            throw DashSpendError.invalidAmount
+        } catch HTTPClientError.statusCode(let r) where r.statusCode == 409 {
+            throw DashSpendError.transactionRejected
+        } catch HTTPClientError.statusCode(let r) where r.statusCode == 422 {
+            throw DashSpendError.invalidAmount
+        } catch HTTPClientError.statusCode(let r) where r.statusCode >= 500 {
+            throw DashSpendError.serverError
+        } catch HTTPClientError.decoder {
+            throw DashSpendError.parsingError
         }
     }
     

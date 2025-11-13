@@ -958,6 +958,9 @@
 /* Explore Dash: Filters */
 "Flexible amounts" = "Flexible amounts";
 
+/* DashSpend */
+"Temporarily unavailable" = "Temporarily unavailable";
+
 /* Usernames */
 "For some reason, the request for the username '%@' has failed." = "For some reason, the request for the username '%@' has failed.";
 

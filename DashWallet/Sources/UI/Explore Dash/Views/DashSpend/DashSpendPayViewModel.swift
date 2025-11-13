@@ -121,19 +121,65 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         merchantTitle = merchant.name
         merchantIconUrl = merchant.logoLocation ?? ""
         merchantUrl = merchant.website
-        savingsFraction = Decimal(merchant.merchant?.toSavingsFraction() ?? 0.0)
-        
-        if let merchantId = merchant.merchant?.merchantId {
-            self.merchantId = merchantId
+
+        // Store initial savings fraction in a local variable
+        var initialSavingsFraction = Decimal(merchant.merchant?.toSavingsFraction() ?? 0.0)
+
+        let merchantIdValue = merchant.merchant?.merchantId ?? ""
+        if !merchantIdValue.isEmpty {
+            merchantId = merchantIdValue
         }
-        
-        if let denomType = merchant.merchant?.denominationsType {
-            self.isFixedDenomination = denomType == DenominationType.Fixed.rawValue
-            self.denominations = merchant.merchant?.denominations.compactMap { Int($0) } ?? []
+
+        // Use the denomination type from the selected provider, not from the merchant table
+        var providerDenominationType: String?
+        if let giftCardProviders = merchant.merchant?.giftCardProviders {
+            // Find the provider info for the selected provider
+            if let providerInfo = giftCardProviders.first(where: { $0.provider == provider }) {
+                providerDenominationType = providerInfo.denominationsType
+                // Update savings fraction from the provider-specific discount
+                initialSavingsFraction = Decimal(providerInfo.savingsPercentage) / Decimal(10000)
+            }
+        }
+
+        // Fall back to merchant's denominationsType if provider info not found
+        let denomType = providerDenominationType ?? merchant.merchant?.denominationsType
+
+        // Create local variables to store values before super.init()
+        var tempIsFixedDenomination = false
+        var tempMinimumAmount: Decimal = 0
+        var tempMaximumAmount: Decimal = 0
+        var tempDenominations: [Int] = []
+
+        if let denomType = denomType {
+            tempIsFixedDenomination = denomType == DenominationType.Fixed.rawValue
+
+            if denomType == DenominationType.Range.rawValue {
+                // For Range type (min-max), set minimum and maximum amounts from denominations
+                // Note: denominations array is empty from database, will be populated by API
+                let denominationValues = merchant.merchant?.denominations ?? []
+                if denominationValues.count >= 1 {
+                    tempMinimumAmount = Decimal(denominationValues[0])
+                }
+                if denominationValues.count >= 2 {
+                    tempMaximumAmount = Decimal(denominationValues[1])
+                }
+            } else if denomType == DenominationType.Fixed.rawValue {
+                // For Fixed type, store the denominations array
+                // Note: denominations array is empty from database, will be populated by API
+                tempDenominations = merchant.merchant?.denominations ?? []
+            }
+            // If denomType is unknown or empty, leave everything at defaults
         }
         
         super.init()
-        
+
+        // Now assign the computed values to instance properties
+        savingsFraction = initialSavingsFraction
+        isFixedDenomination = tempIsFixedDenomination
+        minimumAmount = tempMinimumAmount
+        maximumAmount = tempMaximumAmount
+        denominations = tempDenominations
+
         // Set up network status change handler
         networkStatusDidChange = { [weak self] status in
             self?.handleNetworkStatusChange(status)
@@ -174,23 +220,35 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     func purchaseGiftCardAndPay() async throws -> Data {
         isProcessingPayment = true
         defer { isProcessingPayment = false }
-        
-        let response = try await purchaseGiftCardAPI()
-        
-        // Process the payment using the payment URL
-        guard let paymentUrlString = response.paymentUrls?.first?.value else {
-            throw DashSpendError.paymentProcessingError("No payment URL received")
+
+        do {
+            let response = try await purchaseGiftCardAPI()
+
+            // Process the payment using the payment URL
+            guard let paymentUrls = response.paymentUrls else {
+                throw DashSpendError.paymentProcessingError("No payment URLs received")
+            }
+
+            guard let paymentUrlString = paymentUrls.first?.value else {
+                throw DashSpendError.paymentProcessingError("No payment URL received")
+            }
+
+            let transaction: DSTransaction
+            do {
+                transaction = try await sendCoinsService.payWithDashUrl(url: paymentUrlString)
+            } catch {
+                throw error
+            }
+
+            // Payment successful - save gift card information
+            markGiftCardTransaction(txId: transaction.txHashData)
+            customIconProvider.updateIcon(txId: transaction.txHashData, iconUrl: merchantIconUrl)
+            saveGiftCardDummy(txHashData: transaction.txHashData, giftCardId: response.paymentId)
+
+            return transaction.txHashData
+        } catch {
+            throw error
         }
-        
-        let transaction = try await sendCoinsService.payWithDashUrl(url: paymentUrlString)
-        
-        // Payment successful - save gift card information
-        DSLogger.log("Payment transaction completed: \(transaction.txHashHexString)")
-        markGiftCardTransaction(txId: transaction.txHashData)
-        customIconProvider.updateIcon(txId: transaction.txHashData, iconUrl: merchantIconUrl)
-        saveGiftCardDummy(txHashData: transaction.txHashData, giftCardId: response.paymentId)
-        
-        return transaction.txHashData
     }
     
     func contactCTXSupport() {
@@ -262,14 +320,17 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     // MARK: - CTX Integration
     
     private func updateMerchantInfo() async {
-        guard !merchantId.isEmpty, repository[provider]?.isUserSignedIn == true else { return }
-        
+        guard !merchantId.isEmpty, repository[provider]?.isUserSignedIn == true else {
+            return
+        }
+
         do {
             let merchantInfo = try await ctxSpendRepository.getMerchant(merchantId: merchantId)
-            
+
             // Update merchant details
-            savingsFraction = Decimal(merchantInfo.savingsPercentage) / Decimal(10000)
-            
+            // Use the discount property which handles both savingsPercentage and userDiscount
+            savingsFraction = Decimal(merchantInfo.discount) / Decimal(10000)
+
             if merchantInfo.denominationType == .Range {
                 isFixedDenomination = false
                 minimumAmount = Decimal(merchantInfo.minimumCardPurchase)
@@ -278,28 +339,44 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 isFixedDenomination = true
                 denominations = merchantInfo.denominations.compactMap { Int($0) }
             }
-            
+
             checkAmountForErrors()
         } catch {
-            DSLogger.log("Failed to get merchant info: \(error)")
+            // Failed to get merchant info
         }
     }
     
     private func purchaseGiftCardAPI() async throws -> GiftCardResponse {
         guard !merchantId.isEmpty, repository[provider]?.isUserSignedIn == true else {
-            DSLogger.log("Purchase gift card failed: User not signed in or merchant ID is empty")
             throw DashSpendError.unauthorized
         }
-        
+
+        // Use locale-invariant formatter to ensure consistent decimal formatting
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        formatter.decimalSeparator = "."
+        formatter.usesGroupingSeparator = false
+
+        // Round to 2 decimal places without converting to Double
+        let roundedAmount = NSDecimalNumber(decimal: amount)
+        let fiatAmountString = formatter.string(from: roundedAmount) ?? "0.00"
+
         DSLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(amount)")
-        let fiatAmountString = String(format: "%.2f", Double(truncating: amount as NSDecimalNumber))
-        
-        return try await ctxSpendRepository.purchaseGiftCard(
-            merchantId: merchantId,
-            fiatAmount: fiatAmountString,
-            fiatCurrency: "USD",
-            cryptoCurrency: "DASH"
-        )
+
+        do {
+            let response = try await ctxSpendRepository.purchaseGiftCard(
+                merchantId: merchantId,
+                fiatAmount: fiatAmountString,
+                fiatCurrency: "USD",
+                cryptoCurrency: "DASH"
+            )
+            return response
+        } catch {
+            throw error
+        }
     }
     
     private func saveGiftCardDummy(txHashData: Data, giftCardId: String) {
