@@ -24,6 +24,53 @@ Essential Files to Understand:
 │   └── UI/RootNavigation/        # Main navigation coordinator
 ```
 
+## 🔴 CRITICAL: Git Workflow Policy - NEVER COMMIT WITHOUT PERMISSION
+
+### ⛔ ABSOLUTE RULE: NO AUTONOMOUS COMMITS OR PUSHES
+
+**THIS IS THE MOST IMPORTANT RULE FOR AI ASSISTANTS:**
+
+1. **NEVER run `git commit` without explicit user permission**
+2. **NEVER run `git push` without explicit user permission**
+3. **ALWAYS stop after making code changes and ASK before committing**
+
+### The ONLY Acceptable Workflow:
+
+```
+1. Make code changes as requested
+2. Show the changes (git diff or explanation)
+3. ✋ FULL STOP - WAIT for user permission
+4. Only commit/push when user EXPLICITLY says:
+   - "commit these changes"
+   - "push to github"
+   - "create a commit and push"
+   - "commit and push all changes"
+```
+
+### ❌ Common Violations to Avoid:
+
+- **VIOLATION**: User asks to "add a feature" → AI adds feature AND commits/pushes
+- **VIOLATION**: User asks to "fix a bug" → AI fixes bug AND commits/pushes
+- **VIOLATION**: User asks to "update documentation" → AI updates AND commits/pushes
+
+### ✅ Correct Behavior:
+
+- **CORRECT**: User asks to "add a feature" → AI adds feature, shows changes, WAITS
+- **CORRECT**: User asks to "fix a bug" → AI fixes bug, shows changes, WAITS
+- **CORRECT**: User asks to "update documentation" → AI updates, shows changes, WAITS
+
+### Why This Matters:
+
+- Users need to review changes before they become permanent
+- Commits cannot be easily undone once pushed
+- Users may want to adjust commit messages
+- Users may want to combine multiple changes into one commit
+- Users may be working on a specific branch strategy
+
+### Exception: NONE
+
+There are **NO EXCEPTIONS** to this rule. Even if the user seems to imply they want changes committed, always confirm explicitly. When in doubt, ASK before committing.
+
 ## Common AI Development Tasks
 
 ### Adding New Features
