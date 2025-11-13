@@ -138,7 +138,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         DSLogger.log("🔍 DashSpendPayViewModel.init - giftCardProviders count: \(merchant.merchant?.giftCardProviders.count ?? 0)")
 
         // Use the denomination type from the selected provider, not from the merchant table
-        var providerDenominationType: String? = nil
+        var providerDenominationType: String?
         if let giftCardProviders = merchant.merchant?.giftCardProviders {
             // Find the provider info for the selected provider
             DSLogger.log("🔍 DashSpendPayViewModel.init - Looking for provider: \(provider) in \(giftCardProviders.count) providers")

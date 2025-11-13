@@ -20,7 +20,7 @@ import Foundation
 class CTXConstants {
     /// Returns the appropriate CTX API base URL based on the current network
     /// - Mainnet: https://spend.ctx.com/
-    /// - Testnet: http://staging.spend.ctx.com/
+    /// - Testnet: https://staging.spend.ctx.com/
     static var baseURI: String {
         let environment = DWEnvironment.sharedInstance()
         let isTestnet = environment.currentChain.isTestnet()
