@@ -140,36 +140,13 @@ class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
             merchantId: merchantId
         )
 
-        DSLogger.log("🔍 CTXSpendRepository.purchaseGiftCard - Request:")
-        DSLogger.log("🔍   merchantId: \(merchantId)")
-        DSLogger.log("🔍   fiatAmount: \(fiatAmount)")
-        DSLogger.log("🔍   fiatCurrency: \(fiatCurrency)")
-        DSLogger.log("🔍   cryptoCurrency: \(cryptoCurrency)")
-
         do {
             let response: GiftCardResponse = try await CTXSpendAPI.shared.request(.purchaseGiftCard(request))
-
-            DSLogger.log("🔍 CTXSpendRepository.purchaseGiftCard - Success Response:")
-            DSLogger.log("🔍   id: \(response.id)")
-            DSLogger.log("🔍   status: \(response.status)")
-            DSLogger.log("🔍   paymentId: \(response.paymentId)")
-            DSLogger.log("🔍   paymentUrls: \(response.paymentUrls ?? [:])")
-
             return response
         } catch let error as DashSpendError {
-            DSLogger.log("🔍 CTXSpendRepository.purchaseGiftCard - Failed with CTXSpendError: \(error)")
             throw error
         } catch let error as HTTPClientError {
-            DSLogger.log("🔍 CTXSpendRepository.purchaseGiftCard - Failed with HTTPClientError: \(error)")
-
             if case .statusCode(let response) = error {
-                DSLogger.log("🔍 CTXSpendRepository.purchaseGiftCard - HTTP Status: \(response.statusCode)")
-                DSLogger.log("🔍 CTXSpendRepository.purchaseGiftCard - Raw Response Data:")
-                if let responseString = String(data: response.data, encoding: .utf8) {
-                    DSLogger.log("🔍   Response body: \(responseString)")
-                } else {
-                    DSLogger.log("🔍   Response data (hex): \(response.data.hexEncodedString())")
-                }
                 switch response.statusCode {
                 case 400:
                     if let errorData = try? JSONDecoder().decode(CTXSpendAPIError.self, from: response.data) {
@@ -217,23 +194,9 @@ class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
             }
 
             throw DashSpendError.unknown
-        } catch let decodingError as DecodingError {
-            DSLogger.log("🔍 CTXSpendRepository.purchaseGiftCard - JSON Decoding Error: \(decodingError)")
-            switch decodingError {
-            case .dataCorrupted(let context):
-                DSLogger.log("🔍   Data corrupted: \(context)")
-            case .keyNotFound(let key, let context):
-                DSLogger.log("🔍   Key not found: \(key), context: \(context)")
-            case .typeMismatch(let type, let context):
-                DSLogger.log("🔍   Type mismatch: \(type), context: \(context)")
-            case .valueNotFound(let type, let context):
-                DSLogger.log("🔍   Value not found: \(type), context: \(context)")
-            @unknown default:
-                DSLogger.log("🔍   Unknown decoding error")
-            }
+        } catch is DecodingError {
             throw DashSpendError.parsingError
         } catch {
-            DSLogger.log("🔍 CTXSpendRepository.purchaseGiftCard - Unknown error: \(error)")
             throw DashSpendError.networkError
         }
     }
@@ -241,29 +204,10 @@ class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
     func getMerchant(merchantId: String) async throws -> MerchantResponse {
         do {
             let response: MerchantResponse = try await CTXSpendAPI.shared.request(.getMerchant(merchantId))
-
-            // DEBUG: Log the parsed response
-            DSLogger.log("🔍 CTXSpendRepository.getMerchant - Response for \(merchantId):")
-            DSLogger.log("🔍   name: \(response.name)")
-            DSLogger.log("🔍   denominationsType: \(response.denominationsType)")
-            DSLogger.log("🔍   denominations array: \(response.denominations)")
-            DSLogger.log("🔍   denominations count: \(response.denominations.count)")
-            if response.denominations.count > 0 {
-                DSLogger.log("🔍   First denomination: \(response.denominations[0])")
-            }
-            if response.denominations.count > 1 {
-                DSLogger.log("🔍   Second denomination: \(response.denominations[1])")
-            }
-            DSLogger.log("🔍   Computed minimumCardPurchase: \(response.minimumCardPurchase)")
-            DSLogger.log("🔍   Computed maximumCardPurchase: \(response.maximumCardPurchase)")
-
             return response
         } catch let error as DashSpendError {
-            DSLogger.log("Failed to get merchant with CTXSpendError: \(error)")
             throw error
         } catch let error as HTTPClientError {
-            DSLogger.log("Failed to get merchant with HTTPClientError: \(error)")
-            
             if case .statusCode(let response) = error {
                 switch response.statusCode {
                 case 401, 403:
@@ -276,10 +220,9 @@ class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
                     break
                 }
             }
-            
+
             throw DashSpendError.unknown
         } catch {
-            DSLogger.log("Failed to get merchant with error: \(error)")
             throw DashSpendError.networkError
         }
     }

@@ -32,7 +32,6 @@ class CTXConstants {
             url = "https://spend.ctx.com/"
         }
 
-        DSLogger.log("🔍 CTXConstants.baseURI - isTestnet: \(isTestnet), URL: \(url)")
         return url
     }
 

@@ -199,7 +199,6 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
         } catch {
             // On error, default to enabled to avoid blocking legitimate purchases
             merchantEnabled = true
-            DSLogger.log("Failed to fetch merchant status: \(error)")
         }
     }
     
