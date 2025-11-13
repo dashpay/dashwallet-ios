@@ -8405,6 +8405,7 @@
 		};
 		C9D2C6912A320AA000D15901 /* Run Script - clang-format */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
