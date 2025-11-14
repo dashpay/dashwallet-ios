@@ -496,37 +496,35 @@ extension HomeViewModel {
         let userHasBalance = options.userHasBalance
 
         var mutableItems = [ShortcutAction]()
-        mutableItems.reserveCapacity(2)
+        mutableItems.reserveCapacity(maxShortcutsCount)
 
-        if walletNeedsBackup {
+        // State 1: Zero balance and not verified passphrase
+        if !userHasBalance && walletNeedsBackup {
             mutableItems.append(ShortcutAction(type: .secureWallet))
-
-            if userHasBalance {
-                mutableItems.append(ShortcutAction(type: .receive))
-                mutableItems.append(ShortcutAction(type: .payToAddress))
-                mutableItems.append(ShortcutAction(type: .scanToPay))
-            } else {
-                mutableItems.append(ShortcutAction(type: .explore))
-                mutableItems.append(ShortcutAction(type: .receive))
-
-                if DWEnvironment.sharedInstance().currentChain.isMainnet() {
-                    mutableItems.append(ShortcutAction(type: .buySellDash))
-                }
-            }
-        } else {
-            if userHasBalance {
-                mutableItems.append(ShortcutAction(type: .explore))
-                mutableItems.append(ShortcutAction(type: .receive))
-                mutableItems.append(ShortcutAction(type: .payToAddress))
-                mutableItems.append(ShortcutAction(type: .scanToPay))
-            } else {
-                mutableItems.append(ShortcutAction(type: .explore))
-                mutableItems.append(ShortcutAction(type: .receive))
-
-                if DWEnvironment.sharedInstance().currentChain.isMainnet() {
-                    mutableItems.append(ShortcutAction(type: .buySellDash))
-                }
-            }
+            mutableItems.append(ShortcutAction(type: .receive))
+            mutableItems.append(ShortcutAction(type: .buySellDash))
+            mutableItems.append(ShortcutAction(type: .spend))
+        }
+        // State 2: Zero balance and verified passphrase
+        else if !userHasBalance && !walletNeedsBackup {
+            mutableItems.append(ShortcutAction(type: .receive))
+            mutableItems.append(ShortcutAction(type: .payToAddress))
+            mutableItems.append(ShortcutAction(type: .buySellDash))
+            mutableItems.append(ShortcutAction(type: .spend))
+        }
+        // State 3: Has balance and verified passphrase
+        else if userHasBalance && !walletNeedsBackup {
+            mutableItems.append(ShortcutAction(type: .receive))
+            mutableItems.append(ShortcutAction(type: .payToAddress))
+            mutableItems.append(ShortcutAction(type: .scanToPay))
+            mutableItems.append(ShortcutAction(type: .spend))
+        }
+        // State 4: Has balance and not verified passphrase
+        else if userHasBalance && walletNeedsBackup {
+            mutableItems.append(ShortcutAction(type: .secureWallet))
+            mutableItems.append(ShortcutAction(type: .receive))
+            mutableItems.append(ShortcutAction(type: .payToAddress))
+            mutableItems.append(ShortcutAction(type: .spend))
         }
 
         self.shortcutItems = mutableItems

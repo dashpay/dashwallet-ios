@@ -50,6 +50,8 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
             delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.receive.rawValue)
         case .explore:
             showExploreDash()
+        case .spend:
+            showExploreDash() // Navigate to "Where to Spend" feature
         }
     }
 

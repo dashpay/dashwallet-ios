@@ -2,9 +2,112 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🔴🔴🔴 CRITICAL: Git Workflow Policy - ABSOLUTELY NO AUTONOMOUS COMMITS 🔴🔴🔴
+
+### ⛔ THE #1 RULE: NEVER COMMIT OR PUSH WITHOUT EXPLICIT PERMISSION ⛔
+
+**This is the MOST IMPORTANT rule in this entire document. Violating this rule is the #1 complaint from users.**
+
+### The Iron-Clad Workflow (NO EXCEPTIONS):
+
+1. ✅ Make the requested changes to the code
+2. ✅ Show what was changed (using `git diff` or explanation)
+3. 🛑 **FULL STOP - DO NOT PROCEED** 🛑
+4. ⏸️ **WAIT for explicit permission to commit/push** ⏸️
+5. ✅ Only commit/push when the user EXPLICITLY says one of these phrases:
+   - "commit these changes"
+   - "push to github"
+   - "create a commit and push"
+   - "commit and push all changes"
+   - "yes, commit it"
+   - "go ahead and commit"
+
+### ❌ NEVER ASSUME PERMISSION ❌
+
+**Common mistakes AI assistants make:**
+- ❌ User says "fix the bug" → AI fixes AND commits (WRONG!)
+- ❌ User says "add the feature" → AI adds AND commits (WRONG!)
+- ❌ User says "update the documentation" → AI updates AND commits (WRONG!)
+- ❌ User says "make these changes and update the PR" → AI changes AND pushes (WRONG!)
+
+**The ONLY correct behavior:**
+- ✅ User says "fix the bug" → AI fixes, shows changes, WAITS
+- ✅ User says "add the feature" → AI adds, shows changes, WAITS
+- ✅ User says "update the documentation" → AI updates, shows changes, WAITS
+- ✅ User says "make these changes" → AI makes changes, shows diff, WAITS
+
+### Why This Is Critical:
+- Users MUST review changes before they become permanent
+- Users may want to modify the changes
+- Users may want to adjust commit messages
+- Users may want to batch multiple changes together
+- Pushed commits are PERMANENT in the git history
+
+**REMEMBER: It is ALWAYS better to wait and ask than to commit without permission. When in doubt, ASK FIRST.**
+
 ## Project Overview
 
 Dash Wallet is an iOS cryptocurrency wallet application built for the Dash network. It's a fork of breadwallet that implements SPV (Simplified Payment Verification) for fast mobile performance. The app includes advanced features like DashPay for user-to-user transactions, CoinJoin for privacy, and integrations with external services like Uphold and Coinbase.
+
+## MCP (Model Context Protocol) Server Configuration
+
+### Overview
+MCP servers extend Claude Code's capabilities by providing access to external services and tools. This project uses MCP servers for Figma design integration.
+
+### Required Configuration
+MCP servers must be configured in Claude Desktop's configuration file. Without this configuration, MCP tools will not be available even if they were used in previous sessions.
+
+**Configuration file location**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+### Setting Up Figma MCP Server
+
+1. **Create or update the configuration file**:
+```bash
+cat > ~/Library/Application\ Support/Claude/claude_desktop_config.json << 'EOF'
+{
+  "mcpServers": {
+    "figma-dev-mode": {
+      "command": "npx",
+      "args": ["-y", "@figma/mcp-server-figma-dev-mode"],
+      "description": "Figma Dev Mode MCP server for extracting design specifications, code, and images from Figma files"
+    }
+  }
+}
+EOF
+```
+
+2. **Restart Claude Code**:
+   - Stop Claude Code with `Ctrl+C` in the terminal
+   - Restart with the `claude` command
+   - MCP servers are only connected at startup
+
+3. **Verify MCP tools are available**:
+   - After restart, MCP tools should appear as:
+     - `mcp__figma-dev-mode-mcp-server__get_code`
+     - `mcp__figma-dev-mode-mcp-server__get_image`
+     - `mcp__figma-dev-mode-mcp-server__get_metadata`
+
+### Figma Requirements
+
+For the Figma MCP server to work properly:
+1. **Figma Desktop App** must be running
+2. **Dev Mode** must be enabled (press `Shift+D` in Figma)
+3. **File permissions** must allow public access or you must be logged in
+
+### Troubleshooting MCP Issues
+
+If MCP tools are not available:
+1. **Check configuration exists**: `cat ~/Library/Application\ Support/Claude/claude_desktop_config.json`
+2. **Verify Figma is running**: `ps aux | grep -i figma`
+3. **Restart Claude Code**: MCP connections are only established at startup
+4. **Check npx availability**: Ensure Node.js/npm is installed for npx command
+
+### Why MCP Configuration is Required
+
+- MCP servers are external processes that Claude Code connects to
+- Configuration tells Claude where to find and how to start MCP servers
+- Without the configuration file, Claude Code has no knowledge of available MCP servers
+- Previous sessions' MCP usage (recorded in `.claude/settings.local.json`) doesn't automatically enable MCP in new sessions
 
 ## Build Commands
 
@@ -272,6 +375,97 @@ class DataService: ObservableObject {
 }
 ```
 
+## Icon and Asset Management Guidelines
+
+### SVG Support and Usage
+iOS supports SVG files directly in image assets since iOS 13/Xcode 12. **Always prefer SVG over PNG** for new icons when available.
+
+#### ✅ Correct SVG Implementation
+```json
+// Contents.json for SVG icons
+{
+  "images" : [
+    {
+      "filename" : "icon.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  },
+  "properties" : {
+    "preserves-vector-representation" : true,
+    "template-rendering-intent" : "template"
+  }
+}
+```
+
+**Key Properties:**
+- `preserves-vector-representation`: Ensures SVG scales perfectly at any size
+- `template-rendering-intent`: Allows icon to adapt to app's tint colors
+
+#### Icon Asset Location
+- **Shortcut icons**: `/DashWallet/Resources/AppAssets.xcassets/Shortcuts/`
+- **Explore Dash icons**: `/DashWallet/Resources/AppAssets.xcassets/Explore Dash/`
+- **General app icons**: `/DashWallet/Resources/AppAssets.xcassets/`
+
+### Home Screen Shortcut Bar Implementation
+
+The shortcut bar displays different button combinations based on wallet state:
+
+#### Four Shortcut States
+1. **Zero balance + Not verified passphrase**: Backup, Receive, Buy & Sell, Spend
+2. **Zero balance + Verified passphrase**: Receive, Send, Buy & Sell, Spend
+3. **Has balance + Verified passphrase**: Receive, Send, Scan, Spend
+4. **Has balance + Not verified passphrase**: Backup, Receive, Send, Spend
+
+#### Implementation Files
+- **Shortcut logic**: `HomeViewModel.swift` - `reloadShortcuts()` method
+- **Action types**: `ShortcutAction.swift` - enum definitions and icon mappings
+- **Action handlers**: `HomeViewController+Shortcuts.swift` - navigation logic
+- **UI component**: `ShortcutsView.swift` - collection view display
+
+#### Adding New Shortcut Icons
+1. Add the case to `ShortcutActionType` enum
+2. Map the icon name in the `icon` computed property
+3. Add localized title in the `title` computed property
+4. Implement action handler in `HomeViewController+Shortcuts.swift`
+5. Update `reloadShortcuts()` logic if needed
+
+### Icon Implementation Best Practices
+
+#### When Updating Icons from Figma
+1. **Check for existing icons first** - Many icons already exist in the project
+   ```bash
+   # Search for existing icons
+   find /path/to/project -name "*.svg" -o -name "*.png" | grep -i "icon_name"
+   ```
+
+2. **Use SVG directly from Figma** - Don't convert to PNG unnecessarily
+   - Download SVG from Figma localhost server
+   - Save directly to appropriate imageset folder
+   - Update Contents.json to reference SVG
+
+3. **Verify icon usage** - Always test that the correct icon appears
+   - Wrong icons often indicate using placeholder or copied assets
+   - Check that imageset name matches the one referenced in code
+
+4. **Clean up old assets** - Remove unused PNG files when replacing with SVG
+   ```bash
+   rm -f /path/to/imageset/*.png
+   ```
+
+### Common Icon Issues and Solutions
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Wrong icon displayed | Using placeholder/copied assets | Replace with actual icon from design |
+| Icon not appearing | Missing imageset or wrong name | Verify imageset exists and name matches code |
+| Icon wrong color | Not using template rendering | Add `"template-rendering-intent": "template"` |
+| Icon blurry | Using PNG instead of SVG | Replace with SVG for vector scaling |
+| Icon too large/small | Fixed size constraints | Use SVG with `preserves-vector-representation` |
+
 ## Important Files
 
 ### Configuration
@@ -294,10 +488,17 @@ class DataService: ObservableObject {
 
 ⚠️ **DWUpholdMainnetConstants.m** - This file frequently gets whitespace changes (extra blank lines) that should not be committed.
 
+**Root Cause:** The Xcode project has a build phase script called "Run Script - clang-format" that automatically formats all Objective-C files (*.h, *.m, *.mm) during builds. This script adds an unwanted blank line after the return statement in the `logoutURLString` method.
+
 **When working with git:**
 - Before committing, always check if this file has changes: `git status`
 - If it appears modified with only whitespace changes, restore it: `git restore DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m`
 - Only commit changes to this file if you've intentionally modified the actual Uphold API constants
+
+**To prevent this issue:**
+- Option 1: Disable the "Run Script - clang-format" build phase in Xcode temporarily while working
+- Option 2: Add the file to a `.clang-format-ignore` file (if supported by your clang-format version)
+- Option 3: Fix the formatting in the source file to match clang-format's expectations (not recommended as it may break existing code style)
 
 ⚠️ **Info.plist files** - These files should use `$(MARKETING_VERSION)` variable, not hardcoded version strings.
 
@@ -312,6 +513,29 @@ class DataService: ObservableObject {
   - Repeat for each target that needs the version update
 - If Info.plist files show changes with hardcoded versions (e.g., `<string>8.4.2</string>` instead of `<string>$(MARKETING_VERSION)</string>`), revert them
 - **Note:** All targets in this project use `$(MARKETING_VERSION)` for version management, not hardcoded strings
+
+**IMPORTANT: When Updating Versions for Release:**
+- **ALL targets must be updated to the same version** to maintain consistency
+- The project has multiple targets that ALL need version updates:
+  - dashwallet (main app)
+  - dashpay (DashPay-enabled version)
+  - TodayExtension (Today widget)
+  - WatchApp (Apple Watch app)
+  - WatchApp Extension
+- When updating versions programmatically (e.g., via script or direct editing of project.pbxproj):
+  - Search for ALL occurrences of `MARKETING_VERSION` in the project.pbxproj file
+  - Update ALL entries to the new version (there are typically 20+ entries across all configurations)
+  - **Verification**: Ensure all MARKETING_VERSION entries are updated to the target version (replace X.Y.Z with your version):
+    ```bash
+    # Method 1: Check for any entries that don't match the target version
+    # This should return nothing if all versions are correctly updated
+    grep "MARKETING_VERSION" DashWallet.xcodeproj/project.pbxproj | grep -v "MARKETING_VERSION = X.Y.Z;"
+
+    # Method 2: Count distinct version values (should be exactly 1)
+    grep -o "MARKETING_VERSION = [^;]*" DashWallet.xcodeproj/project.pbxproj | sort -u | wc -l
+    # Expected output: 1
+    ```
+- **Before pushing to GitHub**: Always verify all MARKETING_VERSION entries match your target version to prevent incomplete version bumps
 
 ## Dependencies and Requirements
 
@@ -336,6 +560,27 @@ The project expects sibling directories:
 ```
 
 ## Special Considerations
+
+### Network Switching (Testnet/Mainnet)
+**Important**: External API endpoints must switch dynamically when changing between testnet and mainnet without requiring app restart.
+
+#### CTX API Configuration
+- **Mainnet**: `https://spend.ctx.com/`
+- **Testnet**: `http://staging.spend.ctx.com/`
+- The endpoint URL is computed dynamically in `CTXSpendEndpoint.baseURL` property
+- **Never cache the base URL** as a constant - it must be evaluated on each request to ensure the correct network endpoint is used
+
+**Implementation Pattern**:
+```swift
+// ❌ WRONG - Caches URL at initialization
+private let kBaseURL = URL(string: CTXConstants.baseURI)!
+public var baseURL: URL { return kBaseURL }
+
+// ✅ CORRECT - Computes URL dynamically
+public var baseURL: URL {
+    return URL(string: CTXConstants.baseURI)!
+}
+```
 
 ### DashPay Features
 - Conditional compilation with `#if DASHPAY`
@@ -929,3 +1174,256 @@ From cleaning up 100+ debug statements:
 3. **Test Edge Cases**: Location permission flows have many states - test them all
 4. **Log Strategically**: Not everything, but key decision points and data transformations
 5. **Clean as You Go**: Don't let debug code accumulate; remove it before committing
+
+## CTX/DashSpend API Integration
+
+### Overview
+The app integrates with CTX (now DashSpend) for gift card purchases and merchant discounts. This integration has several environment-specific differences and critical implementation patterns that must be followed.
+
+### API Environment Differences
+
+#### Base URLs
+- **Production**: `https://spend.ctx.com/`
+- **Staging/TestNet**: `https://staging.spend.ctx.com/` (NOT http - must use HTTPS)
+
+**Critical Implementation Note**: The staging URL was incorrectly documented as HTTP in some places. It MUST use HTTPS:
+```swift
+// ❌ WRONG - Will cause SSL errors
+static let stagingBaseURI = "http://staging.spend.ctx.com/"
+
+// ✅ CORRECT - Proper HTTPS endpoint
+static let stagingBaseURI = "https://staging.spend.ctx.com/"
+```
+
+#### Field Name Differences
+The staging and production APIs return different field names for the same data:
+
+**Discount Percentage Field**:
+- **Production**: `savingsPercentage` (number, e.g., 10)
+- **Staging**: `userDiscount` (number, e.g., 10)
+
+```swift
+// Handle both field names with fallback chain
+let discountPercentage = json["savingsPercentage"] as? Double
+    ?? json["userDiscount"] as? Double
+    ?? 0.0
+```
+
+#### Authentication Requirements
+**getMerchant Endpoint** (`/api/v1/merchants/{id}`):
+- **Production**: No authentication required (public endpoint)
+- **Staging**: Requires `Authorization` header with user token
+
+```swift
+func getMerchant(id: String) async throws -> Merchant {
+    var headers = defaultHeaders
+
+    // Staging requires authentication, production doesn't
+    if isStaging {
+        headers["Authorization"] = "Bearer \(userToken)"
+    }
+
+    return try await request(endpoint: .getMerchant(id: id), headers: headers)
+}
+```
+
+#### Response Structure Differences
+
+**Gift Card Fetch Endpoint** (`/api/v1/purchases/gift_cards/{txid}`):
+
+Production returns a single gift card object:
+```json
+{
+    "uuid": "abc123",
+    "claimCode": "CLAIM123",
+    "pin": "1234",
+    "amount": 25.00
+}
+```
+
+Staging returns a paginated response:
+```json
+{
+    "data": [
+        {
+            "uuid": "abc123",
+            "claimCode": "CLAIM123",
+            "pin": "1234",
+            "amount": 25.00
+        }
+    ],
+    "meta": {
+        "total": 1,
+        "page": 1
+    }
+}
+```
+
+Implementation pattern:
+```swift
+func parseGiftCardResponse(json: [String: Any]) -> GiftCard? {
+    // Check for paginated response (staging)
+    if let dataArray = json["data"] as? [[String: Any]],
+       let firstCard = dataArray.first {
+        return GiftCard(json: firstCard)
+    }
+
+    // Direct object (production)
+    if let uuid = json["uuid"] as? String {
+        return GiftCard(json: json)
+    }
+
+    return nil
+}
+```
+
+### Common Issues and Solutions
+
+#### Issue 1: CTX-Only Discount Display
+**Problem**: Merchants show incorrect discounts when CTX discounts differ from PiggyCards discounts.
+
+**Root Cause**: The database contains duplicate merchant rows (one per provider), but UI was showing combined data.
+
+**Solution**: Filter by provider when fetching merchant details:
+```swift
+// ❌ WRONG - Returns multiple rows, causes incorrect discount display
+let query = "SELECT * FROM merchants WHERE merchant_id = ?"
+
+// ✅ CORRECT - Filter by active provider
+let provider: String = {
+    #if PIGGYCARDS_ENABLED
+    return userPreference // Could be "ctx" or "piggyCards"
+    #else
+    return "ctx" // Only CTX available
+    #endif
+}()
+let query = "SELECT * FROM gift_card_providers WHERE merchant_id = ? AND provider = ?"
+```
+
+#### Issue 2: Transaction ID vs Gift Card UUID
+**Problem**: Confusion about which ID to use for fetching gift cards.
+
+**Key Understanding**:
+- The API uses the blockchain **transaction ID (txid)** to fetch gift cards
+- NOT the gift card's internal UUID
+- The txid is what gets stored when a purchase is made
+
+```swift
+// ❌ WRONG - Using gift card UUID
+let endpoint = "/api/v1/purchases/gift_cards/\(giftCard.uuid)"
+
+// ✅ CORRECT - Using transaction ID
+let endpoint = "/api/v1/purchases/gift_cards/\(transaction.txid)"
+```
+
+#### Issue 3: Denomination Type Source
+**Problem**: Incorrect denomination type (fixed vs variable) displayed for gift cards.
+
+**Root Cause**: Denomination type was being read from the wrong table.
+
+**Solution**: Use `gift_card_providers` table, not `merchant` table:
+```swift
+// The gift_card_providers table has the correct denomination_type per provider
+struct GiftCardProvider {
+    let merchantId: Int64
+    let provider: String
+    let denominationType: String // "fixed" or "variable"
+    let minAmount: Double?
+    let maxAmount: Double?
+    let denominations: [Double]? // For fixed denomination cards
+}
+```
+
+### Database Considerations
+
+#### Multi-Provider Architecture
+The database stores duplicate merchant data to support multiple gift card providers:
+
+```sql
+-- Each merchant can have multiple provider entries
+CREATE TABLE gift_card_providers (
+    merchant_id INTEGER,
+    provider TEXT, -- 'ctx' or 'piggyCards'
+    denomination_type TEXT, -- 'fixed' or 'variable'
+    discount_percentage REAL,
+    -- Provider-specific data
+);
+
+-- When PIGGYCARDS_ENABLED is not defined, always filter by provider = 'ctx'
+```
+
+#### Provider Filtering Pattern
+```swift
+class MerchantDAO {
+    private var activeProvider: String {
+        #if PIGGYCARDS_ENABLED
+        // User can switch providers
+        return UserDefaults.standard.string(forKey: "selectedProvider") ?? "ctx"
+        #else
+        // Only CTX available
+        return "ctx"
+        #endif
+    }
+
+    func fetchMerchant(id: Int64) -> Merchant? {
+        // Always include provider filter to avoid duplicate/wrong data
+        let query = """
+            SELECT * FROM gift_card_providers
+            WHERE merchant_id = ? AND provider = ?
+        """
+        return database.query(query, id, activeProvider)
+    }
+}
+```
+
+### Testing Guidelines
+
+#### Environment Setup
+1. **Switching Environments**: Use Xcode schemes (Debug vs TestNet) to switch between staging and production
+2. **API Mocking**: Use Charles Proxy or similar to inspect actual API responses
+3. **Database State**: Clear app data when switching providers to avoid stale cache
+
+#### Test Scenarios
+Critical test cases for CTX integration:
+
+1. **Discount Display**:
+   - Verify correct discount percentage shows (staging: `userDiscount`, production: `savingsPercentage`)
+   - Ensure CTX-only discounts display when PiggyCards is disabled
+
+2. **Gift Card Purchase Flow**:
+   - Test with both fixed and variable denomination cards
+   - Verify transaction ID is used for fetching, not gift card UUID
+   - Check proper response parsing for both paginated (staging) and direct (production) responses
+
+3. **Network Environment Switching**:
+   - Switch between TestNet and MainNet in Settings
+   - Verify API endpoints update without app restart
+   - Confirm HTTPS is used for staging environment
+
+4. **Provider Filtering**:
+   - When PIGGYCARDS_ENABLED is undefined, verify only CTX data is shown
+   - Check that database queries include proper provider filtering
+
+#### Debug Headers
+The API requires specific headers for proper operation:
+
+```swift
+struct CTXAPIHeaders {
+    static func defaultHeaders(for network: Network) -> [String: String] {
+        return [
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "X-Client-Id": clientId, // Required for API tracking
+            "X-Device-Platform": "iOS",
+            "X-App-Version": appVersion
+        ]
+    }
+}
+```
+
+### Key Implementation Files
+- `CTXEndpoint.swift` - API endpoint definitions and base URL computation
+- `CTXService.swift` - Main service layer for CTX API interactions
+- `CTXConstants.swift` - Environment-specific constants
+- `MerchantDAO.swift` - Database queries with provider filtering
+- `GiftCardProvider.swift` - Data model for provider-specific merchant data
