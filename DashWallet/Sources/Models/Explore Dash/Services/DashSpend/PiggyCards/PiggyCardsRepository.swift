@@ -184,54 +184,204 @@ class PiggyCardsRepository: DashSpendRepository {
     
     
     // MARK: - Gift Card Methods
-    
-    func purchaseGiftCard(merchantId: String, fiatAmount: String, fiatCurrency: String = "USD", cryptoCurrency: String = "DASH") async throws -> PiggyCardsGiftCardResponse {
-        let request = PiggyCardsPurchaseRequest(
-            cryptoCurrency: cryptoCurrency,
-            fiatCurrency: fiatCurrency,
-            fiatAmount: fiatAmount,
-            merchantId: merchantId
+
+    /// Create an order for a gift card purchase
+    /// This is the main flow for PiggyCards purchases
+    func orderGiftCard(merchantId: String, fiatAmount: Double, fiatCurrency: String = "USD", cryptoCurrency: String = "DASH") async throws -> GiftCardInfo {
+        // Step 1: Get cached gift cards or fetch them
+        guard let giftCards = PiggyCardsCache.shared.getGiftCards(forMerchant: merchantId) else {
+            throw DashSpendError.invalidMerchant
+        }
+
+        // Step 2: Select the appropriate gift card
+        guard let selectedCard = PiggyCardsCache.shared.selectGiftCard(from: giftCards, forAmount: fiatAmount) else {
+            DSLogger.log("PiggyCards: No suitable gift card found for amount \(fiatAmount)")
+            throw DashSpendError.invalidAmount
+        }
+
+        // Step 3: Get user email
+        guard let email = userEmail else {
+            throw DashSpendError.unauthorized
+        }
+
+        // Step 4: Create order request
+        let order = PiggyCardsOrder(
+            productId: selectedCard.id,
+            quantity: 1,
+            denomination: fiatAmount,
+            currency: fiatCurrency
         )
-        
+
+        let userMetadata = PiggyCardsUserMetadata(
+            registeredSince: ISO8601DateFormatter().string(from: Date()),
+            country: "US",
+            state: "CA"
+        )
+
+        let user = PiggyCardsUser(
+            name: "none",
+            ip: "192.168.100.1",
+            metadata: userMetadata
+        )
+
+        let orderRequest = PiggyCardsOrderRequest(
+            orders: [order],
+            recipientEmail: email,
+            user: user
+        )
+
+        // Step 5: Create the order
+        let orderResponse: PiggyCardsOrderResponse = try await PiggyCardsAPI.shared.request(.createOrder(orderRequest))
+
+        // Step 6: Get exchange rate
+        let exchangeRate = try await getExchangeRate(currency: fiatCurrency)
+
+        // Step 7: Poll for order status (with delay)
+        try await Task.sleep(nanoseconds: UInt64(PiggyCardsConstants.orderPollingDelayMs) * 1_000_000)
+        let orderStatus = try await getOrderStatus(orderId: orderResponse.id)
+
+        // Step 8: Parse payment URI and create GiftCardInfo
+        let paymentInfo = try parsePaymentURI(orderResponse.payTo, orderId: orderResponse.id, message: orderResponse.payMessage)
+
+        return GiftCardInfo(
+            orderId: orderResponse.id,
+            paymentAddress: paymentInfo.address,
+            amount: paymentInfo.amount,
+            merchantName: giftCards.first?.name ?? "Unknown",
+            discountPercentage: calculateDisplayDiscount(selectedCard.discountPercentage),
+            exchangeRate: exchangeRate,
+            status: orderStatus.data.status
+        )
+    }
+
+    /// Get order status to retrieve gift card details
+    func getOrderStatus(orderId: String) async throws -> PiggyCardsOrderStatusResponse {
         do {
-            return try await PiggyCardsAPI.shared.request(.purchaseGiftCard(request))
+            return try await PiggyCardsAPI.shared.request(.getOrderStatus(orderId: orderId))
         } catch let error as DashSpendError {
-            DSLogger.log("PiggyCards gift card purchase failed with DashSpendError: \(error)")
+            DSLogger.log("PiggyCards failed to get order status with DashSpendError: \(error)")
             throw error
         } catch let error as HTTPClientError {
-            throw try parseError(from: error, context: "gift card purchase")
+            throw try parseError(from: error, context: "get order status")
         } catch {
-            DSLogger.log("PiggyCards gift card purchase failed with error: \(error)")
+            DSLogger.log("PiggyCards failed to get order status with error: \(error)")
             throw DashSpendError.networkError
         }
     }
-    
+
+    /// Get exchange rate for currency conversion
+    func getExchangeRate(currency: String) async throws -> Double {
+        // Check cache first
+        if let cached = PiggyCardsCache.shared.getExchangeRate(forCurrency: currency) {
+            return cached.exchangeRate
+        }
+
+        do {
+            let result: PiggyCardsExchangeRateResult = try await PiggyCardsAPI.shared.request(.getExchangeRate(currency: currency))
+            PiggyCardsCache.shared.storeExchangeRate(result, forCurrency: currency)
+            return result.exchangeRate
+        } catch let error as HTTPClientError {
+            throw try parseError(from: error, context: "get exchange rate")
+        }
+    }
+
+    /// Fetch available brands for a country
+    func getBrands(country: String = "US") async throws -> [PiggyCardsBrand] {
+        do {
+            return try await PiggyCardsAPI.shared.request(.getBrands(country: country))
+        } catch let error as HTTPClientError {
+            throw try parseError(from: error, context: "get brands")
+        }
+    }
+
+    /// Fetch gift cards for a brand and cache them
+    func getGiftCards(country: String = "US", sourceId: String, merchantId: String) async throws -> [PiggyCardsGiftcard] {
+        // sourceId is the PiggyCards brand ID from the database
+        DSLogger.log("🎯 PiggyCards API: Fetching gift cards - country: \(country), merchantId: \(merchantId), sourceId: \(sourceId)")
+
+        do {
+            let response: PiggyCardsGiftcardResponse = try await PiggyCardsAPI.shared.request(.getGiftCards(country: country, brandId: sourceId))
+
+            DSLogger.log("🎯 PiggyCards API: Response - code: \(response.code), message: \(response.message), data count: \(response.data?.count ?? 0)")
+
+            guard let cards = response.data else {
+                DSLogger.log("🎯 PiggyCards API: No cards in response")
+                throw DashSpendError.merchantUnavailable
+            }
+
+            // Log details of each card
+            for (index, card) in cards.enumerated() {
+                DSLogger.log("🎯 PiggyCards API: Card \(index) - id: \(card.id), name: \(card.name), priceType: \(card.priceType), denomination: \(card.denomination), min: \(card.minDenomination), max: \(card.maxDenomination)")
+            }
+
+            // Cache the cards for later use in order creation
+            PiggyCardsCache.shared.storeGiftCards(cards, forMerchant: merchantId)
+
+            return cards
+        } catch let error as HTTPClientError {
+            throw try parseError(from: error, context: "get gift cards")
+        }
+    }
+
+    /// Calculate display discount after service fee
+    private func calculateDisplayDiscount(_ discountDecimal: Double) -> Double {
+        // PiggyCards returns discount as decimal (0.15 = 15%)
+        // Subtract service fee
+        return (discountDecimal * 100) - PiggyCardsConstants.serviceFeePercent
+    }
+
+    /// Parse payment URI into address and amount
+    private func parsePaymentURI(_ payTo: String, orderId: String, message: String?) throws -> (address: String, amount: Double) {
+        // Check for empty or invalid URI
+        guard !payTo.isEmpty else {
+            let errorMessage = message ?? "Payment URI unavailable"
+            DSLogger.log("PiggyCards: Empty payment URI for order \(orderId): \(errorMessage)")
+            throw DashSpendError.customError(errorMessage)
+        }
+
+        // Parse dash: URI format
+        // Example: "dash:XsomeAddress?amount=1.234"
+        guard payTo.hasPrefix("dash:") else {
+            throw DashSpendError.customError("Invalid payment URI format")
+        }
+
+        let uriWithoutScheme = String(payTo.dropFirst(5)) // Remove "dash:"
+        let components = uriWithoutScheme.split(separator: "?", maxSplits: 1)
+
+        guard components.count >= 1 else {
+            throw DashSpendError.customError("Invalid payment URI: missing address")
+        }
+
+        let address = String(components[0])
+        var amount: Double = 0
+
+        // Parse query parameters
+        if components.count > 1 {
+            let queryString = String(components[1])
+            let queryItems = queryString.split(separator: "&")
+
+            for item in queryItems {
+                let keyValue = item.split(separator: "=", maxSplits: 1)
+                if keyValue.count == 2 && keyValue[0] == "amount" {
+                    amount = Double(keyValue[1]) ?? 0
+                    break
+                }
+            }
+        }
+
+        guard amount > 0 else {
+            throw DashSpendError.customError("Invalid payment amount")
+        }
+
+        return (address: address, amount: amount)
+    }
+
+    // MARK: - Legacy Methods (to be removed)
+
     func getMerchant(merchantId: String) async throws -> PiggyCardsMerchantResponse {
-        do {
-            return try await PiggyCardsAPI.shared.request(.getMerchant(merchantId))
-        } catch let error as DashSpendError {
-            DSLogger.log("PiggyCards failed to get merchant with DashSpendError: \(error)")
-            throw error
-        } catch let error as HTTPClientError {
-            throw try parseError(from: error, context: "get merchant")
-        } catch {
-            DSLogger.log("PiggyCards failed to get merchant with error: \(error)")
-            throw DashSpendError.networkError
-        }
-    }
-    
-    func getGiftCardByTxid(txid: String) async throws -> PiggyCardsGiftCardResponse {
-        do {
-            return try await PiggyCardsAPI.shared.request(.getGiftCard(txid))
-        } catch let error as DashSpendError {
-            DSLogger.log("PiggyCards failed to get gift card with DashSpendError: \(error)")
-            throw error
-        } catch let error as HTTPClientError {
-            throw try parseError(from: error, context: "get gift card")
-        } catch {
-            DSLogger.log("PiggyCards failed to get gift card with error: \(error)")
-            throw DashSpendError.networkError
-        }
+        // This should be replaced with proper brand/gift card fetching
+        DSLogger.log("PiggyCards: getMerchant is deprecated, use getBrands/getGiftCards instead")
+        throw DashSpendError.unknown
     }
 }
 

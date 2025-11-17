@@ -16,10 +16,14 @@
 //
 
 class PiggyCardsConstants {
-    // TODO: prod "https://api.piggy.cards/dash/v1/"
-    static let baseURI = "https://apidev.piggy.cards/dash/v1/"
-    
+    static let baseURI = "https://api.piggy.cards/dash/v1/"
+    static let stagingBaseURI = "https://apidev.piggy.cards/dash/v1/" // For future testnet support
+
     static let termsAndConditionsUrl = "https://piggy.cards/index.php?route=information/information&information_id=5"
-    // TODO: Confirm correct support email
     static let supportEmail = "support@piggy.cards"
+
+    // Service configuration
+    static let tokenExpirationSeconds = 3600
+    static let serviceFeePercent = 1.5 // 1.5% service fee deducted from discount
+    static let orderPollingDelayMs = 250 // Delay before first status check
 }

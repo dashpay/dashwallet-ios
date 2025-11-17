@@ -1427,3 +1427,140 @@ struct CTXAPIHeaders {
 - `CTXConstants.swift` - Environment-specific constants
 - `MerchantDAO.swift` - Database queries with provider filtering
 - `GiftCardProvider.swift` - Data model for provider-specific merchant data
+
+## PiggyCards Integration (Critical Implementation Details)
+
+### Overview
+PiggyCards is an alternative gift card provider integrated alongside CTX. The implementation uses a provider pattern where both CTX and PiggyCards conform to `DashSpendRepository` protocol.
+
+### Critical Database Architecture Issue (Fixed)
+
+#### The sourceId Problem
+**CRITICAL**: The `gift_card_providers` table contains a `sourceId` column that maps merchants to provider-specific IDs:
+- CTX uses UUID strings (e.g., "84793fe2-603d-465c-8899-6c90f6e11b63")
+- PiggyCards uses numeric IDs (e.g., 18 for AutoZone, 45 for Domino's, 89 for Macy's)
+
+**The Issue**: When loading merchants, the `giftCardProviders` array MUST be populated with sourceIds or the API calls will fail.
+
+#### Required SQL Query Pattern
+```sql
+-- CORRECT: Include sourceId in the SELECT
+SELECT provider, savingsPercentage, denominationsType, sourceId
+FROM gift_card_providers
+WHERE merchantId = ?
+
+-- WRONG: Missing sourceId causes API failures
+SELECT provider, savingsPercentage, denominationsType
+FROM gift_card_providers
+WHERE merchantId = ?
+```
+
+#### GiftCardProviderInfo Structure
+```swift
+struct GiftCardProviderInfo {
+    let providerId: String
+    let provider: GiftCardProvider?
+    let savingsPercentage: Int
+    let denominationsType: String
+    let sourceId: String?  // CRITICAL: Must be populated from database
+}
+```
+
+### Denomination Type Handling (Critical Lessons)
+
+#### API as Source of Truth
+**CRITICAL PRINCIPLE**: When the user is signed in, the API response MUST be the source of truth for denomination types, NOT the database values.
+
+#### Provider-Specific Denomination Types
+Different providers may have different denomination types for the same merchant:
+
+| Merchant | CTX Type | PiggyCards Type | PiggyCards Values |
+|----------|----------|-----------------|-------------------|
+| Domino's | Flexible | Fixed | $25 denomination |
+| Macy's | Fixed | Range | $5-$500 min/max |
+| AutoZone | Flexible | Range | $10-$200 min/max |
+
+#### Proper State Management Pattern
+```swift
+// When API returns denomination type, clear previous state
+if normalizedPriceType == PiggyCardsPriceType.range.rawValue {
+    isFixedDenomination = false
+    minimumAmount = Decimal(card.minDenomination)
+    maximumAmount = Decimal(card.maxDenomination)
+    denominations = []  // CRITICAL: Clear fixed values
+} else if normalizedPriceType == PiggyCardsPriceType.fixed.rawValue {
+    isFixedDenomination = true
+    denominations = parseDenominations(card.denomination)
+    minimumAmount = 0  // CRITICAL: Clear range values
+    maximumAmount = 0
+}
+```
+
+### Common Integration Pitfalls
+
+#### 1. Missing sourceId in Database Queries
+- **Symptom**: `giftCardProviders` array is empty, API calls fail
+- **Solution**: Ensure all SQL queries include sourceId column
+
+#### 2. Cross-Provider Data Contamination
+- **Symptom**: Domino's shows keyboard instead of $25 button for PiggyCards
+- **Solution**: Clear all state when switching between denomination types
+
+#### 3. Database Values Override API
+- **Symptom**: Wrong denomination types persist despite API response
+- **Solution**: Always use API as source of truth when user is signed in
+
+#### 4. Type Handling for sourceId
+The sourceId in database can be:
+- String (for CTX UUIDs)
+- Int64 (for PiggyCards numeric IDs)
+- NULL
+
+Handle all cases:
+```swift
+var sourceIdString: String? = nil
+if let sourceId = row[3] as? String, !sourceId.isEmpty {
+    sourceIdString = sourceId
+} else if let sourceId = row[3] as? Int64 {
+    sourceIdString = String(sourceId)
+} else if let sourceId = row[3] as? Int {
+    sourceIdString = String(sourceId)
+}
+```
+
+### Debugging Strategy
+
+#### Essential Log Points
+Use the 🎯 emoji for easy log filtering:
+```swift
+DSLogger.log("🎯 PiggyCards DEBUG: Found \(giftCardProviders.count) providers")
+DSLogger.log("🎯 PiggyCards DEBUG: sourceId: \(sourceId ?? "nil")")
+DSLogger.log("🎯 PiggyCards DEBUG: API says \(isFixed ? "FIXED" : "FLEXIBLE")")
+```
+
+#### Diagnostic Checklist
+1. Check `giftCardProviders` count (must be > 0)
+2. Verify sourceId is not nil
+3. Confirm API is called and returns data
+4. Check state BEFORE and AFTER API call
+5. Verify UI updates after state change
+
+### PiggyCards-Specific Implementation Files
+- `PiggyCardsRepository.swift` - Main repository implementation
+- `PiggyCardsAPI.swift` - API client with endpoint definitions
+- `PiggyCardsTokenService.swift` - Thread-safe token management using Actor pattern
+- `PiggyCardsModels.swift` - Response models for gift cards and authentication
+
+### Testing PiggyCards Integration
+
+#### Required Test Accounts
+- Use "brian.foster@dash.org" for testing (OTP required)
+- Ensure user is signed in before testing denomination types
+
+#### Critical Test Cases
+1. **AutoZone**: Should show keyboard with $10-$200 range
+2. **Domino's**: Should show $25 fixed denomination button
+3. **Macy's**: Should show keyboard with $5-$500 range
+
+#### Build Configuration
+Add `PIGGYCARDS_ENABLED` to Swift Compiler - Custom Flags in Build Settings to enable PiggyCards features.

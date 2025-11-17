@@ -284,7 +284,7 @@ struct POIDetailsView: View {
                 .padding(.horizontal, 16)
             
             VStack(spacing: 8) {
-                ForEach(Array(viewModel.supportedProviders.keys), id: \.self) { provider in
+                ForEach(viewModel.sortedProviders, id: \.self) { provider in
                     let providerData = viewModel.supportedProviders[provider] ?? (isFixed: false, discount: 0)
                     let isFixedDenom = providerData.isFixed
                     let discount = providerData.discount

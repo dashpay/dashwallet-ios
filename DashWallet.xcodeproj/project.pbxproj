@@ -779,6 +779,10 @@
 		75EE9F432DE2F750000AD1AD /* DashSpendConfirmationDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE9F412DE2F74B000AD1AD /* DashSpendConfirmationDialog.swift */; };
 		75F3EF4B2E13D1670092A0D9 /* PiggyCardsTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F3EF4A2E13D1670092A0D9 /* PiggyCardsTokenService.swift */; };
 		75F3EF4C2E13D1670092A0D9 /* PiggyCardsTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F3EF4A2E13D1670092A0D9 /* PiggyCardsTokenService.swift */; };
+		75F3EF4D2E13D1680092A0D1 /* PiggyCardsCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F3EF4B2E13D1680092A0D0 /* PiggyCardsCache.swift */;
+		AA3A466CEAA14A01AA79EA69 /* PiggyCardsBrandMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsBrandMapping.swift; sourceTree = "<group>"; }; };
+		75F3EF4E2E13D1680092A0D2 /* PiggyCardsCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F3EF4B2E13D1680092A0D0 /* PiggyCardsCache.swift */;
+		AA3A466CEAA14A01AA79EA69 /* PiggyCardsBrandMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsBrandMapping.swift; sourceTree = "<group>"; }; };
 		75F3EF4E2E1553BF0092A0D9 /* DashSpendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F3EF4D2E1553BB0092A0D9 /* DashSpendError.swift */; };
 		75F3EF4F2E1553BF0092A0D9 /* DashSpendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F3EF4D2E1553BB0092A0D9 /* DashSpendError.swift */; };
 		75F3EF562E16AD060092A0D9 /* POIDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F3EF542E16AD060092A0D9 /* POIDetailsView.swift */; };
@@ -807,7 +811,8 @@
 		BA7B537B1BDD1DCF00355E8D /* LoadingIndicator.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA7B537A1BDD1DCF00355E8D /* LoadingIndicator.xcassets */; };
 		BA913BE21BD57E4D005A7C0E /* Interface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA913BE01BD57E4D005A7C0E /* Interface.storyboard */; };
 		BA913BE41BD57E4D005A7C0E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA913BE31BD57E4D005A7C0E /* Assets.xcassets */; };
-		BA913BEB1BD57E4D005A7C0E /* WatchApp Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BA913BEA1BD57E4D005A7C0E /* WatchApp Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		BA913BEB1BD57E4D005A7C0E /* WatchApp Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BA913BEA1BD57E4D005A7C0E /* WatchApp Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy,
+				AA3A466CEAA14A01AA79EA69 /* PiggyCardsBrandMapping.swift */, ); }; };
 		BA913BF21BD57E4D005A7C0E /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA913BF11BD57E4D005A7C0E /* ExtensionDelegate.swift */; };
 		BA913BFA1BD57E4D005A7C0E /* WatchApp.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = BA913BDE1BD57E4D005A7C0E /* WatchApp.app */; };
 		BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = BAA4843B1B3EFFAF0075C749 /* UIImage+Utils.m */; };
@@ -2620,6 +2625,8 @@
 		75EE9F412DE2F74B000AD1AD /* DashSpendConfirmationDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendConfirmationDialog.swift; sourceTree = "<group>"; };
 		75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		75F3EF4A2E13D1670092A0D9 /* PiggyCardsTokenService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsTokenService.swift; sourceTree = "<group>"; };
+		75F3EF4B2E13D1680092A0D0 /* PiggyCardsCache.swift */ = {isa = PBXFileReference;
+		AA3A466CEAA14A01AA79EA69 /* PiggyCardsBrandMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsBrandMapping.swift; sourceTree = "<group>"; }; lastKnownFileType = sourcecode.swift; path = PiggyCardsCache.swift; sourceTree = "<group>"; };
 		75F3EF4D2E1553BB0092A0D9 /* DashSpendError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendError.swift; sourceTree = "<group>"; };
 		75F3EF542E16AD060092A0D9 /* POIDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POIDetailsView.swift; sourceTree = "<group>"; };
 		75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Uphold.swift"; sourceTree = "<group>"; };
@@ -3174,6 +3181,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D1B5CFC5EAB94DBB22D2C932 /* libPods-DashWalletScreenshotsUITests.a in Frameworks */,
+				AA3A466CEAA14A01AA79EA69 /* PiggyCardsBrandMapping.swift */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6155,7 +6163,10 @@
 				757AEBCB2E1131A1007BE8B4 /* PiggyCardsEndpoint.swift */,
 				757AEBCC2E1131A1007BE8B4 /* PiggyCardsRepository.swift */,
 				75F3EF4A2E13D1670092A0D9 /* PiggyCardsTokenService.swift */,
+				75F3EF4B2E13D1680092A0D0 /* PiggyCardsCache.swift */,
+				AA3A466CEAA14A01AA79EA69 /* PiggyCardsBrandMapping.swift */,
 			);
+		AA3A466CEAA14A01AA79EA69 /* PiggyCardsBrandMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsBrandMapping.swift; sourceTree = "<group>"; };
 			path = PiggyCards;
 			sourceTree = "<group>";
 		};
@@ -8789,6 +8800,7 @@
 				750CEFA22CCA6EA100E87A32 /* TextInput.swift in Sources */,
 				47AE8C1C28C6AA2500490F5E /* PointOfUseLocationServicePopup.swift in Sources */,
 				75F3EF4C2E13D1670092A0D9 /* PiggyCardsTokenService.swift in Sources */,
+				75F3EF4E2E13D1680092A0D2 /* PiggyCardsCache.swift in Sources */,
 				472D13E8299E4EE7006903F1 /* BalanceModel.swift in Sources */,
 				47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */,
 				2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */,
@@ -9225,6 +9237,7 @@
 				C9D2C6AA2A320AA000D15901 /* DSTransaction+DashWallet.swift in Sources */,
 				C943B4C52A40A54600AF23C5 /* DWUserSearchModel.m in Sources */,
 				75F3EF4B2E13D1670092A0D9 /* PiggyCardsTokenService.swift in Sources */,
+				75F3EF4D2E13D1680092A0D1 /* PiggyCardsCache.swift in Sources */,
 				C9D2C6AC2A320AA000D15901 /* PayableViewController.swift in Sources */,
 				C9D2C6AD2A320AA000D15901 /* HairlineView.swift in Sources */,
 				C943B51B2A40A54600AF23C5 /* BaseInvitationViewController.swift in Sources */,

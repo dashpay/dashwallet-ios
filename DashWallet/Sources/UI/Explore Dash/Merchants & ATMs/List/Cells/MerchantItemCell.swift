@@ -58,9 +58,21 @@ class MerchantItemCell: PointOfUseItemCell {
         let paymentIconName = isGiftCard ? "image.explore.dash.wts.payment.gift-card" : "image.explore.dash.wts.payment.dash";
         paymentTypeIconView.image = UIImage(named: paymentIconName)
         
-        if merchant.savingsBasisPoints > 0 {
+        // Show the highest discount from all providers
+        var maxDiscountBasisPoints = 0
+        if !merchant.giftCardProviders.isEmpty {
+            // If we have provider-specific data, use the max discount
+            maxDiscountBasisPoints = merchant.giftCardProviders.map { $0.savingsPercentage }.max() ?? 0
+        } else {
+            // Fallback to the merchant-level discount (legacy)
+            maxDiscountBasisPoints = Int(merchant.toSavingPercentages())
+        }
+
+        if maxDiscountBasisPoints > 0 {
             savingsLabel.isHidden = false
-            savingsLabel.text = String(format: NSLocalizedString("~%.0f%%", comment: "Savings percentage"), merchant.toSavingPercentages())
+            // Convert from basis points to percentage and round to nearest whole number (e.g., 400 -> 4%)
+            let discountPercentage = round(Double(maxDiscountBasisPoints) / 100.0)
+            savingsLabel.text = String(format: NSLocalizedString("~%.0f%%", comment: "Savings percentage"), discountPercentage)
         } else {
             savingsLabel.isHidden = true
         }

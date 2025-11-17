@@ -123,8 +123,21 @@ struct DashSpendPayScreen: View {
                 .padding(.bottom, 10)
                 
                 Spacer()
-                
-                if viewModel.isFixedDenomination {
+
+                // Show loading state while fetching merchant info to prevent UI flicker
+                if viewModel.isLoading && !viewModel.hasValidLimits && viewModel.denominations.isEmpty {
+                    VStack(spacing: 20) {
+                        Text(NSLocalizedString("Loading gift card options...", comment: "DashSpend"))
+                            .font(.body2)
+                            .foregroundColor(.secondaryText)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 320)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 30)
+                    .background(Color.secondaryBackground)
+                    .cornerRadius(20)
+                } else if viewModel.isFixedDenomination {
                     MerchantDenominations(
                         denominations: viewModel.denominations,
                         selectedDenomination: viewModel.selectedDenomination,

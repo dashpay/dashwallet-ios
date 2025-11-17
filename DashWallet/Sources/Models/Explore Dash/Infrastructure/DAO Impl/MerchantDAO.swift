@@ -178,7 +178,7 @@ class MerchantDAO: PointOfUseDAO {
                     for (index, item) in allItems.enumerated() {
                         if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
                             let providersQuery = """
-                                SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers
+                                SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
                                 WHERE merchantId = '\(merchant.merchantId)'
                             """
 
@@ -195,10 +195,22 @@ class MerchantDAO: PointOfUseDAO {
                                     if let providerId = row[0] as? String,
                                        let savingsPercentage = row[1] as? Int64,
                                        let denominationsType = row[2] as? String {
+
+                                        // Handle sourceId - it might be String, Int64, or nil
+                                        var sourceIdString: String? = nil
+                                        if let sourceId = row[3] as? String, !sourceId.isEmpty {
+                                            sourceIdString = sourceId
+                                        } else if let sourceId = row[3] as? Int64 {
+                                            sourceIdString = String(sourceId)
+                                        } else if let sourceId = row[3] as? Int {
+                                            sourceIdString = String(sourceId)
+                                        }
+
                                         providers.append(ExplorePointOfUse.Merchant.GiftCardProviderInfo(
                                             providerId: providerId,
                                             savingsPercentage: Int(savingsPercentage),
-                                            denominationsType: denominationsType
+                                            denominationsType: denominationsType,
+                                            sourceId: sourceIdString
                                         ))
                                     }
                                 }
@@ -400,7 +412,7 @@ class MerchantDAO: PointOfUseDAO {
                 for (index, item) in items.enumerated() {
                     if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
                         let providersQuery = """
-                            SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers
+                            SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
                             WHERE merchantId = '\(merchant.merchantId)'
                         """
 
@@ -417,10 +429,22 @@ class MerchantDAO: PointOfUseDAO {
                                 if let providerId = row[0] as? String,
                                    let savingsPercentage = row[1] as? Int64,
                                    let denominationsType = row[2] as? String {
+
+                                    // Handle sourceId - it might be String, Int64, or nil
+                                    var sourceIdString: String? = nil
+                                    if let sourceId = row[3] as? String, !sourceId.isEmpty {
+                                        sourceIdString = sourceId
+                                    } else if let sourceId = row[3] as? Int64 {
+                                        sourceIdString = String(sourceId)
+                                    } else if let sourceId = row[3] as? Int {
+                                        sourceIdString = String(sourceId)
+                                    }
+
                                     providers.append(ExplorePointOfUse.Merchant.GiftCardProviderInfo(
                                         providerId: providerId,
                                         savingsPercentage: Int(savingsPercentage),
-                                        denominationsType: denominationsType
+                                        denominationsType: denominationsType,
+                                        sourceId: sourceIdString
                                     ))
                                 }
                             }
@@ -586,9 +610,10 @@ extension MerchantDAO {
                 // Fetch gift card provider information for gift card merchants
                 for (index, item) in items.enumerated() {
                     if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
+                        // Use parameterized query to avoid SQL injection
                         let providersQuery = """
-                            SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers
-                            WHERE merchantId = '\(merchant.merchantId)'
+                            SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
+                            WHERE merchantId = ?
                         """
 
                         do {
@@ -597,17 +622,55 @@ extension MerchantDAO {
                                 continue
                             }
 
-                            let rows = try db.prepare(providersQuery)
+                            let statement = try db.prepare(providersQuery, merchant.merchantId)
                             var providers: [ExplorePointOfUse.Merchant.GiftCardProviderInfo] = []
 
-                            for row in rows {
-                                if let providerId = row[0] as? String,
-                                   let savingsPercentage = row[1] as? Int64,
-                                   let denominationsType = row[2] as? String {
+                            for row in statement {
+                                // Access columns by index
+                                let providerId = row[0] as? String
+                                let savingsPercentage = row[1] as? Int64
+                                let denominationsType = row[2] as? String
+
+                                if let providerId = providerId,
+                                   let savingsPercentage = savingsPercentage,
+                                   let denominationsType = denominationsType {
+
+                                    // Handle sourceId - it might be String, Int64, or nil
+                                    var sourceIdString: String? = nil
+
+                                    // Check if sourceId exists (not NULL)
+                                    if row.count > 3 {
+                                        // Try different type conversions
+                                        if let sourceId = row[3] as? String, !sourceId.isEmpty {
+                                            sourceIdString = sourceId
+                                            print("🎯 MerchantDAO: Found sourceId as String: '\(sourceId)' for provider: \(providerId), merchant: \(merchant.merchantId)")
+                                        } else if let sourceId = row[3] as? Int64 {
+                                            sourceIdString = String(sourceId)
+                                            print("🎯 MerchantDAO: Found sourceId as Int64: \(sourceId) for provider: \(providerId), merchant: \(merchant.merchantId)")
+                                        } else if let sourceId = row[3] as? Int {
+                                            sourceIdString = String(sourceId)
+                                            print("🎯 MerchantDAO: Found sourceId as Int: \(sourceId) for provider: \(providerId), merchant: \(merchant.merchantId)")
+                                        } else if let sourceId = row[3] {
+                                            // Try to convert whatever type it is to string
+                                            sourceIdString = String(describing: sourceId)
+                                            if sourceIdString == "<null>" || sourceIdString == "nil" {
+                                                sourceIdString = nil
+                                                print("🎯 MerchantDAO: sourceId is NULL for provider: \(providerId), merchant: \(merchant.merchantId)")
+                                            } else {
+                                                print("🎯 MerchantDAO: Found sourceId with unknown type, converted to: '\(sourceIdString)' for provider: \(providerId), merchant: \(merchant.merchantId)")
+                                            }
+                                        } else {
+                                            print("🎯 MerchantDAO: sourceId column not present for provider: \(providerId), merchant: \(merchant.merchantId)")
+                                        }
+                                    } else {
+                                        print("🎯 MerchantDAO: sourceId column index out of bounds for provider: \(providerId), merchant: \(merchant.merchantId)")
+                                    }
+
                                     providers.append(ExplorePointOfUse.Merchant.GiftCardProviderInfo(
                                         providerId: providerId,
                                         savingsPercentage: Int(savingsPercentage),
-                                        denominationsType: denominationsType
+                                        denominationsType: denominationsType,
+                                        sourceId: sourceIdString
                                     ))
                                 }
                             }

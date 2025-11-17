@@ -30,18 +30,40 @@ final class PiggyCardsAPI: HTTPClient<PiggyCardsEndpoint> {
     }
     
     override func request<R>(_ target: PiggyCardsEndpoint) async throws -> R where R: Decodable {
+        // Log the request details
+        DSLogger.log("🎯 PiggyCards API Request: \(target.method.rawValue) \(target.baseURL.absoluteString)\(target.path)")
+
+        switch target.task {
+        case .requestParameters(let parameters, _):
+            DSLogger.log("🎯 PiggyCards API Query Params: \(parameters)")
+        case .requestJSONEncodable(let encodable):
+            DSLogger.log("🎯 PiggyCards API Body: (JSON payload)")
+        default:
+            break
+        }
+
         do {
             try checkAccessTokenIfNeeded(for: target)
-            return try await super.request(target)
+            let result: R = try await super.request(target)
+
+            // Log successful response
+            DSLogger.log("🎯 PiggyCards API Response: Success (Type: \(String(describing: R.self)))")
+
+            return result
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
+            DSLogger.log("🎯 PiggyCards API: Got 401, refreshing token and retrying")
             try await handleUnauthorizedError(for: target)
             return try await super.request(target)
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 400 {
+            DSLogger.log("🎯 PiggyCards API Error 400: \(String(data: r.data, encoding: .utf8) ?? "No error body")")
             if target.path.contains("/verify-otp") {
                 throw DashSpendError.invalidCode
             }
-            
+
             throw HTTPClientError.statusCode(r)
+        } catch {
+            DSLogger.log("🎯 PiggyCards API Error: \(error)")
+            throw error
         }
     }
     
