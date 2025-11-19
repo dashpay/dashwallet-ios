@@ -1564,3 +1564,772 @@ DSLogger.log("🎯 PiggyCards DEBUG: API says \(isFixed ? "FIXED" : "FLEXIBLE")"
 
 #### Build Configuration
 Add `PIGGYCARDS_ENABLED` to Swift Compiler - Custom Flags in Build Settings to enable PiggyCards features.
+
+### Adding Test Merchants to Database
+
+#### Overview
+For testing PiggyCards integration, you may need to add test merchants to the local database. The database stores merchant data in the `merchant` table and provider-specific data in the `gift_card_providers` table.
+
+#### Database Location
+The SQLite database is located at:
+```
+~/Library/Developer/CoreSimulator/Devices/{DEVICE_ID}/data/Containers/Data/Application/{APP_ID}/Documents/explore.db
+```
+
+**Finding the database**:
+```bash
+# Find the most recent explore.db for your running simulator
+find ~/Library/Developer/CoreSimulator/Devices/*/data/Containers/Data/Application/*/Documents/explore.db -type f -exec stat -f '%Sm %N' -t '%Y-%m-%d %H:%M:%S' {} \; | sort -r | head -1
+```
+
+#### Test Merchant: PiggyCards Test Merchant
+
+**This is the standard test merchant used for PiggyCards testing.**
+**IMPORTANT**: This SQL recreates the EXACT merchant from your working database.
+
+```sql
+INSERT INTO merchant (
+    merchantId,
+    name,
+    source,
+    sourceId,
+    logoLocation,
+    active,
+    paymentMethod,
+    savingsPercentage,
+    denominationsType,
+    type,
+    redeemType,
+    territory,
+    city,
+    website,
+    addDate,
+    updateDate
+) VALUES (
+    '2e393eee-4508-47fe-954d-66209333fc96',                         -- UUID merchant ID (matches working DB)
+    'Piggy Cards Test Merchant',                                     -- Exact name from DB
+    'PiggyCards',                                                     -- Source (case-sensitive)
+    '177',                                                            -- PiggyCards brand_id
+    'https://piggy.cards/image/catalog/piggycards/logo2023_mobile.png', -- Logo URL
+    1,                                                                -- Active
+    'gift card',                                                      -- Payment method (not 'dash')
+    1000,                                                             -- 10% discount (stored as basis points)
+    'Fixed',                                                          -- Denomination type
+    'online',                                                         -- Type
+    'online',                                                         -- Redeem type
+    'MA',                                                             -- Territory
+    'Boston',                                                         -- City
+    'https://piggy.cards',                                           -- Website
+    datetime('now'),                                                  -- Add date
+    datetime('now')                                                   -- Update date
+);
+```
+
+**CRITICAL VALUES** (must match exactly):
+- **merchantId**: `'2e393eee-4508-47fe-954d-66209333fc96'` (UUID format, not integer!)
+- **name**: `'Piggy Cards Test Merchant'` (NOT the API card name)
+- **source**: `'PiggyCards'` (case-sensitive - capital P and C)
+- **sourceId**: `'177'` (TEXT, not integer)
+- **savingsPercentage**: `1000` (10% as basis points: 10% × 100 = 1000)
+- **denominationsType**: `'Fixed'` (capital F)
+- **paymentMethod**: `'gift card'` (not 'dash')
+- **type**: `'online'`
+- **redeemType**: `'online'`
+
+**Quick Insert Command** (copy-paste ready):
+
+⚠️ **IMPORTANT**: The merchant table has FTS (Full-Text Search) triggers that cause "unsafe use of virtual table" errors during INSERT. The script below handles this by temporarily dropping triggers, inserting data, then recreating them.
+
+```bash
+# Find the most recent database and insert test merchant
+DB_PATH=$(find ~/Library/Developer/CoreSimulator/Devices/*/data/Containers/Data/Application/*/Documents/explore.db -type f -exec stat -f '%Sm %N' -t '%Y-%m-%d %H:%M:%S' {} \; 2>/dev/null | sort -r | head -1 | awk '{print $3}')
+
+echo "Database path: $DB_PATH"
+
+sqlite3 "$DB_PATH" << 'EOF'
+-- STEP 1: Temporarily drop FTS triggers to avoid "unsafe use of virtual table" error
+DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_AFTER_INSERT;
+DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_AFTER_UPDATE;
+DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_BEFORE_UPDATE;
+DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_BEFORE_DELETE;
+
+-- STEP 2: Insert merchant record
+INSERT INTO merchant (
+    merchantId, name, source, sourceId, logoLocation, active, paymentMethod,
+    savingsPercentage, denominationsType, type, redeemType, territory, city,
+    website, addDate, updateDate
+) VALUES (
+    '2e393eee-4508-47fe-954d-66209333fc96',
+    'Piggy Cards Test Merchant',
+    'PiggyCards',
+    '177',
+    'https://piggy.cards/image/catalog/piggycards/logo2023_mobile.png',
+    1,
+    'gift card',
+    1000,
+    'Fixed',
+    'online',
+    'online',
+    'MA',
+    'Boston',
+    'https://piggy.cards',
+    datetime('now'),
+    datetime('now')
+);
+
+-- STEP 3: Insert gift_card_providers record (REQUIRED for sourceId lookup)
+INSERT INTO gift_card_providers (
+    merchantId, provider, sourceId, savingsPercentage,
+    denominationsType, active, redeemType
+) VALUES (
+    '2e393eee-4508-47fe-954d-66209333fc96',
+    'PiggyCards',
+    '177',
+    10,
+    'fixed',
+    1,
+    'online'
+);
+
+-- STEP 4: Manually update FTS index
+INSERT INTO merchant_fts(docid, name)
+SELECT rowid, name FROM merchant WHERE merchantId = '2e393eee-4508-47fe-954d-66209333fc96';
+
+-- STEP 5: Recreate FTS triggers
+CREATE TRIGGER room_fts_content_sync_merchant_fts_BEFORE_UPDATE BEFORE UPDATE ON `merchant` BEGIN DELETE FROM `merchant_fts` WHERE `docid`=OLD.`rowid`; END;
+CREATE TRIGGER room_fts_content_sync_merchant_fts_BEFORE_DELETE BEFORE DELETE ON `merchant` BEGIN DELETE FROM `merchant_fts` WHERE `docid`=OLD.`rowid`; END;
+CREATE TRIGGER room_fts_content_sync_merchant_fts_AFTER_UPDATE AFTER UPDATE ON `merchant` BEGIN INSERT INTO `merchant_fts`(`docid`, `name`) VALUES (NEW.`rowid`, NEW.`name`); END;
+CREATE TRIGGER room_fts_content_sync_merchant_fts_AFTER_INSERT AFTER INSERT ON `merchant` BEGIN INSERT INTO `merchant_fts`(`docid`, `name`) VALUES (NEW.`rowid`, NEW.`name`); END;
+
+SELECT 'Test merchant inserted successfully! Merchant count: ' || COUNT(*) FROM merchant WHERE merchantId = '2e393eee-4508-47fe-954d-66209333fc96';
+SELECT 'Gift card provider count: ' || COUNT(*) FROM gift_card_providers WHERE merchantId = '2e393eee-4508-47fe-954d-66209333fc96';
+EOF
+```
+
+**Why This Approach is Needed:**
+1. **FTS Triggers Problem**: The `merchant` table has AFTER INSERT triggers that try to update the `merchant_fts` virtual table
+2. **SQLite Limitation**: Virtual tables (FTS) cannot be modified within triggers during certain operations
+3. **Solution**: Drop triggers → Insert data → Manually update FTS → Recreate triggers
+4. **Critical**: Must insert BOTH `merchant` AND `gift_card_providers` records for the app to find the sourceId
+
+**Verification Command**:
+```bash
+# Verify the merchant and provider were inserted correctly
+DB_PATH=$(find ~/Library/Developer/CoreSimulator/Devices/*/data/Containers/Data/Application/*/Documents/explore.db -type f -exec stat -f '%Sm %N' -t '%Y-%m-%d %H:%M:%S' {} \; 2>/dev/null | sort -r | head -1 | awk '{print $3}')
+
+sqlite3 "$DB_PATH" << 'EOF'
+.mode line
+.print "=== Merchant Record ==="
+SELECT merchantId, name, source, sourceId, savingsPercentage, denominationsType, paymentMethod, type
+FROM merchant
+WHERE merchantId = '2e393eee-4508-47fe-954d-66209333fc96';
+
+.print ""
+.print "=== Gift Card Provider Record (REQUIRED) ==="
+SELECT merchantId, provider, sourceId, savingsPercentage, denominationsType, active, redeemType
+FROM gift_card_providers
+WHERE merchantId = '2e393eee-4508-47fe-954d-66209333fc96';
+
+.print ""
+.print "=== FTS Search Test ==="
+SELECT COUNT(*) as matches FROM merchant_fts WHERE merchant_fts MATCH 'Piggy';
+EOF
+```
+
+#### Denomination Type Examples
+
+**Fixed Denominations** (e.g., Domino's with $25 only):
+```sql
+INSERT INTO gift_card_providers (
+    merchantId, provider, sourceId, savingsPercentage,
+    denominationsType, minimumAmount, maximumAmount, denominations
+) VALUES (
+    999998, 'piggyCards', '45', 5,
+    'fixed', NULL, NULL, '[25.0]'  -- JSON array of fixed amounts
+);
+```
+
+**Range/Flexible** (e.g., Macy's with $5-$500):
+```sql
+INSERT INTO gift_card_providers (
+    merchantId, provider, sourceId, savingsPercentage,
+    denominationsType, minimumAmount, maximumAmount, denominations
+) VALUES (
+    999997, 'piggyCards', '89', 8,
+    'range', 5.00, 500.00, NULL  -- Min/max amounts, no fixed denominations
+);
+```
+
+#### Adding Test Merchant via sqlite3 Command Line
+
+```bash
+# 1. Find the database path
+DB_PATH=$(find ~/Library/Developer/CoreSimulator/Devices/*/data/Containers/Data/Application/*/Documents/explore.db -type f | head -1)
+
+# 2. Connect to database
+sqlite3 "$DB_PATH"
+
+# 3. Insert test merchant (paste the SQL commands above)
+-- Paste INSERT statements here
+
+# 4. Verify insertion
+SELECT * FROM merchant WHERE merchantId = 999999;
+SELECT * FROM gift_card_providers WHERE merchantId = 999999;
+
+# 5. Exit sqlite3
+.exit
+```
+
+#### Important Database Constraints
+
+1. **merchantId must be unique** in the `merchant` table
+2. **sourceId is critical** for API calls:
+   - CTX uses UUID strings (e.g., "84793fe2-603d-465c-8899-6c90f6e11b63")
+   - PiggyCards uses numeric IDs (e.g., "45" for Domino's, "89" for Macy's)
+3. **provider field** must match enum values:
+   - Use `'piggyCards'` (camelCase) for PiggyCards
+   - Use `'ctx'` (lowercase) for CTX
+4. **source field** in merchant table:
+   - Use `'piggycards'` (lowercase) for PiggyCards merchants
+   - Use `'ctx'` (lowercase) for CTX merchants
+
+#### Verification Queries
+
+```sql
+-- Check if merchant appears in search
+SELECT m.merchantId, m.name, gcp.provider, gcp.denominationsType, gcp.savingsPercentage
+FROM merchant m
+LEFT JOIN gift_card_providers gcp ON m.merchantId = gcp.merchantId
+WHERE m.name LIKE '%Test%';
+
+-- Check provider-specific data
+SELECT provider, sourceId, denominationsType, minimumAmount, maximumAmount, denominations
+FROM gift_card_providers
+WHERE merchantId = 999999;
+
+-- Verify FTS (Full-Text Search) index
+SELECT * FROM merchant_fts WHERE merchant_fts MATCH 'Test';
+```
+
+#### Troubleshooting Test Merchants
+
+**"unsafe use of virtual table" error during INSERT**:
+- **Cause**: The `merchant` table has FTS sync triggers that try to modify the `merchant_fts` virtual table during INSERT
+- **Solution**: Use the updated Quick Insert Command above that drops triggers before inserting
+- **Why it happens**: SQLite doesn't allow virtual tables (FTS) to be modified within certain trigger contexts
+- **Prevention**: Always use the drop-triggers approach when manually inserting merchants
+
+**Missing sourceId causes empty giftCardProviders array**:
+- **Symptom**: Logs show `Found 0 gift card providers` even though merchant exists
+- **Cause**: No `gift_card_providers` record exists for the merchant
+- **Solution**: Insert BOTH `merchant` AND `gift_card_providers` records (see Quick Insert Command)
+- **Critical**: The app queries `gift_card_providers` table to get sourceId for API calls
+
+**Merchant doesn't appear in search**:
+1. Check that `active = 1` in merchant table
+2. Verify FTS index: `INSERT INTO merchant_fts(merchant_fts) VALUES('rebuild');`
+3. Ensure `source` field matches filter ('piggycards' or 'ctx')
+
+**Wrong denomination type displayed**:
+1. Verify `denominationsType` in `gift_card_providers` table
+2. Check that `sourceId` is populated (required for API calls)
+3. For fixed denominations, ensure `denominations` is valid JSON array
+
+**API calls failing**:
+1. Verify `sourceId` matches actual PiggyCards merchant ID
+2. Check that merchant exists in PiggyCards API
+3. Ensure user is signed in to PiggyCards account
+
+#### Cleaning Up Test Data
+
+```bash
+# Remove the PiggyCards test merchant
+DB_PATH=$(find ~/Library/Developer/CoreSimulator/Devices/*/data/Containers/Data/Application/*/Documents/explore.db -type f -exec stat -f '%Sm %N' -t '%Y-%m-%d %H:%M:%S' {} \; 2>/dev/null | sort -r | head -1 | awk '{print $3}')
+
+sqlite3 "$DB_PATH" << 'EOF'
+-- Remove test merchant and provider data
+DELETE FROM gift_card_providers WHERE merchantId = '2e393eee-4508-47fe-954d-66209333fc96';
+DELETE FROM merchant WHERE merchantId = '2e393eee-4508-47fe-954d-66209333fc96';
+
+-- Rebuild FTS index
+INSERT INTO merchant_fts(merchant_fts) VALUES('rebuild');
+
+SELECT 'Cleanup complete. Remaining test merchants: ' || COUNT(*) FROM merchant WHERE name LIKE '%Test%';
+EOF
+```
+
+#### Best Practices for Test Data
+
+1. **Use UUID format for merchantId** - matches production data structure (e.g., '2e393eee-4508-47fe-954d-66209333fc96')
+2. **Always insert BOTH tables** - merchant AND gift_card_providers (sourceId is critical for API calls)
+3. **Document sourceId values** - these must match actual API merchant IDs for testing
+4. **Test both denomination types** - add at least one fixed and one range merchant
+5. **Clean up after testing** - remove test merchants before committing database changes
+6. **Use realistic data** - discount percentages, min/max amounts should match actual API responses
+7. **Handle FTS triggers properly** - use the drop-triggers approach to avoid SQLite errors
+
+## Gift Card Barcode and Claim Link Implementation
+
+### Overview
+Gift cards can be delivered with barcodes (for in-store redemption) or claim links (for online redemption). The iOS implementation matches the Android approach by downloading barcode images from URLs and automatically detecting barcode formats using Apple's Vision framework.
+
+### Barcode Implementation Architecture
+
+#### BarcodeScanner.swift - Core Utility
+Located at: `DashWallet/Sources/Models/Explore Dash/Services/BarcodeScanner.swift`
+
+**Key Innovation**: Extract barcode values from URL query parameters instead of relying solely on image scanning. This approach is:
+- Faster (no image download/processing required)
+- More reliable (no Vision framework limitations)
+- Simulator-compatible (avoids Neural Engine requirements)
+
+#### URL Query Parameter Extraction (Primary Method)
+```swift
+/// Extract barcode value from URL query parameters
+/// - Parameter url: The URL that may contain barcode data
+/// - Returns: Barcode value if found in URL parameters
+private static func extractBarcodeFromURL(_ url: String) -> String? {
+    guard let urlComponents = URLComponents(string: url) else {
+        return nil
+    }
+
+    // Check common parameter names for barcode data
+    let parameterNames = ["text", "data", "code", "barcode"]
+    for paramName in parameterNames {
+        if let value = urlComponents.queryItems?.first(where: { $0.name == paramName })?.value {
+            DSLogger.log("🔍 BarcodeScanner: Extracted barcode value from URL parameter '\(paramName)': \(value)")
+            return value
+        }
+    }
+
+    return nil
+}
+```
+
+**Example URLs**:
+- PiggyCards: `https://piggy.cards/index.php?route=tool/barcode&text=12345727`
+- CTX: URLs may vary, but follow similar pattern
+
+#### Image Download and Scan (Fallback Method)
+When URL doesn't contain barcode value as query parameter, download and scan the image:
+
+```swift
+static func downloadAndScan(from url: String) async -> BarcodeResult? {
+    // First try to extract barcode value from URL (faster and more reliable)
+    if let extractedValue = extractBarcodeFromURL(url) {
+        DSLogger.log("🔍 BarcodeScanner: Using extracted value, defaulting to CODE_128 format")
+        return BarcodeResult(value: extractedValue, format: .code128)
+    }
+
+    // Fallback: Download and scan the image
+    guard let imageUrl = URL(string: url) else { return nil }
+
+    do {
+        let (data, response) = try await URLSession.shared.data(from: imageUrl)
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            return nil
+        }
+
+        return await scanBarcode(from: data)
+    } catch {
+        DSLogger.log("🔍 BarcodeScanner: Download failed: \(error.localizedDescription)")
+        return nil
+    }
+}
+```
+
+### Multi-Format Barcode Support
+
+#### Supported Barcode Formats
+The implementation supports all major barcode formats via Vision framework:
+
+```swift
+enum BarcodeFormat: String {
+    case code128 = "CODE_128"      // Most common for gift cards
+    case qrCode = "QR_CODE"
+    case code39 = "CODE_39"
+    case code93 = "CODE_93"
+    case ean13 = "EAN_13"
+    case ean8 = "EAN_8"
+    case upca = "UPC_A"
+    case upce = "UPC_E"
+    case pdf417 = "PDF_417"
+    case aztec = "AZTEC"
+    case dataMatrix = "DATA_MATRIX"
+    case itf = "ITF"
+    case unknown = "UNKNOWN"
+}
+```
+
+#### Core Image Filter Mapping
+For generating barcode images from values, map formats to CIFilter names:
+
+```swift
+var ciFilterName: String? {
+    switch self {
+    case .code128:
+        return "CICode128BarcodeGenerator"
+    case .qrCode:
+        return "CIQRCodeGenerator"
+    case .pdf417:
+        return "CIPDF417BarcodeGenerator"
+    case .aztec:
+        return "CIAztecCodeGenerator"
+    case .dataMatrix:
+        return "CIDataMatrixCodeGenerator"
+    default:
+        // Other formats don't have native CIFilter support
+        return nil
+    }
+}
+```
+
+### Provider-Specific Barcode Handling
+
+#### CTX Barcode Flow
+In `GiftCardDetailsViewModel.swift` within `fetchGiftCardInfo()`:
+
+```swift
+case "fulfilled":
+    if let cardNumber = response.cardNumber, !cardNumber.isEmpty {
+        await giftCardsDAO.updateCardDetails(
+            txId: txId,
+            number: cardNumber,
+            pin: response.cardPin
+        )
+
+        // Download and scan barcode from URL if available (matching Android)
+        if let barcodeUrl = response.barcodeUrl, !barcodeUrl.isEmpty {
+            await downloadAndScanBarcode(from: barcodeUrl)
+        } else if !cardNumber.isEmpty {
+            // Fallback: Generate barcode from card number (legacy behavior)
+            let cleanNumber = cardNumber.replacingOccurrences(of: " ", with: "")
+                .replacingOccurrences(of: "-", with: "")
+            await giftCardsDAO.updateBarcode(
+                txId: txId,
+                value: cleanNumber,
+                format: "CODE_128"
+            )
+        }
+        stopTicker()
+    }
+```
+
+**CTX Barcode Priority**:
+1. Use `response.barcodeUrl` if available → download and scan
+2. Fallback to generating from `cardNumber` → hardcode CODE_128
+
+#### PiggyCards Barcode Flow
+In `GiftCardDetailsViewModel.swift` within `fetchPiggyCardsGiftCardInfo()`:
+
+```swift
+if let claimCode = card.claimCode, !claimCode.isEmpty {
+    await giftCardsDAO.updateCardDetails(
+        txId: txId,
+        number: claimCode,
+        pin: card.claimPin
+    )
+
+    // Download and scan barcode from URL if available (matching Android)
+    if let barcodeLink = card.barcodeLink, !barcodeLink.isEmpty {
+        await downloadAndScanBarcode(from: barcodeLink)
+    } else {
+        // Fallback: Generate barcode from claimCode (legacy behavior)
+        let cleanCode = claimCode.replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: "-", with: "")
+        await giftCardsDAO.updateBarcode(
+            txId: txId,
+            value: cleanCode,
+            format: "CODE_128"
+        )
+    }
+    stopTicker()
+}
+```
+
+**PiggyCards Barcode Priority**:
+1. Use `card.barcodeLink` if available → download and scan
+2. Fallback to generating from `claimCode` → hardcode CODE_128
+
+### Claim Link Handling (Online Redemption)
+
+#### What Are Claim Links?
+Some merchants (e.g., Applebees, online-only retailers) deliver gift cards as web links rather than barcode/PIN combinations. Users redeem these by clicking the link.
+
+#### Implementation Pattern
+For merchants with link-based delivery:
+
+```swift
+// In fetchPiggyCardsGiftCardInfo()
+else if let claimLink = card.claimLink, !claimLink.isEmpty {
+    DSLogger.log("🎯 PiggyCards: Link delivery - updating database with claimLink: \(claimLink)")
+
+    // For link-based redemption, store the link as the "number"
+    await giftCardsDAO.updateCardDetails(
+        txId: txId,
+        number: claimLink,  // Store URL as the card number
+        pin: nil            // No PIN for link-based cards
+    )
+
+    stopTicker()
+}
+```
+
+**Key Design Decision**: Store the claim link URL in the `number` field of the gift card database record. The UI can then:
+- Display the link as a tappable button
+- Open the link in Safari when tapped
+- No barcode display needed for these cards
+
+#### Detecting Claim Link Cards
+Check if the `number` field contains a URL:
+
+```swift
+if let number = giftCard.number, number.starts(with: "http") {
+    // This is a claim link card
+    // Show "Redeem Online" button instead of barcode
+} else if let number = giftCard.number {
+    // This is a traditional barcode/PIN card
+    // Show barcode display
+}
+```
+
+### Barcode Generation for Display
+
+#### Multi-Format Barcode Generation
+In `GiftCardDetailsViewModel.swift`, the `generateBarcode()` method creates barcode images:
+
+```swift
+private func generateBarcode(from string: String, format: String) {
+    // Normalize format string to BarcodeFormat enum
+    let barcodeFormat: BarcodeFormat
+    switch format.uppercased() {
+    case "CODE128", "CODE_128":
+        barcodeFormat = .code128
+    case "QRCODE", "QR_CODE", "QR":
+        barcodeFormat = .qrCode
+    case "PDF417", "PDF_417":
+        barcodeFormat = .pdf417
+    case "AZTEC":
+        barcodeFormat = .aztec
+    case "DATAMATRIX", "DATA_MATRIX":
+        barcodeFormat = .dataMatrix
+    default:
+        barcodeFormat = .code128  // Safe default
+    }
+
+    guard let filterName = barcodeFormat.ciFilterName else { return }
+    guard let filter = CIFilter(name: filterName) else { return }
+
+    // Different filters use different input keys and data encodings
+    if barcodeFormat == .qrCode {
+        let data = string.data(using: .utf8)  // UTF-8 for QR codes
+        filter.setValue(data, forKey: "inputMessage")
+        filter.setValue("M", forKey: "inputCorrectionLevel")
+    } else {
+        let data = string.data(using: .ascii)  // ASCII for linear barcodes
+        filter.setValue(data, forKey: "inputMessage")
+    }
+
+    guard let outputImage = filter.outputImage else { return }
+
+    // Scale barcode for display (QR codes need different scaling)
+    let scaleX: CGFloat = barcodeFormat == .qrCode ? 5.0 : 3.0
+    let scaleY: CGFloat = barcodeFormat == .qrCode ? 5.0 : 5.0
+    let transformedImage = outputImage.transformed(by: CGAffineTransform(scaleX: scaleX, y: scaleY))
+
+    let context = CIContext()
+    if let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) {
+        uiState.barcodeImage = UIImage(cgImage: cgImage)
+    }
+}
+```
+
+### Database Schema
+
+#### Barcode Storage
+Gift card barcodes are stored in the `gift_cards` table:
+
+```sql
+CREATE TABLE gift_cards (
+    tx_id BLOB PRIMARY KEY,
+    merchant_name TEXT,
+    price REAL,
+    number TEXT,           -- Card number or claim link URL
+    pin TEXT,              -- PIN (null for link-based cards)
+    barcode_value TEXT,    -- Raw barcode value
+    barcode_format TEXT,   -- "CODE_128", "QR_CODE", etc.
+    note TEXT,             -- Payment ID for polling
+    merchant_url TEXT
+);
+```
+
+#### Update Methods
+```swift
+// Update card details (number/PIN)
+func updateCardDetails(txId: Data, number: String, pin: String?) async
+
+// Update barcode separately (after download/scan)
+func updateBarcode(txId: Data, value: String, format: String) async
+```
+
+### Vision Framework Integration
+
+#### Asynchronous Barcode Scanning
+The scanner uses Swift's checked continuations to bridge Vision's callback API to async/await:
+
+```swift
+static func scanBarcode(from cgImage: CGImage) async -> BarcodeResult? {
+    return await withCheckedContinuation { continuation in
+        DispatchQueue.global(qos: .userInitiated).async {
+            var resumed = false  // Prevent double-resumption
+
+            let request = VNDetectBarcodesRequest { request, error in
+                guard !resumed else { return }
+                resumed = true
+
+                if let error = error {
+                    continuation.resume(returning: nil)
+                    return
+                }
+
+                guard let observations = request.results as? [VNBarcodeObservation],
+                      let firstBarcode = observations.first,
+                      let payloadString = firstBarcode.payloadStringValue else {
+                    continuation.resume(returning: nil)
+                    return
+                }
+
+                let format = BarcodeFormat.from(symbology: firstBarcode.symbology)
+                let result = BarcodeResult(value: payloadString, format: format)
+                continuation.resume(returning: result)
+            }
+
+            let handler = VNImageRequestHandler(ciImage: CIImage(cgImage: cgImage), options: [:])
+
+            do {
+                try handler.perform([request])
+            } catch {
+                guard !resumed else { return }
+                resumed = true
+                continuation.resume(returning: nil)
+            }
+        }
+    }
+}
+```
+
+**Critical Pattern**: Always use `resumed` flag to prevent double-resumption crashes. The Vision framework's completion handler can be called even when `perform()` throws.
+
+### Polling and UI Updates
+
+#### Gift Card Polling Flow
+After purchase, the app polls for card details:
+
+1. Purchase transaction broadcasts to blockchain
+2. Store transaction ID (txId) and payment ID (note) in database
+3. Start polling timer (every 1.5 seconds)
+4. Call provider API with txId to get card details
+5. When card is "fulfilled", update database with:
+   - Card number/claim link
+   - PIN (if applicable)
+   - Barcode (download and scan, or generate)
+6. UI automatically updates via SwiftUI `@Published` properties
+
+#### UI State Management
+```swift
+struct GiftCardDetailsUIState {
+    var cardNumber: String? = nil
+    var cardPin: String? = nil
+    var barcodeImage: UIImage? = nil
+    var isLoadingCardDetails: Bool = false
+    var loadingError: Error? = nil
+}
+```
+
+### Testing Guidelines
+
+#### Test Scenarios
+1. **Barcode from URL (PiggyCards)**:
+   - Purchase Domino's card
+   - Verify barcode appears after fulfillment
+   - Check that barcode value was extracted from URL
+
+2. **Barcode from Card Number (CTX)**:
+   - Purchase merchant without barcodeUrl
+   - Verify barcode generated from cardNumber
+   - Confirm CODE_128 format used
+
+3. **Claim Link Cards (Applebees)**:
+   - Purchase merchant with link delivery
+   - Verify claim link stored in number field
+   - Check that no barcode is displayed
+   - Ensure link is tappable
+
+4. **Multi-Format Support**:
+   - Test merchants with QR codes
+   - Test merchants with PDF417
+   - Verify correct format detected and displayed
+
+#### Debug Logging
+Use 🔍 emoji for barcode-related logs:
+
+```swift
+DSLogger.log("🔍 BarcodeScanner: Processing barcode URL: \(url)")
+DSLogger.log("🔍 BarcodeScanner: Extracted value: \(value)")
+DSLogger.log("🔍 BarcodeScanner: Format detected: \(format.rawValue)")
+```
+
+### Common Issues and Solutions
+
+#### Issue 1: Vision Framework "Could Not Create Inference Context"
+**Problem**: Error code 9 when scanning barcodes in simulator.
+
+**Cause**: Simulator limitation - Vision framework tries to use Neural Engine/GPU which isn't available in simulator.
+
+**Solution**: Extract barcode value from URL query parameters (primary method). Image scanning is fallback only.
+
+#### Issue 2: Barcode Not Displaying After Purchase
+**Problem**: Card details update but barcode doesn't appear.
+
+**Cause**: Missing UI reload after barcode database update.
+
+**Solution**: Call `await loadGiftCard()` after updating barcode:
+
+```swift
+await giftCardsDAO.updateBarcode(txId: txId, value: value, format: format)
+await loadGiftCard()  // CRITICAL: Reload to update UI
+```
+
+#### Issue 3: Wrong Barcode Format
+**Problem**: Barcode displays but can't be scanned in store.
+
+**Cause**: Hardcoding CODE_128 instead of detecting actual format.
+
+**Solution**: Use Vision framework to auto-detect format from downloaded image, or trust format provided by API.
+
+#### Issue 4: Claim Link Not Tappable
+**Problem**: Claim link displays as text instead of button.
+
+**Cause**: UI not detecting URL in number field.
+
+**Solution**: Check if `number` starts with "http" and render as link button.
+
+### Key Implementation Files
+
+- **BarcodeScanner.swift** - Core barcode utility with URL extraction and Vision scanning
+- **GiftCardDetailsViewModel.swift** - Gift card display and polling logic
+- **GiftCardsDAO.swift** - Database operations for gift cards
+- **PiggyCardsModels.swift** - Response models including `barcodeLink` and `claimLink`
+- **CTXSpendModels.swift** - Response models including `barcodeUrl`
+
+### Android Parity
+
+The iOS implementation matches Android's approach:
+- ✅ Download barcodes from URLs
+- ✅ Auto-detect barcode format using device vision API
+- ✅ Support multiple barcode formats (CODE_128, QR, PDF417, etc.)
+- ✅ Handle claim links for online redemption
+- ✅ Fallback to generating barcodes from card numbers
+
+**Key Difference**: iOS extracts barcode values from URL query parameters as primary method (faster and more reliable), with image scanning as fallback. Android may scan images directly.
