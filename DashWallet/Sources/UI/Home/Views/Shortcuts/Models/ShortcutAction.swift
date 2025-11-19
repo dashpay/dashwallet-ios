@@ -34,6 +34,7 @@ enum ShortcutActionType: Int {
     case createUsername
     case receive
     case explore
+    case spend
 }
 
 extension ShortcutActionType {
@@ -96,6 +97,11 @@ extension ShortcutActionType {
                 fatalError("Image not found for shortcut type: \(self)")
             }
             return image
+        case .spend:
+            guard let image = UIImage(named: "shortcut_spend") else {
+                fatalError("Image not found for shortcut type: \(self)")
+            }
+            return image
         default:
             fatalError("Image not found for shortcut type: \(self)")
         }
@@ -139,6 +145,8 @@ extension ShortcutActionType {
             return NSLocalizedString("Receive", comment: "Translate it as short as possible! (24 symbols max)")
         case .explore:
             return NSLocalizedString("Explore", comment: "Translate it as short as possible! (24 symbols max)")
+        case .spend:
+            return NSLocalizedString("Spend", comment: "Translate it as short as possible! (24 symbols max)")
         }
     }
 }

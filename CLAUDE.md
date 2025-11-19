@@ -24,6 +24,66 @@ When the user asks you to make code changes:
 
 Dash Wallet is an iOS cryptocurrency wallet application built for the Dash network. It's a fork of breadwallet that implements SPV (Simplified Payment Verification) for fast mobile performance. The app includes advanced features like DashPay for user-to-user transactions, CoinJoin for privacy, and integrations with external services like Uphold and Coinbase.
 
+## MCP (Model Context Protocol) Server Configuration
+
+### Overview
+MCP servers extend Claude Code's capabilities by providing access to external services and tools. This project uses MCP servers for Figma design integration.
+
+### Required Configuration
+MCP servers must be configured in Claude Desktop's configuration file. Without this configuration, MCP tools will not be available even if they were used in previous sessions.
+
+**Configuration file location**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+### Setting Up Figma MCP Server
+
+1. **Create or update the configuration file**:
+```bash
+cat > ~/Library/Application\ Support/Claude/claude_desktop_config.json << 'EOF'
+{
+  "mcpServers": {
+    "figma-dev-mode": {
+      "command": "npx",
+      "args": ["-y", "@figma/mcp-server-figma-dev-mode"],
+      "description": "Figma Dev Mode MCP server for extracting design specifications, code, and images from Figma files"
+    }
+  }
+}
+EOF
+```
+
+2. **Restart Claude Code**:
+   - Stop Claude Code with `Ctrl+C` in the terminal
+   - Restart with the `claude` command
+   - MCP servers are only connected at startup
+
+3. **Verify MCP tools are available**:
+   - After restart, MCP tools should appear as:
+     - `mcp__figma-dev-mode-mcp-server__get_code`
+     - `mcp__figma-dev-mode-mcp-server__get_image`
+     - `mcp__figma-dev-mode-mcp-server__get_metadata`
+
+### Figma Requirements
+
+For the Figma MCP server to work properly:
+1. **Figma Desktop App** must be running
+2. **Dev Mode** must be enabled (press `Shift+D` in Figma)
+3. **File permissions** must allow public access or you must be logged in
+
+### Troubleshooting MCP Issues
+
+If MCP tools are not available:
+1. **Check configuration exists**: `cat ~/Library/Application\ Support/Claude/claude_desktop_config.json`
+2. **Verify Figma is running**: `ps aux | grep -i figma`
+3. **Restart Claude Code**: MCP connections are only established at startup
+4. **Check npx availability**: Ensure Node.js/npm is installed for npx command
+
+### Why MCP Configuration is Required
+
+- MCP servers are external processes that Claude Code connects to
+- Configuration tells Claude where to find and how to start MCP servers
+- Without the configuration file, Claude Code has no knowledge of available MCP servers
+- Previous sessions' MCP usage (recorded in `.claude/settings.local.json`) doesn't automatically enable MCP in new sessions
+
 ## Build Commands
 
 ### Setup
@@ -289,6 +349,97 @@ class DataService: ObservableObject {
     }
 }
 ```
+
+## Icon and Asset Management Guidelines
+
+### SVG Support and Usage
+iOS supports SVG files directly in image assets since iOS 13/Xcode 12. **Always prefer SVG over PNG** for new icons when available.
+
+#### ✅ Correct SVG Implementation
+```json
+// Contents.json for SVG icons
+{
+  "images" : [
+    {
+      "filename" : "icon.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  },
+  "properties" : {
+    "preserves-vector-representation" : true,
+    "template-rendering-intent" : "template"
+  }
+}
+```
+
+**Key Properties:**
+- `preserves-vector-representation`: Ensures SVG scales perfectly at any size
+- `template-rendering-intent`: Allows icon to adapt to app's tint colors
+
+#### Icon Asset Location
+- **Shortcut icons**: `/DashWallet/Resources/AppAssets.xcassets/Shortcuts/`
+- **Explore Dash icons**: `/DashWallet/Resources/AppAssets.xcassets/Explore Dash/`
+- **General app icons**: `/DashWallet/Resources/AppAssets.xcassets/`
+
+### Home Screen Shortcut Bar Implementation
+
+The shortcut bar displays different button combinations based on wallet state:
+
+#### Four Shortcut States
+1. **Zero balance + Not verified passphrase**: Backup, Receive, Buy & Sell, Spend
+2. **Zero balance + Verified passphrase**: Receive, Send, Buy & Sell, Spend
+3. **Has balance + Verified passphrase**: Receive, Send, Scan, Spend
+4. **Has balance + Not verified passphrase**: Backup, Receive, Send, Spend
+
+#### Implementation Files
+- **Shortcut logic**: `HomeViewModel.swift` - `reloadShortcuts()` method
+- **Action types**: `ShortcutAction.swift` - enum definitions and icon mappings
+- **Action handlers**: `HomeViewController+Shortcuts.swift` - navigation logic
+- **UI component**: `ShortcutsView.swift` - collection view display
+
+#### Adding New Shortcut Icons
+1. Add the case to `ShortcutActionType` enum
+2. Map the icon name in the `icon` computed property
+3. Add localized title in the `title` computed property
+4. Implement action handler in `HomeViewController+Shortcuts.swift`
+5. Update `reloadShortcuts()` logic if needed
+
+### Icon Implementation Best Practices
+
+#### When Updating Icons from Figma
+1. **Check for existing icons first** - Many icons already exist in the project
+   ```bash
+   # Search for existing icons
+   find /path/to/project -name "*.svg" -o -name "*.png" | grep -i "icon_name"
+   ```
+
+2. **Use SVG directly from Figma** - Don't convert to PNG unnecessarily
+   - Download SVG from Figma localhost server
+   - Save directly to appropriate imageset folder
+   - Update Contents.json to reference SVG
+
+3. **Verify icon usage** - Always test that the correct icon appears
+   - Wrong icons often indicate using placeholder or copied assets
+   - Check that imageset name matches the one referenced in code
+
+4. **Clean up old assets** - Remove unused PNG files when replacing with SVG
+   ```bash
+   rm -f /path/to/imageset/*.png
+   ```
+
+### Common Icon Issues and Solutions
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Wrong icon displayed | Using placeholder/copied assets | Replace with actual icon from design |
+| Icon not appearing | Missing imageset or wrong name | Verify imageset exists and name matches code |
+| Icon wrong color | Not using template rendering | Add `"template-rendering-intent": "template"` |
+| Icon blurry | Using PNG instead of SVG | Replace with SVG for vector scaling |
+| Icon too large/small | Fixed size constraints | Use SVG with `preserves-vector-representation` |
 
 ## Important Files
 

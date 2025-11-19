@@ -2211,6 +2211,9 @@
 /* No comment provided by engineer. */
 "Send" = "Send";
 
+/* Shortcut button on Home screen */
+"Spend" = "Spend";
+
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) from this private key into your wallet? The Dash network will receive a fee of %3$@ (%4$@).";
 
