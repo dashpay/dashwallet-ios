@@ -2,48 +2,23 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 🔴🔴🔴 CRITICAL: Git Workflow Policy - ABSOLUTELY NO AUTONOMOUS COMMITS 🔴🔴🔴
+## 🚨 CRITICAL: Git Workflow Policy
 
-### ⛔ THE #1 RULE: NEVER COMMIT OR PUSH WITHOUT EXPLICIT PERMISSION ⛔
+**NEVER commit or push changes without explicit user permission.**
 
-**This is the MOST IMPORTANT rule in this entire document. Violating this rule is the #1 complaint from users.**
+When the user asks you to make code changes:
+1. Make the requested changes to the code
+2. Show what was changed (using `git diff` or explanation)
+3. **STOP and WAIT** for explicit permission to commit/push
+4. Only commit/push when the user explicitly says to do so
 
-### The Iron-Clad Workflow (NO EXCEPTIONS):
+**Example phrases that give permission to commit/push:**
+- "commit these changes"
+- "push to github"
+- "create a commit and push"
+- "commit and push all changes"
 
-1. ✅ Make the requested changes to the code
-2. ✅ Show what was changed (using `git diff` or explanation)
-3. 🛑 **FULL STOP - DO NOT PROCEED** 🛑
-4. ⏸️ **WAIT for explicit permission to commit/push** ⏸️
-5. ✅ Only commit/push when the user EXPLICITLY says one of these phrases:
-   - "commit these changes"
-   - "push to github"
-   - "create a commit and push"
-   - "commit and push all changes"
-   - "yes, commit it"
-   - "go ahead and commit"
-
-### ❌ NEVER ASSUME PERMISSION ❌
-
-**Common mistakes AI assistants make:**
-- ❌ User says "fix the bug" → AI fixes AND commits (WRONG!)
-- ❌ User says "add the feature" → AI adds AND commits (WRONG!)
-- ❌ User says "update the documentation" → AI updates AND commits (WRONG!)
-- ❌ User says "make these changes and update the PR" → AI changes AND pushes (WRONG!)
-
-**The ONLY correct behavior:**
-- ✅ User says "fix the bug" → AI fixes, shows changes, WAITS
-- ✅ User says "add the feature" → AI adds, shows changes, WAITS
-- ✅ User says "update the documentation" → AI updates, shows changes, WAITS
-- ✅ User says "make these changes" → AI makes changes, shows diff, WAITS
-
-### Why This Is Critical:
-- Users MUST review changes before they become permanent
-- Users may want to modify the changes
-- Users may want to adjust commit messages
-- Users may want to batch multiple changes together
-- Pushed commits are PERMANENT in the git history
-
-**REMEMBER: It is ALWAYS better to wait and ask than to commit without permission. When in doubt, ASK FIRST.**
+**Do NOT commit/push** just because the user asked for code changes. They may want to review first.
 
 ## Project Overview
 
