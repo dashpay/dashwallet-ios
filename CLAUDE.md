@@ -225,6 +225,43 @@ bartycrouch update
 - UTF-8 encoding with automatic key sorting and harmonization
 - Supports App Store metadata localization
 
+#### Important: UTF-16 Encoding in Translation Files
+**Critical Issue**: Translation files downloaded from Transifex may use different encodings:
+- **English source file** (`en.lproj/Localizable.strings`): UTF-8 encoding
+- **Translated files**: Often UTF-16 little-endian encoding
+
+This causes command-line tools like `grep` to fail when searching for translations:
+```bash
+# ❌ WRONG - Won't find strings in UTF-16 files
+grep '"Spend"' DashWallet/de.lproj/Localizable.strings
+
+# ✅ CORRECT - Convert encoding first
+iconv -f UTF-16 -t UTF-8 DashWallet/de.lproj/Localizable.strings | grep '"Spend"'
+```
+
+**To check translations properly:**
+```bash
+# Check file encoding
+file DashWallet/*/lproj/Localizable.strings
+
+# Search all translation files regardless of encoding
+for file in DashWallet/*.lproj/Localizable.strings; do
+    lang=$(basename $(dirname "$file") .lproj)
+    if file "$file" | grep -q UTF-16; then
+        # UTF-16 file - convert before searching
+        translation=$(iconv -f UTF-16 -t UTF-8 "$file" 2>/dev/null | grep '"Spend"' | sed 's/.*= "//; s/";//')
+    else
+        # UTF-8 file - search directly
+        translation=$(grep '"Spend"' "$file" 2>/dev/null | sed 's/.*= "//; s/";//')
+    fi
+    if [ -n "$translation" ]; then
+        echo "$lang: $translation"
+    fi
+done
+```
+
+**Note**: Xcode and iOS handle both encodings transparently, so this only affects command-line operations. The app will display translations correctly regardless of the file encoding.
+
 ### Build Configurations
 - **Debug**: Development with full debugging and logging
 - **Release**: Production optimized build
