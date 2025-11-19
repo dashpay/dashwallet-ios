@@ -184,14 +184,17 @@ class MerchantDAO: PointOfUseDAO {
 
                             do {
                                 guard let db = wSelf.connection.db else {
-                                    print("Error: Database connection is nil for merchant \(merchant.merchantId)")
+                                    print("🎯 MerchantDAO.items(userLocation): ERROR - Database connection is nil for merchant \(merchant.merchantId)")
                                     continue
                                 }
 
+                                print("🎯 MerchantDAO.items(userLocation): Querying providers for merchant: \(merchant.merchantId)")
                                 let rows = try db.prepare(providersQuery)
                                 var providers: [ExplorePointOfUse.Merchant.GiftCardProviderInfo] = []
+                                var rowCount = 0
 
                                 for row in rows {
+                                    rowCount += 1
                                     if let providerId = row[0] as? String,
                                        let savingsPercentage = row[1] as? Int64,
                                        let denominationsType = row[2] as? String {
@@ -214,6 +217,8 @@ class MerchantDAO: PointOfUseDAO {
                                         ))
                                     }
                                 }
+
+                                print("🎯 MerchantDAO.items(userLocation): Found \(rowCount) provider rows, created \(providers.count) providers for \(merchant.merchantId)")
 
                                 if !providers.isEmpty {
                                     // Create updated merchant with providers
@@ -253,7 +258,7 @@ class MerchantDAO: PointOfUseDAO {
                                     allItems[index] = updatedItem
                                 }
                             } catch {
-                                print("Error fetching gift card providers for merchant \(merchant.merchantId): \(error)")
+                                print("🎯 MerchantDAO.items(userLocation): ERROR fetching gift card providers for merchant \(merchant.merchantId): \(error)")
                             }
                         }
                     }
@@ -418,14 +423,17 @@ class MerchantDAO: PointOfUseDAO {
 
                         do {
                             guard let db = wSelf.connection.db else {
-                                print("Error: Database connection is nil for merchant \(merchant.merchantId)")
+                                print("🎯 MerchantDAO.items: ERROR - Database connection is nil for merchant \(merchant.merchantId)")
                                 continue
                             }
 
+                            print("🎯 MerchantDAO.items: Querying providers for merchant: \(merchant.merchantId)")
                             let rows = try db.prepare(providersQuery)
                             var providers: [ExplorePointOfUse.Merchant.GiftCardProviderInfo] = []
-                            
+                            var rowCount = 0
+
                             for row in rows {
+                                rowCount += 1
                                 if let providerId = row[0] as? String,
                                    let savingsPercentage = row[1] as? Int64,
                                    let denominationsType = row[2] as? String {
@@ -448,7 +456,9 @@ class MerchantDAO: PointOfUseDAO {
                                     ))
                                 }
                             }
-                            
+
+                            print("🎯 MerchantDAO.items: Found \(rowCount) provider rows, created \(providers.count) providers for \(merchant.merchantId)")
+
                             if !providers.isEmpty {
                                 // Create updated merchant with providers
                                 let updatedMerchant = ExplorePointOfUse.Merchant(
@@ -488,11 +498,11 @@ class MerchantDAO: PointOfUseDAO {
                             }
                         } catch {
                             // If we can't fetch providers, just continue with empty providers
-                            print("Error fetching gift card providers for merchant \(merchant.merchantId): \(error)")
+                            print("🎯 MerchantDAO.items: ERROR fetching gift card providers for merchant \(merchant.merchantId): \(error)")
                         }
                     }
                 }
-                
+
                 completion(.success(PaginationResult(items: items, offset: offset)))
             } catch {
                 print(error)
@@ -624,8 +634,10 @@ extension MerchantDAO {
 
                             let statement = try db.prepare(providersQuery, merchant.merchantId)
                             var providers: [ExplorePointOfUse.Merchant.GiftCardProviderInfo] = []
+                            var rowCount = 0
 
                             for row in statement {
+                                rowCount += 1
                                 // Access columns by index
                                 let providerId = row[0] as? String
                                 let savingsPercentage = row[1] as? Int64
@@ -674,6 +686,8 @@ extension MerchantDAO {
                                     ))
                                 }
                             }
+
+                            print("🎯 MerchantDAO.items(userLocation): Found \(rowCount) provider rows, created \(providers.count) providers for \(merchant.merchantId)")
 
                             if !providers.isEmpty {
                                 // Create updated merchant with providers
