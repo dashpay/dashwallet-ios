@@ -90,7 +90,7 @@ class PiggyCardsCache {
 
         // Priority 1: Instant delivery fixed cards with exact denomination
         if let instantCard = enabledCards.first(where: { card in
-            card.priceType == PiggyCardsPriceType.fixed.rawValue &&
+            card.priceType.trimmingCharacters(in: .whitespaces).lowercased() == PiggyCardsPriceType.fixed.rawValue &&
             card.name.contains("INSTANT DELIVERY") &&
             Double(card.denomination) == amount
         }) {
@@ -99,7 +99,7 @@ class PiggyCardsCache {
 
         // Priority 2: Regular fixed cards with exact denomination
         if let fixedCard = enabledCards.first(where: { card in
-            card.priceType == PiggyCardsPriceType.fixed.rawValue &&
+            card.priceType.trimmingCharacters(in: .whitespaces).lowercased() == PiggyCardsPriceType.fixed.rawValue &&
             Double(card.denomination) == amount
         }) {
             return fixedCard
@@ -107,7 +107,7 @@ class PiggyCardsCache {
 
         // Priority 3: Range cards that include the amount
         if let rangeCard = enabledCards.first(where: { card in
-            card.priceType == PiggyCardsPriceType.range.rawValue &&
+            card.priceType.trimmingCharacters(in: .whitespaces).lowercased() == PiggyCardsPriceType.range.rawValue &&
             amount >= card.minDenomination &&
             amount <= card.maxDenomination
         }) {
@@ -116,8 +116,8 @@ class PiggyCardsCache {
 
         // Priority 4: Option cards that include the denomination
         if let optionCard = enabledCards.first(where: { card in
-            card.priceType == PiggyCardsPriceType.option.rawValue &&
-            card.denomination.split(separator: ",").compactMap { Double($0) }.contains(amount)
+            card.priceType.trimmingCharacters(in: .whitespaces).lowercased() == PiggyCardsPriceType.option.rawValue &&
+            card.denomination.split(separator: ",").compactMap { Double($0.trimmingCharacters(in: .whitespaces)) }.contains(amount)
         }) {
             return optionCard
         }

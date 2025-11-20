@@ -82,7 +82,7 @@ class AllMerchantLocationsViewController: ExplorePointOfUseListViewController {
             let isFromAllTab = searchRadius == Double.greatestFiniteMagnitude
             let shouldRemoveRadius = isFromAllTab
 
-            print("🎯 AllMerchantLocationsViewController: isFromAllTab=\(isFromAllTab), shouldRemoveRadius=\(shouldRemoveRadius)")
+            print("🔴 AllMerchantLocationsViewController: isFromAllTab=\(isFromAllTab), shouldRemoveRadius=\(shouldRemoveRadius)")
 
             // Sort by distance if location authorized, otherwise use the current sort from filters
             let sortBy: PointOfUseListFilters.SortBy

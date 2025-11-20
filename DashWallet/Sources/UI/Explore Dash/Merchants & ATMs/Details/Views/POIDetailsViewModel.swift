@@ -53,6 +53,7 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
     @Published private(set) var selectedProvider: GiftCardProvider? = nil
     @Published private(set) var showProviderPicker: Bool = false
     @Published private(set) var locationCount: Int = 0
+    @Published private(set) var merchantEnabled: Bool = true
 
     var formattedPhoneNumber: String? {
         guard let phone = merchant.phone, !phone.isEmpty else { return nil }
@@ -176,11 +177,7 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
         providerList.sort { first, second in
             if first.discount == second.discount {
                 // If discounts are equal, prefer PiggyCards
-                #if PIGGYCARDS_ENABLED
                 return first.provider == .piggyCards && second.provider != .piggyCards
-                #else
-                return false // Keep original order if PiggyCards is not enabled
-                #endif
             }
             return first.discount > second.discount
         }
@@ -202,6 +199,28 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
         // Start observing the selected provider
         if let selectedProvider = selectedProvider {
             observeDashSpendState(provider: selectedProvider)
+        }
+
+        // Fetch merchant enabled status from API
+        Task {
+            await fetchMerchantStatus()
+        }
+    }
+
+    private func fetchMerchantStatus() async {
+        guard case .merchant(let m) = merchant.category,
+              m.paymentMethod == .giftCard,
+              let provider = selectedProvider,
+              let repository = repositories[provider] as? CTXSpendRepository else {
+            return
+        }
+
+        do {
+            let merchantResponse = try await repository.getMerchant(merchantId: m.merchantId)
+            merchantEnabled = merchantResponse.enabled
+        } catch {
+            // On error, default to enabled to avoid blocking legitimate purchases
+            merchantEnabled = true
         }
     }
     

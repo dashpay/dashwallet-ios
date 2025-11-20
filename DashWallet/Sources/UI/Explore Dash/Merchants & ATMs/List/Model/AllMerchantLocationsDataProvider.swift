@@ -39,13 +39,13 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
         let isShowAllLocationsGlobally = bounds == nil && !hasRadiusFilter
 
         if isShowAllLocationsWithRadius {
-            print("🎯 NEARBY-RADIUS-FIX: bounds=nil, radius=\(filters?.radius?.meters ?? 0)m, userPoint=\(userPoint != nil)")
+            print("🔴 NEARBY-RADIUS-FIX: bounds=nil, radius=\(filters?.radius?.meters ?? 0)m, userPoint=\(userPoint != nil)")
             if let radius = filters?.radius, let userLocation = userPoint {
                 let circularBounds = MKCircle(center: userLocation, radius: radius.meters)
                 bounds = ExploreMapBounds(rect: circularBounds.boundingMapRect)
             }
         } else if isShowAllLocationsGlobally {
-            print("🎯 ALL-TAB-GLOBAL: bounds=nil, no radius filter")
+            print("🔴 ALL-TAB-GLOBAL: bounds=nil, no radius filter")
             bounds = nil
             // Keep userPoint for distance sorting if filters require it
             if filters?.sortBy == .distance {

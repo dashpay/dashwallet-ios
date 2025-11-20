@@ -70,7 +70,7 @@ public struct PiggyCardsOrderRequest: Codable {
 
     enum CodingKeys: String, CodingKey {
         case orders
-        case recipientEmail = "recipient_email"
+        case recipientEmail  // Changed to camelCase (API expects "recipientEmail" not "recipient_email")
         case user
     }
 }
@@ -82,7 +82,7 @@ struct PiggyCardsOrder: Codable {
     let currency: String
 
     enum CodingKeys: String, CodingKey {
-        case productId = "product_id"
+        case productId  // Changed from "product_id" to match API expectation
         case quantity
         case denomination
         case currency
@@ -101,7 +101,7 @@ struct PiggyCardsUserMetadata: Codable {
     let state: String
 
     enum CodingKeys: String, CodingKey {
-        case registeredSince = "registered_since"
+        case registeredSince  // Changed to camelCase (API expects "registeredSince" not "registered_since")
         case country
         case state
     }
@@ -136,13 +136,13 @@ struct PiggyCardsSignupResponse: Codable {
 
 struct PiggyCardsOrderResponse: Codable {
     let id: String
-    let payTo: String
+    let payTo: String?  // Made optional - might not be in initial response
     let payMessage: String?
 
     enum CodingKeys: String, CodingKey {
         case id
-        case payTo = "pay_to"
-        case payMessage = "pay_message"
+        case payTo  // Changed to camelCase (API returns "payTo" not "pay_to")
+        case payMessage  // Changed to camelCase (API returns "payMessage" not "pay_message")
     }
 }
 
@@ -160,9 +160,9 @@ struct PiggyCardsOrderData: Codable {
     let cards: [PiggyCardsOrderGiftCard]
 
     enum CodingKeys: String, CodingKey {
-        case orderId = "order_id"
-        case payTo = "pay_to"
-        case deliveryTime = "delivery_time"
+        case orderId  // Changed to camelCase
+        case payTo  // Changed to camelCase
+        case deliveryTime  // Changed to camelCase
         case status
         case cards
     }
@@ -179,11 +179,11 @@ struct PiggyCardsOrderGiftCard: Codable {
 
     enum CodingKeys: String, CodingKey {
         case name
-        case claimCode = "claim_code"
-        case claimPin = "claim_pin"
-        case barcodeLink = "barcode_link"
-        case cardStatus = "card_status"
-        case claimLink = "claim_link"
+        case claimCode  // Changed to camelCase
+        case claimPin  // Changed to camelCase
+        case barcodeLink  // Changed to camelCase
+        case cardStatus  // Changed to camelCase
+        case claimLink  // Changed to camelCase
         case answer
     }
 }
@@ -244,8 +244,8 @@ struct PiggyCardsExchangeRateResult: Codable {
 
     enum CodingKeys: String, CodingKey {
         case currency
-        case exchangeRate = "exchange_rate"
-        case dateModified = "date_modified"
+        case exchangeRate = "exchange_rate"  // Revert to snake_case - this endpoint uses it
+        case dateModified = "date_modified"  // Revert to snake_case
     }
 }
 

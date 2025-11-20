@@ -123,32 +123,32 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         merchantTitle = merchant.name
         merchantIconUrl = merchant.logoLocation ?? ""
         merchantUrl = merchant.website
-        savingsFraction = Decimal(merchant.merchant?.toSavingsFraction() ?? 0.0)
-
         if let merchantId = merchant.merchant?.merchantId {
             self.merchantId = merchantId
         }
 
         // Get the sourceId and denomination type for the current provider from giftCardProviders
-        DSLogger.log("🎯 DashSpendPayViewModel: Looking for provider-specific data for: \(provider)")
         var providerIsFixed = false  // Local variable to store denomination type
+        var providerSavingsFraction = Decimal(merchant.merchant?.toSavingsFraction() ?? 0.0)
+
         if let giftCardProviders = merchant.merchant?.giftCardProviders {
-            DSLogger.log("🎯 DashSpendPayViewModel: Found \(giftCardProviders.count) gift card providers")
             for providerInfo in giftCardProviders {
-                DSLogger.log("🎯 DashSpendPayViewModel: Checking provider: \(providerInfo.providerId), type: \(String(describing: providerInfo.provider)), sourceId: \(providerInfo.sourceId ?? "nil"), denominationType: \(providerInfo.denominationsType)")
                 if (provider == .ctx && providerInfo.provider == .ctx) ||
                    (provider == .piggyCards && providerInfo.provider == .piggyCards) {
                     // Set sourceId
                     self.sourceId = providerInfo.sourceId
                     // Store provider-specific denomination type
                     providerIsFixed = providerInfo.denominationsType == DenominationType.Fixed.rawValue
-                    DSLogger.log("🎯 DashSpendPayViewModel: MATCHED! Set for \(provider): sourceId: \(providerInfo.sourceId ?? "nil"), isFixed: \(providerIsFixed)")
+                    // Update savings fraction from the provider-specific discount
+                    providerSavingsFraction = Decimal(providerInfo.savingsPercentage) / Decimal(10000)
                     break
                 }
             }
         } else {
-            DSLogger.log("🎯 DashSpendPayViewModel: ERROR - No gift card providers found for merchant: \(merchant.name)")
         }
+
+        // Store initial savingsFraction
+        savingsFraction = providerSavingsFraction
 
         // Only use merchant-level denominations as fallback if we don't have provider-specific info
         if merchant.merchant?.denominations != nil {
@@ -161,10 +161,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         self.isFixedDenomination = providerIsFixed
 
         // Log debug info after super.init()
-        DSLogger.log("🎯 PiggyCards DEBUG: DashSpendPayViewModel init with provider: \(provider), merchant: \(merchant.name)")
-        DSLogger.log("🎯 PiggyCards DEBUG: Merchant ID: \(merchantId)")
-        DSLogger.log("🎯 PiggyCards DEBUG: Initial denomination type from DB - isFixed: \(isFixedDenomination), denominations: \(denominations)")
-        
+
         // Set up network status change handler
         networkStatusDidChange = { [weak self] status in
             self?.handleNetworkStatusChange(status)
@@ -203,10 +200,13 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
     
     func purchaseGiftCardAndPay() async throws -> Data {
+        DSLogger.log("🔴 PAYMENT START: Beginning purchaseGiftCardAndPay for provider: \(provider)")
+        DSLogger.log("🔴 PAYMENT: Merchant: \(merchantTitle), Amount: \(amount)")
+
         isProcessingPayment = true
         defer { isProcessingPayment = false }
 
-        let paymentUrlString: String
+        let transaction: DSTransaction
         let giftCardId: String
 
         switch provider {
@@ -217,17 +217,21 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             guard let url = response.paymentUrls?.first?.value else {
                 throw DashSpendError.paymentProcessingError("No payment URL received")
             }
-            paymentUrlString = url
+
+
+            // CTX uses BIP70 payment request URLs
+            transaction = try await sendCoinsService.payWithDashUrl(url: url)
             giftCardId = response.paymentId
 
-        #if PIGGYCARDS_ENABLED
         case .piggyCards:
+
             // PiggyCards uses orderGiftCard which returns GiftCardInfo
             guard let piggyCardsRepo = repository[provider] as? PiggyCardsRepository else {
                 throw DashSpendError.unauthorized
             }
 
             let fiatAmountDouble = Double(truncating: amount as NSDecimalNumber)
+
             let giftCardInfo = try await piggyCardsRepo.orderGiftCard(
                 merchantId: merchantId,
                 fiatAmount: fiatAmountDouble,
@@ -235,20 +239,30 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 cryptoCurrency: "DASH"
             )
 
-            // Create payment URL from the GiftCardInfo
-            paymentUrlString = "dash:\(giftCardInfo.paymentAddress)?amount=\(giftCardInfo.amount)"
+
+            // PiggyCards returns a simple address and amount, not a BIP70 URL
+            // Convert DASH amount to satoshis (1 DASH = 100,000,000 satoshis)
+            let dashAmountInSatoshis = UInt64(giftCardInfo.amount * 100_000_000)
+
+            // Use sendCoins directly with address and amount
+            // This will properly trigger PIN authorization
+
+            transaction = try await sendCoinsService.sendCoins(
+                address: giftCardInfo.paymentAddress,
+                amount: dashAmountInSatoshis
+            )
+
+
             giftCardId = giftCardInfo.orderId
-        #endif
         }
 
-        let transaction = try await sendCoinsService.payWithDashUrl(url: paymentUrlString)
-
         // Payment successful - save gift card information
-        DSLogger.log("Payment transaction completed: \(transaction.txHashHexString)")
+        DSLogger.log("🔴 Transaction completed: \(transaction.txHashHexString)")
         markGiftCardTransaction(txId: transaction.txHashData, provider: provider.displayName)
         customIconProvider.updateIcon(txId: transaction.txHashData, iconUrl: merchantIconUrl)
         saveGiftCardDummy(txHashData: transaction.txHashData, giftCardId: giftCardId)
 
+        DSLogger.log("🔴 PAYMENT END: Returning transaction hash")
         return transaction.txHashData
     }
     
@@ -322,12 +336,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     
     private func updateMerchantInfo() async {
         guard !merchantId.isEmpty, repository[provider]?.isUserSignedIn == true else {
-            DSLogger.log("🎯 PiggyCards DEBUG: Not updating merchant info - merchantId: \(merchantId), provider: \(provider), signedIn: \(repository[provider]?.isUserSignedIn ?? false)")
             return
         }
 
-        DSLogger.log("🎯 PiggyCards DEBUG: Updating merchant info for provider: \(provider), merchantId: \(merchantId)")
-        DSLogger.log("🎯 PiggyCards DEBUG: BEFORE API - isFixed: \(isFixedDenomination), denominations: \(denominations), min: \(minimumAmount), max: \(maximumAmount)")
 
         // Set loading state
         await MainActor.run {
@@ -337,11 +348,11 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         do {
             switch provider {
             case .ctx:
-                DSLogger.log("🎯 PiggyCards DEBUG: Fetching CTX merchant info")
                 let merchantInfo = try await ctxSpendRepository.getMerchant(merchantId: merchantId)
 
                 // Update merchant details from API (API is source of truth when signed in)
-                savingsFraction = Decimal(merchantInfo.savingsPercentage) / Decimal(10000)
+                // Use discount property for backwards compatibility (handles both savingsPercentage and userDiscount)
+                savingsFraction = Decimal(merchantInfo.discount) / Decimal(10000)
 
                 // Set denomination type from API response
                 if merchantInfo.denominationType == .Range {
@@ -350,27 +361,21 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                     maximumAmount = Decimal(merchantInfo.maximumCardPurchase)
                     // Clear fixed denomination values
                     denominations = []
-                    DSLogger.log("🎯 CTX DEBUG: API says FLEXIBLE - min: \(minimumAmount), max: \(maximumAmount)")
                 } else {
                     isFixedDenomination = true
                     denominations = merchantInfo.denominations.compactMap { Int($0) }
                     // Clear flexible amount values
                     minimumAmount = 0
                     maximumAmount = 0
-                    DSLogger.log("🎯 CTX DEBUG: API says FIXED - denominations: \(denominations)")
                 }
 
-            #if PIGGYCARDS_ENABLED
             case .piggyCards:
-                DSLogger.log("🎯 PiggyCards DEBUG: Fetching PiggyCards gift cards for merchantId: \(merchantId), sourceId: \(sourceId ?? "nil")")
                 // For PiggyCards, we need to fetch gift cards for this merchant using the sourceId from the database
                 guard let piggyCardsRepo = repository[provider] as? PiggyCardsRepository else {
-                    DSLogger.log("🎯 PiggyCards DEBUG: ERROR - Could not cast repository to PiggyCardsRepository")
                     return
                 }
 
                 guard let sourceId = sourceId else {
-                    DSLogger.log("🎯 PiggyCards DEBUG: ERROR - No sourceId found for PiggyCards provider")
                     return
                 }
 
@@ -380,11 +385,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                     merchantId: merchantId
                 )
 
-                DSLogger.log("🎯 PiggyCards DEBUG: Received \(giftCards.count) gift cards")
 
                 // Log ALL cards to understand what we're getting
                 for (index, card) in giftCards.enumerated() {
-                    DSLogger.log("🎯 PiggyCards DEBUG: Card \(index): name=\(card.name), priceType=\(card.priceType), denomination=\(card.denomination), min=\(card.minDenomination), max=\(card.maxDenomination), discount=\(card.discountPercentage)%")
                 }
 
                 // Select the best card based on merchant name
@@ -396,25 +399,20 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                         card.priceType.lowercased() == "fixed"
                     }) {
                         preferredCard = fixedCard
-                        DSLogger.log("🎯 PiggyCards DEBUG: Domino's - Using fixed card: \(fixedCard.name), priceType: \(fixedCard.priceType)")
                     } else {
                         preferredCard = giftCards.first
-                        DSLogger.log("🎯 PiggyCards DEBUG: Domino's - No fixed card found, using first card")
                     }
                 } else if let instantCard = giftCards.first(where: { card in
                     card.name.lowercased().contains("instant")
                 }) {
                     // For other merchants, prefer instant delivery cards
                     preferredCard = instantCard
-                    DSLogger.log("🎯 PiggyCards DEBUG: Using instant delivery card: \(instantCard.name), priceType: \(instantCard.priceType)")
                 } else {
                     preferredCard = giftCards.first
-                    DSLogger.log("🎯 PiggyCards DEBUG: Using first available card")
                 }
 
                 // Process the selected gift card to determine denomination type
                 if let firstCard = preferredCard {
-                    DSLogger.log("🎯 PiggyCards DEBUG: Processing card - priceType: \(firstCard.priceType), denomination: \(firstCard.denomination), min: \(firstCard.minDenomination), max: \(firstCard.maxDenomination)")
 
                     // Apply discount with service fee
                     // PiggyCards returns discount as whole number (e.g., 2.0 = 2% discount)
@@ -422,13 +420,13 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                     let serviceFee = Decimal(PiggyCardsConstants.serviceFeePercent)
                     savingsFraction = max(0, discountPercent - serviceFee) / 100
 
-                    DSLogger.log("🎯 PiggyCards DEBUG: Discount: \(discountPercent)%, Service fee: \(serviceFee)%, Final savings: \(savingsFraction)")
 
                     // PiggyCards API returns capitalized price types, normalize to lowercase
-                    let normalizedPriceType = firstCard.priceType.lowercased()
+                    // Android pattern: trim().lowercase() for proper normalization
+                    let normalizedPriceType = firstCard.priceType
+                        .trimmingCharacters(in: .whitespaces)
+                        .lowercased()
 
-                    DSLogger.log("🎯 PiggyCards DEBUG: Normalized price type: \(normalizedPriceType)")
-                    DSLogger.log("🎯 PiggyCards DEBUG: Database said isFixedDenomination: \(isFixedDenomination)")
 
                     // Use API as source of truth for denomination type (like Android does)
                     if normalizedPriceType == PiggyCardsPriceType.range.rawValue {
@@ -441,9 +439,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                         if minVal > 0 && maxVal > 0 {
                             minimumAmount = minVal
                             maximumAmount = maxVal
-                            DSLogger.log("🎯 PiggyCards DEBUG: API says FLEXIBLE - min: \(minimumAmount), max: \(maximumAmount)")
                         } else {
-                            DSLogger.log("🎯 PiggyCards DEBUG: WARNING - Invalid min/max values from API: min=\(minVal), max=\(maxVal)")
                             // Keep any existing valid values or set defaults
                             if minimumAmount <= 0 { minimumAmount = 10 }
                             if maximumAmount <= 0 { maximumAmount = 500 }
@@ -464,39 +460,30 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                             let denominationValues = firstCard.denomination.split(separator: ",")
                                 .compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }
                             denominations = denominationValues.sorted()
-                            DSLogger.log("🎯 PiggyCards DEBUG: API says FIXED (option) - denominations: \(denominations)")
                         } else if let fixedValue = Int(firstCard.denomination.trimmingCharacters(in: .whitespaces)) {
                             // Single fixed denomination
                             denominations = [fixedValue]
-                            DSLogger.log("🎯 PiggyCards DEBUG: API says FIXED - denomination: \(fixedValue)")
                         } else {
                             // Try parsing as comma-separated values if single parse fails
                             let denominationValues = firstCard.denomination.split(separator: ",")
                                 .compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }
                             denominations = denominationValues.sorted()
-                            DSLogger.log("🎯 PiggyCards DEBUG: API says FIXED - parsed denominations: \(denominations)")
                         }
                     } else {
                         // Unknown price type - log warning but keep existing values
-                        DSLogger.log("🎯 PiggyCards DEBUG: WARNING - Unknown price type: \(normalizedPriceType)")
                     }
                 } else {
-                    DSLogger.log("🎯 PiggyCards DEBUG: WARNING - No gift cards returned from API")
                 }
-            #endif
             }
 
-            DSLogger.log("🎯 PiggyCards DEBUG: AFTER API - isFixed: \(isFixedDenomination), denominations: \(denominations), min: \(minimumAmount), max: \(maximumAmount)")
 
             // Force UI update on main thread
             await MainActor.run {
                 self.isLoading = false
                 self.objectWillChange.send()
                 self.checkAmountForErrors()
-                DSLogger.log("🎯 PiggyCards DEBUG: Triggered UI update")
             }
         } catch {
-            DSLogger.log("🎯 PiggyCards DEBUG: ERROR - Failed to get merchant info: \(error)")
             await MainActor.run {
                 self.isLoading = false
             }
@@ -505,32 +492,49 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     
     private func purchaseGiftCardAPI() async throws -> GiftCardResponse {
         guard !merchantId.isEmpty, repository[provider]?.isUserSignedIn == true else {
-            DSLogger.log("Purchase gift card failed: User not signed in or merchant ID is empty")
             throw DashSpendError.unauthorized
         }
-        
+
+        // Use locale-invariant formatter to ensure consistent decimal formatting
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        formatter.decimalSeparator = "."
+        formatter.usesGroupingSeparator = false
+
+        // Round to 2 decimal places without converting to Double
+        let roundedAmount = NSDecimalNumber(decimal: amount)
+        let fiatAmountString = formatter.string(from: roundedAmount) ?? "0.00"
+
         DSLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(amount)")
-        let fiatAmountString = String(format: "%.2f", Double(truncating: amount as NSDecimalNumber))
-        
-        return try await ctxSpendRepository.purchaseGiftCard(
-            merchantId: merchantId,
-            fiatAmount: fiatAmountString,
-            fiatCurrency: "USD",
-            cryptoCurrency: "DASH"
-        )
+
+        do {
+            let response = try await ctxSpendRepository.purchaseGiftCard(
+                merchantId: merchantId,
+                fiatAmount: fiatAmountString,
+                fiatCurrency: "USD",
+                cryptoCurrency: "DASH"
+            )
+            return response
+        } catch {
+            throw error
+        }
     }
     
     private func saveGiftCardDummy(txHashData: Data, giftCardId: String) {
         DSLogger.log("Gift card saved - txId: \(txHashData.hexEncodedString()), giftCardId: \(giftCardId)")
-        
+
         let giftCard = GiftCard(
             txId: txHashData,
             merchantName: merchantTitle,
             merchantUrl: merchantUrl,
             price: amount,
-            note: giftCardId // Store payment ID in note field temporarily
+            note: giftCardId, // Store payment ID in note field temporarily
+            provider: provider.displayName  // Store provider (CTX or PiggyCards)
         )
-        
+
         Task {
             await GiftCardsDAOImpl.shared.create(dto: giftCard)
         }

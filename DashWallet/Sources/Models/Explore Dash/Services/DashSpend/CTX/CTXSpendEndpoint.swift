@@ -18,8 +18,6 @@
 import Foundation
 import Moya
 
-private let kBaseURL = URL(string: CTXConstants.baseURI)!
-
 // MARK: - CTXSpendAPIError
 
 struct CTXSpendAPIError: Decodable {
@@ -58,13 +56,19 @@ extension CTXSpendEndpoint: TargetType, AccessTokenAuthorizable {
         switch self {
         case .login, .verifyEmail, .refreshToken:
             return nil
+        case .getMerchant:
+            // getMerchant requires auth in staging but not in production
+            // Always use auth if available to ensure it works in both environments
+            return .bearer
         default:
             return .bearer
         }
     }
     
     public var baseURL: URL {
-        return kBaseURL
+        // Dynamically compute the base URL based on the current network
+        // This ensures the correct endpoint is used even when switching between testnet/mainnet
+        return URL(string: CTXConstants.baseURI)!
     }
     
     public var path: String {
@@ -108,11 +112,14 @@ extension CTXSpendEndpoint: TargetType, AccessTokenAuthorizable {
     
     public var headers: [String: String]? {
         var headers = ["Content-Type": "application/json"]
-        
+
+        // Add client identifier for CTX API tracking
+        headers["X-Client-Id"] = "dcg_ios"
+
         if let lang = Locale.current.languageCode {
             headers["Accept-Language"] = lang
         }
-        
+
         return headers
     }
 }

@@ -2,48 +2,23 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 🔴🔴🔴 CRITICAL: Git Workflow Policy - ABSOLUTELY NO AUTONOMOUS COMMITS 🔴🔴🔴
+## 🚨 CRITICAL: Git Workflow Policy
 
-### ⛔ THE #1 RULE: NEVER COMMIT OR PUSH WITHOUT EXPLICIT PERMISSION ⛔
+**NEVER commit or push changes without explicit user permission.**
 
-**This is the MOST IMPORTANT rule in this entire document. Violating this rule is the #1 complaint from users.**
+When the user asks you to make code changes:
+1. Make the requested changes to the code
+2. Show what was changed (using `git diff` or explanation)
+3. **STOP and WAIT** for explicit permission to commit/push
+4. Only commit/push when the user explicitly says to do so
 
-### The Iron-Clad Workflow (NO EXCEPTIONS):
+**Example phrases that give permission to commit/push:**
+- "commit these changes"
+- "push to github"
+- "create a commit and push"
+- "commit and push all changes"
 
-1. ✅ Make the requested changes to the code
-2. ✅ Show what was changed (using `git diff` or explanation)
-3. 🛑 **FULL STOP - DO NOT PROCEED** 🛑
-4. ⏸️ **WAIT for explicit permission to commit/push** ⏸️
-5. ✅ Only commit/push when the user EXPLICITLY says one of these phrases:
-   - "commit these changes"
-   - "push to github"
-   - "create a commit and push"
-   - "commit and push all changes"
-   - "yes, commit it"
-   - "go ahead and commit"
-
-### ❌ NEVER ASSUME PERMISSION ❌
-
-**Common mistakes AI assistants make:**
-- ❌ User says "fix the bug" → AI fixes AND commits (WRONG!)
-- ❌ User says "add the feature" → AI adds AND commits (WRONG!)
-- ❌ User says "update the documentation" → AI updates AND commits (WRONG!)
-- ❌ User says "make these changes and update the PR" → AI changes AND pushes (WRONG!)
-
-**The ONLY correct behavior:**
-- ✅ User says "fix the bug" → AI fixes, shows changes, WAITS
-- ✅ User says "add the feature" → AI adds, shows changes, WAITS
-- ✅ User says "update the documentation" → AI updates, shows changes, WAITS
-- ✅ User says "make these changes" → AI makes changes, shows diff, WAITS
-
-### Why This Is Critical:
-- Users MUST review changes before they become permanent
-- Users may want to modify the changes
-- Users may want to adjust commit messages
-- Users may want to batch multiple changes together
-- Pushed commits are PERMANENT in the git history
-
-**REMEMBER: It is ALWAYS better to wait and ask than to commit without permission. When in doubt, ASK FIRST.**
+**Do NOT commit/push** just because the user asked for code changes. They may want to review first.
 
 ## Project Overview
 
@@ -224,6 +199,43 @@ bartycrouch update
 - Process: Build project → `tx push -s` → `tx pull` for translations
 - UTF-8 encoding with automatic key sorting and harmonization
 - Supports App Store metadata localization
+
+#### Important: UTF-16 Encoding in Translation Files
+**Critical Issue**: Translation files downloaded from Transifex may use different encodings:
+- **English source file** (`en.lproj/Localizable.strings`): UTF-8 encoding
+- **Translated files**: Often UTF-16 little-endian encoding
+
+This causes command-line tools like `grep` to fail when searching for translations:
+```bash
+# ❌ WRONG - Won't find strings in UTF-16 files
+grep '"Spend"' DashWallet/de.lproj/Localizable.strings
+
+# ✅ CORRECT - Convert encoding first
+iconv -f UTF-16 -t UTF-8 DashWallet/de.lproj/Localizable.strings | grep '"Spend"'
+```
+
+**To check translations properly:**
+```bash
+# Check file encoding
+file DashWallet/*/lproj/Localizable.strings
+
+# Search all translation files regardless of encoding
+for file in DashWallet/*.lproj/Localizable.strings; do
+    lang=$(basename $(dirname "$file") .lproj)
+    if file "$file" | grep -q UTF-16; then
+        # UTF-16 file - convert before searching
+        translation=$(iconv -f UTF-16 -t UTF-8 "$file" 2>/dev/null | grep '"Spend"' | sed 's/.*= "//; s/";//')
+    else
+        # UTF-8 file - search directly
+        translation=$(grep '"Spend"' "$file" 2>/dev/null | sed 's/.*= "//; s/";//')
+    fi
+    if [ -n "$translation" ]; then
+        echo "$lang: $translation"
+    fi
+done
+```
+
+**Note**: Xcode and iOS handle both encodings transparently, so this only affects command-line operations. The app will display translations correctly regardless of the file encoding.
 
 ### Build Configurations
 - **Debug**: Development with full debugging and logging
@@ -2333,3 +2345,40 @@ The iOS implementation matches Android's approach:
 - ✅ Fallback to generating barcodes from card numbers
 
 **Key Difference**: iOS extracts barcode values from URL query parameters as primary method (faster and more reliable), with image scanning as fallback. Android may scan images directly.
+
+## Gift Card Payment Authorization (Critical Implementation Difference)
+
+### CTX vs PiggyCards Payment Flow
+
+The two providers use fundamentally different payment URL formats, requiring different payment methods:
+
+#### CTX Payment Flow
+- Returns a **BIP70 payment request URL** with an `r` parameter
+- Example: `dash:?r=https://api.ctx.com/payment/request/12345`
+- Uses `sendCoinsService.payWithDashUrl()` which handles BIP70 protocol
+- PIN authorization triggered automatically by BIP70 flow
+
+#### PiggyCards Payment Flow
+- Returns a **simple dash address with amount**
+- Example: `dash:XpEBa5Rq9Xv3Y...?amount=1.234567`
+- **MUST use `sendCoinsService.sendCoins()`** directly (NOT `payWithDashUrl`)
+- PIN authorization triggered by `sendCoins` method's `account.sign()` call
+
+### Critical Implementation Pattern
+```swift
+switch provider {
+case .ctx:
+    // CTX: Use payWithDashUrl for BIP70 handling
+    transaction = try await sendCoinsService.payWithDashUrl(url: paymentUrl)
+
+case .piggyCards:
+    // PiggyCards: Parse address/amount and use sendCoins directly
+    let dashAmountInSatoshis = UInt64(giftCardInfo.amount * 100_000_000)
+    transaction = try await sendCoinsService.sendCoins(
+        address: giftCardInfo.paymentAddress,
+        amount: dashAmountInSatoshis
+    )
+}
+```
+
+**Common Issue**: Using `payWithDashUrl` for PiggyCards will fail because it expects BIP70 format with `r` parameter. This also prevents PIN authorization from being triggered, causing payment failures.

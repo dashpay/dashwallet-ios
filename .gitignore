@@ -51,3 +51,6 @@ CLAUDE.md
 # SQLite temporary files
 *.db-shm
 *.db-wal
+
+# Transifex CLI binary
+tx

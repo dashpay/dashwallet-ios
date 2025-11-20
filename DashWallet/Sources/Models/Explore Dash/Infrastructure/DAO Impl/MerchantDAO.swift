@@ -177,18 +177,26 @@ class MerchantDAO: PointOfUseDAO {
                     // Fetch gift card providers for each merchant that accepts gift cards
                     for (index, item) in allItems.enumerated() {
                         if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
+                            // Only fetch CTX providers when PiggyCards is disabled
+                            #if PIGGYCARDS_ENABLED
                             let providersQuery = """
                                 SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
                                 WHERE merchantId = '\(merchant.merchantId)'
                             """
+                            #else
+                            let providersQuery = """
+                                SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers
+                                WHERE merchantId = '\(merchant.merchantId)' AND provider = 'CTX'
+                            """
+                            #endif
 
                             do {
                                 guard let db = wSelf.connection.db else {
-                                    print("🎯 MerchantDAO.items(userLocation): ERROR - Database connection is nil for merchant \(merchant.merchantId)")
+                                    print("🔴 MerchantDAO.items(userLocation): ERROR - Database connection is nil for merchant \(merchant.merchantId)")
                                     continue
                                 }
 
-                                print("🎯 MerchantDAO.items(userLocation): Querying providers for merchant: \(merchant.merchantId)")
+                                print("🔴 MerchantDAO.items(userLocation): Querying providers for merchant: \(merchant.merchantId)")
                                 let rows = try db.prepare(providersQuery)
                                 var providers: [ExplorePointOfUse.Merchant.GiftCardProviderInfo] = []
                                 var rowCount = 0
@@ -218,7 +226,7 @@ class MerchantDAO: PointOfUseDAO {
                                     }
                                 }
 
-                                print("🎯 MerchantDAO.items(userLocation): Found \(rowCount) provider rows, created \(providers.count) providers for \(merchant.merchantId)")
+                                print("🔴 MerchantDAO.items(userLocation): Found \(rowCount) provider rows, created \(providers.count) providers for \(merchant.merchantId)")
 
                                 if !providers.isEmpty {
                                     // Create updated merchant with providers
@@ -258,7 +266,7 @@ class MerchantDAO: PointOfUseDAO {
                                     allItems[index] = updatedItem
                                 }
                             } catch {
-                                print("🎯 MerchantDAO.items(userLocation): ERROR fetching gift card providers for merchant \(merchant.merchantId): \(error)")
+                                print("🔴 MerchantDAO.items(userLocation): ERROR fetching gift card providers for merchant \(merchant.merchantId): \(error)")
                             }
                         }
                     }
@@ -416,18 +424,26 @@ class MerchantDAO: PointOfUseDAO {
                 // Fetch gift card providers for each merchant that accepts gift cards
                 for (index, item) in items.enumerated() {
                     if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
+                        // Only fetch CTX providers when PiggyCards is disabled
+                        #if PIGGYCARDS_ENABLED
                         let providersQuery = """
                             SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
                             WHERE merchantId = '\(merchant.merchantId)'
                         """
+                        #else
+                        let providersQuery = """
+                            SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers
+                            WHERE merchantId = '\(merchant.merchantId)' AND provider = 'CTX'
+                        """
+                        #endif
 
                         do {
                             guard let db = wSelf.connection.db else {
-                                print("🎯 MerchantDAO.items: ERROR - Database connection is nil for merchant \(merchant.merchantId)")
+                                print("🔴 MerchantDAO.items: ERROR - Database connection is nil for merchant \(merchant.merchantId)")
                                 continue
                             }
 
-                            print("🎯 MerchantDAO.items: Querying providers for merchant: \(merchant.merchantId)")
+                            print("🔴 MerchantDAO.items: Querying providers for merchant: \(merchant.merchantId)")
                             let rows = try db.prepare(providersQuery)
                             var providers: [ExplorePointOfUse.Merchant.GiftCardProviderInfo] = []
                             var rowCount = 0
@@ -457,7 +473,7 @@ class MerchantDAO: PointOfUseDAO {
                                 }
                             }
 
-                            print("🎯 MerchantDAO.items: Found \(rowCount) provider rows, created \(providers.count) providers for \(merchant.merchantId)")
+                            print("🔴 MerchantDAO.items: Found \(rowCount) provider rows, created \(providers.count) providers for \(merchant.merchantId)")
 
                             if !providers.isEmpty {
                                 // Create updated merchant with providers
@@ -498,7 +514,7 @@ class MerchantDAO: PointOfUseDAO {
                             }
                         } catch {
                             // If we can't fetch providers, just continue with empty providers
-                            print("🎯 MerchantDAO.items: ERROR fetching gift card providers for merchant \(merchant.merchantId): \(error)")
+                            print("🔴 MerchantDAO.items: ERROR fetching gift card providers for merchant \(merchant.merchantId): \(error)")
                         }
                     }
                 }
@@ -601,7 +617,7 @@ extension MerchantDAO {
                     let boundsRadius = min(latDiff, lonDiff) * 111000 / 2 // Convert degrees to meters, divide by 2
                     let filterRadius = boundsRadius
 
-                    print("🎯 MerchantDAO.allLocations: Applying circular distance filter with radius=\(filterRadius)m (\(filterRadius/1609.34) miles)")
+                    print("🔴 MerchantDAO.allLocations: Applying circular distance filter with radius=\(filterRadius)m (\(filterRadius/1609.34) miles)")
 
                     let initialCount = items.count
                     items = items.filter { item in
@@ -609,12 +625,12 @@ extension MerchantDAO {
                         let distance = userCLLocation.distance(from: CLLocation(latitude: lat, longitude: lon))
                         let isWithinRadius = distance <= filterRadius
                         if !isWithinRadius {
-                            print("🎯 MerchantDAO.allLocations: Filtering out '\(item.name)' at \(distance/1609.34) miles (outside \(filterRadius/1609.34) mile radius)")
+                            print("🔴 MerchantDAO.allLocations: Filtering out '\(item.name)' at \(distance/1609.34) miles (outside \(filterRadius/1609.34) mile radius)")
                         }
                         return isWithinRadius
                     }
 
-                    print("🎯 MerchantDAO.allLocations: After circular distance filtering: \(items.count) locations remain (was \(initialCount))")
+                    print("🔴 MerchantDAO.allLocations: After circular distance filtering: \(items.count) locations remain (was \(initialCount))")
                 }
 
                 // Fetch gift card provider information for gift card merchants
@@ -655,27 +671,27 @@ extension MerchantDAO {
                                         // Try different type conversions
                                         if let sourceId = row[3] as? String, !sourceId.isEmpty {
                                             sourceIdString = sourceId
-                                            print("🎯 MerchantDAO: Found sourceId as String: '\(sourceId)' for provider: \(providerId), merchant: \(merchant.merchantId)")
+                                            print("🔴 MerchantDAO: Found sourceId as String: '\(sourceId)' for provider: \(providerId), merchant: \(merchant.merchantId)")
                                         } else if let sourceId = row[3] as? Int64 {
                                             sourceIdString = String(sourceId)
-                                            print("🎯 MerchantDAO: Found sourceId as Int64: \(sourceId) for provider: \(providerId), merchant: \(merchant.merchantId)")
+                                            print("🔴 MerchantDAO: Found sourceId as Int64: \(sourceId) for provider: \(providerId), merchant: \(merchant.merchantId)")
                                         } else if let sourceId = row[3] as? Int {
                                             sourceIdString = String(sourceId)
-                                            print("🎯 MerchantDAO: Found sourceId as Int: \(sourceId) for provider: \(providerId), merchant: \(merchant.merchantId)")
+                                            print("🔴 MerchantDAO: Found sourceId as Int: \(sourceId) for provider: \(providerId), merchant: \(merchant.merchantId)")
                                         } else if let sourceId = row[3] {
                                             // Try to convert whatever type it is to string
                                             sourceIdString = String(describing: sourceId)
                                             if sourceIdString == "<null>" || sourceIdString == "nil" {
                                                 sourceIdString = nil
-                                                print("🎯 MerchantDAO: sourceId is NULL for provider: \(providerId), merchant: \(merchant.merchantId)")
+                                                print("🔴 MerchantDAO: sourceId is NULL for provider: \(providerId), merchant: \(merchant.merchantId)")
                                             } else {
-                                                print("🎯 MerchantDAO: Found sourceId with unknown type, converted to: '\(sourceIdString)' for provider: \(providerId), merchant: \(merchant.merchantId)")
+                                                print("🔴 MerchantDAO: Found sourceId with unknown type, converted to: '\(sourceIdString)' for provider: \(providerId), merchant: \(merchant.merchantId)")
                                             }
                                         } else {
-                                            print("🎯 MerchantDAO: sourceId column not present for provider: \(providerId), merchant: \(merchant.merchantId)")
+                                            print("🔴 MerchantDAO: sourceId column not present for provider: \(providerId), merchant: \(merchant.merchantId)")
                                         }
                                     } else {
-                                        print("🎯 MerchantDAO: sourceId column index out of bounds for provider: \(providerId), merchant: \(merchant.merchantId)")
+                                        print("🔴 MerchantDAO: sourceId column index out of bounds for provider: \(providerId), merchant: \(merchant.merchantId)")
                                     }
 
                                     providers.append(ExplorePointOfUse.Merchant.GiftCardProviderInfo(
@@ -687,7 +703,7 @@ extension MerchantDAO {
                                 }
                             }
 
-                            print("🎯 MerchantDAO.items(userLocation): Found \(rowCount) provider rows, created \(providers.count) providers for \(merchant.merchantId)")
+                            print("🔴 MerchantDAO.items(userLocation): Found \(rowCount) provider rows, created \(providers.count) providers for \(merchant.merchantId)")
 
                             if !providers.isEmpty {
                                 // Create updated merchant with providers
