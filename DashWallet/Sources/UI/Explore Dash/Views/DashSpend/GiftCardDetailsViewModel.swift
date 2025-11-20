@@ -256,13 +256,10 @@ class GiftCardDetailsViewModel: ObservableObject {
         }
 
         do {
-            DSLogger.log("🔴 PiggyCards: Polling for order \(orderId)")
             let orderStatus = try await piggyCardsRepository.getOrderStatus(orderId: orderId)
 
             switch orderStatus.data.status.lowercased() {
             case "complete", "completed":
-                DSLogger.log("🔴 PiggyCards: Order complete, fetching card details")
-
                 // Get the card details from the order
                 let cards = orderStatus.data.cards
                 if let firstCard = cards.first {
@@ -285,10 +282,8 @@ class GiftCardDetailsViewModel: ObservableObject {
                             format: "CODE_128"
                         )
                         stopTicker()
-                        DSLogger.log("🔴 PiggyCards: Gift card details saved successfully")
                     } else if let claimLink = firstCard.claimLink, !claimLink.isEmpty {
                         // Link-based redemption
-                        DSLogger.log("🔴 PiggyCards: Link delivery - updating with claimLink")
                         await giftCardsDAO.updateCardDetails(
                             txId: txId,
                             number: claimLink,  // Store URL as the card number
@@ -308,7 +303,6 @@ class GiftCardDetailsViewModel: ObservableObject {
 
             default:
                 // Keep polling for other statuses
-                DSLogger.log("🔴 PiggyCards: Order status: \(orderStatus.data.status), continuing to poll")
                 break
             }
         } catch {
@@ -319,7 +313,6 @@ class GiftCardDetailsViewModel: ObservableObject {
                 }
                 stopTicker()
             }
-            DSLogger.log("🔴 PiggyCards: Failed to fetch gift card info: \(error)")
         }
     }
 

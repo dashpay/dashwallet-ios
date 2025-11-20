@@ -27,8 +27,6 @@ public final class SendCoinsService: NSObject {
     func sendCoins(address: String, amount: UInt64,
                    inputSelector: SingleInputAddressSelector? = nil, adjustAmountDownwards: Bool = false) async throws
         -> DSTransaction {
-        DSLogger.log("🔴 SendCoins: amount=\(amount) to \(address)")
-
         let chain = DWEnvironment.sharedInstance().currentChain
         let account = DWEnvironment.sharedInstance().currentAccount
         let transaction = DSTransaction(on: chain)
@@ -63,8 +61,6 @@ public final class SendCoinsService: NSObject {
             }
         }
 
-        DSLogger.log("🔴 Requesting PIN authorization")
-
         // Explicitly authenticate before signing to ensure PIN is requested
         // Must run on main thread as it's a UI operation
         @MainActor func authenticate() async -> Bool {
@@ -85,8 +81,6 @@ public final class SendCoinsService: NSObject {
             throw DashSpendError.paymentProcessingError("Authentication cancelled")
         }
 
-        DSLogger.log("🔴 PIN authorized, signing transaction")
-
         // Sign the transaction after authentication
         account.sign(transaction)
 
@@ -95,7 +89,6 @@ public final class SendCoinsService: NSObject {
 
         // Publish the transaction
         try await transactionManager.publishTransaction(transaction)
-        DSLogger.log("🔴 Transaction sent successfully")
 
         return transaction
     }

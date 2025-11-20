@@ -288,14 +288,10 @@ struct DashSpendPayScreen: View {
     }
     
     private func purchaseGiftCard() {
-        DSLogger.log("🔴 PURCHASE START: purchaseGiftCard() called")
-        DSLogger.log("🔴 PURCHASE START: Amount: \(viewModel.amount)")
 
         Task {
             do {
-                DSLogger.log("🔴 PURCHASE: Calling viewModel.purchaseGiftCardAndPay()")
                 let txId = try await viewModel.purchaseGiftCardAndPay()
-                DSLogger.log("🔴 PURCHASE SUCCESS: Got txId: \(txId.hexEncodedString())")
                 showConfirmationDialog = false
                 presentationMode.wrappedValue.dismiss()
                 onPurchaseSuccess?(txId)
@@ -310,8 +306,6 @@ struct DashSpendPayScreen: View {
                     showErrorDialog = true
                 }
                 
-                DSLogger.log("🔴 PURCHASE ERROR: Gift card purchase failed with DashSpendError: \(error)")
-                DSLogger.log("🔴 PURCHASE ERROR: Error description: \(error.errorDescription ?? "nil")")
             } catch {
                 showConfirmationDialog = false
                 errorTitle = !error.localizedDescription.isEmpty ? error.localizedDescription : NSLocalizedString("Error", comment: "")

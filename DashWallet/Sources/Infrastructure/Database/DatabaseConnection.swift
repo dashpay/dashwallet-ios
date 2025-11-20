@@ -70,20 +70,12 @@ extension DatabaseConnection {
     }
 
     static func migrations() -> [Migration] {
-        var migrations: [Migration] = [
+        return [
             SeedDB(),
             AddGiftCardsTable(),
             AddIconBitmapsTable(),
             AddProviderToGiftCardsTable()
         ]
-
-        // Add test merchant migration only for non-production builds
-        // IMPORTANT: Remove this before production release
-        #if DEBUG || TESTFLIGHT
-        migrations.append(AddPiggyCardsTestMerchant())
-        #endif
-
-        return migrations
     }
 
     static func migrationsBundle() -> Bundle {

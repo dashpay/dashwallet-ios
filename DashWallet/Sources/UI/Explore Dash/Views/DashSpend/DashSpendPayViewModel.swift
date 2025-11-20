@@ -200,9 +200,6 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
     
     func purchaseGiftCardAndPay() async throws -> Data {
-        DSLogger.log("🔴 PAYMENT START: Beginning purchaseGiftCardAndPay for provider: \(provider)")
-        DSLogger.log("🔴 PAYMENT: Merchant: \(merchantTitle), Amount: \(amount)")
-
         isProcessingPayment = true
         defer { isProcessingPayment = false }
 
@@ -257,12 +254,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
 
         // Payment successful - save gift card information
-        DSLogger.log("🔴 Transaction completed: \(transaction.txHashHexString)")
         markGiftCardTransaction(txId: transaction.txHashData, provider: provider.displayName)
         customIconProvider.updateIcon(txId: transaction.txHashData, iconUrl: merchantIconUrl)
         saveGiftCardDummy(txHashData: transaction.txHashData, giftCardId: giftCardId)
 
-        DSLogger.log("🔴 PAYMENT END: Returning transaction hash")
         return transaction.txHashData
     }
     
