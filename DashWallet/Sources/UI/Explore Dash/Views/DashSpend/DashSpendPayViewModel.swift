@@ -215,10 +215,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 throw DashSpendError.paymentProcessingError("No payment URL received")
             }
 
+            giftCardId = response.paymentId
 
             // CTX uses BIP70 payment request URLs
             transaction = try await sendCoinsService.payWithDashUrl(url: url)
-            giftCardId = response.paymentId
 
         case .piggyCards:
 
