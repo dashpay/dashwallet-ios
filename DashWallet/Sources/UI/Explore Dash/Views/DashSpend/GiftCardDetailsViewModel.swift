@@ -31,6 +31,9 @@ struct GiftCardDetailsUIState {
     var isLoadingCardDetails: Bool = false
     var loadingError: Error? = nil
     var transaction: DSTransaction? = nil
+    var isClaimLink: Bool = false
+    var hasBeenPollingForLongTime: Bool = false
+    var provider: String? = nil
 }
 
 @MainActor
@@ -44,6 +47,7 @@ class GiftCardDetailsViewModel: ObservableObject {
     private var tickerTimer: Timer?
     private var retryCount = 0
     private let maxRetries = 40  // 60 seconds / 1.5 sec interval = 40 retries
+    private let longPollingThreshold = 40  // After 60 seconds show message
     
     let txId: Data
     @Published private(set) var uiState = GiftCardDetailsUIState()
@@ -124,19 +128,25 @@ class GiftCardDetailsViewModel: ObservableObject {
     
     private func loadGiftCard() async {
         guard let card = await giftCardsDAO.get(byTxId: txId) else { return }
-        
+
         await MainActor.run {
             self.uiState.merchantName = card.merchantName
             self.uiState.merchantUrl = card.merchantUrl
             self.uiState.formattedPrice = self.currencyFormatter.string(from: card.price as NSDecimalNumber) ?? "$0.00"
             self.uiState.cardNumber = card.number
             self.uiState.cardPin = card.pin
-            
+            self.uiState.provider = card.provider
+
+            // Check if this is a claim link (URL in number field)
+            if let number = card.number, number.starts(with: "http") {
+                self.uiState.isClaimLink = true
+            }
+
             // Generate barcode if we have the value
             if let barcodeValue = card.barcodeValue {
                 self.generateBarcode(from: barcodeValue, format: card.barcodeFormat ?? "CODE128")
             }
-            
+
             // If we don't have card details yet but have a note (payment ID), start ticker
             if card.number == nil && card.note != nil {
                 self.startTicker()
@@ -168,6 +178,7 @@ class GiftCardDetailsViewModel: ObservableObject {
         tickerTimer?.invalidate()
         tickerTimer = nil
         uiState.isLoadingCardDetails = false
+        uiState.hasBeenPollingForLongTime = false
         retryCount = 0
     }
     
@@ -176,6 +187,13 @@ class GiftCardDetailsViewModel: ObservableObject {
               let _ = giftCard.note else {
             stopTicker()
             return
+        }
+
+        // Check if we've been polling for more than 60 seconds
+        if retryCount >= longPollingThreshold {
+            await MainActor.run {
+                self.uiState.hasBeenPollingForLongTime = true
+            }
         }
 
         // Check provider and call appropriate API
