@@ -196,46 +196,128 @@ bartycrouch update
 ### Localization Workflow
 - 25+ languages supported via Transifex integration
 - BartyCrouch automates string extraction and normalization
-- Process: Build project → `tx push -s` → `tx pull` for translations
-- UTF-8 encoding with automatic key sorting and harmonization
 - Supports App Store metadata localization
 
-#### Important: UTF-16 Encoding in Translation Files
-**Critical Issue**: Translation files downloaded from Transifex may use different encodings:
-- **English source file** (`en.lproj/Localizable.strings`): UTF-8 encoding
-- **Translated files**: Often UTF-16 little-endian encoding
+#### ⚠️ CRITICAL: iOS Translation File Encoding
+**iOS .strings files use UTF-16 little-endian encoding**, not UTF-8. This is a critical distinction that affects all command-line operations but is handled transparently by Xcode.
 
-This causes command-line tools like `grep` to fail when searching for translations:
+##### The Encoding Issue
+All iOS localization files (`*.lproj/Localizable.strings`) are saved in **UTF-16LE** (UTF-16 little-endian) format:
 ```bash
-# ❌ WRONG - Won't find strings in UTF-16 files
-grep '"Spend"' DashWallet/de.lproj/Localizable.strings
-
-# ✅ CORRECT - Convert encoding first
-iconv -f UTF-16 -t UTF-8 DashWallet/de.lproj/Localizable.strings | grep '"Spend"'
+# Check encoding of translation files
+file DashWallet/*.lproj/Localizable.strings
+# Output: UTF-16 Unicode text, little-endian
 ```
 
-**To check translations properly:**
+This causes standard Unix tools to fail:
 ```bash
-# Check file encoding
-file DashWallet/*/lproj/Localizable.strings
+# ❌ WRONG - grep cannot read UTF-16 files
+grep '"Spend"' DashWallet/de.lproj/Localizable.strings
+# Result: Binary file matches (useless) or no output
 
-# Search all translation files regardless of encoding
-for file in DashWallet/*.lproj/Localizable.strings; do
-    lang=$(basename $(dirname "$file") .lproj)
-    if file "$file" | grep -q UTF-16; then
-        # UTF-16 file - convert before searching
-        translation=$(iconv -f UTF-16 -t UTF-8 "$file" 2>/dev/null | grep '"Spend"' | sed 's/.*= "//; s/";//')
-    else
-        # UTF-8 file - search directly
-        translation=$(grep '"Spend"' "$file" 2>/dev/null | sed 's/.*= "//; s/";//')
-    fi
-    if [ -n "$translation" ]; then
-        echo "$lang: $translation"
+# ✅ CORRECT - Convert to UTF-8 first
+iconv -f UTF-16LE -t UTF-8 DashWallet/de.lproj/Localizable.strings | grep '"Spend"'
+```
+
+##### Transifex Setup and Usage
+
+**Installing Transifex CLI:**
+```bash
+# Install via pip (recommended)
+pip install transifex-client
+
+# Or via Homebrew
+brew install transifex-cli
+```
+
+**Configuration** (`.tx/config`):
+```ini
+[main]
+host = https://www.transifex.com
+
+[dashwallet.dash-wallet-ios]
+file_filter = DashWallet/<lang>.lproj/Localizable.strings
+source_file = DashWallet/en.lproj/Localizable.strings
+source_lang = en
+type = STRINGS
+```
+
+**Workflow Commands:**
+```bash
+# 1. Build the project to generate latest strings
+xcodebuild -workspace DashWallet.xcworkspace -scheme dashwallet
+
+# 2. Push source strings to Transifex
+tx push -s
+
+# 3. Pull all translations (100% complete)
+tx pull -a
+
+# 4. Pull specific language
+tx pull -l de
+
+# 5. Force pull all translations (including incomplete)
+tx pull -a -f
+```
+
+##### Checking Translations Properly
+
+**Quick check for a specific string across all languages:**
+```bash
+# Check "Spend" translation in all languages
+for lang in de es fr it ja ko pt ru zh zh_TW; do
+    if [ -f "DashWallet/$lang.lproj/Localizable.strings" ]; then
+        echo -n "$lang: "
+        iconv -f UTF-16LE -t UTF-8 "DashWallet/$lang.lproj/Localizable.strings" 2>/dev/null | \
+            grep '"Spend" = ' | sed 's/.*= "//; s/".*//'
     fi
 done
 ```
 
-**Note**: Xcode and iOS handle both encodings transparently, so this only affects command-line operations. The app will display translations correctly regardless of the file encoding.
+**Comprehensive translation verification:**
+```bash
+# Find all languages with a specific translation
+for file in DashWallet/*.lproj/Localizable.strings; do
+    lang=$(basename $(dirname "$file") .lproj)
+    # Skip English source
+    [ "$lang" = "en" ] && continue
+
+    # Convert and search
+    translation=$(iconv -f UTF-16LE -t UTF-8 "$file" 2>/dev/null | \
+                  grep '"Spend" = ' | sed 's/.*= "//; s/".*//')
+
+    if [ -n "$translation" ]; then
+        echo "$lang: $translation"
+    else
+        echo "$lang: [MISSING]"
+    fi
+done
+```
+
+##### Common Issues and Solutions
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| grep shows "Binary file matches" | UTF-16 encoding | Use `iconv -f UTF-16LE -t UTF-8` before grep |
+| Translations appear missing | Searching UTF-16 files with UTF-8 tools | Convert encoding before searching |
+| tx pull creates wrong encoding | Transifex client version issue | Ensure latest tx client: `pip install --upgrade transifex-client` |
+| Special characters corrupted | Wrong encoding conversion | Always specify UTF-16LE (little-endian), not just UTF-16 |
+| Empty search results | Incorrect grep pattern | iOS uses `"Key" = "Value";` format with spaces and semicolon |
+
+##### Why This Matters
+1. **Command-line searches will fail** without encoding conversion
+2. **Git diffs may show entire file changed** due to encoding differences
+3. **Text editors may display garbage** if they don't detect UTF-16LE
+4. **CI/CD scripts must handle encoding** when validating translations
+
+##### Best Practices
+1. **Always use iconv** when processing .strings files via command line
+2. **Let Xcode handle the files** when possible - it manages encoding automatically
+3. **Don't convert files permanently** - keep them as UTF-16LE for iOS
+4. **Use BartyCrouch** for string extraction - it handles encoding correctly
+5. **Verify encoding** after pulling from Transifex: `file *.lproj/Localizable.strings`
+
+**Note**: Despite the encoding complexity for command-line operations, Xcode and iOS handle UTF-16LE transparently. The app will display translations correctly regardless of these encoding concerns.
 
 ### Build Configurations
 - **Debug**: Development with full debugging and logging
