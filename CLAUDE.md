@@ -41,7 +41,7 @@ MCP servers must be configured in Claude Desktop's configuration file. Without t
 cat > ~/Library/Application\ Support/Claude/claude_desktop_config.json << 'EOF'
 {
   "mcpServers": {
-    "figma-dev-mode": {
+    "figma-dev-mode-mcp-server": {
       "command": "npx",
       "args": ["-y", "@figma/mcp-server-figma-dev-mode"],
       "description": "Figma Dev Mode MCP server for extracting design specifications, code, and images from Figma files"
@@ -73,9 +73,11 @@ For the Figma MCP server to work properly:
 
 If MCP tools are not available:
 1. **Check configuration exists**: `cat ~/Library/Application\ Support/Claude/claude_desktop_config.json`
-2. **Verify Figma is running**: `ps aux | grep -i figma`
-3. **Restart Claude Code**: MCP connections are only established at startup
-4. **Check npx availability**: Ensure Node.js/npm is installed for npx command
+2. **Verify correct package name**: Should be `@figma/mcp-server-figma-dev-mode` NOT `claude-talk-to-figma-mcp`
+3. **Verify server name matches**: Should be `figma-dev-mode-mcp-server` to match tool names
+4. **Verify Figma is running**: `ps aux | grep -i figma`
+5. **Restart Claude Code**: MCP connections are only established at startup
+6. **Check npx availability**: Ensure Node.js/npm is installed for npx command
 
 ### Why MCP Configuration is Required
 
@@ -2382,3 +2384,265 @@ case .piggyCards:
 ```
 
 **Common Issue**: Using `payWithDashUrl` for PiggyCards will fail because it expects BIP70 format with `r` parameter. This also prevents PIN authorization from being triggered, causing payment failures.
+## Gift Card Token Expiration Handling (Critical Timing Differences)
+
+### Overview
+CTX and PiggyCards have fundamentally different token expiration check timings. Understanding when and how to validate tokens is critical for proper user experience.
+
+### Token Validation Timing
+
+#### CTX Token Validation
+- **When**: Checked on merchant details screen load (`viewDidLoad()`)
+- **Method**: `tryRefreshCtxToken()` in `POIDetailsViewController.swift`
+- **Flow**: Proactive validation before user interaction
+- **Implementation**:
+```swift
+private func refreshTokenAndMerchantInfo() {
+    Task {
+        if try await tryRefreshCtxToken(), let merchantId = pointOfUse.merchant?.merchantId {
+            let merchantInfo = try await CTXSpendRepository.shared.getMerchant(merchantId: merchantId)
+            // Update merchant info...
+        }
+    }
+}
+```
+
+#### PiggyCards Token Validation
+- **When**: Checked only when user clicks Buy button (NOT on screen load)
+- **Method**: `tryRefreshPiggyCardsToken()` in `POIDetailsViewController.swift`
+- **Flow**: On-demand validation at payment initiation
+- **Implementation**:
+```swift
+detailsView.buyGiftCardHandler = { [weak self] provider in
+    Task {
+        #if PIGGYCARDS_ENABLED
+        if provider == .piggyCards {
+            if await self?.tryRefreshPiggyCardsToken() == true {
+                await MainActor.run {
+                    self?.showDashSpendPayScreen(provider: provider)
+                }
+            }
+            return
+        }
+        #endif
+
+        // CTX flow - no token check here
+        await MainActor.run {
+            self?.showDashSpendPayScreen(provider: provider)
+        }
+    }
+}
+```
+
+### Token Refresh Implementation Pattern
+
+Both providers follow a similar pattern but at different trigger points:
+
+```swift
+private func tryRefreshPiggyCardsToken() async -> Bool {
+    do {
+        try await PiggyCardsTokenService.shared.refreshAccessToken()
+        return true
+    } catch DashSpendError.tokenRefreshFailed {
+        // Log out user
+        await MainActor.run {
+            PiggyCardsRepository.shared.logout()
+        }
+        // Show session expired dialog
+        await showModalDialog(
+            style: .warning,
+            icon: .system("exclamationmark.triangle.fill"),
+            heading: NSLocalizedString("Your session expired", comment: "DashSpend"),
+            textBlock1: NSLocalizedString("It looks like you haven't used DashSpend in a while...", comment: "DashSpend"),
+            positiveButtonText: NSLocalizedString("Dismiss", comment: "")
+        )
+        return false
+    }
+}
+```
+
+### Key Differences Summary
+
+| Aspect | CTX | PiggyCards |
+|--------|-----|------------|
+| **Validation Trigger** | Screen load (`viewDidLoad`) | Buy button click |
+| **User Impact** | May see delay on screen load | No delay until purchase attempt |
+| **Token Service** | `CTXSpendRepository.shared.refreshToken()` | `PiggyCardsTokenService.shared.refreshAccessToken()` |
+| **Logout Handling** | Automatic via repository | Manual call to `PiggyCardsRepository.shared.logout()` |
+| **Conditional Compilation** | Always available | Wrapped in `#if PIGGYCARDS_ENABLED` |
+
+### Why Different Timing?
+
+**CTX**: Proactive validation allows fetching updated merchant info (denomination types, amounts) from API during token refresh. This improves UX by having fresh data ready.
+
+**PiggyCards**: Defers validation until absolutely necessary (purchase attempt) to avoid unnecessary API calls and potential delays during browsing. Merchant info is cached and doesn't require token refresh to display.
+
+### Common Issues
+
+**Issue**: Token validation happening at wrong time
+- **Symptom**: PiggyCards token checked on screen load instead of Buy button
+- **Fix**: Ensure token check is only in buy button handler, not `viewDidLoad()`
+
+**Issue**: Forgetting to log out user on token expiration
+- **Symptom**: User sees expired session dialog but can still attempt purchases
+- **Fix**: Always call `PiggyCardsRepository.shared.logout()` before showing dialog
+
+**Issue**: Build failure when PIGGYCARDS_ENABLED not defined
+- **Symptom**: Compilation error for `GiftCardProvider.piggyCards`
+- **Fix**: Wrap all PiggyCards-specific code in `#if PIGGYCARDS_ENABLED` blocks
+
+## Barcode URL Parameter Extraction (Performance Optimization)
+
+### Overview
+Instead of always downloading and scanning barcode images, extract barcode values directly from URL query parameters when available. This approach is faster, more reliable, and simulator-compatible.
+
+### Implementation Pattern
+
+```swift
+static func downloadAndScan(from url: String) async -> BarcodeResult? {
+    // STEP 1: Try to extract from URL (fastest method)
+    if let extractedValue = extractBarcodeFromURL(url) {
+        DSLogger.log("🔍 BarcodeScanner: Using extracted value from URL, defaulting to CODE_128 format")
+        return BarcodeResult(value: extractedValue, format: .code128)
+    }
+
+    // STEP 2: Fallback to downloading and scanning image
+    guard let imageUrl = URL(string: url) else { return nil }
+    let (data, response) = try await URLSession.shared.data(from: imageUrl)
+    return await scanBarcode(from: data)
+}
+
+private static func extractBarcodeFromURL(_ url: String) -> String? {
+    guard let urlComponents = URLComponents(string: url) else { return nil }
+
+    // Check common parameter names
+    let parameterNames = ["text", "data", "code", "barcode"]
+    for paramName in parameterNames {
+        if let value = urlComponents.queryItems?.first(where: { $0.name == paramName })?.value {
+            return value
+        }
+    }
+    return nil
+}
+```
+
+### Example URLs
+
+**PiggyCards URL**: `https://piggy.cards/index.php?route=tool/barcode&text=12345727`
+- Extracted value: `12345727`
+- Format: Default to CODE_128
+- No image download needed
+
+**Generic Barcode Service**: `https://example.com/barcode?data=ABC123&format=qr`
+- Extracted value: `ABC123`
+- Format: Default to CODE_128 (format param not standardized)
+
+### Benefits
+
+1. **Performance**: No network request or image processing needed
+2. **Reliability**: Avoids Vision framework failures or Neural Engine requirements
+3. **Simulator Compatible**: Works in simulator where Vision framework may fail
+4. **Battery Efficient**: Reduces CPU/GPU usage from image processing
+
+### When to Use Image Scanning
+
+Only fall back to image scanning when:
+- URL doesn't contain barcode value in query parameters
+- Need to detect specific barcode format (QR, PDF417, etc.)
+- Barcode image contains additional metadata
+
+## Discount Formatting Pattern (Smart Decimal Display)
+
+### Overview
+Display discounts with appropriate precision based on their magnitude. Small discounts (<1%) need decimal precision, while larger discounts look better as whole numbers.
+
+### Implementation Pattern
+
+```swift
+private func formatDiscount(_ discountBasisPoints: Int) -> String {
+    let discountPercent = Double(discountBasisPoints) / 100.0
+
+    // Use 1 decimal place for discounts < 1%, otherwise use whole numbers
+    if discountPercent < 1.0 {
+        return String(format: "-%.1f%%", discountPercent)
+    } else {
+        return String(format: "-%.0f%%", discountPercent)
+    }
+}
+```
+
+### Examples
+
+| Basis Points | Percent | Displayed As | Why |
+|--------------|---------|--------------|-----|
+| 50 | 0.5% | `-0.5%` | Shows meaningful precision |
+| 80 | 0.8% | `-0.8%` | Avoids rounding to 0% |
+| 100 | 1.0% | `-1%` | Clean whole number |
+| 400 | 4.0% | `-4%` | No unnecessary decimals |
+| 1000 | 10.0% | `-10%` | Standard display |
+
+### Where to Apply
+
+This pattern should be used in:
+1. **Merchant details screen** (`POIDetailsView.swift`) - Provider selection and merchant card
+2. **Purchase screen** (`DashSpendPayViewModel.swift`) - Cost message with discount
+3. **Gift card list** - Any discount display in merchant listings
+
+### Common Pitfall
+
+**Using `.intValue` instead of `.doubleValue`**:
+```swift
+// ❌ WRONG - Truncates to 0 for values < 1%
+let discountPercent = NSDecimalNumber(decimal: savingsFraction * 100).intValue
+
+// ✅ CORRECT - Preserves decimal precision
+let discountPercent = NSDecimalNumber(decimal: savingsFraction * 100).doubleValue
+```
+
+## Git Branch Tracking for Xcode Display
+
+### Issue
+After committing changes, Xcode's Changes tab may not show the committed files or branch status, even though `git log` shows the commits correctly.
+
+### Root Cause
+Branch doesn't have a remote tracking reference that Xcode can use to display "X commits ahead" status.
+
+### Solution
+
+Create a local remote reference at the branch creation point:
+
+```bash
+# Find the commit where the branch diverged from master
+git merge-base feature/your-branch master
+
+# Create local remote reference at that commit
+git update-ref refs/remotes/origin/feature/your-branch <commit-sha>
+```
+
+### Example
+
+```bash
+# For feature/PC-show-gift-card branch
+git update-ref refs/remotes/origin/feature/PC-show-gift-card 2da602c29
+```
+
+### Verification
+
+```bash
+# Check branch status
+git status
+# Should now show: "Your branch is ahead of 'origin/feature/PC-show-gift-card' by X commits"
+
+# Restart Xcode
+# Changes tab will now display committed changes and branch status
+```
+
+### When Needed
+
+- After creating a new branch that hasn't been pushed to remote yet
+- When Xcode doesn't show committed changes in the Changes tab
+- To enable Xcode's source control UI for local-only branches
+
+### Note
+
+This creates a **local reference only** - it doesn't push anything to the remote repository. The actual push happens when you explicitly run `git push`.
