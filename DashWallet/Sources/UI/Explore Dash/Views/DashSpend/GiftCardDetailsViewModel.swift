@@ -290,15 +290,41 @@ class GiftCardDetailsViewModel: ObservableObject {
                             pin: firstCard.claimPin
                         )
 
-                        // TODO: Download and scan barcode from URL if available
-                        // For now, just generate from claim code
-                        let cleanCode = claimCode.replacingOccurrences(of: " ", with: "")
-                            .replacingOccurrences(of: "-", with: "")
-                        await giftCardsDAO.updateBarcode(
-                            txId: txId,
-                            value: cleanCode,
-                            format: "CODE_128"
-                        )
+                        // Download and scan barcode from URL if available (matching Android)
+                        if let barcodeLink = firstCard.barcodeLink, !barcodeLink.isEmpty {
+                            DSLogger.log("🎯 PiggyCards: Downloading and scanning barcode from URL: \(barcodeLink)")
+                            if let result = await BarcodeScanner.downloadAndScan(from: barcodeLink) {
+                                // Clean the barcode value (remove spaces and dashes)
+                                let cleanValue = result.value.replacingOccurrences(of: " ", with: "")
+                                    .replacingOccurrences(of: "-", with: "")
+                                await giftCardsDAO.updateBarcode(
+                                    txId: txId,
+                                    value: cleanValue,
+                                    format: result.format.rawValue
+                                )
+                                DSLogger.log("🎯 PiggyCards: Barcode saved - Format: \(result.format.rawValue), Value: \(cleanValue)")
+                            } else {
+                                DSLogger.log("🎯 PiggyCards: Failed to scan barcode from URL, falling back to claim code")
+                                // Fallback: Generate barcode from claimCode
+                                let cleanCode = claimCode.replacingOccurrences(of: " ", with: "")
+                                    .replacingOccurrences(of: "-", with: "")
+                                await giftCardsDAO.updateBarcode(
+                                    txId: txId,
+                                    value: cleanCode,
+                                    format: "CODE_128"
+                                )
+                            }
+                        } else {
+                            DSLogger.log("🎯 PiggyCards: No barcodeLink provided, generating from claim code")
+                            // Fallback: Generate barcode from claimCode (legacy behavior)
+                            let cleanCode = claimCode.replacingOccurrences(of: " ", with: "")
+                                .replacingOccurrences(of: "-", with: "")
+                            await giftCardsDAO.updateBarcode(
+                                txId: txId,
+                                value: cleanCode,
+                                format: "CODE_128"
+                            )
+                        }
                         stopTicker()
                     } else if let claimLink = firstCard.claimLink, !claimLink.isEmpty {
                         // Link-based redemption

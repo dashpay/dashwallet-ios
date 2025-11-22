@@ -104,11 +104,20 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         let originalPrice = fiatFormatter.string(for: amount) ?? "0.00"
         let discountedPrice = amount * (1 - savingsFraction)
         let formattedDiscountedPrice = fiatFormatter.string(for: discountedPrice) ?? "0.00"
-        
-        let discount = NSDecimalNumber(decimal: savingsFraction * 100).intValue
-        return String.localizedStringWithFormat(
-            NSLocalizedString("You are buying a %@ gift card for %@ (%d%% discount)", comment: "DashSpend"),
-            originalPrice, formattedDiscountedPrice, discount)
+
+        let discountPercent = NSDecimalNumber(decimal: savingsFraction * 100).doubleValue
+        let discountText: String
+
+        // Use 1 decimal place for discounts < 1%, otherwise use whole numbers
+        if discountPercent < 1.0 {
+            discountText = String(format: "%.1f", discountPercent)
+        } else {
+            discountText = String(format: "%.0f", discountPercent)
+        }
+
+        return String(format:
+            NSLocalizedString("You are buying a %@ gift card for %@ (%@%% discount)", comment: "DashSpend"),
+            originalPrice, formattedDiscountedPrice, discountText)
     }
     var showCost: Bool { error == nil && amount >= minimumAmount && amount <= maximumAmount && hasValidLimits }
     var showLimits: Bool { error == nil && !showCost && hasValidLimits }

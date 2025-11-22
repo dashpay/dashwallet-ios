@@ -86,6 +86,8 @@
 		192E5E737398F69154940D09 /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1946AE4B077923ED5BEF70FD /* libPods-WatchApp Extension.a */; };
 		1D267CDF2ECF86920053AD68 /* AddProviderToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D267CDE2ECF86920053AD68 /* AddProviderToGiftCardsTable.swift */; };
 		1D267CE02ECF86920053AD68 /* AddProviderToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D267CDE2ECF86920053AD68 /* AddProviderToGiftCardsTable.swift */; };
+		1DAD1AA92ED2037F00C8090E /* BarcodeScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DAD1AA82ED2037F00C8090E /* BarcodeScanner.swift */; };
+		1DAD1AAA2ED2037F00C8090E /* BarcodeScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DAD1AA82ED2037F00C8090E /* BarcodeScanner.swift */; };
 		1DD7BE9CD62998F12672140D /* RadioButtonRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 708B9F2B4B1E4C31B5010CDF /* RadioButtonRow.swift */; };
 		222040C61C1A1940005CE1C3 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222040C51C1A1940005CE1C3 /* WebKit.framework */; };
 		222E7F561C46E9B8009AB45D /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222E7F551C46E9B8009AB45D /* Security.framework */; };
@@ -1789,6 +1791,7 @@
 		1946AE4B077923ED5BEF70FD /* libPods-WatchApp Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A13DF165F6A0780F58985AB /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; path = "Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; sourceTree = "<group>"; };
 		1D267CDE2ECF86920053AD68 /* AddProviderToGiftCardsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddProviderToGiftCardsTable.swift; sourceTree = "<group>"; };
+		1DAD1AA82ED2037F00C8090E /* BarcodeScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScanner.swift; sourceTree = "<group>"; };
 		1FA780FC3C067D0F6DEE9543 /* Pods-DashWalletTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.debug.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.debug.xcconfig"; sourceTree = "<group>"; };
 		222040C51C1A1940005CE1C3 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		222E7F551C46E9B8009AB45D /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -5654,6 +5657,7 @@
 		47AE8B9828BFAD0000490F5E /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				1DAD1AA82ED2037F00C8090E /* BarcodeScanner.swift */,
 				757AEBDD2E113D7B007BE8B4 /* DashSpend */,
 				47AE8BAC28BFAE6700490F5E /* DWLocationManager.swift */,
 				47AE8BA828BFAE5800490F5E /* ExploreDatabaseSyncManager.swift */,
@@ -8692,6 +8696,7 @@
 				2AD1CE8A22DC9C6F00C99324 /* DWVerifySeedPhraseContentView.m in Sources */,
 				47A2A2E2293DCCEA00938DB7 /* Coinbase+Constants.swift in Sources */,
 				47AE8C0728C2274200490F5E /* PointOfUseListSearchCell.swift in Sources */,
+				1DAD1AA92ED2037F00C8090E /* BarcodeScanner.swift in Sources */,
 				4774DCE128F44BA4008CF87D /* ServiceDataProvider.swift in Sources */,
 				C9F451E72A0BA16400825057 /* PaymentButton.swift in Sources */,
 				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,
@@ -9807,6 +9812,7 @@
 				C943B4FF2A40A54600AF23C5 /* DWDPGenericContactRequestItemView.m in Sources */,
 				C9D2C8402A320AA000D15901 /* DWQRScanView.m in Sources */,
 				75C1F0462AE26AC0006929CA /* CoinJoinLevelsViewModel.swift in Sources */,
+				1DAD1AAA2ED2037F00C8090E /* BarcodeScanner.swift in Sources */,
 				C9D2C8412A320AA000D15901 /* ServiceItem.swift in Sources */,
 				C9D2C8422A320AA000D15901 /* ErrorPresentable.swift in Sources */,
 				C9D2C8432A320AA000D15901 /* DWPinInputStepView.m in Sources */,
