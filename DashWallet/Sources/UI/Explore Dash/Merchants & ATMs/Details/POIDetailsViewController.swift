@@ -329,21 +329,27 @@ extension POIDetailsViewController {
     #if PIGGYCARDS_ENABLED
     private func tryRefreshPiggyCardsToken() async -> Bool {
         do {
-            try await PiggyCardsTokenService.shared.refreshAccessToken()
+            // Use refreshTokenIfNeeded which only refreshes if token is expired or expiring soon
+            try await PiggyCardsTokenService.shared.refreshTokenIfNeeded()
             return true
         } catch DashSpendError.tokenRefreshFailed {
-            // Token refresh failed - log out and show session expired message
+            // Token refresh failed due to invalid credentials - log out and show session expired message
+            await MainActor.run {
+                PiggyCardsRepository.shared.logout()
+            }
+            await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: NSLocalizedString("Your session expired", comment: "DashSpend"), textBlock1: NSLocalizedString("It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.", comment: "DashSpend"), positiveButtonText: NSLocalizedString("Dismiss", comment: ""))
+            return false
+        } catch DashSpendError.unauthorized {
+            // Unauthorized error - log out and show session expired message
             await MainActor.run {
                 PiggyCardsRepository.shared.logout()
             }
             await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: NSLocalizedString("Your session expired", comment: "DashSpend"), textBlock1: NSLocalizedString("It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.", comment: "DashSpend"), positiveButtonText: NSLocalizedString("Dismiss", comment: ""))
             return false
         } catch {
-            // Any other error - log out and show session expired message
-            await MainActor.run {
-                PiggyCardsRepository.shared.logout()
-            }
-            await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: NSLocalizedString("Your session expired", comment: "DashSpend"), textBlock1: NSLocalizedString("It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.", comment: "DashSpend"), positiveButtonText: NSLocalizedString("Dismiss", comment: ""))
+            // Network or other transient error - show error but don't log out
+            DSLogger.log("PiggyCards: Token refresh failed with error: \(error.localizedDescription)")
+            await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: NSLocalizedString("Connection Error", comment: "DashSpend"), textBlock1: NSLocalizedString("Unable to verify your session. Please check your internet connection and try again.", comment: "DashSpend"), positiveButtonText: NSLocalizedString("Dismiss", comment: ""))
             return false
         }
     }

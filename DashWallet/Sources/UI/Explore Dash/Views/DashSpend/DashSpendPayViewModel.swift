@@ -376,10 +376,16 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             case .piggyCards:
                 // For PiggyCards, we need to fetch gift cards for this merchant using the sourceId from the database
                 guard let piggyCardsRepo = repository[provider] as? PiggyCardsRepository else {
+                    await MainActor.run {
+                        self.isLoading = false
+                    }
                     return
                 }
 
                 guard let sourceId = sourceId else {
+                    await MainActor.run {
+                        self.isLoading = false
+                    }
                     return
                 }
 
