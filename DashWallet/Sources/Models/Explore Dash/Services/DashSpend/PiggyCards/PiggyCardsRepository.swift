@@ -301,6 +301,8 @@ class PiggyCardsRepository: DashSpendRepository {
     /// Get order status to retrieve gift card details
     func getOrderStatus(orderId: String) async throws -> PiggyCardsOrderStatusResponse {
         do {
+            let baseURL = PiggyCardsConstants.baseURI
+            DSLogger.log("DashSpend: PiggyCards API request - BaseURL: \(baseURL), Endpoint: orders/\(orderId)")
             return try await PiggyCardsAPI.shared.request(.getOrderStatus(orderId: orderId))
         } catch let error as DashSpendError {
             throw error

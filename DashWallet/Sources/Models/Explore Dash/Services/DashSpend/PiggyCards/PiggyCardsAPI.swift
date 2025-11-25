@@ -60,7 +60,15 @@ final class PiggyCardsAPI: HTTPClient<PiggyCardsEndpoint> {
     }
     
     private func handleUnauthorizedError(for target: PiggyCardsEndpoint) async throws {
-        try await PiggyCardsTokenService.shared.refreshAccessToken()
+        // Check if this is an auth endpoint - don't try to refresh token for auth failures
+        switch target {
+        case .signup, .login, .verifyOtp:
+            // Auth endpoints should not trigger token refresh as it causes recursive deadlock
+            throw DashSpendError.unauthorized
+        default:
+            // For non-auth endpoints, attempt token refresh and retry
+            try await PiggyCardsTokenService.shared.refreshAccessToken()
+        }
     }
 
     private func checkAccessTokenIfNeeded(for target: PiggyCardsEndpoint) throws {

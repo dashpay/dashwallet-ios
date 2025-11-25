@@ -196,6 +196,11 @@ class GiftCardDetailsViewModel: ObservableObject {
             }
         }
 
+        // Log provider decision for debugging upgrade issues
+        let providerName = giftCard.provider ?? "nil (defaulting to CTX)"
+        let txIdHex = txId.map { String(format: "%02x", $0) }.joined()
+        DSLogger.log("DashSpend: Fetching gift card - Provider: \(providerName), TxId: \(txIdHex)")
+
         // Check provider and call appropriate API
         if giftCard.provider == "PiggyCards" {
             await fetchPiggyCardsGiftCardInfo()
@@ -215,6 +220,7 @@ class GiftCardDetailsViewModel: ObservableObject {
 
         do {
             let base58TxId = ((txId as NSData).reverse() as NSData).base58String()
+            DSLogger.log("DashSpend: Calling CTX API - Base58TxId: \(base58TxId)")
             let response = try await ctxSpendRepository.getGiftCardByTxid(txid: base58TxId)
             
             switch response.status {
@@ -274,6 +280,7 @@ class GiftCardDetailsViewModel: ObservableObject {
         }
 
         do {
+            DSLogger.log("DashSpend: Calling PiggyCards API - OrderId: \(orderId)")
             let orderStatus = try await piggyCardsRepository.getOrderStatus(orderId: orderId)
 
             switch orderStatus.data.status.lowercased() {
@@ -292,7 +299,6 @@ class GiftCardDetailsViewModel: ObservableObject {
 
                         // Download and scan barcode from URL if available (matching Android)
                         if let barcodeLink = firstCard.barcodeLink, !barcodeLink.isEmpty {
-                            DSLogger.log("🎯 PiggyCards: Downloading and scanning barcode from URL: \(barcodeLink)")
                             if let result = await BarcodeScanner.downloadAndScan(from: barcodeLink) {
                                 // Clean the barcode value (remove spaces and dashes)
                                 let cleanValue = result.value.replacingOccurrences(of: " ", with: "")
@@ -302,9 +308,7 @@ class GiftCardDetailsViewModel: ObservableObject {
                                     value: cleanValue,
                                     format: result.format.rawValue
                                 )
-                                DSLogger.log("🎯 PiggyCards: Barcode saved - Format: \(result.format.rawValue), Value: \(cleanValue)")
                             } else {
-                                DSLogger.log("🎯 PiggyCards: Failed to scan barcode from URL, falling back to claim code")
                                 // Fallback: Generate barcode from claimCode
                                 let cleanCode = claimCode.replacingOccurrences(of: " ", with: "")
                                     .replacingOccurrences(of: "-", with: "")
@@ -315,7 +319,6 @@ class GiftCardDetailsViewModel: ObservableObject {
                                 )
                             }
                         } else {
-                            DSLogger.log("🎯 PiggyCards: No barcodeLink provided, generating from claim code")
                             // Fallback: Generate barcode from claimCode (legacy behavior)
                             let cleanCode = claimCode.replacingOccurrences(of: " ", with: "")
                                 .replacingOccurrences(of: "-", with: "")

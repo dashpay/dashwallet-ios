@@ -89,10 +89,12 @@ class GiftCardMetadataProvider: MetadataProvider, @unchecked Sendable {
     private func updateMetadataForGiftCards(_ giftCards: [GiftCard]) async {
         for giftCard in giftCards {
             let title = String.localizedStringWithFormat(NSLocalizedString("Gift card · %@", comment: "DashSpend"), giftCard.merchantName)
+            // Capture txId before async block to avoid race condition with Data object
+            let txId = giftCard.txId
 
             metadataQueue.async { [weak self] in
                 guard let self = self else { return }
-                var txRowMetadata = self._availableMetadata[giftCard.txId]
+                var txRowMetadata = self._availableMetadata[txId]
 
                 if txRowMetadata != nil {
                     txRowMetadata!.title = title
@@ -104,11 +106,11 @@ class GiftCardMetadataProvider: MetadataProvider, @unchecked Sendable {
                     )
                 }
 
-                self._availableMetadata[giftCard.txId] = txRowMetadata
+                self._availableMetadata[txId] = txRowMetadata
 
                 // Send update notification for this tx
                 DispatchQueue.main.async {
-                    self.metadataUpdated.send(giftCard.txId)
+                    self.metadataUpdated.send(txId)
                 }
             }
         }

@@ -701,6 +701,8 @@
 		759C8FA02B593589004B1305 /* CrowdNodeAPYView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */; };
 		75A0A3F32CA7DBCF003ED48B /* TimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */; };
 		75A0A3F42CA7DBCF003ED48B /* TimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */; };
+		7DC62C07EC8B45E0B605409B669257E9 /* PercentageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B18E3F81E54074AC0E0CECAB2421C2 /* PercentageFormatter.swift */; };
+		85A75E8713D440908EAF3F7A9BADF9E2 /* PercentageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B18E3F81E54074AC0E0CECAB2421C2 /* PercentageFormatter.swift */; };
 		75A2F3032DE48C860046BE17 /* CTXSpendTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A2F3022DE48C860046BE17 /* CTXSpendTokenService.swift */; };
 		75A2F3042DE48C860046BE17 /* CTXSpendTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A2F3022DE48C860046BE17 /* CTXSpendTokenService.swift */; };
 		75A8C1652AE5726B0042256E /* UsernameRequestsDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1632AE5725C0042256E /* UsernameRequestsDAO.swift */; };
@@ -2572,6 +2574,7 @@
 		759AFDE22CC67E89007072D2 /* VotingInfoScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingInfoScreen.swift; sourceTree = "<group>"; };
 		759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeAPYView.swift; sourceTree = "<group>"; };
 		75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimeUtils.swift; sourceTree = "<group>"; };
+		D9B18E3F81E54074AC0E0CECAB2421C2 /* PercentageFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PercentageFormatter.swift; sourceTree = "<group>"; };
 		75A2F3022DE48C860046BE17 /* CTXSpendTokenService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTXSpendTokenService.swift; sourceTree = "<group>"; };
 		75A8C1632AE5725C0042256E /* UsernameRequestsDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequestsDAO.swift; sourceTree = "<group>"; };
 		75A8C1662AE5734A0042256E /* UsernameRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequest.swift; sourceTree = "<group>"; };
@@ -5909,6 +5912,7 @@
 			children = (
 				472D13E0299E1F2F006903F1 /* CSVBuilder.swift */,
 				75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */,
+				D9B18E3F81E54074AC0E0CECAB2421C2 /* PercentageFormatter.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -9118,6 +9122,7 @@
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
 				75A0A3F32CA7DBCF003ED48B /* TimeUtils.swift in Sources */,
 				47EEE243293F436200049E0B /* CoinbaseAPIClient.swift in Sources */,
+				7DC62C07EC8B45E0B605409B669257E9 /* PercentageFormatter.swift in Sources */,
 				47B30D80291123D30080C326 /* SendAmountViewController.swift in Sources */,
 				47CF46A1296540EF0067B6EE /* AccountService.swift in Sources */,
 				47C6E6E7291A90B3003FEDF2 /* ListHandlerView.swift in Sources */,
@@ -9846,6 +9851,7 @@
 				C9D2C85B2A320AA000D15901 /* PointOfUseListEmptyResultsView.swift in Sources */,
 				75A0A3F42CA7DBCF003ED48B /* TimeUtils.swift in Sources */,
 				75D9EBC82DE5CE14009416A2 /* GiftCardDetailsViewModel.swift in Sources */,
+				85A75E8713D440908EAF3F7A9BADF9E2 /* PercentageFormatter.swift in Sources */,
 				75D9EBC92DE5CE14009416A2 /* GiftCardDetailsView.swift in Sources */,
 				75FFD6C82BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */,
 				C9D2C85D2A320AA000D15901 /* DWLockPinInputView.m in Sources */,

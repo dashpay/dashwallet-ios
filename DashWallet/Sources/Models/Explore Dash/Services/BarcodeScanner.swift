@@ -100,13 +100,11 @@ class BarcodeScanner {
     static func downloadAndScan(from url: String) async -> BarcodeResult? {
         // First try to extract barcode value from URL query parameters (faster and more reliable)
         if let extractedValue = extractBarcodeFromURL(url) {
-            DSLogger.log("🔍 BarcodeScanner: Using extracted value from URL, defaulting to CODE_128 format")
             return BarcodeResult(value: extractedValue, format: .code128)
         }
 
         // Fallback: Download and scan the image
         guard let imageUrl = URL(string: url) else {
-            DSLogger.log("🔍 BarcodeScanner: Invalid URL: \(url)")
             return nil
         }
 
@@ -115,13 +113,11 @@ class BarcodeScanner {
 
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {
-                DSLogger.log("🔍 BarcodeScanner: HTTP error downloading barcode image")
                 return nil
             }
 
             return await scanBarcode(from: data)
         } catch {
-            DSLogger.log("🔍 BarcodeScanner: Download failed: \(error.localizedDescription)")
             return nil
         }
     }
@@ -138,7 +134,6 @@ class BarcodeScanner {
         let parameterNames = ["text", "data", "code", "barcode"]
         for paramName in parameterNames {
             if let value = urlComponents.queryItems?.first(where: { $0.name == paramName })?.value {
-                DSLogger.log("🔍 BarcodeScanner: Extracted barcode value from URL parameter '\(paramName)': \(value)")
                 return value
             }
         }
@@ -152,7 +147,6 @@ class BarcodeScanner {
     private static func scanBarcode(from imageData: Data) async -> BarcodeResult? {
         guard let image = UIImage(data: imageData),
               let cgImage = image.cgImage else {
-            DSLogger.log("🔍 BarcodeScanner: Failed to create image from data")
             return nil
         }
 
@@ -172,7 +166,6 @@ class BarcodeScanner {
                     resumed = true
 
                     if let error = error {
-                        DSLogger.log("🔍 BarcodeScanner: Vision error: \(error.localizedDescription)")
                         continuation.resume(returning: nil)
                         return
                     }
@@ -180,7 +173,6 @@ class BarcodeScanner {
                     guard let observations = request.results as? [VNBarcodeObservation],
                           let firstBarcode = observations.first,
                           let payloadString = firstBarcode.payloadStringValue else {
-                        DSLogger.log("🔍 BarcodeScanner: No barcode found in image")
                         continuation.resume(returning: nil)
                         return
                     }
@@ -188,7 +180,6 @@ class BarcodeScanner {
                     let format = BarcodeFormat.from(symbology: firstBarcode.symbology)
                     let result = BarcodeResult(value: payloadString, format: format)
 
-                    DSLogger.log("🔍 BarcodeScanner: Successfully scanned barcode - Format: \(format.rawValue), Value: \(payloadString)")
                     continuation.resume(returning: result)
                 }
 
@@ -199,7 +190,6 @@ class BarcodeScanner {
                 } catch {
                     guard !resumed else { return }
                     resumed = true
-                    DSLogger.log("🔍 BarcodeScanner: Failed to perform Vision request: \(error.localizedDescription)")
                     continuation.resume(returning: nil)
                 }
             }

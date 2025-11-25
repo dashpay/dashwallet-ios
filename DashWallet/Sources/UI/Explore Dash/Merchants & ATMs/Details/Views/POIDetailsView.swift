@@ -561,14 +561,7 @@ struct POIDetailsView: View {
     /// - Parameter discountBasisPoints: Discount in basis points (e.g., 50 = 0.5%, 1000 = 10%)
     /// - Returns: Formatted string (e.g., "-0.5%", "-10%")
     private func formatDiscount(_ discountBasisPoints: Int) -> String {
-        let discountPercent = Double(discountBasisPoints) / 100.0
-
-        // Use 1 decimal place for discounts < 1%, otherwise use whole numbers
-        if discountPercent < 1.0 {
-            return String(format: "-%.1f%%", discountPercent)
-        } else {
-            return String(format: "-%.0f%%", discountPercent)
-        }
+        return PercentageFormatter.format(basisPoints: discountBasisPoints, includeSign: true)
     }
 
     private var separatorView: some View {
