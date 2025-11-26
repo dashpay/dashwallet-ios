@@ -86,6 +86,8 @@
 		192E5E737398F69154940D09 /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1946AE4B077923ED5BEF70FD /* libPods-WatchApp Extension.a */; };
 		1D267CDF2ECF86920053AD68 /* AddProviderToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D267CDE2ECF86920053AD68 /* AddProviderToGiftCardsTable.swift */; };
 		1D267CE02ECF86920053AD68 /* AddProviderToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D267CDE2ECF86920053AD68 /* AddProviderToGiftCardsTable.swift */; };
+		1DAD1AA92ED2037F00C8090E /* BarcodeScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DAD1AA82ED2037F00C8090E /* BarcodeScanner.swift */; };
+		1DAD1AAA2ED2037F00C8090E /* BarcodeScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DAD1AA82ED2037F00C8090E /* BarcodeScanner.swift */; };
 		1DD7BE9CD62998F12672140D /* RadioButtonRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 708B9F2B4B1E4C31B5010CDF /* RadioButtonRow.swift */; };
 		222040C61C1A1940005CE1C3 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222040C51C1A1940005CE1C3 /* WebKit.framework */; };
 		222E7F561C46E9B8009AB45D /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222E7F551C46E9B8009AB45D /* Security.framework */; };
@@ -699,6 +701,8 @@
 		759C8FA02B593589004B1305 /* CrowdNodeAPYView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */; };
 		75A0A3F32CA7DBCF003ED48B /* TimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */; };
 		75A0A3F42CA7DBCF003ED48B /* TimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */; };
+		7DC62C07EC8B45E0B605409B669257E9 /* PercentageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B18E3F81E54074AC0E0CECAB2421C2 /* PercentageFormatter.swift */; };
+		85A75E8713D440908EAF3F7A9BADF9E2 /* PercentageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B18E3F81E54074AC0E0CECAB2421C2 /* PercentageFormatter.swift */; };
 		75A2F3032DE48C860046BE17 /* CTXSpendTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A2F3022DE48C860046BE17 /* CTXSpendTokenService.swift */; };
 		75A2F3042DE48C860046BE17 /* CTXSpendTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A2F3022DE48C860046BE17 /* CTXSpendTokenService.swift */; };
 		75A8C1652AE5726B0042256E /* UsernameRequestsDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1632AE5725C0042256E /* UsernameRequestsDAO.swift */; };
@@ -1789,6 +1793,7 @@
 		1946AE4B077923ED5BEF70FD /* libPods-WatchApp Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A13DF165F6A0780F58985AB /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; path = "Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; sourceTree = "<group>"; };
 		1D267CDE2ECF86920053AD68 /* AddProviderToGiftCardsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddProviderToGiftCardsTable.swift; sourceTree = "<group>"; };
+		1DAD1AA82ED2037F00C8090E /* BarcodeScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScanner.swift; sourceTree = "<group>"; };
 		1FA780FC3C067D0F6DEE9543 /* Pods-DashWalletTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.debug.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.debug.xcconfig"; sourceTree = "<group>"; };
 		222040C51C1A1940005CE1C3 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		222E7F551C46E9B8009AB45D /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -2569,6 +2574,7 @@
 		759AFDE22CC67E89007072D2 /* VotingInfoScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingInfoScreen.swift; sourceTree = "<group>"; };
 		759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeAPYView.swift; sourceTree = "<group>"; };
 		75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimeUtils.swift; sourceTree = "<group>"; };
+		D9B18E3F81E54074AC0E0CECAB2421C2 /* PercentageFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PercentageFormatter.swift; sourceTree = "<group>"; };
 		75A2F3022DE48C860046BE17 /* CTXSpendTokenService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTXSpendTokenService.swift; sourceTree = "<group>"; };
 		75A8C1632AE5725C0042256E /* UsernameRequestsDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequestsDAO.swift; sourceTree = "<group>"; };
 		75A8C1662AE5734A0042256E /* UsernameRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequest.swift; sourceTree = "<group>"; };
@@ -5654,6 +5660,7 @@
 		47AE8B9828BFAD0000490F5E /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				1DAD1AA82ED2037F00C8090E /* BarcodeScanner.swift */,
 				757AEBDD2E113D7B007BE8B4 /* DashSpend */,
 				47AE8BAC28BFAE6700490F5E /* DWLocationManager.swift */,
 				47AE8BA828BFAE5800490F5E /* ExploreDatabaseSyncManager.swift */,
@@ -5905,6 +5912,7 @@
 			children = (
 				472D13E0299E1F2F006903F1 /* CSVBuilder.swift */,
 				75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */,
+				D9B18E3F81E54074AC0E0CECAB2421C2 /* PercentageFormatter.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -8692,6 +8700,7 @@
 				2AD1CE8A22DC9C6F00C99324 /* DWVerifySeedPhraseContentView.m in Sources */,
 				47A2A2E2293DCCEA00938DB7 /* Coinbase+Constants.swift in Sources */,
 				47AE8C0728C2274200490F5E /* PointOfUseListSearchCell.swift in Sources */,
+				1DAD1AA92ED2037F00C8090E /* BarcodeScanner.swift in Sources */,
 				4774DCE128F44BA4008CF87D /* ServiceDataProvider.swift in Sources */,
 				C9F451E72A0BA16400825057 /* PaymentButton.swift in Sources */,
 				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,
@@ -9113,6 +9122,7 @@
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
 				75A0A3F32CA7DBCF003ED48B /* TimeUtils.swift in Sources */,
 				47EEE243293F436200049E0B /* CoinbaseAPIClient.swift in Sources */,
+				7DC62C07EC8B45E0B605409B669257E9 /* PercentageFormatter.swift in Sources */,
 				47B30D80291123D30080C326 /* SendAmountViewController.swift in Sources */,
 				47CF46A1296540EF0067B6EE /* AccountService.swift in Sources */,
 				47C6E6E7291A90B3003FEDF2 /* ListHandlerView.swift in Sources */,
@@ -9807,6 +9817,7 @@
 				C943B4FF2A40A54600AF23C5 /* DWDPGenericContactRequestItemView.m in Sources */,
 				C9D2C8402A320AA000D15901 /* DWQRScanView.m in Sources */,
 				75C1F0462AE26AC0006929CA /* CoinJoinLevelsViewModel.swift in Sources */,
+				1DAD1AAA2ED2037F00C8090E /* BarcodeScanner.swift in Sources */,
 				C9D2C8412A320AA000D15901 /* ServiceItem.swift in Sources */,
 				C9D2C8422A320AA000D15901 /* ErrorPresentable.swift in Sources */,
 				C9D2C8432A320AA000D15901 /* DWPinInputStepView.m in Sources */,
@@ -9840,6 +9851,7 @@
 				C9D2C85B2A320AA000D15901 /* PointOfUseListEmptyResultsView.swift in Sources */,
 				75A0A3F42CA7DBCF003ED48B /* TimeUtils.swift in Sources */,
 				75D9EBC82DE5CE14009416A2 /* GiftCardDetailsViewModel.swift in Sources */,
+				85A75E8713D440908EAF3F7A9BADF9E2 /* PercentageFormatter.swift in Sources */,
 				75D9EBC92DE5CE14009416A2 /* GiftCardDetailsView.swift in Sources */,
 				75FFD6C82BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */,
 				C9D2C85D2A320AA000D15901 /* DWLockPinInputView.m in Sources */,

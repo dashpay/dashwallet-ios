@@ -104,11 +104,13 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         let originalPrice = fiatFormatter.string(for: amount) ?? "0.00"
         let discountedPrice = amount * (1 - savingsFraction)
         let formattedDiscountedPrice = fiatFormatter.string(for: discountedPrice) ?? "0.00"
-        
-        let discount = NSDecimalNumber(decimal: savingsFraction * 100).intValue
-        return String.localizedStringWithFormat(
-            NSLocalizedString("You are buying a %@ gift card for %@ (%d%% discount)", comment: "DashSpend"),
-            originalPrice, formattedDiscountedPrice, discount)
+
+        let discountPercent = NSDecimalNumber(decimal: savingsFraction * 100).doubleValue
+        let discountText = PercentageFormatter.format(percent: discountPercent, includePercent: false)
+
+        return String(format:
+            NSLocalizedString("You are buying a %@ gift card for %@ (%@%% discount)", comment: "DashSpend"),
+            originalPrice, formattedDiscountedPrice, discountText)
     }
     var showCost: Bool { error == nil && amount >= minimumAmount && amount <= maximumAmount && hasValidLimits }
     var showLimits: Bool { error == nil && !showCost && hasValidLimits }
@@ -215,10 +217,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 throw DashSpendError.paymentProcessingError("No payment URL received")
             }
 
+            giftCardId = response.paymentId
 
             // CTX uses BIP70 payment request URLs
             transaction = try await sendCoinsService.payWithDashUrl(url: url)
-            giftCardId = response.paymentId
 
         case .piggyCards:
 
@@ -367,10 +369,16 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             case .piggyCards:
                 // For PiggyCards, we need to fetch gift cards for this merchant using the sourceId from the database
                 guard let piggyCardsRepo = repository[provider] as? PiggyCardsRepository else {
+                    await MainActor.run {
+                        self.isLoading = false
+                    }
                     return
                 }
 
                 guard let sourceId = sourceId else {
+                    await MainActor.run {
+                        self.isLoading = false
+                    }
                     return
                 }
 

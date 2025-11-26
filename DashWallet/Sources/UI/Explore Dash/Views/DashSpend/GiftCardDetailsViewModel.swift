@@ -31,6 +31,9 @@ struct GiftCardDetailsUIState {
     var isLoadingCardDetails: Bool = false
     var loadingError: Error? = nil
     var transaction: DSTransaction? = nil
+    var isClaimLink: Bool = false
+    var hasBeenPollingForLongTime: Bool = false
+    var provider: String? = nil
 }
 
 @MainActor
@@ -44,6 +47,7 @@ class GiftCardDetailsViewModel: ObservableObject {
     private var tickerTimer: Timer?
     private var retryCount = 0
     private let maxRetries = 40  // 60 seconds / 1.5 sec interval = 40 retries
+    private let longPollingThreshold = 40  // After 60 seconds show message
     
     let txId: Data
     @Published private(set) var uiState = GiftCardDetailsUIState()
@@ -124,19 +128,25 @@ class GiftCardDetailsViewModel: ObservableObject {
     
     private func loadGiftCard() async {
         guard let card = await giftCardsDAO.get(byTxId: txId) else { return }
-        
+
         await MainActor.run {
             self.uiState.merchantName = card.merchantName
             self.uiState.merchantUrl = card.merchantUrl
             self.uiState.formattedPrice = self.currencyFormatter.string(from: card.price as NSDecimalNumber) ?? "$0.00"
             self.uiState.cardNumber = card.number
             self.uiState.cardPin = card.pin
-            
+            self.uiState.provider = card.provider
+
+            // Check if this is a claim link (URL in number field)
+            if let number = card.number, number.starts(with: "http") {
+                self.uiState.isClaimLink = true
+            }
+
             // Generate barcode if we have the value
             if let barcodeValue = card.barcodeValue {
                 self.generateBarcode(from: barcodeValue, format: card.barcodeFormat ?? "CODE128")
             }
-            
+
             // If we don't have card details yet but have a note (payment ID), start ticker
             if card.number == nil && card.note != nil {
                 self.startTicker()
@@ -168,6 +178,7 @@ class GiftCardDetailsViewModel: ObservableObject {
         tickerTimer?.invalidate()
         tickerTimer = nil
         uiState.isLoadingCardDetails = false
+        uiState.hasBeenPollingForLongTime = false
         retryCount = 0
     }
     
@@ -177,6 +188,18 @@ class GiftCardDetailsViewModel: ObservableObject {
             stopTicker()
             return
         }
+
+        // Check if we've been polling for more than 60 seconds
+        if retryCount >= longPollingThreshold {
+            await MainActor.run {
+                self.uiState.hasBeenPollingForLongTime = true
+            }
+        }
+
+        // Log provider decision for debugging upgrade issues
+        let providerName = giftCard.provider ?? "nil (defaulting to CTX)"
+        let txIdHex = txId.map { String(format: "%02x", $0) }.joined()
+        DSLogger.log("DashSpend: Fetching gift card - Provider: \(providerName), TxId: \(txIdHex)")
 
         // Check provider and call appropriate API
         if giftCard.provider == "PiggyCards" {
@@ -197,6 +220,7 @@ class GiftCardDetailsViewModel: ObservableObject {
 
         do {
             let base58TxId = ((txId as NSData).reverse() as NSData).base58String()
+            DSLogger.log("DashSpend: Calling CTX API - Base58TxId: \(base58TxId)")
             let response = try await ctxSpendRepository.getGiftCardByTxid(txid: base58TxId)
             
             switch response.status {
@@ -256,6 +280,7 @@ class GiftCardDetailsViewModel: ObservableObject {
         }
 
         do {
+            DSLogger.log("DashSpend: Calling PiggyCards API - OrderId: \(orderId)")
             let orderStatus = try await piggyCardsRepository.getOrderStatus(orderId: orderId)
 
             switch orderStatus.data.status.lowercased() {
@@ -272,15 +297,37 @@ class GiftCardDetailsViewModel: ObservableObject {
                             pin: firstCard.claimPin
                         )
 
-                        // TODO: Download and scan barcode from URL if available
-                        // For now, just generate from claim code
-                        let cleanCode = claimCode.replacingOccurrences(of: " ", with: "")
-                            .replacingOccurrences(of: "-", with: "")
-                        await giftCardsDAO.updateBarcode(
-                            txId: txId,
-                            value: cleanCode,
-                            format: "CODE_128"
-                        )
+                        // Download and scan barcode from URL if available (matching Android)
+                        if let barcodeLink = firstCard.barcodeLink, !barcodeLink.isEmpty {
+                            if let result = await BarcodeScanner.downloadAndScan(from: barcodeLink) {
+                                // Clean the barcode value (remove spaces and dashes)
+                                let cleanValue = result.value.replacingOccurrences(of: " ", with: "")
+                                    .replacingOccurrences(of: "-", with: "")
+                                await giftCardsDAO.updateBarcode(
+                                    txId: txId,
+                                    value: cleanValue,
+                                    format: result.format.rawValue
+                                )
+                            } else {
+                                // Fallback: Generate barcode from claimCode
+                                let cleanCode = claimCode.replacingOccurrences(of: " ", with: "")
+                                    .replacingOccurrences(of: "-", with: "")
+                                await giftCardsDAO.updateBarcode(
+                                    txId: txId,
+                                    value: cleanCode,
+                                    format: "CODE_128"
+                                )
+                            }
+                        } else {
+                            // Fallback: Generate barcode from claimCode (legacy behavior)
+                            let cleanCode = claimCode.replacingOccurrences(of: " ", with: "")
+                                .replacingOccurrences(of: "-", with: "")
+                            await giftCardsDAO.updateBarcode(
+                                txId: txId,
+                                value: cleanCode,
+                                format: "CODE_128"
+                            )
+                        }
                         stopTicker()
                     } else if let claimLink = firstCard.claimLink, !claimLink.isEmpty {
                         // Link-based redemption

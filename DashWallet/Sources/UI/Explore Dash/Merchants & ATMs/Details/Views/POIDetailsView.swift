@@ -315,7 +315,7 @@ struct POIDetailsView: View {
             if let selectedProvider = viewModel.selectedProvider,
                let providerData = viewModel.supportedProviders[selectedProvider],
                providerData.discount > 0 {
-                Text(String(format: "-%.0f%%", Double(providerData.discount) / 100.0))
+                Text(formatDiscount(providerData.discount))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.primaryText)
             }
@@ -336,7 +336,7 @@ struct POIDetailsView: View {
         RadioButtonRow(
             title: provider.displayName,
             subtitle: providerStatusText(for: provider, isFixed: providerData.isFixed),
-            trailingText: discount > 0 ? String(format: "-%.0f%%", Double(discount) / 100.0) : nil,
+            trailingText: discount > 0 ? formatDiscount(discount) : nil,
             isSelected: viewModel.selectedProvider == provider,
             style: .radio
         ) {
@@ -557,6 +557,13 @@ struct POIDetailsView: View {
         .frame(height: 48)
     }
     
+    /// Format discount percentage with appropriate decimal places
+    /// - Parameter discountBasisPoints: Discount in basis points (e.g., 50 = 0.5%, 1000 = 10%)
+    /// - Returns: Formatted string (e.g., "-0.5%", "-10%")
+    private func formatDiscount(_ discountBasisPoints: Int) -> String {
+        return PercentageFormatter.format(basisPoints: discountBasisPoints, includeSign: true)
+    }
+
     private var separatorView: some View {
         Rectangle()
             .fill(Color.black.opacity(0.3))
