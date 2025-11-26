@@ -39,7 +39,18 @@ class GiftCardMetadataProvider: MetadataProvider, @unchecked Sendable {
         Task {
             await loadMetadata()
         }
-        
+
+        // Observe gift card changes
+        giftCardDao.observeAll()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] giftCards in
+                guard let self = self else { return }
+                Task {
+                    await self.updateMetadataForGiftCards(giftCards)
+                }
+            }
+            .store(in: &cancellableBag)
+
         self.metadataDao.$lastChange
             .receive(on: DispatchQueue.main)
             .sink { [weak self] change in
@@ -72,10 +83,13 @@ class GiftCardMetadataProvider: MetadataProvider, @unchecked Sendable {
     
     private func loadMetadata() async {
         let giftCards = await giftCardDao.all()
-        
+        await updateMetadataForGiftCards(giftCards)
+    }
+
+    private func updateMetadataForGiftCards(_ giftCards: [GiftCard]) async {
         for giftCard in giftCards {
             let title = String.localizedStringWithFormat(NSLocalizedString("Gift card · %@", comment: "DashSpend"), giftCard.merchantName)
-            
+
             metadataQueue.async { [weak self] in
                 guard let self = self else { return }
                 var txRowMetadata = self._availableMetadata[giftCard.txId]
@@ -91,6 +105,11 @@ class GiftCardMetadataProvider: MetadataProvider, @unchecked Sendable {
                 }
 
                 self._availableMetadata[giftCard.txId] = txRowMetadata
+
+                // Send update notification for this tx
+                DispatchQueue.main.async {
+                    self.metadataUpdated.send(giftCard.txId)
+                }
             }
         }
     }

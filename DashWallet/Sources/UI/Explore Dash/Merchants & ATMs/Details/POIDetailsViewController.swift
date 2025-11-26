@@ -362,7 +362,8 @@ extension ExplorePointOfUse {
             savingsBasisPoints: currentMerchant.savingsBasisPoints,
             denominationsType: denominationsType,
             denominations: denominations,
-            redeemType: currentMerchant.redeemType
+            redeemType: currentMerchant.redeemType,
+            giftCardProviders: currentMerchant.giftCardProviders
         )
         
         return ExplorePointOfUse(

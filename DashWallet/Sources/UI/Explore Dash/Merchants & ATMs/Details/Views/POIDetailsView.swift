@@ -284,26 +284,8 @@ struct POIDetailsView: View {
                 .padding(.horizontal, 16)
             
             VStack(spacing: 8) {
-                ForEach(Array(viewModel.supportedProviders.keys), id: \.self) { provider in
-                    let providerData = viewModel.supportedProviders[provider] ?? (isFixed: false, discount: 0)
-                    let isFixedDenom = providerData.isFixed
-                    let discount = providerData.discount
-                    
-                    RadioButtonRow(
-                        title: provider.displayName,
-                        subtitle: isFixedDenom ? NSLocalizedString("Fixed amounts", comment: "DashSpend") : NSLocalizedString("Flexible amounts", comment: "DashSpend"),
-                        trailingText: discount > 0 ? String(format: "-%.0f%%", Double(discount) / 100.0) : nil,
-                        isSelected: viewModel.selectedProvider == provider,
-                        style: .radio
-                    ) {
-                        viewModel.selectProvider(provider)
-                    }
-                    .background(viewModel.selectedProvider == provider ? Color.dashBlue.opacity(0.05) : Color.clear)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(viewModel.selectedProvider == provider ? Color.dashBlue : Color.secondaryText.opacity(0.2), lineWidth: 1)
-                    )
-                    .cornerRadius(12)
+                ForEach(viewModel.sortedProviders, id: \.self) { provider in
+                    providerRow(for: provider)
                 }
             }
             .padding(6)
@@ -322,7 +304,7 @@ struct POIDetailsView: View {
 
                 if let selectedProvider = viewModel.selectedProvider,
                    let providerData = viewModel.supportedProviders[selectedProvider] {
-                    Text(providerData.isFixed ? NSLocalizedString("Fixed amounts", comment: "DashSpend") : NSLocalizedString("Flexible amounts", comment: "DashSpend"))
+                    Text(providerStatusText(for: selectedProvider, isFixed: providerData.isFixed))
                         .font(.system(size: 13))
                         .foregroundColor(.secondaryText)
                 }
@@ -343,7 +325,42 @@ struct POIDetailsView: View {
         .background(Color.gray.opacity(0.1))
         .cornerRadius(10)
     }
-    
+
+    // MARK: - Helper Views
+
+    @ViewBuilder
+    private func providerRow(for provider: GiftCardProvider) -> some View {
+        let providerData = viewModel.supportedProviders[provider] ?? (isFixed: false, discount: 0)
+        let discount = providerData.discount
+
+        RadioButtonRow(
+            title: provider.displayName,
+            subtitle: providerStatusText(for: provider, isFixed: providerData.isFixed),
+            trailingText: discount > 0 ? String(format: "-%.0f%%", Double(discount) / 100.0) : nil,
+            isSelected: viewModel.selectedProvider == provider,
+            style: .radio
+        ) {
+            viewModel.selectProvider(provider)
+        }
+        .background(viewModel.selectedProvider == provider ? Color.dashBlue.opacity(0.05) : Color.clear)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(viewModel.selectedProvider == provider ? Color.dashBlue : Color.secondaryText.opacity(0.2), lineWidth: 1)
+        )
+        .cornerRadius(12)
+    }
+
+    private func providerStatusText(for provider: GiftCardProvider, isFixed: Bool) -> String {
+        // Check provider-specific availability
+        // For CTX provider, check if merchant is enabled
+        if provider == .ctx && !viewModel.merchantEnabled {
+            return NSLocalizedString("Temporarily unavailable", comment: "DashSpend")
+        }
+
+        // For other providers or when merchant is enabled, show denomination type
+        return isFixed ? NSLocalizedString("Fixed amounts", comment: "DashSpend") : NSLocalizedString("Flexible amounts", comment: "DashSpend")
+    }
+
     // MARK: - Country Restriction View
 
     @ViewBuilder
@@ -444,9 +461,9 @@ struct POIDetailsView: View {
         guard case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard else {
             return true
         }
-        
-        return merchant.active && 
-               viewModel.networkStatus == .online && 
+
+        return viewModel.merchantEnabled &&
+               viewModel.networkStatus == .online &&
                viewModel.syncState == .syncDone
     }
     

@@ -2,6 +2,42 @@
 
 This document provides specific guidance for AI developers working with the Dash Wallet iOS codebase, including common tasks, troubleshooting patterns, and development workflows.
 
+## 🚨 CRITICAL: Git Commit and Push Policy
+
+**NEVER commit or push changes without explicit user permission.**
+
+### Rules:
+1. **Make code changes** as requested by the user
+2. **Show the user what was changed** using `git diff` or by explaining the changes
+3. **WAIT for explicit permission** before running `git commit` or `git push`
+4. **Never assume** the user wants changes committed just because they asked for code changes
+
+### Acceptable workflow:
+```
+User: "Fix the JSON parsing to be less strict"
+AI: [Makes changes to code files]
+AI: "I've updated CTXSpendModels.swift to make these fields optional: ..."
+AI: [Shows diff or explains changes]
+AI: [STOPS and WAITS - does NOT commit]
+
+User: "Please commit and push these changes"
+AI: [NOW commits and pushes]
+```
+
+### Unacceptable workflow:
+```
+User: "Fix the JSON parsing"
+AI: [Makes changes]
+AI: [Commits without asking] ❌ WRONG
+AI: [Pushes without asking] ❌ WRONG
+```
+
+**Exception**: Only commit/push without asking if the user's message explicitly includes phrases like:
+- "commit these changes"
+- "push to github"
+- "create a commit"
+- "commit and push"
+
 ## Getting Started for AI Developers
 
 ### Understanding the Codebase
@@ -23,6 +59,53 @@ Essential Files to Understand:
 │   ├── Models/DWEnvironment.h/m  # Global wallet state
 │   └── UI/RootNavigation/        # Main navigation coordinator
 ```
+
+## 🔴 CRITICAL: Git Workflow Policy - NEVER COMMIT WITHOUT PERMISSION
+
+### ⛔ ABSOLUTE RULE: NO AUTONOMOUS COMMITS OR PUSHES
+
+**THIS IS THE MOST IMPORTANT RULE FOR AI ASSISTANTS:**
+
+1. **NEVER run `git commit` without explicit user permission**
+2. **NEVER run `git push` without explicit user permission**
+3. **ALWAYS stop after making code changes and ASK before committing**
+
+### The ONLY Acceptable Workflow:
+
+```
+1. Make code changes as requested
+2. Show the changes (git diff or explanation)
+3. ✋ FULL STOP - WAIT for user permission
+4. Only commit/push when user EXPLICITLY says:
+   - "commit these changes"
+   - "push to github"
+   - "create a commit and push"
+   - "commit and push all changes"
+```
+
+### ❌ Common Violations to Avoid:
+
+- **VIOLATION**: User asks to "add a feature" → AI adds feature AND commits/pushes
+- **VIOLATION**: User asks to "fix a bug" → AI fixes bug AND commits/pushes
+- **VIOLATION**: User asks to "update documentation" → AI updates AND commits/pushes
+
+### ✅ Correct Behavior:
+
+- **CORRECT**: User asks to "add a feature" → AI adds feature, shows changes, WAITS
+- **CORRECT**: User asks to "fix a bug" → AI fixes bug, shows changes, WAITS
+- **CORRECT**: User asks to "update documentation" → AI updates, shows changes, WAITS
+
+### Why This Matters:
+
+- Users need to review changes before they become permanent
+- Commits cannot be easily undone once pushed
+- Users may want to adjust commit messages
+- Users may want to combine multiple changes into one commit
+- Users may be working on a specific branch strategy
+
+### Exception: NONE
+
+There are **NO EXCEPTIONS** to this rule. Even if the user seems to imply they want changes committed, always confirm explicitly. When in doubt, ASK before committing.
 
 ## Common AI Development Tasks
 

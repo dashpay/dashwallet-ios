@@ -37,12 +37,13 @@ struct GiftCardDetailsUIState {
 class GiftCardDetailsViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     private let ctxSpendRepository = CTXSpendRepository.shared
+    private let piggyCardsRepository = PiggyCardsRepository.shared
     private let giftCardsDAO = GiftCardsDAOImpl.shared
     private let customIconDAO = IconBitmapDAOImpl.shared
     private let txMetadataDAO = TransactionMetadataDAOImpl.shared
     private var tickerTimer: Timer?
     private var retryCount = 0
-    private let maxRetries = 3
+    private let maxRetries = 40  // 60 seconds / 1.5 sec interval = 40 retries
     
     let txId: Data
     @Published private(set) var uiState = GiftCardDetailsUIState()
@@ -172,12 +173,28 @@ class GiftCardDetailsViewModel: ObservableObject {
     
     private func fetchGiftCardInfo() async {
         guard let giftCard = await giftCardsDAO.get(byTxId: txId),
+              let _ = giftCard.note else {
+            stopTicker()
+            return
+        }
+
+        // Check provider and call appropriate API
+        if giftCard.provider == "PiggyCards" {
+            await fetchPiggyCardsGiftCardInfo()
+        } else {
+            // Default to CTX for backward compatibility
+            await fetchCTXGiftCardInfo()
+        }
+    }
+
+    private func fetchCTXGiftCardInfo() async {
+        guard let giftCard = await giftCardsDAO.get(byTxId: txId),
               let _ = giftCard.note,
               ctxSpendRepository.isUserSignedIn else {
             stopTicker()
             return
         }
-        
+
         do {
             let base58TxId = ((txId as NSData).reverse() as NSData).base58String()
             let response = try await ctxSpendRepository.getGiftCardByTxid(txid: base58TxId)
@@ -229,7 +246,76 @@ class GiftCardDetailsViewModel: ObservableObject {
             DSLogger.log("DashSpend: Failed to fetch gift card info: \(error)")
         }
     }
-    
+
+    private func fetchPiggyCardsGiftCardInfo() async {
+        guard let giftCard = await giftCardsDAO.get(byTxId: txId),
+              let orderId = giftCard.note,
+              piggyCardsRepository.isUserSignedIn else {
+            stopTicker()
+            return
+        }
+
+        do {
+            let orderStatus = try await piggyCardsRepository.getOrderStatus(orderId: orderId)
+
+            switch orderStatus.data.status.lowercased() {
+            case "complete", "completed":
+                // Get the card details from the order
+                let cards = orderStatus.data.cards
+                if let firstCard = cards.first {
+
+                    // Update gift card with received details
+                    if let claimCode = firstCard.claimCode, !claimCode.isEmpty {
+                        await giftCardsDAO.updateCardDetails(
+                            txId: txId,
+                            number: claimCode,
+                            pin: firstCard.claimPin
+                        )
+
+                        // TODO: Download and scan barcode from URL if available
+                        // For now, just generate from claim code
+                        let cleanCode = claimCode.replacingOccurrences(of: " ", with: "")
+                            .replacingOccurrences(of: "-", with: "")
+                        await giftCardsDAO.updateBarcode(
+                            txId: txId,
+                            value: cleanCode,
+                            format: "CODE_128"
+                        )
+                        stopTicker()
+                    } else if let claimLink = firstCard.claimLink, !claimLink.isEmpty {
+                        // Link-based redemption
+                        await giftCardsDAO.updateCardDetails(
+                            txId: txId,
+                            number: claimLink,  // Store URL as the card number
+                            pin: nil            // No PIN for link-based cards
+                        )
+                        stopTicker()
+                    }
+                }
+
+            case "failed", "rejected", "cancelled":
+                await MainActor.run {
+                    self.uiState.loadingError = DashSpendError.customError(
+                        NSLocalizedString("Gift card purchase was rejected", comment: "")
+                    )
+                }
+                stopTicker()
+
+            default:
+                // Keep polling for other statuses
+                break
+            }
+        } catch {
+            retryCount += 1
+            if retryCount >= maxRetries {
+                await MainActor.run {
+                    self.uiState.loadingError = error
+                }
+                stopTicker()
+            }
+        }
+    }
+
     private func loadExistingMetadata() {
         Task {
             if let metadata = txMetadataDAO.get(by: txId) {
