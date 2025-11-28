@@ -67,10 +67,16 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     @Published var error: Error? = nil
     @Published var isFixedDenomination: Bool = false
     @Published var denominations: [Int] = []
+    /// Maps each denomination to its specific discount percentage (after service fee)
+    private var denominationDiscounts: [Int: Decimal] = [:]
     @Published var selectedDenomination: Int? = nil {
         didSet {
             if let denom = selectedDenomination {
                 input = String(denom)
+                // Update savingsFraction to use the discount specific to this denomination
+                if let specificDiscount = denominationDiscounts[denom] {
+                    savingsFraction = specificDiscount
+                }
             } else {
                 input = "0"
             }
@@ -112,7 +118,17 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             NSLocalizedString("You are buying a %@ gift card for %@ (%@%% discount)", comment: "DashSpend"),
             originalPrice, formattedDiscountedPrice, discountText)
     }
-    var showCost: Bool { error == nil && amount >= minimumAmount && amount <= maximumAmount && hasValidLimits }
+    var showCost: Bool {
+        if error != nil { return false }
+
+        // For fixed denominations, show cost when a valid denomination is selected
+        if isFixedDenomination {
+            return selectedDenomination != nil && selectedDenomination != 0
+        }
+
+        // For flexible amounts, show cost when within limits
+        return amount >= minimumAmount && amount <= maximumAmount && hasValidLimits
+    }
     var showLimits: Bool { error == nil && !showCost && hasValidLimits }
     var hasValidLimits: Bool { minimumAmount > 0 || maximumAmount > 0 }
     var minimumLimitMessage: String { String.localizedStringWithFormat(NSLocalizedString("Min: %@", comment: "DashSpend"), fiatFormatter.string(for: minimumAmount) ?? "0.0" ) }
@@ -389,93 +405,86 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 )
 
 
-                // Log ALL cards to understand what we're getting
-                for (index, card) in giftCards.enumerated() {
-                }
+                // Aggregate denominations from ALL gift cards (like Android does)
+                // Each fixed denomination card is a separate entry in the API response
+                var allFixedDenominations: Set<Int> = []
+                var denomDiscounts: [Int: Decimal] = [:]  // Track discount per denomination
+                var hasRangeCard = false
+                var rangeMin: Double = 0
+                var rangeMax: Double = 0
+                var rangeDiscount: Double = 0
+                let serviceFee = Decimal(PiggyCardsConstants.serviceFeePercent)
 
-                // Select the best card based on merchant name
-                let preferredCard: PiggyCardsGiftcard?
-
-                // For Domino's, prefer fixed price cards
-                if merchantTitle.lowercased().contains("domino") {
-                    if let fixedCard = giftCards.first(where: { card in
-                        card.priceType.lowercased() == "fixed"
-                    }) {
-                        preferredCard = fixedCard
-                    } else {
-                        preferredCard = giftCards.first
-                    }
-                } else if let instantCard = giftCards.first(where: { card in
-                    card.name.lowercased().contains("instant")
-                }) {
-                    // For other merchants, prefer instant delivery cards
-                    preferredCard = instantCard
-                } else {
-                    preferredCard = giftCards.first
-                }
-
-                // Process the selected gift card to determine denomination type
-                if let firstCard = preferredCard {
-
-                    // Apply discount with service fee
-                    // PiggyCards returns discount as whole number (e.g., 2.0 = 2% discount)
-                    let discountPercent = Decimal(firstCard.discountPercentage)
-                    let serviceFee = Decimal(PiggyCardsConstants.serviceFeePercent)
-                    savingsFraction = max(0, discountPercent - serviceFee) / 100
-
-
-                    // PiggyCards API returns capitalized price types, normalize to lowercase
-                    // Android pattern: trim().lowercase() for proper normalization
-                    let normalizedPriceType = firstCard.priceType
+                for card in giftCards {
+                    let normalizedPriceType = card.priceType
                         .trimmingCharacters(in: .whitespaces)
                         .lowercased()
 
+                    // Calculate discount after service fee for this card
+                    let cardDiscount = max(0, Decimal(card.discountPercentage) - serviceFee) / 100
 
-                    // Use API as source of truth for denomination type (like Android does)
-                    if normalizedPriceType == PiggyCardsPriceType.range.rawValue {
-                        // Range type means flexible amounts
-                        isFixedDenomination = false
-                        let minVal = Decimal(firstCard.minDenomination)
-                        let maxVal = Decimal(firstCard.maxDenomination)
-
-                        // Ensure we got valid values
-                        if minVal > 0 && maxVal > 0 {
-                            minimumAmount = minVal
-                            maximumAmount = maxVal
-                        } else {
-                            // Keep any existing valid values or set defaults
-                            if minimumAmount <= 0 { minimumAmount = 10 }
-                            if maximumAmount <= 0 { maximumAmount = 500 }
+                    if normalizedPriceType == PiggyCardsPriceType.fixed.rawValue {
+                        // Fixed type: collect the denomination and its specific discount
+                        if let fixedValue = Int(card.denomination.trimmingCharacters(in: .whitespaces)) {
+                            allFixedDenominations.insert(fixedValue)
+                            denomDiscounts[fixedValue] = cardDiscount
                         }
-                        // Clear fixed denomination values
-                        denominations = []
-                    } else if normalizedPriceType == PiggyCardsPriceType.fixed.rawValue ||
-                              normalizedPriceType == PiggyCardsPriceType.option.rawValue {
-                        // Fixed or Option types mean fixed denominations
+                    } else if normalizedPriceType == PiggyCardsPriceType.option.rawValue {
+                        // Option type: parse comma-separated values (all share same discount)
+                        let denominationValues = card.denomination.split(separator: ",")
+                            .compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }
+                        for value in denominationValues {
+                            allFixedDenominations.insert(value)
+                            denomDiscounts[value] = cardDiscount
+                        }
+                    } else if normalizedPriceType == PiggyCardsPriceType.range.rawValue {
+                        // Range type: track min/max for flexible amounts
+                        hasRangeCard = true
+                        if rangeMin == 0 || card.minDenomination < rangeMin {
+                            rangeMin = card.minDenomination
+                        }
+                        if card.maxDenomination > rangeMax {
+                            rangeMax = card.maxDenomination
+                        }
+                        // Track discount for range cards
+                        if card.discountPercentage > rangeDiscount {
+                            rangeDiscount = card.discountPercentage
+                        }
+                    }
+                }
+
+                // Store denomination-specific discounts
+                denominationDiscounts = denomDiscounts
+
+                // Determine UI mode: fixed denominations take precedence if available
+                if !allFixedDenominations.isEmpty {
+                    // Show fixed denomination buttons
+                    isFixedDenomination = true
+                    denominations = allFixedDenominations.sorted()
+                    // Clear flexible amount values
+                    minimumAmount = 0
+                    maximumAmount = 0
+                    // Set initial savingsFraction to 0 until user selects a denomination
+                    savingsFraction = 0
+                } else if hasRangeCard {
+                    // Only range cards available - show keyboard input
+                    isFixedDenomination = false
+                    minimumAmount = Decimal(rangeMin > 0 ? rangeMin : 10)
+                    maximumAmount = Decimal(rangeMax > 0 ? rangeMax : 500)
+                    denominations = []
+                    // Apply range card discount
+                    savingsFraction = max(0, Decimal(rangeDiscount) - serviceFee) / 100
+                } else if let firstCard = giftCards.first {
+                    // Fallback: use first card's denomination
+                    if let fixedValue = Int(firstCard.denomination.trimmingCharacters(in: .whitespaces)) {
                         isFixedDenomination = true
-                        // Clear flexible amount values first
+                        denominations = [fixedValue]
                         minimumAmount = 0
                         maximumAmount = 0
-
-                        // Parse denomination values
-                        if normalizedPriceType == PiggyCardsPriceType.option.rawValue {
-                            // Option type has multiple fixed denominations
-                            let denominationValues = firstCard.denomination.split(separator: ",")
-                                .compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }
-                            denominations = denominationValues.sorted()
-                        } else if let fixedValue = Int(firstCard.denomination.trimmingCharacters(in: .whitespaces)) {
-                            // Single fixed denomination
-                            denominations = [fixedValue]
-                        } else {
-                            // Try parsing as comma-separated values if single parse fails
-                            let denominationValues = firstCard.denomination.split(separator: ",")
-                                .compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }
-                            denominations = denominationValues.sorted()
-                        }
-                    } else {
-                        // Unknown price type - log warning but keep existing values
+                        let cardDiscount = max(0, Decimal(firstCard.discountPercentage) - serviceFee) / 100
+                        denominationDiscounts[fixedValue] = cardDiscount
+                        savingsFraction = cardDiscount
                     }
-                } else {
                 }
             }
 
