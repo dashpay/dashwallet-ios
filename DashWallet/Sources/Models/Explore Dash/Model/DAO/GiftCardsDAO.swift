@@ -66,7 +66,8 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                                               GiftCard.pin <- dto.pin,
                                               GiftCard.barcodeValue <- dto.barcodeValue,
                                               GiftCard.barcodeFormat <- dto.barcodeFormat,
-                                              GiftCard.note <- dto.note)
+                                              GiftCard.note <- dto.note,
+                                              GiftCard.provider <- dto.provider)
             try await execute(insert)
             let key = dto.txId.hexEncodedString()
             self.cache[key] = dto
@@ -120,7 +121,8 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                     pin: pin,
                     barcodeValue: existingCard.barcodeValue,
                     barcodeFormat: existingCard.barcodeFormat,
-                    note: nil
+                    note: nil,
+                    provider: existingCard.provider
                 )
                 let key = txId.hexEncodedString()
                 cache[key] = updatedCard
@@ -150,7 +152,8 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                     pin: existingCard.pin,
                     barcodeValue: value,
                     barcodeFormat: format,
-                    note: existingCard.note
+                    note: existingCard.note,
+                    provider: existingCard.provider
                 )
                 let key = txId.hexEncodedString()
                 cache[key] = updatedCard

@@ -104,16 +104,54 @@ class HomeViewModel: ObservableObject {
         syncModel.networkStatusDidChange = { status in
             self.recalculateHeight()
         }
-        
+
         self.setupMetadataProviders()
         self.onSyncStateChanged()
         self.recalculateHeight()
-        
+
         self.observeCoinJoin()
         self.observeWallet()
+        self.observeNetworkChange()
         #if DASHPAY
         self.observeDashPay()
         #endif
+    }
+
+    /// Observes network changes (testnet <-> mainnet) to clear cached transaction data
+    private func observeNetworkChange() {
+        NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.clearCachedData()
+            }
+            .store(in: &cancellableBag)
+    }
+
+    /// Clears all cached transaction data when switching networks
+    private func clearCachedData() {
+        DSLogger.log("HomeViewModel: Network changed, clearing cached transaction data")
+
+        // Dispatch to self.queue to ensure thread-safe access to txByHash, crowdNodeTxSet, coinJoinTxSets
+        // These properties are also accessed/modified in reloadTxDataSource() on self.queue
+        self.queue.async { [weak self] in
+            guard let self = self else { return }
+
+            // Clear cached data structures on the same queue they're accessed
+            self.txByHash.removeAll()
+            self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
+            self.coinJoinTxSets.removeAll()
+
+            // Update UI-bound property on main thread
+            DispatchQueue.main.async {
+                self.txItems = []
+            }
+
+            // Reload fresh data from the new network's wallet
+            // reloadTxsAndShortcuts() will dispatch back to queue internally
+            DispatchQueue.main.async {
+                self.reloadTxsAndShortcuts()
+            }
+        }
     }
     
     @MainActor

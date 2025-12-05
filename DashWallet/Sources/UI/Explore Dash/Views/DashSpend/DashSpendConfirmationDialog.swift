@@ -106,7 +106,7 @@ struct DashSpendConfirmationDialog: View {
                         
                     Spacer()
                         
-                    Text("\(NSDecimalNumber(decimal: discount * 100).intValue)%")
+                    Text(PercentageFormatter.format(percent: NSDecimalNumber(decimal: discount * 100).doubleValue))
                         .font(.body2)
                         .foregroundColor(.primaryText)
                 }

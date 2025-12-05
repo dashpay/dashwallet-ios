@@ -48,7 +48,7 @@ public final class SendCoinsService: NSObject {
                     let adjustedTx = try await sendCoins(address: address, amount: adjustedAmount, inputSelector: inputSelector)
                     return adjustedTx
                 } else {
-                    throw Error.notEnoughFunds(selected: balance, amount: amount, fee: feeAmount)
+                    throw DashSpendError.paymentProcessingError("Not enough funds. Selected: \(balance), Amount: \(amount), Fee: \(feeAmount)")
                 }
             }
 
@@ -61,8 +61,33 @@ public final class SendCoinsService: NSObject {
             }
         }
 
-        await account.sign(transaction)
+        // Explicitly authenticate before signing to ensure PIN is requested
+        // Must run on main thread as it's a UI operation
+        @MainActor func authenticate() async -> Bool {
+            return await withCheckedContinuation { continuation in
+                DSAuthenticationManager.sharedInstance().authenticate(
+                    withPrompt: nil,
+                    usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
+                    alertIfLockout: true
+                ) { authenticatedOrSuccess, usedBiometrics, cancelled in
+                    continuation.resume(returning: authenticatedOrSuccess && !cancelled)
+                }
+            }
+        }
+
+        let authenticated = await authenticate()
+
+        if !authenticated {
+            throw DashSpendError.paymentProcessingError("Authentication cancelled")
+        }
+
+        // Sign the transaction after authentication
+        account.sign(transaction)
+
+        // Register the transaction
         account.register(transaction, saveImmediately: false)
+
+        // Publish the transaction
         try await transactionManager.publishTransaction(transaction)
 
         return transaction

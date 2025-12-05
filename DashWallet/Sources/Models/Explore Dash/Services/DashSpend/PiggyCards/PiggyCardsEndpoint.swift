@@ -26,9 +26,14 @@ public enum PiggyCardsEndpoint {
     case signup(firstName: String, lastName: String, email: String, country: String, state: String?)
     case login(userId: String, password: String)
     case verifyOtp(email: String, otp: String)
-    case purchaseGiftCard(PiggyCardsPurchaseRequest)
-    case getMerchant(String)
-    case getGiftCard(String)
+    case getBrands(country: String)
+    case getGiftCards(country: String, brandId: String)
+    case createOrder(PiggyCardsOrderRequest)
+    case getOrderStatus(orderId: String)
+    case getExchangeRate(currency: String)
+    case purchaseGiftCard(PiggyCardsPurchaseRequest) // Legacy - to be removed
+    case getMerchant(String) // Legacy - to be removed
+    case getGiftCard(String) // Legacy - doesn't exist in API
 }
 
 // MARK: TargetType, AccessTokenAuthorizable
@@ -38,7 +43,8 @@ extension PiggyCardsEndpoint: TargetType, AccessTokenAuthorizable {
         switch self {
         case .signup, .login, .verifyOtp:
             return nil
-        default:
+        case .getBrands, .getGiftCards, .createOrder, .getOrderStatus, .getExchangeRate,
+             .purchaseGiftCard, .getMerchant, .getGiftCard:
             return .bearer
         }
     }
@@ -52,17 +58,22 @@ extension PiggyCardsEndpoint: TargetType, AccessTokenAuthorizable {
         case .signup: return "signup"
         case .login: return "login"
         case .verifyOtp: return "verify-otp"
-        case .purchaseGiftCard: return "orders"
-        case .getMerchant(let merchantId): return "merchants/\(merchantId)"
-        case .getGiftCard(let txid): return "gift-cards/\(txid)" // TODO: no such path
+        case .getBrands(let country): return "brands/\(country)"
+        case .getGiftCards(let country, _): return "giftcards/\(country)"
+        case .createOrder: return "orders"
+        case .getOrderStatus(let orderId): return "orders/\(orderId)"
+        case .getExchangeRate: return "exchange-rate"
+        case .purchaseGiftCard: return "orders" // Legacy
+        case .getMerchant(let merchantId): return "merchants/\(merchantId)" // Legacy
+        case .getGiftCard(let txid): return "gift-cards/\(txid)" // Doesn't exist
         }
     }
     
     public var method: Moya.Method {
         switch self {
-        case .signup, .login, .verifyOtp, .purchaseGiftCard:
+        case .signup, .login, .verifyOtp, .createOrder, .purchaseGiftCard:
             return .post
-        default:
+        case .getBrands, .getGiftCards, .getOrderStatus, .getExchangeRate, .getMerchant, .getGiftCard:
             return .get
         }
     }
@@ -78,9 +89,15 @@ extension PiggyCardsEndpoint: TargetType, AccessTokenAuthorizable {
         case .verifyOtp(let email, let otp):
             let verifyRequest = PiggyCardsVerifyOtpRequest(email: email, otp: otp)
             return .requestJSONEncodable(verifyRequest)
+        case .getGiftCards(_, let brandId):
+            return .requestParameters(parameters: ["brandId": brandId], encoding: URLEncoding.queryString)
+        case .createOrder(let request):
+            return .requestJSONEncodable(request)
+        case .getExchangeRate(let currency):
+            return .requestParameters(parameters: ["currency": currency], encoding: URLEncoding.queryString)
         case .purchaseGiftCard(let request):
             return .requestJSONEncodable(request)
-        default:
+        case .getBrands, .getOrderStatus, .getMerchant, .getGiftCard:
             return .requestPlain
         }
     }

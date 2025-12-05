@@ -15,15 +15,14 @@
 //  limitations under the License.
 //
 
-class PiggyCardsConstants {
-    static let baseURI = "https://api.piggy.cards/dash/v1/"
-    static let stagingBaseURI = "https://apidev.piggy.cards/dash/v1/" // For future testnet support
+import Foundation
+import SQLite
+import SQLiteMigrationManager
 
-    static let termsAndConditionsUrl = "https://piggy.cards/index.php?route=information/information&information_id=5"
-    static let supportEmail = "support@piggy.cards"
+struct AddProviderToGiftCardsTable: Migration {
+    var version: Int64 = 20251120150000
 
-    // Service configuration
-    static let tokenExpirationSeconds = 3600
-    static let serviceFeePercent = 1.5 // 1.5% service fee deducted from discount
-    static let orderPollingDelayMs = 250 // Delay before first status check
+    func migrateDatabase(_ db: Connection) throws {
+        try db.run(GiftCard.table.addColumn(GiftCard.provider, defaultValue: nil))
+    }
 }
