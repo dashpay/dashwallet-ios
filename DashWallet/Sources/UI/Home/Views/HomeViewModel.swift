@@ -104,16 +104,41 @@ class HomeViewModel: ObservableObject {
         syncModel.networkStatusDidChange = { status in
             self.recalculateHeight()
         }
-        
+
         self.setupMetadataProviders()
         self.onSyncStateChanged()
         self.recalculateHeight()
-        
+
         self.observeCoinJoin()
         self.observeWallet()
+        self.observeNetworkChange()
         #if DASHPAY
         self.observeDashPay()
         #endif
+    }
+
+    /// Observes network changes (testnet <-> mainnet) to clear cached transaction data
+    private func observeNetworkChange() {
+        NotificationCenter.default.publisher(for: Notification.Name("DWCurrentNetworkDidChangeNotification"))
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.clearCachedData()
+            }
+            .store(in: &cancellableBag)
+    }
+
+    /// Clears all cached transaction data when switching networks
+    private func clearCachedData() {
+        DSLogger.log("HomeViewModel: Network changed, clearing cached transaction data")
+
+        // Clear all cached transaction data
+        self.txItems = []
+        self.txByHash.removeAll()
+        self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
+        self.coinJoinTxSets.removeAll()
+
+        // Reload fresh data from the new network's wallet
+        self.reloadTxsAndShortcuts()
     }
     
     @MainActor
