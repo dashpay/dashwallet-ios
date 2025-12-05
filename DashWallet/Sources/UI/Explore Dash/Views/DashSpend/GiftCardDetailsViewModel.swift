@@ -47,7 +47,7 @@ class GiftCardDetailsViewModel: ObservableObject {
     private var tickerTimer: Timer?
     private var retryCount = 0
     private let maxRetries = 40  // 60 seconds / 1.5 sec interval = 40 retries
-    private let longPollingThreshold = 40  // After 60 seconds show message
+    private let longPollingThreshold = 27  // Show "code is being generated" message after ~40s (27 * 1.5s)
     
     let txId: Data
     @Published private(set) var uiState = GiftCardDetailsUIState()

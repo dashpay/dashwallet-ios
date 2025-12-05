@@ -35,6 +35,31 @@ class MerchantDAO: PointOfUseDAO {
         connection = dbConnection
     }
 
+    /// Extracts sourceId from a database row, handling String, Int64, Int types and nil/empty values
+    /// - Parameters:
+    ///   - row: The database row (Statement.Element)
+    ///   - index: The column index for sourceId
+    /// - Returns: The sourceId as a String, or nil if missing/empty/invalid
+    private func extractSourceId(from row: Statement.Element, at index: Int) -> String? {
+        guard row.count > index else { return nil }
+
+        if let sourceId = row[index] as? String, !sourceId.isEmpty {
+            return sourceId
+        } else if let sourceId = row[index] as? Int64 {
+            return String(sourceId)
+        } else if let sourceId = row[index] as? Int {
+            return String(sourceId)
+        } else if let sourceId = row[index] {
+            let stringValue = String(describing: sourceId)
+            if stringValue == "<null>" || stringValue == "nil" {
+                return nil
+            }
+            return stringValue
+        }
+
+        return nil
+    }
+
     func items(filters: PointOfUseDAOFilters, offset: Int?,
                completion: @escaping (Swift.Result<PaginationResult<Item>, Error>) -> Void) { }
 
@@ -204,21 +229,11 @@ class MerchantDAO: PointOfUseDAO {
                                        let savingsPercentage = row[1] as? Int64,
                                        let denominationsType = row[2] as? String {
 
-                                        // Handle sourceId - it might be String, Int64, or nil
-                                        var sourceIdString: String? = nil
-                                        if let sourceId = row[3] as? String, !sourceId.isEmpty {
-                                            sourceIdString = sourceId
-                                        } else if let sourceId = row[3] as? Int64 {
-                                            sourceIdString = String(sourceId)
-                                        } else if let sourceId = row[3] as? Int {
-                                            sourceIdString = String(sourceId)
-                                        }
-
                                         providers.append(ExplorePointOfUse.Merchant.GiftCardProviderInfo(
                                             providerId: providerId,
                                             savingsPercentage: Int(savingsPercentage),
                                             denominationsType: denominationsType,
-                                            sourceId: sourceIdString
+                                            sourceId: wSelf.extractSourceId(from: row, at: 3)
                                         ))
                                     }
                                 }
@@ -447,21 +462,11 @@ class MerchantDAO: PointOfUseDAO {
                                    let savingsPercentage = row[1] as? Int64,
                                    let denominationsType = row[2] as? String {
 
-                                    // Handle sourceId - it might be String, Int64, or nil
-                                    var sourceIdString: String? = nil
-                                    if let sourceId = row[3] as? String, !sourceId.isEmpty {
-                                        sourceIdString = sourceId
-                                    } else if let sourceId = row[3] as? Int64 {
-                                        sourceIdString = String(sourceId)
-                                    } else if let sourceId = row[3] as? Int {
-                                        sourceIdString = String(sourceId)
-                                    }
-
                                     providers.append(ExplorePointOfUse.Merchant.GiftCardProviderInfo(
                                         providerId: providerId,
                                         savingsPercentage: Int(savingsPercentage),
                                         denominationsType: denominationsType,
-                                        sourceId: sourceIdString
+                                        sourceId: wSelf.extractSourceId(from: row, at: 3)
                                     ))
                                 }
                             }
@@ -651,35 +656,11 @@ extension MerchantDAO {
                                    let savingsPercentage = savingsPercentage,
                                    let denominationsType = denominationsType {
 
-                                    // Handle sourceId - it might be String, Int64, or nil
-                                    var sourceIdString: String? = nil
-
-                                    // Check if sourceId exists (not NULL)
-                                    if row.count > 3 {
-                                        // Try different type conversions
-                                        if let sourceId = row[3] as? String, !sourceId.isEmpty {
-                                            sourceIdString = sourceId
-                                        } else if let sourceId = row[3] as? Int64 {
-                                            sourceIdString = String(sourceId)
-                                        } else if let sourceId = row[3] as? Int {
-                                            sourceIdString = String(sourceId)
-                                        } else if let sourceId = row[3] {
-                                            // Try to convert whatever type it is to string
-                                            sourceIdString = String(describing: sourceId)
-                                            if sourceIdString == "<null>" || sourceIdString == "nil" {
-                                                sourceIdString = nil
-                                            } else {
-                                            }
-                                        } else {
-                                        }
-                                    } else {
-                                    }
-
                                     providers.append(ExplorePointOfUse.Merchant.GiftCardProviderInfo(
                                         providerId: providerId,
                                         savingsPercentage: Int(savingsPercentage),
                                         denominationsType: denominationsType,
-                                        sourceId: sourceIdString
+                                        sourceId: wSelf.extractSourceId(from: row, at: 3)
                                     ))
                                 }
                             }

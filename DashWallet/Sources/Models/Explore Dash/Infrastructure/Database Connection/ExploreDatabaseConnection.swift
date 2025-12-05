@@ -164,90 +164,93 @@ class ExploreDatabaseConnection {
 
             print("🎯 Adding PiggyCards test merchant...")
 
-            // Drop FTS triggers temporarily
-            try db.run("DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_AFTER_INSERT")
-            try db.run("DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_AFTER_UPDATE")
-            try db.run("DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_BEFORE_UPDATE")
-            try db.run("DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_BEFORE_DELETE")
+            // Wrap all FTS trigger operations in a transaction for atomicity
+            try db.transaction {
+                // Drop FTS triggers temporarily
+                try db.run("DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_AFTER_INSERT")
+                try db.run("DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_AFTER_UPDATE")
+                try db.run("DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_BEFORE_UPDATE")
+                try db.run("DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_BEFORE_DELETE")
 
-            // Insert merchant with unique prefix
-            try db.run("""
-                INSERT INTO merchant (
-                    merchantId, name, source, sourceId, logoLocation, active, paymentMethod,
-                    savingsPercentage, denominationsType, type, redeemType, territory, city,
-                    website, addDate, updateDate
-                ) VALUES (
-                    '2e393eee-4508-47fe-954d-66209333fc96',
-                    'Piggy Cards Test Merchant',
-                    'PiggyCards',
-                    '177',
-                    'https://piggy.cards/image/catalog/piggycards/logo2023_mobile.png',
-                    1,
-                    'gift card',
-                    1000,
-                    'Fixed',
-                    'online',
-                    'online',
-                    'MA',
-                    'Boston',
-                    'https://piggy.cards',
-                    datetime('now'),
-                    datetime('now')
-                )
-            """)
+                // Insert merchant with unique prefix
+                try db.run("""
+                    INSERT INTO merchant (
+                        merchantId, name, source, sourceId, logoLocation, active, paymentMethod,
+                        savingsPercentage, denominationsType, type, redeemType, territory, city,
+                        website, addDate, updateDate
+                    ) VALUES (
+                        '2e393eee-4508-47fe-954d-66209333fc96',
+                        'Piggy Cards Test Merchant',
+                        'PiggyCards',
+                        '177',
+                        'https://piggy.cards/image/catalog/piggycards/logo2023_mobile.png',
+                        1,
+                        'gift card',
+                        1000,
+                        'Fixed',
+                        'online',
+                        'online',
+                        'MA',
+                        'Boston',
+                        'https://piggy.cards',
+                        datetime('now'),
+                        datetime('now')
+                    )
+                """)
 
-            let insertedRowId = db.lastInsertRowid
+                let insertedRowId = db.lastInsertRowid
 
-            // Insert gift_card_providers record
-            try db.run("""
-                INSERT INTO gift_card_providers (
-                    merchantId, provider, sourceId, savingsPercentage,
-                    denominationsType, active, redeemType
-                ) VALUES (
-                    '2e393eee-4508-47fe-954d-66209333fc96',
-                    'PiggyCards',
-                    '177',
-                    10,
-                    'fixed',
-                    1,
-                    'online'
-                )
-            """)
+                // Insert gift_card_providers record
+                try db.run("""
+                    INSERT INTO gift_card_providers (
+                        merchantId, provider, sourceId, savingsPercentage,
+                        denominationsType, active, redeemType
+                    ) VALUES (
+                        '2e393eee-4508-47fe-954d-66209333fc96',
+                        'PiggyCards',
+                        '177',
+                        10,
+                        'fixed',
+                        1,
+                        'online'
+                    )
+                """)
 
-            // Update FTS index
-            try db.run("""
-                INSERT INTO merchant_fts(docid, name)
-                VALUES (\(insertedRowId), 'Piggy Cards Test Merchant')
-            """)
+                // Update FTS index
+                try db.run("""
+                    INSERT INTO merchant_fts(docid, name)
+                    VALUES (\(insertedRowId), 'Piggy Cards Test Merchant')
+                """)
 
-            // Recreate FTS triggers
-            try db.run("""
-                CREATE TRIGGER room_fts_content_sync_merchant_fts_BEFORE_UPDATE
-                BEFORE UPDATE ON merchant BEGIN
-                    DELETE FROM merchant_fts WHERE docid=OLD.rowid;
-                END
-            """)
+                // Recreate FTS triggers
+                try db.run("""
+                    CREATE TRIGGER room_fts_content_sync_merchant_fts_BEFORE_UPDATE
+                    BEFORE UPDATE ON merchant BEGIN
+                        DELETE FROM merchant_fts WHERE docid=OLD.rowid;
+                    END
+                """)
 
-            try db.run("""
-                CREATE TRIGGER room_fts_content_sync_merchant_fts_BEFORE_DELETE
-                BEFORE DELETE ON merchant BEGIN
-                    DELETE FROM merchant_fts WHERE docid=OLD.rowid;
-                END
-            """)
+                try db.run("""
+                    CREATE TRIGGER room_fts_content_sync_merchant_fts_BEFORE_DELETE
+                    BEFORE DELETE ON merchant BEGIN
+                        DELETE FROM merchant_fts WHERE docid=OLD.rowid;
+                    END
+                """)
 
-            try db.run("""
-                CREATE TRIGGER room_fts_content_sync_merchant_fts_AFTER_UPDATE
-                AFTER UPDATE ON merchant BEGIN
-                    INSERT INTO merchant_fts(docid, name) VALUES (NEW.rowid, NEW.name);
-                END
-            """)
+                try db.run("""
+                    CREATE TRIGGER room_fts_content_sync_merchant_fts_AFTER_UPDATE
+                    AFTER UPDATE ON merchant BEGIN
+                        INSERT INTO merchant_fts(docid, name) VALUES (NEW.rowid, NEW.name);
+                    END
+                """)
 
-            try db.run("""
-                CREATE TRIGGER room_fts_content_sync_merchant_fts_AFTER_INSERT
-                AFTER INSERT ON merchant BEGIN
-                    INSERT INTO merchant_fts(docid, name) VALUES (NEW.rowid, NEW.name);
-                END
-            """)
+                try db.run("""
+                    CREATE TRIGGER room_fts_content_sync_merchant_fts_AFTER_INSERT
+                    AFTER INSERT ON merchant BEGIN
+                        INSERT INTO merchant_fts(docid, name) VALUES (NEW.rowid, NEW.name);
+                    END
+                """)
+            }
 
             print("✅ PiggyCards test merchant added successfully")
 
