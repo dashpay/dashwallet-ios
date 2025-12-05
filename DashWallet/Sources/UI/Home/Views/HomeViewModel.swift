@@ -119,7 +119,7 @@ class HomeViewModel: ObservableObject {
 
     /// Observes network changes (testnet <-> mainnet) to clear cached transaction data
     private func observeNetworkChange() {
-        NotificationCenter.default.publisher(for: Notification.Name("DWCurrentNetworkDidChangeNotification"))
+        NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.clearCachedData()
