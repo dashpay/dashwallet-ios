@@ -20,6 +20,17 @@ When the user asks you to make code changes:
 
 **Do NOT commit/push** just because the user asked for code changes. They may want to review first.
 
+### ⚠️ Permission Does NOT Carry Over
+
+**Each set of changes requires its own explicit permission.** If the user gave permission to commit earlier in the conversation, that permission applies ONLY to those specific changes - NOT to any subsequent changes.
+
+**Example scenario:**
+1. User: "Fix bug X, then commit and push" → Permission granted for bug X fix only
+2. User: "Now fix bug Y" → Make the fix, show diff, **STOP AND WAIT** - no permission to commit yet
+3. User: "Looks good, commit it" → NOW permission is granted for bug Y fix
+
+**Common mistake to avoid:** After completing a task like "address review comments" or "fix these issues", do NOT automatically commit. The user needs to test the changes first. Always pause after showing the diff and wait for explicit commit instruction.
+
 ## Project Overview
 
 Dash Wallet is an iOS cryptocurrency wallet application built for the Dash network. It's a fork of breadwallet that implements SPV (Simplified Payment Verification) for fast mobile performance. The app includes advanced features like DashPay for user-to-user transactions, CoinJoin for privacy, and integrations with external services like Uphold and Coinbase.
