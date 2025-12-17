@@ -47,5 +47,9 @@ TODO.md
 */Coinbase-Info.plist
 */ZenLedger-Info.plist
 
+# SQLite temporary files
+*.db-shm
+*.db-wal
+
 # Transifex CLI binary
 tx

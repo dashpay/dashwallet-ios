@@ -49,6 +49,7 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
     @Published private(set) var syncState: SyncingActivityMonitor.State = .unknown
     @Published private(set) var distanceText: String? = nil
     @Published private(set) var supportedProviders: [GiftCardProvider: (isFixed: Bool, discount: Int)] = [:]
+    @Published private(set) var sortedProviders: [GiftCardProvider] = [] // Maintains sort order
     @Published private(set) var selectedProvider: GiftCardProvider? = nil
     @Published private(set) var showProviderPicker: Bool = false
     @Published private(set) var locationCount: Int = 0
@@ -76,13 +77,13 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
     func observeDashSpendState(provider: GiftCardProvider?) {
         cancellableBag.removeAll()
         guard let provider = provider, let repository = repositories[provider] else { return }
-        
+
         repository.isUserSignedInPublisher
             .sink { [weak self] isSignedIn in
                 self?.isUserSignedIn = isSignedIn
             }
             .store(in: &cancellableBag)
-        
+
         repository.userEmailPublisher
             .sink { [weak self] email in
                 self?.userEmail = email
@@ -158,6 +159,9 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
             return
         }
 
+        // Collect providers with their info for sorting
+        var providerList: [(provider: GiftCardProvider, isFixed: Bool, discount: Int)] = []
+
         // Get gift card providers from the merchant data
         for providerInfo in m.giftCardProviders {
             guard let provider = providerInfo.provider else { continue }
@@ -165,14 +169,32 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
             let isFixed = providerInfo.denominationsType == DenominationType.Fixed.rawValue
             let discount = providerInfo.savingsPercentage
 
-            supportedProviders[provider] = (isFixed: isFixed, discount: discount)
+            providerList.append((provider: provider, isFixed: isFixed, discount: discount))
+        }
+
+        // Sort providers by discount (highest first)
+        // If discounts are equal, PiggyCards comes first
+        providerList.sort { first, second in
+            if first.discount == second.discount {
+                // If discounts are equal, prefer PiggyCards
+                return first.provider == .piggyCards && second.provider != .piggyCards
+            }
+            return first.discount > second.discount
+        }
+
+        // Build the supportedProviders dictionary and maintain sorted order array
+        supportedProviders.removeAll()
+        sortedProviders.removeAll()
+        for item in providerList {
+            supportedProviders[item.provider] = (isFixed: item.isFixed, discount: item.discount)
+            sortedProviders.append(item.provider)
         }
 
         // Determine if we need to show the provider picker
         showProviderPicker = supportedProviders.count > 1
 
-        // Select the first available provider
-        selectedProvider = supportedProviders.keys.first
+        // Select the first provider (highest discount or PiggyCards if tied)
+        selectedProvider = providerList.first?.provider
 
         // Start observing the selected provider
         if let selectedProvider = selectedProvider {

@@ -39,11 +39,13 @@ extension ExplorePointOfUse {
             let provider: GiftCardProvider?
             let savingsPercentage: Int
             let denominationsType: String
-            
-            init(providerId: String, savingsPercentage: Int = 0, denominationsType: String = "") {
+            let sourceId: String?
+
+            init(providerId: String, savingsPercentage: Int = 0, denominationsType: String = "", sourceId: String? = nil) {
                 self.providerId = providerId
                 self.savingsPercentage = savingsPercentage
                 self.denominationsType = denominationsType
+                self.sourceId = sourceId
                 switch providerId.lowercased() {
                 case "ctx":
                     self.provider = .ctx

@@ -32,7 +32,8 @@ final class PiggyCardsAPI: HTTPClient<PiggyCardsEndpoint> {
     override func request<R>(_ target: PiggyCardsEndpoint) async throws -> R where R: Decodable {
         do {
             try checkAccessTokenIfNeeded(for: target)
-            return try await super.request(target)
+            let result: R = try await super.request(target)
+            return result
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 401 {
             try await handleUnauthorizedError(for: target)
             return try await super.request(target)
@@ -40,8 +41,9 @@ final class PiggyCardsAPI: HTTPClient<PiggyCardsEndpoint> {
             if target.path.contains("/verify-otp") {
                 throw DashSpendError.invalidCode
             }
-            
             throw HTTPClientError.statusCode(r)
+        } catch {
+            throw error
         }
     }
     
@@ -58,17 +60,24 @@ final class PiggyCardsAPI: HTTPClient<PiggyCardsEndpoint> {
     }
     
     private func handleUnauthorizedError(for target: PiggyCardsEndpoint) async throws {
-        DSLogger.log("PiggyCards: Got 401, attempting to refresh access token")
-        try await PiggyCardsTokenService.shared.refreshAccessToken()
+        // Check if this is an auth endpoint - don't try to refresh token for auth failures
+        switch target {
+        case .signup, .login, .verifyOtp:
+            // Auth endpoints should not trigger token refresh as it causes recursive deadlock
+            throw DashSpendError.unauthorized
+        default:
+            // For non-auth endpoints, attempt token refresh and retry
+            try await PiggyCardsTokenService.shared.refreshAccessToken()
+        }
     }
-    
+
     private func checkAccessTokenIfNeeded(for target: PiggyCardsEndpoint) throws {
         switch target {
         case .signup, .login, .verifyOtp:
             return
         default:
-            if PiggyCardsTokenService.shared.accessToken == nil {
-                DSLogger.log("PiggyCards: No access token available for protected endpoint")
+            let token = PiggyCardsTokenService.shared.accessToken
+            if token == nil {
                 throw DashSpendError.unauthorized
             }
         }

@@ -39,7 +39,18 @@ class GiftCardMetadataProvider: MetadataProvider, @unchecked Sendable {
         Task {
             await loadMetadata()
         }
-        
+
+        // Observe gift card changes
+        giftCardDao.observeAll()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] giftCards in
+                guard let self = self else { return }
+                Task {
+                    await self.updateMetadataForGiftCards(giftCards)
+                }
+            }
+            .store(in: &cancellableBag)
+
         self.metadataDao.$lastChange
             .receive(on: DispatchQueue.main)
             .sink { [weak self] change in
@@ -72,13 +83,18 @@ class GiftCardMetadataProvider: MetadataProvider, @unchecked Sendable {
     
     private func loadMetadata() async {
         let giftCards = await giftCardDao.all()
-        
+        await updateMetadataForGiftCards(giftCards)
+    }
+
+    private func updateMetadataForGiftCards(_ giftCards: [GiftCard]) async {
         for giftCard in giftCards {
             let title = String.localizedStringWithFormat(NSLocalizedString("Gift card · %@", comment: "DashSpend"), giftCard.merchantName)
-            
+            // Capture txId before async block to avoid race condition with Data object
+            let txId = giftCard.txId
+
             metadataQueue.async { [weak self] in
                 guard let self = self else { return }
-                var txRowMetadata = self._availableMetadata[giftCard.txId]
+                var txRowMetadata = self._availableMetadata[txId]
 
                 if txRowMetadata != nil {
                     txRowMetadata!.title = title
@@ -90,7 +106,12 @@ class GiftCardMetadataProvider: MetadataProvider, @unchecked Sendable {
                     )
                 }
 
-                self._availableMetadata[giftCard.txId] = txRowMetadata
+                self._availableMetadata[txId] = txRowMetadata
+
+                // Send update notification for this tx
+                DispatchQueue.main.async {
+                    self.metadataUpdated.send(txId)
+                }
             }
         }
     }

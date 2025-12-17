@@ -23,6 +23,7 @@ enum ServiceName: String, CaseIterable {
     case uphold = "uphold"
     case coinbase = "coinbase"
     case ctxSpend = "ctxspend"
+    case piggyCards = "piggycards"
     case unknown = "unknown"
 }
 

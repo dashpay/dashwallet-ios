@@ -58,36 +58,24 @@ class MerchantItemCell: PointOfUseItemCell {
         let paymentIconName = isGiftCard ? "image.explore.dash.wts.payment.gift-card" : "image.explore.dash.wts.payment.dash";
         paymentTypeIconView.image = UIImage(named: paymentIconName)
         
-        // Calculate the effective discount, filtering out PiggyCards when disabled
-        let effectiveDiscount = calculateEffectiveDiscount(for: merchant)
+        // Show the highest discount from all providers
+        var maxDiscountBasisPoints = 0
+        if !merchant.giftCardProviders.isEmpty {
+            // If we have provider-specific data, use the max discount
+            maxDiscountBasisPoints = merchant.giftCardProviders.map { $0.savingsPercentage }.max() ?? 0
+        } else {
+            // Fallback to the merchant-level discount (legacy)
+            maxDiscountBasisPoints = Int(merchant.toSavingPercentages())
+        }
 
-        if effectiveDiscount > 0 {
+        if maxDiscountBasisPoints > 0 {
             savingsLabel.isHidden = false
-            savingsLabel.text = String(format: NSLocalizedString("~%.0f%%", comment: "Savings percentage"), effectiveDiscount)
+            // Convert from basis points to percentage and round to nearest whole number (e.g., 400 -> 4%)
+            let discountPercentage = round(Double(maxDiscountBasisPoints) / 100.0)
+            savingsLabel.text = String(format: NSLocalizedString("~%.0f%%", comment: "Savings percentage"), discountPercentage)
         } else {
             savingsLabel.isHidden = true
         }
-    }
-
-    private func calculateEffectiveDiscount(for merchant: ExplorePointOfUse.Merchant) -> Double {
-        // If not a gift card merchant, return the original discount
-        guard merchant.paymentMethod == .giftCard else {
-            return merchant.toSavingPercentages()
-        }
-
-        // When PiggyCards is disabled, calculate discount from CTX only
-        #if !PIGGYCARDS_ENABLED
-        // Find CTX provider and use its discount (converting from basis points to percentage)
-        if let ctxProvider = merchant.giftCardProviders.first(where: { $0.provider == .ctx }) {
-            // savingsPercentage is in basis points (600 = 6%), so divide by 100
-            return Double(ctxProvider.savingsPercentage) / 100.0
-        }
-        // If no CTX provider found, return 0
-        return 0
-        #else
-        // When PiggyCards is enabled, return the combined discount as before
-        return merchant.toSavingPercentages()
-        #endif
     }
 }
 
