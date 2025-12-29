@@ -161,36 +161,10 @@ class GeoRestrictionService {
         detectionSource = .unknown
     }
 
-    /// Check restriction using fallback methods when GPS is not available
-    /// Priority: IP Geolocation -> App Store Country
-    private func checkRestrictionWithFallbacks() async {
-        DSLogger.log("🌍 GeoRestrictionService: Starting fallback checks (GPS not available)")
-
-        // Try IP geolocation first (most reliable for actual location)
-        if let countryCode = await fetchCountryFromIP() {
-            DSLogger.log("🌍 GeoRestrictionService: IP geolocation returned: \(countryCode)")
-            updateRestrictionStatus(countryCode: countryCode, source: .ipGeolocation)
-            return
-        }
-
-        // Try App Store country (reflects where user set up Apple ID)
-        if let countryCode = await fetchAppStoreCountry() {
-            DSLogger.log("🌍 GeoRestrictionService: App Store country: \(countryCode)")
-            updateRestrictionStatus(countryCode: countryCode, source: .appStore)
-            return
-        }
-
-        // If all methods fail, assume not restricted (benefit of the doubt)
-        DSLogger.log("🌍 GeoRestrictionService: Unable to determine country, assuming not restricted")
-        isPiggyCardsRestricted = false
-        detectedCountryCode = nil
-        detectionSource = .unknown
-    }
-
     /// Fetch country code from IP geolocation service
     private func fetchCountryFromIP() async -> String? {
         // Using ip-api.com - free, no API key required, returns country code
-        guard let url = URL(string: "http://ip-api.com/json/?fields=countryCode") else {
+        guard let url = URL(string: "https://ip-api.com/json/?fields=countryCode") else {
             return nil
         }
 
