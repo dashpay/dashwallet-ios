@@ -134,8 +134,14 @@ class MerchantDAO: PointOfUseDAO {
             // Using literal expression to handle cases where redeemType column might not exist
             queryFilter = queryFilter && Expression<Bool>(literal: "(redeemType IS NULL OR redeemType != 'url')")
 
-            // Filter out PiggyCards-only merchants when PIGGYCARDS_ENABLED is not defined
-            #if !PIGGYCARDS_ENABLED
+            // Filter out PiggyCards-only merchants when:
+            // 1. PIGGYCARDS_ENABLED is not defined, OR
+            // 2. PIGGYCARDS_ENABLED is defined but user is in a restricted region (Russia or Cuba)
+            #if PIGGYCARDS_ENABLED
+            if isPiggyCardsGeoRestricted() {
+                queryFilter = queryFilter && Expression<Bool>(literal: "merchantId NOT IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider = 'PiggyCards' AND merchantId NOT IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider != 'PiggyCards'))")
+            }
+            #else
             queryFilter = queryFilter && Expression<Bool>(literal: "merchantId NOT IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider = 'PiggyCards' AND merchantId NOT IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider != 'PiggyCards'))")
             #endif
             
@@ -202,12 +208,21 @@ class MerchantDAO: PointOfUseDAO {
                     // Fetch gift card providers for each merchant that accepts gift cards
                     for (index, item) in allItems.enumerated() {
                         if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
-                            // Only fetch CTX providers when PiggyCards is disabled
+                            // Only fetch CTX providers when PiggyCards is disabled or user is in restricted region
                             #if PIGGYCARDS_ENABLED
-                            let providersQuery = """
-                                SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
-                                WHERE merchantId = '\(merchant.merchantId)'
-                            """
+                            let excludePiggyCards = isPiggyCardsGeoRestricted()
+                            let providersQuery: String
+                            if excludePiggyCards {
+                                providersQuery = """
+                                    SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
+                                    WHERE merchantId = '\(merchant.merchantId)' AND provider != 'PiggyCards'
+                                """
+                            } else {
+                                providersQuery = """
+                                    SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
+                                    WHERE merchantId = '\(merchant.merchantId)'
+                                """
+                            }
                             #else
                             let providersQuery = """
                                 SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers
@@ -434,12 +449,21 @@ class MerchantDAO: PointOfUseDAO {
                 // Fetch gift card providers for each merchant that accepts gift cards
                 for (index, item) in items.enumerated() {
                     if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
-                        // Only fetch CTX providers when PiggyCards is disabled
+                        // Only fetch CTX providers when PiggyCards is disabled or user is in restricted region
                         #if PIGGYCARDS_ENABLED
-                        let providersQuery = """
-                            SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
-                            WHERE merchantId = '\(merchant.merchantId)'
-                        """
+                        let excludePiggyCards = isPiggyCardsGeoRestricted()
+                        let providersQuery: String
+                        if excludePiggyCards {
+                            providersQuery = """
+                                SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
+                                WHERE merchantId = '\(merchant.merchantId)' AND provider != 'PiggyCards'
+                            """
+                        } else {
+                            providersQuery = """
+                                SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
+                                WHERE merchantId = '\(merchant.merchantId)'
+                            """
+                        }
                         #else
                         let providersQuery = """
                             SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers
@@ -629,11 +653,27 @@ extension MerchantDAO {
                 // Fetch gift card provider information for gift card merchants
                 for (index, item) in items.enumerated() {
                     if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
-                        // Use parameterized query to avoid SQL injection
+                        // Filter out PiggyCards providers when user is in restricted region
+                        #if PIGGYCARDS_ENABLED
+                        let excludePiggyCards = isPiggyCardsGeoRestricted()
+                        let providersQuery: String
+                        if excludePiggyCards {
+                            providersQuery = """
+                                SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
+                                WHERE merchantId = ? AND provider != 'PiggyCards'
+                            """
+                        } else {
+                            providersQuery = """
+                                SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
+                                WHERE merchantId = ?
+                            """
+                        }
+                        #else
                         let providersQuery = """
                             SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
-                            WHERE merchantId = ?
+                            WHERE merchantId = ? AND provider = 'CTX'
                         """
+                        #endif
 
                         do {
                             guard let db = wSelf.connection.db else {

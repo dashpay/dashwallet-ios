@@ -116,13 +116,16 @@ struct MerchantFiltersView: View {
                             
 
                             #if PIGGYCARDS_ENABLED
-                            RadioButtonRow(
-                                title: NSLocalizedString("Piggy Cards gift cards", comment: "Explore Dash: Filters"),
-                                icon: .custom("piggycards.logo.small"),
-                                isSelected: viewModel.piggyGiftCards,
-                                style: .checkbox
-                            ) {
-                                viewModel.togglePaymentMethod(.piggyCards)
+                            // Only show PiggyCards option if not in a geo-restricted region (Russia or Cuba)
+                            if viewModel.isPiggyCardsAvailable {
+                                RadioButtonRow(
+                                    title: NSLocalizedString("Piggy Cards gift cards", comment: "Explore Dash: Filters"),
+                                    icon: .custom("piggycards.logo.small"),
+                                    isSelected: viewModel.piggyGiftCards,
+                                    style: .checkbox
+                                ) {
+                                    viewModel.togglePaymentMethod(.piggyCards)
+                                }
                             }
                             #endif
                         }

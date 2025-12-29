@@ -44,11 +44,19 @@ class MerchantFiltersViewModel: ObservableObject {
     
     @Published var denominationFixed = false
     @Published var denominationFlexible = false
-    
+
     @Published var selectedRadius: PointOfUseListFilters.Radius?
     @Published var selectedTerritory: Territory?
-    
+
     @Published var isLocationServiceEnabled = DWLocationManager.shared.isAuthorized
+
+    #if PIGGYCARDS_ENABLED
+    /// Whether PiggyCards is available (not in a geo-restricted region)
+    /// Uses the thread-safe free function to avoid MainActor isolation issues
+    var isPiggyCardsAvailable: Bool {
+        !isPiggyCardsGeoRestricted()
+    }
+    #endif
     
     // MARK: - Computed Properties
     
