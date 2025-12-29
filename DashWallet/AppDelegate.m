@@ -158,13 +158,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-    
+
     //
     // THIS IS IMPORTANT!
     //
     // When adding any logic here mind the migration process
     //
     [self.balanceNotifier updateBalance];
+
+    // Check geo-restriction for PiggyCards (if available)
+    // This logs location info each time the app becomes active for debugging
+    SEL checkGeoRestrictionSelector = NSSelectorFromString(@"checkGeoRestriction");
+    if ([ExploreDashObjcWrapper respondsToSelector:checkGeoRestrictionSelector]) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+        [ExploreDashObjcWrapper performSelector:checkGeoRestrictionSelector];
+#pragma clang diagnostic pop
+    }
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {

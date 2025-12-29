@@ -52,6 +52,14 @@ public class ExploreDashObjcWrapper: NSObject {
     public class func configure() {
         do {
             try ExploreDash.configure()
+
+            #if PIGGYCARDS_ENABLED
+            // Initialize GeoRestrictionService to detect user's country early
+            // This enables filtering PiggyCards for users in restricted regions (Russia/Cuba)
+            Task { @MainActor in
+                await GeoRestrictionService.shared.checkRestriction()
+            }
+            #endif
         } catch {
             print(error)
             // Do something
@@ -73,6 +81,15 @@ public class ExploreDashObjcWrapper: NSObject {
     @objc public class var lastFailedSyncDate: Date? {
         ExploreDash.shared.lastFailedSyncDate
     }
+
+    #if PIGGYCARDS_ENABLED
+    /// Check geo-restriction status. Call this when the app becomes active to log location info.
+    @objc public class func checkGeoRestriction() {
+        Task { @MainActor in
+            await GeoRestrictionService.shared.checkRestriction()
+        }
+    }
+    #endif
 }
 
 // MARK: - ExploreDash

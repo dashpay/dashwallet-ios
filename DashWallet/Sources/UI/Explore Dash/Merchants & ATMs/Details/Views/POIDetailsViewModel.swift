@@ -166,6 +166,13 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
         for providerInfo in m.giftCardProviders {
             guard let provider = providerInfo.provider else { continue }
 
+            #if PIGGYCARDS_ENABLED
+            // Filter out PiggyCards if the user is in a restricted region (Russia or Cuba)
+            if provider == .piggyCards && GeoRestrictionService.shared.isPiggyCardsRestricted {
+                continue
+            }
+            #endif
+
             let isFixed = providerInfo.denominationsType == DenominationType.Fixed.rawValue
             let discount = providerInfo.savingsPercentage
 
@@ -176,8 +183,12 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
         // If discounts are equal, PiggyCards comes first
         providerList.sort { first, second in
             if first.discount == second.discount {
+                #if PIGGYCARDS_ENABLED
                 // If discounts are equal, prefer PiggyCards
                 return first.provider == .piggyCards && second.provider != .piggyCards
+                #else
+                return false
+                #endif
             }
             return first.discount > second.discount
         }
