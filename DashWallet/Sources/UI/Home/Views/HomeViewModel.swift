@@ -36,16 +36,27 @@ class HomeViewModel: ObservableObject {
     private let queue = DispatchQueue(label: "HomeViewModel", qos: .userInitiated)
     private let coinJoinService = CoinJoinService.shared
     private var timeSkewDialogShown: Bool = false
-    
+
     static let shared: HomeViewModel = {
         return HomeViewModel(transactionSource: DSWalletSource())
     }()
-    
+
     private let transactionSource: TransactionSource
     private var txByHash: [String: TransactionListDataItem] = [:]
     private var crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
     private var coinJoinTxSets: [String: CoinJoinMixingTxSet] = [:] // Grouped by date
     private var metadataProviders: [MetadataProvider] = []
+
+    /// Tracks whether a full reload is currently in progress to prevent race conditions
+    /// with incremental updates (Fix #3)
+    private var isReloading: Bool = false
+
+    /// Tracks whether initial data load has completed (Fix #2)
+    private var hasCompletedInitialLoad: Bool = false
+
+    /// Debounce timer for sync state changes to prevent excessive reloads (Fix #4)
+    private var syncStateDebounceWorkItem: DispatchWorkItem?
+    private let syncStateDebounceInterval: TimeInterval = 0.5
     
     @Published private(set) var txItems: [TransactionGroup] = []
     @Published var shortcutItems: [ShortcutAction] = []
@@ -141,6 +152,10 @@ class HomeViewModel: ObservableObject {
             self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
             self.coinJoinTxSets.removeAll()
 
+            // Reset load tracking flags so the new network's data loads correctly
+            self.hasCompletedInitialLoad = false
+            self.isReloading = false
+
             // Update UI-bound property on main thread
             DispatchQueue.main.async {
                 self.txItems = []
@@ -174,9 +189,13 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
 
+        // Fix #5: Balance changes often indicate new transactions, so reload the full
+        // transaction list, not just shortcuts. This ensures newly received or sent
+        // transactions appear in the UI promptly.
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
             .sink { [weak self] _ in
-                self?.reloadShortcuts()
+                DSLogger.log("HomeViewModel: Wallet balance changed, reloading transactions and shortcuts")
+                self?.reloadTxsAndShortcuts()
             }
             .store(in: &cancellableBag)
         
@@ -188,11 +207,13 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
         
+        // Fix #1: Always reload transactions when sync starts, not just during resync.
+        // Previously, this only reloaded if isResyncingWallet was true, which meant
+        // normal sync operations wouldn't refresh the transaction list.
         NotificationCenter.default.publisher(for: Notification.Name.DSChainManagerSyncWillStart)
             .sink { [weak self] _ in
-                if DWGlobalOptions.sharedInstance().isResyncingWallet {
-                    self?.reloadTxsAndShortcuts()
-                }
+                DSLogger.log("HomeViewModel: Sync will start, reloading transactions")
+                self?.reloadTxsAndShortcuts()
             }
             .store(in: &cancellableBag)
         
@@ -210,22 +231,23 @@ class HomeViewModel: ObservableObject {
     private func reloadTxDataSource() {
         self.queue.async { [weak self] in
             guard let self = self else { return }
-            
+
+            // Fix #3: Set reload flag to prevent race conditions with incremental updates
+            self.isReloading = true
+            DSLogger.log("HomeViewModel: Starting full transaction reload")
+
             let transactions = transactionSource.allTransactions
             self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
             self.coinJoinTxSets = [:]
-            
+
             var items: [TransactionListDataItem] = transactions.compactMap { tx -> TransactionListDataItem? in
                 Tx.shared.updateRateIfNeeded(for: tx)
-                            
+
                 if !self.passesFilter(tx: tx, displayMode: self.displayMode) {
                     return nil
                 }
-                           
-                if !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: tx) {
-                    return nil
-                }
-                            
+
+                // Fix #7: Remove duplicate CrowdNode check - only need to check once
                 if !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: tx) {
                     // CrowdNode transactions will be included below
                     return nil
@@ -234,15 +256,15 @@ class HomeViewModel: ObservableObject {
                 let date = DWDateFormatter.sharedInstance.dateOnly(from: tx.date)
                 let coinJoinTxSet = self.coinJoinTxSets[date] ?? CoinJoinMixingTxSet()
                 self.coinJoinTxSets[date] = coinJoinTxSet
-                           
+
                 if coinJoinTxSet.tryInclude(tx: tx) {
                     // CoinJoin transactions will be included below
                     return nil
                 }
-                            
+
                 return .tx(Transaction(transaction: tx), self.resolveMetadata(for: tx.txHashData))
             }
-            
+
             self.txByHash.removeAll()
             items.forEach { item in
                 self.txByHash[item.id] = item
@@ -266,11 +288,17 @@ class HomeViewModel: ObservableObject {
                 grouping: items.sorted(by: { $0.date > $1.date }),
                 by: { DWDateFormatter.sharedInstance.dateOnly(from: $0.date) }
             )
-            
+
             let array = groupedItems.map { key, items in
                 TransactionGroup(id: key, date: items.first!.date, items: items)
             }.sorted { $0.date > $1.date }
-            
+
+            // Fix #2 & #3: Mark initial load complete and clear reload flag
+            self.hasCompletedInitialLoad = true
+            self.isReloading = false
+
+            DSLogger.log("HomeViewModel: Full reload complete, \(array.count) groups, \(self.txByHash.count) transactions cached")
+
             DispatchQueue.main.async {
                 self.txItems = array
             }
@@ -280,42 +308,135 @@ class HomeViewModel: ObservableObject {
     private func onTransactionStatusChanged(tx: DSTransaction) {
         self.queue.async { [weak self] in
             guard let self = self else { return }
-            
+
+            // Fix #3: Skip incremental updates while a full reload is in progress
+            // to prevent race conditions that could cause missing transactions
+            if self.isReloading {
+                DSLogger.log("HomeViewModel: Skipping incremental update during full reload for tx: \(tx.txHashHexString)")
+                return
+            }
+
+            // Fix #2: If initial load hasn't completed yet, the cache is empty and
+            // incremental updates won't work correctly. Trigger a full reload instead.
+            if !self.hasCompletedInitialLoad {
+                DSLogger.log("HomeViewModel: Initial load not complete, triggering full reload for tx: \(tx.txHashHexString)")
+                DispatchQueue.main.async {
+                    self.reloadTxsAndShortcuts()
+                }
+                return
+            }
+
             if !self.passesFilter(tx: tx, displayMode: self.displayMode) {
                 return
             }
-            
+
             Tx.shared.updateRateIfNeeded(for: tx)
-            var itemId = tx.txHashHexString
+            let txHashHex = tx.txHashHexString
+            var itemId = txHashHex
             var txItem: TransactionListDataItem = .tx(Transaction(transaction: tx), resolveMetadata(for: tx.txHashData))
-            let dateKey = DWDateFormatter.sharedInstance.dateOnly(from: tx.date)
+            let newDateKey = DWDateFormatter.sharedInstance.dateOnly(from: tx.date)
+
+            // Track if this transaction was absorbed by a grouped set (CrowdNode/CoinJoin)
+            var wasAbsorbedByGroup = false
 
             if self.crowdNodeTxSet.tryInclude(tx: tx) {
                 itemId = FullCrowdNodeSignUpTxSet.id
                 txItem = .crowdnode(self.crowdNodeTxSet)
+                wasAbsorbedByGroup = true
+                DSLogger.log("HomeViewModel: Transaction \(txHashHex) absorbed by CrowdNode group")
             } else {
-                let coinJoinTxSet = self.coinJoinTxSets[dateKey] ?? CoinJoinMixingTxSet()
-                self.coinJoinTxSets[dateKey] = coinJoinTxSet
-               
+                let coinJoinTxSet = self.coinJoinTxSets[newDateKey] ?? CoinJoinMixingTxSet()
+                self.coinJoinTxSets[newDateKey] = coinJoinTxSet
+
                 if coinJoinTxSet.tryInclude(tx: tx) {
                     itemId = coinJoinTxSet.id
                     txItem = .coinjoin(coinJoinTxSet)
+                    wasAbsorbedByGroup = true
+                    DSLogger.log("HomeViewModel: Transaction \(txHashHex) absorbed by CoinJoin group for date \(newDateKey)")
+                }
+            }
+
+            // Fix: Check if this transaction exists under its original hash (not group ID)
+            // This handles the case where a transaction was previously shown individually
+            // but is now being absorbed by a CoinJoin/CrowdNode group
+            if wasAbsorbedByGroup && self.txByHash[txHashHex] != nil {
+                DSLogger.log("HomeViewModel: Removing individual transaction \(txHashHex) as it's now in a group")
+                self.txByHash.removeValue(forKey: txHashHex)
+                // Find and remove from txItems
+                for groupIndex in 0..<self.txItems.count {
+                    if let itemIndex = self.txItems[groupIndex].items.firstIndex(where: { $0.id == txHashHex }) {
+                        DispatchQueue.main.async {
+                            self.txItems[groupIndex].items.remove(at: itemIndex)
+                            // Remove empty groups
+                            if self.txItems[groupIndex].items.isEmpty {
+                                self.txItems.remove(at: groupIndex)
+                            }
+                        }
+                        break
+                    }
                 }
             }
 
             if let existingItem = self.txByHash[itemId] {
                 // Updating existing item
                 self.txByHash[itemId] = txItem
+
+                // Fix: Find the OLD date group where this transaction currently lives
+                // Transaction dates can change when going from unconfirmed to confirmed
+                var oldGroupIndex: Int? = nil
+                var oldItemIndex: Int? = nil
+                var oldDateKey: String? = nil
+
+                for (gIdx, group) in self.txItems.enumerated() {
+                    if let iIdx = group.items.firstIndex(where: { $0.id == itemId }) {
+                        oldGroupIndex = gIdx
+                        oldItemIndex = iIdx
+                        oldDateKey = group.id
+                        break
+                    }
+                }
+
                 var isChanged = true
-                
                 if case let .tx(existingTx, oldMetadata) = existingItem, case let .tx(newTx, metadata) = txItem {
                     isChanged = newTx.state != existingTx.state || oldMetadata != metadata
                 }
-                
-                if isChanged {
-                    if let groupIndex = self.txItems.firstIndex(where: { $0.id == dateKey }),
-                        let itemIndex = self.txItems[groupIndex].items.firstIndex(where: { $0.id == itemId }) {
+
+                // Fix: Handle transaction moving between date groups (e.g., unconfirmed -> confirmed)
+                if let oldDateKey = oldDateKey, oldDateKey != newDateKey {
+                    DSLogger.log("HomeViewModel: Transaction \(itemId) date changed from \(oldDateKey) to \(newDateKey)")
+
+                    // Remove from old group
+                    if let oldGIdx = oldGroupIndex, let oldIIdx = oldItemIndex {
                         DispatchQueue.main.async {
+                            guard oldGIdx < self.txItems.count else { return }
+                            self.txItems[oldGIdx].items.remove(at: oldIIdx)
+
+                            // Remove empty groups
+                            if self.txItems[oldGIdx].items.isEmpty {
+                                self.txItems.remove(at: oldGIdx)
+                            }
+
+                            // Add to new group (similar to new item logic)
+                            if let newGroupIndex = self.txItems.firstIndex(where: { $0.id == newDateKey }) {
+                                self.txItems[newGroupIndex].items.append(txItem)
+                                self.txItems[newGroupIndex].items.sort { $0.date > $1.date }
+                            } else {
+                                let newGroup = TransactionGroup(id: newDateKey, date: txItem.date, items: [txItem])
+                                let insertIndex = self.txItems.firstIndex(where: { $0.date < txItem.date })
+                                if let index = insertIndex {
+                                    self.txItems.insert(newGroup, at: index)
+                                } else {
+                                    self.txItems.append(newGroup)
+                                }
+                            }
+                        }
+                    }
+                } else if isChanged {
+                    // Same date group, just update in place
+                    if let groupIndex = oldGroupIndex, let itemIndex = oldItemIndex {
+                        DispatchQueue.main.async {
+                            guard groupIndex < self.txItems.count,
+                                  itemIndex < self.txItems[groupIndex].items.count else { return }
                             let updatedGroup = self.txItems[groupIndex]
                             var updatedItems = updatedGroup.items
                             updatedItems[itemIndex] = txItem
@@ -328,8 +449,8 @@ class HomeViewModel: ObservableObject {
                 // New item
                 self.txByHash[itemId] = txItem
                 let shouldShowReclassify = self.shouldDisplayReclassifyTransaction && tx.date > reclassifyTransactionsActivatedAt
-                
-                if let groupIndex = self.txItems.firstIndex(where: { $0.id == dateKey }) {
+
+                if let groupIndex = self.txItems.firstIndex(where: { $0.id == newDateKey }) {
                     // Add to an existing date group
                     DispatchQueue.main.async {
                         self.txItems[groupIndex].items.append(txItem)
@@ -338,9 +459,9 @@ class HomeViewModel: ObservableObject {
                     }
                 } else {
                     // Create a new date group
-                    let newGroup = TransactionGroup(id: dateKey, date: txItem.date, items: [txItem])
+                    let newGroup = TransactionGroup(id: newDateKey, date: txItem.date, items: [txItem])
                     let insertIndex = self.txItems.firstIndex(where: { $0.date < txItem.date })
-                        
+
                     DispatchQueue.main.async {
                         if let index = insertIndex {
                             self.txItems.insert(newGroup, at: index)
@@ -433,10 +554,22 @@ extension HomeViewModel {
     }
     
     private func onSyncStateChanged() {
-        self.reloadTxsAndShortcuts()
-        #if DASHPAY
-        self.checkJoinDashPay()
-        #endif
+        // Fix #4: Debounce sync state changes to prevent excessive reloads.
+        // During active sync, state can change rapidly which would cause
+        // multiple expensive full reloads in quick succession.
+        syncStateDebounceWorkItem?.cancel()
+
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self = self else { return }
+            DSLogger.log("HomeViewModel: Sync state changed (debounced), reloading")
+            self.reloadTxsAndShortcuts()
+            #if DASHPAY
+            self.checkJoinDashPay()
+            #endif
+        }
+
+        syncStateDebounceWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + syncStateDebounceInterval, execute: workItem)
     }
     
     func reloadTxsAndShortcuts() {
