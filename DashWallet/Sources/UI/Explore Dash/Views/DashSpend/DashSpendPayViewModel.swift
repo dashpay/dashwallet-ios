@@ -278,8 +278,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
         return transaction.txHashData
     }
-    
-    func contactCTXSupport() {
+
+    var contactSupportButtonText: String {
+        String(format: NSLocalizedString("Contact %@ Support", comment: "DashSpend"), provider.displayName)
+    }
+
+    func contactSupport() {
         let subject = "\(provider.displayName) Issue: Spending Limit Problem"
         
         var body = "Merchant details\n"

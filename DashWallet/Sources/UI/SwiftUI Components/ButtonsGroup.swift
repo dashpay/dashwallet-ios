@@ -68,13 +68,13 @@ struct ButtonsGroup: View {
                     .overrideBackgroundColor(style == .regular ? .dashBlue : .buttonRed)
                     .overrideForegroundColor(negativeButtonText == nil ? .dashBlue : .white)
                 negativeButton
-                    .overrideForegroundColor(positiveButtonText == nil ? .dashBlue : .primaryText)
+                    .overrideForegroundColor(.dashBlue)
             }
         } else {
             HStack(spacing: 6) {
                 negativeButton
                     .frame(maxWidth: .infinity)
-                    .overrideForegroundColor(positiveButtonText == nil ? .dashBlue : .primaryText)
+                    .overrideForegroundColor(.dashBlue)
                 positiveButton
                     .frame(maxWidth: .infinity)
                     .overrideBackgroundColor(style == .regular ? .dashBlue : .buttonRed)

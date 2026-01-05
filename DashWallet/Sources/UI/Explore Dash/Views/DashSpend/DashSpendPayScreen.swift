@@ -228,10 +228,10 @@ struct DashSpendPayScreen: View {
                     positiveButtonAction: {
                         showCustomErrorDialog = false
                     },
-                    negativeButtonText: NSLocalizedString("Contact CTX Support", comment: "DashSpend"),
+                    negativeButtonText: viewModel.contactSupportButtonText,
                     negativeButtonAction: {
                         showCustomErrorDialog = false
-                        viewModel.contactCTXSupport()
+                        viewModel.contactSupport()
                     }
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
