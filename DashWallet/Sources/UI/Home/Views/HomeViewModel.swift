@@ -361,18 +361,32 @@ class HomeViewModel: ObservableObject {
             // but is now being absorbed by a CoinJoin/CrowdNode group
             if wasAbsorbedByGroup && self.txByHash[txHashHex] != nil {
                 DSLogger.log("HomeViewModel: Removing individual transaction \(txHashHex) as it's now in a group")
-                self.txByHash.removeValue(forKey: txHashHex)
-                // Find and remove from txItems
-                for groupIndex in 0..<self.txItems.count {
-                    if let itemIndex = self.txItems[groupIndex].items.firstIndex(where: { $0.id == txHashHex }) {
-                        DispatchQueue.main.async {
+
+                // Perform iteration and removal entirely on main thread to avoid race conditions
+                // where txItems could change between finding indices and performing removal
+                DispatchQueue.main.async {
+                    // Find the group containing this transaction by searching current state
+                    for groupIndex in 0..<self.txItems.count {
+                        guard groupIndex < self.txItems.count else { break }
+
+                        if let itemIndex = self.txItems[groupIndex].items.firstIndex(where: { $0.id == txHashHex }) {
+                            // Verify bounds are still valid before removal
+                            guard groupIndex < self.txItems.count,
+                                  itemIndex < self.txItems[groupIndex].items.count else { break }
+
                             self.txItems[groupIndex].items.remove(at: itemIndex)
-                            // Remove empty groups
-                            if self.txItems[groupIndex].items.isEmpty {
+
+                            // Remove empty groups (re-check bounds after item removal)
+                            if groupIndex < self.txItems.count && self.txItems[groupIndex].items.isEmpty {
                                 self.txItems.remove(at: groupIndex)
                             }
+
+                            // Only remove from cache after confirming UI removal succeeded
+                            self.queue.async {
+                                self.txByHash.removeValue(forKey: txHashHex)
+                            }
+                            break
                         }
-                        break
                     }
                 }
             }
@@ -408,11 +422,20 @@ class HomeViewModel: ObservableObject {
                     // Remove from old group
                     if let oldGIdx = oldGroupIndex, let oldIIdx = oldItemIndex {
                         DispatchQueue.main.async {
-                            guard oldGIdx < self.txItems.count else { return }
+                            // Validate both group index and item index bounds before removal
+                            // txItems may have changed between when indices were captured and now
+                            guard oldGIdx >= 0,
+                                  oldGIdx < self.txItems.count,
+                                  oldIIdx >= 0,
+                                  oldIIdx < self.txItems[oldGIdx].items.count else {
+                                DSLogger.log("HomeViewModel: Skipping removal - indices out of bounds (groupIdx: \(oldGIdx), itemIdx: \(oldIIdx))")
+                                return
+                            }
+
                             self.txItems[oldGIdx].items.remove(at: oldIIdx)
 
-                            // Remove empty groups
-                            if self.txItems[oldGIdx].items.isEmpty {
+                            // Remove empty groups (re-check bounds after item removal)
+                            if oldGIdx < self.txItems.count && self.txItems[oldGIdx].items.isEmpty {
                                 self.txItems.remove(at: oldGIdx)
                             }
 
