@@ -246,7 +246,7 @@ extension BackupInfoViewController {
 
 extension BackupInfoViewController {
     var shouldCreateNewWalletOnScreenshot: Bool {
-        type == .reminder
+        false
     }
 }
 
