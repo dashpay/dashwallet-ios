@@ -17,14 +17,16 @@ for DAPI_CACHE in "$RELEASE_CACHE" "$EXTERNAL_CACHE"; do
             echo "  Initializing platform submodule..."
             git init 2>/dev/null || true
             git submodule update --init --recursive 2>/dev/null || true
-            cd platform && git reset --hard 2>/dev/null && cd .. || true
+            if [ -d "platform" ]; then
+                (cd platform && git reset --hard 2>/dev/null) || true
+            fi
         fi
 
         # Run pod install for dapi-grpc-pod-installer if needed
         if [ ! -d "dapi-grpc-pod-installer/Pods/!ProtoCompiler" ]; then
             echo "  Installing dapi-grpc-pod-installer pods..."
             pushd dapi-grpc-pod-installer >/dev/null
-            pod install --quiet
+            pod install --silent
             popd >/dev/null
         fi
 
