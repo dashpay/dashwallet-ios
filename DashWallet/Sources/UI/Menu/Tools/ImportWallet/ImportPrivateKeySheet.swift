@@ -19,13 +19,14 @@ import SwiftUI
 
 struct ImportPrivateKeySheet: View {
     @Environment(\.presentationMode) private var presentationMode
+    @Environment(\.colorScheme) private var colorScheme
     let onScanPrivateKey: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
             // Grabber
             Capsule()
-                .fill(Color(red: 0.83, green: 0.83, blue: 0.85))
+                .fill(colorScheme == .dark ? Color.whiteAlpha20 : Color.gray300Alpha50)
                 .frame(width: 36, height: 5)
                 .padding(.top, 6)
                 .padding(.bottom, 6)
@@ -37,7 +38,7 @@ struct ImportPrivateKeySheet: View {
                 Button(action: {
                     presentationMode.wrappedValue.dismiss()
                 }) {
-                    Image("icon-close-sheet")
+                    Image(colorScheme == .dark ? "icon-close-sheet-white" : "icon-close-sheet")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 9, height: 9)
