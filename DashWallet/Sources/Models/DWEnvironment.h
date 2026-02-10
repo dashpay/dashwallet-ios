@@ -19,6 +19,8 @@
 
 #import <DashSync/DashSync.h>
 
+@class PlatformService;
+
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSNotificationName const DWCurrentNetworkDidChangeNotification;
@@ -32,6 +34,7 @@ extern NSNotificationName const DWWillWipeWalletNotification;
 @property (nonatomic, readonly) DSAccount *currentAccount;
 @property (nonatomic, strong) DSChainManager *currentChainManager;
 @property (nonatomic, strong, readonly) NSNumber *apy;
+@property (nonatomic, strong, readonly) PlatformService *platformService;
 + (instancetype)sharedInstance;
 
 - (void)clearAllWallets;

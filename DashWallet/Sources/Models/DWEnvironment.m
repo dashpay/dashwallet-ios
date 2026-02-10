@@ -18,6 +18,12 @@
 #import "DWEnvironment.h"
 #import "DSChain+DashWallet.h"
 
+#if __has_include("dashpay-Swift.h")
+#import "dashpay-Swift.h"
+#elif __has_include("dashwallet-Swift.h")
+#import "dashwallet-Swift.h"
+#endif
+
 #define CURRENT_CHAIN_TYPE_KEY @"CURRENT_CHAIN_TYPE_KEY"
 
 NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetworkDidChangeNotification";
@@ -25,6 +31,8 @@ NSNotificationName const DWWillWipeWalletNotification = @"DWWillWipeWalletNotifi
 static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
 
 @implementation DWEnvironment
+
+@synthesize platformService = _platformService;
 
 
 + (instancetype)sharedInstance {
@@ -217,6 +225,10 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
 
 - (NSNumber *)apy {
     return self.currentChain.apy;
+}
+
+- (PlatformService *)platformService {
+    return [PlatformService shared];
 }
 
 @end

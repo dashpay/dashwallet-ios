@@ -1,9 +1,20 @@
 inhibit_all_warnings!
 
+# Prefer the documented external folder structure:
+#   ../DashSync/
+# but also support this monorepo layout where DashSync lives at:
+#   ../dashsync-iOS/
+dashsync_path = File.expand_path('../DashSync', __dir__)
+dashsync_path = File.expand_path('../dashsync-iOS', __dir__) unless File.exist?(File.join(dashsync_path, 'DashSync.podspec'))
+
+swift_sdk_path = File.expand_path('../platform/packages/swift-sdk', __dir__)
+
 target 'dashwallet' do
-  platform :ios, '14.0'
-  
-  pod 'DashSync', :path => '../DashSync/'
+  platform :ios, '17.0'
+
+  pod 'DAPI-GRPC', :path => dashsync_path
+  pod 'DashSync', :path => dashsync_path
+  pod 'SwiftDashSDK', :path => swift_sdk_path
   pod 'SQLite.swift', '~> 0.15.3'
   pod 'SQLiteMigrationManager.swift', '0.8.3'
   pod 'CloudInAppMessaging', '0.1.0'
@@ -26,9 +37,11 @@ target 'dashwallet' do
 end
 
 target 'dashpay' do
-  platform :ios, '14.0'
-  
-  pod 'DashSync', :path => '../DashSync/'
+  platform :ios, '17.0'
+
+  pod 'DAPI-GRPC', :path => dashsync_path
+  pod 'DashSync', :path => dashsync_path
+  pod 'SwiftDashSDK', :path => swift_sdk_path
   pod 'SQLite.swift', '~> 0.15.3'
   pod 'SQLiteMigrationManager.swift', '0.8.3'
   pod 'CloudInAppMessaging', '0.1.0'
@@ -62,7 +75,7 @@ end
 
 
 target 'TodayExtension' do
-  platform :ios, '13.0'
+  platform :ios, '17.0'
   
   pod 'DSDynamicOptions', '0.1.2'
 
@@ -84,7 +97,7 @@ post_install do |installer|
     # fixes warnings about unsupported Deployment Target in Xcode
     target.build_configurations.each do |config|
       if target.platform_name == :ios
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '17.0'
       elsif target.platform_name == :watchos
         config.build_settings['WATCHOS_DEPLOYMENT_TARGET'] = '4.0'
       end
