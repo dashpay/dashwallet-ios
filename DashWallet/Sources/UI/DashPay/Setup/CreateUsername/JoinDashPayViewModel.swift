@@ -20,13 +20,14 @@ class JoinDashPayViewModel: ObservableObject {
     @Published private(set) var state: JoinDashPayState
     @Published private(set) var username: String = ""
     
-    private var blockchainIdentity: DSBlockchainIdentity? {
-        if MOCK_DASHPAY.boolValue {
-            if let username = DWGlobalOptions.sharedInstance().dashpayUsername {
-                return DWEnvironment.sharedInstance().currentWallet.createBlockchainIdentity(forUsername: username)
-            }
-        }
-        return DWEnvironment.sharedInstance().currentWallet.defaultBlockchainIdentity
+    private var isRegisteredOnPlatform: Bool {
+        let platform = PlatformService.shared
+        return platform.isRegistered
+    }
+
+    private var platformUsername: String? {
+        let platform = PlatformService.shared
+        return platform.currentUsername
     }
     
     init(initialState: JoinDashPayState) {
@@ -36,20 +37,19 @@ class JoinDashPayViewModel: ObservableObject {
 
     @MainActor
     func checkUsername() {
-        if blockchainIdentity != nil && DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted && UsernamePrefs.shared.joinDashPayDismissed { // TODO: MOCK_DASHPAY simplify
+        if isRegisteredOnPlatform && DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted && UsernamePrefs.shared.joinDashPayDismissed {
             self.state = .registered
-            self.username = blockchainIdentity?.currentDashpayUsername ?? ""
+            self.username = platformUsername ?? ""
         } else {
             Task {
-                // TODO: MOCK_DASHPAY replace with actual state check
                 if let requestId = UsernamePrefs.shared.requestedUsernameId {
                     let dao = UsernameRequestsDAOImpl.shared
                     guard let request = await dao.get(byRequestId: requestId) else { return }
                     self.username = request.username
-                    
+
                     if request.isApproved {
                         self.state = .approved
-                        
+
                         if DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted != true {
                             DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted = true
                             NotificationCenter.default.post(name: NSNotification.Name.DWDashPayRegistrationStatusUpdated, object: nil)

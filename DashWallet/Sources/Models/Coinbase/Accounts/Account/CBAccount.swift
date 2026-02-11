@@ -100,7 +100,8 @@ extension CBAccount {
 extension CBAccount {
     public func send(amount: UInt64, verificationCode: String?, idem: UUID?) async throws -> CoinbaseTransaction {
         // NOTE: Maybe better to get the address once and use it during the tx flow
-        guard let dashWalletAddress = DWEnvironment.sharedInstance().currentAccount.receiveAddress else {
+        guard let dashWalletAddress = try? DWEnvironment.sharedInstance().coreService.getReceiveAddress()
+                ?? DWEnvironment.sharedInstance().currentAccount.receiveAddress else {
             fatalError("No wallet")
         }
 

@@ -25,6 +25,5 @@ uint64_t DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME = (DUFFS / 4);   // 0.25 Dash
 
 NSInteger DW_MIN_USERNAME_LENGTH = 3;
 NSInteger DW_MAX_USERNAME_LENGTH = 23;
-BOOL MOCK_DASHPAY = NO; // Platform is now available via SwiftDashSDK
 
 NSString *const DWDP_THUMBNAIL_SERVER = @"http://54.74.4.114";

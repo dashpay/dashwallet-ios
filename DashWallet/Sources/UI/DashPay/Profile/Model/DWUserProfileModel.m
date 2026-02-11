@@ -156,46 +156,27 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)sendContactRequest:(void (^)(BOOL success))completion {
-    if (MOCK_DASHPAY) {
-        self.sendRequestState = DWUserProfileModelState_Loading;
-
-        NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
-        DSDashpayUserEntity *contact = [DSDashpayUserEntity managedObjectInBlockedContext:context];
-        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-        contact.chain = [wallet.chain chainEntityInContext:context];
-        DSBlockchainIdentity *identity = [wallet createBlockchainIdentityForUsername:_item.username];
-        DSBlockchainIdentityUsernameEntity *username = [DSBlockchainIdentityUsernameEntity managedObjectInBlockedContext:context];
-        username.stringValue = _item.username;
-        DSBlockchainIdentityEntity *entity = [DSBlockchainIdentityEntity managedObjectInBlockedContext:context];
-        entity.uniqueID = [_item.username dataUsingEncoding:NSUTF8StringEncoding];
-        username.blockchainIdentity = entity;
-        entity.dashpayUsername = username;
-        contact.associatedBlockchainIdentity = entity;
-        NSError *error = [contact applyTransientDashpayUser:identity.transientDashpayUser save:YES];
-
-        completion(YES);
-        return;
-    }
-
     self.sendRequestState = DWUserProfileModelState_Loading;
 
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
+    // Use PlatformService to send contact request
+    PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+    NSData *recipientId = uint256_data(self.item.blockchainIdentity.uniqueID);
+
     __weak typeof(self) weakSelf = self;
-    [myBlockchainIdentity sendNewFriendRequestToBlockchainIdentity:self.item.blockchainIdentity
-                                                        completion:^(BOOL success, NSArray<NSError *> *_Nullable errors) {
-                                                            __strong typeof(weakSelf) strongSelf = weakSelf;
-                                                            if (!strongSelf) {
-                                                                return;
-                                                            }
+    [platform sendContactRequestWithRecipientId:recipientId
+                                     completion:^(BOOL success, NSError *error) {
+                                         __strong typeof(weakSelf) strongSelf = weakSelf;
+                                         if (!strongSelf) {
+                                             return;
+                                         }
 
-                                                            [strongSelf updateDataSource];
-                                                            strongSelf.sendRequestState = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
+                                         [strongSelf updateDataSource];
+                                         strongSelf.sendRequestState = success ? DWUserProfileModelState_Done : DWUserProfileModelState_Error;
 
-                                                            if (completion) {
-                                                                completion(success);
-                                                            }
-                                                        }];
+                                         if (completion) {
+                                             completion(success);
+                                         }
+                                     }];
 }
 
 - (void)acceptContactRequest {
@@ -246,21 +227,21 @@ NS_ASSUME_NONNULL_END
 #pragma mark - Private
 
 - (DSBlockchainIdentityFriendshipStatus)friendshipStatusInternal {
-    if (MOCK_DASHPAY) {
-        if (uint256_is_zero(self.item.blockchainIdentity.uniqueID)) {
-            // From search
-            return DSBlockchainIdentityFriendshipStatus_None;
-        }
-        else {
-            // From mocked contacts
-            return DSBlockchainIdentityFriendshipStatus_Friends;
-        }
-    }
+    // Use PlatformService for friendship status
+    PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+    NSData *identityId = uint256_data(self.item.blockchainIdentity.uniqueID);
+    DWPlatformFriendshipStatus platformStatus = [platform friendshipStatusWith:identityId];
 
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    DSBlockchainIdentity *blockchainIdentity = self.item.blockchainIdentity;
-    return [myBlockchainIdentity friendshipStatusForRelationshipWithBlockchainIdentity:blockchainIdentity];
+    switch (platformStatus) {
+        case DWPlatformFriendshipStatusNone:
+            return DSBlockchainIdentityFriendshipStatus_None;
+        case DWPlatformFriendshipStatusOutgoing:
+            return DSBlockchainIdentityFriendshipStatus_Outgoing;
+        case DWPlatformFriendshipStatusIncoming:
+            return DSBlockchainIdentityFriendshipStatus_Incoming;
+        case DWPlatformFriendshipStatusFriends:
+            return DSBlockchainIdentityFriendshipStatus_Friends;
+    }
 }
 
 - (void)updateDataSource {
@@ -273,16 +254,15 @@ NS_ASSUME_NONNULL_END
     DSFriendRequestEntity *meToFriend = nil;
     DSFriendRequestEntity *friendToMe = nil;
 
-    if (MOCK_DASHPAY) {
-        meToFriend = self.item.friendRequestToPay;
-        friendBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:self.item.username];
-        NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
-
-        if (username != nil) {
-            myBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
+    // Use PlatformService for identity, fallback to DashSync
+    if (myBlockchainIdentity == nil) {
+        PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+        if (platform.isRegistered && platform.currentUsername != nil) {
+            myBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:platform.currentUsername];
         }
     }
-    else {
+
+    {
         if (myBlockchainIdentity == nil) {
             return;
         }

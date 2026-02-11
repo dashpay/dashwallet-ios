@@ -150,20 +150,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if DASHPAY
 - (DWPaymentInput *)paymentInputWithUserItem:(id<DWDPBasicUserItem>)userItem {
-    if (MOCK_DASHPAY) {
-        NSString *address = @"yeRZBWYfeNE4yVUHV4ZLs83Ppn9aMRH57A"; // testnet faucet
-        DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-        DSPaymentRequest *paymentRequest = [DSPaymentRequest requestWithString:address onChain:chain];
-
-        DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_BlockchainUser];
-        paymentInput.userItem = userItem;
-        paymentInput.canChangeAmount = YES;
-        paymentInput.request = paymentRequest;
-        paymentInput.request.dashpayUsername = userItem.username;
-
-        return paymentInput;
-    }
-
     DSFriendRequestEntity *friendRequest = [userItem friendRequestToPay];
     NSParameterAssert(friendRequest);
 

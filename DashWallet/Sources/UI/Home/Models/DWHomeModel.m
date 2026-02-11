@@ -252,7 +252,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    if (chain.isEvolutionEnabled == NO && !MOCK_DASHPAY) {
+    if (chain.isEvolutionEnabled == NO && ![DWEnvironment sharedInstance].platformService.isInitialized) {
         return NO;
     }
 
@@ -265,10 +265,9 @@ NS_ASSUME_NONNULL_BEGIN
         return NO;
     }
 
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     // TODO: add check if appropriate spork is on
     BOOL canRegisterUsername = YES;
-    const uint64_t balanceValue = wallet.balance;
+    const uint64_t balanceValue = [DWEnvironment sharedInstance].coreService.balanceTotal;
     BOOL isEnoughBalance = balanceValue >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME;
     BOOL isSynced = [SyncingActivityMonitor shared].state == SyncingActivityMonitorStateSyncDone;
     return canRegisterUsername && isSynced && isEnoughBalance;

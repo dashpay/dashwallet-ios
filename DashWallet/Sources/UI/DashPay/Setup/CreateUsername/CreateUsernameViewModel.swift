@@ -106,26 +106,37 @@ class CreateUsernameViewModel: ObservableObject {
     }
     
     func submitUsernameRequest(withProve link: URL?) async -> Bool {
-        do {
-            // TODO: MOCK_DASHPAY simulation of a request. Remove when not needed
-            // dashPayModel.createUsername(username, invitation: invitationURL)
-            
-            let now = Date().timeIntervalSince1970
-            let identityData = withUnsafeBytes(of: UUID().uuid) { Data($0) }
-            let identity = (identityData as NSData).base58String()
-            let usernameRequest = UsernameRequest(requestId: UUID().uuidString, username: username, createdAt: Int64(now), identity: "\(identity)\(identity)", link: link?.absoluteString, votes: 0, blockVotes: 0, isApproved: false)
-            
-            await dao.create(dto: usernameRequest)
-            prefs.requestedUsernameId = usernameRequest.requestId
-            UsernamePrefs.shared.joinDashPayDismissed = false // TODO: MOCK_DASHPAY remove
-            
-            let oneSecond = TimeInterval(1_000_000_000)
-            let delay = UInt64(oneSecond * 2)
-            try await Task.sleep(nanoseconds: delay)
-            
-            return true
-        } catch {
-            return false
+        let platform = PlatformService.shared
+
+        return await withCheckedContinuation { continuation in
+            platform.registerUsername(username) { step in
+                // Step progress callback - could update UI
+            } completion: { success, error in
+                if success {
+                    let now = Date().timeIntervalSince1970
+                    let identityData = withUnsafeBytes(of: UUID().uuid) { Data($0) }
+                    let identity = (identityData as NSData).base58String()
+                    let usernameRequest = UsernameRequest(
+                        requestId: UUID().uuidString,
+                        username: self.username,
+                        createdAt: Int64(now),
+                        identity: "\(identity)\(identity)",
+                        link: link?.absoluteString,
+                        votes: 0,
+                        blockVotes: 0,
+                        isApproved: false
+                    )
+
+                    Task {
+                        await self.dao.create(dto: usernameRequest)
+                        self.prefs.requestedUsernameId = usernameRequest.requestId
+                        UsernamePrefs.shared.joinDashPayDismissed = false
+                        continuation.resume(returning: true)
+                    }
+                } else {
+                    continuation.resume(returning: false)
+                }
+            }
         }
     }
     
@@ -167,12 +178,12 @@ class CreateUsernameViewModel: ObservableObject {
             return
         }
         
-        let isContested = false // TODO MOCK_DASHPAY
+        let isContested = false // TODO: Implement contested username check via SDK
         let lengthValid = username.count >= DW_MIN_USERNAME_LENGTH && username.count <= DW_MAX_USERNAME_LENGTH
         let hasIllegalCharacters = username.rangeOfCharacter(from: illegalChars) != nil
         let startsOrEndsWithHyphen = username.first == "-" || username.last == "-"
         let requiredCost = isContested ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME : DWDP_MIN_BALANCE_TO_CREATE_USERNAME
-        let balance = DWEnvironment.sharedInstance().currentWallet.balance
+        let balance = DWEnvironment.sharedInstance().coreService.balanceTotal
         let hasEnoughBalance = balance >= requiredCost
         let canContinue = lengthValid && !hasIllegalCharacters && !startsOrEndsWithHyphen && hasEnoughBalance
         
@@ -193,14 +204,28 @@ class CreateUsernameViewModel: ObservableObject {
     }
     
     private func checkIfBlocked(username: String) async {
-        // TODO: MOCK_DASHPAY remove
-        let oneSecond = TimeInterval(1_000_000_000)
-        let delay = UInt64(oneSecond * 2)
-        try! await Task.sleep(nanoseconds: delay)
-        
-        if self.username == username {
-            uiState.usernameBlockedRule = .warning
-            uiState.canContinue = true
+        // Check username availability via PlatformService
+        let platform = PlatformService.shared
+
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            platform.checkUsernameAvailability(username) { [weak self] isAvailable, error in
+                guard let self = self, self.username == username else {
+                    continuation.resume()
+                    return
+                }
+
+                if let _ = error {
+                    self.uiState.usernameBlockedRule = .invalid
+                    self.uiState.canContinue = false
+                } else if isAvailable {
+                    self.uiState.usernameBlockedRule = .valid
+                    self.uiState.canContinue = true
+                } else {
+                    self.uiState.usernameBlockedRule = .warning
+                    self.uiState.canContinue = false
+                }
+                continuation.resume()
+            }
         }
     }
     

@@ -30,7 +30,9 @@ class ZenLedgerViewModel: ObservableObject {
         var addresses: [String] = []
 
         if allTransaction.isEmpty {
-            addresses.append(account.receiveAddress ?? "")
+            let fallbackAddress = (try? DWEnvironment.sharedInstance().coreService.getReceiveAddress())
+                ?? account.receiveAddress ?? ""
+            addresses.append(fallbackAddress)
         } else {
             for tx in allTransaction {
                 addresses.append(contentsOf:

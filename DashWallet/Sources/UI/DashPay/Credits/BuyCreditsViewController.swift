@@ -18,8 +18,8 @@
 import SwiftUI
 
 final class BuyCreditsModel: SendAmountModel {
-    static let opCost: UInt64 = 1000000 // TODO: temp MOCK_DASHPAY
-    static var currentCredits: Double = 0.5 // TODO: temp MOCK_DASHPAY
+    static let opCost: UInt64 = 1000000 // TODO: Get real op cost from PlatformService
+    static var currentCredits: Double = 0.5 // TODO: Get real credit balance from PlatformService
     
     override var isAllowedToContinue: Bool {
         return super.isAllowedToContinue && amount.dashAmount.plainAmount / BuyCreditsModel.opCost > 0
@@ -146,14 +146,18 @@ final class BuyCreditsViewController: SendAmountViewController, ObservableObject
 
             self.showActivityIndicator()
             
-            Task { // TODO: Temp MOCK_DASHPAY
-                try? await Task.sleep(nanoseconds: 2_000_000_000)
-                self.hideActivityIndicator()
-                let dashAmount = self.model.amount.dashAmount.plainAmount
-                let opAmount = dashAmount / BuyCreditsModel.opCost
-                BuyCreditsModel.currentCredits += Double(opAmount) * 0.25
-                self.dismiss(animated: true)
-                self.onDismissed?()
+            // TODO: Implement real credit purchase via PlatformService
+            Task {
+                do {
+                    let dashAmount = self.model.amount.dashAmount.plainAmount
+                    let opAmount = dashAmount / BuyCreditsModel.opCost
+                    // TODO: Call PlatformService to top-up identity balance
+                    try? await Task.sleep(nanoseconds: 2_000_000_000)
+                    BuyCreditsModel.currentCredits += Double(opAmount) * 0.25
+                    self.hideActivityIndicator()
+                    self.dismiss(animated: true)
+                    self.onDismissed?()
+                }
             }
         }
     }

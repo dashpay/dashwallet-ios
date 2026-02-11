@@ -26,6 +26,7 @@
 #if DASHPAY
 #import "DWDashPayConstants.h"
 #import "DWEnvironment.h"
+#import "dashwallet-Swift.h"
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
@@ -64,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if DASHPAY
     DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
-    if (blockchainIdentity.currentDashpayUsername != nil || MOCK_DASHPAY) {
+    if (blockchainIdentity.currentDashpayUsername != nil || [DWEnvironment sharedInstance].platformService.isRegistered) {
         DWPayOptionModel *option = [[DWPayOptionModel alloc] initWithType:DWPayOptionModelType_DashPayUser];
         [options addObject:option];
     }

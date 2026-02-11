@@ -83,7 +83,8 @@ final class UpholdAmountModel: BaseAmountModel {
     }
 
     private func createTransaction(for amount: String, feeWasDeductedFromAmount: Bool, otpToken: String?) {
-        guard let receiveAddress = DWEnvironment.sharedInstance().currentAccount.receiveAddress else {
+        guard let receiveAddress = try? DWEnvironment.sharedInstance().coreService.getReceiveAddress()
+                ?? DWEnvironment.sharedInstance().currentAccount.receiveAddress else {
             fatalError("Address should exist")
         }
 

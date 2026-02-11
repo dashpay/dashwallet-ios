@@ -23,10 +23,12 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSBlockchainIdentity;
+@class DWPlatformUser;
 
 @interface DWDPSearchItemsFactory : NSObject
 
 - (id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>)itemForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+- (id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>)itemForPlatformUser:(DWPlatformUser *)platformUser;
 
 @end
 

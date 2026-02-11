@@ -569,23 +569,7 @@ extension MainMenuScreen {
             #if DASHPAY
             viewModel.userProfileModel?.updateModel.update(withDisplayName: rawDisplayName, aboutMe: rawAboutMe, avatarURLString: avatarURLString)
             
-            if MOCK_DASHPAY.boolValue {
-                BuyCreditsModel.currentCredits -= 0.25
-                let heading: String
-                let message: String
-                
-                if BuyCreditsModel.currentCredits <= 0 {
-                    heading = NSLocalizedString("Your credit balance has been fully depleted", comment: "")
-                    message = NSLocalizedString("You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance", comment: "")
-                } else if BuyCreditsModel.currentCredits <= 0.25 {
-                    heading = NSLocalizedString("Your credit balance is low", comment: "")
-                    message = NSLocalizedString("Top-up your credits to continue making changes to your profile and adding contacts", comment: "")
-                } else {
-                    return
-                }
-                
-                showCreditsWarning(heading, message)
-            }
+            // TODO: Implement real credit balance check via PlatformService after profile update
             #endif
             controller.dismiss(animated: true)
         }

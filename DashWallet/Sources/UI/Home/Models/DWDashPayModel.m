@@ -80,8 +80,10 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSString *)username {
-    if (MOCK_DASHPAY) {
-        return [DWGlobalOptions sharedInstance].dashpayUsername;
+    // Check PlatformService first for current username
+    PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+    if (platform.currentUsername) {
+        return platform.currentUsername;
     }
 
     DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
@@ -89,12 +91,15 @@ NS_ASSUME_NONNULL_END
 }
 
 - (DSBlockchainIdentity *)blockchainIdentity {
-    if (MOCK_DASHPAY) {
-        NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
+    // Check PlatformService first
+    PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+    if (platform.isRegistered && platform.currentUsername != nil) {
+        return [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:platform.currentUsername];
+    }
 
-        if (username != nil) {
-            return [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
-        }
+    NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
+    if (username != nil) {
+        return [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
     }
 
     return [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
@@ -200,31 +205,26 @@ NS_ASSUME_NONNULL_END
         return;
     }
 
-    DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;
-    __weak typeof(self) weakSelf = self;
-    [manager searchIdentityByDashpayUsername:username
-                              withCompletion:^(BOOL success, DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error) {
-                                  if (success) {
-
-                                      DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-                                      DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-
-                                      [myBlockchainIdentity sendNewFriendRequestToBlockchainIdentity:blockchainIdentity
-                                                                                          completion:^(BOOL success, NSArray<NSError *> *_Nullable errors) {
-                                                                                              DSLog(@"Friend request sent %i", success);
-                                                                                          }];
-                                  }
-                              }];
+    // Use PlatformService to find inviter and send contact request
+    PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+    [platform searchUserByUsername:username
+                        completion:^(DWPlatformUser *user, NSError *error) {
+                            if (user) {
+                                [platform sendContactRequestWithRecipientId:user.identityId
+                                                                 completion:^(BOOL success, NSError *error) {
+                                                                     DSLog(@"Friend request sent %i", success);
+                                                                 }];
+                            }
+                        }];
 }
 
 - (void)sendContactRequestToBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    [myBlockchainIdentity sendNewFriendRequestToBlockchainIdentity:blockchainIdentity
-                                                        completion:^(BOOL success, NSArray<NSError *> *_Nullable errors){
-
-                                                        }];
+    PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+    NSData *recipientId = uint256_data(blockchainIdentity.uniqueID);
+    [platform sendContactRequestWithRecipientId:recipientId
+                                     completion:^(BOOL success, NSError *error) {
+                                         DSLog(@"Friend request sent %i", success);
+                                     }];
 }
 
 - (BOOL)canRetry {
@@ -238,10 +238,7 @@ NS_ASSUME_NONNULL_END
 - (void)completeRegistration {
     [DWGlobalOptions sharedInstance].shouldShowInvitationsBadge = YES;
     [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted = YES;
-
-    if (!MOCK_DASHPAY) {
-        [DWGlobalOptions sharedInstance].dashpayUsername = nil;
-    }
+    [DWGlobalOptions sharedInstance].dashpayUsername = nil;
 
     NSAssert(self.username != nil, @"Default DSBlockchainIdentity has an empty username");
     self.registrationStatus = nil;
@@ -274,11 +271,7 @@ NS_ASSUME_NONNULL_END
             completion:(void (^)(BOOL success,
                                  NSString *_Nullable errorTitle,
                                  NSString *_Nullable errorMessage))completion {
-    if (MOCK_DASHPAY) {
-        completion(YES, nil, nil);
-        return;
-    }
-
+    // Invitation verification uses DashSync L1 (transaction verification)
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     [DSBlockchainInvitation
         verifyInvitationLink:url.absoluteString
@@ -345,11 +338,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)registerIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-    if (MOCK_DASHPAY) {
-        [self handleSteps:DSBlockchainIdentityRegistrationStep_All error:nil];
-        return;
-    }
-
+    // L1 funding + L2 identity registration via DashSync
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
 
     __weak typeof(self) weakSelf = self;

@@ -28,7 +28,6 @@
 
 #if DASHPAY
 #import "DWDPUserObject.h"
-// if MOCK_DASHPAY
 #import "DWDashPayConstants.h"
 #endif
 
@@ -129,11 +128,11 @@ static NSString *sanitizeString(NSString *s) {
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
         DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
 
-        if (MOCK_DASHPAY && myBlockchainIdentity == NULL) {
-            NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
-
-            if (username != nil) {
-                myBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
+        // If no DashSync identity, try PlatformService
+        if (myBlockchainIdentity == NULL) {
+            PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+            if (platform.isRegistered && platform.currentUsername != nil) {
+                myBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:platform.currentUsername];
             }
         }
 

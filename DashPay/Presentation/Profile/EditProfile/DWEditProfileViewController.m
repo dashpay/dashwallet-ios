@@ -33,9 +33,11 @@
 #import "DWSharedUIConstants.h"
 #import "DWTextInputFormTableViewCell.h"
 #import "DWUIKit.h"
-// if MOCK_DASHPAY
-#import "DWDashPayConstants.h"
-#import "DWGlobalOptions.h"
+#if __has_include("dashpay-Swift.h")
+#import "dashpay-Swift.h"
+#elif __has_include("dashwallet-Swift.h")
+#import "dashwallet-Swift.h"
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -105,9 +107,10 @@ NS_ASSUME_NONNULL_END
 
     self.blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
     
-    if (MOCK_DASHPAY && self.blockchainIdentity == nil) {
-        NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
-        
+    if (self.blockchainIdentity == nil) {
+        PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+        NSString *username = platform.currentUsername;
+
         if (username != nil) {
             self.blockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
         }

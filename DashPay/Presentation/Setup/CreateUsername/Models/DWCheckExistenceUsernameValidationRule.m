@@ -18,8 +18,13 @@
 #import "DWCheckExistenceUsernameValidationRule.h"
 
 #import "DWAllowedCharactersUsernameValidationRule.h"
-#import "DWDashPayConstants.h"
 #import "DWEnvironment.h"
+
+#if __has_include("dashpay-Swift.h")
+#import "dashpay-Swift.h"
+#elif __has_include("dashwallet-Swift.h")
+#import "dashwallet-Swift.h"
+#endif
 #import "DWFirstUsernameSymbolValidationRule.h"
 #import "DWLengthUsernameValidationRule.h"
 #import "DWUsernameValidationRule+Protected.h"
@@ -34,7 +39,6 @@ static NSTimeInterval VALIDATION_DEBOUNCE_DELAY = 0.4;
 @property (nullable, nonatomic, weak) id<DWCheckExistenceUsernameValidationRuleDelegate> delegate;
 
 @property (nullable, nonatomic, copy) NSString *username;
-@property (nullable, nonatomic, strong) id<DSDAPINetworkServiceRequest> request;
 @property (readonly, nonatomic, copy) NSArray<DWUsernameValidationRule *> *validators;
 
 @end
@@ -75,7 +79,6 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)validateText:(NSString *)text {
-    [self.request cancel];
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(performValidation) object:nil];
     self.username = text;
 
@@ -106,44 +109,30 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)performValidationWithUsername:(NSString *)username {
-    DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;
     __weak typeof(self) weakSelf = self;
-    
-    if (MOCK_DASHPAY) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            self.validationResult = DWUsernameValidationRuleResultValid;
-        });
-        
-        return;
-    }
-    
-    self.request = [manager
-        searchIdentityByDashpayUsername:username
-                         withCompletion:^(BOOL succeess, DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error) {
-                             __strong typeof(weakSelf) strongSelf = weakSelf;
-                             if (!strongSelf) {
-                                 return;
-                             }
 
-                             NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+    PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+    [platform checkUsernameAvailability:username completion:^(BOOL available, NSError *_Nullable error) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
 
-                             // search query was changed before results arrive, ignore results
-                             if (![strongSelf.username isEqualToString:username]) {
-                                 return;
-                             }
+        NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
-                             if (succeess) {
-                                 if (blockchainIdentity != nil) {
-                                     strongSelf.validationResult = DWUsernameValidationRuleResultInvalidCritical;
-                                 }
-                                 else {
-                                     strongSelf.validationResult = DWUsernameValidationRuleResultValid;
-                                 }
-                             }
-                             else {
-                                 strongSelf.validationResult = DWUsernameValidationRuleResultError;
-                             }
-                         }];
+        // search query was changed before results arrive, ignore results
+        if (![strongSelf.username isEqualToString:username]) {
+            return;
+        }
+
+        if (error) {
+            strongSelf.validationResult = DWUsernameValidationRuleResultError;
+        } else if (available) {
+            strongSelf.validationResult = DWUsernameValidationRuleResultValid;
+        } else {
+            strongSelf.validationResult = DWUsernameValidationRuleResultInvalidCritical;
+        }
+    }];
 }
 
 @end

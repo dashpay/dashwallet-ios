@@ -25,6 +25,12 @@
 #import "DWIncomingFetchedDataSource.h"
 #import "DWRequestsModel.h"
 
+#if __has_include("dashpay-Swift.h")
+#import "dashpay-Swift.h"
+#elif __has_include("dashwallet-Swift.h")
+#import "dashwallet-Swift.h"
+#endif
+
 @implementation DWContactsModel
 
 @synthesize requestsDataSource = _requestsDataSource;
@@ -40,13 +46,12 @@
 }
 
 - (BOOL)canOpenBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-    if (MOCK_DASHPAY) {
+    PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+    if (!platform.isRegistered) {
         return YES;
     }
-
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    return !uint256_eq(myBlockchainIdentity.uniqueID, blockchainIdentity.uniqueID);
+    NSString *currentUsername = platform.currentUsername;
+    return currentUsername == nil || ![currentUsername isEqualToString:blockchainIdentity.currentDashpayUsername];
 }
 
 - (DWRequestsModel *)contactRequestsModel {
@@ -56,7 +61,7 @@
 - (void)rebuildFRCDataSources {
     DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
 
-    if (!blockchainIdentity && !MOCK_DASHPAY) {
+    if (!blockchainIdentity && ![DWEnvironment sharedInstance].platformService.isRegistered) {
         return;
     }
 

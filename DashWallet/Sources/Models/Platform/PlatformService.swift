@@ -296,6 +296,74 @@ import SwiftDashSDK
             }
         }
     }
+
+    // MARK: - Profile Operations
+
+    /// Fetch the current user's profile
+    @objc func fetchProfile(completion: @escaping (DWPlatformUser?, Error?) -> Void) {
+        Task {
+            do {
+                guard let identity = try dashPayService.getPrimaryIdentity() else {
+                    await MainActor.run { completion(nil, nil) }
+                    return
+                }
+                let id = try identity.getId()
+                let label = try? identity.getLabel()
+                // TODO: Fetch full profile document for displayName, avatarURL, publicMessage
+                let user = DWPlatformUser(
+                    username: label ?? "",
+                    identityId: id
+                )
+                await MainActor.run { completion(user, nil) }
+            } catch {
+                await MainActor.run { completion(nil, error) }
+            }
+        }
+    }
+
+    // MARK: - Username Availability
+
+    /// Check if a username is available on DPNS
+    @objc func checkUsernameAvailability(_ username: String, completion: @escaping (Bool, Error?) -> Void) {
+        guard let sdk = sdk else {
+            completion(false, DashPayError.noWallet)
+            return
+        }
+        Task {
+            do {
+                // Query DPNS to see if username is already taken
+                let existing = try sdk.identities.get(id: username)
+                await MainActor.run { completion(existing == nil, nil) }
+            } catch {
+                await MainActor.run { completion(false, error) }
+            }
+        }
+    }
+
+    // MARK: - Search by Username
+
+    /// Search for a user by exact username (for invitation contact request)
+    @objc func searchUserByUsername(_ username: String, completion: @escaping (DWPlatformUser?, Error?) -> Void) {
+        guard let sdk = sdk else {
+            completion(nil, DashPayError.noWallet)
+            return
+        }
+        Task {
+            do {
+                if let identity = try sdk.identities.get(id: username) {
+                    let user = DWPlatformUser(
+                        username: username,
+                        identityId: Data() // TODO: extract identity id bytes
+                    )
+                    await MainActor.run { completion(user, nil) }
+                } else {
+                    await MainActor.run { completion(nil, nil) }
+                }
+            } catch {
+                await MainActor.run { completion(nil, error) }
+            }
+        }
+    }
 }
 
 // MARK: - Notification Names

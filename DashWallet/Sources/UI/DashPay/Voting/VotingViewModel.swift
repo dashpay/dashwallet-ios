@@ -31,11 +31,8 @@ class VotingViewModel {
     private var dao: UsernameRequestsDAO = UsernameRequestsDAOImpl.shared
     private var cancellableBag = Set<AnyCancellable>()
     private var groupedRequests: [GroupedUsernames] = []
-    private var validKeys: [String] = [ // TODO: temp
-        "kn2GwaSZkoY8qg6i2dPCpDtDoBCftJWMzZXtHDDJ1w7PjFYfq",
-        "n6YtJ7pdDYPTa57imEHEp8zinq1oNGUdwZQdnGk1MMpCWBHEq",
-        "maEiRZeKXNLZovNqoS3HkmZJGmACbro7s3eC8GenExLF7QMQs"
-    ]
+    // TODO: Replace with real masternode key validation via PlatformService
+    private var validKeys: [String] = []
     
     private(set) var filters = VotingFilters.defaultFilters
     @Published private(set) var masternodeKeys: [MasternodeKey] = []
@@ -134,7 +131,7 @@ extension [UsernameRequest] {
         case .approved:
             result = sorted.filter { $0.isApproved }
         case .notVoted:
-            result = sorted.filter { !$0.isApproved } // TODO: MOCK_DASHPAY recheck logic
+            result = sorted.filter { !$0.isApproved } // TODO: Replace with real platform voting logic recheck logic
         case .hasBlockVotes:
             result = sorted.filter { $0.blockVotes > 0 }
         default:
@@ -152,18 +149,18 @@ extension VotingViewModel {
         Task {
             if var copy = await dao.get(byRequestId: requestId) {
                 copy.votes += masternodeKeys.count
-                copy.blockVotes = 0 // TODO: MOCK_DASHPAY
+                copy.blockVotes = 0 // TODO: Replace with real platform voting logic
                 copy.isApproved = true
                 await dao.update(dto: copy)
                 lastVoteAction = .approved
                 refresh()
                 
-                // TODO: MOCK_DASHPAY user own name approval. Remove when not needed
+                // TODO: Replace with real platform voting logic user own name approval. Remove when not needed
                 if UsernamePrefs.shared.requestedUsernameId == requestId {
                     DWGlobalOptions.sharedInstance().dashpayUsername = copy.username
                 }
                 
-                // TODO: MOCK_DASHPAY "votes left" check. Replace with actual logic
+                // TODO: Replace with real platform voting logic "votes left" check. Replace with actual logic
                 if let groupIndex = groupedRequests.firstIndex(where: { group in
                     group.requests.contains { request in
                         request.requestId == requestId
@@ -184,12 +181,12 @@ extension VotingViewModel {
                 lastVoteAction = .revoked
                 refresh()
                 
-                // TODO: MOCK_DASHPAY user own name approval. Remove when not needed
+                // TODO: Replace with real platform voting logic user own name approval. Remove when not needed
                 if UsernamePrefs.shared.requestedUsernameId == requestId {
                     DWGlobalOptions.sharedInstance().dashpayUsername = nil
                 }
                 
-                // TODO: MOCK_DASHPAY "votes left" check. Replace with actual logic
+                // TODO: Replace with real platform voting logic "votes left" check. Replace with actual logic
                 if let groupIndex = groupedRequests.firstIndex(where: { group in
                     group.requests.contains { request in
                         request.requestId == requestId
@@ -202,7 +199,7 @@ extension VotingViewModel {
     }
     
     func votesLeft(for requestId: String) -> Int {
-        // TODO: MOCK_DASHPAY "votes left" check. Replace with actual logic
+        // TODO: Replace with real platform voting logic "votes left" check. Replace with actual logic
         let group = groupedRequests.first(where: { group in
             group.requests.contains { request in
                 request.requestId == requestId
@@ -219,7 +216,7 @@ extension VotingViewModel {
                 lastVoteAction = .blocked
                 refresh()
                 
-                // TODO: MOCK_DASHPAY user own name approval. Remove when not needed
+                // TODO: Replace with real platform voting logic user own name approval. Remove when not needed
                 if UsernamePrefs.shared.requestedUsernameId == requestId {
                     DWGlobalOptions.sharedInstance().dashpayUsername = nil
                 }
@@ -253,31 +250,5 @@ extension VotingViewModel {
     
     func onVoteActionHandled() {
         lastVoteAction = .none
-    }
-}
-
-
-// TODO: MOCK_DASHPAY remove when not needed
-
-extension VotingViewModel {
-    func addMockRequest() {
-        Task {
-            nameCount += 1
-            let now = Date().timeIntervalSince1970
-            let twoWeeksAgo = now - (14 * 24 * 60 * 60)
-            let randomValue = Double.random(in: twoWeeksAgo..<now)
-            let identityData = withUnsafeBytes(of: UUID().uuid) { Data($0) }
-            let names = ["John", "Doe", "Sarah", "Jane", "Jack", "Jill", "Bob"]
-            let identity = (identityData as NSData).base58String()
-            let randomName = names[Int.random(in: 0..<min(names.count, nameCount))]
-            let link = nameCount % 2 == 0 ? "https://example.com" : nil
-            let isApproved = false
-            
-            let dto = UsernameRequest(requestId: UUID().uuidString, username: randomName, createdAt: Int64(randomValue), identity: "\(identity)\(identity)\(identity)", link: link, votes: Int.random(in: 0..<15), blockVotes: Int.random(in: 0..<15), isApproved: isApproved)
-            print(dto)
-            await dao.create(dto: dto)
-            
-            refresh()
-        }
     }
 }

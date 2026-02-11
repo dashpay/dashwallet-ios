@@ -244,7 +244,7 @@ class BaseAmountModel: ObservableObject {
     internal func selectAllFunds() { }
     
     private func refreshBalance() {
-        walletBalance = DWEnvironment.sharedInstance().currentWallet.balance
+        walletBalance = DWEnvironment.sharedInstance().coreService.balanceTotal
     }
 }
 

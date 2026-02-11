@@ -24,6 +24,12 @@
 #import "DWDPPendingRequestObject.h"
 #import "DWDPUserObject.h"
 
+#if __has_include("dashpay-Swift.h")
+#import "dashpay-Swift.h"
+#elif __has_include("dashwallet-Swift.h")
+#import "dashwallet-Swift.h"
+#endif
+
 @implementation DWDPSearchItemsFactory
 
 - (id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>)itemForBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
@@ -41,6 +47,27 @@
             return [[DWDPNewIncomingRequestObject alloc] initWithBlockchainIdentity:blockchainIdentity];
         case DSBlockchainIdentityFriendshipStatus_Friends:
             return [[DWDPEstablishedContactObject alloc] initWithBlockchainIdentity:blockchainIdentity];
+    }
+}
+
+- (id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>)itemForPlatformUser:(DWPlatformUser *)platformUser {
+    // Use PlatformService to determine friendship status
+    PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+    DWPlatformFriendshipStatus status = [platform friendshipStatusWith:platformUser.identityId];
+
+    // Create a local DSBlockchainIdentity for UI compatibility
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSBlockchainIdentity *identity = [wallet createBlockchainIdentityForUsername:platformUser.username];
+
+    switch (status) {
+        case DWPlatformFriendshipStatusNone:
+            return [[DWDPUserObject alloc] initWithBlockchainIdentity:identity];
+        case DWPlatformFriendshipStatusOutgoing:
+            return [[DWDPPendingRequestObject alloc] initWithBlockchainIdentity:identity];
+        case DWPlatformFriendshipStatusIncoming:
+            return [[DWDPNewIncomingRequestObject alloc] initWithBlockchainIdentity:identity];
+        case DWPlatformFriendshipStatusFriends:
+            return [[DWDPEstablishedContactObject alloc] initWithBlockchainIdentity:identity];
     }
 }
 

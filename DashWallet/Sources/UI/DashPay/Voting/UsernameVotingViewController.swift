@@ -156,7 +156,6 @@ extension UsernameVotingViewController {
     }
     
     @objc func mockData() {
-        viewModel.addMockRequest()
     }
     
     private func updateQuickVoteButton() {
@@ -279,7 +278,7 @@ extension UsernameVotingViewController {
     private func onBlockTapped(request: UsernameRequest) {
         if viewModel.masternodeKeys.isEmpty || request.blockVotes <= 0 {
             self.navigateToBlock(request: request)
-        } else { // TODO: MOCK_DASHPAY replace with correct logic
+        } else { // TODO: Replace with correct unblock logic via PlatformService
             self.viewModel.unblock(request: request.requestId)
             self.showToast(text: String.localizedStringWithFormat(NSLocalizedString("Unblocked '%@' username", comment: "Voting"), request.username), icon: .system("checkmark.circle.fill"), duration: 2)
         }
@@ -293,7 +292,7 @@ extension UsernameVotingViewController {
                 let endDate = Date(timeIntervalSince1970: TimeInterval(req.createdAt)).addingTimeInterval(twoWeeks)
                 let days = max(0, Int(endDate.timeIntervalSinceNow / (24 * 60 * 60)))
                 return days
-            } ?? 0 // TODO: MOCK_DASHPAY might be incorrect logic for the vote ending date
+            } ?? 0 // TODO: Verify vote ending date logic with real platform data
         })
            
         for (votingEndsInDays, items) in groupedData {

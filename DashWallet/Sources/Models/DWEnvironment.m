@@ -33,6 +33,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
 @implementation DWEnvironment
 
 @synthesize platformService = _platformService;
+@synthesize coreService = _coreService;
 
 
 + (instancetype)sharedInstance {
@@ -110,6 +111,10 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
 
 - (void)clearAllWalletsAndRemovePin:(BOOL)shouldRemovePin {
     [[NSNotificationCenter defaultCenter] postNotificationName:DWWillWipeWalletNotification object:self];
+
+    // Shutdown CoreService (SwiftDashSDK)
+    [self.coreService shutdown];
+    [self.platformService shutdown];
 
     [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
     NSManagedObjectContext *context = [NSManagedObjectContext chainContext];
@@ -196,6 +201,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
                   completion:^(DSWallet *_Nullable copiedWallet) {
                       if (copiedWallet) {
                           NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+                          [self.coreService stopSync];
                           [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
                           [userDefaults setInteger:chainType forKey:CURRENT_CHAIN_TYPE_KEY];
                           [self reset];
@@ -211,6 +217,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
     }
     else {
         NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+        [self.coreService stopSync];
         if (self.currentChain) {
             [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
         }
@@ -229,6 +236,10 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
 
 - (PlatformService *)platformService {
     return [PlatformService shared];
+}
+
+- (CoreService *)coreService {
+    return [CoreService shared];
 }
 
 @end

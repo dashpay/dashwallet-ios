@@ -25,8 +25,11 @@
 #import "DWNetworkErrorViewController.h"
 #import "DWNotificationsProvider.h"
 
-// if MOCK_DASHPAY
-#import "DWDashPayConstants.h"
+#if __has_include("dashpay-Swift.h")
+#import "dashpay-Swift.h"
+#elif __has_include("dashwallet-Swift.h")
+#import "dashwallet-Swift.h"
+#endif
 
 
 @implementation DWDashPayContactsActions
@@ -36,74 +39,51 @@
                   completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
     NSAssert([item conformsToProtocol:@protocol(DWDPNewIncomingRequestItem)], @"Incompatible item");
 
-    const BOOL isBlockchainIdentityBacked = [item conformsToProtocol:@protocol(DWDPBlockchainIdentityBackedItem)];
-    const BOOL isFriendRequestBacked = [item conformsToProtocol:@protocol(DWDPFriendRequestBackedItem)];
-    NSAssert(isBlockchainIdentityBacked || isFriendRequestBacked, @"Invalid item to accept contact request");
-
     __block id<DWDPNewIncomingRequestItem> newRequestItem = (id<DWDPNewIncomingRequestItem>)item;
     newRequestItem.requestState = DWDPNewIncomingRequestItemState_Processing;
 
-    if (MOCK_DASHPAY) {
-        NSManagedObjectContext *context = [NSManagedObjectContext viewContext];
-        DSDashpayUserEntity *contact = [DSDashpayUserEntity managedObjectInBlockedContext:context];
-        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-        contact.chain = [wallet.chain chainEntityInContext:context];
-        DSBlockchainIdentityUsernameEntity *username = [DSBlockchainIdentityUsernameEntity managedObjectInBlockedContext:context];
-        username.stringValue = item.username;
-        DSBlockchainIdentityEntity *entity = [DSBlockchainIdentityEntity managedObjectInBlockedContext:context];
-        entity.uniqueID = [item.username dataUsingEncoding:NSUTF8StringEncoding];
-        username.blockchainIdentity = entity;
-        entity.dashpayUsername = username;
-        contact.associatedBlockchainIdentity = entity;
-        NSError *error = [contact applyTransientDashpayUser:item.blockchainIdentity.transientDashpayUser save:YES];
+    // Use PlatformService to accept the contact request
+    PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+    NSData *senderIdentityId = nil;
 
-        newRequestItem.requestState = DWDPNewIncomingRequestItemState_Accepted;
-
-        return;
-    }
-
-    void (^resultCompletion)(BOOL success, NSArray<NSError *> *errors) = ^(BOOL success, NSArray<NSError *> *errors) {
-        if (newRequestItem == nil) {
-            NSLog(@"324 %lu", (unsigned long)((id<DWDPNewIncomingRequestItem>)newRequestItem).requestState);
-        }
-
-        NSLog(@"%lu", (unsigned long)((id<DWDPNewIncomingRequestItem>)newRequestItem).requestState);
-
-        ((id<DWDPNewIncomingRequestItem>)newRequestItem).requestState = success ? DWDPNewIncomingRequestItemState_Accepted : DWDPNewIncomingRequestItemState_Failed;
-
-        if (!success) {
-            DWNetworkErrorViewController *controller = [[DWNetworkErrorViewController alloc] initWithType:DWErrorDescriptionType_AcceptContactRequest];
-            [context presentViewController:controller animated:YES completion:nil];
-        }
-
-        // TODO: DP temp workaround to update and force reload contact list
-        // This will trigger DWNotificationsProvider to reset
-        [[DWDashPayContactsUpdater sharedInstance] fetchWithCompletion:^(BOOL contactsSuccess, NSArray<NSError *> *_Nonnull contactsErrors) {
-            if (completion) {
-                completion(success, errors);
-            }
-        }];
-
-        DSLog(@"DWDP: accept contact request %@: %@", success ? @"Succeeded" : @"Failed", errors);
-    };
-
-    // Accepting request from a DSFriendRequestEntity doesn't require searching for associated blockchain identity.
-    // Since all DWDPBasicUserItem has associated BI, check if it's a DSFriendRequestEntity first.
-    if (isFriendRequestBacked && [(id<DWDPFriendRequestBackedItem>)item friendRequestEntity] != nil) {
-        id<DWDPFriendRequestBackedItem> backedItem = (id<DWDPFriendRequestBackedItem>)item;
-        [self acceptContactRequestFromFriendRequest:backedItem.friendRequestEntity completion:resultCompletion];
-    }
-    else if (isBlockchainIdentityBacked && [(id<DWDPBlockchainIdentityBackedItem>)item blockchainIdentity] != nil) {
+    // Try to get identity ID from the blockchain identity
+    if ([item conformsToProtocol:@protocol(DWDPBlockchainIdentityBackedItem)]) {
         id<DWDPBlockchainIdentityBackedItem> backedItem = (id<DWDPBlockchainIdentityBackedItem>)item;
-        [self acceptContactRequestFromBlockchainIdentity:backedItem.blockchainIdentity completion:resultCompletion];
+        if (backedItem.blockchainIdentity) {
+            senderIdentityId = uint256_data(backedItem.blockchainIdentity.uniqueID);
+        }
     }
+
+    if (!senderIdentityId) {
+        // Fallback: use username as identifier
+        senderIdentityId = [item.username dataUsingEncoding:NSUTF8StringEncoding];
+    }
+
+    [platform acceptContactRequestWithSenderId:senderIdentityId
+                                    completion:^(BOOL success, NSError *error) {
+                                        newRequestItem.requestState = success ? DWDPNewIncomingRequestItemState_Accepted : DWDPNewIncomingRequestItemState_Failed;
+
+                                        if (!success) {
+                                            DWNetworkErrorViewController *controller = [[DWNetworkErrorViewController alloc] initWithType:DWErrorDescriptionType_AcceptContactRequest];
+                                            [context presentViewController:controller animated:YES completion:nil];
+                                        }
+
+                                        // Force reload contact list
+                                        [[DWDashPayContactsUpdater sharedInstance] fetchWithCompletion:^(BOOL contactsSuccess, NSArray<NSError *> *_Nonnull contactsErrors) {
+                                            if (completion) {
+                                                NSArray<NSError *> *errors = error ? @[ error ] : @[];
+                                                completion(success, errors);
+                                            }
+                                        }];
+
+                                        DSLog(@"DWDP: accept contact request %@: %@", success ? @"Succeeded" : @"Failed", error);
+                                    }];
 }
 
 + (void)declineContactRequest:(id<DWDPBasicUserItem>)item
                       context:(UIViewController *)context
                    completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
-    // TODO: DP dummy method
-
+    // TODO: Implement decline via PlatformService when SDK supports it
     NSAssert([item conformsToProtocol:@protocol(DWDPNewIncomingRequestItem)], @"Incompatible item");
 
     id<DWDPNewIncomingRequestItem> newRequestItem = (id<DWDPNewIncomingRequestItem>)item;
@@ -112,22 +92,6 @@
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         newRequestItem.requestState = DWDPNewIncomingRequestItemState_Failed;
     });
-}
-
-#pragma mark - Private
-
-+ (void)acceptContactRequestFromBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity
-                                        completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    [myBlockchainIdentity acceptFriendRequestFromBlockchainIdentity:blockchainIdentity completion:completion];
-}
-
-+ (void)acceptContactRequestFromFriendRequest:(DSFriendRequestEntity *)friendRequest
-                                   completion:(void (^)(BOOL success, NSArray<NSError *> *errors))completion {
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    [myBlockchainIdentity acceptFriendRequest:friendRequest completion:completion];
 }
 
 @end

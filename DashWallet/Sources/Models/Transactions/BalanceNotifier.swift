@@ -34,7 +34,7 @@ class DWBalanceNotifier: NSObject {
 
         let notificationCenter = NotificationCenter.default
 
-        balanceObserver = notificationCenter.addObserver(forName: NSNotification.Name("DSWalletBalanceChangedNotification"),
+        balanceObserver = notificationCenter.addObserver(forName: NSNotification.Name("DSWalletBalanceDidChangeNotification"),
                                                          object: nil,
                                                          queue: nil) { [weak self] note in
             self?.walletBalanceDidChangeNotification(note: note)
@@ -47,7 +47,7 @@ class DWBalanceNotifier: NSObject {
             guard let self, self.balance == UInt64.max else {
                 return
             }
-            self.balance = DWEnvironment.sharedInstance().currentWallet.balance
+            self.balance = DWEnvironment.sharedInstance().coreService.balanceTotal
         }
     }
 
@@ -67,12 +67,12 @@ class DWBalanceNotifier: NSObject {
     // MARK: Private
 
     private func walletBalanceDidChangeNotification(note: Notification) {
-        let wallet = DWEnvironment.sharedInstance().currentWallet
+        let currentBalance = DWEnvironment.sharedInstance().coreService.balanceTotal
         let application = UIApplication.shared
 
-        if balance < wallet.balance {
+        if balance < currentBalance {
             let notificationsEnabled = DWGlobalOptions.sharedInstance().localNotificationsEnabled
-            let received = wallet.balance - balance
+            let received = currentBalance - balance
             var noteText = ""
             var identifier = ""
             var sound: UNNotificationSound?
@@ -122,7 +122,7 @@ class DWBalanceNotifier: NSObject {
             #endif
         }
 
-        balance = wallet.balance
+        balance = currentBalance
     }
 
     deinit {

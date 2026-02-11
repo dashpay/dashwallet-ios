@@ -50,13 +50,13 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
 
 - (BOOL)isWalletEmpty {
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    const uint64_t balanceValue = [DWEnvironment sharedInstance].coreService.balanceTotal;
     // make sure there's no block for 60 mins
     const NSTimeInterval lastBlockTimestamp = chain.lastSyncBlockTimestamp;
     const NSTimeInterval delta = HOUR_TIME_INTERVAL;
     const NSTimeInterval now = [NSDate timeIntervalSince1970];
     const BOOL isSyncedUp = (chain.lastSyncBlockHeight == chain.lastTerminalBlockHeight);
-    return (wallet.balance == 0) && (lastBlockTimestamp + delta > now) && isSyncedUp;
+    return (balanceValue == 0) && (lastBlockTimestamp + delta > now) && isSyncedUp;
 }
 
 - (NSString *)cleanupPhrase:(NSString *)phrase {

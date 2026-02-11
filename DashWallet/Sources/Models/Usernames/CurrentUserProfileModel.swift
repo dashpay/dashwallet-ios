@@ -35,11 +35,15 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
     @Published private(set) var showJoinDashpay: Bool = true
     
     @objc var blockchainIdentity: DSBlockchainIdentity? {
-        if MOCK_DASHPAY.boolValue {
-            if let username = DWGlobalOptions.sharedInstance().dashpayUsername {
-                return DWEnvironment.sharedInstance().currentWallet.createBlockchainIdentity(forUsername: username)
-            }
+        let platform = PlatformService.shared
+        if platform.isRegistered, let username = platform.currentUsername {
+            return DWEnvironment.sharedInstance().currentWallet.createBlockchainIdentity(forUsername: username)
         }
+
+        if let username = DWGlobalOptions.sharedInstance().dashpayUsername {
+            return DWEnvironment.sharedInstance().currentWallet.createBlockchainIdentity(forUsername: username)
+        }
+
         return DWEnvironment.sharedInstance().currentWallet.defaultBlockchainIdentity
     }
     
@@ -57,27 +61,25 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
     }
     
     @objc func update() {
-        guard let _ = blockchainIdentity else {
+        guard blockchainIdentity != nil else {
             state = .none
             return
         }
-        
+
         if state == .loading {
             return
         }
-        
+
         state = .loading
-        
-        if MOCK_DASHPAY.boolValue {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-                self?.state = .done
-            }
-            return
-        }
-        
-        blockchainIdentity?.fetchProfile { [weak self] success, error in
+
+        // Use PlatformService to fetch profile
+        PlatformService.shared.fetchProfile { [weak self] user, error in
             guard let self = self else { return }
-            self.state = success ? .done : .error
+            if error != nil {
+                self.state = .error
+            } else {
+                self.state = .done
+            }
         }
     }
 }

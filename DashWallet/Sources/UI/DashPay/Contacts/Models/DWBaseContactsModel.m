@@ -25,6 +25,12 @@
 #import "DWDashPayContactsUpdater.h"
 #import "DWEnvironment.h"
 
+#if __has_include("dashpay-Swift.h")
+#import "dashpay-Swift.h"
+#elif __has_include("dashwallet-Swift.h")
+#import "dashwallet-Swift.h"
+#endif
+
 @implementation DWBaseContactsModel
 
 @synthesize sortMode;
@@ -43,7 +49,8 @@
 }
 
 - (BOOL)hasBlockchainIdentity {
-    if (MOCK_DASHPAY) {
+    PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+    if (platform.isRegistered) {
         return YES;
     }
 

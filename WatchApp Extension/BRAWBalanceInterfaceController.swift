@@ -41,8 +41,8 @@ final class BRAWBalanceInterfaceController: WKInterfaceController {
 
     var showBalanceLoadingIndicator = false {
         didSet {
-            self.balanceTextContainer.setHidden(showBalanceLoadingIndicator)
-            self.balanceLoadingIndicator.setHidden(!showBalanceLoadingIndicator)
+            balanceTextContainer.setHidden(showBalanceLoadingIndicator)
+            balanceLoadingIndicator.setHidden(!showBalanceLoadingIndicator)
         }
     }
 

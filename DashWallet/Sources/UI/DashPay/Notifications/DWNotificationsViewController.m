@@ -31,6 +31,7 @@
 #import "DWUIKit.h"
 #import "DWUserProfileViewController.h"
 #import "UICollectionView+DWDPItemDequeue.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -73,8 +74,7 @@ NS_ASSUME_NONNULL_END
         return YES;
     }
 
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    const uint64_t balanceValue = wallet.balance;
+    const uint64_t balanceValue = [DWEnvironment sharedInstance].coreService.balanceTotal;
     BOOL isEnoughBalance = balanceValue > DWDP_MIN_BALANCE_TO_CREATE_INVITE;
     if (!isEnoughBalance) {
         return YES;

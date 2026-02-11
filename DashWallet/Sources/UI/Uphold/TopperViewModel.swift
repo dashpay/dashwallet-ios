@@ -41,7 +41,8 @@ class TopperViewModel {
     }
     
     func topperBuyUrl(walletName: String) -> String {
-        let address = DWEnvironment.sharedInstance().currentAccount.receiveAddress ?? ""
+        let address = (try? DWEnvironment.sharedInstance().coreService.getReceiveAddress())
+            ?? DWEnvironment.sharedInstance().currentAccount.receiveAddress ?? ""
         return topper.getOnRampUrl(desiredSourceAsset: App.fiatCurrency, receiverAddress: address, walletName: walletName)
     }
 }

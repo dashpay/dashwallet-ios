@@ -19,9 +19,11 @@
 
 #import "DWEnvironment.h"
 
-// if MOCK_DASHPAY
-#import "DWDashPayConstants.h"
-#import "DWGlobalOptions.h"
+#if __has_include("dashpay-Swift.h")
+#import "dashpay-Swift.h"
+#elif __has_include("dashwallet-Swift.h")
+#import "dashwallet-Swift.h"
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -37,15 +39,18 @@ NS_ASSUME_NONNULL_END
 @implementation DWDPUpdateProfileModel
 
 - (DSBlockchainIdentity *)blockchainIdentity {
-    if (MOCK_DASHPAY) {
-        NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
-        
+    DSBlockchainIdentity *identity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+
+    if (identity == nil) {
+        PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+        NSString *username = platform.currentUsername;
+
         if (username != nil) {
-            return [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
+            identity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
         }
     }
-    
-    return [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+
+    return identity;
 }
 
 - (void)updateWithDisplayName:(NSString *)rawDisplayName

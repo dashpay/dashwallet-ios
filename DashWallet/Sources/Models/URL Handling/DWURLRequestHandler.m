@@ -22,6 +22,7 @@
 
 #import "DWEnvironment.h"
 #import "DWURLActions.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -92,14 +93,18 @@ NS_ASSUME_NONNULL_BEGIN
                       alertIfLockout:YES
                           completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
                               if (authenticatedOrSuccess) {
-                                  DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+                                  NSError *urlAddrErr = nil;
+                                  NSString *urlAddr = [[DWEnvironment sharedInstance].coreService getReceiveAddressAndReturnError:&urlAddrErr];
+                                  if (!urlAddr) {
+                                      urlAddr = [DWEnvironment sharedInstance].currentAccount.receiveAddress;
+                                  }
 
                                   NSString *urlString =
                                       [NSString stringWithFormat:
                                                     @"%@://callback=%@&address=%@&source=dashwallet",
                                                     action.sender,
                                                     action.request,
-                                                    account.receiveAddress];
+                                                    urlAddr];
 
                                   NSURL *url = [NSURL URLWithString:urlString];
                                   NSParameterAssert(url);

@@ -178,11 +178,20 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (uint32_t)blockHeight {
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    const uint32_t lastHeight = chain.lastTerminalBlockHeight;
-
-    if (lastHeight > self.blockHeightValue) {
-        self.blockHeightValue = lastHeight;
+    // Try CoreService first, fallback to DashSync
+    NSError *heightError = nil;
+    uint32_t coreHeight = [[DWEnvironment sharedInstance].coreService currentBlockHeightAndReturnError:&heightError];
+    if (!heightError && coreHeight > 0) {
+        if (coreHeight > self.blockHeightValue) {
+            self.blockHeightValue = coreHeight;
+        }
+    }
+    else {
+        DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+        const uint32_t lastHeight = chain.lastTerminalBlockHeight;
+        if (lastHeight > self.blockHeightValue) {
+            self.blockHeightValue = lastHeight;
+        }
     }
 
     return self.blockHeightValue;

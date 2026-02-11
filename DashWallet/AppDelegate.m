@@ -142,9 +142,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-    
+    // Stop CoreService SPV sync when backgrounded
+    [[DWEnvironment sharedInstance].coreService stopSync];
+
     // Schedule background fetch if the wallet (DashSync) had been started
     DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
     if (!migrationManager.shouldMigrate) {
@@ -153,7 +153,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
-    // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
+    // Resume CoreService SPV sync when returning to foreground
+    if ([DWEnvironment sharedInstance].coreService.isInitialized) {
+        [[DWEnvironment sharedInstance].coreService startSync];
+    }
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
@@ -317,6 +320,12 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     [[DashSync sharedSyncController] setupDashSyncOnce];
     
     [DWEnvironment sharedInstance]; //starts up the environment, this is needed here
+
+    // CoreService (SwiftDashSDK L1 bridge) is initialized with mnemonic after wallet unlock.
+    // During the dual-engine phase, CoreService runs alongside DashSync.
+    // CoreService.initialize(mnemonic:isTestnet:) must be called after user authentication
+    // provides access to the wallet seed phrase.
+    (void)[DWEnvironment sharedInstance].coreService;
     
 #if FRESH_INSTALL
     // TODO: fix. Disabled due to crashing :(

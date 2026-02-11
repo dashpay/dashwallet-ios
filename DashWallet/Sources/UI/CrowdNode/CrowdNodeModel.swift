@@ -136,7 +136,8 @@ final class CrowdNodeModel {
 
     func getAccountAddress() {
         if crowdNode.accountAddress.isEmpty {
-            accountAddress = DWEnvironment.sharedInstance().currentAccount.receiveAddress ?? ""
+            accountAddress = (try? DWEnvironment.sharedInstance().coreService.getReceiveAddress())
+                ?? DWEnvironment.sharedInstance().currentAccount.receiveAddress ?? ""
         }
         else {
             accountAddress = crowdNode.accountAddress

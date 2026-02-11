@@ -90,7 +90,7 @@
 		1DAD1AAA2ED2037F00C8090E /* BarcodeScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DAD1AA82ED2037F00C8090E /* BarcodeScanner.swift */; };
 		1DAD1B012ED4037F00C8090E /* GeoRestrictionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DAD1B002ED4037F00C8090E /* GeoRestrictionService.swift */; };
 		1DAD1B022ED4037F00C8090E /* GeoRestrictionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DAD1B002ED4037F00C8090E /* GeoRestrictionService.swift */; };
-		1DD7BE9CD62998F12672140D /* RadioButtonRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 708B9F2B4B1E4C31B5010CDF /* RadioButtonRow.swift */; };
+
 		222040C61C1A1940005CE1C3 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222040C51C1A1940005CE1C3 /* WebKit.framework */; };
 		222E7F561C46E9B8009AB45D /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222E7F551C46E9B8009AB45D /* Security.framework */; };
 		222E7F581C46E9BE009AB45D /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222E7F571C46E9BE009AB45D /* SystemConfiguration.framework */; };
@@ -501,6 +501,10 @@
 		7503643B2C89CFB70029EC0D /* CoinJoinProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */; };
 		7503643E2C89D49A0029EC0D /* CoinJoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7503643D2C89D49A0029EC0D /* CoinJoinService.swift */; };
 		7503643F2C89D49A0029EC0D /* CoinJoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7503643D2C89D49A0029EC0D /* CoinJoinService.swift */; };
+		7F94D6EEB0D94DFBB3E707D7 /* CoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43B5DC0D6E98C4C626F7561E /* CoreService.swift */; };
+		0EA9B8599DF3FD0CD9B0EE57 /* CoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43B5DC0D6E98C4C626F7561E /* CoreService.swift */; };
+		D6E7F8091A2B3C4D5E6F7081 /* PlatformService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5C /* PlatformService.swift */; };
+		92A3B4C5D6E7F8091A2B3C4D /* PlatformService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5C /* PlatformService.swift */; };
 		75050CCE2DF2CB0F00F586D6 /* GiftCardMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75050CCD2DF2CB0E00F586D6 /* GiftCardMetadataProvider.swift */; };
 		75050CCF2DF2CB0F00F586D6 /* GiftCardMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75050CCD2DF2CB0E00F586D6 /* GiftCardMetadataProvider.swift */; };
 		75050CD12DF2FCC200F586D6 /* ServiceName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75050CD02DF2FCBF00F586D6 /* ServiceName.swift */; };
@@ -2445,10 +2449,12 @@
 		5F9EF7C7D0B76255AA95D29C /* Pods-dashpay.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashpay.debug.xcconfig"; path = "Target Support Files/Pods-dashpay/Pods-dashpay.debug.xcconfig"; sourceTree = "<group>"; };
 		640B293ED8F6BC5016CD13EC /* libPods-dashwallet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-dashwallet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		68F834C43B4E8FD4E9D4A3EB /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
-		708B9F2B4B1E4C31B5010CDF /* RadioButtonRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RadioButtonRow.swift; path = "DashWallet/Sources/UI/SwiftUI Components/RadioButtonRow.swift"; sourceTree = "<group>"; };
+
 		7502A4862AE401EF00ACDDD3 /* UsernameVotingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameVotingViewController.swift; sourceTree = "<group>"; };
 		750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinProgressView.swift; sourceTree = "<group>"; };
 		7503643D2C89D49A0029EC0D /* CoinJoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinService.swift; sourceTree = "<group>"; };
+		43B5DC0D6E98C4C626F7561E /* CoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreService.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5C /* PlatformService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformService.swift; sourceTree = "<group>"; };
 		75050CCD2DF2CB0E00F586D6 /* GiftCardMetadataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardMetadataProvider.swift; sourceTree = "<group>"; };
 		75050CD02DF2FCBF00F586D6 /* ServiceName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceName.swift; sourceTree = "<group>"; };
 		7509C10E1AF3076100D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
@@ -4037,6 +4043,8 @@
 			isa = PBXGroup;
 			children = (
 				7503643C2C89D4890029EC0D /* CoinJoin */,
+				3051BB14F33A9FD09EF18708 /* Core */,
+				E5F60718293A4B5CD6E7F809 /* Platform */,
 				75A8C1612AE571E30042256E /* Voting */,
 				47081194298CF1E3003FCA3D /* Transactions */,
 				11BD737F28E7354200A34022 /* CrowdNode */,
@@ -6038,6 +6046,22 @@
 			path = Voting;
 			sourceTree = "<group>";
 		};
+		3051BB14F33A9FD09EF18708 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				43B5DC0D6E98C4C626F7561E /* CoreService.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		E5F60718293A4B5CD6E7F809 /* Platform */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D4E5F60718293A4B5C /* PlatformService.swift */,
+			);
+			path = Platform;
+			sourceTree = "<group>";
+		};
 		7503643C2C89D4890029EC0D /* CoinJoin */ = {
 			isa = PBXGroup;
 			children = (
@@ -6294,7 +6318,6 @@
 				2A4663012279DC2F0027533B /* DashWalletScreenshotsUITests */,
 				75D5F3C0191EC270004AB296 /* Frameworks */,
 				75D5F3BF191EC270004AB296 /* Products */,
-				708B9F2B4B1E4C31B5010CDF /* RadioButtonRow.swift */,
 				E4313B239BF48C0CBA67D201 /* Pods */,
 			);
 			sourceTree = "<group>";
@@ -9000,6 +9023,8 @@
 				2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */,
 				7592AA7C2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */,
 				7503643E2C89D49A0029EC0D /* CoinJoinService.swift in Sources */,
+				7F94D6EEB0D94DFBB3E707D7 /* CoreService.swift in Sources */,
+				D6E7F8091A2B3C4D5E6F7081 /* PlatformService.swift in Sources */,
 				75AA33CC2BF9C82700F12465 /* ModalDialog.swift in Sources */,
 				2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */,
 				47C661AF28FDAA3400028A8D /* BaseAmountViewController.swift in Sources */,
@@ -9700,6 +9725,8 @@
 				C9D2C7D32A320AA000D15901 /* CrowdNodeAPIConfirmationTx.swift in Sources */,
 				C9D2C7D42A320AA000D15901 /* UIViewController+DWEmbedding.m in Sources */,
 				7503643F2C89D49A0029EC0D /* CoinJoinService.swift in Sources */,
+				0EA9B8599DF3FD0CD9B0EE57 /* CoreService.swift in Sources */,
+				92A3B4C5D6E7F8091A2B3C4D /* PlatformService.swift in Sources */,
 				C9D2C7D62A320AA000D15901 /* CALayer+DWShadow.m in Sources */,
 				C9D2C7D72A320AA000D15901 /* MerchantDAO.swift in Sources */,
 				C9D2C7D82A320AA000D15901 /* ExploreDatabaseSyncManager.swift in Sources */,
@@ -10064,7 +10091,6 @@
 				C9D2C8F32A320AA000D15901 /* main.m in Sources */,
 				C9D2C8F42A320AA000D15901 /* DWQuickReceiveViewController.m in Sources */,
 				75A8C1692AE6A1AC0042256E /* VotingViewModel.swift in Sources */,
-				1DD7BE9CD62998F12672140D /* RadioButtonRow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -10512,7 +10538,7 @@
 					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DAPI-GRPC\"",
-					"-l\"DSDynamicOptions-iOS14.0\"",
+					"-l\"DSDynamicOptions\"",
 					"-l\"DWAlertController\"",
 					"-l\"DashSync\"",
 					"-l\"FirebaseCore\"",
@@ -10653,7 +10679,7 @@
 					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DAPI-GRPC\"",
-					"-l\"DSDynamicOptions-iOS14.0\"",
+					"-l\"DSDynamicOptions\"",
 					"-l\"DWAlertController\"",
 					"-l\"DashSync\"",
 					"-l\"FirebaseCore\"",
@@ -11013,7 +11039,7 @@
 					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DAPI-GRPC\"",
-					"-l\"DSDynamicOptions-iOS14.0\"",
+					"-l\"DSDynamicOptions\"",
 					"-l\"DWAlertController\"",
 					"-l\"DashSync\"",
 					"-l\"FirebaseCore\"",
@@ -11148,7 +11174,7 @@
 					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DAPI-GRPC\"",
-					"-l\"DSDynamicOptions-iOS14.0\"",
+					"-l\"DSDynamicOptions\"",
 					"-l\"DWAlertController\"",
 					"-l\"DashSync\"",
 					"-l\"FirebaseCore\"",
@@ -11294,7 +11320,7 @@
 					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DAPI-GRPC\"",
-					"-l\"DSDynamicOptions-iOS14.0\"",
+					"-l\"DSDynamicOptions\"",
 					"-l\"DWAlertController\"",
 					"-l\"DashSync\"",
 					"-l\"FirebaseCore\"",
@@ -11438,7 +11464,7 @@
 					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DAPI-GRPC\"",
-					"-l\"DSDynamicOptions-iOS14.0\"",
+					"-l\"DSDynamicOptions\"",
 					"-l\"DWAlertController\"",
 					"-l\"DashSync\"",
 					"-l\"FirebaseCore\"",
@@ -11642,7 +11668,7 @@
 					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DAPI-GRPC\"",
-					"-l\"DSDynamicOptions-iOS14.0\"",
+					"-l\"DSDynamicOptions\"",
 					"-l\"DWAlertController\"",
 					"-l\"DashSync\"",
 					"-l\"FirebaseCore\"",
@@ -11954,7 +11980,7 @@
 					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
 					"-l\"DAPI-GRPC\"",
-					"-l\"DSDynamicOptions-iOS14.0\"",
+					"-l\"DSDynamicOptions\"",
 					"-l\"DWAlertController\"",
 					"-l\"DashSync\"",
 					"-l\"FirebaseCore\"",

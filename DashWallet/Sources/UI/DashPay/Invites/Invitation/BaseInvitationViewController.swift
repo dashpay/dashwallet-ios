@@ -63,13 +63,12 @@ class InvitationSourceItem: NSObject, UIActivityItemSource
         let wallet = DWEnvironment.sharedInstance().currentWallet
         let myBlockchainIdentity: DSBlockchainIdentity
         
-        if (MOCK_DASHPAY.boolValue) {
-            let username = DWGlobalOptions.sharedInstance().dashpayUsername
+        if let username = DWEnvironment.sharedInstance().platformService.currentUsername {
             myBlockchainIdentity = wallet.createBlockchainIdentity(forUsername: username)
         } else {
             myBlockchainIdentity = wallet.defaultBlockchainIdentity!
         }
-        
+
         DWInvitationLinkBuilder.dynamicLink(from: fullLink, myBlockchainIdentity: myBlockchainIdentity, completion: { [weak self] url in
             self?.invitationURL = url ?? URL(string: fullLink)
         })
@@ -229,8 +228,8 @@ class InvitationSourceItem: NSObject, UIActivityItemSource
         let wallet = DWEnvironment.sharedInstance().currentWallet
         let myBlockchainIdentity: DSBlockchainIdentity
         
-        if (MOCK_DASHPAY.boolValue) {
-            myBlockchainIdentity = wallet.createBlockchainIdentity(forUsername: DWGlobalOptions.sharedInstance().dashpayUsername)
+        if let username = DWEnvironment.sharedInstance().platformService.currentUsername {
+            myBlockchainIdentity = wallet.createBlockchainIdentity(forUsername: username)
         } else {
             myBlockchainIdentity = wallet.defaultBlockchainIdentity!
         }

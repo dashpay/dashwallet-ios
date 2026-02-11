@@ -19,6 +19,12 @@
 
 #import "DWEnvironment.h"
 
+#if __has_include("dashpay-Swift.h")
+#import "dashpay-Swift.h"
+#elif __has_include("dashwallet-Swift.h")
+#import "dashwallet-Swift.h"
+#endif
+
 NS_ASSUME_NONNULL_BEGIN
 
 NSNotificationName const DWDashPayContactsDidUpdateNotification = @"org.dash.wallet.dp.contacts-did-update";
@@ -52,9 +58,8 @@ NS_ASSUME_NONNULL_END
 - (void)beginUpdating {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    if (myBlockchainIdentity == nil || myBlockchainIdentity.registered == NO) {
+    PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+    if (!platform.isRegistered) {
         return;
     }
 
@@ -96,9 +101,8 @@ NS_ASSUME_NONNULL_END
 
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(fetchInternal) object:nil];
 
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    if (myBlockchainIdentity == nil || myBlockchainIdentity.registered == NO) {
+    PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+    if (!platform.isRegistered) {
         if (completion) {
             completion(YES, nil);
         }
@@ -130,7 +134,7 @@ NS_ASSUME_NONNULL_END
     self.lastFetch = [NSDate date];
 
     __weak typeof(self) weakSelf = self;
-    [myBlockchainIdentity fetchContactRequests:^(BOOL success, NSArray<NSError *> *_Nonnull errors) {
+    [platform fetchContactRequestsWithCompletion:^(BOOL success, NSError *error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -144,9 +148,10 @@ NS_ASSUME_NONNULL_END
 
         DSLog(@"DWDP: Fetch contact requests %@: %@",
               success ? @"Succeeded" : @"Failed",
-              errors.count == 0 ? @"" : errors);
+              error ?: @"");
 
         if (strongSelf.fetchCompletion) {
+            NSArray<NSError *> *errors = error ? @[ error ] : @[];
             strongSelf.fetchCompletion(success, errors);
             strongSelf.fetchCompletion = nil;
         }

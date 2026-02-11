@@ -22,9 +22,11 @@
 #import "DWSuccessInvitationView.h"
 #import "DWUIKit.h"
 
-// If MOCK_DASHPAY
-#import "DWDashPayConstants.h"
-#import "DWGlobalOptions.h"
+#if __has_include("dashpay-Swift.h")
+#import "dashpay-Swift.h"
+#elif __has_include("dashwallet-Swift.h")
+#import "dashwallet-Swift.h"
+#endif
 
 @implementation DWInvitationMessageView
 
@@ -80,8 +82,9 @@
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
         DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
 
-        if (MOCK_DASHPAY) {
-            NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
+        if (myBlockchainIdentity == nil) {
+            PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+            NSString *username = platform.currentUsername;
 
             if (username != nil) {
                 myBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];

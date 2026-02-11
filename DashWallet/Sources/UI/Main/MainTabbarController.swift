@@ -107,12 +107,10 @@ class MainTabbarController: UITabBarController {
     var homeModel: DWHomeProtocol!
     
     #if DASHPAY
-    // TODO: MOCK_DASHPAY remove when not mocked
     private var blockchainIdentity: DSBlockchainIdentity? {
-        if MOCK_DASHPAY.boolValue {
-            if let username = DWGlobalOptions.sharedInstance().dashpayUsername {
-                return DWEnvironment.sharedInstance().currentWallet.createBlockchainIdentity(forUsername: username)
-            }
+        let platform = PlatformService.shared
+        if platform.isRegistered, let username = platform.currentUsername {
+            return DWEnvironment.sharedInstance().currentWallet.createBlockchainIdentity(forUsername: username)
         }
         return DWEnvironment.sharedInstance().currentWallet.defaultBlockchainIdentity
     }

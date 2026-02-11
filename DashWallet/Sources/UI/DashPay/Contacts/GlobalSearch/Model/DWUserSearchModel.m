@@ -22,6 +22,12 @@
 #import "DWDashPayContactsActions.h"
 #import "DWEnvironment.h"
 
+#if __has_include("dashpay-Swift.h")
+#import "dashpay-Swift.h"
+#elif __has_include("dashwallet-Swift.h")
+#import "dashwallet-Swift.h"
+#endif
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUserSearchRequest : NSObject
@@ -61,7 +67,6 @@ static NSTimeInterval SEARCH_DEBOUNCE_DELAY = 0.4;
 @interface DWUserSearchModel ()
 
 @property (nullable, nonatomic, strong) DWUserSearchRequest *searchRequest;
-@property (nullable, nonatomic, strong) id<DSDAPINetworkServiceRequest> request;
 @property (readonly, nonatomic, strong) DWDPSearchItemsFactory *itemsFactory;
 
 @end
@@ -84,9 +89,6 @@ NS_ASSUME_NONNULL_END
 
 - (void)searchWithQuery:(NSString *)searchQuery {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(performInitialSearch) object:nil];
-
-    [self.request cancel];
-    self.request = nil;
 
     self.searchRequest = nil;
 
@@ -122,13 +124,13 @@ NS_ASSUME_NONNULL_END
 }
 
 - (BOOL)canOpenBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-    if (MOCK_DASHPAY) {
+    PlatformService *platform = [DWEnvironment sharedInstance].platformService;
+    if (!platform.isRegistered) {
         return YES;
     }
-
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    return !uint256_eq(myBlockchainIdentity.uniqueID, blockchainIdentity.uniqueID);
+    // Don't allow opening own profile from search
+    NSString *currentUsername = platform.currentUsername;
+    return currentUsername == nil || ![currentUsername isEqualToString:blockchainIdentity.currentDashpayUsername];
 }
 
 - (void)acceptContactRequest:(id<DWDPBasicUserItem>)item {
@@ -168,58 +170,37 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)performSearchWithQuery:(NSString *)query offset:(uint32_t)offset {
-    if (MOCK_DASHPAY) {
-        NSMutableArray<id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>> *items = [NSMutableArray array];
-
-        for (int i = 0; i < 3; i++) {
-            DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-            NSString *username = [NSString stringWithFormat:@"%@%d", query, i];
-            DSBlockchainIdentity *identity = [wallet createBlockchainIdentityForUsername:username];
-            id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem> item = [self.itemsFactory itemForBlockchainIdentity:identity];
-            [items addObject:item];
-        }
-
-        self.searchRequest.hasNextPage = NO;
-        self.searchRequest.items = items;
-
-        [self.delegate userSearchModel:self completedWithItems:items];
-    }
-
     self.searchRequest.requestInProgress = YES;
 
-    DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;
+    PlatformService *platform = [DWEnvironment sharedInstance].platformService;
     __weak typeof(self) weakSelf = self;
-    self.request = [manager searchIdentitiesByNamePrefix:query
-                                                inDomain:@"dash"
-                                              startAfter:self.searchRequest.lastItem
-                                                   limit:LIMIT
-                                          withCompletion:^(BOOL success, NSArray<DSBlockchainIdentity *> *_Nullable blockchainIdentities, NSArray<NSError *> *_Nonnull errors) {
-                                              __strong typeof(weakSelf) strongSelf = weakSelf;
-                                              if (!strongSelf) {
-                                                  return;
-                                              }
-                                              NSAssert([NSThread isMainThread], @"Main thread is assumed here");
-                                              // search query was changed before results arrive, ignore results
-                                              if (!strongSelf.searchRequest || ![strongSelf.searchRequest.trimmedQuery isEqualToString:query]) {
-                                                  return;
-                                              }
-                                              strongSelf.searchRequest.requestInProgress = NO;
-                                              if (success) {
-                                                  NSMutableArray<id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>> *items = strongSelf.searchRequest.items ? [strongSelf.searchRequest.items mutableCopy] : [NSMutableArray array];
-                                                  for (DSBlockchainIdentity *blockchainIdentity in blockchainIdentities) {
-                                                      id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem> item = [strongSelf.itemsFactory itemForBlockchainIdentity:blockchainIdentity];
-                                                      [items addObject:item];
-                                                  }
-                                                  strongSelf.searchRequest.hasNextPage = blockchainIdentities.count >= LIMIT;
-                                                  strongSelf.searchRequest.items = items;
-                                                  strongSelf.searchRequest.lastItem = [[[items lastObject] blockchainIdentity] uniqueIDData];
-                                                  [strongSelf.delegate userSearchModel:strongSelf completedWithItems:items];
-                                              }
-                                              else {
-                                                  strongSelf.searchRequest.hasNextPage = NO;
-                                                  [strongSelf.delegate userSearchModel:strongSelf completedWithError:errors.firstObject];
-                                              }
-                                          }];
+    [platform searchUsersWithPrefix:query
+                         completion:^(NSArray<DWPlatformUser *> *users, NSError *error) {
+                             __strong typeof(weakSelf) strongSelf = weakSelf;
+                             if (!strongSelf) {
+                                 return;
+                             }
+                             NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+                             // search query was changed before results arrive, ignore results
+                             if (!strongSelf.searchRequest || ![strongSelf.searchRequest.trimmedQuery isEqualToString:query]) {
+                                 return;
+                             }
+                             strongSelf.searchRequest.requestInProgress = NO;
+                             if (!error) {
+                                 NSMutableArray<id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem>> *items = strongSelf.searchRequest.items ? [strongSelf.searchRequest.items mutableCopy] : [NSMutableArray array];
+                                 for (DWPlatformUser *user in users) {
+                                     id<DWDPBasicUserItem, DWDPBlockchainIdentityBackedItem> item = [strongSelf.itemsFactory itemForPlatformUser:user];
+                                     [items addObject:item];
+                                 }
+                                 strongSelf.searchRequest.hasNextPage = users.count >= LIMIT;
+                                 strongSelf.searchRequest.items = items;
+                                 [strongSelf.delegate userSearchModel:strongSelf completedWithItems:items];
+                             }
+                             else {
+                                 strongSelf.searchRequest.hasNextPage = NO;
+                                 [strongSelf.delegate userSearchModel:strongSelf completedWithError:error];
+                             }
+                         }];
 }
 
 @end

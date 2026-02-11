@@ -160,7 +160,11 @@ NS_ASSUME_NONNULL_BEGIN
 
             return;
         }
-        NSString *paymentAddress = account.receiveAddress;
+        NSError *addressError = nil;
+        NSString *paymentAddress = [[DWEnvironment sharedInstance].coreService getReceiveAddressAndReturnError:&addressError];
+        if (addressError || !paymentAddress) {
+            paymentAddress = account.receiveAddress; // fallback to DashSync
+        }
 
         DSChain *chain = [DWEnvironment sharedInstance].currentChain;
         DWAppGroupOptions *appGroupOptions = [DWAppGroupOptions sharedInstance];

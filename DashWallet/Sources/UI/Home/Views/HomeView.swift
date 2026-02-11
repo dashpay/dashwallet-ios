@@ -240,7 +240,7 @@ struct HomeViewContent<Content: View>: View {
                                     joinDPViewModel.markAsDismissed()
                                     viewModel.checkJoinDashPay()
                                 } else {
-                                    // TODO: ? MOCK_DASHPAY if failed, maybe need to call model?.dashPayModel.retry()
+                                    // TODO: If registration failed, consider calling model?.dashPayModel.retry()
                                     if viewModel.shouldShowMixDashDialog {
                                         self.navigateToDashPayFlow = false
                                         self.navigateToCoinJoin = false
