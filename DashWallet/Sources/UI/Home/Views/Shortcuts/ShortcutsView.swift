@@ -19,37 +19,18 @@ import UIKit
 import Combine
 
 func cellSize(for contentSizeCategory: UIContentSizeCategory) -> CGSize {
-    var size = CGSize.zero
-
-    if contentSizeCategory == .extraSmall ||
-        contentSizeCategory == .small ||
-        contentSizeCategory == .medium ||
-        contentSizeCategory == .large {
-        size = CGSize(width: 80.0, height: 95.0)
-    } else if contentSizeCategory == .extraLarge {
-        size = CGSize(width: 88.0, height: 95.0)
-    } else if contentSizeCategory == .extraExtraLarge {
-        size = CGSize(width: 100.0, height: 100.0)
-    } else {
-        size = CGSize(width: 116.0, height: 116.0)
-    }
-
-    if UIDevice.isIphone6Plus || UIDevice.hasHomeIndicator {
-        let width = UIScreen.main.bounds.size.width
-        let margin: CGFloat = 16.0
-        let minSpacing: CGFloat = 8.0 // min cell spacing, set in xib
-        let visibleCells: CGFloat = 4.0
-        let cellWidth = (width - margin * 2.0 - minSpacing * (visibleCells - 1)) / visibleCells
-        if cellWidth > size.width {
-            return CGSize(width: cellWidth, height: cellWidth)
-        }
-    }
+    let screenWidth = UIScreen.main.bounds.size.width
+    let margin: CGFloat = 10.0       // Figma: container px padding
+    let spacing: CGFloat = 4.0       // Figma: shortcut-bar/gap
+    let visibleCells: CGFloat = 4.0
+    let cellWidth = floor((screenWidth - margin * 2.0 - spacing * (visibleCells - 1)) / visibleCells)
+    let cellHeight: CGFloat = 68.0   // Figma: icon(46) + gap(4) + text(16) + bottomPad(2)
 
     if UIDevice.isIpad {
-        return CGSize(width: size.width * 2.0, height: size.height)
+        return CGSize(width: cellWidth * 2.0, height: cellHeight)
     }
 
-    return size
+    return CGSize(width: cellWidth, height: cellHeight)
 }
 
 
@@ -118,7 +99,7 @@ class ShortcutsView: UIView {
             contentView.widthAnchor.constraint(equalTo: widthAnchor),
         ])
 
-        collectionView.layer.cornerRadius = 8
+        collectionView.layer.cornerRadius = 16
         collectionView.layer.masksToBounds = true
 
         if UIDevice.current.userInterfaceIdiom == .pad {
@@ -203,7 +184,7 @@ extension ShortcutsView: UICollectionViewDataSource, UICollectionViewDelegate, U
         let cellCount = CGFloat(collectionView.numberOfItems(inSection: section))
         var inset = (collectionView.bounds.size.width - (cellCount * cellWidth) - ((cellCount - 1) * cellSpacing)) * 0.5
         inset = max(inset, 0.0)
-        return UIEdgeInsets(top: 0.0, left: inset, bottom: 0.0, right: 0.0)
+        return UIEdgeInsets(top: 0.0, left: inset, bottom: 0.0, right: inset)
     }
 }
 
