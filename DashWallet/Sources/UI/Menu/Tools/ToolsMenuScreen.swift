@@ -28,6 +28,7 @@ struct ToolsMenuScreen: View {
     @State private var showCSVExportAlert = false
     @State private var showCSVExportActivity = false
     @State private var showZenLedgerSheet = false
+    @State private var showImportPrivateKeySheet = false
     
     init(vc: UINavigationController, onImportPrivateKey: @escaping () -> ()) {
         self.vc = vc
@@ -146,6 +147,18 @@ struct ToolsMenuScreen: View {
                 ZenLedgerInfoSheet(safariLink: $viewModel.safariLink)
             }
         }
+        .sheet(isPresented: $showImportPrivateKeySheet) {
+            if #available(iOS 16.4, *) {
+                ImportPrivateKeySheet(onScanPrivateKey: onImportPrivateKey)
+                    .presentationDetents([.height(460)])
+                    .presentationCornerRadius(32)
+            } else if #available(iOS 16.0, *) {
+                ImportPrivateKeySheet(onScanPrivateKey: onImportPrivateKey)
+                    .presentationDetents([.height(460)])
+            } else {
+                ImportPrivateKeySheet(onScanPrivateKey: onImportPrivateKey)
+            }
+        }
     }
     
     private func handleNavigation(_ destination: ToolsMenuNavigationDestination?) {
@@ -171,9 +184,7 @@ struct ToolsMenuScreen: View {
     }
     
     private func showImportPrivateKey() {
-        let controller = DWImportWalletInfoViewController.createController()
-        controller.delegate = delegateInternal
-        vc.pushViewController(controller, animated: true)
+        showImportPrivateKeySheet = true
     }
     
     private func showExtendedPublicKeys() {
