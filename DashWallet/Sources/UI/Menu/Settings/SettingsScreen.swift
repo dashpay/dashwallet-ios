@@ -40,24 +40,11 @@ struct SettingsScreen: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Back button
-            HStack {
-                Button(action: {
-                    vc.popViewController(animated: true)
-                }) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.primary)
-                        .frame(width: 36, height: 36)
-                        .overlay(
-                            Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1)
-                        )
-                }
-                Spacer()
+            // Navigation bar with back button
+            NavigationBar {
+                vc.popViewController(animated: true)
             }
-            .padding(.horizontal, 5)
-            .padding(.top, 10)
-            
+
             // Header
             HStack {
                 Text(NSLocalizedString("Settings", comment: ""))
@@ -66,6 +53,7 @@ struct SettingsScreen: View {
                     .foregroundColor(.primaryText)
                 Spacer()
             }
+            .padding(.horizontal, 20)
             .padding(.top, 30)
             .padding(.bottom, 20)
             
@@ -96,6 +84,7 @@ struct SettingsScreen: View {
                     }
                 }
             }
+            .padding(.horizontal, 20)
             .padding(.vertical, 5)
             .background(Color.secondaryBackground)
             .cornerRadius(12)
@@ -103,7 +92,6 @@ struct SettingsScreen: View {
             
             Spacer()
         }
-        .padding(.horizontal, 20)
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
         .onReceive(viewModel.$navigationDestination) { destination in

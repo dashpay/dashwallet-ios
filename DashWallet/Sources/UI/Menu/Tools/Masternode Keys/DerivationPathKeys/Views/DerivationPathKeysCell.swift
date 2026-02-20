@@ -21,6 +21,11 @@ final class DerivationPathKeysCell: UITableViewCell {
     private var nameLabel: UILabel!
     private var valueLabel: UILabel!
     private var copyButton: UIButton!
+    private var mainStackView: UIStackView!
+    private var topConstraint: NSLayoutConstraint!
+    private var leadingConstraint: NSLayoutConstraint!
+    private var trailingConstraint: NSLayoutConstraint!
+    private var bottomConstraint: NSLayoutConstraint!
 
     private(set) var item: DerivationPathKeysItem!
 
@@ -42,10 +47,32 @@ final class DerivationPathKeysCell: UITableViewCell {
         valueLabel.text = item.value
     }
 
+    func applyMenuSpacing(isFirst: Bool, isLast: Bool, sectionPadding: CGFloat) {
+        // Cell vertical padding: 12px
+        // Section padding: 6px (added to first cell top and last cell bottom)
+        // Inter-cell gap: 2px (added to non-first cells)
+        let cellVerticalPadding: CGFloat = 12
+
+        // Top: section padding (6px) for first cell, or cell padding + gap for others
+        topConstraint.constant = isFirst ? (sectionPadding + cellVerticalPadding) : (cellVerticalPadding + kMenuVGap)
+
+        // Bottom: section padding (6px) for last cell
+        bottomConstraint.constant = isLast ? -(sectionPadding + cellVerticalPadding) : -cellVerticalPadding
+
+        // Horizontal: section padding (6px) + cell padding (14px)
+        let totalHorizontalPadding = sectionPadding + 14
+        leadingConstraint.constant = totalHorizontalPadding
+        trailingConstraint.constant = -totalHorizontalPadding
+    }
+
     private func configureHierarchy() {
         backgroundColor = .dw_background()
 
-        let mainStackView = UIStackView()
+        // Cell corner radius: 14px
+        layer.cornerRadius = 14
+        layer.masksToBounds = true
+
+        mainStackView = UIStackView()
         mainStackView.translatesAutoresizingMaskIntoConstraints = false
         mainStackView.axis = .vertical
         mainStackView.spacing = 2
@@ -72,15 +99,24 @@ final class DerivationPathKeysCell: UITableViewCell {
         copyButton.isUserInteractionEnabled = false
         contentView.addSubview(copyButton)
 
+        // Initial cell padding (will be adjusted by applyMenuSpacing)
+        let cellHorizontalPadding: CGFloat = 14
+        let cellVerticalPadding: CGFloat = 12
+
+        topConstraint = mainStackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: cellVerticalPadding)
+        leadingConstraint = mainStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: cellHorizontalPadding)
+        bottomConstraint = mainStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -cellVerticalPadding)
+        trailingConstraint = copyButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -cellHorizontalPadding)
+
         NSLayoutConstraint.activate([
-            mainStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
-            mainStackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 9),
-            mainStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -9),
+            leadingConstraint,
+            topConstraint,
+            bottomConstraint,
 
             copyButton.widthAnchor.constraint(equalToConstant: 30),
             copyButton.heightAnchor.constraint(equalToConstant: 30),
-            copyButton.leadingAnchor.constraint(equalTo: mainStackView.trailingAnchor, constant: 5),
-            copyButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -5),
+            copyButton.leadingAnchor.constraint(equalTo: mainStackView.trailingAnchor, constant: 8),
+            trailingConstraint,
             copyButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor, constant: 0),
         ])
     }

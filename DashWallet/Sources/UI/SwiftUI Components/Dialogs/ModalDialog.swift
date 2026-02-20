@@ -73,13 +73,13 @@ struct ModalDialog: View {
             }
             
             Text(heading)
-                .font(.subtitle1)
+                .font(.calloutMedium)
                 .lineSpacing(3)
                 .multilineTextAlignment(.center)
             
             if let text = textBlock1 {
                 Text(text)
-                    .font(.body2)
+                    .font(.subhead)
                     .lineSpacing(3)
                     .multilineTextAlignment(.center)
                     .foregroundColor(.secondaryText)
@@ -88,7 +88,7 @@ struct ModalDialog: View {
             
             if let text = textBlock2 {
                 Text(text)
-                    .font(.body2)
+                    .font(.subhead)
                     .lineSpacing(3)
                     .multilineTextAlignment(.center)
                     .foregroundColor(.secondaryText)

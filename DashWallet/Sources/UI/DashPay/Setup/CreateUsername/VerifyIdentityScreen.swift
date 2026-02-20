@@ -32,13 +32,13 @@ public struct VerifyIdentityScreen: View {
         ZStack(alignment: .bottom) {
             VStack(alignment: .leading) {
                 Text(NSLocalizedString("Verify your identity", comment: "Usernames"))
-                    .font(.h5Bold)
+                    .font(.title1)
                     .multilineTextAlignment(.leading)
                     .lineSpacing(3)
                     .foregroundColor(.primaryText)
               
                 Text(NSLocalizedString("The link you send will be visible only to the network owners", comment: "Usernames"))
-                    .font(.body2)
+                    .font(.subhead)
                     .multilineTextAlignment(.leading)
                     .lineSpacing(3)
                     .foregroundColor(.secondaryText)
@@ -52,7 +52,7 @@ public struct VerifyIdentityScreen: View {
                             .foregroundStyle(Color.secondaryText)
                         
                         Text(text)
-                            .font(.body2)
+                            .font(.subhead)
                             .padding(.top, 2)
                     }
                     .padding(14)
@@ -79,14 +79,14 @@ public struct VerifyIdentityScreen: View {
                 .padding(.vertical, 20)
                 
                 Text(NSLocalizedString("Prove your identity", comment: "Usernames"))
-                    .font(.subtitle1)
+                    .font(.calloutMedium)
                     .multilineTextAlignment(.leading)
                     .lineSpacing(3)
                     .foregroundColor(.primaryText)
                     .padding(.top, 8)
               
                 Text(NSLocalizedString("Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow", comment: "Usernames"))
-                    .font(.body2)
+                    .font(.subhead)
                     .multilineTextAlignment(.leading)
                     .lineSpacing(3)
                     .foregroundColor(.secondaryText)
