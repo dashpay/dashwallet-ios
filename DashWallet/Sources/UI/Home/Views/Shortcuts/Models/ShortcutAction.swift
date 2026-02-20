@@ -35,9 +35,23 @@ enum ShortcutActionType: Int {
     case receive
     case explore
     case spend
+    case send
+    case atm
+    case sendToContact
+    case crowdNode
+    case coinbase
+    case uphold
+    case topper
 }
 
 extension ShortcutActionType {
+    /// The 13 features available for shortcut bar customization
+    static let customizableActions: [ShortcutActionType] = [
+        .buySellDash, .explore, .spend, .atm, .receive,
+        .send, .scanToPay, .payToAddress, .sendToContact,
+        .crowdNode, .coinbase, .uphold, .topper
+    ]
+
     var icon: UIImage {
         switch self {
         case .secureWallet:
@@ -102,6 +116,41 @@ extension ShortcutActionType {
                 fatalError("Image not found for shortcut type: \(self)")
             }
             return image
+        case .send:
+            guard let image = UIImage(named: "shortcut_send") else {
+                fatalError("Image not found for shortcut type: \(self)")
+            }
+            return image
+        case .atm:
+            guard let image = UIImage(named: "shortcut_atm") else {
+                fatalError("Image not found for shortcut type: \(self)")
+            }
+            return image
+        case .sendToContact:
+            guard let image = UIImage(named: "shortcut_sendToContact") else {
+                fatalError("Image not found for shortcut type: \(self)")
+            }
+            return image
+        case .crowdNode:
+            guard let image = UIImage(named: "shortcut_crowdNode") else {
+                fatalError("Image not found for shortcut type: \(self)")
+            }
+            return image
+        case .coinbase:
+            guard let image = UIImage(named: "shortcut_coinbase") else {
+                fatalError("Image not found for shortcut type: \(self)")
+            }
+            return image
+        case .uphold:
+            guard let image = UIImage(named: "shortcut_uphold") else {
+                fatalError("Image not found for shortcut type: \(self)")
+            }
+            return image
+        case .topper:
+            guard let image = UIImage(named: "shortcut_topper") else {
+                fatalError("Image not found for shortcut type: \(self)")
+            }
+            return image
         default:
             fatalError("Image not found for shortcut type: \(self)")
         }
@@ -113,10 +162,10 @@ extension ShortcutActionType {
             return NSLocalizedString("Backup",
                                      comment: "Translate it as short as possible! (24 symbols max)")
         case .scanToPay:
-            return NSLocalizedString("Scan",
+            return NSLocalizedString("Scan QR",
                                      comment: "Translate it as short as possible! (24 symbols max)")
         case .payToAddress:
-            return NSLocalizedString("Send",
+            return NSLocalizedString("Send to Address",
                                      comment: "Translate it as short as possible! (24 symbols max)")
         case .buySellDash:
             return NSLocalizedString("Buy & Sell",
@@ -147,6 +196,20 @@ extension ShortcutActionType {
             return NSLocalizedString("Explore", comment: "Translate it as short as possible! (24 symbols max)")
         case .spend:
             return NSLocalizedString("Spend", comment: "Translate it as short as possible! (24 symbols max)")
+        case .send:
+            return NSLocalizedString("Send", comment: "Translate it as short as possible! (24 symbols max)")
+        case .atm:
+            return NSLocalizedString("ATM", comment: "Translate it as short as possible! (24 symbols max)")
+        case .sendToContact:
+            return NSLocalizedString("Send to Contact", comment: "Translate it as short as possible! (24 symbols max)")
+        case .crowdNode:
+            return NSLocalizedString("CrowdNode", comment: "Translate it as short as possible! (24 symbols max)")
+        case .coinbase:
+            return NSLocalizedString("Coinbase", comment: "Translate it as short as possible! (24 symbols max)")
+        case .uphold:
+            return NSLocalizedString("Uphold", comment: "Translate it as short as possible! (24 symbols max)")
+        case .topper:
+            return NSLocalizedString("Topper", comment: "Translate it as short as possible! (24 symbols max)")
         }
     }
 }

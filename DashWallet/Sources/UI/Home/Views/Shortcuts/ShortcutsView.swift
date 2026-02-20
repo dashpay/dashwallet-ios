@@ -38,6 +38,7 @@ func cellSize(for contentSizeCategory: UIContentSizeCategory) -> CGSize {
 
 protocol ShortcutsActionDelegate: AnyObject {
     func shortcutsView(didSelectAction action: ShortcutAction, sender: UIView?)
+    func shortcutsView(didLongPressPosition position: Int, currentAction: ShortcutAction)
 }
 
 // MARK: - ShortcutsViewDelegate
@@ -108,6 +109,9 @@ class ShortcutsView: UIView {
 
         collectionView.register(UINib(nibName: "DWShortcutCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: ShortcutCell.reuseIdentifier)
 
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+        collectionView.addGestureRecognizer(longPress)
+
         NotificationCenter.default.addObserver(self, selector: #selector(contentSizeCategoryDidChangeNotification(notification:)),
                                                name: UIContentSizeCategory.didChangeNotification, object: nil)
 
@@ -140,6 +144,20 @@ class ShortcutsView: UIView {
         if !initialSetup {
             delegate?.shortcutsViewDidUpdateContentSize(self)
         }
+    }
+
+    @objc
+    private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else { return }
+
+        let point = gesture.location(in: collectionView)
+        guard let indexPath = collectionView.indexPathForItem(at: point) else { return }
+
+        let position = indexPath.item
+        guard position < viewModel.shortcutItems.count else { return }
+
+        let action = viewModel.shortcutItems[position]
+        actionDelegate?.shortcutsView(didLongPressPosition: position, currentAction: action)
     }
 }
 

@@ -686,6 +686,21 @@ extension HomeViewModel {
 extension HomeViewModel {
     func reloadShortcuts() {
         let options = DWGlobalOptions.sharedInstance()
+
+        // Check for custom configuration first
+        if let customShortcuts = options.shortcuts,
+           customShortcuts.count == maxShortcutsCount {
+            let items = customShortcuts.compactMap { number -> ShortcutAction? in
+                guard let type = ShortcutActionType(rawValue: number.intValue) else { return nil }
+                return ShortcutAction(type: type)
+            }
+            if items.count == maxShortcutsCount {
+                self.shortcutItems = items
+                return
+            }
+        }
+
+        // Fall back to default state-based logic
         let walletNeedsBackup = options.walletNeedsBackup
         let userHasBalance = options.userHasBalance
 
@@ -702,14 +717,14 @@ extension HomeViewModel {
         // State 2: Zero balance and verified passphrase
         else if !userHasBalance && !walletNeedsBackup {
             mutableItems.append(ShortcutAction(type: .receive))
-            mutableItems.append(ShortcutAction(type: .payToAddress))
+            mutableItems.append(ShortcutAction(type: .send))
             mutableItems.append(ShortcutAction(type: .buySellDash))
             mutableItems.append(ShortcutAction(type: .spend))
         }
         // State 3: Has balance and verified passphrase
         else if userHasBalance && !walletNeedsBackup {
             mutableItems.append(ShortcutAction(type: .receive))
-            mutableItems.append(ShortcutAction(type: .payToAddress))
+            mutableItems.append(ShortcutAction(type: .send))
             mutableItems.append(ShortcutAction(type: .scanToPay))
             mutableItems.append(ShortcutAction(type: .spend))
         }
@@ -717,7 +732,7 @@ extension HomeViewModel {
         else if userHasBalance && walletNeedsBackup {
             mutableItems.append(ShortcutAction(type: .secureWallet))
             mutableItems.append(ShortcutAction(type: .receive))
-            mutableItems.append(ShortcutAction(type: .payToAddress))
+            mutableItems.append(ShortcutAction(type: .send))
             mutableItems.append(ShortcutAction(type: .spend))
         }
 
