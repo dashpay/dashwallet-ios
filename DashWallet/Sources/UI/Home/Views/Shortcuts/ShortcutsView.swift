@@ -18,12 +18,11 @@
 import UIKit
 import Combine
 
-func cellSize(for contentSizeCategory: UIContentSizeCategory) -> CGSize {
-    let screenWidth = UIScreen.main.bounds.size.width
+func cellSize(for contentSizeCategory: UIContentSizeCategory, viewWidth: CGFloat) -> CGSize {
     let margin: CGFloat = 10.0       // Figma: container px padding
     let spacing: CGFloat = 4.0       // Figma: shortcut-bar/gap
     let visibleCells: CGFloat = 4.0
-    let cellWidth = floor((screenWidth - margin * 2.0 - spacing * (visibleCells - 1)) / visibleCells)
+    let cellWidth = floor((viewWidth - margin * 2.0 - spacing * (visibleCells - 1)) / visibleCells)
     let cellHeight: CGFloat = 68.0   // Figma: icon(46) + gap(4) + text(16) + bottomPad(2)
 
     if UIDevice.isIpad {
@@ -118,6 +117,11 @@ class ShortcutsView: UIView {
         updateCellSizeForContentSizeCategory(UIApplication.shared.preferredContentSizeCategory, initialSetup: true)
     }
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        updateCellSizeForContentSizeCategory(UIApplication.shared.preferredContentSizeCategory, initialSetup: false)
+    }
+
     @objc
     func contentSizeCategoryDidChangeNotification(notification: Notification) {
         guard let category = notification.userInfo?[UIContentSizeCategory.newValueUserInfoKey] as? UIContentSizeCategory else {
@@ -127,7 +131,8 @@ class ShortcutsView: UIView {
     }
 
     private func updateCellSizeForContentSizeCategory(_ contentSizeCategory: UIContentSizeCategory, initialSetup: Bool) {
-        var cellSize = cellSize(for: contentSizeCategory)
+        let width = bounds.width > 0 ? bounds.width : UIScreen.main.bounds.size.width
+        var cellSize = cellSize(for: contentSizeCategory, viewWidth: width)
         cellSize.height = ceil(cellSize.height) // This fixes the autolayout issue when the size of the cell is higher than the collection view itself
 
         collectionViewHeightConstraint.constant = cellSize.height

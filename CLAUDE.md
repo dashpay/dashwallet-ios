@@ -47,20 +47,12 @@ MCP servers must be configured in Claude Desktop's configuration file. Without t
 
 ### Setting Up Figma MCP Server
 
-1. **Create or update the configuration file**:
-```bash
-cat > ~/Library/Application\ Support/Claude/claude_desktop_config.json << 'EOF'
-{
-  "mcpServers": {
-    "figma-dev-mode-mcp-server": {
-      "command": "npx",
-      "args": ["-y", "@figma/mcp-server-figma-dev-mode"],
-      "description": "Figma Dev Mode MCP server for extracting design specifications, code, and images from Figma files"
-    }
-  }
-}
-EOF
-```
+1. **Enable the Figma desktop MCP server**:
+   - Open Figma Desktop app
+   - Toggle to Dev Mode (`Shift+D`)
+   - In the MCP server section of the inspect panel, click "Enable desktop MCP server"
+   - The server runs at `http://127.0.0.1:3845/mcp`
+   - The project `.mcp.json` already configures the connection for Claude Code
 
 2. **Restart Claude Code**:
    - Stop Claude Code with `Ctrl+C` in the terminal
@@ -69,9 +61,12 @@ EOF
 
 3. **Verify MCP tools are available**:
    - After restart, MCP tools should appear as:
-     - `mcp__figma-dev-mode-mcp-server__get_code`
-     - `mcp__figma-dev-mode-mcp-server__get_image`
+     - `mcp__figma-dev-mode-mcp-server__get_design_context`
+     - `mcp__figma-dev-mode-mcp-server__get_screenshot`
      - `mcp__figma-dev-mode-mcp-server__get_metadata`
+     - `mcp__figma-dev-mode-mcp-server__get_variable_defs`
+     - `mcp__figma-dev-mode-mcp-server__create_design_system_rules`
+     - `mcp__figma-dev-mode-mcp-server__get_figjam`
 
 ### Figma Requirements
 
@@ -83,19 +78,11 @@ For the Figma MCP server to work properly:
 ### Troubleshooting MCP Issues
 
 If MCP tools are not available:
-1. **Check configuration exists**: `cat ~/Library/Application\ Support/Claude/claude_desktop_config.json`
-2. **Verify correct package name**: Should be `@figma/mcp-server-figma-dev-mode` NOT `claude-talk-to-figma-mcp`
-3. **Verify server name matches**: Should be `figma-dev-mode-mcp-server` to match tool names
-4. **Verify Figma is running**: `ps aux | grep -i figma`
+1. **Verify Figma Desktop is running**: `ps aux | grep -i figma`
+2. **Verify Dev Mode is enabled**: Press `Shift+D` in Figma, enable MCP server in inspect panel
+3. **Check server is responding**: `curl -s http://127.0.0.1:3845/mcp`
+4. **Verify `.mcp.json` exists** in project root with correct URL (`http://127.0.0.1:3845/mcp`)
 5. **Restart Claude Code**: MCP connections are only established at startup
-6. **Check npx availability**: Ensure Node.js/npm is installed for npx command
-
-### Why MCP Configuration is Required
-
-- MCP servers are external processes that Claude Code connects to
-- Configuration tells Claude where to find and how to start MCP servers
-- Without the configuration file, Claude Code has no knowledge of available MCP servers
-- Previous sessions' MCP usage (recorded in `.claude/settings.local.json`) doesn't automatically enable MCP in new sessions
 
 ## Build Commands
 
