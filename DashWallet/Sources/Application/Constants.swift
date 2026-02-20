@@ -21,3 +21,14 @@ let kOneDash: UInt64 = 100_000_000;
 let kDefaultCurrencyCode = "USD"
 let kWalletName = "Dash Wallet"
 let kDashCurrency = "DASH"
+
+// MARK: - UI Constants
+
+/// Menu radius for all menu containers (from Figma design system)
+let kMenuRadius: CGFloat = 20
+
+/// Menu padding (from Figma design system)
+let kMenuPadding: CGFloat = 6
+
+/// Menu vertical gap between items in VStack (from Figma design system)
+let kMenuVGap: CGFloat = 2

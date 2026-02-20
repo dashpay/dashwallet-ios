@@ -151,8 +151,17 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
         if let giftCardProviders = merchant.merchant?.giftCardProviders {
             for providerInfo in giftCardProviders {
-                if (provider == .ctx && providerInfo.provider == .ctx) ||
-                   (provider == .piggyCards && providerInfo.provider == .piggyCards) {
+                var isMatchingProvider = false
+                if provider == .ctx && providerInfo.provider == .ctx {
+                    isMatchingProvider = true
+                }
+                #if PIGGYCARDS_ENABLED
+                if provider == .piggyCards && providerInfo.provider == .piggyCards {
+                    isMatchingProvider = true
+                }
+                #endif
+
+                if isMatchingProvider {
                     // Set sourceId
                     self.sourceId = providerInfo.sourceId
                     // Store provider-specific denomination type
@@ -238,6 +247,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             // CTX uses BIP70 payment request URLs
             transaction = try await sendCoinsService.payWithDashUrl(url: url)
 
+        #if PIGGYCARDS_ENABLED
         case .piggyCards:
 
             // PiggyCards uses orderGiftCard which returns GiftCardInfo
@@ -269,6 +279,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
 
             giftCardId = giftCardInfo.orderId
+        #endif
         }
 
         // Payment successful - save gift card information
@@ -386,6 +397,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                     maximumAmount = 0
                 }
 
+            #if PIGGYCARDS_ENABLED
             case .piggyCards:
                 // For PiggyCards, we need to fetch gift cards for this merchant using the sourceId from the database
                 guard let piggyCardsRepo = repository[provider] as? PiggyCardsRepository else {
@@ -490,6 +502,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                         savingsFraction = cardDiscount
                     }
                 }
+            #endif
             }
 
 
