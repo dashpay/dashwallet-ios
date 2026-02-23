@@ -253,6 +253,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
         shortcuts[position] = type.rawValue
         DWGlobalOptions.sharedInstance().shortcuts = shortcuts.map { NSNumber(value: $0) }
         HomeViewModel.shared.reloadShortcuts()
+        HomeViewModel.shared.recheckBannerAfterCustomization()
     }
 
     func showBackupWarningThenSelect(position: Int) {

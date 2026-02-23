@@ -72,6 +72,7 @@ class HomeViewModel: ObservableObject {
 
     @Published private(set) var headerHeight: CGFloat = kBaseBalanceHeaderHeight // TDOO: move back to HomeView when fully transitioned to SwiftUI
     @Published private(set) var showReclassifyTransaction: DSTransaction? = nil
+    @Published var shouldShowShortcutBanner: Bool = false
     
 #if DASHPAY
     var joinDashPayState: JoinDashPayState = .callToAction
@@ -513,6 +514,10 @@ class HomeViewModel: ObservableObject {
             height += 85
         }
 
+        if shouldShowShortcutBanner {
+            height += 70
+        }
+
         self.headerHeight = height
     }
     
@@ -684,6 +689,21 @@ extension HomeViewModel {
 // MARK: - Shortcuts
 
 extension HomeViewModel {
+    func checkShortcutBanner() {
+        let options = DWGlobalOptions.sharedInstance()
+        let newValue = (options.shortcutBannerState == 2 && options.shortcuts == nil)
+        if newValue != shouldShowShortcutBanner {
+            shouldShowShortcutBanner = newValue
+            recalculateHeight()
+        }
+    }
+
+    func dismissShortcutBanner() {
+        DWGlobalOptions.sharedInstance().shortcutBannerState = 3
+        shouldShowShortcutBanner = false
+        recalculateHeight()
+    }
+
     func reloadShortcuts() {
         let options = DWGlobalOptions.sharedInstance()
 
@@ -737,6 +757,13 @@ extension HomeViewModel {
         }
 
         self.shortcutItems = mutableItems
+    }
+
+    /// Re-check banner visibility after shortcuts change (e.g., user customized via long press)
+    func recheckBannerAfterCustomization() {
+        if shouldShowShortcutBanner {
+            checkShortcutBanner()
+        }
     }
 }
 

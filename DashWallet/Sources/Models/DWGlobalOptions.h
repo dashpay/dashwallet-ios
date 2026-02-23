@@ -59,6 +59,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL exploreDashMerchantsInfoShown;
 @property (nonatomic, assign) BOOL coinbaseInfoShown;
 
+/// Shortcut customization banner state:
+/// 0 = not initialized, 1 = new install deferred, 2 = ready to show, 3 = dismissed
+@property (nonatomic, assign) NSInteger shortcutBannerState;
+
 #ifdef DASHPAY
 @property (nonatomic, assign) BOOL dashPayRegistrationOpenedOnce;
 @property (nonatomic, assign) BOOL dashpayRegistrationCompleted;
