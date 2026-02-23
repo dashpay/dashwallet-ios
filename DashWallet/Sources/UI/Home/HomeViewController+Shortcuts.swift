@@ -219,11 +219,11 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
     }
 
     private func showTopper() {
-        let urlString = TopperViewModel.shared.topperBuyUrl(walletName: Bundle.main.infoDictionary!["CFBundleDisplayName"] as! String)
-        if let url = URL(string: urlString) {
-            let safariViewController = SFSafariViewController.dw_controller(with: url)
-            present(safariViewController, animated: true)
-        }
+        guard let bundleName = Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String else { return }
+        let urlString = TopperViewModel.shared.topperBuyUrl(walletName: bundleName)
+        guard let url = URL(string: urlString) else { return }
+        let safariViewController = SFSafariViewController.dw_controller(with: url)
+        present(safariViewController, animated: true)
     }
 
     private func presentControllerModallyInNavigationController(_ controller: UIViewController) {
