@@ -559,6 +559,9 @@ curl -s -o /path/to/project/DashWallet/Resources/AppAssets.xcassets/IconName.ima
 ```
 
 **Step 3: Create or update Contents.json**
+
+> **Shortcut bar icons**: Use `"original"` so that SVG fill colors are preserved in both UIKit (shortcut bar) and SwiftUI (selection sheet). Template rendering strips colors and applies system tint, which causes icons to appear grey in SwiftUI `Button` labels.
+
 ```json
 {
   "images" : [
@@ -573,7 +576,7 @@ curl -s -o /path/to/project/DashWallet/Resources/AppAssets.xcassets/IconName.ima
   },
   "properties" : {
     "preserves-vector-representation" : true,
-    "template-rendering-intent" : "template"
+    "template-rendering-intent" : "original"
   }
 }
 ```

@@ -135,7 +135,8 @@ class ShortcutsView: UIView {
     }
 
     private func updateCellSizeForContentSizeCategory(_ contentSizeCategory: UIContentSizeCategory, initialSetup: Bool) {
-        let width = bounds.width > 0 ? bounds.width : UIScreen.main.bounds.size.width
+        let fallbackWidth = window?.windowScene?.screen.bounds.width ?? UIScreen.main.bounds.size.width
+        let width = bounds.width > 0 ? bounds.width : fallbackWidth
         var cellSize = cellSize(for: contentSizeCategory, viewWidth: width)
         cellSize.height = ceil(cellSize.height) // This fixes the autolayout issue when the size of the cell is higher than the collection view itself
 

@@ -15,120 +15,43 @@
 //  limitations under the License.
 //
 
-import UIKit
+import SwiftUI
 
-final class ShortcutCustomizeBannerView: UIView {
-    var onDismiss: (() -> Void)?
+struct ShortcutCustomizeBannerView: View {
+    let onDismiss: () -> Void
 
-    private let iconImageView: UIImageView = {
-        let iv = UIImageView()
-        iv.translatesAutoresizingMaskIntoConstraints = false
-        iv.contentMode = .scaleAspectFit
-        iv.image = UIImage(named: "shortcut_customize_banner")
-        return iv
-    }()
+    var body: some View {
+        HStack(spacing: 16) {
+            Image("shortcut_customize_banner")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 24, height: 24)
 
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = .dw_mediumFont(ofSize: 13)
-        label.textColor = .dw_darkTitle()
-        label.text = NSLocalizedString("Customize shortcut bar", comment: "Shortcut banner")
-        return label
-    }()
+            VStack(alignment: .leading, spacing: 1) {
+                Text(NSLocalizedString("Customize shortcut bar", comment: "Shortcut banner"))
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(Color(.dw_darkTitle()))
+                Text(NSLocalizedString("Hold any button above to replace it with the function you need", comment: "Shortcut banner"))
+                    .font(.system(size: 13))
+                    .foregroundColor(Color(.dw_secondaryText()))
+            }
 
-    private let subtitleLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = .dw_regularFont(ofSize: 13)
-        label.textColor = .dw_secondaryText()
-        label.text = NSLocalizedString("Hold any button above to replace it with the function you need", comment: "Shortcut banner")
-        label.numberOfLines = 0
-        return label
-    }()
+            Spacer(minLength: 0)
 
-    private let dismissButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        let config = UIImage.SymbolConfiguration(pointSize: 10, weight: .medium)
-        button.setImage(UIImage(systemName: "xmark", withConfiguration: config), for: .normal)
-        button.tintColor = .dw_secondaryText()
-        return button
-    }()
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setupView()
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    private func setupView() {
-        // Card container
-        let card = UIView()
-        card.translatesAutoresizingMaskIntoConstraints = false
-        card.backgroundColor = .dw_background()
-        card.layer.cornerRadius = 20
-        card.layer.shadowColor = UIColor(red: 0.72, green: 0.76, blue: 0.80, alpha: 1.0).cgColor
-        card.layer.shadowOpacity = 0.1
-        card.layer.shadowOffset = CGSize(width: 0, height: 5)
-        card.layer.shadowRadius = 10
-        addSubview(card)
-
-        // Icon container for centering
-        let iconContainer = UIView()
-        iconContainer.translatesAutoresizingMaskIntoConstraints = false
-        card.addSubview(iconContainer)
-
-        iconContainer.addSubview(iconImageView)
-
-        // Text stack
-        let textStack = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
-        textStack.translatesAutoresizingMaskIntoConstraints = false
-        textStack.axis = .vertical
-        textStack.spacing = 1
-        card.addSubview(textStack)
-
-        // Dismiss button container for larger touch target
-        card.addSubview(dismissButton)
-        dismissButton.addTarget(self, action: #selector(dismissTapped), for: .touchUpInside)
-
-        NSLayoutConstraint.activate([
-            // Card pinned with 20px horizontal margins, 0 top margin (stack view handles spacing)
-            card.topAnchor.constraint(equalTo: topAnchor),
-            card.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
-            card.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
-            card.bottomAnchor.constraint(equalTo: bottomAnchor),
-
-            // Icon container
-            iconContainer.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 18),
-            iconContainer.centerYAnchor.constraint(equalTo: card.centerYAnchor),
-            iconContainer.widthAnchor.constraint(equalToConstant: 26),
-            iconContainer.heightAnchor.constraint(equalToConstant: 26),
-
-            // Icon centered in container
-            iconImageView.centerXAnchor.constraint(equalTo: iconContainer.centerXAnchor),
-            iconImageView.centerYAnchor.constraint(equalTo: iconContainer.centerYAnchor),
-            iconImageView.widthAnchor.constraint(equalToConstant: 24),
-            iconImageView.heightAnchor.constraint(equalToConstant: 24),
-
-            // Text stack
-            textStack.leadingAnchor.constraint(equalTo: iconContainer.trailingAnchor, constant: 16),
-            textStack.topAnchor.constraint(equalTo: card.topAnchor, constant: 12),
-            textStack.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -12),
-            textStack.trailingAnchor.constraint(equalTo: dismissButton.leadingAnchor, constant: -12),
-
-            // Dismiss button
-            dismissButton.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -18),
-            dismissButton.centerYAnchor.constraint(equalTo: card.centerYAnchor),
-            dismissButton.widthAnchor.constraint(equalToConstant: 24),
-            dismissButton.heightAnchor.constraint(equalToConstant: 24),
-        ])
-    }
-
-    @objc private func dismissTapped() {
-        onDismiss?()
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(Color(.dw_secondaryText()))
+            }
+            .frame(width: 24, height: 24)
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color(.dw_background()))
+                .shadow(color: Color(red: 0.72, green: 0.76, blue: 0.80).opacity(0.1), radius: 10, x: 0, y: 5)
+        )
+        .padding(.horizontal, 20)
     }
 }

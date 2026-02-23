@@ -19,7 +19,8 @@ import SwiftUI
 
 struct ShortcutSelectionView: View {
     let onSelect: (ShortcutActionType) -> Void
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.dismiss)
+    private var dismiss
 
     var body: some View {
         NavigationView {

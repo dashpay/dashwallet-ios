@@ -689,6 +689,7 @@ extension HomeViewModel {
 // MARK: - Shortcuts
 
 extension HomeViewModel {
+    @MainActor
     func checkShortcutBanner() {
         let options = DWGlobalOptions.sharedInstance()
         let newValue = (options.shortcutBannerState == 2 && options.shortcuts == nil)
@@ -698,6 +699,7 @@ extension HomeViewModel {
         }
     }
 
+    @MainActor
     func dismissShortcutBanner() {
         DWGlobalOptions.sharedInstance().shortcutBannerState = 3
         shouldShowShortcutBanner = false
@@ -764,6 +766,7 @@ extension HomeViewModel {
     }
 
     /// Re-check banner visibility after shortcuts change (e.g., user customized via long press)
+    @MainActor
     func recheckBannerAfterCustomization() {
         if shouldShowShortcutBanner {
             checkShortcutBanner()

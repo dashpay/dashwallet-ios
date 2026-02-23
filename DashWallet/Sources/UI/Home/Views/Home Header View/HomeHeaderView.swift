@@ -16,6 +16,7 @@
 //
 
 import UIKit
+import SwiftUI
 import Combine
 
 private let kAvatarSize = CGSize(width: 72.0, height: 72.0)
@@ -47,7 +48,7 @@ final class HomeHeaderView: UIView {
     }
 
     private let model: HomeHeaderModel
-    private var bannerView: ShortcutCustomizeBannerView?
+    private var bannerHostingController: UIHostingController<ShortcutCustomizeBannerView>?
     private var cancellableBag = Set<AnyCancellable>()
 
     init(frame: CGRect, viewModel: HomeViewModel) {
@@ -67,14 +68,15 @@ final class HomeHeaderView: UIView {
         var views: [UIView] = [shortcutsView]
 
         if viewModel.shouldShowShortcutBanner {
-            let banner = ShortcutCustomizeBannerView()
-            banner.translatesAutoresizingMaskIntoConstraints = false
-            banner.onDismiss = { [weak self] in
+            let bannerView = ShortcutCustomizeBannerView(onDismiss: { [weak self] in
                 viewModel.dismissShortcutBanner()
                 self?.hideBanner()
-            }
-            self.bannerView = banner
-            views.append(banner)
+            })
+            let hosting = UIHostingController(rootView: bannerView)
+            hosting.view.translatesAutoresizingMaskIntoConstraints = false
+            hosting.view.backgroundColor = .clear
+            self.bannerHostingController = hosting
+            views.append(hosting.view)
         }
 
         views.append(syncView)
@@ -125,13 +127,13 @@ final class HomeHeaderView: UIView {
     func parentScrollViewDidScroll(_ scrollView: UIScrollView) { }
 
     private func hideBanner() {
-        guard let banner = bannerView else { return }
+        guard let hosting = bannerHostingController else { return }
         UIView.animate(withDuration: 0.3, animations: {
-            banner.alpha = 0
-            banner.isHidden = true
+            hosting.view.alpha = 0
         }) { _ in
-            banner.removeFromSuperview()
-            self.bannerView = nil
+            hosting.view.isHidden = true
+            hosting.view.removeFromSuperview()
+            self.bannerHostingController = nil
             self.delegate?.homeHeaderViewDidUpdateContents(self)
         }
     }

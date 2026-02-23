@@ -53,7 +53,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
         case .explore:
             showExploreDash()
         case .spend:
-            showExploreDash()
+            showWhereToSpend()
         case .send:
             delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.pay.rawValue)
         case .atm:
@@ -137,6 +137,22 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
         present(navigationController, animated: true, completion: nil)
     }
 
+    private func showWhereToSpend() {
+        let controller = MerchantListViewController()
+        controller.initialSegment = .all
+        controller.payWithDashHandler = { [weak self] in
+            guard let self = self else { return }
+            self.delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.pay.rawValue)
+        }
+        controller.onGiftCardPurchased = { [weak self] txId in
+            guard let self = self else { return }
+            self.dismiss(animated: true)
+            self.showGiftCardDetails(txId: txId)
+        }
+        let navigationController = BaseNavigationController(rootViewController: controller)
+        present(navigationController, animated: true, completion: nil)
+    }
+
     private func showAtmList() {
         let controller = AtmListViewController()
         controller.payWithDashHandler = { [weak self] in
@@ -175,7 +191,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
     }
 
     private func showCoinbase() {
-        DSAuthenticationManager.sharedInstance().authenticate(withPrompt: nil, usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled, alertIfLockout: true) { [weak self] authenticated, usedBiometrics, cancelled in
+        DSAuthenticationManager.sharedInstance().authenticate(withPrompt: nil, usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled, alertIfLockout: true) { [weak self] authenticated, _, _ in
             guard authenticated else { return }
             self?.showCoinbaseAuthenticated()
         }
