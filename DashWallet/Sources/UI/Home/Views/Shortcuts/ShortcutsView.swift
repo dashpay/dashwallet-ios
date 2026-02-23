@@ -51,7 +51,8 @@ protocol ShortcutsViewDelegate: AnyObject {
 class ShortcutsView: UIView {
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel: HomeViewModel
-    
+    private var lastLayoutWidth: CGFloat = 0
+
     weak var actionDelegate: ShortcutsActionDelegate?
 
     weak var delegate: ShortcutsViewDelegate?
@@ -119,6 +120,9 @@ class ShortcutsView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
+        let currentWidth = bounds.width
+        guard currentWidth != lastLayoutWidth else { return }
+        lastLayoutWidth = currentWidth
         updateCellSizeForContentSizeCategory(UIApplication.shared.preferredContentSizeCategory, initialSetup: false)
     }
 

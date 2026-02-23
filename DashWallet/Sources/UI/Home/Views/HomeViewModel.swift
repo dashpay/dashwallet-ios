@@ -715,7 +715,9 @@ extension HomeViewModel {
                 return ShortcutAction(type: type)
             }
             if items.count == maxShortcutsCount {
-                self.shortcutItems = items
+                DispatchQueue.main.async {
+                    self.shortcutItems = items
+                }
                 return
             }
         }
@@ -756,7 +758,9 @@ extension HomeViewModel {
             mutableItems.append(ShortcutAction(type: .spend))
         }
 
-        self.shortcutItems = mutableItems
+        DispatchQueue.main.async {
+            self.shortcutItems = mutableItems
+        }
     }
 
     /// Re-check banner visibility after shortcuts change (e.g., user customized via long press)

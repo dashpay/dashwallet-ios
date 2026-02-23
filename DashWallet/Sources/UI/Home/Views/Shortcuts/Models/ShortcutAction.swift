@@ -48,7 +48,7 @@ extension ShortcutActionType {
     /// The 13 features available for shortcut bar customization
     static let customizableActions: [ShortcutActionType] = [
         .buySellDash, .explore, .spend, .atm, .receive,
-        .send, .scanToPay, .payToAddress, .sendToContact,
+        .send, .scanToPay, .payToAddress,
         .crowdNode, .coinbase, .uphold, .topper
     ]
 
