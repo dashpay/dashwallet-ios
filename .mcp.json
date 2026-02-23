@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "figma-dev-mode-mcp-server": {
+      "command": "npx",
+      "args": ["-y", "@figma/mcp-server-figma-dev-mode"],
+      "description": "Figma Dev Mode MCP server for extracting design specifications, code, and images from Figma files"
+    }
+  }
+}

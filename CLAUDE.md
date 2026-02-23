@@ -540,6 +540,116 @@ The shortcut bar displays different button combinations based on wallet state:
 4. Implement action handler in `HomeViewController+Shortcuts.swift`
 5. Update `reloadShortcuts()` logic if needed
 
+### Figma MCP Asset Download Workflow (MANDATORY)
+
+#### Overview
+The Figma MCP server exposes image assets via temporary localhost URLs (e.g., `http://localhost:3845/assets/{hash}.svg`). These URLs are **ephemeral** — they only exist while Figma Desktop is running and the MCP server is active. **Image files MUST be downloaded and saved to the project's asset catalog** so they can be committed to git and verified in the UI.
+
+#### ⚠️ CRITICAL: Always Download Assets During Development
+When implementing UI from Figma designs, you MUST:
+1. **Download every image asset** referenced in the design context to a local file
+2. **Save it to the correct asset catalog location** in the project
+3. **Verify the asset displays correctly** in the running app before committing
+4. **Never reference localhost URLs in code** — they are only a transport mechanism
+
+#### Step-by-Step Asset Download Process
+
+**Step 1: Get design context from Figma MCP**
+Use `get_design_context` to retrieve the design. Image URLs appear as constants:
+```javascript
+const imgMayaLogo = "http://localhost:3845/assets/4b039921e0c1cdbe2b8ca56814e78264985c97a0.svg";
+```
+
+**Step 2: Download each image asset**
+```bash
+# Download SVG asset from Figma MCP server
+curl -s -o /path/to/project/DashWallet/Resources/AppAssets.xcassets/IconName.imageset/icon.svg \
+  "http://localhost:3845/assets/{hash}.svg"
+
+# Download PNG asset if needed
+curl -s -o /path/to/project/DashWallet/Resources/AppAssets.xcassets/IconName.imageset/icon.png \
+  "http://localhost:3845/assets/{hash}.png"
+```
+
+**Step 3: Create or update Contents.json**
+```json
+{
+  "images" : [
+    {
+      "filename" : "icon.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  },
+  "properties" : {
+    "preserves-vector-representation" : true,
+    "template-rendering-intent" : "template"
+  }
+}
+```
+
+**Step 4: Verify the asset in the running app**
+- Build and run the app in Simulator
+- Navigate to the screen that uses the asset
+- Confirm the icon/image renders correctly (right icon, right color, right size)
+- Only after visual verification should the asset be staged for commit
+
+**Step 5: Verify the file is valid before committing**
+```bash
+# Confirm file type
+file /path/to/imageset/icon.svg
+# Expected: SVG Scalable Vector Graphics image
+
+# Confirm non-zero file size
+ls -la /path/to/imageset/icon.svg
+```
+
+#### Batch Download Pattern
+When a design has multiple assets, download them all at once:
+```bash
+# Example: Download all assets for a new screen
+curl -s -o asset1.svg "http://localhost:3845/assets/{hash1}.svg"
+curl -s -o asset2.svg "http://localhost:3845/assets/{hash2}.svg"
+curl -s -o asset3.svg "http://localhost:3845/assets/{hash3}.svg"
+```
+
+#### Important Notes
+- **Localhost URLs expire** when Figma Desktop closes or the MCP server stops
+- **Always download immediately** when you get design context — don't defer downloads
+- **SVG preferred over PNG** — SVGs scale perfectly and have smaller file sizes
+- **Verify before committing** — wrong or placeholder assets are a common source of UI bugs
+- **Asset catalog structure**: Each image needs its own `.imageset` folder with a `Contents.json`
+
+#### ⚠️ CRITICAL: Clean SVGs for iOS Compatibility
+Figma MCP exports SVGs with **web-specific features that iOS cannot render**. You MUST clean every SVG after downloading:
+
+| Figma SVG Feature | iOS Problem | Fix |
+|---|---|---|
+| `fill="var(--fill-0, #78C4F5)"` | CSS custom properties not supported — paths render invisible | Replace with plain hex: `fill="#78C4F5"` |
+| `width="100%" height="100%"` | iOS needs explicit pixel dimensions | Use viewBox dimensions: `width="36" height="36"` |
+| `preserveAspectRatio="none"` | Web-specific, causes rendering issues | Remove attribute |
+| `style="display: block;"` | Web-specific inline style | Remove attribute |
+| `overflow="visible"` | Web-specific | Remove attribute |
+
+**Example cleanup:**
+```xml
+<!-- ❌ RAW from Figma MCP — will NOT render on iOS -->
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible"
+     style="display: block;" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M18 0C8.06..." fill="var(--fill-0, #78C4F5)"/>
+</svg>
+
+<!-- ✅ CLEANED for iOS asset catalog -->
+<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M18 0C8.06..." fill="#78C4F5"/>
+</svg>
+```
+
+**If icons appear blank after adding SVGs**, the first thing to check is whether the SVG contains `var(--fill-0, ...)` or `width="100%"`.
+
 ### Icon Implementation Best Practices
 
 #### When Updating Icons from Figma
@@ -549,14 +659,19 @@ The shortcut bar displays different button combinations based on wallet state:
    find /path/to/project -name "*.svg" -o -name "*.png" | grep -i "icon_name"
    ```
 
-2. **Use SVG directly from Figma** - Don't convert to PNG unnecessarily
-   - Download SVG from Figma localhost server
+2. **Download SVG directly from Figma MCP** - Don't convert to PNG unnecessarily
+   ```bash
+   # Download from Figma MCP localhost server and save to asset catalog
+   curl -s -o /path/to/imageset/icon.svg "http://localhost:3845/assets/{hash}.svg"
+   ```
    - Save directly to appropriate imageset folder
-   - Update Contents.json to reference SVG
+   - Update Contents.json to reference the SVG filename
+   - Verify the downloaded file is valid: `file /path/to/icon.svg`
 
-3. **Verify icon usage** - Always test that the correct icon appears
+3. **Verify icon in running app** - Always build and visually confirm the correct icon appears
    - Wrong icons often indicate using placeholder or copied assets
    - Check that imageset name matches the one referenced in code
+   - Run the app and navigate to the relevant screen before considering the task complete
 
 4. **Clean up old assets** - Remove unused PNG files when replacing with SVG
    ```bash
