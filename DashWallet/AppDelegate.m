@@ -321,11 +321,32 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     
     [DWEnvironment sharedInstance]; //starts up the environment, this is needed here
 
-    // CoreService (SwiftDashSDK L1 bridge) is initialized with mnemonic after wallet unlock.
-    // During the dual-engine phase, CoreService runs alongside DashSync.
-    // CoreService.initialize(mnemonic:isTestnet:) must be called after user authentication
-    // provides access to the wallet seed phrase.
-    (void)[DWEnvironment sharedInstance].coreService;
+    // Initialize CoreService (SwiftDashSDK L1 bridge).
+    // Try existing wallet first (no mnemonic needed for subsequent launches).
+    // If no wallet exists yet, try to get mnemonic from DashSync keychain.
+    // If user hasn't authenticated yet, CoreService will be initialized after PIN unlock
+    // in DWAppRootViewController.lockScreenViewControllerDidUnlock:.
+    BOOL isTestnet = [DWEnvironment sharedInstance].currentChain.chainType.tag == ChainType_TestNet;
+    [[DWEnvironment sharedInstance].coreService initializeIfWalletExistsWithIsTestnet:isTestnet completion:^(BOOL success, NSError * _Nullable error) {
+        if (success) {
+            [[DWEnvironment sharedInstance].coreService startSync];
+        } else {
+            // Try to get mnemonic immediately (works if authentication is not enabled or user already authenticated)
+            DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+            NSString *mnemonic = [wallet seedPhraseIfAuthenticated];
+            if (mnemonic.length > 0) {
+                [[DWEnvironment sharedInstance].coreService initializeWithMnemonic:mnemonic
+                                                                         isTestnet:isTestnet
+                                                                        completion:^(BOOL ok, NSError * _Nullable err) {
+                    if (ok) {
+                        [[DWEnvironment sharedInstance].coreService startSync];
+                    }
+                }];
+            }
+            // If mnemonic is not available yet, CoreService will be initialized after PIN unlock
+            // in DWAppRootViewController.initializeCoreServiceIfNeeded
+        }
+    }];
     
 #if FRESH_INSTALL
     // TODO: fix. Disabled due to crashing :(

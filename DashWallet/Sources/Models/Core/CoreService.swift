@@ -131,6 +131,16 @@ import SwiftDashSDK
     /// Initialize SPV client and wallet from mnemonic.
     /// Call startSync() separately to begin blockchain synchronization.
     @objc func initialize(mnemonic: String, isTestnet: Bool, completion: @escaping (Bool, Error?) -> Void) {
+        initializeInternal(mnemonic: mnemonic, isTestnet: isTestnet, completion: completion)
+    }
+
+    /// Initialize SPV client using an existing wallet (no mnemonic needed).
+    /// Returns false if no wallet has been created yet (call initialize(mnemonic:...) first).
+    @objc func initializeIfWalletExists(isTestnet: Bool, completion: @escaping (Bool, Error?) -> Void) {
+        initializeInternal(mnemonic: nil, isTestnet: isTestnet, completion: completion)
+    }
+
+    private func initializeInternal(mnemonic: String?, isTestnet: Bool, completion: @escaping (Bool, Error?) -> Void) {
         Task {
             do {
                 let network: DashSDKNetwork = isTestnet
@@ -152,12 +162,25 @@ import SwiftDashSDK
                 let wm = try client.getWalletManager()
                 self.walletManager = wm
 
-                let existingIds = try wm.getWalletIds()
+                var existingIds: [Data] = []
+                do {
+                    existingIds = try wm.getWalletIds()
+                } catch {
+                    // getWalletIds() throws when no wallet database exists yet — treat as empty
+                }
+
                 if let existingId = existingIds.first {
                     self.currentWalletId = existingId
-                } else {
+                } else if let mnemonic = mnemonic {
                     let walletId = try wm.addWallet(mnemonic: mnemonic)
                     self.currentWalletId = walletId
+                } else {
+                    self.spvClient = nil
+                    self.walletManager = nil
+                    await MainActor.run {
+                        completion(false, nil)
+                    }
+                    return
                 }
 
                 self.isInitialized = true
@@ -282,10 +305,11 @@ import SwiftDashSDK
 
     /// Post a DashSync-compatible notification with the current chain in userInfo for backward compatibility.
     /// SyncingActivityMonitor and other observers filter by DSChainManagerNotificationChainKey.
+    /// Safe to call from any thread (dispatches to main queue).
     private func postNotification(_ name: String) {
-        let chain = DWEnvironment.sharedInstance().currentChain
-        let userInfo: [String: Any] = ["DSChainManagerNotificationChainKey": chain as Any]
         DispatchQueue.main.async {
+            let chain = DWEnvironment.sharedInstance().currentChain
+            let userInfo: [String: Any] = ["DSChainManagerNotificationChainKey": chain as Any]
             NotificationCenter.default.post(
                 name: Notification.Name(rawValue: name),
                 object: nil,
@@ -351,7 +375,7 @@ extension CoreService: SPVSyncEventsHandler {
     func onInstantLockReceived(_ txid: Data, _ instantLockData: Data, _ validated: Bool) {}
 
     func onSyncManagerError(_ manager: SPVSyncManager, _ errorMsg: String) {
-        NSLog("[CoreService] sync error (%@): %@", String(describing: manager), errorMsg)
+        NSLog("[CoreService] sync error: %@", errorMsg)
         DispatchQueue.main.async {
             self.syncState = .error
         }
@@ -384,7 +408,9 @@ extension CoreService: SPVWalletEventsHandler {
         _ amount: Int64,
         _ addresses: [String]
     ) {
-        refreshBalance()
+        // Don't call refreshBalance() here — this callback runs on a Rust FFI thread
+        // that holds a lock. Calling back into FFI (getWalletBalance) would deadlock/panic.
+        // Balance will be updated via onBalanceUpdated() callback from the SDK.
         postNotification("DSTransactionManagerTransactionStatusDidChangeNotification")
     }
 
@@ -402,6 +428,6 @@ extension CoreService: SPVWalletEventsHandler {
             self.balanceLocked = locked
             self.balanceTotal = spendable + unconfirmed
         }
-        postNotification("DSWalletBalanceDidChangeNotification")
+        postNotification("DSWalletBalanceChangedNotification")
     }
 }

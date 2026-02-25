@@ -19,6 +19,7 @@
 
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -56,6 +57,16 @@ NS_ASSUME_NONNULL_BEGIN
                                isTransient:NO];
 
     [DWGlobalOptions sharedInstance].resyncingWallet = YES;
+
+    // Initialize CoreService with mnemonic for SwiftDashSDK
+    BOOL isTestnet = chain.chainType.tag == ChainType_TestNet;
+    [[DWEnvironment sharedInstance].coreService initializeWithMnemonic:phrase
+                                                             isTestnet:isTestnet
+                                                            completion:^(BOOL success, NSError *_Nullable error) {
+                                                                if (success) {
+                                                                    [[DWEnvironment sharedInstance].coreService startSync];
+                                                                }
+                                                            }];
 
     // START_SYNC_ENTRY_POINT
     [[DWEnvironment sharedInstance].currentChainManager startSync];

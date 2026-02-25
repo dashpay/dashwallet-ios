@@ -325,6 +325,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         [self transitionToController:controller];
     }
 
+    // Initialize CoreService if not yet initialized.
+    // After PIN unlock, seedPhraseIfAuthenticated will return the mnemonic.
+    // This is the one-time migration path for existing DashSync wallets.
+    [self initializeCoreServiceIfNeeded];
+
     [UIView animateWithDuration:UNLOCK_ANIMATION_DURATION
         animations:^{
             self.lockWindow.alpha = 0.0;
@@ -398,6 +403,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     if (![self.model shouldShowLockScreen]) {
         [self hideAndRemoveOverlayImageView];
 
+        // No lock screen needed - initialize CoreService if not yet done
+        // (seedPhraseIfAuthenticated works when auth is disabled or user already authenticated)
+        [self initializeCoreServiceIfNeeded];
+
         return;
     }
 
@@ -408,6 +417,30 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     self.overlayImageView.hidden = YES;
     [self.overlayImageView removeFromSuperview];
     self.overlayImageView = nil;
+}
+
+/// Initialize CoreService with the mnemonic from DashSync keychain if it's not yet initialized.
+/// Called after user authenticates (PIN unlock) or when authentication is not required.
+- (void)initializeCoreServiceIfNeeded {
+    CoreService *coreService = [DWEnvironment sharedInstance].coreService;
+    if (coreService.isInitialized) {
+        return;
+    }
+
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    NSString *mnemonic = [wallet seedPhraseIfAuthenticated];
+    if (mnemonic.length == 0) {
+        return;
+    }
+
+    BOOL isTestnet = [DWEnvironment sharedInstance].currentChain.chainType.tag == ChainType_TestNet;
+    [coreService initializeWithMnemonic:mnemonic
+                              isTestnet:isTestnet
+                             completion:^(BOOL success, NSError *_Nullable error) {
+                                 if (success) {
+                                     [coreService startSync];
+                                 }
+                             }];
 }
 
 - (void)showDevicePasscodeAlert {

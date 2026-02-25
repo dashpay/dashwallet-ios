@@ -353,7 +353,7 @@ struct HomeViewContent<Content: View>: View {
                 joinDashPayDialog
             }
         }
-        .onChange(of: joinDPViewModel.state) { state in
+        .onChange(of: joinDPViewModel.state) { _, state in
             viewModel.joinDashPayState = state
             viewModel.checkJoinDashPay()
         }
