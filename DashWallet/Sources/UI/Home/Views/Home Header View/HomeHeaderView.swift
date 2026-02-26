@@ -16,6 +16,8 @@
 //
 
 import UIKit
+import SwiftUI
+import Combine
 
 private let kAvatarSize = CGSize(width: 72.0, height: 72.0)
 
@@ -46,6 +48,8 @@ final class HomeHeaderView: UIView {
     }
 
     private let model: HomeHeaderModel
+    private var bannerHostingController: UIHostingController<ShortcutCustomizeBannerView>?
+    private var cancellableBag = Set<AnyCancellable>()
 
     init(frame: CGRect, viewModel: HomeViewModel) {
         model = HomeHeaderModel()
@@ -58,7 +62,25 @@ final class HomeHeaderView: UIView {
         shortcutsView = ShortcutsView(frame: .zero, viewModel: viewModel)
         shortcutsView.translatesAutoresizingMaskIntoConstraints = false
 
-        let views: [UIView] = [shortcutsView, syncView]
+        // Check if we should show the shortcut customization banner
+        viewModel.checkShortcutBanner()
+
+        var views: [UIView] = [shortcutsView]
+
+        if viewModel.shouldShowShortcutBanner {
+            let bannerView = ShortcutCustomizeBannerView(onDismiss: { [weak self] in
+                viewModel.dismissShortcutBanner()
+                self?.hideBanner()
+            })
+            let hosting = UIHostingController(rootView: bannerView)
+            hosting.view.translatesAutoresizingMaskIntoConstraints = false
+            hosting.view.backgroundColor = .clear
+            self.bannerHostingController = hosting
+            views.append(hosting.view)
+        }
+
+        views.append(syncView)
+
         let stackView = UIStackView(arrangedSubviews: views)
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
@@ -85,6 +107,17 @@ final class HomeHeaderView: UIView {
                 self?.hideSyncView()
             }
         }
+
+        // Auto-hide banner when user customizes shortcuts (sets shortcuts != nil)
+        viewModel.$shouldShowShortcutBanner
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] shouldShow in
+                if !shouldShow {
+                    self?.hideBanner()
+                }
+            }
+            .store(in: &cancellableBag)
     }
 
     required init?(coder: NSCoder) {
@@ -92,6 +125,18 @@ final class HomeHeaderView: UIView {
     }
 
     func parentScrollViewDidScroll(_ scrollView: UIScrollView) { }
+
+    private func hideBanner() {
+        guard let hosting = bannerHostingController else { return }
+        UIView.animate(withDuration: 0.3, animations: {
+            hosting.view.alpha = 0
+        }) { _ in
+            hosting.view.isHidden = true
+            hosting.view.removeFromSuperview()
+            self.bannerHostingController = nil
+            self.delegate?.homeHeaderViewDidUpdateContents(self)
+        }
+    }
 
     private func hideSyncView() {
         syncView.isHidden = true
