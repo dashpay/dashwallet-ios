@@ -20,11 +20,28 @@ PODFILE_VERSION=`cat Podfile.lock | ruby -ryaml -e "$RUBY_SCRIPT"`
 if [ -z "${PODFILE_VERSION}" ]; then
 	echo "Updating DashSyncCurrentCommit using LOCAL DashSync dependency..."
 
-    pushd "../DashSync/"
-	DASHSYNC_COMMIT=`git rev-parse HEAD`
-	popd
+    # Prefer the documented external folder structure:
+    #   ../DashSync/
+    # but also support this monorepo layout where DashSync lives at:
+    #   ../dashsync-iOS/
+    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+    DASHSYNC_DIR="${SCRIPT_DIR}/../DashSync"
+    if [ ! -f "${DASHSYNC_DIR}/DashSync.podspec" ] && [ -f "${SCRIPT_DIR}/../dashsync-iOS/DashSync.podspec" ]; then
+      DASHSYNC_DIR="${SCRIPT_DIR}/../dashsync-iOS"
+    fi
 
-	echo "$DASHSYNC_COMMIT" > DashSyncCurrentCommit
+    if [ -d "${DASHSYNC_DIR}" ]; then
+      pushd "${DASHSYNC_DIR}" >/dev/null
+      DASHSYNC_COMMIT="$(git rev-parse HEAD 2>/dev/null || true)"
+      popd >/dev/null
+    fi
+
+    if [ -z "${DASHSYNC_COMMIT}" ]; then
+      echo "Warning: could not determine DashSync git commit (missing repo or not a git checkout)."
+    else
+      echo "$DASHSYNC_COMMIT" > DashSyncCurrentCommit
+    fi
+
 else
 	echo "Updating DashSyncCurrentCommit using REMOTE DashSync dependency..."
 	

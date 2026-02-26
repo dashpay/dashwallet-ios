@@ -473,26 +473,22 @@ class HomeViewModel: ObservableObject {
                 self.txByHash[itemId] = txItem
                 let shouldShowReclassify = self.shouldDisplayReclassifyTransaction && tx.date > reclassifyTransactionsActivatedAt
 
-                if let groupIndex = self.txItems.firstIndex(where: { $0.id == newDateKey }) {
-                    // Add to an existing date group
-                    DispatchQueue.main.async {
+                // Perform all txItems mutations on main thread to avoid race conditions
+                // where indices computed on background queue become stale
+                DispatchQueue.main.async {
+                    if let groupIndex = self.txItems.firstIndex(where: { $0.id == newDateKey }) {
                         self.txItems[groupIndex].items.append(txItem)
                         self.txItems[groupIndex].items.sort { $0.date > $1.date }
-                        self.showReclassifyTransaction = shouldShowReclassify ? tx : nil
-                    }
-                } else {
-                    // Create a new date group
-                    let newGroup = TransactionGroup(id: newDateKey, date: txItem.date, items: [txItem])
-                    let insertIndex = self.txItems.firstIndex(where: { $0.date < txItem.date })
-
-                    DispatchQueue.main.async {
+                    } else {
+                        let newGroup = TransactionGroup(id: newDateKey, date: txItem.date, items: [txItem])
+                        let insertIndex = self.txItems.firstIndex(where: { $0.date < txItem.date })
                         if let index = insertIndex {
                             self.txItems.insert(newGroup, at: index)
                         } else {
                             self.txItems.append(newGroup)
                         }
-                        self.showReclassifyTransaction = shouldShowReclassify ? tx : nil
                     }
+                    self.showReclassifyTransaction = shouldShowReclassify ? tx : nil
                 }
             }
         }
