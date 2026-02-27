@@ -85,7 +85,7 @@ struct BuySellPortalView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 5)
-                    .background(Color(.sRGB, red: 176.0/255.0, green: 182.0/255.0, blue: 188.0/255.0, opacity: 0.1))
+                    .background(Color(.sRGB, red: 176.0 / 255.0, green: 182.0 / 255.0, blue: 188.0 / 255.0, opacity: 0.1))
                     .cornerRadius(8)
                 }
                 .padding(6)

@@ -97,7 +97,8 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
 
     @objc
     func topperAction() {
-        let urlString = topperViewModel.topperBuyUrl(walletName: Bundle.main.infoDictionary!["CFBundleDisplayName"] as! String)
+        let walletName = Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? "Dash Wallet"
+        let urlString = topperViewModel.topperBuyUrl(walletName: walletName)
         if let url = URL(string: urlString) {
             let safariViewController = SFSafariViewController.dw_controller(with: url)
             present(safariViewController, animated: true)
