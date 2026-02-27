@@ -97,7 +97,22 @@ NS_ASSUME_NONNULL_BEGIN
 #if DASHPAY
     [DWGlobalOptions sharedInstance].dpInvitationFlowEnabled = YES;
 #endif
-    
+
+    // Shortcut customization banner state machine
+    DWGlobalOptions *bannerOptions = [DWGlobalOptions sharedInstance];
+    if (bannerOptions.shortcutBannerState == 0) {
+        if (bannerOptions.shouldDisplayOnboarding) {
+            // New install — defer banner to second app open
+            bannerOptions.shortcutBannerState = 1;
+        } else {
+            // Update from prior version — show on this open
+            bannerOptions.shortcutBannerState = 2;
+        }
+    } else if (bannerOptions.shortcutBannerState == 1) {
+        // New install, second+ launch — ready to show
+        bannerOptions.shortcutBannerState = 2;
+    }
+
     [DSLogger sharedInstance];
     [FIRApp configure];
     [ExploreDashObjcWrapper configure];

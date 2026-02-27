@@ -33,12 +33,15 @@ class ServiceDataProviderImpl: ServiceDataProvider {
     init() {
         items = [
             .init(service: .uphold, dataProvider: UpholdDataSource()),
-            .init(service: .topper, dataProvider: nil)
+            .init(service: .topper, dataProvider: nil),
         ]
-        
+
         if CoinbaseDataSource.shouldShow() {
             items.insert(.init(service: .coinbase, dataProvider: CoinbaseDataSource()), at: 0)
         }
+
+        // Maya always at the end of the list
+        items.append(.init(service: .maya, dataProvider: nil))
         
         for item in items {
             item.didUpdate = { [weak self] in
