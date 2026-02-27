@@ -105,6 +105,9 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
     }
 
     func mayaAction() {
+        // UIHostingController hides the UIKit navigation bar when pushed directly,
+        // so a thin UIViewController wrapper is required for BaseNavigationController
+        // to provide its custom back button.
         let vc = MayaPortalViewController()
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)

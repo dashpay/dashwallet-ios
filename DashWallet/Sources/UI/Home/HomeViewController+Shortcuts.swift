@@ -199,6 +199,18 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
     }
 
     private func showCoinbaseAuthenticated() {
+        let geoblockedCountries = ["GB"]
+        if let placemark = DWLocationManager.shared.currentPlacemark,
+           geoblockedCountries.contains(placemark.isoCountryCode ?? "") {
+            showModalDialog(
+                style: .warning,
+                icon: .system("exclamationmark.triangle.fill"),
+                heading: NSLocalizedString("Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK", comment: "Geoblock"),
+                positiveButtonText: NSLocalizedString("OK", comment: "")
+            )
+            return
+        }
+
         if Coinbase.shared.isAuthorized {
             let controller = IntegrationViewController.controller(model: CoinbaseEntryPointModel())
             controller.hidesBottomBarWhenPushed = true

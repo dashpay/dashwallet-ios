@@ -103,7 +103,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
 
     var initialSegment: MerchantsListSegment?
 
-    private var infoButton: UIBarButtonItem!
+    private var infoButton: UIBarButtonItem?
 
     override var locationServicePopupTitle: String {
         NSLocalizedString("Merchant search works better with Location Services turned on.", comment: "")

@@ -42,8 +42,11 @@ struct ShortcutCustomizeBannerView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 10, weight: .medium))
                     .foregroundColor(Color(.dw_secondaryText()))
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
-            .frame(width: 24, height: 24)
+            .accessibilityLabel(NSLocalizedString("Close", comment: "Accessibility"))
+            .accessibilityIdentifier("shortcut_banner_dismiss")
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)

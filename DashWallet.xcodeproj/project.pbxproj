@@ -1643,10 +1643,10 @@
 		FBF3F42D1E42B00C00C7248E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42C1E42B00C00C7248E /* UIKit.framework */; };
 		FBF3F42F1E42B01E00C7248E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */; };
 		FBF3F4311E42B02800C7248E /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F4301E42B02800C7248E /* ImageIO.framework */; };
-		AA0001022AA9F58E00MAYA01 /* MayaPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012AA9F58E00MAYA01 /* MayaPortalView.swift */; };
-		AA0001032AA9F58E00MAYA01 /* MayaPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012AA9F58E00MAYA01 /* MayaPortalView.swift */; };
-		AA0001052AA9F58E00MAYA01 /* MayaPortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042AA9F58E00MAYA02 /* MayaPortalViewController.swift */; };
-		AA0001062AA9F58E00MAYA01 /* MayaPortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042AA9F58E00MAYA02 /* MayaPortalViewController.swift */; };
+		AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */; };
+		AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */; };
+		AA0001052AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */; };
+		AA0001062AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3194,8 +3194,8 @@
 		FBF3F42C1E42B00C00C7248E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		FBF3F4301E42B02800C7248E /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
-		AA0001012AA9F58E00MAYA01 /* MayaPortalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPortalView.swift; sourceTree = "<group>"; };
-		AA0001042AA9F58E00MAYA02 /* MayaPortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPortalViewController.swift; sourceTree = "<group>"; };
+		AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPortalView.swift; sourceTree = "<group>"; };
+		AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPortalViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -4046,16 +4046,16 @@
 				2A4430EF22CBC77A009BAF7F /* Views */,
 				2A4430E922CBB98D009BAF7F /* Setup */,
 				0F6EDFE028C8AE32000427E7 /* Coinbase */,
-				AA0001042AA9F58E00MAYA01 /* Maya */,
+				AA0001042AA9F58E00A1B203 /* Maya */,
 			);
 			path = UI;
 			sourceTree = "<group>";
 		};
-		AA0001042AA9F58E00MAYA01 /* Maya */ = {
+		AA0001042AA9F58E00A1B203 /* Maya */ = {
 			isa = PBXGroup;
 			children = (
-				AA0001012AA9F58E00MAYA01 /* MayaPortalView.swift */,
-				AA0001042AA9F58E00MAYA02 /* MayaPortalViewController.swift */,
+				AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */,
+				AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */,
 			);
 			path = Maya;
 			sourceTree = "<group>";
@@ -9196,8 +9196,8 @@
 				477F501729543834003C7508 /* BaseViewController+NetworkReachability.swift in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
 				2A8C24B423336FEA00000D43 /* DWQuickReceiveViewController.m in Sources */,
-				AA0001022AA9F58E00MAYA01 /* MayaPortalView.swift in Sources */,
-				AA0001052AA9F58E00MAYA01 /* MayaPortalViewController.swift in Sources */,
+				AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
+				AA0001052AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -10085,8 +10085,8 @@
 				C9D2C8F42A320AA000D15901 /* DWQuickReceiveViewController.m in Sources */,
 				75A8C1692AE6A1AC0042256E /* VotingViewModel.swift in Sources */,
 				1DD7BE9CD62998F12672140D /* RadioButtonRow.swift in Sources */,
-				AA0001032AA9F58E00MAYA01 /* MayaPortalView.swift in Sources */,
-				AA0001062AA9F58E00MAYA01 /* MayaPortalViewController.swift in Sources */,
+				AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
+				AA0001062AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
