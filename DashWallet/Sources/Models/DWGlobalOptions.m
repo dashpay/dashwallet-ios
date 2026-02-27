@@ -45,6 +45,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic dateHistoricalRatesActivated;
 @dynamic exploreDashMerchantsInfoShown;
 @dynamic coinbaseInfoShown;
+@dynamic shortcutBannerState;
 
 #ifdef DASHPAY
 @dynamic dashpayUsername;
@@ -68,6 +69,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
         DW_KEYPATH(self, shouldDisplayOnboarding) : @YES,
         DW_KEYPATH(self, shouldDisplayReclassifyYourTransactionsFlow) : @YES,
         DW_KEYPATH(self, coinbaseInfoShown) : @NO,
+        DW_KEYPATH(self, shortcutBannerState) : @0,
 #if DASHPAY
         DW_KEYPATH(self, confirmationAcceptContactRequestIsOn) : @YES,
 #endif
@@ -156,6 +158,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
     self.dateHistoricalRatesActivated = nil;
     self.exploreDashMerchantsInfoShown = NO;
     self.coinbaseInfoShown = NO;
+    self.shortcutBannerState = 0;
 
 #ifdef DASHPAY
     self.dashpayUsername = nil;

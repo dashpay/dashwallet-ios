@@ -18,12 +18,11 @@
 import UIKit
 import Combine
 
-func cellSize(for contentSizeCategory: UIContentSizeCategory) -> CGSize {
-    let screenWidth = UIScreen.main.bounds.size.width
+func cellSize(for contentSizeCategory: UIContentSizeCategory, viewWidth: CGFloat) -> CGSize {
     let margin: CGFloat = 10.0       // Figma: container px padding
     let spacing: CGFloat = 4.0       // Figma: shortcut-bar/gap
     let visibleCells: CGFloat = 4.0
-    let cellWidth = floor((screenWidth - margin * 2.0 - spacing * (visibleCells - 1)) / visibleCells)
+    let cellWidth = floor((viewWidth - margin * 2.0 - spacing * (visibleCells - 1)) / visibleCells)
     let cellHeight: CGFloat = 68.0   // Figma: icon(46) + gap(4) + text(16) + bottomPad(2)
 
     if UIDevice.isIpad {
@@ -38,6 +37,7 @@ func cellSize(for contentSizeCategory: UIContentSizeCategory) -> CGSize {
 
 protocol ShortcutsActionDelegate: AnyObject {
     func shortcutsView(didSelectAction action: ShortcutAction, sender: UIView?)
+    func shortcutsView(didLongPressPosition position: Int, currentAction: ShortcutAction)
 }
 
 // MARK: - ShortcutsViewDelegate
@@ -51,7 +51,8 @@ protocol ShortcutsViewDelegate: AnyObject {
 class ShortcutsView: UIView {
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel: HomeViewModel
-    
+    private var lastLayoutWidth: CGFloat = 0
+
     weak var actionDelegate: ShortcutsActionDelegate?
 
     weak var delegate: ShortcutsViewDelegate?
@@ -108,10 +109,21 @@ class ShortcutsView: UIView {
 
         collectionView.register(UINib(nibName: "DWShortcutCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: ShortcutCell.reuseIdentifier)
 
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+        collectionView.addGestureRecognizer(longPress)
+
         NotificationCenter.default.addObserver(self, selector: #selector(contentSizeCategoryDidChangeNotification(notification:)),
                                                name: UIContentSizeCategory.didChangeNotification, object: nil)
 
         updateCellSizeForContentSizeCategory(UIApplication.shared.preferredContentSizeCategory, initialSetup: true)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let currentWidth = bounds.width
+        guard currentWidth != lastLayoutWidth else { return }
+        lastLayoutWidth = currentWidth
+        updateCellSizeForContentSizeCategory(UIApplication.shared.preferredContentSizeCategory, initialSetup: false)
     }
 
     @objc
@@ -123,7 +135,9 @@ class ShortcutsView: UIView {
     }
 
     private func updateCellSizeForContentSizeCategory(_ contentSizeCategory: UIContentSizeCategory, initialSetup: Bool) {
-        var cellSize = cellSize(for: contentSizeCategory)
+        let fallbackWidth = window?.windowScene?.screen.bounds.width ?? UIScreen.main.bounds.size.width
+        let width = bounds.width > 0 ? bounds.width : fallbackWidth
+        var cellSize = cellSize(for: contentSizeCategory, viewWidth: width)
         cellSize.height = ceil(cellSize.height) // This fixes the autolayout issue when the size of the cell is higher than the collection view itself
 
         collectionViewHeightConstraint.constant = cellSize.height
@@ -140,6 +154,20 @@ class ShortcutsView: UIView {
         if !initialSetup {
             delegate?.shortcutsViewDidUpdateContentSize(self)
         }
+    }
+
+    @objc
+    private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else { return }
+
+        let point = gesture.location(in: collectionView)
+        guard let indexPath = collectionView.indexPathForItem(at: point) else { return }
+
+        let position = indexPath.item
+        guard position < viewModel.shortcutItems.count else { return }
+
+        let action = viewModel.shortcutItems[position]
+        actionDelegate?.shortcutsView(didLongPressPosition: position, currentAction: action)
     }
 }
 
