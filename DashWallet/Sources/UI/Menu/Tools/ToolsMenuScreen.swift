@@ -195,8 +195,7 @@ struct ToolsMenuScreen: View {
     }
     
     private func showMasternodeKeys() {
-        let swiftUIView = KeysOverviewView(navigationController: vc)
-        let controller = UIHostingController(rootView: swiftUIView)
+        let controller = KeysOverviewViewController()
         controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }

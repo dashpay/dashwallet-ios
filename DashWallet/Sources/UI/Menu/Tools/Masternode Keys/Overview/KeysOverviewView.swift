@@ -22,9 +22,10 @@
 import SwiftUI
 import UIKit
 
-struct KeysOverviewView: View {
+// MARK: - KeysOverviewContentView
+
+struct KeysOverviewContentView: View {
     @StateObject private var viewModel = KeysOverviewViewModel()
-    @Environment(\.presentationMode) var presentationMode
     private let navigationController: UINavigationController?
 
     init(navigationController: UINavigationController? = nil) {
@@ -32,24 +33,15 @@ struct KeysOverviewView: View {
     }
 
     var body: some View {
-        ZStack {
-            Color.secondaryBackground
-                .ignoresSafeArea()
-
-            VStack(alignment: .leading, spacing: 16) {
-                // Navigation bar with back button
-                NavBarBack {
-                    presentationMode.wrappedValue.dismiss()
-                }
-
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
                 // Title
-                Text("Masternode Keys")
-                    .font(.system(size: 28, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                Text("Masternode keys")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(Color(uiColor: .dw_label()))
                     .padding(.horizontal, 20)
-                    .padding(.top, 12)
 
-                // Keys list
+                // Keys list container
                 VStack(spacing: kMenuVGap) {
                     ForEach(viewModel.items, id: \.self) { item in
                         KeyItemButton(
@@ -62,20 +54,17 @@ struct KeysOverviewView: View {
                     }
                 }
                 .padding(kMenuPadding)
-                .background {
-                    Color.background
-                }
-                .cornerRadius(kMenuRadius)
+                .background(Color(uiColor: .dw_background()))
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                 .padding(.horizontal, 20)
-
-                Spacer()
             }
+            .frame(maxWidth: .infinity, alignment: .topLeading)
         }
-        .navigationBarHidden(true)
+        .background(Color(uiColor: .dw_secondaryBackground()))
     }
 
     private func handleItemTap(_ item: MNKey) {
-        // Authenticate before showing keys
+        let derivationPath = viewModel.derivationPath(for: item)
         DSAuthenticationManager.sharedInstance().authenticate(
             withPrompt: nil,
             usingBiometricAuthentication: false,
@@ -84,7 +73,6 @@ struct KeysOverviewView: View {
             guard authenticated else { return }
 
             DispatchQueue.main.async {
-                let derivationPath = viewModel.derivationPath(for: item)
                 let vc = DerivationPathKeysViewController(with: item, derivationPath: derivationPath)
                 vc.hidesBottomBarWhenPushed = true
                 navigationController?.pushViewController(vc, animated: true)
@@ -103,38 +91,40 @@ struct KeyItemButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 8) {
+            HStack(spacing: 0) {
                 // Left side - key name and count
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.title)
                         .font(.subheadline)
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(Color(uiColor: .dw_label()))
 
                     Text(keyCountText)
-                        .font(.caption)
-                        .foregroundColor(.secondaryText)
+                        .font(.footnote)
+                        .foregroundColor(Color(uiColor: .dw_tertiaryText()))
                 }
 
                 Spacer()
 
-                // Right side - used count
-                Text(usedCountText)
-                    .font(.footnote)
-                    .foregroundColor(.tertiaryText)
+                // Right side - used count + chevron
+                HStack(spacing: 16) {
+                    Text(usedCountText)
+                        .font(.footnote)
+                        .foregroundColor(Color(uiColor: .dw_label()))
 
-                // Chevron
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.tertiaryText)
+                    Image("list-chevron-right")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(height: 11)
+                }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .frame(height: 62)
-            .background {
-                Color.background
-            }
-            .cornerRadius(14)
+            .background(Color(uiColor: .dw_background()))
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .contentShape(Rectangle())
         }
+        .buttonStyle(PlainButtonStyle())
     }
 
     private var keyCountText: String {
@@ -179,5 +169,5 @@ extension MNKey: Identifiable {
 // MARK: - Preview
 
 #Preview {
-    KeysOverviewView()
+    KeysOverviewContentView()
 }

@@ -21,17 +21,21 @@ import UIKit
 extension Color {
     
 // Text
-    
+
     static var primaryText: Color {
         Color("Label")
     }
-    
+
     static var secondaryText: Color {
         Color("SecondaryTextColor")
     }
-    
+
     static var tertiaryText: Color {
         Color("TertiaryTextColor")
+    }
+
+    static var whiteText: Color {
+        Color("White")
     }
     
 // System

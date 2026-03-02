@@ -82,6 +82,81 @@ struct NavBarBack: View {
     }
 }
 
+// MARK: - NavBarBackPlus
+
+/// Navigation bar with a back button on the left and an add button on the right.
+///
+/// Mirrors the styling of `NavBarBack` on both sides:
+/// - 64pt height navigation container
+/// - Circular back button (left) with chevron icon
+/// - Circular add button (right) with "toolbar-plus" icon (11pt height)
+/// - 34pt circular border with custom styling on both buttons
+/// - Dark mode support
+///
+/// Usage:
+/// ```swift
+/// NavBarBackPlus(onBack: { dismiss() }, onAdd: { viewModel.addItem() })
+/// ```
+struct NavBarBackPlus: View {
+    @Environment(\.colorScheme) private var colorScheme
+    let onBack: () -> Void
+    let onAdd: () -> Void
+
+    var body: some View {
+        HStack {
+            // Back button (left)
+            Button(action: onBack) {
+                ZStack {
+                    Color.clear
+                        .frame(width: 44, height: 44)
+
+                    Circle()
+                        .stroke(borderColor, lineWidth: 1.5)
+                        .frame(width: 34, height: 34)
+
+                    Image(backIconName)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(height: 12)
+                        .offset(x: -1)
+                        .foregroundColor(.primaryText)
+                }
+            }
+            .padding(.leading, 20)
+
+            Spacer()
+
+            // Add button (right)
+            Button(action: onAdd) {
+                ZStack {
+                    Color.clear
+                        .frame(width: 44, height: 44)
+
+                    Circle()
+                        .stroke(borderColor, lineWidth: 1.5)
+                        .frame(width: 34, height: 34)
+
+                    Image("toolbar-plus")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(height: 11)
+                        .foregroundColor(.primaryText)
+                }
+            }
+            .padding(.trailing, 20)
+        }
+        .frame(height: 64)
+    }
+
+    private var borderColor: Color {
+        .gray300Alpha30
+    }
+
+    private var backIconName: String {
+        colorScheme == .dark ? "controls-back-dark-mode" : "controls-back"
+    }
+}
+
 // MARK: - Legacy Support
 
 /// Legacy name for NavBarBack - use NavBarBack instead
