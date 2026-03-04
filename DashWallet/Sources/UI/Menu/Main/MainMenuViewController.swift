@@ -142,6 +142,7 @@ struct MainMenuScreen: View {
     @State private var showMixDialog: Bool = false
     @State private var showDashPayInfo: Bool = false
     @State private var showCreditsPurchasedToast: Bool = false
+    @State private var qrScanDelegate: MainMenuScreen.QRScanDelegate? = nil
     
     #if DASHPAY
     private let joinDPViewModel = JoinDashPayViewModel(initialState: .none)
@@ -320,8 +321,29 @@ struct MainMenuScreen: View {
             
             NavigationLink(
                 destination: ToolsMenuScreen(vc: vc, onImportPrivateKey: {
-                    self.vc.popToRootViewController(animated: false)
-                    self.delegateInternal.mainMenuViewControllerImportPrivateKey()
+                    print("🔍 DEBUG: onImportPrivateKey called from Tools menu")
+
+                    // Present scanner directly without switching tabs
+                    let scannerVC = DWQRScanViewController()
+                    scannerVC.modalPresentationStyle = .fullScreen
+
+                    // Create and set delegate to handle dismissal
+                    let delegate = MainMenuScreen.QRScanDelegate(viewController: scannerVC)
+                    self.qrScanDelegate = delegate
+                    scannerVC.model.delegate = delegate
+
+                    print("🔍 DEBUG: About to present scanner from vc: \(self.vc)")
+
+                    // Present from the topmost view controller
+                    if let topVC = self.vc.topViewController {
+                        print("🔍 DEBUG: Presenting from top VC: \(topVC)")
+                        topVC.present(scannerVC, animated: true, completion: {
+                            print("🔍 DEBUG: Scanner presented successfully")
+                        })
+                    } else {
+                        print("🔍 DEBUG: No top VC, presenting from nav controller")
+                        self.vc.present(scannerVC, animated: true, completion: nil)
+                    }
                 }),
                 isActive: $showTools
             ) {
@@ -594,5 +616,31 @@ extension MainMenuScreen {
             controller.dismiss(animated: true)
         }
         #endif
+    }
+
+    // MARK: - QR Scanner Delegate for Tools Menu
+    class QRScanDelegate: NSObject, DWQRScanModelDelegate {
+        weak var viewController: UIViewController?
+
+        init(viewController: UIViewController) {
+            self.viewController = viewController
+            print("🔍 DEBUG: QRScanDelegate initialized")
+        }
+
+        func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
+            print("🔍 DEBUG: didScanPaymentInput called")
+            // Handle scanned private key if needed
+            viewController?.dismiss(animated: true, completion: {
+                print("🔍 DEBUG: Scanner dismissed after scan")
+            })
+        }
+
+        func qrScanModelDidCancel(_ viewModel: DWQRScanModel) {
+            print("🔍 DEBUG: qrScanModelDidCancel called - X button pressed")
+            // User pressed X button - just dismiss
+            viewController?.dismiss(animated: true, completion: {
+                print("🔍 DEBUG: Scanner dismissed after cancel")
+            })
+        }
     }
 }

@@ -32,6 +32,7 @@ struct DashButton: View {
         case plain
         case outlined
         case filled
+        case filledBlue
     }
     
     enum Size {
@@ -65,6 +66,7 @@ struct DashButton: View {
                     Text(text)
                         .font(.system(size: fontSize))
                         .fontWeight(.semibold)
+                        .frame(height: lineHeight)
                         .padding(.vertical, 2)
                 }
                 
@@ -80,27 +82,37 @@ struct DashButton: View {
             .if(stretch) { view in
                 view.frame(maxWidth: .infinity)
             }
-            .frame(minHeight: minimumHeight)
-            .background(backgroundColor)
+            .frame(height: minimumHeight)
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(backgroundColor)
+            )
             .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .stroke(borderColor, lineWidth: 2)
             )
-            .cornerRadius(cornerRadius)
             .opacity(isEnabled ? 1.0 : 0.5)
         }
+        .buttonStyle(DashButtonStyle(cornerRadius: cornerRadius))
         .disabled(!isEnabled || isLoading)
         .background(Color.clear)
     }
 
     private var backgroundColor: Color {
         if !isEnabled {
-            return Color.black.opacity(0.2)
+            switch style {
+            case .filledBlue:
+                return Color.blackAlpha5
+            default:
+                return Color.black.opacity(0.2)
+            }
         }
-        
+
         switch style {
         case .filled:
             return overridenBackgroundColor ?? Color.dashBlue
+        case .filledBlue:
+            return Color.blue
         default:
             return Color.clear
         }
@@ -108,11 +120,18 @@ struct DashButton: View {
 
     private var foregroundColor: Color {
         if !isEnabled {
-            return Color.black.opacity(0.6)
+            switch style {
+            case .filledBlue:
+                return Color.blackAlpha40
+            default:
+                return Color.black.opacity(0.6)
+            }
         }
-        
+
         switch style {
         case .filled:
+            return Color.white
+        case .filledBlue:
             return Color.white
         default:
             return Color.primaryText
@@ -145,6 +164,19 @@ struct DashButton: View {
         }
     }
 
+    private var lineHeight: CGFloat {
+        switch size {
+        case .large:
+            return 22
+        case .medium:
+            return 20
+        case .small:
+            return 18
+        case .extraSmall:
+            return 16
+        }
+    }
+
     private var iconSize: CGFloat {
         switch size {
         case .large:
@@ -152,9 +184,9 @@ struct DashButton: View {
         case .medium:
             return 20
         case .small:
-            return 16
+            return 18
         case .extraSmall:
-            return 13
+            return 16
         }
     }
 
@@ -187,26 +219,26 @@ struct DashButton: View {
     private var cornerRadius: CGFloat {
         switch size {
         case .large:
-            return 12
+            return 16
         case .medium:
-            return 10
+            return 14
         case .small:
-            return 8
+            return 11
         case .extraSmall:
-            return 6
+            return 9
         }
     }
 
     private var minimumHeight: CGFloat {
         switch size {
         case .large:
-            return 48
+            return 50
         case .medium:
-            return 42
+            return 40
         case .small:
-            return 36
-        default:
-            return 28
+            return 30
+        case .extraSmall:
+            return 24
         }
     }
 }
@@ -235,8 +267,20 @@ extension View {
     func overrideForegroundColor(_ color: Color?) -> some View {
         environment(\.overrideForegroundColor, color)
     }
-    
+
     func overrideBackgroundColor(_ color: Color?) -> some View {
         environment(\.overrideBackgroundColor, color)
+    }
+}
+
+struct DashButtonStyle: ButtonStyle {
+    let cornerRadius: CGFloat
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(Color.black.opacity(configuration.isPressed ? 0.2 : 0))
+            )
     }
 }

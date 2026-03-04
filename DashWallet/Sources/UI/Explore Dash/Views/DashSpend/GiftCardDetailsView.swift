@@ -68,7 +68,7 @@ struct GiftCardDetailsView: View {
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text(viewModel.uiState.merchantName)
-                            .font(.body2)
+                            .font(.subhead)
                             .fontWeight(.medium)
                             .foregroundColor(.primaryText)
                         
@@ -286,7 +286,7 @@ struct GiftCardDetailsView: View {
                         }
                     }) {
                         Text(NSLocalizedString("See how to use this gift card", comment: "DashSpend"))
-                            .font(.subtitle1)
+                            .font(.calloutMedium)
                             .foregroundColor(.dashBlue)
                     }
                     .padding(.top, 30)
@@ -294,7 +294,7 @@ struct GiftCardDetailsView: View {
                     // How to use expanded content
                     VStack(alignment: .leading, spacing: 30) {
                         Text(NSLocalizedString("How to use your gift card", comment: "DashSpend"))
-                            .font(.body2)
+                            .font(.subhead)
                             .fontWeight(.medium)
                             .foregroundColor(.tertiaryText)
                             .frame(maxWidth: .infinity, alignment: .leading)

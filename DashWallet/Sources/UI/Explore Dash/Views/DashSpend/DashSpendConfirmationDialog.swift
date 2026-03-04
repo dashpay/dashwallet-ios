@@ -43,7 +43,7 @@ struct DashSpendConfirmationDialog: View {
             VStack(spacing: 0) {
                 HStack(spacing: 8) {
                     Text(NSLocalizedString("From", comment: "DashSpend"))
-                        .font(.body2)
+                        .font(.subhead)
                         .fontWeight(.medium)
                         .foregroundColor(.tertiaryText)
                         
@@ -54,7 +54,7 @@ struct DashSpendConfirmationDialog: View {
                         .frame(width: 24, height: 24)
                             
                     Text(NSLocalizedString("Dash Wallet", comment: "DashSpend"))
-                        .font(.body2)
+                        .font(.subhead)
                         .foregroundColor(.primaryText)
                 }
                 .padding(.horizontal, 12)
@@ -62,7 +62,7 @@ struct DashSpendConfirmationDialog: View {
                     
                 HStack(spacing: 8) {
                     Text(NSLocalizedString("To", comment: "DashSpend"))
-                        .font(.body2)
+                        .font(.subhead)
                         .fontWeight(.medium)
                         .foregroundColor(.tertiaryText)
                         
@@ -77,7 +77,7 @@ struct DashSpendConfirmationDialog: View {
                         .clipShape(Circle())
                             
                     Text(merchantName)
-                        .font(.body2)
+                        .font(.subhead)
                         .foregroundColor(.primaryText)
                 }
                 .padding(.horizontal, 12)
@@ -85,14 +85,14 @@ struct DashSpendConfirmationDialog: View {
                     
                 HStack {
                     Text(NSLocalizedString("Gift card total", comment: "DashSpend"))
-                        .font(.body2)
+                        .font(.subhead)
                         .fontWeight(.medium)
                         .foregroundColor(.tertiaryText)
                         
                     Spacer()
                         
                     Text(fiatFormatter.string(from: NSDecimalNumber(decimal: originalPrice)) ?? "")
-                        .font(.body2)
+                        .font(.subhead)
                         .foregroundColor(.primaryText)
                 }
                 .padding(.horizontal, 12)
@@ -100,14 +100,14 @@ struct DashSpendConfirmationDialog: View {
                     
                 HStack {
                     Text(NSLocalizedString("Discount", comment: "DashSpend"))
-                        .font(.body2)
+                        .font(.subhead)
                         .fontWeight(.medium)
                         .foregroundColor(.tertiaryText)
                         
                     Spacer()
                         
                     Text(PercentageFormatter.format(percent: NSDecimalNumber(decimal: discount * 100).doubleValue))
-                        .font(.body2)
+                        .font(.subhead)
                         .foregroundColor(.primaryText)
                 }
                 .padding(.horizontal, 12)
@@ -115,14 +115,14 @@ struct DashSpendConfirmationDialog: View {
                     
                 HStack {
                     Text(NSLocalizedString("You pay", comment: "DashSpend"))
-                        .font(.body2)
+                        .font(.subhead)
                         .fontWeight(.medium)
                         .foregroundColor(.tertiaryText)
                         
                     Spacer()
                     
                     Text(fiatFormatter.string(from: NSDecimalNumber(decimal: originalPrice * (1 - discount))) ?? "")
-                        .font(.body2)
+                        .font(.subhead)
                         .foregroundColor(.primaryText)
                 }
                 .padding(.horizontal, 12)

@@ -88,18 +88,17 @@ struct ImportPrivateKeySheet: View {
 
             // Button wrap with fixed padding
             VStack(spacing: 0) {
-                Button(action: {
-                    presentationMode.wrappedValue.dismiss()
-                    onScanPrivateKey()
-                }) {
-                    Text(NSLocalizedString("Scan private key", comment: ""))
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 46)
-                        .background(Color.dashBlue)
-                        .cornerRadius(14)
-                }
+                DashButton(
+                    text: NSLocalizedString("Scan private key", comment: ""),
+                    style: .filledBlue,
+                    size: .large,
+                    stretch: true,
+                    isEnabled: true,
+                    action: {
+                        presentationMode.wrappedValue.dismiss()
+                        onScanPrivateKey()
+                    }
+                )
                 .padding(.horizontal, 60)
             }
             .padding(.top, 20)

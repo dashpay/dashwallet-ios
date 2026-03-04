@@ -21,21 +21,29 @@ import UIKit
 extension Color {
     
 // Text
-    
+
     static var primaryText: Color {
         Color("Label")
     }
-    
+
     static var secondaryText: Color {
         Color("SecondaryTextColor")
     }
-    
+
     static var tertiaryText: Color {
         Color("TertiaryTextColor")
     }
+
+    static var whiteText: Color {
+        Color("White")
+    }
     
 // System
-    
+
+    static var blue: Color {
+        Color("Blue")
+    }
+
     static var dashBlue: Color {
         Color("DashBlueColor")
     }
@@ -56,8 +64,18 @@ extension Color {
         Color("SystemYellowColor")
     }
     
+// Black
+
+    static var blackAlpha5: Color {
+        Color("BlackAlpha5")
+    }
+
+    static var blackAlpha40: Color {
+        Color("BlackAlpha40")
+    }
+
 // Gray
-    
+
     static var gray50: Color {
         Color("Gray50")
     }
@@ -183,8 +201,13 @@ extension Color {
     static var primaryBackground: Color {
         Color("SecondaryBackgroundColor")
     }
-    
+
     static var secondaryBackground: Color {
+        Color("BackgroundColor")
+    }
+
+    // Alias for secondaryBackground for backwards compatibility
+    static var background: Color {
         Color("BackgroundColor")
     }
     
