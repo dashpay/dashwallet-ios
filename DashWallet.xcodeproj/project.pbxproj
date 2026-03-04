@@ -1647,6 +1647,22 @@
 		AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */; };
 		AA0001052AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */; };
 		AA0001062AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */; };
+		AA0002022BA0F58E00A1B301 /* MayaCryptoCurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002012BA0F58E00A1B301 /* MayaCryptoCurrency.swift */; };
+		AA0002032BA0F58E00A1B301 /* MayaCryptoCurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002012BA0F58E00A1B301 /* MayaCryptoCurrency.swift */; };
+		AA0002052BA0F58E00A1B302 /* MayaPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002042BA0F58E00A1B302 /* MayaPool.swift */; };
+		AA0002062BA0F58E00A1B302 /* MayaPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002042BA0F58E00A1B302 /* MayaPool.swift */; };
+		AA0002082BA0F58E00A1B303 /* MayaEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002072BA0F58E00A1B303 /* MayaEndpoint.swift */; };
+		AA0002092BA0F58E00A1B303 /* MayaEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002072BA0F58E00A1B303 /* MayaEndpoint.swift */; };
+		AA00020B2BA0F58E00A1B304 /* MayaAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00020A2BA0F58E00A1B304 /* MayaAPIService.swift */; };
+		AA00020C2BA0F58E00A1B304 /* MayaAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00020A2BA0F58E00A1B304 /* MayaAPIService.swift */; };
+		AA00020E2BA0F58E00A1B305 /* SelectCoinViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00020D2BA0F58E00A1B305 /* SelectCoinViewModel.swift */; };
+		AA00020F2BA0F58E00A1B305 /* SelectCoinViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00020D2BA0F58E00A1B305 /* SelectCoinViewModel.swift */; };
+		AA0002112BA0F58E00A1B306 /* CoinRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002102BA0F58E00A1B306 /* CoinRowView.swift */; };
+		AA0002122BA0F58E00A1B306 /* CoinRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002102BA0F58E00A1B306 /* CoinRowView.swift */; };
+		AA0002142BA0F58E00A1B307 /* SelectCoinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002132BA0F58E00A1B307 /* SelectCoinView.swift */; };
+		AA0002152BA0F58E00A1B307 /* SelectCoinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002132BA0F58E00A1B307 /* SelectCoinView.swift */; };
+		AA0002172BA0F58E00A1B308 /* SelectCoinHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002162BA0F58E00A1B308 /* SelectCoinHostingController.swift */; };
+		AA0002182BA0F58E00A1B308 /* SelectCoinHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002162BA0F58E00A1B308 /* SelectCoinHostingController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3196,6 +3212,14 @@
 		FBF3F4301E42B02800C7248E /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPortalView.swift; sourceTree = "<group>"; };
 		AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPortalViewController.swift; sourceTree = "<group>"; };
+		AA0002012BA0F58E00A1B301 /* MayaCryptoCurrency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaCryptoCurrency.swift; sourceTree = "<group>"; };
+		AA0002042BA0F58E00A1B302 /* MayaPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPool.swift; sourceTree = "<group>"; };
+		AA0002072BA0F58E00A1B303 /* MayaEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaEndpoint.swift; sourceTree = "<group>"; };
+		AA00020A2BA0F58E00A1B304 /* MayaAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAPIService.swift; sourceTree = "<group>"; };
+		AA00020D2BA0F58E00A1B305 /* SelectCoinViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectCoinViewModel.swift; sourceTree = "<group>"; };
+		AA0002102BA0F58E00A1B306 /* CoinRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinRowView.swift; sourceTree = "<group>"; };
+		AA0002132BA0F58E00A1B307 /* SelectCoinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectCoinView.swift; sourceTree = "<group>"; };
+		AA0002162BA0F58E00A1B308 /* SelectCoinHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectCoinHostingController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -4056,6 +4080,21 @@
 			children = (
 				AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */,
 				AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */,
+				AA00020D2BA0F58E00A1B305 /* SelectCoinViewModel.swift */,
+				AA0002102BA0F58E00A1B306 /* CoinRowView.swift */,
+				AA0002132BA0F58E00A1B307 /* SelectCoinView.swift */,
+				AA0002162BA0F58E00A1B308 /* SelectCoinHostingController.swift */,
+			);
+			path = Maya;
+			sourceTree = "<group>";
+		};
+		AA0002192BA0F58E00A1B309 /* Maya */ = {
+			isa = PBXGroup;
+			children = (
+				AA0002012BA0F58E00A1B301 /* MayaCryptoCurrency.swift */,
+				AA0002042BA0F58E00A1B302 /* MayaPool.swift */,
+				AA0002072BA0F58E00A1B303 /* MayaEndpoint.swift */,
+				AA00020A2BA0F58E00A1B304 /* MayaAPIService.swift */,
 			);
 			path = Maya;
 			sourceTree = "<group>";
@@ -4063,6 +4102,7 @@
 		2A44313D22CF632F009BAF7F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				AA0002192BA0F58E00A1B309 /* Maya */,
 				7503643C2C89D4890029EC0D /* CoinJoin */,
 				75A8C1612AE571E30042256E /* Voting */,
 				47081194298CF1E3003FCA3D /* Transactions */,
@@ -9198,6 +9238,14 @@
 				2A8C24B423336FEA00000D43 /* DWQuickReceiveViewController.m in Sources */,
 				AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 				AA0001052AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */,
+				AA0002022BA0F58E00A1B301 /* MayaCryptoCurrency.swift in Sources */,
+				AA0002052BA0F58E00A1B302 /* MayaPool.swift in Sources */,
+				AA0002082BA0F58E00A1B303 /* MayaEndpoint.swift in Sources */,
+				AA00020B2BA0F58E00A1B304 /* MayaAPIService.swift in Sources */,
+				AA00020E2BA0F58E00A1B305 /* SelectCoinViewModel.swift in Sources */,
+				AA0002112BA0F58E00A1B306 /* CoinRowView.swift in Sources */,
+				AA0002142BA0F58E00A1B307 /* SelectCoinView.swift in Sources */,
+				AA0002172BA0F58E00A1B308 /* SelectCoinHostingController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -10087,6 +10135,14 @@
 				1DD7BE9CD62998F12672140D /* RadioButtonRow.swift in Sources */,
 				AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 				AA0001062AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */,
+				AA0002032BA0F58E00A1B301 /* MayaCryptoCurrency.swift in Sources */,
+				AA0002062BA0F58E00A1B302 /* MayaPool.swift in Sources */,
+				AA0002092BA0F58E00A1B303 /* MayaEndpoint.swift in Sources */,
+				AA00020C2BA0F58E00A1B304 /* MayaAPIService.swift in Sources */,
+				AA00020F2BA0F58E00A1B305 /* SelectCoinViewModel.swift in Sources */,
+				AA0002122BA0F58E00A1B306 /* CoinRowView.swift in Sources */,
+				AA0002152BA0F58E00A1B307 /* SelectCoinView.swift in Sources */,
+				AA0002182BA0F58E00A1B308 /* SelectCoinHostingController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
