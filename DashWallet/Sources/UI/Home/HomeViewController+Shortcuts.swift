@@ -100,6 +100,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
         controller.showCloseButton = true
 
         let navigationController = BaseNavigationController(rootViewController: controller)
+        navigationController.modalPresentationStyle = .fullScreen
         present(navigationController, animated: true, completion: nil)
     }
 

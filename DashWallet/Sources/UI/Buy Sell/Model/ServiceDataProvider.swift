@@ -33,12 +33,15 @@ class ServiceDataProviderImpl: ServiceDataProvider {
     init() {
         items = [
             .init(service: .uphold, dataProvider: UpholdDataSource()),
-            .init(service: .topper, dataProvider: nil)
+            .init(service: .topper, dataProvider: nil),
         ]
-        
+
         if CoinbaseDataSource.shouldShow() {
             items.insert(.init(service: .coinbase, dataProvider: CoinbaseDataSource()), at: 0)
         }
+
+        // Maya always at the end of the list
+        items.append(.init(service: .maya, dataProvider: nil))
         
         for item in items {
             item.didUpdate = { [weak self] in
@@ -58,9 +61,13 @@ class ServiceDataProviderImpl: ServiceDataProvider {
     }
 
     private func updateServices() {
+        // Maya is always pinned to the end, so exclude it from sorting
+        let mayaItems = items.filter { $0.service == .maya }
         let sortedItems = items
+            .filter { $0.service != .maya }
             .sorted(by: { $0.usageCount > $1.usageCount })
             .sorted(by: { $0.isInUse && !$1.isInUse })
+            + mayaItems
 
         handler?(sortedItems)
     }
