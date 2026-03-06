@@ -29,9 +29,15 @@ extension MayaEndpoint: TargetType {
     var baseURL: URL {
         switch self {
         case .getPools:
-            return URL(string: "https://midgard.mayachain.info/v2/")!
+            guard let url = URL(string: "https://midgard.mayachain.info/v2/") else {
+                preconditionFailure("Invalid base URL literal for MayaEndpoint.getPools")
+            }
+            return url
         case .getInboundAddresses:
-            return URL(string: "https://mayanode.mayachain.info/mayachain/")!
+            guard let url = URL(string: "https://mayanode.mayachain.info/mayachain/") else {
+                preconditionFailure("Invalid base URL literal for MayaEndpoint.getInboundAddresses")
+            }
+            return url
         }
     }
 
