@@ -42,15 +42,6 @@ struct SelectCoinView: View {
                 }
             }
         }
-        .overlay(alignment: .bottom) {
-            if viewModel.showHaltedToast {
-                haltedToast
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 16)
-            }
-        }
-        .animation(.easeInOut(duration: 0.3), value: viewModel.showHaltedToast)
         .task {
             await viewModel.loadCoins()
         }
@@ -81,21 +72,18 @@ struct SelectCoinView: View {
             LazyVStack(spacing: 0) {
                 ForEach(viewModel.filteredCoins) { item in
                     Button {
-                        if !item.isHalted {
-                            onCoinSelected?(item.coin)
-                        }
+                        onCoinSelected?(item.coin)
                     } label: {
                         CoinRowView(item: item)
                     }
                     .buttonStyle(.plain)
-                    .disabled(item.isHalted)
                 }
             }
             .background(Color.secondaryBackground)
             .cornerRadius(12)
             .shadow(color: .shadow, radius: 10, x: 0, y: 5)
             .padding(.horizontal, 20)
-            .padding(.bottom, viewModel.showHaltedToast ? 80 : 20)
+            .padding(.bottom, 20)
         }
     }
 
@@ -115,50 +103,24 @@ struct SelectCoinView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
 
-            Button(action: {
-                Task {
-                    await viewModel.loadCoins()
+            Button(
+                action: {
+                    Task {
+                        await viewModel.loadCoins()
+                    }
+                },
+                label: {
+                    Text(NSLocalizedString("Retry", comment: ""))
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 10)
+                        .background(Color.dashBlue)
+                        .cornerRadius(8)
                 }
-            }) {
-                Text(NSLocalizedString("Retry", comment: ""))
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 10)
-                    .background(Color.dashBlue)
-                    .cornerRadius(8)
-            }
+            )
 
             Spacer()
         }
-    }
-
-    // MARK: - Halted Toast
-
-    private var haltedToast: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundColor(Color.systemYellow)
-                .font(.system(size: 14))
-
-            Text(NSLocalizedString("Some coins are not available because of the halted chain", comment: "Maya"))
-                .font(.system(size: 12, weight: .regular))
-                .foregroundColor(.white)
-                .lineLimit(2)
-
-            Spacer(minLength: 4)
-
-            Button {
-                viewModel.showHaltedToast = false
-            } label: {
-                Image(systemName: "xmark")
-                    .foregroundColor(.white.opacity(0.7))
-                    .font(.system(size: 12, weight: .semibold))
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(Color(red: 0.15, green: 0.15, blue: 0.18).opacity(0.95))
-        .cornerRadius(12)
     }
 }

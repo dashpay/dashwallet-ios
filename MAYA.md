@@ -51,8 +51,8 @@ This document tracks the implementation of Maya Protocol (decentralized crypto e
 
 | # | Feature | Figma Node | Branch | Status |
 |---|---------|-----------|--------|--------|
-| 1 | Select Destination Coin | 24007-4644 | `feat/maya-select-dest-coin` | In Progress |
-| 2 | Enter Destination Address | 24007-6732 | TBD | Not Started |
+| 1 | Select Destination Coin | 24007-4644 | `feat/maya-select-dest-coin` | Implemented (PR #755) |
+| 2 | Enter Destination Address | 24007-6732 | `feat/maya-enter-dest-address` | In Progress |
 | 3 | Retrieve Coinbase & Uphold Addresses | 24014-6577 | TBD | Not Started |
 | 4 | Validate Destination Address | 24032-36179 | TBD | Not Started |
 | 5 | Enter Amount Screen | 24015-8963 | TBD | Not Started |
@@ -273,10 +273,11 @@ Sourced from Android `MayaCurrencyList`. Only coins in this list AND with pool s
 | WBTC | Wrapped Bitcoin | ARB.WBTC-0X2F2A2543B76A4166549F7AAB2E75BEF0AEFC5B0F | ARB | Ethereum |
 | WSTETH (ARB) | Wrapped stETH (ARB) | ARB.WSTETH-0X5979D7B546E38E414F7E9822514BE443A4800529 | ARB | Ethereum |
 | KUJI | Kujira | KUJI.KUJI | KUJI | Bech32 (kujira prefix) |
-| USK | USK | KUJI.USK | KUJI | Bech32 |
 | RUNE | Rune | THOR.RUNE | THOR | Custom (thor prefix) |
 
-**Note:** DASH.DASH is defined in the system but filtered out of the coin picker (can't swap Dash to Dash).
+**Notes:**
+- DASH.DASH is defined in the system but filtered out of the coin picker (can't swap Dash to Dash).
+- USK (KUJI.USK) is listed in some Android references but excluded from the iOS implementation (19 coins total) as it does not have an active Maya pool.
 
 ---
 

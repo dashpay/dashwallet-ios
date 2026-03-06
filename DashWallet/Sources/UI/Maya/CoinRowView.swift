@@ -38,15 +38,7 @@ struct CoinRowView: View {
 
             Spacer()
 
-            if item.isHalted {
-                Text(NSLocalizedString("halted", comment: "Maya"))
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.secondaryText)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.gray400.opacity(0.15))
-                    .cornerRadius(6)
-            } else if let price = item.fiatPrice {
+            if let price = item.fiatPrice {
                 Text(price)
                     .font(.system(size: 12, weight: .regular))
                     .foregroundColor(.secondaryText)
@@ -54,8 +46,6 @@ struct CoinRowView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .opacity(item.isHalted ? 0.5 : 1.0)
-        .saturation(item.isHalted ? 0.0 : 1.0)
     }
 
     private var coinIcon: some View {
