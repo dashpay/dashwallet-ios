@@ -1,5 +1,5 @@
 //
-//  MayaPortalViewController.swift
+//  SelectCoinHostingController.swift
 //  DashWallet
 //
 //  Copyright © 2024 Dash Core Group. All rights reserved.
@@ -20,19 +20,21 @@
 import SwiftUI
 import UIKit
 
-class MayaPortalViewController: UIViewController {
+class SelectCoinHostingController: UIViewController {
+    var onCoinSelected: ((MayaCryptoCurrency) -> Void)?
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        title = NSLocalizedString("Select coin", comment: "Maya")
         view.backgroundColor = UIColor.dw_secondaryBackground()
         navigationItem.largeTitleDisplayMode = .never
 
-        let portalView = MayaPortalView(onConvertDash: { [weak self] in
-            self?.navigateToSelectCoin()
-        })
+        let selectCoinView = SelectCoinView { [weak self] coin in
+            self?.onCoinSelected?(coin)
+        }
 
-        let hostingController = UIHostingController(rootView: portalView)
+        let hostingController = UIHostingController(rootView: selectCoinView)
         hostingController.view.backgroundColor = .clear
 
         addChild(hostingController)
@@ -46,23 +48,5 @@ class MayaPortalViewController: UIViewController {
             hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
-    }
-
-    private func navigateToSelectCoin() {
-        let selectCoinVC = SelectCoinHostingController()
-        selectCoinVC.onCoinSelected = { [weak self] coin in
-            DSLogger.log("Maya: Selected coin \(coin.code) (\(coin.name))")
-            self?.navigateToEnterAddress(for: coin)
-        }
-        navigationController?.pushViewController(selectCoinVC, animated: true)
-    }
-
-    private func navigateToEnterAddress(for coin: MayaCryptoCurrency) {
-        let enterAddressVC = EnterAddressHostingController(coin: coin)
-        enterAddressVC.onAddressConfirmed = { coin, address in
-            DSLogger.log("Maya: Address confirmed for \(coin.code): \(address)")
-            // TODO: Navigate to Enter Amount (Requirement 5)
-        }
-        navigationController?.pushViewController(enterAddressVC, animated: true)
     }
 }
