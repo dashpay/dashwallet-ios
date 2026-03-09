@@ -41,8 +41,12 @@ struct EnterAddressView: View {
                                 .padding(.top, -12)
                         }
 
-                        if viewModel.clipboardContent != nil {
-                            clipboardSection
+                        if viewModel.hasClipboardContent {
+                            if viewModel.isClipboardRevealed {
+                                clipboardSection
+                            } else {
+                                showClipboardButton
+                            }
                         }
                     }
                     .padding(.horizontal, 20)
@@ -55,6 +59,9 @@ struct EnterAddressView: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 16)
             }
+        }
+        .onAppear {
+            viewModel.checkClipboard()
         }
     }
 
@@ -82,11 +89,33 @@ struct EnterAddressView: View {
         .cornerRadius(16)
     }
 
-    // MARK: - Clipboard Section
+    // MARK: - Show Clipboard Button
+
+    private var showClipboardButton: some View {
+        Button(action: { viewModel.revealClipboard() }) {
+            HStack(spacing: 8) {
+                Image(systemName: "doc.on.clipboard")
+                    .font(.system(size: 14))
+                    .foregroundColor(.dashBlue)
+
+                Text(NSLocalizedString("Show content in the clipboard", comment: "Maya"))
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.dashBlue)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(Color.secondaryBackground)
+            .cornerRadius(12)
+            .shadow(color: .shadow, radius: 10, x: 0, y: 5)
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Clipboard Section (Revealed)
 
     private var clipboardSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(NSLocalizedString("Paste address from", comment: "Maya"))
+            Text(NSLocalizedString("Tap the address from the clipboard to paste it", comment: "Maya"))
                 .font(.system(size: 13, weight: .regular))
                 .foregroundColor(.secondaryText)
 
@@ -97,25 +126,15 @@ struct EnterAddressView: View {
                         .foregroundColor(.dashBlue)
                         .frame(width: 24, height: 24)
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(NSLocalizedString("Clipboard", comment: "Maya"))
+                    if let content = viewModel.revealedClipboardContent {
+                        Text(content)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.primaryText)
-
-                        if let content = viewModel.clipboardContent {
-                            Text(content)
-                                .font(.system(size: 12))
-                                .foregroundColor(.secondaryText)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
-                        }
+                            .lineLimit(1)
+                            .truncationMode(.middle)
                     }
 
                     Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(.secondaryText)
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)

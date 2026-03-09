@@ -213,7 +213,9 @@ extension GenericQRScannerController: AVCaptureMetadataOutputObjectsDelegate {
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
 
+        #if DEBUG
         DSLogger.log("Maya QR Scanner: Scanned value: \(stringValue)")
+        #endif
         onQRCodeScanned?(stringValue)
     }
 }

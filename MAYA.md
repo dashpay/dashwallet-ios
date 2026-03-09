@@ -52,7 +52,7 @@ This document tracks the implementation of Maya Protocol (decentralized crypto e
 | # | Feature | Figma Node | Branch | Status |
 |---|---------|-----------|--------|--------|
 | 1 | Select Destination Coin | 24007-4644 | `feat/maya-select-dest-coin` | In Progress |
-| 2 | Enter Destination Address | 24007-6732 | TBD | Not Started |
+| 2 | Enter Destination Address | 24007-6732 | `feat/maya-enter-dest-address` | In Progress |
 | 3 | Retrieve Coinbase & Uphold Addresses | 24014-6577 | TBD | Not Started |
 | 4 | Validate Destination Address | 24032-36179 | TBD | Not Started |
 | 5 | Enter Amount Screen | 24015-8963 | TBD | Not Started |
