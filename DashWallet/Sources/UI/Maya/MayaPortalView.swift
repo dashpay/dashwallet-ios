@@ -20,6 +20,8 @@
 import SwiftUI
 
 struct MayaPortalView: View {
+    var onConvertDash: (() -> Void)?
+
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -58,7 +60,7 @@ struct MayaPortalView: View {
                 // Menu card
                 VStack(spacing: 0) {
                     Button(action: {
-                        // Placeholder — Convert Dash action not yet implemented
+                        onConvertDash?()
                     }) {
                         HStack(spacing: 16) {
                             Image("convert.crypto")
