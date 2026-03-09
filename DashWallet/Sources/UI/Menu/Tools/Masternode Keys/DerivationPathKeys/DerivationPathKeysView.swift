@@ -128,7 +128,7 @@ struct DerivationPathKeysContentView: View {
 
 // MARK: - BackgroundBlurView
 
-private struct BackgroundBlurView: UIViewRepresentable {
+struct BackgroundBlurView: UIViewRepresentable {
     func makeUIView(context: Context) -> UIVisualEffectView {
         UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
     }

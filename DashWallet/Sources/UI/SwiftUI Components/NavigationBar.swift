@@ -157,6 +157,52 @@ struct NavBarBackPlus: View {
     }
 }
 
+// MARK: - NavBarClose
+
+/// Navigation bar with only a close button on the right side.
+///
+/// Used for modal/sheet presentations where a dismiss action is needed:
+/// - 64pt height navigation container
+/// - Circular close button (right) with "toolbar-plus" X icon (11pt height)
+/// - 34pt circular border with custom styling
+/// - Dark mode support
+///
+/// Usage:
+/// ```swift
+/// NavBarClose {
+///     dismiss()
+/// }
+/// ```
+struct NavBarClose: View {
+    let onClose: () -> Void
+
+    var body: some View {
+        HStack {
+            Spacer()
+
+            // Close button (right)
+            Button(action: onClose) {
+                ZStack {
+                    Color.clear
+                        .frame(width: 44, height: 44)
+
+                    Circle()
+                        .stroke(Color.gray300Alpha30, lineWidth: 1.5)
+                        .frame(width: 34, height: 34)
+
+                    Image("toolbar-close")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(height: 11)
+                        .foregroundColor(.primaryText)
+                }
+            }
+            .padding(.trailing, 20)
+        }
+        .frame(height: 64)
+    }
+}
+
 // MARK: - Legacy Support
 
 /// Legacy name for NavBarBack - use NavBarBack instead
@@ -185,5 +231,24 @@ struct NavigationBar_Previews: PreviewProvider {
         }
         .preferredColorScheme(.dark)
         .previewDisplayName("NavBarBack - Dark")
+
+        VStack(spacing: 0) {
+            NavBarClose {
+                print("Close tapped")
+            }
+
+            Spacer()
+        }
+        .previewDisplayName("NavBarClose - Light")
+
+        VStack(spacing: 0) {
+            NavBarClose {
+                print("Close tapped")
+            }
+
+            Spacer()
+        }
+        .preferredColorScheme(.dark)
+        .previewDisplayName("NavBarClose - Dark")
     }
 }
