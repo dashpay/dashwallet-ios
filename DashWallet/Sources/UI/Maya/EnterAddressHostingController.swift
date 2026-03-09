@@ -51,13 +51,16 @@ class EnterAddressHostingController: UIViewController {
             },
             onContinue: { [weak self] address in
                 guard let self else { return }
+                #if DEBUG
                 DSLogger.log("Maya: Address confirmed for \(self.coin.code): \(address)")
+                #endif
                 self.onAddressConfirmed?(self.coin, address)
             }
         )
 
         let hostingController = UIHostingController(rootView: enterAddressView)
-        hostingController.view.backgroundColor = .clear
+        // Match SwiftUI's Color.primaryBackground to prevent flash during system paste banner dismissal
+        hostingController.view.backgroundColor = UIColor(named: "SecondaryBackgroundColor")
 
         addChild(hostingController)
         view.addSubview(hostingController.view)

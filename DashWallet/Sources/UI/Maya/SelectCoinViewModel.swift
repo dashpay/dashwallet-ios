@@ -68,7 +68,7 @@ class SelectCoinViewModel: ObservableObject {
             var items: [CoinDisplayItem] = []
 
             for coin in MayaCryptoCurrency.supportedCoins {
-                guard let pool = poolsByAsset[coin.mayaAsset] else { continue }
+                guard let pool = poolsByAsset[coin.mayaAsset], pool.isAvailable else { continue }
 
                 let isHalted = haltedChains.contains(coin.chain)
                 var priceString: String?

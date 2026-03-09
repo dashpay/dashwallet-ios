@@ -18,6 +18,7 @@
 //
 
 import Foundation
+import SwiftUI
 import UIKit
 
 @MainActor
@@ -26,6 +27,8 @@ class EnterAddressViewModel: ObservableObject {
 
     @Published var addressText: String = ""
     @Published var errorMessage: String?
+    @Published var hasClipboardContent: Bool = false
+    @Published var revealedClipboardContent: String?
 
     var placeholderText: String {
         String(format: NSLocalizedString("%@ address", comment: "Maya"), coin.code)
@@ -35,16 +38,30 @@ class EnterAddressViewModel: ObservableObject {
         !addressText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    var clipboardContent: String? {
-        UIPasteboard.general.string
+    var isClipboardRevealed: Bool {
+        revealedClipboardContent != nil
     }
 
     init(coin: MayaCryptoCurrency) {
         self.coin = coin
     }
 
+    func checkClipboard() {
+        hasClipboardContent = UIPasteboard.general.hasStrings
+    }
+
+    func revealClipboard() {
+        // Read clipboard content (triggers iOS paste permission banner on first access),
+        // then set the published property so the view re-renders with content ready.
+        // Animate the transition to prevent flash during system banner dismissal.
+        let content = UIPasteboard.general.string
+        withAnimation(.easeInOut(duration: 0.2)) {
+            revealedClipboardContent = content
+        }
+    }
+
     func pasteFromClipboard() {
-        guard let content = clipboardContent else { return }
+        guard let content = revealedClipboardContent else { return }
         addressText = content
         errorMessage = nil
     }
