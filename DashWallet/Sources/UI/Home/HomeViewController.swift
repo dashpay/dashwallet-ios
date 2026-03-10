@@ -345,6 +345,14 @@ extension HomeViewController: ShortcutsActionDelegate {
     func shortcutsView(didSelectAction action: ShortcutAction, sender: UIView?) {
         performAction(for: action, sender: sender)
     }
+
+    func shortcutsView(didLongPressPosition position: Int, currentAction: ShortcutAction) {
+        if currentAction.type == .secureWallet && DWGlobalOptions.sharedInstance().walletNeedsBackup {
+            showBackupWarningThenSelect(position: position)
+        } else {
+            presentShortcutSelection(for: position)
+        }
+    }
 }
 
 // MARK: - SyncingActivityMonitorObserver

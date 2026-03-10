@@ -72,6 +72,7 @@ class HomeViewModel: ObservableObject {
 
     @Published private(set) var headerHeight: CGFloat = kBaseBalanceHeaderHeight // TDOO: move back to HomeView when fully transitioned to SwiftUI
     @Published private(set) var showReclassifyTransaction: DSTransaction? = nil
+    @Published var shouldShowShortcutBanner: Bool = false
     
 #if DASHPAY
     var joinDashPayState: JoinDashPayState = .callToAction
@@ -513,6 +514,10 @@ class HomeViewModel: ObservableObject {
             height += 85
         }
 
+        if shouldShowShortcutBanner {
+            height += 70
+        }
+
         self.headerHeight = height
     }
     
@@ -684,8 +689,42 @@ extension HomeViewModel {
 // MARK: - Shortcuts
 
 extension HomeViewModel {
+    @MainActor
+    func checkShortcutBanner() {
+        let options = DWGlobalOptions.sharedInstance()
+        let newValue = (options.shortcutBannerState == 2 && options.shortcuts == nil)
+        if newValue != shouldShowShortcutBanner {
+            shouldShowShortcutBanner = newValue
+            recalculateHeight()
+        }
+    }
+
+    @MainActor
+    func dismissShortcutBanner() {
+        DWGlobalOptions.sharedInstance().shortcutBannerState = 3
+        shouldShowShortcutBanner = false
+        recalculateHeight()
+    }
+
     func reloadShortcuts() {
         let options = DWGlobalOptions.sharedInstance()
+
+        // Check for custom configuration first
+        if let customShortcuts = options.shortcuts,
+           customShortcuts.count == maxShortcutsCount {
+            let items = customShortcuts.compactMap { number -> ShortcutAction? in
+                guard let type = ShortcutActionType(rawValue: number.intValue) else { return nil }
+                return ShortcutAction(type: type)
+            }
+            if items.count == maxShortcutsCount {
+                DispatchQueue.main.async {
+                    self.shortcutItems = items
+                }
+                return
+            }
+        }
+
+        // Fall back to default state-based logic
         let walletNeedsBackup = options.walletNeedsBackup
         let userHasBalance = options.userHasBalance
 
@@ -702,14 +741,14 @@ extension HomeViewModel {
         // State 2: Zero balance and verified passphrase
         else if !userHasBalance && !walletNeedsBackup {
             mutableItems.append(ShortcutAction(type: .receive))
-            mutableItems.append(ShortcutAction(type: .payToAddress))
+            mutableItems.append(ShortcutAction(type: .send))
             mutableItems.append(ShortcutAction(type: .buySellDash))
             mutableItems.append(ShortcutAction(type: .spend))
         }
         // State 3: Has balance and verified passphrase
         else if userHasBalance && !walletNeedsBackup {
             mutableItems.append(ShortcutAction(type: .receive))
-            mutableItems.append(ShortcutAction(type: .payToAddress))
+            mutableItems.append(ShortcutAction(type: .send))
             mutableItems.append(ShortcutAction(type: .scanToPay))
             mutableItems.append(ShortcutAction(type: .spend))
         }
@@ -717,11 +756,21 @@ extension HomeViewModel {
         else if userHasBalance && walletNeedsBackup {
             mutableItems.append(ShortcutAction(type: .secureWallet))
             mutableItems.append(ShortcutAction(type: .receive))
-            mutableItems.append(ShortcutAction(type: .payToAddress))
+            mutableItems.append(ShortcutAction(type: .send))
             mutableItems.append(ShortcutAction(type: .spend))
         }
 
-        self.shortcutItems = mutableItems
+        DispatchQueue.main.async {
+            self.shortcutItems = mutableItems
+        }
+    }
+
+    /// Re-check banner visibility after shortcuts change (e.g., user customized via long press)
+    @MainActor
+    func recheckBannerAfterCustomization() {
+        if shouldShowShortcutBanner {
+            checkShortcutBanner()
+        }
     }
 }
 

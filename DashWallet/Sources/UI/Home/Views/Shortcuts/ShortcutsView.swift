@@ -18,38 +18,18 @@
 import UIKit
 import Combine
 
-func cellSize(for contentSizeCategory: UIContentSizeCategory) -> CGSize {
-    var size = CGSize.zero
-
-    if contentSizeCategory == .extraSmall ||
-        contentSizeCategory == .small ||
-        contentSizeCategory == .medium ||
-        contentSizeCategory == .large {
-        size = CGSize(width: 80.0, height: 95.0)
-    } else if contentSizeCategory == .extraLarge {
-        size = CGSize(width: 88.0, height: 95.0)
-    } else if contentSizeCategory == .extraExtraLarge {
-        size = CGSize(width: 100.0, height: 100.0)
-    } else {
-        size = CGSize(width: 116.0, height: 116.0)
-    }
-
-    if UIDevice.isIphone6Plus || UIDevice.hasHomeIndicator {
-        let width = UIScreen.main.bounds.size.width
-        let margin: CGFloat = 16.0
-        let minSpacing: CGFloat = 8.0 // min cell spacing, set in xib
-        let visibleCells: CGFloat = 4.0
-        let cellWidth = (width - margin * 2.0 - minSpacing * (visibleCells - 1)) / visibleCells
-        if cellWidth > size.width {
-            return CGSize(width: cellWidth, height: cellWidth)
-        }
-    }
+func cellSize(for contentSizeCategory: UIContentSizeCategory, viewWidth: CGFloat) -> CGSize {
+    let margin: CGFloat = 10.0       // Figma: container px padding
+    let spacing: CGFloat = 4.0       // Figma: shortcut-bar/gap
+    let visibleCells: CGFloat = 4.0
+    let cellWidth = floor((viewWidth - margin * 2.0 - spacing * (visibleCells - 1)) / visibleCells)
+    let cellHeight: CGFloat = 68.0   // Figma: icon(46) + gap(4) + text(16) + bottomPad(2)
 
     if UIDevice.isIpad {
-        return CGSize(width: size.width * 2.0, height: size.height)
+        return CGSize(width: cellWidth * 2.0, height: cellHeight)
     }
 
-    return size
+    return CGSize(width: cellWidth, height: cellHeight)
 }
 
 
@@ -57,6 +37,7 @@ func cellSize(for contentSizeCategory: UIContentSizeCategory) -> CGSize {
 
 protocol ShortcutsActionDelegate: AnyObject {
     func shortcutsView(didSelectAction action: ShortcutAction, sender: UIView?)
+    func shortcutsView(didLongPressPosition position: Int, currentAction: ShortcutAction)
 }
 
 // MARK: - ShortcutsViewDelegate
@@ -70,7 +51,8 @@ protocol ShortcutsViewDelegate: AnyObject {
 class ShortcutsView: UIView {
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel: HomeViewModel
-    
+    private var lastLayoutWidth: CGFloat = 0
+
     weak var actionDelegate: ShortcutsActionDelegate?
 
     weak var delegate: ShortcutsViewDelegate?
@@ -118,7 +100,7 @@ class ShortcutsView: UIView {
             contentView.widthAnchor.constraint(equalTo: widthAnchor),
         ])
 
-        collectionView.layer.cornerRadius = 8
+        collectionView.layer.cornerRadius = 16
         collectionView.layer.masksToBounds = true
 
         if UIDevice.current.userInterfaceIdiom == .pad {
@@ -127,10 +109,21 @@ class ShortcutsView: UIView {
 
         collectionView.register(UINib(nibName: "DWShortcutCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: ShortcutCell.reuseIdentifier)
 
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+        collectionView.addGestureRecognizer(longPress)
+
         NotificationCenter.default.addObserver(self, selector: #selector(contentSizeCategoryDidChangeNotification(notification:)),
                                                name: UIContentSizeCategory.didChangeNotification, object: nil)
 
         updateCellSizeForContentSizeCategory(UIApplication.shared.preferredContentSizeCategory, initialSetup: true)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let currentWidth = bounds.width
+        guard currentWidth != lastLayoutWidth else { return }
+        lastLayoutWidth = currentWidth
+        updateCellSizeForContentSizeCategory(UIApplication.shared.preferredContentSizeCategory, initialSetup: false)
     }
 
     @objc
@@ -142,7 +135,9 @@ class ShortcutsView: UIView {
     }
 
     private func updateCellSizeForContentSizeCategory(_ contentSizeCategory: UIContentSizeCategory, initialSetup: Bool) {
-        var cellSize = cellSize(for: contentSizeCategory)
+        let fallbackWidth = window?.windowScene?.screen.bounds.width ?? UIScreen.main.bounds.size.width
+        let width = bounds.width > 0 ? bounds.width : fallbackWidth
+        var cellSize = cellSize(for: contentSizeCategory, viewWidth: width)
         cellSize.height = ceil(cellSize.height) // This fixes the autolayout issue when the size of the cell is higher than the collection view itself
 
         collectionViewHeightConstraint.constant = cellSize.height
@@ -159,6 +154,20 @@ class ShortcutsView: UIView {
         if !initialSetup {
             delegate?.shortcutsViewDidUpdateContentSize(self)
         }
+    }
+
+    @objc
+    private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else { return }
+
+        let point = gesture.location(in: collectionView)
+        guard let indexPath = collectionView.indexPathForItem(at: point) else { return }
+
+        let position = indexPath.item
+        guard position < viewModel.shortcutItems.count else { return }
+
+        let action = viewModel.shortcutItems[position]
+        actionDelegate?.shortcutsView(didLongPressPosition: position, currentAction: action)
     }
 }
 
@@ -203,7 +212,7 @@ extension ShortcutsView: UICollectionViewDataSource, UICollectionViewDelegate, U
         let cellCount = CGFloat(collectionView.numberOfItems(inSection: section))
         var inset = (collectionView.bounds.size.width - (cellCount * cellWidth) - ((cellCount - 1) * cellSpacing)) * 0.5
         inset = max(inset, 0.0)
-        return UIEdgeInsets(top: 0.0, left: inset, bottom: 0.0, right: 0.0)
+        return UIEdgeInsets(top: 0.0, left: inset, bottom: 0.0, right: inset)
     }
 }
 
