@@ -275,10 +275,7 @@ extension ToolsMenuScreen {
         }
 
         func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
-            let presenter = viewController?.presentingViewController
-            viewController?.dismiss(animated: true) {
-                (presenter as? DWBasePayViewController)?.processPaymentInput(paymentInput)
-            }
+            viewController?.dismiss(animated: true)
         }
 
         func qrScanModelDidCancel(_ viewModel: DWQRScanModel) {
