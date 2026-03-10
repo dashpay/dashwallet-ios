@@ -68,6 +68,7 @@ class ServiceDataProviderImpl: ServiceDataProvider {
         let sortedItems = nonMayaItems
             .sorted(by: { $0.usageCount > $1.usageCount })
             .sorted(by: { $0.isInUse && !$1.isInUse })
+            + mayaItems
 
         handler?(sortedItems + mayaItems)
     }
