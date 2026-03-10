@@ -64,6 +64,12 @@ extension Color {
         Color("SystemYellowColor")
     }
     
+// Blue
+
+    static var blueAlpha5: Color {
+        Color("BlueAlpha5")
+    }
+
 // Black
 
     static var blackAlpha5: Color {

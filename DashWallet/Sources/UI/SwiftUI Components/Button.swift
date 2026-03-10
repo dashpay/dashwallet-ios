@@ -33,6 +33,7 @@ struct DashButton: View {
         case outlined
         case filled
         case filledBlue
+        case tintedBlue
     }
     
     enum Size {
@@ -113,6 +114,8 @@ struct DashButton: View {
             return overridenBackgroundColor ?? Color.dashBlue
         case .filledBlue:
             return Color.blue
+        case .tintedBlue:
+            return Color.blueAlpha5
         default:
             return Color.clear
         }
@@ -133,6 +136,8 @@ struct DashButton: View {
             return Color.white
         case .filledBlue:
             return Color.white
+        case .tintedBlue:
+            return Color.blue
         default:
             return Color.primaryText
         }

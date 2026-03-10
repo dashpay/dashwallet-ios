@@ -29,6 +29,7 @@ struct ToolsMenuScreen: View {
     @State private var showCSVExportActivity = false
     @State private var showZenLedgerSheet = false
     @State private var showImportPrivateKeySheet = false
+    @State private var showExtendedPublicKeySheet = false
     @State private var scannerDelegate: QRScannerDelegate? = nil
     
     init(vc: UINavigationController, onImportPrivateKey: @escaping () -> ()) {
@@ -160,6 +161,18 @@ struct ToolsMenuScreen: View {
                 ImportPrivateKeySheet(onScanPrivateKey: presentScanner)
             }
         }
+        .sheet(isPresented: $showExtendedPublicKeySheet) {
+            if #available(iOS 16.4, *) {
+                ExtendedPublicKeySheet()
+                    .presentationDetents([.height(640)])
+                    .presentationCornerRadius(32)
+            } else if #available(iOS 16.0, *) {
+                ExtendedPublicKeySheet()
+                    .presentationDetents([.height(640)])
+            } else {
+                ExtendedPublicKeySheet()
+            }
+        }
     }
     
     private func handleNavigation(_ destination: ToolsMenuNavigationDestination?) {
@@ -189,9 +202,7 @@ struct ToolsMenuScreen: View {
     }
     
     private func showExtendedPublicKeys() {
-        let controller = ExtendedPublicKeysViewController()
-        controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        showExtendedPublicKeySheet = true
     }
     
     private func showMasternodeKeys() {
