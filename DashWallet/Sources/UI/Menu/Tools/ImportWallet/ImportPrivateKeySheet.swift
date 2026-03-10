@@ -96,7 +96,9 @@ struct ImportPrivateKeySheet: View {
                     isEnabled: true,
                     action: {
                         presentationMode.wrappedValue.dismiss()
-                        onScanPrivateKey()
+                        DispatchQueue.main.async {
+                            onScanPrivateKey()
+                        }
                     }
                 )
                 .padding(.horizontal, 60)
