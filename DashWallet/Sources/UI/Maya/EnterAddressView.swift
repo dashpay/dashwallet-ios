@@ -81,7 +81,10 @@ struct EnterAddressView: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 20, height: 20)
                     .foregroundColor(.secondaryText)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel(NSLocalizedString("Scan QR code", comment: "Maya"))
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
