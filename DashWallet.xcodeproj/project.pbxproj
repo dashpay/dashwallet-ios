@@ -1663,6 +1663,18 @@
 		AA0002152BA0F58E00A1B307 /* SelectCoinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002132BA0F58E00A1B307 /* SelectCoinView.swift */; };
 		AA0002172BA0F58E00A1B308 /* SelectCoinHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002162BA0F58E00A1B308 /* SelectCoinHostingController.swift */; };
 		AA0002182BA0F58E00A1B308 /* SelectCoinHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002162BA0F58E00A1B308 /* SelectCoinHostingController.swift */; };
+		AA0003022CA0F58E00B1B401 /* EnterAddressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */; };
+		AA0003032CA0F58E00B1B401 /* EnterAddressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */; };
+		AA0003052CA0F58E00B1B402 /* EnterAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */; };
+		AA0003062CA0F58E00B1B402 /* EnterAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */; };
+		AA0003082CA0F58E00B1B403 /* EnterAddressHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */; };
+		AA0003092CA0F58E00B1B403 /* EnterAddressHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */; };
+		AA00030B2CA0F58E00B1B404 /* GenericQRScannerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */; };
+		AA00030C2CA0F58E00B1B404 /* GenericQRScannerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */; };
+		AA00030E2CA0F58E00B1B405 /* QRCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */; };
+		AA00030F2CA0F58E00B1B405 /* QRCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */; };
+		AA0003112CA0F58E00B1B406 /* GenericQRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */; };
+		AA0003122CA0F58E00B1B406 /* GenericQRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3220,6 +3232,12 @@
 		AA0002102BA0F58E00A1B306 /* CoinRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinRowView.swift; sourceTree = "<group>"; };
 		AA0002132BA0F58E00A1B307 /* SelectCoinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectCoinView.swift; sourceTree = "<group>"; };
 		AA0002162BA0F58E00A1B308 /* SelectCoinHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectCoinHostingController.swift; sourceTree = "<group>"; };
+		AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressViewModel.swift; sourceTree = "<group>"; };
+		AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressView.swift; sourceTree = "<group>"; };
+		AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressHostingController.swift; sourceTree = "<group>"; };
+		AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericQRScannerController.swift; sourceTree = "<group>"; };
+		AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCaptureView.swift; sourceTree = "<group>"; };
+		AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericQRScannerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -4084,6 +4102,12 @@
 				AA0002102BA0F58E00A1B306 /* CoinRowView.swift */,
 				AA0002132BA0F58E00A1B307 /* SelectCoinView.swift */,
 				AA0002162BA0F58E00A1B308 /* SelectCoinHostingController.swift */,
+				AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */,
+				AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */,
+				AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */,
+				AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */,
+				AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */,
+				AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */,
 			);
 			path = Maya;
 			sourceTree = "<group>";
@@ -9246,6 +9270,12 @@
 				AA0002112BA0F58E00A1B306 /* CoinRowView.swift in Sources */,
 				AA0002142BA0F58E00A1B307 /* SelectCoinView.swift in Sources */,
 				AA0002172BA0F58E00A1B308 /* SelectCoinHostingController.swift in Sources */,
+				AA0003022CA0F58E00B1B401 /* EnterAddressViewModel.swift in Sources */,
+				AA0003052CA0F58E00B1B402 /* EnterAddressView.swift in Sources */,
+				AA0003082CA0F58E00B1B403 /* EnterAddressHostingController.swift in Sources */,
+				AA00030B2CA0F58E00B1B404 /* GenericQRScannerController.swift in Sources */,
+				AA00030E2CA0F58E00B1B405 /* QRCaptureView.swift in Sources */,
+				AA0003112CA0F58E00B1B406 /* GenericQRScannerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -10143,6 +10173,12 @@
 				AA0002122BA0F58E00A1B306 /* CoinRowView.swift in Sources */,
 				AA0002152BA0F58E00A1B307 /* SelectCoinView.swift in Sources */,
 				AA0002182BA0F58E00A1B308 /* SelectCoinHostingController.swift in Sources */,
+				AA0003032CA0F58E00B1B401 /* EnterAddressViewModel.swift in Sources */,
+				AA0003062CA0F58E00B1B402 /* EnterAddressView.swift in Sources */,
+				AA0003092CA0F58E00B1B403 /* EnterAddressHostingController.swift in Sources */,
+				AA00030C2CA0F58E00B1B404 /* GenericQRScannerController.swift in Sources */,
+				AA00030F2CA0F58E00B1B405 /* QRCaptureView.swift in Sources */,
+				AA0003122CA0F58E00B1B406 /* GenericQRScannerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

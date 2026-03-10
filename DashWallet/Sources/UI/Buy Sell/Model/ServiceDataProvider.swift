@@ -61,14 +61,15 @@ class ServiceDataProviderImpl: ServiceDataProvider {
     }
 
     private func updateServices() {
-        // Maya is always pinned to the end, so exclude it from sorting
+        // Separate Maya from sorting so it stays at the end
+        let nonMayaItems = items.filter { $0.service != .maya }
         let mayaItems = items.filter { $0.service == .maya }
-        let sortedItems = items
-            .filter { $0.service != .maya }
+
+        let sortedItems = nonMayaItems
             .sorted(by: { $0.usageCount > $1.usageCount })
             .sorted(by: { $0.isInUse && !$1.isInUse })
             + mayaItems
 
-        handler?(sortedItems)
+        handler?(sortedItems + mayaItems)
     }
 }

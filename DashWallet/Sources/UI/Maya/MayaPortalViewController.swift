@@ -52,8 +52,19 @@ class MayaPortalViewController: UIViewController {
         let selectCoinVC = SelectCoinHostingController()
         selectCoinVC.onCoinSelected = { [weak self] coin in
             DSLogger.log("Maya: Selected coin \(coin.code) (\(coin.name))")
-            // TODO: Navigate to Enter Destination Address (Requirement 2)
+            self?.navigateToEnterAddress(for: coin)
         }
         navigationController?.pushViewController(selectCoinVC, animated: true)
+    }
+
+    private func navigateToEnterAddress(for coin: MayaCryptoCurrency) {
+        let enterAddressVC = EnterAddressHostingController(coin: coin)
+        enterAddressVC.onAddressConfirmed = { coin, address in
+            #if DEBUG
+            DSLogger.log("Maya: Address confirmed for \(coin.code): \(address)")
+            #endif
+            // TODO: Navigate to Enter Amount (Requirement 5)
+        }
+        navigationController?.pushViewController(enterAddressVC, animated: true)
     }
 }
