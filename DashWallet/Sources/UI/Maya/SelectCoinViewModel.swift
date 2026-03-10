@@ -24,6 +24,7 @@ struct CoinDisplayItem: Identifiable {
     let id: String
     let coin: MayaCryptoCurrency
     let fiatPrice: String?
+    let isHalted: Bool
 }
 
 @MainActor
@@ -32,6 +33,8 @@ class SelectCoinViewModel: ObservableObject {
     @Published var searchText: String = ""
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var hasHaltedCoins: Bool = false
+    @Published var showHaltedToast: Bool = false
 
     var filteredCoins: [CoinDisplayItem] {
         if searchText.isEmpty {
@@ -48,9 +51,13 @@ class SelectCoinViewModel: ObservableObject {
         errorMessage = nil
 
         do {
-            let pools = try await MayaAPIService.shared.fetchPools()
+            async let poolsRequest = MayaAPIService.shared.fetchPools()
+            async let inboundRequest = MayaAPIService.shared.fetchInboundAddresses()
+
+            let (pools, inboundAddresses) = try await (poolsRequest, inboundRequest)
 
             let poolsByAsset = Dictionary(pools.map { ($0.asset, $0) }, uniquingKeysWith: { first, _ in first })
+            let haltedChains = Set(inboundAddresses.filter { $0.halted }.map { $0.chain })
 
             let fiatCurrency = App.fiatCurrency
             let formatter = NumberFormatter()
@@ -61,8 +68,9 @@ class SelectCoinViewModel: ObservableObject {
             var items: [CoinDisplayItem] = []
 
             for coin in MayaCryptoCurrency.supportedCoins {
-                guard let pool = poolsByAsset[coin.mayaAsset] else { continue }
+                guard let pool = poolsByAsset[coin.mayaAsset], pool.isAvailable else { continue }
 
+                let isHalted = haltedChains.contains(coin.chain)
                 var priceString: String?
 
                 if let priceUSD = pool.priceUSD, priceUSD > 0 {
@@ -75,13 +83,22 @@ class SelectCoinViewModel: ObservableObject {
                 items.append(CoinDisplayItem(
                     id: coin.id,
                     coin: coin,
-                    fiatPrice: priceString
+                    fiatPrice: priceString,
+                    isHalted: isHalted
                 ))
             }
 
-            items.sort { $0.coin.name < $1.coin.name }
+            // Sort: available coins first, then halted; alphabetically within each group
+            items.sort { a, b in
+                if a.isHalted != b.isHalted {
+                    return !a.isHalted
+                }
+                return a.coin.name < b.coin.name
+            }
 
             coins = items
+            hasHaltedCoins = items.contains { $0.isHalted }
+            showHaltedToast = hasHaltedCoins
             isLoading = false
         } catch {
             isLoading = false
