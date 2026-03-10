@@ -229,29 +229,19 @@ struct ToolsMenuScreen: View {
     }
 
     private func presentScanner() {
-        print("🔍 DEBUG: presentScanner called in ToolsMenuScreen")
-
         // Wait for sheet dismissal animation to complete before presenting scanner
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             let scannerVC = DWQRScanViewController()
             scannerVC.modalPresentationStyle = .fullScreen
 
-            // Create and set delegate
             let delegate = QRScannerDelegate(viewController: scannerVC)
             self.scannerDelegate = delegate
             scannerVC.model.delegate = delegate
 
-            print("🔍 DEBUG: About to present scanner from vc: \(self.vc)")
-
-            // Present from the topmost view controller in the navigation stack
             if let topVC = self.vc.topViewController {
-                print("🔍 DEBUG: Presenting from top VC: \(topVC)")
-                topVC.present(scannerVC, animated: true) {
-                    print("🔍 DEBUG: Scanner presented successfully")
-                }
+                topVC.present(scannerVC, animated: true)
             } else {
-                print("🔍 DEBUG: No top VC, presenting from nav controller")
-                self.vc.present(scannerVC, animated: true, completion: nil)
+                self.vc.present(scannerVC, animated: true)
             }
         }
     }
@@ -282,21 +272,17 @@ extension ToolsMenuScreen {
 
         init(viewController: UIViewController) {
             self.viewController = viewController
-            print("🔍 DEBUG: QRScannerDelegate initialized in ToolsMenuScreen")
         }
 
         func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
-            print("🔍 DEBUG: didScanPaymentInput called")
+            let presenter = viewController?.presentingViewController
             viewController?.dismiss(animated: true) {
-                print("🔍 DEBUG: Scanner dismissed after scan")
+                (presenter as? DWBasePayViewController)?.processPaymentInput(paymentInput)
             }
         }
 
         func qrScanModelDidCancel(_ viewModel: DWQRScanModel) {
-            print("🔍 DEBUG: qrScanModelDidCancel called - X button pressed")
-            viewController?.dismiss(animated: true) {
-                print("🔍 DEBUG: Scanner dismissed after cancel")
-            }
+            viewController?.dismiss(animated: true)
         }
     }
 }
