@@ -1671,6 +1671,10 @@
 		AA0003092CA0F58E00B1B403 /* EnterAddressHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */; };
 		AA00030B2CA0F58E00B1B404 /* GenericQRScannerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */; };
 		AA00030C2CA0F58E00B1B404 /* GenericQRScannerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */; };
+		AA00030E2CA0F58E00B1B405 /* QRCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */; };
+		AA00030F2CA0F58E00B1B405 /* QRCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */; };
+		AA0003112CA0F58E00B1B406 /* GenericQRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */; };
+		AA0003122CA0F58E00B1B406 /* GenericQRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3232,6 +3236,8 @@
 		AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressView.swift; sourceTree = "<group>"; };
 		AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressHostingController.swift; sourceTree = "<group>"; };
 		AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericQRScannerController.swift; sourceTree = "<group>"; };
+		AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCaptureView.swift; sourceTree = "<group>"; };
+		AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericQRScannerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -4100,6 +4106,8 @@
 				AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */,
 				AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */,
 				AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */,
+				AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */,
+				AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */,
 			);
 			path = Maya;
 			sourceTree = "<group>";
@@ -9266,6 +9274,8 @@
 				AA0003052CA0F58E00B1B402 /* EnterAddressView.swift in Sources */,
 				AA0003082CA0F58E00B1B403 /* EnterAddressHostingController.swift in Sources */,
 				AA00030B2CA0F58E00B1B404 /* GenericQRScannerController.swift in Sources */,
+				AA00030E2CA0F58E00B1B405 /* QRCaptureView.swift in Sources */,
+				AA0003112CA0F58E00B1B406 /* GenericQRScannerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -10167,6 +10177,8 @@
 				AA0003062CA0F58E00B1B402 /* EnterAddressView.swift in Sources */,
 				AA0003092CA0F58E00B1B403 /* EnterAddressHostingController.swift in Sources */,
 				AA00030C2CA0F58E00B1B404 /* GenericQRScannerController.swift in Sources */,
+				AA00030F2CA0F58E00B1B405 /* QRCaptureView.swift in Sources */,
+				AA0003122CA0F58E00B1B406 /* GenericQRScannerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
