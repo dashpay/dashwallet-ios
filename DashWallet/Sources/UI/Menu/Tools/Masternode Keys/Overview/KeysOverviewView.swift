@@ -36,7 +36,7 @@ struct KeysOverviewContentView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 // Title
-                Text("Masternode keys")
+                Text(NSLocalizedString("Masternode keys", comment: ""))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(Color(uiColor: .dw_label()))
                     .padding(.horizontal, 20)
