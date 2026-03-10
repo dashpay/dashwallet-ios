@@ -128,11 +128,11 @@ struct KeyItemButton: View {
     }
 
     private var keyCountText: String {
-        String(format: NSLocalizedString("%d key(s)", comment: "#bc-ignore!"), count)
+        String.localizedStringWithFormat(NSLocalizedString("%d key(s)", comment: "#bc-ignore!"), count)
     }
 
     private var usedCountText: String {
-        String(format: NSLocalizedString("%ld used(s)", comment: "#bc-ignore!"), used)
+        String.localizedStringWithFormat(NSLocalizedString("%ld used", comment: "#bc-ignore!"), used)
     }
 }
 
