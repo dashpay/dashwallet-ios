@@ -33,9 +33,9 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>one</key>
-			<string>%d merchant</string>
+			<string>%d merchant in %@</string>
 			<key>other</key>
-			<string>%d merchants</string>
+			<string>%d merchants in %@</string>
 		</dict>
 	</dict>
 	<key>%d merchant(s)</key>
