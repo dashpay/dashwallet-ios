@@ -41,11 +41,11 @@ struct MerchantDenominations: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(NSLocalizedString("Select amount", comment: "DashSpend"))
-                .font(.h5Bold)
+                .font(.title1)
                 .foregroundColor(.primaryText)
             
             Text(NSLocalizedString("This merchant sells gift cards at fixed prices", comment: "DashSpend"))
-                .font(.body2)
+                .font(.subhead)
                 .foregroundColor(.secondaryText)
                 .padding(.top, 4)
             
@@ -85,7 +85,7 @@ private struct DenominationChip: View {
     var body: some View {
         Button(action: onTap) {
             Text(formattedValue)
-                .font(.subtitle1)
+                .font(.calloutMedium)
                 .foregroundColor(.primaryText)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)

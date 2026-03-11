@@ -16,98 +16,137 @@
 //
 
 import UIKit
+import SwiftUI
 
 // MARK: - KeysOverviewViewController
 
 @objc(DWKeysOverviewViewController)
 final class KeysOverviewViewController: BaseViewController {
-    private var tableView: UITableView!
-    private var model: WalletKeysOverviewModel!
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-    }
+    private var navigationContainer: UIView!
+    private var backButtonBorder: UIView!
+    private var backButtonIcon: UIImageView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        configureModel()
         configureHierarchy()
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            updateBackButtonAppearance()
+        }
     }
 }
 
 extension KeysOverviewViewController {
-    private func configureModel() {
-        model = WalletKeysOverviewModel()
-    }
-
     private func configureHierarchy() {
-        title = NSLocalizedString("Masternode Keys", comment: "")
-
         view.backgroundColor = .dw_secondaryBackground()
 
-        tableView = UITableView(frame: .zero, style: .insetGrouped)
-        tableView.preservesSuperviewLayoutMargins = true
-        tableView.rowHeight = 62
-        tableView.backgroundColor = .clear
-        tableView.estimatedRowHeight = 62
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.registerClass(for: KeysOverviewCell.self)
-        tableView.delegate = self
-        tableView.dataSource = self
-        view.addSubview(tableView)
+        configureCustomNavigationBar()
+        addSwiftUIContent()
+    }
+
+    private func addSwiftUIContent() {
+        let swiftUIView = KeysOverviewContentView(navigationController: navigationController)
+
+        let hostingController = UIHostingController(rootView: swiftUIView)
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        hostingController.view.backgroundColor = .clear
+
+        addChild(hostingController)
+        view.addSubview(hostingController.view)
+        hostingController.didMove(toParent: self)
 
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.topAnchor, constant: 0),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 0),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
+            hostingController.view.topAnchor.constraint(equalTo: navigationContainer.bottomAnchor, constant: 10),
+            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
-}
 
-// MARK: UITableViewDataSource, UITableViewDelegate
+    private func configureCustomNavigationBar() {
+        navigationContainer = UIView()
+        navigationContainer.translatesAutoresizingMaskIntoConstraints = false
+        navigationContainer.backgroundColor = .dw_secondaryBackground()
+        view.addSubview(navigationContainer)
 
-extension KeysOverviewViewController: UITableViewDataSource, UITableViewDelegate {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        model.items.count
+        NSLayoutConstraint.activate([
+            navigationContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            navigationContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            navigationContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            navigationContainer.heightAnchor.constraint(equalToConstant: 64)
+        ])
+
+        let backButton = UIButton(type: .custom)
+        backButton.translatesAutoresizingMaskIntoConstraints = false
+        backButton.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
+        navigationContainer.addSubview(backButton)
+
+        NSLayoutConstraint.activate([
+            backButton.leadingAnchor.constraint(equalTo: navigationContainer.leadingAnchor, constant: 20),
+            backButton.centerYAnchor.constraint(equalTo: navigationContainer.centerYAnchor),
+            backButton.widthAnchor.constraint(equalToConstant: 44),
+            backButton.heightAnchor.constraint(equalToConstant: 44)
+        ])
+
+        backButtonBorder = UIView()
+        backButtonBorder.translatesAutoresizingMaskIntoConstraints = false
+        backButtonBorder.layer.cornerRadius = 17
+        backButtonBorder.layer.borderWidth = 1.5
+        backButtonBorder.isUserInteractionEnabled = false
+        backButton.addSubview(backButtonBorder)
+
+        NSLayoutConstraint.activate([
+            backButtonBorder.centerXAnchor.constraint(equalTo: backButton.centerXAnchor),
+            backButtonBorder.centerYAnchor.constraint(equalTo: backButton.centerYAnchor),
+            backButtonBorder.widthAnchor.constraint(equalToConstant: 34),
+            backButtonBorder.heightAnchor.constraint(equalToConstant: 34)
+        ])
+
+        backButtonIcon = UIImageView()
+        backButtonIcon.translatesAutoresizingMaskIntoConstraints = false
+        backButtonIcon.contentMode = .scaleAspectFit
+        backButton.addSubview(backButtonIcon)
+
+        NSLayoutConstraint.activate([
+            backButtonIcon.centerXAnchor.constraint(equalTo: backButton.centerXAnchor, constant: -1),
+            backButtonIcon.centerYAnchor.constraint(equalTo: backButton.centerYAnchor),
+            backButtonIcon.heightAnchor.constraint(equalToConstant: 12)
+        ])
+
+        updateBackButtonAppearance()
     }
 
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let item = model.items[indexPath.row]
-        let count = model.keyCount(for: item)
-        let used = model.usedCount(for: item)
+    private func updateBackButtonAppearance() {
+        if let borderColor = UIColor(named: "Gray300Alpha30") {
+            backButtonBorder.layer.borderColor = borderColor.cgColor
+        } else {
+            backButtonBorder.layer.borderColor = UIColor.dw_gray300().withAlphaComponent(0.3).cgColor
+        }
 
-        let cell = tableView.dequeueReusableCell(type: KeysOverviewCell.self, for: indexPath)
-        cell.accessoryType = .disclosureIndicator
-        cell.update(with: item, count: count, used: used)
-        return cell
+        let iconName = traitCollection.userInterfaceStyle == .dark ? "controls-back-dark-mode" : "controls-back"
+        backButtonIcon.image = UIImage(named: iconName)
+        backButtonIcon.tintColor = .dw_label()
     }
 
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-
-        let showVcBlock = { [weak self] in
-            guard let wSelf = self else { return }
-
-            let item = wSelf.model.items[indexPath.row]
-            let derivationPath = wSelf.model.derivationPath(for: item)
-            let vc = DerivationPathKeysViewController(with: item, derivationPath: derivationPath)
-            vc.hidesBottomBarWhenPushed = true
-            wSelf.navigationController?.pushViewController(vc, animated: true)
-        }
-
-        DSAuthenticationManager.sharedInstance().authenticate(withPrompt: nil, usingBiometricAuthentication: false, alertIfLockout: true) { authenticatedOrSuccess, _, _ in
-
-            guard authenticatedOrSuccess else { return }
-            showVcBlock()
-        }
+    @objc private func backButtonTapped() {
+        navigationController?.popViewController(animated: true)
     }
 }
 
 // MARK: NavigationBarStyleable
 
 extension KeysOverviewViewController: NavigationBarStyleable {
-    var prefersLargeTitles: Bool { true }
-    var largeTitleDisplayMode: UINavigationItem.LargeTitleDisplayMode { .always }
+    var prefersLargeTitles: Bool { false }
+    var largeTitleDisplayMode: UINavigationItem.LargeTitleDisplayMode { .never }
+}
+
+// MARK: NavigationBarDisplayable
+
+extension KeysOverviewViewController: NavigationBarDisplayable {
+    var isNavigationBarHidden: Bool { true }
 }

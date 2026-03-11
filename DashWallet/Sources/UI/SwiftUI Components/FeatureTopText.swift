@@ -29,7 +29,7 @@ struct FeatureTopText: View {
     var body: some View {
         VStack(alignment: getStackAlignment(), spacing: 6) {
             Text(title)
-                .font(.h5Bold)
+                .font(.title1)
                 .multilineTextAlignment(alignment)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
@@ -38,7 +38,7 @@ struct FeatureTopText: View {
           
             if let text = text {
                 Text(text)
-                    .font(.body2)
+                    .font(.subhead)
                     .multilineTextAlignment(alignment)
                     .lineSpacing(3)
                     .foregroundColor(.secondaryText)

@@ -16,21 +16,20 @@
 //
 
 import UIKit
+import SwiftUI
 
 // MARK: - DerivationPathKeysViewController
 
 final class DerivationPathKeysViewController: BaseViewController, NavigationStackControllable {
-    private let model: DerivationPathKeysModel
-
-    private var tableView: UITableView!
+    private let viewModel: DerivationPathKeysViewModel
 
     convenience init(with key: MNKey, derivationPath: DSAuthenticationKeysDerivationPath) {
-        self.init(with: DerivationPathKeysModel(key: key, derivationPath: derivationPath))
+        let model = DerivationPathKeysModel(key: key, derivationPath: derivationPath)
+        self.init(with: DerivationPathKeysViewModel(model: model))
     }
 
-    init(with model: DerivationPathKeysModel) {
-        self.model = model
-
+    init(with viewModel: DerivationPathKeysViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -38,25 +37,32 @@ final class DerivationPathKeysViewController: BaseViewController, NavigationStac
         fatalError("init(coder:) has not been implemented")
     }
 
-    @objc
-    private func addNewAction() {
-        model.showNextKey()
-
-        tableView.insertSections([model.visibleIndexes], with: .automatic)
-    }
-
-    @objc
-    func applicationWillResignActiveNotification() {
-        navigationController?.popViewController(animated: false)
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        configureHierarchy()
+        view.backgroundColor = .dw_secondaryBackground()
+
+        let swiftUIView = DerivationPathKeysContentView(viewModel: viewModel) { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
+        }
+
+        let hostingController = UIHostingController(rootView: swiftUIView)
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        hostingController.view.backgroundColor = .clear
+
+        addChild(hostingController)
+        view.addSubview(hostingController.view)
+        hostingController.didMove(toParent: self)
+
+        NSLayoutConstraint.activate([
+            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
 
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(applicationWillResignActiveNotification),
+                                               selector: #selector(applicationWillResignActive),
                                                name: UIApplication.willResignActiveNotification,
                                                object: nil)
     }
@@ -64,90 +70,21 @@ final class DerivationPathKeysViewController: BaseViewController, NavigationStac
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
-}
 
-// MARK: UITableViewDelegate, UITableViewDataSource
-
-extension DerivationPathKeysViewController: UITableViewDelegate, UITableViewDataSource {
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let usageInfo = model.usageInfoForKey(at: section)
-
-        let view = tableView.dequeueReusableHeaderFooterView(type: DerivationPathKeysHeaderView.self)
-        view.titleLabel.text = NSLocalizedString("Keypair", comment: "") + " \(section)"
-        view.extraInfoLabel.text = usageInfo
-        return view
-    }
-
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        40
-    }
-
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-
-        guard let cell = tableView.cellForRow(at: indexPath) as? DerivationPathKeysCell, !cell.item.value.isEmpty else {
-            return
-        }
-
-        UIPasteboard.general.string = cell.item.value
-        view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
-    }
-
-    func numberOfSections(in tableView: UITableView) -> Int {
-        model.numberOfSections
-    }
-
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        model.numberIfItems
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let info = model.infoItems[indexPath.row]
-        let item = model.itemForInfo(info, atIndex: indexPath.section)
-
-        let cell = tableView.dequeueReusableCell(type: DerivationPathKeysCell.self, for: indexPath)
-        cell.update(with: item)
-        cell.separatorInset = .init(top: 0, left: 15, bottom: 0, right: 0)
-        return cell
-    }
-}
-
-extension DerivationPathKeysViewController {
-    private func configureHierarchy() {
-        title = model.title
-        view.backgroundColor = .dw_secondaryBackground()
-
-        let plusItem = UIBarButtonItem(image: UIImage(systemName: "plus"),
-                                       style: .plain,
-                                       target: self,
-                                       action: #selector(addNewAction))
-        plusItem.tintColor = UIColor.dw_label()
-        navigationItem.rightBarButtonItem = plusItem
-
-        tableView = UITableView(frame: .zero, style: .insetGrouped)
-        tableView.registerClass(for: DerivationPathKeysCell.self)
-        tableView.registerClassforHeaderFooterView(for: DerivationPathKeysHeaderView.self)
-        tableView.preservesSuperviewLayoutMargins = true
-        tableView.backgroundColor = .clear
-        tableView.estimatedRowHeight = UITableView.automaticDimension
-        tableView.rowHeight = UITableView.automaticDimension
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.delegate = self
-        tableView.dataSource = self
-        view.addSubview(tableView)
-
-        NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.topAnchor, constant: 0),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 0),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
-        ])
+    @objc private func applicationWillResignActive() {
+        navigationController?.popViewController(animated: false)
     }
 }
 
 // MARK: NavigationBarStyleable
 
 extension DerivationPathKeysViewController: NavigationBarStyleable {
-    var prefersLargeTitles: Bool { true }
-    var largeTitleDisplayMode: UINavigationItem.LargeTitleDisplayMode { .always }
+    var prefersLargeTitles: Bool { false }
+    var largeTitleDisplayMode: UINavigationItem.LargeTitleDisplayMode { .never }
+}
+
+// MARK: NavigationBarDisplayable
+
+extension DerivationPathKeysViewController: NavigationBarDisplayable {
+    var isNavigationBarHidden: Bool { true }
 }

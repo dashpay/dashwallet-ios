@@ -66,7 +66,7 @@ struct HomeBalanceView: View {
                         DashAmount(amount: Int64(viewModel.value), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
                             .foregroundColor(.white)
                         Text(viewModel.fiatAmountString())
-                            .font(.body2)
+                            .font(.subhead)
                             .foregroundColor(.white)
                         
                         ZStack {

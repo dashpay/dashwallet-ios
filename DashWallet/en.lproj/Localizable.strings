@@ -1106,7 +1106,7 @@
 "How to use your gift card" = "How to use your gift card";
 
 /* No comment provided by engineer. */
-"HPMN Operator Keys" = "Evolution Node ID Keys";
+"HPMN Operator keys" = "HPMN Operator keys";
 
 /* No comment provided by engineer. */
 "I Accept" = "I Accept";
@@ -1491,7 +1491,7 @@
 "Masternode IP address" = "Masternode IP address";
 
 /* No comment provided by engineer. */
-"Masternode Keys" = "Masternode Keys";
+"Masternode keys" = "Masternode keys";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "masternode list #%1$d of %2$d";
@@ -1719,7 +1719,7 @@
 "Only with links" = "Only with links";
 
 /* No comment provided by engineer. */
-"Operator Keys" = "Operator Keys";
+"Operator keys" = "Operator keys";
 
 /* No comment provided by engineer. */
 "or" = "or";
@@ -1734,7 +1734,7 @@
 "Owner Address" = "Owner Address";
 
 /* No comment provided by engineer. */
-"Owner Keys" = "Owner Keys";
+"Owner keys" = "Owner keys";
 
 /* DashSpend */
 "Password" = "Password";
@@ -2836,7 +2836,7 @@
 "Voting is only required in some cases" = "Voting is only required in some cases";
 
 /* No comment provided by engineer. */
-"Voting Keys" = "Voting Keys";
+"Voting keys" = "Voting keys";
 
 /* ZenLedger */
 "Wait until the chain is fully synced, so we can review your transaction history." = "Wait until the chain is fully synced, so we can review your transaction history.";

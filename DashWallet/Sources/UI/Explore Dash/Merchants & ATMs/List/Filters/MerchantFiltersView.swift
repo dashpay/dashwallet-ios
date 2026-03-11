@@ -281,7 +281,7 @@ private struct FilterDisclosureItem: View {
     var body: some View {
         HStack {
             Text(title)
-                .font(.body2)
+                .font(.subhead)
                 .fontWeight(.medium)
                 .foregroundColor(.primaryText)
             
