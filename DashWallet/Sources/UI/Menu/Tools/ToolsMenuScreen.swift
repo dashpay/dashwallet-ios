@@ -23,15 +23,14 @@ struct ToolsMenuScreen: View {
     private let vc: UINavigationController
     private let delegateInternal: DelegateInternal
     private let onImportPrivateKey: () -> ()
-    
+
     @StateObject private var viewModel = ToolsMenuViewModel()
     @State private var showCSVExportAlert = false
     @State private var showCSVExportActivity = false
     @State private var showZenLedgerSheet = false
     @State private var showImportPrivateKeySheet = false
     @State private var showExtendedPublicKeySheet = false
-    @State private var scannerDelegate: QRScannerDelegate? = nil
-    
+
     init(vc: UINavigationController, onImportPrivateKey: @escaping () -> ()) {
         self.vc = vc
         self.onImportPrivateKey = onImportPrivateKey
@@ -151,14 +150,14 @@ struct ToolsMenuScreen: View {
         }
         .sheet(isPresented: $showImportPrivateKeySheet) {
             if #available(iOS 16.4, *) {
-                ImportPrivateKeySheet(onScanPrivateKey: presentScanner)
+                ImportPrivateKeySheet(onScanPrivateKey: onImportPrivateKey)
                     .presentationDetents([.height(460)])
                     .presentationCornerRadius(32)
             } else if #available(iOS 16.0, *) {
-                ImportPrivateKeySheet(onScanPrivateKey: presentScanner)
+                ImportPrivateKeySheet(onScanPrivateKey: onImportPrivateKey)
                     .presentationDetents([.height(460)])
             } else {
-                ImportPrivateKeySheet(onScanPrivateKey: presentScanner)
+                ImportPrivateKeySheet(onScanPrivateKey: onImportPrivateKey)
             }
         }
         .sheet(isPresented: $showExtendedPublicKeySheet) {
@@ -228,23 +227,6 @@ struct ToolsMenuScreen: View {
         }
     }
 
-    private func presentScanner() {
-        // Wait for sheet dismissal animation to complete before presenting scanner
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            let scannerVC = DWQRScanViewController()
-            scannerVC.modalPresentationStyle = .fullScreen
-
-            let delegate = QRScannerDelegate(viewController: scannerVC)
-            self.scannerDelegate = delegate
-            scannerVC.model.delegate = delegate
-
-            if let topVC = self.vc.topViewController {
-                topVC.present(scannerVC, animated: true)
-            } else {
-                self.vc.present(scannerVC, animated: true)
-            }
-        }
-    }
 }
 
 extension DWImportWalletInfoViewController {
@@ -267,19 +249,4 @@ extension ToolsMenuScreen {
         @objc func importWalletInfoViewControllerScanPrivateKeyAction(_ controller: DWImportWalletInfoViewController) { onImportPrivateKey() }
     }
 
-    class QRScannerDelegate: NSObject, DWQRScanModelDelegate {
-        weak var viewController: UIViewController?
-
-        init(viewController: UIViewController) {
-            self.viewController = viewController
-        }
-
-        func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
-            viewController?.dismiss(animated: true)
-        }
-
-        func qrScanModelDidCancel(_ viewModel: DWQRScanModel) {
-            viewController?.dismiss(animated: true)
-        }
-    }
 }
