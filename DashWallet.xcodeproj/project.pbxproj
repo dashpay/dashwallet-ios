@@ -1675,6 +1675,10 @@
 		AA00030F2CA0F58E00B1B405 /* QRCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */; };
 		AA0003112CA0F58E00B1B406 /* GenericQRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */; };
 		AA0003122CA0F58E00B1B406 /* GenericQRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */; };
+		AA0004012DA0F58E00C1C501 /* AddressSourceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0004002DA0F58E00C1C501 /* AddressSourceView.swift */; };
+		AA0004022DA0F58E00C1C501 /* AddressSourceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0004002DA0F58E00C1C501 /* AddressSourceView.swift */; };
+		AA0004042DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0004032DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift */; };
+		AA0004052DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0004032DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3238,6 +3242,8 @@
 		AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericQRScannerController.swift; sourceTree = "<group>"; };
 		AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCaptureView.swift; sourceTree = "<group>"; };
 		AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericQRScannerView.swift; sourceTree = "<group>"; };
+		AA0004002DA0F58E00C1C501 /* AddressSourceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressSourceView.swift; sourceTree = "<group>"; };
+		AA0004032DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaExchangeAddressProvider.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -4108,6 +4114,7 @@
 				AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */,
 				AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */,
 				AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */,
+				AA0004002DA0F58E00C1C501 /* AddressSourceView.swift */,
 			);
 			path = Maya;
 			sourceTree = "<group>";
@@ -4119,6 +4126,7 @@
 				AA0002042BA0F58E00A1B302 /* MayaPool.swift */,
 				AA0002072BA0F58E00A1B303 /* MayaEndpoint.swift */,
 				AA00020A2BA0F58E00A1B304 /* MayaAPIService.swift */,
+				AA0004032DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift */,
 			);
 			path = Maya;
 			sourceTree = "<group>";
@@ -9276,6 +9284,8 @@
 				AA00030B2CA0F58E00B1B404 /* GenericQRScannerController.swift in Sources */,
 				AA00030E2CA0F58E00B1B405 /* QRCaptureView.swift in Sources */,
 				AA0003112CA0F58E00B1B406 /* GenericQRScannerView.swift in Sources */,
+				AA0004012DA0F58E00C1C501 /* AddressSourceView.swift in Sources */,
+				AA0004042DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -10179,6 +10189,8 @@
 				AA00030C2CA0F58E00B1B404 /* GenericQRScannerController.swift in Sources */,
 				AA00030F2CA0F58E00B1B405 /* QRCaptureView.swift in Sources */,
 				AA0003122CA0F58E00B1B406 /* GenericQRScannerView.swift in Sources */,
+				AA0004022DA0F58E00C1C501 /* AddressSourceView.swift in Sources */,
+				AA0004052DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

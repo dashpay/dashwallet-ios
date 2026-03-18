@@ -17,6 +17,7 @@
 //  limitations under the License.
 //
 
+import AuthenticationServices
 import SwiftUI
 import UIKit
 
@@ -26,6 +27,7 @@ class EnterAddressHostingController: UIViewController {
 
     private let coin: MayaCryptoCurrency
     private let viewModel: EnterAddressViewModel
+    private var authSession: ASWebAuthenticationSession?
 
     init(coin: MayaCryptoCurrency) {
         self.coin = coin
@@ -55,6 +57,12 @@ class EnterAddressHostingController: UIViewController {
                 DSLogger.log("Maya: Address confirmed for \(self.coin.code): \(address)")
                 #endif
                 self.onAddressConfirmed?(self.coin, address)
+            },
+            onLoginUphold: { [weak self] in
+                self?.presentUpholdLogin()
+            },
+            onLoginCoinbase: { [weak self] in
+                self?.presentCoinbaseLogin()
             }
         )
 
@@ -92,5 +100,50 @@ class EnterAddressHostingController: UIViewController {
         }
 
         present(scanner, animated: true)
+    }
+
+    // MARK: - Uphold Login
+
+    private func presentUpholdLogin() {
+        let url = DWUpholdClient.sharedInstance().startAuthRoutineByURL()
+        let callbackURLScheme = "dashwallet"
+
+        let session = ASWebAuthenticationSession(url: url, callbackURLScheme: callbackURLScheme) { [weak self] callbackURL, error in
+            guard let self, let callbackURL else { return }
+
+            guard callbackURL.absoluteString.contains("uphold") else { return }
+
+            DWUpholdClient.sharedInstance().completeAuthRoutine(with: callbackURL) { [weak self] success in
+                guard success else { return }
+                DispatchQueue.main.async {
+                    self?.viewModel.onUpholdLoginCompleted()
+                }
+            }
+        }
+
+        session.presentationContextProvider = self
+        session.start()
+        self.authSession = session
+    }
+
+    // MARK: - Coinbase Login
+
+    private func presentCoinbaseLogin() {
+        Task {
+            do {
+                try await Coinbase.shared.signIn(with: self)
+                viewModel.onCoinbaseLoginCompleted()
+            } catch {
+                DSLogger.log("Maya: Coinbase login failed: \(error)")
+            }
+        }
+    }
+}
+
+// MARK: - ASWebAuthenticationPresentationContextProviding
+
+extension EnterAddressHostingController: ASWebAuthenticationPresentationContextProviding {
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        view.window ?? ASPresentationAnchor()
     }
 }

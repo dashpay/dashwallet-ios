@@ -27,8 +27,24 @@ class EnterAddressViewModel: ObservableObject {
 
     @Published var addressText: String = ""
     @Published var errorMessage: String?
+
+    // MARK: - Address Sources
+
+    @Published var upholdState: AddressSourceState = .loggedOut
+    @Published var coinbaseState: AddressSourceState = .loggedOut
+
+    // MARK: - Clipboard (two-step: detect → reveal → paste)
+
     @Published var hasClipboardContent: Bool = false
     @Published var revealedClipboardContent: String?
+
+    var isClipboardRevealed: Bool {
+        revealedClipboardContent != nil
+    }
+
+    private let addressProvider = MayaExchangeAddressProvider()
+    private var upholdAddress: String?
+    private var coinbaseAddress: String?
 
     var placeholderText: String {
         String(format: NSLocalizedString("%@ address", comment: "Maya"), coin.code)
@@ -38,22 +54,98 @@ class EnterAddressViewModel: ObservableObject {
         !addressText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    var isClipboardRevealed: Bool {
-        revealedClipboardContent != nil
+    /// The currency code to look up on exchanges.
+    /// Uses the coin code directly — exchanges manage their own currency listings.
+    /// If the exchange doesn't support the currency, the UI shows "Not available".
+    private var exchangeCurrencyCode: String {
+        coin.code
     }
 
     init(coin: MayaCryptoCurrency) {
         self.coin = coin
     }
 
+    // MARK: - Load Address Sources
+
+    func loadAddressSources() {
+        loadUpholdState()
+        loadCoinbaseState()
+        checkClipboard()
+    }
+
+    private func loadUpholdState() {
+        guard addressProvider.isUpholdAuthorized else {
+            upholdState = .loggedOut
+            return
+        }
+
+        upholdState = .loading
+
+        Task {
+            let address = await addressProvider.fetchUpholdAddress(for: exchangeCurrencyCode)
+            if let address = address {
+                upholdAddress = address
+                upholdState = .available(address)
+            } else {
+                // Re-check authorization: if the session was revoked during the fetch,
+                // show "Log In" instead of "Not available".
+                if !addressProvider.isUpholdAuthorized {
+                    upholdState = .loggedOut
+                } else {
+                    upholdState = .notAvailable
+                }
+            }
+        }
+    }
+
+    private func loadCoinbaseState() {
+        guard addressProvider.isCoinbaseAuthorized else {
+            coinbaseState = .loggedOut
+            return
+        }
+
+        coinbaseState = .loading
+
+        Task {
+            // Uses cached address if available, otherwise creates a new one
+            let address = await addressProvider.fetchCoinbaseAddress(for: exchangeCurrencyCode)
+            if let address = address {
+                coinbaseAddress = address
+                coinbaseState = .available(address)
+            } else {
+                // Re-check authorization: if the session was revoked during the fetch
+                // (e.g., expired token after device restart), show "Log In" instead of
+                // "Not available" so the user can re-authenticate.
+                if !addressProvider.isCoinbaseAuthorized {
+                    coinbaseState = .loggedOut
+                } else {
+                    coinbaseState = .notAvailable
+                }
+            }
+        }
+    }
+
+    // MARK: - Address Selection
+
+    func selectUpholdAddress() {
+        guard let address = upholdAddress else { return }
+        addressText = address
+        errorMessage = nil
+    }
+
+    func selectCoinbaseAddress() {
+        guard let address = coinbaseAddress else { return }
+        addressText = address
+        errorMessage = nil
+    }
+
+    // MARK: - Clipboard
+
     func checkClipboard() {
         hasClipboardContent = UIPasteboard.general.hasStrings || UIPasteboard.general.hasURLs
     }
 
     func revealClipboard() {
-        // Read clipboard content (triggers iOS paste permission banner on first access),
-        // then set the published property so the view re-renders with content ready.
-        // Animate the transition to prevent flash during system banner dismissal.
         let content = UIPasteboard.general.url?.absoluteString ?? UIPasteboard.general.string
         withAnimation(.easeInOut(duration: 0.2)) {
             revealedClipboardContent = content
@@ -65,6 +157,40 @@ class EnterAddressViewModel: ObservableObject {
         addressText = extractAddressFromURI(content)
         errorMessage = nil
     }
+
+    // MARK: - Post-Login Refresh
+
+    func onUpholdLoginCompleted() {
+        upholdState = .loading
+
+        Task {
+            // Login triggers a fresh API fetch, replacing any cached address
+            let address = await addressProvider.fetchAndCacheUpholdAddress(for: exchangeCurrencyCode)
+            if let address = address {
+                upholdAddress = address
+                upholdState = .available(address)
+            } else {
+                upholdState = .notAvailable
+            }
+        }
+    }
+
+    func onCoinbaseLoginCompleted() {
+        coinbaseState = .loading
+
+        Task {
+            // Login triggers a fresh address creation (POST), replacing any cached address
+            let address = await addressProvider.createAndCacheCoinbaseAddress(for: exchangeCurrencyCode)
+            if let address = address {
+                coinbaseAddress = address
+                coinbaseState = .available(address)
+            } else {
+                coinbaseState = .notAvailable
+            }
+        }
+    }
+
+    // MARK: - QR / Manual
 
     func setAddress(_ address: String) {
         addressText = extractAddressFromURI(address)

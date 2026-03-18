@@ -164,13 +164,15 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
     }
 
     public var baseURL: URL {
-        guard case .path(let string) = self else {
+        switch self {
+        case .getToken, .refreshToken, .revokeToken:
+            return URL(string: "https://login.coinbase.com")!
+        case .path(let string):
+            let path = string.removingPercentEncoding ?? string
+            return URL(string: "https://api.coinbase.com" + path)!
+        default:
             return kBaseURL
         }
-
-        let path = string.removingPercentEncoding ?? string
-        let url = URL(string: "https://api.coinbase.com" + path)!
-        return url
     }
 
     public var path: String {
@@ -188,9 +190,9 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
         case .swapTradeCommit(let tradeId): return "/v2/trades/\(tradeId)/commit"
         case .accountAddress(let accountId): return "/v2/accounts/\(accountId)/addresses"
         case .createCoinbaseAccountAddress(let accountId): return "/v2/accounts/\(accountId)/addresses"
-        case .getToken, .refreshToken: return "/oauth/token"
-        case .revokeToken: return "/oauth/revoke"
-        case .signIn: return "/oauth/authorize"
+        case .getToken, .refreshToken: return "/oauth2/token"
+        case .revokeToken: return "/oauth2/revoke"
+        case .signIn: return "/oauth2/auth"
         default:
             return ""
         }
@@ -212,13 +214,12 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
                 "redirect_uri": Coinbase.redirectUri,
                 "code": code,
                 "grant_type": Coinbase.grantType,
-                "account": Coinbase.account,
             ]
 
             queryItems["client_id"] = Coinbase.clientID
             queryItems["client_secret"] = Coinbase.clientSecret
-            
-            return .requestParameters(parameters: queryItems, encoding: JSONEncoding.default)
+
+            return .requestParameters(parameters: queryItems, encoding: URLEncoding.httpBody)
         case .refreshToken(let refreshToken):
             var queryItems: [String: Any] = [
                 "refresh_token": refreshToken,
@@ -227,10 +228,10 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
 
             queryItems["client_id"] = Coinbase.clientID
             queryItems["client_secret"] = Coinbase.clientSecret
-            
-            return .requestParameters(parameters: queryItems, encoding: JSONEncoding.default)
+
+            return .requestParameters(parameters: queryItems, encoding: URLEncoding.httpBody)
         case .revokeToken(let token):
-            return .requestParameters(parameters: ["token": token], encoding: JSONEncoding.default)
+            return .requestParameters(parameters: ["token": token], encoding: URLEncoding.httpBody)
         case .sendCoinsToWallet(_, _, let dto):
             return .requestJSONEncodable(dto)
         case .swapTrade(let dto):
