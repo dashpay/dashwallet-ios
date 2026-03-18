@@ -1105,7 +1105,7 @@
 /* No comment provided by engineer. */
 "How to use your gift card" = "How to use your gift card";
 
-/* No comment provided by engineer. */
+/* HPMN Operator keys */
 "HPMN Operator keys" = "HPMN Operator keys";
 
 /* No comment provided by engineer. */
@@ -1490,7 +1490,7 @@
 /* Voting */
 "Masternode IP address" = "Masternode IP address";
 
-/* No comment provided by engineer. */
+/* Masternode keys */
 "Masternode keys" = "Masternode keys";
 
 /* No comment provided by engineer. */
@@ -1718,7 +1718,7 @@
 /* Voting */
 "Only with links" = "Only with links";
 
-/* No comment provided by engineer. */
+/* Operator keys */
 "Operator keys" = "Operator keys";
 
 /* No comment provided by engineer. */
@@ -1733,7 +1733,7 @@
 /* No comment provided by engineer. */
 "Owner Address" = "Owner Address";
 
-/* No comment provided by engineer. */
+/* Owner keys */
 "Owner keys" = "Owner keys";
 
 /* DashSpend */
@@ -2835,7 +2835,7 @@
 /* Usernames */
 "Voting is only required in some cases" = "Voting is only required in some cases";
 
-/* No comment provided by engineer. */
+/* Voting keys */
 "Voting keys" = "Voting keys";
 
 /* ZenLedger */
@@ -3186,3 +3186,21 @@
 
 /* Savings percentage */
 "~%.0f%%" = "~%.0f%%";
+
+/* Import private key */
+"Import private key" = "Import private key";
+
+/* Scan private key */
+"Scan private key" = "Scan private key";
+
+/* This action will move all coins from the Dash paper wallet to your DashPay app on this device. */
+"This action will move all coins from the Dash paper wallet to your DashPay app on this device." = "This action will move all coins from the Dash paper wallet to your DashPay app on this device.";
+
+/* Extended public key (BIP44) */
+"Extended public key (BIP44)" = "Extended public key (BIP44)";
+
+/* Extended public keys */
+"Extended public keys" = "Extended public keys";
+
+/* Share key */
+"Share key" = "Share key";
