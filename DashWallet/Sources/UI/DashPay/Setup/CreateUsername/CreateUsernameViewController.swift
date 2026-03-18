@@ -78,7 +78,7 @@ struct CreateUsernameView: View {
         VStack(alignment: .leading, spacing: 0) {
             Text(NSLocalizedString("Create your username", comment: "Usernames"))
                 .foregroundColor(.primaryText)
-                .font(.h5Bold)
+                .font(.title1)
                 .padding(.top, 12)
             Text(NSLocalizedString("Please note that you will not be able to change it in future", comment: "Usernames"))
                 .foregroundColor(.primaryText)

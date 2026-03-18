@@ -2,7 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>%ld used(s)</key>
+	<key>%ld used</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@used@</string>
@@ -29,9 +29,9 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>one</key>
-			<string>%d Händler in &@</string>
+			<string>%d Händler in %@</string>
 			<key>other</key>
-			<string>%d Händler in &@</string>
+			<string>%d Händler in %@</string>
 		</dict>
 	</dict>
 	<key>%d merchant(s)</key>
