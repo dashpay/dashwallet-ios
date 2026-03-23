@@ -138,24 +138,17 @@ extension CBAuth {
 extension CBAuth {
     nonisolated
     private var oAuth2URL: URL {
-        let path = CoinbaseEndpoint.signIn.path
-
         var queryItems = [
-            URLQueryItem(name: "redirect_uri", value: Coinbase.redirectUri),
             URLQueryItem(name: "response_type", value: Coinbase.responseType),
+            URLQueryItem(name: "client_id", value: Coinbase.clientID),
+            URLQueryItem(name: "redirect_uri", value: Coinbase.redirectUri),
             URLQueryItem(name: "scope", value: Coinbase.scope),
-            URLQueryItem(name: "meta[send_limit_amount]", value: "\((Coinbase.sendLimitAmount as NSDecimalNumber).intValue)"),
-            URLQueryItem(name: "meta[send_limit_currency]", value: Coinbase.sendLimitCurrency),
-            URLQueryItem(name: "meta[send_limit_period]", value: Coinbase.sendLimitPeriod),
-            URLQueryItem(name: "account", value: Coinbase.account),
         ]
-
-        queryItems.append(URLQueryItem(name: "client_id", value: Coinbase.clientID))
 
         var urlComponents = URLComponents()
         urlComponents.scheme = "https"
-        urlComponents.host = "coinbase.com"
-        urlComponents.path = path
+        urlComponents.host = "login.coinbase.com"
+        urlComponents.path = "/oauth2/auth"
         urlComponents.queryItems = queryItems
 
         guard let url = urlComponents.url else {

@@ -23,10 +23,14 @@ struct EnterAddressView: View {
     @ObservedObject var viewModel: EnterAddressViewModel
     var onScanQR: (() -> Void)?
     var onContinue: ((String) -> Void)?
+    var onLoginUphold: (() -> Void)?
+    var onLoginCoinbase: (() -> Void)?
 
     var body: some View {
         ZStack {
-            Color.primaryBackground.ignoresSafeArea()
+            Color.primaryBackground
+                .ignoresSafeArea()
+                .onTapGesture { dismissKeyboard() }
 
             VStack(spacing: 0) {
                 ScrollView {
@@ -41,6 +45,8 @@ struct EnterAddressView: View {
                                 .padding(.top, -12)
                         }
 
+                        addressSourcesMenu
+
                         if viewModel.hasClipboardContent {
                             if viewModel.isClipboardRevealed {
                                 clipboardSection
@@ -51,9 +57,6 @@ struct EnterAddressView: View {
                     }
                     .padding(.horizontal, 20)
                 }
-                .onTapGesture {
-                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                }
 
                 continueButton
                     .padding(.horizontal, 20)
@@ -61,8 +64,12 @@ struct EnterAddressView: View {
             }
         }
         .onAppear {
-            viewModel.checkClipboard()
+            viewModel.loadAddressSources()
         }
+    }
+
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 
     // MARK: - Address Field
@@ -92,7 +99,47 @@ struct EnterAddressView: View {
         .cornerRadius(16)
     }
 
-    // MARK: - Show Clipboard Button
+    // MARK: - Address Sources Menu
+
+    private var addressSourcesMenu: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(NSLocalizedString("Paste address from", comment: "Maya"))
+                .font(.system(size: 13))
+                .foregroundColor(.secondaryText)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 10)
+
+            AddressSourceView(
+                sourceType: .uphold,
+                state: viewModel.upholdState,
+                onTap: {
+                    if case .loggedOut = viewModel.upholdState {
+                        onLoginUphold?()
+                    } else {
+                        viewModel.selectUpholdAddress()
+                    }
+                }
+            )
+
+            AddressSourceView(
+                sourceType: .coinbase,
+                state: viewModel.coinbaseState,
+                onTap: {
+                    if case .loggedOut = viewModel.coinbaseState {
+                        onLoginCoinbase?()
+                    } else {
+                        viewModel.selectCoinbaseAddress()
+                    }
+                }
+            )
+        }
+        .padding(6)
+        .background(Color.secondaryBackground)
+        .cornerRadius(12)
+        .shadow(color: .shadow, radius: 10, x: 0, y: 5)
+    }
+
+    // MARK: - Clipboard
 
     private var showClipboardButton: some View {
         Button(action: { viewModel.revealClipboard() }) {
@@ -113,8 +160,6 @@ struct EnterAddressView: View {
         }
         .buttonStyle(.plain)
     }
-
-    // MARK: - Clipboard Section (Revealed)
 
     private var clipboardSection: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -155,15 +200,15 @@ struct EnterAddressView: View {
         Button(action: {
             let address = viewModel.addressText.trimmingCharacters(in: .whitespacesAndNewlines)
             onContinue?(address)
-        }) {
+        }, label: {
             Text(NSLocalizedString("Continue", comment: ""))
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(viewModel.isAddressValid ? .white : Color(UIColor.label.withAlphaComponent(0.4)))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(viewModel.isAddressValid ? Color.dashBlue : Color.gray400)
+                .background(viewModel.isAddressValid ? Color.dashBlue : Color(UIColor.systemFill))
                 .cornerRadius(12)
-        }
+        })
         .disabled(!viewModel.isAddressValid)
     }
 }
