@@ -22,6 +22,7 @@ import Moya
 enum MayaEndpoint {
     case getPools
     case getInboundAddresses
+    case quoteSwap(fromAsset: String, toAsset: String, amount: Int64, destination: String)
 }
 
 extension MayaEndpoint: TargetType {
@@ -30,7 +31,7 @@ extension MayaEndpoint: TargetType {
         switch self {
         case .getPools:
             return URL(string: "https://midgard.mayachain.info/v2/")!
-        case .getInboundAddresses:
+        case .getInboundAddresses, .quoteSwap:
             return URL(string: "https://mayanode.mayachain.info/mayachain/")!
         }
     }
@@ -41,6 +42,8 @@ extension MayaEndpoint: TargetType {
             return "pools"
         case .getInboundAddresses:
             return "inbound_addresses"
+        case .quoteSwap:
+            return "quote/swap"
         }
     }
 
@@ -49,7 +52,20 @@ extension MayaEndpoint: TargetType {
     }
 
     var task: Moya.Task {
-        .requestPlain
+        switch self {
+        case .quoteSwap(let fromAsset, let toAsset, let amount, let destination):
+            return .requestParameters(
+                parameters: [
+                    "from_asset": fromAsset,
+                    "to_asset": toAsset,
+                    "amount": amount,
+                    "destination": destination,
+                ],
+                encoding: URLEncoding.queryString
+            )
+        default:
+            return .requestPlain
+        }
     }
 
     var headers: [String: String]? {

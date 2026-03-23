@@ -53,10 +53,7 @@ class EnterAddressHostingController: UIViewController {
             },
             onContinue: { [weak self] address in
                 guard let self else { return }
-                #if DEBUG
-                DSLogger.log("Maya: Address confirmed for \(self.coin.code): \(address)")
-                #endif
-                self.onAddressConfirmed?(self.coin, address)
+                self.validateAndContinue(address: address)
             },
             onLoginUphold: { [weak self] in
                 self?.presentUpholdLogin()
@@ -81,6 +78,35 @@ class EnterAddressHostingController: UIViewController {
             hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
+    }
+
+    // MARK: - Address Validation (Maya API)
+
+    private func validateAndContinue(address: String) {
+        viewModel.errorMessage = nil
+
+        Task {
+            let error = await MayaAPIService.shared.validateAddress(
+                destination: address,
+                toAsset: coin.mayaAsset
+            )
+
+            if let error = error {
+                viewModel.errorMessage = error
+            } else {
+                // Temp success dialog — will be replaced in later stories
+                let alert = UIAlertController(
+                    title: "SUCCESS",
+                    message: "Address validation passed for \(coin.code):\n\(address)",
+                    preferredStyle: .alert
+                )
+                alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+                    guard let self else { return }
+                    self.onAddressConfirmed?(self.coin, address)
+                })
+                present(alert, animated: true)
+            }
+        }
     }
 
     // MARK: - QR Scanner
