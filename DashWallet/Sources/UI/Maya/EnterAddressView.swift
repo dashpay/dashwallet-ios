@@ -38,11 +38,12 @@ struct EnterAddressView: View {
                         addressField
                             .padding(.top, 20)
 
-                        if let error = viewModel.errorMessage {
+                        if let error = viewModel.addressValidationErrorMessage ?? viewModel.errorMessage {
                             Text(error)
                                 .font(.system(size: 12))
                                 .foregroundColor(.systemRed)
-                                .padding(.top, -12)
+                                .padding(.horizontal, 16)
+                                .padding(.top, -10)
                         }
 
                         addressSourcesMenu
@@ -95,8 +96,12 @@ struct EnterAddressView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(Color.gray400.opacity(0.1))
+        .background(viewModel.showAddressError ? Color.systemRed.opacity(0.05) : Color.gray400.opacity(0.1))
         .cornerRadius(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(viewModel.showAddressError ? Color.systemRed : Color.clear, lineWidth: 1)
+        )
     }
 
     // MARK: - Address Sources Menu
