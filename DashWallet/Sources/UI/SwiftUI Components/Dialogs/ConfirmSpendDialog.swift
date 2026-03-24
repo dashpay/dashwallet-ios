@@ -30,9 +30,9 @@ struct ConfirmSpendDialog: View {
             
             VStack(spacing: 4) {
                 Text(String.localizedStringWithFormat(NSLocalizedString("You chose “%@” as your username.", comment: "Usernames"), username))
-                    .font(.body2)
+                    .font(.subhead)
                 Text(NSLocalizedString("Please note that the username can NOT be changed once it is registered.", comment: "Usernames"))
-                    .font(.body2)
+                    .font(.subhead)
                     .multilineTextAlignment(.center)
             }
             .padding(.top, 15)
@@ -75,7 +75,7 @@ struct ConfirmSpendDialog: View {
     private func FormattedFiatText(from dashAmount: Int64) -> some View {
         let text = (try? CurrencyExchanger.shared.convertDash(amount: abs(dashAmount.dashAmount), to: App.fiatCurrency).formattedFiatAmount) ?? NSLocalizedString("Not available", comment: "")
         Text(text)
-            .font(.body2)
+            .font(.subhead)
             .foregroundColor(.secondaryText)
     }
 }

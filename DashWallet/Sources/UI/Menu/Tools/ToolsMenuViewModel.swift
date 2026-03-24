@@ -48,7 +48,7 @@ class ToolsMenuViewModel: ObservableObject {
                 }
             ),
             MenuItemModel(
-                title: NSLocalizedString("Extended Public Keys", comment: ""),
+                title: NSLocalizedString("Extended public key (BIP44)", comment: ""),
                 icon: .custom("image.extend.public.key", maxHeight: 22),
                 action: { [weak self] in
                     self?.navigationDestination = .extendedPublicKeys
