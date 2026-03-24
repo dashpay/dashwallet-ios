@@ -1649,6 +1649,9 @@
 		AA0001062AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */; };
 		AA0002022BA0F58E00A1B301 /* MayaCryptoCurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002012BA0F58E00A1B301 /* MayaCryptoCurrency.swift */; };
 		AA0002032BA0F58E00A1B301 /* MayaCryptoCurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002012BA0F58E00A1B301 /* MayaCryptoCurrency.swift */; };
+		AA0003012CA0F58E00A1B401 /* MayaAddressValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003002CA0F58E00A1B401 /* MayaAddressValidator.swift */; };
+		AA0003022CA0F58E00A1B401 /* MayaAddressValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003002CA0F58E00A1B401 /* MayaAddressValidator.swift */; };
+		AA0003042CA0F58E00A1B402 /* MayaAddressValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003032CA0F58E00A1B402 /* MayaAddressValidatorTests.swift */; };
 		AA0002052BA0F58E00A1B302 /* MayaPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002042BA0F58E00A1B302 /* MayaPool.swift */; };
 		AA0002062BA0F58E00A1B302 /* MayaPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002042BA0F58E00A1B302 /* MayaPool.swift */; };
 		AA0002082BA0F58E00A1B303 /* MayaEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002072BA0F58E00A1B303 /* MayaEndpoint.swift */; };
@@ -3229,6 +3232,8 @@
 		AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPortalView.swift; sourceTree = "<group>"; };
 		AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPortalViewController.swift; sourceTree = "<group>"; };
 		AA0002012BA0F58E00A1B301 /* MayaCryptoCurrency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaCryptoCurrency.swift; sourceTree = "<group>"; };
+		AA0003002CA0F58E00A1B401 /* MayaAddressValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAddressValidator.swift; sourceTree = "<group>"; };
+		AA0003032CA0F58E00A1B402 /* MayaAddressValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAddressValidatorTests.swift; sourceTree = "<group>"; };
 		AA0002042BA0F58E00A1B302 /* MayaPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPool.swift; sourceTree = "<group>"; };
 		AA0002072BA0F58E00A1B303 /* MayaEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaEndpoint.swift; sourceTree = "<group>"; };
 		AA00020A2BA0F58E00A1B304 /* MayaAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAPIService.swift; sourceTree = "<group>"; };
@@ -4122,6 +4127,7 @@
 		AA0002192BA0F58E00A1B309 /* Maya */ = {
 			isa = PBXGroup;
 			children = (
+				AA0003002CA0F58E00A1B401 /* MayaAddressValidator.swift */,
 				AA0002012BA0F58E00A1B301 /* MayaCryptoCurrency.swift */,
 				AA0002042BA0F58E00A1B302 /* MayaPool.swift */,
 				AA0002072BA0F58E00A1B303 /* MayaEndpoint.swift */,
@@ -6494,6 +6500,7 @@
 				2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */,
 				471DD1BB290AE30B00E030C8 /* String+DashWalletTests.swift */,
 				47976E492987772700612988 /* AmountObjectTests.swift */,
+				AA0003032CA0F58E00A1B402 /* MayaAddressValidatorTests.swift */,
 			);
 			path = DashWalletTests;
 			sourceTree = "<group>";
@@ -9270,6 +9277,7 @@
 				2A8C24B423336FEA00000D43 /* DWQuickReceiveViewController.m in Sources */,
 				AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 				AA0001052AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */,
+				AA0003012CA0F58E00A1B401 /* MayaAddressValidator.swift in Sources */,
 				AA0002022BA0F58E00A1B301 /* MayaCryptoCurrency.swift in Sources */,
 				AA0002052BA0F58E00A1B302 /* MayaPool.swift in Sources */,
 				AA0002082BA0F58E00A1B303 /* MayaEndpoint.swift in Sources */,
@@ -9297,6 +9305,7 @@
 				2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */,
 				471DD1C0290AECE900E030C8 /* String+DashWalletTests.swift in Sources */,
 				47976E4A2987772700612988 /* AmountObjectTests.swift in Sources */,
+				AA0003042CA0F58E00A1B402 /* MayaAddressValidatorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -10175,6 +10184,7 @@
 				1DD7BE9CD62998F12672140D /* RadioButtonRow.swift in Sources */,
 				AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 				AA0001062AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */,
+				AA0003022CA0F58E00A1B401 /* MayaAddressValidator.swift in Sources */,
 				AA0002032BA0F58E00A1B301 /* MayaCryptoCurrency.swift in Sources */,
 				AA0002062BA0F58E00A1B302 /* MayaPool.swift in Sources */,
 				AA0002092BA0F58E00A1B303 /* MayaEndpoint.swift in Sources */,

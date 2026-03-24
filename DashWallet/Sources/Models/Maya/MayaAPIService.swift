@@ -29,9 +29,38 @@ final class MayaAPIService: HTTPClient<MayaEndpoint> {
     func fetchInboundAddresses() async throws -> [MayaInboundAddress] {
         try await request(.getInboundAddresses)
     }
+
+    /// Validates a destination address by requesting a swap quote from the Maya API.
+    /// Returns nil if the address is valid, or an error string if invalid.
+    func validateAddress(destination: String, toAsset: String) async -> String? {
+        do {
+            let quote: MayaSwapQuote = try await request(
+                .quoteSwap(
+                    fromAsset: "DASH.DASH",
+                    toAsset: toAsset,
+                    amount: 100_000_000, // 1 DASH in base units
+                    destination: destination
+                )
+            )
+            return quote.error
+        } catch {
+            // Non-200 responses may contain an error body with the validation message
+            if case HTTPClientError.statusCode(let response) = error {
+                if let body = try? JSONDecoder().decode(MayaSwapQuote.self, from: response.data) {
+                    return body.error
+                }
+            }
+            DSLogger.log("Maya: Address validation request failed: \(error)")
+            return NSLocalizedString("Address validation unavailable — please check your connection", comment: "Maya")
+        }
+    }
 }
 
 struct MayaInboundAddress: Decodable {
     let chain: String
     let halted: Bool
+}
+
+struct MayaSwapQuote: Decodable {
+    let error: String?
 }
