@@ -25,7 +25,10 @@ class QRCapturePreviewView: UIView {
     override class var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }
 
     var previewLayer: AVCaptureVideoPreviewLayer {
-        layer as! AVCaptureVideoPreviewLayer
+        guard let preview = layer as? AVCaptureVideoPreviewLayer else {
+            preconditionFailure("Expected AVCaptureVideoPreviewLayer, got \(type(of: layer))")
+        }
+        return preview
     }
 }
 
@@ -60,6 +63,7 @@ struct QRCaptureView: UIViewRepresentable {
         private let onQRCodeScanned: (String) -> Void
         private let onCameraUnavailable: () -> Void
         private var captureSession: AVCaptureSession?
+        private var metadataOutput: AVCaptureMetadataOutput?
         private let sessionQueue = DispatchQueue(label: "com.dashwallet.maya.qr-capture")
         private var hasScanned = false
 
@@ -69,7 +73,14 @@ struct QRCaptureView: UIViewRepresentable {
         }
 
         deinit {
-            stopSession()
+            // Nil out the delegate immediately to prevent callbacks to a deallocated coordinator.
+            // AVCaptureMetadataOutput does not retain its delegate — without this, the session
+            // can deliver metadata to a dangling pointer between deinit and session.stopRunning().
+            metadataOutput?.setMetadataObjectsDelegate(nil, queue: nil)
+            let session = captureSession
+            sessionQueue.async {
+                session?.stopRunning()
+            }
         }
 
         func setup(previewLayer: AVCaptureVideoPreviewLayer) {
@@ -90,6 +101,13 @@ struct QRCaptureView: UIViewRepresentable {
         }
 
         func stopSession() {
+            // Nil out the delegate BEFORE stopping to prevent callbacks to a deallocated coordinator.
+            // AVCaptureMetadataOutput holds an unretained reference to its delegate — if the
+            // coordinator is deallocated while the session is still running, the delegate becomes
+            // a dangling pointer and the next metadata callback causes EXC_BAD_ACCESS.
+            metadataOutput?.setMetadataObjectsDelegate(nil, queue: nil)
+            metadataOutput = nil
+
             let session = captureSession
             captureSession = nil
             sessionQueue.async {
@@ -124,9 +142,7 @@ struct QRCaptureView: UIViewRepresentable {
             }
 
             hasScanned = true
-            DispatchQueue.main.async { [weak self] in
-                self?.onQRCodeScanned(value)
-            }
+            onQRCodeScanned(value)
         }
 
         // MARK: - Private
@@ -162,6 +178,8 @@ struct QRCaptureView: UIViewRepresentable {
                 session.addOutput(output)
                 output.setMetadataObjectsDelegate(self, queue: .main)
                 output.metadataObjectTypes = [.qr]
+
+                self.metadataOutput = output
 
                 DispatchQueue.main.async {
                     previewLayer.session = session

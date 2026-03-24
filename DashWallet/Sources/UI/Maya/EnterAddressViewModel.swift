@@ -51,7 +51,19 @@ class EnterAddressViewModel: ObservableObject {
     }
 
     var isAddressValid: Bool {
-        !addressText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let trimmed = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+        return MayaAddressValidator.isValid(address: trimmed, for: coin)
+    }
+
+    var showAddressError: Bool {
+        let trimmed = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !trimmed.isEmpty && !MayaAddressValidator.isValid(address: trimmed, for: coin)
+    }
+
+    var addressValidationErrorMessage: String? {
+        guard showAddressError else { return nil }
+        return String(format: NSLocalizedString("%@ address is not valid", comment: "Maya"), coin.code)
     }
 
     /// The currency code to look up on exchanges.

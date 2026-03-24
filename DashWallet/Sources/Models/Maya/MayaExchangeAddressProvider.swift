@@ -174,7 +174,13 @@ class MayaExchangeAddressProvider {
         request.httpBody = try? JSONEncoder().encode(body)
 
         do {
-            let (data, _) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+                DSLogger.log("Maya Uphold: Create card failed with status \(statusCode) for \(currency)")
+                return nil
+            }
             let card = try JSONDecoder().decode(UpholdCard.self, from: data)
             DSLogger.log("Maya Uphold: Created card for \(currency): \(card.id)")
             return card.id
