@@ -19,7 +19,7 @@ struct BlockExplorerSelectionView: View {
                                 .frame(width: 24, height: 24)
                             
                             Text(explorer.title)
-                                .font(.body2)
+                                .font(.subhead)
                                 .fontWeight(.medium)
                                 .foregroundColor(.primaryText)
                             

@@ -52,7 +52,7 @@ struct RadioButtonRow: View {
                 
                 VStack(alignment: .leading, spacing: 0) {
                     Text(title)
-                        .font(.body2)
+                        .font(.subhead)
                         .fontWeight(.medium)
                         .foregroundColor(.primaryText)
                     
@@ -67,7 +67,7 @@ struct RadioButtonRow: View {
                 
                 if let trailingText = trailingText {
                     Text(trailingText)
-                        .font(.body2)
+                        .font(.subhead)
                         .fontWeight(.medium)
                         .foregroundColor(.primaryText)
                 }

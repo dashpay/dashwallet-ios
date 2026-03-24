@@ -18,7 +18,49 @@
 import SwiftUI
 
 extension Font {
-    public static let subtitle1: Font = .system(size: 16, weight: .semibold)
-    public static let body2: Font = .system(size: 14)
-    public static let h5Bold: Font = .system(size: 24, weight: .bold)
+    // MARK: - Titles
+
+    /// Large Title: 34pt Bold (line height: 41pt)
+    public static let largeTitle: Font = .system(size: 34, weight: .bold)
+
+    /// Title 1: 28pt Bold (line height: 34pt)
+    public static let title1: Font = .system(size: 28, weight: .bold)
+
+    /// Title 2: 22pt Bold (line height: 28pt)
+    public static let title2: Font = .system(size: 22, weight: .bold)
+
+    /// Title 3: 20pt Bold (line height: 25pt)
+    public static let title3: Font = .system(size: 20, weight: .bold)
+
+    // MARK: - Text Styles
+
+    /// Headline: 17pt Bold (line height: 22pt)
+    public static let headline: Font = .system(size: 17, weight: .bold)
+
+    /// Body: 17pt Regular (line height: 22pt)
+    public static let body: Font = .system(size: 17, weight: .regular)
+
+    /// Callout: 16pt Regular (line height: 21pt)
+    public static let callout: Font = .system(size: 16, weight: .regular)
+
+    /// Callout Medium: 16pt Semibold (line height: 21pt)
+    public static let calloutMedium: Font = .system(size: 16, weight: .semibold)
+
+    /// Subhead Regular: 15pt Regular (line height: 20pt)
+    public static let subhead: Font = .system(size: 15, weight: .regular)
+
+    /// Subhead Medium: 15pt Medium (line height: 20pt)
+    public static let subheadMedium: Font = .system(size: 15, weight: .medium)
+
+    /// Footnote Regular: 13pt Regular (line height: 18pt)
+    public static let footnote: Font = .system(size: 13, weight: .regular)
+
+    /// Footnote Medium: 13pt Medium (line height: 18pt)
+    public static let footnoteMedium: Font = .system(size: 13, weight: .medium)
+
+    /// Caption 1: 12pt Regular (line height: 16pt)
+    public static let caption1: Font = .system(size: 12, weight: .regular)
+
+    /// Caption 2: 11pt Regular (line height: 13pt)
+    public static let caption2: Font = .system(size: 11, weight: .regular)
 }

@@ -156,21 +156,21 @@ struct POIDetailsView: View {
 
                 if merchant.address1?.isEmpty == false {
                     Text(merchant.address1 ?? "")
-                        .font(.body2)
+                        .font(.subhead)
                         .foregroundColor(.primaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
                 if merchant.address2?.isEmpty == false {
                     Text(merchant.address2 ?? "")
-                        .font(.body2)
+                        .font(.subhead)
                         .foregroundColor(.primaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
                 if merchant.address3?.isEmpty == false {
                     Text(merchant.address3 ?? "")
-                        .font(.body2)
+                        .font(.subhead)
                         .foregroundColor(.primaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -179,7 +179,7 @@ struct POIDetailsView: View {
                 let cityAndTerritory = [merchant.city, merchant.territory].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", ")
                 if !cityAndTerritory.isEmpty {
                     Text(cityAndTerritory)
-                        .font(.body2)
+                        .font(.subhead)
                         .foregroundColor(.primaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -214,7 +214,7 @@ struct POIDetailsView: View {
                         .foregroundColor(.secondaryText)
                     
                     Text(viewModel.formattedPhoneNumber ?? merchant.phone ?? "")
-                        .font(.body2)
+                        .font(.subhead)
                         .foregroundColor(.dashBlue)
                 }
                 
@@ -235,7 +235,7 @@ struct POIDetailsView: View {
                         .foregroundColor(.secondaryText)
                             
                     Text(merchant.website ?? "merchant.com")
-                        .font(.body2)
+                        .font(.subhead)
                         .foregroundColor(.dashBlue)
                         .lineLimit(1)
                         .truncationMode(.tail)

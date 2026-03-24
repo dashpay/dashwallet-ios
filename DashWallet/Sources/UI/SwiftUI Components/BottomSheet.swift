@@ -49,7 +49,7 @@ struct BottomSheet<Content: View>: View {
                         .cornerRadius(2.50)
                     
                     Text(title)
-                        .font(.subtitle1)
+                        .font(.calloutMedium)
                         .foregroundColor(.primaryText)
                         .padding(.top, 10)
                 }

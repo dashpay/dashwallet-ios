@@ -86,7 +86,7 @@ struct DashSpendPayScreen: View {
                 HStack {
                     if viewModel.showLimits {
                         Text(viewModel.minimumLimitMessage)
-                            .font(.body2)
+                            .font(.subhead)
                             .foregroundColor(Color.primaryText)
                             .padding(.leading, 20)
                         Spacer()
@@ -94,14 +94,14 @@ struct DashSpendPayScreen: View {
                     
                     if let error = viewModel.error {
                         Text(error.localizedDescription)
-                            .font(.body2)
+                            .font(.subhead)
                             .foregroundColor(Color.systemRed)
                             .multilineTextAlignment(.center)
                             .fixedSize(horizontal: false, vertical: true)
                             .padding(.horizontal, 10)
                     } else if viewModel.showCost {
                         Text(viewModel.costMessage)
-                            .font(.body2)
+                            .font(.subhead)
                             .foregroundColor(Color.primaryText)
                             .multilineTextAlignment(.center)
                             .fixedSize(horizontal: false, vertical: true)
@@ -111,7 +111,7 @@ struct DashSpendPayScreen: View {
                     if viewModel.showLimits {
                         Spacer()
                         Text(viewModel.maximumLimitMessage)
-                            .font(.body2)
+                            .font(.subhead)
                             .foregroundColor(Color.primaryText)
                             .padding(.trailing, 20)
                     }
@@ -128,7 +128,7 @@ struct DashSpendPayScreen: View {
                 if viewModel.isLoading && !viewModel.hasValidLimits && viewModel.denominations.isEmpty {
                     VStack(spacing: 20) {
                         Text(NSLocalizedString("Loading gift card options...", comment: "DashSpend"))
-                            .font(.body2)
+                            .font(.subhead)
                             .foregroundColor(.secondaryText)
                     }
                     .frame(maxWidth: .infinity)

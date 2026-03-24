@@ -16,6 +16,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 
 // MARK: - ReceiveViewControllerDelegate
@@ -45,13 +46,27 @@ class ReceiveViewController: BaseViewController {
 
     @objc
     func importPrivateKeyButtonAction() {
-        let controller = sb("ImportWalletInfo").instantiateInitialViewController() as! DWImportWalletInfoViewController
-        controller.delegate = self
+        let sheetView = ImportPrivateKeySheet { [weak self] in
+            // When scan button is tapped, trigger the delegate method
+            self?.delegate?.importPrivateKeyButtonAction(self!)
+        }
 
-        let nvc = BaseNavigationController(rootViewController: controller)
-        present(nvc, animated: true)
+        let hostingController = UIHostingController(rootView: sheetView)
 
-        nvc.setCancelButtonHidden(false)
+        if #available(iOS 16.4, *) {
+            hostingController.sheetPresentationController?.detents = [.custom(resolver: { context in
+                return 460
+            })]
+            hostingController.sheetPresentationController?.preferredCornerRadius = 32
+        } else if #available(iOS 16.0, *) {
+            hostingController.sheetPresentationController?.detents = [.custom(resolver: { context in
+                return 460
+            })]
+        } else if #available(iOS 15.0, *) {
+            hostingController.sheetPresentationController?.detents = [.medium()]
+        }
+
+        present(hostingController, animated: true)
     }
 
     required init?(coder: NSCoder) {
@@ -90,28 +105,48 @@ extension ReceiveViewController {
         receiveContentView.layer.cornerRadius = radius
         mainStackView.addArrangedSubview(receiveContentView)
 
-        let importPrivateKeyButton = UIButton(type: .custom)
-        importPrivateKeyButton.addTarget(self, action: #selector(importPrivateKeyButtonAction), for: .touchUpInside)
-        importPrivateKeyButton.backgroundColor = .dw_background()
-        importPrivateKeyButton.contentHorizontalAlignment = .leading
-        importPrivateKeyButton.imageEdgeInsets = .init(top: 0, left: 17, bottom: 0, right: 0)
-        importPrivateKeyButton.titleEdgeInsets = .init(top: 0, left: 39, bottom: 0, right: 0)
-        importPrivateKeyButton.layer.cornerRadius = radius
-        importPrivateKeyButton.setImage(UIImage(named: "import-icon"), for: .normal)
-        importPrivateKeyButton.titleLabel?.font = .dw_font(forTextStyle: .subheadline)
-        importPrivateKeyButton.setTitleColor(.dw_label(), for: .normal)
-        importPrivateKeyButton.setTitle(NSLocalizedString("Import Private Key", comment: "Import Private Key"), for: .normal)
-        importPrivateKeyButton.isHidden = !allowedToImportPrivateKey
-        mainStackView.addArrangedSubview(importPrivateKeyButton)
+        // Import Private Key menu item (SwiftUI)
+        let importMenuItem = UIHostingController(rootView:
+            VStack(spacing: 0) {
+                MenuItem(
+                    title: NSLocalizedString("Import Private Key", comment: "Import Private Key"),
+                    subtitle: nil as String?,
+                    details: nil,
+                    topText: nil,
+                    icon: .custom("image.import.private.key", maxHeight: 22),
+                    secondaryIcon: nil,
+                    showInfo: false,
+                    showChevron: false,
+                    badgeText: nil,
+                    dashAmount: nil,
+                    overrideFiatAmount: nil,
+                    showToggle: false,
+                    isToggled: false,
+                    action: { [weak self] in
+                        self?.importPrivateKeyButtonAction()
+                    }
+                )
+                .frame(minHeight: 60)
+            }
+            .padding(.vertical, 5)
+            .background(Color(uiColor: .dw_background()))
+            .cornerRadius(CGFloat(radius))
+        )
+        importMenuItem.view.translatesAutoresizingMaskIntoConstraints = false
+        importMenuItem.view.backgroundColor = UIColor.clear
+        importMenuItem.view.isHidden = !allowedToImportPrivateKey
+
+        addChild(importMenuItem)
+        mainStackView.addArrangedSubview(importMenuItem.view)
+        importMenuItem.didMove(toParent: self)
 
         mainStackView.addArrangedSubview(EmptyUIView())
-        
+
         NSLayoutConstraint.activate([
             mainStackView.topAnchor.constraint(equalTo: view.topAnchor),
             mainStackView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             mainStackView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-            mainStackView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-            importPrivateKeyButton.heightAnchor.constraint(equalToConstant: 64)
+            mainStackView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor)
         ])
     }
 }
@@ -143,12 +178,3 @@ extension ReceiveViewController: DWRequestAmountViewControllerDelegate {
     }
 }
 
-// MARK: DWImportWalletInfoViewControllerDelegate
-
-extension ReceiveViewController: DWImportWalletInfoViewControllerDelegate {
-    func importWalletInfoViewControllerScanPrivateKeyAction(_ controller: DWImportWalletInfoViewController) {
-        controller.dismiss(animated: true) {
-            self.delegate?.importPrivateKeyButtonAction(self)
-        }
-    }
-}

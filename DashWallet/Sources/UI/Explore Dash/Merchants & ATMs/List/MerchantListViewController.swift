@@ -211,11 +211,11 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
             guard !physicalMerchants.isEmpty else { return nil }
 
             if Locale.current.usesMetricSystem {
-                return String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"), items.count,
+                return String.localizedStringWithFormat(NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"), items.count,
                               ExploreDash.distanceFormatter
                                   .string(from: Measurement(value: model.currentRadius, unit: UnitLength.meters)))
             } else {
-                return String(format: NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"), items.count,
+                return String.localizedStringWithFormat(NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"), items.count,
                               ExploreDash.distanceFormatter
                                   .string(from: Measurement(value: model.currentRadiusMiles, unit: UnitLength.miles)))
             }

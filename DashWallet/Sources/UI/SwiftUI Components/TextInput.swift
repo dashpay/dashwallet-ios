@@ -34,7 +34,7 @@ struct TextInput: View {
         VStack(alignment: .leading, spacing: 0) {
             ZStack(alignment: .leading) {
                 Text(label)
-                    .font(.body2)
+                    .font(.subhead)
                     .foregroundColor(.secondaryText)
                     .offset(y: labelOffset)
                     .scaleEffect(labelScale, anchor: .leading)
@@ -45,7 +45,7 @@ struct TextInput: View {
                     .textInputAutocapitalization(autocapitalization)
                     .focused($isFocused)
                     .autocorrectionDisabled(true)
-                    .font(.body2)
+                    .font(.subhead)
                     .padding(.top, 15)
                     .disabled(!isEnabled)
                     .onSubmit {

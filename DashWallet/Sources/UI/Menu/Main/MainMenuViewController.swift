@@ -595,4 +595,5 @@ extension MainMenuScreen {
         }
         #endif
     }
+
 }

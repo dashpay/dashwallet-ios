@@ -34,7 +34,7 @@ struct ValidationCheck: View {
             }
             Text(text)
                 .foregroundColor(.primaryText)
-                .font(.body2)
+                .font(.subhead)
         }
     }
     
