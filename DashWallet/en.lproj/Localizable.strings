@@ -3186,3 +3186,7 @@
 
 /* Savings percentage */
 "~%.0f%%" = "~%.0f%%";
+
+/* CSV Export */
+"The full transaction history will be exported as a CSV file" = "The full transaction history will be exported as a CSV file";
+
