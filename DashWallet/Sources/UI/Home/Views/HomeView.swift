@@ -404,7 +404,7 @@ struct HomeViewContent<Content: View>: View {
             TransactionPreview(
                 title: NSLocalizedString("CrowdNode · Account", comment: "Crowdnode"),
                 subtitle: firstTx?.shortTimeString ?? "",
-                topText: String(format: NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
+                topText: String.localizedStringWithFormat(NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
                 icon: .custom("tx.item.cn.icon"),
                 dashAmount: set.amount
             ) {
@@ -417,7 +417,7 @@ struct HomeViewContent<Content: View>: View {
             TransactionPreview(
                 title: NSLocalizedString("Mixing Transactions", comment: "CoinJoin"),
                 subtitle: firstTx?.shortTimeString ?? "",
-                topText: String(format: NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
+                topText: String.localizedStringWithFormat(NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
                 icon: .custom("tx.item.coinjoin.icon"),
                 dashAmount: set.amount
             ) {

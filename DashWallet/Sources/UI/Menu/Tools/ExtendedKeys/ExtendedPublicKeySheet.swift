@@ -109,7 +109,7 @@ struct ExtendedPublicKeySheet: View {
 
             // Title + tappable key text
             VStack(alignment: .leading, spacing: 6) {
-                Text(NSLocalizedString("Extended public key (BIP 44)", comment: ""))
+                Text(NSLocalizedString("Extended public key (BIP44)", comment: ""))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.primaryText)
                     .frame(maxWidth: .infinity, alignment: .leading)

@@ -27,7 +27,7 @@ class ShortcutCell: UICollectionViewCell {
 
     override func awakeFromNib() {
         super.awakeFromNib()
-        titleLabel.font = UIFont.dw_font(forTextStyle: .caption2)
+        titleLabel.font = UIFont.systemFont(ofSize: 12, weight: .medium)
         centeredView.backgroundColor = .clear
     }
 
