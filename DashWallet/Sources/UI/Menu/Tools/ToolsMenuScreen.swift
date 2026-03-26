@@ -25,7 +25,7 @@ struct ToolsMenuScreen: View {
     private let onImportPrivateKey: () -> ()
 
     @StateObject private var viewModel = ToolsMenuViewModel()
-    @State private var showCSVExportAlert = false
+    @State private var showCSVExportSheet = false
     @State private var showCSVExportActivity = false
     @State private var showZenLedgerSheet = false
     @State private var showImportPrivateKeySheet = false
@@ -122,13 +122,17 @@ struct ToolsMenuScreen: View {
         .onReceive(viewModel.$showCSVExportActivity) { show in
             showCSVExportActivity = show
         }
-        .alert(NSLocalizedString("CSV Export", comment: ""), isPresented: $showCSVExportAlert) {
-            Button(NSLocalizedString("Continue", comment: "")) {
-                handleCSVExport()
+        .sheet(isPresented: $showCSVExportSheet) {
+            if #available(iOS 16.4, *) {
+                CSVExportSheet(onExport: handleCSVExport)
+                    .presentationDetents([.large])
+                    .presentationCornerRadius(32)
+            } else if #available(iOS 16.0, *) {
+                CSVExportSheet(onExport: handleCSVExport)
+                    .presentationDetents([.large])
+            } else {
+                CSVExportSheet(onExport: handleCSVExport)
             }
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
-        } message: {
-            Text(NSLocalizedString("All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.", comment: ""))
         }
         .sheet(isPresented: $showCSVExportActivity) {
             if let csvData = viewModel.csvExportData {
@@ -141,9 +145,13 @@ struct ToolsMenuScreen: View {
                 viewModel.safariLink = nil
             }
         }) {
-            if #available(iOS 16.0, *) {
+            if #available(iOS 16.4, *) {
                 ZenLedgerInfoSheet(safariLink: $viewModel.safariLink)
-                    .presentationDetents([.height(450)])
+                    .presentationDetents([.large])
+                    .presentationCornerRadius(32)
+            } else if #available(iOS 16.0, *) {
+                ZenLedgerInfoSheet(safariLink: $viewModel.safariLink)
+                    .presentationDetents([.large])
             } else {
                 ZenLedgerInfoSheet(safariLink: $viewModel.safariLink)
             }
@@ -183,7 +191,7 @@ struct ToolsMenuScreen: View {
         case .masternodeKeys:
             showMasternodeKeys()
         case .csvExport:
-            showCSVExportAlert = true
+            showCSVExportSheet = true
         case .zenLedger:
             showZenLedgerSheet = true
         case .none:
