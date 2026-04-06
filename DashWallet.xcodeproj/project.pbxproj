@@ -1652,6 +1652,7 @@
 		GG0000012DUMMYID001234567 /* GeoRestrictionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG0000032DUMMYID001234567 /* GeoRestrictionService.swift */; };
 		GG0000022DUMMYID001234567 /* GeoRestrictionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG0000032DUMMYID001234567 /* GeoRestrictionService.swift */; };
 		A5D5DD0000000000000000B1 /* SwiftDashSDK in Frameworks */ = {isa = PBXBuildFile; productRef = A5D5DD0000000000000000B2 /* SwiftDashSDK */; };
+		A5D5DD0000000000000000C1 /* SwiftDashSDK in Frameworks */ = {isa = PBXBuildFile; productRef = A5D5DD0000000000000000B2 /* SwiftDashSDK */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3280,6 +3281,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A5D5DD0000000000000000C1 /* SwiftDashSDK in Frameworks */,
 				C9D2C8F62A320AA000D15901 /* libDashSync.a in Frameworks */,
 				C9D2C8F72A320AA000D15901 /* CoreNFC.framework in Frameworks */,
 				C9D2C8F82A320AA000D15901 /* BackgroundTasks.framework in Frameworks */,
@@ -7849,6 +7851,9 @@
 			dependencies = (
 			);
 			name = dashpay;
+			packageProductDependencies = (
+				A5D5DD0000000000000000B2 /* SwiftDashSDK */,
+			);
 			productName = DashWallet;
 			productReference = C9D2C9532A320AA000D15901 /* dashpay.app */;
 			productType = "com.apple.product-type.application";
