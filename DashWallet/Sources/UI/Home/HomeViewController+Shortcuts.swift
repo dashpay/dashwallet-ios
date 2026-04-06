@@ -169,10 +169,10 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
 
     private func showSendToContact() {
         #if DASHPAY
-        let controller = DWContactsViewController()
-        controller.payDelegate = self
-        let navigationController = BaseNavigationController(rootViewController: controller)
-        present(navigationController, animated: true, completion: nil)
+        // TODO: wire this up via the payments controller. DWContactsViewController
+        // requires initWithPayModel:dataProvider: and a payDelegate that conforms to
+        // DWContactsViewControllerPayDelegate (PayViewController does, HomeViewController
+        // does not). See PayableViewController.performPayToDashPayUser(with:delegate:).
         #endif
     }
 
