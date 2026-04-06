@@ -16,6 +16,9 @@
 //
 
 import Foundation
+#if canImport(SwiftDashSDK)
+import SwiftDashSDK
+#endif
 
 
 

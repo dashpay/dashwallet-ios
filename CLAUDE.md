@@ -24,13 +24,13 @@ Dash Wallet is an iOS cryptocurrency wallet for the Dash network (fork of breadw
 ```bash
 pod install                      # Install dependencies
 open DashWallet.xcworkspace      # Always use workspace, not project
-fastlane test                    # Run tests (iPhone 8 simulator)
+fastlane test                    # Run tests (iPhone 17 simulator)
 swiftformat . && swiftlint       # Lint/format Swift
 ```
 
 **Schemes**: `dashwallet` (main), `dashpay` (DashPay-enabled). **Configurations**: Debug, Release, TestNet, TestFlight.
 
-**Requirements**: Xcode 16+, CocoaPods, iOS 14.0+, Rust toolchain. Expects sibling dirs `../DashSync/` and `../dapi-grpc/`.
+**Requirements**: Xcode 16+, CocoaPods, iOS 17.0+, Rust toolchain. Expects sibling dirs `../DashSync/`, `../dapi-grpc/`, and `../platform/` (for `SwiftDashSDK` local SPM package at `../platform/packages/swift-sdk`).
 
 ## Architecture
 
@@ -488,7 +488,7 @@ INSERT INTO merchant_fts(merchant_fts) VALUES('rebuild');
 
 - Unit: `DashWalletTests/` with mock providers, XCTest `@testable`, JSON fixtures
 - UI: `DashWalletScreenshotsUITests/` for App Store screenshots
-- Fastlane: iPhone 8 simulator
+- Fastlane: iPhone 17 simulator
 
 ## Security
 

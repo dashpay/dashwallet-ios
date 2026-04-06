@@ -51,7 +51,7 @@ platform :ios do
       workspace: ENV["XCODE_WORKSPACE"],
       clean: true,
       scheme: ENV["XCODE_SCHEME"],
-      devices: ["iPhone 8"],
+      devices: ["iPhone 17"],
     )
   end
 
