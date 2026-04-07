@@ -76,7 +76,7 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
 }
 
 - (BOOL)phraseIsValid:(NSString *)phrase {
-    return [[DSBIP39Mnemonic sharedInstance] phraseIsValid:phrase];
+    return [DWSwiftDashSDKMnemonicValidator phraseIsValid:phrase];
 }
 
 - (void)wipeWallet {
