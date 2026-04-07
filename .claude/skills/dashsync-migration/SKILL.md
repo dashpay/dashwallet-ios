@@ -7,6 +7,19 @@ description: Use when migrating any function from DashSync (legacy ObjC) to Swif
 
 This skill is the entry point for **all** DashSync removal work in dashwallet-ios, regardless of which function you're migrating. Most sections apply universally; only §3 (the recipe) is specific to functions that fit the basic shape. For everything else, §2 + §3a route you to the right alternative.
 
+## 0. Deployment model: one-shot, single-release migration
+
+**The entire DashSync → SwiftDashSDK migration ships in a single App Store release.** No interim release ever ships with the migration partially done. The 4-stage adapter ladder in §3 (Shadow → Flipped → Solo → Done), the key/storage migrators, and DashSync's removal all happen on the development branch and land together.
+
+This is a load-bearing assumption with hard implications for what code you should and shouldn't write:
+
+- **No dual-stack window exists in production.** Users never see a build where DashSync's UI is authoritative for one operation while SwiftDashSDK is authoritative for another. Anything you'd write to handle that interleaving is dead code.
+- **Do not write cross-library state-drift handlers.** No wipe-detection branches that scrub SwiftDashSDK state when DashSync state disappears. No PIN-rotation branches that re-encrypt SwiftDashSDK seeds when DashSync's PIN changes. No wallet-ID translation tables that map DashSync wallet IDs onto SwiftDashSDK wallet IDs at runtime.
+- **Stage 0 ("Shadow") is a development verification harness, not a production safety net.** Its job is to let you sanity-check the SwiftDashSDK call against DashSync ground truth before flipping the adapter on the dev branch — it does not need to survive into a shipped binary as a safety mechanism. Stage 0 → 1 → 2 still happen as separate commits for review hygiene, but they all bake in the same dev branch.
+- **Hard invariant for storage migrators:** never delete from a DashSync-owned keychain service (`org.dashfoundation.dash`). The DashSync keychain entries from previous app versions persist on user devices forever as belt-and-suspenders rollback. The migrator only ever reads from them. Reference: `DASHSYNC_KEY_MIGRATION.md` and `DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKKeyMigrator.swift`.
+
+If you find yourself writing a branch that "handles the case where DashSync did X to its state after the migrator already ran", **stop**. That case can't happen in our deployment model. Delete the branch.
+
 ## 1. First step: read the migration map
 
 Always read `DASHSYNC_MIGRATION.md` at the repo root **before** starting any migration work. For the function you're about to touch, find:

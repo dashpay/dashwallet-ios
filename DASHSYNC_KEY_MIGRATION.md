@@ -1,6 +1,8 @@
 # DashSync → SwiftDashSDK key migration
 
-Status ledger for the multi-PR arc that moves wallet key material from DashSync's keychain layout into SwiftDashSDK's `WalletStorage` + SwiftData. Sibling to [`DASHSYNC_MIGRATION.md`](./DASHSYNC_MIGRATION.md) (function-first map). This doc tracks **data movement**; that doc tracks function migration.
+Status ledger for the wallet key-material migration from DashSync's keychain layout into SwiftDashSDK's `WalletStorage` + SwiftData. Sibling to [`DASHSYNC_MIGRATION.md`](./DASHSYNC_MIGRATION.md) (function-first map). This doc tracks **data movement**; that doc tracks function migration.
+
+**Deployment model.** All work in this doc lands on the `swift-sdk-integration` dev branch and ships in a single App Store release alongside DashSync's removal — see [`.claude/skills/dashsync-migration/SKILL.md §0`](./.claude/skills/dashsync-migration/SKILL.md). The "milestones" below are review hygiene (small commits, separable diffs), **not** separate ship cycles. The doc therefore intentionally does not design for any dual-stack window, and any branch that would only matter in such a window is dead code.
 
 ## Hard invariant
 
@@ -10,15 +12,18 @@ Even after DashSync the *library* is removed from the app binary, the keychain e
 
 ## Where we are
 
-| Phase | Status | What landed | Commit |
-|---|---|---|---|
-| **v1 — Full one-shot import (mnemonic → seed + HDWallet)** | 🚧 In progress (built, awaiting commit) | Migrator file, AppDelegate one-line, two platform-repo patches (`CoreWalletManager` public convenience init + `WalletStorage` public init), tracking doc | — |
-| v2 — Wave-1 function adapters consume the migrated wallet | — Not started | — | — |
-| v3 — DashSync library removal (keychain entries preserved) | — Not started | — | — |
+| Milestone | Status | Commits |
+|---|---|---|
+| **Seed migrator** — mnemonic → encrypted seed (`WalletStorage`) + `HDWallet` SwiftData record, run silently at app launch on a background queue | ✅ Landed on `swift-sdk-integration` | `ba477919c` (initial), `a3c24e9d8` (lowest-level API rewrite), `5af09c84f` (background dispatch), `fd7b770ea` (drop PIN-change), this PR (drop wipe-detection) |
+| Cross-repo SwiftDashSDK visibility patches | ✅ Landed in platform repo | `223dda6ca`, `b3bb5fcdf` (on `fix/swift-sdk-ios-17-deployment-target`) |
+| Wave-1 function adapters consume the migrated wallet (e.g. #1 receive address) | — Not started | — |
+| DashSync library removal (keychain entries preserved) | — Not started | — |
+
+The seed migrator is feature-complete on the dev branch. The next milestone is wiring a Wave-1 adapter (or the SPV sync work) to consume the migrated `HDWallet` record so we get end-to-end proof that the wallet bytes are usable. Both follow-on milestones still belong to the same App Store release — no intermediate ship.
 
 ## Today's frozen contract with DashSync's keychain
 
-The migrator (`DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKKeyMigrator.swift`) is the **only file in dashwallet-ios** that knows DashSync's keychain layout. The constants below are load-bearing — once v1 ships, they cannot change without a coordinated release.
+The migrator (`DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKKeyMigrator.swift`) is the **only file in dashwallet-ios** that knows DashSync's keychain layout. The constants below are load-bearing — they describe DashSync entries previous app versions wrote on user devices, and we never delete or rewrite those entries. They cannot change after the migrator ships.
 
 | What | Service | Account | Format | Source |
 |---|---|---|---|---|
@@ -38,12 +43,12 @@ Chain genesis short-hex format: `[[NSData dataWithUInt256:[chain genesisHash]] s
 
 Keychain access: default app keychain group (`<team-id>.<bundle-id>`), no `kSecAttrAccessGroup` set. No biometric/passcode access control flags — silent reads.
 
-## Phase v1 — scope, design, and "done when"
+## Seed migrator — scope, design, status
 
 ### Scope
 
-- **In:** mnemonic + PIN → 64-byte BIP39 seed → encrypted in `org.dash.wallet`/`wallet.seed` via `WalletStorage` → SwiftData `HDWallet` record persisted via a fresh `ModelContext` from `ModelContainerHelper.createContainer()`. Wallet bytes captured via `WalletManager.addWalletAndSerialize`. Round-trip verified. Done flag stores a version sentinel (`"v1"`) for idempotency only — no PIN tracking.
-- **Out:** xpub-cache migration (derivable from seed; deferred indefinitely). Removing DashSync call sites. Deleting any DashSync keychain entries (never). Exposing the migrated wallet to other parts of the app (v2).
+- **In:** mnemonic + PIN → 64-byte BIP39 seed → encrypted in `org.dash.wallet`/`wallet.seed` via `WalletStorage` → SwiftData `HDWallet` record persisted via a fresh `ModelContext` from `ModelContainerHelper.createContainer()`. Wallet bytes captured via `WalletManager.addWalletAndSerialize`. Round-trip verified. Done flag stores a version sentinel (`"v1"`) for idempotency only — no PIN tracking. (`v1` is a UserDefaults key namespace and version tag, not a release phase; the value is frozen and must not change after the migrator ships.)
+- **Out:** xpub-cache migration (derivable from seed; deferred indefinitely). Removing DashSync call sites — that's the function-migration work tracked in `DASHSYNC_MIGRATION.md`. Deleting any DashSync keychain entries (never). Exposing the migrated wallet to other parts of the app — that's the Wave-1 adapter milestone in the table above.
 
 ### Design
 
@@ -69,51 +74,54 @@ Set per-cause UserDefaults flag and bail; the next launch will re-check.
 |---|---|
 | No PIN in DashSync keychain | `swiftSDKKeyMigration.v1.deferredNoPIN` |
 | More than one wallet found | `swiftSDKKeyMigration.v1.deferredMultiWallet` (count value) |
-| Wallet on devnet/regtest/evonet (unsupported in v1) | `swiftSDKKeyMigration.v1.deferredUnknownChain` |
+| Wallet on devnet/regtest/evonet (currently unsupported) | `swiftSDKKeyMigration.v1.deferredUnknownChain` |
 
-### Special branches
+### One-shot, single-release deployment model
 
-- **Wipe detection:** If done flag is set but DashSync mnemonics are gone AND our SwiftDashSDK seed lingers, the migrator deletes the SwiftDashSDK seed and clears the flag. Only touches `org.dash.wallet`. Never `org.dashfoundation.dash`.
+The migrator is built for a **one-shot migration in a single App Store release**. There is no intermediate release where v1's migrator ships while DashSync's UI is still authoritative — the migrator, the SDK consumers, and DashSync's removal all land together. As a direct consequence the migrator deliberately does **not** handle any of the cross-library state-drift scenarios that a dual-stack window would create:
 
-The migrator does **not** track PIN changes. Once the done flag is set, the migrator is done forever (modulo wipe detection). PIN rotation post-migration is handled by `CoreWalletManager.changeWalletPIN(currentPIN:newPIN:)` (`Core/Wallet/CoreWalletManager.swift:285`) — that's the SDK's official API for re-encrypting the seed with a new PIN, and it's what the app's PIN-change UI should call once it's ported to SwiftDashSDK in a later wave. The migrator only owns the one-time DashSync → SwiftDashSDK handoff; everything after that, including PIN rotation, is the SwiftDashSDK consumer's responsibility.
+- **No wipe-detection branch.** Because DashSync's wipe UI never coexists with a SwiftDashSDK seed in production, the "DashSync mnemonics gone but our seed lingers" state cannot occur organically. The hard invariant (we never delete from `org.dashfoundation.dash` ourselves) closes the only other path.
+- **No PIN-change branch.** PIN rotation never happens through DashSync after the migrator runs in production. PIN rotation post-migration is handled by `CoreWalletManager.changeWalletPIN(currentPIN:newPIN:)` (`Core/Wallet/CoreWalletManager.swift:285`).
+- **No cross-library wallet ID mapping.** The migrator hands off the wallet once and exits; nothing later needs to correlate a DashSync wallet ID against a SwiftDashSDK one.
 
-### Done when
+Once the done flag is set, the migrator is done forever. The post-migration world is SwiftDashSDK-only.
+
+### Acceptance criteria
 
 - Both `dashwallet` and `dashpay` targets build clean ✅
 - `plutil -lint` on `project.pbxproj` is OK ✅
-- Round-trip verification inside the migrator passes (seed re-read byte-equals freshly-derived) — verified by code path; runtime confirmation requires a real device
-- Manual smoke test passes on a working device/simulator combo (release blocker, not merge blocker — see Risks)
+- Round-trip verification inside the migrator passes (seed re-read byte-equals freshly-derived) — verified by code path; runtime confirmation requires a real device.
+- Manual smoke test on a working device/simulator combo before the App Store release — see the iPhone 17 + iOS 26.3 entry in Open risks.
 
 ## Cross-repo dependency: SwiftDashSDK patches
 
-v1 requires two minimal visibility flips in `../platform/packages/swift-sdk/Sources/SwiftDashSDK/Core/Wallet/`:
+The seed migrator requires two minimal visibility flips in `../platform/packages/swift-sdk/Sources/SwiftDashSDK/Core/Wallet/`:
 
 | File | Change | Why |
 |---|---|---|
 | `HDWallet.swift` | Add `public` to the existing `init(walletId:serializedWalletBytes:label:network:isWatchOnly:isImported:)` | The migrator constructs `HDWallet` directly to insert into a `ModelContext` without going through `CoreWalletManager.createWallet` (which is `@MainActor` async and would force the migrator into the same isolation domain). The class itself is already `public final class HDWallet`; only the init was internal. |
 | `WalletStorage.swift` | Add `public init() {}` | Synthesized inits on `public class` types default to internal. Without an explicit `public init()`, callers outside the module can't construct a `WalletStorage`. |
 
-Both changes are additive and minimal — no behavior change, no breaking change. They must be merged in the platform repo before this dashwallet-ios PR can ship.
+Both changes are additive and minimal — no behavior change, no breaking change. They land on `fix/swift-sdk-ios-17-deployment-target` in the platform repo (commits `223dda6ca`, `b3bb5fcdf`) and must merge before the dashwallet-ios PR ships.
 
-**Earlier design — abandoned.** An earlier attempt added `public convenience init(keyWalletNetwork:)` to `CoreWalletManager` that internally constructed an `SPVClient(dataDir: nil)` and chained to the existing internal designated init. That approach had two real problems and was reverted: (a) **use-after-free** — the convenience init dropped its local `SPVClient` at end-of-init, but `WalletManager.init(handle:)` sets `ownsHandle = false` because the handle is owned by the SPVClient; the FFI handle stored in `self.sdkWalletManager` became dangling as soon as the convenience init returned. (b) **`dataDir: nil` semantics were unverified** — every other call site in the SDK passes an explicit Documents-based path; the FFI behavior with no dataDir was unknown and the SPVClient header comment hints at a directory lock that may persist even with nil. The current design bypasses `CoreWalletManager` and `SPVClient` entirely, eliminating both problems.
+**Earlier design — abandoned.** An earlier attempt added `public convenience init(keyWalletNetwork:)` to `CoreWalletManager` that internally constructed an `SPVClient(dataDir: nil)` and chained to the existing internal designated init. Two problems caused it to be reverted: (a) **use-after-free** — the convenience init dropped its local `SPVClient` at end-of-init, but `WalletManager.init(handle:)` sets `ownsHandle = false` because the handle is owned by the SPVClient; the FFI handle stored in `self.sdkWalletManager` became dangling as soon as the convenience init returned. (b) **`dataDir: nil` semantics were unverified.** The current design bypasses `CoreWalletManager` and `SPVClient` entirely, eliminating both problems.
 
-## Phase v2 (sketch)
+## Follow-on milestones (same App Store release)
 
-Wire up a shared `SwiftDashSDKContainer` singleton (currently the SDK is initialized ephemerally inside the migrator only). Build a `SwiftDashSDKWalletProvider` that returns the migrated `HDWallet` to consumers via `CoreWalletManager.wallets`. Wire the first Wave-1 function adapter (likely #1 receive address per [`DASHSYNC_MIGRATION.md`](./DASHSYNC_MIGRATION.md)) to consume that provider. This gives us our first end-to-end test that the migration actually produced a usable wallet.
+These are the next steps on the same dev branch. Each is a small, separately-reviewable diff but ships in the same release as the seed migrator and DashSync's removal.
 
-## Phase v3 (sketch)
+**1. Wire a Wave-1 adapter to consume the migrated `HDWallet`.** Stand up a shared `SwiftDashSDKContainer` (today the SDK is initialized ephemerally inside the migrator only), build a `SwiftDashSDKWalletProvider` that surfaces the migrated `HDWallet` via `CoreWalletManager.wallets`, and point the first Wave-1 function adapter (likely #1 receive address per `DASHSYNC_MIGRATION.md`, or the SPV chain sync work — see `DASHSYNC_MIGRATION.md` row #11) at it. This is the first end-to-end proof that the wallet bytes the migrator wrote are usable.
 
-Once Wave 1–4 of `DASHSYNC_MIGRATION.md` are complete and the app no longer needs DashSync at runtime, remove the DashSync CocoaPods dependency. The DashSync keychain entries that previous app versions wrote remain on user devices and remain readable by the migrator. **They are never deleted.**
+**2. Remove the DashSync CocoaPods dependency.** Once every Wave 1–4 function in `DASHSYNC_MIGRATION.md` is on SwiftDashSDK and the app no longer needs DashSync at runtime, drop the pod. The DashSync keychain entries previous app versions wrote remain on user devices and remain readable by the migrator. **They are never deleted.**
 
 ## Open risks and notes
 
-- **iPhone 17 + iOS 26.3 crash in `[DSChain retrieveWallets]`** is a pre-existing host-app blocker that prevents end-to-end testing of v1 on this dev machine. v1 itself is safe (it runs *before* DashSync init) but we cannot manually verify the post-migrator launch path here. Release blocker: smoke test on a different device or simulator combo before merging.
-- **Multi-wallet prevalence is unknown.** v1 ships a "skip if >1 wallet" guard. We need telemetry on the `swiftSDKKeyMigration.v1.deferredMultiWallet` counter to know whether we need a follow-up to handle multi-wallet.
-- **Devnet/regtest/evonet not supported in v1.** Network detection only matches mainnet and testnet. Users on other networks see migration deferred via `swiftSDKKeyMigration.v1.deferredUnknownChain`. Follow-up to add devnet support if telemetry shows non-zero incidence.
-- **Wallet ID stability across libraries**: DashSync's wallet ID is `%0llx` of a 64-bit hash; SwiftDashSDK's wallet ID is 32 bytes from `wallet_manager_add_wallet_from_mnemonic_return_serialized_bytes`. These are NOT the same value and cannot be cross-referenced. Wave 4 dual-stack code that needs to correlate wallets across libraries will need an explicit mapping table.
-- **PIN-hash format mismatch**: DashSync stores PIN as UTF-8 plaintext; SwiftDashSDK stores `SHA256(PIN)` (unsalted, single round). The two cannot validate each other's PIN entries. Future cleanup needs to reconcile.
-- **`kSecAttrAccessible` mismatch on PIN**: DashSync's PIN uses `AfterFirstUnlockThisDeviceOnly` (background-readable); SwiftDashSDK's `wallet.pin` uses `WhenUnlockedThisDeviceOnly` (foreground-only). v1 only runs at `didFinishLaunching` so this doesn't bite us, but v2+ background unlock paths must not assume the SwiftDashSDK PIN hash is readable in the background.
-- **`ensurePlatformPaymentAccount` failure** is treated as non-fatal — the migrator logs a warning and proceeds. Matches the behavior of `CoreWalletManager.createWallet` (`CoreWalletManager.swift:78-83`). Fine for v1 since we don't use platform features yet.
-- **HDWallet record cleanup on wipe-detection is intentionally NOT performed.** The wipe-detection branch only deletes the encrypted seed from `WalletStorage`, not the `HDWallet` SwiftData record, because doing so would require constructing and operating on the SwiftData stack on every cold-launch fast path. The orphaned `HDWallet` record is harmless until v2 has consumers; v2 will discover it via SwiftData on first run and decide whether to delete or rebuild it.
-- **Background dispatch race window.** Because the migrator body runs on `DispatchQueue.global(qos: .userInitiated)`, there is a window between launch finish and migration completion (~300–500 ms one-time, immediately after the upgrade installs) during which the SwiftDashSDK side is not yet populated. **Irrelevant for v1** because no consumer reads `wallet.seed` or queries the `HDWallet` SwiftData store yet. Future PRs that consume the migrated wallet must use an explicit "migration complete" handshake — polling `UserDefaults.standard.string(forKey: "swiftSDKKeyMigration.v1.done")`, NotificationCenter post on completion, or a SwiftData query for `HDWallet` rows — rather than assuming synchronous completion.
+- **iPhone 17 + iOS 26.3 crash in `[DSChain retrieveWallets]`** is a pre-existing host-app blocker that prevents end-to-end testing of the migrator on this dev machine. The migrator itself is safe (it runs *before* DashSync init) but we cannot manually verify the post-migrator launch path here. Release blocker: smoke test on a different device or simulator combo before merging the App Store release.
+- **Multi-wallet prevalence is unknown.** The migrator ships a "skip if >1 wallet" guard. We need telemetry on the `swiftSDKKeyMigration.v1.deferredMultiWallet` counter to know whether we need a follow-up commit to handle multi-wallet on the same dev branch before the release.
+- **Devnet/regtest/evonet not supported.** Network detection only matches mainnet and testnet. Users on other networks see migration deferred via `swiftSDKKeyMigration.v1.deferredUnknownChain`. Follow-up commit on the same dev branch if telemetry shows non-zero incidence.
+- **Wallet ID stability across libraries (informational).** DashSync's wallet ID is `%0llx` of a 64-bit hash; SwiftDashSDK's wallet ID is 32 bytes from `wallet_manager_add_wallet_from_mnemonic_return_serialized_bytes`. These are NOT the same value and cannot be cross-referenced. Under the one-shot model nothing needs to correlate them — DashSync's IDs only matter to DashSync, and DashSync is gone after the release. Listed here only so future readers don't get confused by the difference.
+- **PIN-hash format mismatch (informational).** DashSync stores PIN as UTF-8 plaintext; SwiftDashSDK stores `SHA256(PIN)` (unsalted, single round). The migrator reads the plaintext, derives the seed, and writes the encrypted seed via `WalletStorage.storeSeed(seed, pin:)`, which produces the SwiftDashSDK PIN hash as a side effect. Post-migration there is only one PIN representation in play (SwiftDashSDK's), so there is no reconciliation work to do.
+- **`kSecAttrAccessible` mismatch on PIN.** DashSync's PIN uses `AfterFirstUnlockThisDeviceOnly` (background-readable); SwiftDashSDK's `wallet.pin` uses `WhenUnlockedThisDeviceOnly` (foreground-only). The migrator only runs at `didFinishLaunching` so this doesn't bite us, but background unlock paths added in future commits on this branch must not assume the SwiftDashSDK PIN hash is readable in the background.
+- **`ensurePlatformPaymentAccount` failure** is treated as non-fatal — the migrator logs a warning and proceeds. Matches the behavior of `CoreWalletManager.createWallet` (`CoreWalletManager.swift:78-83`). Acceptable because we do not use platform features at the point the migrator runs.
+- **Background dispatch race window.** Because the migrator body runs on `DispatchQueue.global(qos: .userInitiated)`, there is a window between launch finish and migration completion (~300–500 ms one-time, immediately after the upgrade installs) during which the SwiftDashSDK side is not yet populated. Irrelevant for the migrator in isolation because no consumer reads `wallet.seed` or queries the `HDWallet` SwiftData store yet, but the **first** Wave-1 adapter that consumes the migrated wallet must use an explicit "migration complete" handshake — polling `UserDefaults.standard.string(forKey: "swiftSDKKeyMigration.v1.done")`, NotificationCenter post on completion, or a SwiftData query for `HDWallet` rows — rather than assuming synchronous completion.
 - **Thread-safety verification (background dispatch).** Every API the migrator touches is thread-safe or used in a thread-confined manner: `UserDefaults.standard` (thread-safe per Apple), `SecItemCopyMatching/Add/Delete` (thread-safe), `Mnemonic.validate/toSeed` (pure FFI, no shared state), `WalletManager(network:)` (creates a fresh FFI handle owned by the dispatched thread for the duration of the function), `WalletStorage()` (just keychain), `ModelContainerHelper.createContainer()` (safe from any thread), `ModelContext(modelContainer)` (a fresh non-main context confined to the dispatched thread — never `mainContext`), `HDWallet @Model` (created and inserted on the same thread, never crossed). `os.log` `Logger` is thread-safe. No actor isolation needed.

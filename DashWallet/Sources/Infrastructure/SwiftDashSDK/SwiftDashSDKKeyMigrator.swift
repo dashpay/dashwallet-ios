@@ -75,14 +75,6 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// `shortHexString` is `2cbcf83`.
     private static let testnetGenesisShortHex = "2cbcf83"
 
-    // MARK: - SwiftDashSDK keychain layout (we own this; cleanup-safe)
-
-    /// SwiftDashSDK's keychain service — `WalletStorage.swift:9`. Owned by us.
-    private static let swiftDashSDKService = "org.dash.wallet"
-
-    /// Encrypted seed account — `WalletStorage.swift:10`. Owned by us.
-    private static let swiftDashSDKSeedAccount = "wallet.seed"
-
     // MARK: - UserDefaults keys
 
     /// Stores a version sentinel (`"v1"`) when migration is complete;
@@ -133,22 +125,13 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// `DASHSYNC_KEY_MIGRATION.md` (Phase v1 — Design / Thread-safety).
     private static func performMigration() {
         let defaults = UserDefaults.standard
-        let doneFlag = defaults.string(forKey: doneKey)
-        let currentPIN = readKeychainString(service: dashSyncService, account: dashSyncPINAccount)
 
-        // Path 1 — already migrated. Handle wipe branch only; PIN rotation
-        // post-migration is the consumer's responsibility via
-        // CoreWalletManager.changeWalletPIN(currentPIN:newPIN:).
-        if doneFlag != nil {
-            // Wipe detection: DashSync mnemonics gone, our seed lingers.
-            if enumerateDashSyncMnemonicAccounts().isEmpty && walletStorageHasSeed() {
-                try? WalletStorage().deleteSeed()
-                defaults.removeObject(forKey: doneKey)
-                logger.info("wipe detected: cleared SwiftDashSDK seed and done flag")
-                return
-            }
-
-            // Happy-path no-op (~1 ms total).
+        // Path 1 — already migrated. One-shot, single-release migration plan:
+        // there is no dual-stack window in which DashSync's wipe UI could
+        // orphan our SwiftDashSDK seed, so no cross-library wipe-detection
+        // branch is needed. PIN rotation post-migration is the consumer's
+        // responsibility via CoreWalletManager.changeWalletPIN.
+        if defaults.string(forKey: doneKey) != nil {
             return
         }
 
@@ -181,7 +164,8 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             return
         }
 
-        guard let pin = currentPIN, !pin.isEmpty else {
+        guard let pin = readKeychainString(service: dashSyncService, account: dashSyncPINAccount),
+              !pin.isEmpty else {
             logger.warning("no PIN in DashSync keychain — deferring")
             defaults.set(true, forKey: deferredNoPINKey)
             return
@@ -362,19 +346,6 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             return nil
         }
         return String(data: data, encoding: .utf8)
-    }
-
-    /// Returns true if SwiftDashSDK's WalletStorage already holds an encrypted seed.
-    private static func walletStorageHasSeed() -> Bool {
-        let query: [String: Any] = [
-            kSecClass as String:        kSecClassGenericPassword,
-            kSecAttrService as String:  swiftDashSDKService,
-            kSecAttrAccount as String:  swiftDashSDKSeedAccount,
-            kSecMatchLimit as String:   kSecMatchLimitOne,
-            kSecReturnData as String:   false
-        ]
-        let status = SecItemCopyMatching(query as CFDictionary, nil)
-        return status == errSecSuccess
     }
 
 }
