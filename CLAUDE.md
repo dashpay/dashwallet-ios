@@ -2,19 +2,6 @@
 
 Guidance for Claude Code when working in this repository.
 
-## 🚨 CRITICAL: Git Workflow Policy
-
-**NEVER commit or push changes without explicit user permission.**
-
-1. Make the requested changes
-2. Show the diff
-3. **STOP and WAIT** for explicit commit/push instruction
-4. Each set of changes requires its own explicit permission — earlier approval does NOT carry over
-
-Permission phrases: "commit these changes", "push to github", "commit and push".
-
-After tasks like "address review comments" or "fix these issues", do NOT automatically commit — the user typically wants to test first.
-
 ## Project Overview
 
 Dash Wallet is an iOS cryptocurrency wallet for the Dash network (fork of breadwallet, SPV-based). Features include DashPay, CoinJoin, and integrations with Uphold, Coinbase, CTX, and PiggyCards.
