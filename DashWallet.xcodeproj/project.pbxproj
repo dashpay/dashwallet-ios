@@ -377,6 +377,8 @@
 		A5D5DD0000000000000000F7 /* SwiftDashSDKMnemonicValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000F5 /* SwiftDashSDKMnemonicValidator.swift */; };
 		A5D5DD0000000000000000F8 /* SwiftDashSDKKeyMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000FA /* SwiftDashSDKKeyMigrator.swift */; };
 		A5D5DD0000000000000000F9 /* SwiftDashSDKKeyMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000FA /* SwiftDashSDKKeyMigrator.swift */; };
+		A5D5DD0000000000000000FB /* SwiftDashSDKSPVCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */; };
+		A5D5DD0000000000000000FC /* SwiftDashSDKSPVCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */; };
 		4774DCDB28F3FA9C008CF87D /* Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4774DCDA28F3FA9C008CF87D /* Coinbase.swift */; };
 		4774DCDD28F43A68008CF87D /* ServiceDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4774DCDC28F43A68008CF87D /* ServiceDataSource.swift */; };
 		4774DCDF28F43AB4008CF87D /* ServiceItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4774DCDE28F43AB4008CF87D /* ServiceItem.swift */; };
@@ -2331,6 +2333,7 @@
 		A5D5DD0000000000000000F1 /* SwiftDashSDKAddressValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKAddressValidator.swift; sourceTree = "<group>"; };
 		A5D5DD0000000000000000F5 /* SwiftDashSDKMnemonicValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKMnemonicValidator.swift; sourceTree = "<group>"; };
 		A5D5DD0000000000000000FA /* SwiftDashSDKKeyMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKKeyMigrator.swift; sourceTree = "<group>"; };
+		A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKSPVCoordinator.swift; sourceTree = "<group>"; };
 		4762C947276CAF6800F5F42D /* DWPaymentCurrency.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentCurrency.h; sourceTree = "<group>"; };
 		4774DCDA28F3FA9C008CF87D /* Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coinbase.swift; sourceTree = "<group>"; };
 		4774DCDC28F43A68008CF87D /* ServiceDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceDataSource.swift; sourceTree = "<group>"; };
@@ -5495,6 +5498,7 @@
 				A5D5DD0000000000000000F1 /* SwiftDashSDKAddressValidator.swift */,
 				A5D5DD0000000000000000F5 /* SwiftDashSDKMnemonicValidator.swift */,
 				A5D5DD0000000000000000FA /* SwiftDashSDKKeyMigrator.swift */,
+				A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */,
 			);
 			path = SwiftDashSDK;
 			sourceTree = "<group>";
@@ -8933,6 +8937,7 @@
 				A5D5DD0000000000000000F2 /* SwiftDashSDKAddressValidator.swift in Sources */,
 				A5D5DD0000000000000000F6 /* SwiftDashSDKMnemonicValidator.swift in Sources */,
 				A5D5DD0000000000000000F8 /* SwiftDashSDKKeyMigrator.swift in Sources */,
+				A5D5DD0000000000000000FB /* SwiftDashSDKSPVCoordinator.swift in Sources */,
 				2A0C69A3231048DA001B8C90 /* DWPaymentProcessor.m in Sources */,
 				75CDD7832C0898FA00F433D2 /* Wrapper.swift in Sources */,
 				C9F451F32A0C933700825057 /* SyncingHeaderView.swift in Sources */,
@@ -9773,6 +9778,7 @@
 				A5D5DD0000000000000000F3 /* SwiftDashSDKAddressValidator.swift in Sources */,
 				A5D5DD0000000000000000F7 /* SwiftDashSDKMnemonicValidator.swift in Sources */,
 				A5D5DD0000000000000000F9 /* SwiftDashSDKKeyMigrator.swift in Sources */,
+				A5D5DD0000000000000000FC /* SwiftDashSDKSPVCoordinator.swift in Sources */,
 				755E6DFE2A99E7A000A42870 /* DWInvitationSetupState.m in Sources */,
 				C9D2C7EB2A320AA000D15901 /* DWPaymentProcessor.m in Sources */,
 				C9D2C7ED2A320AA000D15901 /* SyncingHeaderView.swift in Sources */,
