@@ -2,44 +2,33 @@
 //  SwiftDashSDKMnemonicValidator.swift
 //  DashWallet
 //
-//  BIP-39 mnemonic phrase validation adapter — Stage 1 (Flipped).
+//  BIP-39 mnemonic phrase validation adapter — SwiftDashSDK is the sole authoritative source.
 //
-//  Calls both DashSync and SwiftDashSDK on every invocation, returns
-//  SwiftDashSDK's result (now authoritative), and continues to log any
-//  disagreements via os.log (subsystem org.dashfoundation.dash,
-//  category swift-sdk-migration.mnemonic-validator).
+//  Stage history:
+//    Stage 0 — Shadow:  called both libraries, returned DashSync result, logged mismatches
+//    Stage 1 — Flipped: called both libraries, returned SwiftDashSDK result, logged mismatches
+//    Stage 2 — Solo:    only SwiftDashSDK is called (current)
+//    Stage 3 — Done:    adapter retired, call sites use SwiftDashSDK directly (future)
 //
-//  Stage progression:
-//    Stage 0 — Shadow:  call both, return DashSync, log mismatches
-//    Stage 1 — Flipped: call both, return SwiftDashSDK, log mismatches (current)
-//    Stage 2 — Solo:    drop the parallel DashSync call entirely
-//    Stage 3 — Done:    retire this file, inline at the call site (deferred)
+//  The DashSync parallel call was removed after Stage 1 baked clean: a manual smoke
+//  test in the Restore Wallet flow produced zero `phraseIsValid mismatch` warnings.
+//  Both implementations follow the BIP-39 RFC against the same 2048-word English
+//  list, so any divergence would be a bug in one side rather than an edge case to
+//  design around.
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 @objc(DWSwiftDashSDKMnemonicValidator)
 final class SwiftDashSDKMnemonicValidator: NSObject {
 
-    private static let logger = Logger(subsystem: "org.dashfoundation.dash",
-                                       category: "swift-sdk-migration.mnemonic-validator")
-
-    /// Validates a BIP-39 mnemonic phrase. Stage 1 returns SwiftDashSDK's result.
+    /// Validates a BIP-39 mnemonic phrase using SwiftDashSDK.
     @objc(phraseIsValid:)
     static func phraseIsValid(_ phrase: String?) -> Bool {
         guard let phrase = phrase, !phrase.isEmpty else {
             return false
         }
-
-        let dashSyncResult = DSBIP39Mnemonic.sharedInstance()?.phraseIsValid(phrase) ?? false
-        let sdkResult = Mnemonic.validate(phrase)
-
-        if sdkResult != dashSyncResult {
-            logger.warning("phraseIsValid mismatch: dashSync=\(dashSyncResult, privacy: .public) sdk=\(sdkResult, privacy: .public)")
-        }
-
-        return sdkResult  // Stage 2 will drop the DashSync parallel call entirely
+        return Mnemonic.validate(phrase)
     }
 }
