@@ -135,7 +135,9 @@ NS_ASSUME_NONNULL_BEGIN
     [[DashSync sharedSyncController] registerBackgroundFetchOnce];
     
     [[DatabaseConnection shared] migrateIfNeededAndReturnError:nil];
-    
+
+    [DWSwiftDashSDKKeyMigrator migrateIfNeeded];
+
     DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
     if (migrationManager.shouldMigrate) {
         [self performDeferredStartWithLaunchOptions:launchOptions];

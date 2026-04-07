@@ -61,6 +61,8 @@ Everything else in the table below is `—` (not started). The SwiftDashSDK pack
 
 ## Storage migration
 
+> **Key material migration is tracked separately** in [`DASHSYNC_KEY_MIGRATION.md`](./DASHSYNC_KEY_MIGRATION.md). That doc covers mnemonic → seed → `WalletStorage` + `HDWallet` and the per-PR status of the multi-phase key migration arc. This section covers the **non-key** persisted data (tx history, masternode list, identity entities, etc.) that lives in DashSync's Core Data store.
+
 This is a separate concern from per-function code migration, and it cuts across functions #5, #6, #7, #11, #14, #16, #17.
 
 **Current state:** DashSync persists everything in **Core Data** (40+ entities): tx history, masternode list, identity entities, contact requests, address metadata, sync state. SwiftDashSDK persists in **SwiftData** (`@Model` types). The two are not interoperable — different storage frameworks, different schemas, different files on disk.
