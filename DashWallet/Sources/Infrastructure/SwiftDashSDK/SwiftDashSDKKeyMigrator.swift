@@ -24,7 +24,6 @@
 //  versions wrote survive app updates and we never delete them.
 //
 
-import CryptoKit
 import Foundation
 import OSLog
 import Security
@@ -86,8 +85,12 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
     // MARK: - UserDefaults keys
 
-    /// Stores `SHA256(pin)` as hex when migration is complete; absent before
-    /// first run. Used both for idempotency and PIN-change detection.
+    /// Stores a version sentinel (`"v1"`) when migration is complete;
+    /// absent before first run. Used purely for idempotency — the migrator
+    /// does not track PIN changes. PIN rotation post-migration is handled
+    /// by `CoreWalletManager.changeWalletPIN(currentPIN:newPIN:)` in
+    /// SwiftDashSDK; the migrator only owns the one-time DashSync → SwiftDashSDK
+    /// handoff.
     private static let doneKey = "swiftSDKKeyMigration.v1.done"
 
     private static let deferredNoPINKey         = "swiftSDKKeyMigration.v1.deferredNoPIN"
@@ -132,10 +135,11 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         let defaults = UserDefaults.standard
         let doneFlag = defaults.string(forKey: doneKey)
         let currentPIN = readKeychainString(service: dashSyncService, account: dashSyncPINAccount)
-        let currentPINHash = currentPIN.map { sha256Hex($0) }
 
-        // Path 1 — already migrated. Handle wipe + PIN-change branches.
-        if let doneFlag {
+        // Path 1 — already migrated. Handle wipe branch only; PIN rotation
+        // post-migration is the consumer's responsibility via
+        // CoreWalletManager.changeWalletPIN(currentPIN:newPIN:).
+        if doneFlag != nil {
             // Wipe detection: DashSync mnemonics gone, our seed lingers.
             if enumerateDashSyncMnemonicAccounts().isEmpty && walletStorageHasSeed() {
                 try? WalletStorage().deleteSeed()
@@ -144,25 +148,15 @@ final class SwiftDashSDKKeyMigrator: NSObject {
                 return
             }
 
-            // PIN-change detection: re-encrypt the seed with the new PIN.
-            // We do NOT recreate the HDWallet record — `addWalletAndSerialize`
-            // is non-idempotent and would create a duplicate. Just rotate the
-            // encryption key on the existing seed via WalletStorage.storeSeed.
-            if let currentPIN, !currentPIN.isEmpty,
-               let currentPINHash, doneFlag != currentPINHash {
-                reencryptSeedForPINChange(newPIN: currentPIN, newPINHash: currentPINHash)
-                return
-            }
-
             // Happy-path no-op (~1 ms total).
             return
         }
 
-        // Path 2 — fresh migration. Enumerate, validate, dispatch Task.
+        // Path 2 — fresh migration. Enumerate, validate, run inline.
         let mnemonicAccounts = enumerateDashSyncMnemonicAccounts()
         switch mnemonicAccounts.count {
         case 0:
-            defaults.set("none", forKey: doneKey)
+            defaults.set("v1", forKey: doneKey)
             logger.info("no DashSync mnemonics found — fresh install or post-wipe, marking done")
             return
         case 1:
@@ -197,8 +191,6 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             logger.error("DashSync mnemonic failed SwiftDashSDK BIP39 validation")
             return
         }
-
-        let pinHash = sha256Hex(pin)
 
         // Inline heavy work — fully synchronous, no Task, no @MainActor.
         // We construct a standalone WalletManager (no SPVClient), persist
@@ -273,8 +265,8 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             context.insert(hdWallet)
             try context.save()
 
-            // Mark done. Store SHA256(pin) for PIN-change detection.
-            defaults.set(pinHash, forKey: doneKey)
+            // Mark done with the version sentinel.
+            defaults.set("v1", forKey: doneKey)
             defaults.removeObject(forKey: deferredNoPINKey)
             defaults.removeObject(forKey: deferredMultiWalletKey)
             defaults.removeObject(forKey: deferredUnknownChainKey)
@@ -284,46 +276,6 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             logger.error("migration threw: \(String(describing: error), privacy: .public)")
             // Best-effort: leave SwiftDashSDK side clean if anything was partially written.
             try? WalletStorage().deleteSeed()
-        }
-    }
-
-    // MARK: - PIN-change re-encrypt (sync, no SDK init)
-
-    /// Re-encrypts the existing SwiftDashSDK seed with the user's new PIN.
-    /// Does NOT touch SwiftData / HDWallet — `addWalletAndSerialize` is
-    /// non-idempotent so we cannot re-run the full migration without
-    /// creating a duplicate FFI wallet.
-    private static func reencryptSeedForPINChange(newPIN: String, newPINHash: String) {
-        let mnemonicAccounts = enumerateDashSyncMnemonicAccounts()
-        guard mnemonicAccounts.count == 1 else {
-            // Don't second-guess multi-wallet here either; just bail and let
-            // the next launch's first-run path handle it once it's resolved.
-            logger.warning("PIN re-encrypt skipped: \(mnemonicAccounts.count, privacy: .public) wallets present")
-            return
-        }
-        guard let mnemonic = readKeychainString(
-            service: dashSyncService,
-            account: mnemonicAccounts[0]
-        ), Mnemonic.validate(mnemonic) else {
-            logger.error("PIN re-encrypt: failed to read or validate mnemonic")
-            return
-        }
-
-        do {
-            let seed = try Mnemonic.toSeed(mnemonic: mnemonic)
-            _ = try WalletStorage().storeSeed(seed, pin: newPIN)
-
-            // Sanity round-trip
-            let readBack = try WalletStorage().retrieveSeed(pin: newPIN)
-            guard readBack == seed else {
-                logger.error("PIN re-encrypt: round-trip mismatch")
-                return
-            }
-
-            UserDefaults.standard.set(newPINHash, forKey: doneKey)
-            logger.info("PIN change: re-encrypted seed with new PIN")
-        } catch {
-            logger.error("PIN re-encrypt threw: \(String(describing: error), privacy: .public)")
         }
     }
 
@@ -425,9 +377,4 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         return status == errSecSuccess
     }
 
-    /// Hex-encoded SHA256 of a UTF-8 string. Used for PIN-change detection.
-    private static func sha256Hex(_ string: String) -> String {
-        let digest = SHA256.hash(data: Data(string.utf8))
-        return digest.map { String(format: "%02x", $0) }.joined()
-    }
 }

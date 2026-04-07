@@ -42,7 +42,7 @@ Keychain access: default app keychain group (`<team-id>.<bundle-id>`), no `kSecA
 
 ### Scope
 
-- **In:** mnemonic + PIN → 64-byte BIP39 seed → encrypted in `org.dash.wallet`/`wallet.seed` via `WalletStorage` → SwiftData `HDWallet` record persisted via a fresh `ModelContext` from `ModelContainerHelper.createContainer()`. Wallet bytes captured via `WalletManager.addWalletAndSerialize`. Round-trip verified. Done flag stores `SHA256(pin)` for change detection.
+- **In:** mnemonic + PIN → 64-byte BIP39 seed → encrypted in `org.dash.wallet`/`wallet.seed` via `WalletStorage` → SwiftData `HDWallet` record persisted via a fresh `ModelContext` from `ModelContainerHelper.createContainer()`. Wallet bytes captured via `WalletManager.addWalletAndSerialize`. Round-trip verified. Done flag stores a version sentinel (`"v1"`) for idempotency only — no PIN tracking.
 - **Out:** xpub-cache migration (derivable from seed; deferred indefinitely). Removing DashSync call sites. Deleting any DashSync keychain entries (never). Exposing the migrated wallet to other parts of the app (v2).
 
 ### Design
@@ -74,7 +74,8 @@ Set per-cause UserDefaults flag and bail; the next launch will re-check.
 ### Special branches
 
 - **Wipe detection:** If done flag is set but DashSync mnemonics are gone AND our SwiftDashSDK seed lingers, the migrator deletes the SwiftDashSDK seed and clears the flag. Only touches `org.dash.wallet`. Never `org.dashfoundation.dash`.
-- **PIN-change re-encrypt:** If done flag is set but `SHA256(currentDashSyncPIN) != doneFlag`, re-derives the seed from the mnemonic and calls `WalletStorage.storeSeed(seed, pin: newPIN)`. Does **not** call `createWallet` again, because `addWalletAndSerialize` is non-idempotent and would create a duplicate FFI wallet. Only the encryption layer rotates.
+
+The migrator does **not** track PIN changes. Once the done flag is set, the migrator is done forever (modulo wipe detection). PIN rotation post-migration is handled by `CoreWalletManager.changeWalletPIN(currentPIN:newPIN:)` (`Core/Wallet/CoreWalletManager.swift:285`) — that's the SDK's official API for re-encrypting the seed with a new PIN, and it's what the app's PIN-change UI should call once it's ported to SwiftDashSDK in a later wave. The migrator only owns the one-time DashSync → SwiftDashSDK handoff; everything after that, including PIN rotation, is the SwiftDashSDK consumer's responsibility.
 
 ### Done when
 
