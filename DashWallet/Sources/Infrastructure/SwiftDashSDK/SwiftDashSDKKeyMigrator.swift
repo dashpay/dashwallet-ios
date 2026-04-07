@@ -96,16 +96,39 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
     // MARK: - Public entry point
 
-    /// Synchronous Obj-C entry point. Performs the entire migration inline
-    /// on the calling thread (which is the main thread in our launch sequence).
-    /// Uses the lowest-level public SwiftDashSDK API surface — standalone
-    /// `WalletManager`, `WalletStorage`, and direct `HDWallet` construction —
-    /// so there is no `SPVClient`, no `CoreWalletManager`, no `@MainActor`
-    /// requirement, and no `Task` dispatch. Never throws, never crashes;
-    /// total cost is ~300–500 ms once per device, dominated by PBKDF2 inside
-    /// `WalletStorage.storeSeed`.
+    /// Synchronous Obj-C entry point. Dispatches the entire migrator body
+    /// to a background queue (`DispatchQueue.global(qos: .userInitiated)`)
+    /// and returns to the caller in microseconds, so launch is not blocked.
+    /// The actual migration completes ~300–500 ms later in the background
+    /// while the user is already looking at the home screen.
+    ///
+    /// Nothing in v1 depends on the migration being complete before launch
+    /// finishes (no consumer reads `wallet.seed` or queries the `HDWallet`
+    /// SwiftData store), so the race window between launch finish and
+    /// migration completion is benign. Future PRs that consume the migrated
+    /// wallet must use an explicit "migration complete" handshake — polling
+    /// `swiftSDKKeyMigration.v1.done` in `UserDefaults`, NotificationCenter,
+    /// or a SwiftData query for `HDWallet` rows — rather than assuming
+    /// synchronous completion.
+    ///
+    /// Never throws, never crashes.
     @objc(migrateIfNeeded)
     static func migrateIfNeeded() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            performMigration()
+        }
+    }
+
+    // MARK: - Background migration body
+
+    /// The actual migration body. Runs on a background `DispatchQueue` —
+    /// uses the lowest-level public SwiftDashSDK API surface (standalone
+    /// `WalletManager`, `WalletStorage`, and direct `HDWallet` construction)
+    /// so it has no `@MainActor` requirements. Total cost ~300–500 ms once
+    /// per device, dominated by PBKDF2 inside `WalletStorage.storeSeed`.
+    /// Thread-safety of every API used is verified in
+    /// `DASHSYNC_KEY_MIGRATION.md` (Phase v1 — Design / Thread-safety).
+    private static func performMigration() {
         let defaults = UserDefaults.standard
         let doneFlag = defaults.string(forKey: doneKey)
         let currentPIN = readKeychainString(service: dashSyncService, account: dashSyncPINAccount)
