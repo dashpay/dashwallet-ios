@@ -28,6 +28,7 @@ import CryptoKit
 import Foundation
 import OSLog
 import Security
+import SwiftData
 import SwiftDashSDK
 
 @objc(DWSwiftDashSDKKeyMigrator)
@@ -95,10 +96,14 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
     // MARK: - Public entry point
 
-    /// Synchronous Obj-C entry point. Performs the fast pre-checks on the
-    /// calling thread; if a fresh migration is needed, dispatches the heavy
-    /// (FFI + PBKDF2 + SwiftData) work to a `Task @MainActor`. Never throws,
-    /// never crashes, never blocks launch beyond a few keychain reads.
+    /// Synchronous Obj-C entry point. Performs the entire migration inline
+    /// on the calling thread (which is the main thread in our launch sequence).
+    /// Uses the lowest-level public SwiftDashSDK API surface — standalone
+    /// `WalletManager`, `WalletStorage`, and direct `HDWallet` construction —
+    /// so there is no `SPVClient`, no `CoreWalletManager`, no `@MainActor`
+    /// requirement, and no `Task` dispatch. Never throws, never crashes;
+    /// total cost is ~300–500 ms once per device, dominated by PBKDF2 inside
+    /// `WalletStorage.storeSeed`.
     @objc(migrateIfNeeded)
     static func migrateIfNeeded() {
         let defaults = UserDefaults.standard
@@ -172,63 +177,80 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
         let pinHash = sha256Hex(pin)
 
-        // Hand off to the main actor for the @MainActor CoreWalletManager work.
-        Task { @MainActor in
-            await performFullMigration(
-                mnemonic: mnemonic,
-                pin: pin,
-                pinHash: pinHash,
-                network: network)
-        }
-    }
-
-    // MARK: - Heavy work (Task body)
-
-    @MainActor
-    private static func performFullMigration(
-        mnemonic: String,
-        pin: String,
-        pinHash: String,
-        network: KeyWalletNetwork
-    ) async {
+        // Inline heavy work — fully synchronous, no Task, no @MainActor.
+        // We construct a standalone WalletManager (no SPVClient), persist
+        // the wallet bytes via a fresh ModelContext, and store the
+        // encrypted seed via WalletStorage. Everything is local to this
+        // function; the FFI wallet manager handle is freed by ARC when
+        // walletManager goes out of scope at the end of this function.
         do {
             // Determinism + length sanity check (extra belt-and-suspenders).
-            let seed1 = try Mnemonic.toSeed(mnemonic: mnemonic)
-            let seed2 = try Mnemonic.toSeed(mnemonic: mnemonic)
-            guard seed1.count == 64 else {
-                logger.error("seed length invalid: \(seed1.count, privacy: .public)")
+            let seed = try Mnemonic.toSeed(mnemonic: mnemonic)
+            guard seed.count == 64 else {
+                logger.error("seed length invalid: \(seed.count, privacy: .public)")
                 return
             }
-            guard seed1 == seed2 else {
+            let seedCheck = try Mnemonic.toSeed(mnemonic: mnemonic)
+            guard seedCheck == seed else {
                 logger.error("seed determinism check failed")
                 return
             }
 
-            // Construct CoreWalletManager via the public convenience init we
-            // added to the SwiftDashSDK package (no SPV peers, no on-disk
-            // SPV state, in-process SwiftData ModelContainer).
-            let walletManager = try CoreWalletManager(keyWalletNetwork: network)
+            // Standalone WalletManager — public init, owns its own FFI handle.
+            let walletManager = try WalletManager(network: network)
 
-            // The actual migration: one createWallet call does it all
-            // (FFI wallet add → platform payment account → seed encrypt →
-            // HDWallet SwiftData insert+save).
-            let hdWallet = try await walletManager.createWallet(
-                label: "Migrated wallet",
+            // Register the wallet with the FFI and capture the serialized bytes.
+            // birthHeight matches CoreWalletManager.createWallet's isImport: true
+            // behaviour (730k for mainnet, 0 for everything else).
+            let addResult = try walletManager.addWalletAndSerialize(
                 mnemonic: mnemonic,
-                pin: pin,
-                isImport: true)
+                passphrase: nil,
+                birthHeight: network == .mainnet ? 730_000 : 0,
+                accountOptions: .default,
+                downgradeToPublicKeyWallet: false,
+                allowExternalSigning: false)
 
-            // Round-trip verify the encrypted seed.
+            // Optional platform payment account — non-fatal, matches
+            // CoreWalletManager.createWallet behaviour. v1 doesn't use
+            // platform features, so failure here is fine.
+            do {
+                try walletManager.ensurePlatformPaymentAccount(walletId: addResult.walletId)
+            } catch {
+                logger.warning("ensurePlatformPaymentAccount failed (non-fatal): \(String(describing: error), privacy: .public)")
+            }
+
+            // Encrypt and store the seed via WalletStorage.
             let storage = WalletStorage()
+            _ = try storage.storeSeed(seed, pin: pin)
+
+            // Round-trip verify the encrypted seed before persisting the
+            // HDWallet record. If verify fails, roll back the seed write.
             let readBack = try storage.retrieveSeed(pin: pin)
-            guard readBack == seed1 else {
-                logger.error("round-trip seed mismatch — rolling back SwiftDashSDK side")
-                await rollback(hdWallet: hdWallet, walletManager: walletManager)
+            guard readBack == seed else {
+                logger.error("round-trip seed mismatch — rolling back SwiftDashSDK seed")
+                try? storage.deleteSeed()
                 return
             }
 
+            // Persist the HDWallet SwiftData record. We construct a fresh
+            // ModelContext (not mainContext) so this code path doesn't
+            // require @MainActor isolation. The new context writes to the
+            // same on-disk store as any future ModelContainer that
+            // ModelContainerHelper.createContainer() returns.
+            let modelContainer = try ModelContainerHelper.createContainer()
+            let context = ModelContext(modelContainer)
+            let appNetwork: AppNetwork = (network == .mainnet) ? .mainnet : .testnet
+            let hdWallet = HDWallet(
+                walletId: addResult.walletId,
+                serializedWalletBytes: addResult.serializedWallet,
+                label: "Migrated wallet",
+                network: appNetwork,
+                isWatchOnly: false,
+                isImported: true)
+            context.insert(hdWallet)
+            try context.save()
+
             // Mark done. Store SHA256(pin) for PIN-change detection.
-            let defaults = UserDefaults.standard
             defaults.set(pinHash, forKey: doneKey)
             defaults.removeObject(forKey: deferredNoPINKey)
             defaults.removeObject(forKey: deferredMultiWalletKey)
@@ -378,17 +400,6 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         ]
         let status = SecItemCopyMatching(query as CFDictionary, nil)
         return status == errSecSuccess
-    }
-
-    /// Best-effort rollback after a verify failure during full migration.
-    @MainActor
-    private static func rollback(hdWallet: HDWallet, walletManager: CoreWalletManager) async {
-        try? WalletStorage().deleteSeed()
-        do {
-            try await walletManager.deleteWallet(hdWallet)
-        } catch {
-            logger.error("rollback deleteWallet threw: \(String(describing: error), privacy: .public)")
-        }
     }
 
     /// Hex-encoded SHA256 of a UTF-8 string. Used for PIN-change detection.

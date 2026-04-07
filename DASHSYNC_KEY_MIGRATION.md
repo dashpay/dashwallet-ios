@@ -42,16 +42,16 @@ Keychain access: default app keychain group (`<team-id>.<bundle-id>`), no `kSecA
 
 ### Scope
 
-- **In:** mnemonic + PIN → 64-byte BIP39 seed → encrypted in `org.dash.wallet`/`wallet.seed` via `WalletStorage` → SwiftData `HDWallet` record via `CoreWalletManager.createWallet(label:mnemonic:pin:isImport:true)`. Round-trip verified. Done flag stores `SHA256(pin)` for change detection.
+- **In:** mnemonic + PIN → 64-byte BIP39 seed → encrypted in `org.dash.wallet`/`wallet.seed` via `WalletStorage` → SwiftData `HDWallet` record persisted via a fresh `ModelContext` from `ModelContainerHelper.createContainer()`. Wallet bytes captured via `WalletManager.addWalletAndSerialize`. Round-trip verified. Done flag stores `SHA256(pin)` for change detection.
 - **Out:** xpub-cache migration (derivable from seed; deferred indefinitely). Removing DashSync call sites. Deleting any DashSync keychain entries (never). Exposing the migrated wallet to other parts of the app (v2).
 
 ### Design
 
 The migrator runs once per cold launch from `AppDelegate.m` immediately after the Core Data migration call (line ~138), **before** any DashSync initialization (`setupDashSyncOnce` runs much later at line ~332). This sidesteps the iPhone 17 + iOS 26.3 `[DSChain retrieveWallets]` crash entirely.
 
-Sync entry point `migrateIfNeeded()` does fast pre-checks (UserDefaults flag, keychain enumeration, network detection) on the calling thread. If a fresh migration is needed, it dispatches the heavy work (FFI + PBKDF2 + SwiftData) to a `Task @MainActor`. Fire-and-forget — nothing in v1 depends on the migration completing before launch finishes.
+The Obj-C entry point `migrateIfNeeded()` is fully synchronous. It runs all of its work inline on the calling thread — fast pre-checks (UserDefaults flag, keychain enumeration, network detection) plus the heavy work (FFI + PBKDF2 + SwiftData). No `Task`, no `@MainActor`, no async dispatch. Total cost ~300–500 ms once per device.
 
-`CoreWalletManager.createWallet(...)` does it all in one call: validate mnemonic → FFI `addWalletAndSerialize` → ensure platform payment account (non-fatal if it fails) → derive seed → `WalletStorage.storeSeed(seed, pin:)` → insert+save `HDWallet` SwiftData record. We then re-read the encrypted seed via `WalletStorage().retrieveSeed(pin:)` and byte-compare against the freshly-derived seed to guard against silent corruption.
+The migrator uses the lowest-level public SwiftDashSDK API surface: standalone `WalletManager(network:)` (which calls `wallet_manager_create` directly with `ownsHandle = true` — no `SPVClient` or `CoreWalletManager`), then `addWalletAndSerialize` to register the wallet and capture its FFI bytes, then `ensurePlatformPaymentAccount` (non-fatal), then `Mnemonic.toSeed` + `WalletStorage().storeSeed(seed, pin:)` to write the encrypted seed, then a round-trip `retrieveSeed(pin:)` byte-compare, then a fresh `ModelContext(modelContainer)` insert+save of the `HDWallet` record. The `WalletManager` and `ModelContainer` locals go out of scope at the end of the function and ARC frees the FFI handle naturally.
 
 ### Hard invariants the migrator honors
 
@@ -85,14 +85,16 @@ Set per-cause UserDefaults flag and bail; the next launch will re-check.
 
 ## Cross-repo dependency: SwiftDashSDK patches
 
-v1 requires two minimal additions to `../platform/packages/swift-sdk/Sources/SwiftDashSDK/Core/Wallet/`:
+v1 requires two minimal visibility flips in `../platform/packages/swift-sdk/Sources/SwiftDashSDK/Core/Wallet/`:
 
 | File | Change | Why |
 |---|---|---|
-| `CoreWalletManager.swift` | Add `public convenience init(keyWalletNetwork:)` that internally constructs `SPVClient(dataDir: nil)` + `ModelContainerHelper.createContainer()` and chains to the existing internal designated init | The designated init is internal because it takes `SPVClient` (also internal). The convenience init exposes a stable, high-level construction path without leaking SPV plumbing into the SDK's public surface. |
+| `HDWallet.swift` | Add `public` to the existing `init(walletId:serializedWalletBytes:label:network:isWatchOnly:isImported:)` | The migrator constructs `HDWallet` directly to insert into a `ModelContext` without going through `CoreWalletManager.createWallet` (which is `@MainActor` async and would force the migrator into the same isolation domain). The class itself is already `public final class HDWallet`; only the init was internal. |
 | `WalletStorage.swift` | Add `public init() {}` | Synthesized inits on `public class` types default to internal. Without an explicit `public init()`, callers outside the module can't construct a `WalletStorage`. |
 
-Both changes are additive and minimal (no behavior change, no breaking change). They must be merged in the platform repo before this dashwallet-ios PR can ship.
+Both changes are additive and minimal — no behavior change, no breaking change. They must be merged in the platform repo before this dashwallet-ios PR can ship.
+
+**Earlier design — abandoned.** An earlier attempt added `public convenience init(keyWalletNetwork:)` to `CoreWalletManager` that internally constructed an `SPVClient(dataDir: nil)` and chained to the existing internal designated init. That approach had two real problems and was reverted: (a) **use-after-free** — the convenience init dropped its local `SPVClient` at end-of-init, but `WalletManager.init(handle:)` sets `ownsHandle = false` because the handle is owned by the SPVClient; the FFI handle stored in `self.sdkWalletManager` became dangling as soon as the convenience init returned. (b) **`dataDir: nil` semantics were unverified** — every other call site in the SDK passes an explicit Documents-based path; the FFI behavior with no dataDir was unknown and the SPVClient header comment hints at a directory lock that may persist even with nil. The current design bypasses `CoreWalletManager` and `SPVClient` entirely, eliminating both problems.
 
 ## Phase v2 (sketch)
 
@@ -110,6 +112,5 @@ Once Wave 1–4 of `DASHSYNC_MIGRATION.md` are complete and the app no longer ne
 - **Wallet ID stability across libraries**: DashSync's wallet ID is `%0llx` of a 64-bit hash; SwiftDashSDK's wallet ID is 32 bytes from `wallet_manager_add_wallet_from_mnemonic_return_serialized_bytes`. These are NOT the same value and cannot be cross-referenced. Wave 4 dual-stack code that needs to correlate wallets across libraries will need an explicit mapping table.
 - **PIN-hash format mismatch**: DashSync stores PIN as UTF-8 plaintext; SwiftDashSDK stores `SHA256(PIN)` (unsalted, single round). The two cannot validate each other's PIN entries. Future cleanup needs to reconcile.
 - **`kSecAttrAccessible` mismatch on PIN**: DashSync's PIN uses `AfterFirstUnlockThisDeviceOnly` (background-readable); SwiftDashSDK's `wallet.pin` uses `WhenUnlockedThisDeviceOnly` (foreground-only). v1 only runs at `didFinishLaunching` so this doesn't bite us, but v2+ background unlock paths must not assume the SwiftDashSDK PIN hash is readable in the background.
-- **`createWallet` is async** but the migrator's Obj-C entry point is synchronous. Heavy work runs in `Task { @MainActor in ... }` — fire-and-forget. Nothing in v1 depends on the migration being complete before launch finishes; v2 will need an explicit handshake when consumers exist.
-- **`ensurePlatformPaymentAccount` failure inside `createWallet`** is non-fatal per `CoreWalletManager.swift:78-83` — execution continues. Fine for v1 (we don't need platform features yet) but worth knowing for the failure-mode catalog.
-- **HDWallet record cleanup on wipe-detection is intentionally NOT performed.** The wipe-detection branch only deletes the encrypted seed from `WalletStorage`, not the `HDWallet` SwiftData record, because doing so would require constructing a `CoreWalletManager` / SwiftData stack on every cold-launch fast path. The orphaned `HDWallet` record is harmless until v2 has consumers; v2 will discover it via SwiftData on first run and decide whether to delete or rebuild it.
+- **`ensurePlatformPaymentAccount` failure** is treated as non-fatal — the migrator logs a warning and proceeds. Matches the behavior of `CoreWalletManager.createWallet` (`CoreWalletManager.swift:78-83`). Fine for v1 since we don't use platform features yet.
+- **HDWallet record cleanup on wipe-detection is intentionally NOT performed.** The wipe-detection branch only deletes the encrypted seed from `WalletStorage`, not the `HDWallet` SwiftData record, because doing so would require constructing and operating on the SwiftData stack on every cold-launch fast path. The orphaned `HDWallet` record is harmless until v2 has consumers; v2 will discover it via SwiftData on first run and decide whether to delete or rebuild it.
