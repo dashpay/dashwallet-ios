@@ -371,6 +371,8 @@
 		4759D514292FEFFC002F20DC /* ModalNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4759D513292FEFFB002F20DC /* ModalNavigationController.swift */; };
 		4759D51729300212002F20DC /* ProvideAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4759D51629300212002F20DC /* ProvideAmountViewController.swift */; };
 		475AE2B92974348F009A1055 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475AE2B82974348F009A1055 /* App.swift */; };
+		A5D5DD0000000000000000F2 /* SwiftDashSDKAddressValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000F1 /* SwiftDashSDKAddressValidator.swift */; };
+		A5D5DD0000000000000000F3 /* SwiftDashSDKAddressValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000F1 /* SwiftDashSDKAddressValidator.swift */; };
 		4774DCDB28F3FA9C008CF87D /* Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4774DCDA28F3FA9C008CF87D /* Coinbase.swift */; };
 		4774DCDD28F43A68008CF87D /* ServiceDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4774DCDC28F43A68008CF87D /* ServiceDataSource.swift */; };
 		4774DCDF28F43AB4008CF87D /* ServiceItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4774DCDE28F43AB4008CF87D /* ServiceItem.swift */; };
@@ -2322,6 +2324,7 @@
 		4759D513292FEFFB002F20DC /* ModalNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalNavigationController.swift; sourceTree = "<group>"; };
 		4759D51629300212002F20DC /* ProvideAmountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProvideAmountViewController.swift; sourceTree = "<group>"; };
 		475AE2B82974348F009A1055 /* App.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
+		A5D5DD0000000000000000F1 /* SwiftDashSDKAddressValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKAddressValidator.swift; sourceTree = "<group>"; };
 		4762C947276CAF6800F5F42D /* DWPaymentCurrency.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentCurrency.h; sourceTree = "<group>"; };
 		4774DCDA28F3FA9C008CF87D /* Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coinbase.swift; sourceTree = "<group>"; };
 		4774DCDC28F43A68008CF87D /* ServiceDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceDataSource.swift; sourceTree = "<group>"; };
@@ -5480,6 +5483,14 @@
 			path = Infrastructure;
 			sourceTree = "<group>";
 		};
+		A5D5DD0000000000000000F4 /* SwiftDashSDK */ = {
+			isa = PBXGroup;
+			children = (
+				A5D5DD0000000000000000F1 /* SwiftDashSDKAddressValidator.swift */,
+			);
+			path = SwiftDashSDK;
+			sourceTree = "<group>";
+		};
 		47838B85290666160003E8AB /* API */ = {
 			isa = PBXGroup;
 			children = (
@@ -5579,6 +5590,7 @@
 				47F006002971B1CE0029EB10 /* Currency Exchanger */,
 				47FA3B0029364743008D58DC /* Networking */,
 				4741255F287E77B4004E6BF3 /* Database */,
+				A5D5DD0000000000000000F4 /* SwiftDashSDK */,
 			);
 			path = Infrastructure;
 			sourceTree = "<group>";
@@ -8910,6 +8922,7 @@
 				C94D982A2A53038400F3BEE1 /* EnterAddressModel.swift in Sources */,
 				47AE8BA628BFADD900490F5E /* AtmDAO.swift in Sources */,
 				475AE2B92974348F009A1055 /* App.swift in Sources */,
+				A5D5DD0000000000000000F2 /* SwiftDashSDKAddressValidator.swift in Sources */,
 				2A0C69A3231048DA001B8C90 /* DWPaymentProcessor.m in Sources */,
 				75CDD7832C0898FA00F433D2 /* Wrapper.swift in Sources */,
 				C9F451F32A0C933700825057 /* SyncingHeaderView.swift in Sources */,
@@ -9747,6 +9760,7 @@
 				C943B3202A408CED00AF23C5 /* DWImgurInfoChildView.m in Sources */,
 				C9D2C7E92A320AA000D15901 /* AtmDAO.swift in Sources */,
 				C9D2C7EA2A320AA000D15901 /* App.swift in Sources */,
+				A5D5DD0000000000000000F3 /* SwiftDashSDKAddressValidator.swift in Sources */,
 				755E6DFE2A99E7A000A42870 /* DWInvitationSetupState.m in Sources */,
 				C9D2C7EB2A320AA000D15901 /* DWPaymentProcessor.m in Sources */,
 				C9D2C7ED2A320AA000D15901 /* SyncingHeaderView.swift in Sources */,

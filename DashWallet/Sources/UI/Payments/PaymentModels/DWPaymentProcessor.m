@@ -287,7 +287,7 @@ static NSString *sanitizeString(NSString *s) {
                                         return;
                                     }
 
-                                    if (error && !([request.paymentAddress isValidDashAddressOnChain:chain])) {
+                                    if (error && !([DWSwiftDashSDKAddressValidator isValidDashAddress:request.paymentAddress onChain:chain])) {
                                         [strongSelf failedWithError:error
                                                               title:NSLocalizedString(@"Couldn't make payment", nil)
                                                             message:error.localizedDescription];
