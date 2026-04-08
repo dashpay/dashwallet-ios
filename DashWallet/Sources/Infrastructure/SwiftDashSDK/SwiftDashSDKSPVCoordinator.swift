@@ -173,20 +173,20 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         // Idempotent guard.
         switch lifecycle {
         case .starting, .running:
-            Self.logger.info("startIfReady ignored — coordinator is already \(String(describing: self.lifecycle), privacy: .public)")
+            Self.logger.info("🛰️ SPVCOORD :: startIfReady ignored — coordinator is already \(String(describing: self.lifecycle), privacy: .public)")
             return
         case .waitingForSeedMigrator, .notStarted, .stopped, .failed:
             break
         }
 
         lifecycle = .waitingForSeedMigrator
-        Self.logger.info("waiting for seed migrator (`\(Self.seedMigratorDoneKey, privacy: .public)`)")
+        Self.logger.info("🛰️ SPVCOORD :: waiting for seed migrator (`\(Self.seedMigratorDoneKey, privacy: .public)`)")
 
         // Poll the migrator's done flag with a bounded backoff.
         let deadline = Date().addingTimeInterval(Self.seedMigratorWaitTimeout)
         while UserDefaults.standard.string(forKey: Self.seedMigratorDoneKey) == nil {
             if Date() >= deadline {
-                Self.logger.error("seed migrator did not complete within \(Self.seedMigratorWaitTimeout, privacy: .public)s — bailing")
+                Self.logger.error("🛰️ SPVCOORD :: seed migrator did not complete within \(Self.seedMigratorWaitTimeout, privacy: .public)s — bailing")
                 lifecycle = .failed
                 publish { $0.lastError = "Seed migration not complete; SPV cannot start." }
                 return
@@ -202,13 +202,13 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             let descriptor = FetchDescriptor<HDWallet>()
             let wallets = try context.fetch(descriptor)
             guard let first = wallets.first else {
-                Self.logger.warning("seed migrator marked done but no HDWallet found — fresh install path, nothing to sync")
+                Self.logger.warning("🛰️ SPVCOORD :: seed migrator marked done but no HDWallet found — fresh install path, nothing to sync")
                 lifecycle = .stopped
                 return
             }
             migratedWallet = first
         } catch {
-            Self.logger.error("failed to read migrated HDWallet: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🛰️ SPVCOORD :: failed to read migrated HDWallet: \(String(describing: error), privacy: .public)")
             lifecycle = .failed
             publish { $0.lastError = "Failed to read migrated wallet: \(error.localizedDescription)" }
             return
@@ -218,7 +218,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         let walletBytes = migratedWallet.serializedWalletBytes
         let expectedWalletId = migratedWallet.walletId
 
-        Self.logger.info("starting SPV client for \(String(describing: appNetwork), privacy: .public), wallet bytes=\(walletBytes.count, privacy: .public)")
+        Self.logger.info("🛰️ SPVCOORD :: starting SPV client for \(String(describing: appNetwork), privacy: .public), wallet bytes=\(walletBytes.count, privacy: .public)")
 
         lifecycle = .starting
 
@@ -242,7 +242,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         do {
             dataDir = try ensureDataDirectory(for: appNetwork)
         } catch {
-            Self.logger.error("failed to create SPV data directory: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🛰️ SPVCOORD :: failed to create SPV data directory: \(String(describing: error), privacy: .public)")
             lifecycle = .failed
             publish { $0.lastError = "Failed to create SPV data directory: \(error.localizedDescription)" }
             return
@@ -263,7 +263,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 startHeight: startHeight,
                 eventHandlers: handlers)
         } catch {
-            Self.logger.error("SPVClient init failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🛰️ SPVCOORD :: SPVClient init failed: \(String(describing: error), privacy: .public)")
             lifecycle = .failed
             publish { $0.lastError = "Failed to create SPV client: \(error.localizedDescription)" }
             return
@@ -274,12 +274,12 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             let walletManager = try newClient.getWalletManager()
             let importedWalletId = try walletManager.importWallet(from: walletBytes)
             if importedWalletId != expectedWalletId {
-                Self.logger.warning("imported walletId mismatch — proceeding anyway")
+                Self.logger.warning("🛰️ SPVCOORD :: imported walletId mismatch — proceeding anyway")
             } else {
-                Self.logger.info("wallet imported into SPV client OK")
+                Self.logger.info("🛰️ SPVCOORD :: wallet imported into SPV client OK")
             }
         } catch {
-            Self.logger.error("failed to import wallet into SPV client: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🛰️ SPVCOORD :: failed to import wallet into SPV client: \(String(describing: error), privacy: .public)")
             lifecycle = .failed
             publish { $0.lastError = "Failed to import wallet: \(error.localizedDescription)" }
             newClient.destroy()
@@ -297,9 +297,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         Task { [weak self] in
             do {
                 try await newClient.startSync()
-                Self.logger.info("startSync returned — sync loop exited")
+                Self.logger.info("🛰️ SPVCOORD :: startSync returned — sync loop exited")
             } catch {
-                Self.logger.error("startSync threw: \(String(describing: error), privacy: .public)")
+                Self.logger.error("🛰️ SPVCOORD :: startSync threw: \(String(describing: error), privacy: .public)")
                 guard let self else { return }
                 self.workQueue.async {
                     self.lifecycle = .failed
@@ -314,10 +314,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// `destroy()` to release the FFI handles and unlock the data dir.
     private func performStop() {
         guard let activeClient = client else {
-            Self.logger.info("stop ignored — no active SPV client")
+            Self.logger.info("🛰️ SPVCOORD :: stop ignored — no active SPV client")
             return
         }
-        Self.logger.info("stopping SPV client")
+        Self.logger.info("🛰️ SPVCOORD :: stopping SPV client")
         activeClient.stopSync()
         activeClient.destroy()
         client = nil
@@ -387,10 +387,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             self.coordinator = coordinator
         }
         func onStart(_ manager: SPVSyncManager) {
-            SwiftDashSDKSPVCoordinator.logger.debug("sync start: \(String(describing: manager), privacy: .public)")
+            SwiftDashSDKSPVCoordinator.logger.debug("🛰️ SPVCOORD :: sync start: \(String(describing: manager), privacy: .public)")
         }
         func onComplete(_ headerTip: UInt32, _ cycle: UInt32) {
-            SwiftDashSDKSPVCoordinator.logger.info("sync cycle complete: tip=\(headerTip, privacy: .public) cycle=\(cycle, privacy: .public)")
+            SwiftDashSDKSPVCoordinator.logger.info("🛰️ SPVCOORD :: sync cycle complete: tip=\(headerTip, privacy: .public) cycle=\(cycle, privacy: .public)")
             coordinator?.publish { $0.tipHeight = headerTip }
         }
         func onBlockHeadersStored(_ tipHeight: UInt32) {
@@ -428,7 +428,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             // Future use: M9 hooks Transaction.swift IS state into this.
         }
         func onSyncManagerError(_ manager: SPVSyncManager, _ errorMsg: String) {
-            SwiftDashSDKSPVCoordinator.logger.error("sync manager error (\(String(describing: manager), privacy: .public)): \(errorMsg, privacy: .public)")
+            SwiftDashSDKSPVCoordinator.logger.error("🛰️ SPVCOORD :: sync manager error (\(String(describing: manager), privacy: .public)): \(errorMsg, privacy: .public)")
             coordinator?.publish { $0.lastError = errorMsg }
         }
     }
@@ -459,11 +459,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
         func onTransactionReceived(_ walletId: String, _ accountIndex: UInt32, _ txid: Data, _ amount: Int64, _ addresses: [String]) {
             // Future use: feed into the transaction-list refresh path (M9 + function #6 migration).
-            SwiftDashSDKSPVCoordinator.logger.info("tx received: wallet=\(walletId, privacy: .public) amount=\(amount, privacy: .public)")
+            SwiftDashSDKSPVCoordinator.logger.info("🛰️ SPVCOORD :: tx received: wallet=\(walletId, privacy: .public) amount=\(amount, privacy: .public)")
         }
         func onBalanceUpdated(_ walletId: String, _ spendable: UInt64, _ unconfirmed: UInt64, _ immature: UInt64, _ locked: UInt64) {
             // Future use: feed into the balance refresh path (function #5 migration).
-            SwiftDashSDKSPVCoordinator.logger.info("balance updated: wallet=\(walletId, privacy: .public) spendable=\(spendable, privacy: .public)")
+            SwiftDashSDKSPVCoordinator.logger.info("🛰️ SPVCOORD :: balance updated: wallet=\(walletId, privacy: .public) spendable=\(spendable, privacy: .public)")
         }
     }
 
@@ -473,7 +473,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             self.coordinator = coordinator
         }
         func onError(_ errorMsg: String) {
-            SwiftDashSDKSPVCoordinator.logger.error("client error: \(errorMsg, privacy: .public)")
+            SwiftDashSDKSPVCoordinator.logger.error("🛰️ SPVCOORD :: client error: \(errorMsg, privacy: .public)")
             coordinator?.publish { $0.lastError = errorMsg }
         }
     }
