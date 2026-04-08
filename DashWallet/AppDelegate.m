@@ -137,6 +137,7 @@ NS_ASSUME_NONNULL_BEGIN
     [[DatabaseConnection shared] migrateIfNeededAndReturnError:nil];
 
     [DWSwiftDashSDKKeyMigrator migrateIfNeeded];
+    [DWSwiftDashSDKWalletWiper startObservingWipeNotification];
 
     DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
     if (migrationManager.shouldMigrate) {
