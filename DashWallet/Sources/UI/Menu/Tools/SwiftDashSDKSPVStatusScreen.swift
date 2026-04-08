@@ -2,17 +2,20 @@
 //  SwiftDashSDKSPVStatusScreen.swift
 //  DashWallet
 //
-//  Debug-only Tools-menu screen that observes SwiftDashSDKSPVCoordinator
-//  and displays the parallel-observe SPV stack's live state. Lets us watch
-//  the new SPV pipeline catch up to mainnet on a real device alongside
-//  DashSync's still-authoritative SPV stack.
+//  Tools-menu screen that observes SwiftDashSDKSPVCoordinator and displays
+//  the parallel-observe SPV stack's live state. Lets us watch the new SPV
+//  pipeline catch up to mainnet on a real device alongside DashSync's
+//  still-authoritative SPV stack.
 //
-//  Hidden from release builds via #if DEBUG (this entire file is wrapped).
+//  Reachable in every build configuration so it can be tested across
+//  Debug / Testnet / TestFlight schemes. The intent is "developer
+//  diagnostic during the migration window"; if Phase B keeps it as a
+//  permanent diagnostic, no further changes needed. If we want to hide
+//  it from production users post-migration, wrap it in a feature flag.
+//
 //  See SwiftDashSDKSPVCoordinator.swift for the underlying lifecycle and
 //  the migration plan for why parallel-observe mode exists.
 //
-
-#if DEBUG
 
 import SwiftUI
 import UIKit
@@ -341,5 +344,3 @@ struct SwiftDashSDKSPVStatusScreen: View {
         }
     }
 }
-
-#endif

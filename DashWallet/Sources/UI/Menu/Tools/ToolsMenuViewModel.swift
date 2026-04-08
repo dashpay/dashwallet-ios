@@ -24,9 +24,7 @@ enum ToolsMenuNavigationDestination {
     case masternodeKeys
     case csvExport
     case zenLedger
-    #if DEBUG
     case swiftDashSDKSPVStatus
-    #endif
 }
 
 @MainActor
@@ -42,7 +40,7 @@ class ToolsMenuViewModel: ObservableObject {
     }
     
     private func setupMenuItems() {
-        var built: [MenuItemModel] = [
+        items = [
             MenuItemModel(
                 title: NSLocalizedString("Import Private Key", comment: ""),
                 icon: .custom("image.import.private.key", maxHeight: 22),
@@ -70,20 +68,14 @@ class ToolsMenuViewModel: ObservableObject {
                 action: { [weak self] in
                     self?.navigationDestination = .csvExport
                 }
-            )
-        ]
-        #if DEBUG
-        built.append(
+            ),
             MenuItemModel(
                 title: "SwiftDashSDK SPV Status",
                 icon: .system("arrow.triangle.2.circlepath"),
                 action: { [weak self] in
                     self?.navigationDestination = .swiftDashSDKSPVStatus
                 }
-            )
-        )
-        #endif
-        built.append(
+            ),
             MenuItemModel(
                 title: NSLocalizedString("ZenLedger", comment: ""),
                 subtitle: NSLocalizedString("Simplify your crypto taxes", comment: ""),
@@ -92,8 +84,7 @@ class ToolsMenuViewModel: ObservableObject {
                     self?.navigationDestination = .zenLedger
                 }
             )
-        )
-        items = built
+        ]
     }
     
     func resetNavigation() {

@@ -186,10 +186,8 @@ struct ToolsMenuScreen: View {
             showCSVExportAlert = true
         case .zenLedger:
             showZenLedgerSheet = true
-        #if DEBUG
         case .swiftDashSDKSPVStatus:
             showSwiftDashSDKSPVStatus()
-        #endif
         case .none:
             break
         }
@@ -200,7 +198,6 @@ struct ToolsMenuScreen: View {
         }
     }
 
-    #if DEBUG
     private func showSwiftDashSDKSPVStatus() {
         let hosting = UIHostingController(
             rootView: SwiftDashSDKSPVStatusScreen(vc: vc)
@@ -208,7 +205,6 @@ struct ToolsMenuScreen: View {
         hosting.hidesBottomBarWhenPushed = true
         vc.pushViewController(hosting, animated: true)
     }
-    #endif
     
     private func showImportPrivateKey() {
         showImportPrivateKeySheet = true
