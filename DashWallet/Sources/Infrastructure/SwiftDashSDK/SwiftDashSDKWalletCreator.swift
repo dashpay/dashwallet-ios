@@ -2,9 +2,12 @@
 //  SwiftDashSDKWalletCreator.swift
 //  DashWallet
 //
-//  Creates a SwiftDashSDK wallet from explicit inputs (mnemonic + PIN + network).
-//  Used during onboarding to make the SwiftDashSDK side exist alongside the
-//  DashSync side from day one for fresh-install and restored-wallet users.
+//  Creates or imports a SwiftDashSDK wallet from explicit inputs
+//  (mnemonic + PIN + network). Used during onboarding (fresh-install
+//  wallet creation, via `createWallet`) and during the recover-wallet
+//  flow (importing an existing wallet from a recovery phrase, via
+//  `importWallet`) to make the SwiftDashSDK side exist alongside the
+//  DashSync side from day one.
 //
 //  This file is intentionally decoupled from DashSync — it does not import
 //  DashSync, does not know DashSync's keychain layout, and does not read
@@ -39,12 +42,21 @@ final class SwiftDashSDKWalletCreator: NSObject {
 
     // MARK: - Public entry point
 
-    /// Create a SwiftDashSDK wallet from the given mnemonic and PIN.
+    /// Create a fresh SwiftDashSDK wallet from a just-generated mnemonic and PIN.
+    ///
+    /// Used by the onboarding wallet-creation flow. The resulting `HDWallet`
+    /// SwiftData record is marked `isImported: false` with label `"Created wallet"`,
+    /// distinguishing it from migrator records (`"Migrated wallet"`) and from
+    /// records produced by `importWallet` (`"Imported wallet"`).
     ///
     /// Dispatched to `DispatchQueue.global(qos: .userInitiated)` and returns
     /// to the caller in microseconds, mirroring the migrator's pattern. The
     /// actual ~300–500 ms of PBKDF2 + FFI work happens in the background while
     /// the caller's UI continues.
+    ///
+    /// Idempotent — safe to call multiple times for the same mnemonic+PIN; the
+    /// existence check on `HDWallet.walletId` (which is `@Attribute(.unique)`)
+    /// turns the duplicate-call case from a destructive rollback into a no-op.
     ///
     /// Never throws, never crashes; all errors are swallowed into os.log.
     ///
@@ -56,7 +68,40 @@ final class SwiftDashSDKWalletCreator: NSObject {
     @objc(createWalletWithMnemonic:pin:network:)
     static func createWallet(mnemonic: String, pin: String, network: Network) {
         DispatchQueue.global(qos: .userInitiated).async {
-            performCreate(mnemonic: mnemonic, pin: pin, network: network)
+            performCreate(
+                mnemonic: mnemonic,
+                pin: pin,
+                network: network,
+                isImported: false,
+                label: "Created wallet")
+        }
+    }
+
+    /// Import a SwiftDashSDK wallet from an existing mnemonic (e.g., from
+    /// the recover-wallet flow).
+    ///
+    /// Identical to `createWallet` except the resulting `HDWallet` SwiftData
+    /// record is marked `isImported: true` with label `"Imported wallet"`,
+    /// matching the convention used by `SwiftDashSDKKeyMigrator` for wallets
+    /// it imports from DashSync's keychain at upgrade time (which uses
+    /// `"Migrated wallet"` to distinguish further).
+    ///
+    /// Same threading and error semantics as `createWallet`: dispatched to a
+    /// background queue, idempotent, never throws, never crashes.
+    ///
+    /// - Parameters:
+    ///   - mnemonic: BIP39 phrase from the user-provided recovery phrase.
+    ///   - pin: User's plaintext PIN, used to encrypt the seed in WalletStorage.
+    ///   - network: 0 = mainnet, 1 = testnet. Devnet/regtest are unsupported.
+    @objc(importWalletWithMnemonic:pin:network:)
+    static func importWallet(mnemonic: String, pin: String, network: Network) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            performCreate(
+                mnemonic: mnemonic,
+                pin: pin,
+                network: network,
+                isImported: true,
+                label: "Imported wallet")
         }
     }
 
@@ -68,20 +113,30 @@ final class SwiftDashSDKWalletCreator: NSObject {
     /// so it has no `@MainActor` requirements. Mirrors the migrator's
     /// `performMigration` body, but takes its inputs as parameters instead
     /// of reading them from DashSync's keychain.
-    private static func performCreate(mnemonic: String, pin: String, network: Network) {
+    ///
+    /// Shared between `createWallet` (fresh-install) and `importWallet`
+    /// (recover-from-recovery-phrase). The two callers differ only in the
+    /// `isImported` and `label` values they pass for the SwiftData record.
+    private static func performCreate(
+        mnemonic: String,
+        pin: String,
+        network: Network,
+        isImported: Bool,
+        label: String
+    ) {
         let sdkNetwork: KeyWalletNetwork = (network == .mainnet) ? .mainnet : .testnet
         let appNetwork: AppNetwork       = (network == .mainnet) ? .mainnet : .testnet
 
         guard !mnemonic.isEmpty else {
-            logger.error("createWallet called with empty mnemonic — refusing")
+            logger.error("\(label, privacy: .public): empty mnemonic — refusing")
             return
         }
         guard !pin.isEmpty else {
-            logger.error("createWallet called with empty PIN — refusing")
+            logger.error("\(label, privacy: .public): empty PIN — refusing")
             return
         }
         guard Mnemonic.validate(mnemonic) else {
-            logger.error("createWallet: mnemonic failed BIP39 validation — refusing")
+            logger.error("\(label, privacy: .public): mnemonic failed BIP39 validation — refusing")
             return
         }
 
@@ -89,7 +144,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
             // Determinism + length sanity check (matches migrator).
             let seed = try Mnemonic.toSeed(mnemonic: mnemonic)
             guard seed.count == 64 else {
-                logger.error("createWallet: seed length invalid: \(seed.count, privacy: .public)")
+                logger.error("\(label, privacy: .public): seed length invalid: \(seed.count, privacy: .public)")
                 return
             }
 
@@ -114,7 +169,9 @@ final class SwiftDashSDKWalletCreator: NSObject {
                 logger.warning("ensurePlatformPaymentAccount failed (non-fatal): \(String(describing: error), privacy: .public)")
             }
 
-            // Encrypt and store the seed via WalletStorage.
+            // Encrypt and store the seed via WalletStorage. Already idempotent
+            // because storeSeed deletes existing items before adding new ones
+            // (WalletStorage.swift:41).
             let storage = WalletStorage()
             _ = try storage.storeSeed(seed, pin: pin)
 
@@ -122,7 +179,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
             // verify fails, roll back the seed write.
             let readBack = try storage.retrieveSeed(pin: pin)
             guard readBack == seed else {
-                logger.error("createWallet: round-trip seed mismatch — rolling back")
+                logger.error("\(label, privacy: .public): round-trip seed mismatch — rolling back")
                 try? storage.deleteSeed()
                 return
             }
@@ -131,19 +188,36 @@ final class SwiftDashSDKWalletCreator: NSObject {
             // context so this code path doesn't require @MainActor isolation.
             let modelContainer = try ModelContainerHelper.createContainer()
             let context = ModelContext(modelContainer)
-            let hdWallet = HDWallet(
-                walletId: addResult.walletId,
-                serializedWalletBytes: addResult.serializedWallet,
-                label: "Created wallet",
-                network: appNetwork,
-                isWatchOnly: false,
-                isImported: false)
-            context.insert(hdWallet)
-            try context.save()
 
-            logger.info("createWallet: wallet created on \(String(describing: sdkNetwork), privacy: .public)")
+            // Idempotency: skip insert if a record for this walletId already
+            // exists (e.g., wipe-then-restore, repeated calls). The seed write
+            // above is already idempotent. `walletId` is `@Attribute(.unique)`
+            // on `HDWallet`, so a duplicate insert would throw at save() and
+            // fall into the catch block below — which would then `deleteSeed`
+            // and destroy valid state. The existence check turns that case
+            // into a safe no-op.
+            let walletId = addResult.walletId
+            let descriptor = FetchDescriptor<HDWallet>(
+                predicate: #Predicate { $0.walletId == walletId }
+            )
+            let existing = try context.fetch(descriptor)
+
+            if existing.isEmpty {
+                let hdWallet = HDWallet(
+                    walletId: walletId,
+                    serializedWalletBytes: addResult.serializedWallet,
+                    label: label,
+                    network: appNetwork,
+                    isWatchOnly: false,
+                    isImported: isImported)
+                context.insert(hdWallet)
+                try context.save()
+                logger.info("\(label, privacy: .public) record inserted on \(String(describing: sdkNetwork), privacy: .public)")
+            } else {
+                logger.info("HDWallet record already exists for walletId, skipping insert (\(label, privacy: .public))")
+            }
         } catch {
-            logger.error("createWallet threw: \(String(describing: error), privacy: .public)")
+            logger.error("\(label, privacy: .public) threw: \(String(describing: error), privacy: .public)")
             // Best-effort: leave SwiftDashSDK side clean if anything was partially written.
             try? WalletStorage().deleteSeed()
         }
