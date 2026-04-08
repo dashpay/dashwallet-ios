@@ -17,9 +17,12 @@
 
 #import "DWPreviewSeedPhraseModel.h"
 
+#import <DashSync/DSAuthenticationManager+Private.h>
+
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWSeedPhraseModel.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -39,6 +42,12 @@ NS_ASSUME_NONNULL_BEGIN
         [DSWallet standardWalletWithRandomSeedPhraseForChain:[DWEnvironment sharedInstance].currentChain storeSeedPhrase:YES isTransient:NO];
 
         [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
+
+        // Also create the wallet in SwiftDashSDK so fresh-install and restored
+        // users get a SwiftDashSDK side from day one — same end state as
+        // upgraded users get from SwiftDashSDKKeyMigrator at launch. The two
+        // libraries run independently; DashSync continues to own its own state.
+        [self createWalletInSwiftDashSDK];
     }
 
     // START_SYNC_ENTRY_POINT
@@ -50,6 +59,38 @@ NS_ASSUME_NONNULL_BEGIN
     DWSeedPhraseModel *seedPhraseModel = [[DWSeedPhraseModel alloc] initWithSeed:seedPhrase];
 
     return seedPhraseModel;
+}
+
+- (void)createWalletInSwiftDashSDK {
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    if (!wallet) {
+        return;
+    }
+
+    NSString *mnemonic = wallet.seedPhraseIfAuthenticated;
+    if (mnemonic.length == 0) {
+        return;
+    }
+
+    NSError *pinError = nil;
+    NSString *pin = [[DSAuthenticationManager sharedInstance] getPin:&pinError];
+    if (pin.length == 0) {
+        return;
+    }
+
+    DWSwiftDashSDKNetwork network;
+    switch ([DWEnvironment sharedInstance].currentChain.chainType.tag) {
+        case ChainType_MainNet:
+            network = DWSwiftDashSDKNetworkMainnet;
+            break;
+        case ChainType_TestNet:
+            network = DWSwiftDashSDKNetworkTestnet;
+            break;
+        default:
+            return; // devnet/regtest unsupported in v1
+    }
+
+    [DWSwiftDashSDKWalletCreator createWalletWithMnemonic:mnemonic pin:pin network:network];
 }
 
 - (void)clearAllWallets {

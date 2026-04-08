@@ -17,8 +17,11 @@
 
 #import "DWRecoverWalletCommand.h"
 
+#import <DashSync/DSAuthenticationManager+Private.h>
+
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -55,10 +58,42 @@ NS_ASSUME_NONNULL_BEGIN
                            storeSeedPhrase:YES
                                isTransient:NO];
 
+    // Also import the wallet into SwiftDashSDK so restored users get a
+    // SwiftDashSDK side from day one — same end state as fresh-install
+    // and upgraded users. The two libraries run independently; DashSync
+    // continues to own its own state.
+    [self importWalletIntoSwiftDashSDK:phrase forChain:chain];
+
     [DWGlobalOptions sharedInstance].resyncingWallet = YES;
 
     // START_SYNC_ENTRY_POINT
     [[DWEnvironment sharedInstance].currentChainManager startSync];
+}
+
+- (void)importWalletIntoSwiftDashSDK:(NSString *)phrase forChain:(DSChain *)chain {
+    if (phrase.length == 0) {
+        return;
+    }
+
+    NSError *pinError = nil;
+    NSString *pin = [[DSAuthenticationManager sharedInstance] getPin:&pinError];
+    if (pin.length == 0) {
+        return;
+    }
+
+    DWSwiftDashSDKNetwork network;
+    switch (chain.chainType.tag) {
+        case ChainType_MainNet:
+            network = DWSwiftDashSDKNetworkMainnet;
+            break;
+        case ChainType_TestNet:
+            network = DWSwiftDashSDKNetworkTestnet;
+            break;
+        default:
+            return; // devnet/regtest unsupported in v1
+    }
+
+    [DWSwiftDashSDKWalletCreator importWalletWithMnemonic:phrase pin:pin network:network];
 }
 
 @end

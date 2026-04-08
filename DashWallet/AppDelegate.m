@@ -138,6 +138,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     [DWSwiftDashSDKKeyMigrator migrateIfNeeded];
     [DWSwiftDashSDKSPVCoordinator startIfReady];
+    [DWSwiftDashSDKWalletWiper startObservingWipeNotification];
 
     DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
     if (migrationManager.shouldMigrate) {
