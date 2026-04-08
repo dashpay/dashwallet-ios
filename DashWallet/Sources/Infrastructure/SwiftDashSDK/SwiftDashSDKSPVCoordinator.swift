@@ -121,10 +121,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     private static let seedMigratorDoneKey = "swiftSDKKeyMigration.v1.done"
 
     /// Maximum time to wait for the seed migrator to complete before giving
-    /// up and marking the coordinator as `failed`. Two minutes covers slow
-    /// device boot + the migrator's PBKDF2 / FFI heavy work + a generous
-    /// buffer for first-launch SwiftData store creation.
-    private static let seedMigratorWaitTimeout: TimeInterval = 120.0
+    /// up and marking the coordinator as `failed`. The migrator's heavy
+    /// work (PBKDF2 + FFI calls) is ~300-500 ms in practice; 30 s is two
+    /// orders of magnitude more headroom than needed and surfaces
+    /// pathological failures (e.g. a hung migrator) reasonably quickly.
+    private static let seedMigratorWaitTimeout: TimeInterval = 30.0
 
     /// Polling interval while waiting for the seed migrator's done flag.
     private static let seedMigratorPollInterval: TimeInterval = 0.1
@@ -197,14 +198,14 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
 
         // Read the migrated HDWallet record from SwiftData. The shared
-        // `ModelContainer` was created on the main thread by
-        // `SwiftDashSDKContainer.warmUp()` from `AppDelegate.didFinishLaunching:`.
-        // We just construct a fresh background `ModelContext` against it
-        // here — `ModelContainer` is documented as thread-safe to read.
+        // `ModelContainer` was created by `SwiftDashSDKContainer.warmUp()`
+        // from `AppDelegate.didFinishLaunching:`. We just construct a
+        // fresh background `ModelContext` against it here —
+        // `ModelContainer` is documented as thread-safe to read.
         guard let modelContainer = SwiftDashSDKContainer.modelContainer else {
-            Self.logger.error("🛰️ SPVCOORD :: SwiftDashSDKContainer.modelContainer is nil — main-thread warmUp must have failed; SPV cannot start")
+            Self.logger.error("🛰️ SPVCOORD :: SwiftDashSDKContainer.modelContainer is nil — warmUp() failed; SPV cannot start")
             lifecycle = .failed
-            publish { $0.lastError = "SwiftData container not initialized (warmUp failed on main thread). Check Console.app for `📦 SDKBOX` logs." }
+            publish { $0.lastError = "SwiftData container not initialized. Check Console.app for `📦 SDKBOX` logs." }
             return
         }
 

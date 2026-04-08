@@ -136,11 +136,13 @@ NS_ASSUME_NONNULL_BEGIN
     
     [[DatabaseConnection shared] migrateIfNeededAndReturnError:nil];
 
-    // Construct the SwiftData ModelContainer once, on the main thread,
-    // BEFORE any background-queue code touches SwiftData. The SDK's
-    // ModelContainerHelper.createContainer() races schema registration
-    // when invoked off-main on iOS 17 (the SDK sample app uses a
-    // @MainActor-isolated init for the same reason).
+    // Construct the SwiftData ModelContainer once, BEFORE any
+    // background-queue code touches SwiftData. The SDK's
+    // ModelContainerHelper.createContainer() can't be used in
+    // dashwallet-ios because dashwallet's iCloud + App Group
+    // entitlements trigger SwiftData's CloudKit auto-detection, and
+    // the SDK's 10-model schema fails CloudKit validation. See
+    // SwiftDashSDKContainer.swift for the bypass + workaround.
     [DWSwiftDashSDKContainer warmUp];
 
     [DWSwiftDashSDKKeyMigrator migrateIfNeeded];

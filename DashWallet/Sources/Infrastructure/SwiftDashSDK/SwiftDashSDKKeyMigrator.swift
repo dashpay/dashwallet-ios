@@ -233,14 +233,14 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
             // Persist the HDWallet SwiftData record. We construct a fresh
             // background `ModelContext` against the shared `ModelContainer`
-            // that `SwiftDashSDKContainer.warmUp()` created on the main
-            // thread at app launch. ModelContainer is thread-safe to read;
-            // ModelContext bound to this background queue is fine per Apple
-            // docs. Calling `ModelContainerHelper.createContainer()` directly
-            // from this background queue throws `SwiftDataError #1` on iOS
-            // 17 — see SwiftDashSDKContainer.swift for the full rationale.
+            // that `SwiftDashSDKContainer.warmUp()` created at app launch.
+            // ModelContainer is thread-safe to read; ModelContext bound to
+            // this background queue is fine per Apple docs. We deliberately
+            // do NOT call `ModelContainerHelper.createContainer()` here —
+            // the SDK helper fails CloudKit validation on entitled apps;
+            // see SwiftDashSDKContainer.swift for the full rationale.
             guard let modelContainer = SwiftDashSDKContainer.modelContainer else {
-                logger.error("🔑 KEYMIG :: SwiftDashSDKContainer.modelContainer is nil — main-thread warmUp must have failed; rolling back seed")
+                logger.error("🔑 KEYMIG :: SwiftDashSDKContainer.modelContainer is nil — warmUp() failed; rolling back seed. Check Console.app for `📦 SDKBOX` logs.")
                 try? storage.deleteSeed()
                 return
             }

@@ -98,9 +98,9 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // we delete ALL to handle any orphan accumulation from before
         // this PR shipped. Fresh background `ModelContext` against the
         // shared `ModelContainer` that `SwiftDashSDKContainer.warmUp()`
-        // created on the main thread at app launch. Calling
-        // `ModelContainerHelper.createContainer()` directly from this
-        // background queue throws `SwiftDataError #1` on iOS 17 — see
+        // created at app launch. We deliberately do NOT call
+        // `ModelContainerHelper.createContainer()` here — the SDK helper
+        // fails CloudKit validation on entitled apps; see
         // SwiftDashSDKContainer.swift for the rationale.
         guard let modelContainer = SwiftDashSDKContainer.modelContainer else {
             logger.error("SwiftDashSDKContainer.modelContainer is nil — cannot delete HDWallet records")

@@ -186,10 +186,10 @@ final class SwiftDashSDKWalletCreator: NSObject {
 
             // Persist the HDWallet SwiftData record on a fresh background
             // `ModelContext` against the shared `ModelContainer` that
-            // `SwiftDashSDKContainer.warmUp()` created on the main thread
-            // at app launch. Calling `ModelContainerHelper.createContainer()`
-            // from this background queue throws `SwiftDataError #1` on
-            // iOS 17 — see SwiftDashSDKContainer.swift for the rationale.
+            // `SwiftDashSDKContainer.warmUp()` created at app launch. We
+            // deliberately do NOT call `ModelContainerHelper.createContainer()`
+            // here — the SDK helper fails CloudKit validation on entitled
+            // apps; see SwiftDashSDKContainer.swift for the full rationale.
             guard let modelContainer = SwiftDashSDKContainer.modelContainer else {
                 logger.error("\(label, privacy: .public): SwiftDashSDKContainer.modelContainer is nil — rolling back seed")
                 try? storage.deleteSeed()

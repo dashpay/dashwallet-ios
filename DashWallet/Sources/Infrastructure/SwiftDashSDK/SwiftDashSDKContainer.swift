@@ -32,8 +32,9 @@
 //     `Persistent*` models are unused by dashwallet-ios anyway)
 //   - explicitly disables CloudKit (`cloudKitDatabase: .none`) so
 //     SwiftData doesn't even attempt CloudKit registration
-//   - explicitly disables app-group container (`groupContainer: .none`)
-//     so the store lives in the regular app sandbox
+//   - uses an explicit store URL inside the regular app sandbox so
+//     SwiftData ignores the App Group default and the store can't
+//     escape into the App Group container
 //   - uses an explicit store URL under
 //     `Library/Application Support/SwiftDashSDKLocal/HDWallet.store` so
 //     it cannot collide with anything the SDK helper produces if some
@@ -97,12 +98,16 @@ public final class SwiftDashSDKContainer: NSObject {
 
     // MARK: - Public entry point
 
-    /// Create the shared `ModelContainer` synchronously on the main
-    /// thread. Idempotent — subsequent calls are no-ops.
+    /// Create the shared `ModelContainer` synchronously. Idempotent —
+    /// subsequent calls are no-ops.
     ///
-    /// MUST be called from the main thread. Crashes on a `precondition`
-    /// failure if called from a background queue, because the entire
-    /// purpose of this class is to confine container creation to main.
+    /// MUST be called from the main thread. Enforced by a
+    /// `precondition`. The main-thread requirement is defensive — the
+    /// SDK example app uses the same pattern, and centralizing
+    /// container creation on the main thread protects against any
+    /// future SwiftData internal regression. The actual bug we're
+    /// working around is CloudKit auto-detection (see file header),
+    /// not off-thread schema registration.
     ///
     /// Call ONCE from `application:didFinishLaunchingWithOptions:` BEFORE
     /// kicking off any code that touches SwiftData (the seed migrator,
