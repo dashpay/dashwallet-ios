@@ -136,6 +136,13 @@ NS_ASSUME_NONNULL_BEGIN
     
     [[DatabaseConnection shared] migrateIfNeededAndReturnError:nil];
 
+    // Construct the SwiftData ModelContainer once, on the main thread,
+    // BEFORE any background-queue code touches SwiftData. The SDK's
+    // ModelContainerHelper.createContainer() races schema registration
+    // when invoked off-main on iOS 17 (the SDK sample app uses a
+    // @MainActor-isolated init for the same reason).
+    [DWSwiftDashSDKContainer warmUp];
+
     [DWSwiftDashSDKKeyMigrator migrateIfNeeded];
     [DWSwiftDashSDKSPVCoordinator startIfReady];
     [DWSwiftDashSDKWalletWiper startObservingWipeNotification];

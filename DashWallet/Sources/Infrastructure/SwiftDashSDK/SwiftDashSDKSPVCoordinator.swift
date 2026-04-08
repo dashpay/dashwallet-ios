@@ -121,8 +121,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     private static let seedMigratorDoneKey = "swiftSDKKeyMigration.v1.done"
 
     /// Maximum time to wait for the seed migrator to complete before giving
-    /// up and marking the coordinator as `failed`.
-    private static let seedMigratorWaitTimeout: TimeInterval = 30.0
+    /// up and marking the coordinator as `failed`. Two minutes covers slow
+    /// device boot + the migrator's PBKDF2 / FFI heavy work + a generous
+    /// buffer for first-launch SwiftData store creation.
+    private static let seedMigratorWaitTimeout: TimeInterval = 120.0
 
     /// Polling interval while waiting for the seed migrator's done flag.
     private static let seedMigratorPollInterval: TimeInterval = 0.1
@@ -194,13 +196,24 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             Thread.sleep(forTimeInterval: Self.seedMigratorPollInterval)
         }
 
-        // Read the migrated HDWallet record from SwiftData.
+        // Read the migrated HDWallet record from SwiftData. The shared
+        // `ModelContainer` was created on the main thread by
+        // `SwiftDashSDKContainer.warmUp()` from `AppDelegate.didFinishLaunching:`.
+        // We just construct a fresh background `ModelContext` against it
+        // here — `ModelContainer` is documented as thread-safe to read.
+        guard let modelContainer = SwiftDashSDKContainer.modelContainer else {
+            Self.logger.error("🛰️ SPVCOORD :: SwiftDashSDKContainer.modelContainer is nil — main-thread warmUp must have failed; SPV cannot start")
+            lifecycle = .failed
+            publish { $0.lastError = "SwiftData container not initialized (warmUp failed on main thread). Check Console.app for `📦 SDKBOX` logs." }
+            return
+        }
+
         let migratedWallet: HDWallet
         do {
-            let modelContainer = try ModelContainerHelper.createContainer()
             let context = ModelContext(modelContainer)
             let descriptor = FetchDescriptor<HDWallet>()
             let wallets = try context.fetch(descriptor)
+            Self.logger.info("🛰️ SPVCOORD :: SwiftData fetch returned \(wallets.count, privacy: .public) HDWallet record(s)")
             guard let first = wallets.first else {
                 Self.logger.warning("🛰️ SPVCOORD :: seed migrator marked done but no HDWallet found — fresh install path, nothing to sync")
                 lifecycle = .stopped
@@ -208,9 +221,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             }
             migratedWallet = first
         } catch {
-            Self.logger.error("🛰️ SPVCOORD :: failed to read migrated HDWallet: \(String(describing: error), privacy: .public)")
+            let ns = error as NSError
+            Self.logger.error("🛰️ SPVCOORD :: HDWallet fetch threw: type=\(String(describing: type(of: error)), privacy: .public) domain=\(ns.domain, privacy: .public) code=\(ns.code, privacy: .public) desc=\(error.localizedDescription, privacy: .public)")
             lifecycle = .failed
-            publish { $0.lastError = "Failed to read migrated wallet: \(error.localizedDescription)" }
+            publish { $0.lastError = "HDWallet fetch failed (\(ns.domain) #\(ns.code)): \(error.localizedDescription)" }
             return
         }
 

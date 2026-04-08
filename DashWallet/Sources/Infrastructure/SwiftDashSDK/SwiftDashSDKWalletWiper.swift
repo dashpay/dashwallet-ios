@@ -96,10 +96,17 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // 2) Delete all HDWallet SwiftData records. dashwallet-ios is
         // single-wallet in practice, so this is 0 or 1 records — but
         // we delete ALL to handle any orphan accumulation from before
-        // this PR shipped. Fresh non-main `ModelContext` so this code
-        // path doesn't require @MainActor isolation.
+        // this PR shipped. Fresh background `ModelContext` against the
+        // shared `ModelContainer` that `SwiftDashSDKContainer.warmUp()`
+        // created on the main thread at app launch. Calling
+        // `ModelContainerHelper.createContainer()` directly from this
+        // background queue throws `SwiftDataError #1` on iOS 17 — see
+        // SwiftDashSDKContainer.swift for the rationale.
+        guard let modelContainer = SwiftDashSDKContainer.modelContainer else {
+            logger.error("SwiftDashSDKContainer.modelContainer is nil — cannot delete HDWallet records")
+            return
+        }
         do {
-            let modelContainer = try ModelContainerHelper.createContainer()
             let context = ModelContext(modelContainer)
             let descriptor = FetchDescriptor<HDWallet>()
             let wallets = try context.fetch(descriptor)

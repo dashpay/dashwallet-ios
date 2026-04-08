@@ -232,11 +232,18 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             }
 
             // Persist the HDWallet SwiftData record. We construct a fresh
-            // ModelContext (not mainContext) so this code path doesn't
-            // require @MainActor isolation. The new context writes to the
-            // same on-disk store as any future ModelContainer that
-            // ModelContainerHelper.createContainer() returns.
-            let modelContainer = try ModelContainerHelper.createContainer()
+            // background `ModelContext` against the shared `ModelContainer`
+            // that `SwiftDashSDKContainer.warmUp()` created on the main
+            // thread at app launch. ModelContainer is thread-safe to read;
+            // ModelContext bound to this background queue is fine per Apple
+            // docs. Calling `ModelContainerHelper.createContainer()` directly
+            // from this background queue throws `SwiftDataError #1` on iOS
+            // 17 — see SwiftDashSDKContainer.swift for the full rationale.
+            guard let modelContainer = SwiftDashSDKContainer.modelContainer else {
+                logger.error("🔑 KEYMIG :: SwiftDashSDKContainer.modelContainer is nil — main-thread warmUp must have failed; rolling back seed")
+                try? storage.deleteSeed()
+                return
+            }
             let context = ModelContext(modelContainer)
             let appNetwork: AppNetwork = (network == .mainnet) ? .mainnet : .testnet
             let hdWallet = HDWallet(

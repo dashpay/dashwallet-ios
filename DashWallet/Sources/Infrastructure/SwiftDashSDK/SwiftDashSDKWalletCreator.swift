@@ -184,9 +184,17 @@ final class SwiftDashSDKWalletCreator: NSObject {
                 return
             }
 
-            // Persist the HDWallet SwiftData record on a fresh non-main
-            // context so this code path doesn't require @MainActor isolation.
-            let modelContainer = try ModelContainerHelper.createContainer()
+            // Persist the HDWallet SwiftData record on a fresh background
+            // `ModelContext` against the shared `ModelContainer` that
+            // `SwiftDashSDKContainer.warmUp()` created on the main thread
+            // at app launch. Calling `ModelContainerHelper.createContainer()`
+            // from this background queue throws `SwiftDataError #1` on
+            // iOS 17 — see SwiftDashSDKContainer.swift for the rationale.
+            guard let modelContainer = SwiftDashSDKContainer.modelContainer else {
+                logger.error("\(label, privacy: .public): SwiftDashSDKContainer.modelContainer is nil — rolling back seed")
+                try? storage.deleteSeed()
+                return
+            }
             let context = ModelContext(modelContainer)
 
             // Idempotency: skip insert if a record for this walletId already
