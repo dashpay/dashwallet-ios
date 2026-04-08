@@ -186,15 +186,29 @@ struct ToolsMenuScreen: View {
             showCSVExportAlert = true
         case .zenLedger:
             showZenLedgerSheet = true
+        #if DEBUG
+        case .swiftDashSDKSPVStatus:
+            showSwiftDashSDKSPVStatus()
+        #endif
         case .none:
             break
         }
-        
+
         // Reset navigation destination after handling
         if destination != nil {
             viewModel.resetNavigation()
         }
     }
+
+    #if DEBUG
+    private func showSwiftDashSDKSPVStatus() {
+        let hosting = UIHostingController(
+            rootView: SwiftDashSDKSPVStatusScreen(vc: vc)
+        )
+        hosting.hidesBottomBarWhenPushed = true
+        vc.pushViewController(hosting, animated: true)
+    }
+    #endif
     
     private func showImportPrivateKey() {
         showImportPrivateKeySheet = true
