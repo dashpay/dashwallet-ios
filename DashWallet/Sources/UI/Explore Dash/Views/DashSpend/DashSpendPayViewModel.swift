@@ -199,7 +199,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         // Start network monitoring
         startNetworkMonitoring()
         
-        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+        // Source from SwiftDashSDKWalletState. After M6 retired DashSync's
+        // SPV, DSWalletBalanceDidChange no longer fires. Function #5 follow-up.
+        SwiftDashSDKWalletState.shared.$balance
+            .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.refreshBalance() }
             .store(in: &cancellableBag)
         
@@ -326,7 +329,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
     
     private func refreshBalance() {
-        walletBalance = DWEnvironment.sharedInstance().currentWallet.balance
+        walletBalance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
     }
     
     private func checkAmountForErrors() {

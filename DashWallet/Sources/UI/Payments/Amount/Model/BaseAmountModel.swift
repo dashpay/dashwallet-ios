@@ -136,11 +136,14 @@ class BaseAmountModel: ObservableObject {
         supplementaryAmountValidator = DWAmountInputValidator(type: .localCurrency)
 
         updateAmountObjects(with: "0")
-        
-        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+
+        // Source from SwiftDashSDKWalletState. After M6 retired DashSync's
+        // SPV, DSWalletBalanceDidChange no longer fires. Function #5 follow-up.
+        SwiftDashSDKWalletState.shared.$balance
+            .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.refreshBalance() }
             .store(in: &cancellableBag)
-        
+
         refreshBalance()
     }
 
@@ -244,7 +247,7 @@ class BaseAmountModel: ObservableObject {
     internal func selectAllFunds() { }
     
     private func refreshBalance() {
-        walletBalance = DWEnvironment.sharedInstance().currentWallet.balance
+        walletBalance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
     }
 }
 

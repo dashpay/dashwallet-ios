@@ -16,12 +16,13 @@
 //
 
 import Foundation
+import Combine
 
 @objc(DWBalanceNotifier)
 class DWBalanceNotifier: NSObject {
 
-    // the nsnotificationcenter observer for wallet balance
-    private var balanceObserver: Any?
+    // Combine subscriptions to SwiftDashSDKWalletState's balance publisher.
+    private var cancellableBag = Set<AnyCancellable>()
 
     // the most recent balance as received by notification
     private var balance = UInt64.max
@@ -32,13 +33,16 @@ class DWBalanceNotifier: NSObject {
     func setupNotifications() {
         balance = UInt64.max // this gets set in `updateBalance` (called in applicationDidBecomActive)
 
-        let notificationCenter = NotificationCenter.default
-
-        balanceObserver = notificationCenter.addObserver(forName: NSNotification.Name("DSWalletBalanceChangedNotification"),
-                                                         object: nil,
-                                                         queue: nil) { [weak self] note in
-            self?.walletBalanceDidChangeNotification(note: note)
-        }
+        // Subscribe to SwiftDashSDKWalletState's balance publisher.
+        // After M6 retired DashSync's SPV, the legacy
+        // DSWalletBalanceChangedNotification no longer fires.
+        // Function #5 follow-up.
+        SwiftDashSDKWalletState.shared.$balance
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.walletBalanceDidChange()
+            }
+            .store(in: &cancellableBag)
     }
 
     @objc
@@ -47,7 +51,7 @@ class DWBalanceNotifier: NSObject {
             guard let self, self.balance == UInt64.max else {
                 return
             }
-            self.balance = DWEnvironment.sharedInstance().currentWallet.balance
+            self.balance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
         }
     }
 
@@ -66,13 +70,13 @@ class DWBalanceNotifier: NSObject {
 
     // MARK: Private
 
-    private func walletBalanceDidChangeNotification(note: Notification) {
-        let wallet = DWEnvironment.sharedInstance().currentWallet
+    private func walletBalanceDidChange() {
+        let currentBalance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
         let application = UIApplication.shared
 
-        if balance < wallet.balance {
+        if balance < currentBalance {
             let notificationsEnabled = DWGlobalOptions.sharedInstance().localNotificationsEnabled
-            let received = wallet.balance - balance
+            let received = currentBalance - balance
             var noteText = ""
             var identifier = ""
             var sound: UNNotificationSound?
@@ -110,7 +114,7 @@ class DWBalanceNotifier: NSObject {
                         if let error {
                             DSLogger.log("DWBalanceNotifier: failed to send local notification: \(error)")
                         } else {
-                            DSLogger.log("DWBalanceNotifier: sent local notification \(note)")
+                            DSLogger.log("DWBalanceNotifier: sent local notification")
                         }
                     }
                 }
@@ -122,13 +126,11 @@ class DWBalanceNotifier: NSObject {
             #endif
         }
 
-        balance = wallet.balance
+        balance = currentBalance
     }
 
     deinit {
-        if let observer = balanceObserver {
-            NotificationCenter.default.removeObserver(observer)
-        }
+        cancellableBag.removeAll()
     }
 }
 

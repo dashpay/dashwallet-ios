@@ -172,7 +172,7 @@ class CreateUsernameViewModel: ObservableObject {
         let hasIllegalCharacters = username.rangeOfCharacter(from: illegalChars) != nil
         let startsOrEndsWithHyphen = username.first == "-" || username.last == "-"
         let requiredCost = isContested ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME : DWDP_MIN_BALANCE_TO_CREATE_USERNAME
-        let balance = DWEnvironment.sharedInstance().currentWallet.balance
+        let balance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
         let hasEnoughBalance = balance >= requiredCost
         let canContinue = lengthValid && !hasIllegalCharacters && !startsOrEndsWithHyphen && hasEnoughBalance
         
@@ -206,8 +206,10 @@ class CreateUsernameViewModel: ObservableObject {
     
     private func observeBalance() {
         checkBalance()
-        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
-            .removeDuplicates()
+        // Source from SwiftDashSDKWalletState. After M6 retired DashSync's
+        // SPV, DSWalletBalanceDidChange no longer fires. Function #5 follow-up.
+        SwiftDashSDKWalletState.shared.$balance
+            .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self = self else { return }
                 self.validateUsername(username: self.username)
@@ -215,9 +217,9 @@ class CreateUsernameViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
     }
-    
+
     private func checkBalance() {
-        let balance = DWEnvironment.sharedInstance().currentAccount.balance
+        let balance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
         self.balance = balance.dashAmount.formattedDashAmountWithoutCurrencySymbol
         hasMinimumRequiredBalance = balance >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
         hasRecommendedBalance = balance >= DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
