@@ -135,5 +135,13 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // leaving it lets the next wallet on the same device skip an
         // expensive resync.
         SwiftDashSDKSPVCoordinator.stop()
+
+        // Clear the cached wallet balance so a wipe-then-recover or
+        // wipe-then-create flow doesn't keep showing the previous wallet's
+        // balance until the new wallet's first balance event arrives.
+        // This is the only place we clear — `performStop` deliberately
+        // preserves the last-seen value (matching how progress/syncProgress
+        // are preserved across debug-screen Restart).
+        SwiftDashSDKWalletState.shared.clearBalance()
     }
 }

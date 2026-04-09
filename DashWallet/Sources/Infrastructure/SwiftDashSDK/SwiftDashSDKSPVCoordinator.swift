@@ -293,6 +293,15 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             } else {
                 Self.logger.info("🛰️ SPVCOORD :: wallet imported into SPV client OK")
             }
+
+            // Seed the initial wallet balance now that the wallet is
+            // registered with the FFI. The actual fetch + publish
+            // happens in `SwiftDashSDKWalletState.seedInitialBalance` —
+            // wallet state lives outside the SPV coordinator's "chain
+            // sync" responsibility.
+            SwiftDashSDKWalletState.shared.seedInitialBalance(
+                walletManager: walletManager,
+                walletId: expectedWalletId)
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: failed to import wallet into SPV client: \(String(describing: error), privacy: .public)")
             lifecycle = .failed
@@ -477,8 +486,19 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             SwiftDashSDKSPVCoordinator.logger.info("🛰️ SPVCOORD :: tx received: wallet=\(walletId, privacy: .public) amount=\(amount, privacy: .public)")
         }
         func onBalanceUpdated(_ walletId: String, _ spendable: UInt64, _ unconfirmed: UInt64, _ immature: UInt64, _ locked: UInt64) {
-            // Future use: feed into the balance refresh path (function #5 migration).
-            SwiftDashSDKSPVCoordinator.logger.info("🛰️ SPVCOORD :: balance updated: wallet=\(walletId, privacy: .public) spendable=\(spendable, privacy: .public)")
+            SwiftDashSDKSPVCoordinator.logger.info("🛰️ SPVCOORD :: balance updated: wallet=\(walletId, privacy: .public) spendable=\(spendable, privacy: .public) unconfirmed=\(unconfirmed, privacy: .public) immature=\(immature, privacy: .public) locked=\(locked, privacy: .public)")
+            // The callback's `spendable` is `confirmed - locked` per the
+            // SDK's KeyWalletTypes.swift documentation. Add `locked` back
+            // to recover `confirmed` for the WalletBalance snapshot.
+            // Forward to the wallet state singleton — the SPV coordinator
+            // does not own wallet-side @Published state.
+            let confirmed = spendable + locked
+            let snapshot = WalletBalance(
+                confirmed: confirmed,
+                unconfirmed: unconfirmed,
+                immature: immature,
+                locked: locked)
+            SwiftDashSDKWalletState.shared.applyBalance(snapshot)
         }
     }
 
