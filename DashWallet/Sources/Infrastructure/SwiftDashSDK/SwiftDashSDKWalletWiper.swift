@@ -113,16 +113,27 @@ final class SwiftDashSDKWalletWiper: NSObject {
 
             if wallets.isEmpty {
                 logger.info("no HDWallet records to delete")
-                return
+            } else {
+                for wallet in wallets {
+                    context.delete(wallet)
+                }
+                try context.save()
+                logger.info("deleted \(wallets.count, privacy: .public) HDWallet record(s)")
             }
-
-            for wallet in wallets {
-                context.delete(wallet)
-            }
-            try context.save()
-            logger.info("deleted \(wallets.count, privacy: .public) HDWallet record(s)")
         } catch {
             logger.error("failed to delete HDWallet records: \(String(describing: error), privacy: .public)")
         }
+
+        // Tear down the SPV coordinator now that the wallet is gone from
+        // SwiftData and the keychain. Without this, the coordinator would
+        // keep running its in-memory wallet against the now-orphaned chain
+        // data dir until the next app restart. The user can still create or
+        // recover a fresh wallet afterwards — SwiftDashSDKWalletCreator wakes
+        // the coordinator back up on its own. Idempotent — no-op if already
+        // stopped. We do NOT delete the per-network SPV chain data dir at
+        // Documents/SwiftDashSDK/SPV/<network>/ — chain data is public and
+        // leaving it lets the next wallet on the same device skip an
+        // expensive resync.
+        SwiftDashSDKSPVCoordinator.stop()
     }
 }

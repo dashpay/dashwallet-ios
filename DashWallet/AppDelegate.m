@@ -132,8 +132,7 @@ NS_ASSUME_NONNULL_BEGIN
     
     [[DWVersionManager sharedInstance] migrateUserDefaults];
     [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:YES];
-    [[DashSync sharedSyncController] registerBackgroundFetchOnce];
-    
+
     [[DatabaseConnection shared] migrateIfNeededAndReturnError:nil];
 
     // Construct the SwiftData ModelContainer once, BEFORE any
@@ -172,12 +171,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-    
-    // Schedule background fetch if the wallet (DashSync) had been started
-    DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
-    if (!migrationManager.shouldMigrate) {
-        [[DashSync sharedSyncController] scheduleBackgroundFetch];
-    }
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
@@ -218,7 +211,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)application:(UIApplication *)application
 performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-    [[DashSync sharedSyncController] performFetchWithCompletionHandler:completionHandler];
+    // Background fetch is no longer driven by DashSync. SwiftDashSDK does not
+    // yet run in the background — backgrounded SPV is a future milestone.
+    // The Apple Watch sync path that piggybacks on this will be re-pointed
+    // in M10 (DWPhoneWCSessionManager). Until then, watch balance updates
+    // may be stale until the user opens the phone app.
+    completionHandler(UIBackgroundFetchResultNoData);
 }
 
 #if DASHPAY

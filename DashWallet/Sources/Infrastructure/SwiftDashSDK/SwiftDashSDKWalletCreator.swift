@@ -224,6 +224,14 @@ final class SwiftDashSDKWalletCreator: NSObject {
             } else {
                 logger.info("HDWallet record already exists for walletId, skipping insert (\(label, privacy: .public))")
             }
+
+            // Wake the SPV coordinator now that the wallet exists in SwiftData.
+            // On a fresh install / first launch the coordinator was started from
+            // AppDelegate but found no HDWallet record and parked itself in
+            // .stopped. This call is the only way to get sync going for the
+            // onboarding-create and recover-from-seed flows. Idempotent — if
+            // the coordinator is already running for some reason, this is a no-op.
+            SwiftDashSDKSPVCoordinator.startIfReady()
         } catch {
             logger.error("\(label, privacy: .public) threw: \(String(describing: error), privacy: .public)")
             // Best-effort: leave SwiftDashSDK side clean if anything was partially written.

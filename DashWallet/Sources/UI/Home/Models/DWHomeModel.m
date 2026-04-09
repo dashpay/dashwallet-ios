@@ -324,10 +324,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)startSyncIfNeeded {
     // This method might be called from init. Don't use any instance variables
 
-    if ([DWEnvironment sharedInstance].currentChain.hasAWallet) {
-        // START_SYNC_ENTRY_POINT
-        [[DWEnvironment sharedInstance].currentChainManager startSync];
-    }
+    // SPV is driven by SwiftDashSDKSPVCoordinator (started at app launch in
+    // AppDelegate). The coordinator is idempotent and already running by
+    // the time the home view appears, so no kick is needed here.
 }
 
 #pragma mark SyncingActivityMonitorObserver

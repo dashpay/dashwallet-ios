@@ -50,8 +50,9 @@ NS_ASSUME_NONNULL_BEGIN
         [self createWalletInSwiftDashSDK];
     }
 
-    // START_SYNC_ENTRY_POINT
-    [[DWEnvironment sharedInstance].currentChainManager startSync];
+    // SwiftDashSDK SPV is started by SwiftDashSDKWalletCreator after the
+    // wallet record is committed to SwiftData (see SwiftDashSDKWalletCreator.swift).
+    // No DashSync startSync needed — DashSync's parallel SPV was retired in M6.
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     NSString *seedPhrase = wallet.seedPhraseIfAuthenticated;
