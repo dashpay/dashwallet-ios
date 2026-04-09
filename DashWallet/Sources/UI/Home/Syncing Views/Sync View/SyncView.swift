@@ -89,25 +89,22 @@ final class SyncView: UIView {
     }
 
     func updateUIForViewStateSeeingBlocks() {
-        // TODO: Don't access DashSync directly
         if syncState == .syncing || syncState == .syncDone {
             if viewStateSeeingBlocks {
-                let model = SyncingActivityMonitor.shared.model;
-                let kind = model.kind;
-                if kind == .headers {
+                let snapshot = SyncingActivityMonitor.shared.snapshot
+                switch snapshot.kind {
+                case .headers, .filterHeaders, .filters:
                     descriptionLabel.text = String(format: NSLocalizedString("header #%d of %d", comment: ""),
-                        model.lastTerminalBlockHeight,
-                        model.estimatedBlockHeight)
-                } else if kind == .masternodes {
-                    let masternodeListsReceived = model.masternodeListSyncInfo.retrievalQueueCount
-                    let masternodeListsTotal = model.masternodeListSyncInfo.retrievalQueueMaxAmount
+                        snapshot.lastTerminalBlockHeight,
+                        snapshot.estimatedBlockHeight)
+                case .masternodes:
                     descriptionLabel.text = String(format: NSLocalizedString("masternode list #%d of %d", comment: ""),
-                        masternodeListsReceived > masternodeListsTotal ? 0 : masternodeListsTotal - masternodeListsTotal,
-                        masternodeListsTotal)
-                } else {
+                        snapshot.masternodeListsReceived,
+                        snapshot.masternodeListsTotal)
+                default:
                     descriptionLabel.text = String(format: NSLocalizedString("block #%d of %d", comment: ""),
-                        model.lastSyncBlockHeight,
-                        model.estimatedBlockHeight)
+                        snapshot.lastSyncBlockHeight,
+                        snapshot.estimatedBlockHeight)
                 }
             }
             else {

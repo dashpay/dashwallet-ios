@@ -17,9 +17,6 @@
 
 import UIKit
 
-private let kChainManagerNotificationChainKey = "DSChainManagerNotificationChainKey"
-private let kChainManagerNotificationSyncStateKey = "DSChainManagerNotificationSyncStateKey"
-
 // MARK: - SyncingAlertContentViewDelegate
 
 protocol SyncingAlertContentViewDelegate: AnyObject {
@@ -111,16 +108,20 @@ final class SyncingAlertContentView: UIView {
     func update(with syncState: SyncingActivityMonitor.State) {
         switch syncState {
         case .syncing, .syncDone:
-            let model = SyncingActivityMonitor.shared.model;
-            let kind = model.kind;
-            if kind == .headers {
-                subtitleLabel.text = String(format: NSLocalizedString("header #%d of %d", comment: ""), model.lastTerminalBlockHeight, model.estimatedBlockHeight)
-            } else if kind == .masternodes {
-                let masternodeListsReceived = model.masternodeListSyncInfo.retrievalQueueCount
-                let masternodeListsTotal = model.masternodeListSyncInfo.retrievalQueueMaxAmount
-                subtitleLabel.text = String(format: NSLocalizedString("masternode list #%d of %d", comment: ""), masternodeListsReceived > masternodeListsTotal ? 0 : masternodeListsTotal - masternodeListsTotal, masternodeListsTotal)
-            } else {
-                subtitleLabel.text = String(format: NSLocalizedString("block #%d of %d", comment: ""), model.lastSyncBlockHeight, model.estimatedBlockHeight)
+            let snapshot = SyncingActivityMonitor.shared.snapshot
+            switch snapshot.kind {
+            case .headers, .filterHeaders, .filters:
+                subtitleLabel.text = String(format: NSLocalizedString("header #%d of %d", comment: ""),
+                                            snapshot.lastTerminalBlockHeight,
+                                            snapshot.estimatedBlockHeight)
+            case .masternodes:
+                subtitleLabel.text = String(format: NSLocalizedString("masternode list #%d of %d", comment: ""),
+                                            snapshot.masternodeListsReceived,
+                                            snapshot.masternodeListsTotal)
+            default:
+                subtitleLabel.text = String(format: NSLocalizedString("block #%d of %d", comment: ""),
+                                            snapshot.lastSyncBlockHeight,
+                                            snapshot.estimatedBlockHeight)
             }
 
         case .syncFailed:
@@ -159,21 +160,4 @@ final class SyncingAlertContentView: UIView {
     func hideAnimation() {
         syncingImageView.layer.removeAllAnimations()
     }
-
-    private func addChainObserver(_ aName: NSNotification.Name?, _ aSelector: Selector) {
-        NotificationCenter.default.addObserver(self, selector: aSelector, name: aName, object: nil)
-    }
-    
-    private func configureObserver() {
-        addChainObserver(.chainManagerSyncStateChanged, #selector(chainManagerSyncStateChangedNotification(notification:)))
-    }
-    @objc
-    func chainManagerSyncStateChangedNotification(notification: Notification) {
-        guard let chain = notification.userInfo?[kChainManagerNotificationChainKey], DWEnvironment.sharedInstance().currentChain.isEqual(chain),
-            let model = notification.userInfo?[kChainManagerNotificationSyncStateKey] as? DSSyncState else {
-            return
-        }
-        self.update(with: model.combinedSyncProgress)
-    }
-
 }
