@@ -110,7 +110,7 @@ NS_ASSUME_NONNULL_BEGIN
                                  object:nil];
         [notificationCenter addObserver:self
                                selector:@selector(walletBalanceDidChangeNotification)
-                                   name:DSWalletBalanceDidChangeNotification
+                                   name:DWSwiftDashSDKWalletState.balanceDidChangeNotification
                                  object:nil];
         [notificationCenter addObserver:self
                                selector:@selector(chainWalletsDidChangeNotification:)
@@ -265,10 +265,9 @@ NS_ASSUME_NONNULL_BEGIN
         return NO;
     }
 
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     // TODO: add check if appropriate spork is on
     BOOL canRegisterUsername = YES;
-    const uint64_t balanceValue = wallet.balance;
+    const uint64_t balanceValue = DWSwiftDashSDKWalletState.currentTotalBalance;
     BOOL isEnoughBalance = balanceValue >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME;
     BOOL isSynced = [SyncingActivityMonitor shared].state == SyncingActivityMonitorStateSyncDone;
     return canRegisterUsername && isSynced && isEnoughBalance;

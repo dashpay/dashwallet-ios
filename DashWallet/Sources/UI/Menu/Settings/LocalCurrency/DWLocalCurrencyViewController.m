@@ -25,6 +25,7 @@
 #import "DWSharedUIConstants.h"
 #import "DWUIKit.h"
 #import "UIView+DWRecursiveSubview.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -219,7 +220,7 @@ static CGFloat const SECTION_SPACING = 10.0;
     [self walletBalanceDidChangeNotification:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(walletBalanceDidChangeNotification:)
-                                                 name:DSWalletBalanceDidChangeNotification
+                                                 name:DWSwiftDashSDKWalletState.balanceDidChangeNotification
                                                object:nil];
 }
 

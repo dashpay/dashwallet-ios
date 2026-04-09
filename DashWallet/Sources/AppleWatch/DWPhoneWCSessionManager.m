@@ -67,11 +67,11 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
             [self sendApplicationContext];
 
             self.balanceObserver =
-                [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification
+                [[NSNotificationCenter defaultCenter] addObserverForName:DWSwiftDashSDKWalletState.balanceDidChangeNotification
                                                                   object:nil
                                                                    queue:nil
                                                               usingBlock:^(NSNotification *_Nonnull note) {
-                                                                  if ([DWEnvironment sharedInstance].currentChainManager.combinedSyncProgress == 1.0)
+                                                                  if ([SyncingActivityMonitor shared].state == SyncingActivityMonitorStateSyncDone)
                                                                       [self sendApplicationContext];
                                                               }];
 

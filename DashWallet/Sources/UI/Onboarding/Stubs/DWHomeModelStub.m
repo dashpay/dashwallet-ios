@@ -22,6 +22,7 @@
 #import "DWPayModelStub.h"
 #import "DWReceiveModelStub.h"
 #import "DWTransactionListDataProviderStub.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -60,7 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(walletBalanceDidChangeNotification)
-                                                     name:DSWalletBalanceDidChangeNotification
+                                                     name:DWSwiftDashSDKWalletState.balanceDidChangeNotification
                                                    object:nil];
     }
     return self;

@@ -22,6 +22,7 @@
 #import "DWReceiveModelProtocol.h"
 #import "DWRequestAmountContentView.h"
 #import "UIViewController+DWShareReceiveInfo.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -53,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self
                            selector:@selector(checkRequestStatus)
-                               name:DSWalletBalanceDidChangeNotification
+                               name:DWSwiftDashSDKWalletState.balanceDidChangeNotification
                              object:nil];
 
     [notificationCenter addObserver:self

@@ -73,6 +73,23 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// first `applyBalance(_:)` call arrives. Updated on the main queue.
     @Published public private(set) var balance: WalletBalance? = nil
 
+    // MARK: - Obj-C bridge
+
+    /// Notification posted on the main queue whenever the published
+    /// `balance` changes (including clears). Obj-C consumers that can't
+    /// subscribe to the `@Published` Combine pipeline should observe
+    /// this notification and read `currentTotalBalance`. Swift consumers
+    /// should subscribe to `$balance` directly.
+    @objc public static let balanceDidChangeNotification =
+        NSNotification.Name("DWSwiftDashSDKWalletStateBalanceDidChange")
+
+    /// Obj-C-friendly accessor for the current total balance in satoshis.
+    /// Returns 0 when no balance is published yet (e.g. before SPV first
+    /// emits a balance event for an imported wallet, or after `clearBalance`).
+    @objc public static var currentTotalBalance: UInt64 {
+        return shared.balance?.total ?? 0
+    }
+
     private override init() {
         super.init()
     }
@@ -86,6 +103,9 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     public func applyBalance(_ snapshot: WalletBalance) {
         DispatchQueue.main.async { [weak self] in
             self?.balance = snapshot
+            NotificationCenter.default.post(
+                name: SwiftDashSDKWalletState.balanceDidChangeNotification,
+                object: nil)
         }
     }
 
@@ -131,6 +151,9 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         DispatchQueue.main.async { [weak self] in
             Self.logger.info("💰 WALLET :: clearing balance")
             self?.balance = nil
+            NotificationCenter.default.post(
+                name: SwiftDashSDKWalletState.balanceDidChangeNotification,
+                object: nil)
         }
     }
 }
