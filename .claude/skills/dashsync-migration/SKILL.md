@@ -118,7 +118,7 @@ Most of the time the two libraries make identical decisions and any defensive fa
 
 ## 6. Verification flow
 
-Run for each stage. None of these require the app to launch (the host-app crash on iPhone 17 + iOS 26.3 in `[DSChain retrieveWallets]` is a known pre-existing blocker for runtime testing on this machine; build verification is what proves correctness).
+Run for each stage. Build verification proves the static correctness of the change. Runtime smoke testing on the iPhone 17 simulator (or a real device) is the second gate; the simulator runs dashwallet again as of 2026-04 — earlier sessions had to skip simulator runs because of a `[DSChain retrieveWallets]` crash on iOS 26.3, but that no longer reproduces.
 
 ```bash
 # 1. pbxproj sanity

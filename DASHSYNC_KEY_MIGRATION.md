@@ -52,7 +52,7 @@ Keychain access: default app keychain group (`<team-id>.<bundle-id>`), no `kSecA
 
 ### Design
 
-The migrator runs once per cold launch from `AppDelegate.m` immediately after the Core Data migration call (line ~138), **before** any DashSync initialization (`setupDashSyncOnce` runs much later at line ~332). This sidesteps the iPhone 17 + iOS 26.3 `[DSChain retrieveWallets]` crash entirely.
+The migrator runs once per cold launch from `AppDelegate.m` immediately after the Core Data migration call (line ~138), **before** any DashSync initialization (`setupDashSyncOnce` runs much later at line ~332). This ordering is for clean handoff — the migrator must own the keychain read window before DashSync touches its own wallet state.
 
 The Obj-C entry point `migrateIfNeeded()` is a thin dispatcher: it immediately schedules the entire migrator body onto `DispatchQueue.global(qos: .userInitiated)` and returns to AppDelegate in microseconds, so launch is **not** blocked by the ~300–500 ms migration cost. The actual work — fast pre-checks (UserDefaults flag, keychain enumeration, network detection) plus the heavy work (FFI + PBKDF2 + SwiftData) — runs in the background while the user is already looking at the home screen. No `Task`, no `@MainActor`, no Swift Concurrency primitives — just a single GCD dispatch. Total background cost ~300–500 ms once per device.
 
@@ -63,7 +63,7 @@ The migrator uses the lowest-level public SwiftDashSDK API surface: standalone `
 1. **Never deletes from `org.dashfoundation.dash`.** All DashSync entries are read-only forever.
 2. **Never throws or crashes.** `migrateIfNeeded()` returns `Void`, swallows all errors into `os.log` entries.
 3. **Never modifies user-visible state.** No UI, no `DWGlobalOptions`, no DashSync state mutation.
-4. **Runs before any DashSync init.** Sidesteps the iPhone 17 crash.
+4. **Runs before any DashSync init.** Owns the keychain read window before DashSync touches its own wallet state.
 5. **No force-unwraps, no `try!`, no `as!`.**
 
 ### Skip-and-defer cases
@@ -91,7 +91,7 @@ Once the done flag is set, the migrator is done forever. The post-migration worl
 - Both `dashwallet` and `dashpay` targets build clean ✅
 - `plutil -lint` on `project.pbxproj` is OK ✅
 - Round-trip verification inside the migrator passes (seed re-read byte-equals freshly-derived) — verified by code path; runtime confirmation requires a real device.
-- Manual smoke test on a working device/simulator combo before the App Store release — see the iPhone 17 + iOS 26.3 entry in Open risks.
+- Manual smoke test on the iPhone 17 simulator (or a real device) before the App Store release.
 
 ## Cross-repo dependency: SwiftDashSDK patches
 
@@ -116,7 +116,6 @@ These are the next steps on the same dev branch. Each is a small, separately-rev
 
 ## Open risks and notes
 
-- **iPhone 17 + iOS 26.3 crash in `[DSChain retrieveWallets]`** is a pre-existing host-app blocker that prevents end-to-end testing of the migrator on this dev machine. The migrator itself is safe (it runs *before* DashSync init) but we cannot manually verify the post-migrator launch path here. Release blocker: smoke test on a different device or simulator combo before merging the App Store release.
 - **Multi-wallet prevalence is unknown.** The migrator ships a "skip if >1 wallet" guard. We need telemetry on the `swiftSDKKeyMigration.v1.deferredMultiWallet` counter to know whether we need a follow-up commit to handle multi-wallet on the same dev branch before the release.
 - **Devnet/regtest/evonet not supported.** Network detection only matches mainnet and testnet. Users on other networks see migration deferred via `swiftSDKKeyMigration.v1.deferredUnknownChain`. Follow-up commit on the same dev branch if telemetry shows non-zero incidence.
 - **Wallet ID stability across libraries (informational).** DashSync's wallet ID is `%0llx` of a 64-bit hash; SwiftDashSDK's wallet ID is 32 bytes from `wallet_manager_add_wallet_from_mnemonic_return_serialized_bytes`. These are NOT the same value and cannot be cross-referenced. Under the one-shot model nothing needs to correlate them — DashSync's IDs only matter to DashSync, and DashSync is gone after the release. Listed here only so future readers don't get confused by the difference.

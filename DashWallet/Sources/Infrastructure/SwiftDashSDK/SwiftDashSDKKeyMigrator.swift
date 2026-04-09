@@ -13,8 +13,9 @@
 //       and swallows all errors into os.log entries.
 //    3. NEVER modifies user-visible state. No UI, no DWGlobalOptions,
 //       no DashSync state mutation.
-//    4. Runs early in app launch, BEFORE any DashSync initialization, to
-//       sidestep the iPhone 17 + iOS 26.3 `[DSChain retrieveWallets]` crash.
+//    4. Runs early in app launch, BEFORE any DashSync initialization, so
+//       the migrator owns the keychain read window before DashSync touches
+//       its own wallet state.
 //    5. No force-unwraps, no `try!`, no `as!`.
 //
 //  This file is the ONLY place in dashwallet-ios that knows DashSync's
