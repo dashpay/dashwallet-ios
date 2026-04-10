@@ -80,7 +80,15 @@ class Transaction: TransactionDataItem, Identifiable {
     private lazy var _direction: DSTransactionDirection = {
         switch source {
         case .ds(let dsTx): return dsTx.direction
-        case .sdk(let wtx): return wtx.netAmount >= 0 ? .received : .sent
+        case .sdk(let wtx):
+            // Use the FFI-provided direction (0=incoming, 1=outgoing, 2=internal, 3=coinJoin)
+            switch wtx.direction {
+            case 0: return .received
+            case 1: return .sent
+            case 2: return .moved
+            case 3: return .sent  // CoinJoin mapped to sent
+            default: return wtx.netAmount >= 0 ? .received : .sent
+            }
         }
     }()
 
@@ -88,7 +96,7 @@ class Transaction: TransactionDataItem, Identifiable {
     private lazy var _outputReceiveAddresses: [String] = {
         switch source {
         case .ds(let dsTx): return dsTx.outputReceiveAddresses
-        case .sdk: return []
+        case .sdk(let wtx): return wtx.outputs.map { $0.address }.filter { !$0.isEmpty }
         }
     }()
 
@@ -101,7 +109,8 @@ class Transaction: TransactionDataItem, Identifiable {
             } else {
                 return Array(Set(dsTx.inputAddresses.compactMap { $0 as? String }))
             }
-        case .sdk: return []
+        case .sdk(let wtx):
+            return Array(Set(wtx.inputs.map { $0.address }.filter { !$0.isEmpty }))
         }
     }()
 
@@ -139,7 +148,15 @@ class Transaction: TransactionDataItem, Identifiable {
     private lazy var _transactionType: `Type` = {
         switch source {
         case .ds(let dsTx): return dsTx.type
-        case .sdk: return .classic
+        case .sdk(let wtx):
+            switch wtx.txType {
+            case 1: return .reward  // coinbase
+            case 2: return .masternodeRegistration
+            case 3: return .masternodeUpdate
+            case 4: return .masternodeRevoke
+            case 5: return .blockchainIdentityRegistration
+            default: return .classic
+            }
         }
     }()
 
@@ -149,7 +166,8 @@ class Transaction: TransactionDataItem, Identifiable {
         case .ds(let dsTx):
             return computeStateFromDSTransaction(dsTx)
         case .sdk(let wtx):
-            return wtx.height > 0 ? .ok : .processing
+            if wtx.instantSendLocked || wtx.height > 0 { return .ok }
+            return .processing
         }
     }()
 
@@ -317,7 +335,7 @@ extension Transaction {
     var isCoinbaseTransaction: Bool {
         switch source {
         case .ds(let dsTx): return dsTx is DSCoinbaseTransaction
-        case .sdk: return false
+        case .sdk(let wtx): return wtx.txType == 1
         }
     }
 }

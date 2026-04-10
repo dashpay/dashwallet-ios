@@ -488,8 +488,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         init(coordinator: SwiftDashSDKSPVCoordinator) {
             self.coordinator = coordinator
         }
-        func onTransactionReceived(_ walletId: String, _ accountIndex: UInt32, _ txid: Data, _ amount: Int64, _ addresses: [String]) {
-            SwiftDashSDKSPVCoordinator.logger.info("🛰️ SPVCOORD :: tx received: wallet=\(walletId, privacy: .public) amount=\(amount, privacy: .public)")
+        func onTransactionReceived(_ walletId: String, _ accountIndex: UInt32, _ record: NotOwnedTransactionRecord) {
+            SwiftDashSDKSPVCoordinator.logger.info("🛰️ SPVCOORD :: tx received: wallet=\(walletId, privacy: .public) account=\(accountIndex, privacy: .public)")
             // Dispatch to a background queue to avoid re-entering the FFI
             // from within the callback. The SPV client holds a lock during
             // callback dispatch; calling getWalletManager() synchronously
