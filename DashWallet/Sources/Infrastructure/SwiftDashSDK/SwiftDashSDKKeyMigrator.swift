@@ -231,6 +231,14 @@ final class SwiftDashSDKKeyMigrator: NSObject {
                 return
             }
 
+            // Also store the mnemonic for backup phrase display.
+            do {
+                try storage.storeMnemonic(mnemonic)
+                logger.info("🔑 KEYMIG :: stored mnemonic in WalletStorage during migration")
+            } catch {
+                logger.error("🔑 KEYMIG :: storeMnemonic failed (non-fatal): \(String(describing: error), privacy: .public)")
+            }
+
             // Persist the HDWallet SwiftData record. We construct a fresh
             // ModelContext (not mainContext) so this code path doesn't
             // require @MainActor isolation. The new context writes to the

@@ -184,6 +184,16 @@ final class SwiftDashSDKWalletCreator: NSObject {
                 return
             }
 
+            // Also store the mnemonic (the 12 words) for backup phrase display.
+            // Plain keychain, no PIN encryption — iOS keychain protection is
+            // the security boundary (parity with DashSync).
+            do {
+                try storage.storeMnemonic(mnemonic)
+                logger.info("stored mnemonic in WalletStorage")
+            } catch {
+                logger.error("storeMnemonic failed (non-fatal): \(String(describing: error), privacy: .public)")
+            }
+
             // Persist the HDWallet SwiftData record on a fresh non-main
             // context so this code path doesn't require @MainActor isolation.
             let modelContainer = try ModelContainerHelper.createContainer()
@@ -220,6 +230,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
             logger.error("\(label, privacy: .public) threw: \(String(describing: error), privacy: .public)")
             // Best-effort: leave SwiftDashSDK side clean if anything was partially written.
             try? WalletStorage().deleteSeed()
+            try? WalletStorage().deleteMnemonic()
         }
     }
 }

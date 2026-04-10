@@ -53,8 +53,20 @@ NS_ASSUME_NONNULL_BEGIN
     // START_SYNC_ENTRY_POINT
     [[DWEnvironment sharedInstance].currentChainManager startSync];
 
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    NSString *seedPhrase = wallet.seedPhraseIfAuthenticated;
+    NSString *seedPhrase;
+    if (hasAWallet) {
+        // Existing wallet (Settings → View Recovery Phrase):
+        // read from SwiftDashSDK — no DashSync in this path.
+        seedPhrase = [DWSwiftDashSDKMnemonicReader readMnemonic];
+    }
+    else {
+        // Just-created wallet (onboarding): DashSync generated the
+        // mnemonic and the SwiftDashSDK mirror is async (may not have
+        // completed yet). Read from DashSync. This DashSync read will
+        // be eliminated when #3 (mnemonic generation flip) ships.
+        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+        seedPhrase = wallet.seedPhraseIfAuthenticated;
+    }
 
     DWSeedPhraseModel *seedPhraseModel = [[DWSeedPhraseModel alloc] initWithSeed:seedPhrase];
 
