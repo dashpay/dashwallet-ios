@@ -158,7 +158,7 @@ class MainTabbarController: UITabBarController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
-        tabBar.addSubview(paymentButton)
+        view.bringSubviewToFront(paymentButton)
     }
 
     override func viewDidLoad() {
@@ -172,8 +172,8 @@ class MainTabbarController: UITabBarController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        // Add Payment Button again to make sure it's at the top
-        tabBar.addSubview(paymentButton)
+        // Bring Payment Button to the front to make sure it's at the top
+        view.bringSubviewToFront(paymentButton)
     }
 }
 
@@ -260,7 +260,7 @@ extension MainTabbarController {
         paymentButton = PaymentButton()
         paymentButton.translatesAutoresizingMaskIntoConstraints = false
         paymentButton.addTarget(self, action: #selector(paymentButtonAction), for: .touchUpInside)
-        tabBar.addSubview(paymentButton)
+        view.addSubview(paymentButton)
 
         NSLayoutConstraint.activate([
             paymentButton.centerXAnchor.constraint(equalTo: tabBar.centerXAnchor),
