@@ -16,6 +16,7 @@
 //
 
 import Foundation
+import SwiftDashSDK
 
 let kConfirmationThreshold = Double(30 * 60)
 
@@ -38,90 +39,152 @@ class Transaction: TransactionDataItem, Identifiable {
         case masternodeRevoke
         case blockchainIdentityRegistration
     }
-    
-    var id: String {
-        tx.txHashHexString
+
+    /// Internal source discriminator. The `.ds` case is the existing rich
+    /// path (used by other consumers like CrowdNode, TaxReport that still
+    /// read from DashSync). The `.sdk` case is the new path for the home
+    /// screen tx list sourced from SwiftDashSDK (function #6).
+    private enum Source {
+        case ds(DSTransaction)
+        case sdk(WalletTransaction)
     }
 
-    let tx: DSTransaction
+    private let source: Source
+
+    /// True for transactions sourced from SwiftDashSDK only. The tx detail
+    /// screen shows reduced information for these — input/output addresses,
+    /// instant-send flags, and account-validity state are not available
+    /// from `WalletTransaction` yet.
+    var isMinimal: Bool {
+        if case .sdk = source { return true }
+        return false
+    }
+
+    /// The underlying DashSync transaction, if available. Returns nil for
+    /// SDK-sourced transactions. Used by code paths that still depend on
+    /// rich `DSTransaction` properties (CrowdNode matchers, CoinJoin
+    /// grouping, TaxReportGenerator, send-flow code).
+    var tx: DSTransaction? {
+        if case .ds(let dsTx) = source { return dsTx }
+        return nil
+    }
+
+    var id: String {
+        switch source {
+        case .ds(let dsTx): return dsTx.txHashHexString
+        case .sdk(let wtx): return wtx.txid
+        }
+    }
+
     var direction: DSTransactionDirection { _direction }
-    private lazy var _direction: DSTransactionDirection = tx.direction
+    private lazy var _direction: DSTransactionDirection = {
+        switch source {
+        case .ds(let dsTx): return dsTx.direction
+        case .sdk(let wtx): return wtx.netAmount >= 0 ? .received : .sent
+        }
+    }()
 
     var outputReceiveAddresses: [String] { _outputReceiveAddresses }
-    private lazy var _outputReceiveAddresses: [String] = tx.outputReceiveAddresses
+    private lazy var _outputReceiveAddresses: [String] = {
+        switch source {
+        case .ds(let dsTx): return dsTx.outputReceiveAddresses
+        case .sdk: return []
+        }
+    }()
 
     var inputSendAddresses: [String] { _inputSendAddresses }
     private lazy var _inputSendAddresses: [String] = {
-        if tx is DSCoinbaseTransaction {
-            // Don't show input addresses for coinbase
-            return []
-        } else {
-            return Array(Set(tx.inputAddresses.compactMap { $0 as? String }))
+        switch source {
+        case .ds(let dsTx):
+            if dsTx is DSCoinbaseTransaction {
+                return []
+            } else {
+                return Array(Set(dsTx.inputAddresses.compactMap { $0 as? String }))
+            }
+        case .sdk: return []
         }
     }()
 
     var specialInfoAddresses: [String: Int]?
 
-    private lazy var _dashAmount: UInt64 = tx.dashAmount
-    
+    private lazy var _dashAmount: UInt64 = {
+        switch source {
+        case .ds(let dsTx): return dsTx.dashAmount
+        case .sdk(let wtx): return UInt64(abs(wtx.netAmount))
+        }
+    }()
+
     var dashAmount: UInt64 { _dashAmount }
     var signedDashAmount: Int64 {
         if dashAmount == UInt64.max {
             return Int64.max
         }
-        
+
         return direction == .sent ? -Int64(dashAmount) : Int64(dashAmount)
     }
 
     var fiatAmount: String {
         storedFiatAmount
     }
-    
+
     var iconName: String {
         state == .invalid ? "tx.invalid.icon" : direction.iconName
     }
 
     private lazy var storedFiatAmount = userInfo?.fiatAmountString(from: _dashAmount) ?? NSLocalizedString("Not available", comment: "");
 
-    lazy var userInfo: TransactionMetadata? = TransactionMetadataDAOImpl.shared.get(by: tx.txHashData)
+    lazy var userInfo: TransactionMetadata? = TransactionMetadataDAOImpl.shared.get(by: txHashData)
 
     var transactionType: `Type` { _transactionType }
-    private lazy var _transactionType: `Type` = tx.type
+    private lazy var _transactionType: `Type` = {
+        switch source {
+        case .ds(let dsTx): return dsTx.type
+        case .sdk: return .classic
+        }
+    }()
 
     var state: State! { _state }
     private lazy var _state: State! = {
-        if tx is DWTransactionStub {
+        switch source {
+        case .ds(let dsTx):
+            return computeStateFromDSTransaction(dsTx)
+        case .sdk(let wtx):
+            return wtx.height > 0 ? .ok : .processing
+        }
+    }()
+
+    private func computeStateFromDSTransaction(_ dsTx: DSTransaction) -> State {
+        if dsTx is DWTransactionStub {
             return .ok
         }
-        
+
         let chain = DWEnvironment.sharedInstance().currentChain
         let currentAccount = DWEnvironment.sharedInstance().currentAccount
-        let account = tx.accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
+        let account = dsTx.accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
         if account == nil {
             return .invalid
         }
-        
+
         let blockHeight = chain.lastTerminalBlockHeight
-        let instantSendReceived = tx.instantSendReceived
-        let processingInstantSend = tx.hasUnverifiedInstantSendLock
-        let confirmed = tx.confirmed
-        let confirms = (tx.blockHeight > blockHeight) ? 0 : (blockHeight - tx.blockHeight) + 1
-        
+        let instantSendReceived = dsTx.instantSendReceived
+        let processingInstantSend = dsTx.hasUnverifiedInstantSendLock
+        let confirmed = dsTx.confirmed
+        let confirms = (dsTx.blockHeight > blockHeight) ? 0 : (blockHeight - dsTx.blockHeight) + 1
+
         if (direction == .sent || direction == .moved)
             && confirms == 0
-            && !account!.transactionIsValid(tx) {
+            && !account!.transactionIsValid(dsTx) {
             return .invalid
         } else if direction == .received {
-            if !instantSendReceived && confirms == 0 && isPending(account, tx) {
-                // should be very hard to get here, a miner would have to include a non standard transaction into a block
+            if !instantSendReceived && confirms == 0 && isPending(account, dsTx) {
                 return .locked
-            } else if !instantSendReceived && confirms == 0 && !isVerified(account, tx) {
+            } else if !instantSendReceived && confirms == 0 && !isVerified(account, dsTx) {
                 return .processing
-            } else if outputsAreLocked(account, tx) {
+            } else if outputsAreLocked(account, dsTx) {
                 return .locked
             } else if !instantSendReceived && !confirmed {
-                let transactionAge = NSDate().timeIntervalSince1970 - tx
-                    .timestamp // we check the transaction age, as we might still be waiting on a transaction lock, 1 second seems like a good wait time
+                let transactionAge = NSDate().timeIntervalSince1970 - dsTx
+                    .timestamp
                 if confirms == 0 && (processingInstantSend || transactionAge < 1.0) {
                     return .processing
                 } else {
@@ -131,10 +194,10 @@ class Transaction: TransactionDataItem, Identifiable {
         } else if direction == .notAccountFunds || instantSendReceived || confirms > 0 {
             return .ok
         }
-        
-        return isVerified(account, tx) ? .ok : .processing
-    }()
-    
+
+        return isVerified(account, dsTx) ? .ok : .processing
+    }
+
     private func outputsAreLocked(_ account: DSAccount?, _ tx: DSTransaction) -> Bool {
         return account!.transactionOutputsAreLocked(tx)
     }
@@ -155,17 +218,30 @@ class Transaction: TransactionDataItem, Identifiable {
         return account!.transactionIsVerified(tx)
     }
 
-    private lazy var _shortDateString: String = tx.formattedShortTxDate
+    private lazy var _shortDateString: String = {
+        switch source {
+        case .ds(let dsTx): return dsTx.formattedShortTxDate
+        case .sdk: return DWDateFormatter.sharedInstance.shortStringFromDate(date)
+        }
+    }()
+
     var date: Date
+
     var shortDateString: String {
         _shortDateString
     }
-    
-    private lazy var _shortTimeString: String = tx.formattedShortTxTime
+
+    private lazy var _shortTimeString: String = {
+        switch source {
+        case .ds(let dsTx): return dsTx.formattedShortTxTime
+        case .sdk: return DWDateFormatter.sharedInstance.shortStringFromDate(date)
+        }
+    }()
+
     var shortTimeString: String {
         _shortTimeString
     }
-    
+
     var stateTitle: String {
         switch transactionType {
         case .classic:
@@ -197,16 +273,24 @@ class Transaction: TransactionDataItem, Identifiable {
             return NSLocalizedString("DashPay Upgrade Fee", comment: "")
         }
     }
-    
+
     init(transaction: DSTransaction) {
-        tx = transaction
-        date = transaction.date
+        self.source = .ds(transaction)
+        self.date = transaction.date
+    }
+
+    init(walletTransaction: WalletTransaction) {
+        self.source = .sdk(walletTransaction)
+        self.date = Date(timeIntervalSince1970: TimeInterval(walletTransaction.timestamp))
     }
 }
 
 extension Transaction {
     var feeUsed: UInt64 {
-        tx.feeUsed
+        switch source {
+        case .ds(let dsTx): return dsTx.feeUsed
+        case .sdk(let wtx): return wtx.fee ?? 0
+        }
     }
 
     var dashAmountTintColor: UIColor {
@@ -214,22 +298,34 @@ extension Transaction {
     }
 
     var txHashHexString: String {
-        tx.txHashHexString
+        switch source {
+        case .ds(let dsTx): return dsTx.txHashHexString
+        case .sdk(let wtx): return wtx.txid
+        }
     }
 
     var txHashData: Data {
-        tx.txHashData
+        switch source {
+        case .ds(let dsTx): return dsTx.txHashData
+        case .sdk(let wtx):
+            // WalletTransaction.txid is a hex string in internal byte order
+            // (same as DSTransaction.txHashData). Convert directly.
+            return Data(hexString: wtx.txid) ?? Data()
+        }
     }
 
     var isCoinbaseTransaction: Bool {
-        tx is DSCoinbaseTransaction
+        switch source {
+        case .ds(let dsTx): return dsTx is DSCoinbaseTransaction
+        case .sdk: return false
+        }
     }
 }
 
 extension Transaction: Hashable {
     // MARK: - Equatable
     static func == (lhs: Transaction, rhs: Transaction) -> Bool {
-        return lhs.tx.txHashData == rhs.tx.txHashData
+        return lhs.txHashData == rhs.txHashData
     }
 
     // MARK: - Hashable

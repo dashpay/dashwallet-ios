@@ -81,7 +81,8 @@ class Taxes: NSObject {
     }
 
     func taxCategory(for tx: Transaction) -> TxMetadataTaxCategory {
-        taxCategory(for: tx.tx)
+        guard let dsTx = tx.tx else { return .unknown }
+        return taxCategory(for: dsTx)
     }
 
     func taxCategory(for address: String) -> TxMetadataTaxCategory? {

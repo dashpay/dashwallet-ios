@@ -302,6 +302,13 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             SwiftDashSDKWalletState.shared.seedInitialBalance(
                 walletManager: walletManager,
                 walletId: expectedWalletId)
+
+            // Seed the initial transaction list. On cold launch this may
+            // be empty (SPV hasn't replayed blocks yet); it fills
+            // progressively as blocks are processed. Function #6.
+            SwiftDashSDKWalletState.shared.seedTransactions(
+                walletManager: walletManager,
+                walletId: expectedWalletId)
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: failed to import wallet into SPV client: \(String(describing: error), privacy: .public)")
             lifecycle = .failed
@@ -482,8 +489,26 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             self.coordinator = coordinator
         }
         func onTransactionReceived(_ walletId: String, _ accountIndex: UInt32, _ txid: Data, _ amount: Int64, _ addresses: [String]) {
-            // Future use: feed into the transaction-list refresh path (M9 + function #6 migration).
             SwiftDashSDKSPVCoordinator.logger.info("🛰️ SPVCOORD :: tx received: wallet=\(walletId, privacy: .public) amount=\(amount, privacy: .public)")
+            // Dispatch to a background queue to avoid re-entering the FFI
+            // from within the callback. The SPV client holds a lock during
+            // callback dispatch; calling getWalletManager() synchronously
+            // here would cause a Rust panic (re-entrant lock). Function #6.
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                guard let coordinator = self?.coordinator, let client = coordinator.client else { return }
+                do {
+                    let walletManager = try client.getWalletManager()
+                    let walletIdData = Data(hexString: walletId)
+                    if let walletIdData {
+                        let account = try walletManager.getManagedAccount(
+                            walletId: walletIdData, accountIndex: accountIndex, accountType: .standardBIP44)
+                        let txs = account.getTransactions()
+                        SwiftDashSDKWalletState.shared.applyTransactions(txs)
+                    }
+                } catch {
+                    SwiftDashSDKSPVCoordinator.logger.error("🛰️ SPVCOORD :: tx re-fetch failed: \(String(describing: error), privacy: .public)")
+                }
+            }
         }
         func onBalanceUpdated(_ walletId: String, _ spendable: UInt64, _ unconfirmed: UInt64, _ immature: UInt64, _ locked: UInt64) {
             SwiftDashSDKSPVCoordinator.logger.info("🛰️ SPVCOORD :: balance updated: wallet=\(walletId, privacy: .public) spendable=\(spendable, privacy: .public) unconfirmed=\(unconfirmed, privacy: .public) immature=\(immature, privacy: .public) locked=\(locked, privacy: .public)")

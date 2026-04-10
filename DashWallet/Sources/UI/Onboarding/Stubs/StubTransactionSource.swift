@@ -22,7 +22,7 @@ class StubTransactionSource: TransactionSource {
         self.model = model
     }
     
-    var allTransactions: Array<DSTransaction> {
-        return model.stubTxs
+    var allTransactions: Array<Transaction> {
+        return model.stubTxs.map { Transaction(transaction: $0) }
     }
 }

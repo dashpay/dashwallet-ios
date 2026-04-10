@@ -143,5 +143,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // preserves the last-seen value (matching how progress/syncProgress
         // are preserved across debug-screen Restart).
         SwiftDashSDKWalletState.shared.clearBalance()
+
+        // Clear the cached transaction list alongside balance.
+        SwiftDashSDKWalletState.shared.clearTransactions()
     }
 }

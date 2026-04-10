@@ -38,7 +38,7 @@ class HomeViewModel: ObservableObject {
     private var timeSkewDialogShown: Bool = false
 
     static let shared: HomeViewModel = {
-        return HomeViewModel(transactionSource: DSWalletSource())
+        return HomeViewModel(transactionSource: SwiftDashSDKWalletSource())
     }()
 
     private let transactionSource: TransactionSource
@@ -190,6 +190,18 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
 
+        // Subscribe to SwiftDashSDKWalletState's transactions publisher.
+        // After M6 retired DashSync's SPV, the legacy
+        // DSTransactionManagerTransactionStatusDidChange + DSWalletBalanceDidChange
+        // notifications no longer fire for new txs. Function #6.
+        SwiftDashSDKWalletState.shared.$transactions
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                DSLogger.log("HomeViewModel: SwiftDashSDK transactions changed, reloading list")
+                self?.reloadTxsAndShortcuts()
+            }
+            .store(in: &cancellableBag)
+
         // Fix #5: Balance changes often indicate new transactions, so reload the full
         // transaction list, not just shortcuts. This ensures newly received or sent
         // transactions appear in the UI promptly.
@@ -241,29 +253,35 @@ class HomeViewModel: ObservableObject {
             self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
             self.coinJoinTxSets = [:]
 
-            var items: [TransactionListDataItem] = transactions.compactMap { tx -> TransactionListDataItem? in
-                Tx.shared.updateRateIfNeeded(for: tx)
+            var items: [TransactionListDataItem] = transactions.compactMap { wrappedTx -> TransactionListDataItem? in
+                // Rate update only works for DS-backed txs (needs DSTransaction
+                // for defaultTaxCategory). SDK-sourced txs skip this.
+                if let dsTx = wrappedTx.tx {
+                    Tx.shared.updateRateIfNeeded(for: dsTx)
+                }
 
-                if !self.passesFilter(tx: tx, displayMode: self.displayMode) {
+                if !self.passesFilter(transaction: wrappedTx, displayMode: self.displayMode) {
                     return nil
                 }
 
-                // Fix #7: Remove duplicate CrowdNode check - only need to check once
-                if !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: tx) {
-                    // CrowdNode transactions will be included below
-                    return nil
+                // CrowdNode + CoinJoin grouping only for DS-backed txs
+                // (matchers need DSTransaction for address comparison).
+                // SDK-sourced txs pass through as standalone rows.
+                if let dsTx = wrappedTx.tx {
+                    if !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: dsTx) {
+                        return nil
+                    }
+
+                    let date = DWDateFormatter.sharedInstance.dateOnly(from: dsTx.date)
+                    let coinJoinTxSet = self.coinJoinTxSets[date] ?? CoinJoinMixingTxSet()
+                    self.coinJoinTxSets[date] = coinJoinTxSet
+
+                    if coinJoinTxSet.tryInclude(tx: dsTx) {
+                        return nil
+                    }
                 }
 
-                let date = DWDateFormatter.sharedInstance.dateOnly(from: tx.date)
-                let coinJoinTxSet = self.coinJoinTxSets[date] ?? CoinJoinMixingTxSet()
-                self.coinJoinTxSets[date] = coinJoinTxSet
-
-                if coinJoinTxSet.tryInclude(tx: tx) {
-                    // CoinJoin transactions will be included below
-                    return nil
-                }
-
-                return .tx(Transaction(transaction: tx), self.resolveMetadata(for: tx.txHashData))
+                return .tx(wrappedTx, self.resolveMetadata(for: wrappedTx.txHashData))
             }
 
             self.txByHash.removeAll()
@@ -327,14 +345,15 @@ class HomeViewModel: ObservableObject {
                 return
             }
 
-            if !self.passesFilter(tx: tx, displayMode: self.displayMode) {
+            let wrappedTx = Transaction(transaction: tx)
+            if !self.passesFilter(transaction: wrappedTx, displayMode: self.displayMode) {
                 return
             }
 
             Tx.shared.updateRateIfNeeded(for: tx)
             let txHashHex = tx.txHashHexString
             var itemId = txHashHex
-            var txItem: TransactionListDataItem = .tx(Transaction(transaction: tx), resolveMetadata(for: tx.txHashData))
+            var txItem: TransactionListDataItem = .tx(wrappedTx, resolveMetadata(for: tx.txHashData))
             let newDateKey = DWDateFormatter.sharedInstance.dateOnly(from: tx.date)
 
             // Track if this transaction was absorbed by a grouped set (CrowdNode/CoinJoin)
@@ -666,23 +685,19 @@ extension HomeViewModel {
         return finalMetadata
     }
     
-    private func passesFilter(tx: DSTransaction, displayMode: HomeTxDisplayMode) -> Bool {
+    private func passesFilter(transaction: Transaction, displayMode: HomeTxDisplayMode) -> Bool {
         switch displayMode {
         case .all:
             return true
         case .sent:
-            return tx.direction == .sent
+            return transaction.direction == .sent
         case .received:
-            return tx.direction == .received && !(tx is DSCoinbaseTransaction)
+            return transaction.direction == .received && !transaction.isCoinbaseTransaction
         case .rewards:
-            return tx is DSCoinbaseTransaction
+            return transaction.isCoinbaseTransaction
         case .giftCard:
-            return isGiftCard(tx: tx)
+            return GiftCardMetadataProvider.shared.availableMetadata[transaction.txHashData] != nil
         }
-    }
-    
-    private func isGiftCard(tx: DSTransaction) -> Bool {
-        return GiftCardMetadataProvider.shared.availableMetadata[tx.txHashData] != nil
     }
 }
 
@@ -775,13 +790,20 @@ extension HomeViewModel {
 }
 
 protocol TransactionSource {
-    var allTransactions: Array<DSTransaction> { get }
+    var allTransactions: Array<Transaction> { get }
 }
 
-class DSWalletSource: TransactionSource {
-    var allTransactions: Array<DSTransaction> {
-        let wallet = DWEnvironment.sharedInstance().currentWallet
-        return wallet.allTransactions
+/// Pure SwiftDashSDK source for the home screen tx list.
+/// Reads exclusively from `SwiftDashSDKWalletState.shared.transactions`
+/// — DashSync is not in the loop. On cold launch, the list starts empty
+/// and fills progressively as SPV replays blocks from cached chain data.
+/// After a full sync, all historical txs are visible. Function #6.
+class SwiftDashSDKWalletSource: TransactionSource {
+    var allTransactions: Array<Transaction> {
+        let sdkTxs = SwiftDashSDKWalletState.shared.transactions ?? []
+        return sdkTxs
+            .map { Transaction(walletTransaction: $0) }
+            .sorted { $0.date > $1.date }
     }
 }
 

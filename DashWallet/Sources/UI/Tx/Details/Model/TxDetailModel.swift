@@ -55,7 +55,7 @@ class TxDetailModel: NSObject {
 
     func toggleTaxCategoryOnCurrentTransaction() {
         if txTaxCategory == .unknown {
-            txTaxCategory = transaction.tx.defaultTaxCategory()
+            txTaxCategory = transaction.tx?.defaultTaxCategory() ?? .unknown
         }
 
         txTaxCategory = txTaxCategory.nextTaxCategory
@@ -99,11 +99,11 @@ extension TxDetailModel {
 
 extension TxDetailModel {
     var hasSourceUser: Bool {
-        !transaction.tx.sourceBlockchainIdentities.isEmpty
+        !(transaction.tx?.sourceBlockchainIdentities.isEmpty ?? true)
     }
 
     var hasDestinationUser: Bool {
-        !transaction.tx.destinationBlockchainIdentities.isEmpty
+        !(transaction.tx?.destinationBlockchainIdentities.isEmpty ?? true)
     }
 
     var hasFee: Bool {
@@ -182,7 +182,7 @@ extension TxDetailModel {
     }
 
     private func sourceUsers(with title: String, font: UIFont) -> [DWTitleDetailItem] {
-        guard let blockchainIdentity = transaction.tx.sourceBlockchainIdentities.first else {
+        guard let blockchainIdentity = transaction.tx?.sourceBlockchainIdentities.first else {
             return []
         }
 
@@ -196,7 +196,7 @@ extension TxDetailModel {
     }
 
     private func destinationUsers(with title: String, font: UIFont) -> [DWTitleDetailItem] {
-        guard let blockchainIdentity = transaction.tx.destinationBlockchainIdentities.first else {
+        guard let blockchainIdentity = transaction.tx?.destinationBlockchainIdentities.first else {
             return []
         }
 
@@ -306,7 +306,7 @@ extension TxDetailModel {
 
     var date: DWTitleDetailCellModel {
         let title = NSLocalizedString("Date", comment: "")
-        let detail = transaction.tx.formattedLongTxDate
+        let detail = transaction.tx?.formattedLongTxDate ?? DWDateFormatter.sharedInstance.longString(from: transaction.date)
         let model = DWTitleDetailCellModel(style: .default, title: title, plainDetail: detail)
         return model
     }

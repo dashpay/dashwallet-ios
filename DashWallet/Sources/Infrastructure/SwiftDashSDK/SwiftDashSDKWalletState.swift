@@ -73,6 +73,11 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// first `applyBalance(_:)` call arrives. Updated on the main queue.
     @Published public private(set) var balance: WalletBalance? = nil
 
+    /// Latest wallet transaction list from SwiftDashSDK. `nil` until either
+    /// `seedTransactions(walletManager:walletId:)` succeeds or the first
+    /// `applyTransactions(_:)` call arrives. Updated on the main queue.
+    @Published public private(set) var transactions: [WalletTransaction]? = nil
+
     // MARK: - Obj-C bridge
 
     /// Notification posted on the main queue whenever the published
@@ -153,6 +158,61 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             self?.balance = nil
             NotificationCenter.default.post(
                 name: SwiftDashSDKWalletState.balanceDidChangeNotification,
+                object: nil)
+        }
+    }
+
+    // MARK: - Transactions
+
+    /// Notification posted on the main queue whenever the published
+    /// `transactions` changes. Swift consumers should subscribe to
+    /// `$transactions` directly.
+    @objc public static let transactionsDidChangeNotification =
+        NSNotification.Name("DWSwiftDashSDKWalletStateTransactionsDidChange")
+
+    @objc public static var currentTransactionCount: Int {
+        return shared.transactions?.count ?? 0
+    }
+
+    /// Called from `SwiftDashSDKSPVCoordinator.WalletEventsHandler.onTransactionReceived`
+    /// after a re-fetch of all transactions. Marshals to the main queue.
+    public func applyTransactions(_ snapshot: [WalletTransaction]) {
+        DispatchQueue.main.async { [weak self] in
+            Self.logger.info("📜 TXLIST :: applying \(snapshot.count, privacy: .public) transactions")
+            self?.transactions = snapshot
+            NotificationCenter.default.post(
+                name: SwiftDashSDKWalletState.transactionsDidChangeNotification,
+                object: nil)
+        }
+    }
+
+    /// Called from `SwiftDashSDKSPVCoordinator.performStart` after
+    /// `walletManager.importWallet` succeeds. Seeds the initial tx list
+    /// from the FFI's in-memory state (populated from cached chain data
+    /// on cold launch). On first launch the list starts empty and fills
+    /// progressively as SPV replays blocks.
+    ///
+    /// Non-fatal — if the FFI call fails, live updates eventually catch up.
+    public func seedTransactions(walletManager: WalletManager, walletId: Data) {
+        do {
+            let account = try walletManager.getManagedAccount(
+                walletId: walletId, accountIndex: 0, accountType: .standardBIP44)
+            let txs = account.getTransactions()
+            Self.logger.info("📜 TXLIST :: initial transactions seed: count=\(txs.count, privacy: .public)")
+            applyTransactions(txs)
+        } catch {
+            Self.logger.warning("📜 TXLIST :: initial transactions seed failed (non-fatal): \(String(describing: error), privacy: .public)")
+        }
+    }
+
+    /// Called from `SwiftDashSDKWalletWiper.performWipe` after the wallet
+    /// records have been deleted. Clears the cached tx list.
+    public func clearTransactions() {
+        DispatchQueue.main.async { [weak self] in
+            Self.logger.info("📜 TXLIST :: clearing transactions")
+            self?.transactions = nil
+            NotificationCenter.default.post(
+                name: SwiftDashSDKWalletState.transactionsDidChangeNotification,
                 object: nil)
         }
     }
