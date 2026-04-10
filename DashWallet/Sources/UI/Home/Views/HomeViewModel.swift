@@ -254,11 +254,7 @@ class HomeViewModel: ObservableObject {
             self.coinJoinTxSets = [:]
 
             var items: [TransactionListDataItem] = transactions.compactMap { wrappedTx -> TransactionListDataItem? in
-                // Rate update only works for DS-backed txs (needs DSTransaction
-                // for defaultTaxCategory). SDK-sourced txs skip this.
-                if let dsTx = wrappedTx.tx {
-                    Tx.shared.updateRateIfNeeded(for: dsTx)
-                }
+                Tx.shared.updateRateIfNeeded(for: wrappedTx)
 
                 if !self.passesFilter(transaction: wrappedTx, displayMode: self.displayMode) {
                     return nil

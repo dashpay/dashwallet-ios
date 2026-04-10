@@ -65,6 +65,39 @@ final class Tx: NSObject {
         txUserInfos.update(dto: userInfo)
     }
 
+    /// Overload for the Transaction wrapper (SDK-sourced txs).
+    /// Uses .unknown tax category when no DSTransaction is available
+    /// for defaultTaxCategory(). Function #6 follow-up.
+    func updateRateIfNeeded(for transaction: Transaction) {
+        if let dsTx = transaction.tx {
+            updateRateIfNeeded(for: dsTx)
+            return
+        }
+
+        guard let activationDate = DWGlobalOptions.sharedInstance().dateHistoricalRatesActivated,
+              transaction.date > activationDate else {
+            return
+        }
+
+        guard let decimalRate = try? CurrencyExchanger.shared.rate(for: App.fiatCurrency) else {
+            return
+        }
+
+        let maximumFractionDigits = decimalRate.fractionDigits
+        let rate = (decimalRate*pow(10, maximumFractionDigits) as NSDecimalNumber).intValue
+
+        guard let userInfo = txUserInfos.get(by: transaction.txHashData) else {
+            set(rate: rate, currency: App.fiatCurrency, maximumFractionDigits: maximumFractionDigits,
+                for: TransactionMetadata(txHash: transaction.txHashData, taxCategory: .unknown))
+            return
+        }
+
+        guard userInfo.rate != nil else {
+            set(rate: rate, currency: App.fiatCurrency, maximumFractionDigits: maximumFractionDigits, for: userInfo)
+            return
+        }
+    }
+
     @objc
     static let shared = Tx()
 }
