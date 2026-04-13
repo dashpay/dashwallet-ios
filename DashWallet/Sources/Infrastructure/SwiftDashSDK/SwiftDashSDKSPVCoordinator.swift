@@ -166,6 +166,48 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
     }
 
+    // MARK: - Transaction support
+
+    /// Returns the `WalletManager` from the running SPVClient.
+    ///
+    /// The wallet manager provides transaction-building APIs
+    /// (`buildSignedTransaction`) that `SwiftDashSDKTransactionSender` uses.
+    /// Throws if the SPV client is not running (e.g., seed migration pending,
+    /// coordinator stopped, or after a wipe).
+    ///
+    /// Thread-safe: `client` is set once during `performStart` and cleared
+    /// only by `performStop`. Reads from any thread with a nil check are safe
+    /// (same pattern as `WalletEventsHandler.onTransactionReceived`).
+    func getWalletManager() throws -> WalletManager {
+        guard let activeClient = client else {
+            throw TransactionSenderError.spvNotRunning
+        }
+        return try activeClient.getWalletManager()
+    }
+
+    /// Broadcasts a signed transaction via the running SPVClient.
+    ///
+    /// Throws if the SPV client is not running or if the broadcast fails
+    /// at the network layer.
+    func broadcastTransaction(_ data: Data) throws {
+        guard let activeClient = client else {
+            throw TransactionSenderError.spvNotRunning
+        }
+        try activeClient.broadcastTransaction(data)
+    }
+
+    /// Errors surfaced by the transaction support methods.
+    enum TransactionSenderError: LocalizedError {
+        case spvNotRunning
+
+        var errorDescription: String? {
+            switch self {
+            case .spvNotRunning:
+                return "Wallet not ready — SPV client is not running"
+            }
+        }
+    }
+
     // MARK: - Background lifecycle
 
     /// Heavy-lifting start path. Runs on `workQueue`. Polls the seed migrator,
