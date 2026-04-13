@@ -93,6 +93,13 @@ final class SwiftDashSDKWalletWiper: NSObject {
             logger.error("failed to delete seed: \(String(describing: error), privacy: .public)")
         }
 
+        do {
+            try WalletStorage().deleteMnemonic()
+            logger.info("deleted mnemonic from WalletStorage")
+        } catch {
+            logger.error("failed to delete mnemonic: \(String(describing: error), privacy: .public)")
+        }
+
         // 2) Delete all HDWallet SwiftData records. dashwallet-ios is
         // single-wallet in practice, so this is 0 or 1 records — but
         // we delete ALL to handle any orphan accumulation from before
