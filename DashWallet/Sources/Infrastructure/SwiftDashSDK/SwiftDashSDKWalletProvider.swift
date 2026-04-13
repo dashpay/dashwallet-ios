@@ -95,7 +95,7 @@ final class SwiftDashSDKWalletProvider: NSObject {
         }
 
         // Determine network from DWEnvironment (DashSync's chain config).
-        let isMainnet = DWEnvironment.sharedInstance().currentChain.isMainnet
+        let isMainnet = DWEnvironment.sharedInstance().currentChain.isMainnet()
         let sdkNetwork: KeyWalletNetwork = isMainnet ? .mainnet : .testnet
         let appNetwork: AppNetwork = isMainnet ? .mainnet : .testnet
 
