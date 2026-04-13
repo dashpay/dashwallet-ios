@@ -20,7 +20,6 @@
 
 import Foundation
 import OSLog
-import SwiftData
 import SwiftDashSDK
 
 @objc(DWSwiftDashSDKWalletWiper)
@@ -100,39 +99,13 @@ final class SwiftDashSDKWalletWiper: NSObject {
             logger.error("failed to delete mnemonic: \(String(describing: error), privacy: .public)")
         }
 
-        // 2) Delete all HDWallet SwiftData records. dashwallet-ios is
-        // single-wallet in practice, so this is 0 or 1 records — but
-        // we delete ALL to handle any orphan accumulation from before
-        // this PR shipped. Fresh background `ModelContext` against the
-        // shared `ModelContainer` that `SwiftDashSDKContainer.warmUp()`
-        // created at app launch. We deliberately do NOT call
-        // `ModelContainerHelper.createContainer()` here — the SDK helper
-        // fails CloudKit validation on entitled apps; see
-        // SwiftDashSDKContainer.swift for the rationale.
-        guard let modelContainer = SwiftDashSDKContainer.modelContainer else {
-            logger.error("SwiftDashSDKContainer.modelContainer is nil — cannot delete HDWallet records")
-            return
-        }
-        do {
-            let context = ModelContext(modelContainer)
-            let descriptor = FetchDescriptor<HDWallet>()
-            let wallets = try context.fetch(descriptor)
+        // 2) Invalidate the in-memory wallet cache. The mnemonic and seed
+        // were already deleted from keychain above, so the next getWallet()
+        // call will fail with mnemonicNotAvailable — which is correct.
+        SwiftDashSDKWalletProvider.shared.invalidate()
 
-            if wallets.isEmpty {
-                logger.info("no HDWallet records to delete")
-            } else {
-                for wallet in wallets {
-                    context.delete(wallet)
-                }
-                try context.save()
-                logger.info("deleted \(wallets.count, privacy: .public) HDWallet record(s)")
-            }
-        } catch {
-            logger.error("failed to delete HDWallet records: \(String(describing: error), privacy: .public)")
-        }
-
-        // Tear down the SPV coordinator now that the wallet is gone from
-        // SwiftData and the keychain. Without this, the coordinator would
+        // Tear down the SPV coordinator now that the wallet is wiped from
+        // the keychain. Without this, the coordinator would
         // keep running its in-memory wallet against the now-orphaned chain
         // data dir until the next app restart. The user can still create or
         // recover a fresh wallet afterwards — SwiftDashSDKWalletCreator wakes

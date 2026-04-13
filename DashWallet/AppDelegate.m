@@ -139,11 +139,6 @@ NS_ASSUME_NONNULL_BEGIN
     // background-queue code touches SwiftData. The SDK's
     // ModelContainerHelper.createContainer() can't be used in
     // dashwallet-ios because dashwallet's iCloud + App Group
-    // entitlements trigger SwiftData's CloudKit auto-detection, and
-    // the SDK's 10-model schema fails CloudKit validation. See
-    // SwiftDashSDKContainer.swift for the bypass + workaround.
-    [DWSwiftDashSDKContainer warmUp];
-
     [DWSwiftDashSDKKeyMigrator migrateIfNeeded];
     [DWSwiftDashSDKSPVCoordinator startIfReady];
     [DWSwiftDashSDKWalletWiper startObservingWipeNotification];

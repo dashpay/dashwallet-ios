@@ -17,7 +17,6 @@
 import CommonCrypto
 import Foundation
 import OSLog
-import SwiftData
 import SwiftDashSDK
 
 @objc(DWSwiftDashSDKTransactionSender)
@@ -54,7 +53,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
         }
 
         // 1. Fetch the HDWallet from SwiftData.
-        let wallet = try fetchWallet()
+        let wallet = try SwiftDashSDKWalletProvider.shared.getWallet()
 
         // 2. Get WalletManager from the running SPV coordinator.
         let walletManager = try SwiftDashSDKSPVCoordinator.shared.getWalletManager()
@@ -89,20 +88,6 @@ final class SwiftDashSDKTransactionSender: NSObject {
     }
 
     // MARK: - Helpers
-
-    /// Fetch the first `HDWallet` record from SwiftData.
-    private static func fetchWallet() throws -> HDWallet {
-        guard let modelContainer = SwiftDashSDKContainer.modelContainer else {
-            throw SendError.walletNotReady("SwiftData container not initialized")
-        }
-        let context = ModelContext(modelContainer)
-        let descriptor = FetchDescriptor<HDWallet>()
-        let wallets = try context.fetch(descriptor)
-        guard let wallet = wallets.first else {
-            throw SendError.walletNotReady("No HDWallet record found")
-        }
-        return wallet
-    }
 
     /// Compute txHash from raw transaction bytes.
     ///

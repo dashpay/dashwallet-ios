@@ -35,7 +35,6 @@
 import Combine
 import Foundation
 import OSLog
-import SwiftData
 import SwiftDashSDK
 
 @objc(DWSwiftDashSDKSPVCoordinator)
@@ -239,35 +238,13 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             Thread.sleep(forTimeInterval: Self.seedMigratorPollInterval)
         }
 
-        // Read the migrated HDWallet record from SwiftData. The shared
-        // `ModelContainer` was created by `SwiftDashSDKContainer.warmUp()`
-        // from `AppDelegate.didFinishLaunching:`. We just construct a
-        // fresh background `ModelContext` against it here —
-        // `ModelContainer` is documented as thread-safe to read.
-        guard let modelContainer = SwiftDashSDKContainer.modelContainer else {
-            Self.logger.error("🛰️ SPVCOORD :: SwiftDashSDKContainer.modelContainer is nil — warmUp() failed; SPV cannot start")
-            lifecycle = .failed
-            publish { $0.lastError = "SwiftData container not initialized. Check Console.app for `📦 SDKBOX` logs." }
-            return
-        }
-
+        // Derive (or retrieve cached) HDWallet from the mnemonic in keychain.
         let migratedWallet: HDWallet
         do {
-            let context = ModelContext(modelContainer)
-            let descriptor = FetchDescriptor<HDWallet>()
-            let wallets = try context.fetch(descriptor)
-            Self.logger.info("🛰️ SPVCOORD :: SwiftData fetch returned \(wallets.count, privacy: .public) HDWallet record(s)")
-            guard let first = wallets.first else {
-                Self.logger.warning("🛰️ SPVCOORD :: seed migrator marked done but no HDWallet found — fresh install path, nothing to sync")
-                lifecycle = .stopped
-                return
-            }
-            migratedWallet = first
+            migratedWallet = try SwiftDashSDKWalletProvider.shared.getWallet()
         } catch {
-            let ns = error as NSError
-            Self.logger.error("🛰️ SPVCOORD :: HDWallet fetch threw: type=\(String(describing: type(of: error)), privacy: .public) domain=\(ns.domain, privacy: .public) code=\(ns.code, privacy: .public) desc=\(error.localizedDescription, privacy: .public)")
-            lifecycle = .failed
-            publish { $0.lastError = "HDWallet fetch failed (\(ns.domain) #\(ns.code)): \(error.localizedDescription)" }
+            Self.logger.warning("🛰️ SPVCOORD :: wallet provider returned error — fresh install path, nothing to sync: \(String(describing: error), privacy: .public)")
+            lifecycle = .stopped
             return
         }
 

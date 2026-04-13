@@ -28,7 +28,6 @@
 import Foundation
 import OSLog
 import Security
-import SwiftData
 import SwiftDashSDK
 
 @objc(DWSwiftDashSDKKeyMigrator)
@@ -240,30 +239,9 @@ final class SwiftDashSDKKeyMigrator: NSObject {
                 logger.error("🔑 KEYMIG :: storeMnemonic failed (non-fatal): \(String(describing: error), privacy: .public)")
             }
 
-            // Persist the HDWallet SwiftData record. We construct a fresh
-            // background `ModelContext` against the shared `ModelContainer`
-            // that `SwiftDashSDKContainer.warmUp()` created at app launch.
-            // ModelContainer is thread-safe to read; ModelContext bound to
-            // this background queue is fine per Apple docs. We deliberately
-            // do NOT call `ModelContainerHelper.createContainer()` here —
-            // the SDK helper fails CloudKit validation on entitled apps;
-            // see SwiftDashSDKContainer.swift for the full rationale.
-            guard let modelContainer = SwiftDashSDKContainer.modelContainer else {
-                logger.error("🔑 KEYMIG :: SwiftDashSDKContainer.modelContainer is nil — warmUp() failed; rolling back seed. Check Console.app for `📦 SDKBOX` logs.")
-                try? storage.deleteSeed()
-                return
-            }
-            let context = ModelContext(modelContainer)
-            let appNetwork: AppNetwork = (network == .mainnet) ? .mainnet : .testnet
-            let hdWallet = HDWallet(
-                walletId: addResult.walletId,
-                serializedWalletBytes: addResult.serializedWallet,
-                label: "Migrated wallet",
-                network: appNetwork,
-                isWatchOnly: false,
-                isImported: true)
-            context.insert(hdWallet)
-            try context.save()
+            // Invalidate the wallet provider so the next getWallet() call
+            // re-derives from the newly-stored mnemonic in keychain.
+            SwiftDashSDKWalletProvider.shared.invalidate()
 
             // Mark done with the version sentinel.
             defaults.set("v1", forKey: doneKey)

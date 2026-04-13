@@ -17,7 +17,6 @@
 
 import Foundation
 import OSLog
-import SwiftData
 import SwiftDashSDK
 
 @objc(DWSwiftDashSDKWalletCreator)
@@ -194,53 +193,14 @@ final class SwiftDashSDKWalletCreator: NSObject {
                 logger.error("storeMnemonic failed (non-fatal): \(String(describing: error), privacy: .public)")
             }
 
-            // Persist the HDWallet SwiftData record on a fresh background
-            // `ModelContext` against the shared `ModelContainer` that
-            // `SwiftDashSDKContainer.warmUp()` created at app launch. We
-            // deliberately do NOT call `ModelContainerHelper.createContainer()`
-            // here — the SDK helper fails CloudKit validation on entitled
-            // apps; see SwiftDashSDKContainer.swift for the full rationale.
-            guard let modelContainer = SwiftDashSDKContainer.modelContainer else {
-                logger.error("\(label, privacy: .public): SwiftDashSDKContainer.modelContainer is nil — rolling back seed")
-                try? storage.deleteSeed()
-                return
-            }
-            let context = ModelContext(modelContainer)
+            // Invalidate the wallet provider so the next getWallet() call
+            // re-derives from the newly-stored mnemonic.
+            SwiftDashSDKWalletProvider.shared.invalidate()
 
-            // Idempotency: skip insert if a record for this walletId already
-            // exists (e.g., wipe-then-restore, repeated calls). The seed write
-            // above is already idempotent. `walletId` is `@Attribute(.unique)`
-            // on `HDWallet`, so a duplicate insert would throw at save() and
-            // fall into the catch block below — which would then `deleteSeed`
-            // and destroy valid state. The existence check turns that case
-            // into a safe no-op.
-            let walletId = addResult.walletId
-            let descriptor = FetchDescriptor<HDWallet>(
-                predicate: #Predicate { $0.walletId == walletId }
-            )
-            let existing = try context.fetch(descriptor)
+            logger.info("\(label, privacy: .public) completed on \(String(describing: sdkNetwork), privacy: .public)")
 
-            if existing.isEmpty {
-                let hdWallet = HDWallet(
-                    walletId: walletId,
-                    serializedWalletBytes: addResult.serializedWallet,
-                    label: label,
-                    network: appNetwork,
-                    isWatchOnly: false,
-                    isImported: isImported)
-                context.insert(hdWallet)
-                try context.save()
-                logger.info("\(label, privacy: .public) record inserted on \(String(describing: sdkNetwork), privacy: .public)")
-            } else {
-                logger.info("HDWallet record already exists for walletId, skipping insert (\(label, privacy: .public))")
-            }
-
-            // Wake the SPV coordinator now that the wallet exists in SwiftData.
-            // On a fresh install / first launch the coordinator was started from
-            // AppDelegate but found no HDWallet record and parked itself in
-            // .stopped. This call is the only way to get sync going for the
-            // onboarding-create and recover-from-seed flows. Idempotent — if
-            // the coordinator is already running for some reason, this is a no-op.
+            // Wake the SPV coordinator now that the mnemonic is in keychain.
+            // The coordinator will derive the wallet via the provider on start.
             SwiftDashSDKSPVCoordinator.startIfReady()
         } catch {
             logger.error("\(label, privacy: .public) threw: \(String(describing: error), privacy: .public)")
