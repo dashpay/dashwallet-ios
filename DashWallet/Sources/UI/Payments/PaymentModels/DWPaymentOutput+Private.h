@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
                   isSecure:(BOOL)isSecure
              localCurrency:(NSString *_Nullable)localCurrency
                   userItem:(id<DWDPBasicUserItem>)userItem
-      rawTransactionData:(NSData *_Nullable)rawTransactionData;
+        rawTransactionData:(NSData *_Nullable)rawTransactionData;
 
 @end
 

@@ -284,21 +284,21 @@ static NSString *sanitizeString(NSString *s) {
     }
 
     [authManager authenticateWithPrompt:nil
-         usingBiometricAuthentication:[DWGlobalOptions sharedInstance].biometricAuthEnabled
-                       alertIfLockout:YES
-                           completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
-        if (cancelled) {
-            [self.delegate paymentProcessorDidCancelTransactionSigning:self];
-            return;
-        }
-        if (!authenticatedOrSuccess) {
-            [self failedWithError:nil
-                            title:NSLocalizedString(@"Couldn't make payment", nil)
-                          message:NSLocalizedString(@"Authentication failed", nil)];
-            return;
-        }
-        [self performSwiftDashSDKBroadcast:paymentOutput];
-    }];
+           usingBiometricAuthentication:[DWGlobalOptions sharedInstance].biometricAuthEnabled
+                         alertIfLockout:YES
+                             completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
+                                 if (cancelled) {
+                                     [self.delegate paymentProcessorDidCancelTransactionSigning:self];
+                                     return;
+                                 }
+                                 if (!authenticatedOrSuccess) {
+                                     [self failedWithError:nil
+                                                     title:NSLocalizedString(@"Couldn't make payment", nil)
+                                                   message:NSLocalizedString(@"Authentication failed", nil)];
+                                     return;
+                                 }
+                                 [self performSwiftDashSDKBroadcast:paymentOutput];
+                             }];
 }
 
 - (void)performSwiftDashSDKBroadcast:(DWPaymentOutput *)paymentOutput {
@@ -392,7 +392,7 @@ static NSString *sanitizeString(NSString *s) {
     // Route non-CoinJoin, non-BIP70 sends through SwiftDashSDK.
     if (!mixedOnly && !hasBIP70 && self.amount > 0 && address.length > 0) {
         [self confirmProtocolRequestViaSwiftDashSDK:protocolRequest
-                                           address:address];
+                                            address:address];
         return;
     }
 
@@ -454,8 +454,8 @@ static NSString *sanitizeString(NSString *s) {
         NSError *error = nil;
         NSDictionary *result = [DWSwiftDashSDKTransactionSender
             objcBuildAndSignWithAddress:address
-                                amount:self.amount
-                                 error:&error];
+                                 amount:self.amount
+                                  error:&error];
         dispatch_async(dispatch_get_main_queue(), ^{
             if (error || !result) {
                 [self failedWithError:error
@@ -472,17 +472,17 @@ static NSString *sanitizeString(NSString *s) {
             DSTransaction *tx = [[DSTransaction alloc] initWithMessage:txData onChain:chain];
 
             DWPaymentOutput *paymentOutput = [[DWPaymentOutput alloc]
-                initWithTx:tx
-                protocolRequest:protocolRequest
-                         amount:self.amount
-                            fee:fee
-                        address:address
-                           name:protocolRequest.commonName
-                           memo:protocolRequest.details.memo
-                       isSecure:NO
-                  localCurrency:protocolRequest.requestedFiatAmountCurrencyCode
-                       userItem:self.paymentInput.userItem
-             rawTransactionData:txData];
+                        initWithTx:tx
+                   protocolRequest:protocolRequest
+                            amount:self.amount
+                               fee:fee
+                           address:address
+                              name:protocolRequest.commonName
+                              memo:protocolRequest.details.memo
+                          isSecure:NO
+                     localCurrency:protocolRequest.requestedFiatAmountCurrencyCode
+                          userItem:self.paymentInput.userItem
+                rawTransactionData:txData];
 
             [self.delegate paymentProcessor:self confirmPaymentOutput:paymentOutput];
         });

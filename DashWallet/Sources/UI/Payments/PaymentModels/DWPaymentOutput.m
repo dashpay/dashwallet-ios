@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
                    isSecure:isSecure
               localCurrency:localCurrency
                    userItem:userItem
-       rawTransactionData:nil];
+         rawTransactionData:nil];
 }
 
 - (instancetype)initWithTx:(DSTransaction *)tx
@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
                   isSecure:(BOOL)isSecure
              localCurrency:(NSString *_Nullable)localCurrency
                   userItem:(id<DWDPBasicUserItem>)userItem
-      rawTransactionData:(NSData *_Nullable)rawTransactionData {
+        rawTransactionData:(NSData *_Nullable)rawTransactionData {
     self = [super init];
     if (self) {
         _tx = tx;
