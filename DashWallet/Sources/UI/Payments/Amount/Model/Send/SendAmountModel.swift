@@ -60,8 +60,9 @@ class SendAmountModel: BaseAmountModel {
     var canShowInsufficientFunds: Bool {
         let plainAmount = amount.plainAmount
 
-        let account = DWEnvironment.sharedInstance().currentAccount
-        let allAvailableFunds = CoinJoinService.shared.mixingState.isInProgress ? coinJoinBalance : account.maxOutputAmount
+        let allAvailableFunds = CoinJoinService.shared.mixingState.isInProgress
+            ? coinJoinBalance
+            : SwiftDashSDKWalletState.shared.balance?.spendable ?? 0
 
         return plainAmount > allAvailableFunds
     }
@@ -93,9 +94,10 @@ class SendAmountModel: BaseAmountModel {
     }
 
     internal func selectAllFundsWithoutAuth() {
-        let account = DWEnvironment.sharedInstance().currentAccount
-        let allAvailableFunds = CoinJoinService.shared.mixingState.isInProgress ? coinJoinBalance : account.maxOutputAmount
-        
+        let allAvailableFunds = CoinJoinService.shared.mixingState.isInProgress
+            ? coinJoinBalance
+            : SwiftDashSDKWalletState.shared.balance?.spendable ?? 0
+
         if allAvailableFunds > 0 {
             updateCurrentAmountObject(with: allAvailableFunds)
         }
