@@ -194,13 +194,20 @@ static NSString *sanitizeString(NSString *s) {
 }
 
 - (void)confirmPaymentOutput:(DWPaymentOutput *)paymentOutput {
-    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
     NSString *address = paymentOutput.address;
     DSPaymentProtocolRequest *protocolRequest = paymentOutput.protocolRequest;
 
     self.request = protocolRequest;
     self.didSendRequestDelegateNotified = NO;
 
+    // SwiftDashSDK path: tx is already signed, just authenticate and broadcast.
+    if (paymentOutput.rawTransactionData) {
+        [self broadcastSwiftDashSDKPaymentOutput:paymentOutput];
+        return;
+    }
+
+    // Existing DashSync path: sign and publish via DSTransactionManager.
+    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
     const BOOL requiresSpendingAuthenticationPrompt = ![[DWGlobalOptions sharedInstance] spendingConfirmationDisabled];
     BOOL mixedOnly = [CoinJoinServiceWrapper mode] != CoinJoinModeNone;
     DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
@@ -262,6 +269,61 @@ static NSString *sanitizeString(NSString *s) {
         errorNotificationBlock:self.errorNotificationBlock];
 }
 
+/// Authenticate user, then broadcast the pre-signed SwiftDashSDK transaction.
+- (void)broadcastSwiftDashSDKPaymentOutput:(DWPaymentOutput *)paymentOutput {
+    NSString *address = paymentOutput.address;
+    DSTransaction *tx = paymentOutput.tx;
+
+    // Authenticate before broadcasting (PIN / biometric).
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    BOOL skipAuth = [[DWGlobalOptions sharedInstance] spendingConfirmationDisabled];
+
+    if (skipAuth || authManager.didAuthenticate) {
+        [self performSwiftDashSDKBroadcast:paymentOutput];
+        return;
+    }
+
+    [authManager authenticateWithPrompt:nil
+         usingBiometricAuthentication:[DWGlobalOptions sharedInstance].biometricAuthEnabled
+                       alertIfLockout:YES
+                           completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
+        if (cancelled) {
+            [self.delegate paymentProcessorDidCancelTransactionSigning:self];
+            return;
+        }
+        if (!authenticatedOrSuccess) {
+            [self failedWithError:nil
+                            title:NSLocalizedString(@"Couldn't make payment", nil)
+                          message:NSLocalizedString(@"Authentication failed", nil)];
+            return;
+        }
+        [self performSwiftDashSDKBroadcast:paymentOutput];
+    }];
+}
+
+- (void)performSwiftDashSDKBroadcast:(DWPaymentOutput *)paymentOutput {
+    NSString *address = paymentOutput.address;
+    NSData *rawTx = paymentOutput.rawTransactionData;
+
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        NSError *error = nil;
+        [DWSwiftDashSDKTransactionSender objcBroadcast:rawTx error:&error];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (error) {
+                [self failedWithError:error
+                                title:NSLocalizedString(@"Couldn't make payment", nil)
+                              message:error.localizedDescription];
+            }
+            else {
+                [self txManagerPublishedCompletion:address
+                                              sent:YES
+                                                tx:paymentOutput.tx];
+            }
+        });
+    });
+}
+
 #pragma mark - Private
 
 - (void)confirmRequest:(DSPaymentRequest *)request {
@@ -318,16 +380,26 @@ static NSString *sanitizeString(NSString *s) {
 }
 
 - (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protocolRequest {
-    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
 
     NSString *address = [NSString addressWithScriptPubKey:protocolRequest.details.outputScripts.firstObject
                                                   onChain:chain];
-    const BOOL addressIsFromPasteboard = self.paymentInput.source == DWPaymentInputSource_Pasteboard;
 
     self.didSendRequestDelegateNotified = NO;
     BOOL mixedOnly = [CoinJoinServiceWrapper mode] != CoinJoinModeNone;
+    BOOL hasBIP70 = protocolRequest.details.paymentURL.length > 0;
+
+    // Route non-CoinJoin, non-BIP70 sends through SwiftDashSDK.
+    if (!mixedOnly && !hasBIP70 && self.amount > 0 && address.length > 0) {
+        [self confirmProtocolRequestViaSwiftDashSDK:protocolRequest
+                                           address:address];
+        return;
+    }
+
+    // Existing DashSync path (CoinJoin, BIP70, or edge cases).
+    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+    DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
+    const BOOL addressIsFromPasteboard = self.paymentInput.source == DWPaymentInputSource_Pasteboard;
 
     [chainManager.transactionManager
         confirmProtocolRequest:protocolRequest
@@ -371,6 +443,50 @@ static NSString *sanitizeString(NSString *s) {
                                                tx:tx];
         }
         errorNotificationBlock:self.errorNotificationBlock];
+}
+
+/// Build+sign via SwiftDashSDK, then show the confirmation UI with the real fee.
+- (void)confirmProtocolRequestViaSwiftDashSDK:(DSPaymentProtocolRequest *)protocolRequest
+                                      address:(NSString *)address {
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        NSError *error = nil;
+        NSDictionary *result = [DWSwiftDashSDKTransactionSender
+            objcBuildAndSignWithAddress:address
+                                amount:self.amount
+                                 error:&error];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (error || !result) {
+                [self failedWithError:error
+                                title:NSLocalizedString(@"Couldn't make payment", nil)
+                              message:error.localizedDescription];
+                return;
+            }
+
+            NSData *txData = result[@"txData"];
+            uint64_t fee = [result[@"fee"] unsignedLongLongValue];
+
+            // Wrap the signed bytes in a DSTransaction for compatibility
+            // with the existing confirmation UI and delegate protocol.
+            DSTransaction *tx = [[DSTransaction alloc] initWithMessage:txData onChain:chain];
+
+            DWPaymentOutput *paymentOutput = [[DWPaymentOutput alloc]
+                initWithTx:tx
+                protocolRequest:protocolRequest
+                         amount:self.amount
+                            fee:fee
+                        address:address
+                           name:protocolRequest.commonName
+                           memo:protocolRequest.details.memo
+                       isSecure:NO
+                  localCurrency:protocolRequest.requestedFiatAmountCurrencyCode
+                       userItem:self.paymentInput.userItem
+             rawTransactionData:txData];
+
+            [self.delegate paymentProcessor:self confirmPaymentOutput:paymentOutput];
+        });
+    });
 }
 
 - (void)confirmSweep:(DSPaymentRequest *)request {

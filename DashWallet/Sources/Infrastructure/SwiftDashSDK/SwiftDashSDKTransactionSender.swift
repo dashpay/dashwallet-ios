@@ -124,6 +124,26 @@ final class SwiftDashSDKTransactionSender: NSObject {
         return Data(hash2.reversed())
     }
 
+    // MARK: - Obj-C bridge
+
+    /// Build+sign accessible from Obj-C. Returns a dictionary with keys
+    /// "txData" (Data), "fee" (NSNumber), "txHash" (Data).
+    @objc(objcBuildAndSignWithAddress:amount:error:)
+    static func objcBuildAndSign(address: String, amount: UInt64) throws -> NSDictionary {
+        let (txData, fee, txHash) = try buildAndSign(address: address, amount: amount)
+        return [
+            "txData": txData,
+            "fee": NSNumber(value: fee),
+            "txHash": txHash
+        ]
+    }
+
+    /// Broadcast accessible from Obj-C.
+    @objc(objcBroadcast:error:)
+    static func objcBroadcast(_ txData: Data) throws {
+        try broadcast(txData)
+    }
+
     // MARK: - Errors
 
     enum SendError: LocalizedError {

@@ -32,6 +32,18 @@ NS_ASSUME_NONNULL_BEGIN
              localCurrency:(NSString *_Nullable)localCurrency
                   userItem:(id<DWDPBasicUserItem>)userItem;
 
+- (instancetype)initWithTx:(DSTransaction *)tx
+           protocolRequest:(DSPaymentProtocolRequest *)protocolRequest
+                    amount:(uint64_t)amount
+                       fee:(uint64_t)fee
+                   address:(NSString *)address
+                      name:(NSString *_Nullable)name
+                      memo:(NSString *_Nullable)memo
+                  isSecure:(BOOL)isSecure
+             localCurrency:(NSString *_Nullable)localCurrency
+                  userItem:(id<DWDPBasicUserItem>)userItem
+      rawTransactionData:(NSData *_Nullable)rawTransactionData;
+
 @end
 
 NS_ASSUME_NONNULL_END

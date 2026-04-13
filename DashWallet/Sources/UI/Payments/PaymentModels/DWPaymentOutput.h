@@ -36,6 +36,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nullable, nonatomic, copy) NSString *localCurrency;
 @property (readonly, nullable, nonatomic, strong) id<DWDPBasicUserItem> userItem;
 
+/// Raw signed transaction bytes from SwiftDashSDK. When non-nil,
+/// `confirmPaymentOutput:` broadcasts via SwiftDashSDK instead of
+/// DashSync's `signAndPublishTransaction:`.
+@property (readonly, nullable, nonatomic, strong) NSData *rawTransactionData;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 @end
