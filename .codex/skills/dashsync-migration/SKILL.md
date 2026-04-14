@@ -114,6 +114,14 @@ When you hit one of these categories for the first time, stop and confirm the ap
 
 Before adding defensive fallbacks or special-case branches, read both implementations first.
 
+`dashwallet-ios` depends on the sibling `../platform` repo for SwiftDashSDK. Treat that repo as the source of truth for the Swift SDK surface this app is actually consuming. Do not infer SwiftDashSDK behavior from dashwallet wrappers alone.
+
+Default inspection order:
+
+1. Read the dashwallet call sites you are changing.
+2. Read the SwiftDashSDK wrappers in `../platform/packages/swift-sdk/Sources/SwiftDashSDK/` to confirm the real Swift API shape, naming, lifecycle, and availability.
+3. If wrapper behavior, type mapping, FFI boundaries, or runtime semantics are still unclear, inspect the underlying Rust/core implementation and FFI layer before designing the migration.
+
 - DashSync source: `../DashSync/`
 - DashSync address logic: `../DashSync/shared/Categories/NSString+Dash.{h,m}`
 - DashSync wallet and derivation code: `../DashSync/shared/Models/Wallet/`
