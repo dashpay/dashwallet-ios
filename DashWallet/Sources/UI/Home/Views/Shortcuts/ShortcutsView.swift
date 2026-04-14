@@ -49,6 +49,8 @@ protocol ShortcutsViewDelegate: AnyObject {
 // MARK: - ShortcutsView
 
 class ShortcutsView: UIView {
+    private static let verticalPadding: CGFloat = 8.0
+
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel: HomeViewModel
     private var lastLayoutWidth: CGFloat = 0
@@ -140,7 +142,7 @@ class ShortcutsView: UIView {
         var cellSize = cellSize(for: contentSizeCategory, viewWidth: width)
         cellSize.height = ceil(cellSize.height) // This fixes the autolayout issue when the size of the cell is higher than the collection view itself
 
-        collectionViewHeightConstraint.constant = cellSize.height
+        collectionViewHeightConstraint.constant = cellSize.height + ShortcutsView.verticalPadding * 2
         setNeedsUpdateConstraints()
 
         if let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
@@ -212,7 +214,7 @@ extension ShortcutsView: UICollectionViewDataSource, UICollectionViewDelegate, U
         let cellCount = CGFloat(collectionView.numberOfItems(inSection: section))
         var inset = (collectionView.bounds.size.width - (cellCount * cellWidth) - ((cellCount - 1) * cellSpacing)) * 0.5
         inset = max(inset, 0.0)
-        return UIEdgeInsets(top: 0.0, left: inset, bottom: 0.0, right: inset)
+        return UIEdgeInsets(top: ShortcutsView.verticalPadding, left: inset, bottom: ShortcutsView.verticalPadding, right: inset)
     }
 }
 
