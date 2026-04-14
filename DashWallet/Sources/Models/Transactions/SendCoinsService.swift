@@ -15,11 +15,9 @@
 //  limitations under the License.
 //
 
-import Combine
-
 public final class SendCoinsService: NSObject {
-    private let transactionManager: DSTransactionManager = DWEnvironment.sharedInstance().currentChainManager.transactionManager
-    
+    private let walletSendService = WalletSendService.shared
+
     // Payment processing
     private var paymentProcessor: DWPaymentProcessor?
     private var pendingPaymentContinuation: CheckedContinuation<DSTransaction, Swift.Error>?
@@ -27,70 +25,12 @@ public final class SendCoinsService: NSObject {
     func sendCoins(address: String, amount: UInt64,
                    inputSelector: SingleInputAddressSelector? = nil, adjustAmountDownwards: Bool = false) async throws
         -> DSTransaction {
-        let chain = DWEnvironment.sharedInstance().currentChain
-        let account = DWEnvironment.sharedInstance().currentAccount
-        let transaction = DSTransaction(on: chain)
-
-        if inputSelector == nil {
-            // Forming transaction normally
-            let script = NSData.scriptPubKey(forAddress: address, for: chain)
-            account.update(transaction, forAmounts: [amount], toOutputScripts: [script], withFee: true)
-        }
-        else {
-            // Selecting proper inputs
-            let balance = inputSelector!.selectFor(tx: transaction)
-            transaction.addOutputAddress(address, amount: amount)
-            let feeAmount = chain.fee(forTxSize: UInt(transaction.size) + UInt(TX_OUTPUT_SIZE))
-
-            if amount + feeAmount > balance {
-                if adjustAmountDownwards {
-                    let adjustedAmount = amount - feeAmount
-                    let adjustedTx = try await sendCoins(address: address, amount: adjustedAmount, inputSelector: inputSelector)
-                    return adjustedTx
-                } else {
-                    throw DashSpendError.paymentProcessingError("Not enough funds. Selected: \(balance), Amount: \(amount), Fee: \(feeAmount)")
-                }
-            }
-
-            let change = balance - (amount + feeAmount)
-
-            if change > 0 {
-                let changeAddress = inputSelector!.address
-                transaction.addOutputAddress(changeAddress, amount: change)
-                transaction.sortOutputsAccordingToBIP69()
-            }
-        }
-
-        // Explicitly authenticate before signing to ensure PIN is requested
-        // Must run on main thread as it's a UI operation
-        @MainActor func authenticate() async -> Bool {
-            return await withCheckedContinuation { continuation in
-                DSAuthenticationManager.sharedInstance().authenticate(
-                    withPrompt: nil,
-                    usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
-                    alertIfLockout: true
-                ) { authenticatedOrSuccess, usedBiometrics, cancelled in
-                    continuation.resume(returning: authenticatedOrSuccess && !cancelled)
-                }
-            }
-        }
-
-        let authenticated = await authenticate()
-
-        if !authenticated {
-            throw DashSpendError.paymentProcessingError("Authentication cancelled")
-        }
-
-        // Sign the transaction after authentication
-        account.sign(transaction)
-
-        // Register the transaction
-        account.register(transaction, saveImmediately: false)
-
-        // Publish the transaction
-        try await transactionManager.publishTransaction(transaction)
-
-        return transaction
+        return try await walletSendService.send(
+            address: address,
+            amount: amount,
+            inputSelector: inputSelector,
+            adjustAmountDownwards: adjustAmountDownwards
+        )
     }
 
     // MARK: - BIP70

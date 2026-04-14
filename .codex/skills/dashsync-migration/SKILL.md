@@ -93,7 +93,7 @@ If section 2 fails, use the right shape for the category instead of forcing a di
 | Async or network calls | `#16`, `#18`, `#19` | Needs callbacks or `async` behavior; Obj-C call sites need rewiring | Single cutover behind a SwiftDashSDK-backed async boundary, with call-site rewiring as needed |
 | Stateful balance or UTXO | `#5`, `#9` | SwiftDashSDK depends on SPV-populated state | Sequence after `#11` SPV sync work |
 | Persisted data | `#6`, `#7` | This is a storage migration, not a function wrapper | One-shot data migrator on first launch |
-| Multi-step async write paths | `#8`, `#16` | Build, sign, and broadcast carry state across steps | Replace the whole boundary at once; do not mix implementations inside one flow |
+| Multi-step async write paths | `#8`, `#16` | Build, sign, and broadcast carry state across steps | Replace the whole boundary at once; do not mix implementations inside one flow. If Swift and Obj-C callers coexist, introduce one app-level async service plus a thin Obj-C completion bridge, and keep the low-level SDK executor behind that boundary. |
 | Long-running event streams | `#11`, `#20`, parts of `#18` | Not a single call you can wrap | Event-router pattern |
 | Side-effect-only calls | `#12`, `#14` | Nothing meaningful to compare | Direct flip with manual verification |
 | Not really a migration | `#21`, `#22` | Replace with platform APIs or remove | Handle as a normal code change |

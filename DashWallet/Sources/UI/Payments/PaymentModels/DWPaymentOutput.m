@@ -32,29 +32,33 @@ NS_ASSUME_NONNULL_BEGIN
              localCurrency:(NSString *_Nullable)localCurrency
                   userItem:(id<DWDPBasicUserItem>)userItem {
     return [self initWithTx:tx
-            protocolRequest:protocolRequest
-                     amount:amount
-                        fee:fee
-                    address:address
-                       name:name
-                       memo:memo
-                   isSecure:isSecure
-              localCurrency:localCurrency
-                   userItem:userItem
-         rawTransactionData:nil];
+                    protocolRequest:protocolRequest
+                             amount:amount
+                                fee:fee
+                            address:address
+                               name:name
+                               memo:memo
+                           isSecure:isSecure
+                      localCurrency:localCurrency
+                           userItem:userItem
+                 rawTransactionData:nil
+               preparedStandardSend:nil
+        broadcastAuthorizationState:DWPaymentOutputBroadcastAuthorizationStateNeedsAuthentication];
 }
 
 - (instancetype)initWithTx:(DSTransaction *)tx
-           protocolRequest:(DSPaymentProtocolRequest *)protocolRequest
-                    amount:(uint64_t)amount
-                       fee:(uint64_t)fee
-                   address:(NSString *)address
-                      name:(NSString *_Nullable)name
-                      memo:(NSString *_Nullable)memo
-                  isSecure:(BOOL)isSecure
-             localCurrency:(NSString *_Nullable)localCurrency
-                  userItem:(id<DWDPBasicUserItem>)userItem
-        rawTransactionData:(NSData *_Nullable)rawTransactionData {
+                protocolRequest:(DSPaymentProtocolRequest *)protocolRequest
+                         amount:(uint64_t)amount
+                            fee:(uint64_t)fee
+                        address:(NSString *)address
+                           name:(NSString *_Nullable)name
+                           memo:(NSString *_Nullable)memo
+                       isSecure:(BOOL)isSecure
+                  localCurrency:(NSString *_Nullable)localCurrency
+                       userItem:(id<DWDPBasicUserItem>)userItem
+             rawTransactionData:(NSData *_Nullable)rawTransactionData
+           preparedStandardSend:(DWPreparedStandardSend *_Nullable)preparedStandardSend
+    broadcastAuthorizationState:(DWPaymentOutputBroadcastAuthorizationState)broadcastAuthorizationState {
     self = [super init];
     if (self) {
         _tx = tx;
@@ -68,6 +72,8 @@ NS_ASSUME_NONNULL_BEGIN
         _localCurrency = localCurrency;
         _userItem = userItem;
         _rawTransactionData = rawTransactionData;
+        _preparedStandardSend = preparedStandardSend;
+        _broadcastAuthorizationState = broadcastAuthorizationState;
     }
     return self;
 }

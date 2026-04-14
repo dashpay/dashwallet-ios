@@ -200,8 +200,8 @@ static NSString *sanitizeString(NSString *s) {
     self.request = protocolRequest;
     self.didSendRequestDelegateNotified = NO;
 
-    // SwiftDashSDK path: tx is already signed, just authenticate and broadcast.
-    if (paymentOutput.rawTransactionData) {
+    // SwiftDashSDK path: tx is already prepared, just broadcast.
+    if (paymentOutput.preparedStandardSend) {
         [self broadcastSwiftDashSDKPaymentOutput:paymentOutput];
         return;
     }
@@ -271,14 +271,12 @@ static NSString *sanitizeString(NSString *s) {
 
 /// Authenticate user, then broadcast the pre-signed SwiftDashSDK transaction.
 - (void)broadcastSwiftDashSDKPaymentOutput:(DWPaymentOutput *)paymentOutput {
-    NSString *address = paymentOutput.address;
-    DSTransaction *tx = paymentOutput.tx;
-
     // Authenticate before broadcasting (PIN / biometric).
     DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
-    BOOL skipAuth = [[DWGlobalOptions sharedInstance] spendingConfirmationDisabled];
+    BOOL skipAuth = [[DWGlobalOptions sharedInstance] spendingConfirmationDisabled] ||
+                    paymentOutput.broadcastAuthorizationState == DWPaymentOutputBroadcastAuthorizationStateAlreadyAuthorized;
 
-    if (skipAuth || authManager.didAuthenticate) {
+    if (skipAuth) {
         [self performSwiftDashSDKBroadcast:paymentOutput];
         return;
     }
@@ -303,11 +301,21 @@ static NSString *sanitizeString(NSString *s) {
 
 - (void)performSwiftDashSDKBroadcast:(DWPaymentOutput *)paymentOutput {
     NSString *address = paymentOutput.address;
-    NSData *rawTx = paymentOutput.rawTransactionData;
+    DWPreparedStandardSend *preparedSend = paymentOutput.preparedStandardSend;
+
+    if (!preparedSend) {
+        NSError *error = [NSError errorWithDomain:@"DashWallet.PaymentProcessor"
+                                             code:-1
+                                         userInfo:@{NSLocalizedDescriptionKey : NSLocalizedString(@"Missing prepared transaction", nil)}];
+        [self failedWithError:error
+                        title:NSLocalizedString(@"Couldn't make payment", nil)
+                      message:error.localizedDescription];
+        return;
+    }
 
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
         NSError *error = nil;
-        [DWSwiftDashSDKTransactionSender objcBroadcast:rawTx error:&error];
+        [preparedSend broadcastAndReturnError:&error];
 
         dispatch_async(dispatch_get_main_queue(), ^{
             if (error) {
@@ -448,45 +456,39 @@ static NSString *sanitizeString(NSString *s) {
 /// Build+sign via SwiftDashSDK, then show the confirmation UI with the real fee.
 - (void)confirmProtocolRequestViaSwiftDashSDK:(DSPaymentProtocolRequest *)protocolRequest
                                       address:(NSString *)address {
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    [[DWWalletSendService sharedService]
+        prepareStandardSendForConfirmationWithAddress:address
+                                               amount:self.amount
+                                           completion:^(DWPreparedStandardSend *_Nullable preparedSend, NSError *_Nullable error) {
+                                               if (error || !preparedSend) {
+                                                   if (error && [DWWalletSendService isAuthenticationCancelledError:error]) {
+                                                       [self.delegate paymentProcessorDidCancelTransactionSigning:self];
+                                                       return;
+                                                   }
 
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
-        NSError *error = nil;
-        NSDictionary *result = [DWSwiftDashSDKTransactionSender
-            objcBuildAndSignWithAddress:address
-                                 amount:self.amount
-                                  error:&error];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (error || !result) {
-                [self failedWithError:error
-                                title:NSLocalizedString(@"Couldn't make payment", nil)
-                              message:error.localizedDescription];
-                return;
-            }
+                                                   [self failedWithError:error
+                                                                   title:NSLocalizedString(@"Couldn't make payment", nil)
+                                                                 message:error.localizedDescription];
+                                                   return;
+                                               }
 
-            NSData *txData = result[@"txData"];
-            uint64_t fee = [result[@"fee"] unsignedLongLongValue];
+                                               DWPaymentOutput *paymentOutput = [[DWPaymentOutput alloc]
+                                                                    initWithTx:preparedSend.transaction
+                                                               protocolRequest:protocolRequest
+                                                                        amount:self.amount
+                                                                           fee:preparedSend.fee
+                                                                       address:address
+                                                                          name:protocolRequest.commonName
+                                                                          memo:protocolRequest.details.memo
+                                                                      isSecure:NO
+                                                                 localCurrency:protocolRequest.requestedFiatAmountCurrencyCode
+                                                                      userItem:self.paymentInput.userItem
+                                                            rawTransactionData:preparedSend.txData
+                                                          preparedStandardSend:preparedSend
+                                                   broadcastAuthorizationState:DWPaymentOutputBroadcastAuthorizationStateAlreadyAuthorized];
 
-            // Wrap the signed bytes in a DSTransaction for compatibility
-            // with the existing confirmation UI and delegate protocol.
-            DSTransaction *tx = [[DSTransaction alloc] initWithMessage:txData onChain:chain];
-
-            DWPaymentOutput *paymentOutput = [[DWPaymentOutput alloc]
-                        initWithTx:tx
-                   protocolRequest:protocolRequest
-                            amount:self.amount
-                               fee:fee
-                           address:address
-                              name:protocolRequest.commonName
-                              memo:protocolRequest.details.memo
-                          isSecure:NO
-                     localCurrency:protocolRequest.requestedFiatAmountCurrencyCode
-                          userItem:self.paymentInput.userItem
-                rawTransactionData:txData];
-
-            [self.delegate paymentProcessor:self confirmPaymentOutput:paymentOutput];
-        });
-    });
+                                               [self.delegate paymentProcessor:self confirmPaymentOutput:paymentOutput];
+                                           }];
 }
 
 - (void)confirmSweep:(DSPaymentRequest *)request {

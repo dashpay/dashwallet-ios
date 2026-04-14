@@ -19,7 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWPreparedStandardSend;
+
 @interface DWPaymentOutput ()
+
+@property (readonly, nullable, nonatomic, strong) DWPreparedStandardSend *preparedStandardSend;
 
 - (instancetype)initWithTx:(DSTransaction *)tx
            protocolRequest:(DSPaymentProtocolRequest *)protocolRequest
@@ -33,16 +37,18 @@ NS_ASSUME_NONNULL_BEGIN
                   userItem:(id<DWDPBasicUserItem>)userItem;
 
 - (instancetype)initWithTx:(DSTransaction *)tx
-           protocolRequest:(DSPaymentProtocolRequest *)protocolRequest
-                    amount:(uint64_t)amount
-                       fee:(uint64_t)fee
-                   address:(NSString *)address
-                      name:(NSString *_Nullable)name
-                      memo:(NSString *_Nullable)memo
-                  isSecure:(BOOL)isSecure
-             localCurrency:(NSString *_Nullable)localCurrency
-                  userItem:(id<DWDPBasicUserItem>)userItem
-        rawTransactionData:(NSData *_Nullable)rawTransactionData;
+                protocolRequest:(DSPaymentProtocolRequest *)protocolRequest
+                         amount:(uint64_t)amount
+                            fee:(uint64_t)fee
+                        address:(NSString *)address
+                           name:(NSString *_Nullable)name
+                           memo:(NSString *_Nullable)memo
+                       isSecure:(BOOL)isSecure
+                  localCurrency:(NSString *_Nullable)localCurrency
+                       userItem:(id<DWDPBasicUserItem>)userItem
+             rawTransactionData:(NSData *_Nullable)rawTransactionData
+           preparedStandardSend:(DWPreparedStandardSend *_Nullable)preparedStandardSend
+    broadcastAuthorizationState:(DWPaymentOutputBroadcastAuthorizationState)broadcastAuthorizationState;
 
 @end
 

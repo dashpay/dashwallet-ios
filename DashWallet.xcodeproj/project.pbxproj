@@ -82,6 +82,7 @@
 		11BD738128E7356100A34022 /* CrowdNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BD738028E7356100A34022 /* CrowdNode.swift */; };
 		11E47BA828EAE7AD0097CFA0 /* CrowdNodeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BA728EAE7AD0097CFA0 /* CrowdNodeModel.swift */; };
 		11E47BAB28EB38510097CFA0 /* SendCoinsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */; };
+		75B4D7E52EEC100000A1B2C3 /* WalletSendService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B4D7E42EEC100000A1B2C3 /* WalletSendService.swift */; };
 		11E47BAD28EB3A7D0097CFA0 /* CrowdNode+Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BAC28EB3A7D0097CFA0 /* CrowdNode+Constants.swift */; };
 		11ED906B29681773003784F9 /* StakingInfoDialogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11ED906A29681773003784F9 /* StakingInfoDialogController.swift */; };
 		1DD7BE9CD62998F12672140D /* RadioButtonRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 708B9F2B4B1E4C31B5010CDF /* RadioButtonRow.swift */; };
@@ -399,6 +400,7 @@
 		A5D5DD000000000000000120 /* SwiftDashSDKMnemonicGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000121 /* SwiftDashSDKMnemonicGenerator.swift */; };
 		A5D5DD000000000000000122 /* SwiftDashSDKTransactionSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000124 /* SwiftDashSDKTransactionSender.swift */; };
 		A5D5DD000000000000000123 /* SwiftDashSDKTransactionSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000124 /* SwiftDashSDKTransactionSender.swift */; };
+		75B4D7E62EEC100000A1B2C3 /* WalletSendService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B4D7E42EEC100000A1B2C3 /* WalletSendService.swift */; };
 		A5D5DD000000000000000125 /* SwiftDashSDKWalletProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000127 /* SwiftDashSDKWalletProvider.swift */; };
 		A5D5DD000000000000000126 /* SwiftDashSDKWalletProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000127 /* SwiftDashSDKWalletProvider.swift */; };
 		4774DCDB28F3FA9C008CF87D /* Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4774DCDA28F3FA9C008CF87D /* Coinbase.swift */; };
@@ -1835,6 +1837,7 @@
 		11BD738028E7356100A34022 /* CrowdNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNode.swift; sourceTree = "<group>"; };
 		11E47BA728EAE7AD0097CFA0 /* CrowdNodeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeModel.swift; sourceTree = "<group>"; };
 		11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCoinsService.swift; sourceTree = "<group>"; };
+		75B4D7E42EEC100000A1B2C3 /* WalletSendService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletSendService.swift; sourceTree = "<group>"; };
 		11E47BAC28EB3A7D0097CFA0 /* CrowdNode+Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CrowdNode+Constants.swift"; sourceTree = "<group>"; };
 		11ED906A29681773003784F9 /* StakingInfoDialogController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StakingInfoDialogController.swift; sourceTree = "<group>"; };
 		1C3070D5E872E975F8473A68 /* Pods-dashwallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.release.xcconfig"; path = "Target Support Files/Pods-dashwallet/Pods-dashwallet.release.xcconfig"; sourceTree = "<group>"; };
@@ -5213,6 +5216,7 @@
 				47081195298CF1FE003FCA3D /* Model */,
 				472D13E2299E23B7006903F1 /* BalanceNotifier.swift */,
 				11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */,
+				75B4D7E42EEC100000A1B2C3 /* WalletSendService.swift */,
 			);
 			path = Transactions;
 			sourceTree = "<group>";
@@ -8702,6 +8706,7 @@
 				75FFD6BB2BF48DF80032879E /* HomeViewController+JailbreakCheck.swift in Sources */,
 				477F50102950A55A003C7508 /* Coinbase+Error.swift in Sources */,
 				2A63003F2327B4BB00827825 /* DWPaymentOutput+DWView.m in Sources */,
+				75B4D7E52EEC100000A1B2C3 /* WalletSendService.swift in Sources */,
 				750CED602C94BFD7000FB837 /* SettingsMenuViewModel.swift in Sources */,
 				75D5D5342CC928630049ED7B /* UIHostingController+DashWallet.swift in Sources */,
 				2ACD53EE234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m in Sources */,
@@ -9398,6 +9403,7 @@
 				C943B5252A40A54600AF23C5 /* DWDPSmallContactView.m in Sources */,
 				C9D2C6C62A320AA000D15901 /* Coinbase+Error.swift in Sources */,
 				C9D2C6C72A320AA000D15901 /* DWPaymentOutput+DWView.m in Sources */,
+				75B4D7E62EEC100000A1B2C3 /* WalletSendService.swift in Sources */,
 				C943B5092A40A54600AF23C5 /* UIFont+DWDPItem.m in Sources */,
 				C9D2C6C82A320AA000D15901 /* UIView+DWRecursiveSubview.m in Sources */,
 				C9D2C6C92A320AA000D15901 /* AddressStatus.swift in Sources */,

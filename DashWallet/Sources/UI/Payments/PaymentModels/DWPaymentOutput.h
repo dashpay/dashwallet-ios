@@ -23,6 +23,11 @@ NS_ASSUME_NONNULL_BEGIN
 @class DSPaymentProtocolRequest;
 @protocol DWDPBasicUserItem;
 
+typedef NS_ENUM(NSInteger, DWPaymentOutputBroadcastAuthorizationState) {
+    DWPaymentOutputBroadcastAuthorizationStateNeedsAuthentication = 0,
+    DWPaymentOutputBroadcastAuthorizationStateAlreadyAuthorized = 1,
+};
+
 @interface DWPaymentOutput : NSObject
 
 @property (readonly, nonatomic, strong) DSTransaction *tx;
@@ -35,10 +40,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, assign) BOOL isSecure;
 @property (readonly, nullable, nonatomic, copy) NSString *localCurrency;
 @property (readonly, nullable, nonatomic, strong) id<DWDPBasicUserItem> userItem;
+@property (readonly, nonatomic, assign) DWPaymentOutputBroadcastAuthorizationState broadcastAuthorizationState;
 
-/// Raw signed transaction bytes from SwiftDashSDK. When non-nil,
-/// `confirmPaymentOutput:` broadcasts via SwiftDashSDK instead of
-/// DashSync's `signAndPublishTransaction:`.
+/// Raw signed transaction bytes from SwiftDashSDK prepared before the
+/// confirmation screen. Retained for compatibility with existing view models.
 @property (readonly, nullable, nonatomic, strong) NSData *rawTransactionData;
 
 - (instancetype)init NS_UNAVAILABLE;
