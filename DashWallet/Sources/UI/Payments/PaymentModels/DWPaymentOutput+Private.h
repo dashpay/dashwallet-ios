@@ -46,7 +46,6 @@ NS_ASSUME_NONNULL_BEGIN
                        isSecure:(BOOL)isSecure
                   localCurrency:(NSString *_Nullable)localCurrency
                        userItem:(id<DWDPBasicUserItem>)userItem
-             rawTransactionData:(NSData *_Nullable)rawTransactionData
            preparedStandardSend:(DWPreparedStandardSend *_Nullable)preparedStandardSend
     broadcastAuthorizationState:(DWPaymentOutputBroadcastAuthorizationState)broadcastAuthorizationState;
 

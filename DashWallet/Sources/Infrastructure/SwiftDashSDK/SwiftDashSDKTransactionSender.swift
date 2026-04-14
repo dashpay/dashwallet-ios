@@ -68,7 +68,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
         // 4. Compute txHash (double SHA-256, reversed — standard Bitcoin/Dash).
         let txHash = computeTxHash(from: txData)
 
-        logger.info("💸 TXSEND :: built and signed tx: fee=\(fee, privacy: .public) txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public)")
+        logger.info("💸 TXSEND :: built and signed tx")
 
         return (txData: txData, fee: fee, txHash: txHash)
     }
@@ -82,7 +82,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
     ///
     /// - Parameter txData: Serialized signed transaction bytes.
     static func broadcast(_ txData: Data) throws {
-        logger.info("💸 TXSEND :: broadcasting \(txData.count, privacy: .public)-byte transaction")
+        logger.info("💸 TXSEND :: broadcasting transaction")
         try SwiftDashSDKSPVCoordinator.shared.broadcastTransaction(txData)
         logger.info("💸 TXSEND :: broadcast succeeded")
     }
@@ -107,26 +107,6 @@ final class SwiftDashSDKTransactionSender: NSObject {
             }
         }
         return Data(hash2.reversed())
-    }
-
-    // MARK: - Obj-C bridge
-
-    /// Build+sign accessible from Obj-C. Returns a dictionary with keys
-    /// "txData" (Data), "fee" (NSNumber), "txHash" (Data).
-    @objc(objcBuildAndSignWithAddress:amount:error:)
-    static func objcBuildAndSign(address: String, amount: UInt64) throws -> NSDictionary {
-        let (txData, fee, txHash) = try buildAndSign(address: address, amount: amount)
-        return [
-            "txData": txData,
-            "fee": NSNumber(value: fee),
-            "txHash": txHash
-        ]
-    }
-
-    /// Broadcast accessible from Obj-C.
-    @objc(objcBroadcast:error:)
-    static func objcBroadcast(_ txData: Data) throws {
-        try broadcast(txData)
     }
 
     // MARK: - Errors

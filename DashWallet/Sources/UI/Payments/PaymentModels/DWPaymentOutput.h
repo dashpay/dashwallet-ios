@@ -42,10 +42,6 @@ typedef NS_ENUM(NSInteger, DWPaymentOutputBroadcastAuthorizationState) {
 @property (readonly, nullable, nonatomic, strong) id<DWDPBasicUserItem> userItem;
 @property (readonly, nonatomic, assign) DWPaymentOutputBroadcastAuthorizationState broadcastAuthorizationState;
 
-/// Raw signed transaction bytes from SwiftDashSDK prepared before the
-/// confirmation screen. Retained for compatibility with existing view models.
-@property (readonly, nullable, nonatomic, strong) NSData *rawTransactionData;
-
 - (instancetype)init NS_UNAVAILABLE;
 
 @end

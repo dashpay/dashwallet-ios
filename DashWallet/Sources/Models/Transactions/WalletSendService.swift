@@ -56,10 +56,10 @@ final class WalletSendService: NSObject {
     }
 
     func prepareStandardSendForConfirmation(address: String, amount: UInt64) async throws -> PreparedStandardSend {
-        Self.logger.info("💸 TXSEND :: preparing standard send to \(address, privacy: .public) amount=\(amount, privacy: .public)")
+        Self.logger.info("💸 TXSEND :: preparing standard send")
         try await sendAuthorizer.authorizeSend()
         let prepared = try buildPreparedStandardSend(address: address, amount: amount)
-        Self.logger.info("💸 TXSEND :: standard send prepared, fee=\(prepared.fee, privacy: .public)")
+        Self.logger.info("💸 TXSEND :: standard send prepared")
         return prepared
     }
 
@@ -70,7 +70,7 @@ final class WalletSendService: NSObject {
         adjustAmountDownwards: Bool = false
     ) async throws -> DSTransaction {
         if let inputSelector {
-            Self.logger.info("💸 TXSEND :: routing to selected-input (DashSync) path for \(address, privacy: .public)")
+            Self.logger.info("💸 TXSEND :: routing to selected-input (DashSync) path")
             try await sendAuthorizer.authorizeSend()
             return try await legacySelectedInputSendExecutor.send(
                 address: address,

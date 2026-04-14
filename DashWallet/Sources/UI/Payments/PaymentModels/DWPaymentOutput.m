@@ -41,7 +41,6 @@ NS_ASSUME_NONNULL_BEGIN
                            isSecure:isSecure
                       localCurrency:localCurrency
                            userItem:userItem
-                 rawTransactionData:nil
                preparedStandardSend:nil
         broadcastAuthorizationState:DWPaymentOutputBroadcastAuthorizationStateNeedsAuthentication];
 }
@@ -56,7 +55,6 @@ NS_ASSUME_NONNULL_BEGIN
                        isSecure:(BOOL)isSecure
                   localCurrency:(NSString *_Nullable)localCurrency
                        userItem:(id<DWDPBasicUserItem>)userItem
-             rawTransactionData:(NSData *_Nullable)rawTransactionData
            preparedStandardSend:(DWPreparedStandardSend *_Nullable)preparedStandardSend
     broadcastAuthorizationState:(DWPaymentOutputBroadcastAuthorizationState)broadcastAuthorizationState {
     self = [super init];
@@ -71,7 +69,6 @@ NS_ASSUME_NONNULL_BEGIN
         _isSecure = isSecure;
         _localCurrency = localCurrency;
         _userItem = userItem;
-        _rawTransactionData = rawTransactionData;
         _preparedStandardSend = preparedStandardSend;
         _broadcastAuthorizationState = broadcastAuthorizationState;
     }

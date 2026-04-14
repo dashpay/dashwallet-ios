@@ -483,7 +483,6 @@ static NSString *sanitizeString(NSString *s) {
                                                                       isSecure:NO
                                                                  localCurrency:protocolRequest.requestedFiatAmountCurrencyCode
                                                                       userItem:self.paymentInput.userItem
-                                                            rawTransactionData:preparedSend.txData
                                                           preparedStandardSend:preparedSend
                                                    broadcastAuthorizationState:DWPaymentOutputBroadcastAuthorizationStateAlreadyAuthorized];
 
