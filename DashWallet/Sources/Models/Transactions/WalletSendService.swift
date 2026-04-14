@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import OSLog
 
 @objc(DWPreparedStandardSend)
 final class PreparedStandardSend: NSObject {
@@ -33,7 +34,7 @@ final class PreparedStandardSend: NSObject {
         self.amount = amount
     }
 
-    @objc
+    @objc(broadcastAndReturnError:)
     func broadcast() throws {
         try SwiftDashSDKTransactionSender.broadcast(txData)
     }
@@ -43,6 +44,10 @@ final class PreparedStandardSend: NSObject {
 final class WalletSendService: NSObject {
     @objc(sharedService) static let shared = WalletSendService()
 
+    fileprivate static let logger = Logger(
+        subsystem: "org.dashfoundation.dash",
+        category: "swift-sdk-migration.wallet-send-service")
+
     private let sendAuthorizer = SendAuthorizer()
     private let legacySelectedInputSendExecutor = LegacySelectedInputSendExecutor()
 
@@ -51,8 +56,11 @@ final class WalletSendService: NSObject {
     }
 
     func prepareStandardSendForConfirmation(address: String, amount: UInt64) async throws -> PreparedStandardSend {
+        Self.logger.info("💸 TXSEND :: preparing standard send to \(address, privacy: .public) amount=\(amount, privacy: .public)")
         try await sendAuthorizer.authorizeSend()
-        return try buildPreparedStandardSend(address: address, amount: amount)
+        let prepared = try buildPreparedStandardSend(address: address, amount: amount)
+        Self.logger.info("💸 TXSEND :: standard send prepared, fee=\(prepared.fee, privacy: .public)")
+        return prepared
     }
 
     func send(
@@ -62,6 +70,7 @@ final class WalletSendService: NSObject {
         adjustAmountDownwards: Bool = false
     ) async throws -> DSTransaction {
         if let inputSelector {
+            Self.logger.info("💸 TXSEND :: routing to selected-input (DashSync) path for \(address, privacy: .public)")
             try await sendAuthorizer.authorizeSend()
             return try await legacySelectedInputSendExecutor.send(
                 address: address,
@@ -138,13 +147,16 @@ private final class SendAuthorizer {
 
         switch result {
         case .authorized:
+            WalletSendService.logger.info("💸 TXSEND :: user authorized send")
             return
         case .cancelled:
+            WalletSendService.logger.info("💸 TXSEND :: user cancelled authentication")
             throw WalletSendService.makeError(
                 code: .authenticationCancelled,
                 description: "Authentication cancelled"
             )
         case .failed:
+            WalletSendService.logger.error("💸 TXSEND :: authentication failed")
             throw WalletSendService.makeError(
                 code: .authenticationFailed,
                 description: "Authentication failed"
@@ -160,8 +172,6 @@ private final class SendAuthorizer {
 }
 
 private final class LegacySelectedInputSendExecutor {
-    private let transactionManager = DWEnvironment.sharedInstance().currentChainManager.transactionManager
-
     func send(
         address: String,
         amount: UInt64,
@@ -170,6 +180,7 @@ private final class LegacySelectedInputSendExecutor {
     ) async throws -> DSTransaction {
         let chain = DWEnvironment.sharedInstance().currentChain
         let account = DWEnvironment.sharedInstance().currentAccount
+        let transactionManager = DWEnvironment.sharedInstance().currentChainManager.transactionManager
         let transaction = DSTransaction(on: chain)
 
         let balance = inputSelector.selectFor(tx: transaction)
@@ -200,6 +211,7 @@ private final class LegacySelectedInputSendExecutor {
 
         account.sign(transaction)
         account.register(transaction, saveImmediately: false)
+        WalletSendService.logger.info("💸 TXSEND :: publishing selected-input tx via DashSync")
         try await transactionManager.publishTransaction(transaction)
         return transaction
     }
