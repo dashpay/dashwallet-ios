@@ -148,7 +148,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     // MARK: - Clear (called from wallet wiper)
 
     /// Called from `SwiftDashSDKWalletWiper.performWipe` after the wallet
-    /// records have been deleted from SwiftData. Without this, the
+    /// state has been deleted from keychain-backed storage. Without this, the
     /// published value would keep showing the previous wallet's balance
     /// across a wipe-then-recover or wipe-then-create flow until the new
     /// wallet's first balance event arrives.
@@ -206,7 +206,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     }
 
     /// Called from `SwiftDashSDKWalletWiper.performWipe` after the wallet
-    /// records have been deleted. Clears the cached tx list.
+    /// state has been deleted. Clears the cached tx list.
     public func clearTransactions() {
         DispatchQueue.main.async { [weak self] in
             Self.logger.info("📜 TXLIST :: clearing transactions")

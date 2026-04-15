@@ -135,10 +135,9 @@ NS_ASSUME_NONNULL_BEGIN
 
     [[DatabaseConnection shared] migrateIfNeededAndReturnError:nil];
 
-    // Construct the SwiftData ModelContainer once, BEFORE any
-    // background-queue code touches SwiftData. The SDK's
-    // ModelContainerHelper.createContainer() can't be used in
-    // dashwallet-ios because dashwallet's iCloud + App Group
+    // Kick off the SwiftDashSDK key migration and SPV runtime early.
+    // The runtime wallet is restored from app-owned Keychain state,
+    // not from a SwiftData wallet store.
     [DWSwiftDashSDKKeyMigrator migrateIfNeeded];
     [DWSwiftDashSDKSPVCoordinator startIfReady];
     [DWSwiftDashSDKWalletWiper startObservingWipeNotification];

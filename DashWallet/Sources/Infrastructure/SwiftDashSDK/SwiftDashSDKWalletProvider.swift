@@ -2,13 +2,13 @@
 //  SwiftDashSDKWalletProvider.swift
 //  DashWallet
 //
-//  Derives an HDWallet from the mnemonic stored in WalletStorage (keychain)
-//  and caches it in memory. All consumers read from here instead of querying
-//  SwiftData directly — the HDWallet is never persisted to disk.
+//  Restores a detached HDWallet from the app-owned runtime wallet descriptor
+//  in Keychain and caches it in memory. All consumers read from here instead
+//  of reconstructing the wallet from mnemonic on demand.
 //
-//  Thread-safe: first caller triggers derivation (~300-500ms), subsequent
-//  callers get the cached result instantly. Concurrent callers block until
-//  derivation completes.
+//  Thread-safe: first caller restores the descriptor-backed wallet,
+//  subsequent callers get the cached result instantly. Concurrent callers
+//  block until restoration completes.
 //
 
 import Foundation
@@ -30,10 +30,11 @@ final class SwiftDashSDKWalletProvider: NSObject {
 
     // MARK: - State
 
-    /// Cached wallet — set once after derivation, cleared on invalidate().
+    /// Cached wallet — set once after restoration, cleared on invalidate().
     private var cachedWallet: HDWallet?
+    private let runtimeWalletStore = SwiftDashSDKRuntimeWalletStore()
 
-    /// Serializes first-access derivation. NSLock is reentrant-safe and
+    /// Serializes first-access restoration. NSLock is reentrant-safe and
     /// works from any thread including DispatchQueue.
     private let lock = NSLock()
 
@@ -43,30 +44,36 @@ final class SwiftDashSDKWalletProvider: NSObject {
 
     // MARK: - Public API
 
-    /// Returns the cached HDWallet, deriving it from the mnemonic on first call.
+    /// Returns the cached HDWallet, restoring it from the runtime descriptor
+    /// on first call.
     ///
-    /// Thread-safe. If multiple threads call simultaneously, one derives and
-    /// the others block until derivation completes (~300-500ms first time,
-    /// instant after).
+    /// Thread-safe. If multiple threads call simultaneously, one restores and
+    /// the others block until restoration completes.
     ///
-    /// Throws if the mnemonic is not yet stored (fresh install before
-    /// onboarding) or if derivation fails.
+    /// Throws if the runtime descriptor is not yet stored (fresh install
+    /// before onboarding) or if restoration fails.
     func getWallet() throws -> HDWallet {
         lock.lock()
         defer { lock.unlock() }
 
-        if let wallet = cachedWallet {
+        let expectedNetwork = currentAppNetwork()
+
+        if let wallet = cachedWallet, wallet.network == expectedNetwork {
             return wallet
         }
+        if let wallet = cachedWallet, wallet.network != expectedNetwork {
+            Self.logger.error("🔑 WALLETPROV :: cached wallet network mismatch")
+            cachedWallet = nil
+        }
 
-        let wallet = try deriveWallet()
+        let wallet = try restoreWallet(expectedNetwork: expectedNetwork)
         cachedWallet = wallet
         return wallet
     }
 
     /// Clears the cached wallet. Called by the wiper on wallet reset and
-    /// by the migrator/creator after storing a new mnemonic so the next
-    /// `getWallet()` call re-derives from the updated keychain.
+    /// by the migrator/creator after storing a new runtime descriptor so the
+    /// next `getWallet()` call re-restores from the updated keychain.
     @objc func invalidate() {
         lock.lock()
         defer { lock.unlock() }
@@ -74,68 +81,65 @@ final class SwiftDashSDKWalletProvider: NSObject {
         Self.logger.info("🔑 WALLETPROV :: cache invalidated")
     }
 
-    // MARK: - Derivation
+    // MARK: - Restoration
 
-    /// Derives an HDWallet from the mnemonic in WalletStorage.
-    /// Runs ~300-500ms (PBKDF2 + FFI key derivation). Called at most
+    /// Restores an HDWallet from the runtime descriptor in Keychain.
+    /// Called at most
     /// once per app session (or after invalidate).
-    private func deriveWallet() throws -> HDWallet {
-        let storage = WalletStorage()
-        let mnemonic: String
+    private func restoreWallet(expectedNetwork: AppNetwork) throws -> HDWallet {
+        let descriptor: SwiftDashSDKRuntimeWalletStore.Descriptor
         do {
-            mnemonic = try storage.retrieveMnemonic()
+            descriptor = try runtimeWalletStore.retrieve()
+        } catch SwiftDashSDKRuntimeWalletStore.RuntimeWalletStoreError.descriptorNotFound {
+            Self.logger.error("🔑 WALLETPROV :: runtime descriptor not found")
+            throw ProviderError.runtimeDescriptorNotAvailable
         } catch {
-            Self.logger.error("🔑 WALLETPROV :: retrieveMnemonic failed: \(String(describing: error), privacy: .public)")
-            throw ProviderError.mnemonicNotAvailable
+            Self.logger.error("🔑 WALLETPROV :: runtime descriptor read failed: \(String(describing: error), privacy: .public)")
+            throw ProviderError.runtimeDescriptorInvalid
         }
 
-        guard !mnemonic.isEmpty else {
-            Self.logger.error("🔑 WALLETPROV :: mnemonic is empty")
-            throw ProviderError.mnemonicNotAvailable
+        guard !descriptor.walletId.isEmpty, !descriptor.serializedWalletBytes.isEmpty else {
+            Self.logger.error("🔑 WALLETPROV :: runtime descriptor is empty")
+            throw ProviderError.runtimeDescriptorInvalid
         }
 
-        // Determine network from DWEnvironment (DashSync's chain config).
-        let isMainnet = DWEnvironment.sharedInstance().currentChain.isMainnet()
-        let sdkNetwork: KeyWalletNetwork = isMainnet ? .mainnet : .testnet
-        let appNetwork: AppNetwork = isMainnet ? .mainnet : .testnet
+        guard descriptor.network == expectedNetwork else {
+            Self.logger.error("🔑 WALLETPROV :: runtime descriptor network mismatch")
+            throw ProviderError.networkMismatch(expected: expectedNetwork, actual: descriptor.network)
+        }
 
-        Self.logger.info("🔑 WALLETPROV :: deriving wallet on \(String(describing: sdkNetwork), privacy: .public)")
-
-        // Standalone WalletManager — owns its own FFI handle, freed by ARC
-        // when this function returns.
-        let walletManager = try WalletManager(network: sdkNetwork)
-
-        let addResult = try walletManager.addWalletAndSerialize(
-            mnemonic: mnemonic,
-            passphrase: nil,
-            birthHeight: isMainnet ? 730_000 : 0,
-            accountOptions: .default,
-            downgradeToPublicKeyWallet: false,
-            allowExternalSigning: false)
-
-        // Construct in-memory HDWallet — never inserted into a ModelContext.
         let wallet = HDWallet(
-            walletId: addResult.walletId,
-            serializedWalletBytes: addResult.serializedWallet,
-            label: "Derived wallet",
-            network: appNetwork,
+            walletId: descriptor.walletId,
+            serializedWalletBytes: descriptor.serializedWalletBytes,
+            label: descriptor.isImported ? "Imported wallet" : "Created wallet",
+            network: descriptor.network,
             isWatchOnly: false,
-            isImported: false)
+            isImported: descriptor.isImported)
 
-        Self.logger.info("🔑 WALLETPROV :: wallet derived OK, walletId=\(addResult.walletId.count, privacy: .public) bytes, serialized=\(addResult.serializedWallet.count, privacy: .public) bytes")
+        Self.logger.info("🔑 WALLETPROV :: runtime wallet restored")
 
         return wallet
+    }
+
+    private func currentAppNetwork() -> AppNetwork {
+        DWEnvironment.sharedInstance().currentChain.isMainnet() ? .mainnet : .testnet
     }
 
     // MARK: - Errors
 
     enum ProviderError: LocalizedError {
-        case mnemonicNotAvailable
+        case runtimeDescriptorNotAvailable
+        case runtimeDescriptorInvalid
+        case networkMismatch(expected: AppNetwork, actual: AppNetwork)
 
         var errorDescription: String? {
             switch self {
-            case .mnemonicNotAvailable:
-                return "Wallet mnemonic not available — wallet not yet created or has been wiped"
+            case .runtimeDescriptorNotAvailable:
+                return "Runtime wallet descriptor not available — wallet not yet created or has been wiped"
+            case .runtimeDescriptorInvalid:
+                return "Runtime wallet descriptor is invalid"
+            case .networkMismatch(let expected, let actual):
+                return "Runtime wallet descriptor network mismatch: expected \(expected.rawValue), got \(actual.rawValue)"
             }
         }
     }

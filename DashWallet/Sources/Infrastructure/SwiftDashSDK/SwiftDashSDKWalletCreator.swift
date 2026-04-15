@@ -7,7 +7,8 @@
 //  wallet creation, via `createWallet`) and during the recover-wallet
 //  flow (importing an existing wallet from a recovery phrase, via
 //  `importWallet`) to make the SwiftDashSDK side exist alongside the
-//  DashSync side from day one.
+//  DashSync side from day one. Runtime restoration is keyed off an
+//  app-owned Keychain descriptor, not a persisted SwiftData wallet record.
 //
 //  This file is intentionally decoupled from DashSync — it does not import
 //  DashSync, does not know DashSync's keychain layout, and does not read
@@ -43,19 +44,10 @@ final class SwiftDashSDKWalletCreator: NSObject {
 
     /// Create a fresh SwiftDashSDK wallet from a just-generated mnemonic and PIN.
     ///
-    /// Used by the onboarding wallet-creation flow. The resulting `HDWallet`
-    /// SwiftData record is marked `isImported: false` with label `"Created wallet"`,
-    /// distinguishing it from migrator records (`"Migrated wallet"`) and from
-    /// records produced by `importWallet` (`"Imported wallet"`).
-    ///
     /// Dispatched to `DispatchQueue.global(qos: .userInitiated)` and returns
     /// to the caller in microseconds, mirroring the migrator's pattern. The
     /// actual ~300–500 ms of PBKDF2 + FFI work happens in the background while
     /// the caller's UI continues.
-    ///
-    /// Idempotent — safe to call multiple times for the same mnemonic+PIN; the
-    /// existence check on `HDWallet.walletId` (which is `@Attribute(.unique)`)
-    /// turns the duplicate-call case from a destructive rollback into a no-op.
     ///
     /// Never throws, never crashes; all errors are swallowed into os.log.
     ///
@@ -78,12 +70,6 @@ final class SwiftDashSDKWalletCreator: NSObject {
 
     /// Import a SwiftDashSDK wallet from an existing mnemonic (e.g., from
     /// the recover-wallet flow).
-    ///
-    /// Identical to `createWallet` except the resulting `HDWallet` SwiftData
-    /// record is marked `isImported: true` with label `"Imported wallet"`,
-    /// matching the convention used by `SwiftDashSDKKeyMigrator` for wallets
-    /// it imports from DashSync's keychain at upgrade time (which uses
-    /// `"Migrated wallet"` to distinguish further).
     ///
     /// Same threading and error semantics as `createWallet`: dispatched to a
     /// background queue, idempotent, never throws, never crashes.
@@ -108,14 +94,14 @@ final class SwiftDashSDKWalletCreator: NSObject {
 
     /// The actual creation body. Runs on a background `DispatchQueue` —
     /// uses the lowest-level public SwiftDashSDK API surface (standalone
-    /// `WalletManager`, `WalletStorage`, and direct `HDWallet` construction)
+    /// `WalletManager` and `WalletStorage`)
     /// so it has no `@MainActor` requirements. Mirrors the migrator's
     /// `performMigration` body, but takes its inputs as parameters instead
     /// of reading them from DashSync's keychain.
     ///
     /// Shared between `createWallet` (fresh-install) and `importWallet`
     /// (recover-from-recovery-phrase). The two callers differ only in the
-    /// `isImported` and `label` values they pass for the SwiftData record.
+    /// `isImported` and `label` values they pass for the runtime descriptor.
     private static func performCreate(
         mnemonic: String,
         pin: String,
@@ -174,7 +160,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
             let storage = WalletStorage()
             _ = try storage.storeSeed(seed, pin: pin)
 
-            // Round-trip verify before persisting the HDWallet record. If
+            // Round-trip verify before storing the runtime descriptor. If
             // verify fails, roll back the seed write.
             let readBack = try storage.retrieveSeed(pin: pin)
             guard readBack == seed else {
@@ -183,30 +169,46 @@ final class SwiftDashSDKWalletCreator: NSObject {
                 return
             }
 
-            // Also store the mnemonic (the 12 words) for backup phrase display.
-            // Plain keychain, no PIN encryption — iOS keychain protection is
-            // the security boundary.
-            do {
-                try storage.storeMnemonic(mnemonic)
-                logger.info("stored mnemonic in WalletStorage")
-            } catch {
-                logger.error("storeMnemonic failed (non-fatal): \(String(describing: error), privacy: .public)")
+            try storage.storeMnemonic(mnemonic)
+            let storedMnemonic = try storage.retrieveMnemonic()
+            guard storedMnemonic == mnemonic else {
+                logger.error("\(label, privacy: .public): mnemonic round-trip mismatch — rolling back")
+                throw CreateError.mnemonicRoundTripMismatch
+            }
+            logger.info("stored mnemonic in WalletStorage")
+
+            let runtimeWalletStore = SwiftDashSDKRuntimeWalletStore()
+            let descriptor = SwiftDashSDKRuntimeWalletStore.Descriptor(
+                walletId: addResult.walletId,
+                serializedWalletBytes: addResult.serializedWallet,
+                network: appNetwork,
+                isImported: isImported)
+            try runtimeWalletStore.store(descriptor)
+            let storedDescriptor = try runtimeWalletStore.retrieve()
+            guard storedDescriptor == descriptor else {
+                logger.error("\(label, privacy: .public): runtime descriptor round-trip mismatch — rolling back")
+                throw CreateError.runtimeDescriptorRoundTripMismatch
             }
 
             // Invalidate the wallet provider so the next getWallet() call
-            // re-derives from the newly-stored mnemonic.
+            // restores from the newly-stored runtime descriptor.
             SwiftDashSDKWalletProvider.shared.invalidate()
 
             logger.info("\(label, privacy: .public) completed on \(String(describing: sdkNetwork), privacy: .public)")
 
-            // Wake the SPV coordinator now that the mnemonic is in keychain.
-            // The coordinator will derive the wallet via the provider on start.
+            // Wake the SPV coordinator now that the runtime descriptor is in keychain.
             SwiftDashSDKSPVCoordinator.startIfReady()
         } catch {
             logger.error("\(label, privacy: .public) threw: \(String(describing: error), privacy: .public)")
             // Best-effort: leave SwiftDashSDK side clean if anything was partially written.
             try? WalletStorage().deleteSeed()
             try? WalletStorage().deleteMnemonic()
+            try? SwiftDashSDKRuntimeWalletStore().delete()
         }
+    }
+
+    private enum CreateError: LocalizedError {
+        case mnemonicRoundTripMismatch
+        case runtimeDescriptorRoundTripMismatch
     }
 }

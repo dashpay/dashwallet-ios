@@ -3,7 +3,8 @@
 //  DashWallet
 //
 //  One-shot migrator that copies wallet key material from DashSync's
-//  keychain layout into SwiftDashSDK's WalletStorage + HDWallet (SwiftData).
+//  keychain layout into SwiftDashSDK's WalletStorage plus an app-owned
+//  runtime wallet descriptor in Keychain.
 //
 //  Hard invariants — see DASHSYNC_KEY_MIGRATION.md:
 //    1. NEVER deletes from `org.dashfoundation.dash` (DashSync's keychain
@@ -98,12 +99,12 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// while the user is already looking at the home screen.
     ///
     /// Nothing in v1 depends on the migration being complete before launch
-    /// finishes (no consumer reads `wallet.seed` or queries the `HDWallet`
-    /// SwiftData store), so the race window between launch finish and
+    /// finishes (no consumer reads `wallet.seed` or the runtime descriptor
+    /// synchronously on the main thread), so the race window between launch finish and
     /// migration completion is benign. Future PRs that consume the migrated
     /// wallet must use an explicit "migration complete" handshake — polling
-    /// `swiftSDKKeyMigration.v1.done` in `UserDefaults`, NotificationCenter,
-    /// or a SwiftData query for `HDWallet` rows — rather than assuming
+    /// `swiftSDKKeyMigration.v1.done` in `UserDefaults` or NotificationCenter
+    /// — rather than assuming
     /// synchronous completion.
     ///
     /// Never throws, never crashes.
@@ -118,7 +119,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
     /// The actual migration body. Runs on a background `DispatchQueue` —
     /// uses the lowest-level public SwiftDashSDK API surface (standalone
-    /// `WalletManager`, `WalletStorage`, and direct `HDWallet` construction)
+    /// `WalletManager` and `WalletStorage`)
     /// so it has no `@MainActor` requirements. Total cost ~300–500 ms once
     /// per device, dominated by PBKDF2 inside `WalletStorage.storeSeed`.
     /// Thread-safety of every API used is verified in
@@ -177,11 +178,12 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         }
 
         // Inline heavy work — fully synchronous, no Task, no @MainActor.
-        // We construct a standalone WalletManager (no SPVClient), persist
-        // the wallet bytes via a fresh ModelContext, and store the
-        // encrypted seed via WalletStorage. Everything is local to this
-        // function; the FFI wallet manager handle is freed by ARC when
-        // walletManager goes out of scope at the end of this function.
+        // We construct a standalone WalletManager (no SPVClient), capture
+        // the serialized wallet bytes, and store the encrypted seed,
+        // mnemonic, and runtime descriptor in keychain-backed stores.
+        // Everything is local to this function; the FFI wallet manager
+        // handle is freed by ARC when walletManager goes out of scope at
+        // the end of this function.
         do {
             // Determinism + length sanity check (extra belt-and-suspenders).
             let seed = try Mnemonic.toSeed(mnemonic: mnemonic)
@@ -222,8 +224,8 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             let storage = WalletStorage()
             _ = try storage.storeSeed(seed, pin: pin)
 
-            // Round-trip verify the encrypted seed before persisting the
-            // HDWallet record. If verify fails, roll back the seed write.
+            // Round-trip verify the encrypted seed before storing the
+            // runtime descriptor. If verify fails, roll back the seed write.
             let readBack = try storage.retrieveSeed(pin: pin)
             guard readBack == seed else {
                 logger.error("🔑 KEYMIG :: round-trip seed mismatch — rolling back SwiftDashSDK seed")
@@ -231,16 +233,30 @@ final class SwiftDashSDKKeyMigrator: NSObject {
                 return
             }
 
-            // Also store the mnemonic for backup phrase display.
-            do {
-                try storage.storeMnemonic(mnemonic)
-                logger.info("🔑 KEYMIG :: stored mnemonic in WalletStorage during migration")
-            } catch {
-                logger.error("🔑 KEYMIG :: storeMnemonic failed (non-fatal): \(String(describing: error), privacy: .public)")
+            try storage.storeMnemonic(mnemonic)
+            let storedMnemonic = try storage.retrieveMnemonic()
+            guard storedMnemonic == mnemonic else {
+                logger.error("🔑 KEYMIG :: mnemonic round-trip mismatch")
+                throw MigrationError.mnemonicRoundTripMismatch
+            }
+            logger.info("🔑 KEYMIG :: stored mnemonic in WalletStorage during migration")
+
+            let appNetwork: AppNetwork = (network == .mainnet) ? .mainnet : .testnet
+            let runtimeWalletStore = SwiftDashSDKRuntimeWalletStore()
+            let descriptor = SwiftDashSDKRuntimeWalletStore.Descriptor(
+                walletId: addResult.walletId,
+                serializedWalletBytes: addResult.serializedWallet,
+                network: appNetwork,
+                isImported: true)
+            try runtimeWalletStore.store(descriptor)
+            let storedDescriptor = try runtimeWalletStore.retrieve()
+            guard storedDescriptor == descriptor else {
+                logger.error("🔑 KEYMIG :: runtime descriptor round-trip mismatch")
+                throw MigrationError.runtimeDescriptorRoundTripMismatch
             }
 
             // Invalidate the wallet provider so the next getWallet() call
-            // re-derives from the newly-stored mnemonic in keychain.
+            // re-restores from the newly-stored runtime descriptor.
             SwiftDashSDKWalletProvider.shared.invalidate()
 
             // Mark done with the version sentinel.
@@ -254,7 +270,14 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             logger.error("🔑 KEYMIG :: migration threw: \(String(describing: error), privacy: .public)")
             // Best-effort: leave SwiftDashSDK side clean if anything was partially written.
             try? WalletStorage().deleteSeed()
+            try? WalletStorage().deleteMnemonic()
+            try? SwiftDashSDKRuntimeWalletStore().delete()
         }
+    }
+
+    private enum MigrationError: LocalizedError {
+        case mnemonicRoundTripMismatch
+        case runtimeDescriptorRoundTripMismatch
     }
 
     // MARK: - Helpers

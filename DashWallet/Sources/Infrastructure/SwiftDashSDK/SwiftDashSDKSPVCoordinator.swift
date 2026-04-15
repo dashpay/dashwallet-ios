@@ -210,9 +210,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     // MARK: - Background lifecycle
 
     /// Heavy-lifting start path. Runs on `workQueue`. Polls the seed migrator,
-    /// reads the migrated `HDWallet` from SwiftData, constructs an `SPVClient`
-    /// with our event handlers, imports the wallet bytes into the client's
-    /// wallet manager, and kicks off `startSync()`.
+    /// reads the runtime wallet descriptor through the provider, constructs
+    /// an `SPVClient` with our event handlers, imports the wallet bytes into
+    /// the client's wallet manager, and kicks off `startSync()`.
     private func performStart() {
         // Idempotent guard.
         switch lifecycle {
@@ -238,13 +238,19 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             Thread.sleep(forTimeInterval: Self.seedMigratorPollInterval)
         }
 
-        // Derive (or retrieve cached) HDWallet from the mnemonic in keychain.
+        // Restore (or retrieve cached) detached HDWallet from the runtime
+        // descriptor in keychain.
         let migratedWallet: HDWallet
         do {
             migratedWallet = try SwiftDashSDKWalletProvider.shared.getWallet()
-        } catch {
-            Self.logger.warning("🛰️ SPVCOORD :: wallet provider returned error — fresh install path, nothing to sync: \(String(describing: error), privacy: .public)")
+        } catch SwiftDashSDKWalletProvider.ProviderError.runtimeDescriptorNotAvailable {
+            Self.logger.info("🛰️ SPVCOORD :: runtime descriptor not available yet — fresh install path, nothing to sync")
             lifecycle = .stopped
+            return
+        } catch {
+            Self.logger.error("🛰️ SPVCOORD :: wallet provider failed: \(String(describing: error), privacy: .public)")
+            lifecycle = .failed
+            publish { $0.lastError = error.localizedDescription }
             return
         }
 
@@ -303,15 +309,18 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             return
         }
 
-        // Import the migrated wallet into the SPV client's wallet manager.
+        // Import the runtime wallet bytes into the SPV client's wallet manager.
         do {
             let walletManager = try newClient.getWalletManager()
             let importedWalletId = try walletManager.importWallet(from: walletBytes)
             if importedWalletId != expectedWalletId {
-                Self.logger.warning("🛰️ SPVCOORD :: imported walletId mismatch — proceeding anyway")
-            } else {
-                Self.logger.info("🛰️ SPVCOORD :: wallet imported into SPV client OK")
+                Self.logger.error("🛰️ SPVCOORD :: imported walletId mismatch")
+                lifecycle = .failed
+                publish { $0.lastError = "Imported wallet ID mismatch" }
+                newClient.destroy()
+                return
             }
+            Self.logger.info("🛰️ SPVCOORD :: wallet imported into SPV client OK")
 
             // Seed the initial wallet balance now that the wallet is
             // registered with the FFI. The actual fetch + publish

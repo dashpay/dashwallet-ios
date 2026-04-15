@@ -2,8 +2,8 @@
 //  SwiftDashSDKWalletWiper.swift
 //  DashWallet
 //
-//  Wipes SwiftDashSDK wallet state (encrypted seed in WalletStorage,
-//  HDWallet SwiftData records) when DashSync's wipe flow fires the
+//  Wipes SwiftDashSDK wallet state (encrypted seed, mnemonic, and runtime
+//  wallet descriptor in Keychain) when DashSync's wipe flow fires the
 //  DWWillWipeWalletNotification. Hooks NotificationCenter once at app
 //  launch — covers all 5 user-facing wipe entry points (Settings →
 //  Reset Wallet, lock screen emergency wipe, legacy PIN reset, etc.)
@@ -72,11 +72,9 @@ final class SwiftDashSDKWalletWiper: NSObject {
     // MARK: - Background wipe body
 
     /// The actual wipe body. Runs on a background `DispatchQueue` —
-    /// uses the lowest-level public SwiftDashSDK API surface
-    /// (`WalletStorage.deleteSeed`, `ModelContext.delete`) so it has
-    /// no `@MainActor` requirements. Total cost ~10–50 ms (much faster
-    /// than the migrator's create path because there's no PBKDF2 or
-    /// FFI work — just two delete operations).
+    /// uses keychain-backed storage only, so it has no `@MainActor`
+    /// requirements. Total cost ~10–50 ms (much faster than the
+    /// migrator's create path because there's no PBKDF2 or FFI work).
     ///
     /// Idempotent. Never throws, never crashes; all errors swallowed
     /// to os.log.
@@ -99,9 +97,16 @@ final class SwiftDashSDKWalletWiper: NSObject {
             logger.error("failed to delete mnemonic: \(String(describing: error), privacy: .public)")
         }
 
-        // 2) Invalidate the in-memory wallet cache. The mnemonic and seed
-        // were already deleted from keychain above, so the next getWallet()
-        // call will fail with mnemonicNotAvailable — which is correct.
+        do {
+            try SwiftDashSDKRuntimeWalletStore().delete()
+            logger.info("deleted runtime wallet descriptor from Keychain")
+        } catch {
+            logger.error("failed to delete runtime wallet descriptor: \(String(describing: error), privacy: .public)")
+        }
+
+        // 2) Invalidate the in-memory wallet cache. The descriptor, mnemonic,
+        // and seed were already deleted from keychain above, so the next
+        // getWallet() call will fail — which is correct.
         SwiftDashSDKWalletProvider.shared.invalidate()
 
         // Tear down the SPV coordinator now that the wallet is wiped from

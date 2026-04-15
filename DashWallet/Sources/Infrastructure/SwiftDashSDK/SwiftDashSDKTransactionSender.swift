@@ -32,9 +32,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
 
     /// Build and sign a transaction that sends `amount` duffs to `address`.
     ///
-    /// Uses the first `HDWallet` in SwiftData and account index 0 (primary
-    /// BIP44 account). Fee is calculated automatically by the FFI at
-    /// 1000 duffs/kB.
+    /// Uses the detached runtime `HDWallet` from `SwiftDashSDKWalletProvider`
+    /// and account index 0 (primary BIP44 account). Fee is calculated
+    /// automatically by the FFI at 1000 duffs/kB.
     ///
     /// The returned transaction is signed but NOT broadcast — call
     /// `broadcast(_:)` separately after the caller has authenticated the
@@ -52,7 +52,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
             throw SendError.invalidInput("Amount must be greater than zero")
         }
 
-        // 1. Fetch the HDWallet from SwiftData.
+        // 1. Fetch the runtime HDWallet descriptor from the provider.
         let wallet = try SwiftDashSDKWalletProvider.shared.getWallet()
 
         // 2. Get WalletManager from the running SPV coordinator.
