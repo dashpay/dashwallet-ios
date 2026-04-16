@@ -59,7 +59,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         guard observerToken == nil else { return }
 
         observerToken = NotificationCenter.default.addObserver(
-            forName: NSNotification.Name("DWCurrentNetworkDidChangeNotification"),
+            forName: NSNotification.Name.DWCurrentNetworkDidChange,
             object: nil,
             queue: nil
         ) { _ in
