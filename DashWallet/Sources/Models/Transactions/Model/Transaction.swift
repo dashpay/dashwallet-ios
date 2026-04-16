@@ -252,7 +252,7 @@ class Transaction: TransactionDataItem, Identifiable {
     private lazy var _shortTimeString: String = {
         switch source {
         case .ds(let dsTx): return dsTx.formattedShortTxTime
-        case .sdk: return DWDateFormatter.sharedInstance.shortStringFromDate(date)
+        case .sdk: return DWDateFormatter.sharedInstance.timeOnly(from: date)
         }
     }()
 
@@ -299,7 +299,13 @@ class Transaction: TransactionDataItem, Identifiable {
 
     init(walletTransaction: WalletTransaction) {
         self.source = .sdk(walletTransaction)
-        self.date = Date(timeIntervalSince1970: TimeInterval(walletTransaction.timestamp))
+        // `WalletTransaction.timestamp` is the block timestamp (0 until the
+        // tx is mined). Fall back to `Date()` for mempool/pending txs so the
+        // home screen doesn't group them into a 1970 section. Re-evaluates
+        // on relaunch — acceptable for typical mainnet confirmation latency.
+        self.date = walletTransaction.timestamp == 0
+            ? Date()
+            : Date(timeIntervalSince1970: TimeInterval(walletTransaction.timestamp))
     }
 }
 
