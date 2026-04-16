@@ -43,7 +43,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     @objc(startIfReady)
     static func startIfReady() {
         shared.workQueue.async {
-            shared.refreshRuntime(trigger: "startIfReady")
+            shared.refreshRuntime(trigger: .startIfReady)
         }
     }
 
@@ -64,7 +64,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             queue: nil
         ) { _ in
             shared.workQueue.async {
-                shared.refreshRuntime(trigger: "networkDidChange")
+                shared.refreshRuntime(trigger: .networkDidChange)
             }
         }
 
@@ -74,7 +74,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     @objc(handleWalletMaterialChanged)
     static func handleWalletMaterialChanged() {
         shared.workQueue.async {
-            shared.refreshRuntime(trigger: "walletMaterialChanged")
+            shared.refreshRuntime(trigger: .walletMaterialChanged)
         }
     }
 
@@ -85,8 +85,8 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         }
     }
 
-    private func refreshRuntime(trigger: String) {
-        Self.logger.info("🧭 RUNTIME :: refreshing runtime for \(trigger, privacy: .public)")
+    private func refreshRuntime(trigger: RefreshTrigger) {
+        Self.logger.info("🧭 RUNTIME :: refreshing runtime for \(trigger.rawValue, privacy: .public)")
 
         guard waitForSeedMigratorIfNeeded() else {
             performFullReset(lastError: "Seed migration not complete; SwiftDashSDK runtime cannot start.")
@@ -98,6 +98,11 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             performFullReset(lastError: error.localizedDescription)
             return
         case .success(let network):
+            if shouldSkipRefresh(for: network, trigger: trigger) {
+                Self.logger.info("🧭 RUNTIME :: refresh is already satisfied for \(network.rawValue, privacy: .public)")
+                return
+            }
+
             performFullReset(lastError: nil)
 
             let chain = DWEnvironment.sharedInstance().currentChain
@@ -117,6 +122,15 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 Self.logger.error("🧭 RUNTIME :: refresh failed: \(String(describing: error), privacy: .public)")
                 performFullReset(lastError: error.localizedDescription)
             }
+        }
+    }
+
+    private func shouldSkipRefresh(for network: AppNetwork, trigger: RefreshTrigger) -> Bool {
+        switch trigger {
+        case .walletMaterialChanged:
+            return false
+        case .startIfReady, .networkDidChange:
+            return SwiftDashSDKSPVCoordinator.shared.isRunning(for: network)
         }
     }
 
@@ -213,6 +227,12 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         group.wait()
 
         return startResult
+    }
+
+    private enum RefreshTrigger: String {
+        case startIfReady
+        case networkDidChange
+        case walletMaterialChanged
     }
 
     enum RuntimeError: LocalizedError {

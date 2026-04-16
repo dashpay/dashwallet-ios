@@ -109,6 +109,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         case failed
     }
     private var lifecycle: LifecycleState = .notStarted
+    private var runningNetwork: AppNetwork? = nil
 
     // MARK: - Init
 
@@ -133,6 +134,20 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         workQueue.async {
             self.performStop(lastError: lastError, completion: completion)
         }
+    }
+
+    func isRunning(for network: AppNetwork) -> Bool {
+        let group = DispatchGroup()
+        var isRunning = false
+
+        group.enter()
+        workQueue.async {
+            isRunning = self.lifecycle == .running && self.runningNetwork == network
+            group.leave()
+        }
+        group.wait()
+
+        return isRunning
     }
 
     @objc(stop)
@@ -229,6 +244,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: failed to create SPV data directory: \(String(describing: error), privacy: .public)")
             lifecycle = .failed
+            runningNetwork = nil
             applyResetState(lastError: "Failed to create SPV data directory: \(error.localizedDescription)")
             completion(.failure(StartError.dataDirectory(error)))
             return
@@ -251,6 +267,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: SPVClient init failed: \(String(describing: error), privacy: .public)")
             lifecycle = .failed
+            runningNetwork = nil
             applyResetState(lastError: "Failed to create SPV client: \(error.localizedDescription)")
             completion(.failure(StartError.spvClient(error)))
             return
@@ -263,6 +280,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             if importedWalletId != expectedWalletId {
                 Self.logger.error("🛰️ SPVCOORD :: imported walletId mismatch")
                 lifecycle = .failed
+                runningNetwork = nil
                 newClient.destroy()
                 applyResetState(lastError: "Imported wallet ID mismatch")
                 completion(.failure(StartError.walletIdMismatch))
@@ -288,6 +306,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: failed to import wallet into SPV client: \(String(describing: error), privacy: .public)")
             lifecycle = .failed
+            runningNetwork = nil
             newClient.destroy()
             applyResetState(lastError: "Failed to import wallet: \(error.localizedDescription)")
             completion(.failure(StartError.walletImport(error)))
@@ -296,6 +315,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
         client = newClient
         lifecycle = .running
+        runningNetwork = appNetwork
         publish { $0.lastError = nil }
         completion(.success(()))
 
@@ -312,6 +332,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 guard let self else { return }
                 self.workQueue.async {
                     self.lifecycle = .failed
+                    self.runningNetwork = nil
                     self.publish { $0.lastError = "Sync failed: \(error.localizedDescription)" }
                 }
             }
@@ -331,6 +352,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
         client = nil
         lifecycle = .stopped
+        runningNetwork = nil
         applyResetState(lastError: lastError)
         completion?()
     }

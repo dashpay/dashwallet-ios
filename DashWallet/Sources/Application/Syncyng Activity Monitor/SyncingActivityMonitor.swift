@@ -157,7 +157,8 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
 
     @objc
     public func forceStartSyncingActivity() {
-        // Idempotent — runtime ownership handles "already running" internally.
+        // Idempotent on the active network — runtime avoids a full restart
+        // when SwiftDashSDK is already running for the current chain.
         SwiftDashSDKWalletRuntime.startIfReady()
     }
 
