@@ -118,8 +118,6 @@ NS_ASSUME_NONNULL_BEGIN
     if (self.currentNetworkDidChangeBlock) {
         self.currentNetworkDidChangeBlock();
     }
-
-    [SyncingActivityMonitor.shared forceStartSyncingActivity];
 }
 
 @end

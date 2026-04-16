@@ -52,8 +52,10 @@ final class SwiftDashSDKTransactionSender: NSObject {
             throw SendError.invalidInput("Amount must be greater than zero")
         }
 
-        // 1. Fetch the runtime HDWallet descriptor from the provider.
-        let wallet = try SwiftDashSDKWalletProvider.shared.getWallet()
+        // 1. Fetch the runtime HDWallet descriptor from the provider for the
+        // current app network.
+        let network = try currentRuntimeNetwork()
+        let wallet = try SwiftDashSDKWalletProvider.shared.getWallet(for: network)
 
         // 2. Get WalletManager from the running SPV coordinator.
         let walletManager = try SwiftDashSDKSPVCoordinator.shared.getWalletManager()
@@ -107,6 +109,17 @@ final class SwiftDashSDKTransactionSender: NSObject {
             }
         }
         return Data(hash2.reversed())
+    }
+
+    private static func currentRuntimeNetwork() throws -> AppNetwork {
+        let chain = DWEnvironment.sharedInstance().currentChain
+        if chain.isMainnet() {
+            return .mainnet
+        }
+        if chain.isTestnet() {
+            return .testnet
+        }
+        throw SendError.walletNotReady("SwiftDashSDK send path does not support the current network")
     }
 
     // MARK: - Errors

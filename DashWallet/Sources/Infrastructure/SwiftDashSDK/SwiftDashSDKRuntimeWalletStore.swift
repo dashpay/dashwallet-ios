@@ -26,28 +26,18 @@ final class SwiftDashSDKRuntimeWalletStore {
         category: "swift-sdk-migration.runtime-wallet-store")
 
     private let keychainService = "org.dashfoundation.dash.swift-sdk-runtime"
-    private let descriptorAccount = "wallet.descriptor"
 
-    func store(_ descriptor: Descriptor) throws {
+    func store(_ descriptor: Descriptor, for network: AppNetwork) throws {
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
         let data = try encoder.encode(descriptor)
 
-        let deleteQuery: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: keychainService,
-            kSecAttrAccount as String: descriptorAccount,
-        ]
-
-        let deleteStatus = SecItemDelete(deleteQuery as CFDictionary)
-        guard deleteStatus == errSecSuccess || deleteStatus == errSecItemNotFound else {
-            throw RuntimeWalletStoreError.keychainError(deleteStatus)
-        }
+        try delete(for: network)
 
         let addQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: keychainService,
-            kSecAttrAccount as String: descriptorAccount,
+            kSecAttrAccount as String: descriptorAccount(for: network),
             kSecValueData as String: data,
             kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
         ]
@@ -57,14 +47,14 @@ final class SwiftDashSDKRuntimeWalletStore {
             throw RuntimeWalletStoreError.keychainError(status)
         }
 
-        Self.logger.info("🔐 RTWALLET :: stored runtime wallet descriptor")
+        Self.logger.info("🔐 RTWALLET :: stored runtime wallet descriptor for \(network.rawValue, privacy: .public)")
     }
 
-    func retrieve() throws -> Descriptor {
+    func retrieve(for network: AppNetwork) throws -> Descriptor {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: keychainService,
-            kSecAttrAccount as String: descriptorAccount,
+            kSecAttrAccount as String: descriptorAccount(for: network),
             kSecReturnData as String: true,
         ]
 
@@ -90,11 +80,29 @@ final class SwiftDashSDKRuntimeWalletStore {
         }
     }
 
-    func delete() throws {
+    func exists(for network: AppNetwork) throws -> Bool {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: keychainService,
-            kSecAttrAccount as String: descriptorAccount,
+            kSecAttrAccount as String: descriptorAccount(for: network),
+            kSecMatchLimit as String: kSecMatchLimitOne,
+        ]
+
+        let status = SecItemCopyMatching(query as CFDictionary, nil)
+        if status == errSecItemNotFound {
+            return false
+        }
+        guard status == errSecSuccess else {
+            throw RuntimeWalletStoreError.keychainError(status)
+        }
+        return true
+    }
+
+    func delete(for network: AppNetwork) throws {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychainService,
+            kSecAttrAccount as String: descriptorAccount(for: network),
         ]
 
         let status = SecItemDelete(query as CFDictionary)
@@ -102,7 +110,16 @@ final class SwiftDashSDKRuntimeWalletStore {
             throw RuntimeWalletStoreError.keychainError(status)
         }
 
-        Self.logger.info("🔐 RTWALLET :: deleted runtime wallet descriptor")
+        Self.logger.info("🔐 RTWALLET :: deleted runtime wallet descriptor for \(network.rawValue, privacy: .public)")
+    }
+
+    func deleteAllSupportedNetworks() throws {
+        try delete(for: .mainnet)
+        try delete(for: .testnet)
+    }
+
+    private func descriptorAccount(for network: AppNetwork) -> String {
+        "wallet.descriptor.\(network.rawValue)"
     }
 
     enum RuntimeWalletStoreError: LocalizedError {

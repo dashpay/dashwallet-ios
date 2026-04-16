@@ -177,13 +177,12 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             return
         }
 
+        let appNetwork: AppNetwork = (network == .mainnet) ? .mainnet : .testnet
+
         // Inline heavy work — fully synchronous, no Task, no @MainActor.
-        // We construct a standalone WalletManager (no SPVClient), capture
-        // the serialized wallet bytes, and store the encrypted seed,
-        // mnemonic, and runtime descriptor in keychain-backed stores.
-        // Everything is local to this function; the FFI wallet manager
-        // handle is freed by ARC when walletManager goes out of scope at
-        // the end of this function.
+        // We derive the runtime descriptor through the shared factory, then
+        // store the encrypted seed, mnemonic, and per-network descriptor in
+        // keychain-backed stores.
         do {
             // Determinism + length sanity check (extra belt-and-suspenders).
             let seed = try Mnemonic.toSeed(mnemonic: mnemonic)
@@ -197,28 +196,11 @@ final class SwiftDashSDKKeyMigrator: NSObject {
                 return
             }
 
-            // Standalone WalletManager — public init, owns its own FFI handle.
-            let walletManager = try WalletManager(network: network)
-
-            // Register the wallet with the FFI and capture the serialized bytes.
-            // birthHeight matches CoreWalletManager.createWallet's isImport: true
-            // behaviour (730k for mainnet, 0 for everything else).
-            let addResult = try walletManager.addWalletAndSerialize(
+            let descriptorFactory = SwiftDashSDKRuntimeDescriptorFactory()
+            let descriptor = try descriptorFactory.makeDescriptor(
                 mnemonic: mnemonic,
-                passphrase: nil,
-                birthHeight: network == .mainnet ? 730_000 : 0,
-                accountOptions: .default,
-                downgradeToPublicKeyWallet: false,
-                allowExternalSigning: false)
-
-            // Optional platform payment account — non-fatal, matches
-            // CoreWalletManager.createWallet behaviour. v1 doesn't use
-            // platform features, so failure here is fine.
-            do {
-                try walletManager.ensurePlatformPaymentAccount(walletId: addResult.walletId)
-            } catch {
-                logger.warning("🔑 KEYMIG :: ensurePlatformPaymentAccount failed (non-fatal): \(String(describing: error), privacy: .public)")
-            }
+                network: appNetwork,
+                isImported: true)
 
             // Encrypt and store the seed via WalletStorage.
             let storage = WalletStorage()
@@ -241,23 +223,13 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             }
             logger.info("🔑 KEYMIG :: stored mnemonic in WalletStorage during migration")
 
-            let appNetwork: AppNetwork = (network == .mainnet) ? .mainnet : .testnet
             let runtimeWalletStore = SwiftDashSDKRuntimeWalletStore()
-            let descriptor = SwiftDashSDKRuntimeWalletStore.Descriptor(
-                walletId: addResult.walletId,
-                serializedWalletBytes: addResult.serializedWallet,
-                network: appNetwork,
-                isImported: true)
-            try runtimeWalletStore.store(descriptor)
-            let storedDescriptor = try runtimeWalletStore.retrieve()
+            try runtimeWalletStore.store(descriptor, for: appNetwork)
+            let storedDescriptor = try runtimeWalletStore.retrieve(for: appNetwork)
             guard storedDescriptor == descriptor else {
                 logger.error("🔑 KEYMIG :: runtime descriptor round-trip mismatch")
                 throw MigrationError.runtimeDescriptorRoundTripMismatch
             }
-
-            // Invalidate the wallet provider so the next getWallet() call
-            // re-restores from the newly-stored runtime descriptor.
-            SwiftDashSDKWalletProvider.shared.invalidate()
 
             // Mark done with the version sentinel.
             defaults.set("v1", forKey: doneKey)
@@ -266,12 +238,13 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             defaults.removeObject(forKey: deferredUnknownChainKey)
 
             logger.info("🔑 KEYMIG :: migration complete: 1 wallet on \(String(describing: network), privacy: .public)")
+            SwiftDashSDKWalletRuntime.handleWalletMaterialChanged()
         } catch {
             logger.error("🔑 KEYMIG :: migration threw: \(String(describing: error), privacy: .public)")
             // Best-effort: leave SwiftDashSDK side clean if anything was partially written.
             try? WalletStorage().deleteSeed()
             try? WalletStorage().deleteMnemonic()
-            try? SwiftDashSDKRuntimeWalletStore().delete()
+            try? SwiftDashSDKRuntimeWalletStore().delete(for: appNetwork)
         }
     }
 

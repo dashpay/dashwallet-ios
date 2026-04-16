@@ -157,8 +157,8 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
 
     @objc
     public func forceStartSyncingActivity() {
-        // Idempotent — the coordinator handles "already running" internally.
-        SwiftDashSDKSPVCoordinator.startIfReady()
+        // Idempotent — runtime ownership handles "already running" internally.
+        SwiftDashSDKWalletRuntime.startIfReady()
     }
 
     @objc(addObserver:)

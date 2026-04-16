@@ -135,11 +135,12 @@ NS_ASSUME_NONNULL_BEGIN
 
     [[DatabaseConnection shared] migrateIfNeededAndReturnError:nil];
 
-    // Kick off the SwiftDashSDK key migration and SPV runtime early.
+    // Kick off the SwiftDashSDK key migration and app-owned runtime early.
     // The runtime wallet is restored from app-owned Keychain state,
     // not from a SwiftData wallet store.
     [DWSwiftDashSDKKeyMigrator migrateIfNeeded];
-    [DWSwiftDashSDKSPVCoordinator startIfReady];
+    [DWSwiftDashSDKWalletRuntime startObservingNetworkChanges];
+    [DWSwiftDashSDKWalletRuntime startIfReady];
     [DWSwiftDashSDKWalletWiper startObservingWipeNotification];
     [DWSwiftDashSDKMnemonicBackfiller backfillIfNeeded];
 

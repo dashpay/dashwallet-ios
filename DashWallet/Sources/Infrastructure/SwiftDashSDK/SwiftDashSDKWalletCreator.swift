@@ -109,8 +109,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
         isImported: Bool,
         label: String
     ) {
-        let sdkNetwork: KeyWalletNetwork = (network == .mainnet) ? .mainnet : .testnet
-        let appNetwork: AppNetwork       = (network == .mainnet) ? .mainnet : .testnet
+        let appNetwork: AppNetwork = (network == .mainnet) ? .mainnet : .testnet
 
         guard !mnemonic.isEmpty else {
             logger.error("\(label, privacy: .public): empty mnemonic — refusing")
@@ -133,26 +132,11 @@ final class SwiftDashSDKWalletCreator: NSObject {
                 return
             }
 
-            // Standalone WalletManager — public init, owns its own FFI handle,
-            // freed by ARC when this function returns.
-            let walletManager = try WalletManager(network: sdkNetwork)
-
-            // birthHeight matches the migrator's choice for fresh wallets:
-            // 730k for mainnet (a recent checkpoint), 0 elsewhere.
-            let addResult = try walletManager.addWalletAndSerialize(
+            let descriptorFactory = SwiftDashSDKRuntimeDescriptorFactory()
+            let descriptor = try descriptorFactory.makeDescriptor(
                 mnemonic: mnemonic,
-                passphrase: nil,
-                birthHeight: sdkNetwork == .mainnet ? 730_000 : 0,
-                accountOptions: .default,
-                downgradeToPublicKeyWallet: false,
-                allowExternalSigning: false)
-
-            // Optional platform payment account — non-fatal, matches migrator.
-            do {
-                try walletManager.ensurePlatformPaymentAccount(walletId: addResult.walletId)
-            } catch {
-                logger.warning("ensurePlatformPaymentAccount failed (non-fatal): \(String(describing: error), privacy: .public)")
-            }
+                network: appNetwork,
+                isImported: isImported)
 
             // Encrypt and store the seed via WalletStorage. Already idempotent
             // because storeSeed deletes existing items before adding new ones
@@ -178,32 +162,23 @@ final class SwiftDashSDKWalletCreator: NSObject {
             logger.info("stored mnemonic in WalletStorage")
 
             let runtimeWalletStore = SwiftDashSDKRuntimeWalletStore()
-            let descriptor = SwiftDashSDKRuntimeWalletStore.Descriptor(
-                walletId: addResult.walletId,
-                serializedWalletBytes: addResult.serializedWallet,
-                network: appNetwork,
-                isImported: isImported)
-            try runtimeWalletStore.store(descriptor)
-            let storedDescriptor = try runtimeWalletStore.retrieve()
+            try runtimeWalletStore.store(descriptor, for: appNetwork)
+            let storedDescriptor = try runtimeWalletStore.retrieve(for: appNetwork)
             guard storedDescriptor == descriptor else {
                 logger.error("\(label, privacy: .public): runtime descriptor round-trip mismatch — rolling back")
                 throw CreateError.runtimeDescriptorRoundTripMismatch
             }
 
-            // Invalidate the wallet provider so the next getWallet() call
-            // restores from the newly-stored runtime descriptor.
-            SwiftDashSDKWalletProvider.shared.invalidate()
+            logger.info("\(label, privacy: .public) completed on \(appNetwork.rawValue, privacy: .public)")
 
-            logger.info("\(label, privacy: .public) completed on \(String(describing: sdkNetwork), privacy: .public)")
-
-            // Wake the SPV coordinator now that the runtime descriptor is in keychain.
-            SwiftDashSDKSPVCoordinator.startIfReady()
+            // Refresh the app-owned runtime now that wallet material is ready.
+            SwiftDashSDKWalletRuntime.handleWalletMaterialChanged()
         } catch {
             logger.error("\(label, privacy: .public) threw: \(String(describing: error), privacy: .public)")
             // Best-effort: leave SwiftDashSDK side clean if anything was partially written.
             try? WalletStorage().deleteSeed()
             try? WalletStorage().deleteMnemonic()
-            try? SwiftDashSDKRuntimeWalletStore().delete()
+            try? SwiftDashSDKRuntimeWalletStore().delete(for: appNetwork)
         }
     }
 

@@ -3,7 +3,7 @@
 //  DashWallet
 //
 //  Wipes SwiftDashSDK wallet state (encrypted seed, mnemonic, and runtime
-//  wallet descriptor in Keychain) when DashSync's wipe flow fires the
+//  wallet descriptors in Keychain) when DashSync's wipe flow fires the
 //  DWWillWipeWalletNotification. Hooks NotificationCenter once at app
 //  launch — covers all 5 user-facing wipe entry points (Settings →
 //  Reset Wallet, lock screen emergency wipe, legacy PIN reset, etc.)
@@ -98,38 +98,18 @@ final class SwiftDashSDKWalletWiper: NSObject {
         }
 
         do {
-            try SwiftDashSDKRuntimeWalletStore().delete()
-            logger.info("deleted runtime wallet descriptor from Keychain")
+            try SwiftDashSDKRuntimeWalletStore().deleteAllSupportedNetworks()
+            logger.info("deleted all supported-network runtime wallet descriptors from Keychain")
         } catch {
-            logger.error("failed to delete runtime wallet descriptor: \(String(describing: error), privacy: .public)")
+            logger.error("failed to delete runtime wallet descriptors: \(String(describing: error), privacy: .public)")
         }
 
-        // 2) Invalidate the in-memory wallet cache. The descriptor, mnemonic,
-        // and seed were already deleted from keychain above, so the next
-        // getWallet() call will fail — which is correct.
-        SwiftDashSDKWalletProvider.shared.invalidate()
-
-        // Tear down the SPV coordinator now that the wallet is wiped from
-        // the keychain. Without this, the coordinator would
-        // keep running its in-memory wallet against the now-orphaned chain
-        // data dir until the next app restart. The user can still create or
-        // recover a fresh wallet afterwards — SwiftDashSDKWalletCreator wakes
-        // the coordinator back up on its own. Idempotent — no-op if already
-        // stopped. We do NOT delete the per-network SPV chain data dir at
-        // Documents/SwiftDashSDK/SPV/<network>/ — chain data is public and
-        // leaving it lets the next wallet on the same device skip an
-        // expensive resync.
-        SwiftDashSDKSPVCoordinator.stop()
-
-        // Clear the cached wallet balance so a wipe-then-recover or
-        // wipe-then-create flow doesn't keep showing the previous wallet's
-        // balance until the new wallet's first balance event arrives.
-        // This is the only place we clear — `performStop` deliberately
-        // preserves the last-seen value (matching how progress/syncProgress
-        // are preserved across debug-screen Restart).
-        SwiftDashSDKWalletState.shared.clearBalance()
-
-        // Clear the cached transaction list alongside balance.
-        SwiftDashSDKWalletState.shared.clearTransactions()
+        // Tear down the app-owned runtime now that all wallet material is
+        // gone. This stops SPV, invalidates the in-memory wallet cache, and
+        // clears published wallet state. We do NOT delete the per-network SPV
+        // chain data dir at Documents/SwiftDashSDK/SPV/<network>/ — chain
+        // data is public and leaving it lets the next wallet on the same
+        // device skip an expensive resync.
+        SwiftDashSDKWalletRuntime.handleWalletWiped()
     }
 }

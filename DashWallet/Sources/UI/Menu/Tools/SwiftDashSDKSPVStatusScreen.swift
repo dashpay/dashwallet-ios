@@ -218,7 +218,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
     private var controlsCard: some View {
         HStack(spacing: 12) {
             Button(action: {
-                SwiftDashSDKSPVCoordinator.stop()
+                SwiftDashSDKWalletRuntime.stop()
             }) {
                 Text("Stop")
                     .font(.system(size: 14, weight: .semibold))
@@ -229,10 +229,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
                     .cornerRadius(8)
             }
             Button(action: {
-                SwiftDashSDKSPVCoordinator.stop()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    SwiftDashSDKSPVCoordinator.startIfReady()
-                }
+                SwiftDashSDKWalletRuntime.startIfReady()
             }) {
                 Text("Restart")
                     .font(.system(size: 14, weight: .semibold))

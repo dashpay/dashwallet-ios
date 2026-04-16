@@ -12,9 +12,9 @@
 //    2. NEVER blocks the main thread. All SPV work runs on a dedicated
 //       background queue. Published-state mutations are marshalled back to
 //       the main queue so SwiftUI consumers see updates on the right thread.
-//    3. NEVER starts before the seed migrator's `swiftSDKKeyMigration.v1.done`
-//       flag is set. The coordinator polls the flag with a backoff loop and
-//       bails out (logging) if the migrator never completes.
+//    3. Runtime readiness is owned externally by `SwiftDashSDKWalletRuntime`.
+//       The coordinator assumes descriptor/network readiness was already
+//       resolved before `start(with:completion:)` is called.
 //    4. NEVER touches DashSync. SPV chain state lives under
 //       `Documents/SwiftDashSDK/SPV/<network>/`, separate from DashSync's
 //       Core Data store.
@@ -26,10 +26,8 @@
 //  directly to the UI without modifying SDK code. See SWIFT_SDK_SPV_GAPS.md
 //  for the gap inventory this bypass implies.
 //
-//  Milestone 2 of the SPV chain sync migration. The coordinator is fully
-//  implemented as far as the lifecycle goes, but is NOT yet started from
-//  `AppDelegate.m` — that's milestone 4. Until M4 lands, this file compiles
-//  and is dead.
+//  Lower-level SPV engine used by `SwiftDashSDKWalletRuntime`. App lifecycle,
+//  network selection, and descriptor readiness no longer live here.
 //
 
 import Combine
@@ -42,9 +40,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     // MARK: - Singleton
 
-    /// Shared instance. Swift consumers access published state via this
-    /// reference; Obj-C consumers go through the @objc class methods below
-    /// (`startIfReady`, `stop`).
+    /// Shared instance. Swift consumers observe published sync state through
+    /// this singleton; runtime ownership lives in `SwiftDashSDKWalletRuntime`.
     public static let shared = SwiftDashSDKSPVCoordinator()
 
     // MARK: - Logging
@@ -106,28 +103,12 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// `SPVSyncState`. Mutated only on `workQueue`.
     private enum LifecycleState {
         case notStarted
-        case waitingForSeedMigrator
         case starting
         case running
         case stopped
         case failed
     }
     private var lifecycle: LifecycleState = .notStarted
-
-    /// UserDefaults key written by `SwiftDashSDKKeyMigrator` when the seed
-    /// migration is complete. The coordinator polls this before constructing
-    /// an `SPVClient`.
-    private static let seedMigratorDoneKey = "swiftSDKKeyMigration.v1.done"
-
-    /// Maximum time to wait for the seed migrator to complete before giving
-    /// up and marking the coordinator as `failed`. The migrator's heavy
-    /// work (PBKDF2 + FFI calls) is ~300-500 ms in practice; 30 s is two
-    /// orders of magnitude more headroom than needed and surfaces
-    /// pathological failures (e.g. a hung migrator) reasonably quickly.
-    private static let seedMigratorWaitTimeout: TimeInterval = 30.0
-
-    /// Polling interval while waiting for the seed migrator's done flag.
-    private static let seedMigratorPollInterval: TimeInterval = 0.1
 
     // MARK: - Init
 
@@ -137,32 +118,26 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     // MARK: - Public lifecycle (Obj-C accessible)
 
-    /// Idempotent entry point. Schedules SPV start on the background queue
-    /// and returns immediately. If already running, no-op.
-    ///
-    /// If the seed migrator has not yet written its `swiftSDKKeyMigration.v1.done`
-    /// flag, the coordinator polls the flag for up to `seedMigratorWaitTimeout`
-    /// seconds before bailing out and marking itself `failed`.
-    ///
-    /// Never throws, never crashes.
-    @objc(startIfReady)
-    public static func startIfReady() {
-        let coordinator = shared
-        coordinator.workQueue.async {
-            coordinator.performStart()
+    /// Starts the coordinator with an explicit runtime wallet. Runtime
+    /// ownership stays outside this type; the coordinator just manages the
+    /// SPV client lifecycle and published sync state.
+    func start(with wallet: HDWallet, completion: @escaping (Result<Void, Error>) -> Void) {
+        workQueue.async {
+            self.performStart(wallet: wallet, completion: completion)
         }
     }
 
-    /// Stops the SPV client and destroys it. The coordinator can be restarted
-    /// later via `startIfReady()`, which constructs a fresh `SPVClient`
-    /// because of the FFI's "no resume after stop" limitation
-    /// (see `SPVClient.swift:12-16`).
+    /// Stops the SPV client, destroys FFI handles, and resets published
+    /// state to idle. Completion fires after the reset path finishes.
+    func stop(lastError: String?, completion: (() -> Void)? = nil) {
+        workQueue.async {
+            self.performStop(lastError: lastError, completion: completion)
+        }
+    }
+
     @objc(stop)
     public static func stop() {
-        let coordinator = shared
-        coordinator.workQueue.async {
-            coordinator.performStop()
-        }
+        shared.stop(lastError: nil, completion: nil)
     }
 
     // MARK: - Transaction support
@@ -171,8 +146,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     ///
     /// The wallet manager provides transaction-building APIs
     /// (`buildSignedTransaction`) that `SwiftDashSDKTransactionSender` uses.
-    /// Throws if the SPV client is not running (e.g., seed migration pending,
-    /// coordinator stopped, or after a wipe).
+    /// Throws if the SPV client is not running (e.g., runtime stopped or
+    /// after a wipe).
     ///
     /// Thread-safe: `client` is set once during `performStart` and cleared
     /// only by `performStop`. Reads from any thread with a nil check are safe
@@ -209,49 +184,19 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     // MARK: - Background lifecycle
 
-    /// Heavy-lifting start path. Runs on `workQueue`. Polls the seed migrator,
-    /// reads the runtime wallet descriptor through the provider, constructs
-    /// an `SPVClient` with our event handlers, imports the wallet bytes into
-    /// the client's wallet manager, and kicks off `startSync()`.
-    private func performStart() {
+    /// Heavy-lifting start path. Runs on `workQueue`. Constructs an
+    /// `SPVClient` with our event handlers, imports the explicit runtime
+    /// wallet bytes into the client's wallet manager, and kicks off
+    /// `startSync()`.
+    private func performStart(wallet migratedWallet: HDWallet, completion: @escaping (Result<Void, Error>) -> Void) {
         // Idempotent guard.
         switch lifecycle {
         case .starting, .running:
-            Self.logger.info("🛰️ SPVCOORD :: startIfReady ignored — coordinator is already \(String(describing: self.lifecycle), privacy: .public)")
+            Self.logger.info("🛰️ SPVCOORD :: start ignored — coordinator is already \(String(describing: self.lifecycle), privacy: .public)")
+            completion(.success(()))
             return
-        case .waitingForSeedMigrator, .notStarted, .stopped, .failed:
+        case .notStarted, .stopped, .failed:
             break
-        }
-
-        lifecycle = .waitingForSeedMigrator
-        Self.logger.info("🛰️ SPVCOORD :: waiting for seed migrator (`\(Self.seedMigratorDoneKey, privacy: .public)`)")
-
-        // Poll the migrator's done flag with a bounded backoff.
-        let deadline = Date().addingTimeInterval(Self.seedMigratorWaitTimeout)
-        while UserDefaults.standard.string(forKey: Self.seedMigratorDoneKey) == nil {
-            if Date() >= deadline {
-                Self.logger.error("🛰️ SPVCOORD :: seed migrator did not complete within \(Self.seedMigratorWaitTimeout, privacy: .public)s — bailing")
-                lifecycle = .failed
-                publish { $0.lastError = "Seed migration not complete; SPV cannot start." }
-                return
-            }
-            Thread.sleep(forTimeInterval: Self.seedMigratorPollInterval)
-        }
-
-        // Restore (or retrieve cached) detached HDWallet from the runtime
-        // descriptor in keychain.
-        let migratedWallet: HDWallet
-        do {
-            migratedWallet = try SwiftDashSDKWalletProvider.shared.getWallet()
-        } catch SwiftDashSDKWalletProvider.ProviderError.runtimeDescriptorNotAvailable {
-            Self.logger.info("🛰️ SPVCOORD :: runtime descriptor not available yet — fresh install path, nothing to sync")
-            lifecycle = .stopped
-            return
-        } catch {
-            Self.logger.error("🛰️ SPVCOORD :: wallet provider failed: \(String(describing: error), privacy: .public)")
-            lifecycle = .failed
-            publish { $0.lastError = error.localizedDescription }
-            return
         }
 
         let appNetwork = migratedWallet.network
@@ -284,7 +229,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: failed to create SPV data directory: \(String(describing: error), privacy: .public)")
             lifecycle = .failed
-            publish { $0.lastError = "Failed to create SPV data directory: \(error.localizedDescription)" }
+            applyResetState(lastError: "Failed to create SPV data directory: \(error.localizedDescription)")
+            completion(.failure(StartError.dataDirectory(error)))
             return
         }
 
@@ -305,7 +251,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: SPVClient init failed: \(String(describing: error), privacy: .public)")
             lifecycle = .failed
-            publish { $0.lastError = "Failed to create SPV client: \(error.localizedDescription)" }
+            applyResetState(lastError: "Failed to create SPV client: \(error.localizedDescription)")
+            completion(.failure(StartError.spvClient(error)))
             return
         }
 
@@ -316,8 +263,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             if importedWalletId != expectedWalletId {
                 Self.logger.error("🛰️ SPVCOORD :: imported walletId mismatch")
                 lifecycle = .failed
-                publish { $0.lastError = "Imported wallet ID mismatch" }
                 newClient.destroy()
+                applyResetState(lastError: "Imported wallet ID mismatch")
+                completion(.failure(StartError.walletIdMismatch))
                 return
             }
             Self.logger.info("🛰️ SPVCOORD :: wallet imported into SPV client OK")
@@ -340,14 +288,16 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: failed to import wallet into SPV client: \(String(describing: error), privacy: .public)")
             lifecycle = .failed
-            publish { $0.lastError = "Failed to import wallet: \(error.localizedDescription)" }
             newClient.destroy()
+            applyResetState(lastError: "Failed to import wallet: \(error.localizedDescription)")
+            completion(.failure(StartError.walletImport(error)))
             return
         }
 
         client = newClient
         lifecycle = .running
         publish { $0.lastError = nil }
+        completion(.success(()))
 
         // Kick off sync. `SPVClient.startSync()` is async and runs the
         // FFI client until completion or until `stopSync()` is called from
@@ -371,20 +321,18 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// Heavy-lifting stop path. Runs on `workQueue`. Calls `stopSync()` on
     /// the active client (which interrupts the `startSync()` task), then
     /// `destroy()` to release the FFI handles and unlock the data dir.
-    private func performStop() {
-        guard let activeClient = client else {
-            Self.logger.info("🛰️ SPVCOORD :: stop ignored — no active SPV client")
-            return
+    private func performStop(lastError: String?, completion: (() -> Void)?) {
+        if let activeClient = client {
+            Self.logger.info("🛰️ SPVCOORD :: stopping SPV client")
+            activeClient.stopSync()
+            activeClient.destroy()
+        } else {
+            Self.logger.info("🛰️ SPVCOORD :: stop requested with no active SPV client")
         }
-        Self.logger.info("🛰️ SPVCOORD :: stopping SPV client")
-        activeClient.stopSync()
-        activeClient.destroy()
         client = nil
         lifecycle = .stopped
-        publish {
-            $0.state = .idle
-            $0.isComplete = false
-        }
+        applyResetState(lastError: lastError)
+        completion?()
     }
 
     /// Compute and create the SPV data directory for a given network.
@@ -414,6 +362,46 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             mutate(self)
+        }
+    }
+
+    private func applyResetState(lastError: String?) {
+        let resetBlock = { [weak self] in
+            guard let self else { return }
+            self.progress = 0.0
+            self.state = .idle
+            self.tipHeight = 0
+            self.bestPeerHeight = 0
+            self.connectedPeerCount = 0
+            self.syncProgress = .default()
+            self.isComplete = false
+            self.lastError = lastError
+        }
+
+        if Thread.isMainThread {
+            resetBlock()
+        } else {
+            DispatchQueue.main.sync(execute: resetBlock)
+        }
+    }
+
+    enum StartError: LocalizedError {
+        case dataDirectory(Error)
+        case spvClient(Error)
+        case walletImport(Error)
+        case walletIdMismatch
+
+        var errorDescription: String? {
+            switch self {
+            case .dataDirectory(let error):
+                return "Failed to create SPV data directory: \(error.localizedDescription)"
+            case .spvClient(let error):
+                return "Failed to create SPV client: \(error.localizedDescription)"
+            case .walletImport(let error):
+                return "Failed to import wallet: \(error.localizedDescription)"
+            case .walletIdMismatch:
+                return "Imported wallet ID mismatch"
+            }
         }
     }
 

@@ -378,6 +378,10 @@
 		A5D5DD0000000000000000F7 /* SwiftDashSDKMnemonicValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000F5 /* SwiftDashSDKMnemonicValidator.swift */; };
 		A5D5DD0000000000000000F8 /* SwiftDashSDKKeyMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000FA /* SwiftDashSDKKeyMigrator.swift */; };
 		A5D5DD0000000000000000F9 /* SwiftDashSDKKeyMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000FA /* SwiftDashSDKKeyMigrator.swift */; };
+		A5D5DD00000000000000012C /* SwiftDashSDKRuntimeDescriptorFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000012B /* SwiftDashSDKRuntimeDescriptorFactory.swift */; };
+		A5D5DD00000000000000012D /* SwiftDashSDKRuntimeDescriptorFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000012B /* SwiftDashSDKRuntimeDescriptorFactory.swift */; };
+		A5D5DD00000000000000012F /* SwiftDashSDKWalletRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000012E /* SwiftDashSDKWalletRuntime.swift */; };
+		A5D5DD000000000000000130 /* SwiftDashSDKWalletRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000012E /* SwiftDashSDKWalletRuntime.swift */; };
 		A5D5DD0000000000000000FB /* SwiftDashSDKSPVCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */; };
 		A5D5DD0000000000000000FC /* SwiftDashSDKSPVCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */; };
 		A5D5DD0000000000000000FE /* SwiftDashSDKSPVStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000100 /* SwiftDashSDKSPVStatusScreen.swift */; };
@@ -2358,6 +2362,8 @@
 		A5D5DD0000000000000000F1 /* SwiftDashSDKAddressValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKAddressValidator.swift; sourceTree = "<group>"; };
 		A5D5DD0000000000000000F5 /* SwiftDashSDKMnemonicValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKMnemonicValidator.swift; sourceTree = "<group>"; };
 		A5D5DD0000000000000000FA /* SwiftDashSDKKeyMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKKeyMigrator.swift; sourceTree = "<group>"; };
+		A5D5DD00000000000000012B /* SwiftDashSDKRuntimeDescriptorFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKRuntimeDescriptorFactory.swift; sourceTree = "<group>"; };
+		A5D5DD00000000000000012E /* SwiftDashSDKWalletRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletRuntime.swift; sourceTree = "<group>"; };
 		A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKSPVCoordinator.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000100 /* SwiftDashSDKSPVStatusScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKSPVStatusScreen.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000105 /* SwiftDashSDKWalletCreator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletCreator.swift; sourceTree = "<group>"; };
@@ -5536,6 +5542,8 @@
 					A5D5DD0000000000000000F1 /* SwiftDashSDKAddressValidator.swift */,
 					A5D5DD0000000000000000F5 /* SwiftDashSDKMnemonicValidator.swift */,
 					A5D5DD0000000000000000FA /* SwiftDashSDKKeyMigrator.swift */,
+					A5D5DD00000000000000012B /* SwiftDashSDKRuntimeDescriptorFactory.swift */,
+					A5D5DD00000000000000012E /* SwiftDashSDKWalletRuntime.swift */,
 					A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */,
 					A5D5DD000000000000000105 /* SwiftDashSDKWalletCreator.swift */,
 				A5D5DD000000000000000108 /* SwiftDashSDKWalletWiper.swift */,
@@ -8986,6 +8994,8 @@
 				A5D5DD0000000000000000F2 /* SwiftDashSDKAddressValidator.swift in Sources */,
 				A5D5DD0000000000000000F6 /* SwiftDashSDKMnemonicValidator.swift in Sources */,
 				A5D5DD0000000000000000F8 /* SwiftDashSDKKeyMigrator.swift in Sources */,
+				A5D5DD00000000000000012C /* SwiftDashSDKRuntimeDescriptorFactory.swift in Sources */,
+				A5D5DD00000000000000012F /* SwiftDashSDKWalletRuntime.swift in Sources */,
 				A5D5DD0000000000000000FB /* SwiftDashSDKSPVCoordinator.swift in Sources */,
 					A5D5DD0000000000000000FE /* SwiftDashSDKSPVStatusScreen.swift in Sources */,
 					A5D5DD000000000000000103 /* SwiftDashSDKWalletCreator.swift in Sources */,
@@ -9839,6 +9849,8 @@
 				A5D5DD0000000000000000F3 /* SwiftDashSDKAddressValidator.swift in Sources */,
 				A5D5DD0000000000000000F7 /* SwiftDashSDKMnemonicValidator.swift in Sources */,
 				A5D5DD0000000000000000F9 /* SwiftDashSDKKeyMigrator.swift in Sources */,
+				A5D5DD00000000000000012D /* SwiftDashSDKRuntimeDescriptorFactory.swift in Sources */,
+				A5D5DD000000000000000130 /* SwiftDashSDKWalletRuntime.swift in Sources */,
 				A5D5DD0000000000000000FC /* SwiftDashSDKSPVCoordinator.swift in Sources */,
 					A5D5DD0000000000000000FF /* SwiftDashSDKSPVStatusScreen.swift in Sources */,
 					A5D5DD000000000000000104 /* SwiftDashSDKWalletCreator.swift in Sources */,

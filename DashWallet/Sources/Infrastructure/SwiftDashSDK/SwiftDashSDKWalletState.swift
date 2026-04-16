@@ -162,6 +162,29 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         }
     }
 
+    /// Clears balance and transaction state synchronously on the main queue.
+    /// Runtime transitions use this so a restart cannot race with stale
+    /// published wallet data lingering after a network switch.
+    public func clearAllState() {
+        let clearBlock = { [weak self] in
+            Self.logger.info("💰 WALLET :: clearing all wallet state")
+            self?.balance = nil
+            self?.transactions = nil
+            NotificationCenter.default.post(
+                name: SwiftDashSDKWalletState.balanceDidChangeNotification,
+                object: nil)
+            NotificationCenter.default.post(
+                name: SwiftDashSDKWalletState.transactionsDidChangeNotification,
+                object: nil)
+        }
+
+        if Thread.isMainThread {
+            clearBlock()
+        } else {
+            DispatchQueue.main.sync(execute: clearBlock)
+        }
+    }
+
     // MARK: - Transactions
 
     /// Notification posted on the main queue whenever the published
