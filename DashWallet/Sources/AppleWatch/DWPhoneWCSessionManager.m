@@ -150,8 +150,9 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
                 break;
 
             case AWSessionRquestDataTypeQRCodeBits: {
-                DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-                DSPaymentRequest *req = [DSPaymentRequest requestWithString:account.receiveAddress onChain:[DWEnvironment sharedInstance].currentChain];
+                DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+                NSString *receiveAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddressOnChain:chain];
+                DSPaymentRequest *req = [DSPaymentRequest requestWithString:receiveAddress onChain:chain];
 
                 req.amount = [message[AW_SESSION_QR_CODE_BITS_KEY] integerValue];
                 NSLog(@"watch requested a qr code amount %lld", req.amount);
@@ -229,7 +230,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
     appleWatchData.balance = [CurrencyExchangerObjcWrapper stringForDashAmount:42980000];
     appleWatchData.balanceInLocalCurrency = [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:42980000];
 #endif
-    appleWatchData.receiveMoneyAddress = account.receiveAddress;
+    appleWatchData.receiveMoneyAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddressOnChain:account.wallet.chain];
     appleWatchData.transactions = [self recentTransactionListFromTransactions:transactions];
     appleWatchData.receiveMoneyQRCodeImage = qrCodeImage;
     appleWatchData.hasWallet = !!account; // if there is no account there is no wallet
@@ -295,7 +296,8 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
         return nil;
     }
 
-    NSData *req = [DSPaymentRequest requestWithString:account.receiveAddress onChain:account.wallet.chain].data;
+    NSString *receiveAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddressOnChain:account.wallet.chain];
+    NSData *req = [DSPaymentRequest requestWithString:receiveAddress onChain:account.wallet.chain].data;
     if (!req) {
         return nil;
     }

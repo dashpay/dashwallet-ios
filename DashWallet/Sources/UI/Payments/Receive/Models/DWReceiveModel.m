@@ -52,6 +52,15 @@ NS_ASSUME_NONNULL_BEGIN
                                                  selector:@selector(transactionReceivedNotification)
                                                      name:DSTransactionManagerTransactionReceivedNotification
                                                    object:nil];
+
+        // Re-fetch the receive address as SwiftDashSDK's SPV catches up.
+        // On first launch post-migration the used-set starts empty and the
+        // initial address may already be used; once SPV processes blocks
+        // the next call returns the correct next-unused index.
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(transactionReceivedNotification)
+                                                     name:DWSwiftDashSDKWalletState.transactionsDidChangeNotification
+                                                   object:nil];
     }
     return self;
 }
@@ -160,9 +169,10 @@ NS_ASSUME_NONNULL_BEGIN
 
             return;
         }
-        NSString *paymentAddress = account.receiveAddress;
-
         DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+        NSString *paymentAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddressOnChain:chain];
+
+
         DWAppGroupOptions *appGroupOptions = [DWAppGroupOptions sharedInstance];
         DSPaymentRequest *paymentRequest = [DSPaymentRequest requestWithString:paymentAddress onChain:chain];
 

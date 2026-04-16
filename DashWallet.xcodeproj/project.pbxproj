@@ -400,6 +400,8 @@
 		A5D5DD00000000000000011D /* SwiftDashSDKMnemonicReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000011E /* SwiftDashSDKMnemonicReader.swift */; };
 		A5D5DD00000000000000011F /* SwiftDashSDKMnemonicGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000121 /* SwiftDashSDKMnemonicGenerator.swift */; };
 		A5D5DD000000000000000120 /* SwiftDashSDKMnemonicGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000121 /* SwiftDashSDKMnemonicGenerator.swift */; };
+		A5D5DD000000000000000132 /* SwiftDashSDKReceiveAddressReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000131 /* SwiftDashSDKReceiveAddressReader.swift */; };
+		A5D5DD000000000000000133 /* SwiftDashSDKReceiveAddressReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000131 /* SwiftDashSDKReceiveAddressReader.swift */; };
 		A5D5DD000000000000000122 /* SwiftDashSDKTransactionSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000124 /* SwiftDashSDKTransactionSender.swift */; };
 		A5D5DD000000000000000123 /* SwiftDashSDKTransactionSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000124 /* SwiftDashSDKTransactionSender.swift */; };
 		A5D5DD000000000000000128 /* SwiftDashSDKRuntimeWalletStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000012A /* SwiftDashSDKRuntimeWalletStore.swift */; };
@@ -2373,6 +2375,7 @@
 		A5D5DD00000000000000011B /* SwiftDashSDKMnemonicBackfiller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKMnemonicBackfiller.swift; sourceTree = "<group>"; };
 		A5D5DD00000000000000011E /* SwiftDashSDKMnemonicReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKMnemonicReader.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000121 /* SwiftDashSDKMnemonicGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKMnemonicGenerator.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000131 /* SwiftDashSDKReceiveAddressReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKReceiveAddressReader.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000124 /* SwiftDashSDKTransactionSender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKTransactionSender.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000127 /* SwiftDashSDKWalletProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletProvider.swift; sourceTree = "<group>"; };
 		A5D5DD00000000000000012A /* SwiftDashSDKRuntimeWalletStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKRuntimeWalletStore.swift; sourceTree = "<group>"; };
@@ -5552,6 +5555,7 @@
 				A5D5DD00000000000000011B /* SwiftDashSDKMnemonicBackfiller.swift */,
 					A5D5DD00000000000000011E /* SwiftDashSDKMnemonicReader.swift */,
 					A5D5DD000000000000000121 /* SwiftDashSDKMnemonicGenerator.swift */,
+					A5D5DD000000000000000131 /* SwiftDashSDKReceiveAddressReader.swift */,
 					A5D5DD000000000000000124 /* SwiftDashSDKTransactionSender.swift */,
 					A5D5DD000000000000000127 /* SwiftDashSDKWalletProvider.swift */,
 					A5D5DD00000000000000012A /* SwiftDashSDKRuntimeWalletStore.swift */,
@@ -9005,6 +9009,7 @@
 					A5D5DD000000000000000119 /* SwiftDashSDKMnemonicBackfiller.swift in Sources */,
 					A5D5DD00000000000000011C /* SwiftDashSDKMnemonicReader.swift in Sources */,
 					A5D5DD00000000000000011F /* SwiftDashSDKMnemonicGenerator.swift in Sources */,
+					A5D5DD000000000000000132 /* SwiftDashSDKReceiveAddressReader.swift in Sources */,
 					A5D5DD000000000000000122 /* SwiftDashSDKTransactionSender.swift in Sources */,
 					A5D5DD000000000000000128 /* SwiftDashSDKRuntimeWalletStore.swift in Sources */,
 					A5D5DD000000000000000125 /* SwiftDashSDKWalletProvider.swift in Sources */,
@@ -9860,6 +9865,7 @@
 					A5D5DD00000000000000011A /* SwiftDashSDKMnemonicBackfiller.swift in Sources */,
 					A5D5DD00000000000000011D /* SwiftDashSDKMnemonicReader.swift in Sources */,
 					A5D5DD000000000000000120 /* SwiftDashSDKMnemonicGenerator.swift in Sources */,
+					A5D5DD000000000000000133 /* SwiftDashSDKReceiveAddressReader.swift in Sources */,
 					A5D5DD000000000000000123 /* SwiftDashSDKTransactionSender.swift in Sources */,
 					A5D5DD000000000000000129 /* SwiftDashSDKRuntimeWalletStore.swift in Sources */,
 					A5D5DD000000000000000126 /* SwiftDashSDKWalletProvider.swift in Sources */,

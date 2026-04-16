@@ -22,6 +22,7 @@
 
 #import "DWEnvironment.h"
 #import "DWURLActions.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -93,13 +94,14 @@ NS_ASSUME_NONNULL_BEGIN
                           completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
                               if (authenticatedOrSuccess) {
                                   DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+                                  NSString *receiveAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddressOnChain:account.wallet.chain];
 
                                   NSString *urlString =
                                       [NSString stringWithFormat:
                                                     @"%@://callback=%@&address=%@&source=dashwallet",
                                                     action.sender,
                                                     action.request,
-                                                    account.receiveAddress];
+                                                    receiveAddress];
 
                                   NSURL *url = [NSURL URLWithString:urlString];
                                   NSParameterAssert(url);
