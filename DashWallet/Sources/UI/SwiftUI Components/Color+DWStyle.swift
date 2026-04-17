@@ -63,7 +63,13 @@ extension Color {
     static var systemYellow: Color {
         Color("SystemYellowColor")
     }
-    
+
+// Search
+
+    static var searchBg: Color {
+        Color("SearchBackground")
+    }
+
 // Blue
 
     static var blueAlpha5: Color {
@@ -78,6 +84,14 @@ extension Color {
 
     static var blackAlpha40: Color {
         Color("BlackAlpha40")
+    }
+
+    static var black1000Alpha30: Color {
+        Color("Black1000Alpha30")
+    }
+
+    static var black1000Alpha50: Color {
+        Color("Black1000Alpha50")
     }
 
 // Gray
