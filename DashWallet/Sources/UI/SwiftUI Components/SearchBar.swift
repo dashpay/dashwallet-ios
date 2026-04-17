@@ -35,32 +35,30 @@ struct SearchBar: View {
     @State private var cancelButtonWidth: CGFloat = 0
 
     var body: some View {
-        GeometryReader { proxy in
-            HStack(spacing: 0) {
-                HStack(spacing: Layout.fieldSpacing) {
-                    magnifyingglass
-                    searchField
-                    clearButton
-                }
-                .padding(.horizontal, Layout.fieldHorizontalPadding)
-                .frame(height: Layout.fieldHeight)
-                .background(Color.searchBg)
-                .clipShape(.rect(cornerRadius: Layout.fieldCornerRadius))
-                .frame(maxWidth: .infinity, alignment: .leading)
+        HStack(spacing: 0) {
+            HStack(spacing: Layout.fieldSpacing) {
+                magnifyingglass
+                searchField
+                clearButton
+            }
+            .padding(.horizontal, Layout.fieldHorizontalPadding)
+            .frame(height: Layout.fieldHeight)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.searchBg)
+            .clipShape(.rect(cornerRadius: Layout.fieldCornerRadius))
 
-                if isEditing {
-                    cancelButton
-                        .transition(.move(edge: .trailing).combined(with: .opacity))
-                }
+            if isEditing {
+                cancelButton
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
             }
-            .animation(.easeInOut(duration: Layout.animationDuration), value: isEditing)
-            .onAppear {
-                isEditing = isFocused
-            }
-            .onChange(of: isFocused) { focused in
-                withAnimation(.easeInOut(duration: Layout.animationDuration)) {
-                    isEditing = focused
-                }
+        }
+        .animation(.easeInOut(duration: Layout.animationDuration), value: isEditing)
+        .onAppear {
+            isEditing = isFocused
+        }
+        .onChange(of: isFocused) { focused in
+            withAnimation(.easeInOut(duration: Layout.animationDuration)) {
+                isEditing = focused
             }
         }
     }
@@ -70,7 +68,7 @@ struct SearchBar: View {
         if !text.isEmpty {
             Button(action: { text = "" }) {
                 Image(systemName: "xmark.circle.fill")
-                    .foregroundColor(.tertiaryText)
+                    .foregroundColor(Color.black1000Alpha30)
             }
         }
     }
