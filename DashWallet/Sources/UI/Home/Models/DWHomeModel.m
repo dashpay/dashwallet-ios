@@ -43,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWHomeModel () <SyncingActivityMonitorObserver>
 
 @property (nonatomic, strong) dispatch_queue_t queue;
-@property (strong, nonatomic) DSReachabilityManager *reachability;
+@property (strong, nonatomic) DWNetworkReachability *reachability;
 @property (readonly, nonatomic, strong) DWTransactionListDataProvider *dataProvider;
 
 @property (nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
@@ -75,8 +75,8 @@ NS_ASSUME_NONNULL_BEGIN
 
         _queue = dispatch_queue_create("DWHomeModel.queue", DISPATCH_QUEUE_SERIAL);
 
-        _reachability = [DSReachabilityManager sharedManager];
-        if (!_reachability.monitoring) {
+        _reachability = [DWNetworkReachability shared];
+        if (!_reachability.isMonitoring) {
             [_reachability startMonitoring];
         }
 
@@ -102,7 +102,7 @@ NS_ASSUME_NONNULL_BEGIN
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
                                selector:@selector(reachabilityDidChangeNotification)
-                                   name:DSReachabilityDidChangeNotification
+                                   name:DWNetworkReachability.didChangeNotification
                                  object:nil];
         [notificationCenter addObserver:self
                                selector:@selector(applicationWillEnterForegroundNotification)
@@ -178,7 +178,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)retrySyncing {
-    if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) {
+    if (!self.reachability.isReachable) {
         [self.reachability stopMonitoring];
         [self.reachability startMonitoring];
     }
@@ -247,7 +247,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if DASHPAY
 - (BOOL)shouldShowCreateUserNameButton {
-    if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) {
+    if (!self.reachability.isReachable) {
         return NO;
     }
 
@@ -284,7 +284,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Notifications
 
 - (void)reachabilityDidChangeNotification {
-    if (self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable &&
+    if (self.reachability.isReachable &&
         [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
 
         [self startSyncIfNeeded];

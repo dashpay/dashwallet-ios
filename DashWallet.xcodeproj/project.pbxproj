@@ -529,6 +529,7 @@
 		47F4B6CD29485A8B00AED4C9 /* ConfirmOrderCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F4B6CC29485A8B00AED4C9 /* ConfirmOrderCells.swift */; };
 		47FA3AFF29350929008D58DC /* SyncingActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3AFE29350929008D58DC /* SyncingActivityMonitor.swift */; };
 		47FA3B0229364991008D58DC /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3B0129364991008D58DC /* HTTPClient.swift */; };
+		A5D5DD000000000000000135 /* NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000134 /* NetworkReachability.swift */; };
 		7502A4872AE401EF00ACDDD3 /* UsernameVotingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7502A4862AE401EF00ACDDD3 /* UsernameVotingViewController.swift */; };
 		7503643A2C89CFB70029EC0D /* CoinJoinProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */; };
 		7503643B2C89CFB70029EC0D /* CoinJoinProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */; };
@@ -1369,6 +1370,7 @@
 		C9D2C7F82A320AA000D15901 /* UIViewController+AlertPresenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47305871295C971F004641DA /* UIViewController+AlertPresenting.swift */; };
 		C9D2C7F92A320AA000D15901 /* DSWatchTransactionDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A06237EE89B0097A7B5 /* DSWatchTransactionDataObject.m */; };
 		C9D2C7FA2A320AA000D15901 /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3B0129364991008D58DC /* HTTPClient.swift */; };
+		A5D5DD000000000000000136 /* NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000134 /* NetworkReachability.swift */; };
 		C9D2C7FB2A320AA000D15901 /* DWPasteboardAddressExtractor.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressExtractor.m */; };
 		C9D2C7FC2A320AA000D15901 /* ViewModel+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477F501429531C07003C7508 /* ViewModel+Coinbase.swift */; };
 		C9D2C7FE2A320AA000D15901 /* CBUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2A2EB293E618600938DB7 /* CBUser.swift */; };
@@ -2507,6 +2509,7 @@
 		47F4B6CC29485A8B00AED4C9 /* ConfirmOrderCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmOrderCells.swift; sourceTree = "<group>"; };
 		47FA3AFE29350929008D58DC /* SyncingActivityMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncingActivityMonitor.swift; sourceTree = "<group>"; };
 		47FA3B0129364991008D58DC /* HTTPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000134 /* NetworkReachability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkReachability.swift; sourceTree = "<group>"; };
 		4944819B9E17D4CC7DBFF293 /* Pods-WatchApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.release.xcconfig"; path = "Target Support Files/Pods-WatchApp/Pods-WatchApp.release.xcconfig"; sourceTree = "<group>"; };
 		4C22BC09CF6178544B2300A4 /* libPods-WatchApp Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D37A3F73905BC239A9D127D /* Pods-WatchApp Extension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testnet.xcconfig"; path = "Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testnet.xcconfig"; sourceTree = "<group>"; };
@@ -6140,6 +6143,7 @@
 			isa = PBXGroup;
 			children = (
 				47FA3B0129364991008D58DC /* HTTPClient.swift */,
+				A5D5DD000000000000000134 /* NetworkReachability.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -9028,6 +9032,7 @@
 				47305872295C971F004641DA /* UIViewController+AlertPresenting.swift in Sources */,
 				2A858A0F237EE89C0097A7B5 /* DSWatchTransactionDataObject.m in Sources */,
 				47FA3B0229364991008D58DC /* HTTPClient.swift in Sources */,
+				A5D5DD000000000000000135 /* NetworkReachability.swift in Sources */,
 				7549BE582DEAECB8004F0BAF /* CustomIconMetadataProvider.swift in Sources */,
 				7549BE602DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */,
 				AA0000012DUMMYID001234567 /* AddProviderToGiftCardsTable.swift in Sources */,
@@ -9885,6 +9890,7 @@
 				75C3EE002DA7C63C00A4E9C0 /* DashSpendUserAuthScreen.swift in Sources */,
 				75C3EE022DA7C63C00A4E9C0 /* DashSpendLoginInfoView.swift in Sources */,
 				C9D2C7FA2A320AA000D15901 /* HTTPClient.swift in Sources */,
+				A5D5DD000000000000000136 /* NetworkReachability.swift in Sources */,
 				C956AF0C2A5B591A002FAB75 /* DashInputField.swift in Sources */,
 				C9D2C7FB2A320AA000D15901 /* DWPasteboardAddressExtractor.m in Sources */,
 				7545ED602DA91FC60075F45C /* NumericKeyboardView.swift in Sources */,

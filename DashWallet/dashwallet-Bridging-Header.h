@@ -15,7 +15,6 @@ static const bool _SNAPSHOT = 0;
 #import "DSTransaction.h"
 #import "DSCoinbaseTransaction.h"
 #import "DSWallet.h"
-#import "DSReachabilityManager.h"
 #import "DSCurrencyPriceObject.h"
 #import "DSPriceOperationProvider.h"
 #import "DSOperation.h"

@@ -31,7 +31,7 @@ extension NetworkReachabilityHandling {
     
     var hasWiFi: Bool { reachability.isReachableViaWiFi }
 
-    internal var reachability: DSReachabilityManager { DSReachabilityManager.shared() }
+    internal var reachability: NetworkReachability { NetworkReachability.shared }
 
     public func startNetworkMonitoring() {
         if !reachability.isMonitoring {

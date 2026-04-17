@@ -24,7 +24,7 @@ public enum NetworkStatus {
     case offline
 }
 
-extension DSReachabilityManager {
+extension NetworkReachability {
     var networkStatus: NetworkStatus {
         isReachable ? .online : .offline
     }

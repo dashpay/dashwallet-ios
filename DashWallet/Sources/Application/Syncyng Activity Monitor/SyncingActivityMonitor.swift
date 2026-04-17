@@ -216,7 +216,7 @@ extension SyncingActivityMonitor {
         snapshot = makeSnapshot(from: sdkSyncProgress, peersBestHeight: peersBestHeight)
 
         // Reachability gate stays the same — overrides everything else.
-        if reachability.networkReachabilityStatus == .notReachable {
+        if reachability.networkStatus == .offline {
             applyProgressWithPeakSmoothing(sdkProgress)
             isSyncing = false
             state = .noConnection
