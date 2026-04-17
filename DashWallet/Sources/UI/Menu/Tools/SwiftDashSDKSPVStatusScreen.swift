@@ -229,6 +229,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
                     .cornerRadius(8)
             }
             Button(action: {
+                SwiftDashSDKWalletRuntime.stop()
                 SwiftDashSDKWalletRuntime.startIfReady()
             }) {
                 Text("Restart")
