@@ -81,6 +81,12 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - UIApplicationDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(nullable NSDictionary *)launchOptions {
+#if DEBUG
+    if ([NSProcessInfo.processInfo.environment[@"XCODE_RUNNING_FOR_PREVIEWS"] isEqualToString:@"1"]) {
+        return YES;
+    }
+#endif /* DEBUG */
+
 #if FRESH_INSTALL
     [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
     NSArray *secItemClasses = @[(__bridge id)kSecClassGenericPassword,
