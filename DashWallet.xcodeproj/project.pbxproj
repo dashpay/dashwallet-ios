@@ -824,6 +824,7 @@
 		C91E919729FBACE6003E7883 /* ExtendedPublicKeysModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E919629FBACE6003E7883 /* ExtendedPublicKeysModel.swift */; };
 		C91E91AE29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E91AD29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift */; };
 		B3A1F2C4D5E6078901234568 /* ExtendedPublicKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A1F2C4D5E6078901234567 /* ExtendedPublicKeySheet.swift */; };
+		C5D7E9F1A2B3C4D5E6F70012 /* CSVExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D7E9F1A2B3C4D5E6F70011 /* CSVExportSheet.swift */; };
 		C93078482A6AD4F500906E4B /* ConfirmPaymentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C956AF222A5C7D93002FAB75 /* ConfirmPaymentViewController.swift */; };
 		C93078492A6AD4FC00906E4B /* UpholdConfirmViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C956AF2E2A5D5F6B002FAB75 /* UpholdConfirmViewController.swift */; };
 		C930784A2A6AD52400906E4B /* UpholdConfirmTransferModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C956AF302A5D601C002FAB75 /* UpholdConfirmTransferModel.swift */; };
@@ -1103,6 +1104,7 @@
 		C9D2C6D52A320AA000D15901 /* TransactionMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C314287EA11900B4BD48 /* TransactionMetadata.swift */; };
 		C9D2C6D62A320AA000D15901 /* ExtendedPublicKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E91AD29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift */; };
 		B3A1F2C4D5E6078901234569 /* ExtendedPublicKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A1F2C4D5E6078901234567 /* ExtendedPublicKeySheet.swift */; };
+		C5D7E9F1A2B3C4D5E6F70013 /* CSVExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D7E9F1A2B3C4D5E6F70011 /* CSVExportSheet.swift */; };
 		C9D2C6D82A320AA000D15901 /* AtmListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BDD28C1305E00490F5E /* AtmListViewController.swift */; };
 		C9D2C6D92A320AA000D15901 /* TxDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */; };
 		C9D2C6DA2A320AA000D15901 /* NSAttributedString+Builder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E9299E5396006903F1 /* NSAttributedString+Builder.swift */; };
@@ -2705,6 +2707,7 @@
 		C91E919629FBACE6003E7883 /* ExtendedPublicKeysModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedPublicKeysModel.swift; sourceTree = "<group>"; };
 		C91E91AD29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedPublicKeysViewController.swift; sourceTree = "<group>"; };
 		B3A1F2C4D5E6078901234567 /* ExtendedPublicKeySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedPublicKeySheet.swift; sourceTree = "<group>"; };
+		C5D7E9F1A2B3C4D5E6F70011 /* CSVExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVExportSheet.swift; sourceTree = "<group>"; };
 		C943B2BA2A408CEC00AF23C5 /* DWUpdatingUserProfileView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpdatingUserProfileView.h; sourceTree = "<group>"; };
 		C943B2BB2A408CEC00AF23C5 /* DWCurrentUserProfileView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWCurrentUserProfileView.h; sourceTree = "<group>"; };
 		C943B2BC2A408CEC00AF23C5 /* DWErrorUpdatingUserProfileView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWErrorUpdatingUserProfileView.m; sourceTree = "<group>"; };
@@ -4285,6 +4288,7 @@
 				FB3FF0B0222641210059A9A5 /* Masternode Keys */,
 				7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */,
 				752F81A82E323FD000ADA76D /* ToolsMenuViewModel.swift */,
+				C5D7E9F1A2B3C4D5E6F70011 /* CSVExportSheet.swift */,
 			);
 			path = Tools;
 			sourceTree = "<group>";
@@ -8641,6 +8645,7 @@
 				4709C315287EA11900B4BD48 /* TransactionMetadata.swift in Sources */,
 				C91E91AE29FFC8A1003E7883 /* ExtendedPublicKeysViewController.swift in Sources */,
 				B3A1F2C4D5E6078901234568 /* ExtendedPublicKeySheet.swift in Sources */,
+				C5D7E9F1A2B3C4D5E6F70012 /* CSVExportSheet.swift in Sources */,
 				47AE8BFE28C1306000490F5E /* AtmListViewController.swift in Sources */,
 				754D02082D155564005CA466 /* CoinJoinTransaction.swift in Sources */,
 				47A514602848F75B005A8E3E /* TxDetailViewController.swift in Sources */,
@@ -9323,6 +9328,7 @@
 				C9D2C6D52A320AA000D15901 /* TransactionMetadata.swift in Sources */,
 				C9D2C6D62A320AA000D15901 /* ExtendedPublicKeysViewController.swift in Sources */,
 				B3A1F2C4D5E6078901234569 /* ExtendedPublicKeySheet.swift in Sources */,
+				C5D7E9F1A2B3C4D5E6F70013 /* CSVExportSheet.swift in Sources */,
 				C9D2C6D82A320AA000D15901 /* AtmListViewController.swift in Sources */,
 				C9D2C6D92A320AA000D15901 /* TxDetailViewController.swift in Sources */,
 				C9D2C6DA2A320AA000D15901 /* NSAttributedString+Builder.swift in Sources */,
@@ -10501,7 +10507,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -10641,7 +10647,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -10815,7 +10821,7 @@
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -10837,7 +10843,7 @@
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -10862,7 +10868,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -10889,7 +10895,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -10921,7 +10927,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -10950,7 +10956,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -11000,7 +11006,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -11134,7 +11140,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -11279,7 +11285,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -11422,7 +11428,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -11625,7 +11631,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -11738,7 +11744,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -11794,7 +11800,7 @@
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -11819,7 +11825,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -11936,7 +11942,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -12048,7 +12054,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -12103,7 +12109,7 @@
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -12128,7 +12134,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.5.5;
+				MARKETING_VERSION = 8.5.6;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;

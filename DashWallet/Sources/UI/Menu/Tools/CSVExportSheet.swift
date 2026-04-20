@@ -1,6 +1,8 @@
 //
-//  Created by Assistant
-//  Copyright © 2025 Dash Core Group. All rights reserved.
+//  CSVExportSheet.swift
+//  DashWallet
+//
+//  Copyright © 2026 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,10 +19,10 @@
 
 import SwiftUI
 
-struct ImportPrivateKeySheet: View {
+struct CSVExportSheet: View {
     @Environment(\.presentationMode) private var presentationMode
     @Environment(\.colorScheme) private var colorScheme
-    let onScanPrivateKey: () -> Void
+    let onExport: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -39,7 +41,7 @@ struct ImportPrivateKeySheet: View {
             // Content
             VStack(spacing: 0) {
                 // Icon
-                Image("image.import.private.key.large")
+                Image("csv-export-large")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 94, height: 100)
@@ -47,17 +49,17 @@ struct ImportPrivateKeySheet: View {
                     .padding(.bottom, 10)
 
                 // Text content
-                VStack(spacing: 6) {
-                    Text(NSLocalizedString("Import private key", comment: ""))
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(NSLocalizedString("The full transaction history will be exported as a CSV file", comment: ""))
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(Color.primaryText)
-                        .multilineTextAlignment(.center)
+                        .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    Text(NSLocalizedString("This action will move all coins from the Dash paper wallet to your DashPay app on this device.", comment: ""))
+                    Text(NSLocalizedString("All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.", comment: ""))
                         .font(.system(size: 15))
                         .foregroundColor(Color.secondaryText)
-                        .multilineTextAlignment(.center)
+                        .multilineTextAlignment(.leading)
                         .lineSpacing(5)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -68,19 +70,17 @@ struct ImportPrivateKeySheet: View {
 
             Spacer()
 
-            // Button wrap with fixed padding
+            // Button
             VStack(spacing: 0) {
                 DashButton(
-                    text: NSLocalizedString("Scan private key", comment: ""),
+                    text: NSLocalizedString("Export CSV", comment: ""),
                     style: .filledBlue,
                     size: .large,
                     stretch: true,
                     isEnabled: true,
                     action: {
                         presentationMode.wrappedValue.dismiss()
-                        DispatchQueue.main.async {
-                            onScanPrivateKey()
-                        }
+                        onExport()
                     }
                 )
                 .padding(.horizontal, 60)
@@ -92,8 +92,8 @@ struct ImportPrivateKeySheet: View {
     }
 }
 
-struct ImportPrivateKeySheet_Previews: PreviewProvider {
+struct CSVExportSheet_Previews: PreviewProvider {
     static var previews: some View {
-        ImportPrivateKeySheet(onScanPrivateKey: {})
+        CSVExportSheet(onExport: {})
     }
 }
