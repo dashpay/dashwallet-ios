@@ -4,8 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - release/*
-      - release/**
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   archive:
@@ -44,19 +46,49 @@ jobs:
           fi
           fastlane --version
 
-      - name: Install pods
-        run: pod install --repo-update
-
       - name: Build release archive
         run: fastlane ios release_archive_ci
+
+      - name: Prepare public-safe artifacts
+        if: always()
+        run: |
+          mkdir -p build/public-artifacts
+
+          if [ -f build/xcode-version.txt ]; then
+            cp build/xcode-version.txt build/public-artifacts/xcode-version.txt
+          fi
+
+          if [ -d build/logs ]; then
+            for src in build/logs/*; do
+              [ -f "$src" ] || continue
+              dst="build/public-artifacts/$(basename "$src")"
+              sed -E \
+                -e 's/(Authorization: Bearer )[A-Za-z0-9._-]+/\1[REDACTED]/g' \
+                -e 's/([?&](token|access_token|password|api_key|apikey|secret)=)[^&[:space:]]+/\1[REDACTED]/Ig' \
+                -e 's/(APPLE_APP_SPECIFIC_PASSWORD=)[^[:space:]]+/\1[REDACTED]/g' \
+                -e 's/(FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD=)[^[:space:]]+/\1[REDACTED]/g' \
+                "$src" > "$dst"
+            done
+          fi
+
+          if [ -f fastlane/report.xml ]; then
+            cp fastlane/report.xml build/public-artifacts/fastlane-report.xml
+          fi
+
+          {
+            echo "Archive log summary"
+            echo "==================="
+            if [ -d build/public-artifacts ]; then
+              grep -R -n -E "ARCHIVE SUCCEEDED|ARCHIVE FAILED|BUILD SUCCEEDED|error:" build/public-artifacts || true
+            fi
+          } > build/public-artifacts/archive-summary.txt
 
       - name: Upload build logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: release-xcode26-logs-${{ github.run_number }}
+          retention-days: 3
           if-no-files-found: warn
           path: |
-            build/xcode-version.txt
-            build/logs/**
-            fastlane/report.xml
+            build/public-artifacts/**
