@@ -27,8 +27,14 @@ class LocalCurrencyViewModel: ObservableObject {
     @Published private(set) var filteredItems: [CurrencyItem] = []
     @Published var selectedCurrencyCode: String
 
-    /// Production init — loads currencies from CurrencyExchangerObjcWrapper.
-    init(currencyCode: String? = nil) {
+    init(allItems: [CurrencyItem], selectedCurrencyCode: String) {
+        self.allItems = allItems
+        self.selectedCurrencyCode = selectedCurrencyCode
+        self.filteredItems = allItems
+        setupSearch()
+    }
+
+    convenience init(currencyCode: String? = nil) {
         let formatter = NumberFormatter()
         formatter.maximumFractionDigits = 2
         formatter.minimumFractionDigits = 2
@@ -41,18 +47,7 @@ class LocalCurrencyViewModel: ObservableObject {
                 priceString: formatter.string(from: price.price)
             )
         }
-        self.allItems = items
-        self.selectedCurrencyCode = currencyCode ?? App.fiatCurrency
-        self.filteredItems = items
-        setupSearch()
-    }
-
-    /// Preview / testing init — accepts pre-built items without DashSync.
-    init(items: [CurrencyItem], selectedCode: String) {
-        self.allItems = items
-        self.selectedCurrencyCode = selectedCode
-        self.filteredItems = items
-        setupSearch()
+        self.init(allItems: items, selectedCurrencyCode: currencyCode ?? App.fiatCurrency)
     }
 
     func select(currencyCode: String) {
@@ -81,6 +76,8 @@ class LocalCurrencyViewModel: ObservableObject {
         }
     }
 }
+
+
 
 // MARK: - Flag mapping
 

@@ -38,20 +38,9 @@ struct LocalCurrencyView: View {
         self.onBack = onBack
     }
 
-    /// Preview / testing init — accepts a pre-built ViewModel.
-    fileprivate init(
-        viewModel: LocalCurrencyViewModel,
-        onSelect: @escaping (String) -> Void,
-        onBack: (() -> Void)? = nil
-    ) {
-        self._viewModel = StateObject(wrappedValue: viewModel)
-        self.onSelect = onSelect
-        self.onBack = onBack
-    }
-
     var body: some View {
         ZStack(alignment: .top) {
-            // Background
+            background
 
             LocalCurrencyScrollContentView(
                 headerHeight: fullHeaderSize.height,
@@ -77,7 +66,10 @@ struct LocalCurrencyView: View {
                 }
             }
         }
-        .background(Color.primaryBackground)
+    }
+
+    private var background: some View {
+        Color.primaryBackground
     }
 }
 
@@ -179,6 +171,24 @@ private struct LocalCurrencyTopOverlayView: View {
 // MARK: - Preview
 
 #if DEBUG
+extension LocalCurrencyView {
+    fileprivate init(
+        viewModel: LocalCurrencyViewModel,
+        onSelect: @escaping (String) -> Void,
+        onBack: (() -> Void)? = nil
+    ) {
+        self._viewModel = StateObject(wrappedValue: viewModel)
+        self.onSelect = onSelect
+        self.onBack = onBack
+    }
+}
+
+extension LocalCurrencyViewModel {
+    convenience init(items: [CurrencyItem], selectedCode: String) {
+        self.init(allItems: items, selectedCurrencyCode: selectedCode)
+    }
+}
+
 #Preview {
     LocalCurrencyView(
         viewModel: LocalCurrencyViewModel(
