@@ -18,33 +18,14 @@
 import Foundation
 import Combine
 
-// MARK: - CurrencyItem
-
-struct CurrencyItem: Identifiable, Equatable {
-    var id: String { code }
-    let code: String
-    let name: String
-    let flagName: String?
-    let priceString: String?
-}
-
-// MARK: - LocalCurrencyViewModel
-
 @MainActor
 class LocalCurrencyViewModel: ObservableObject {
     private let allItems: [CurrencyItem]
+    private var cancellables = Set<AnyCancellable>()
 
     @Published var searchQuery: String = ""
+    @Published private(set) var filteredItems: [CurrencyItem] = []
     @Published var selectedCurrencyCode: String
-
-    var filteredItems: [CurrencyItem] {
-        let trimmed = searchQuery.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { return allItems }
-        let query = trimmed.lowercased()
-        return allItems.filter {
-            $0.code.lowercased().contains(query) || $0.name.lowercased().contains(query)
-        }
-    }
 
     /// Production init — loads currencies from CurrencyExchangerObjcWrapper.
     init(currencyCode: String? = nil) {
@@ -62,17 +43,42 @@ class LocalCurrencyViewModel: ObservableObject {
         }
         self.allItems = items
         self.selectedCurrencyCode = currencyCode ?? App.fiatCurrency
+        self.filteredItems = items
+        setupSearch()
     }
 
     /// Preview / testing init — accepts pre-built items without DashSync.
     init(items: [CurrencyItem], selectedCode: String) {
         self.allItems = items
         self.selectedCurrencyCode = selectedCode
+        self.filteredItems = items
+        setupSearch()
     }
 
     func select(currencyCode: String) {
         selectedCurrencyCode = currencyCode
         App.shared.fiatCurrency = currencyCode
+    }
+
+    private func setupSearch() {
+        $searchQuery
+            .debounce(for: .milliseconds(150), scheduler: RunLoop.main)
+            .sink { [weak self] query in
+                self?.applyFilter(query)
+            }
+            .store(in: &cancellables)
+    }
+
+    private func applyFilter(_ query: String) {
+        let trimmed = query.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else {
+            filteredItems = allItems
+            return
+        }
+        let lowercased = trimmed.lowercased()
+        filteredItems = allItems.filter {
+            $0.code.lowercased().contains(lowercased) || $0.name.lowercased().contains(lowercased)
+        }
     }
 }
 
