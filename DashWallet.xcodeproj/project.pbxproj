@@ -394,8 +394,6 @@
 		A5D5DD00000000000000010D /* SwiftDashSDKWalletState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000010E /* SwiftDashSDKWalletState.swift */; };
 		A5D5DD000000000000000115 /* SwiftDashSDKPinChanger.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000118 /* SwiftDashSDKPinChanger.swift */; };
 		A5D5DD000000000000000116 /* SwiftDashSDKPinChanger.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000118 /* SwiftDashSDKPinChanger.swift */; };
-		A5D5DD000000000000000119 /* SwiftDashSDKMnemonicBackfiller.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000011B /* SwiftDashSDKMnemonicBackfiller.swift */; };
-		A5D5DD00000000000000011A /* SwiftDashSDKMnemonicBackfiller.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000011B /* SwiftDashSDKMnemonicBackfiller.swift */; };
 		A5D5DD00000000000000011C /* SwiftDashSDKMnemonicReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000011E /* SwiftDashSDKMnemonicReader.swift */; };
 		A5D5DD00000000000000011D /* SwiftDashSDKMnemonicReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000011E /* SwiftDashSDKMnemonicReader.swift */; };
 		A5D5DD00000000000000011F /* SwiftDashSDKMnemonicGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000121 /* SwiftDashSDKMnemonicGenerator.swift */; };
@@ -2374,7 +2372,6 @@
 		A5D5DD000000000000000108 /* SwiftDashSDKWalletWiper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletWiper.swift; sourceTree = "<group>"; };
 		A5D5DD00000000000000010E /* SwiftDashSDKWalletState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletState.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000118 /* SwiftDashSDKPinChanger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKPinChanger.swift; sourceTree = "<group>"; };
-		A5D5DD00000000000000011B /* SwiftDashSDKMnemonicBackfiller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKMnemonicBackfiller.swift; sourceTree = "<group>"; };
 		A5D5DD00000000000000011E /* SwiftDashSDKMnemonicReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKMnemonicReader.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000121 /* SwiftDashSDKMnemonicGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKMnemonicGenerator.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000131 /* SwiftDashSDKReceiveAddressReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKReceiveAddressReader.swift; sourceTree = "<group>"; };
@@ -5555,7 +5552,6 @@
 				A5D5DD000000000000000108 /* SwiftDashSDKWalletWiper.swift */,
 				A5D5DD00000000000000010E /* SwiftDashSDKWalletState.swift */,
 				A5D5DD000000000000000118 /* SwiftDashSDKPinChanger.swift */,
-				A5D5DD00000000000000011B /* SwiftDashSDKMnemonicBackfiller.swift */,
 					A5D5DD00000000000000011E /* SwiftDashSDKMnemonicReader.swift */,
 					A5D5DD000000000000000121 /* SwiftDashSDKMnemonicGenerator.swift */,
 					A5D5DD000000000000000131 /* SwiftDashSDKReceiveAddressReader.swift */,
@@ -9010,8 +9006,7 @@
 					A5D5DD000000000000000106 /* SwiftDashSDKWalletWiper.swift in Sources */,
 					A5D5DD00000000000000010C /* SwiftDashSDKWalletState.swift in Sources */,
 					A5D5DD000000000000000115 /* SwiftDashSDKPinChanger.swift in Sources */,
-					A5D5DD000000000000000119 /* SwiftDashSDKMnemonicBackfiller.swift in Sources */,
-					A5D5DD00000000000000011C /* SwiftDashSDKMnemonicReader.swift in Sources */,
+						A5D5DD00000000000000011C /* SwiftDashSDKMnemonicReader.swift in Sources */,
 					A5D5DD00000000000000011F /* SwiftDashSDKMnemonicGenerator.swift in Sources */,
 					A5D5DD000000000000000132 /* SwiftDashSDKReceiveAddressReader.swift in Sources */,
 					A5D5DD000000000000000122 /* SwiftDashSDKTransactionSender.swift in Sources */,
@@ -9867,8 +9862,7 @@
 					A5D5DD000000000000000107 /* SwiftDashSDKWalletWiper.swift in Sources */,
 					A5D5DD00000000000000010D /* SwiftDashSDKWalletState.swift in Sources */,
 					A5D5DD000000000000000116 /* SwiftDashSDKPinChanger.swift in Sources */,
-					A5D5DD00000000000000011A /* SwiftDashSDKMnemonicBackfiller.swift in Sources */,
-					A5D5DD00000000000000011D /* SwiftDashSDKMnemonicReader.swift in Sources */,
+						A5D5DD00000000000000011D /* SwiftDashSDKMnemonicReader.swift in Sources */,
 					A5D5DD000000000000000120 /* SwiftDashSDKMnemonicGenerator.swift in Sources */,
 					A5D5DD000000000000000133 /* SwiftDashSDKReceiveAddressReader.swift in Sources */,
 					A5D5DD000000000000000123 /* SwiftDashSDKTransactionSender.swift in Sources */,

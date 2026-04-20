@@ -142,7 +142,6 @@ NS_ASSUME_NONNULL_BEGIN
     [DWSwiftDashSDKWalletRuntime startObservingNetworkChanges];
     [DWSwiftDashSDKWalletRuntime startIfReady];
     [DWSwiftDashSDKWalletWiper startObservingWipeNotification];
-    [DWSwiftDashSDKMnemonicBackfiller backfillIfNeeded];
 
     DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
     if (migrationManager.shouldMigrate) {
