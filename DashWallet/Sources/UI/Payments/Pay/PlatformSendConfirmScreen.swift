@@ -7,6 +7,7 @@
 //  `PlatformSendExecutor` for the actual transferFunds call.
 //
 
+import SwiftDashSDK
 import SwiftUI
 
 struct PlatformSendConfirmScreen: View {

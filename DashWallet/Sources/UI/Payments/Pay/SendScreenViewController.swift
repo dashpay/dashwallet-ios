@@ -3,6 +3,7 @@
 //  DashWallet
 //
 
+import SwiftDashSDK
 import SwiftUI
 import UIKit
 
@@ -10,7 +11,11 @@ import UIKit
 final class SendScreenViewController: DWBasePayViewController {
 
     @objc var homeModel: DWHomeProtocol? {
-        didSet { dataProvider = homeModel?.getDataProvider() }
+        didSet {
+            if let provider = homeModel?.getDataProvider() {
+                dataProvider = provider
+            }
+        }
     }
 
     private let sendViewModel = SendViewModel()
@@ -50,7 +55,7 @@ final class SendScreenViewController: DWBasePayViewController {
         let chain = DWEnvironment.sharedInstance().currentChain
         guard address.isValidDashAddress(on: chain) else { return }
         guard let url = URL(string: "dash:\(address)") else { return }
-        performPayToURL(url)
+        performPay(to: url)
     }
 
     private func continuePlatform(address: String) {
