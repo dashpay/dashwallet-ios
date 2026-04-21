@@ -380,29 +380,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     }
 
     private func refreshBalanceSnapshot() async {
-        guard let wallet = platformAddressWallet else { return }
-
-        do {
-            let (balances, credits) = try await Task.detached { [wallet] in
-                let balances = try wallet.addressesWithBalances()
-                let credits = try wallet.totalCredits()
-                return (balances, credits)
-            }.value
-
-            var total: UInt64 = 0
-            var nonZero = 0
-            for entry in balances {
-                total += entry.balance
-                if entry.balance > 0 { nonZero += 1 }
-            }
-
-            platformBalance = credits == total ? total : credits
-            activeAddressCount = nonZero
-        } catch {
-            lastError = error.localizedDescription
-            Self.logger.warning("🛰️ PLATFORM-ADDR :: balance snapshot refresh failed: \(String(describing: error), privacy: .public)")
-        }
-
+        // Source of truth is SwiftData — the FFI `addressesWithBalances()` /
+        // `totalCredits()` pair lags behind the BLAST persistence callbacks
+        // and can report zero while the DB already holds the funded rows.
         refreshDerivedAddresses()
     }
 
@@ -412,6 +392,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             let walletId = wallet?.walletId
         else {
             derivedAddresses = []
+            platformBalance = 0
+            activeAddressCount = 0
             return
         }
 
@@ -432,6 +414,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                     isUsed: row.isUsed,
                     balance: row.balance)
             }
+            platformBalance = rows.reduce(0) { $0 + $1.balance }
+            activeAddressCount = rows.reduce(0) { $1.balance > 0 ? $0 + 1 : $0 }
         } catch {
             Self.logger.warning("🛰️ PLATFORM-ADDR :: derived-address fetch failed: \(String(describing: error), privacy: .public)")
         }
