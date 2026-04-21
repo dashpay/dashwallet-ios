@@ -81,6 +81,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     private var platformAddressWallet: ManagedPlatformAddressWallet?
     private var modelContainer: ModelContainer?
 
+    public var swiftDataContainer: ModelContainer? { modelContainer }
+
     private var syncEventCancellable: AnyCancellable?
     private var syncStateCancellable: AnyCancellable?
 

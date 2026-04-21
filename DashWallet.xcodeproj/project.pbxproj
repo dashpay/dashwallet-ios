@@ -414,6 +414,14 @@
 		A5D5DD000000000000000247 /* ReceiveViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000248 /* ReceiveViewModel.swift */; };
 		A5D5DD000000000000000249 /* PlatformSendExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000251 /* PlatformSendExecutor.swift */; };
 		A5D5DD000000000000000250 /* PlatformSendExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000251 /* PlatformSendExecutor.swift */; };
+		A5D5DD000000000000000252 /* StorageExplorerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000254 /* StorageExplorerView.swift */; };
+		A5D5DD000000000000000253 /* StorageExplorerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000254 /* StorageExplorerView.swift */; };
+		A5D5DD000000000000000255 /* StorageModelListViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000257 /* StorageModelListViews.swift */; };
+		A5D5DD000000000000000256 /* StorageModelListViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000257 /* StorageModelListViews.swift */; };
+		A5D5DD000000000000000258 /* StorageRecordDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000260 /* StorageRecordDetailViews.swift */; };
+		A5D5DD000000000000000259 /* StorageRecordDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000260 /* StorageRecordDetailViews.swift */; };
+		A5D5DD000000000000000261 /* StorageExplorerUnavailableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000263 /* StorageExplorerUnavailableView.swift */; };
+		A5D5DD000000000000000262 /* StorageExplorerUnavailableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000263 /* StorageExplorerUnavailableView.swift */; };
 		A5D5DD000000000000000103 /* SwiftDashSDKWalletCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000105 /* SwiftDashSDKWalletCreator.swift */; };
 		A5D5DD000000000000000104 /* SwiftDashSDKWalletCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000105 /* SwiftDashSDKWalletCreator.swift */; };
 		A5D5DD000000000000000106 /* SwiftDashSDKWalletWiper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000108 /* SwiftDashSDKWalletWiper.swift */; };
@@ -2410,6 +2418,10 @@
 		A5D5DD000000000000000245 /* ReceiveScreenHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiveScreenHostingController.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000248 /* ReceiveViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiveViewModel.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000251 /* PlatformSendExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSendExecutor.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000254 /* StorageExplorerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageExplorerView.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000257 /* StorageModelListViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageModelListViews.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000260 /* StorageRecordDetailViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageRecordDetailViews.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000263 /* StorageExplorerUnavailableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageExplorerUnavailableView.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000105 /* SwiftDashSDKWalletCreator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletCreator.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000108 /* SwiftDashSDKWalletWiper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletWiper.swift; sourceTree = "<group>"; };
 		A5D5DD00000000000000010E /* SwiftDashSDKWalletState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletState.swift; sourceTree = "<group>"; };
@@ -4390,8 +4402,20 @@
 				752F81A82E323FD000ADA76D /* ToolsMenuViewModel.swift */,
 				A5D5DD000000000000000100 /* SwiftDashSDKSPVStatusScreen.swift */,
 				A5D5DD000000000000000215 /* PlatformSyncStatusScreen.swift */,
+				A5D5DD000000000000000265 /* StorageExplorer */,
 			);
 			path = Tools;
+			sourceTree = "<group>";
+		};
+		A5D5DD000000000000000265 /* StorageExplorer */ = {
+			isa = PBXGroup;
+			children = (
+				A5D5DD000000000000000254 /* StorageExplorerView.swift */,
+				A5D5DD000000000000000257 /* StorageModelListViews.swift */,
+				A5D5DD000000000000000260 /* StorageRecordDetailViews.swift */,
+				A5D5DD000000000000000263 /* StorageExplorerUnavailableView.swift */,
+			);
+			path = StorageExplorer;
 			sourceTree = "<group>";
 		};
 		2A7A7C13234B761700451078 /* LocalCurrency */ = {
@@ -9071,6 +9095,10 @@
 					A5D5DD000000000000000243 /* ReceiveScreenHostingController.swift in Sources */,
 					A5D5DD000000000000000246 /* ReceiveViewModel.swift in Sources */,
 					A5D5DD000000000000000249 /* PlatformSendExecutor.swift in Sources */,
+					A5D5DD000000000000000252 /* StorageExplorerView.swift in Sources */,
+					A5D5DD000000000000000255 /* StorageModelListViews.swift in Sources */,
+					A5D5DD000000000000000258 /* StorageRecordDetailViews.swift in Sources */,
+					A5D5DD000000000000000261 /* StorageExplorerUnavailableView.swift in Sources */,
 					A5D5DD000000000000000103 /* SwiftDashSDKWalletCreator.swift in Sources */,
 					A5D5DD000000000000000106 /* SwiftDashSDKWalletWiper.swift in Sources */,
 					A5D5DD00000000000000010C /* SwiftDashSDKWalletState.swift in Sources */,
@@ -9941,6 +9969,10 @@
 					A5D5DD000000000000000244 /* ReceiveScreenHostingController.swift in Sources */,
 					A5D5DD000000000000000247 /* ReceiveViewModel.swift in Sources */,
 					A5D5DD000000000000000250 /* PlatformSendExecutor.swift in Sources */,
+					A5D5DD000000000000000253 /* StorageExplorerView.swift in Sources */,
+					A5D5DD000000000000000256 /* StorageModelListViews.swift in Sources */,
+					A5D5DD000000000000000259 /* StorageRecordDetailViews.swift in Sources */,
+					A5D5DD000000000000000262 /* StorageExplorerUnavailableView.swift in Sources */,
 					A5D5DD000000000000000104 /* SwiftDashSDKWalletCreator.swift in Sources */,
 					A5D5DD000000000000000107 /* SwiftDashSDKWalletWiper.swift in Sources */,
 					A5D5DD00000000000000010D /* SwiftDashSDKWalletState.swift in Sources */,

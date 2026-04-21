@@ -190,6 +190,8 @@ struct ToolsMenuScreen: View {
             showSwiftDashSDKSPVStatus()
         case .platformSyncStatus:
             showPlatformSyncStatus()
+        case .storageExplorer:
+            showStorageExplorer()
         case .none:
             break
         }
@@ -212,6 +214,26 @@ struct ToolsMenuScreen: View {
         let hosting = UIHostingController(
             rootView: PlatformSyncStatusScreen(vc: vc)
         )
+        hosting.hidesBottomBarWhenPushed = true
+        vc.pushViewController(hosting, animated: true)
+    }
+
+    private func showStorageExplorer() {
+        let coordinator = PlatformAddressSyncCoordinator.shared
+        let hosting: UIHostingController<AnyView>
+        if let container = coordinator.swiftDataContainer {
+            hosting = UIHostingController(
+                rootView: AnyView(
+                    StorageExplorerView()
+                        .modelContainer(container)
+                        .navigationTitle("Storage Explorer")
+                )
+            )
+        } else {
+            hosting = UIHostingController(
+                rootView: AnyView(StorageExplorerUnavailableView())
+            )
+        }
         hosting.hidesBottomBarWhenPushed = true
         vc.pushViewController(hosting, animated: true)
     }

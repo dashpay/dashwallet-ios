@@ -26,6 +26,7 @@ enum ToolsMenuNavigationDestination {
     case zenLedger
     case swiftDashSDKSPVStatus
     case platformSyncStatus
+    case storageExplorer
 }
 
 @MainActor
@@ -82,6 +83,13 @@ class ToolsMenuViewModel: ObservableObject {
                 icon: .system("globe"),
                 action: { [weak self] in
                     self?.navigationDestination = .platformSyncStatus
+                }
+            ),
+            MenuItemModel(
+                title: "Storage Explorer",
+                icon: .system("cylinder.split.1x2"),
+                action: { [weak self] in
+                    self?.navigationDestination = .storageExplorer
                 }
             ),
             MenuItemModel(
