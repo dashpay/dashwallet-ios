@@ -220,18 +220,44 @@ struct ToolsMenuScreen: View {
 
     private func showStorageExplorer() {
         let coordinator = PlatformAddressSyncCoordinator.shared
+        let navController = vc
+        let popRoot = { [weak navController] in
+            navController?.popViewController(animated: true)
+        }
+
         let hosting: UIHostingController<AnyView>
         if let container = coordinator.swiftDataContainer {
             hosting = UIHostingController(
                 rootView: AnyView(
-                    StorageExplorerView()
-                        .modelContainer(container)
-                        .navigationTitle("Storage Explorer")
+                    NavigationStack {
+                        StorageExplorerView()
+                            .navigationTitle("Storage Explorer")
+                            .navigationBarTitleDisplayMode(.inline)
+                            .toolbar {
+                                ToolbarItem(placement: .navigationBarLeading) {
+                                    Button(action: popRoot) {
+                                        Image(systemName: "chevron.left")
+                                    }
+                                }
+                            }
+                    }
+                    .modelContainer(container)
                 )
             )
         } else {
             hosting = UIHostingController(
-                rootView: AnyView(StorageExplorerUnavailableView())
+                rootView: AnyView(
+                    NavigationStack {
+                        StorageExplorerUnavailableView()
+                            .toolbar {
+                                ToolbarItem(placement: .navigationBarLeading) {
+                                    Button(action: popRoot) {
+                                        Image(systemName: "chevron.left")
+                                    }
+                                }
+                            }
+                    }
+                )
             )
         }
         hosting.hidesBottomBarWhenPushed = true
