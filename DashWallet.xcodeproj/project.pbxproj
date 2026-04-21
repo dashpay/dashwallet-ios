@@ -394,6 +394,26 @@
 		A5D5DD000000000000000217 /* PlatformCreditsFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000218 /* PlatformCreditsFormatter.swift */; };
 		A5D5DD000000000000000219 /* PlatformBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000221 /* PlatformBalanceView.swift */; };
 		A5D5DD000000000000000220 /* PlatformBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000221 /* PlatformBalanceView.swift */; };
+		A5D5DD000000000000000222 /* ChainNetworkToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000224 /* ChainNetworkToggle.swift */; };
+		A5D5DD000000000000000223 /* ChainNetworkToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000224 /* ChainNetworkToggle.swift */; };
+		A5D5DD000000000000000225 /* QRCodeGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000227 /* QRCodeGenerator.swift */; };
+		A5D5DD000000000000000226 /* QRCodeGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000227 /* QRCodeGenerator.swift */; };
+		A5D5DD000000000000000228 /* PlatformSendConfirmScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000230 /* PlatformSendConfirmScreen.swift */; };
+		A5D5DD000000000000000229 /* PlatformSendConfirmScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000230 /* PlatformSendConfirmScreen.swift */; };
+		A5D5DD000000000000000231 /* SendScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000233 /* SendScreen.swift */; };
+		A5D5DD000000000000000232 /* SendScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000233 /* SendScreen.swift */; };
+		A5D5DD000000000000000234 /* SendScreenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000236 /* SendScreenViewController.swift */; };
+		A5D5DD000000000000000235 /* SendScreenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000236 /* SendScreenViewController.swift */; };
+		A5D5DD000000000000000237 /* SendViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000239 /* SendViewModel.swift */; };
+		A5D5DD000000000000000238 /* SendViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000239 /* SendViewModel.swift */; };
+		A5D5DD000000000000000240 /* ReceiveScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000242 /* ReceiveScreen.swift */; };
+		A5D5DD000000000000000241 /* ReceiveScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000242 /* ReceiveScreen.swift */; };
+		A5D5DD000000000000000243 /* ReceiveScreenHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000245 /* ReceiveScreenHostingController.swift */; };
+		A5D5DD000000000000000244 /* ReceiveScreenHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000245 /* ReceiveScreenHostingController.swift */; };
+		A5D5DD000000000000000246 /* ReceiveViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000248 /* ReceiveViewModel.swift */; };
+		A5D5DD000000000000000247 /* ReceiveViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000248 /* ReceiveViewModel.swift */; };
+		A5D5DD000000000000000249 /* PlatformSendExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000251 /* PlatformSendExecutor.swift */; };
+		A5D5DD000000000000000250 /* PlatformSendExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000251 /* PlatformSendExecutor.swift */; };
 		A5D5DD000000000000000103 /* SwiftDashSDKWalletCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000105 /* SwiftDashSDKWalletCreator.swift */; };
 		A5D5DD000000000000000104 /* SwiftDashSDKWalletCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000105 /* SwiftDashSDKWalletCreator.swift */; };
 		A5D5DD000000000000000106 /* SwiftDashSDKWalletWiper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000108 /* SwiftDashSDKWalletWiper.swift */; };
@@ -2380,6 +2400,16 @@
 		A5D5DD000000000000000215 /* PlatformSyncStatusScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSyncStatusScreen.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000218 /* PlatformCreditsFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformCreditsFormatter.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000221 /* PlatformBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBalanceView.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000224 /* ChainNetworkToggle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainNetworkToggle.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000227 /* QRCodeGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeGenerator.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000230 /* PlatformSendConfirmScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSendConfirmScreen.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000233 /* SendScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendScreen.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000236 /* SendScreenViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendScreenViewController.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000239 /* SendViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendViewModel.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000242 /* ReceiveScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiveScreen.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000245 /* ReceiveScreenHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiveScreenHostingController.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000248 /* ReceiveViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiveViewModel.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000251 /* PlatformSendExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSendExecutor.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000105 /* SwiftDashSDKWalletCreator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletCreator.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000108 /* SwiftDashSDKWalletWiper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletWiper.swift; sourceTree = "<group>"; };
 		A5D5DD00000000000000010E /* SwiftDashSDKWalletState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletState.swift; sourceTree = "<group>"; };
@@ -4485,6 +4515,12 @@
 				2A8B9E5B22FF6FE500FF8653 /* Pay.storyboard */,
 				C917024029D462C6008C034D /* PayViewController.swift */,
 				C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */,
+				A5D5DD000000000000000224 /* ChainNetworkToggle.swift */,
+				A5D5DD000000000000000227 /* QRCodeGenerator.swift */,
+				A5D5DD000000000000000233 /* SendScreen.swift */,
+				A5D5DD000000000000000239 /* SendViewModel.swift */,
+				A5D5DD000000000000000236 /* SendScreenViewController.swift */,
+				A5D5DD000000000000000230 /* PlatformSendConfirmScreen.swift */,
 			);
 			path = Pay;
 			sourceTree = "<group>";
@@ -4519,6 +4555,9 @@
 				2A8B9E772302E66100FF8653 /* Models */,
 				2ACCD85E23193BC200A96B62 /* Views */,
 				C9F42FA529DC092B001BC549 /* ReceiveViewController.swift */,
+				A5D5DD000000000000000242 /* ReceiveScreen.swift */,
+				A5D5DD000000000000000245 /* ReceiveScreenHostingController.swift */,
+				A5D5DD000000000000000248 /* ReceiveViewModel.swift */,
 				2ACCD86C2319609400A96B62 /* UIViewController+DWShareReceiveInfo.h */,
 				2ACCD86D2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m */,
 			);
@@ -5563,6 +5602,7 @@
 					A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */,
 					A5D5DD000000000000000212 /* PlatformAddressSyncCoordinator.swift */,
 					A5D5DD000000000000000218 /* PlatformCreditsFormatter.swift */,
+					A5D5DD000000000000000251 /* PlatformSendExecutor.swift */,
 					A5D5DD000000000000000105 /* SwiftDashSDKWalletCreator.swift */,
 				A5D5DD000000000000000108 /* SwiftDashSDKWalletWiper.swift */,
 				A5D5DD00000000000000010E /* SwiftDashSDKWalletState.swift */,
@@ -9021,6 +9061,16 @@
 					A5D5DD000000000000000210 /* PlatformAddressSyncCoordinator.swift in Sources */,
 					A5D5DD000000000000000213 /* PlatformSyncStatusScreen.swift in Sources */,
 					A5D5DD000000000000000216 /* PlatformCreditsFormatter.swift in Sources */,
+					A5D5DD000000000000000222 /* ChainNetworkToggle.swift in Sources */,
+					A5D5DD000000000000000225 /* QRCodeGenerator.swift in Sources */,
+					A5D5DD000000000000000228 /* PlatformSendConfirmScreen.swift in Sources */,
+					A5D5DD000000000000000231 /* SendScreen.swift in Sources */,
+					A5D5DD000000000000000234 /* SendScreenViewController.swift in Sources */,
+					A5D5DD000000000000000237 /* SendViewModel.swift in Sources */,
+					A5D5DD000000000000000240 /* ReceiveScreen.swift in Sources */,
+					A5D5DD000000000000000243 /* ReceiveScreenHostingController.swift in Sources */,
+					A5D5DD000000000000000246 /* ReceiveViewModel.swift in Sources */,
+					A5D5DD000000000000000249 /* PlatformSendExecutor.swift in Sources */,
 					A5D5DD000000000000000103 /* SwiftDashSDKWalletCreator.swift in Sources */,
 					A5D5DD000000000000000106 /* SwiftDashSDKWalletWiper.swift in Sources */,
 					A5D5DD00000000000000010C /* SwiftDashSDKWalletState.swift in Sources */,
@@ -9881,6 +9931,16 @@
 					A5D5DD000000000000000211 /* PlatformAddressSyncCoordinator.swift in Sources */,
 					A5D5DD000000000000000214 /* PlatformSyncStatusScreen.swift in Sources */,
 					A5D5DD000000000000000217 /* PlatformCreditsFormatter.swift in Sources */,
+					A5D5DD000000000000000223 /* ChainNetworkToggle.swift in Sources */,
+					A5D5DD000000000000000226 /* QRCodeGenerator.swift in Sources */,
+					A5D5DD000000000000000229 /* PlatformSendConfirmScreen.swift in Sources */,
+					A5D5DD000000000000000232 /* SendScreen.swift in Sources */,
+					A5D5DD000000000000000235 /* SendScreenViewController.swift in Sources */,
+					A5D5DD000000000000000238 /* SendViewModel.swift in Sources */,
+					A5D5DD000000000000000241 /* ReceiveScreen.swift in Sources */,
+					A5D5DD000000000000000244 /* ReceiveScreenHostingController.swift in Sources */,
+					A5D5DD000000000000000247 /* ReceiveViewModel.swift in Sources */,
+					A5D5DD000000000000000250 /* PlatformSendExecutor.swift in Sources */,
 					A5D5DD000000000000000104 /* SwiftDashSDKWalletCreator.swift in Sources */,
 					A5D5DD000000000000000107 /* SwiftDashSDKWalletWiper.swift in Sources */,
 					A5D5DD00000000000000010D /* SwiftDashSDKWalletState.swift in Sources */,

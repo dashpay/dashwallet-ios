@@ -400,25 +400,36 @@ extension MainTabbarController: HomeViewControllerDelegate {
     func showPaymentsController(withActivePage pageIndex: PaymentsViewControllerState) {
         paymentButton.isOpened = true
 
-        let receiveModel = DWReceiveModel()
-        let payModel = DWPayModel()
+        switch pageIndex {
+        case .receive:
+            presentReceiveScreen()
+        case .pay, .enterAddress, .none:
+            presentSendScreen()
+        }
+    }
 
-        let controller = PaymentsViewController.controller(withReceiveModel: receiveModel,
-                                                           payModel: payModel,
-                                                           dataProvider: homeModel.getDataProvider())
-
-        controller.delegate = self
-        controller.currentState = pageIndex
-        controller.demoMode = isDemoMode
-        controller.demoDelegate = demoDelegate
-
+    private func presentSendScreen() {
+        let controller = SendScreenViewController()
+        controller.homeModel = homeModel
         let navigationController = BaseNavigationController(rootViewController: controller)
-        navigationController.isModalInPresentation = true
+        navigationController.isNavigationBarHidden = true
+        navigationController.isModalInPresentation = false
+        presentModal(navigationController)
+    }
 
+    private func presentReceiveScreen() {
+        let host = ReceiveScreenHostingController()
+        let navigationController = BaseNavigationController(rootViewController: host)
+        navigationController.isNavigationBarHidden = true
+        navigationController.isModalInPresentation = false
+        presentModal(navigationController)
+    }
+
+    private func presentModal(_ nav: UIViewController) {
         if isDemoMode {
-            demoDelegate?.presentModalController(navigationController, sender: self)
+            demoDelegate?.presentModalController(nav, sender: self)
         } else {
-            selectedViewController?.topController().present(navigationController, animated: true)
+            selectedViewController?.topController().present(nav, animated: true)
         }
     }
 }
