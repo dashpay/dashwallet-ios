@@ -46,7 +46,11 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
 
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     if (![userDefaults objectForKey:CURRENT_CHAIN_TYPE_KEY]) {
-        [userDefaults setInteger:ChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
+        // Default to testnet during the SwiftDashSDK migration — Platform L2
+        // DAPI defaults only work on testnet in the current SDK build; mainnet
+        // returns "no available addresses to use". Flip back to mainnet once
+        // the Rust SDK ships a reachable mainnet DAPI seed list.
+        [userDefaults setInteger:ChainType_TestNet forKey:CURRENT_CHAIN_TYPE_KEY];
     }
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain mainnet]]; // initialization
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain testnet]]; // initialization

@@ -212,7 +212,11 @@ struct HomeViewContent<Content: View>: View {
                     .background(Color.navigationBarColor)
                     .padding(.top, 5)
                     .padding(.bottom, -12)
-                    
+
+                    PlatformBalanceView()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.navigationBarColor)
+
                     headerView()
                         .frame(height: viewModel.headerHeight)
                     

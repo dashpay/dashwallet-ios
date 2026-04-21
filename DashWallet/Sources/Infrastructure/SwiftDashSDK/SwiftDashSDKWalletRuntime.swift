@@ -118,6 +118,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 if case .failure(let error) = startResult {
                     Self.logger.error("🧭 RUNTIME :: coordinator start failed: \(String(describing: error), privacy: .public)")
                 }
+                PlatformAddressSyncCoordinator.shared.start(for: network)
             } catch {
                 Self.logger.error("🧭 RUNTIME :: refresh failed: \(String(describing: error), privacy: .public)")
                 performFullReset(lastError: error.localizedDescription)
@@ -166,6 +167,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     }
 
     private func performFullReset(lastError: String?) {
+        PlatformAddressSyncCoordinator.stop()
         waitForCoordinatorStop(lastError: lastError)
         SwiftDashSDKWalletProvider.shared.invalidate()
         SwiftDashSDKWalletState.shared.clearAllState()

@@ -25,6 +25,7 @@ enum ToolsMenuNavigationDestination {
     case csvExport
     case zenLedger
     case swiftDashSDKSPVStatus
+    case platformSyncStatus
 }
 
 @MainActor
@@ -74,6 +75,13 @@ class ToolsMenuViewModel: ObservableObject {
                 icon: .system("arrow.triangle.2.circlepath"),
                 action: { [weak self] in
                     self?.navigationDestination = .swiftDashSDKSPVStatus
+                }
+            ),
+            MenuItemModel(
+                title: "Platform Sync Status",
+                icon: .system("globe"),
+                action: { [weak self] in
+                    self?.navigationDestination = .platformSyncStatus
                 }
             ),
             MenuItemModel(

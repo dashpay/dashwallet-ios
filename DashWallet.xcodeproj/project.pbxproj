@@ -386,6 +386,14 @@
 		A5D5DD0000000000000000FC /* SwiftDashSDKSPVCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */; };
 		A5D5DD0000000000000000FE /* SwiftDashSDKSPVStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000100 /* SwiftDashSDKSPVStatusScreen.swift */; };
 		A5D5DD0000000000000000FF /* SwiftDashSDKSPVStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000100 /* SwiftDashSDKSPVStatusScreen.swift */; };
+		A5D5DD000000000000000210 /* PlatformAddressSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000212 /* PlatformAddressSyncCoordinator.swift */; };
+		A5D5DD000000000000000211 /* PlatformAddressSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000212 /* PlatformAddressSyncCoordinator.swift */; };
+		A5D5DD000000000000000213 /* PlatformSyncStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000215 /* PlatformSyncStatusScreen.swift */; };
+		A5D5DD000000000000000214 /* PlatformSyncStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000215 /* PlatformSyncStatusScreen.swift */; };
+		A5D5DD000000000000000216 /* PlatformCreditsFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000218 /* PlatformCreditsFormatter.swift */; };
+		A5D5DD000000000000000217 /* PlatformCreditsFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000218 /* PlatformCreditsFormatter.swift */; };
+		A5D5DD000000000000000219 /* PlatformBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000221 /* PlatformBalanceView.swift */; };
+		A5D5DD000000000000000220 /* PlatformBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000221 /* PlatformBalanceView.swift */; };
 		A5D5DD000000000000000103 /* SwiftDashSDKWalletCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000105 /* SwiftDashSDKWalletCreator.swift */; };
 		A5D5DD000000000000000104 /* SwiftDashSDKWalletCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000105 /* SwiftDashSDKWalletCreator.swift */; };
 		A5D5DD000000000000000106 /* SwiftDashSDKWalletWiper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000108 /* SwiftDashSDKWalletWiper.swift */; };
@@ -2368,6 +2376,10 @@
 		A5D5DD00000000000000012E /* SwiftDashSDKWalletRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletRuntime.swift; sourceTree = "<group>"; };
 		A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKSPVCoordinator.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000100 /* SwiftDashSDKSPVStatusScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKSPVStatusScreen.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000212 /* PlatformAddressSyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformAddressSyncCoordinator.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000215 /* PlatformSyncStatusScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSyncStatusScreen.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000218 /* PlatformCreditsFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformCreditsFormatter.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000221 /* PlatformBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBalanceView.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000105 /* SwiftDashSDKWalletCreator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletCreator.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000108 /* SwiftDashSDKWalletWiper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletWiper.swift; sourceTree = "<group>"; };
 		A5D5DD00000000000000010E /* SwiftDashSDKWalletState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletState.swift; sourceTree = "<group>"; };
@@ -4347,6 +4359,7 @@
 				7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */,
 				752F81A82E323FD000ADA76D /* ToolsMenuViewModel.swift */,
 				A5D5DD000000000000000100 /* SwiftDashSDKSPVStatusScreen.swift */,
+				A5D5DD000000000000000215 /* PlatformSyncStatusScreen.swift */,
 			);
 			path = Tools;
 			sourceTree = "<group>";
@@ -5548,6 +5561,8 @@
 					A5D5DD00000000000000012B /* SwiftDashSDKRuntimeDescriptorFactory.swift */,
 					A5D5DD00000000000000012E /* SwiftDashSDKWalletRuntime.swift */,
 					A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */,
+					A5D5DD000000000000000212 /* PlatformAddressSyncCoordinator.swift */,
+					A5D5DD000000000000000218 /* PlatformCreditsFormatter.swift */,
 					A5D5DD000000000000000105 /* SwiftDashSDKWalletCreator.swift */,
 				A5D5DD000000000000000108 /* SwiftDashSDKWalletWiper.swift */,
 				A5D5DD00000000000000010E /* SwiftDashSDKWalletState.swift */,
@@ -7745,6 +7760,7 @@
 			children = (
 				472D13E7299E4EE7006903F1 /* BalanceModel.swift */,
 				C9F067F129E4576D0022D958 /* HomeBalanceView.swift */,
+				A5D5DD000000000000000221 /* PlatformBalanceView.swift */,
 			);
 			path = "Home Balance View";
 			sourceTree = "<group>";
@@ -9002,6 +9018,9 @@
 				A5D5DD00000000000000012F /* SwiftDashSDKWalletRuntime.swift in Sources */,
 				A5D5DD0000000000000000FB /* SwiftDashSDKSPVCoordinator.swift in Sources */,
 					A5D5DD0000000000000000FE /* SwiftDashSDKSPVStatusScreen.swift in Sources */,
+					A5D5DD000000000000000210 /* PlatformAddressSyncCoordinator.swift in Sources */,
+					A5D5DD000000000000000213 /* PlatformSyncStatusScreen.swift in Sources */,
+					A5D5DD000000000000000216 /* PlatformCreditsFormatter.swift in Sources */,
 					A5D5DD000000000000000103 /* SwiftDashSDKWalletCreator.swift in Sources */,
 					A5D5DD000000000000000106 /* SwiftDashSDKWalletWiper.swift in Sources */,
 					A5D5DD00000000000000010C /* SwiftDashSDKWalletState.swift in Sources */,
@@ -9280,6 +9299,7 @@
 				75BDE7AC2BF3287400556791 /* Toast.swift in Sources */,
 				47B30D7A290D035B0080C326 /* DashTextAttachment.swift in Sources */,
 				C9F067F229E4576D0022D958 /* HomeBalanceView.swift in Sources */,
+				A5D5DD000000000000000219 /* PlatformBalanceView.swift in Sources */,
 				47838B82290271170003E8AB /* PointOfUseListFiltersModel.swift in Sources */,
 				4751CAD92970509600F63AC4 /* ConvertCryptoOrderPreviewViews.swift in Sources */,
 				75E2F3CA2AA4D1B900C3B458 /* Topper.swift in Sources */,
@@ -9858,6 +9878,9 @@
 				A5D5DD000000000000000130 /* SwiftDashSDKWalletRuntime.swift in Sources */,
 				A5D5DD0000000000000000FC /* SwiftDashSDKSPVCoordinator.swift in Sources */,
 					A5D5DD0000000000000000FF /* SwiftDashSDKSPVStatusScreen.swift in Sources */,
+					A5D5DD000000000000000211 /* PlatformAddressSyncCoordinator.swift in Sources */,
+					A5D5DD000000000000000214 /* PlatformSyncStatusScreen.swift in Sources */,
+					A5D5DD000000000000000217 /* PlatformCreditsFormatter.swift in Sources */,
 					A5D5DD000000000000000104 /* SwiftDashSDKWalletCreator.swift in Sources */,
 					A5D5DD000000000000000107 /* SwiftDashSDKWalletWiper.swift in Sources */,
 					A5D5DD00000000000000010D /* SwiftDashSDKWalletState.swift in Sources */,
@@ -10182,6 +10205,7 @@
 				C9D2C8E72A320AA000D15901 /* DashTextAttachment.swift in Sources */,
 				C943B5432A40AFD100AF23C5 /* DWTxDetailPopupViewController.m in Sources */,
 				C9D2C8E82A320AA000D15901 /* HomeBalanceView.swift in Sources */,
+				A5D5DD000000000000000220 /* PlatformBalanceView.swift in Sources */,
 				C9D2C8E92A320AA000D15901 /* PointOfUseListFiltersModel.swift in Sources */,
 				C943B3262A408CED00AF23C5 /* DWCropAvatarViewController.m in Sources */,
 				7573C2E32B01105F00F4C347 /* MasternodeIPCell.swift in Sources */,

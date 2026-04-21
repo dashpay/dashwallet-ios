@@ -45,34 +45,15 @@ final class SwiftDashSDKTransactionSender: NSObject {
     ///   - amount: Amount to send in duffs (1 DASH = 100_000_000 duffs).
     /// - Returns: Tuple of (serialized signed tx bytes, fee in duffs, 32-byte txHash).
     static func buildAndSign(address: String, amount: UInt64) throws -> (txData: Data, fee: UInt64, txHash: Data) {
-        guard !address.isEmpty else {
-            throw SendError.invalidInput("Empty address")
-        }
-        guard amount > 0 else {
-            throw SendError.invalidInput("Amount must be greater than zero")
-        }
-
-        // 1. Fetch the runtime HDWallet descriptor from the provider for the
-        // current app network.
-        let network = try currentRuntimeNetwork()
-        let wallet = try SwiftDashSDKWalletProvider.shared.getWallet(for: network)
-
-        // 2. Get WalletManager from the running SPV coordinator.
-        let walletManager = try SwiftDashSDKSPVCoordinator.shared.getWalletManager()
-
-        // 3. Build + sign (atomic — keys already in FFI memory).
-        let output = TxOutput(address: address, amount: amount)
-        let (txData, fee) = try walletManager.buildSignedTransaction(
-            for: wallet,
-            accIndex: 0,
-            outputs: [output])
-
-        // 4. Compute txHash (double SHA-256, reversed — standard Bitcoin/Dash).
-        let txHash = computeTxHash(from: txData)
-
-        logger.info("💸 TXSEND :: built and signed tx")
-
-        return (txData: txData, fee: fee, txHash: txHash)
+        // TODO(core-spv-neuter): core SPV is disabled while the SwiftDashSDK
+        // `SPVClient` / `TxOutput` / `WalletManager.buildSignedTransaction`
+        // surface is absent (see SwiftDashSDKSPVCoordinator for context).
+        // Re-enable this path once the SDK exposes a replacement
+        // build-and-sign API via `PlatformWalletManager`.
+        logger.warning("💸 TXSEND :: buildAndSign unavailable — core SPV disabled")
+        _ = address
+        _ = amount
+        throw SendError.walletNotReady("SwiftDashSDK send path is temporarily disabled")
     }
 
     // MARK: - Broadcast

@@ -188,6 +188,8 @@ struct ToolsMenuScreen: View {
             showZenLedgerSheet = true
         case .swiftDashSDKSPVStatus:
             showSwiftDashSDKSPVStatus()
+        case .platformSyncStatus:
+            showPlatformSyncStatus()
         case .none:
             break
         }
@@ -201,6 +203,14 @@ struct ToolsMenuScreen: View {
     private func showSwiftDashSDKSPVStatus() {
         let hosting = UIHostingController(
             rootView: SwiftDashSDKSPVStatusScreen(vc: vc)
+        )
+        hosting.hidesBottomBarWhenPushed = true
+        vc.pushViewController(hosting, animated: true)
+    }
+
+    private func showPlatformSyncStatus() {
+        let hosting = UIHostingController(
+            rootView: PlatformSyncStatusScreen(vc: vc)
         )
         hosting.hidesBottomBarWhenPushed = true
         vc.pushViewController(hosting, animated: true)
