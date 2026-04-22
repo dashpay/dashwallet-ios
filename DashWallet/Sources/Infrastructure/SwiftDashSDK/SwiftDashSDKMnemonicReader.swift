@@ -30,4 +30,18 @@ final class SwiftDashSDKMnemonicReader: NSObject {
             return nil
         }
     }
+
+    /// Delete the stored mnemonic. Used by the keychain-recovery flow when the
+    /// user declines to re-derive a wallet from a mnemonic that survived an
+    /// app reinstall. Returns `true` on success, `false` on failure (logged).
+    @objc(deleteStoredMnemonic)
+    static func deleteStoredMnemonic() -> Bool {
+        do {
+            try WalletStorage().deleteMnemonic()
+            return true
+        } catch {
+            logger.error("deleteStoredMnemonic failed: \(String(describing: error), privacy: .public)")
+            return false
+        }
+    }
 }

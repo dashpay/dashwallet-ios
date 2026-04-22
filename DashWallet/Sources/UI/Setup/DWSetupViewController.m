@@ -47,6 +47,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
 @property (nonatomic, assign) BOOL launchingWasDeferred;
 
+@property (nonatomic, assign) BOOL keychainRecoveryChecked;
+
 @end
 
 @implementation DWSetupViewController
@@ -85,6 +87,35 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
                              [self.view layoutIfNeeded];
                          }];
     }
+
+    [self checkKeychainForOrphanMnemonicIfNeeded];
+}
+
+- (void)checkKeychainForOrphanMnemonicIfNeeded {
+    if (self.keychainRecoveryChecked) {
+        return;
+    }
+    if (![DWKeychainWalletRecoveryCoordinator hasOrphanMnemonic]) {
+        return;
+    }
+    self.keychainRecoveryChecked = YES;
+
+    __weak typeof(self) weakSelf = self;
+    [DWKeychainWalletRecoveryCoordinator
+        presentRecoveryFlowFrom:self
+                     completion:^(NSString *_Nullable phrase) {
+                         typeof(self) strongSelf = weakSelf;
+                         if (strongSelf == nil) {
+                             return;
+                         }
+                         if (phrase.length == 0) {
+                             return;
+                         }
+                         [DWGlobalOptions sharedInstance].walletNeedsBackup = NO;
+                         strongSelf.recoverWalletCommand =
+                             [[DWRecoverWalletCommand alloc] initWithPhrase:phrase];
+                         [strongSelf continueOrCompleteWalletSetup];
+                     }];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
