@@ -84,13 +84,13 @@ protocol BuySellPortalModelDelegate: AnyObject {
 
 // MARK: - BuySellPortalModel
 
-class BuySellPortalModel: NetworkReachabilityHandling {
+class BuySellPortalModel: ObservableObject, NetworkReachabilityHandling {
     var networkStatusDidChange: ((NetworkStatus) -> ())?
     internal var reachabilityObserver: Any!
 
     weak var delegate: BuySellPortalModelDelegate?
 
-    var items: [ServiceItem] = [] {
+    @Published var items: [ServiceItem] = [] {
         didSet {
             delegate?.serviceItemsDidChange()
         }
@@ -104,8 +104,10 @@ class BuySellPortalModel: NetworkReachabilityHandling {
     init() {
         serviceItemDataProvider = ServiceDataProviderImpl()
         serviceItemDataProvider.listenForData { [weak self] items in
-            self?.items = items
-            self?.delegate?.serviceItemsDidChange()
+            DispatchQueue.main.async {
+                self?.items = items
+                self?.delegate?.serviceItemsDidChange()
+            }
         }
 
         networkStatusDidChange = { [weak self] _ in

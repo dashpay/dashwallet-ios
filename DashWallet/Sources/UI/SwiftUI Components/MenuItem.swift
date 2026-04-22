@@ -26,11 +26,14 @@ struct MenuItem: View {
     var topText: String? = nil
     var icon: IconName? = nil
     var secondaryIcon: IconName? = nil
+    var iconAlignment: VerticalAlignment = .center
     var showInfo: Bool = false
     var showChevron: Bool = false
     var badgeText: String? = nil
     var dashAmount: Int64? = nil
+    var showDashAmountDirection: Bool = true
     var overrideFiatAmount: String? = nil
+    var trailingView: AnyView? = nil
     var showToggle: Bool = false
     @State private var isToggled: Bool = false
     var action: (() -> Void)? = nil
@@ -41,11 +44,14 @@ struct MenuItem: View {
          topText: String? = nil,
          icon: IconName? = nil,
          secondaryIcon: IconName? = nil,
+         iconAlignment: VerticalAlignment = .center,
          showInfo: Bool = false,
          showChevron: Bool = false,
          badgeText: String? = nil,
          dashAmount: Int64? = nil,
+         showDashAmountDirection: Bool = true,
          overrideFiatAmount: String? = nil,
+         trailingView: AnyView? = nil,
          showToggle: Bool = false,
          isToggled: Bool = false,
          action: (() -> Void)? = nil
@@ -55,22 +61,25 @@ struct MenuItem: View {
             subtitleView: subtitle.map {
                 AnyView(
                     Text($0)
-                        .font(.caption)
-                        .lineSpacing(3)
+                        .font(.footnote)
+                        .lineSpacing(4)
                         .foregroundColor(.tertiaryText)
-                        .padding(.leading, 4)
-                        .padding(.top, 2)
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 )
             },
             details: details,
             topText: topText,
             icon: icon,
             secondaryIcon: secondaryIcon,
+            iconAlignment: iconAlignment,
             showInfo: showInfo,
             showChevron: showChevron,
             badgeText: badgeText,
             dashAmount: dashAmount,
+            showDashAmountDirection: showDashAmountDirection,
             overrideFiatAmount: overrideFiatAmount,
+            trailingView: trailingView,
             showToggle: showToggle,
             isToggled: isToggled,
             action: action
@@ -83,11 +92,14 @@ struct MenuItem: View {
          topText: String? = nil,
          icon: IconName? = nil,
          secondaryIcon: IconName? = nil,
+         iconAlignment: VerticalAlignment = .center,
          showInfo: Bool = false,
          showChevron: Bool = false,
          badgeText: String? = nil,
          dashAmount: Int64? = nil,
+         showDashAmountDirection: Bool = true,
          overrideFiatAmount: String? = nil,
+         trailingView: AnyView? = nil,
          showToggle: Bool = false,
          isToggled: Bool = false,
          action: (() -> Void)? = nil
@@ -98,11 +110,14 @@ struct MenuItem: View {
         self.topText = topText
         self.icon = icon
         self.secondaryIcon = secondaryIcon
+        self.iconAlignment = iconAlignment
         self.showInfo = showInfo
         self.showChevron = showChevron
         self.dashAmount = dashAmount
+        self.showDashAmountDirection = showDashAmountDirection
         self.badgeText = badgeText
         self.overrideFiatAmount = overrideFiatAmount
+        self.trailingView = trailingView
         self._isToggled = State(initialValue: isToggled)
         self.showToggle = showToggle
         self.action = action
@@ -116,7 +131,7 @@ struct MenuItem: View {
                 action?()
             }
         }) {
-            HStack(spacing: 4) {
+            HStack(alignment: iconAlignment, spacing: 10) {
                 if let icon = icon {
                     ZStack(alignment: .leading) {
                         Icon(name: icon)
@@ -138,17 +153,15 @@ struct MenuItem: View {
                             }
                         }
                     }
-                    .frame(width: 36, height: 36)
+                    .frame(width: 30, height: 30)
                 }
                 
-                VStack(alignment: .leading, spacing: 0) {
+                VStack(alignment: .leading, spacing: 2) {
                     if let topText = topText {
                         Text(topText)
                             .font(.caption)
                             .lineSpacing(3)
                             .foregroundColor(.tertiaryText)
-                            .padding(.leading, 4)
-                            .padding(.bottom, 2)
                     }
                     
                     HStack(spacing: 6) {
@@ -177,7 +190,6 @@ struct MenuItem: View {
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.leading, 4)
                     
                     if let subtitle = subtitleView {
                         subtitle
@@ -188,12 +200,11 @@ struct MenuItem: View {
                             .font(.caption)
                             .lineSpacing(3)
                             .foregroundColor(.tertiaryText)
-                            .padding(.leading, 4)
-                            .padding(.top, 2)
                     }
                 }
+                .padding(.leading, 6)
                 .frame(maxWidth: .infinity)
-                
+
                 if showToggle {
                     Toggle(isOn: $isToggled) { }
                         .tint(Color.dashBlue)
@@ -206,12 +217,14 @@ struct MenuItem: View {
                         .imageScale(.small)
                         .foregroundColor(Color.gray)
                         .padding(.trailing, 10)
+                } else if let trailingView = trailingView {
+                    trailingView
                 } else {
                     VStack(alignment: .trailing) {
                         if let dashAmount = dashAmount {
-                            DashAmount(amount: dashAmount)
+                            DashAmount(amount: dashAmount, showDirection: showDashAmountDirection)
                                 .foregroundColor(.primaryText)
-                            
+
                             if dashAmount != 0 && dashAmount != Int64.max && dashAmount != Int64.min {
                                 if let overriden = overrideFiatAmount {
                                     Text(overriden)
