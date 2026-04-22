@@ -153,6 +153,71 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }
     }
 
+    // MARK: - Transfer
+
+    /// Signs and submits a Platform credit transfer from the highest-balance
+    /// derived address with `balance > amount` to `destination`. The funding
+    /// address is drained (input.amount == row.balance); the SDK subtracts the
+    /// fee from the residual via `feeFromInputIndex: 0`. Any excess above the
+    /// real fee is burned — acceptable v1 behavior, to be revisited once we see
+    /// real fee magnitudes from testnet transfers.
+    public func transfer(
+        destination: String,
+        amount: UInt64
+    ) async throws -> PlatformAddressInfosResult {
+        guard isRunning,
+              let sdk = sdk,
+              let walletId = wallet?.walletId,
+              let container = modelContainer,
+              let network = runningNetwork
+        else { throw SendError.coordinatorNotReady }
+
+        let descriptor = FetchDescriptor<PersistentPlatformAddress>(
+            predicate: #Predicate<PersistentPlatformAddress> {
+                $0.walletId == walletId && $0.balance > amount
+            })
+        let rows = try container.mainContext.fetch(descriptor)
+        guard let source = rows.max(by: { $0.balance < $1.balance })
+        else { throw SendError.noFundedAddress }
+
+        guard let dest = Bech32m.decode(destination), dest.data.count == 21
+        else { throw SendError.invalidDestination }
+
+        guard let src = Bech32m.decode(source.address), src.data.count == 21
+        else { throw SendError.invalidSourceAddress }
+
+        guard let mnemonic = SwiftDashSDKMnemonicReader.readMnemonic()
+        else { throw SendError.mnemonicUnavailable }
+
+        let keyWallet = try Wallet(
+            mnemonic: mnemonic,
+            network: keyWalletNetwork(for: network))
+        let wif = try keyWallet.derivePrivateKey(path: source.derivationPath)
+        let parsed = PrivateKeyParser.parseWIF(wif)
+        guard let rawKey = parsed.data, rawKey.count == 32
+        else { throw SendError.keyDecodeFailed(parsed.error ?? "invalid WIF") }
+
+        let input = Addresses.AddressTransferInput(
+            addressBytes: src.data,
+            amount: source.balance,
+            nonce: source.nonce,
+            privateKey: rawKey)
+        let output = Addresses.AddressTransferOutput(
+            addressBytes: dest.data,
+            amount: amount)
+
+        Self.logger.info(
+            "🛰️ PLATFORM-SEND :: from \(source.address, privacy: .public) → \(destination, privacy: .public) :: amount=\(amount) sourceBalance=\(source.balance) nonce=\(source.nonce)")
+
+        let result = try sdk.addresses.transferFunds(
+            inputs: [input],
+            outputs: [output],
+            feeFromInputIndex: 0)
+
+        Task { await self.syncNow() }
+        return result
+    }
+
     /// Clear the UI counters/display without tearing down the sync loop.
     public func clearDisplay() {
         platformBalance = 0
@@ -468,6 +533,15 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }
     }
 
+    private func keyWalletNetwork(for network: AppNetwork) -> KeyWalletNetwork {
+        switch network {
+        case .mainnet: return .mainnet
+        case .testnet: return .testnet
+        case .devnet: return .devnet
+        case .regtest: return .regtest
+        }
+    }
+
     private func buildModelContainer(for network: AppNetwork) throws -> ModelContainer {
         let documents = try FileManager.default.url(
             for: .documentDirectory,
@@ -504,4 +578,46 @@ public struct DerivedPlatformAddress: Identifiable, Equatable, Sendable {
     public let balance: UInt64
 
     public var id: String { address }
+}
+
+// MARK: - SendError
+
+extension PlatformAddressSyncCoordinator {
+    public enum SendError: LocalizedError {
+        case coordinatorNotReady
+        case noFundedAddress
+        case invalidDestination
+        case invalidSourceAddress
+        case mnemonicUnavailable
+        case keyDecodeFailed(String)
+
+        public var errorDescription: String? {
+            switch self {
+            case .coordinatorNotReady:
+                return NSLocalizedString(
+                    "Platform sync is not running. Open Tools → Platform Sync Status to start it.",
+                    comment: "")
+            case .noFundedAddress:
+                return NSLocalizedString(
+                    "No funded Platform address has enough balance to cover this amount plus fees.",
+                    comment: "")
+            case .invalidDestination:
+                return NSLocalizedString(
+                    "Destination address is not a valid Platform bech32m address.",
+                    comment: "")
+            case .invalidSourceAddress:
+                return NSLocalizedString(
+                    "Funding address could not be decoded.",
+                    comment: "")
+            case .mnemonicUnavailable:
+                return NSLocalizedString(
+                    "Wallet mnemonic is unavailable. Unlock the wallet and try again.",
+                    comment: "")
+            case .keyDecodeFailed(let reason):
+                return String(
+                    format: NSLocalizedString("Private key could not be decoded: %@", comment: ""),
+                    reason)
+            }
+        }
+    }
 }
