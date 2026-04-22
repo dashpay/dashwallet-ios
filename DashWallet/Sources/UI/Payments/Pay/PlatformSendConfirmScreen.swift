@@ -69,15 +69,20 @@ struct PlatformSendConfirmScreen: View {
 
     private var amountField: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(NSLocalizedString("Amount (credits)", comment: ""))
+            Text(NSLocalizedString("Amount (DASH)", comment: ""))
                 .font(.caption)
                 .foregroundColor(.secondary)
-            TextField("0", text: $amountText)
-                .keyboardType(.numberPad)
+            TextField("0.0", text: $amountText)
+                .keyboardType(.decimalPad)
                 .font(.system(.body, design: .monospaced))
                 .padding(12)
                 .background(Color.secondaryBackground)
                 .cornerRadius(10)
+            if let credits = parsedAmountCredits(), credits > 0 {
+                Text("\(credits) credits")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
         }
     }
 
@@ -100,12 +105,38 @@ struct PlatformSendConfirmScreen: View {
     }
 
     private var canSend: Bool {
-        guard let amount = UInt64(amountText), amount > 0 else { return false }
-        return Bech32m.isValidPlatformAddress(destination)
+        guard let credits = parsedAmountCredits(), credits > 0 else { return false }
+        let lower = destination.lowercased()
+        let hasPlatformPrefix = lower.hasPrefix("tdashevo1")
+            || lower.hasPrefix("dashevo1")
+            || lower.hasPrefix("tdash1")
+            || lower.hasPrefix("dash1")
+        return hasPlatformPrefix && Bech32m.decode(destination) != nil
+    }
+
+    /// Accept either a `.` or `,` decimal separator; convert DASH → credits
+    /// (1 DASH = 100_000_000_000 credits). Returns nil when the text is empty
+    /// or unparseable, or when the product overflows UInt64.
+    private func parsedAmountCredits() -> UInt64? {
+        let normalized = amountText
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: ",", with: ".")
+        guard !normalized.isEmpty,
+              let dash = Decimal(string: normalized) else { return nil }
+        let credits = dash * Decimal(PlatformCreditsFormatter.creditsPerDash)
+        var rounded = Decimal()
+        var source = credits
+        NSDecimalRound(&rounded, &source, 0, .plain)
+        let number = NSDecimalNumber(decimal: rounded)
+        guard number.compare(NSDecimalNumber.zero) == .orderedDescending else { return nil }
+        guard number.compare(NSDecimalNumber(value: UInt64.max)) != .orderedDescending else {
+            return nil
+        }
+        return number.uint64Value
     }
 
     private func send() {
-        guard let amount = UInt64(amountText), amount > 0 else { return }
+        guard let amount = parsedAmountCredits(), amount > 0 else { return }
         isWorking = true
         errorMessage = nil
         successMessage = nil

@@ -59,7 +59,13 @@ final class SendScreenViewController: DWBasePayViewController {
     }
 
     private func continuePlatform(address: String) {
-        guard Bech32m.isValidPlatformAddress(address) else { return }
+        let lower = address.lowercased()
+        let hasPlatformPrefix = lower.hasPrefix("tdashevo1")
+            || lower.hasPrefix("dashevo1")
+            || lower.hasPrefix("tdash1")
+            || lower.hasPrefix("dash1")
+        guard hasPlatformPrefix, Bech32m.decode(address) != nil else { return }
+
         let confirm = PlatformSendConfirmScreen(destination: address) { [weak self] in
             self?.dismiss(animated: true)
         }

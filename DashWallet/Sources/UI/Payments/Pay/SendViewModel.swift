@@ -60,20 +60,55 @@ final class SendViewModel: ObservableObject {
             network = .core
             return
         }
-        if let raw = paymentInput.userDetails, Bech32m.isValidPlatformAddress(raw) {
+        if let raw = paymentInput.userDetails, Self.looksLikePlatformAddress(raw) {
             addressText = raw
             network = .platform
         }
     }
 
+    /// Flip the Core/Platform toggle when the entered text validates unambiguously
+    /// as the *other* network. Prevents the "can't press Continue" trap when a
+    /// user pastes a `tdash1…` into a Core-selected screen (or vice versa).
+    func autoSelectNetworkForCurrentAddress() {
+        let trimmed = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        let chain = DWEnvironment.sharedInstance().currentChain
+        let matchesCore = trimmed.isValidDashAddress(on: chain)
+        let matchesPlatform = Self.looksLikePlatformAddress(trimmed)
+
+        if matchesPlatform && !matchesCore && network != .platform {
+            network = .platform
+        } else if matchesCore && !matchesPlatform && network != .core {
+            network = .core
+        }
+    }
+
     var canContinue: Bool {
+        let trimmed = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
         switch network {
         case .core:
             let chain = DWEnvironment.sharedInstance().currentChain
-            return addressText.isValidDashAddress(on: chain)
+            return trimmed.isValidDashAddress(on: chain)
         case .platform:
-            return Bech32m.isValidPlatformAddress(addressText)
+            return Self.looksLikePlatformAddress(trimmed)
         }
+    }
+
+    /// Lenient Platform-address check. `Bech32m.isValidPlatformAddress` is
+    /// strict about HRPs `dashevo` / `tdashevo`, but dashwallet generates
+    /// addresses with HRPs `dash` / `tdash` (visible in Storage Explorer and
+    /// the Receive screen). Accept any of the four platform HRPs and rely on
+    /// `Bech32m.decode` for checksum validation.
+    private static func looksLikePlatformAddress(_ s: String) -> Bool {
+        let lower = s.lowercased()
+        let hasPlatformPrefix = lower.hasPrefix("tdashevo1")
+            || lower.hasPrefix("dashevo1")
+            || lower.hasPrefix("tdash1")
+            || lower.hasPrefix("dash1")
+        guard hasPlatformPrefix else { return false }
+        return Bech32m.decode(s) != nil
     }
 
     private static func detect(in raw: String, chain: DSChain) -> ClipboardSuggestion? {

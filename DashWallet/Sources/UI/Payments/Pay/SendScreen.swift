@@ -70,7 +70,16 @@ struct SendScreen: View {
                 .cornerRadius(10)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
+                .keyboardType(.asciiCapable)
                 .lineLimit(2...4)
+                .onChange(of: viewModel.addressText) { _, newValue in
+                    let sanitized = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if sanitized != newValue {
+                        viewModel.addressText = sanitized
+                        return
+                    }
+                    viewModel.autoSelectNetworkForCurrentAddress()
+                }
         }
         .padding(.horizontal, 20)
     }
