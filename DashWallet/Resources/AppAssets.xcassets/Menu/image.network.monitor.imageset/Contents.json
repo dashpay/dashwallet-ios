@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Layer_1.png",
+      "filename" : "network-monitor.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Layer_1@2x.png",
+      "filename" : "network-monitor@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Layer_1@3x.png",
+      "filename" : "network-monitor@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

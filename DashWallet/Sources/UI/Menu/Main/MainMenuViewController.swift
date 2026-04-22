@@ -136,9 +136,6 @@ struct MainMenuScreen: View {
     private let onContactSupport: () -> ()
     
     @ObservedObject private var viewModel: MainMenuViewModel
-    @State private var openSettings: Bool = false
-    @State private var showTools: Bool = false
-    @State private var showSecurity: Bool = false
     @State private var showMixDialog: Bool = false
     @State private var showDashPayInfo: Bool = false
     @State private var showCreditsPurchasedToast: Bool = false
@@ -196,17 +193,8 @@ struct MainMenuScreen: View {
     
     var body: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 20) {
-                // Header
-                HStack {
-                    Text(NSLocalizedString("More", comment: ""))
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primaryText)
-                    Spacer()
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 5)
+            LazyVStack(alignment: .leading, spacing: 0) {
+                TopIntro(title: NSLocalizedString("More", comment: ""))
                 
                 #if DASHPAY
                 if viewModel.userProfileModel?.showJoinDashpay == true {
@@ -227,10 +215,10 @@ struct MainMenuScreen: View {
                 #endif
                 
                 // Menu items grouped in sections
-                VStack(spacing: 16) {
-                    // First group - main services (first 2 items)
+                VStack(spacing: 20) {
+                    // Menu list - first group (first 2 items)
                     if viewModel.items.count >= 2 {
-                        VStack(spacing: 0) {
+                        VStack(spacing: 2) {
                             ForEach(viewModel.items.prefix(2)) { item in
                                 MenuItem(
                                     title: item.title,
@@ -239,18 +227,18 @@ struct MainMenuScreen: View {
                                     showChevron: false,
                                     action: item.action
                                 )
-                                .frame(minHeight: 60)
+                                .frame(minHeight: 56)
                             }
                         }
-                        .padding(.vertical, 5)
+                        .padding(6)
                         .background(Color.secondaryBackground)
-                        .cornerRadius(12)
+                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                         .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
                     }
-                    
-                    // Second group - settings items (remaining items)
+
+                    // Menu list - second group (remaining items)
                     if viewModel.items.count > 2 {
-                        VStack(spacing: 0) {
+                        VStack(spacing: 2) {
                             ForEach(viewModel.items.dropFirst(2)) { item in
                                 MenuItem(
                                     title: item.title,
@@ -259,12 +247,12 @@ struct MainMenuScreen: View {
                                     showChevron: false,
                                     action: item.action
                                 )
-                                .frame(minHeight: 60)
+                                .frame(minHeight: 56)
                             }
                         }
-                        .padding(.vertical, 5)
+                        .padding(6)
                         .background(Color.secondaryBackground)
-                        .cornerRadius(12)
+                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                         .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
                     }
                 }
@@ -308,32 +296,6 @@ struct MainMenuScreen: View {
             }
             #endif
             
-            NavigationLink(
-                destination: SettingsScreen(vc: vc, onDidRescan: {
-                    self.vc.popToRootViewController(animated: false)
-                    self.delegateInternal.mainMenuViewControllerOpenHomeScreen()
-                }),
-                isActive: $openSettings
-            ) {
-                EmptyView()
-            }
-            
-            NavigationLink(
-                destination: ToolsMenuScreen(vc: vc, onImportPrivateKey: {
-                    self.vc.popToRootViewController(animated: false)
-                    self.delegateInternal.mainMenuViewControllerImportPrivateKey()
-                }),
-                isActive: $showTools
-            ) {
-                EmptyView()
-            }
-            
-            NavigationLink(
-                destination: SecurityMenuScreen(vc: vc),
-                isActive: $showSecurity
-            ) {
-                EmptyView()
-            }
         }
         .background(Color.primaryBackground)
         .onAppear {
@@ -425,11 +387,11 @@ struct MainMenuScreen: View {
         case .explore:
             showExplore()
         case .security:
-            showSecurity = true
+            showSecurity()
         case .settings:
-            openSettings = true
+            showSettings()
         case .tools:
-            showTools = true
+            showTools()
         case .support:
             onContactSupport()
         #if DASHPAY
@@ -455,15 +417,47 @@ struct MainMenuScreen: View {
         controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }
-    
+
     private func showExplore() {
-        let controller = ExploreViewController()
-        controller.delegate = delegateInternal
-        let navigationController = BaseNavigationController(rootViewController: controller)
-        vc.present(navigationController, animated: true)
+        let screen = ExploreMenuScreen(
+            vc: vc,
+            onShowSendPayment: { delegateInternal.showPaymentsController(withActivePage: PaymentsViewControllerState.pay.rawValue) },
+            onShowReceivePayment: { delegateInternal.showPaymentsController(withActivePage: PaymentsViewControllerState.receive.rawValue) },
+            onShowGiftCard: { txId in delegateInternal.showGiftCard(txId) }
+        )
+        let controller = UIHostingController(rootView: screen)
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
+    }
+
+    private func showSettings() {
+        let screen = SettingsScreen(vc: vc, onDidRescan: {
+            self.vc.popToRootViewController(animated: false)
+            self.delegateInternal.mainMenuViewControllerOpenHomeScreen()
+        })
+        let controller = UIHostingController(rootView: screen)
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
+    }
+
+    private func showTools() {
+        let screen = ToolsMenuScreen(vc: vc, onImportPrivateKey: {
+            self.vc.popToRootViewController(animated: false)
+            self.delegateInternal.mainMenuViewControllerImportPrivateKey()
+        })
+        let controller = UIHostingController(rootView: screen)
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
+    }
+
+    private func showSecurity() {
+        let screen = SecurityMenuScreen(vc: vc)
+        let controller = UIHostingController(rootView: screen)
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
     }
     
-    #if DASHPAY
+#if DASHPAY
     private func showInvite() {
         let controller = DWInvitationHistoryViewController()
         controller.hidesBottomBarWhenPushed = true
