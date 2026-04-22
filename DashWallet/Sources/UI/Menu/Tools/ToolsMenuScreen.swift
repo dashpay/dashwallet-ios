@@ -221,8 +221,8 @@ struct ToolsMenuScreen: View {
     private func showStorageExplorer() {
         let coordinator = PlatformAddressSyncCoordinator.shared
         let navController = vc
-        let popRoot = { [weak navController] in
-            navController?.popViewController(animated: true)
+        let popRoot: () -> Void = { [weak navController] in
+            _ = navController?.popViewController(animated: true)
         }
 
         let hosting: UIHostingController<AnyView>
