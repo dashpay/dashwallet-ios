@@ -1418,6 +1418,9 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "Local Currency";
 
+/* local currency empty state */
+"No matches for \"%@\"" = "No matches for \"%@\"";
+
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
 
