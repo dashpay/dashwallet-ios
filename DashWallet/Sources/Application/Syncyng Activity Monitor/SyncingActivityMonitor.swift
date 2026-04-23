@@ -138,7 +138,15 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
 
     private var isSyncing = false {
         didSet {
-            UIApplication.shared.isIdleTimerDisabled = isSyncing
+            // All writers reach this on the main thread (Combine pipeline
+            // `.receive(on: RunLoop.main)`, reachability callback hops via
+            // `Task { @MainActor in }`). `assumeIsolated` asserts that at
+            // runtime and gives Xcode's Main-Thread-Checker heuristic the
+            // isolation proof it won't accept from `DispatchQueue.main.async`
+            // or a detached `Task { @MainActor in }`.
+            MainActor.assumeIsolated {
+                UIApplication.shared.isIdleTimerDisabled = isSyncing
+            }
         }
     }
 
