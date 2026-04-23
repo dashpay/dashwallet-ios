@@ -145,7 +145,7 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
     }
 
     @objc
-    class func controller() -> BuySellPortalViewController {
+    static func controller() -> BuySellPortalViewController {
         BuySellPortalViewController()
     }
 }

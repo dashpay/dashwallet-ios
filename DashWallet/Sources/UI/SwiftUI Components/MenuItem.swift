@@ -22,22 +22,21 @@ typealias TransactionPreview = MenuItem
 struct MenuItem: View {
     var title: String
     var subtitleView: AnyView?
-    var details: String? = nil
-    var topText: String? = nil
-    var icon: IconName? = nil
-    var secondaryIcon: IconName? = nil
+    var details: String?
+    var topText: String?
+    var icon: IconName?
+    var secondaryIcon: IconName?
     var iconAlignment: VerticalAlignment = .center
     var showInfo: Bool = false
     var showChevron: Bool = false
-    var badgeText: String? = nil
-    var dashAmount: Int64? = nil
+    var badgeText: String?
+    var dashAmount: Int64?
     var showDashAmountDirection: Bool = true
-    var overrideFiatAmount: String? = nil
-    var trailingView: AnyView? = nil
+    var overrideFiatAmount: String?
+    var trailingView: AnyView?
     var showToggle: Bool = false
     @State private var isToggled: Bool = false
-    var action: (() -> Void)? = nil
-
+    var action: (() -> Void)?
     init(title: String,
          subtitle: String? = nil,
          subtitleLineLimit: Int? = 1,
