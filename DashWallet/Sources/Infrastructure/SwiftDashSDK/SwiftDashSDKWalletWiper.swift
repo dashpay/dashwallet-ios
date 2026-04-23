@@ -62,6 +62,17 @@ final class SwiftDashSDKWalletWiper: NSObject {
             object: nil,
             queue: nil
         ) { _ in
+            // Stop Platform address sync synchronously on main BEFORE the rest
+            // of the wipe runs. The notification is posted on the main thread
+            // from `[DWEnvironment clearAllWalletsAndRemovePin:]` just *before*
+            // DashSync's own synchronous wipe starts; this observer fires
+            // inline (queue: nil → poster's thread = main). Stopping here
+            // drains the BLAST tokio task before any teardown runs, so a
+            // late `persistSyncState` callback can't hit a torn-down
+            // SwiftData `ModelContext` during keychain deletion.
+            MainActor.assumeIsolated {
+                PlatformAddressSyncCoordinator.stopImmediatelyOnMain()
+            }
             DispatchQueue.global(qos: .userInitiated).async {
                 performWipe()
             }
@@ -79,14 +90,10 @@ final class SwiftDashSDKWalletWiper: NSObject {
     /// Idempotent. Never throws, never crashes; all errors swallowed
     /// to os.log.
     private static func performWipe() {
-        // 0) Stop the Platform address sync coordinator synchronously FIRST.
-        // Its BLAST tokio task emits periodic `persistSyncState` callbacks
-        // that run SwiftData fetches against the coordinator's `ModelContext`.
-        // If we delete keychain material and tear down the runtime below
-        // while a callback is mid-flight, the fetch crashes against a
-        // torn-down context (EXC_BAD_ACCESS in `walletNetwork(walletId:)`).
-        PlatformAddressSyncCoordinator.stopAndWait(timeout: 5.0)
-        logger.info("stopped Platform address sync coordinator before wipe")
+        // By this point the notification observer has already stopped the
+        // Platform address sync coordinator synchronously on main; the BLAST
+        // tokio task is drained and its `ModelContext` released, so the
+        // keychain teardown below can't race with an in-flight callback.
 
         // 1) Delete the encrypted seed from WalletStorage. Already
         // idempotent — `WalletStorage.deleteSeed` accepts both
