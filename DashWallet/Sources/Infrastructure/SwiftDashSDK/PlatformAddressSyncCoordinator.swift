@@ -122,21 +122,6 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }
     }
 
-    /// Synchronous stop that blocks the caller until `performStop()` completes,
-    /// bounded by `timeout`. Used by the wallet-wipe path so the BLAST tokio
-    /// task quiesces (no more `persistSyncState` callbacks) BEFORE keychain +
-    /// SwiftData teardown runs — otherwise an in-flight callback crashes on a
-    /// torn-down `ModelContext`.
-    @objc(stopAndWaitWithTimeout:)
-    public nonisolated static func stopAndWait(timeout: TimeInterval) {
-        let semaphore = DispatchSemaphore(value: 0)
-        Task { @MainActor in
-            await shared.performStop()
-            semaphore.signal()
-        }
-        _ = semaphore.wait(timeout: .now() + timeout)
-    }
-
     // MARK: - Public lifecycle (Swift)
 
     public nonisolated func start(for network: AppNetwork) {
