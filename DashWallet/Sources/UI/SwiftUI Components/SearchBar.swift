@@ -71,7 +71,6 @@ struct SearchBar: View {
         if !text.isEmpty {
             Button(action: { text = "" }) {
                 Icon(name: xmarkIcon)
-                    .foregroundColor(Color.black1000Alpha30)
             }
         }
     }
@@ -105,7 +104,6 @@ struct SearchBar: View {
 
     private var magnifyingglass: some View {
         Icon(name: searchIcon)
-            .foregroundColor(Color.black1000Alpha50)
     }
 
     @ViewBuilder
