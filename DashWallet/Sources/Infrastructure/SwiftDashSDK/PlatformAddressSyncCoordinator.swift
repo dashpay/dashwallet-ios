@@ -404,22 +404,53 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     }
 
     private func deletePersistedWalletIfAny() {
-        guard let container = modelContainer, let walletId = wallet?.walletId else {
-            return
-        }
-        let descriptor = FetchDescriptor<PersistentWallet>(
-            predicate: #Predicate<PersistentWallet> { $0.walletId == walletId })
-        do {
-            let rows = try container.mainContext.fetch(descriptor)
-            for row in rows {
-                container.mainContext.delete(row)
+        guard let container = modelContainer else { return }
+        let context = container.mainContext
+
+        if let walletId = wallet?.walletId {
+            let walletDescriptor = FetchDescriptor<PersistentWallet>(
+                predicate: #Predicate<PersistentWallet> { $0.walletId == walletId })
+            do {
+                let rows = try context.fetch(walletDescriptor)
+                for row in rows {
+                    context.delete(row)
+                }
+                Self.logger.info(
+                    "🛰️ PLATFORM-ADDR :: deleted \(rows.count) PersistentWallet row(s) before stop")
+            } catch {
+                Self.logger.error(
+                    "🛰️ PLATFORM-ADDR :: PersistentWallet cleanup threw: \(String(describing: error), privacy: .public)")
             }
-            try container.mainContext.save()
-            Self.logger.info(
-                "🛰️ PLATFORM-ADDR :: deleted \(rows.count) PersistentWallet row(s) before stop")
+        }
+
+        // Drop the BLAST sync watermark too. `PersistentSyncState` is a
+        // standalone model — no cascade from `PersistentWallet` — and it's
+        // keyed per network (`platform-sync:<network>` scope id, one row per
+        // network). Leaving it behind makes BLAST resume from the last-known
+        // block on the re-created wallet; the trunk/branch/compact rescan
+        // that would re-discover balances for the freshly-derived address
+        // pool is skipped, and the UI stays at 0 forever.
+        if let netName = runningNetwork?.rawValue {
+            let syncDescriptor = FetchDescriptor<PersistentSyncState>(
+                predicate: #Predicate<PersistentSyncState> { $0.network == netName })
+            do {
+                let rows = try context.fetch(syncDescriptor)
+                for row in rows {
+                    context.delete(row)
+                }
+                Self.logger.info(
+                    "🛰️ PLATFORM-ADDR :: deleted \(rows.count) PersistentSyncState row(s) for \(netName, privacy: .public)")
+            } catch {
+                Self.logger.error(
+                    "🛰️ PLATFORM-ADDR :: PersistentSyncState cleanup threw: \(String(describing: error), privacy: .public)")
+            }
+        }
+
+        do {
+            try context.save()
         } catch {
             Self.logger.error(
-                "🛰️ PLATFORM-ADDR :: PersistentWallet cleanup threw: \(String(describing: error), privacy: .public)")
+                "🛰️ PLATFORM-ADDR :: wipe-cleanup save threw: \(String(describing: error), privacy: .public)")
         }
     }
 
