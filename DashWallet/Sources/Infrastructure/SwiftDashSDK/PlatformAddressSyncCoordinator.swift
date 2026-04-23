@@ -118,7 +118,21 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     @objc(stop)
     public nonisolated static func stop() {
         Task { @MainActor in
-            await shared.performStop()
+            await shared.performStop(deletingPersistedWallet: false)
+        }
+    }
+
+    /// Wipe-path entry: delete the `PersistentWallet` row from SwiftData BEFORE
+    /// stopping the BLAST tokio task, so in-flight `walletNetwork(walletId:)`
+    /// callbacks early-exit instead of racing the teardown. Mirrors
+    /// `WalletDetailView.deleteWallet()` + `rebindWalletScopedServices()` in
+    /// SwiftExampleApp. Must only be called when the wallet is actually being
+    /// wiped — a plain stop/restart should use `stop()` to preserve address +
+    /// balance history.
+    @objc(stopForWipe)
+    public nonisolated static func stopForWipe() {
+        Task { @MainActor in
+            await shared.performStop(deletingPersistedWallet: true)
         }
     }
 
@@ -132,7 +146,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     public nonisolated func stop() {
         Task { @MainActor in
-            await self.performStop()
+            await self.performStop(deletingPersistedWallet: false)
         }
     }
 
@@ -256,7 +270,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }
 
         if walletManager != nil {
-            await performStop()
+            await performStop(deletingPersistedWallet: false)
         }
 
         guard let platformNetwork = platformNetwork(for: network) else {
@@ -342,22 +356,27 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         Self.logger.info("🛰️ PLATFORM-ADDR :: started for \(network.rawValue, privacy: .public)")
     }
 
-    private func performStop() async {
+    private func performStop(deletingPersistedWallet: Bool) async {
         // Mirror SwiftExampleApp's delete-wallet sequence
         // (`WalletDetailView.deleteWallet()` + `rebindWalletScopedServices()`):
         //
-        //   1. Delete the `PersistentWallet` row from SwiftData FIRST. After
-        //      this, any in-flight BLAST callback that does
+        //   1. When wiping, delete the `PersistentWallet` row from SwiftData
+        //      FIRST. After this, any in-flight BLAST callback that does
         //      `walletNetwork(walletId:)` gets an empty fetch and early-exits,
         //      instead of traversing deeper and hitting refs that will be
         //      dropped by the teardown below.
+        //      Plain stops (app restart, wallet-material change, network
+        //      switch) must NOT delete the row — that would erase address +
+        //      balance history and force a full resync every launch.
         //   2. Cancel Combine subscriptions.
         //   3. `stopPlatformAddressSync()` on the still-alive manager.
         //   4. Drop Swift-side handles. `modelContainer` stays alive through
         //      the reset — the next `performStart` overwrites it, and keeping
         //      it referenced here means SwiftData contexts captured by
         //      Rust-side persister closures don't dangle while tokio winds down.
-        deletePersistedWalletIfAny()
+        if deletingPersistedWallet {
+            deletePersistedWalletIfAny()
+        }
 
         syncEventCancellable?.cancel()
         syncEventCancellable = nil

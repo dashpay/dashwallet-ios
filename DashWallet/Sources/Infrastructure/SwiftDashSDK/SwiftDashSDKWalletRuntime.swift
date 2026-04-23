@@ -81,7 +81,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     @objc(handleWalletWiped)
     static func handleWalletWiped() {
         shared.workQueue.async {
-            shared.performFullReset(lastError: nil)
+            shared.performFullReset(lastError: nil, forWipe: true)
         }
     }
 
@@ -166,8 +166,12 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         Self.logger.info("🧭 RUNTIME :: bootstrapped missing descriptor for \(network.rawValue, privacy: .public)")
     }
 
-    private func performFullReset(lastError: String?) {
-        PlatformAddressSyncCoordinator.stop()
+    private func performFullReset(lastError: String?, forWipe: Bool = false) {
+        if forWipe {
+            PlatformAddressSyncCoordinator.stopForWipe()
+        } else {
+            PlatformAddressSyncCoordinator.stop()
+        }
         waitForCoordinatorStop(lastError: lastError)
         SwiftDashSDKWalletProvider.shared.invalidate()
         SwiftDashSDKWalletState.shared.clearAllState()
