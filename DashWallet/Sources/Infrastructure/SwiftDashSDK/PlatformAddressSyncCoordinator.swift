@@ -156,11 +156,11 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     // MARK: - Transfer
 
     /// Signs and submits a Platform credit transfer from the highest-balance
-    /// derived address with `balance > amount` to `destination`. The funding
-    /// address is drained (input.amount == row.balance); the SDK subtracts the
-    /// fee from the residual via `feeFromInputIndex: 0`. Any excess above the
-    /// real fee is burned — acceptable v1 behavior, to be revisited once we see
-    /// real fee magnitudes from testnet transfers.
+    /// derived address with `balance >= amount` to `destination`. Platform's
+    /// state transition protocol enforces `sum(inputs) == sum(outputs)`, so
+    /// we transfer exactly `amount` — any unspent balance stays on the source
+    /// address. `feeFromInputIndex: 0` designates which input's account bears
+    /// the processing fee, charged separately by Platform.
     public func transfer(
         destination: String,
         amount: UInt64
@@ -174,17 +174,19 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
         let descriptor = FetchDescriptor<PersistentPlatformAddress>(
             predicate: #Predicate<PersistentPlatformAddress> {
-                $0.walletId == walletId && $0.balance > amount
+                $0.walletId == walletId && $0.balance >= amount
             })
         let rows = try container.mainContext.fetch(descriptor)
         guard let source = rows.max(by: { $0.balance < $1.balance })
         else { throw SendError.noFundedAddress }
 
-        guard let dest = Bech32m.decode(destination), dest.data.count == 21
+        guard let destBytes = Self.platformAddressBytes(bech32m: destination)
         else { throw SendError.invalidDestination }
 
-        guard let src = Bech32m.decode(source.address), src.data.count == 21
+        guard source.addressHash.count == 20
         else { throw SendError.invalidSourceAddress }
+        var srcBytes = Data([source.addressType])
+        srcBytes.append(source.addressHash)
 
         guard let mnemonic = SwiftDashSDKMnemonicReader.readMnemonic()
         else { throw SendError.mnemonicUnavailable }
@@ -198,12 +200,12 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         else { throw SendError.keyDecodeFailed(parsed.error ?? "invalid WIF") }
 
         let input = Addresses.AddressTransferInput(
-            addressBytes: src.data,
-            amount: source.balance,
+            addressBytes: srcBytes,
+            amount: amount,
             nonce: source.nonce,
             privateKey: rawKey)
         let output = Addresses.AddressTransferOutput(
-            addressBytes: dest.data,
+            addressBytes: destBytes,
             amount: amount)
 
         Self.logger.info(
@@ -539,6 +541,44 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         case .testnet: return .testnet
         case .devnet: return .devnet
         case .regtest: return .regtest
+        }
+    }
+
+    /// Normalize a bech32m Platform address to the 21-byte `[variant | hash]`
+    /// form `sdk.addresses.transferFunds` expects (variant is the PlatformAddress
+    /// discriminant: 0 = P2PKH, 1 = P2SH).
+    ///
+    /// Accepts two encodings:
+    /// - HRP `dashevo` / `tdashevo` — already in variant-prefixed form; returned as-is.
+    /// - HRP `dash` / `tdash` (DIP-0018) — what dashwallet's Receive screen
+    ///   produces. The first decoded byte is a DIP-0018 *version* byte
+    ///   (`0xb0` → P2PKH, `0x80` → P2SH). Translate to the variant form.
+    ///
+    /// Mirrors `PlatformWalletPersistenceHandler.platformAddressComponents(fromBech32m:)`
+    /// in SwiftDashSDK, which is private to the SDK.
+    static func platformAddressBytes(bech32m: String) -> Data? {
+        guard let decoded = Bech32m.decode(bech32m.lowercased()),
+              decoded.data.count == 21
+        else { return nil }
+
+        switch decoded.hrp {
+        case "dashevo", "tdashevo":
+            let variant = decoded.data[0]
+            guard variant <= 1 else { return nil }
+            return decoded.data
+        case "dash", "tdash":
+            let versionByte = decoded.data[0]
+            let variant: UInt8
+            switch versionByte {
+            case 0xb0: variant = 0
+            case 0x80: variant = 1
+            default: return nil
+            }
+            var bytes = Data([variant])
+            bytes.append(decoded.data.subdata(in: 1..<21))
+            return bytes
+        default:
+            return nil
         }
     }
 
