@@ -98,11 +98,18 @@ private struct LocalCurrencyScrollContentView: View {
     private var hasVisibleContent: Bool {
         !filteredItems.isEmpty || shouldShowNoResults
     }
+    
+    private var noResultsText: String {
+        String.localizedStringWithFormat(
+            NSLocalizedString("No matches for \"%@\"", comment: "Local Currency: no search matches"),
+            trimmedSearchQuery
+        )
+    }
 
     @ViewBuilder
     private var noResultsView: some View {
         VStack {
-            Text("No matches for \"\(trimmedSearchQuery)\"")
+            Text(noResultsText)
                 .font(.footnote)
                 .foregroundColor(.secondary)
         }
