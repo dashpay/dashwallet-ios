@@ -122,52 +122,19 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }
     }
 
-    /// Synchronous stop that must be called from the main thread. Used by the
-    /// wallet-wipe path so the BLAST tokio task quiesces (no more
-    /// `persistSyncState` callbacks) BEFORE keychain + SwiftData teardown —
-    /// otherwise an in-flight callback crashes on a torn-down `ModelContext`.
-    /// Blocks the main thread for up to ~2s while polling the FFI drain state.
-    @objc(stopImmediatelyOnMain)
-    @MainActor
-    public static func stopImmediatelyOnMain() {
-        shared.performStopSynchronously()
-    }
-
-    @MainActor
-    private func performStopSynchronously() {
-        syncEventCancellable?.cancel()
-        syncEventCancellable = nil
-        syncStateCancellable?.cancel()
-        syncStateCancellable = nil
-
-        if let manager = walletManager {
-            do {
-                if try manager.isPlatformAddressSyncRunning() {
-                    try manager.stopPlatformAddressSync()
-                }
-                // Poll for actual drain — the FFI stop call may return before
-                // the tokio task has finished its last in-flight callback.
-                let deadline = Date().addingTimeInterval(2.0)
-                while Date() < deadline {
-                    if let running = try? manager.isPlatformAddressSyncRunning(), !running {
-                        break
-                    }
-                    Thread.sleep(forTimeInterval: 0.05)
-                }
-                Self.logger.info("🛰️ PLATFORM-ADDR :: stopped synchronously")
-            } catch {
-                Self.logger.error("🛰️ PLATFORM-ADDR :: stopPlatformAddressSync threw: \(String(describing: error), privacy: .public)")
-            }
+    /// Synchronous stop that blocks the caller until `performStop()` completes,
+    /// bounded by `timeout`. Used by the wallet-wipe path so the BLAST tokio
+    /// task quiesces (no more `persistSyncState` callbacks) BEFORE keychain +
+    /// SwiftData teardown runs — otherwise an in-flight callback crashes on a
+    /// torn-down `ModelContext`.
+    @objc(stopAndWaitWithTimeout:)
+    public nonisolated static func stopAndWait(timeout: TimeInterval) {
+        let semaphore = DispatchSemaphore(value: 0)
+        Task { @MainActor in
+            await shared.performStop()
+            semaphore.signal()
         }
-
-        walletManager = nil
-        wallet = nil
-        platformAddressWallet = nil
-        sdk = nil
-        modelContainer = nil
-        runningNetwork = nil
-        isRunning = false
-        clearDisplay()
+        _ = semaphore.wait(timeout: .now() + timeout)
     }
 
     // MARK: - Public lifecycle (Swift)
