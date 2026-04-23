@@ -34,6 +34,9 @@ struct SearchBar: View {
     @State private var isEditing: Bool = false
     @State private var cancelButtonWidth: CGFloat = 0
 
+    private let searchIcon = IconName.custom("search-icon", maxHeight: 15)
+    private let xmarkIcon = IconName.custom("xmark-icon", maxHeight: 15)
+
     var body: some View {
         HStack(spacing: 0) {
             HStack(spacing: Layout.fieldSpacing) {
@@ -56,7 +59,7 @@ struct SearchBar: View {
         .onAppear {
             isEditing = isFocused
         }
-        .onChange(of: isFocused) { focused in
+        .onChange(of: isFocused) { _, focused in
             withAnimation(.easeInOut(duration: Layout.animationDuration)) {
                 isEditing = focused
             }
@@ -67,7 +70,7 @@ struct SearchBar: View {
     private var clearButton: some View {
         if !text.isEmpty {
             Button(action: { text = "" }) {
-                Image(systemName: "xmark.circle.fill")
+                Icon(name: xmarkIcon)
                     .foregroundColor(Color.black1000Alpha30)
             }
         }
@@ -101,7 +104,7 @@ struct SearchBar: View {
     }
 
     private var magnifyingglass: some View {
-        Image(systemName: "magnifyingglass")
+        Icon(name: searchIcon)
             .foregroundColor(Color.black1000Alpha50)
     }
 
@@ -115,6 +118,7 @@ struct SearchBar: View {
                 EmptyView()
             }
             .focused($isFocused)
+            .tint(.primaryText)
         } else {
             // Fallback on earlier versions
             TextField(NSLocalizedString("Search", comment: ""), text: $text)
@@ -122,6 +126,7 @@ struct SearchBar: View {
                 .disableAutocorrection(true)
                 .foregroundColor(.primaryText)
                 .focused($isFocused)
+                .tint(.primaryText)
         }
     }
 }
