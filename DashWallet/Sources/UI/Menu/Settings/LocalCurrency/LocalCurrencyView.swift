@@ -95,10 +95,6 @@ private struct LocalCurrencyScrollContentView: View {
         filteredItems.isEmpty && !trimmedSearchQuery.isEmpty
     }
 
-    private var hasVisibleContent: Bool {
-        !filteredItems.isEmpty || shouldShowNoResults
-    }
-    
     private var noResultsText: String {
         String.localizedStringWithFormat(
             NSLocalizedString("No matches for \"%@\"", comment: "Local Currency: no search matches"),
@@ -138,7 +134,7 @@ private struct LocalCurrencyScrollContentView: View {
                     }
                 }
             }
-            .padding(hasVisibleContent ? 6 : 0)
+            .padding(filteredItems.isEmpty ? 0 : 6)
             .background(
                 RoundedRectangle(cornerRadius: Layout.containerCornerRadius)
                     .fill(Color.secondaryBackground)
