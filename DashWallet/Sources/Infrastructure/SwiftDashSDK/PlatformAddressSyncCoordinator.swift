@@ -343,6 +343,22 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     }
 
     private func performStop() async {
+        // Mirror SwiftExampleApp's delete-wallet sequence
+        // (`WalletDetailView.deleteWallet()` + `rebindWalletScopedServices()`):
+        //
+        //   1. Delete the `PersistentWallet` row from SwiftData FIRST. After
+        //      this, any in-flight BLAST callback that does
+        //      `walletNetwork(walletId:)` gets an empty fetch and early-exits,
+        //      instead of traversing deeper and hitting refs that will be
+        //      dropped by the teardown below.
+        //   2. Cancel Combine subscriptions.
+        //   3. `stopPlatformAddressSync()` on the still-alive manager.
+        //   4. Drop Swift-side handles. `modelContainer` stays alive through
+        //      the reset — the next `performStart` overwrites it, and keeping
+        //      it referenced here means SwiftData contexts captured by
+        //      Rust-side persister closures don't dangle while tokio winds down.
+        deletePersistedWalletIfAny()
+
         syncEventCancellable?.cancel()
         syncEventCancellable = nil
         syncStateCancellable?.cancel()
@@ -363,10 +379,29 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         wallet = nil
         platformAddressWallet = nil
         sdk = nil
-        modelContainer = nil
         runningNetwork = nil
         isRunning = false
         clearDisplay()
+    }
+
+    private func deletePersistedWalletIfAny() {
+        guard let container = modelContainer, let walletId = wallet?.walletId else {
+            return
+        }
+        let descriptor = FetchDescriptor<PersistentWallet>(
+            predicate: #Predicate<PersistentWallet> { $0.walletId == walletId })
+        do {
+            let rows = try container.mainContext.fetch(descriptor)
+            for row in rows {
+                container.mainContext.delete(row)
+            }
+            try container.mainContext.save()
+            Self.logger.info(
+                "🛰️ PLATFORM-ADDR :: deleted \(rows.count) PersistentWallet row(s) before stop")
+        } catch {
+            Self.logger.error(
+                "🛰️ PLATFORM-ADDR :: PersistentWallet cleanup threw: \(String(describing: error), privacy: .public)")
+        }
     }
 
     // MARK: - Wallet bootstrap
