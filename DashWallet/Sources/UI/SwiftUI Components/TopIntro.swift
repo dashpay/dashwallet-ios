@@ -19,7 +19,7 @@ import SwiftUI
 
 struct TopIntro: View {
     let title: String
-    var subtitle: String? = nil
+    var subtitle: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {

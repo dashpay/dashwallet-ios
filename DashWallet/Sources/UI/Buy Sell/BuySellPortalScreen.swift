@@ -17,6 +17,17 @@
 
 import SwiftUI
 
+private struct MenuCardStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .padding(6)
+            .background(Color.secondaryBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
+            .padding(.horizontal, 20)
+    }
+}
+
 struct BuySellPortalScreen: View {
     @Environment(\.colorScheme) private var colorScheme
     @ObservedObject var model: BuySellPortalModel
@@ -79,11 +90,7 @@ struct BuySellPortalScreen: View {
                     .background(colorScheme == .dark ? Color.whiteAlpha5 : Color.primaryBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
-                .padding(6)
-                .background(Color.secondaryBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
-                .padding(.horizontal, 20)
+                .modifier(MenuCardStyle())
 
                 // Coinbase
                 VStack(spacing: 0) {
@@ -94,14 +101,9 @@ struct BuySellPortalScreen: View {
                         trailingView: serviceBalanceView(item: coinbaseItem),
                         action: onCoinbase
                     )
-                    .id(coinbaseSubtitle)
                     .frame(minHeight: 56)
                 }
-                .padding(6)
-                .background(Color.secondaryBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
-                .padding(.horizontal, 20)
+                .modifier(MenuCardStyle())
 
                 // Uphold
                 VStack(spacing: 0) {
@@ -112,14 +114,9 @@ struct BuySellPortalScreen: View {
                         trailingView: serviceBalanceView(item: upholdItem),
                         action: onUphold
                     )
-                    .id(upholdSubtitle)
                     .frame(minHeight: 56)
                 }
-                .padding(6)
-                .background(Color.secondaryBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
-                .padding(.horizontal, 20)
+                .modifier(MenuCardStyle())
             }
 
             Spacer()

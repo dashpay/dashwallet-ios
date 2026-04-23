@@ -21,7 +21,7 @@ typealias TransactionPreview = MenuItem
 
 struct MenuItem: View {
     var title: String
-    @State var subtitleView: AnyView? = nil
+    var subtitleView: AnyView?
     var details: String? = nil
     var topText: String? = nil
     var icon: IconName? = nil
@@ -40,6 +40,7 @@ struct MenuItem: View {
 
     init(title: String,
          subtitle: String? = nil,
+         subtitleLineLimit: Int? = 1,
          details: String? = nil,
          topText: String? = nil,
          icon: IconName? = nil,
@@ -58,13 +59,13 @@ struct MenuItem: View {
     ) {
         self.init(
             title: title,
-            subtitleView: subtitle.map {
+            subtitleView: subtitle.map { text in
                 AnyView(
-                    Text($0)
+                    Text(text)
                         .font(.footnote)
                         .lineSpacing(4)
                         .foregroundColor(.tertiaryText)
-                        .lineLimit(1)
+                        .lineLimit(subtitleLineLimit)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 )
             },
@@ -105,7 +106,7 @@ struct MenuItem: View {
          action: (() -> Void)? = nil
     ) {
         self.title = title
-        self._subtitleView = State(initialValue: subtitleView)
+        self.subtitleView = subtitleView
         self.details = details
         self.topText = topText
         self.icon = icon

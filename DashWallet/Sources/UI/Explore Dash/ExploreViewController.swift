@@ -18,7 +18,7 @@
 import UIKit
 import SwiftUI
 
-private let kMerchantTypesShown = "merchantTypesInfoDialogShownKey"
+let kMerchantTypesShown = "merchantTypesInfoDialogShownKey"
 private let kExploreHeaderViewHeight: CGFloat = 351.0
 
 // MARK: - DWExploreTestnetViewControllerDelegate

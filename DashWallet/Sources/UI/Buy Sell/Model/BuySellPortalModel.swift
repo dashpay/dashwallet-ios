@@ -76,25 +76,13 @@ extension Service {
     }
 }
 
-// MARK: - BuySellPortalModelDelegate
-
-protocol BuySellPortalModelDelegate: AnyObject {
-    func serviceItemsDidChange();
-}
-
 // MARK: - BuySellPortalModel
 
 class BuySellPortalModel: ObservableObject, NetworkReachabilityHandling {
     var networkStatusDidChange: ((NetworkStatus) -> ())?
     internal var reachabilityObserver: Any!
 
-    weak var delegate: BuySellPortalModelDelegate?
-
-    @Published var items: [ServiceItem] = [] {
-        didSet {
-            delegate?.serviceItemsDidChange()
-        }
-    }
+    @Published var items: [ServiceItem] = []
 
     var services: [Service] = Service.allCases
     private var upholdDashCard: DWUpholdCardObject?
@@ -106,7 +94,6 @@ class BuySellPortalModel: ObservableObject, NetworkReachabilityHandling {
         serviceItemDataProvider.listenForData { [weak self] items in
             DispatchQueue.main.async {
                 self?.items = items
-                self?.delegate?.serviceItemsDidChange()
             }
         }
 
