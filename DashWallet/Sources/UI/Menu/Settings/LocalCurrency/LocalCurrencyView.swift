@@ -74,6 +74,10 @@ struct LocalCurrencyView: View {
 }
 
 private struct LocalCurrencyScrollContentView: View {
+    private enum Layout {
+        static let containerCornerRadius: CGFloat = 20
+        static let noResultsMinHeight: CGFloat = 150
+    }
 
     let headerHeight: CGFloat
     let onScrollChanged: (CGPoint) -> Void
@@ -83,6 +87,58 @@ private struct LocalCurrencyScrollContentView: View {
     var select: (String) -> Void
     var onSelect: (String) -> Void
 
+    private var trimmedSearchQuery: String {
+        searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var shouldShowNoResults: Bool {
+        filteredItems.isEmpty && !trimmedSearchQuery.isEmpty
+    }
+
+    private var hasVisibleContent: Bool {
+        !filteredItems.isEmpty || shouldShowNoResults
+    }
+
+    @ViewBuilder
+    private var noResultsView: some View {
+        VStack {
+            Text("No matches for \"\(trimmedSearchQuery)\"")
+                .font(.footnote)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, minHeight: Layout.noResultsMinHeight, alignment: .center)
+        .background(
+            RoundedRectangle(cornerRadius: Layout.containerCornerRadius)
+                .fill(Color.secondaryBackground)
+        )
+    }
+
+    @ViewBuilder
+    private var currencyContent: some View {
+        if shouldShowNoResults {
+            noResultsView
+        } else {
+            LazyVStack(spacing: 2) {
+                ForEach(filteredItems) { item in
+                    LocalCurrencyCellView(
+                        item: item,
+                        isSelected: item.code == selectedCurrencyCode,
+                        searchQuery: searchQuery
+                    )
+                    .onTapGesture {
+                        select(item.code)
+                        onSelect(item.code)
+                    }
+                }
+            }
+            .padding(hasVisibleContent ? 6 : 0)
+            .background(
+                RoundedRectangle(cornerRadius: Layout.containerCornerRadius)
+                    .fill(Color.secondaryBackground)
+            )
+        }
+    }
+
     var body: some View {
         ScrollViewWithOnScrollChanged(.vertical, showsIndicators: false) {
             VStack {
@@ -91,24 +147,8 @@ private struct LocalCurrencyScrollContentView: View {
                     .frame(height: headerHeight)
 
                 // Currency list
-                LazyVStack(spacing: 2) {
-                    ForEach(filteredItems) { item in
-                        LocalCurrencyCellView(
-                            item: item,
-                            isSelected: item.code == selectedCurrencyCode,
-                            searchQuery: searchQuery
-                        )
-                        .onTapGesture {
-                            select(item.code)
-                            onSelect(item.code)
-                        }
-                    }
-                }
-                .padding(filteredItems.count > 0 ? 6 : 0)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.secondaryBackground)
-                )
+                currencyContent
+
             }
         } onScrollChanged: { offset in
             onScrollChanged(offset)
@@ -200,7 +240,7 @@ extension LocalCurrencyViewModel {
                 CurrencyItem(code: "UAH", name: "Ukrainian Hryvnia",     flagName: "ukraine",          priceString: "1750.00"),
                 CurrencyItem(code: "PLN", name: "Polish Zloty",          flagName: "poland",           priceString: "168.00"),
                 CurrencyItem(code: "CHF", name: "Swiss Franc",           flagName: "switzerland",      priceString: "37.10"),
-                
+
             ],
             selectedCode: "USD"
         ),
