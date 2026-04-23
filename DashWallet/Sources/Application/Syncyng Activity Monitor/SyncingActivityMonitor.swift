@@ -350,13 +350,27 @@ extension SyncingActivityMonitor {
             // current coordinator snapshot through `handleCoordinatorUpdate`.
             // The Combine pipeline doesn't fire on reachability changes, so
             // without this kick the .noConnection state would be sticky.
-            guard let self else { return }
-            let coord = SwiftDashSDKSPVCoordinator.shared
-            self.handleCoordinatorUpdate(
-                sdkState: coord.state,
-                sdkProgress: coord.progress,
-                sdkSyncProgress: coord.syncProgress,
-                peersBestHeight: coord.bestPeerHeight)
+            //
+            // Main-hop: `startNetworkMonitoring()` fires this synchronously
+            // during init, so when the shared singleton is lazy-initialized
+            // from a background Task (e.g. `CoinJoinService.restoreMode`),
+            // `handleCoordinatorUpdate` would otherwise run off-main and
+            // `isSyncing`'s `UIApplication.isIdleTimerDisabled` didSet would
+            // trip the main-thread barrier.
+            let apply: () -> Void = {
+                guard let self else { return }
+                let coord = SwiftDashSDKSPVCoordinator.shared
+                self.handleCoordinatorUpdate(
+                    sdkState: coord.state,
+                    sdkProgress: coord.progress,
+                    sdkSyncProgress: coord.syncProgress,
+                    peersBestHeight: coord.bestPeerHeight)
+            }
+            if Thread.isMainThread {
+                apply()
+            } else {
+                DispatchQueue.main.async(execute: apply)
+            }
         }
         startNetworkMonitoring()
     }
