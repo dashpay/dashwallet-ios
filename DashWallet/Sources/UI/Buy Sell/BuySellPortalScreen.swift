@@ -29,7 +29,8 @@ private struct MenuCardStyle: ViewModifier {
 }
 
 struct BuySellPortalScreen: View {
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.colorScheme)
+    private var colorScheme
     @ObservedObject var model: BuySellPortalModel
     private let onBack: () -> Void
     private let onTopper: () -> Void

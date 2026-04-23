@@ -457,8 +457,8 @@ struct MainMenuScreen: View {
         controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }
-    
-#if DASHPAY
+
+    #if DASHPAY
     private func showInvite() {
         let controller = DWInvitationHistoryViewController()
         controller.hidesBottomBarWhenPushed = true
@@ -511,7 +511,7 @@ struct MainMenuScreen: View {
 
 
 extension MainMenuScreen {
-    class DelegateInternal: NSObject, RootEditProfileViewControllerDelegate, ExploreViewControllerDelegate {
+    class DelegateInternal: NSObject, RootEditProfileViewControllerDelegate {
         private weak var delegate: MainMenuViewControllerDelegate?
         private weak var wipeDelegate: DWWipeDelegate?
         private let viewModel: MainMenuViewModel
@@ -542,18 +542,6 @@ extension MainMenuScreen {
         
         func showGiftCard(_ txId: Data) {
             delegate?.showGiftCard(txId)
-        }
-        
-        func exploreViewControllerShowSendPayment(_ controller: ExploreViewController) {
-            showPaymentsController(withActivePage: PaymentsViewControllerState.pay.rawValue)
-        }
-        
-        func exploreViewControllerShowReceivePayment(_ controller: ExploreViewController) {
-            showPaymentsController(withActivePage: PaymentsViewControllerState.receive.rawValue)
-        }
-        
-        func exploreViewControllerShowGiftCard(_ controller: ExploreViewController, txId: Data) {
-            showGiftCard(txId)
         }
         
         #if DASHPAY

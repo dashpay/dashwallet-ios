@@ -34,9 +34,9 @@ protocol ExploreViewControllerDelegate: AnyObject {
 
 @objc(DWExploreViewController)
 class ExploreViewController: UIViewController, NavigationFullscreenable {
-    
+
     @objc weak var delegate: ExploreViewControllerDelegate?
-    
+
     var requiresNoNavigationBar: Bool {
         return true
     }

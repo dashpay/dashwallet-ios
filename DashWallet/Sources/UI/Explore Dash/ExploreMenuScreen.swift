@@ -15,9 +15,8 @@
 //  limitations under the License.
 //
 
-import UIKit
 import SwiftUI
-
+import UIKit
 
 struct ExploreMenuScreen: View {
     private let vc: UINavigationController
@@ -182,7 +181,7 @@ struct ExploreMenuScreen: View {
 }
 
 struct CrowdNodeAPYBadge: View {
-    private static let systemGreen = Color(red: 98/255, green: 182/255, blue: 125/255)
+    private static let systemGreen = Color(red: 98 / 255, green: 182 / 255, blue: 125 / 255)
 
     private var apy: String {
         let apyValue = CrowdNode.shared.crowdnodeAPY
