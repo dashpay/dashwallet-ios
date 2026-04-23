@@ -17,10 +17,14 @@
 
 #import "DWInitialViewController.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWAppRootViewController.h"
+#import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWOnboardingViewController.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 #if SNAPSHOT
 #import "DWDemoAppRootViewController.h"
@@ -96,6 +100,37 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onboardingViewControllerDidFinish:(DWOnboardingViewController *)controller {
     [self onboardingDidFinish];
 
+    // Reinstall detection: if DashSync's keychain survived the wipe but
+    // UserDefaults didn't, `chain.hasAWallet` is YES at this exact moment
+    // and the default transition to `DWAppRootViewController` would jump
+    // straight to the wallet home without ever asking the user. Gate the
+    // transition behind a Keep/Delete prompt, mirroring the SwiftExampleApp
+    // orphan-mnemonic UX.
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    if (!chain.hasAWallet) {
+        [self transitionToAppRoot];
+        return;
+    }
+
+    __weak typeof(self) weakSelf = self;
+    [DWKeychainWalletRecoveryCoordinator
+        presentReinstallKeepOrDeleteChoiceFrom:controller
+                                    completion:^(BOOL keep) {
+                                        typeof(self) strongSelf = weakSelf;
+                                        if (strongSelf == nil) {
+                                            return;
+                                        }
+                                        if (!keep) {
+                                            // Posts DWWillWipeWalletNotification, which
+                                            // `SwiftDashSDKWalletWiper` observes to clear
+                                            // the SwiftDashSDK keychain + runtime state.
+                                            [[DWEnvironment sharedInstance] clearAllWalletsAndRemovePin:YES];
+                                        }
+                                        [strongSelf transitionToAppRoot];
+                                    }];
+}
+
+- (void)transitionToAppRoot {
     DWAppRootViewController *rootController = [self createRootController];
     [rootController setLaunchingAsDeferredController]; // always deferred after onboarding
     [self transitionToController:rootController];

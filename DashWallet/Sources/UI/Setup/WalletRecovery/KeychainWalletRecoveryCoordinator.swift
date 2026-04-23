@@ -44,6 +44,20 @@ final class KeychainWalletRecoveryCoordinator: NSObject {
         presentPrimaryAlert(from: host, completion: completion)
     }
 
+    /// Presents the post-reinstall "Wallet found on this device" prompt on
+    /// `host`. Used by `DWInitialViewController` after the Welcome carousel
+    /// when DashSync's keychain entries survived the reinstall — the wallet
+    /// is fully usable, so the user only needs to choose between keeping it
+    /// or wiping it clean before landing on the app root. Completion fires
+    /// on the main queue exactly once: `true` = keep, `false` = delete.
+    @objc(presentReinstallKeepOrDeleteChoiceFrom:completion:)
+    static func presentReinstallKeepOrDeleteChoice(
+        from host: UIViewController,
+        completion: @escaping (Bool) -> Void
+    ) {
+        presentReinstallPrimaryAlert(from: host, completion: completion)
+    }
+
     // MARK: - Alert sequencing
 
     private static func presentPrimaryAlert(
@@ -102,6 +116,68 @@ final class KeychainWalletRecoveryCoordinator: NSObject {
                 handler: { _ in
                     _ = SwiftDashSDKMnemonicReader.deleteStoredMnemonic()
                     completion(nil)
+                }))
+
+        host.present(alert, animated: true)
+    }
+
+    // MARK: - Reinstall Keep/Delete sequencing
+
+    private static func presentReinstallPrimaryAlert(
+        from host: UIViewController,
+        completion: @escaping (Bool) -> Void
+    ) {
+        let alert = UIAlertController(
+            title: NSLocalizedString("Wallet found on this device", comment: ""),
+            message: NSLocalizedString(
+                "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.",
+                comment: ""),
+            preferredStyle: .alert)
+
+        alert.addAction(
+            UIAlertAction(
+                title: NSLocalizedString("Delete", comment: ""),
+                style: .destructive,
+                handler: { _ in
+                    presentReinstallDeleteConfirm(from: host, completion: completion)
+                }))
+
+        alert.addAction(
+            UIAlertAction(
+                title: NSLocalizedString("Keep Wallet", comment: ""),
+                style: .default,
+                handler: { _ in
+                    completion(true)
+                }))
+
+        host.present(alert, animated: true)
+    }
+
+    private static func presentReinstallDeleteConfirm(
+        from host: UIViewController,
+        completion: @escaping (Bool) -> Void
+    ) {
+        let alert = UIAlertController(
+            title: NSLocalizedString("Delete Wallet?", comment: ""),
+            message: NSLocalizedString(
+                "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.",
+                comment: ""),
+            preferredStyle: .alert)
+
+        alert.addAction(
+            UIAlertAction(
+                title: NSLocalizedString("Cancel", comment: ""),
+                style: .cancel,
+                handler: { _ in
+                    presentReinstallPrimaryAlert(from: host, completion: completion)
+                }))
+
+        alert.addAction(
+            UIAlertAction(
+                title: NSLocalizedString("Delete", comment: ""),
+                style: .destructive,
+                handler: { _ in
+                    completion(false)
                 }))
 
         host.present(alert, animated: true)
