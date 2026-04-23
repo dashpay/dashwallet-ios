@@ -79,6 +79,15 @@ final class SwiftDashSDKWalletWiper: NSObject {
     /// Idempotent. Never throws, never crashes; all errors swallowed
     /// to os.log.
     private static func performWipe() {
+        // 0) Stop the Platform address sync coordinator synchronously FIRST.
+        // Its BLAST tokio task emits periodic `persistSyncState` callbacks
+        // that run SwiftData fetches against the coordinator's `ModelContext`.
+        // If we delete keychain material and tear down the runtime below
+        // while a callback is mid-flight, the fetch crashes against a
+        // torn-down context (EXC_BAD_ACCESS in `walletNetwork(walletId:)`).
+        PlatformAddressSyncCoordinator.stopAndWait(timeout: 5.0)
+        logger.info("stopped Platform address sync coordinator before wipe")
+
         // 1) Delete the encrypted seed from WalletStorage. Already
         // idempotent — `WalletStorage.deleteSeed` accepts both
         // `errSecSuccess` and `errSecItemNotFound`
