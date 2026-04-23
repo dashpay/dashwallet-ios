@@ -183,8 +183,6 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         guard let destBytes = Self.platformAddressBytes(bech32m: destination)
         else { throw SendError.invalidDestination }
 
-        guard source.addressHash.count == 20
-        else { throw SendError.invalidSourceAddress }
         var srcBytes = Data([source.addressType])
         srcBytes.append(source.addressHash)
 
@@ -544,42 +542,25 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }
     }
 
-    /// Normalize a bech32m Platform address to the 21-byte `[variant | hash]`
-    /// form `sdk.addresses.transferFunds` expects (variant is the PlatformAddress
-    /// discriminant: 0 = P2PKH, 1 = P2SH).
-    ///
-    /// Accepts two encodings:
-    /// - HRP `dashevo` / `tdashevo` — already in variant-prefixed form; returned as-is.
-    /// - HRP `dash` / `tdash` (DIP-0018) — what dashwallet's Receive screen
-    ///   produces. The first decoded byte is a DIP-0018 *version* byte
-    ///   (`0xb0` → P2PKH, `0x80` → P2SH). Translate to the variant form.
-    ///
-    /// Mirrors `PlatformWalletPersistenceHandler.platformAddressComponents(fromBech32m:)`
-    /// in SwiftDashSDK, which is private to the SDK.
+    /// Translate a DIP-0018 bech32m address (HRP `dash`/`tdash`, what dashwallet's
+    /// Receive screen emits) into the 21-byte `[variant | hash]` form the SDK's
+    /// `transferFunds` expects. Version byte → variant: `0xb0` → 0 (P2PKH),
+    /// `0x80` → 1 (P2SH).
     static func platformAddressBytes(bech32m: String) -> Data? {
         guard let decoded = Bech32m.decode(bech32m.lowercased()),
+              decoded.hrp == "dash" || decoded.hrp == "tdash",
               decoded.data.count == 21
         else { return nil }
 
-        switch decoded.hrp {
-        case "dashevo", "tdashevo":
-            let variant = decoded.data[0]
-            guard variant <= 1 else { return nil }
-            return decoded.data
-        case "dash", "tdash":
-            let versionByte = decoded.data[0]
-            let variant: UInt8
-            switch versionByte {
-            case 0xb0: variant = 0
-            case 0x80: variant = 1
-            default: return nil
-            }
-            var bytes = Data([variant])
-            bytes.append(decoded.data.subdata(in: 1..<21))
-            return bytes
-        default:
-            return nil
+        let variant: UInt8
+        switch decoded.data[0] {
+        case 0xb0: variant = 0
+        case 0x80: variant = 1
+        default: return nil
         }
+        var bytes = Data([variant])
+        bytes.append(decoded.data.subdata(in: 1..<21))
+        return bytes
     }
 
     private func buildModelContainer(for network: AppNetwork) throws -> ModelContainer {
@@ -627,7 +608,6 @@ extension PlatformAddressSyncCoordinator {
         case coordinatorNotReady
         case noFundedAddress
         case invalidDestination
-        case invalidSourceAddress
         case mnemonicUnavailable
         case keyDecodeFailed(String)
 
@@ -644,10 +624,6 @@ extension PlatformAddressSyncCoordinator {
             case .invalidDestination:
                 return NSLocalizedString(
                     "Destination address is not a valid Platform bech32m address.",
-                    comment: "")
-            case .invalidSourceAddress:
-                return NSLocalizedString(
-                    "Funding address could not be decoded.",
                     comment: "")
             case .mnemonicUnavailable:
                 return NSLocalizedString(
