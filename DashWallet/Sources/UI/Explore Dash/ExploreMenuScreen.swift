@@ -18,7 +18,6 @@
 import UIKit
 import SwiftUI
 
-private let kMerchantTypesShownKey = "merchantTypesInfoDialogShownKey"
 
 struct ExploreMenuScreen: View {
     private let vc: UINavigationController
@@ -143,9 +142,9 @@ struct ExploreMenuScreen: View {
     }
 
     private func showWhereToSpend() {
-        if UserDefaults.standard.bool(forKey: kMerchantTypesShownKey) != true {
+        if UserDefaults.standard.bool(forKey: kMerchantTypesShown) != true {
             let hostingController = UIHostingController(rootView: MerchantTypesDialog {
-                UserDefaults.standard.setValue(true, forKey: kMerchantTypesShownKey)
+                UserDefaults.standard.setValue(true, forKey: kMerchantTypesShown)
                 showMerchants()
             })
             hostingController.setDetent(640)

@@ -231,7 +231,10 @@ extension MainTabbarController {
                 showBackButton: false,
                 onShowSendPayment: { [weak self] in self?.showPaymentsController(withActivePage: PaymentsViewControllerState.pay) },
                 onShowReceivePayment: { [weak self] in self?.showPaymentsController(withActivePage: PaymentsViewControllerState.receive) },
-                onShowGiftCard: { [weak self] txId in self?.homeController?.showGiftCardDetails(txId: txId) }
+                onShowGiftCard: { [weak self] txId in
+                    self?.selectedIndex = MainTabbarTabs.home.rawValue
+                    self?.homeController?.showGiftCardDetails(txId: txId)
+                }
             )
             nvc.viewControllers = [UIHostingController(rootView: exploreScreen)]
             nvc.tabBarItem = item

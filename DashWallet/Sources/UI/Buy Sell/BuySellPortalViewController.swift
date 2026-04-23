@@ -108,8 +108,6 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        model.delegate = self
-
         let screen = BuySellPortalScreen(
             model: model,
             onBack: { [weak self] in
@@ -152,11 +150,6 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
     }
 }
 
-// MARK: PortalModelDelegate
-
-extension BuySellPortalViewController: BuySellPortalModelDelegate {
-    func serviceItemsDidChange() { }
-}
 
 // MARK: Geoblock
 
