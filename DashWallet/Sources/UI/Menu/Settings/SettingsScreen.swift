@@ -36,21 +36,11 @@ struct SettingsScreen: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Navigation bar with back button
             NavBarBack {
                 vc.popViewController(animated: true)
             }
 
-            HStack {
-                Text(NSLocalizedString("Settings", comment: ""))
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primaryText)
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 30)
-            .padding(.bottom, 20)
+            TopIntro(title: NSLocalizedString("Settings", comment: ""))
 
             // Menu list
             VStack(spacing: 2) {

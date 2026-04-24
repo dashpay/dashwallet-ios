@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Iconly_x2F_Bold_x2F_Setting.png",
+      "filename" : "settings.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Iconly_x2F_Bold_x2F_Setting@2x.png",
+      "filename" : "settings@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Iconly_x2F_Bold_x2F_Setting@3x.png",
+      "filename" : "settings@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

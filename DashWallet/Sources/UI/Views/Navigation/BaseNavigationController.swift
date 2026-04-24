@@ -79,9 +79,10 @@ class BaseNavigationController: UINavigationController {
 
     override init(rootViewController: UIViewController) {
         super.init(rootViewController: rootViewController)
+    }
 
-        interactivePopGestureRecognizer?.delegate = self
-        navigationBar.tintColor = .black
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -121,6 +122,8 @@ class BaseNavigationController: UINavigationController {
         super.viewDidLoad()
         super.delegate = self
 
+        interactivePopGestureRecognizer?.delegate = self
+        navigationBar.tintColor = .black
         view.backgroundColor = .dw_secondaryBackground()
         navigationBar.applyOpaqueAppearance(with: .dw_secondaryBackground(), shadowColor: .dw_separatorLine())
     }
