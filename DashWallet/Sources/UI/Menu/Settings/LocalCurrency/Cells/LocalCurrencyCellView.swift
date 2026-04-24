@@ -66,10 +66,12 @@ struct LocalCurrencyCellView: View {
                 .foregroundColor(.primaryText)
                 .lineLimit(1)
 
-            Text(item.priceString ?? " ")
-                .font(.footnote)
-                .foregroundColor(.tertiaryText)
-                .lineLimit(1)
+            if let priceString = item.priceString {
+                Text(priceString)
+                    .font(.footnote)
+                    .foregroundColor(.tertiaryText)
+                    .lineLimit(1)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, Layout.infoVerticalPadding)

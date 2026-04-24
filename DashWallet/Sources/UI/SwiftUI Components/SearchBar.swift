@@ -18,7 +18,6 @@
 import SwiftUI
 
 struct SearchBar: View {
-
     private enum Layout {
         static let fieldHeight: CGFloat = 40
         static let fieldCornerRadius: CGFloat = 14
@@ -26,13 +25,16 @@ struct SearchBar: View {
         static let fieldSpacing: CGFloat = 10
         static let cancelHorizontalPadding: CGFloat = 12
         static let cancelVerticalPadding: CGFloat = 6
-        static let animationDuration: CGFloat = 0.25
+        static let animationDuration: TimeInterval = 0.25
     }
 
     @Binding var text: String
     @FocusState private var isFocused: Bool
     @State private var isEditing: Bool = false
     @State private var cancelButtonWidth: CGFloat = 0
+
+    private let searchIcon = IconName.custom("search-icon", maxHeight: 15)
+    private let xmarkIcon = IconName.custom("xmark-icon", maxHeight: 15)
 
     var body: some View {
         HStack(spacing: 0) {
@@ -56,20 +58,16 @@ struct SearchBar: View {
         .onAppear {
             isEditing = isFocused
         }
-        .onChange(of: isFocused) { focused in
+        .onChangeCompat(of: isFocused) { focused in
             withAnimation(.easeInOut(duration: Layout.animationDuration)) {
                 isEditing = focused
             }
         }
     }
 
-    @ViewBuilder
-    private var clearButton: some View {
+    @ViewBuilder private var clearButton: some View {
         if !text.isEmpty {
-            Button(action: { text = "" }) {
-                Image(systemName: "xmark.circle.fill")
-                    .foregroundColor(Color.black1000Alpha30)
-            }
+            Button(action: { text = "" }, label: { Icon(name: xmarkIcon) })
         }
     }
 
@@ -80,11 +78,11 @@ struct SearchBar: View {
                 isEditing = false
             }
             isFocused = false
-        }) {
+        }, label: {
             Text(NSLocalizedString("Cancel", comment: ""))
                 .padding(.horizontal, Layout.cancelHorizontalPadding)
                 .padding(.vertical, Layout.cancelVerticalPadding)
-        }
+        })
         .tint(.primaryText)
     }
 
@@ -101,12 +99,10 @@ struct SearchBar: View {
     }
 
     private var magnifyingglass: some View {
-        Image(systemName: "magnifyingglass")
-            .foregroundColor(Color.black1000Alpha50)
+        Icon(name: searchIcon)
     }
 
-    @ViewBuilder
-    private var searchField: some View {
+    @ViewBuilder private var searchField: some View {
         if #available(iOS 17.0, *) {
             TextField(
                 text: $text,
@@ -115,6 +111,7 @@ struct SearchBar: View {
                 EmptyView()
             }
             .focused($isFocused)
+            .tint(.primaryText)
         } else {
             // Fallback on earlier versions
             TextField(NSLocalizedString("Search", comment: ""), text: $text)
@@ -122,6 +119,7 @@ struct SearchBar: View {
                 .disableAutocorrection(true)
                 .foregroundColor(.primaryText)
                 .focused($isFocused)
+                .tint(.primaryText)
         }
     }
 }
@@ -135,6 +133,20 @@ private struct SearchBarSizePreferenceKey: PreferenceKey {
 }
 
 private extension View {
+    func onChangeCompat<Value: Equatable>(of value: Value, perform action: @escaping (Value) -> Void) -> some View {
+        Group {
+            if #available(iOS 17.0, *) {
+                self.onChange(of: value) { _, newValue in
+                    action(newValue)
+                }
+            } else {
+                self.onChange(of: value) { newValue in
+                    action(newValue)
+                }
+            }
+        }
+    }
+
     func captureSize(_ onChange: @escaping (CGSize) -> Void) -> some View {
         background(
             GeometryReader { geometry in
@@ -145,7 +157,6 @@ private extension View {
         .onPreferenceChange(SearchBarSizePreferenceKey.self, perform: onChange)
     }
 }
-
 
 #Preview {
     SearchBarPreview()
