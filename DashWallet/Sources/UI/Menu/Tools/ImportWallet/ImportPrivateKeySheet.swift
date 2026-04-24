@@ -32,27 +32,9 @@ struct ImportPrivateKeySheet: View {
                 .padding(.bottom, 6)
 
             // Close button
-            HStack {
-                Spacer()
-
-                Button(action: {
-                    presentationMode.wrappedValue.dismiss()
-                }) {
-                    Image(colorScheme == .dark ? "icon-close-sheet-white" : "icon-close-sheet")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 9, height: 9)
-                        .foregroundColor(Color.primaryText)
-                        .frame(width: 34, height: 34)
-                        .overlay(
-                            Circle()
-                                .stroke(Color.gray300.opacity(0.3), lineWidth: 1.5)
-                        )
-                }
-                .padding(.horizontal, 20)
+            NavBarClose {
+                presentationMode.wrappedValue.dismiss()
             }
-            .frame(height: 64)
-            .background(Color.secondaryBackground)
 
             // Content
             VStack(spacing: 0) {
