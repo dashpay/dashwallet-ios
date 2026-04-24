@@ -83,14 +83,11 @@ class MainTabbarController: UITabBarController {
 
     #if DASHPAY
     weak var contactsNavigationController: DWRootContactsViewController?
-    weak var exploreNavigationController: ExploreViewController?
     #endif
 
     // TODO: Refactor this and send notification about wiped wallet instead of chaining the delegate
     @objc
     weak var wipeDelegate: DWWipeDelegate?
-
-    private var paymentIsOpened = false
 
     @objc
     var isDemoMode = false
@@ -204,10 +201,18 @@ extension MainTabbarController {
             item = UITabBarItem(title: nil, image: MainTabbarTabs.explore.icon, selectedImage: MainTabbarTabs.explore.selectedIcon)
             item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
             
-            let exploreVC = ExploreViewController()
-            exploreVC.delegate = self
-            exploreNavigationController = exploreVC
-            nvc = BaseNavigationController(rootViewController: exploreVC)
+            nvc = BaseNavigationController()
+            let exploreScreen = ExploreMenuScreen(
+                vc: nvc,
+                showBackButton: false,
+                onShowSendPayment: { [weak self] in self?.showPaymentsController(withActivePage: PaymentsViewControllerState.pay) },
+                onShowReceivePayment: { [weak self] in self?.showPaymentsController(withActivePage: PaymentsViewControllerState.receive) },
+                onShowGiftCard: { [weak self] txId in
+                    self?.selectedIndex = MainTabbarTabs.home.rawValue
+                    self?.homeController?.showGiftCardDetails(txId: txId)
+                }
+            )
+            nvc.viewControllers = [UIHostingController(rootView: exploreScreen)]
             nvc.tabBarItem = item
             viewControllers.append(nvc)
         }
@@ -419,21 +424,6 @@ extension MainTabbarController: UITabBarControllerDelegate {
     }
 }
 
-// MARK: DWExploreTestnetViewControllerDelegate
-
-extension MainTabbarController: ExploreViewControllerDelegate {
-    func exploreViewControllerShowGiftCard(_ controller: ExploreViewController, txId: Data) {
-        homeController?.showGiftCardDetails(txId: txId)
-    }
-    
-    func exploreViewControllerShowSendPayment(_ controller: ExploreViewController) {
-        showPaymentsController(withActivePage: PaymentsViewControllerState.pay)
-    }
-    
-    func exploreViewControllerShowReceivePayment(_ controller: ExploreViewController) {
-        showPaymentsController(withActivePage: PaymentsViewControllerState.receive)
-    }
-}
 
 // MARK: - EmptyController
 
