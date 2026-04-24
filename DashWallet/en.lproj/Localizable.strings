@@ -3207,3 +3207,57 @@
 
 /* Share key */
 "Share key" = "Share key";
+
+/* Buy Sell Dash */
+"Select a service to buy, sell, convert and transfer Dash" = "Select a service to buy, sell, convert and transfer Dash";
+
+/* Buy Sell Dash */
+"Powered by Uphold" = "Powered by Uphold";
+
+/* Explore Dash */
+"Find merchants that accept Dash payments" = "Find merchants that accept Dash payments";
+
+/* Explore Dash */
+"Find ATMs where you can buy or sell Dash" = "Find ATMs where you can buy or sell Dash";
+
+/* CrowdNode */
+"Easily stake Dash and earn passive income with a few simple clicks" = "Easily stake Dash and earn passive income with a few simple clicks";
+
+/* CrowdNode */
+"Wait until the chain is fully synced before using CrowdNode." = "Wait until the chain is fully synced before using CrowdNode.";
+
+/* Backup */
+"Back Up Your Wallet" = "Back Up Your Wallet";
+
+/* Backup */
+"Back Up Now" = "Back Up Now";
+
+/* Backup */
+"You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Send to Address" = "Send to Address";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Send to Contact" = "Send to Contact";
+
+/* Translate it as short as possible! (24 symbols max) */
+"ATM" = "ATM";
+
+/* Translate it as short as possible! (24 symbols max) */
+"CrowdNode" = "CrowdNode";
+
+/* Shortcut banner */
+"Customize shortcut bar" = "Customize shortcut bar";
+
+/* Shortcut banner */
+"Hold any button above to replace it with the function you need" = "Hold any button above to replace it with the function you need";
+
+/* No comment provided by engineer. */
+"Select option" = "Select option";
+
+/* CSV Export */
+"All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
+
+/* #bc-ignore! */
+"%ld used" = "%ld used";

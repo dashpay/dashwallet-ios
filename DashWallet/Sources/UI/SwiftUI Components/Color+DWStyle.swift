@@ -72,6 +72,10 @@ extension Color {
 
 // Black
 
+    static var black800: Color {
+        Color("Black800")
+    }
+
     static var blackAlpha5: Color {
         Color("BlackAlpha5")
     }
@@ -221,7 +225,7 @@ extension Color {
          Color(UIColor { traitCollection in
             switch traitCollection.userInterfaceStyle {
             case .dark:
-                return UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 0.5) // TODO
+                return UIColor.clear
             default:
                 return UIColor(red: 0.72, green: 0.76, blue: 0.8, alpha: 0.1)
             }
