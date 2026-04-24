@@ -41,7 +41,16 @@ struct SettingsScreen: View {
                 vc.popViewController(animated: true)
             }
 
-            TopIntro(title: NSLocalizedString("Settings", comment: ""))
+            HStack {
+                Text(NSLocalizedString("Settings", comment: ""))
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primaryText)
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 30)
+            .padding(.bottom, 20)
 
             // Menu list
             VStack(spacing: 2) {
@@ -253,7 +262,7 @@ private final class LocalCurrencyHostingViewController: BaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = .dw_backgroundColor()
+        view.backgroundColor = .dw_background()
 
         let hostingController = UIHostingController(rootView: rootView)
         hostingController.view.backgroundColor = .clear
