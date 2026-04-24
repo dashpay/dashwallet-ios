@@ -102,8 +102,7 @@ private struct LocalCurrencyScrollContentView: View {
         )
     }
 
-    @ViewBuilder
-    private var noResultsView: some View {
+    @ViewBuilder private var noResultsView: some View {
         VStack {
             Text(noResultsText)
                 .font(.footnote)
@@ -116,8 +115,7 @@ private struct LocalCurrencyScrollContentView: View {
         )
     }
 
-    @ViewBuilder
-    private var currencyContent: some View {
+    @ViewBuilder private var currencyContent: some View {
         if shouldShowNoResults {
             noResultsView
         } else {
@@ -151,7 +149,6 @@ private struct LocalCurrencyScrollContentView: View {
 
                 // Currency list
                 currencyContent
-
             }
         } onScrollChanged: { offset in
             onScrollChanged(offset)
@@ -176,7 +173,7 @@ private struct LocalCurrencyTopOverlayView: View {
         }
         .padding(.bottom, 6)
         .background(toolbarBackground)
-        .animation(.smooth, value: scrollOffset)
+        .animation(.easeInOut(duration: 0.2), value: scrollOffset)
     }
 
     private var header: some View {
@@ -195,8 +192,7 @@ private struct LocalCurrencyTopOverlayView: View {
         }
     }
 
-    @ViewBuilder
-    private var toolbarBackground: some View {
+    @ViewBuilder private var toolbarBackground: some View {
         ZStack(alignment: .bottom) {
             Rectangle()
                 .fill(.clear)
@@ -204,18 +200,17 @@ private struct LocalCurrencyTopOverlayView: View {
                 .ignoresSafeArea()
 
             Divider()
-                .background(Color(red: 176/255, green: 182/255, blue: 188/255, opacity: 0.15))
+                .background(Color(red: 176 / 255, green: 182 / 255, blue: 188 / 255, opacity: 0.15))
                 .opacity(scrollOffset < -20 ? 1 : 0)
         }
-
     }
 }
 
 // MARK: - Preview
 
 #if DEBUG
-extension LocalCurrencyView {
-    fileprivate init(
+fileprivate extension LocalCurrencyView {
+    init(
         viewModel: LocalCurrencyViewModel,
         onSelect: @escaping (String) -> Void,
         onBack: (() -> Void)? = nil
@@ -226,7 +221,7 @@ extension LocalCurrencyView {
     }
 }
 
-extension LocalCurrencyViewModel {
+fileprivate extension LocalCurrencyViewModel {
     convenience init(items: [CurrencyItem], selectedCode: String) {
         self.init(allItems: items, selectedCurrencyCode: selectedCode)
     }
@@ -236,14 +231,48 @@ extension LocalCurrencyViewModel {
     LocalCurrencyView(
         viewModel: LocalCurrencyViewModel(
             items: [
-                CurrencyItem(code: "USD", name: "US Dollar",            flagName: "united states",    priceString: "42.50"),
-                CurrencyItem(code: "EUR", name: "Euro",                  flagName: "european union",   priceString: "39.20"),
-                CurrencyItem(code: "GBP", name: "British Pound",         flagName: "united kingdom",   priceString: "33.80"),
-                CurrencyItem(code: "JPY", name: "Japanese Yen",          flagName: "japan",            priceString: "6380.00"),
-                CurrencyItem(code: "UAH", name: "Ukrainian Hryvnia",     flagName: "ukraine",          priceString: "1750.00"),
-                CurrencyItem(code: "PLN", name: "Polish Zloty",          flagName: "poland",           priceString: "168.00"),
-                CurrencyItem(code: "CHF", name: "Swiss Franc",           flagName: "switzerland",      priceString: "37.10"),
-
+                CurrencyItem(
+                    code: "USD",
+                    name: "US Dollar",
+                    flagName: "united states",
+                    priceString: "42.50"
+                ),
+                CurrencyItem(
+                    code: "EUR",
+                    name: "Euro",
+                    flagName: "european union",
+                    priceString: "39.20"
+                ),
+                CurrencyItem(
+                    code: "GBP",
+                    name: "British Pound",
+                    flagName: "united kingdom",
+                    priceString: "33.80"
+                ),
+                CurrencyItem(
+                    code: "JPY",
+                    name: "Japanese Yen",
+                    flagName: "japan",
+                    priceString: "6380.00"
+                ),
+                CurrencyItem(
+                    code: "UAH",
+                    name: "Ukrainian Hryvnia",
+                    flagName: "ukraine",
+                    priceString: "1750.00"
+                ),
+                CurrencyItem(
+                    code: "PLN",
+                    name: "Polish Zloty",
+                    flagName: "poland",
+                    priceString: "168.00"
+                ),
+                CurrencyItem(
+                    code: "CHF",
+                    name: "Swiss Franc",
+                    flagName: "switzerland",
+                    priceString: "37.10"
+                )
             ],
             selectedCode: "USD"
         ),

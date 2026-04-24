@@ -18,7 +18,6 @@
 import SwiftUI
 
 struct SearchBar: View {
-
     private enum Layout {
         static let fieldHeight: CGFloat = 40
         static let fieldCornerRadius: CGFloat = 14
@@ -26,7 +25,7 @@ struct SearchBar: View {
         static let fieldSpacing: CGFloat = 10
         static let cancelHorizontalPadding: CGFloat = 12
         static let cancelVerticalPadding: CGFloat = 6
-        static let animationDuration: CGFloat = 0.25
+        static let animationDuration: TimeInterval = 0.25
     }
 
     @Binding var text: String
@@ -66,12 +65,9 @@ struct SearchBar: View {
         }
     }
 
-    @ViewBuilder
-    private var clearButton: some View {
+    @ViewBuilder private var clearButton: some View {
         if !text.isEmpty {
-            Button(action: { text = "" }) {
-                Icon(name: xmarkIcon)
-            }
+            Button(action: { text = "" }, label: { Icon(name: xmarkIcon) })
         }
     }
 
@@ -82,11 +78,11 @@ struct SearchBar: View {
                 isEditing = false
             }
             isFocused = false
-        }) {
+        }, label: {
             Text(NSLocalizedString("Cancel", comment: ""))
                 .padding(.horizontal, Layout.cancelHorizontalPadding)
                 .padding(.vertical, Layout.cancelVerticalPadding)
-        }
+        })
         .tint(.primaryText)
     }
 
@@ -106,8 +102,7 @@ struct SearchBar: View {
         Icon(name: searchIcon)
     }
 
-    @ViewBuilder
-    private var searchField: some View {
+    @ViewBuilder private var searchField: some View {
         if #available(iOS 17.0, *) {
             TextField(
                 text: $text,
@@ -162,7 +157,6 @@ private extension View {
         .onPreferenceChange(SearchBarSizePreferenceKey.self, perform: onChange)
     }
 }
-
 
 #Preview {
     SearchBarPreview()
