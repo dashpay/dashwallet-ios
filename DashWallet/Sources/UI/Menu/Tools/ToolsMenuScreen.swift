@@ -25,7 +25,7 @@ struct ToolsMenuScreen: View {
     private let onImportPrivateKey: () -> ()
 
     @StateObject private var viewModel = ToolsMenuViewModel()
-    @State private var showCSVExportAlert = false
+    @State private var showCSVExportSheet = false
     @State private var showCSVExportActivity = false
     @State private var showZenLedgerSheet = false
     @State private var showImportPrivateKeySheet = false
@@ -39,81 +39,60 @@ struct ToolsMenuScreen: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Back button
-            HStack {
-                Button(action: {
-                    vc.popViewController(animated: true)
-                }) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.primary)
-                        .frame(width: 36, height: 36)
-                        .overlay(
-                            Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1)
+            NavBarBack {
+                vc.popViewController(animated: true)
+            }
+
+            TopIntro(title: NSLocalizedString("Tools", comment: ""))
+
+            VStack(alignment: .leading, spacing: 20) {
+                // Menu list - First group (4 buttons)
+                VStack(spacing: 2) {
+                    ForEach(viewModel.items.dropLast()) { item in
+                        MenuItem(
+                            title: item.title,
+                            subtitle: item.subtitle,
+                            details: item.details,
+                            icon: item.icon,
+                            showInfo: item.showInfo,
+                            showChevron: false,
+                            isToggled: item.isToggled,
+                            action: item.action
                         )
+                        .frame(minHeight: 56)
+                    }
                 }
-                Spacer()
-            }
-            .padding(.horizontal, 5)
-            .padding(.top, 10)
-            
-            // Header
-            HStack {
-                Text(NSLocalizedString("Tools", comment: ""))
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primaryText)
-                Spacer()
-            }
-            .padding(.top, 30)
-            .padding(.bottom, 20)
-            
-            VStack(alignment: .leading, spacing: 16) {
-                // First group - all items except ZenLedger  
-                VStack(spacing: 0) {
-                ForEach(viewModel.items.dropLast()) { item in
-                    MenuItem(
-                        title: item.title,
-                        subtitle: item.subtitle,
-                        details: item.details,
-                        icon: item.icon,
-                        showInfo: item.showInfo,
-                        showChevron: false,
-                        isToggled: item.isToggled,
-                        action: item.action
-                    )
-                    .frame(minHeight: 60)
-                }
-            }
-            .padding(.vertical, 5)
-            .background(Color.secondaryBackground)
-            .cornerRadius(12)
-            .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
-            
-            // Second group - ZenLedger
-            if let zenLedgerItem = viewModel.items.last {
-                VStack(spacing: 0) {
-                    MenuItem(
-                        title: zenLedgerItem.title,
-                        subtitle: zenLedgerItem.subtitle,
-                        details: zenLedgerItem.details,
-                        icon: zenLedgerItem.icon,
-                        showInfo: zenLedgerItem.showInfo,
-                        showChevron: false,
-                        isToggled: zenLedgerItem.isToggled,
-                        action: zenLedgerItem.action
-                    )
-                    .frame(minHeight: 60)
-                }
-                .padding(.vertical, 5)
+                .padding(6)
                 .background(Color.secondaryBackground)
-                .cornerRadius(12)
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                 .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
-            }
+                .padding(.horizontal, 20)
+
+                // Menu list - ZenLedger
+                if let zenLedgerItem = viewModel.items.last {
+                    VStack(spacing: 2) {
+                        MenuItem(
+                            title: zenLedgerItem.title,
+                            subtitle: zenLedgerItem.subtitle,
+                            details: zenLedgerItem.details,
+                            icon: zenLedgerItem.icon,
+                            showInfo: zenLedgerItem.showInfo,
+                            showChevron: false,
+                            isToggled: zenLedgerItem.isToggled,
+                            action: zenLedgerItem.action
+                        )
+                        .frame(minHeight: 56)
+                    }
+                    .padding(6)
+                    .background(Color.secondaryBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
+                    .padding(.horizontal, 20)
+                }
+
                 Spacer()
             }
         }
-        .padding(.horizontal, 20)
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
         .onReceive(viewModel.$navigationDestination) { destination in
@@ -122,13 +101,17 @@ struct ToolsMenuScreen: View {
         .onReceive(viewModel.$showCSVExportActivity) { show in
             showCSVExportActivity = show
         }
-        .alert(NSLocalizedString("CSV Export", comment: ""), isPresented: $showCSVExportAlert) {
-            Button(NSLocalizedString("Continue", comment: "")) {
-                handleCSVExport()
+        .sheet(isPresented: $showCSVExportSheet) {
+            if #available(iOS 16.4, *) {
+                CSVExportSheet(onExport: handleCSVExport)
+                    .presentationDetents([.large])
+                    .presentationCornerRadius(32)
+            } else if #available(iOS 16.0, *) {
+                CSVExportSheet(onExport: handleCSVExport)
+                    .presentationDetents([.large])
+            } else {
+                CSVExportSheet(onExport: handleCSVExport)
             }
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
-        } message: {
-            Text(NSLocalizedString("All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.", comment: ""))
         }
         .sheet(isPresented: $showCSVExportActivity) {
             if let csvData = viewModel.csvExportData {
@@ -141,9 +124,13 @@ struct ToolsMenuScreen: View {
                 viewModel.safariLink = nil
             }
         }) {
-            if #available(iOS 16.0, *) {
+            if #available(iOS 16.4, *) {
                 ZenLedgerInfoSheet(safariLink: $viewModel.safariLink)
-                    .presentationDetents([.height(450)])
+                    .presentationDetents([.large])
+                    .presentationCornerRadius(32)
+            } else if #available(iOS 16.0, *) {
+                ZenLedgerInfoSheet(safariLink: $viewModel.safariLink)
+                    .presentationDetents([.large])
             } else {
                 ZenLedgerInfoSheet(safariLink: $viewModel.safariLink)
             }
@@ -183,7 +170,7 @@ struct ToolsMenuScreen: View {
         case .masternodeKeys:
             showMasternodeKeys()
         case .csvExport:
-            showCSVExportAlert = true
+            showCSVExportSheet = true
         case .zenLedger:
             showZenLedgerSheet = true
         case .none:
