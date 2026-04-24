@@ -89,8 +89,6 @@ class MainTabbarController: UITabBarController {
     @objc
     weak var wipeDelegate: DWWipeDelegate?
 
-    private var paymentIsOpened = false
-
     @objc
     var isDemoMode = false
 
