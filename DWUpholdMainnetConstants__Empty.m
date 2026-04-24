@@ -21,33 +21,47 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWUpholdMainnetConstants
 
++ (NSDictionary *)plistDictionary {
+    static NSDictionary *dict = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSString *path = [[NSBundle mainBundle] pathForResource:@"Uphold-Info" ofType:@"plist"];
+        dict = path ? [NSDictionary dictionaryWithContentsOfFile:path] : @{};
+    });
+    return dict;
+}
+
++ (NSString *)clientID {
+    return [self plistDictionary][@"CLIENT_ID"] ?: @"";
+}
+
++ (NSString *)clientSecret {
+    return [self plistDictionary][@"CLIENT_SECRET"] ?: @"";
+}
+
 + (NSString *)authorizeURLFormat {
-    return @"";
+    NSString *clientId = [self clientID];
+    if (clientId.length == 0) {
+        return @"";
+    }
+    NSString *prefix = [NSString stringWithFormat:@"https://wallet.uphold.com/authorize/%@", clientId];
+    return [prefix stringByAppendingString:@"?scope=accounts:read%%20cards:read%%20cards:write%%20transactions:deposit%%20transactions:read%%20transactions:transfer:application%%20transactions:transfer:others%%20transactions:transfer:self%%20transactions:withdraw%%20transactions:commit:otp%%20user:read&state=%@"];
 }
 
 + (NSString *)baseURLString {
     return @"https://api.uphold.com/";
 }
 
-+ (NSString *)clientID {
-    return @"";
-}
-
-+ (NSString *)clientSecret {
-    return @"";
-}
-
 + (NSString *)buyCardURLFormat {
-    return @"https://uphold.com/dashboard/cards/%@/add";
+    return @"https://wallet.uphold.com/dashboard/cards/%@/add";
 }
 
 + (NSString *)transactionURLFormat {
-    return @"https://uphold.com/reserve/transactions/%@";
+    return @"https://wallet.uphold.com/reserve/transactions/%@";
 }
 
 + (NSString *)logoutURLString {
-    return @"https://uphold.com/";
-
+    return @"https://wallet.uphold.com/dashboard";
 }
 
 @end
