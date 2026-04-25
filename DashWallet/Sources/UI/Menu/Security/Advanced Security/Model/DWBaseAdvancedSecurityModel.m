@@ -158,7 +158,9 @@ NS_ASSUME_NONNULL_BEGIN
         else if (self.hasFaceID) {
             string = NSLocalizedString(@"You can authenticate with Face ID for payments below", nil);
         }
-        NSParameterAssert(string);
+        else {
+            string = NSLocalizedString(@"You can authenticate with biometrics for payments below", nil);
+        }
 
         string = [string stringByAppendingString:@" "];
 

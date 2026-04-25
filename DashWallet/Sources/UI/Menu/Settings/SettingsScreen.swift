@@ -21,21 +21,17 @@ import Combine
 
 struct SettingsScreen: View {
     private let vc: UINavigationController
-    private let delegateInternal: DelegateInternal
     private let onDidRescan: () -> ()
-    
+
     @StateObject private var viewModel = SettingsMenuViewModel()
     @State private var showNetworkAlert = false
     @State private var showRescanWarningAlert = false
     @State private var showRescanActionAlert = false
     @State private var showCSVExportActivity = false
-    
+
     init(vc: UINavigationController, onDidRescan: @escaping () -> ()) {
         self.vc = vc
         self.onDidRescan = onDidRescan
-        self.delegateInternal = DelegateInternal(onHide: {
-            vc.popViewController(animated: true)
-        })
     }
 
     var body: some View {
@@ -181,8 +177,17 @@ struct SettingsScreen: View {
     }
     
     private func showCurrencySelector() {
-        let controller = DWLocalCurrencyViewController(navigationAppearance: .default, presentationMode: .screen, currencyCode: nil)
-        controller.delegate = delegateInternal
+        let view = LocalCurrencyView(
+            currencyCode: nil,
+            onSelect: { [weak vc] _ in
+                vc?.popViewController(animated: true)
+            },
+            onBack: { [weak vc] in
+                vc?.popViewController(animated: true)
+            }
+        )
+        let controller = UIHostingController(rootView: view)
+        controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }
     
@@ -220,20 +225,6 @@ struct SettingsScreen: View {
     }
 }
 
-extension SettingsScreen {
-    class DelegateInternal: NSObject, DWLocalCurrencyViewControllerDelegate {
-        let onHide: () -> ()
-        
-        init(onHide: @escaping () -> ()) {
-            self.onHide = onHide
-        }
-        
-        func localCurrencyViewController(_ controller: DWLocalCurrencyViewController, didSelectCurrency currencyCode: String) { 
-            onHide() 
-        }
-        func localCurrencyViewControllerDidCancel(_ controller: DWLocalCurrencyViewController) { onHide() }
-    }
-}
 
 struct ActivityView: UIViewControllerRepresentable {
     let activityItems: [Any]
