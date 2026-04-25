@@ -181,7 +181,8 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
 
     private func showSendToContact() {
         #if DASHPAY
-        let controller = DWContactsViewController()
+        let controller = DWContactsViewController(payModel: payModel, dataProvider: dataProvider)
+        controller.intent = .payToSelector
         controller.payDelegate = self
         let navigationController = BaseNavigationController(rootViewController: controller)
         present(navigationController, animated: true, completion: nil)
@@ -310,3 +311,14 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     }
 
 }
+#if DASHPAY
+// MARK: DWContactsViewControllerPayDelegate
+extension HomeViewController: DWContactsViewControllerPayDelegate {
+    func contactsViewController(_ controller: DWContactsViewController, payTo item: DWDPBasicUserItem) {
+        dismiss(animated: true) { [weak self] in
+            self?.performPay(toUser: item)
+        }
+    }
+}
+#endif
+
