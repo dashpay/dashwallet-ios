@@ -21,7 +21,6 @@ platform :ios do
 
   desc "Push a new beta build to TestFlight"
   lane :beta do
-    ensure_xcode_26
     ensure_git_status_clean
 
     cocoapods_install
@@ -29,12 +28,10 @@ platform :ios do
     increment_build_number
 
     build_app(
-      workspace: ENV["XCODE_WORKSPACE"],
       scheme: ENV["XCODE_SCHEME"],
       configuration: "Release",
       clean: true,
-      export_method: "app-store",
-      buildlog_path: "build/logs"
+      export_method: "app-store"
     )
 
     upload_to_testflight(
@@ -44,24 +41,6 @@ platform :ios do
 
     # Make sure our directory is clean, except for changes Fastlane has made
     clean_build_artifacts
-  end
-
-  desc "Build release archive in CI with Xcode 26.x (no upload)"
-  lane :release_archive_ci do
-    ensure_xcode_26
-
-    cocoapods_install
-
-    build_app(
-      workspace: ENV["XCODE_WORKSPACE"],
-      scheme: ENV["XCODE_SCHEME"],
-      configuration: "Release",
-      clean: true,
-      skip_codesigning: true,
-      skip_package_ipa: true,
-      archive_path: "build/DashWallet.xcarchive",
-      buildlog_path: "build/logs"
-    )
   end
 
   desc "Run tests"
@@ -80,15 +59,6 @@ platform :ios do
     cocoapods(
       repo_update: true
     )
-  end
-
-  private_lane :ensure_xcode_26 do
-    xcode_version_output = sh("xcodebuild -version")
-    UI.message("Detected Xcode:\n#{xcode_version_output}")
-
-    unless xcode_version_output.match?(/^Xcode 26\./)
-      UI.user_error!("Xcode 26.x is required for release lanes. Current version output:\n#{xcode_version_output}")
-    end
   end
 
 end
