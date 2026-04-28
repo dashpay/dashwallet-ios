@@ -186,7 +186,7 @@ struct SettingsScreen: View {
                 vc?.popViewController(animated: true)
             }
         )
-        let controller = UIHostingController(rootView: view)
+        let controller = LocalCurrencyHostingViewController(rootView: view)
         controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }
@@ -234,4 +234,33 @@ struct ActivityView: UIViewControllerRepresentable {
     }
     
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+private final class LocalCurrencyHostingViewController: BaseViewController {
+    private let rootView: LocalCurrencyView
+
+    init(rootView: LocalCurrencyView) {
+        self.rootView = rootView
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        view.backgroundColor = .dw_background()
+
+        let hostingController = UIHostingController(rootView: rootView)
+        hostingController.view.backgroundColor = .clear
+        dw_embedChild(hostingController)
+    }
+}
+
+extension LocalCurrencyHostingViewController: NavigationBarDisplayable {
+    var isBackButtonHidden: Bool { true }
+    var isNavigationBarHidden: Bool { true }
 }
