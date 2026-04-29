@@ -147,7 +147,11 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         let storage = WalletStorage()
         let mnemonic: String
         do {
-            mnemonic = try storage.retrieveMnemonic()
+            let walletIds = try storage.listWalletIdsWithMnemonic()
+            guard let walletId = walletIds.first else {
+                throw WalletStorageError.mnemonicNotFound
+            }
+            mnemonic = try storage.retrieveMnemonic(for: walletId)
         } catch {
             throw RuntimeError.missingMnemonicForDescriptorBootstrap(network: network, underlying: error)
         }

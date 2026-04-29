@@ -222,17 +222,17 @@ struct KeywordStorageListView: View {
     }
 }
 
-// MARK: - PersistentSyncState
+// MARK: - PersistentPlatformAddressesSyncState
 
 struct SyncStateStorageListView: View {
-    @Query(sort: \PersistentSyncState.lastUpdated, order: .reverse)
-    private var records: [PersistentSyncState]
+    @Query(sort: \PersistentPlatformAddressesSyncState.lastUpdated, order: .reverse)
+    private var records: [PersistentPlatformAddressesSyncState]
 
     var body: some View {
         List(records) { record in
             NavigationLink(destination: SyncStateStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(record.network.capitalized)
+                    Text(record.network.networkName.capitalized)
                         .font(.body)
                     Text("Height \(record.syncHeight)")
                         .font(.caption)
@@ -348,12 +348,8 @@ struct AccountStorageListView: View {
     private func accountRow(_ record: PersistentAccount) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(record.accountTypeName).font(.body).lineLimit(1)
-            Text(
-                "Index \(record.accountIndex) · "
-                    + "\(record.transactions.count) txs · "
-                    + "\(record.utxos.count) utxos"
-            )
-            .font(.caption).foregroundColor(.secondary)
+            Text("Index \(record.accountIndex)")
+                .font(.caption).foregroundColor(.secondary)
         }
     }
 }
@@ -368,7 +364,7 @@ struct TransactionStorageListView: View {
         List(records) { record in
             NavigationLink(destination: TransactionStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(record.txid)
+                    Text(record.txidHex)
                         .font(.system(.caption, design: .monospaced))
                         .lineLimit(1).truncationMode(.middle)
                     HStack {
@@ -623,17 +619,17 @@ struct PlatformAddressStorageListView: View {
     }
 }
 
-// MARK: - PersistentUtxo
+// MARK: - PersistentTxo
 
 struct UtxoStorageListView: View {
-    @Query(sort: \PersistentUtxo.createdAt, order: .reverse)
-    private var records: [PersistentUtxo]
+    @Query(sort: \PersistentTxo.createdAt, order: .reverse)
+    private var records: [PersistentTxo]
 
     var body: some View {
         List(records) { record in
             NavigationLink(destination: UtxoStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(record.outpoint)
+                    Text(record.outpointHex)
                         .font(.system(.caption, design: .monospaced))
                         .lineLimit(1).truncationMode(.middle)
                     HStack {
@@ -663,7 +659,7 @@ struct WalletManagerMetadataStorageListView: View {
         List(records) { record in
             NavigationLink(destination: WalletManagerMetadataStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(record.network).font(.body)
+                    Text(record.network.networkName).font(.body)
                     Text("Height \(record.combinedSyncHeight) · \(record.walletCount) wallets")
                         .font(.caption).foregroundColor(.secondary)
                 }

@@ -79,22 +79,17 @@ final class SwiftDashSDKWalletWiper: NSObject {
     /// Idempotent. Never throws, never crashes; all errors swallowed
     /// to os.log.
     private static func performWipe() {
-        // 1) Delete the encrypted seed from WalletStorage. Already
-        // idempotent — `WalletStorage.deleteSeed` accepts both
-        // `errSecSuccess` and `errSecItemNotFound`
-        // (per WalletStorage.swift:97).
+        // SwiftDashSDK no longer stores PIN-encrypted seeds. Per-wallet
+        // mnemonics are keyed by walletId — enumerate and delete them all.
         do {
-            try WalletStorage().deleteSeed()
-            logger.info("deleted encrypted seed from WalletStorage")
+            let storage = WalletStorage()
+            let walletIds = try storage.listWalletIdsWithMnemonic()
+            for walletId in walletIds {
+                try? storage.deleteMnemonic(for: walletId)
+            }
+            logger.info("deleted mnemonics for \(walletIds.count) wallet(s) from WalletStorage")
         } catch {
-            logger.error("failed to delete seed: \(String(describing: error), privacy: .public)")
-        }
-
-        do {
-            try WalletStorage().deleteMnemonic()
-            logger.info("deleted mnemonic from WalletStorage")
-        } catch {
-            logger.error("failed to delete mnemonic: \(String(describing: error), privacy: .public)")
+            logger.error("failed to enumerate/delete mnemonics: \(String(describing: error), privacy: .public)")
         }
 
         do {

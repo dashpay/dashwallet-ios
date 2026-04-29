@@ -71,79 +71,11 @@ final class SwiftDashSDKPinChanger: NSObject {
     /// Never leaves a half-written entry that would cause hard failures
     /// for downstream readers.
     private static func performChange(oldPin: String, newPin: String) {
-        // Defensive: skip cases the caller should already filter, but
-        // belt-and-suspenders.
-        guard !oldPin.isEmpty, !newPin.isEmpty else {
-            logger.warning("ignoring PIN change with empty pin(s)")
-            return
-        }
-        guard oldPin != newPin else {
-            logger.info("old and new PIN are identical, no-op")
-            return
-        }
-
-        let storage = WalletStorage()
-
-        // 1) Decrypt the existing seed with the OLD PIN.
-        //
-        // Three relevant outcomes:
-        //  - success: continue to step 2.
-        //  - seedNotFound: no SwiftDashSDK seed yet — this is the
-        //    first-time-setup case slipping through (DWSetPinModel
-        //    should have skipped us, but we belt-and-suspender it
-        //    here too). The wallet creator will populate the seed
-        //    later in the flow with the new PIN. No-op.
-        //  - invalidPIN: drift between DashSync's stored PIN and
-        //    SwiftDashSDK's. The SwiftDashSDK seed is already
-        //    orphaned and unrecoverable; best-effort delete to
-        //    clean up so the next createWallet/importWallet starts
-        //    from a clean slate.
-        let seed: Data
-        do {
-            seed = try storage.retrieveSeed(pin: oldPin)
-        } catch WalletStorageError.seedNotFound {
-            logger.info("no SwiftDashSDK seed to re-encrypt; nothing to do")
-            return
-        } catch WalletStorageError.invalidPIN {
-            logger.warning("oldPin doesn't decrypt SwiftDashSDK seed (drift). Deleting orphaned seed.")
-            try? storage.deleteSeed()
-            return
-        } catch {
-            logger.error("retrieveSeed(oldPin) failed: \(String(describing: error), privacy: .public)")
-            return
-        }
-
-        // 2) Re-encrypt with the NEW PIN. WalletStorage.storeSeed is
-        // already idempotent — it deletes the existing entry first
-        // (WalletStorage.swift:41), so this is effectively atomic
-        // from the caller's perspective.
-        do {
-            _ = try storage.storeSeed(seed, pin: newPin)
-        } catch {
-            logger.error("storeSeed(newPin) failed: \(String(describing: error), privacy: .public). Cleaning up.")
-            // Best-effort cleanup so we don't leave a half-encrypted
-            // entry behind. The user will hit seedNotFound on next
-            // read, which is recoverable via wipe + restore.
-            try? storage.deleteSeed()
-            return
-        }
-
-        // 3) Round-trip verify with the NEW PIN. Mirrors the migrator
-        // and creator's verify-before-commit pattern. If verify fails,
-        // delete to avoid leaving a corrupted entry.
-        do {
-            let verify = try storage.retrieveSeed(pin: newPin)
-            guard verify == seed else {
-                logger.error("round-trip seed mismatch after PIN change — deleting")
-                try? storage.deleteSeed()
-                return
-            }
-        } catch {
-            logger.error("retrieveSeed(newPin) verify failed: \(String(describing: error), privacy: .public). Deleting.")
-            try? storage.deleteSeed()
-            return
-        }
-
-        logger.info("PIN change mirrored to SwiftDashSDK successfully")
+        // SwiftDashSDK no longer stores PIN-encrypted seeds — the
+        // entire encryptedSeed/PIN keychain layer was removed. PIN
+        // changes are now a DashSync-only concern; nothing to mirror.
+        _ = oldPin
+        _ = newPin
+        logger.info("PIN change is a no-op; SwiftDashSDK seed encryption removed")
     }
 }

@@ -15,6 +15,24 @@ import Foundation
 import OSLog
 import SwiftDashSDK
 
+// MARK: - Local stand-in for removed SDK type
+//
+// `HDWallet` was removed from SwiftDashSDK in favor of the
+// `PlatformWalletManager`-owned wallet model. The dashwallet integration
+// still uses this shape as a value-type carrier between WalletProvider,
+// SPV coordinator, transaction sender, and runtime — preserved here so
+// those call sites compile while the migration progresses. None of the
+// downstream consumers exercise it functionally (SPV/send paths throw
+// `spvNotRunning`).
+struct HDWallet {
+    let walletId: Data
+    let serializedWalletBytes: Data
+    let label: String
+    let network: AppNetwork
+    let isWatchOnly: Bool
+    let isImported: Bool
+}
+
 @objc(DWSwiftDashSDKWalletProvider)
 final class SwiftDashSDKWalletProvider: NSObject {
 

@@ -24,7 +24,10 @@ final class SwiftDashSDKMnemonicReader: NSObject {
     @objc(readMnemonic)
     static func readMnemonic() -> String? {
         do {
-            return try WalletStorage().retrieveMnemonic()
+            let storage = WalletStorage()
+            let walletIds = try storage.listWalletIdsWithMnemonic()
+            guard let walletId = walletIds.first else { return nil }
+            return try storage.retrieveMnemonic(for: walletId)
         } catch {
             logger.error("readMnemonic failed: \(String(describing: error), privacy: .public)")
             return nil

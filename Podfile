@@ -1,7 +1,7 @@
 inhibit_all_warnings!
 
 target 'dashwallet' do
-  platform :ios, '17.0'
+  platform :ios, '18.0'
 
   pod 'DashSync', :path => '../DashSync/'
   pod 'SQLite.swift', '~> 0.15.3'
@@ -26,7 +26,7 @@ target 'dashwallet' do
 end
 
 target 'dashpay' do
-  platform :ios, '17.0'
+  platform :ios, '18.0'
 
   pod 'DashSync', :path => '../DashSync/'
   pod 'SQLite.swift', '~> 0.15.3'
@@ -62,7 +62,7 @@ end
 
 
 target 'TodayExtension' do
-  platform :ios, '17.0'
+  platform :ios, '18.0'
 
   pod 'DSDynamicOptions', '0.1.2'
 
@@ -84,7 +84,7 @@ post_install do |installer|
     # fixes warnings about unsupported Deployment Target in Xcode
     target.build_configurations.each do |config|
       if target.platform_name == :ios
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '17.0'
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '18.0'
       elsif target.platform_name == :watchos
         config.build_settings['WATCHOS_DEPLOYMENT_TARGET'] = '4.0'
       end

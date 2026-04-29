@@ -103,7 +103,7 @@ struct PlatformSyncStatusScreen: View {
             }
             Spacer()
             if let network = coordinator.runningNetwork {
-                Text(network.rawValue)
+                Text(network.networkName)
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.secondary)
             }

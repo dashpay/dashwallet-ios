@@ -29,8 +29,9 @@ final class SwiftDashSDKMnemonicGenerator: NSObject {
     static func generateAndStore() -> String? {
         do {
             let mnemonic = try Mnemonic.generate(wordCount: 12)
-            try WalletStorage().storeMnemonic(mnemonic)
-            logger.info("generated and stored 12-word mnemonic")
+            // Storage now requires a walletId; persistence happens later in the
+            // wallet-creation flow once the descriptor exists.
+            logger.info("generated 12-word mnemonic")
             return mnemonic
         } catch {
             logger.error("generateAndStore failed: \(String(describing: error), privacy: .public)")

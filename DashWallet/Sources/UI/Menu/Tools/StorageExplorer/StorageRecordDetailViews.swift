@@ -47,7 +47,7 @@ struct IdentityStorageDetailView: View {
                 FieldRow(label: "Balance", value: record.formattedBalance)
                 FieldRow(label: "Revision", value: "\(record.revision)")
                 FieldRow(label: "Is Local", value: record.isLocal ? "Yes" : "No")
-                FieldRow(label: "Network", value: record.network)
+                FieldRow(label: "Network", value: record.network.networkName)
             }
             Section("Names") {
                 FieldRow(label: "Alias", value: record.alias ?? "None")
@@ -88,7 +88,7 @@ struct DocumentStorageDetailView: View {
                 FieldRow(label: "Revision", value: "\(record.revision)")
                 FieldRow(label: "Contract ID", value: record.contractId)
                 FieldRow(label: "Owner ID", value: record.ownerId)
-                FieldRow(label: "Network", value: record.network)
+                FieldRow(label: "Network", value: record.network.networkName)
                 FieldRow(label: "Deleted", value: record.isDeleted ? "Yes" : "No")
             }
             Section("Timestamps") {
@@ -118,7 +118,7 @@ struct DataContractStorageDetailView: View {
                 FieldRow(label: "Name", value: record.name)
                 FieldRow(label: "Version", value: record.version.map { "\($0)" } ?? "None")
                 FieldRow(label: "Owner (Base58)", value: record.ownerIdBase58 ?? "None")
-                FieldRow(label: "Network", value: record.network)
+                FieldRow(label: "Network", value: record.network.networkName)
                 FieldRow(label: "Has Tokens", value: record.hasTokens ? "Yes" : "No")
             }
             Section("Flags") {
@@ -217,7 +217,7 @@ struct TokenBalanceStorageDetailView: View {
                 FieldRow(label: "Identity ID", value: hexString(record.identityId))
                 FieldRow(label: "Balance", value: "\(record.balance)")
                 FieldRow(label: "Frozen", value: record.frozen ? "Yes" : "No")
-                FieldRow(label: "Network", value: record.network)
+                FieldRow(label: "Network", value: record.network.networkName)
             }
             Section("Token Info") {
                 FieldRow(label: "Name", value: record.tokenName ?? "None")
@@ -374,10 +374,10 @@ struct KeywordStorageDetailView: View {
     }
 }
 
-// MARK: - PersistentSyncState
+// MARK: - PersistentPlatformAddressesSyncState
 
 struct SyncStateStorageDetailView: View {
-    let record: PersistentSyncState
+    let record: PersistentPlatformAddressesSyncState
 
     private var blockDate: Date? {
         record.syncTimestamp > 0
@@ -388,7 +388,7 @@ struct SyncStateStorageDetailView: View {
     var body: some View {
         Form {
             Section("Sync Watermark") {
-                FieldRow(label: "Network", value: record.network)
+                FieldRow(label: "Network", value: record.network.networkName)
                 FieldRow(label: "Sync Height", value: "\(record.syncHeight)")
                 FieldRow(label: "Sync Timestamp", value: "\(record.syncTimestamp)")
                 if let date = blockDate {
@@ -474,7 +474,7 @@ struct WalletStorageDetailView: View {
         Form {
             Section("Core") {
                 FieldRow(label: "Wallet ID", value: hexString(record.walletId))
-                FieldRow(label: "Network", value: record.network)
+                FieldRow(label: "Network", value: record.network?.networkName ?? "—")
                 FieldRow(label: "Name", value: record.name ?? "None")
                 FieldRow(label: "Birth Height", value: "\(record.birthHeight)")
                 FieldRow(label: "Synced Height", value: "\(record.syncedHeight)")
@@ -519,7 +519,6 @@ struct AccountStorageDetailView: View {
                 FieldRow(label: "Type", value: record.accountTypeName)
                 FieldRow(label: "Type ID", value: "\(record.accountType)")
                 FieldRow(label: "Index", value: "\(record.accountIndex)")
-                FieldRow(label: "Watch Only", value: record.isWatchOnly ? "Yes" : "No")
                 FieldRow(
                     label: "Extended Public Key",
                     value: accountXpubString ?? "—"
@@ -534,10 +533,8 @@ struct AccountStorageDetailView: View {
                 FieldRow(label: "Internal Highest Used", value: "\(record.internalHighestUsed)")
             }
             Section("Relationships") {
-                FieldRow(label: "Transactions", value: "\(record.transactions.count)")
-                FieldRow(label: "UTXOs", value: "\(record.utxos.count)")
                 FieldRow(label: "Addresses", value: "\(record.coreAddresses.count)")
-                FieldRow(label: "Wallet", value: record.wallet?.name ?? record.wallet.map { hexString($0.walletId) } ?? "None")
+                FieldRow(label: "Wallet", value: record.wallet.name ?? hexString(record.wallet.walletId))
             }
             ForEach(addressSections(), id: \.0) { poolName, addresses in
                 Section("\(poolName) Addresses (\(addresses.count))") {
@@ -643,7 +640,7 @@ struct TransactionStorageDetailView: View {
     var body: some View {
         Form {
             Section("Core") {
-                FieldRow(label: "TXID", value: record.txid)
+                FieldRow(label: "TXID", value: record.txidHex)
                 FieldRow(label: "Direction", value: record.directionName)
                 FieldRow(label: "Type", value: record.transactionType)
                 FieldRow(label: "Net Amount", value: record.formattedAmount)
@@ -666,9 +663,6 @@ struct TransactionStorageDetailView: View {
                     FieldRow(label: "TX Size", value: "\(size) bytes")
                 }
             }
-            Section("Relationships") {
-                FieldRow(label: "Account", value: record.account?.accountTypeName ?? "None")
-            }
             Section("Timestamps") {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
@@ -679,16 +673,16 @@ struct TransactionStorageDetailView: View {
     }
 }
 
-// MARK: - PersistentUtxo
+// MARK: - PersistentTxo
 
 struct UtxoStorageDetailView: View {
-    let record: PersistentUtxo
+    let record: PersistentTxo
 
     var body: some View {
         Form {
             Section("Core") {
-                FieldRow(label: "Outpoint", value: record.outpoint)
-                FieldRow(label: "TXID", value: record.txid)
+                FieldRow(label: "Outpoint", value: record.outpointHex)
+                FieldRow(label: "TXID", value: record.txidHex)
                 FieldRow(label: "Vout", value: "\(record.vout)")
                 FieldRow(label: "Amount", value: record.formattedAmount)
                 FieldRow(label: "Address", value: record.address)
@@ -722,7 +716,7 @@ struct WalletManagerMetadataStorageDetailView: View {
     var body: some View {
         Form {
             Section("Core") {
-                FieldRow(label: "Network", value: record.network)
+                FieldRow(label: "Network", value: record.network.networkName)
                 FieldRow(label: "Combined Sync Height", value: "\(record.combinedSyncHeight)")
                 FieldRow(label: "Wallet Count", value: "\(record.walletCount)")
                 if let hash = record.combinedSyncBlockHash {

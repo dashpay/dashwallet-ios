@@ -202,21 +202,11 @@ final class SwiftDashSDKKeyMigrator: NSObject {
                 network: appNetwork,
                 isImported: true)
 
-            // Encrypt and store the seed via WalletStorage.
+            // SwiftDashSDK no longer stores PIN-encrypted seeds; mnemonic
+            // is the only secret kept by WalletStorage and is keyed by walletId.
             let storage = WalletStorage()
-            _ = try storage.storeSeed(seed, pin: pin)
-
-            // Round-trip verify the encrypted seed before storing the
-            // runtime descriptor. If verify fails, roll back the seed write.
-            let readBack = try storage.retrieveSeed(pin: pin)
-            guard readBack == seed else {
-                logger.error("🔑 KEYMIG :: round-trip seed mismatch — rolling back SwiftDashSDK seed")
-                try? storage.deleteSeed()
-                return
-            }
-
-            try storage.storeMnemonic(mnemonic)
-            let storedMnemonic = try storage.retrieveMnemonic()
+            try storage.storeMnemonic(mnemonic, for: descriptor.walletId)
+            let storedMnemonic = try storage.retrieveMnemonic(for: descriptor.walletId)
             guard storedMnemonic == mnemonic else {
                 logger.error("🔑 KEYMIG :: mnemonic round-trip mismatch")
                 throw MigrationError.mnemonicRoundTripMismatch
@@ -242,8 +232,9 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         } catch {
             logger.error("🔑 KEYMIG :: migration threw: \(String(describing: error), privacy: .public)")
             // Best-effort: leave SwiftDashSDK side clean if anything was partially written.
-            try? WalletStorage().deleteSeed()
-            try? WalletStorage().deleteMnemonic()
+            if let descriptor = try? SwiftDashSDKRuntimeWalletStore().retrieve(for: appNetwork) {
+                try? WalletStorage().deleteMnemonic(for: descriptor.walletId)
+            }
             try? SwiftDashSDKRuntimeWalletStore().delete(for: appNetwork)
         }
     }

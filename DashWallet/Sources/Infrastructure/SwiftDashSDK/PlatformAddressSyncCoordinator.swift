@@ -423,26 +423,26 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             }
         }
 
-        // Drop the BLAST sync watermark too. `PersistentSyncState` is a
+        // Drop the BLAST sync watermark too. `PersistentPlatformAddressesSyncState` is a
         // standalone model — no cascade from `PersistentWallet` — and it's
         // keyed per network (`platform-sync:<network>` scope id, one row per
         // network). Leaving it behind makes BLAST resume from the last-known
         // block on the re-created wallet; the trunk/branch/compact rescan
         // that would re-discover balances for the freshly-derived address
         // pool is skipped, and the UI stays at 0 forever.
-        if let netName = runningNetwork?.rawValue {
-            let syncDescriptor = FetchDescriptor<PersistentSyncState>(
-                predicate: #Predicate<PersistentSyncState> { $0.network == netName })
+        if let netRaw = runningNetwork?.rawValue {
+            let syncDescriptor = FetchDescriptor<PersistentPlatformAddressesSyncState>(
+                predicate: #Predicate<PersistentPlatformAddressesSyncState> { $0.networkRaw == netRaw })
             do {
                 let rows = try context.fetch(syncDescriptor)
                 for row in rows {
                     context.delete(row)
                 }
                 Self.logger.info(
-                    "🛰️ PLATFORM-ADDR :: deleted \(rows.count) PersistentSyncState row(s) for \(netName, privacy: .public)")
+                    "🛰️ PLATFORM-ADDR :: deleted \(rows.count) PersistentPlatformAddressesSyncState row(s) for network \(netRaw, privacy: .public)")
             } catch {
                 Self.logger.error(
-                    "🛰️ PLATFORM-ADDR :: PersistentSyncState cleanup threw: \(String(describing: error), privacy: .public)")
+                    "🛰️ PLATFORM-ADDR :: PersistentPlatformAddressesSyncState cleanup threw: \(String(describing: error), privacy: .public)")
             }
         }
 
@@ -470,7 +470,11 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }
 
         let storage = WalletStorage()
-        let mnemonic = try storage.retrieveMnemonic()
+        let walletIds = try storage.listWalletIdsWithMnemonic()
+        guard let walletId = walletIds.first else {
+            throw WalletStorageError.mnemonicNotFound
+        }
+        let mnemonic = try storage.retrieveMnemonic(for: walletId)
         Self.logger.info("🛰️ PLATFORM-ADDR :: creating new platform wallet from existing mnemonic")
         return try manager.createWallet(
             mnemonic: mnemonic,
@@ -657,7 +661,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         let dir = documents
             .appendingPathComponent("SwiftDashSDK", isDirectory: true)
             .appendingPathComponent("Platform", isDirectory: true)
-            .appendingPathComponent(network.rawValue, isDirectory: true)
+            .appendingPathComponent(network.networkName, isDirectory: true)
         try FileManager.default.createDirectory(
             at: dir,
             withIntermediateDirectories: true)
