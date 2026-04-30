@@ -286,6 +286,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         updateCachedRunState(network: network, running: true)
         lastError = nil
         subscribeToManagerProgress(manager: manager)
+        refreshBalanceBridge()
 
         Self.logger.info("🛰️ SPVCOORD :: started on \(network.rawValue, privacy: .public)")
         return .success(())
@@ -307,6 +308,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             }
         }
 
+        // Drop the bridge'd balance so a network switch / wipe doesn't leak
+        // the previous wallet's value into the next session. The next
+        // `performStart` re-seeds via `refreshBalanceBridge()`.
+        SwiftDashSDKWalletState.shared.clearBalance()
+
         runningNetwork = nil
         updateCachedRunState(network: nil, running: false)
         resetPublishedState()
@@ -320,10 +326,16 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         progressCancellable = manager.$spvProgress
             .receive(on: RunLoop.main)
             .sink { [weak self] platformProgress in
-                self?.applyProgress(platformProgress)
+                // `.receive(on: RunLoop.main)` puts us on the main thread,
+                // so we can hop into MainActor isolation synchronously to
+                // touch the host's `@MainActor` wallet inside applyProgress.
+                MainActor.assumeIsolated {
+                    self?.applyProgress(platformProgress)
+                }
             }
     }
 
+    @MainActor
     private func applyProgress(_ p: PlatformSpvSyncProgress) {
         let mappedState = mapState(p.overallState)
         let translated = SPVSyncProgress(
@@ -360,6 +372,36 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         isComplete = mappedState.isComplete()
         if mappedState != .error {
             lastError = nil
+        }
+
+        // Piggyback on the deduped 1Hz progress tick to refresh the live
+        // balance into `SwiftDashSDKWalletState.shared` for downstream
+        // consumers (BalanceModel, SendAmountModel, etc.).
+        refreshBalanceBridge()
+    }
+
+    /// Pull the latest core-wallet balance via FFI and republish through
+    /// `SwiftDashSDKWalletState.shared.applyBalance(_:)` so the home screen
+    /// `BalanceModel` and friends keep working off the same `@Published`
+    /// surface they always did. The legacy callback that used to feed this
+    /// publisher was removed in the SDK refactor, so the bridge replaces it.
+    @MainActor
+    private func refreshBalanceBridge() {
+        guard let wallet = SwiftDashSDKHost.shared.wallet else {
+            SwiftDashSDKWalletState.shared.clearBalance()
+            return
+        }
+        do {
+            let core = try wallet.coreWallet().balance()
+            let mapped = WalletBalance(
+                confirmed: core.confirmed,
+                unconfirmed: core.unconfirmed,
+                immature: core.immature,
+                locked: core.locked)
+            SwiftDashSDKWalletState.shared.applyBalance(mapped)
+        } catch {
+            Self.logger.warning(
+                "🛰️ SPVCOORD :: balance bridge fetch failed: \(String(describing: error), privacy: .public)")
         }
     }
 
