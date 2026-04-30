@@ -17,6 +17,8 @@
 
 import Foundation
 import Combine
+import SwiftData
+import SwiftDashSDK
 
 private let kBaseBalanceHeaderHeight: CGFloat = 100
 private let kTimeskewTolerance: TimeInterval = 3600 // 1 hour
@@ -190,14 +192,17 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
 
-        // Subscribe to SwiftDashSDKWalletState's transactions publisher.
-        // After M6 retired DashSync's SPV, the legacy
-        // DSTransactionManagerTransactionStatusDidChange + DSWalletBalanceDidChange
-        // notifications no longer fire for new txs. Function #6.
-        SwiftDashSDKWalletState.shared.$transactions
+        // Reload when SwiftData saves — Rust's persister callback writes
+        // PersistentTransaction rows on every Core SPV / BLAST batch, and
+        // SwiftData posts NSManagedObjectContextDidSave under the hood. The
+        // legacy SwiftDashSDKWalletState.$transactions bridge is dead (its
+        // input callback was removed in the SDK refactor), so we read
+        // directly from SwiftData via SwiftDashSDKWalletSource and use this
+        // notification as the reload trigger.
+        NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                DSLogger.log("HomeViewModel: SwiftDashSDK transactions changed, reloading list")
+                DSLogger.log("HomeViewModel: SwiftData saved, reloading tx list")
                 self?.reloadTxsAndShortcuts()
             }
             .store(in: &cancellableBag)
@@ -789,17 +794,75 @@ protocol TransactionSource {
     var allTransactions: Array<Transaction> { get }
 }
 
-/// Pure SwiftDashSDK source for the home screen tx list.
-/// Reads exclusively from `SwiftDashSDKWalletState.shared.transactions`
-/// — DashSync is not in the loop. On cold launch, the list starts empty
-/// and fills progressively as SPV replays blocks from cached chain data.
-/// After a full sync, all historical txs are visible. Function #6.
+/// Pure SwiftDashSDK source for the home screen tx list. Queries the
+/// `PersistentTransaction` rows persisted by Rust's SwiftData callbacks
+/// (Core SPV block apply + BLAST events) directly from
+/// `SwiftDashSDKHost.shared.modelContainer`. DashSync is not in the loop.
+///
+/// Mirrors the SwiftExampleApp's `TransactionListView` pattern, adapted
+/// for the existing UIKit + Combine home view: instead of `@Query`, we do
+/// a synchronous fetch and feed the existing `Transaction` wrapper.
+///
+/// `SwiftDashSDKHost` is `@MainActor`-isolated; this getter is invoked
+/// from `HomeViewModel.queue` (a background dispatch queue), so the read
+/// trampolines through `DispatchQueue.main.sync`. The fetch itself is
+/// fast (<10ms for a few hundred rows), so blocking the worker queue
+/// briefly is acceptable.
 class SwiftDashSDKWalletSource: TransactionSource {
     var allTransactions: Array<Transaction> {
-        let sdkTxs = SwiftDashSDKWalletState.shared.transactions ?? []
-        return sdkTxs
-            .map { Transaction(walletTransaction: $0) }
+        let rows: [PersistentTransaction]
+        if Thread.isMainThread {
+            rows = MainActor.assumeIsolated { Self.fetchRowsOnMain() }
+        } else {
+            var fetched: [PersistentTransaction] = []
+            DispatchQueue.main.sync {
+                fetched = MainActor.assumeIsolated { Self.fetchRowsOnMain() }
+            }
+            rows = fetched
+        }
+        return rows
+            .map { Transaction(walletTransaction: WalletTransaction(persistent: $0)) }
             .sorted { $0.date > $1.date }
+    }
+
+    @MainActor
+    private static func fetchRowsOnMain() -> [PersistentTransaction] {
+        guard let container = SwiftDashSDKHost.shared.modelContainer else {
+            return []
+        }
+        let descriptor = FetchDescriptor<PersistentTransaction>(
+            sortBy: [SortDescriptor(\.firstSeen, order: .reverse)])
+        do {
+            return try container.mainContext.fetch(descriptor)
+        } catch {
+            DSLogger.log("HomeViewModel: PersistentTransaction fetch failed: \(error)")
+            return []
+        }
+    }
+}
+
+private extension WalletTransaction {
+    /// Adapt the SwiftData persisted row to the legacy `WalletTransaction`
+    /// value shape that `Transaction(walletTransaction:)` already
+    /// understands. `PersistentTransaction.txid` is raw 32 bytes in
+    /// internal byte order; `WalletTransaction.txid` (per `Transaction.swift`'s
+    /// `txHashData` accessor) expects a hex string in *internal* order, so
+    /// avoid `p.txidHex` (which reverses for display).
+    init(persistent p: PersistentTransaction) {
+        let internalHex = p.txid.map { String(format: "%02x", $0) }.joined()
+        let blockHashHex = p.blockHash.map { $0.map { String(format: "%02x", $0) }.joined() }
+        // Mempool rows have blockTimestamp == 0; fall back to firstSeen so
+        // they don't sort into 1970 on the home screen. Mirrors
+        // `Transaction.init(walletTransaction:)`'s mempool fallback.
+        let timestamp: UInt64 = p.blockTimestamp == 0 ? p.firstSeen : UInt64(p.blockTimestamp)
+        self.init(
+            txid: internalHex,
+            netAmount: p.netAmount,
+            height: p.blockHeight,
+            blockHash: blockHashHex,
+            timestamp: timestamp,
+            fee: p.fee,
+            isOurs: true)
     }
 }
 
