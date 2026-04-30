@@ -86,20 +86,6 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     private var syncEventCancellable: AnyCancellable?
     private var syncStateCancellable: AnyCancellable?
 
-    // MARK: - Process-wide SDK init guard
-
-    private static var sdkInitialized = false
-    private static let sdkInitLock = NSLock()
-
-    private static func ensureSDKInitialized() {
-        sdkInitLock.lock()
-        defer { sdkInitLock.unlock() }
-        if !sdkInitialized {
-            SDK.initialize()
-            sdkInitialized = true
-        }
-    }
-
     // MARK: - Init
 
     private override init() {
@@ -273,48 +259,15 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             await performStop(deletingPersistedWallet: false)
         }
 
-        guard let platformNetwork = platformNetwork(for: network) else {
-            Self.logger.error("🛰️ PLATFORM-ADDR :: \(network.rawValue, privacy: .public) is not a supported PlatformNetwork")
-            lastError = "Platform SDK does not support \(network.rawValue)"
-            return
-        }
-
-        Self.ensureSDKInitialized()
         Self.logger.info("🛰️ PLATFORM-ADDR :: starting for \(network.rawValue, privacy: .public)")
 
-        let newSDK: SDK
-        do {
-            newSDK = try SDK(network: network.sdkNetwork)
-        } catch {
-            Self.logger.error("🛰️ PLATFORM-ADDR :: SDK init failed: \(String(describing: error), privacy: .public)")
-            lastError = "SDK init failed: \(error.localizedDescription)"
-            return
-        }
-
-        let container: ModelContainer
-        do {
-            container = try buildModelContainer(for: network)
-        } catch {
-            Self.logger.error("🛰️ PLATFORM-ADDR :: ModelContainer build failed: \(String(describing: error), privacy: .public)")
-            lastError = "ModelContainer setup failed: \(error.localizedDescription)"
-            return
-        }
-
-        let manager = PlatformWalletManager()
-        do {
-            try manager.configure(sdk: newSDK, modelContainer: container)
-        } catch {
-            Self.logger.error("🛰️ PLATFORM-ADDR :: configure failed: \(String(describing: error), privacy: .public)")
-            lastError = "PlatformWalletManager configure failed: \(error.localizedDescription)"
-            return
-        }
-
+        let manager: PlatformWalletManager
         let resolvedWallet: ManagedPlatformWallet
         do {
-            resolvedWallet = try bootstrapWallet(manager: manager, network: platformNetwork)
+            (manager, resolvedWallet) = try SwiftDashSDKHost.shared.start(network: network)
         } catch {
-            Self.logger.error("🛰️ PLATFORM-ADDR :: wallet bootstrap failed: \(String(describing: error), privacy: .public)")
-            lastError = "Wallet bootstrap failed: \(error.localizedDescription)"
+            Self.logger.error("🛰️ PLATFORM-ADDR :: host.start failed: \(String(describing: error), privacy: .public)")
+            lastError = error.localizedDescription
             return
         }
 
@@ -341,8 +294,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             return
         }
 
-        self.sdk = newSDK
-        self.modelContainer = container
+        self.sdk = SwiftDashSDKHost.shared.sdk
+        self.modelContainer = SwiftDashSDKHost.shared.modelContainer
         self.walletManager = manager
         self.wallet = resolvedWallet
         self.platformAddressWallet = addressWallet
@@ -452,35 +405,6 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             Self.logger.error(
                 "🛰️ PLATFORM-ADDR :: wipe-cleanup save threw: \(String(describing: error), privacy: .public)")
         }
-    }
-
-    // MARK: - Wallet bootstrap
-
-    private func bootstrapWallet(
-        manager: PlatformWalletManager,
-        network: PlatformNetwork
-    ) throws -> ManagedPlatformWallet {
-        let restored = try manager.loadFromPersistor()
-        if let first = restored.first {
-            Self.logger.info("🛰️ PLATFORM-ADDR :: reusing persisted wallet")
-            return first
-        }
-        if let existing = manager.firstWallet {
-            return existing
-        }
-
-        let storage = WalletStorage()
-        let walletIds = try storage.listWalletIdsWithMnemonic()
-        guard let walletId = walletIds.first else {
-            throw WalletStorageError.mnemonicNotFound
-        }
-        let mnemonic = try storage.retrieveMnemonic(for: walletId)
-        Self.logger.info("🛰️ PLATFORM-ADDR :: creating new platform wallet from existing mnemonic")
-        return try manager.createWallet(
-            mnemonic: mnemonic,
-            network: network,
-            name: "dashwallet",
-            createDefaultAccounts: true)
     }
 
     // MARK: - Combine subscriptions
@@ -613,15 +537,6 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         return nil
     }
 
-    private func platformNetwork(for network: AppNetwork) -> PlatformNetwork? {
-        switch network {
-        case .mainnet: return .mainnet
-        case .testnet: return .testnet
-        case .devnet: return .devnet
-        case .regtest: return nil
-        }
-    }
-
     private func keyWalletNetwork(for network: AppNetwork) -> KeyWalletNetwork {
         switch network {
         case .mainnet: return .mainnet
@@ -652,30 +567,6 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         return bytes
     }
 
-    private func buildModelContainer(for network: AppNetwork) throws -> ModelContainer {
-        let documents = try FileManager.default.url(
-            for: .documentDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true)
-        let dir = documents
-            .appendingPathComponent("SwiftDashSDK", isDirectory: true)
-            .appendingPathComponent("Platform", isDirectory: true)
-            .appendingPathComponent(network.networkName, isDirectory: true)
-        try FileManager.default.createDirectory(
-            at: dir,
-            withIntermediateDirectories: true)
-        let url = dir.appendingPathComponent("DashModel.sqlite", isDirectory: false)
-
-        let configuration = ModelConfiguration(
-            schema: DashModelContainer.schema,
-            url: url,
-            allowsSave: true,
-            cloudKitDatabase: .none)
-        return try ModelContainer(
-            for: DashModelContainer.schema,
-            configurations: [configuration])
-    }
 }
 
 // MARK: - DerivedPlatformAddress

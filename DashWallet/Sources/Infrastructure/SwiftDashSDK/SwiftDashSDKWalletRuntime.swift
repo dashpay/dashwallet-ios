@@ -179,6 +179,16 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         waitForCoordinatorStop(lastError: lastError)
         SwiftDashSDKWalletProvider.shared.invalidate()
         SwiftDashSDKWalletState.shared.clearAllState()
+
+        // Tear down the shared `PlatformWalletManager` last. Both BLAST and
+        // Core SPV consume `SwiftDashSDKHost.shared`; releasing the FFI
+        // handle while either tokio task is still running would be a
+        // use-after-free. By the time we get here, both have been stopped
+        // (BLAST via `PlatformAddressSyncCoordinator.stop*` above, Core SPV
+        // via `waitForCoordinatorStop`).
+        Task { @MainActor in
+            SwiftDashSDKHost.shared.stop()
+        }
     }
 
     private func waitForSeedMigratorIfNeeded() -> Bool {

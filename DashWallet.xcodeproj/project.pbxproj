@@ -388,6 +388,8 @@
 		A5D5DD0000000000000000FF /* SwiftDashSDKSPVStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000100 /* SwiftDashSDKSPVStatusScreen.swift */; };
 		A5D5DD000000000000000210 /* PlatformAddressSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000212 /* PlatformAddressSyncCoordinator.swift */; };
 		A5D5DD000000000000000211 /* PlatformAddressSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000212 /* PlatformAddressSyncCoordinator.swift */; };
+		A5D5DD000000000000000271 /* SwiftDashSDKHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000270 /* SwiftDashSDKHost.swift */; };
+		A5D5DD000000000000000272 /* SwiftDashSDKHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000270 /* SwiftDashSDKHost.swift */; };
 		A5D5DD000000000000000213 /* PlatformSyncStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000215 /* PlatformSyncStatusScreen.swift */; };
 		A5D5DD000000000000000214 /* PlatformSyncStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000215 /* PlatformSyncStatusScreen.swift */; };
 		A5D5DD000000000000000216 /* PlatformCreditsFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000218 /* PlatformCreditsFormatter.swift */; };
@@ -2407,6 +2409,7 @@
 		A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKSPVCoordinator.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000100 /* SwiftDashSDKSPVStatusScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKSPVStatusScreen.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000212 /* PlatformAddressSyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformAddressSyncCoordinator.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000270 /* SwiftDashSDKHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKHost.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000215 /* PlatformSyncStatusScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSyncStatusScreen.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000218 /* PlatformCreditsFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformCreditsFormatter.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000221 /* PlatformBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBalanceView.swift; sourceTree = "<group>"; };
@@ -5635,6 +5638,7 @@
 					A5D5DD0000000000000000FA /* SwiftDashSDKKeyMigrator.swift */,
 					A5D5DD00000000000000012B /* SwiftDashSDKRuntimeDescriptorFactory.swift */,
 					A5D5DD00000000000000012E /* SwiftDashSDKWalletRuntime.swift */,
+					A5D5DD000000000000000270 /* SwiftDashSDKHost.swift */,
 					A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */,
 					A5D5DD000000000000000212 /* PlatformAddressSyncCoordinator.swift */,
 					A5D5DD000000000000000218 /* PlatformCreditsFormatter.swift */,
@@ -9090,6 +9094,7 @@
 				A5D5DD0000000000000000F8 /* SwiftDashSDKKeyMigrator.swift in Sources */,
 				A5D5DD00000000000000012C /* SwiftDashSDKRuntimeDescriptorFactory.swift in Sources */,
 				A5D5DD00000000000000012F /* SwiftDashSDKWalletRuntime.swift in Sources */,
+				A5D5DD000000000000000271 /* SwiftDashSDKHost.swift in Sources */,
 				A5D5DD0000000000000000FB /* SwiftDashSDKSPVCoordinator.swift in Sources */,
 					A5D5DD0000000000000000FE /* SwiftDashSDKSPVStatusScreen.swift in Sources */,
 					A5D5DD000000000000000210 /* PlatformAddressSyncCoordinator.swift in Sources */,
@@ -9965,6 +9970,7 @@
 				A5D5DD0000000000000000F9 /* SwiftDashSDKKeyMigrator.swift in Sources */,
 				A5D5DD00000000000000012D /* SwiftDashSDKRuntimeDescriptorFactory.swift in Sources */,
 				A5D5DD000000000000000130 /* SwiftDashSDKWalletRuntime.swift in Sources */,
+				A5D5DD000000000000000272 /* SwiftDashSDKHost.swift in Sources */,
 				A5D5DD0000000000000000FC /* SwiftDashSDKSPVCoordinator.swift in Sources */,
 					A5D5DD0000000000000000FF /* SwiftDashSDKSPVStatusScreen.swift in Sources */,
 					A5D5DD000000000000000211 /* PlatformAddressSyncCoordinator.swift in Sources */,
