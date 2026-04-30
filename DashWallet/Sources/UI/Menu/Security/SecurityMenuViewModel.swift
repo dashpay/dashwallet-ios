@@ -24,6 +24,7 @@ enum SecurityMenuNavigationDestination {
     case changePin
     case advancedSecurity
     case resetWallet
+    case resetWalletDebug
 }
 
 @MainActor
@@ -113,7 +114,15 @@ class SecurityMenuViewModel: ObservableObject {
                 self?.navigationDestination = .resetWallet
             }
         ))
-        
+
+        menuItems.append(MenuItemModel(
+            title: "Reset Wallet (Debug)",
+            icon: .custom("image.reset.wallet", maxHeight: 22),
+            action: { [weak self] in
+                self?.navigationDestination = .resetWalletDebug
+            }
+        ))
+
         items = menuItems
     }
     

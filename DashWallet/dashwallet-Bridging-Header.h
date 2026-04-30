@@ -170,6 +170,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWBiometricAuthModel.h"
 #import "DWAdvancedSecurityModel.h"
 #import "DWResetWalletInfoViewController.h"
+#import "DWRecoverModel.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWPreviewSeedPhraseViewController.h"
 #import "DWSecureWalletDelegate.h"

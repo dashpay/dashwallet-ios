@@ -24,6 +24,7 @@ struct SecurityMenuScreen: View {
     
     @StateObject private var viewModel = SecurityMenuViewModel()
     @State private var showBiometricsAlert = false
+    @State private var showResetWalletDebugAlert = false
     
     init(vc: UINavigationController) {
         self.vc = vc
@@ -103,6 +104,15 @@ struct SecurityMenuScreen: View {
         } message: {
             Text(biometricsAlertMessage)
         }
+        .alert("Reset Wallet (Debug)", isPresented: $showResetWalletDebugAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Wipe", role: .destructive) {
+                DWRecoverModel(action: .wipe).wipeWallet()
+                delegateInternal.didWipeWallet()
+            }
+        } message: {
+            Text("Wipes the wallet immediately without asking for the recovery phrase.")
+        }
     }
     
     private func handleNavigation(_ destination: SecurityMenuNavigationDestination?) {
@@ -142,6 +152,8 @@ struct SecurityMenuScreen: View {
             let controller = DWResetWalletInfoViewController.make()
             controller.delegate = delegateInternal
             self.vc.pushViewController(controller, animated: true)
+        case .resetWalletDebug:
+            showResetWalletDebugAlert = true
         case .none:
             break
         }
