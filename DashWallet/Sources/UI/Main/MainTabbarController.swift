@@ -262,7 +262,6 @@ extension MainTabbarController {
     }
 
     private func closePayments(completion: (() -> Void)? = nil) {
-        paymentIsOpened = false
 
         guard let top = selectedViewController?.topController(),
               top != selectedViewController
@@ -366,8 +365,6 @@ extension MainTabbarController: PaymentsViewControllerDelegate {
     }
 
     func paymentsViewControllerWantsToImportPrivateKey(_ controller: PaymentsViewController) {
-        paymentIsOpened = false
-
         controller.dismiss(animated: true) {
             self.performScanQRCodeAction()
         }
@@ -386,8 +383,6 @@ extension MainTabbarController: HomeViewControllerDelegate {
     }
 
     func showPaymentsController(withActivePage pageIndex: PaymentsViewControllerState) {
-        paymentIsOpened = true
-
         let receiveModel = DWReceiveModel()
         let payModel = DWPayModel()
 
