@@ -2,14 +2,17 @@
 //  SwiftDashSDKTransactionSender.swift
 //  DashWallet
 //
-//  Wraps SwiftDashSDK's two-step send flow (build+sign → broadcast) in a
-//  thin adapter that the rest of dashwallet-ios can call without importing
-//  SwiftDashSDK directly.
-//
-//  Build+sign is atomic in SwiftDashSDK — `WalletManager.buildSignedTransaction`
-//  signs the transaction using keys already loaded in FFI memory from app
-//  launch. No PIN or biometric auth is needed at this layer; authentication
-//  is a UI-level gate that callers enforce before calling `broadcast`.
+//  Adapter around the SwiftDashSDK Core send path. The SDK refactor
+//  collapsed `buildSignedTransaction` + `broadcast` into a single
+//  `coreWallet().sendToAddresses(...)` FFI call (build + sign + broadcast
+//  bundled). The legacy two-step `buildAndSign` then `broadcast` shape
+//  used by `WalletSendService` / `DWPaymentProcessor` is preserved here
+//  by routing the entire send through `buildAndSign` and turning
+//  `broadcast(_:)` into a no-op. The user has already authenticated by
+//  the time the build path runs (PIN auth fires in
+//  `WalletSendService.prepareStandardSendForConfirmation`), and the
+//  payment-output broadcast path stamps `alreadyAuthorized` so it doesn't
+//  re-prompt.
 //
 //  This file intentionally does NOT import DashSync.
 //
@@ -28,46 +31,69 @@ final class SwiftDashSDKTransactionSender: NSObject {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.transaction-sender")
 
-    // MARK: - Build & Sign
+    // MARK: - Build & Sign (and broadcast)
 
-    /// Build and sign a transaction that sends `amount` duffs to `address`.
-    ///
-    /// Uses the detached runtime `HDWallet` from `SwiftDashSDKWalletProvider`
-    /// and account index 0 (primary BIP44 account). Fee is calculated
-    /// automatically by the FFI at 1000 duffs/kB.
-    ///
-    /// The returned transaction is signed but NOT broadcast — call
-    /// `broadcast(_:)` separately after the caller has authenticated the
-    /// user.
+    /// Build, sign, and broadcast a transaction that sends `amount` duffs to
+    /// `address`. The SDK's `coreWallet().sendToAddresses(...)` is a single
+    /// FFI call that does all three; we call it here so the existing
+    /// `WalletSendService` two-step API keeps working without surgery into
+    /// the surrounding ObjC payment processor.
     ///
     /// - Parameters:
     ///   - address: Destination Dash address (Base58Check).
     ///   - amount: Amount to send in duffs (1 DASH = 100_000_000 duffs).
     /// - Returns: Tuple of (serialized signed tx bytes, fee in duffs, 32-byte txHash).
     static func buildAndSign(address: String, amount: UInt64) throws -> (txData: Data, fee: UInt64, txHash: Data) {
-        // TODO(core-spv-neuter): core SPV is disabled while the SwiftDashSDK
-        // `SPVClient` / `TxOutput` / `WalletManager.buildSignedTransaction`
-        // surface is absent (see SwiftDashSDKSPVCoordinator for context).
-        // Re-enable this path once the SDK exposes a replacement
-        // build-and-sign API via `PlatformWalletManager`.
-        logger.warning("💸 TXSEND :: buildAndSign unavailable — core SPV disabled")
-        _ = address
-        _ = amount
-        throw SendError.walletNotReady("SwiftDashSDK send path is temporarily disabled")
+        logger.info("💸 TXSEND :: building+signing+broadcasting via PlatformWalletManager.coreWallet")
+
+        let send = { @MainActor () throws -> Data in
+            guard let wallet = SwiftDashSDKHost.shared.wallet else {
+                throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
+            }
+            let core = try wallet.coreWallet()
+            return try core.sendToAddresses(
+                accountType: .bip44,
+                accountIndex: 0,
+                recipients: [(address: address, amountDuffs: amount)])
+        }
+
+        let txData: Data
+        if Thread.isMainThread {
+            txData = try MainActor.assumeIsolated { try send() }
+        } else {
+            var captured: Result<Data, Error> = .failure(SendError.walletNotReady("uninitialized result"))
+            DispatchQueue.main.sync {
+                captured = Result { try MainActor.assumeIsolated { try send() } }
+            }
+            txData = try captured.get()
+        }
+
+        let txHash = computeTxHash(from: txData)
+        // Approximate fee at the standard 1000 duff/kB rate (1 duff/byte).
+        // The actual fee — settled by the FFI when constructing the tx —
+        // is within ±a few duffs of `txData.count` for typical 1-in-2-out
+        // sends. We expose this for the preview UI; callers that need the
+        // exact value can parse it from `DSTransaction.feeUsed` once the
+        // tx is registered with DashSync's chain context.
+        let fee = UInt64(txData.count)
+        logger.info("💸 TXSEND :: send broadcast — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public) fee≈\(fee, privacy: .public) duffs")
+        return (txData, fee, txHash)
     }
 
     // MARK: - Broadcast
 
-    /// Broadcast a previously-signed transaction via the SPV network.
+    /// No-op. The transaction was already broadcast by `buildAndSign` —
+    /// the SDK's send path bundles build + sign + broadcast into a single
+    /// FFI call, so there is nothing left to do here. Kept around so the
+    /// legacy two-step caller surface (`PreparedStandardSend.broadcast()`,
+    /// `DWPaymentProcessor.performSwiftDashSDKBroadcast`) stays
+    /// compilable. If a future SDK exposes a separated build/broadcast
+    /// pair, this becomes the broadcast call.
     ///
-    /// Callers must authenticate the user (PIN / biometric) before calling
-    /// this method. The signed transaction bytes come from `buildAndSign`.
-    ///
-    /// - Parameter txData: Serialized signed transaction bytes.
+    /// - Parameter txData: Serialized signed transaction bytes (ignored).
     static func broadcast(_ txData: Data) throws {
-        logger.info("💸 TXSEND :: broadcasting transaction")
-        try SwiftDashSDKSPVCoordinator.shared.broadcastTransaction(txData)
-        logger.info("💸 TXSEND :: broadcast succeeded")
+        _ = txData
+        logger.info("💸 TXSEND :: broadcast no-op — tx was already broadcast at buildAndSign time")
     }
 
     // MARK: - Helpers
@@ -90,17 +116,6 @@ final class SwiftDashSDKTransactionSender: NSObject {
             }
         }
         return Data(hash2.reversed())
-    }
-
-    private static func currentRuntimeNetwork() throws -> AppNetwork {
-        let chain = DWEnvironment.sharedInstance().currentChain
-        if chain.isMainnet() {
-            return .mainnet
-        }
-        if chain.isTestnet() {
-            return .testnet
-        }
-        throw SendError.walletNotReady("SwiftDashSDK send path does not support the current network")
     }
 
     // MARK: - Errors
