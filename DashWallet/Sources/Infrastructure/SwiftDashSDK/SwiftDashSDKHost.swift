@@ -16,11 +16,10 @@
 //   - `start(network:)` is idempotent. Re-entering with the same network is
 //     a no-op (preserves running SPV / BLAST state). A different network
 //     tears down and rebuilds.
-//   - `stop(forWipe:)` releases the manager handle. When `forWipe: true`,
-//     also deletes the persisted `PersistentWallet` row (so
-//     `loadFromPersistor()` returns empty next launch) and the
-//     network-scoped `PersistentPlatformAddressesSyncState` row (so BLAST
-//     restarts from a fresh checkpoint instead of resuming on stale state).
+//   - `createOrImportWallet(mnemonic:network:isImported:)` is the only path
+//     that creates wallet rows and stores the mnemonic in WalletStorage.
+//   - `stop()` releases the manager handle. Wipe-time persisted-row cleanup is
+//     owned by `PlatformAddressSyncCoordinator` before BLAST stops.
 //
 //  Subsystems coordinate ordering through `SwiftDashSDKWalletRuntime`:
 //  start = host.start → SPV.start → BLAST.start. Stop = BLAST.stop →
@@ -77,6 +76,11 @@ final class SwiftDashSDKHost {
         case modelContainerFailed(Error)
         case configureFailed(Error)
         case walletBootstrapFailed(Error)
+        case walletCreationFailed(Error)
+        case walletNotFound(AppNetwork)
+        case invalidMnemonic
+        case mnemonicPersistenceFailed(Error)
+        case mnemonicRoundTripMismatch
 
         var errorDescription: String? {
             switch self {
@@ -90,8 +94,26 @@ final class SwiftDashSDKHost {
                 return "PlatformWalletManager configure failed: \(error.localizedDescription)"
             case .walletBootstrapFailed(let error):
                 return "Wallet bootstrap failed: \(error.localizedDescription)"
+            case .walletCreationFailed(let error):
+                return "Wallet creation failed: \(error.localizedDescription)"
+            case .walletNotFound(let network):
+                return "No persisted SwiftDashSDK wallet found for \(network.rawValue)"
+            case .invalidMnemonic:
+                return "SwiftDashSDKHost received an invalid mnemonic"
+            case .mnemonicPersistenceFailed(let error):
+                return "Mnemonic persistence failed: \(error.localizedDescription)"
+            case .mnemonicRoundTripMismatch:
+                return "Mnemonic round-trip mismatch"
             }
         }
+    }
+
+    private struct RuntimeHandles {
+        let sdk: SDK
+        let manager: PlatformWalletManager
+        let modelContainer: ModelContainer
+        let network: AppNetwork
+        let platformNetwork: PlatformNetwork
     }
 
     /// Start the host for `network`. Idempotent: re-entering with the same
@@ -105,6 +127,98 @@ final class SwiftDashSDKHost {
             return (existingManager, existingWallet)
         }
 
+        Self.logger.info("🪺 HOST :: starting for \(network.rawValue, privacy: .public)")
+
+        let handles = try buildRuntime(for: network)
+        let resolvedWallet: ManagedPlatformWallet
+        do {
+            resolvedWallet = try loadPersistedWallet(manager: handles.manager, network: network)
+        } catch let error as HostError {
+            throw error
+        } catch {
+            Self.logger.error("🪺 HOST :: wallet bootstrap failed: \(String(describing: error), privacy: .public)")
+            throw HostError.walletBootstrapFailed(error)
+        }
+
+        publish(handles: handles, wallet: resolvedWallet)
+        Self.logger.info("🪺 HOST :: started for \(network.rawValue, privacy: .public)")
+        return (handles.manager, resolvedWallet)
+    }
+
+    /// Create or import a wallet as the active managed platform wallet. This is
+    /// the only path that writes new wallet identity into SwiftData and stores
+    /// its mnemonic in `WalletStorage`.
+    @discardableResult
+    func createOrImportWallet(
+        mnemonic: String,
+        network: AppNetwork,
+        isImported: Bool
+    ) throws -> ManagedPlatformWallet {
+        guard !mnemonic.isEmpty, Mnemonic.validate(mnemonic) else {
+            throw HostError.invalidMnemonic
+        }
+
+        Self.logger.info("🪺 HOST :: creating managed wallet for \(network.rawValue, privacy: .public)")
+
+        let handles = try buildRuntime(for: network)
+        let createdWallet: ManagedPlatformWallet
+        do {
+            createdWallet = try handles.manager.createWallet(
+                mnemonic: mnemonic,
+                network: handles.platformNetwork,
+                name: "dashwallet",
+                createDefaultAccounts: true)
+        } catch {
+            Self.logger.error("🪺 HOST :: createWallet failed: \(String(describing: error), privacy: .public)")
+            throw HostError.walletCreationFailed(error)
+        }
+
+        let storage = WalletStorage()
+        do {
+            try storage.storeMnemonic(mnemonic, for: createdWallet.walletId)
+            let storedMnemonic = try storage.retrieveMnemonic(for: createdWallet.walletId)
+            guard storedMnemonic == mnemonic else {
+                throw HostError.mnemonicRoundTripMismatch
+            }
+        } catch {
+            Self.logger.error("🪺 HOST :: mnemonic persistence failed: \(String(describing: error), privacy: .public)")
+            try? storage.deleteMnemonic(for: createdWallet.walletId)
+            deletePersistedWallet(walletId: createdWallet.walletId, in: handles.modelContainer)
+            stop()
+            if let hostError = error as? HostError {
+                throw hostError
+            }
+            throw HostError.mnemonicPersistenceFailed(error)
+        }
+
+        publish(handles: handles, wallet: createdWallet)
+
+        let origin = isImported ? "imported" : "created"
+        Self.logger.info("🪺 HOST :: \(origin, privacy: .public) managed wallet for \(network.rawValue, privacy: .public)")
+        return createdWallet
+    }
+
+    /// Tear down the host's references. The actual SDK / FFI handles drop
+    /// when their last strong reference goes away.
+    ///
+    /// Persisted-row cleanup on wipe is owned by `PlatformAddressSyncCoordinator`
+    /// — it must happen BEFORE BLAST's tokio task winds down so in-flight
+    /// `walletNetwork(walletId:)` callbacks early-exit on an empty fetch.
+    /// The host is torn down last (after BLAST + SPV stops), so the
+    /// invariant doesn't hold here.
+    func stop() {
+        manager = nil
+        wallet = nil
+        sdk = nil
+        modelContainer = nil
+        runningNetwork = nil
+
+        Self.logger.info("🪺 HOST :: stopped")
+    }
+
+    // MARK: - Runtime bootstrap
+
+    private func buildRuntime(for network: AppNetwork) throws -> RuntimeHandles {
         if manager != nil {
             stop()
         }
@@ -114,7 +228,6 @@ final class SwiftDashSDKHost {
         }
 
         Self.ensureSDKInitialized()
-        Self.logger.info("🪺 HOST :: starting for \(network.rawValue, privacy: .public)")
 
         let newSDK: SDK
         do {
@@ -140,69 +253,49 @@ final class SwiftDashSDKHost {
             throw HostError.configureFailed(error)
         }
 
-        let resolvedWallet: ManagedPlatformWallet
-        do {
-            resolvedWallet = try bootstrapWallet(manager: newManager, network: platformNetwork)
-        } catch {
-            Self.logger.error("🪺 HOST :: wallet bootstrap failed: \(String(describing: error), privacy: .public)")
-            throw HostError.walletBootstrapFailed(error)
-        }
-
-        sdk = newSDK
-        manager = newManager
-        wallet = resolvedWallet
-        modelContainer = container
-        runningNetwork = network
-
-        Self.logger.info("🪺 HOST :: started for \(network.rawValue, privacy: .public)")
-        return (newManager, resolvedWallet)
+        return RuntimeHandles(
+            sdk: newSDK,
+            manager: newManager,
+            modelContainer: container,
+            network: network,
+            platformNetwork: platformNetwork)
     }
 
-    /// Tear down the host's references. The actual SDK / FFI handles drop
-    /// when their last strong reference goes away.
-    ///
-    /// Persisted-row cleanup on wipe is owned by `PlatformAddressSyncCoordinator`
-    /// — it must happen BEFORE BLAST's tokio task winds down so in-flight
-    /// `walletNetwork(walletId:)` callbacks early-exit on an empty fetch.
-    /// The host is torn down last (after BLAST + SPV stops), so the
-    /// invariant doesn't hold here.
-    func stop() {
-        manager = nil
-        wallet = nil
-        sdk = nil
-        modelContainer = nil
-        runningNetwork = nil
-
-        Self.logger.info("🪺 HOST :: stopped")
-    }
-
-    // MARK: - Wallet bootstrap
-
-    private func bootstrapWallet(
+    private func loadPersistedWallet(
         manager: PlatformWalletManager,
-        network: PlatformNetwork
+        network: AppNetwork
     ) throws -> ManagedPlatformWallet {
         let restored = try manager.loadFromPersistor()
-        if let first = restored.first {
-            Self.logger.info("🪺 HOST :: reusing persisted wallet")
+        if let first = manager.firstWallet {
+            Self.logger.info("🪺 HOST :: reusing persisted wallet; restored=\(restored.count, privacy: .public)")
             return first
         }
-        if let existing = manager.firstWallet {
-            return existing
-        }
 
-        let storage = WalletStorage()
-        let walletIds = try storage.listWalletIdsWithMnemonic()
-        guard let walletId = walletIds.first else {
-            throw WalletStorageError.mnemonicNotFound
+        throw HostError.walletNotFound(network)
+    }
+
+    private func publish(handles: RuntimeHandles, wallet resolvedWallet: ManagedPlatformWallet) {
+        sdk = handles.sdk
+        manager = handles.manager
+        wallet = resolvedWallet
+        modelContainer = handles.modelContainer
+        runningNetwork = handles.network
+    }
+
+    private func deletePersistedWallet(walletId: Data, in container: ModelContainer) {
+        let context = container.mainContext
+        let descriptor = FetchDescriptor<PersistentWallet>(
+            predicate: #Predicate<PersistentWallet> { $0.walletId == walletId })
+        do {
+            let rows = try context.fetch(descriptor)
+            for row in rows {
+                context.delete(row)
+            }
+            try context.save()
+            Self.logger.info("🪺 HOST :: rolled back \(rows.count, privacy: .public) persisted wallet row(s)")
+        } catch {
+            Self.logger.error("🪺 HOST :: persisted wallet rollback failed: \(String(describing: error), privacy: .public)")
         }
-        let mnemonic = try storage.retrieveMnemonic(for: walletId)
-        Self.logger.info("🪺 HOST :: creating new platform wallet from existing mnemonic")
-        return try manager.createWallet(
-            mnemonic: mnemonic,
-            network: network,
-            name: "dashwallet",
-            createDefaultAccounts: true)
     }
 
     // MARK: - Network helpers

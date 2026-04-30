@@ -593,38 +593,58 @@ struct AccountStorageDetailView: View {
 
 struct CoreAddressDetailView: View {
     let record: PersistentCoreAddress
+    @State private var showCopiedToast = false
 
     var body: some View {
-        Form {
-            Section("Address") {
-                FieldRow(label: "Address", value: record.address)
-                FieldRow(label: "Pool", value: record.poolTypeName)
-                FieldRow(label: "Index", value: "\(record.addressIndex)")
-                FieldRow(label: "Derivation Path", value: record.derivationPath)
-                FieldRow(label: "Used", value: record.isUsed ? "Yes" : "No")
+        ZStack(alignment: .bottom) {
+            Form {
+                Section("Address") {
+                    HStack {
+                        Text("Address").foregroundColor(.secondary)
+                        Spacer()
+                        Text(record.address).lineLimit(1).truncationMode(.middle)
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        UIPasteboard.general.string = record.address
+                        showCopiedToast = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            showCopiedToast = false
+                        }
+                    }
+                    FieldRow(label: "Pool", value: record.poolTypeName)
+                    FieldRow(label: "Index", value: "\(record.addressIndex)")
+                    FieldRow(label: "Derivation Path", value: record.derivationPath)
+                    FieldRow(label: "Used", value: record.isUsed ? "Yes" : "No")
+                }
+                Section("Public Key") {
+                    FieldRow(
+                        label: "Bytes (hex)",
+                        value: record.publicKey.isEmpty
+                            ? "—"
+                            : record.publicKey.map { String(format: "%02x", $0) }.joined()
+                    )
+                }
+                Section("Balance / Activity") {
+                    FieldRow(label: "Balance", value: "\(record.balance)")
+                    FieldRow(
+                        label: "First Seen Height",
+                        value: record.firstSeenHeight == 0 ? "—" : "\(record.firstSeenHeight)"
+                    )
+                    FieldRow(
+                        label: "Last Seen Height",
+                        value: record.lastSeenHeight == 0 ? "—" : "\(record.lastSeenHeight)"
+                    )
+                }
+                Section("Timestamps") {
+                    FieldRow(label: "Created", value: dateString(record.createdAt))
+                    FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+                }
             }
-            Section("Public Key") {
-                FieldRow(
-                    label: "Bytes (hex)",
-                    value: record.publicKey.isEmpty
-                        ? "—"
-                        : record.publicKey.map { String(format: "%02x", $0) }.joined()
-                )
-            }
-            Section("Balance / Activity") {
-                FieldRow(label: "Balance", value: "\(record.balance)")
-                FieldRow(
-                    label: "First Seen Height",
-                    value: record.firstSeenHeight == 0 ? "—" : "\(record.firstSeenHeight)"
-                )
-                FieldRow(
-                    label: "Last Seen Height",
-                    value: record.lastSeenHeight == 0 ? "—" : "\(record.lastSeenHeight)"
-                )
-            }
-            Section("Timestamps") {
-                FieldRow(label: "Created", value: dateString(record.createdAt))
-                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+
+            if showCopiedToast {
+                ToastView(text: NSLocalizedString("Copied", comment: ""))
+                    .padding(.bottom, 20)
             }
         }
         .navigationTitle("Address")

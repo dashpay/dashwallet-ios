@@ -3,8 +3,9 @@
 //  DashWallet
 //
 //  One-shot migrator that copies wallet key material from DashSync's
-//  keychain layout into SwiftDashSDK's WalletStorage plus an app-owned
-//  runtime wallet descriptor in Keychain.
+//  keychain layout into SwiftDashSDK's host-owned wallet runtime. The host
+//  creates the ManagedPlatformWallet, persists the SwiftData wallet row, and
+//  stores the mnemonic in WalletStorage under the returned wallet id.
 //
 //  Hard invariants — see DASHSYNC_KEY_MIGRATION.md:
 //    1. NEVER deletes from `org.dashfoundation.dash` (DashSync's keychain
@@ -52,9 +53,6 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`.
     private static let dashSyncMnemonicAccountPrefix = "WALLET_MNEMONIC_KEY_"
 
-    /// PIN account name — `DSAuthenticationManager.m:62`. Plaintext UTF-8.
-    private static let dashSyncPINAccount = "pin"
-
     /// Prefix for per-chain wallet list items — `DSChain.m:94`. Full account:
     /// `CHAIN_WALLETS_KEY_<chainGenesisShortHex>` where the suffix is the
     /// first 7 hex chars of `[NSData dataWithUInt256:genesisHash].hexString`.
@@ -79,14 +77,10 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     // MARK: - UserDefaults keys
 
     /// Stores a version sentinel (`"v1"`) when migration is complete;
-    /// absent before first run. Used purely for idempotency — the migrator
-    /// does not track PIN changes. PIN rotation post-migration is handled
-    /// by `CoreWalletManager.changeWalletPIN(currentPIN:newPIN:)` in
-    /// SwiftDashSDK; the migrator only owns the one-time DashSync → SwiftDashSDK
-    /// handoff.
+    /// absent before first run. Used purely for idempotency; the migrator only
+    /// owns the one-time DashSync → SwiftDashSDK handoff.
     private static let doneKey = "swiftSDKKeyMigration.v1.done"
 
-    private static let deferredNoPINKey         = "swiftSDKKeyMigration.v1.deferredNoPIN"
     private static let deferredMultiWalletKey   = "swiftSDKKeyMigration.v1.deferredMultiWallet"
     private static let deferredUnknownChainKey  = "swiftSDKKeyMigration.v1.deferredUnknownChain"
 
@@ -98,14 +92,8 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// The actual migration completes ~300–500 ms later in the background
     /// while the user is already looking at the home screen.
     ///
-    /// Nothing in v1 depends on the migration being complete before launch
-    /// finishes (no consumer reads `wallet.seed` or the runtime descriptor
-    /// synchronously on the main thread), so the race window between launch finish and
-    /// migration completion is benign. Future PRs that consume the migrated
-    /// wallet must use an explicit "migration complete" handshake — polling
-    /// `swiftSDKKeyMigration.v1.done` in `UserDefaults` or NotificationCenter
-    /// — rather than assuming
-    /// synchronous completion.
+    /// Runtime startup waits for the `swiftSDKKeyMigration.v1.done` sentinel
+    /// before it asks `SwiftDashSDKHost` to load the persisted wallet.
     ///
     /// Never throws, never crashes.
     @objc(migrateIfNeeded)
@@ -118,20 +106,16 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     // MARK: - Background migration body
 
     /// The actual migration body. Runs on a background `DispatchQueue` —
-    /// uses the lowest-level public SwiftDashSDK API surface (standalone
-    /// `WalletManager` and `WalletStorage`)
-    /// so it has no `@MainActor` requirements. Total cost ~300–500 ms once
-    /// per device, dominated by PBKDF2 inside `WalletStorage.storeSeed`.
-    /// Thread-safety of every API used is verified in
-    /// `DASHSYNC_KEY_MIGRATION.md` (Phase v1 — Design / Thread-safety).
+    /// validates DashSync's mnemonic on a background queue, then synchronously
+    /// asks `SwiftDashSDKHost` on the main actor to create/import the managed
+    /// wallet and store mnemonic material in `WalletStorage`.
     private static func performMigration() {
         let defaults = UserDefaults.standard
 
         // Path 1 — already migrated. One-shot, single-release migration plan:
         // there is no dual-stack window in which DashSync's wipe UI could
-        // orphan our SwiftDashSDK seed, so no cross-library wipe-detection
-        // branch is needed. PIN rotation post-migration is the consumer's
-        // responsibility via CoreWalletManager.changeWalletPIN.
+        // orphan SwiftDashSDK wallet material, so no cross-library
+        // wipe-detection branch is needed.
         if defaults.string(forKey: doneKey) != nil {
             return
         }
@@ -165,13 +149,6 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             return
         }
 
-        guard let pin = readKeychainString(service: dashSyncService, account: dashSyncPINAccount),
-              !pin.isEmpty else {
-            logger.warning("🔑 KEYMIG :: no PIN in DashSync keychain — deferring")
-            defaults.set(true, forKey: deferredNoPINKey)
-            return
-        }
-
         guard Mnemonic.validate(mnemonic) else {
             logger.error("🔑 KEYMIG :: DashSync mnemonic failed SwiftDashSDK BIP39 validation")
             return
@@ -179,10 +156,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
         let appNetwork: AppNetwork = (network == .mainnet) ? .mainnet : .testnet
 
-        // Inline heavy work — fully synchronous, no Task, no @MainActor.
-        // We derive the runtime descriptor through the shared factory, then
-        // store the encrypted seed, mnemonic, and per-network descriptor in
-        // keychain-backed stores.
+        // Inline validation, then a synchronous hop to the host on MainActor.
         do {
             // Determinism + length sanity check (extra belt-and-suspenders).
             let seed = try Mnemonic.toSeed(mnemonic: mnemonic)
@@ -196,34 +170,16 @@ final class SwiftDashSDKKeyMigrator: NSObject {
                 return
             }
 
-            let descriptorFactory = SwiftDashSDKRuntimeDescriptorFactory()
-            let descriptor = try descriptorFactory.makeDescriptor(
+            let walletId = try createWalletOnHost(
                 mnemonic: mnemonic,
                 network: appNetwork,
                 isImported: true)
 
-            // SwiftDashSDK no longer stores PIN-encrypted seeds; mnemonic
-            // is the only secret kept by WalletStorage and is keyed by walletId.
-            let storage = WalletStorage()
-            try storage.storeMnemonic(mnemonic, for: descriptor.walletId)
-            let storedMnemonic = try storage.retrieveMnemonic(for: descriptor.walletId)
-            guard storedMnemonic == mnemonic else {
-                logger.error("🔑 KEYMIG :: mnemonic round-trip mismatch")
-                throw MigrationError.mnemonicRoundTripMismatch
-            }
-            logger.info("🔑 KEYMIG :: stored mnemonic in WalletStorage during migration")
-
-            let runtimeWalletStore = SwiftDashSDKRuntimeWalletStore()
-            try runtimeWalletStore.store(descriptor, for: appNetwork)
-            let storedDescriptor = try runtimeWalletStore.retrieve(for: appNetwork)
-            guard storedDescriptor == descriptor else {
-                logger.error("🔑 KEYMIG :: runtime descriptor round-trip mismatch")
-                throw MigrationError.runtimeDescriptorRoundTripMismatch
-            }
+            let walletPrefix = walletId.prefix(4).map { String(format: "%02x", $0) }.joined()
+            logger.info("🔑 KEYMIG :: created managed SwiftDashSDK wallet \(walletPrefix, privacy: .public)…")
 
             // Mark done with the version sentinel.
             defaults.set("v1", forKey: doneKey)
-            defaults.removeObject(forKey: deferredNoPINKey)
             defaults.removeObject(forKey: deferredMultiWalletKey)
             defaults.removeObject(forKey: deferredUnknownChainKey)
 
@@ -231,17 +187,37 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             SwiftDashSDKWalletRuntime.handleWalletMaterialChanged()
         } catch {
             logger.error("🔑 KEYMIG :: migration threw: \(String(describing: error), privacy: .public)")
-            // Best-effort: leave SwiftDashSDK side clean if anything was partially written.
-            if let descriptor = try? SwiftDashSDKRuntimeWalletStore().retrieve(for: appNetwork) {
-                try? WalletStorage().deleteMnemonic(for: descriptor.walletId)
-            }
-            try? SwiftDashSDKRuntimeWalletStore().delete(for: appNetwork)
         }
     }
 
+    private static func createWalletOnHost(
+        mnemonic: String,
+        network: AppNetwork,
+        isImported: Bool
+    ) throws -> Data {
+        let semaphore = DispatchSemaphore(value: 0)
+        var result: Result<Data, Error>?
+
+        Task { @MainActor in
+            result = Result {
+                try SwiftDashSDKHost.shared.createOrImportWallet(
+                    mnemonic: mnemonic,
+                    network: network,
+                    isImported: isImported
+                ).walletId
+            }
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+        guard let result else {
+            throw MigrationError.hostCreateDidNotReturn
+        }
+        return try result.get()
+    }
+
     private enum MigrationError: LocalizedError {
-        case mnemonicRoundTripMismatch
-        case runtimeDescriptorRoundTripMismatch
+        case hostCreateDidNotReturn
     }
 
     // MARK: - Helpers

@@ -2,9 +2,9 @@
 //  SwiftDashSDKWalletRuntime.swift
 //  DashWallet
 //
-//  Central owner of the SwiftDashSDK runtime lifecycle. Coordinates
-//  descriptor readiness, network switching, provider invalidation, wallet
-//  state clearing, and SPV coordinator start/stop.
+//  Central owner of the SwiftDashSDK runtime lifecycle. Coordinates network
+//  switching, host startup, wallet state clearing, and SPV coordinator
+//  start/stop.
 //
 
 import Foundation
@@ -19,7 +19,6 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     private static let seedMigratorDoneKey = "swiftSDKKeyMigration.v1.done"
     private static let seedMigratorDeferredKeys = [
-        "swiftSDKKeyMigration.v1.deferredNoPIN",
         "swiftSDKKeyMigration.v1.deferredMultiWallet",
         "swiftSDKKeyMigration.v1.deferredUnknownChain",
     ]
@@ -33,8 +32,6 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     private let workQueue = DispatchQueue(
         label: "org.dashfoundation.dash.swift-sdk-wallet-runtime",
         qos: .userInitiated)
-    private let runtimeWalletStore = SwiftDashSDKRuntimeWalletStore()
-    private let descriptorFactory = SwiftDashSDKRuntimeDescriptorFactory()
 
     private override init() {
         super.init()
@@ -89,7 +86,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         Self.logger.info("🧭 RUNTIME :: refreshing runtime for \(trigger.rawValue, privacy: .public)")
 
         guard waitForSeedMigratorIfNeeded() else {
-            performFullReset(lastError: "Seed migration not complete; SwiftDashSDK runtime cannot start.")
+            performFullReset(lastError: "Key migration not complete; SwiftDashSDK runtime cannot start.")
             return
         }
 
@@ -107,14 +104,12 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
             let chain = DWEnvironment.sharedInstance().currentChain
             do {
-                try ensureDescriptorIfNeeded(for: network, chainHasWallet: chain.hasAWallet)
                 guard chain.hasAWallet else {
                     Self.logger.info("🧭 RUNTIME :: no wallet on \(network.rawValue, privacy: .public); leaving runtime stopped")
                     return
                 }
 
-                let wallet = try SwiftDashSDKWalletProvider.shared.getWallet(for: network)
-                let startResult = waitForCoordinatorStart(with: wallet)
+                let startResult = waitForCoordinatorStart(for: network)
                 if case .failure(let error) = startResult {
                     Self.logger.error("🧭 RUNTIME :: coordinator start failed: \(String(describing: error), privacy: .public)")
                 }
@@ -135,41 +130,6 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         }
     }
 
-    private func ensureDescriptorIfNeeded(for network: AppNetwork, chainHasWallet: Bool) throws {
-        if try runtimeWalletStore.exists(for: network) {
-            return
-        }
-
-        guard chainHasWallet else {
-            return
-        }
-
-        let storage = WalletStorage()
-        let mnemonic: String
-        do {
-            let walletIds = try storage.listWalletIdsWithMnemonic()
-            guard let walletId = walletIds.first else {
-                throw WalletStorageError.mnemonicNotFound
-            }
-            mnemonic = try storage.retrieveMnemonic(for: walletId)
-        } catch {
-            throw RuntimeError.missingMnemonicForDescriptorBootstrap(network: network, underlying: error)
-        }
-
-        let descriptor = try descriptorFactory.makeDescriptor(
-            mnemonic: mnemonic,
-            network: network,
-            isImported: true)
-        try runtimeWalletStore.store(descriptor, for: network)
-
-        let storedDescriptor = try runtimeWalletStore.retrieve(for: network)
-        guard storedDescriptor == descriptor else {
-            throw RuntimeError.runtimeDescriptorRoundTripMismatch(network: network)
-        }
-
-        Self.logger.info("🧭 RUNTIME :: bootstrapped missing descriptor for \(network.rawValue, privacy: .public)")
-    }
-
     private func performFullReset(lastError: String?, forWipe: Bool = false) {
         if forWipe {
             PlatformAddressSyncCoordinator.stopForWipe()
@@ -177,7 +137,6 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             PlatformAddressSyncCoordinator.stop()
         }
         waitForCoordinatorStop(lastError: lastError)
-        SwiftDashSDKWalletProvider.shared.invalidate()
         SwiftDashSDKWalletState.shared.clearAllState()
 
         // Tear down the shared `PlatformWalletManager` last. Both BLAST and
@@ -186,9 +145,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         // use-after-free. By the time we get here, both have been stopped
         // (BLAST via `PlatformAddressSyncCoordinator.stop*` above, Core SPV
         // via `waitForCoordinatorStop`).
-        Task { @MainActor in
-            SwiftDashSDKHost.shared.stop()
-        }
+        waitForHostStop()
     }
 
     private func waitForSeedMigratorIfNeeded() -> Bool {
@@ -200,11 +157,11 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         let deadline = Date().addingTimeInterval(Self.seedMigratorWaitTimeout)
         while defaults.string(forKey: Self.seedMigratorDoneKey) == nil {
             if Self.seedMigratorDeferredKeys.contains(where: { defaults.object(forKey: $0) != nil }) {
-                Self.logger.warning("🧭 RUNTIME :: seed migrator deferred; continuing runtime refresh without migrated wallet material")
+                Self.logger.warning("🧭 RUNTIME :: key migrator deferred; continuing runtime refresh without migrated wallet material")
                 return true
             }
             if Date() >= deadline {
-                Self.logger.error("🧭 RUNTIME :: seed migrator did not complete within \(Self.seedMigratorWaitTimeout, privacy: .public)s")
+                Self.logger.error("🧭 RUNTIME :: key migrator did not complete within \(Self.seedMigratorWaitTimeout, privacy: .public)s")
                 return false
             }
             Thread.sleep(forTimeInterval: Self.seedMigratorPollInterval)
@@ -235,18 +192,28 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         group.wait()
     }
 
-    private func waitForCoordinatorStart(with wallet: HDWallet) -> Result<Void, Error> {
+    private func waitForCoordinatorStart(for network: AppNetwork) -> Result<Void, Error> {
         let group = DispatchGroup()
         var startResult: Result<Void, Error> = .success(())
 
         group.enter()
-        SwiftDashSDKSPVCoordinator.shared.start(with: wallet) { result in
+        SwiftDashSDKSPVCoordinator.shared.start(for: network) { result in
             startResult = result
             group.leave()
         }
         group.wait()
 
         return startResult
+    }
+
+    private func waitForHostStop() {
+        let group = DispatchGroup()
+        group.enter()
+        Task { @MainActor in
+            SwiftDashSDKHost.shared.stop()
+            group.leave()
+        }
+        group.wait()
     }
 
     private enum RefreshTrigger: String {
@@ -257,17 +224,11 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     enum RuntimeError: LocalizedError {
         case unsupportedCurrentNetwork(String)
-        case missingMnemonicForDescriptorBootstrap(network: AppNetwork, underlying: Error)
-        case runtimeDescriptorRoundTripMismatch(network: AppNetwork)
 
         var errorDescription: String? {
             switch self {
             case .unsupportedCurrentNetwork(let name):
                 return "SwiftDashSDK runtime does not support \(name)"
-            case .missingMnemonicForDescriptorBootstrap(let network, let underlying):
-                return "Cannot bootstrap \(network.rawValue) runtime descriptor without mnemonic: \(underlying.localizedDescription)"
-            case .runtimeDescriptorRoundTripMismatch(let network):
-                return "Runtime descriptor round-trip mismatch for \(network.rawValue)"
             }
         }
     }

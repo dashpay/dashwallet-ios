@@ -2,8 +2,8 @@
 //  SwiftDashSDKWalletWiper.swift
 //  DashWallet
 //
-//  Wipes SwiftDashSDK wallet state (encrypted seed, mnemonic, and runtime
-//  wallet descriptors in Keychain) when DashSync's wipe flow fires the
+//  Wipes SwiftDashSDK wallet state (per-wallet mnemonics in WalletStorage)
+//  when DashSync's wipe flow fires the
 //  DWWillWipeWalletNotification. Hooks NotificationCenter once at app
 //  launch — covers all 5 user-facing wipe entry points (Settings →
 //  Reset Wallet, lock screen emergency wipe, legacy PIN reset, etc.)
@@ -92,19 +92,11 @@ final class SwiftDashSDKWalletWiper: NSObject {
             logger.error("failed to enumerate/delete mnemonics: \(String(describing: error), privacy: .public)")
         }
 
-        do {
-            try SwiftDashSDKRuntimeWalletStore().deleteAllSupportedNetworks()
-            logger.info("deleted all supported-network runtime wallet descriptors from Keychain")
-        } catch {
-            logger.error("failed to delete runtime wallet descriptors: \(String(describing: error), privacy: .public)")
-        }
-
         // Tear down the app-owned runtime now that all wallet material is
-        // gone. This stops SPV, invalidates the in-memory wallet cache, and
-        // clears published wallet state. We do NOT delete the per-network SPV
-        // chain data dir at Documents/SwiftDashSDK/SPV/<network>/ — chain
-        // data is public and leaving it lets the next wallet on the same
-        // device skip an expensive resync.
+        // gone. This stops BLAST/SPV, drops the host-owned manager/wallet, and
+        // clears published wallet state. We do NOT delete public chain data;
+        // leaving it lets the next wallet on the same device skip an expensive
+        // resync.
         SwiftDashSDKWalletRuntime.handleWalletWiped()
     }
 }

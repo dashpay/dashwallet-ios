@@ -7,8 +7,9 @@
 //  wallet creation, via `createWallet`) and during the recover-wallet
 //  flow (importing an existing wallet from a recovery phrase, via
 //  `importWallet`) to make the SwiftDashSDK side exist alongside the
-//  DashSync side from day one. Runtime restoration is keyed off an
-//  app-owned Keychain descriptor, not a persisted SwiftData wallet record.
+//  DashSync side from day one. Runtime ownership belongs to
+//  `SwiftDashSDKHost`, which creates the ManagedPlatformWallet, persists
+//  the SwiftData wallet row, and stores the mnemonic in WalletStorage.
 //
 //  This file is intentionally decoupled from DashSync — it does not import
 //  DashSync, does not know DashSync's keychain layout, and does not read
@@ -42,19 +43,19 @@ final class SwiftDashSDKWalletCreator: NSObject {
 
     // MARK: - Public entry point
 
-    /// Create a fresh SwiftDashSDK wallet from a just-generated mnemonic and PIN.
+    /// Create a fresh SwiftDashSDK wallet from a just-generated mnemonic.
     ///
     /// Dispatched to `DispatchQueue.global(qos: .userInitiated)` and returns
-    /// to the caller in microseconds, mirroring the migrator's pattern. The
-    /// actual ~300–500 ms of PBKDF2 + FFI work happens in the background while
-    /// the caller's UI continues.
+    /// to the caller in microseconds. Validation happens on the background
+    /// queue; wallet creation hops to `SwiftDashSDKHost` on the main actor.
     ///
     /// Never throws, never crashes; all errors are swallowed into os.log.
     ///
     /// - Parameters:
     ///   - mnemonic: BIP39 phrase. Caller is responsible for it being valid;
     ///     we re-validate via `Mnemonic.validate` defensively before use.
-    ///   - pin: User's plaintext PIN, used to encrypt the seed in WalletStorage.
+    ///   - pin: User's plaintext PIN. Retained for Obj-C selector stability;
+    ///     SwiftDashSDK key material is now mnemonic-only.
     ///   - network: 0 = mainnet, 1 = testnet. Devnet/regtest are unsupported.
     @objc(createWalletWithMnemonic:pin:network:)
     static func createWallet(mnemonic: String, pin: String, network: Network) {
@@ -76,7 +77,8 @@ final class SwiftDashSDKWalletCreator: NSObject {
     ///
     /// - Parameters:
     ///   - mnemonic: BIP39 phrase from the user-provided recovery phrase.
-    ///   - pin: User's plaintext PIN, used to encrypt the seed in WalletStorage.
+    ///   - pin: User's plaintext PIN. Retained for Obj-C selector stability;
+    ///     SwiftDashSDK key material is now mnemonic-only.
     ///   - network: 0 = mainnet, 1 = testnet. Devnet/regtest are unsupported.
     @objc(importWalletWithMnemonic:pin:network:)
     static func importWallet(mnemonic: String, pin: String, network: Network) {
@@ -92,16 +94,14 @@ final class SwiftDashSDKWalletCreator: NSObject {
 
     // MARK: - Background creation body
 
-    /// The actual creation body. Runs on a background `DispatchQueue` —
-    /// uses the lowest-level public SwiftDashSDK API surface (standalone
-    /// `WalletManager` and `WalletStorage`)
-    /// so it has no `@MainActor` requirements. Mirrors the migrator's
-    /// `performMigration` body, but takes its inputs as parameters instead
-    /// of reading them from DashSync's keychain.
+    /// The actual creation body. Runs on a background `DispatchQueue` and
+    /// performs cheap validation before invoking `SwiftDashSDKHost` on the
+    /// main actor. The host is the only code allowed to create the managed
+    /// wallet and persist the mnemonic under the returned wallet id.
     ///
     /// Shared between `createWallet` (fresh-install) and `importWallet`
     /// (recover-from-recovery-phrase). The two callers differ only in the
-    /// `isImported` and `label` values they pass for the runtime descriptor.
+    /// `isImported` and `label` values they pass for logging.
     private static func performCreate(
         mnemonic: String,
         pin: String,
@@ -132,47 +132,48 @@ final class SwiftDashSDKWalletCreator: NSObject {
                 return
             }
 
-            let descriptorFactory = SwiftDashSDKRuntimeDescriptorFactory()
-            let descriptor = try descriptorFactory.makeDescriptor(
+            let walletId = try createWalletOnHost(
                 mnemonic: mnemonic,
                 network: appNetwork,
                 isImported: isImported)
 
-            // SwiftDashSDK no longer stores PIN-encrypted seeds; mnemonic is
-            // the only secret persisted by WalletStorage and is keyed by walletId.
-            let storage = WalletStorage()
-            try storage.storeMnemonic(mnemonic, for: descriptor.walletId)
-            let storedMnemonic = try storage.retrieveMnemonic(for: descriptor.walletId)
-            guard storedMnemonic == mnemonic else {
-                logger.error("\(label, privacy: .public): mnemonic round-trip mismatch — rolling back")
-                throw CreateError.mnemonicRoundTripMismatch
-            }
-            logger.info("stored mnemonic in WalletStorage")
-
-            let runtimeWalletStore = SwiftDashSDKRuntimeWalletStore()
-            try runtimeWalletStore.store(descriptor, for: appNetwork)
-            let storedDescriptor = try runtimeWalletStore.retrieve(for: appNetwork)
-            guard storedDescriptor == descriptor else {
-                logger.error("\(label, privacy: .public): runtime descriptor round-trip mismatch — rolling back")
-                throw CreateError.runtimeDescriptorRoundTripMismatch
-            }
-
-            logger.info("\(label, privacy: .public) completed on \(appNetwork.rawValue, privacy: .public)")
+            let walletPrefix = walletId.prefix(4).map { String(format: "%02x", $0) }.joined()
+            logger.info("\(label, privacy: .public) completed on \(appNetwork.rawValue, privacy: .public), wallet=\(walletPrefix, privacy: .public)…")
 
             // Refresh the app-owned runtime now that wallet material is ready.
             SwiftDashSDKWalletRuntime.handleWalletMaterialChanged()
         } catch {
             logger.error("\(label, privacy: .public) threw: \(String(describing: error), privacy: .public)")
-            // Best-effort: leave SwiftDashSDK side clean if anything was partially written.
-            if let descriptor = try? SwiftDashSDKRuntimeWalletStore().retrieve(for: appNetwork) {
-                try? WalletStorage().deleteMnemonic(for: descriptor.walletId)
-            }
-            try? SwiftDashSDKRuntimeWalletStore().delete(for: appNetwork)
         }
     }
 
+    private static func createWalletOnHost(
+        mnemonic: String,
+        network: AppNetwork,
+        isImported: Bool
+    ) throws -> Data {
+        let semaphore = DispatchSemaphore(value: 0)
+        var result: Result<Data, Error>?
+
+        Task { @MainActor in
+            result = Result {
+                try SwiftDashSDKHost.shared.createOrImportWallet(
+                    mnemonic: mnemonic,
+                    network: network,
+                    isImported: isImported
+                ).walletId
+            }
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+        guard let result else {
+            throw CreateError.hostCreateDidNotReturn
+        }
+        return try result.get()
+    }
+
     private enum CreateError: LocalizedError {
-        case mnemonicRoundTripMismatch
-        case runtimeDescriptorRoundTripMismatch
+        case hostCreateDidNotReturn
     }
 }

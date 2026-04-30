@@ -155,9 +155,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     // MARK: - Public lifecycle (called via DispatchGroup from workQueue)
 
-    func start(with wallet: HDWallet, completion: @escaping (Result<Void, Error>) -> Void) {
+    func start(for network: AppNetwork, completion: @escaping (Result<Void, Error>) -> Void) {
         Task { @MainActor in
-            let result = self.performStart(with: wallet)
+            let result = self.performStart(for: network)
             completion(result)
         }
     }
@@ -234,9 +234,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     // MARK: - Implementation
 
     @MainActor
-    private func performStart(with wallet: HDWallet) -> Result<Void, Error> {
-        let network = wallet.network
-
+    private func performStart(for network: AppNetwork) -> Result<Void, Error> {
         let host = SwiftDashSDKHost.shared
         let manager: PlatformWalletManager
         do {

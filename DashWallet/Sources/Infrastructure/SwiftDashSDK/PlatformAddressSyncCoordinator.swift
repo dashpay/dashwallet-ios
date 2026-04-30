@@ -17,9 +17,9 @@
 //   3. `ModelContainer` over `DashModelContainer.modelTypes`, one sqlite
 //      file per network under Documents/SwiftDashSDK/Platform/<network>/.
 //   4. `PlatformWalletManager.configure(sdk:, modelContainer:)`.
-//   5. `loadFromPersistor()` — reuse if non-empty. Otherwise pull the
-//      app mnemonic from `WalletStorage().retrieveMnemonic()` and
-//      `createWallet(mnemonic:, network:, name: "dashwallet")`.
+//   5. `SwiftDashSDKHost.start(network:)` loads the persisted
+//      `ManagedPlatformWallet`; create/import paths go through the host before
+//      BLAST starts.
 //   6. `startPlatformAddressSync()` — spawns the tokio loop.
 //   7. Subscribe to `manager.$lastPlatformAddressSyncEvent` on main,
 //      filter by our wallet id, accumulate counters, compute balance

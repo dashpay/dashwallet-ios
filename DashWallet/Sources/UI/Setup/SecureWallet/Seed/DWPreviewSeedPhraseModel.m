@@ -57,8 +57,8 @@ NS_ASSUME_NONNULL_BEGIN
 
         [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
 
-        // Create full SwiftDashSDK wallet async (seed encryption, HDWallet
-        // SwiftData record, etc.). Mnemonic is already in WalletStorage.
+        // Create full SwiftDashSDK wallet async (ManagedPlatformWallet,
+        // SwiftData record, and mnemonic stored by wallet id).
         [self createSwiftDashSDKWalletWithMnemonic:mnemonic];
     }
 

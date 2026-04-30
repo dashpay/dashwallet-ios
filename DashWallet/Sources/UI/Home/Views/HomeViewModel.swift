@@ -821,7 +821,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
             rows = fetched
         }
         return rows
-            .map { Transaction(walletTransaction: WalletTransaction(persistent: $0)) }
+            .map { Transaction(persistentTransaction: $0) }
             .sorted { $0.date > $1.date }
     }
 
@@ -838,31 +838,6 @@ class SwiftDashSDKWalletSource: TransactionSource {
             DSLogger.log("HomeViewModel: PersistentTransaction fetch failed: \(error)")
             return []
         }
-    }
-}
-
-private extension WalletTransaction {
-    /// Adapt the SwiftData persisted row to the legacy `WalletTransaction`
-    /// value shape that `Transaction(walletTransaction:)` already
-    /// understands. `PersistentTransaction.txid` is raw 32 bytes in
-    /// internal byte order; `WalletTransaction.txid` (per `Transaction.swift`'s
-    /// `txHashData` accessor) expects a hex string in *internal* order, so
-    /// avoid `p.txidHex` (which reverses for display).
-    init(persistent p: PersistentTransaction) {
-        let internalHex = p.txid.map { String(format: "%02x", $0) }.joined()
-        let blockHashHex = p.blockHash.map { $0.map { String(format: "%02x", $0) }.joined() }
-        // Mempool rows have blockTimestamp == 0; fall back to firstSeen so
-        // they don't sort into 1970 on the home screen. Mirrors
-        // `Transaction.init(walletTransaction:)`'s mempool fallback.
-        let timestamp: UInt64 = p.blockTimestamp == 0 ? p.firstSeen : UInt64(p.blockTimestamp)
-        self.init(
-            txid: internalHex,
-            netAmount: p.netAmount,
-            height: p.blockHeight,
-            blockHash: blockHashHex,
-            timestamp: timestamp,
-            fee: p.fee,
-            isOurs: true)
     }
 }
 

@@ -43,10 +43,12 @@ class Transaction: TransactionDataItem, Identifiable {
     /// Internal source discriminator. The `.ds` case is the existing rich
     /// path (used by other consumers like CrowdNode, TaxReport that still
     /// read from DashSync). The `.sdk` case is the new path for the home
-    /// screen tx list sourced from SwiftDashSDK (function #6).
+    /// screen tx list sourced from SwiftDashSDK (function #6) — backed
+    /// directly by the SwiftData row so the input/output graph and
+    /// FFI-supplied direction are reachable without a lossy adapter.
     private enum Source {
         case ds(DSTransaction)
-        case sdk(WalletTransaction)
+        case sdk(PersistentTransaction)
     }
 
     private let source: Source
@@ -72,7 +74,7 @@ class Transaction: TransactionDataItem, Identifiable {
     var id: String {
         switch source {
         case .ds(let dsTx): return dsTx.txHashHexString
-        case .sdk(let wtx): return wtx.txid
+        case .sdk(let p): return Self.internalHex(p.txid)
         }
     }
 
@@ -80,11 +82,26 @@ class Transaction: TransactionDataItem, Identifiable {
     private lazy var _direction: DSTransactionDirection = {
         switch source {
         case .ds(let dsTx): return dsTx.direction
-        case .sdk(let wtx):
-            // TODO(core-spv-neuter): WalletTransaction no longer exposes a
-            // `direction` field after the SwiftDashSDK `ab6dfbf7b` refactor.
-            // Fall back to netAmount sign until a replacement API lands.
-            return wtx.netAmount >= 0 ? .received : .sent
+        case .sdk(let p):
+            // FFI direction encoding: 0=incoming, 1=outgoing, 2=internal,
+            // 3=coinjoin. Promote outgoing→moved when the wallet's net
+            // change equals just the fee (self-send) — mirrors DashSync's
+            // `received + fee == sent` check so the legacy code path that
+            // still relies on `.moved` (e.g. CrowdNode top-up matcher,
+            // "Internal Transfer" labelling) keeps working uniformly.
+            switch p.direction {
+            case 0: return .received
+            case 2: return .moved
+            case 3: return .sent
+            case 1:
+                let fee = Int64(p.fee ?? 0)
+                if fee > 0 && p.netAmount == -fee {
+                    return .moved
+                }
+                return .sent
+            default:
+                return p.netAmount >= 0 ? .received : .sent
+            }
         }
     }()
 
@@ -92,8 +109,17 @@ class Transaction: TransactionDataItem, Identifiable {
     private lazy var _outputReceiveAddresses: [String] = {
         switch source {
         case .ds(let dsTx): return dsTx.outputReceiveAddresses
-        // TODO(core-spv-neuter): WalletTransaction no longer exposes outputs.
-        case .sdk: return []
+        case .sdk(let p):
+            // Persistence only stores owned outputs (the FFI emits
+            // `acc.utxos*` arrays — wallet UTXOs only — and external
+            // recipient outputs aren't surfaced). For received txs that
+            // matches DSTransaction's "addresses receiving in this tx"
+            // semantics; for sent txs the external destination is
+            // unrecoverable from the row alone.
+            if direction == .received || direction == .moved {
+                return Array(Set(p.outputs.map { $0.address }.filter { !$0.isEmpty }))
+            }
+            return []
         }
     }()
 
@@ -106,8 +132,12 @@ class Transaction: TransactionDataItem, Identifiable {
             } else {
                 return Array(Set(dsTx.inputAddresses.compactMap { $0 as? String }))
             }
-        // TODO(core-spv-neuter): WalletTransaction no longer exposes inputs.
-        case .sdk: return []
+        case .sdk(let p):
+            // Reachable only when the FFI links spent UTXOs back to the
+            // spending tx. Today the spent-utxo notification carries only
+            // the outpoint, so `inputs` is usually empty — fine, callers
+            // already tolerate empty arrays.
+            return Array(Set(p.inputs.map { $0.address }.filter { !$0.isEmpty }))
         }
     }()
 
@@ -116,7 +146,25 @@ class Transaction: TransactionDataItem, Identifiable {
     private lazy var _dashAmount: UInt64 = {
         switch source {
         case .ds(let dsTx): return dsTx.dashAmount
-        case .sdk(let wtx): return UInt64(abs(wtx.netAmount))
+        case .sdk(let p):
+            let fee = Int64(p.fee ?? 0)
+            switch direction {
+            case .received:
+                return p.netAmount > 0 ? UInt64(p.netAmount) : 0
+            case .sent:
+                // Gross amount paid to external recipients. For an
+                // external send `netAmount = -(amount + fee)`, so the
+                // user-visible amount = `-netAmount - fee`. abs(netAmount)
+                // (the previous fallback) double-counted the fee and
+                // collapsed self-sends to a fee-sized number on screen.
+                return UInt64(max(0, -p.netAmount - fee))
+            case .moved:
+                return 0
+            case .notAccountFunds:
+                return 0
+            @unknown default:
+                return UInt64(abs(p.netAmount))
+            }
         }
     }()
 
@@ -155,11 +203,13 @@ class Transaction: TransactionDataItem, Identifiable {
         switch source {
         case .ds(let dsTx):
             return computeStateFromDSTransaction(dsTx)
-        case .sdk(let wtx):
-            // TODO(core-spv-neuter): WalletTransaction no longer exposes
-            // instantSendLocked. Treat confirmed (height > 0) as .ok,
-            // mempool as .processing.
-            return wtx.height > 0 ? .ok : .processing
+        case .sdk(let p):
+            // PersistentTransaction.context: 0=mempool, 1=instantSend,
+            // 2=inBlock, 3=chainLocked. Anything past mempool counts as
+            // "ok" — instant-send is a strong-enough confirmation for
+            // home-screen UX (matches the legacy DSTransaction codepath
+            // which exits `.processing` once `instantSendReceived` flips).
+            return p.context == 0 ? .processing : .ok
         }
     }()
 
@@ -228,6 +278,10 @@ class Transaction: TransactionDataItem, Identifiable {
         return account!.transactionIsVerified(tx)
     }
 
+    private static func internalHex(_ data: Data) -> String {
+        data.map { String(format: "%02x", $0) }.joined()
+    }
+
     private lazy var _shortDateString: String = {
         switch source {
         case .ds(let dsTx): return dsTx.formattedShortTxDate
@@ -289,15 +343,17 @@ class Transaction: TransactionDataItem, Identifiable {
         self.date = transaction.date
     }
 
-    init(walletTransaction: WalletTransaction) {
-        self.source = .sdk(walletTransaction)
-        // `WalletTransaction.timestamp` is the block timestamp (0 until the
-        // tx is mined). Fall back to `Date()` for mempool/pending txs so the
-        // home screen doesn't group them into a 1970 section. Re-evaluates
-        // on relaunch — acceptable for typical mainnet confirmation latency.
-        self.date = walletTransaction.timestamp == 0
+    init(persistentTransaction p: PersistentTransaction) {
+        self.source = .sdk(p)
+        // PersistentTransaction.blockTimestamp is 0 until mined; firstSeen
+        // is set when the tx is first observed (mempool entry). Use it as
+        // the mempool fallback so the home screen doesn't group these
+        // into a 1970 section. Re-evaluates on relaunch — acceptable for
+        // typical mainnet confirmation latency.
+        let ts: UInt64 = p.blockTimestamp == 0 ? p.firstSeen : UInt64(p.blockTimestamp)
+        self.date = ts == 0
             ? Date()
-            : Date(timeIntervalSince1970: TimeInterval(walletTransaction.timestamp))
+            : Date(timeIntervalSince1970: TimeInterval(ts))
     }
 }
 
@@ -305,7 +361,7 @@ extension Transaction {
     var feeUsed: UInt64 {
         switch source {
         case .ds(let dsTx): return dsTx.feeUsed
-        case .sdk(let wtx): return wtx.fee ?? 0
+        case .sdk(let p): return p.fee ?? 0
         }
     }
 
@@ -316,24 +372,20 @@ extension Transaction {
     var txHashHexString: String {
         switch source {
         case .ds(let dsTx): return dsTx.txHashHexString
-        case .sdk(let wtx): return wtx.txid
+        case .sdk(let p): return Self.internalHex(p.txid)
         }
     }
 
     var txHashData: Data {
         switch source {
         case .ds(let dsTx): return dsTx.txHashData
-        case .sdk(let wtx):
-            // WalletTransaction.txid is a hex string in internal byte order
-            // (same as DSTransaction.txHashData). Convert directly.
-            return Data(hexString: wtx.txid) ?? Data()
+        case .sdk(let p): return p.txid
         }
     }
 
     var isCoinbaseTransaction: Bool {
         switch source {
         case .ds(let dsTx): return dsTx is DSCoinbaseTransaction
-        // TODO(core-spv-neuter): WalletTransaction no longer exposes txType.
         case .sdk: return false
         }
     }
