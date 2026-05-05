@@ -119,6 +119,7 @@ class GiftCardDetailsViewModel: ObservableObject {
                 Task {
                     switch change {
                     case .created(let metadata), .updated(let metadata, _):
+                        guard metadata.txHash == self.txId else { return }
                         await self.loadIcon(metadata: metadata)
                     default:
                         break
@@ -327,7 +328,15 @@ class GiftCardDetailsViewModel: ObservableObject {
                     expectedAmounts: metadata.cardAmounts
                 )
 
-                guard !payload.isEmpty else { return }
+                guard !payload.isEmpty else {
+                    await MainActor.run {
+                        self.uiState.loadingError = DashSpendError.customError(
+                            NSLocalizedString("Gift card details are unavailable. Please contact support.", comment: "")
+                        )
+                    }
+                    stopTicker()
+                    return
+                }
 
                 let completedMetadata = GiftCardOrderMetadata(
                     orderId: metadata.orderId,
@@ -395,12 +404,15 @@ class GiftCardDetailsViewModel: ObservableObject {
                 var barcodeValue = cleanCode
                 var barcodeFormat = "CODE_128"
 
-                if let barcodeLink = card.barcodeLink,
-                   !barcodeLink.isEmpty,
-                   let result = await BarcodeScanner.downloadAndScan(from: barcodeLink) {
-                    barcodeValue = result.value.replacingOccurrences(of: " ", with: "")
-                        .replacingOccurrences(of: "-", with: "")
-                    barcodeFormat = result.format.rawValue
+                if let barcodeLink = card.barcodeLink, !barcodeLink.isEmpty {
+                    if let parsed = parseBarcodePayload(from: barcodeLink) {
+                        barcodeValue = parsed.value
+                        barcodeFormat = parsed.format
+                    } else if let result = await BarcodeScanner.downloadAndScan(from: barcodeLink) {
+                        barcodeValue = result.value.replacingOccurrences(of: " ", with: "")
+                            .replacingOccurrences(of: "-", with: "")
+                        barcodeFormat = result.format.rawValue
+                    }
                 }
 
                 entries.append(
@@ -483,6 +495,44 @@ class GiftCardDetailsViewModel: ObservableObject {
         return currencyFormatter.string(from: amount as NSDecimalNumber) ?? fallbackFormattedPrice
     }
 
+    private func parseBarcodePayload(from link: String) -> (value: String, format: String)? {
+        guard let components = URLComponents(string: link),
+              let queryItems = components.queryItems,
+              !queryItems.isEmpty else { return nil }
+
+        let loweredItems = queryItems.reduce(into: [String: String]()) { dict, item in
+            guard let value = item.value, !value.isEmpty else { return }
+            dict[item.name.lowercased()] = value
+        }
+
+        let valueKeys = ["text", "data", "code", "barcode"]
+        guard let rawValue = valueKeys.compactMap({ loweredItems[$0] }).first, !rawValue.isEmpty else {
+            return nil
+        }
+
+        let formatCandidate = loweredItems["format"] ?? loweredItems["type"] ?? loweredItems["symbology"]
+        let normalizedValue = rawValue
+            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: "-", with: "")
+        return (normalizedValue, normalizeBarcodeFormat(formatCandidate))
+    }
+
+    private func normalizeBarcodeFormat(_ rawFormat: String?) -> String {
+        let normalized = (rawFormat ?? "CODE_128")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .uppercased()
+            .replacingOccurrences(of: "-", with: "_")
+
+        switch normalized {
+        case "CODE128", "CODE_128": return "CODE_128"
+        case "QRCODE", "QR_CODE", "QR": return "QR_CODE"
+        case "PDF417", "PDF_417": return "PDF_417"
+        case "AZTEC", "AZTEC_CODE": return "AZTEC"
+        case "DATAMATRIX", "DATA_MATRIX": return "DATA_MATRIX"
+        default: return "CODE_128"
+        }
+    }
+
     private func loadExistingMetadata() {
         Task {
             if let metadata = txMetadataDAO.get(by: txId) {
@@ -505,14 +555,36 @@ class GiftCardDetailsViewModel: ObservableObject {
 
     private func imageFromBarcode(value: String?, format: String?) -> UIImage? {
         guard let value, !value.isEmpty else { return nil }
-        guard let filter = CIFilter(name: "CICode128BarcodeGenerator") else { return nil }
+        let normalizedFormat = normalizeBarcodeFormat(format)
 
-        let data = value.data(using: .ascii)
-        filter.setValue(data, forKey: "inputMessage")
+        let filterName: String
+        let transform: CGAffineTransform
+        switch normalizedFormat {
+        case "QR_CODE":
+            filterName = "CIQRCodeGenerator"
+            transform = CGAffineTransform(scaleX: 6.0, y: 6.0)
+        case "PDF_417":
+            filterName = "CIPDF417BarcodeGenerator"
+            transform = CGAffineTransform(scaleX: 3.0, y: 3.0)
+        case "AZTEC":
+            filterName = "CIAztecCodeGenerator"
+            transform = CGAffineTransform(scaleX: 6.0, y: 6.0)
+        case "DATA_MATRIX":
+            filterName = "CIDataMatrixCodeGenerator"
+            transform = CGAffineTransform(scaleX: 8.0, y: 8.0)
+        default:
+            filterName = "CICode128BarcodeGenerator"
+            transform = CGAffineTransform(scaleX: 3.0, y: 5.0)
+        }
+
+        guard let filter = CIFilter(name: filterName) else { return nil }
+        filter.setValue(value.data(using: .utf8), forKey: "inputMessage")
+        if normalizedFormat == "QR_CODE" {
+            filter.setValue("M", forKey: "inputCorrectionLevel")
+        }
 
         guard let outputImage = filter.outputImage else { return nil }
-
-        let transformedImage = outputImage.transformed(by: CGAffineTransform(scaleX: 3.0, y: 5.0))
+        let transformedImage = outputImage.transformed(by: transform)
         let context = CIContext()
         guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else { return nil }
 

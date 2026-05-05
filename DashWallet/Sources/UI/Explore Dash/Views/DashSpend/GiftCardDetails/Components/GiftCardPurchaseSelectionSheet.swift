@@ -83,7 +83,12 @@ struct GiftCardPurchaseSelectionSheet: View {
                                     .clipShape(.rect(cornerRadius: 5))
                             }
 
-                            Icon(name: .custom("icon-gift_card-piggy_cards", maxHeight: 23))
+                            Icon(
+                                name: .custom(
+                                    provider == "PiggyCards" ? "icon-gift_card-piggy_cards" : "ctx.logo",
+                                    maxHeight: 23
+                                )
+                            )
 
                             Text(card.formattedPrice)
                                 .font(.title3)
