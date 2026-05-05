@@ -17,6 +17,7 @@
 
 import UIKit
 import Combine
+import SwiftUI
 
 // MARK: - MainTabbarTabs
 
@@ -202,7 +203,7 @@ extension MainTabbarController {
             item = UITabBarItem(title: nil, image: MainTabbarTabs.explore.icon, selectedImage: MainTabbarTabs.explore.selectedIcon)
             item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
             
-            nvc = BaseNavigationController()
+            nvc = BaseNavigationController(rootViewController: EmptyController())
             let exploreScreen = ExploreMenuScreen(
                 vc: nvc,
                 showBackButton: false,

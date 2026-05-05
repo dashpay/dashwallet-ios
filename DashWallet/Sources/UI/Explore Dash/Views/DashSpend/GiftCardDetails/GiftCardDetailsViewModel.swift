@@ -19,6 +19,15 @@ import Foundation
 import Combine
 import UIKit
 
+struct GiftCardDetailsCardItem: Identifiable {
+    let id: String
+    let formattedPrice: String
+    let cardNumber: String?
+    let cardPin: String?
+    let barcodeImage: UIImage?
+    let isClaimLink: Bool
+}
+
 struct GiftCardDetailsUIState {
     var merchantName: String = ""
     var merchantUrl: String? = nil
@@ -34,59 +43,74 @@ struct GiftCardDetailsUIState {
     var isClaimLink: Bool = false
     var hasBeenPollingForLongTime: Bool = false
     var provider: String? = nil
+    var cards: [GiftCardDetailsCardItem] = []
+}
+
+private struct GiftCardOrderMetadata: Codable {
+    let orderId: String
+    let cardAmounts: [String]?
+    let cards: [GiftCardPayloadEntry]?
+}
+
+private struct GiftCardPayloadEntry: Codable {
+    let formattedPrice: String
+    let cardNumber: String?
+    let cardPin: String?
+    let barcodeValue: String?
+    let barcodeFormat: String?
+    let isClaimLink: Bool
 }
 
 @MainActor
 class GiftCardDetailsViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
-    private let ctxSpendRepository = CTXSpendRepository.shared
-    private let piggyCardsRepository = PiggyCardsRepository.shared
-    private let giftCardsDAO = GiftCardsDAOImpl.shared
-    private let customIconDAO = IconBitmapDAOImpl.shared
-    private let txMetadataDAO = TransactionMetadataDAOImpl.shared
+    private lazy var ctxSpendRepository = CTXSpendRepository.shared
+    private lazy var piggyCardsRepository = PiggyCardsRepository.shared
+    private lazy var giftCardsDAO = GiftCardsDAOImpl.shared
+    private lazy var customIconDAO = IconBitmapDAOImpl.shared
+    private lazy var txMetadataDAO = TransactionMetadataDAOImpl.shared
     private var tickerTimer: Timer?
     private var retryCount = 0
-    private let maxRetries = 40  // 60 seconds / 1.5 sec interval = 40 retries
-    private let longPollingThreshold = 27  // Show "code is being generated" message after ~40s (27 * 1.5s)
-    
+    private let maxRetries = 40
+    private let longPollingThreshold = 27
+
     let txId: Data
     @Published private(set) var uiState = GiftCardDetailsUIState()
-    
+
     private let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = "USD"
         return formatter
     }()
-    
-    init(txId: Data) {
+
+    init(txId: Data, shouldLoadTransaction: Bool = true) {
         self.txId = txId
-        loadTransaction()
+        if shouldLoadTransaction {
+            loadTransaction()
+        }
     }
-    
+
     func startObserving() {
         loadExistingMetadata()
-        
-        // Load the initial gift card data
+
         Task {
             await loadGiftCard()
         }
-        
-        // Observe changes to gift card txId
+
         giftCardsDAO.giftCardTxIdPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] publishedTxId in
                 guard let self = self,
                       let publishedTxId = publishedTxId,
                       publishedTxId == self.txId else { return }
-                
-                // The gift card for our txId has changed, fetch it
+
                 Task {
                     await self.loadGiftCard()
                 }
             }
             .store(in: &cancellableBag)
-        
+
         self.txMetadataDAO.$lastChange
             .receive(on: DispatchQueue.main)
             .sink { [weak self] change in
@@ -103,20 +127,20 @@ class GiftCardDetailsViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
     }
-    
+
     func stopObserving() {
         cancellableBag.removeAll()
         stopTicker()
     }
-    
+
     private func loadTransaction() {
         Task.detached { [weak self] in
             guard let self = self else { return }
-            
+
             let transaction = DWEnvironment.sharedInstance().currentWallet.allTransactions.first { transaction in
-                return transaction.txHashData == self.txId
+                transaction.txHashData == self.txId
             }
-            
+
             await MainActor.run {
                 if let tx = transaction {
                     self.uiState.purchaseDate = Date(timeIntervalSince1970: TimeInterval(tx.timestamp))
@@ -125,55 +149,64 @@ class GiftCardDetailsViewModel: ObservableObject {
             }
         }
     }
-    
+
     private func loadGiftCard() async {
         guard let card = await giftCardsDAO.get(byTxId: txId) else { return }
+
+        let formattedPrice = currencyFormatter.string(from: card.price as NSDecimalNumber) ?? "$0.00"
+        let displayCards = buildDisplayCards(from: card, fallbackFormattedPrice: formattedPrice)
+        let isClaimLink = displayCards.first?.isClaimLink ?? (card.number?.starts(with: "http") ?? false)
+        let barcodeImage = displayCards.first?.barcodeImage ?? imageFromBarcode(value: card.barcodeValue, format: card.barcodeFormat)
 
         await MainActor.run {
             self.uiState.merchantName = card.merchantName
             self.uiState.merchantUrl = card.merchantUrl
-            self.uiState.formattedPrice = self.currencyFormatter.string(from: card.price as NSDecimalNumber) ?? "$0.00"
+            self.uiState.formattedPrice = formattedPrice
             self.uiState.cardNumber = card.number
             self.uiState.cardPin = card.pin
             self.uiState.provider = card.provider
+            self.uiState.isClaimLink = isClaimLink
+            self.uiState.barcodeImage = barcodeImage
+            self.uiState.cards = displayCards
 
-            // Check if this is a claim link (URL in number field)
-            if let number = card.number, number.starts(with: "http") {
-                self.uiState.isClaimLink = true
-            }
-
-            // Generate barcode if we have the value
-            if let barcodeValue = card.barcodeValue {
-                self.generateBarcode(from: barcodeValue, format: card.barcodeFormat ?? "CODE128")
-            }
-
-            // If we don't have card details yet but have a note (payment ID), start ticker
-            if card.number == nil && card.note != nil {
+            if shouldStartPolling(for: card, hasDisplayCards: !displayCards.isEmpty) {
                 self.startTicker()
             } else {
                 self.stopTicker()
             }
         }
     }
-    
+
+    private func shouldStartPolling(for card: GiftCard, hasDisplayCards: Bool) -> Bool {
+        guard card.note != nil else { return false }
+
+        if card.provider == "PiggyCards" {
+            if let note = card.note, decodeOrderMetadata(from: note).cards?.isEmpty == false {
+                return false
+            }
+            return !hasDisplayCards
+        }
+
+        return card.number == nil
+    }
+
     private func startTicker() {
         guard tickerTimer == nil else { return }
-        
+
         uiState.isLoadingCardDetails = true
         uiState.loadingError = nil
-        
+
         Task {
             await fetchGiftCardInfo()
         }
-        
-        // Set up timer for periodic fetches
+
         tickerTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true) { [weak self] _ in
             Task { [weak self] in
                 await self?.fetchGiftCardInfo()
             }
         }
     }
-    
+
     private func stopTicker() {
         tickerTimer?.invalidate()
         tickerTimer = nil
@@ -181,38 +214,34 @@ class GiftCardDetailsViewModel: ObservableObject {
         uiState.hasBeenPollingForLongTime = false
         retryCount = 0
     }
-    
+
     private func fetchGiftCardInfo() async {
         guard let giftCard = await giftCardsDAO.get(byTxId: txId),
-              let _ = giftCard.note else {
+              giftCard.note != nil else {
             stopTicker()
             return
         }
 
-        // Check if we've been polling for more than 60 seconds
         if retryCount >= longPollingThreshold {
             await MainActor.run {
                 self.uiState.hasBeenPollingForLongTime = true
             }
         }
 
-        // Log provider decision for debugging upgrade issues
         let providerName = giftCard.provider ?? "nil (defaulting to CTX)"
         let txIdHex = txId.map { String(format: "%02x", $0) }.joined()
         DSLogger.log("DashSpend: Fetching gift card - Provider: \(providerName), TxId: \(txIdHex)")
 
-        // Check provider and call appropriate API
         if giftCard.provider == "PiggyCards" {
             await fetchPiggyCardsGiftCardInfo()
         } else {
-            // Default to CTX for backward compatibility
             await fetchCTXGiftCardInfo()
         }
     }
 
     private func fetchCTXGiftCardInfo() async {
         guard let giftCard = await giftCardsDAO.get(byTxId: txId),
-              let _ = giftCard.note,
+              giftCard.note != nil,
               ctxSpendRepository.isUserSignedIn else {
             stopTicker()
             return
@@ -222,18 +251,16 @@ class GiftCardDetailsViewModel: ObservableObject {
             let base58TxId = ((txId as NSData).reverse() as NSData).base58String()
             DSLogger.log("DashSpend: Calling CTX API - Base58TxId: \(base58TxId)")
             let response = try await ctxSpendRepository.getGiftCardByTxid(txid: base58TxId)
-            
+
             switch response.status {
             case "fulfilled":
                 if let cardNumber = response.cardNumber, !cardNumber.isEmpty {
-                    // Update gift card with received details
                     await giftCardsDAO.updateCardDetails(
                         txId: txId,
                         number: cardNumber,
                         pin: response.cardPin
                     )
-                    
-                    // Save barcode
+
                     if !cardNumber.isEmpty {
                         let cleanNumber = cardNumber.replacingOccurrences(of: " ", with: "")
                             .replacingOccurrences(of: "-", with: "")
@@ -245,8 +272,16 @@ class GiftCardDetailsViewModel: ObservableObject {
                     }
                     stopTicker()
                     DSLogger.log("DashSpend: Gift card details fetched successfully")
+                } else if let redeemUrl = response.redeemUrl, !redeemUrl.isEmpty {
+                    await giftCardsDAO.updateCardDetails(
+                        txId: txId,
+                        number: redeemUrl,
+                        pin: nil
+                    )
+                    stopTicker()
+                    DSLogger.log("DashSpend: Gift card redeem URL fetched successfully")
                 }
-                
+
             case "rejected":
                 await MainActor.run {
                     self.uiState.loadingError = DashSpendError.customError(
@@ -254,9 +289,8 @@ class GiftCardDetailsViewModel: ObservableObject {
                     )
                 }
                 stopTicker()
-                
+
             default:
-                // Keep polling for other statuses
                 break
             }
         } catch {
@@ -273,72 +307,51 @@ class GiftCardDetailsViewModel: ObservableObject {
 
     private func fetchPiggyCardsGiftCardInfo() async {
         guard let giftCard = await giftCardsDAO.get(byTxId: txId),
-              let orderId = giftCard.note,
+              let note = giftCard.note,
               piggyCardsRepository.isUserSignedIn else {
             stopTicker()
             return
         }
 
+        let metadata = decodeOrderMetadata(from: note)
+
         do {
-            DSLogger.log("DashSpend: Calling PiggyCards API - OrderId: \(orderId)")
-            let orderStatus = try await piggyCardsRepository.getOrderStatus(orderId: orderId)
+            DSLogger.log("DashSpend: Calling PiggyCards API - OrderId: \(metadata.orderId)")
+            let orderStatus = try await piggyCardsRepository.getOrderStatus(orderId: metadata.orderId)
 
             switch orderStatus.data.status.lowercased() {
             case "complete", "completed":
-                // Get the card details from the order
-                let cards = orderStatus.data.cards
-                if let firstCard = cards.first {
+                let payload = await buildPayloadEntries(
+                    cards: orderStatus.data.cards,
+                    fallbackFormattedPrice: uiState.formattedPrice,
+                    expectedAmounts: metadata.cardAmounts
+                )
 
-                    // Update gift card with received details
-                    if let claimCode = firstCard.claimCode, !claimCode.isEmpty {
-                        await giftCardsDAO.updateCardDetails(
-                            txId: txId,
-                            number: claimCode,
-                            pin: firstCard.claimPin
-                        )
+                guard !payload.isEmpty else { return }
 
-                        // Download and scan barcode from URL if available (matching Android)
-                        if let barcodeLink = firstCard.barcodeLink, !barcodeLink.isEmpty {
-                            if let result = await BarcodeScanner.downloadAndScan(from: barcodeLink) {
-                                // Clean the barcode value (remove spaces and dashes)
-                                let cleanValue = result.value.replacingOccurrences(of: " ", with: "")
-                                    .replacingOccurrences(of: "-", with: "")
-                                await giftCardsDAO.updateBarcode(
-                                    txId: txId,
-                                    value: cleanValue,
-                                    format: result.format.rawValue
-                                )
-                            } else {
-                                // Fallback: Generate barcode from claimCode
-                                let cleanCode = claimCode.replacingOccurrences(of: " ", with: "")
-                                    .replacingOccurrences(of: "-", with: "")
-                                await giftCardsDAO.updateBarcode(
-                                    txId: txId,
-                                    value: cleanCode,
-                                    format: "CODE_128"
-                                )
-                            }
-                        } else {
-                            // Fallback: Generate barcode from claimCode (legacy behavior)
-                            let cleanCode = claimCode.replacingOccurrences(of: " ", with: "")
-                                .replacingOccurrences(of: "-", with: "")
-                            await giftCardsDAO.updateBarcode(
-                                txId: txId,
-                                value: cleanCode,
-                                format: "CODE_128"
-                            )
-                        }
-                        stopTicker()
-                    } else if let claimLink = firstCard.claimLink, !claimLink.isEmpty {
-                        // Link-based redemption
-                        await giftCardsDAO.updateCardDetails(
-                            txId: txId,
-                            number: claimLink,  // Store URL as the card number
-                            pin: nil            // No PIN for link-based cards
-                        )
-                        stopTicker()
-                    }
-                }
+                let completedMetadata = GiftCardOrderMetadata(
+                    orderId: metadata.orderId,
+                    cardAmounts: metadata.cardAmounts,
+                    cards: payload
+                )
+                let serializedNote = encodeOrderMetadata(completedMetadata) ?? note
+                let firstEntry = payload.first
+
+                let updatedCard = GiftCard(
+                    txId: giftCard.txId,
+                    merchantName: giftCard.merchantName,
+                    merchantUrl: giftCard.merchantUrl,
+                    price: giftCard.price,
+                    number: firstEntry?.cardNumber,
+                    pin: firstEntry?.cardPin,
+                    barcodeValue: firstEntry?.barcodeValue,
+                    barcodeFormat: firstEntry?.barcodeFormat,
+                    note: serializedNote,
+                    provider: giftCard.provider
+                )
+
+                await giftCardsDAO.update(dto: updatedCard)
+                stopTicker()
 
             case "failed", "rejected", "cancelled":
                 await MainActor.run {
@@ -349,7 +362,6 @@ class GiftCardDetailsViewModel: ObservableObject {
                 stopTicker()
 
             default:
-                // Keep polling for other statuses
                 break
             }
         } catch {
@@ -363,6 +375,114 @@ class GiftCardDetailsViewModel: ObservableObject {
         }
     }
 
+    private func buildPayloadEntries(
+        cards: [PiggyCardsOrderGiftCard],
+        fallbackFormattedPrice: String,
+        expectedAmounts: [String]?
+    ) async -> [GiftCardPayloadEntry] {
+        var entries: [GiftCardPayloadEntry] = []
+
+        for (index, card) in cards.enumerated() {
+            let formattedPrice = formattedPriceForCard(
+                amountString: expectedAmounts?[safe: index],
+                fallbackFormattedPrice: fallbackFormattedPrice
+            )
+
+            if let claimCode = card.claimCode, !claimCode.isEmpty {
+                let cleanCode = claimCode.replacingOccurrences(of: " ", with: "")
+                    .replacingOccurrences(of: "-", with: "")
+
+                var barcodeValue = cleanCode
+                var barcodeFormat = "CODE_128"
+
+                if let barcodeLink = card.barcodeLink,
+                   !barcodeLink.isEmpty,
+                   let result = await BarcodeScanner.downloadAndScan(from: barcodeLink) {
+                    barcodeValue = result.value.replacingOccurrences(of: " ", with: "")
+                        .replacingOccurrences(of: "-", with: "")
+                    barcodeFormat = result.format.rawValue
+                }
+
+                entries.append(
+                    GiftCardPayloadEntry(
+                        formattedPrice: formattedPrice,
+                        cardNumber: claimCode,
+                        cardPin: card.claimPin,
+                        barcodeValue: barcodeValue,
+                        barcodeFormat: barcodeFormat,
+                        isClaimLink: false
+                    )
+                )
+            } else if let claimLink = card.claimLink, !claimLink.isEmpty {
+                entries.append(
+                    GiftCardPayloadEntry(
+                        formattedPrice: formattedPrice,
+                        cardNumber: claimLink,
+                        cardPin: nil,
+                        barcodeValue: nil,
+                        barcodeFormat: nil,
+                        isClaimLink: true
+                    )
+                )
+            }
+        }
+
+        return entries
+    }
+
+    private func decodeOrderMetadata(from note: String) -> GiftCardOrderMetadata {
+        guard let data = note.data(using: .utf8),
+              let decoded = try? JSONDecoder().decode(GiftCardOrderMetadata.self, from: data) else {
+            return GiftCardOrderMetadata(orderId: note, cardAmounts: nil, cards: nil)
+        }
+
+        return decoded
+    }
+
+    private func encodeOrderMetadata(_ metadata: GiftCardOrderMetadata) -> String? {
+        guard let data = try? JSONEncoder().encode(metadata) else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+
+    private func buildDisplayCards(from card: GiftCard, fallbackFormattedPrice: String) -> [GiftCardDetailsCardItem] {
+        if let note = card.note, let payload = decodeOrderMetadata(from: note).cards, !payload.isEmpty {
+            return payload.enumerated().map { index, entry in
+                GiftCardDetailsCardItem(
+                    id: "\(index)-\(entry.cardNumber ?? "")",
+                    formattedPrice: entry.formattedPrice,
+                    cardNumber: entry.cardNumber,
+                    cardPin: entry.cardPin,
+                    barcodeImage: imageFromBarcode(value: entry.barcodeValue, format: entry.barcodeFormat),
+                    isClaimLink: entry.isClaimLink
+                )
+            }
+        }
+
+        if card.number != nil || card.pin != nil || card.barcodeValue != nil {
+            return [
+                GiftCardDetailsCardItem(
+                    id: "legacy-0",
+                    formattedPrice: fallbackFormattedPrice,
+                    cardNumber: card.number,
+                    cardPin: card.pin,
+                    barcodeImage: imageFromBarcode(value: card.barcodeValue, format: card.barcodeFormat),
+                    isClaimLink: card.number?.starts(with: "http") ?? false
+                )
+            ]
+        }
+
+        return []
+    }
+
+    private func formattedPriceForCard(amountString: String?, fallbackFormattedPrice: String) -> String {
+        guard let amountString,
+              let amount = Decimal(string: amountString) else {
+            return fallbackFormattedPrice
+        }
+
+        return currencyFormatter.string(from: amount as NSDecimalNumber) ?? fallbackFormattedPrice
+    }
+
     private func loadExistingMetadata() {
         Task {
             if let metadata = txMetadataDAO.get(by: txId) {
@@ -370,34 +490,163 @@ class GiftCardDetailsViewModel: ObservableObject {
             }
         }
     }
-    
+
     private func loadIcon(metadata: TransactionMetadata) async {
         if let customIconId = metadata.customIconId,
-            let iconBitmap = await self.customIconDAO.getBitmap(id: customIconId) {
+           let iconBitmap = await self.customIconDAO.getBitmap(id: customIconId) {
             guard let image = UIImage(data: iconBitmap.imageData) else {
                 DSLogger.log("Failed to create image from data for tx icon: \(metadata.txHash.hexEncodedString())")
                 return
             }
-            
+
             self.uiState.merchantIcon = image
         }
     }
-    
-    private func generateBarcode(from string: String, format: String) {
-        guard let filter = CIFilter(name: "CICode128BarcodeGenerator") else { return }
-        
-        let data = string.data(using: .ascii)
+
+    private func imageFromBarcode(value: String?, format: String?) -> UIImage? {
+        guard let value, !value.isEmpty else { return nil }
+        guard let filter = CIFilter(name: "CICode128BarcodeGenerator") else { return nil }
+
+        let data = value.data(using: .ascii)
         filter.setValue(data, forKey: "inputMessage")
-        
-        guard let outputImage = filter.outputImage else { return }
-        
-        let scaleX = 3.0
-        let scaleY = 5.0
-        let transformedImage = outputImage.transformed(by: CGAffineTransform(scaleX: scaleX, y: scaleY))
-        
+
+        guard let outputImage = filter.outputImage else { return nil }
+
+        let transformedImage = outputImage.transformed(by: CGAffineTransform(scaleX: 3.0, y: 5.0))
         let context = CIContext()
-        if let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) {
-            uiState.barcodeImage = UIImage(cgImage: cgImage)
-        }
+        guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else { return nil }
+
+        return UIImage(cgImage: cgImage)
     }
-} 
+}
+
+private extension Array {
+    subscript(safe index: Index) -> Element? {
+        indices.contains(index) ? self[index] : nil
+    }
+}
+
+extension GiftCardDetailsViewModel {
+    static func previewBarcodeCard() -> GiftCardDetailsViewModel {
+        let viewModel = GiftCardDetailsViewModel(txId: Data(), shouldLoadTransaction: false)
+        viewModel.uiState = GiftCardDetailsUIState(
+            merchantName: "Amazon",
+            merchantUrl: "https://www.amazon.com",
+            formattedPrice: "$75.00",
+            cardNumber: "1234 5678 9012",
+            cardPin: "7890",
+            barcodeImage: UIImage(systemName: "barcode.viewfinder"),
+            merchantIcon: UIImage(systemName: "cart.fill"),
+            purchaseDate: Date(timeIntervalSince1970: 1_713_484_800),
+            isLoadingCardDetails: false,
+            loadingError: nil,
+            transaction: nil,
+            isClaimLink: false,
+            hasBeenPollingForLongTime: false,
+            provider: "CTX",
+            cards: [
+                GiftCardDetailsCardItem(
+                    id: "preview-1",
+                    formattedPrice: "$75.00",
+                    cardNumber: "1234 5678 9012",
+                    cardPin: "7890",
+                    barcodeImage: UIImage(systemName: "barcode.viewfinder"),
+                    isClaimLink: false
+                )
+            ]
+        )
+        return viewModel
+    }
+
+    static func previewClaimLinkCard() -> GiftCardDetailsViewModel {
+        let viewModel = GiftCardDetailsViewModel(txId: Data(), shouldLoadTransaction: false)
+        viewModel.uiState = GiftCardDetailsUIState(
+            merchantName: "Steam",
+            merchantUrl: "https://store.steampowered.com",
+            formattedPrice: "$50.00",
+            cardNumber: "https://giftcards.example.com/claim/ABC123",
+            cardPin: nil,
+            barcodeImage: nil,
+            merchantIcon: UIImage(systemName: "gamecontroller.fill"),
+            purchaseDate: Date(timeIntervalSince1970: 1_713_571_200),
+            isLoadingCardDetails: false,
+            loadingError: nil,
+            transaction: nil,
+            isClaimLink: true,
+            hasBeenPollingForLongTime: false,
+            provider: "PiggyCards",
+            cards: [
+                GiftCardDetailsCardItem(
+                    id: "preview-claim-1",
+                    formattedPrice: "$50.00",
+                    cardNumber: "https://giftcards.example.com/claim/ABC123",
+                    cardPin: nil,
+                    barcodeImage: nil,
+                    isClaimLink: true
+                )
+            ]
+        )
+        return viewModel
+    }
+
+    static func previewLoadingCard() -> GiftCardDetailsViewModel {
+        let viewModel = GiftCardDetailsViewModel(txId: Data(), shouldLoadTransaction: false)
+        viewModel.uiState = GiftCardDetailsUIState(
+            merchantName: "Target",
+            merchantUrl: "https://www.target.com",
+            formattedPrice: "$100.00",
+            cardNumber: nil,
+            cardPin: nil,
+            barcodeImage: nil,
+            merchantIcon: UIImage(systemName: "bag.fill"),
+            purchaseDate: Date(timeIntervalSince1970: 1_713_657_600),
+            isLoadingCardDetails: true,
+            loadingError: nil,
+            transaction: nil,
+            isClaimLink: false,
+            hasBeenPollingForLongTime: true,
+            provider: "CTX",
+            cards: []
+        )
+        return viewModel
+    }
+
+    static func previewMultipleCards() -> GiftCardDetailsViewModel {
+        let viewModel = GiftCardDetailsViewModel(txId: Data(), shouldLoadTransaction: false)
+        viewModel.uiState = GiftCardDetailsUIState(
+            merchantName: "Amazon",
+            merchantUrl: "https://www.amazon.com",
+            formattedPrice: "$125.00",
+            cardNumber: "1111 2222 3333",
+            cardPin: "1234",
+            barcodeImage: UIImage(systemName: "barcode.viewfinder"),
+            merchantIcon: UIImage(systemName: "cart.fill"),
+            purchaseDate: Date(timeIntervalSince1970: 1_713_484_800),
+            isLoadingCardDetails: false,
+            loadingError: nil,
+            transaction: nil,
+            isClaimLink: false,
+            hasBeenPollingForLongTime: false,
+            provider: "PiggyCards",
+            cards: [
+                GiftCardDetailsCardItem(
+                    id: "preview-multi-1",
+                    formattedPrice: "$25.00",
+                    cardNumber: "1111 2222 3333",
+                    cardPin: "1234",
+                    barcodeImage: UIImage(systemName: "barcode.viewfinder"),
+                    isClaimLink: false
+                ),
+                GiftCardDetailsCardItem(
+                    id: "preview-multi-2",
+                    formattedPrice: "$100.00",
+                    cardNumber: "4444 5555 6666",
+                    cardPin: "9876",
+                    barcodeImage: UIImage(systemName: "barcode.viewfinder"),
+                    isClaimLink: false
+                )
+            ]
+        )
+        return viewModel
+    }
+}
