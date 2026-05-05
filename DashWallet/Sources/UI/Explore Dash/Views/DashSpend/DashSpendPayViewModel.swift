@@ -52,6 +52,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private var merchantId: String = ""
     private var merchantUrl: String? = nil
     private var sourceId: String?
+    private let providerConfiguredIsFixed: Bool?
     private(set) var amount: Decimal = 0
     private(set) var savingsFraction: Decimal = 0.0
     @Published private(set) var isLoading = false
@@ -176,7 +177,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
 
         // Get the sourceId and denomination type for the current provider from giftCardProviders
-        var providerIsFixed = false  // Local variable to store denomination type
+        var providerIsFixed: Bool? = nil  // Local variable to store denomination type
         var providerSavingsFraction = Decimal(merchant.merchant?.toSavingsFraction() ?? 0.0)
 
         if let giftCardProviders = merchant.merchant?.giftCardProviders {
@@ -211,18 +212,19 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             let localDenominations = merchantData.denominations
             let localDenominationType = merchantData.denominationsType
 
-            if providerIsFixed {
+            if providerIsFixed == true {
                 self.denominations = localDenominations
             } else if localDenominationType == DenominationType.Range.rawValue, localDenominations.count >= 2 {
                 self.minimumAmount = Decimal(localDenominations[0])
                 self.maximumAmount = Decimal(localDenominations[1])
             }
         }
+        self.providerConfiguredIsFixed = providerIsFixed
 
         super.init()
 
         // Set the denomination type after super.init()
-        self.isFixedDenomination = providerIsFixed
+        self.isFixedDenomination = providerIsFixed ?? false
 
         // Log debug info after super.init()
 
@@ -494,7 +496,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
                     if normalizedPriceType == PiggyCardsPriceType.fixed.rawValue {
                         // Fixed type: collect the denomination and its specific discount
-                        if let fixedValue = Int(card.denomination.trimmingCharacters(in: .whitespaces)) {
+                        if let fixedValue = parseWholeDollarDenomination(card.denomination) {
                             allFixedDenominations.insert(fixedValue)
                             denomDiscounts[fixedValue] = cardDiscount
                             denomInventory[fixedValue] = card.quantity
@@ -502,7 +504,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                     } else if normalizedPriceType == PiggyCardsPriceType.option.rawValue {
                         // Option type: parse comma-separated values (all share same discount)
                         let denominationValues = card.denomination.split(separator: ",")
-                            .compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }
+                            .compactMap { parseWholeDollarDenomination(String($0)) }
                         for value in denominationValues {
                             allFixedDenominations.insert(value)
                             denomDiscounts[value] = cardDiscount
@@ -532,23 +534,43 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 var finalDenominations: [Int] = []
                 var finalSavings = Decimal(0)
 
-                if hasRangeCard {
+                let hasFixedCards = !allFixedDenominations.isEmpty
+                let preferredFixedInMixedSet = providerConfiguredIsFixed
+
+                if hasRangeCard && hasFixedCards {
+                    // Some sources (e.g. test data) can return mixed types for the same sourceId.
+                    // In that case, honor merchant/provider configuration from the local database.
+                    if preferredFixedInMixedSet == true {
+                        finalFixed = true
+                        finalDenominations = allFixedDenominations.sorted()
+                        finalSavings = denomDiscounts.values.max() ?? 0
+                    } else {
+                        finalFixed = false
+                        finalMin = Decimal(rangeMin > 0 ? rangeMin : 10)
+                        finalMax = Decimal(rangeMax > 0 ? rangeMax : 500)
+                        finalSavings = max(0, Decimal(rangeDiscount) - serviceFee) / 100
+                    }
+                } else if hasRangeCard {
                     finalFixed = false
                     finalMin = Decimal(rangeMin > 0 ? rangeMin : 10)
                     finalMax = Decimal(rangeMax > 0 ? rangeMax : 500)
                     finalSavings = max(0, Decimal(rangeDiscount) - serviceFee) / 100
-                } else if !allFixedDenominations.isEmpty {
+                } else if hasFixedCards {
                     finalFixed = true
                     finalDenominations = allFixedDenominations.sorted()
                     finalSavings = denomDiscounts.values.max() ?? 0
                 } else if let firstCard = giftCards.first,
-                          let fixedValue = Int(firstCard.denomination.trimmingCharacters(in: .whitespaces)) {
+                          let fixedValue = parseWholeDollarDenomination(firstCard.denomination) {
                     finalFixed = true
                     finalDenominations = [fixedValue]
                     finalSavings = max(0, Decimal(firstCard.discountPercentage) - serviceFee) / 100
                 }
 
                 await MainActor.run {
+                    DSLogger.log(
+                        "DashSpend: PiggyCards mode=\(finalFixed ? "fixed" : "flexible"), " +
+                        "range=[\(finalMin), \(finalMax)], fixedCount=\(finalDenominations.count)"
+                    )
                     self.denominationDiscounts = finalFixed ? denomDiscounts : [:]
                     self.denominationInventory = finalFixed ? denomInventory : [:]
                     self.isFixedDenomination = finalFixed
@@ -701,5 +723,25 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
     private func decimalToDouble(_ value: Decimal) -> Double {
         Double(truncating: value as NSDecimalNumber)
+    }
+
+    private func parseWholeDollarDenomination(_ raw: String) -> Int? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        // Accept values like "5", "5.0", "5.00".
+        if let intValue = Int(trimmed) {
+            return intValue
+        }
+
+        if let decimalValue = Decimal(string: trimmed, locale: Locale(identifier: "en_US_POSIX")) {
+            let asDouble = NSDecimalNumber(decimal: decimalValue).doubleValue
+            let rounded = Int(asDouble.rounded())
+            if abs(asDouble - Double(rounded)) < 0.0001 {
+                return rounded
+            }
+        }
+
+        return nil
     }
 }

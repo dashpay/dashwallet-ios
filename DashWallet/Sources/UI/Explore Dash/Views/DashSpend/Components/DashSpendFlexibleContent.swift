@@ -67,54 +67,30 @@ struct DashSpendFlexibleContent: View {
         let minimum = max(Decimal(5), viewModel.minimumAmount)
         let maximum = min(Decimal(500), viewModel.maximumAmount)
         guard minimum > 0, maximum >= minimum else { return [] }
-
-        return buildMultipleDenominations(minimum: minimum, maximum: maximum, targetCount: 4)
+        return uniqueInOrder(formulaCandidates(minimum: minimum, maximum: maximum))
     }
 
-    private func buildMultipleDenominations(minimum: Decimal, maximum: Decimal, targetCount: Int) -> [Decimal] {
+    private func formulaCandidates(minimum: Decimal, maximum: Decimal) -> [Decimal] {
+        [
+            roundedToCents(minimum),
+            roundedToCents(minimum * 2),
+            roundedToCents(minimum * 4),
+            roundedToCents(maximum / 2),
+            roundedToCents(maximum)
+        ].map { min(max($0, minimum), maximum) }
+    }
+
+    private func uniqueInOrder(_ values: [Decimal]) -> [Decimal] {
         var uniqueValues: [Decimal] = []
         var seen: Set<Decimal> = []
 
-        func appendIfUnique(_ rawValue: Decimal) {
-            let clamped = min(max(rawValue, minimum), maximum)
-            let rounded = roundedToCents(clamped)
-            guard !seen.contains(rounded) else { return }
+        for value in values {
+            let rounded = roundedToCents(value)
+            guard !seen.contains(rounded) else { continue }
             seen.insert(rounded)
             uniqueValues.append(rounded)
         }
-
-        // Keep the 4-point design as the primary shape.
-        [minimum, minimum * 2, maximum / 2, maximum].forEach(appendIfUnique)
-
-        // Fill missing slots deterministically when collisions happen.
-        if uniqueValues.count < targetCount {
-            let span = maximum - minimum
-            let fallbackValues: [Decimal] = [
-                minimum + span / 4,
-                minimum + span / 3,
-                minimum + span * 2 / 3,
-                minimum + span * 3 / 4,
-                minimum + 1,
-                maximum - 1
-            ]
-
-            for value in fallbackValues {
-                appendIfUnique(value)
-                if uniqueValues.count == targetCount { break }
-            }
-        }
-
-        // Last-resort filler for very narrow ranges (e.g. min == max).
-        if uniqueValues.count < targetCount {
-            var probe = minimum
-            while uniqueValues.count < targetCount {
-                appendIfUnique(probe)
-                probe += 0.01
-                if probe > maximum { break }
-            }
-        }
-
-        return Array(uniqueValues.prefix(targetCount))
+        return uniqueValues
     }
 
     private func roundedToCents(_ value: Decimal) -> Decimal {
