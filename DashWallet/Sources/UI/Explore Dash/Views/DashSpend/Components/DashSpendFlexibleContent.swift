@@ -64,10 +64,64 @@ struct DashSpendFlexibleContent: View {
     }
 
     private var multipleDenominations: [Decimal] {
-        let min = viewModel.minimumAmount
-        let max = viewModel.maximumAmount
-        guard min > 0, max > 0 else { return [] }
-        return [min, min * 2, max / 2, max]
+        let minimum = max(Decimal(5), viewModel.minimumAmount)
+        let maximum = min(Decimal(500), viewModel.maximumAmount)
+        guard minimum > 0, maximum >= minimum else { return [] }
+
+        return buildMultipleDenominations(minimum: minimum, maximum: maximum, targetCount: 4)
+    }
+
+    private func buildMultipleDenominations(minimum: Decimal, maximum: Decimal, targetCount: Int) -> [Decimal] {
+        var uniqueValues: [Decimal] = []
+        var seen: Set<Decimal> = []
+
+        func appendIfUnique(_ rawValue: Decimal) {
+            let clamped = min(max(rawValue, minimum), maximum)
+            let rounded = roundedToCents(clamped)
+            guard !seen.contains(rounded) else { return }
+            seen.insert(rounded)
+            uniqueValues.append(rounded)
+        }
+
+        // Keep the 4-point design as the primary shape.
+        [minimum, minimum * 2, maximum / 2, maximum].forEach(appendIfUnique)
+
+        // Fill missing slots deterministically when collisions happen.
+        if uniqueValues.count < targetCount {
+            let span = maximum - minimum
+            let fallbackValues: [Decimal] = [
+                minimum + span / 4,
+                minimum + span / 3,
+                minimum + span * 2 / 3,
+                minimum + span * 3 / 4,
+                minimum + 1,
+                maximum - 1
+            ]
+
+            for value in fallbackValues {
+                appendIfUnique(value)
+                if uniqueValues.count == targetCount { break }
+            }
+        }
+
+        // Last-resort filler for very narrow ranges (e.g. min == max).
+        if uniqueValues.count < targetCount {
+            var probe = minimum
+            while uniqueValues.count < targetCount {
+                appendIfUnique(probe)
+                probe += 0.01
+                if probe > maximum { break }
+            }
+        }
+
+        return Array(uniqueValues.prefix(targetCount))
+    }
+
+    private func roundedToCents(_ value: Decimal) -> Decimal {
+        var source = value
+        var result = Decimal()
+        NSDecimalRound(&result, &source, 2, .plain)
+        return result
     }
 
     var body: some View {

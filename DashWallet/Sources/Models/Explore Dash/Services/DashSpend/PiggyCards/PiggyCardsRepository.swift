@@ -185,6 +185,12 @@ class PiggyCardsRepository: DashSpendRepository {
         let denomination: Double
         let quantity: Int
     }
+    
+    private struct SelectedBasketItem {
+        let card: PiggyCardsGiftcard
+        let quantity: Int
+        let denomination: Double
+    }
 
     /// Create an order for a gift card purchase
     /// This is the main flow for PiggyCards purchases
@@ -218,7 +224,7 @@ class PiggyCardsRepository: DashSpendRepository {
 
         // Step 2: Select the appropriate gift cards for each line item
         var selectedOrders: [PiggyCardsOrder] = []
-        var firstSelectedCard: PiggyCardsGiftcard?
+        var selectedBasketItems: [SelectedBasketItem] = []
 
         for lineItem in lineItems where lineItem.quantity > 0 {
             guard let selectedCard = PiggyCardsCache.shared.selectGiftCard(
@@ -238,10 +244,6 @@ class PiggyCardsRepository: DashSpendRepository {
                 throw DashSpendError.invalidAmount
             }
 
-            if firstSelectedCard == nil {
-                firstSelectedCard = selectedCard
-            }
-
             selectedOrders.append(
                 PiggyCardsOrder(
                     productId: selectedCard.id,
@@ -250,12 +252,22 @@ class PiggyCardsRepository: DashSpendRepository {
                     currency: fiatCurrency
                 )
             )
+            
+            selectedBasketItems.append(
+                SelectedBasketItem(
+                    card: selectedCard,
+                    quantity: lineItem.quantity,
+                    denomination: lineItem.denomination
+                )
+            )
         }
 
-        guard !selectedOrders.isEmpty, let selectedCardForDisplay = firstSelectedCard else {
+        guard !selectedOrders.isEmpty else {
             throw DashSpendError.invalidAmount
         }
 
+
+        let summaryDiscountPercentage = basketSummaryDiscount(from: selectedBasketItems)
 
         // Step 3: Get user email
         guard let email = userEmail else {
@@ -297,7 +309,7 @@ class PiggyCardsRepository: DashSpendRepository {
             let orderResponse: PiggyCardsOrderResponse = try await PiggyCardsAPI.shared.request(.createOrder(orderRequest))
             return try await processOrderResponse(
                 orderResponse,
-                selectedCard: selectedCardForDisplay,
+                summaryDiscountPercentage: summaryDiscountPercentage,
                 giftCards: giftCards,
                 fiatCurrency: fiatCurrency
             )
@@ -316,7 +328,7 @@ class PiggyCardsRepository: DashSpendRepository {
     }
 
     private func processOrderResponse(_ orderResponse: PiggyCardsOrderResponse,
-                                     selectedCard: PiggyCardsGiftcard,
+                                     summaryDiscountPercentage: Double,
                                      giftCards: [PiggyCardsGiftcard],
                                      fiatCurrency: String) async throws -> GiftCardInfo {
 
@@ -342,10 +354,25 @@ class PiggyCardsRepository: DashSpendRepository {
             paymentAddress: paymentInfo.address,
             amount: paymentInfo.amount,
             merchantName: giftCards.first?.name ?? "Unknown",
-            discountPercentage: calculateDisplayDiscount(selectedCard.discountPercentage),
+            discountPercentage: calculateDisplayDiscount(summaryDiscountPercentage),
             exchangeRate: exchangeRate,
             status: orderStatus.data.status
         )
+    }
+    
+    private func basketSummaryDiscount(from items: [SelectedBasketItem]) -> Double {
+        let totalFaceValue = items.reduce(0.0) { partialResult, item in
+            partialResult + (item.denomination * Double(item.quantity))
+        }
+        
+        guard totalFaceValue > 0 else { return 0 }
+        
+        let weightedDiscountSum = items.reduce(0.0) { partialResult, item in
+            let lineTotal = item.denomination * Double(item.quantity)
+            return partialResult + (item.card.discountPercentage * lineTotal)
+        }
+        
+        return weightedDiscountSum / totalFaceValue
     }
 
     /// Get order status to retrieve gift card details
