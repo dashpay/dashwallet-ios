@@ -485,7 +485,7 @@ struct GiftCardDetailsSheet: View {
         }) {
             if let txDetailRoute {
                 TXDetailVCWrapper(
-                    transaction: txDetailRoute.transaction,
+                    tx: txDetailRoute.tx,
                     navigateBack: $backNavigationRequested,
                     onDismissed: {
                         showBackButton = shouldShowBackButton
@@ -496,12 +496,12 @@ struct GiftCardDetailsSheet: View {
                     viewModel: viewModel,
                     selectedCardIndex: selectedCardIndex,
                     backNavigationRequested: $backNavigationRequested,
-                    onShowBackButton: { _ in
-                        showBackButton = false
+                    onShowBackButton: { show in
+                        showBackButton = show
                     },
                     onOpenTransaction: { transaction in
                         txDetailRoute = TxDetailRoute(
-                            transaction: transaction,
+                            tx: Transaction(transaction: transaction),
                             selectedCardIndex: selectedCardIndex
                         )
                         showBackButton = true
@@ -518,7 +518,7 @@ struct GiftCardDetailsSheet: View {
                     hasBeenPollingForLongTime: viewModel.uiState.hasBeenPollingForLongTime,
                     onSelectCard: { index in
                         selectedCardIndex = index
-                        showBackButton = false
+                        showBackButton = true
                         prefersLargeDetent = true
                     }
                 )
@@ -562,7 +562,11 @@ struct GiftCardDetailsSheet: View {
             }
         }
         .onChange(of: viewModel.uiState.cards.count) { cardsCount in
-            cacheCompactSheetHeightIfNeeded()
+            if cardsCount > 0 {
+                cacheCompactSheetHeightIfNeeded(force: true)
+            } else {
+                cacheCompactSheetHeightIfNeeded()
+            }
             if selectedCardIndex == nil, txDetailRoute == nil, cardsCount == 1 {
                 selectedCardIndex = 0
                 prefersLargeDetent = true
@@ -608,10 +612,14 @@ struct GiftCardDetailsSheet: View {
         return baseHeight + cappedListHeight
     }
 
-    private func cacheCompactSheetHeightIfNeeded() {
-        guard compactSheetHeight <= 0 else { return }
+    private func cacheCompactSheetHeightIfNeeded(force: Bool = false) {
         let candidate = calculatedSelectionSheetHeight
         guard candidate > 0 else { return }
+        if force {
+            compactSheetHeight = candidate
+            return
+        }
+        guard compactSheetHeight <= 0 else { return }
         compactSheetHeight = candidate
     }
 
@@ -649,7 +657,7 @@ struct GiftCardDetailsSheet: View {
 
 private struct TxDetailRoute: Identifiable {
     let id = UUID()
-    let transaction: DSTransaction
+    let tx: Transaction
     let selectedCardIndex: Int?
 }
 

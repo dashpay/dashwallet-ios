@@ -53,15 +53,15 @@ struct DashSpendPayIntro: View {
     private var eyeIcon: some View {
         ZStack {
             Circle()
-                .fill(Color.black1000Alpha5)
+                .fill(Color.gray300Alpha10)
                 .frame(width: Layout.eyeCircleSize, height: Layout.eyeCircleSize)
 
             Icon(name: .custom("eye_opened-icon", maxHeight: Layout.eyeIconSize))
-                .foregroundColor(Color(red: 0, green: 0, blue: 0))
+                .foregroundColor(.primaryText)
                 .opacity(balanceHidden ? 1 : 0)
 
             Icon(name: .custom("eye_closed-icon", maxHeight: Layout.eyeIconSize))
-                .foregroundColor(Color(red: 0, green: 0, blue: 0))
+                .foregroundColor(.primaryText)
                 .opacity(balanceHidden ? 0 : 1)
         }
         .compositingGroup()

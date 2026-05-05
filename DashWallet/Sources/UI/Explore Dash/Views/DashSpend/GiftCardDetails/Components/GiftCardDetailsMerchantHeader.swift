@@ -28,7 +28,7 @@ struct GiftCardDetailsMerchantHeader: View {
                 if let icon = merchantIcon {
                     Image(uiImage: icon)
                         .resizable()
-                        .transition(.fade(duration: 0.3))
+                        .transition(.opacity)
                         .scaledToFit()
                         .frame(width: 50, height: 50)
                         .clipShape(Circle())

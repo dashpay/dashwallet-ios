@@ -196,6 +196,11 @@ struct DashSpendFlexibleContent: View {
                             withAnimation(.easeInOut(duration: 0.3)) {
                                 segmentSelection = newValue
                             }
+                            if newValue == .single {
+                                // Restore single-mode amount-driven validation after returning
+                                // from multiple mode where total is derived from quantities.
+                                viewModel.updateTotalAmount(viewModel.input.decimal() ?? 0)
+                            }
                         }
                     ),
                     label: \.localizedTitle

@@ -52,7 +52,6 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private var merchantId: String = ""
     private var merchantUrl: String? = nil
     private var sourceId: String?
-    private var dbDenominationIsFixed: Bool = false
     private(set) var amount: Decimal = 0
     private(set) var savingsFraction: Decimal = 0.0
     @Published private(set) var isLoading = false
@@ -207,8 +206,6 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
         // Store initial savingsFraction
         savingsFraction = providerSavingsFraction
-        dbDenominationIsFixed = providerIsFixed
-
         // Seed initial UI state from local merchant data while remote details are loading.
         if let merchantData = merchant.merchant {
             let localDenominations = merchantData.denominations
@@ -527,40 +524,45 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                     }
                 }
 
-                // Compute final state on background, then publish on MainActor
+                // Compute final state on background, then publish on MainActor.
+                // Signed-in API response is the source of truth for PiggyCards denomination mode.
                 var finalFixed = false
                 var finalMin = Decimal(0)
                 var finalMax = Decimal(0)
                 var finalDenominations: [Int] = []
                 var finalSavings = Decimal(0)
 
-                if dbDenominationIsFixed {
-                    if !allFixedDenominations.isEmpty {
-                        finalFixed = true
-                        finalDenominations = allFixedDenominations.sorted()
-                    }
-                } else if hasRangeCard {
+                if hasRangeCard {
                     finalFixed = false
                     finalMin = Decimal(rangeMin > 0 ? rangeMin : 10)
                     finalMax = Decimal(rangeMax > 0 ? rangeMax : 500)
                     finalSavings = max(0, Decimal(rangeDiscount) - serviceFee) / 100
+                } else if !allFixedDenominations.isEmpty {
+                    finalFixed = true
+                    finalDenominations = allFixedDenominations.sorted()
+                    finalSavings = denomDiscounts.values.max() ?? 0
                 } else if let firstCard = giftCards.first,
                           let fixedValue = Int(firstCard.denomination.trimmingCharacters(in: .whitespaces)) {
                     finalFixed = true
                     finalDenominations = [fixedValue]
-                    let cardDiscount = max(0, Decimal(firstCard.discountPercentage) - serviceFee) / 100
-                    denomDiscounts[fixedValue] = cardDiscount
-                    finalSavings = cardDiscount
+                    finalSavings = max(0, Decimal(firstCard.discountPercentage) - serviceFee) / 100
                 }
 
                 await MainActor.run {
-                    self.denominationDiscounts = denomDiscounts
-                    self.denominationInventory = denomInventory
+                    self.denominationDiscounts = finalFixed ? denomDiscounts : [:]
+                    self.denominationInventory = finalFixed ? denomInventory : [:]
                     self.isFixedDenomination = finalFixed
                     self.minimumAmount = finalMin
                     self.maximumAmount = finalMax
                     self.denominations = finalDenominations
-                    if finalSavings > 0 { self.savingsFraction = finalSavings }
+                    self.savingsFraction = finalSavings
+                    if finalFixed {
+                        if let selected = self.selectedDenomination, !finalDenominations.contains(selected) {
+                            self.selectedDenomination = nil
+                        }
+                    } else {
+                        self.selectedDenomination = nil
+                    }
                 }
             #endif
             }
@@ -673,14 +675,18 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
 
     private func buildPiggyOrderNote(orderId: String, selectedQuantities: [Decimal: Int]) -> String {
-        let expandedAmounts = selectedQuantities
+        var expandedAmounts = selectedQuantities
             .filter { $0.value > 0 }
             .sorted { $0.key < $1.key }
             .flatMap { entry in Array(repeating: entry.key.description, count: entry.value) }
 
+        if expandedAmounts.isEmpty {
+            expandedAmounts = [amount.description]
+        }
+
         let metadata = GiftCardOrderMetadata(
             orderId: orderId,
-            cardAmounts: expandedAmounts.isEmpty ? nil : expandedAmounts
+            cardAmounts: expandedAmounts
         )
 
         guard
