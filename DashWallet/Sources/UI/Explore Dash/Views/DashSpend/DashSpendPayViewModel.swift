@@ -573,8 +573,17 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 self.checkAmountForErrors()
             }
         } catch {
+            DSLogger.log("DashSpend updateMerchantInfo failed for provider \(provider.displayName): \(error.localizedDescription)")
+
             await MainActor.run {
                 self.isLoading = false
+                if let dashError = error as? DashSpendError {
+                    self.error = dashError
+                } else {
+                    self.error = DashSpendError.customError(
+                        NSLocalizedString("Unable to load merchant details. Please try again.", comment: "DashSpend")
+                    )
+                }
             }
         }
     }

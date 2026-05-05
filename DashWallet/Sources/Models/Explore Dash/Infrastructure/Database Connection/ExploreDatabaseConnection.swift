@@ -148,48 +148,86 @@ class ExploreDatabaseConnection {
         addPiggyCardsTestMerchants(db: db)
     }
 
+    private struct PiggyCardsTestMerchant {
+        let merchantId: String
+        let name: String
+        let sourceId: String
+        let merchantSavings: Int
+        let merchantDenomType: String
+        let providerSavings: Int
+        let providerDenomType: String
+        let logo: String
+        let website: String
+        let territory: String?
+        let city: String?
+    }
+
     // Matches Android PiggyCardsTestMerchants data
-    private let piggyCardsTestMerchants: [(
-        merchantId: String, name: String, sourceId: String,
-        merchantSavings: Int, merchantDenomType: String,
-        providerSavings: Int, providerDenomType: String,
-        logo: String, website: String,
-        territory: String?, city: String?
-    )] = [
-        (
-            "2e393eee-4508-47fe-954d-66209333fc96",
-            "Piggy Cards Test Merchant",
-            "177", -250, "Fixed", 100, "fixed",
-            "https://piggy.cards/image/catalog/piggycards/logo2023_mobile.png",
-            "https://piggy.cards", "MA", "Boston"
+    private let piggyCardsTestMerchants: [PiggyCardsTestMerchant] = [
+        PiggyCardsTestMerchant(
+            merchantId: "2e393eee-4508-47fe-954d-66209333fc96",
+            name: "Piggy Cards Test Merchant",
+            sourceId: "177",
+            merchantSavings: -250,
+            merchantDenomType: "Fixed",
+            providerSavings: 100,
+            providerDenomType: "fixed",
+            logo: "https://piggy.cards/image/catalog/piggycards/logo2023_mobile.png",
+            website: "https://piggy.cards",
+            territory: "MA",
+            city: "Boston"
         ),
-        (
-            "2e393fff-4508-47fe-954d-66209333fc96",
-            "Piggy Cards Flexible Test Merchant",
-            "177", -250, "min-max", -250, "min-max",
-            "https://piggy.cards/image/catalog/piggycards/logo2023_mobile.png",
-            "https://piggy.cards", "MA", "Boston"
+        PiggyCardsTestMerchant(
+            merchantId: "2e393fff-4508-47fe-954d-66209333fc96",
+            name: "Piggy Cards Flexible Test Merchant",
+            sourceId: "177",
+            merchantSavings: -250,
+            merchantDenomType: "min-max",
+            providerSavings: -250,
+            providerDenomType: "min-max",
+            logo: "https://piggy.cards/image/catalog/piggycards/logo2023_mobile.png",
+            website: "https://piggy.cards",
+            territory: "MA",
+            city: "Boston"
         ),
-        (
-            "2e393aaa-4508-47fe-954d-66209333fc96",
-            "Home Depot [Flexible]",
-            "74", 100, "min-max", -50, "min-max",
-            "https://piggy.cards/image/catalog/piggycards/Home_Depot_Copy.jpg",
-            "https://www.homedepot.com", nil, nil
+        PiggyCardsTestMerchant(
+            merchantId: "2e393aaa-4508-47fe-954d-66209333fc96",
+            name: "Home Depot [Flexible]",
+            sourceId: "74",
+            merchantSavings: 100,
+            merchantDenomType: "min-max",
+            providerSavings: -50,
+            providerDenomType: "min-max",
+            logo: "https://piggy.cards/image/catalog/piggycards/Home_Depot_Copy.jpg",
+            website: "https://www.homedepot.com",
+            territory: nil,
+            city: nil
         ),
-        (
-            "2e393ddd-4508-47fe-954d-66209333fc96",
-            "Apple [Flexible]",
-            "13", 100, "min-max", 100, "min-max",
-            "https://piggy.cards/image/catalog/incenti/8aaa3d5d-logo.png",
-            "https://www.apple.com", nil, nil
+        PiggyCardsTestMerchant(
+            merchantId: "2e393ddd-4508-47fe-954d-66209333fc96",
+            name: "Apple [Flexible]",
+            sourceId: "13",
+            merchantSavings: 100,
+            merchantDenomType: "min-max",
+            providerSavings: 100,
+            providerDenomType: "min-max",
+            logo: "https://piggy.cards/image/catalog/incenti/8aaa3d5d-logo.png",
+            website: "https://www.apple.com",
+            territory: nil,
+            city: nil
         ),
-        (
-            "2e393ccc-4508-47fe-954d-66209333fc96",
-            "Dominos [Flexible]",
-            "45", 100, "min-max", 150, "min-max",
-            "https://piggy.cards/image/catalog/incenti/68ea431c-logo.png",
-            "https://www.dominos.com", nil, nil
+        PiggyCardsTestMerchant(
+            merchantId: "2e393ccc-4508-47fe-954d-66209333fc96",
+            name: "Dominos [Flexible]",
+            sourceId: "45",
+            merchantSavings: 100,
+            merchantDenomType: "min-max",
+            providerSavings: 150,
+            providerDenomType: "min-max",
+            logo: "https://piggy.cards/image/catalog/incenti/68ea431c-logo.png",
+            website: "https://www.dominos.com",
+            territory: nil,
+            city: nil
         ),
     ]
 
@@ -205,8 +243,22 @@ class ExploreDatabaseConnection {
                 try db.run("DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_BEFORE_DELETE")
 
                 // Delete existing test merchants (matches Android delete+re-insert pattern)
-                try db.run("DELETE FROM gift_card_providers WHERE merchantId IN (\(allIds))")
-                try db.run("DELETE FROM merchant WHERE merchantId IN (\(allIds))")
+                try db.run("""
+                    DELETE FROM merchant_fts
+                    WHERE docid IN (
+                        SELECT rowid
+                        FROM merchant
+                        WHERE source = 'PiggyCards' AND merchantId IN (\(allIds))
+                    )
+                """)
+                try db.run("""
+                    DELETE FROM gift_card_providers
+                    WHERE provider = 'PiggyCards' AND merchantId IN (\(allIds))
+                """)
+                try db.run("""
+                    DELETE FROM merchant
+                    WHERE source = 'PiggyCards' AND merchantId IN (\(allIds))
+                """)
 
                 // Insert all test merchants
                 for m in piggyCardsTestMerchants {
