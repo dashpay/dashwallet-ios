@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2025 Dash Core Group. All rights reserved.
 //
@@ -30,9 +30,17 @@ struct DashSpendPayScreen: View {
     @State private var showCustomErrorDialog = false
     @State private var errorMessage = ""
     @State private var errorTitle = ""
+    @State private var quantities: [Decimal: Int] = [:]
+    @State private var confirmationQuantities: [Decimal: Int] = [:]
+    @State private var confirmationOriginalPrice: Decimal = 0
     let onPurchaseSuccess: ((Data) -> Void)?
-    
-    init(merchant: ExplorePointOfUse, provider: GiftCardProvider = .ctx, justAuthenticated: Bool = false, onPurchaseSuccess: ((Data) -> Void)? = nil) {
+
+    init(
+        merchant: ExplorePointOfUse,
+        provider: GiftCardProvider = .ctx,
+        justAuthenticated: Bool = false,
+        onPurchaseSuccess: ((Data) -> Void)? = nil
+    ) {
         self.merchant = merchant
         self.provider = provider
         self._viewModel = .init(wrappedValue: DashSpendPayViewModel(merchant: merchant, provider: provider))
@@ -40,210 +48,61 @@ struct DashSpendPayScreen: View {
         self.showConfirmToast = false
         self.onPurchaseSuccess = onPurchaseSuccess
     }
-    
+
+    fileprivate init(previewViewModel: DashSpendPayViewModel) {
+        self.merchant = ExplorePointOfUse(
+            id: 0,
+            name: "",
+            category: .unknown,
+            active: true,
+            city: nil,
+            territory: nil,
+            address1: nil,
+            address2: nil,
+            address3: nil,
+            address4: nil,
+            latitude: nil,
+            longitude: nil,
+            website: nil,
+            phone: nil,
+            logoLocation: nil,
+            coverImage: nil,
+            source: nil
+        )
+        self.provider = .ctx
+        self._viewModel = .init(wrappedValue: previewViewModel)
+        self.justAuthenticated = false
+        self.showConfirmToast = false
+        self.onPurchaseSuccess = nil
+    }
+
     var body: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
-                HStack {
-                    Button(action: {
-                        presentationMode.wrappedValue.dismiss()
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.primaryText)
-                            .padding(10)
-                    }
-                    
-                    Spacer()
+                NavBarBack {
+                    presentationMode.wrappedValue.dismiss()
                 }
-                .padding(.top, 5)
-                .padding(.horizontal, 10)
-                
-                SendIntro(
-                    title: NSLocalizedString("Buy gift card", comment: "DashSpend"),
-                    preposition: NSLocalizedString("at", comment: "DashSpend"),
-                    destination: viewModel.merchantTitle,
-                    dashBalance: viewModel.isMixing ? viewModel.coinJoinBalance : viewModel.walletBalance,
-                    balanceLabel: (viewModel.isMixing ? NSLocalizedString("Mixed balance", comment: "") : NSLocalizedString("Balance", comment: "")) + ":",
-                    avatarView: {
-                        WebImage(url: URL(string: viewModel.merchantIconUrl))
-                            .resizable()
-                            .indicator(.activity)
-                            .transition(.fade(duration: 0.3))
-                            .scaledToFit()
-                            .clipShape(Circle())
-                    }
-                ).padding(.horizontal, 20)
-                
-                Spacer()
-                
-                Text(viewModel.currencySymbol + viewModel.input)
-                    .font(.largeTitle)
-                    .foregroundColor(.primaryText)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-                
-                HStack {
-                    if viewModel.showLimits {
-                        Text(viewModel.minimumLimitMessage)
-                            .font(.subhead)
-                            .foregroundColor(Color.primaryText)
-                            .padding(.leading, 20)
-                        Spacer()
-                    }
-                    
-                    if let error = viewModel.error {
-                        Text(error.localizedDescription)
-                            .font(.subhead)
-                            .foregroundColor(Color.systemRed)
-                            .multilineTextAlignment(.center)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .padding(.horizontal, 10)
-                    } else if viewModel.showCost {
-                        Text(viewModel.costMessage)
-                            .font(.subhead)
-                            .foregroundColor(Color.primaryText)
-                            .multilineTextAlignment(.center)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .padding(.horizontal, 10)
-                    }
-                    
-                    if viewModel.showLimits {
-                        Spacer()
-                        Text(viewModel.maximumLimitMessage)
-                            .font(.subhead)
-                            .foregroundColor(Color.primaryText)
-                            .padding(.trailing, 20)
-                    }
 
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: 20)
-                .padding(.top, 20)
-                .padding(.bottom, 10)
-                
-                Spacer()
-
-                // Show loading state while fetching merchant info to prevent UI flicker
-                if viewModel.isLoading && !viewModel.hasValidLimits && viewModel.denominations.isEmpty {
-                    VStack(spacing: 20) {
-                        Text(NSLocalizedString("Loading gift card options...", comment: "DashSpend"))
-                            .font(.subhead)
-                            .foregroundColor(.secondaryText)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 320)
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 30)
-                    .background(Color.secondaryBackground)
-                    .cornerRadius(20)
-                } else if viewModel.isFixedDenomination {
-                    MerchantDenominations(
-                        denominations: viewModel.denominations,
-                        selectedDenomination: viewModel.selectedDenomination,
-                        actionEnabled: viewModel.selectedDenomination != nil && viewModel.error == nil && !viewModel.isLoading,
-                        onDenominationSelected: { denom in
-                            viewModel.selectedDenomination = denom
-                        },
-                        actionHandler: {
-                            if !viewModel.isUserSignedIn {
-                                showSignInError()
-                                return
-                            }
-                            
-                            showConfirmationDialog = true
-                        }
+                if viewModel.isFixedDenomination {
+                    DashSpendFixedContent(
+                        viewModel: viewModel,
+                        quantities: $quantities,
+                        onAction: handlePayAction
                     )
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 20)
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 30)
-                    .background(Color.secondaryBackground)
-                    .cornerRadius(20)
                 } else {
-                    NumericKeyboardView(
-                        value: $viewModel.input,
-                        showDecimalSeparator: true,
-                        actionButtonText: NSLocalizedString("Preview", comment: ""),
-                        actionEnabled: viewModel.error == nil && !viewModel.showLimits && !viewModel.isLoading && viewModel.hasValidLimits,
-                        inProgress: viewModel.isProcessingPayment,
-                        actionHandler: {
-                            if !viewModel.isUserSignedIn {
-                                showSignInError()
-                                return
-                            }
-                            
-                            showConfirmationDialog = true
-                        }
+                    DashSpendFlexibleContent(
+                        viewModel: viewModel,
+                        quantities: $quantities,
+                        onAction: handlePayAction
                     )
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 320)
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 30)
-                    .background(Color.secondaryBackground)
-                    .cornerRadius(20)
                 }
             }
-            
-            if justAuthenticated {
-                ToastView(
-                    text: NSLocalizedString("Logged in to DashSpend account", comment: "DashSpend"),
-                    icon: .system("checkmark.circle")
-                )
-                .frame(height: 20)
-                .padding(.bottom, 30)
-            }
-            
-            if showConfirmToast {
-                ToastView(
-                    text: NSLocalizedString("Gift card purchase successful", comment: "DashSpend")
-                )
-                .frame(height: 20)
-                .padding(.bottom, 30)
-            }
-            
-            if showErrorDialog {
-                ModalDialog(
-                    style: .error,
-                    icon: .system("exclamationmark.triangle.fill"),
-                    heading: errorTitle,
-                    textBlock1: errorMessage,
-                    positiveButtonText: NSLocalizedString("OK", comment: ""),
-                    positiveButtonAction: {
-                        showErrorDialog = false
-                    }
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.black.opacity(0.7))
-                .edgesIgnoringSafeArea(.all)
-            }
-            
-            if showCustomErrorDialog {
-                ModalDialog(
-                    style: .error,
-                    icon: .system("exclamationmark.triangle.fill"),
-                    heading: errorTitle,
-                    textBlock1: errorMessage,
-                    positiveButtonText: NSLocalizedString("Close", comment: ""),
-                    positiveButtonAction: {
-                        showCustomErrorDialog = false
-                    },
-                    negativeButtonText: viewModel.contactSupportButtonText,
-                    negativeButtonAction: {
-                        showCustomErrorDialog = false
-                        viewModel.contactSupport()
-                    }
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.black.opacity(0.7))
-                .edgesIgnoringSafeArea(.all)
-            }
+            overlays
         }
-        .ignoresSafeArea(.all, edges: .bottom)
         .background(Color.primaryBackground)
         .onAppear {
             viewModel.subscribeToUpdates()
-            
+
             if justAuthenticated {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                     justAuthenticated = false
@@ -259,39 +118,99 @@ struct DashSpendPayScreen: View {
             }
         }
         .sheet(isPresented: $showConfirmationDialog) {
-            let dialog = BottomSheet(
-                title: NSLocalizedString("Confirm", comment: "DashSpend"),
-                showBackButton: Binding<Bool>.constant(false)
-            ) {
-                DashSpendConfirmationDialog(
-                    amount: viewModel.input,
-                    merchantName: viewModel.merchantTitle,
-                    merchantIconUrl: viewModel.merchantIconUrl,
-                    originalPrice: viewModel.amount,
-                    discount: viewModel.savingsFraction,
-                    onConfirm: {
-                        showConfirmationDialog = false
-                        purchaseGiftCard()
-                    },
-                    onCancel: {
-                        showConfirmationDialog = false
-                    }
-                )
-            }.background(Color.primaryBackground)
-            
-            if #available(iOS 16.0, *) {
-                dialog.presentationDetents([.height(500)])
-            } else {
-                dialog
-            }
+            DashSpendPayConfirmationSheet(
+                merchantName: viewModel.merchantTitle,
+                merchantIconUrl: viewModel.merchantIconUrl,
+                originalPrice: confirmationOriginalPrice,
+                discount: viewModel.savingsFraction,
+                quantities: confirmationQuantities.isEmpty ? nil : confirmationQuantities,
+                onConfirm: {
+                    showConfirmationDialog = false
+                    purchaseGiftCard()
+                },
+                onCancel: {
+                    showConfirmationDialog = false
+                }
+            )
         }
     }
-    
-    private func purchaseGiftCard() {
 
+    @ViewBuilder
+    private var overlays: some View {
+        if justAuthenticated {
+            ToastView(
+                text: NSLocalizedString("Logged in to DashSpend account", comment: "DashSpend"),
+                icon: .system("checkmark.circle")
+            )
+            .frame(height: 20)
+            .padding(.bottom, 30)
+        }
+
+        if showConfirmToast {
+            ToastView(text: NSLocalizedString("Gift card purchase successful", comment: "DashSpend"))
+                .frame(height: 20)
+                .padding(.bottom, 30)
+        }
+
+        if showErrorDialog {
+            ModalDialog(
+                style: .error,
+                icon: .system("exclamationmark.triangle.fill"),
+                heading: errorTitle,
+                textBlock1: errorMessage,
+                positiveButtonText: NSLocalizedString("OK", comment: ""),
+                positiveButtonAction: { showErrorDialog = false }
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.black.opacity(0.7))
+            .edgesIgnoringSafeArea(.all)
+        }
+
+        if showCustomErrorDialog {
+            ModalDialog(
+                style: .error,
+                icon: .system("exclamationmark.triangle.fill"),
+                heading: errorTitle,
+                textBlock1: errorMessage,
+                positiveButtonText: NSLocalizedString("Close", comment: ""),
+                positiveButtonAction: { showCustomErrorDialog = false },
+                negativeButtonText: viewModel.contactSupportButtonText,
+                negativeButtonAction: {
+                    showCustomErrorDialog = false
+                    viewModel.contactSupport()
+                }
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.black.opacity(0.7))
+            .edgesIgnoringSafeArea(.all)
+        }
+    }
+
+    private func handlePayAction() {
+        if !viewModel.isUserSignedIn { showSignInError(); return }
+        let snapshotQuantities = quantities.filter { $0.value > 0 }
+        let snapshotTotal = snapshotQuantities.reduce(Decimal(0)) { $0 + $1.key * Decimal($1.value) }
+        let snapshotSingleAmount = viewModel.input.decimal() ?? viewModel.amount
+
+        confirmationQuantities = snapshotQuantities
+        confirmationOriginalPrice = snapshotQuantities.isEmpty ? snapshotSingleAmount : snapshotTotal
+
+        // Keep viewModel amount in sync before presenting the dialog to avoid delayed UI updates.
+        if snapshotQuantities.isEmpty {
+            viewModel.updateTotalAmount(snapshotSingleAmount)
+        } else {
+            viewModel.updateTotalAmount(snapshotTotal)
+        }
+
+        DispatchQueue.main.async {
+            showConfirmationDialog = true
+        }
+    }
+
+    private func purchaseGiftCard() {
         Task {
             do {
-                let txId = try await viewModel.purchaseGiftCardAndPay()
+                let txId = try await viewModel.purchaseGiftCardAndPay(selectedQuantities: confirmationQuantities)
                 showConfirmationDialog = false
                 presentationMode.wrappedValue.dismiss()
                 onPurchaseSuccess?(txId)
@@ -299,27 +218,169 @@ struct DashSpendPayScreen: View {
                 showConfirmationDialog = false
                 errorTitle = NSLocalizedString("Purchase Failed", comment: "DashSpend")
                 errorMessage = error.errorDescription ?? NSLocalizedString("Error", comment: "")
-                
+
                 if case .customError = error {
                     showCustomErrorDialog = true
                 } else {
                     showErrorDialog = true
                 }
-                
+
             } catch {
                 showConfirmationDialog = false
                 errorTitle = !error.localizedDescription.isEmpty ? error.localizedDescription : NSLocalizedString("Error", comment: "")
                 errorMessage = error.localizedDescription
                 showErrorDialog = true
-                
+
                 DSLogger.log("Gift card purchase failed with error: \(error)")
             }
         }
     }
-    
+
     private func showSignInError() {
         errorTitle = NSLocalizedString("Sign in required", comment: "Alert title")
         errorMessage = NSLocalizedString("You need to sign in to DashSpend to purchase gift cards.", comment: "DashSpend")
         showErrorDialog = true
+    }
+}
+
+private struct DashSpendPayConfirmationSheet: View {
+    let merchantName: String
+    let merchantIconUrl: String
+    let originalPrice: Decimal
+    let discount: Decimal
+    let quantities: [Decimal: Int]?
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
+
+    @State private var contentHeight: CGFloat = 0
+
+    @ViewBuilder
+    var body: some View {
+        let dialog = DashSpendConfirmationDialog(
+            merchantName: merchantName,
+            merchantIconUrl: merchantIconUrl,
+            originalPrice: originalPrice,
+            discount: discount,
+            quantities: quantities,
+            onConfirm: onConfirm,
+            onCancel: onCancel,
+            contentHeight: $contentHeight
+        )
+
+        if #available(iOS 16.4, *) {
+            dialog
+                .presentationBackground(Color.primaryBackground)
+                .presentationDetents([.height(contentHeight > 0 ? contentHeight : 550)])
+                .presentationCornerRadius(32)
+                .presentationDragIndicator(.hidden)
+        } else {
+            dialog
+        }
+    }
+}
+
+#Preview("Flexible amount") {
+    DashSpendPayScreen(previewViewModel: DashSpendPayPreviewViewModel())
+}
+
+#Preview("Fixed amount") {
+    DashSpendPayScreen(previewViewModel: DashSpendPayFixedPreviewViewModel())
+}
+
+private class DashSpendPayFixedPreviewViewModel: DashSpendPayViewModel {
+    override var isMixing: Bool { false }
+    override func subscribeToUpdates() {}
+    override func unsubscribeFromAll() {}
+
+    init() {
+        let merchant = ExplorePointOfUse(
+            id: 2,
+            name: "Domino's",
+            category: .merchant(
+                ExplorePointOfUse.Merchant(
+                    merchantId: "dominos-123",
+                    paymentMethod: .giftCard,
+                    type: .online,
+                    deeplink: nil,
+                    savingsBasisPoints: 500,
+                    denominationsType: "fixed",
+                    denominations: [],
+                    redeemType: "online",
+                    giftCardProviders: [
+                        ExplorePointOfUse.Merchant.GiftCardProviderInfo(
+                            providerId: "ctx", savingsPercentage: 500,
+                            denominationsType: "fixed", sourceId: nil
+                        )
+                    ]
+                )
+            ),
+            active: true,
+            city: nil,
+            territory: nil,
+            address1: nil,
+            address2: nil,
+            address3: nil,
+            address4: nil,
+            latitude: nil,
+            longitude: nil,
+            website: nil,
+            phone: nil,
+            logoLocation: nil,
+            coverImage: nil,
+            source: "ctx"
+        )
+        super.init(merchant: merchant, provider: .ctx)
+        merchantTitle = "Domino's"
+        isFixedDenomination = true
+        denominations = [5, 25, 50, 100]
+    }
+}
+
+private class DashSpendPayPreviewViewModel: DashSpendPayViewModel {
+    override var isMixing: Bool { false }
+    override func subscribeToUpdates() {}
+    override func unsubscribeFromAll() {}
+
+    init() {
+        let merchant = ExplorePointOfUse(
+            id: 1,
+            name: "Amazon",
+            category: .merchant(
+                ExplorePointOfUse.Merchant(
+                    merchantId: "amazon-123",
+                    paymentMethod: .giftCard,
+                    type: .online,
+                    deeplink: nil,
+                    savingsBasisPoints: 1000,
+                    denominationsType: "range",
+                    denominations: [],
+                    redeemType: "online",
+                    giftCardProviders: [
+                        ExplorePointOfUse.Merchant.GiftCardProviderInfo(
+                            providerId: "ctx", savingsPercentage: 1000,
+                            denominationsType: "range", sourceId: nil
+                        )
+                    ]
+                )
+            ),
+            active: true,
+            city: nil,
+            territory: nil,
+            address1: nil,
+            address2: nil,
+            address3: nil,
+            address4: nil,
+            latitude: nil,
+            longitude: nil,
+            website: nil,
+            phone: nil,
+            logoLocation: nil,
+            coverImage: nil,
+            source: "ctx"
+        )
+        super.init(merchant: merchant, provider: .ctx)
+        merchantTitle = "Amazon"
+        minimumAmount = 5
+        maximumAmount = 100
     }
 }

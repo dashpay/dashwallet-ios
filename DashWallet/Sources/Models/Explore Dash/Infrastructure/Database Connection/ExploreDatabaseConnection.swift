@@ -138,89 +138,109 @@ class ExploreDatabaseConnection {
     }
 
     private func insertTestMerchant() {
-        print("🎯 ExploreDatabaseConnection: Adding test merchant...")
+        print("🎯 ExploreDatabaseConnection: Adding test merchants...")
 
         guard let db = self.db else {
             print("🎯 ExploreDatabaseConnection: Database not ready yet")
             return
         }
 
-        // Add PiggyCards test merchant
-        addPiggyCardsTestMerchant(db: db)
+        addPiggyCardsTestMerchants(db: db)
     }
 
-    private func addPiggyCardsTestMerchant(db: Connection) {
+    // Matches Android PiggyCardsTestMerchants data
+    private let piggyCardsTestMerchants: [(
+        merchantId: String, name: String, sourceId: String,
+        merchantSavings: Int, merchantDenomType: String,
+        providerSavings: Int, providerDenomType: String,
+        logo: String, website: String,
+        territory: String?, city: String?
+    )] = [
+        (
+            "2e393eee-4508-47fe-954d-66209333fc96",
+            "Piggy Cards Test Merchant",
+            "177", -250, "Fixed", 100, "fixed",
+            "https://piggy.cards/image/catalog/piggycards/logo2023_mobile.png",
+            "https://piggy.cards", "MA", "Boston"
+        ),
+        (
+            "2e393fff-4508-47fe-954d-66209333fc96",
+            "Piggy Cards Flexible Test Merchant",
+            "177", -250, "min-max", -250, "min-max",
+            "https://piggy.cards/image/catalog/piggycards/logo2023_mobile.png",
+            "https://piggy.cards", "MA", "Boston"
+        ),
+        (
+            "2e393aaa-4508-47fe-954d-66209333fc96",
+            "Home Depot [Flexible]",
+            "74", 100, "min-max", -50, "min-max",
+            "https://piggy.cards/image/catalog/piggycards/Home_Depot_Copy.jpg",
+            "https://www.homedepot.com", nil, nil
+        ),
+        (
+            "2e393ddd-4508-47fe-954d-66209333fc96",
+            "Apple [Flexible]",
+            "13", 100, "min-max", 100, "min-max",
+            "https://piggy.cards/image/catalog/incenti/8aaa3d5d-logo.png",
+            "https://www.apple.com", nil, nil
+        ),
+        (
+            "2e393ccc-4508-47fe-954d-66209333fc96",
+            "Dominos [Flexible]",
+            "45", 100, "min-max", 150, "min-max",
+            "https://piggy.cards/image/catalog/incenti/68ea431c-logo.png",
+            "https://www.dominos.com", nil, nil
+        ),
+    ]
+
+    private func addPiggyCardsTestMerchants(db: Connection) {
         do {
-            let testMerchantId = "2e393eee-4508-47fe-954d-66209333fc96"
+            let allIds = piggyCardsTestMerchants.map { "'\($0.merchantId)'" }.joined(separator: ", ")
 
-            // Check if merchant already exists
-            let checkQuery = "SELECT COUNT(*) FROM merchant WHERE merchantId = '\(testMerchantId)'"
-            let count = try db.scalar(checkQuery) as? Int64 ?? 0
-
-            if count > 0 {
-                print("🎯 PiggyCards test merchant already exists, skipping")
-                return
-            }
-
-            print("🎯 Adding PiggyCards test merchant...")
-
-            // Wrap all FTS trigger operations in a transaction for atomicity
             try db.transaction {
-                // Drop FTS triggers temporarily
+                // Drop FTS triggers to allow merchant table modifications
                 try db.run("DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_AFTER_INSERT")
                 try db.run("DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_AFTER_UPDATE")
                 try db.run("DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_BEFORE_UPDATE")
                 try db.run("DROP TRIGGER IF EXISTS room_fts_content_sync_merchant_fts_BEFORE_DELETE")
 
-                // Insert merchant with unique prefix
-                try db.run("""
-                    INSERT INTO merchant (
-                        merchantId, name, source, sourceId, logoLocation, active, paymentMethod,
-                        savingsPercentage, denominationsType, type, redeemType, territory, city,
-                        website, addDate, updateDate
-                    ) VALUES (
-                        '2e393eee-4508-47fe-954d-66209333fc96',
-                        'Piggy Cards Test Merchant',
-                        'PiggyCards',
-                        '177',
-                        'https://piggy.cards/image/catalog/piggycards/logo2023_mobile.png',
-                        1,
-                        'gift card',
-                        1000,
-                        'Fixed',
-                        'online',
-                        'online',
-                        'MA',
-                        'Boston',
-                        'https://piggy.cards',
-                        datetime('now'),
-                        datetime('now')
-                    )
-                """)
+                // Delete existing test merchants (matches Android delete+re-insert pattern)
+                try db.run("DELETE FROM gift_card_providers WHERE merchantId IN (\(allIds))")
+                try db.run("DELETE FROM merchant WHERE merchantId IN (\(allIds))")
 
-                let insertedRowId = db.lastInsertRowid
+                // Insert all test merchants
+                for m in piggyCardsTestMerchants {
+                    let territory = "'\(m.territory ?? "")'"
+                    let city = "'\(m.city ?? "")'"
 
-                // Insert gift_card_providers record
-                try db.run("""
-                    INSERT INTO gift_card_providers (
-                        merchantId, provider, sourceId, savingsPercentage,
-                        denominationsType, active, redeemType
-                    ) VALUES (
-                        '2e393eee-4508-47fe-954d-66209333fc96',
-                        'PiggyCards',
-                        '177',
-                        10,
-                        'fixed',
-                        1,
-                        'online'
-                    )
-                """)
+                    try db.run("""
+                        INSERT INTO merchant (
+                            merchantId, name, source, sourceId, logoLocation, active, paymentMethod,
+                            savingsPercentage, denominationsType, type, redeemType, territory, city,
+                            website, addDate, updateDate
+                        ) VALUES (
+                            '\(m.merchantId)', '\(m.name)', 'PiggyCards', '\(m.sourceId)',
+                            '\(m.logo)', 1, 'gift card', \(m.merchantSavings),
+                            '\(m.merchantDenomType)', 'online', 'online',
+                            \(territory), \(city), '\(m.website)',
+                            datetime('now'), datetime('now')
+                        )
+                    """)
 
-                // Update FTS index
-                try db.run("""
-                    INSERT INTO merchant_fts(docid, name)
-                    VALUES (\(insertedRowId), 'Piggy Cards Test Merchant')
-                """)
+                    let rowId = db.lastInsertRowid
+
+                    try db.run("""
+                        INSERT INTO gift_card_providers (
+                            merchantId, provider, sourceId, savingsPercentage,
+                            denominationsType, active, redeemType
+                        ) VALUES (
+                            '\(m.merchantId)', 'PiggyCards', '\(m.sourceId)',
+                            \(m.providerSavings), '\(m.providerDenomType)', 1, 'online'
+                        )
+                    """)
+
+                    try db.run("INSERT INTO merchant_fts(docid, name) VALUES (\(rowId), '\(m.name)')")
+                }
 
                 // Recreate FTS triggers
                 try db.run("""
@@ -229,21 +249,18 @@ class ExploreDatabaseConnection {
                         DELETE FROM merchant_fts WHERE docid=OLD.rowid;
                     END
                 """)
-
                 try db.run("""
                     CREATE TRIGGER room_fts_content_sync_merchant_fts_BEFORE_DELETE
                     BEFORE DELETE ON merchant BEGIN
                         DELETE FROM merchant_fts WHERE docid=OLD.rowid;
                     END
                 """)
-
                 try db.run("""
                     CREATE TRIGGER room_fts_content_sync_merchant_fts_AFTER_UPDATE
                     AFTER UPDATE ON merchant BEGIN
                         INSERT INTO merchant_fts(docid, name) VALUES (NEW.rowid, NEW.name);
                     END
                 """)
-
                 try db.run("""
                     CREATE TRIGGER room_fts_content_sync_merchant_fts_AFTER_INSERT
                     AFTER INSERT ON merchant BEGIN
@@ -252,10 +269,9 @@ class ExploreDatabaseConnection {
                 """)
             }
 
-            print("✅ PiggyCards test merchant added successfully")
-
+            print("✅ PiggyCards test merchants added successfully (\(piggyCardsTestMerchants.count) merchants)")
         } catch {
-            print("🎯 Error adding PiggyCards test merchant: \(error)")
+            print("🎯 Error adding PiggyCards test merchants: \(error)")
         }
     }
     #endif

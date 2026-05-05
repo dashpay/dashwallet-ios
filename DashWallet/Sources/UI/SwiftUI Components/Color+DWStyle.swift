@@ -59,7 +59,7 @@ extension Color {
     static var systemRed: Color {
         Color("SystemRedColor")
     }
-    
+
     static var systemYellow: Color {
         Color("SystemYellowColor")
     }
@@ -90,8 +90,20 @@ extension Color {
         Color("BlackAlpha40")
     }
 
+    static var black1000Alpha5: Color {
+        Color("Black1000Alpha5")
+    }
+
+    static var black1000Alpha8: Color {
+        Color("Black1000Alpha8")
+    }
+
     static var black1000Alpha30: Color {
         Color("Black1000Alpha30")
+    }
+
+    static var black1000Alpha40: Color {
+        Color("Black1000Alpha40")
     }
 
     static var black1000Alpha50: Color {

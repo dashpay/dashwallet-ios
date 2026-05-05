@@ -181,9 +181,32 @@ class PiggyCardsRepository: DashSpendRepository {
     
     // MARK: - Gift Card Methods
 
+    struct OrderLineItem {
+        let denomination: Double
+        let quantity: Int
+    }
+
     /// Create an order for a gift card purchase
     /// This is the main flow for PiggyCards purchases
     func orderGiftCard(merchantId: String, fiatAmount: Double, fiatCurrency: String = "USD", cryptoCurrency: String = "DASH") async throws -> GiftCardInfo {
+        let lineItems = [OrderLineItem(denomination: fiatAmount, quantity: 1)]
+        return try await orderGiftCards(
+            merchantId: merchantId,
+            lineItems: lineItems,
+            fiatCurrency: fiatCurrency,
+            cryptoCurrency: cryptoCurrency
+        )
+    }
+
+    func orderGiftCards(
+        merchantId: String,
+        lineItems: [OrderLineItem],
+        fiatCurrency: String = "USD",
+        cryptoCurrency: String = "DASH"
+    ) async throws -> GiftCardInfo {
+        guard !lineItems.isEmpty else {
+            throw DashSpendError.invalidAmount
+        }
 
         // Step 1: Get cached gift cards or fetch them
         guard let giftCards = PiggyCardsCache.shared.getGiftCards(forMerchant: merchantId) else {
@@ -193,14 +216,43 @@ class PiggyCardsRepository: DashSpendRepository {
         for (index, card) in giftCards.enumerated() {
         }
 
-        // Step 2: Select the appropriate gift card
-        guard let selectedCard = PiggyCardsCache.shared.selectGiftCard(from: giftCards, forAmount: fiatAmount) else {
-            for card in giftCards {
-                let normalizedType = card.priceType.lowercased()
-                if normalizedType == "fixed" {
-                } else if normalizedType == "range" {
+        // Step 2: Select the appropriate gift cards for each line item
+        var selectedOrders: [PiggyCardsOrder] = []
+        var firstSelectedCard: PiggyCardsGiftcard?
+
+        for lineItem in lineItems where lineItem.quantity > 0 {
+            guard let selectedCard = PiggyCardsCache.shared.selectGiftCard(
+                from: giftCards,
+                forAmount: lineItem.denomination
+            ) else {
+                for card in giftCards {
+                    let normalizedType = card.priceType.lowercased()
+                    if normalizedType == "fixed" {
+                    } else if normalizedType == "range" {
+                    }
                 }
+                throw DashSpendError.invalidAmount
             }
+
+            if lineItem.quantity > selectedCard.quantity {
+                throw DashSpendError.invalidAmount
+            }
+
+            if firstSelectedCard == nil {
+                firstSelectedCard = selectedCard
+            }
+
+            selectedOrders.append(
+                PiggyCardsOrder(
+                    productId: selectedCard.id,
+                    quantity: lineItem.quantity,
+                    denomination: lineItem.denomination,
+                    currency: fiatCurrency
+                )
+            )
+        }
+
+        guard !selectedOrders.isEmpty, let selectedCardForDisplay = firstSelectedCard else {
             throw DashSpendError.invalidAmount
         }
 
@@ -211,13 +263,6 @@ class PiggyCardsRepository: DashSpendRepository {
         }
 
         // Step 4: Create order request
-        let order = PiggyCardsOrder(
-            productId: selectedCard.id,
-            quantity: 1,
-            denomination: fiatAmount,
-            currency: fiatCurrency
-        )
-
         // Match Android's hardcoded values exactly
         // Android uses "2025-07-01" as a fixed date, not actual registration date
         let userMetadata = PiggyCardsUserMetadata(
@@ -233,7 +278,7 @@ class PiggyCardsRepository: DashSpendRepository {
         )
 
         let orderRequest = PiggyCardsOrderRequest(
-            orders: [order],
+            orders: selectedOrders,
             recipientEmail: email,
             user: user
         )
@@ -250,7 +295,12 @@ class PiggyCardsRepository: DashSpendRepository {
 
         do {
             let orderResponse: PiggyCardsOrderResponse = try await PiggyCardsAPI.shared.request(.createOrder(orderRequest))
-            return try await processOrderResponse(orderResponse, selectedCard: selectedCard, giftCards: giftCards, fiatCurrency: fiatCurrency)
+            return try await processOrderResponse(
+                orderResponse,
+                selectedCard: selectedCardForDisplay,
+                giftCards: giftCards,
+                fiatCurrency: fiatCurrency
+            )
         } catch let error as HTTPClientError {
             // Log the raw error response for debugging
             if case .statusCode(let response) = error {
@@ -422,4 +472,3 @@ class PiggyCardsRepository: DashSpendRepository {
         throw DashSpendError.unknown
     }
 }
-
