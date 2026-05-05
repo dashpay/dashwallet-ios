@@ -2962,6 +2962,15 @@
 /* DashSpend */
 "You are buying a %@ gift card for %@ (%d%% discount)" = "You are buying a %1$@ gift card for %2$@ (%3$d%% discount)";
 
+/* DashSpend */
+"Quantity" = "Quantity";
+
+/* DashSpend */
+"Merchant has only %d cards available" = "Merchant has only %d cards available";
+
+/* DashSpend */
+"You can buy up to %@ in gift cards per order" = "You can buy up to %@ in gift cards per order";
+
 /* No comment provided by engineer. */
 "You can always delete the image uploaded, as long as you have access to this wallet." = "You can always delete the image uploaded, as long as you have access to this wallet.";
 

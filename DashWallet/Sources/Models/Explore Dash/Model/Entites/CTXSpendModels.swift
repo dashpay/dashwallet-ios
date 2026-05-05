@@ -106,7 +106,7 @@ struct GiftCardResponse: Codable {
     }
 }
 
-struct MerchantResponse: Codable {
+struct MerchantResponse: Decodable {
     let id: String
     let name: String
     let logoUrl: String
@@ -126,9 +126,83 @@ struct MerchantResponse: Codable {
     let mapPinUrl: String
     let type: String
     let redeemType: String
-    let info: MerchantInfo
+    let info: MerchantInfo?
     let cardImageUrl: String
     let currency: String
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case logoUrl
+        case enabled
+        case savingsPercentage
+        case userDiscount
+        case denominationsType
+        case denominationType
+        case denominations
+        case denominationValues
+        case cachedLocationCount
+        case locationCount
+        case mapPinUrl
+        case type
+        case redeemType
+        case info
+        case cardImageUrl
+        case currency
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        logoUrl = try container.decode(String.self, forKey: .logoUrl)
+        enabled = try container.decode(Bool.self, forKey: .enabled)
+
+        savingsPercentage = try container.decodeIfPresent(Int.self, forKey: .savingsPercentage)
+        userDiscount = try container.decodeIfPresent(Int.self, forKey: .userDiscount)
+
+        let primaryDenominationType = try container.decodeIfPresent(String.self, forKey: .denominationsType)
+        let legacyDenominationType = try container.decodeIfPresent(String.self, forKey: .denominationType)
+        denominationsType = primaryDenominationType ?? legacyDenominationType ?? DenominationType.Fixed.rawValue
+
+        denominations = Self.decodeDenominations(from: container)
+
+        cachedLocationCount = try container.decodeIfPresent(Int.self, forKey: .cachedLocationCount)
+        locationCount = try container.decodeIfPresent(Int.self, forKey: .locationCount)
+
+        mapPinUrl = try container.decode(String.self, forKey: .mapPinUrl)
+        type = try container.decode(String.self, forKey: .type)
+        redeemType = try container.decode(String.self, forKey: .redeemType)
+        info = try container.decodeIfPresent(MerchantInfo.self, forKey: .info)
+        cardImageUrl = try container.decode(String.self, forKey: .cardImageUrl)
+        currency = try container.decode(String.self, forKey: .currency)
+    }
+
+    private static func decodeDenominations(from container: KeyedDecodingContainer<CodingKeys>) -> [String] {
+        if let stringValues = try? container.decode([String].self, forKey: .denominations), !stringValues.isEmpty {
+            return stringValues
+        }
+        if let doubleValues = try? container.decode([Double].self, forKey: .denominations), !doubleValues.isEmpty {
+            return doubleValues.map { NSDecimalNumber(value: $0).stringValue }
+        }
+        if let intValues = try? container.decode([Int].self, forKey: .denominations), !intValues.isEmpty {
+            return intValues.map(String.init)
+        }
+
+        // Some responses use denominationValues instead of denominations.
+        if let stringValues = try? container.decode([String].self, forKey: .denominationValues), !stringValues.isEmpty {
+            return stringValues
+        }
+        if let doubleValues = try? container.decode([Double].self, forKey: .denominationValues), !doubleValues.isEmpty {
+            return doubleValues.map { NSDecimalNumber(value: $0).stringValue }
+        }
+        if let intValues = try? container.decode([Int].self, forKey: .denominationValues), !intValues.isEmpty {
+            return intValues.map(String.init)
+        }
+
+        return []
+    }
 
     // Computed property to get discount value from either field
     var discount: Int {
