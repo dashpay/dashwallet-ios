@@ -77,6 +77,7 @@ class MainTabbarController: UITabBarController {
     private var cancellableBag = Set<AnyCancellable>()
     private var ratesFetchErrorShown = false
     private var ratesVolatileWarningShown = false
+    private var paymentIsOpened = false
 
     weak var homeController: HomeViewController?
     weak var menuNavigationController: MainMenuViewController?
