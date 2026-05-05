@@ -45,7 +45,8 @@ struct DashButton: View {
     
     @Environment(\.overrideForegroundColor) var overridenForegroundColor
     @Environment(\.overrideBackgroundColor) var overridenBackgroundColor
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.colorScheme)
+    private var colorScheme
 
     var body: some View {
         Button(action: {

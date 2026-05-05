@@ -61,20 +61,33 @@ struct SegmentedControl<T: Hashable>: View {
 
             HStack(spacing: 0) {
                 ForEach(options, id: \.self) { option in
-                    Text(label(option))
-                        .font(.footnoteMedium)
-                        .foregroundColor(selection == option ? .primaryText : .primaryText.opacity(0.4))
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, Layout.segmentVerticalPadding)
-                        .contentShape(Rectangle())
-                        .animation(.spring(response: Layout.springResponse, dampingFraction: Layout.springDamping), value: selection)
+                    Button(action: {
+                        select(option)
+                    }) {
+                        Text(label(option))
+                            .font(.footnoteMedium)
+                            .foregroundColor(selection == option ? .primaryText : .primaryText.opacity(0.4))
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Layout.segmentVerticalPadding)
+                            .contentShape(Rectangle())
+                            .animation(.spring(response: Layout.springResponse, dampingFraction: Layout.springDamping), value: selection)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text(label(option)))
+                    .accessibilityHint(Text(NSLocalizedString("Double tap to select", comment: "SegmentedControl")))
+                    .accessibilityAddTraits(selection == option ? [.isButton, .isSelected] : .isButton)
                 }
             }
         }
         .background(
             GeometryReader { geo in
-                Color.clear.onAppear { containerWidth = geo.size.width }
+                Color.clear
+                    .onAppear { containerWidth = geo.size.width }
+                    .onChange(of: geo.size.width) { newWidth in
+                        containerWidth = newWidth
+                    }
             }
         )
         .highPriorityGesture(
@@ -92,10 +105,13 @@ struct SegmentedControl<T: Hashable>: View {
 
     private func updateSelection(at x: CGFloat) {
         let index = max(0, min(options.count - 1, Int(x / segmentWidth)))
-        let candidate = options[index]
-        guard candidate != selection else { return }
+        select(options[index])
+    }
+
+    private func select(_ option: T) {
+        guard option != selection else { return }
         withAnimation(.spring(response: Layout.springResponse, dampingFraction: Layout.springDamping)) {
-            selection = candidate
+            selection = option
         }
     }
 }
