@@ -123,7 +123,6 @@ struct DashSpendPayScreen: View {
                 merchantIconUrl: viewModel.merchantIconUrl,
                 originalPrice: confirmationOriginalPrice,
                 discount: viewModel.savingsFraction,
-                quantities: confirmationQuantities.isEmpty ? nil : confirmationQuantities,
                 onConfirm: {
                     showConfirmationDialog = false
                     purchaseGiftCard()
@@ -248,29 +247,31 @@ private struct DashSpendPayConfirmationSheet: View {
     let merchantIconUrl: String
     let originalPrice: Decimal
     let discount: Decimal
-    let quantities: [Decimal: Int]?
     let onConfirm: () -> Void
     let onCancel: () -> Void
-
-    @State private var contentHeight: CGFloat = 0
+    
+    private var amountText: String {
+        let formatter = NumberFormatter.fiatFormatter(currencyCode: kDefaultCurrencyCode)
+        formatter.numberStyle = .decimal
+        return formatter.string(from: NSDecimalNumber(decimal: originalPrice)) ?? "0"
+    }
 
     @ViewBuilder
     var body: some View {
         let dialog = DashSpendConfirmationDialog(
+            amount: amountText,
             merchantName: merchantName,
             merchantIconUrl: merchantIconUrl,
             originalPrice: originalPrice,
             discount: discount,
-            quantities: quantities,
             onConfirm: onConfirm,
-            onCancel: onCancel,
-            contentHeight: $contentHeight
+            onCancel: onCancel
         )
 
         if #available(iOS 16.4, *) {
             dialog
                 .presentationBackground(Color.primaryBackground)
-                .presentationDetents([.height(contentHeight > 0 ? contentHeight : 550)])
+                .presentationDetents([.height(550)])
                 .presentationCornerRadius(32)
                 .presentationDragIndicator(.hidden)
         } else {
