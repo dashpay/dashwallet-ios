@@ -19,7 +19,7 @@ import SwiftUI
 
 struct DashStepper: View {
     @Binding var count: Int
-    var maxCount: Int? = nil
+    var maxCount: Int?
 
     private var plusEnabled: Bool {
         guard let max = maxCount else { return true }
@@ -28,7 +28,11 @@ struct DashStepper: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            stepperButton(systemImage: "minus", enabled: count > 0) {
+            stepperButton(
+                systemImage: "minus",
+                enabled: count > 0,
+                accessibilityLabel: NSLocalizedString("Decrease quantity", comment: "DashSpend")
+            ) {
                 if count > 0 { count -= 1 }
             }
 
@@ -38,7 +42,11 @@ struct DashStepper: View {
                 .frame(width: 30)
                 .multilineTextAlignment(.center)
 
-            stepperButton(systemImage: "plus", enabled: plusEnabled) {
+            stepperButton(
+                systemImage: "plus",
+                enabled: plusEnabled,
+                accessibilityLabel: NSLocalizedString("Increase quantity", comment: "DashSpend")
+            ) {
                 count += 1
             }
         }
@@ -47,6 +55,7 @@ struct DashStepper: View {
     private func stepperButton(
         systemImage: String,
         enabled: Bool,
+        accessibilityLabel: String,
         action: @escaping () -> Void
     ) -> some View {
         Image(systemImage)
@@ -69,6 +78,21 @@ struct DashStepper: View {
                 action()
             }
             .padding(4)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(accessibilityLabel)
+            .accessibilityValue(Text("\(count)"))
+            .accessibilityHint(
+                Text(
+                    enabled
+                        ? NSLocalizedString("Double tap to change quantity", comment: "DashSpend")
+                        : NSLocalizedString("Unavailable at this limit", comment: "DashSpend")
+                )
+            )
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction {
+                guard enabled else { return }
+                action()
+            }
     }
 }
 
