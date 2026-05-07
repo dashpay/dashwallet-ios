@@ -103,14 +103,14 @@ class SettingsMenuViewModel: ObservableObject {
             MenuItemModel(
                 title: NSLocalizedString("Local Currency", comment: ""),
                 subtitle: localCurrencyCode,
-                icon: .custom("image.currency", maxHeight: 22),
+                icon: .custom("image.currency", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .currencySelector
                 }
             ),
             MenuItemModel(
-                title: NSLocalizedString("Enable Receive Notifications", comment: ""),
-                icon: .custom("image.notifications", maxHeight: 22),
+                title: NSLocalizedString("Notifications", comment: ""),
+                icon: .custom("image.notifications", maxHeight: 30),
                 showToggle: true,
                 isToggled: notificationsEnabled,
                 action: { [weak self] in
@@ -123,21 +123,21 @@ class SettingsMenuViewModel: ObservableObject {
             MenuItemModel(
                 title: NSLocalizedString("Network", comment: ""),
                 subtitle: networkName,
-                icon: .custom("image.network.monitor", maxHeight: 22),
+                icon: .custom("image.network.monitor", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .network
                 }
             ),
             MenuItemModel(
                 title: NSLocalizedString("Rescan Blockchain", comment: ""),
-                icon: .custom("image.rescan", maxHeight: 22),
+                icon: .custom("image.rescan", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .rescan
                 }
             ),
             MenuItemModel(
                 title: NSLocalizedString("About", comment: ""),
-                icon: .custom("image.about", maxHeight: 22),
+                icon: .custom("image.about", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .about
                 }

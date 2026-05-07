@@ -29,7 +29,7 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>one</key>
-			<string>%d Händler in %@</string>
+			<string>%d Händler in &@</string>
 			<key>other</key>
 			<string>%d Händler in %@</string>
 		</dict>

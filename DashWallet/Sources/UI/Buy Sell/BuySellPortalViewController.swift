@@ -24,10 +24,9 @@ import Combine
 // MARK: - BuySellPortalViewController
 
 @objc
-final class BuySellPortalViewController: UIViewController, NavigationBarDisplayable, NavigationStackControllable {
-
-    var isBackButtonHidden: Bool { false }
-
+final class BuySellPortalViewController: UIViewController, NavigationBarDisplayable {
+    var isNavigationBarHidden: Bool { true }
+    private var model = BuySellPortalModel()
     private let topperViewModel = TopperViewModel.shared
     private var locationRequested = false
 
@@ -39,6 +38,10 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
             return false
         }
         return true
+    }
+    
+    func closeAction() {
+        dismiss(animated: true)
     }
 
     @objc
@@ -114,10 +117,28 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
         navigationController?.pushViewController(vc, animated: true)
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        model.refreshData()
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = UIColor.dw_secondaryBackground()
+        let screen = BuySellPortalScreen(
+            model: model,
+            onBack: { [weak self] in
+                guard let self else { return }
+                if self.showCloseButton {
+                    self.closeAction()
+                } else {
+                    self.navigationController?.popViewController(animated: true)
+                }
+            },
+            onTopper: { [weak self] in self?.topperAction() },
+            onCoinbase: { [weak self] in self?.coinbaseAction() },
+            onUphold: { [weak self] in self?.upholdAction() }
+        )
 
         title = nil
         navigationItem.largeTitleDisplayMode = .never
@@ -164,7 +185,6 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
         super.viewDidDisappear(animated)
         DWLocationManager.shared.remove(observer: self)
     }
-}
 
 // MARK: Geoblock
 

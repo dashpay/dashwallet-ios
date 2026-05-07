@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "public.key.png",
+      "filename" : "extend-public-key.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "public.key@2x.png",
+      "filename" : "extend-public-key@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "public.key@3x.png",
+      "filename" : "extend-public-key@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
