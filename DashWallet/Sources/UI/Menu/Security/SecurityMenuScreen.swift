@@ -34,36 +34,14 @@ struct SecurityMenuScreen: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Back button
-            HStack {
-                Button(action: {
-                    vc.popViewController(animated: true)
-                }) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.primary)
-                        .frame(width: 36, height: 36)
-                        .overlay(
-                            Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1)
-                        )
-                }
-                Spacer()
+            NavBarBack {
+                vc.popViewController(animated: true)
             }
-            .padding(.horizontal, 5)
-            .padding(.top, 10)
-            
-            // Header
-            HStack {
-                Text(NSLocalizedString("Security", comment: ""))
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primaryText)
-                Spacer()
-            }
-            .padding(.top, 30)
-            .padding(.bottom, 20)
-            
-            VStack(spacing: 0) {
+
+            TopIntro(title: NSLocalizedString("Security", comment: ""))
+
+            // Menu list
+            VStack(spacing: 2) {
                 ForEach(viewModel.items) { item in
                     MenuItem(
                         title: item.title,
@@ -76,17 +54,17 @@ struct SecurityMenuScreen: View {
                         isToggled: item.isToggled,
                         action: item.action
                     )
-                    .frame(minHeight: 60)
+                    .frame(minHeight: 56)
                 }
             }
-            .padding(.vertical, 5)
+            .padding(6)
             .background(Color.secondaryBackground)
-            .cornerRadius(12)
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
-            
+            .padding(.horizontal, 20)
+
             Spacer()
         }
-        .padding(.horizontal, 20)
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
         .onReceive(viewModel.$navigationDestination) { destination in

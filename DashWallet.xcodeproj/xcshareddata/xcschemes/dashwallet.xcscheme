@@ -73,7 +73,7 @@
       </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Testflight"
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       language = "en"
