@@ -133,7 +133,7 @@ struct DashSpendSinglePanel: View {
             NumericKeyboardView(
                 value: $input,
                 showDecimalSeparator: true,
-                actionButtonText: NSLocalizedString("Conttinue", comment: ""),
+                actionButtonText: NSLocalizedString("Continue", comment: ""),
                 actionEnabled: actionEnabled && !showLimits && hasValidLimits,
                 inProgress: inProgress,
                 actionHandler: onAction
