@@ -441,7 +441,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 let apiMax = Decimal(merchantInfo.maximumCardPurchase)
                 let newMin = isRange ? (apiMin > 0 ? apiMin : minimumAmount) : Decimal(0)
                 let newMax = isRange ? (apiMax > 0 ? apiMax : maximumAmount) : Decimal(0)
-                let newDenominations = isRange ? [] : merchantInfo.denominations.compactMap { Int($0) }
+                let newDenominations = isRange ? [] : merchantInfo.denominations.compactMap { parseWholeDollarDenomination($0) }
 
                 await MainActor.run {
                     self.savingsFraction = newSavings
