@@ -22,7 +22,7 @@ extension View {
         self
             .padding(.horizontal, 20)
             .background(Color.secondaryBackground)
-            .padding(.bottom, 30)
+//            .padding(.bottom, 30)
             .cornerRadius(20)
     }
 }
@@ -139,9 +139,13 @@ struct DashSpendSinglePanel: View {
                 actionHandler: onAction
             )
             .frame(maxWidth: .infinity)
-            .frame(height: 320)
             .bottomPanelStyle()
+            .background(ignoresSafeAreaEdges: .top)
+            .background(
+                Color.secondaryBackground
+            )
         }
+
     }
 }
 

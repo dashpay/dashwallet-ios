@@ -148,7 +148,7 @@ struct DashSpendFlexibleContent: View {
                 onDenominationSelected: { _ in },
                 onAction: onAction
             )
-            .ignoresSafeArea(.all, edges: .bottom)
+//            .ignoresSafeArea(.all, edges: .bottom)
         }
     }
 
@@ -216,7 +216,6 @@ struct DashSpendFlexibleContent: View {
                     insertion: .opacity.combined(with: .offset(x: goingForward ? 50 : -50)),
                     removal: .opacity.combined(with: .offset(x: goingForward ? -50 : 50))
                 ))
-                .ignoresSafeArea(.all, edges: .bottom)
             } else {
                 DashSpendMultiplePanel(
                     denominations: multipleDenominations,
@@ -234,7 +233,6 @@ struct DashSpendFlexibleContent: View {
                     insertion: .opacity.combined(with: .offset(x: goingForward ? 50 : -50)),
                     removal: .opacity.combined(with: .offset(x: goingForward ? -50 : 50))
                 ))
-                .ignoresSafeArea(.all, edges: .bottom)
                 .onChange(of: quantities) { newQuantities in
                     let total = newQuantities.reduce(Decimal(0)) { $0 + $1.key * Decimal($1.value) }
                     viewModel.updateTotalAmount(total)

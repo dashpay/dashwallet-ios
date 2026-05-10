@@ -34,6 +34,13 @@ struct DashSpendFixedContent: View {
         viewModel.denominations.map { Decimal($0) }
     }
 
+    private var actionEnabled: Bool {
+        !quantities.isEmpty &&
+        viewModel.error == nil &&
+        !viewModel.isLoading &&
+        !viewModel.isProcessingPayment
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 20) {
@@ -57,8 +64,8 @@ struct DashSpendFixedContent: View {
             DashSpendMultiplePanel(
                 denominations: denominations,
                 quantities: $quantities,
-                actionEnabled: !quantities.isEmpty,
-                inProgress: false,
+                actionEnabled: actionEnabled,
+                inProgress: viewModel.isProcessingPayment,
                 error: viewModel.error,
                 showCost: !quantities.isEmpty && viewModel.error == nil,
                 costMessage: viewModel.costMessage,
@@ -66,7 +73,6 @@ struct DashSpendFixedContent: View {
                 onContinue: onAction,
                 onReset: { quantities.removeAll() }
             )
-            .ignoresSafeArea(.all, edges: .bottom)
             .onChange(of: quantities) { newQuantities in
                 let total = newQuantities.reduce(Decimal(0)) { $0 + $1.key * Decimal($1.value) }
                 viewModel.updateTotalAmount(total)

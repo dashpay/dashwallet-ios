@@ -134,14 +134,22 @@ struct NumericKeyboardView: View {
 }
 
 #Preview {
-    NumericKeyboardView(
-        value: .constant(""),
-        showDecimalSeparator: true,
-        actionButtonText: NSLocalizedString("Verify", comment: "Button title for numeric keyboard action"),
-        actionEnabled: true,
-        inProgress: false,
-        actionHandler: { print("Action button tapped") }
-    )
-    .frame(height: 400)
-    .padding(.horizontal, 20)
+
+    VStack {
+        Spacer()
+
+        NumericKeyboardView(
+            value: .constant(""),
+            showDecimalSeparator: true,
+            actionButtonText: NSLocalizedString("Verify", comment: "Button title for numeric keyboard action"),
+            actionEnabled: true,
+            inProgress: false,
+            actionHandler: { print("Action button tapped") }
+        )
+//        .frame(height: 400)
+        .padding(.horizontal, 20)
+        .background(.red.opacity(0.3))
+    }
+
+
 }
