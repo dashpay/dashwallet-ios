@@ -24,6 +24,19 @@ public final class SendCoinsService: NSObject {
     private var paymentProcessor: DWPaymentProcessor?
     private var pendingPaymentContinuation: CheckedContinuation<DSTransaction, Swift.Error>?
 
+    @MainActor
+    private func authenticateForPayment() async -> Bool {
+        await withCheckedContinuation { continuation in
+            DSAuthenticationManager.sharedInstance().authenticate(
+                withPrompt: nil,
+                usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
+                alertIfLockout: true
+            ) { authenticatedOrSuccess, _, cancelled in
+                continuation.resume(returning: authenticatedOrSuccess && !cancelled)
+            }
+        }
+    }
+
     func sendCoins(address: String, amount: UInt64,
                    inputSelector: SingleInputAddressSelector? = nil, adjustAmountDownwards: Bool = false) async throws
         -> DSTransaction {
@@ -61,21 +74,8 @@ public final class SendCoinsService: NSObject {
             }
         }
 
-        // Explicitly authenticate before signing to ensure PIN is requested
-        // Must run on main thread as it's a UI operation
-        @MainActor func authenticate() async -> Bool {
-            return await withCheckedContinuation { continuation in
-                DSAuthenticationManager.sharedInstance().authenticate(
-                    withPrompt: nil,
-                    usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
-                    alertIfLockout: true
-                ) { authenticatedOrSuccess, usedBiometrics, cancelled in
-                    continuation.resume(returning: authenticatedOrSuccess && !cancelled)
-                }
-            }
-        }
-
-        let authenticated = await authenticate()
+        // Explicitly authenticate before signing to ensure PIN/biometric prompt.
+        let authenticated = await authenticateForPayment()
 
         if !authenticated {
             throw DashSpendError.paymentProcessingError("Authentication cancelled")
@@ -96,6 +96,12 @@ public final class SendCoinsService: NSObject {
     // MARK: - BIP70
     
     func payWithDashUrl(url paymentUrlString: String) async throws -> DSTransaction {
+        // Keep CTX (BIP70) behavior consistent with direct send flow: require auth first.
+        let authenticated = await authenticateForPayment()
+        if !authenticated {
+            throw DashSpendError.paymentProcessingError("Authentication cancelled")
+        }
+
         // Create payment input from the URL
         guard let paymentUrl = URL(string: paymentUrlString) else {
             throw DashSpendError.paymentProcessingError("Invalid payment URL")
