@@ -103,12 +103,14 @@ struct PlatformSendConfirmScreen: View {
 
     private var canSend: Bool {
         guard let credits = parsedAmountCredits(), credits > 0 else { return false }
-        let lower = destination.lowercased()
-        let hasPlatformPrefix = lower.hasPrefix("tdashevo1")
-            || lower.hasPrefix("dashevo1")
-            || lower.hasPrefix("tdash1")
-            || lower.hasPrefix("dash1")
-        return hasPlatformPrefix && Bech32m.decode(destination) != nil
+        // Defer to the same parser the coordinator uses so the UI can't
+        // accept anything the submit path would later reject — including
+        // P2SH (FFI-unsupported) and bogus HRPs like `tdashevo1…` that pass
+        // a naïve prefix check but fail bech32m → P2PKH parsing.
+        guard let parsed = PlatformAddressSyncCoordinator
+            .parsePlatformRecipient(bech32m: destination)
+        else { return false }
+        return parsed.ffiAddressType == 0
     }
 
     /// Accept either a `.` or `,` decimal separator; convert DASH → credits
