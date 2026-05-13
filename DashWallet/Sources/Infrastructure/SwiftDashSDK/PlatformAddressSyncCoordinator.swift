@@ -193,13 +193,19 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         let senderAccountIndex = senderRow.accountIndex
 
         // Lowest-indexed unused zero-balance row scoped to the sender's
-        // account, matching ReceiveAddressView's selection rule. Nil
-        // falls back to the wrapper's internal "smallest non-recipient"
+        // account, matching ReceiveAddressView's selection rule. Exclude
+        // the recipient hash — a self-send to the wallet's own next-unused
+        // address would otherwise pick that same row for change, and
+        // `ManagedPlatformAddressWallet.transfer` rejects collisions with
+        // a `changeAddress collides with a recipient address` error.
+        // Nil falls back to the wrapper's internal "smallest non-recipient"
         // pick — workable but lands change on an existing balance row.
+        let recipientHash = recipient.hash
         let changeRow = allRows
             .filter { $0.accountIndex == senderAccountIndex
                       && !$0.isUsed
-                      && $0.balance == 0 }
+                      && $0.balance == 0
+                      && $0.addressHash != recipientHash }
             .min(by: { $0.addressIndex < $1.addressIndex })
         let change = changeRow.map {
             ManagedPlatformAddressWallet.ChangeAddress(
