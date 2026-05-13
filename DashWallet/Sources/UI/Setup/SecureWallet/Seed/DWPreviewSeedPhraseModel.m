@@ -72,9 +72,19 @@ NS_ASSUME_NONNULL_BEGIN
     }
     else {
         // Settings → View Recovery Phrase path. Mnemonic was persisted earlier
-        // (by migration / first-create) under an existing walletId, so the
-        // storage read is safe here.
-        seedPhrase = [DWSwiftDashSDKMnemonicReader readMnemonic];
+        // (by migration / first-create) under an existing walletId. Two
+        // realistic ways this read still returns nil though:
+        //  1) migrator deferred this wallet (multi-wallet or unknown chain
+        //     — see `enumerateDashSyncMnemonicAccounts` / `detectNetwork`).
+        //  2) async `SwiftDashSDKHost.createOrImportWallet` failed earlier
+        //     in the lifecycle, leaving DashSync's wallet without a paired
+        //     SwiftDashSDK record.
+        // Both cases would otherwise crash `NSParameterAssert(seed)` in
+        // `DWSeedPhraseModel initWithSeed:`. Fall back to an empty string —
+        // the screen renders blank words, which is a degraded UX but
+        // survivable. Proper fix (DashSync fallback or error banner) is
+        // a follow-up once the broader DashSync-drop is in flight.
+        seedPhrase = [DWSwiftDashSDKMnemonicReader readMnemonic] ?: @"";
     }
 
     return [[DWSeedPhraseModel alloc] initWithSeed:seedPhrase];
