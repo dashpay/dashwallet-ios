@@ -38,17 +38,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DWSeedPhraseModel *)getOrCreateNewWallet {
     BOOL hasAWallet = [DWEnvironment sharedInstance].currentWallet != nil;
+    NSString *seedPhrase;
+
     if (!hasAWallet) {
-        // SwiftDashSDK is the entropy source. Generate the 12-word
-        // mnemonic and store it in WalletStorage synchronously so the
-        // display read below always finds it.
+        // SwiftDashSDK is the entropy source. `generateAndStore` no longer
+        // persists synchronously — the SwiftDashSDK refactor made
+        // `WalletStorage` require a walletId, so persistence is deferred to
+        // the async `SwiftDashSDKHost.createOrImportWallet` path kicked off
+        // by `createSwiftDashSDKWalletWithMnemonic:` below. Use the in-hand
+        // string here rather than `readMnemonic`, which would race against
+        // that background dispatch and return nil → crash on `initWithSeed:`.
         NSString *mnemonic = [DWSwiftDashSDKMnemonicGenerator generateAndStore];
         if (mnemonic.length == 0) {
             return [[DWSeedPhraseModel alloc] initWithSeed:nil];
         }
 
-        // Feed the SwiftDashSDK-generated mnemonic TO DashSync.
-        // DashSync still owns SPV sync — it needs the wallet structure.
+        // Feed the SwiftDashSDK-generated mnemonic TO DashSync. DashSync
+        // still owns SPV sync — it needs the wallet structure.
         [DSWallet standardWalletWithSeedPhrase:mnemonic
                                setCreationDate:[[NSDate date] timeIntervalSince1970]
                                       forChain:[DWEnvironment sharedInstance].currentChain
@@ -57,23 +63,21 @@ NS_ASSUME_NONNULL_BEGIN
 
         [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
 
-        // Create full SwiftDashSDK wallet async (ManagedPlatformWallet,
-        // SwiftData record, and mnemonic stored by wallet id).
+        // Async: persists mnemonic to WalletStorage under the new walletId
+        // (ManagedPlatformWallet, SwiftData record, and mnemonic stored by
+        // wallet id). Nothing on this screen depends on completion.
         [self createSwiftDashSDKWalletWithMnemonic:mnemonic];
+
+        seedPhrase = mnemonic;
+    }
+    else {
+        // Settings → View Recovery Phrase path. Mnemonic was persisted earlier
+        // (by migration / first-create) under an existing walletId, so the
+        // storage read is safe here.
+        seedPhrase = [DWSwiftDashSDKMnemonicReader readMnemonic];
     }
 
-    // SwiftDashSDK SPV is started by SwiftDashSDKWalletCreator after the
-    // wallet record is committed to SwiftData (see SwiftDashSDKWalletCreator.swift).
-    // No DashSync startSync needed — DashSync's parallel SPV was retired in M6.
-
-    // SwiftDashSDK is the single source for BOTH paths:
-    // - Existing wallet: stored by migrator/backfiller/creator
-    // - Just-created: stored synchronously by generateAndStore above
-    NSString *seedPhrase = [DWSwiftDashSDKMnemonicReader readMnemonic];
-
-    DWSeedPhraseModel *seedPhraseModel = [[DWSeedPhraseModel alloc] initWithSeed:seedPhrase];
-
-    return seedPhraseModel;
+    return [[DWSeedPhraseModel alloc] initWithSeed:seedPhrase];
 }
 
 - (void)createSwiftDashSDKWalletWithMnemonic:(NSString *)mnemonic {
