@@ -155,67 +155,91 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     // MARK: - Transfer
 
-    /// Signs and submits a Platform credit transfer from the highest-balance
-    /// derived address with `balance >= amount` to `destination`. Platform's
-    /// state transition protocol enforces `sum(inputs) == sum(outputs)`, so
-    /// we transfer exactly `amount` — any unspent balance stays on the source
-    /// address. `feeFromInputIndex: 0` designates which input's account bears
-    /// the processing fee, charged separately by Platform.
+    /// Submits a Platform credit transfer to `destination`. Inputs are
+    /// auto-selected largest-first by `ManagedPlatformAddressWallet.transfer`
+    /// (dashpay/platform#3626) across the account holding the highest-balance
+    /// row; change goes to the lowest-indexed unused HD address in that
+    /// account (mirrors the Receive screen's selection). The returned
+    /// `[UpdatedBalance]` rows are applied to SwiftData as a
+    /// belt-and-suspenders alongside the Rust persister.
     public func transfer(
         destination: String,
         amount: UInt64
-    ) async throws -> PlatformAddressInfosResult {
+    ) async throws {
         guard isRunning,
-              let sdk = sdk,
-              let walletId = wallet?.walletId,
+              let addressWallet = platformAddressWallet,
               let container = modelContainer,
+              let walletId = wallet?.walletId,
               let network = runningNetwork
         else { throw SendError.coordinatorNotReady }
 
-        let descriptor = FetchDescriptor<PersistentPlatformAddress>(
-            predicate: #Predicate<PersistentPlatformAddress> {
-                $0.walletId == walletId && $0.balance >= amount
-            })
-        let rows = try container.mainContext.fetch(descriptor)
-        guard let source = rows.max(by: { $0.balance < $1.balance })
-        else { throw SendError.noFundedAddress }
-
-        guard let destBytes = Self.platformAddressBytes(bech32m: destination)
+        guard let recipient = Self.parsePlatformRecipient(bech32m: destination)
         else { throw SendError.invalidDestination }
+        // FFI's `PlatformAddressFFI → PlatformAddress` conversion in
+        // rs-platform-wallet-ffi only accepts P2PKH; surface a clear error
+        // rather than letting Rust emit "Unsupported address type".
+        guard recipient.ffiAddressType == 0
+        else { throw SendError.p2shNotSupported }
 
-        var srcBytes = Data([source.addressType])
-        srcBytes.append(source.addressHash)
+        let context = container.mainContext
 
-        guard let mnemonic = SwiftDashSDKMnemonicReader.readMnemonic()
-        else { throw SendError.mnemonicUnavailable }
+        let allDescriptor = FetchDescriptor<PersistentPlatformAddress>(
+            predicate: #Predicate<PersistentPlatformAddress> { $0.walletId == walletId })
+        let allRows = try context.fetch(allDescriptor)
+        guard let senderRow = allRows
+            .filter({ $0.balance > 0 })
+            .max(by: { $0.balance < $1.balance })
+        else { throw SendError.noFundedAddress }
+        let senderAccountIndex = senderRow.accountIndex
 
-        let keyWallet = try Wallet(
-            mnemonic: mnemonic,
-            network: keyWalletNetwork(for: network))
-        let wif = try keyWallet.derivePrivateKey(path: source.derivationPath)
-        let parsed = PrivateKeyParser.parseWIF(wif)
-        guard let rawKey = parsed.data, rawKey.count == 32
-        else { throw SendError.keyDecodeFailed(parsed.error ?? "invalid WIF") }
+        // Lowest-indexed unused zero-balance row scoped to the sender's
+        // account, matching ReceiveAddressView's selection rule. Nil
+        // falls back to the wrapper's internal "smallest non-recipient"
+        // pick — workable but lands change on an existing balance row.
+        let changeRow = allRows
+            .filter { $0.accountIndex == senderAccountIndex
+                      && !$0.isUsed
+                      && $0.balance == 0 }
+            .min(by: { $0.addressIndex < $1.addressIndex })
+        let change = changeRow.map {
+            ManagedPlatformAddressWallet.ChangeAddress(
+                addressType: $0.addressType,
+                hash: $0.addressHash)
+        }
 
-        let input = Addresses.AddressTransferInput(
-            addressBytes: srcBytes,
-            amount: amount,
-            nonce: source.nonce,
-            privateKey: rawKey)
-        let output = Addresses.AddressTransferOutput(
-            addressBytes: destBytes,
-            amount: amount)
+        let output = ManagedPlatformAddressWallet.TransferOutput(
+            addressType: recipient.ffiAddressType,
+            hash: recipient.hash,
+            credits: amount)
+
+        let signer = KeychainSigner(
+            modelContainer: container,
+            network: network.sdkNetwork)
 
         Self.logger.info(
-            "🛰️ PLATFORM-SEND :: from \(source.address, privacy: .public) → \(destination, privacy: .public) :: amount=\(amount) sourceBalance=\(source.balance) nonce=\(source.nonce)")
+            "🛰️ PLATFORM-SEND :: → \(destination, privacy: .public) :: amount=\(amount) account=\(senderAccountIndex) change=\(changeRow?.address ?? "fallback", privacy: .public)")
 
-        let result = try sdk.addresses.transferFunds(
-            inputs: [input],
+        let updated = try await addressWallet.transfer(
+            accountIndex: senderAccountIndex,
             outputs: [output],
-            feeFromInputIndex: 0)
+            changeAddress: change,
+            signer: signer)
+
+        // Idempotent with the Rust persister callback; keeps @Query-bound
+        // rows fresh even if the callback ordering ever changes.
+        for entry in updated {
+            let entryHash = entry.hash
+            let descriptor = FetchDescriptor<PersistentPlatformAddress>(
+                predicate: #Predicate { $0.addressHash == entryHash })
+            guard let row = try? context.fetch(descriptor).first else { continue }
+            row.balance = entry.balance
+            row.nonce = entry.nonce
+            row.isUsed = true
+            row.lastUpdated = Date()
+        }
+        try? context.save()
 
         Task { await self.syncNow() }
-        return result
     }
 
     /// Clear the UI counters/display without tearing down the sync loop.
@@ -546,25 +570,32 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }
     }
 
-    /// Translate a DIP-0018 bech32m address (HRP `dash`/`tdash`, what dashwallet's
-    /// Receive screen emits) into the 21-byte `[variant | hash]` form the SDK's
-    /// `transferFunds` expects. Version byte → variant: `0xb0` → 0 (P2PKH),
-    /// `0x80` → 1 (P2SH).
-    static func platformAddressBytes(bech32m: String) -> Data? {
+    struct PlatformRecipient {
+        let ffiAddressType: UInt8  // 0 = P2PKH, 1 = P2SH
+        let hash: Data             // 20 bytes
+    }
+
+    /// Decode a DIP-0018 bech32m address (HRP `dash`/`tdash`) into the FFI
+    /// discriminant + 20-byte hash that `ManagedPlatformAddressWallet`
+    /// expects. Per rs-dpp's `address_funds/platform_address.rs`, only
+    /// `0xb0` (P2PKH) and `0x80` (P2SH) are valid wire bytes — `0x00`/`0x01`
+    /// are storage bytes and must never appear in a `tdash1…`/`dash1…`
+    /// string.
+    static func parsePlatformRecipient(bech32m: String) -> PlatformRecipient? {
         guard let decoded = Bech32m.decode(bech32m.lowercased()),
               decoded.hrp == "dash" || decoded.hrp == "tdash",
               decoded.data.count == 21
         else { return nil }
 
-        let variant: UInt8
+        let ffiType: UInt8
         switch decoded.data[0] {
-        case 0xb0: variant = 0
-        case 0x80: variant = 1
+        case 0xb0: ffiType = 0
+        case 0x80: ffiType = 1
         default: return nil
         }
-        var bytes = Data([variant])
-        bytes.append(decoded.data.subdata(in: 1..<21))
-        return bytes
+        return PlatformRecipient(
+            ffiAddressType: ffiType,
+            hash: decoded.data.subdata(in: 1..<21))
     }
 
 }
@@ -588,6 +619,7 @@ extension PlatformAddressSyncCoordinator {
         case coordinatorNotReady
         case noFundedAddress
         case invalidDestination
+        case p2shNotSupported
         case mnemonicUnavailable
         case keyDecodeFailed(String)
 
@@ -604,6 +636,10 @@ extension PlatformAddressSyncCoordinator {
             case .invalidDestination:
                 return NSLocalizedString(
                     "Destination address is not a valid Platform bech32m address.",
+                    comment: "")
+            case .p2shNotSupported:
+                return NSLocalizedString(
+                    "P2SH platform addresses aren't supported yet. Use a P2PKH recipient.",
                     comment: "")
             case .mnemonicUnavailable:
                 return NSLocalizedString(

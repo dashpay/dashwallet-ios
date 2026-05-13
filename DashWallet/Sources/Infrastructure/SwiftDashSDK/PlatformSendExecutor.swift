@@ -23,7 +23,7 @@ final class PlatformSendExecutor {
     private init() {}
 
     func transfer(destination: String, amount: UInt64) async throws {
-        _ = try await PlatformAddressSyncCoordinator.shared.transfer(
+        try await PlatformAddressSyncCoordinator.shared.transfer(
             destination: destination,
             amount: amount)
     }

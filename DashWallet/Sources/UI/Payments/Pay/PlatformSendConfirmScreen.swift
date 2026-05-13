@@ -83,6 +83,11 @@ struct PlatformSendConfirmScreen: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
+            Text(NSLocalizedString(
+                "Max fee: ~0.001 DASH. Change returns to your wallet.",
+                comment: ""))
+                .font(.caption2)
+                .foregroundColor(.secondary)
         }
     }
 
