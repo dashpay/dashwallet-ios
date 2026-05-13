@@ -418,10 +418,28 @@ struct SyncStateStorageDetailView: View {
 struct PlatformAddressDetailView: View {
     let record: PersistentPlatformAddress
 
+    @State private var didCopyAddress: Bool = false
+
     var body: some View {
         Form {
             Section("Address") {
-                FieldRow(label: "Address", value: record.address)
+                // Tap-to-copy: writes the full address to UIPasteboard and
+                // fires a success haptic. The row's value flashes "Copied!"
+                // briefly so the action is discoverable without an icon
+                // (textSelection still works for partial copies via long-press).
+                FieldRow(
+                    label: "Address",
+                    value: didCopyAddress ? "Copied!" : record.address
+                )
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    UIPasteboard.general.string = record.address
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    withAnimation { didCopyAddress = true }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        withAnimation { didCopyAddress = false }
+                    }
+                }
                 FieldRow(
                     label: "Type",
                     value: record.addressType == 0 ? "P2PKH" : "P2SH"
