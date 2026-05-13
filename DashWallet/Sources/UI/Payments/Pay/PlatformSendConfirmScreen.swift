@@ -92,21 +92,13 @@ struct PlatformSendConfirmScreen: View {
     }
 
     private var sendButton: some View {
-        Button(action: send) {
-            HStack {
-                if isWorking {
-                    SwiftUI.ProgressView().tint(.white)
-                }
-                Text(NSLocalizedString("Send", comment: ""))
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(.white)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(canSend ? Color.blue : Color.gray300)
-            .cornerRadius(10)
-        }
-        .disabled(!canSend || isWorking)
+        DashButton(
+            text: NSLocalizedString("Send", comment: ""),
+            style: .filledBlue,
+            size: .large,
+            isEnabled: canSend,
+            isLoading: isWorking,
+            action: send)
     }
 
     private var canSend: Bool {
