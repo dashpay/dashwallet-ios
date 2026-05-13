@@ -121,7 +121,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         }
     }
 
-    private func shouldSkipRefresh(for network: AppNetwork, trigger: RefreshTrigger) -> Bool {
+    private func shouldSkipRefresh(for network: Network, trigger: RefreshTrigger) -> Bool {
         switch trigger {
         case .walletMaterialChanged:
             return false
@@ -170,7 +170,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         return true
     }
 
-    private func resolveCurrentNetwork() -> Result<AppNetwork, RuntimeError> {
+    private func resolveCurrentNetwork() -> Result<Network, RuntimeError> {
         let chain = DWEnvironment.sharedInstance().currentChain
         if chain.isMainnet() {
             return .success(.mainnet)
@@ -192,7 +192,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         group.wait()
     }
 
-    private func waitForCoordinatorStart(for network: AppNetwork) -> Result<Void, Error> {
+    private func waitForCoordinatorStart(for network: Network) -> Result<Void, Error> {
         let group = DispatchGroup()
         var startResult: Result<Void, Error> = .success(())
 

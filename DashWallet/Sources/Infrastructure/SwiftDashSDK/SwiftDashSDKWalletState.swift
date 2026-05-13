@@ -209,23 +209,19 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         }
     }
 
-    /// Called from `SwiftDashSDKSPVCoordinator.performStart` after
-    /// `walletManager.importWallet` succeeds. Seeds the initial tx list
-    /// from the FFI's in-memory state (populated from cached chain data
-    /// on cold launch). On first launch the list starts empty and fills
-    /// progressively as SPV replays blocks.
-    ///
-    /// Non-fatal — if the FFI call fails, live updates eventually catch up.
+    /// No-op stub — `ManagedAccount.getTransactions()` was removed when
+    /// SwiftDashSDK gated `managed_core_account_get_transactions` behind the
+    /// `keep-finalized-transactions` Cargo feature (off by default). Per the
+    /// upstream comment in `ManagedAccount.swift`, history is now delivered
+    /// through the platform-wallet event channel rather than the in-memory
+    /// per-account map; consumers must subscribe to wallet events Rust-side.
+    /// Kept here as a parameter-preserving stub so existing call sites still
+    /// compile; `applyTransactions(_:)` is what an event handler should call
+    /// when the event-driven seed path is wired up.
     public func seedTransactions(walletManager: WalletManager, walletId: Data) {
-        do {
-            let account = try walletManager.getManagedAccount(
-                walletId: walletId, accountIndex: 0, accountType: .standardBIP44)
-            let txs = account.getTransactions()
-            Self.logger.info("📜 TXLIST :: initial transactions seed: count=\(txs.count, privacy: .public)")
-            applyTransactions(txs)
-        } catch {
-            Self.logger.warning("📜 TXLIST :: initial transactions seed failed (non-fatal): \(String(describing: error), privacy: .public)")
-        }
+        _ = walletManager
+        _ = walletId
+        Self.logger.info("📜 TXLIST :: seedTransactions is a no-op — awaiting platform-wallet event subscription")
     }
 
     /// Called from `SwiftDashSDKWalletWiper.performWipe` after the wallet

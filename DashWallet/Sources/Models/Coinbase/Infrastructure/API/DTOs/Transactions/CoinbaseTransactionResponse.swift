@@ -16,7 +16,7 @@ struct CoinbaseTransaction: Codable {
     let createdAt, updatedAt: String?
     let resource, resourcePath: String?
     let instantExchange: Bool?
-    let network: Network?
+    let network: TransactionNetwork?
     let to: To?
     let idem: String?
     let application: Application?
@@ -58,9 +58,12 @@ struct Details: Codable {
     let title, subtitle, header, health: String?
 }
 
-// MARK: - Network
+// MARK: - TransactionNetwork
 
-struct Network: Codable {
+/// Renamed from `Network` to avoid colliding with `SwiftDashSDK.Network` in
+/// the dashwallet module. JSON decoding is field-name driven (CodingKeys
+/// below), so the Swift-side rename has no wire-format effect.
+struct TransactionNetwork: Codable {
     let status: String?
     let statusDescription: String?
     let hash: String?

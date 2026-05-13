@@ -38,7 +38,7 @@ final class SwiftDashSDKAddressValidator: NSObject {
 
     // MARK: - Network mapping
 
-    private static func mapNetwork(_ tag: ChainType_Tag) -> KeyWalletNetwork {
+    private static func mapNetwork(_ tag: ChainType_Tag) -> SwiftDashSDK.Network {
         switch tag {
         case ChainType_MainNet: return .mainnet
         case ChainType_TestNet: return .testnet

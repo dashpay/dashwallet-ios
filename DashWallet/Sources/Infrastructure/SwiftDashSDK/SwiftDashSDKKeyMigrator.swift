@@ -154,7 +154,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             return
         }
 
-        let appNetwork: AppNetwork = (network == .mainnet) ? .mainnet : .testnet
+        let appNetwork: Network = (network == .mainnet) ? .mainnet : .testnet
 
         // Inline validation, then a synchronous hop to the host on MainActor.
         do {
@@ -192,7 +192,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
     private static func createWalletOnHost(
         mnemonic: String,
-        network: AppNetwork,
+        network: Network,
         isImported: Bool
     ) throws -> Data {
         let semaphore = DispatchSemaphore(value: 0)
@@ -248,7 +248,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// NSKeyedArchiver `NSArray<NSString *>` of wallet IDs, and matching the
     /// chain genesis short-hex against our hard-coded mainnet/testnet
     /// constants. Returns `nil` for devnet/regtest/evonet (unsupported in v1).
-    private static func detectNetwork(forWalletID walletID: String) -> KeyWalletNetwork? {
+    private static func detectNetwork(forWalletID walletID: String) -> Network? {
         let query: [String: Any] = [
             kSecClass as String:            kSecClassGenericPassword,
             kSecAttrService as String:      dashSyncService,

@@ -49,7 +49,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     // MARK: - Published state
 
     @Published public private(set) var isRunning: Bool = false
-    @Published public private(set) var runningNetwork: AppNetwork? = nil
+    @Published public private(set) var runningNetwork: Network? = nil
 
     @Published public private(set) var isSyncing: Bool = false
     @Published public private(set) var lastSyncTime: Date? = nil
@@ -124,7 +124,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     // MARK: - Public lifecycle (Swift)
 
-    public nonisolated func start(for network: AppNetwork) {
+    public nonisolated func start(for network: Network) {
         Task { @MainActor in
             await self.performStart(network: network)
         }
@@ -214,7 +214,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
         let signer = KeychainSigner(
             modelContainer: container,
-            network: network.sdkNetwork)
+            network: network)
 
         Self.logger.info(
             "🛰️ PLATFORM-SEND :: → \(destination, privacy: .public) :: amount=\(amount) account=\(senderAccountIndex) change=\(changeRow?.address ?? "fallback", privacy: .public)")
@@ -266,14 +266,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     // MARK: - Main-actor work
 
     private func startForCurrentNetworkMainActor() async {
-        guard let network = resolveCurrentAppNetwork() else {
+        guard let network = resolveCurrentNetwork() else {
             Self.logger.info("🛰️ PLATFORM-ADDR :: skipping start — unsupported network")
             return
         }
         await performStart(network: network)
     }
 
-    private func performStart(network: AppNetwork) async {
+    private func performStart(network: Network) async {
         if isRunning && runningNetwork == network {
             Self.logger.info("🛰️ PLATFORM-ADDR :: start ignored — already running on \(network.rawValue, privacy: .public)")
             return
@@ -554,20 +554,11 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     // MARK: - Helpers
 
-    private func resolveCurrentAppNetwork() -> AppNetwork? {
+    private func resolveCurrentNetwork() -> Network? {
         let chain = DWEnvironment.sharedInstance().currentChain
         if chain.isMainnet() { return .mainnet }
         if chain.isTestnet() { return .testnet }
         return nil
-    }
-
-    private func keyWalletNetwork(for network: AppNetwork) -> KeyWalletNetwork {
-        switch network {
-        case .mainnet: return .mainnet
-        case .testnet: return .testnet
-        case .devnet: return .devnet
-        case .regtest: return .regtest
-        }
     }
 
     struct PlatformRecipient {

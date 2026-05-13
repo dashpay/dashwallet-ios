@@ -171,14 +171,14 @@ struct PlatformSendConfirmScreen: View {
                 amount: amount)
             successMessage = NSLocalizedString("Transfer submitted", comment: "")
             PlatformAddressSyncCoordinator.shared.start(
-                for: currentAppNetwork() ?? .testnet)
+                for: currentNetwork() ?? .testnet)
             Task { await PlatformAddressSyncCoordinator.shared.syncNow() }
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
-    private func currentAppNetwork() -> AppNetwork? {
+    private func currentNetwork() -> Network? {
         let chain = DWEnvironment.sharedInstance().currentChain
         if chain.isMainnet() { return .mainnet }
         if chain.isTestnet() { return .testnet }

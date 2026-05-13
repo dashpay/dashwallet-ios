@@ -479,11 +479,14 @@ struct WalletStorageDetailView: View {
                 FieldRow(label: "Birth Height", value: "\(record.birthHeight)")
                 FieldRow(label: "Synced Height", value: "\(record.syncedHeight)")
             }
-            Section("Balance") {
-                FieldRow(label: "Confirmed", value: "\(record.balanceConfirmed)")
-                FieldRow(label: "Unconfirmed", value: "\(record.balanceUnconfirmed)")
-                FieldRow(label: "Immature", value: "\(record.balanceImmature)")
-                FieldRow(label: "Locked", value: "\(record.balanceLocked)")
+            // Wallet-level cached balance fields were removed from
+            // `PersistentWallet` (SDK comment: "Per-account totals continue
+            // to live on `PersistentAccount`"). Sum the per-account fields
+            // for display in the storage explorer; the canonical live total
+            // lives in `PlatformWalletManager.accountBalances(for:)`.
+            Section("Balance (summed across accounts)") {
+                FieldRow(label: "Confirmed", value: "\(record.accounts.reduce(UInt64(0)) { $0 + $1.balanceConfirmed })")
+                FieldRow(label: "Unconfirmed", value: "\(record.accounts.reduce(UInt64(0)) { $0 + $1.balanceUnconfirmed })")
             }
             Section("Relationships") {
                 FieldRow(label: "Accounts", value: "\(record.accounts.count)")
@@ -508,9 +511,10 @@ struct AccountStorageDetailView: View {
     /// (account created before the xpub-persistence path landed) or
     /// decode fails.
     private var accountXpubString: String? {
-        PlatformWalletManager.accountExtendedPubKeyString(
-            bytes: record.accountExtendedPubKeyBytes
-        )
+        // `accountExtendedPubKeyBytes` is now `Data?` (`@Attribute(.unique)`,
+        // nil for accounts created before the xpub-persistence path).
+        guard let bytes = record.accountExtendedPubKeyBytes else { return nil }
+        return PlatformWalletManager.accountExtendedPubKeyString(bytes: bytes)
     }
 
     var body: some View {
@@ -679,9 +683,7 @@ struct TransactionStorageDetailView: View {
             Section("Metadata") {
                 FieldRow(label: "Label", value: record.label.isEmpty ? "None" : record.label)
                 FieldRow(label: "First Seen", value: "\(record.firstSeen)")
-                if let size = record.transactionData?.count {
-                    FieldRow(label: "TX Size", value: "\(size) bytes")
-                }
+                FieldRow(label: "TX Size", value: "\(record.transactionData.count) bytes")
             }
             Section("Timestamps") {
                 FieldRow(label: "Created", value: dateString(record.createdAt))

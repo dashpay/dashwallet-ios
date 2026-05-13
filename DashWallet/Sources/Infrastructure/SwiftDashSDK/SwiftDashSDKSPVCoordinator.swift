@@ -127,7 +127,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     // MARK: - Internal state
 
-    private var runningNetwork: AppNetwork?
+    private var runningNetwork: Network?
     private var progressCancellable: AnyCancellable?
 
     /// Mirror of running state, readable without hopping to the main actor.
@@ -135,13 +135,13 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// non-main `DispatchQueue`, so the lock — not the actor — is the
     /// concurrency boundary.
     private struct CachedRunState {
-        var network: AppNetwork?
+        var network: Network?
         var running: Bool
     }
     private let cacheLock = NSLock()
     private var cachedRunState = CachedRunState(network: nil, running: false)
 
-    private func updateCachedRunState(network: AppNetwork?, running: Bool) {
+    private func updateCachedRunState(network: Network?, running: Bool) {
         cacheLock.lock()
         cachedRunState = CachedRunState(network: network, running: running)
         cacheLock.unlock()
@@ -155,7 +155,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     // MARK: - Public lifecycle (called via DispatchGroup from workQueue)
 
-    func start(for network: AppNetwork, completion: @escaping (Result<Void, Error>) -> Void) {
+    func start(for network: Network, completion: @escaping (Result<Void, Error>) -> Void) {
         Task { @MainActor in
             let result = self.performStart(for: network)
             completion(result)
@@ -169,7 +169,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
     }
 
-    func isRunning(for network: AppNetwork) -> Bool {
+    func isRunning(for network: Network) -> Bool {
         cacheLock.lock()
         defer { cacheLock.unlock() }
         return cachedRunState.running && cachedRunState.network == network
@@ -234,7 +234,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     // MARK: - Implementation
 
     @MainActor
-    private func performStart(for network: AppNetwork) -> Result<Void, Error> {
+    private func performStart(for network: Network) -> Result<Void, Error> {
         let host = SwiftDashSDKHost.shared
         let manager: PlatformWalletManager
         do {
@@ -252,7 +252,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             return .success(())
         }
 
-        guard let platformNet = host.platformNetwork(for: network) else {
+        guard network != .regtest else {
             return .failure(StartError.dataDirectory(HostUnsupportedNetwork(network: network)))
         }
 
@@ -266,7 +266,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
         let config = PlatformSpvStartConfig(
             dataDir: dataDir,
-            network: platformNet,
+            network: network,
             userAgent: nil,
             peers: [],
             restrictToConfiguredPeers: false,
@@ -435,7 +435,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     // MARK: - Filesystem
 
-    private func makeSPVDataDirectory(for network: AppNetwork) throws -> URL {
+    private func makeSPVDataDirectory(for network: Network) throws -> URL {
         let documents = try FileManager.default.url(
             for: .documentDirectory,
             in: .userDomainMask,
@@ -484,7 +484,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     }
 
     private struct HostUnsupportedNetwork: LocalizedError {
-        let network: AppNetwork
+        let network: Network
         var errorDescription: String? { "Platform SDK does not support \(network.rawValue)" }
     }
 }

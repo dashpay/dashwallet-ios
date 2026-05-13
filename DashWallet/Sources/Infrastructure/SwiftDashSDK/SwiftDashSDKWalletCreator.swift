@@ -33,10 +33,12 @@ final class SwiftDashSDKWalletCreator: NSObject {
     // MARK: - Network
 
     /// Network tags exposed to Obj-C as plain integers, mirroring the
-    /// `KeyWalletNetwork` cases the migrator uses. Keeps Obj-C call sites
-    /// from needing to import SwiftDashSDK.
+    /// `Network` cases the migrator uses. Keeps Obj-C call sites from
+    /// needing to import SwiftDashSDK. Named `BridgeNetwork` Swift-side to
+    /// avoid shadowing `SwiftDashSDK.Network`; ObjC consumers still see
+    /// `DWSwiftDashSDKNetwork`.
     @objc(DWSwiftDashSDKNetwork)
-    enum Network: Int {
+    enum BridgeNetwork: Int {
         case mainnet = 0
         case testnet = 1
     }
@@ -58,7 +60,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
     ///     SwiftDashSDK key material is now mnemonic-only.
     ///   - network: 0 = mainnet, 1 = testnet. Devnet/regtest are unsupported.
     @objc(createWalletWithMnemonic:pin:network:)
-    static func createWallet(mnemonic: String, pin: String, network: Network) {
+    static func createWallet(mnemonic: String, pin: String, network: BridgeNetwork) {
         DispatchQueue.global(qos: .userInitiated).async {
             performCreate(
                 mnemonic: mnemonic,
@@ -81,7 +83,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
     ///     SwiftDashSDK key material is now mnemonic-only.
     ///   - network: 0 = mainnet, 1 = testnet. Devnet/regtest are unsupported.
     @objc(importWalletWithMnemonic:pin:network:)
-    static func importWallet(mnemonic: String, pin: String, network: Network) {
+    static func importWallet(mnemonic: String, pin: String, network: BridgeNetwork) {
         DispatchQueue.global(qos: .userInitiated).async {
             performCreate(
                 mnemonic: mnemonic,
@@ -105,11 +107,11 @@ final class SwiftDashSDKWalletCreator: NSObject {
     private static func performCreate(
         mnemonic: String,
         pin: String,
-        network: Network,
+        network: BridgeNetwork,
         isImported: Bool,
         label: String
     ) {
-        let appNetwork: AppNetwork = (network == .mainnet) ? .mainnet : .testnet
+        let appNetwork: Network = (network == .mainnet) ? .mainnet : .testnet
 
         guard !mnemonic.isEmpty else {
             logger.error("\(label, privacy: .public): empty mnemonic — refusing")
@@ -149,7 +151,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
 
     private static func createWalletOnHost(
         mnemonic: String,
-        network: AppNetwork,
+        network: Network,
         isImported: Bool
     ) throws -> Data {
         let semaphore = DispatchSemaphore(value: 0)

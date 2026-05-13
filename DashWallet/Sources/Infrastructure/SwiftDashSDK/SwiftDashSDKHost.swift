@@ -50,7 +50,7 @@ final class SwiftDashSDKHost {
     private(set) var manager: PlatformWalletManager?
     private(set) var wallet: ManagedPlatformWallet?
     private(set) var modelContainer: ModelContainer?
-    private(set) var runningNetwork: AppNetwork?
+    private(set) var runningNetwork: Network?
 
     // MARK: - Process-wide SDK init guard
 
@@ -71,13 +71,13 @@ final class SwiftDashSDKHost {
     // MARK: - Lifecycle
 
     enum HostError: LocalizedError {
-        case unsupportedNetwork(AppNetwork)
+        case unsupportedNetwork(Network)
         case sdkInitFailed(Error)
         case modelContainerFailed(Error)
         case configureFailed(Error)
         case walletBootstrapFailed(Error)
         case walletCreationFailed(Error)
-        case walletNotFound(AppNetwork)
+        case walletNotFound(Network)
         case invalidMnemonic
         case mnemonicPersistenceFailed(Error)
         case mnemonicRoundTripMismatch
@@ -112,15 +112,14 @@ final class SwiftDashSDKHost {
         let sdk: SDK
         let manager: PlatformWalletManager
         let modelContainer: ModelContainer
-        let network: AppNetwork
-        let platformNetwork: PlatformNetwork
+        let network: Network
     }
 
     /// Start the host for `network`. Idempotent: re-entering with the same
     /// network leaves the live manager + wallet alone. Different network
     /// triggers a clean rebuild via `stop()` first.
     @discardableResult
-    func start(network: AppNetwork) throws -> (manager: PlatformWalletManager, wallet: ManagedPlatformWallet) {
+    func start(network: Network) throws -> (manager: PlatformWalletManager, wallet: ManagedPlatformWallet) {
         if let existingManager = manager,
            let existingWallet = wallet,
            runningNetwork == network {
@@ -151,7 +150,7 @@ final class SwiftDashSDKHost {
     @discardableResult
     func createOrImportWallet(
         mnemonic: String,
-        network: AppNetwork,
+        network: Network,
         isImported: Bool
     ) throws -> ManagedPlatformWallet {
         guard !mnemonic.isEmpty, Mnemonic.validate(mnemonic) else {
@@ -165,7 +164,7 @@ final class SwiftDashSDKHost {
         do {
             createdWallet = try handles.manager.createWallet(
                 mnemonic: mnemonic,
-                network: handles.platformNetwork,
+                network: handles.network,
                 name: "dashwallet",
                 createDefaultAccounts: true)
         } catch {
@@ -218,12 +217,12 @@ final class SwiftDashSDKHost {
 
     // MARK: - Runtime bootstrap
 
-    private func buildRuntime(for network: AppNetwork) throws -> RuntimeHandles {
+    private func buildRuntime(for network: Network) throws -> RuntimeHandles {
         if manager != nil {
             stop()
         }
 
-        guard let platformNetwork = platformNetwork(for: network) else {
+        guard network != .regtest else {
             throw HostError.unsupportedNetwork(network)
         }
 
@@ -231,7 +230,7 @@ final class SwiftDashSDKHost {
 
         let newSDK: SDK
         do {
-            newSDK = try SDK(network: network.sdkNetwork)
+            newSDK = try SDK(network: network)
         } catch {
             Self.logger.error("🪺 HOST :: SDK init failed: \(String(describing: error), privacy: .public)")
             throw HostError.sdkInitFailed(error)
@@ -257,13 +256,12 @@ final class SwiftDashSDKHost {
             sdk: newSDK,
             manager: newManager,
             modelContainer: container,
-            network: network,
-            platformNetwork: platformNetwork)
+            network: network)
     }
 
     private func loadPersistedWallet(
         manager: PlatformWalletManager,
-        network: AppNetwork
+        network: Network
     ) throws -> ManagedPlatformWallet {
         let restored = try manager.loadFromPersistor()
         if let first = manager.firstWallet {
@@ -298,20 +296,9 @@ final class SwiftDashSDKHost {
         }
     }
 
-    // MARK: - Network helpers
-
-    func platformNetwork(for network: AppNetwork) -> PlatformNetwork? {
-        switch network {
-        case .mainnet: return .mainnet
-        case .testnet: return .testnet
-        case .devnet: return .devnet
-        case .regtest: return nil
-        }
-    }
-
     // MARK: - ModelContainer
 
-    private func buildModelContainer(for network: AppNetwork) throws -> ModelContainer {
+    private func buildModelContainer(for network: Network) throws -> ModelContainer {
         let documents = try FileManager.default.url(
             for: .documentDirectory,
             in: .userDomainMask,
