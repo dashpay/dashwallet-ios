@@ -40,30 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)setPin:(NSString *)pin {
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-
-    // Capture the current PIN BEFORE setupNewPin overwrites it. Will be
-    // empty/nil during first-time setup (no PIN yet) — that case is
-    // handled by skipping the SwiftDashSDK mirror entirely below.
-    NSError *getPinError = nil;
-    NSString *oldPin = [authenticationManager getPin:&getPinError];
-
-    BOOL success = [authenticationManager setupNewPin:pin];
-    if (!success) {
-        return NO;
-    }
-
-    // Mirror the PIN change into SwiftDashSDK so its encrypted seed
-    // can still be decrypted after the change. Self-discriminates:
-    //   - oldPin empty/nil → first-time setup (intent: createNewWallet),
-    //     no SwiftDashSDK seed exists yet; the wallet creator will
-    //     populate it later in the onboarding flow with the new PIN.
-    //   - old == new → no-op "change", nothing to do.
-    // Both branches fall through this single guard.
-    if (oldPin.length > 0 && ![oldPin isEqualToString:pin]) {
-        [DWSwiftDashSDKPinChanger changePinFrom:oldPin to:pin];
-    }
-
-    return YES;
+    return [authenticationManager setupNewPin:pin];
 }
 
 @end
