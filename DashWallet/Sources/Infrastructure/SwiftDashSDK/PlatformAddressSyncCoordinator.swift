@@ -136,6 +136,26 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }
     }
 
+    // MARK: - Public lifecycle (async)
+    //
+    // Used by `SwiftDashSDKWalletRuntime`'s single async lifecycle pipeline.
+    // The nonisolated/objc wrappers above stay for fire-and-forget callers.
+
+    @MainActor
+    public func startAsync(for network: Network) async {
+        await performStart(network: network)
+    }
+
+    @MainActor
+    public func stopAsync() async {
+        await performStop(deletingPersistedWallet: false)
+    }
+
+    @MainActor
+    public static func stopForWipeAsync() async {
+        await shared.performStop(deletingPersistedWallet: true)
+    }
+
     public func syncNow() async {
         guard !isSyncing else { return }
         guard let manager = walletManager else {

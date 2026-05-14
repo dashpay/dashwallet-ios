@@ -14,8 +14,8 @@
 //
 //  Public surface is the Combine `@Published` state consumed by
 //  `SyncingActivityMonitor` and `SwiftDashSDKSPVStatusScreen` plus the
-//  `start` / `stop(lastError:completion:)` / `isRunning(for:)` lifecycle
-//  driven by `SwiftDashSDKWalletRuntime`.
+//  `startAsync(for:)` / `stopAsync(lastError:)` lifecycle driven by
+//  `SwiftDashSDKWalletRuntime`'s serial async pipeline.
 //
 //  The local stand-in types (`SPVSyncState`, `SPVSyncProgress`,
 //  `PhaseSubProgress`, etc. below) survived the SDK refactor and are now
@@ -107,49 +107,29 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     private var runningNetwork: Network?
     private var progressCancellable: AnyCancellable?
 
-    /// Mirror of running state, readable without hopping to the main actor.
-    /// `WalletRuntime.shouldSkipRefresh` reads `isRunning(for:)` from a
-    /// non-main `DispatchQueue`, so the lock — not the actor — is the
-    /// concurrency boundary.
-    private struct CachedRunState {
-        var network: Network?
-        var running: Bool
-    }
-    private let cacheLock = NSLock()
-    private var cachedRunState = CachedRunState(network: nil, running: false)
-
-    private func updateCachedRunState(network: Network?, running: Bool) {
-        cacheLock.lock()
-        cachedRunState = CachedRunState(network: network, running: running)
-        cacheLock.unlock()
-    }
-
     // MARK: - Init
 
     private override init() {
         super.init()
     }
 
-    // MARK: - Public lifecycle (called via DispatchGroup from workQueue)
+    // MARK: - Public lifecycle (async)
+    //
+    // Invoked by `SwiftDashSDKWalletRuntime`'s single async pipeline,
+    // which owns the canonical `currentNetwork` state and serializes
+    // start / stop ordering.
 
-    func start(for network: Network, completion: @escaping (Result<Void, Error>) -> Void) {
-        Task { @MainActor in
-            let result = self.performStart(for: network)
-            completion(result)
+    @MainActor
+    func startAsync(for network: Network) async throws {
+        switch performStart(for: network) {
+        case .success: return
+        case .failure(let error): throw error
         }
     }
 
-    func stop(lastError: String?, completion: (() -> Void)? = nil) {
-        Task { @MainActor in
-            self.performStop(lastError: lastError)
-            completion?()
-        }
-    }
-
-    func isRunning(for network: Network) -> Bool {
-        cacheLock.lock()
-        defer { cacheLock.unlock() }
-        return cachedRunState.running && cachedRunState.network == network
+    @MainActor
+    func stopAsync(lastError: String?) async {
+        performStop(lastError: lastError)
     }
 
     // MARK: - Implementation
@@ -202,7 +182,6 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
 
         runningNetwork = network
-        updateCachedRunState(network: network, running: true)
         lastError = nil
         subscribeToManagerProgress(manager: manager)
         refreshBalanceBridge()
@@ -233,7 +212,6 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         SwiftDashSDKWalletState.shared.clearBalance()
 
         runningNetwork = nil
-        updateCachedRunState(network: nil, running: false)
         resetPublishedState()
         if let lastError {
             self.lastError = lastError
