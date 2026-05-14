@@ -12,10 +12,10 @@
 //  managers would mean two FFI handles and divergent SwiftData
 //  persistence, so all sync subsystems consume the host's single instance.
 //
-//  Public surface (Combine `@Published` + Obj-C `@objc(stop)`) is preserved
-//  so existing consumers (`SyncingActivityMonitor`,
-//  `SwiftDashSDKSPVStatusScreen`, `SwiftDashSDKWalletRuntime`,
-//  `SwiftDashSDKTransactionSender`) keep working without rewires.
+//  Public surface is the Combine `@Published` state consumed by
+//  `SyncingActivityMonitor` and `SwiftDashSDKSPVStatusScreen` plus the
+//  `start` / `stop(lastError:completion:)` / `isRunning(for:)` lifecycle
+//  driven by `SwiftDashSDKWalletRuntime`.
 //
 //  The local stand-in types (`SPVSyncState`, `SPVSyncProgress`,
 //  `PhaseSubProgress`, etc. below) survived the SDK refactor and are now
@@ -51,10 +51,7 @@ public struct SPVSyncProgress {
     public var headers: PhaseSubProgress?
     public var filterHeaders: PhaseSubProgress?
     public var filters: PhaseSubProgress?
-    public var blocks: BlocksSubProgress?
     public var masternodes: MasternodesSubProgress?
-    public var chainLocks: ChainLocksSubProgress?
-    public var instantSend: InstantSendSubProgress?
 
     public static func `default`() -> SPVSyncProgress {
         SPVSyncProgress(
@@ -63,10 +60,7 @@ public struct SPVSyncProgress {
             headers: nil,
             filterHeaders: nil,
             filters: nil,
-            blocks: nil,
-            masternodes: nil,
-            chainLocks: nil,
-            instantSend: nil)
+            masternodes: nil)
     }
 }
 
@@ -77,26 +71,11 @@ public struct PhaseSubProgress {
     public let targetHeight: UInt32
 }
 
-public struct BlocksSubProgress {
-    public let state: SPVSyncState
-    public let lastProcessed: UInt32
-}
-
 public struct MasternodesSubProgress {
     public let state: SPVSyncState
     public let currentHeight: UInt32
     public let targetHeight: UInt32
     public let diffsProcessed: UInt32
-}
-
-public struct ChainLocksSubProgress {
-    public let state: SPVSyncState
-    public let bestValidatedHeight: UInt32
-}
-
-public struct InstantSendSubProgress {
-    public let state: SPVSyncState
-    public let valid: UInt32
 }
 
 // MARK: - SwiftDashSDKSPVCoordinator
@@ -120,9 +99,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @Published public private(set) var state: SPVSyncState = .idle
     @Published public private(set) var tipHeight: UInt32 = 0
     @Published public private(set) var bestPeerHeight: UInt32 = 0
-    @Published public private(set) var connectedPeerCount: UInt32 = 0
     @Published public private(set) var lastError: String? = nil
-    @Published public private(set) var isComplete: Bool = false
     @Published public private(set) var syncProgress: SPVSyncProgress = .default()
 
     // MARK: - Internal state
@@ -173,62 +150,6 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         cacheLock.lock()
         defer { cacheLock.unlock() }
         return cachedRunState.running && cachedRunState.network == network
-    }
-
-    @objc(stop)
-    public static func stop() {
-        shared.stop(lastError: nil, completion: nil)
-    }
-
-    // MARK: - Transaction support
-
-    /// Broadcast a previously-signed Core transaction via the live SPV
-    /// network. Throws if the host is not started or the wallet is not yet
-    /// available.
-    ///
-    /// The actual SDK call must run on the main actor (the wallet handle
-    /// is `@MainActor`-isolated); we trampoline through
-    /// `DispatchQueue.main.sync` if invoked from a background thread.
-    /// Synchronous to keep `@objc(broadcastAndReturnError:)` Obj-C call
-    /// sites working without async-conversion.
-    func broadcastTransaction(_ data: Data) throws {
-        if Thread.isMainThread {
-            try MainActor.assumeIsolated {
-                try _broadcastOnMain(data)
-            }
-        } else {
-            var thrownError: Error?
-            DispatchQueue.main.sync {
-                MainActor.assumeIsolated {
-                    do {
-                        try _broadcastOnMain(data)
-                    } catch {
-                        thrownError = error
-                    }
-                }
-            }
-            if let thrownError {
-                throw thrownError
-            }
-        }
-    }
-
-    @MainActor
-    private func _broadcastOnMain(_ data: Data) throws {
-        guard let wallet = SwiftDashSDKHost.shared.wallet else {
-            throw TransactionSenderError.spvNotRunning
-        }
-        let core = try wallet.coreWallet()
-        _ = try core.broadcastTransaction(data)
-    }
-
-    /// Stubbed — `SwiftDashSDKTransactionSender.buildAndSign` is currently
-    /// disabled (the SDK now bundles build+sign+broadcast into a single
-    /// `coreWallet().sendToAddresses(...)` call which doesn't fit the
-    /// existing PIN-gated build/broadcast split). Reinstate when that send
-    /// path is reworked.
-    func getWalletManager() throws -> WalletManager {
-        throw TransactionSenderError.spvNotRunning
     }
 
     // MARK: - Implementation
@@ -342,16 +263,13 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             headers: p.headers.map(mapPhase),
             filterHeaders: p.filterHeaders.map(mapPhase),
             filters: p.filters.map(mapPhase),
-            blocks: nil,
             masternodes: p.masternodes.map { sub in
                 MasternodesSubProgress(
                     state: mapState(sub.state),
                     currentHeight: sub.currentHeight,
                     targetHeight: sub.targetHeight,
                     diffsProcessed: 0)
-            },
-            chainLocks: nil,
-            instantSend: nil)
+            })
 
         // Best-effort tip / peer-height: the new SDK doesn't expose peer
         // counts or a discrete "best peer" height. Approximate from the
@@ -367,7 +285,6 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         state = mappedState
         tipHeight = headersCurrent
         bestPeerHeight = max(headersTarget, headersCurrent)
-        isComplete = mappedState.isComplete()
         if mappedState != .error {
             lastError = nil
         }
@@ -408,8 +325,6 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         state = .idle
         tipHeight = 0
         bestPeerHeight = 0
-        connectedPeerCount = 0
-        isComplete = false
         syncProgress = .default()
     }
 
@@ -451,17 +366,6 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     }
 
     // MARK: - Errors
-
-    enum TransactionSenderError: LocalizedError {
-        case spvNotRunning
-
-        var errorDescription: String? {
-            switch self {
-            case .spvNotRunning:
-                return "Wallet not ready — Core SPV is not running"
-            }
-        }
-    }
 
     enum StartError: LocalizedError {
         case dataDirectory(Error)

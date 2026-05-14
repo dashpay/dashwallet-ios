@@ -257,7 +257,7 @@ extension SyncingActivityMonitor {
 
     /// Map SwiftDashSDK's per-phase progress to the snapshot fields the
     /// existing UI consumers expect. The phase priority order
-    /// (headers → filterHeaders → filters → blocks → masternodes → finished)
+    /// (headers → filterHeaders → filters → masternodes → finished)
     /// matches what dashwallet's syncing UI used to render under DashSync.
     private func makeSnapshot(
         from progress: SPVSyncProgress,
@@ -272,8 +272,6 @@ extension SyncingActivityMonitor {
             kind = .filterHeaders
         } else if let f = progress.filters, f.percentage < 1.0 {
             kind = .filters
-        } else if let b = progress.blocks, peersBestHeight > 0, b.lastProcessed < peersBestHeight {
-            kind = .blocks
         } else if let m = progress.masternodes, m.targetHeight > m.currentHeight {
             kind = .masternodes
         } else {
@@ -281,7 +279,7 @@ extension SyncingActivityMonitor {
         }
 
         let headerHeight = progress.headers?.currentHeight ?? 0
-        let blockHeight = progress.blocks?.lastProcessed ?? headerHeight
+        let blockHeight = headerHeight
         let mnReceived = progress.masternodes?.diffsProcessed ?? 0
         // SDK doesn't expose "total masternode lists to download" directly;
         // approximate from the height delta on the masternodes phase. UI

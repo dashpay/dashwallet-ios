@@ -128,7 +128,6 @@ struct SwiftDashSDKSPVStatusScreen: View {
 
     private var peersCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            row(title: "Connected peers", value: "\(coordinator.connectedPeerCount)")
             row(title: "Tip height", value: "\(coordinator.tipHeight)")
             row(title: "Best peer height", value: "\(coordinator.bestPeerHeight)")
         }
@@ -166,32 +165,11 @@ struct SwiftDashSDKSPVStatusScreen: View {
                 target: coordinator.syncProgress.filters?.targetHeight
             )
             phaseRow(
-                title: "Blocks",
-                state: coordinator.syncProgress.blocks?.state,
-                percentage: nil,
-                current: coordinator.syncProgress.blocks?.lastProcessed,
-                target: nil
-            )
-            phaseRow(
                 title: "Masternodes",
                 state: coordinator.syncProgress.masternodes?.state,
                 percentage: nil,
                 current: coordinator.syncProgress.masternodes?.currentHeight,
                 target: coordinator.syncProgress.masternodes?.targetHeight
-            )
-            phaseRow(
-                title: "ChainLocks",
-                state: coordinator.syncProgress.chainLocks?.state,
-                percentage: nil,
-                current: coordinator.syncProgress.chainLocks?.bestValidatedHeight,
-                target: nil
-            )
-            phaseRow(
-                title: "InstantSend",
-                state: coordinator.syncProgress.instantSend?.state,
-                percentage: nil,
-                current: coordinator.syncProgress.instantSend?.valid,
-                target: nil
             )
         }
         .padding(16)
