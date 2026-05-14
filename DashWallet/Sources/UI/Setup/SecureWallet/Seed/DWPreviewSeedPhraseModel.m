@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
         // by `createSwiftDashSDKWalletWithMnemonic:` below. Use the in-hand
         // string here rather than `readMnemonic`, which would race against
         // that background dispatch and return nil → crash on `initWithSeed:`.
-        NSString *mnemonic = [DWSwiftDashSDKMnemonicGenerator generateAndStore];
+        NSString *mnemonic = [self generateAndStoreMnemonic];
         if (mnemonic.length == 0) {
             return [[DWSeedPhraseModel alloc] initWithSeed:nil];
         }
@@ -84,7 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
         // the screen renders blank words, which is a degraded UX but
         // survivable. Proper fix (DashSync fallback or error banner) is
         // a follow-up once the broader DashSync-drop is in flight.
-        seedPhrase = [DWSwiftDashSDKMnemonicReader readMnemonic] ?: @"";
+        seedPhrase = [self readStoredMnemonic] ?: @"";
     }
 
     return [[DWSeedPhraseModel alloc] initWithSeed:seedPhrase];
