@@ -142,8 +142,12 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     // The nonisolated/objc wrappers above stay for fire-and-forget callers.
 
     @MainActor
-    public func startAsync(for network: Network) async {
+    public func startAsync(for network: Network) async throws {
         await performStart(network: network)
+        if isRunning && runningNetwork == network {
+            return
+        }
+        throw StartError.failed(lastError ?? "BLAST start failed")
     }
 
     @MainActor
@@ -154,6 +158,17 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     @MainActor
     public static func stopForWipeAsync() async {
         await shared.performStop(deletingPersistedWallet: true)
+    }
+
+    enum StartError: LocalizedError {
+        case failed(String)
+
+        var errorDescription: String? {
+            switch self {
+            case .failed(let message):
+                return "BLAST start failed: \(message)"
+            }
+        }
     }
 
     public func syncNow() async {

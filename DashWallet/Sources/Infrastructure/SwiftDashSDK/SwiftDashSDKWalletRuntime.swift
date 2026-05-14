@@ -36,6 +36,16 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     static let shared = SwiftDashSDKWalletRuntime()
 
+    /// Serial gate at the Obj-C/Swift entrypoint boundary. Each entrypoint
+    /// pushes its enqueue step through here so that two callers from
+    /// different threads (e.g. a wipe and a wallet-material-changed
+    /// notification arriving simultaneously) produce a strict FIFO order
+    /// of Task creation, not just an order that happens to hold for
+    /// MainActor-originated callers.
+    private static let entryQueue = DispatchQueue(
+        label: "org.dashfoundation.dash.swift-sdk-wallet-runtime.entry",
+        qos: .userInitiated)
+
     private var observerToken: NSObjectProtocol?
     private var currentLifecycleTask: Task<Void, Never>?
     private var currentNetwork: Network?
@@ -47,40 +57,44 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     // MARK: - Obj-C / Swift entrypoints
     //
     // All public entrypoints are fire-and-forget at the caller boundary —
-    // they enqueue a single op onto the serial task chain and return.
+    // they push one ordered step through `entryQueue` which then enqueues
+    // a single op onto the serial lifecycle task chain.
 
     @objc(startIfReady)
     nonisolated static func startIfReady() {
-        Task { @MainActor in
-            shared.enqueueRefresh(trigger: .startIfReady)
-        }
+        dispatchOnPipeline { shared.enqueueRefresh(trigger: .startIfReady) }
     }
 
     @objc(stop)
     nonisolated static func stop() {
-        Task { @MainActor in
-            shared.enqueueFullReset(lastError: nil, forWipe: false)
-        }
+        dispatchOnPipeline { shared.enqueueFullReset(lastError: nil, forWipe: false) }
     }
 
     @objc(startObservingNetworkChanges)
     nonisolated static func startObservingNetworkChanges() {
-        Task { @MainActor in
-            shared.installNetworkObserver()
-        }
+        dispatchOnPipeline { shared.installNetworkObserver() }
     }
 
     @objc(handleWalletMaterialChanged)
     nonisolated static func handleWalletMaterialChanged() {
-        Task { @MainActor in
-            shared.enqueueRefresh(trigger: .walletMaterialChanged)
-        }
+        dispatchOnPipeline { shared.enqueueRefresh(trigger: .walletMaterialChanged) }
     }
 
     @objc(handleWalletWiped)
     nonisolated static func handleWalletWiped() {
-        Task { @MainActor in
-            shared.enqueueFullReset(lastError: nil, forWipe: true)
+        dispatchOnPipeline { shared.enqueueFullReset(lastError: nil, forWipe: true) }
+    }
+
+    /// Push one ordered step from any thread into the MainActor lifecycle.
+    /// `entryQueue` serializes Task creation; the MainActor then processes
+    /// the enqueue calls in the order their Tasks were created. The block
+    /// itself only touches `currentLifecycleTask` (synchronous), so no
+    /// `await` boundaries open up inside it for reordering.
+    nonisolated private static func dispatchOnPipeline(
+        _ block: @escaping @Sendable @MainActor () -> Void
+    ) {
+        entryQueue.async {
+            Task { @MainActor in block() }
         }
     }
 
@@ -138,7 +152,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
             do {
                 try await SwiftDashSDKSPVCoordinator.shared.startAsync(for: network)
-                await PlatformAddressSyncCoordinator.shared.startAsync(for: network)
+                try await PlatformAddressSyncCoordinator.shared.startAsync(for: network)
                 currentNetwork = network
             } catch {
                 Self.logger.error("🧭 RUNTIME :: start failed: \(String(describing: error), privacy: .public)")
@@ -171,7 +185,15 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         case .walletMaterialChanged:
             return false
         case .startIfReady, .networkDidChange:
+            // External callers (PlatformSyncStatusScreen, StorageExplorerUnavailableView,
+            // PlatformSendConfirmScreen) can mutate BLAST without touching
+            // `currentNetwork`, so consult the live coordinator state too — otherwise
+            // the runtime would skip a refresh after an out-of-band BLAST stop and
+            // leave the user without the BLAST sync they triggered.
+            let blast = PlatformAddressSyncCoordinator.shared
             return currentNetwork == network
+                && blast.isRunning
+                && blast.runningNetwork == network
         }
     }
 
