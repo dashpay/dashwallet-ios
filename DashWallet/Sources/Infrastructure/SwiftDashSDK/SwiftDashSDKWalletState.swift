@@ -8,10 +8,12 @@
 //  the FFI couples their event delivery.
 //
 //  Currently holds wallet balance only (function #5 of the DashSync
-//  migration). Will grow to hold transactions (#6), addresses (#1),
-//  identities (#16) etc. as those migrations land. The SPV coordinator's
-//  WalletEventsHandler forwards FFI events here; this class owns the
-//  @Published Combine surface that BalanceModel and friends subscribe to.
+//  migration). Transaction history is read directly from SwiftData
+//  (`PersistentTransaction` rows written by Rust's persister callback);
+//  future migrations may add addresses (#1), identities (#16) etc. as
+//  those land. The SPV coordinator's WalletEventsHandler forwards FFI
+//  events here; this class owns the @Published Combine surface that
+//  BalanceModel and friends subscribe to.
 //
 //  Hard invariants:
 //    1. NEVER throws or crashes from public methods.
@@ -72,11 +74,6 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// `seedInitialBalance(walletManager:walletId:)` succeeds or the
     /// first `applyBalance(_:)` call arrives. Updated on the main queue.
     @Published public private(set) var balance: WalletBalance? = nil
-
-    /// Latest wallet transaction list from SwiftDashSDK. `nil` until either
-    /// `seedTransactions(walletManager:walletId:)` succeeds or the first
-    /// `applyTransactions(_:)` call arrives. Updated on the main queue.
-    @Published public private(set) var transactions: [WalletTransaction]? = nil
 
     // MARK: - Obj-C bridge
 
@@ -162,19 +159,15 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         }
     }
 
-    /// Clears balance and transaction state synchronously on the main queue.
-    /// Runtime transitions use this so a restart cannot race with stale
-    /// published wallet data lingering after a network switch.
+    /// Clears wallet state synchronously on the main queue. Runtime
+    /// transitions use this so a restart cannot race with stale published
+    /// wallet data lingering after a network switch.
     public func clearAllState() {
         let clearBlock = { [weak self] in
             Self.logger.info("💰 WALLET :: clearing all wallet state")
             self?.balance = nil
-            self?.transactions = nil
             NotificationCenter.default.post(
                 name: SwiftDashSDKWalletState.balanceDidChangeNotification,
-                object: nil)
-            NotificationCenter.default.post(
-                name: SwiftDashSDKWalletState.transactionsDidChangeNotification,
                 object: nil)
         }
 
@@ -182,57 +175,6 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             clearBlock()
         } else {
             DispatchQueue.main.sync(execute: clearBlock)
-        }
-    }
-
-    // MARK: - Transactions
-
-    /// Notification posted on the main queue whenever the published
-    /// `transactions` changes. Swift consumers should subscribe to
-    /// `$transactions` directly.
-    @objc public static let transactionsDidChangeNotification =
-        NSNotification.Name("DWSwiftDashSDKWalletStateTransactionsDidChange")
-
-    @objc public static var currentTransactionCount: Int {
-        return shared.transactions?.count ?? 0
-    }
-
-    /// Called from `SwiftDashSDKSPVCoordinator.WalletEventsHandler.onTransactionReceived`
-    /// after a re-fetch of all transactions. Marshals to the main queue.
-    public func applyTransactions(_ snapshot: [WalletTransaction]) {
-        DispatchQueue.main.async { [weak self] in
-            Self.logger.info("📜 TXLIST :: applying \(snapshot.count, privacy: .public) transactions")
-            self?.transactions = snapshot
-            NotificationCenter.default.post(
-                name: SwiftDashSDKWalletState.transactionsDidChangeNotification,
-                object: nil)
-        }
-    }
-
-    /// No-op stub — `ManagedAccount.getTransactions()` was removed when
-    /// SwiftDashSDK gated `managed_core_account_get_transactions` behind the
-    /// `keep-finalized-transactions` Cargo feature (off by default). Per the
-    /// upstream comment in `ManagedAccount.swift`, history is now delivered
-    /// through the platform-wallet event channel rather than the in-memory
-    /// per-account map; consumers must subscribe to wallet events Rust-side.
-    /// Kept here as a parameter-preserving stub so existing call sites still
-    /// compile; `applyTransactions(_:)` is what an event handler should call
-    /// when the event-driven seed path is wired up.
-    public func seedTransactions(walletManager: WalletManager, walletId: Data) {
-        _ = walletManager
-        _ = walletId
-        Self.logger.info("📜 TXLIST :: seedTransactions is a no-op — awaiting platform-wallet event subscription")
-    }
-
-    /// Called from `SwiftDashSDKWalletWiper.performWipe` after the wallet
-    /// state has been deleted. Clears the cached tx list.
-    public func clearTransactions() {
-        DispatchQueue.main.async { [weak self] in
-            Self.logger.info("📜 TXLIST :: clearing transactions")
-            self?.transactions = nil
-            NotificationCenter.default.post(
-                name: SwiftDashSDKWalletState.transactionsDidChangeNotification,
-                object: nil)
         }
     }
 }

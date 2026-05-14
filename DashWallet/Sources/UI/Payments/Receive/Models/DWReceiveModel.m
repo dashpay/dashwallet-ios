@@ -54,12 +54,13 @@ NS_ASSUME_NONNULL_BEGIN
                                                    object:nil];
 
         // Re-fetch the receive address as SwiftDashSDK's SPV catches up.
-        // On first launch post-migration the used-set starts empty and the
-        // initial address may already be used; once SPV processes blocks
-        // the next call returns the correct next-unused index.
+        // Rust's persister writes PersistentTransaction rows on every Core
+        // SPV / BLAST batch and SwiftData posts NSManagedObjectContextDidSave
+        // under the hood; observing that signal lets the displayed address
+        // advance to the next-unused BIP44 index once the used-set updates.
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(transactionReceivedNotification)
-                                                     name:DWSwiftDashSDKWalletState.transactionsDidChangeNotification
+                                                     name:NSManagedObjectContextDidSaveNotification
                                                    object:nil];
     }
     return self;
