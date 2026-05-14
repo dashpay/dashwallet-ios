@@ -75,10 +75,6 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
     return [[DSBIP39Mnemonic sharedInstance] wordIsValid:word];
 }
 
-- (BOOL)phraseIsValid:(NSString *)phrase {
-    return [DWSwiftDashSDKMnemonicValidator phraseIsValid:phrase];
-}
-
 - (void)wipeWallet {
     [DWApp cleanUp]; // Send notificaiton
     [[DWEnvironment sharedInstance] clearAllWallets];

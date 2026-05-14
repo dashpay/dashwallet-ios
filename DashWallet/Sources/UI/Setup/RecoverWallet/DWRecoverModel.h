@@ -40,8 +40,6 @@ extern NSInteger const DW_PHRASE_MULTIPLE;
 - (BOOL)wordIsLocal:(NSString *)word;
 - (BOOL)wordIsValid:(NSString *)word;
 
-- (BOOL)phraseIsValid:(NSString *)phrase;
-
 - (void)wipeWallet;
 - (BOOL)canWipeWithPhrase:(NSString *)phrase;
 
