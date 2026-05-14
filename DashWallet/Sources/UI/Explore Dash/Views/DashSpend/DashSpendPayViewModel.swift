@@ -77,6 +77,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     @Published var denominationInventory: [Int: Int] = [:]
     /// Maps each denomination to its specific discount percentage (after service fee)
     private var denominationDiscounts: [Int: Decimal] = [:]
+    @Published private var basketSavingsFraction: Decimal? = nil
     @Published var selectedDenomination: Int? = nil {
         didSet {
             if let denom = selectedDenomination {
@@ -90,8 +91,13 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             }
         }
     }
-    func updateTotalAmount(_ total: Decimal) {
+    var displaySavingsFraction: Decimal {
+        basketSavingsFraction ?? savingsFraction
+    }
+
+    func updateTotalAmount(_ total: Decimal, quantities: [Decimal: Int]? = nil) {
         amount = total
+        basketSavingsFraction = basketDiscountFraction(from: quantities)
         checkAmountForErrors()
     }
 
@@ -121,10 +127,11 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     
     var costMessage: String {
         let originalPrice = fiatFormatter.string(for: amount) ?? "0.00"
-        let discountedPrice = amount * (1 - savingsFraction)
+        let savingsToDisplay = displaySavingsFraction
+        let discountedPrice = amount * (1 - savingsToDisplay)
         let formattedDiscountedPrice = fiatFormatter.string(for: discountedPrice) ?? "0.00"
 
-        let discountPercent = NSDecimalNumber(decimal: savingsFraction * 100).doubleValue
+        let discountPercent = NSDecimalNumber(decimal: savingsToDisplay * 100).doubleValue
         let discountText = PercentageFormatter.format(percent: discountPercent, includePercent: false)
 
         return String(format:
@@ -449,6 +456,13 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                     self.minimumAmount = newMin
                     self.maximumAmount = newMax
                     self.denominations = newDenominations
+                    self.basketSavingsFraction = nil
+
+                    if isRange {
+                        self.selectedDenomination = nil
+                    } else if let selected = self.selectedDenomination, !newDenominations.contains(selected) {
+                        self.selectedDenomination = nil
+                    }
                 }
 
             #if PIGGYCARDS_ENABLED
@@ -578,6 +592,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                     self.maximumAmount = finalMax
                     self.denominations = finalDenominations
                     self.savingsFraction = finalSavings
+                    self.basketSavingsFraction = nil
                     if finalFixed {
                         if let selected = self.selectedDenomination, !finalDenominations.contains(selected) {
                             self.selectedDenomination = nil
@@ -723,6 +738,49 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
     private func decimalToDouble(_ value: Decimal) -> Double {
         Double(truncating: value as NSDecimalNumber)
+    }
+
+    private func basketDiscountFraction(from quantities: [Decimal: Int]?) -> Decimal? {
+        #if PIGGYCARDS_ENABLED
+        guard
+            provider == .piggyCards,
+            isFixedDenomination,
+            let quantities,
+            !quantities.isEmpty
+        else { return nil }
+
+        var originalTotal = Decimal(0)
+        var discountedTotal = Decimal(0)
+
+        for (denomination, quantity) in quantities where quantity > 0 {
+            let discount = discountForDenomination(denomination)
+            let lineOriginal = denomination * Decimal(quantity)
+            let lineDiscounted = lineOriginal * (1 - discount)
+            originalTotal += lineOriginal
+            discountedTotal += lineDiscounted
+        }
+
+        guard originalTotal > 0 else { return nil }
+        return 1 - (discountedTotal / originalTotal)
+        #else
+        return nil
+        #endif
+    }
+
+    private func discountForDenomination(_ denomination: Decimal) -> Decimal {
+        guard let key = wholeDollarDenominationKey(from: denomination),
+              let mappedDiscount = denominationDiscounts[key] else {
+            return savingsFraction
+        }
+
+        return mappedDiscount
+    }
+
+    private func wholeDollarDenominationKey(from denomination: Decimal) -> Int? {
+        let asDouble = NSDecimalNumber(decimal: denomination).doubleValue
+        let rounded = Int(asDouble.rounded())
+        guard abs(asDouble - Double(rounded)) < 0.0001 else { return nil }
+        return rounded
     }
 
     private func parseWholeDollarDenomination(_ raw: String) -> Int? {

@@ -140,10 +140,7 @@ struct DashSpendSinglePanel: View {
             )
             .frame(maxWidth: .infinity)
             .bottomPanelStyle()
-            .background(ignoresSafeAreaEdges: .top)
-            .background(
-                Color.secondaryBackground
-            )
+            .background(Color.secondaryBackground, ignoresSafeAreaEdges: .top)
         }
 
     }
