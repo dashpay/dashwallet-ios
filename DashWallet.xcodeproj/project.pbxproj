@@ -372,8 +372,8 @@
 		4759D514292FEFFC002F20DC /* ModalNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4759D513292FEFFB002F20DC /* ModalNavigationController.swift */; };
 		4759D51729300212002F20DC /* ProvideAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4759D51629300212002F20DC /* ProvideAmountViewController.swift */; };
 		475AE2B92974348F009A1055 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475AE2B82974348F009A1055 /* App.swift */; };
-		A5D5DD0000000000000000F2 /* SwiftDashSDKAddressValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000F1 /* SwiftDashSDKAddressValidator.swift */; };
-		A5D5DD0000000000000000F3 /* SwiftDashSDKAddressValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000F1 /* SwiftDashSDKAddressValidator.swift */; };
+		A5D5DD000000000000000311 /* NSString+SwiftDashSDKAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000310 /* NSString+SwiftDashSDKAddress.swift */; };
+		A5D5DD000000000000000312 /* NSString+SwiftDashSDKAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000310 /* NSString+SwiftDashSDKAddress.swift */; };
 		A5D5DD000000000000000301 /* DWRecoverModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000300 /* DWRecoverModel+Mnemonic.swift */; };
 		A5D5DD000000000000000302 /* DWRecoverModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000300 /* DWRecoverModel+Mnemonic.swift */; };
 		A5D5DD0000000000000000F8 /* SwiftDashSDKKeyMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000FA /* SwiftDashSDKKeyMigrator.swift */; };
@@ -2393,7 +2393,7 @@
 		4759D513292FEFFB002F20DC /* ModalNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalNavigationController.swift; sourceTree = "<group>"; };
 		4759D51629300212002F20DC /* ProvideAmountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProvideAmountViewController.swift; sourceTree = "<group>"; };
 		475AE2B82974348F009A1055 /* App.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
-		A5D5DD0000000000000000F1 /* SwiftDashSDKAddressValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKAddressValidator.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000310 /* NSString+SwiftDashSDKAddress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSString+SwiftDashSDKAddress.swift"; sourceTree = "<group>"; };
 		A5D5DD000000000000000300 /* DWRecoverModel+Mnemonic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DWRecoverModel+Mnemonic.swift"; sourceTree = "<group>"; };
 		A5D5DD0000000000000000FA /* SwiftDashSDKKeyMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKKeyMigrator.swift; sourceTree = "<group>"; };
 		A5D5DD00000000000000012E /* SwiftDashSDKWalletRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletRuntime.swift; sourceTree = "<group>"; };
@@ -3717,6 +3717,7 @@
 				2A0C69A2231048DA001B8C90 /* DWPaymentProcessor.m */,
 				2A63003D2327B4BB00827825 /* DWPaymentOutput+DWView.h */,
 				2A63003E2327B4BB00827825 /* DWPaymentOutput+DWView.m */,
+				A5D5DD000000000000000310 /* NSString+SwiftDashSDKAddress.swift */,
 			);
 			path = PaymentModels;
 			sourceTree = "<group>";
@@ -5622,7 +5623,6 @@
 		A5D5DD0000000000000000F4 /* SwiftDashSDK */ = {
 			isa = PBXGroup;
 				children = (
-					A5D5DD0000000000000000F1 /* SwiftDashSDKAddressValidator.swift */,
 					A5D5DD0000000000000000FA /* SwiftDashSDKKeyMigrator.swift */,
 					A5D5DD00000000000000012E /* SwiftDashSDKWalletRuntime.swift */,
 					A5D5DD000000000000000270 /* SwiftDashSDKHost.swift */,
@@ -9073,7 +9073,7 @@
 				C94D982A2A53038400F3BEE1 /* EnterAddressModel.swift in Sources */,
 				47AE8BA628BFADD900490F5E /* AtmDAO.swift in Sources */,
 				475AE2B92974348F009A1055 /* App.swift in Sources */,
-				A5D5DD0000000000000000F2 /* SwiftDashSDKAddressValidator.swift in Sources */,
+				A5D5DD000000000000000311 /* NSString+SwiftDashSDKAddress.swift in Sources */,
 				A5D5DD000000000000000301 /* DWRecoverModel+Mnemonic.swift in Sources */,
 				A5D5DD0000000000000000F8 /* SwiftDashSDKKeyMigrator.swift in Sources */,
 				A5D5DD00000000000000012F /* SwiftDashSDKWalletRuntime.swift in Sources */,
@@ -9945,7 +9945,7 @@
 				C943B3202A408CED00AF23C5 /* DWImgurInfoChildView.m in Sources */,
 				C9D2C7E92A320AA000D15901 /* AtmDAO.swift in Sources */,
 				C9D2C7EA2A320AA000D15901 /* App.swift in Sources */,
-				A5D5DD0000000000000000F3 /* SwiftDashSDKAddressValidator.swift in Sources */,
+				A5D5DD000000000000000312 /* NSString+SwiftDashSDKAddress.swift in Sources */,
 				A5D5DD000000000000000302 /* DWRecoverModel+Mnemonic.swift in Sources */,
 				A5D5DD0000000000000000F9 /* SwiftDashSDKKeyMigrator.swift in Sources */,
 				A5D5DD000000000000000130 /* SwiftDashSDKWalletRuntime.swift in Sources */,

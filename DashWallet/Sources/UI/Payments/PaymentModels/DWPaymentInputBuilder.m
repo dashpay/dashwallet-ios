@@ -47,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
         return nil;
     }
 
-    if ([DWSwiftDashSDKAddressValidator isValidDashAddress:request.paymentAddress onChain:chain] || [address isValidDashPrivateKeyOnChain:chain] || [address isValidDashBIP38Key] ||
+    if ([request.paymentAddress dw_isValidDashAddressOnChain:chain] || [address isValidDashPrivateKeyOnChain:chain] || [address isValidDashBIP38Key] ||
         (request.r.length > 0 && ([request.scheme isEqual:@"dash:"]))) {
         DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_PlainAddress];
         paymentInput.request = request;
@@ -80,7 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
             continue;
         }
 
-        if ([DWSwiftDashSDKAddressValidator isValidDashAddress:request.paymentAddress onChain:chain] || [str isValidDashPrivateKeyOnChain:chain] || [str isValidDashBIP38Key] ||
+        if ([request.paymentAddress dw_isValidDashAddressOnChain:chain] || [str isValidDashPrivateKeyOnChain:chain] || [str isValidDashBIP38Key] ||
             (request.r.length > 0 && ([request.scheme isEqual:@"dash:"]))) {
             if (completion) {
                 DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:source];
@@ -139,7 +139,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     // Check if the request contains a valid Dash address to determine if this is a deep link
-    if (request && [DWSwiftDashSDKAddressValidator isValidDashAddress:request.paymentAddress onChain:chain]) {
+    if (request && [request.paymentAddress dw_isValidDashAddressOnChain:chain]) {
         sourceType = DWPaymentInputSource_DeepLink;
     }
 
