@@ -59,6 +59,7 @@ struct DashSpendFlexibleContent: View {
         !quantities.isEmpty &&
         viewModel.error == nil &&
         !viewModel.isLoading &&
+        !viewModel.isProcessingPayment &&
         multipleTotalAmount >= viewModel.minimumAmount &&
         multipleTotalAmount <= multipleMaxAmount
     }
@@ -221,7 +222,7 @@ struct DashSpendFlexibleContent: View {
                     denominations: multipleDenominations,
                     quantities: $quantities,
                     actionEnabled: multipleActionEnabled,
-                    inProgress: false,
+                    inProgress: viewModel.isProcessingPayment,
                     error: viewModel.error,
                     showCost: multipleShowCost,
                     costMessage: viewModel.costMessage,
