@@ -122,7 +122,7 @@ struct DashSpendPayScreen: View {
                 merchantName: viewModel.merchantTitle,
                 merchantIconUrl: viewModel.merchantIconUrl,
                 originalPrice: confirmationOriginalPrice,
-                discount: viewModel.savingsFraction,
+                discount: viewModel.displaySavingsFraction,
                 quantities: confirmationQuantities.isEmpty ? nil : confirmationQuantities,
                 onConfirm: {
                     showConfirmationDialog = false
@@ -199,7 +199,7 @@ struct DashSpendPayScreen: View {
         if snapshotQuantities.isEmpty {
             viewModel.updateTotalAmount(snapshotSingleAmount)
         } else {
-            viewModel.updateTotalAmount(snapshotTotal)
+            viewModel.updateTotalAmount(snapshotTotal, quantities: snapshotQuantities)
         }
 
         DispatchQueue.main.async {
