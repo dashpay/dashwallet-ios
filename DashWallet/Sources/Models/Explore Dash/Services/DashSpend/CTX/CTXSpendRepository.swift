@@ -213,6 +213,8 @@ class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
                 case 401, 403:
                     throw DashSpendError.unauthorized
                 case 404:
+                    let body = String(data: response.data, encoding: .utf8) ?? "<undecodable>"
+                    DSLogger.log("CTXSpend getMerchant 404 for merchantId: \(merchantId), body: \(body)")
                     throw DashSpendError.invalidMerchant
                 case 500...599:
                     throw DashSpendError.networkError
@@ -226,7 +228,7 @@ class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
             throw DashSpendError.networkError
         }
     }
-    
+
     func getGiftCardByTxid(txid: String) async throws -> GiftCardResponse {
         do {
             let baseURL = CTXConstants.baseURI
