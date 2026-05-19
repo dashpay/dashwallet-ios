@@ -84,6 +84,11 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     private static let deferredMultiWalletKey   = "swiftSDKKeyMigration.v1.deferredMultiWallet"
     private static let deferredUnknownChainKey  = "swiftSDKKeyMigration.v1.deferredUnknownChain"
 
+    /// Per-wallet success ledger — DashSync walletIDs that already round-tripped
+    /// through `createOrImportWallet`. Lets a partial-failure run resume on next
+    /// launch without re-importing the ones that already landed.
+    private static let migratedDashSyncWalletIdsKey = "swiftSDKKeyMigration.v1.migratedDashSyncWalletIds"
+
     // MARK: - Public entry point
 
     /// Synchronous Obj-C entry point. Dispatches the entire migrator body
@@ -120,73 +125,76 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             return
         }
 
-        // Path 2 — fresh migration. Enumerate, validate, run inline.
+        // Clear stale defer flags before re-evaluating. The runtime reads
+        // either flag as permission to stop waiting for migration — leaving
+        // a stale value would race the loop below.
+        defaults.removeObject(forKey: deferredMultiWalletKey)
+        defaults.removeObject(forKey: deferredUnknownChainKey)
+
         let mnemonicAccounts = enumerateDashSyncMnemonicAccounts()
-        switch mnemonicAccounts.count {
-        case 0:
+        if mnemonicAccounts.isEmpty {
             defaults.set("v1", forKey: doneKey)
             logger.info("🔑 KEYMIG :: no DashSync mnemonics found — fresh install or post-wipe, marking done")
             return
-        case 1:
-            break  // happy path
-        default:
-            logger.warning("🔑 KEYMIG :: multi-wallet detected (\(mnemonicAccounts.count, privacy: .public)) — deferring")
-            defaults.set(mnemonicAccounts.count, forKey: deferredMultiWalletKey)
-            return
         }
 
-        let mnemonicAccount = mnemonicAccounts[0]
-        let walletID = String(mnemonicAccount.dropFirst(dashSyncMnemonicAccountPrefix.count))
+        var migrated = Set(defaults.stringArray(forKey: migratedDashSyncWalletIdsKey) ?? [])
+        var hadUnknownChain = false
+        var hadFailure = false
+        var migratedThisRun = 0
 
-        guard let network = detectNetwork(forWalletID: walletID) else {
-            logger.warning("🔑 KEYMIG :: could not determine chain for wallet \(walletID, privacy: .public) — deferring")
-            defaults.set(true, forKey: deferredUnknownChainKey)
-            return
-        }
-
-        guard let mnemonic = readKeychainString(service: dashSyncService, account: mnemonicAccount) else {
-            logger.error("🔑 KEYMIG :: failed to read mnemonic from \(mnemonicAccount, privacy: .public)")
-            return
-        }
-
-        guard Mnemonic.validate(mnemonic) else {
-            logger.error("🔑 KEYMIG :: DashSync mnemonic failed SwiftDashSDK BIP39 validation")
-            return
-        }
-
-        let appNetwork: Network = (network == .mainnet) ? .mainnet : .testnet
-
-        // Inline validation, then a synchronous hop to the host on MainActor.
-        do {
-            // Determinism + length sanity check (extra belt-and-suspenders).
-            let seed = try Mnemonic.toSeed(mnemonic: mnemonic)
-            guard seed.count == 64 else {
-                logger.error("🔑 KEYMIG :: seed length invalid: \(seed.count, privacy: .public)")
-                return
-            }
-            let seedCheck = try Mnemonic.toSeed(mnemonic: mnemonic)
-            guard seedCheck == seed else {
-                logger.error("🔑 KEYMIG :: seed determinism check failed")
-                return
+        for account in mnemonicAccounts {
+            let walletID = String(account.dropFirst(dashSyncMnemonicAccountPrefix.count))
+            if migrated.contains(walletID) {
+                continue
             }
 
-            let walletId = try createWalletOnHost(
-                mnemonic: mnemonic,
-                network: appNetwork,
-                isImported: true)
+            guard let network = detectNetwork(forWalletID: walletID) else {
+                logger.warning("🔑 KEYMIG :: \(walletID, privacy: .public) chain unresolved/unsupported")
+                hadUnknownChain = true
+                continue
+            }
 
-            let walletPrefix = walletId.prefix(4).map { String(format: "%02x", $0) }.joined()
-            logger.info("🔑 KEYMIG :: created managed SwiftDashSDK wallet \(walletPrefix, privacy: .public)…")
+            guard let mnemonic = readKeychainString(service: dashSyncService, account: account),
+                  Mnemonic.validate(mnemonic) else {
+                logger.error("🔑 KEYMIG :: \(walletID, privacy: .public) mnemonic read/validate failed")
+                hadFailure = true
+                continue
+            }
 
-            // Mark done with the version sentinel.
+            do {
+                let seed = try Mnemonic.toSeed(mnemonic: mnemonic)
+                guard seed.count == 64, try Mnemonic.toSeed(mnemonic: mnemonic) == seed else {
+                    logger.error("🔑 KEYMIG :: \(walletID, privacy: .public) seed sanity check failed")
+                    hadFailure = true
+                    continue
+                }
+                let sdkWalletId = try createWalletOnHost(
+                    mnemonic: mnemonic,
+                    network: network,
+                    isImported: true)
+                let prefix = sdkWalletId.prefix(4).map { String(format: "%02x", $0) }.joined()
+                logger.info("🔑 KEYMIG :: migrated \(walletID, privacy: .public) → \(prefix, privacy: .public)… on \(String(describing: network), privacy: .public)")
+
+                migrated.insert(walletID)
+                defaults.set(migrated.sorted(), forKey: migratedDashSyncWalletIdsKey)
+                migratedThisRun += 1
+            } catch {
+                logger.error("🔑 KEYMIG :: \(walletID, privacy: .public) threw: \(String(describing: error), privacy: .public)")
+                hadFailure = true
+            }
+        }
+
+        if !hadFailure && !hadUnknownChain {
             defaults.set("v1", forKey: doneKey)
-            defaults.removeObject(forKey: deferredMultiWalletKey)
-            defaults.removeObject(forKey: deferredUnknownChainKey)
-
-            logger.info("🔑 KEYMIG :: migration complete: 1 wallet on \(String(describing: network), privacy: .public)")
+            logger.info("🔑 KEYMIG :: migration complete (\(migrated.count, privacy: .public) total, \(migratedThisRun, privacy: .public) this run)")
+            // Notify runtime only after doneKey is set — its wait loop polls for it.
             SwiftDashSDKWalletRuntime.handleWalletMaterialChanged()
-        } catch {
-            logger.error("🔑 KEYMIG :: migration threw: \(String(describing: error), privacy: .public)")
+        } else {
+            if hadUnknownChain {
+                defaults.set(true, forKey: deferredUnknownChainKey)
+            }
+            logger.warning("🔑 KEYMIG :: migration incomplete — will retry on next launch")
         }
     }
 

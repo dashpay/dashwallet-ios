@@ -171,8 +171,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             userAgent: nil,
             peers: [],
             restrictToConfiguredPeers: false,
-            startFromHeight: 0,
-            masternodeSyncEnabled: true)
+            startFromHeight: 0)
 
         do {
             try manager.startSpv(config: config)
