@@ -209,7 +209,7 @@ struct MainMenuScreen: View {
                 .padding(.top, 5)
                 
                 #if DASHPAY
-                if viewModel.userProfileModel?.showJoinDashpay == true {
+                if viewModel.showJoinDashpay {
                     JoinDashPayView(
                         viewModel: joinDPViewModel,
                         onTap: { state in

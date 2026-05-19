@@ -51,10 +51,11 @@ class MainMenuViewModel: ObservableObject {
     let dashPayReady: DWDashPayReadyProtocol?
     let dashPayModel: DWDashPayProtocol?
     let userProfileModel: CurrentUserProfileModel?
+    @Published private(set) var showJoinDashpay: Bool = false
     #endif
-    
+
     weak var delegate: MainMenuViewModelDelegate?
-    
+
     #if DASHPAY
     init(dashPayModel: DWDashPayProtocol? = nil,
          dashPayReady: DWDashPayReadyProtocol? = nil,
@@ -63,6 +64,10 @@ class MainMenuViewModel: ObservableObject {
         self.dashPayReady = dashPayReady
         self.userProfileModel = userProfileModel
         buildMenuSections()
+
+        userProfileModel?.$showJoinDashpay
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$showJoinDashpay)
     }
     #else
     init() {
