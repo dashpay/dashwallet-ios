@@ -140,9 +140,9 @@ struct CreateUsernameView: View {
                 if viewModel.uiState.usernameBlockedRule == .valid {
                     Task {
                         inProgress = true
-                        let result = await viewModel.submitUsernameRequest(withProve: nil)
+                        let result = await viewModel.submitUsernameRequest(withProve: nil, dashPayModel: dashPayModel)
                         inProgress = false
-                        
+
                         if result {
                             finish()
                         }
@@ -203,9 +203,9 @@ struct CreateUsernameView: View {
                 confirmUsernameRequest = false
                 Task {
                     inProgress = true
-                    let result = await viewModel.submitUsernameRequest(withProve: self.prove)
+                    let result = await viewModel.submitUsernameRequest(withProve: self.prove, dashPayModel: dashPayModel)
                     inProgress = false
-                    
+
                     if result {
                         finish()
                     }

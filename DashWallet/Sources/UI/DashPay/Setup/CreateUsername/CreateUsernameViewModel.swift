@@ -105,28 +105,23 @@ class CreateUsernameViewModel: ObservableObject {
         return await dao.get(byUsername: username) != nil
     }
     
-    func submitUsernameRequest(withProve link: URL?) async -> Bool {
-        do {
-            // TODO: MOCK_DASHPAY simulation of a request. Remove when not needed
-            // dashPayModel.createUsername(username, invitation: invitationURL)
-            
-            let now = Date().timeIntervalSince1970
-            let identityData = withUnsafeBytes(of: UUID().uuid) { Data($0) }
-            let identity = (identityData as NSData).base58String()
-            let usernameRequest = UsernameRequest(requestId: UUID().uuidString, username: username, createdAt: Int64(now), identity: "\(identity)\(identity)", link: link?.absoluteString, votes: 0, blockVotes: 0, isApproved: false)
-            
-            await dao.create(dto: usernameRequest)
-            prefs.requestedUsernameId = usernameRequest.requestId
-            UsernamePrefs.shared.joinDashPayDismissed = false // TODO: MOCK_DASHPAY remove
-            
-            let oneSecond = TimeInterval(1_000_000_000)
-            let delay = UInt64(oneSecond * 2)
-            try await Task.sleep(nanoseconds: delay)
-            
-            return true
-        } catch {
-            return false
-        }
+    func submitUsernameRequest(withProve link: URL?, dashPayModel: DWDashPayProtocol) async -> Bool {
+        // Fire-and-forget. With DASHPAY_SWIFT_SDK_REGISTRATION=1 the
+        // model routes new-user registrations through
+        // `DWIdentityRegistrationBridge` → `DWIdentityRegistrationCoordinator`
+        // (PIN gate → asset-lock + IdentityCreate → DPNS register).
+        // Progress flows to the rest of the app via
+        // `DWDashPayRegistrationStatusUpdatedNotification` →
+        // `DWDashPayModel.registrationStatus` → home-screen banner +
+        // `DWDPRegistrationStatusViewController`.
+        //
+        // `link` (verify-identity proof URL) is accepted in the
+        // signature for source compatibility with the contested-name
+        // path but isn't forwarded — the SDK v1 doesn't surface a
+        // verify-identity hook through `DWDashPayProtocol.createUsername`.
+        // Contested-username voting is a future stage.
+        dashPayModel.createUsername(username, invitation: nil)
+        return true
     }
     
     func fetchUsernameRequestData() {
@@ -193,13 +188,17 @@ class CreateUsernameViewModel: ObservableObject {
     }
     
     private func checkIfBlocked(username: String) async {
-        // TODO: MOCK_DASHPAY remove
-        let oneSecond = TimeInterval(1_000_000_000)
-        let delay = UInt64(oneSecond * 2)
-        try! await Task.sleep(nanoseconds: delay)
-        
+        // SDK path: contested-username voting is not exercised in v1.
+        // Treat all locally-valid names as immediately available so
+        // Continue hits the simple submit path (skipping the
+        // verify-identity sheet). Real DPNS availability detection
+        // lives in `DWIdentityRegistrationBridge.checkAvailability`
+        // (used by the legacy `DWCheckExistenceUsernameValidationRule`
+        // flow). For the SwiftUI form we rely on the actual DPNS
+        // registration call to surface a "name taken" failure if it
+        // happens — by then the user has already committed to submit.
         if self.username == username {
-            uiState.usernameBlockedRule = .warning
+            uiState.usernameBlockedRule = .valid
             uiState.canContinue = true
         }
     }
