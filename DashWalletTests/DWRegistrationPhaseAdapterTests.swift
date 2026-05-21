@@ -142,4 +142,69 @@ final class DWRegistrationPhaseAdapterTests: XCTestCase {
             DWRegistrationPhaseAdapter.map(phase: .inFlight, assetLockStatus: 99),
             .registrationUsername)
     }
+
+    // MARK: - Platform Payment funding source
+
+    // PR 5: when the coordinator routes through
+    // `registerIdentityFromAddresses` there is no Core-chain asset-
+    // lock — the adapter must collapse the in-flight phase straight
+    // onto `.creatingID` (skipping the `.processingPayment` window
+    // that would normally cover the IS/CL wait).
+
+    func test_platformPayment_idle_isProcessingPayment() {
+        // Pre-FFI is identical for both funding sources — keys are
+        // still being derived, no on-chain activity yet.
+        XCTAssertEqual(
+            DWRegistrationPhaseAdapter.map(
+                phase: .idle,
+                assetLockStatus: 0,
+                fundingSource: .platformPayment),
+            .processingPayment)
+    }
+
+    func test_platformPayment_preparingKeys_isProcessingPayment() {
+        XCTAssertEqual(
+            DWRegistrationPhaseAdapter.map(
+                phase: .preparingKeys,
+                assetLockStatus: 0,
+                fundingSource: .platformPayment),
+            .processingPayment)
+    }
+
+    func test_platformPayment_inFlight_anyAssetLockStatus_isCreatingID() {
+        // Platform Payment path ignores assetLockStatus entirely —
+        // there is no PersistentAssetLock row to poll, so whatever
+        // stale value `assetLockStatus` carries (most likely 0 from
+        // the prior `.idle` state) must not pull the UI back to
+        // `.processingPayment`.
+        for status in 0...4 {
+            XCTAssertEqual(
+                DWRegistrationPhaseAdapter.map(
+                    phase: .inFlight,
+                    assetLockStatus: status,
+                    fundingSource: .platformPayment),
+                .creatingID,
+                "Platform Payment .inFlight with assetLockStatus=\(status) should map to creatingID")
+        }
+    }
+
+    func test_platformPayment_completed_isDone() {
+        let dummyId = Data(count: 32)
+        XCTAssertEqual(
+            DWRegistrationPhaseAdapter.map(
+                phase: .completed(identityId: dummyId),
+                assetLockStatus: 0,
+                fundingSource: .platformPayment),
+            .done)
+    }
+
+    func test_platformPayment_failed_usesFailedAtPhase() {
+        XCTAssertEqual(
+            DWRegistrationPhaseAdapter.map(
+                phase: .failed("registerIdentityFromAddresses failed"),
+                assetLockStatus: 0,
+                fundingSource: .platformPayment,
+                failedAtPhase: .creatingID),
+            .creatingID)
+    }
 }

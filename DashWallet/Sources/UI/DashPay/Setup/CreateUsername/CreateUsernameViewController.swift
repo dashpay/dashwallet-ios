@@ -62,6 +62,12 @@ struct CreateUsernameView: View {
     @StateObject private var viewModel = CreateUsernameViewModel()
     @FocusState private var isTextInputFocused: Bool
     @State private var inProgress: Bool = false
+    /// Funding source for the SwiftDashSDK identity registration. Defaults
+    /// to Core; auto-pinned to Platform when only PP credits are available;
+    /// user-selectable via the segmented picker when both sources have enough.
+    /// Written into `DWIdentityRegistrationBridge.shared.preferredFundingSource`
+    /// in the Continue handler right before the submit call.
+    @State private var fundingSource: DWIdentityFundingSource = .core
     var finish: () -> Void
 
     var body: some View {
@@ -104,9 +110,29 @@ struct CreateUsernameView: View {
                     text: getMessageForBlockedRule()
                 ).padding(.top, 20)
             }
-            
+
+            // Funding source picker. Visible only when both Core and
+            // Platform Payment have enough balance to cover the
+            // identity-registration cost. When only one source is
+            // viable, the picker stays hidden and `fundingSource` is
+            // auto-pinned by `.onChange` so the Continue handler
+            // routes correctly without UI clutter.
+            if viewModel.hasMinimumRequiredCoreBalance && viewModel.hasMinimumRequiredPlatformBalance {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(NSLocalizedString("Pay with", comment: "Usernames"))
+                        .foregroundColor(.secondaryText)
+                        .font(.caption)
+                    Picker("", selection: $fundingSource) {
+                        Text("Core (\(viewModel.balance) Dash)").tag(DWIdentityFundingSource.core)
+                        Text("Platform (\(viewModel.platformPaymentBalance) Dash)").tag(DWIdentityFundingSource.platformPayment)
+                    }
+                    .pickerStyle(.segmented)
+                }
+                .padding(.top, 20)
+            }
+
             Spacer()
-            
+
             DashButton(
                 text: NSLocalizedString("Continue", comment: ""),
                 isEnabled: viewModel.uiState.canContinue,
@@ -116,6 +142,13 @@ struct CreateUsernameView: View {
                 // `checkIfBlocked` flips `usernameBlockedRule` to
                 // `.valid`, so the button is gated on the same condition
                 // — no `if .valid` check needed here.
+                //
+                // Write the funding-source pick into the bridge right
+                // before submit. The bridge resets to `.core` on every
+                // terminal phase, so a stale picker value can't leak
+                // into a future attempt; this single write is the only
+                // synchronization needed.
+                DWIdentityRegistrationBridge.shared.preferredFundingSource = fundingSource
                 Task {
                     inProgress = true
                     let result = await viewModel.submitUsernameRequest(withProve: nil, dashPayModel: dashPayModel)
@@ -132,7 +165,34 @@ struct CreateUsernameView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
             isTextInputFocused = true
+            // Seed the picker selection so a wallet with only one
+            // viable source (typical case) doesn't default to a
+            // non-viable Core path.
+            syncFundingSourceToViableSource()
         }
+        .onChange(of: viewModel.hasMinimumRequiredCoreBalance) { _ in
+            syncFundingSourceToViableSource()
+        }
+        .onChange(of: viewModel.hasMinimumRequiredPlatformBalance) { _ in
+            syncFundingSourceToViableSource()
+        }
+    }
+
+    /// Keep `fundingSource` pointing at a viable source when only one
+    /// of {Core, Platform} qualifies. When both qualify we leave the
+    /// selection alone so the picker preserves the user's pick.
+    private func syncFundingSourceToViableSource() {
+        let coreOk = viewModel.hasMinimumRequiredCoreBalance
+        let platformOk = viewModel.hasMinimumRequiredPlatformBalance
+        if coreOk && !platformOk {
+            fundingSource = .core
+        } else if platformOk && !coreOk {
+            fundingSource = .platformPayment
+        }
+        // Otherwise (both viable, or neither): leave `fundingSource`
+        // alone. With neither viable, the Continue button is disabled
+        // anyway; with both viable, the picker is shown and the user
+        // makes the call.
     }
 
     private func getMessageForBlockedRule() -> String {

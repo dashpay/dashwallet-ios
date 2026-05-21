@@ -63,6 +63,16 @@ class CreateUsernameViewModel: ObservableObject {
     @Published private(set) var hasMinimumRequiredBalance = false
     @Published private(set) var hasRecommendedBalance = false
     @Published private(set) var balance: String = ""
+
+    /// Per-funding-source eligibility flags. `hasMinimumRequiredBalance`
+    /// (above) is kept as the legacy OR-of-both flag for any existing
+    /// consumer; the new picker UI reads these to decide whether to
+    /// show both options or auto-pin to the single viable source.
+    @Published private(set) var hasMinimumRequiredCoreBalance = false
+    @Published private(set) var hasMinimumRequiredPlatformBalance = false
+    /// Formatted Platform Payment balance (in DASH, derived from the
+    /// duff-equivalent of `SwiftDashSDKWalletState.platformPaymentCredits`).
+    @Published private(set) var platformPaymentBalance: String = ""
     
     var minimumRequiredBalance: String {
         return DWDP_MIN_BALANCE_TO_CREATE_USERNAME.dashAmount.formattedDashAmountWithoutCurrencySymbol
@@ -138,21 +148,30 @@ class CreateUsernameViewModel: ObservableObject {
     
     private func validateUsername(username: String) {
         let username = username.trimmingCharacters(in: .whitespacesAndNewlines)
-        
+
         guard !username.isEmpty else {
             uiState = CreateUsernameUIState()
             return
         }
-        
+
         let isContested = false // TODO MOCK_DASHPAY
         let lengthValid = username.count >= DW_MIN_USERNAME_LENGTH && username.count <= DW_MAX_USERNAME_LENGTH
         let hasIllegalCharacters = username.rangeOfCharacter(from: illegalChars) != nil
         let startsOrEndsWithHyphen = username.first == "-" || username.last == "-"
         let requiredCost = isContested ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME : DWDP_MIN_BALANCE_TO_CREATE_USERNAME
-        let balance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
-        let hasEnoughBalance = balance >= requiredCost
+        // Either funding source can satisfy the cost rule. Core
+        // spends BIP44 UTXOs via `registerIdentityWithFunding`;
+        // Platform Payment spends DIP-17 credits via
+        // `registerIdentityFromAddresses`. The picker in
+        // `CreateUsernameView` lets the user choose when both are
+        // viable; the form is unblocked as soon as either is.
+        let coreBalance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
+        let platformBalance = SwiftDashSDKWalletState.shared.platformPaymentCreditsAsDuffs
+        let hasEnoughCore = coreBalance >= requiredCost
+        let hasEnoughPlatform = platformBalance >= requiredCost
+        let hasEnoughBalance = hasEnoughCore || hasEnoughPlatform
         let canContinue = lengthValid && !hasIllegalCharacters && !startsOrEndsWithHyphen && hasEnoughBalance
-        
+
         uiState = CreateUsernameUIState(
             lengthRule: lengthValid ? .valid : .invalid,
             allowedCharactersRule: hasIllegalCharacters || startsOrEndsWithHyphen ? .invalid : .valid,
@@ -161,7 +180,7 @@ class CreateUsernameViewModel: ObservableObject {
             requiredDash: requiredCost,
             canContinue: false
         )
-        
+
         if canContinue {
             Task {
                 await checkIfBlocked(username: username)
@@ -186,6 +205,12 @@ class CreateUsernameViewModel: ObservableObject {
     }
     
     private func observeBalance() {
+        // Trigger a fresh Platform-credit tally on viewmodel init —
+        // the wallet-state's auto-refresh only fires on Core-balance
+        // updates, so without this the picker would miss any PP
+        // credits that landed before the view opened (e.g. a
+        // long-standing wallet with PP credits but no recent Core tx).
+        SwiftDashSDKWalletState.shared.refreshPlatformPaymentCredits()
         checkBalance()
         // Source from SwiftDashSDKWalletState. After M6 retired DashSync's
         // SPV, DSWalletBalanceDidChange no longer fires. Function #5 follow-up.
@@ -197,12 +222,31 @@ class CreateUsernameViewModel: ObservableObject {
                 self.checkBalance()
             }
             .store(in: &cancellableBag)
+        // Mirror the Core-balance subscription so a BLAST-driven PP
+        // credit refresh re-runs validation + updates the per-source
+        // booleans / formatted strings the picker reads.
+        SwiftDashSDKWalletState.shared.$platformPaymentCredits
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                self.validateUsername(username: self.username)
+                self.checkBalance()
+            }
+            .store(in: &cancellableBag)
     }
 
     private func checkBalance() {
         let balance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
+        let platformDuffs = SwiftDashSDKWalletState.shared.platformPaymentCreditsAsDuffs
         self.balance = balance.dashAmount.formattedDashAmountWithoutCurrencySymbol
-        hasMinimumRequiredBalance = balance >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        self.platformPaymentBalance = platformDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
+        hasMinimumRequiredCoreBalance = balance >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        hasMinimumRequiredPlatformBalance = platformDuffs >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        // `hasMinimumRequiredBalance` stays as the legacy OR view —
+        // any pre-PR-5 consumer (banner gate, etc.) keeps seeing
+        // "user has enough to register" without caring about source.
+        hasMinimumRequiredBalance = hasMinimumRequiredCoreBalance || hasMinimumRequiredPlatformBalance
         hasRecommendedBalance = balance >= DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
+            || platformDuffs >= DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
     }
 }

@@ -29,7 +29,11 @@
 //
 //  v1 scope:
 //    - Single identity per wallet (`identityIndex` pinned at 0).
-//    - Core-funded only (Platform Payment funding deferred).
+//    - Two funding paths (PR 5):
+//      * Core-funded via `registerIdentityWithFunding` (default).
+//      * Platform Payment via `registerIdentityFromAddresses` —
+//        spends credits already on DIP-17 platform addresses.
+//        Skips the Core-chain asset-lock IS/CL wait.
 //    - No crash-resume (`resumeIdentityWithAssetLock` deferred to v2).
 //
 
@@ -66,6 +70,14 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// 0.5s cadence is plenty without burning CPU.
     private static let assetLockPollInterval: TimeInterval = 0.5
 
+    /// Credits per DASH on Platform — 1e11 credits per DASH per
+    /// `SwiftExampleApp/Views/CreateIdentityView.swift:54`. Used to
+    /// convert the `DWDP_MIN_BALANCE_*` duff-denominated targets to
+    /// the credit-denominated targets that `IdentityAddressInput`
+    /// expects on the Platform Payment funding path.
+    /// 1 duff = 1000 credits.
+    private static let creditsPerDuff: UInt64 = 1_000
+
     // MARK: - Published surface
 
     /// Current phase, mirrored from the active controller.
@@ -88,6 +100,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// Username being registered. Stashed at submit time so the
     /// `.completed` mirror can write DWGlobalOptions.dashpayUsername.
     private(set) var currentUsername: String?
+
+    /// Funding source for the in-flight attempt (the value the
+    /// coordinator's caller passed into `startCreateUsername(_:fundingSource:)`).
+    /// Read by `DWIdentityRegistrationBridge.refreshFromCoordinator`
+    /// when mapping phase → UI state so the Platform Payment path
+    /// can skip the asset-lock progression rule in
+    /// `DWRegistrationPhaseAdapter`. Defaults to `.core` outside of
+    /// an active attempt.
+    private(set) var currentFundingSource: DWIdentityFundingSource = .core
 
     // MARK: - Internal state
 
@@ -112,6 +133,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         case identityRegistration(Error)
         case dpnsRegistration(Error)
         case availabilityCheck(Error)
+        case insufficientPlatformCredits(required: UInt64, available: UInt64)
 
         var errorDescription: String? {
             switch self {
@@ -135,6 +157,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 return underlying.localizedDescription
             case .availabilityCheck(let underlying):
                 return underlying.localizedDescription
+            case .insufficientPlatformCredits:
+                return NSLocalizedString("Not enough Platform credits to register an identity", comment: "DashPay")
             }
         }
     }
@@ -146,9 +170,19 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// On success, mirrors the username into `DWGlobalOptions` and
     /// returns the 32-byte identifier. On failure, sets
     /// `failedAtPhase` + `lastErrorMessage` and rethrows.
+    ///
+    /// `fundingSource` selects between Core BIP44 UTXOs
+    /// (`registerIdentityWithFunding` → asset-lock + IS/CL + ST) and
+    /// DIP-17 Platform Payment addresses
+    /// (`registerIdentityFromAddresses` → direct address-funded ST).
+    /// Defaults to `.core` for callers that don't care (legacy
+    /// Obj-C entry points, retries after a terminal phase).
     @discardableResult
-    func startCreateUsername(_ username: String) async throws -> Identifier {
-        Self.logger.info("🪪 IDENT-COORD :: startCreateUsername username=\(username, privacy: .public)")
+    func startCreateUsername(
+        _ username: String,
+        fundingSource: DWIdentityFundingSource = .core
+    ) async throws -> Identifier {
+        Self.logger.info("🪪 IDENT-COORD :: startCreateUsername username=\(username, privacy: .public) funding=\(fundingSource == .core ? "core" : "pp", privacy: .public)")
 
         // Preconditions — resolved once up-front so failures are
         // surfaced before the PIN prompt.
@@ -171,13 +205,22 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         resetState()
 
         currentUsername = username
+        currentFundingSource = fundingSource
         failedAtPhase = nil
         lastErrorMessage = nil
 
         let newController = DWIdentityRegistrationController()
         controller = newController
         wireController(newController)
-        startAssetLockPolling(walletId: wallet.walletId, modelContainer: modelContainer)
+        // Asset-lock polling only applies to the Core-funded path —
+        // the Platform Payment path never writes a `PersistentAssetLock`
+        // row, and polling would just keep `assetLockStatus` pegged at
+        // 0 throughout the FFI call (which would force the adapter
+        // backwards to `.processingPayment` on every emit if the
+        // funding-source branch in the adapter wasn't honored).
+        if fundingSource == .core {
+            startAssetLockPolling(walletId: wallet.walletId, modelContainer: modelContainer)
+        }
 
         // PIN / biometric gate. Throws on cancel / failure; the
         // controller stays at `.idle` so the UI doesn't show
@@ -218,25 +261,62 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // strong reference here for the duration of the awaits.
         let signer = KeychainSigner(modelContainer: modelContainer)
 
-        // Step 2: IdentityCreate (asset-lock + IS/CL wait + ST).
+        // Step 2: IdentityCreate. Two paths depending on funding source.
         newController.enterInFlight()
         let identityId: Identifier
         do {
-            let result = try await wallet.registerIdentityWithFunding(
-                amountDuffs: DWDP_MIN_BALANCE_TO_CREATE_USERNAME,
-                accountIndex: Self.defaultAccountIndex,
-                identityIndex: Self.pinnedIdentityIndex,
-                identityPubkeys: pubkeys,
-                signer: signer)
-            identityId = result.0
+            switch fundingSource {
+            case .core:
+                let result = try await wallet.registerIdentityWithFunding(
+                    amountDuffs: DWDP_MIN_BALANCE_TO_CREATE_USERNAME,
+                    accountIndex: Self.defaultAccountIndex,
+                    identityIndex: Self.pinnedIdentityIndex,
+                    identityPubkeys: pubkeys,
+                    signer: signer)
+                identityId = result.0
+
+            case .platformPayment:
+                let targetCredits = UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME) * Self.creditsPerDuff
+                let inputs = try buildPlatformPaymentInputs(
+                    walletId: wallet.walletId,
+                    modelContainer: modelContainer,
+                    targetCredits: targetCredits)
+                Self.logger.info("🪪 IDENT-COORD :: PP inputs=\(inputs.count, privacy: .public) targetCredits=\(targetCredits, privacy: .public)")
+                let created = try await wallet.registerIdentityFromAddresses(
+                    inputs: inputs,
+                    output: nil,
+                    identityIndex: Self.pinnedIdentityIndex,
+                    identityPubkeys: pubkeys,
+                    identitySigner: signer,
+                    addressSigner: signer)
+                identityId = created.identityId
+            }
             Self.logger.info("🪪 IDENT-COORD :: identity created, id=\(identityId.map { String(format: "%02x", $0) }.joined().prefix(8), privacy: .public)…")
+        } catch let coordError as CoordinatorError {
+            // `buildPlatformPaymentInputs` throws our own typed error
+            // before any FFI call — surface as a registration failure
+            // anchored at `.processingPayment` since nothing has hit
+            // the network yet.
+            Self.logger.error("🪪 IDENT-COORD :: identity creation precondition failed: \(String(describing: coordError), privacy: .public)")
+            failedAtPhase = .processingPayment
+            lastErrorMessage = coordError.localizedDescription
+            newController.enterFailed(coordError.localizedDescription)
+            throw coordError
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: identity creation failed: \(String(describing: error), privacy: .public)")
             // Decide whether failure happened during payment processing
             // (asset-lock not yet IS/CL'd) or during identity create
             // (asset-lock confirmed but ST failed). The polled
-            // assetLockStatus reflects the latest known state.
-            failedAtPhase = assetLockStatus < 2 ? .processingPayment : .creatingID
+            // assetLockStatus reflects the latest known state — only
+            // meaningful for the Core path; Platform Payment has no
+            // asset-lock and always anchors at `.creatingID` since the
+            // FFI submit was the only on-chain step.
+            switch fundingSource {
+            case .core:
+                failedAtPhase = assetLockStatus < 2 ? .processingPayment : .creatingID
+            case .platformPayment:
+                failedAtPhase = .creatingID
+            }
             lastErrorMessage = error.localizedDescription
             newController.enterFailed(error.localizedDescription)
             throw CoordinatorError.identityRegistration(error)
@@ -267,14 +347,17 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     }
 
     /// Restart the flow after a `.failed` terminal phase. Identical
-    /// to `startCreateUsername(_:)` — the prior controller is
-    /// discarded and a fresh attempt runs end-to-end. The Keychain-
-    /// persisted identity keys from the prior attempt are overwritten
-    /// during pre-derive.
+    /// to `startCreateUsername(_:fundingSource:)` — the prior
+    /// controller is discarded and a fresh attempt runs end-to-end.
+    /// The Keychain-persisted identity keys from the prior attempt
+    /// are overwritten during pre-derive.
     @discardableResult
-    func retry(_ username: String) async throws -> Identifier {
-        Self.logger.info("🪪 IDENT-COORD :: retry username=\(username, privacy: .public)")
-        return try await startCreateUsername(username)
+    func retry(
+        _ username: String,
+        fundingSource: DWIdentityFundingSource = .core
+    ) async throws -> Identifier {
+        Self.logger.info("🪪 IDENT-COORD :: retry username=\(username, privacy: .public) funding=\(fundingSource == .core ? "core" : "pp", privacy: .public)")
+        return try await startCreateUsername(username, fundingSource: fundingSource)
     }
 
     /// Abort the current attempt and reset to `.idle`. Safe to call
@@ -387,5 +470,73 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         failedAtPhase = nil
         lastErrorMessage = nil
         currentUsername = nil
+        currentFundingSource = .core
+    }
+
+    /// Greedy-select DIP-17 Platform Payment addresses to cover
+    /// `targetCredits`, returning the flat `IdentityAddressInput` list
+    /// `registerIdentityFromAddresses` expects.
+    ///
+    /// Ported from `SwiftExampleApp/Views/CreateIdentityView.swift:1086-1113`.
+    /// Sorts candidates by balance descending so the smallest number
+    /// of inputs covers the target — keeps the resulting state
+    /// transition compact.
+    ///
+    /// `PersistentPlatformAddress.balance` is in credits (1e11 per
+    /// DASH), matching `IdentityAddressInput.credits`, so no
+    /// conversion is needed inside this function. Each `spend` is
+    /// clamped to `addr.balance` so a single fat address doesn't
+    /// over-spend; remaining target rolls onto the next address.
+    ///
+    /// Throws `CoordinatorError.insufficientPlatformCredits` if the
+    /// candidate set can't cover the target — surfacing the precise
+    /// shortfall is more useful than a generic FFI error from the
+    /// SDK on a too-short inputs list.
+    private func buildPlatformPaymentInputs(
+        walletId: Data,
+        modelContainer: ModelContainer,
+        targetCredits: UInt64
+    ) throws -> [ManagedPlatformWallet.IdentityAddressInput] {
+        let context = modelContainer.mainContext
+        // PlatformPayment accounts (`accountType == 14`) hold the only
+        // `platformAddresses`. Read every account for this wallet —
+        // dashwallet only has one PP account today but the example
+        // app's pattern doesn't assume that, and the cost is the same.
+        let accountDescriptor = FetchDescriptor<PersistentAccount>(
+            predicate: #Predicate { account in
+                account.accountType == 14
+                    && account.wallet.walletId == walletId
+            }
+        )
+        let accounts: [PersistentAccount]
+        do {
+            accounts = try context.fetch(accountDescriptor)
+        } catch {
+            Self.logger.error("🪪 IDENT-COORD :: PP account fetch failed: \(String(describing: error), privacy: .public)")
+            throw CoordinatorError.identityRegistration(error)
+        }
+        let candidates = accounts
+            .flatMap { $0.platformAddresses }
+            .filter { $0.balance > 0 }
+            .sorted { $0.balance > $1.balance }
+        let totalAvailable = candidates.reduce(UInt64(0)) { $0 + $1.balance }
+        guard totalAvailable >= targetCredits else {
+            throw CoordinatorError.insufficientPlatformCredits(
+                required: targetCredits,
+                available: totalAvailable)
+        }
+        var remaining = targetCredits
+        var inputs: [ManagedPlatformWallet.IdentityAddressInput] = []
+        for addr in candidates {
+            guard remaining > 0 else { break }
+            let spend = min(addr.balance, remaining)
+            inputs.append(
+                ManagedPlatformWallet.IdentityAddressInput(
+                    addressType: addr.addressType,
+                    hash: addr.addressHash,
+                    credits: spend))
+            remaining -= spend
+        }
+        return inputs
     }
 }

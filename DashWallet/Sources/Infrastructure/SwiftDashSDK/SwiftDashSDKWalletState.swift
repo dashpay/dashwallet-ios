@@ -28,6 +28,7 @@
 import Combine
 import Foundation
 import OSLog
+import SwiftData
 import SwiftDashSDK
 
 // MARK: - WalletBalance
@@ -75,6 +76,30 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// first `applyBalance(_:)` call arrives. Updated on the main queue.
     @Published public private(set) var balance: WalletBalance? = nil
 
+    /// Total DIP-17 Platform Payment credit balance across every
+    /// PlatformPayment account (`accountType == 14`) for the active
+    /// wallet. Reported in credits (1e11 credits per DASH). Refreshed
+    /// in lockstep with `balance` updates — every Core-balance event
+    /// is treated as a hint that BLAST sync has progressed and a
+    /// platform-address re-tally may be worthwhile. Reads from
+    /// SwiftData synchronously on the main context; the underlying
+    /// table is small (one row per HD-derived platform address) so
+    /// this is cheap.
+    ///
+    /// Consumed by `CreateUsernameViewModel` to gate the
+    /// SwiftDashSDK identity-registration flow's funding-source
+    /// picker: when this is ≥ the required cost in credits, the
+    /// Platform Payment funding path becomes selectable as an
+    /// alternative to spending Core UTXOs.
+    @Published public private(set) var platformPaymentCredits: UInt64 = 0
+
+    /// `platformPaymentCredits` re-expressed in duffs (credits / 1000),
+    /// for parity with the duff-denominated `DWDP_MIN_BALANCE_*`
+    /// constants the username form validates against.
+    public var platformPaymentCreditsAsDuffs: UInt64 {
+        platformPaymentCredits / 1000
+    }
+
     // MARK: - Obj-C bridge
 
     /// Notification posted on the main queue whenever the published
@@ -104,10 +129,69 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// updates on the right thread.
     public func applyBalance(_ snapshot: WalletBalance) {
         DispatchQueue.main.async { [weak self] in
-            self?.balance = snapshot
+            guard let self = self else { return }
+            self.balance = snapshot
+            // `refreshPlatformPaymentCredits` is @MainActor (it reads
+            // `SwiftDashSDKHost.shared.wallet/.modelContainer`, both
+            // MainActor-isolated). We're already on the main queue
+            // here, so `assumeIsolated` is the synchronous, zero-hop
+            // way to satisfy the isolation requirement.
+            MainActor.assumeIsolated {
+                self.refreshPlatformPaymentCredits()
+            }
             NotificationCenter.default.post(
                 name: SwiftDashSDKWalletState.balanceDidChangeNotification,
                 object: nil)
+        }
+    }
+
+    /// Re-tally the Platform Payment credit balance from SwiftData.
+    /// Idempotent — safe to call from any MainActor consumer that
+    /// needs a fresh snapshot (e.g. `CreateUsernameViewModel.observeBalance`
+    /// on view-model init, before the next Core-balance hook fires).
+    /// No-op when the wallet handle or model container isn't ready.
+    ///
+    /// `@MainActor` is required because the function reads
+    /// `SwiftDashSDKHost.shared.wallet/.modelContainer`, both
+    /// MainActor-isolated. The non-MainActor entry points on this
+    /// class (`applyBalance`, `clearBalance`, `clearAllState`)
+    /// dispatch through their existing `DispatchQueue.main.async` and
+    /// call this via `MainActor.assumeIsolated`.
+    @MainActor
+    public func refreshPlatformPaymentCredits() {
+        guard
+            let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+            let container = SwiftDashSDKHost.shared.modelContainer
+        else {
+            if platformPaymentCredits != 0 {
+                platformPaymentCredits = 0
+            }
+            return
+        }
+
+        let context = container.mainContext
+        // Filter accounts to PlatformPayment (`accountType == 14`) for
+        // this wallet — the only account type that carries
+        // `platformAddresses`. The persister keeps `balance` upserted
+        // by BLAST sync, so a fetch + reduce is sufficient; no live
+        // FFI call needed.
+        let descriptor = FetchDescriptor<PersistentAccount>(
+            predicate: #Predicate { account in
+                account.accountType == 14
+                    && account.wallet.walletId == walletId
+            }
+        )
+        do {
+            let accounts = try context.fetch(descriptor)
+            let total = accounts.reduce(UInt64(0)) { acc, account in
+                acc + account.platformAddresses.reduce(UInt64(0)) { $0 + $1.balance }
+            }
+            if platformPaymentCredits != total {
+                platformPaymentCredits = total
+                Self.logger.info("💰 WALLET :: platformPaymentCredits=\(total, privacy: .public) credits")
+            }
+        } catch {
+            Self.logger.warning("💰 WALLET :: platformPaymentCredits fetch failed: \(String(describing: error), privacy: .public)")
         }
     }
 
@@ -153,6 +237,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         DispatchQueue.main.async { [weak self] in
             Self.logger.info("💰 WALLET :: clearing balance")
             self?.balance = nil
+            self?.platformPaymentCredits = 0
             NotificationCenter.default.post(
                 name: SwiftDashSDKWalletState.balanceDidChangeNotification,
                 object: nil)
@@ -166,6 +251,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         let clearBlock = { [weak self] in
             Self.logger.info("💰 WALLET :: clearing all wallet state")
             self?.balance = nil
+            self?.platformPaymentCredits = 0
             NotificationCenter.default.post(
                 name: SwiftDashSDKWalletState.balanceDidChangeNotification,
                 object: nil)

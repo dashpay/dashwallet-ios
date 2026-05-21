@@ -36,6 +36,7 @@ enum DWRegistrationPhaseAdapter {
     static func map(
         phase: DWIdentityRegistrationController.Phase,
         assetLockStatus: Int,
+        fundingSource: DWIdentityFundingSource = .core,
         failedAtPhase: DWDPRegistrationState? = nil
     ) -> DWDPRegistrationState {
         // NS_ENUM(NSUInteger, DWDPRegistrationState) imports into Swift
@@ -52,20 +53,32 @@ enum DWRegistrationPhaseAdapter {
             return .processingPayment
 
         case .inFlight:
-            // Stage within `.inFlight` is read from the matching
-            // `PersistentAssetLock.statusRaw` row.
-            //   0 = Built      → asset-lock tx built, not broadcast
-            //   1 = Broadcast  → broadcast, waiting for IS/CL
-            //   2 = InstantSendLocked → IS proof received
-            //   3 = ChainLocked       → CL proof received (fallback)
-            //   4 = Consumed   → asset-lock used by IdentityCreate ST
-            if assetLockStatus < 2 {
-                return .processingPayment
-            }
-            if assetLockStatus < 4 {
+            switch fundingSource {
+            case .core:
+                // Stage within `.inFlight` is read from the matching
+                // `PersistentAssetLock.statusRaw` row.
+                //   0 = Built      → asset-lock tx built, not broadcast
+                //   1 = Broadcast  → broadcast, waiting for IS/CL
+                //   2 = InstantSendLocked → IS proof received
+                //   3 = ChainLocked       → CL proof received (fallback)
+                //   4 = Consumed   → asset-lock used by IdentityCreate ST
+                if assetLockStatus < 2 {
+                    return .processingPayment
+                }
+                if assetLockStatus < 4 {
+                    return .creatingID
+                }
+                return .registrationUsername
+
+            case .platformPayment:
+                // Platform Payment path skips Core-chain asset-lock
+                // entirely — `registerIdentityFromAddresses` consumes
+                // credits already on Platform addresses. There is no
+                // IS/CL wait, so the UI jumps straight to "Creating
+                // ID" as soon as the FFI submit goes in flight.
+                // `assetLockStatus` is intentionally ignored here.
                 return .creatingID
             }
-            return .registrationUsername
 
         case .completed:
             return .done

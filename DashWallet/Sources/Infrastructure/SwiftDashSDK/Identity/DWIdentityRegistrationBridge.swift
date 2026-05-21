@@ -29,6 +29,22 @@ import Foundation
 import OSLog
 import SwiftDashSDK
 
+/// Funding source for new-identity registration. Surfaced to Obj-C
+/// as an NSInteger-backed enum so the SwiftUI form can route the
+/// user's picker selection through the bridge without changing
+/// `DWDashPayProtocol.createUsername:invitation:`.
+///
+/// - `core`: spend Core BIP44 UTXOs via `registerIdentityWithFunding`.
+///   Default and only path before PR 5.
+/// - `platformPayment`: spend credits already on DIP-17 Platform
+///   Payment addresses via `registerIdentityFromAddresses`. Skips
+///   the asset-lock IS/CL wait — there is no Core-chain asset-lock
+///   in this path.
+@objc public enum DWIdentityFundingSource: Int {
+    case core = 0
+    case platformPayment = 1
+}
+
 @objc(DWIdentityRegistrationBridge)
 @MainActor
 @objcMembers
@@ -70,6 +86,20 @@ public final class DWIdentityRegistrationBridge: NSObject {
     /// Last failure description, or nil if no failure recorded.
     @objc public private(set) var lastErrorMessage: String?
 
+    /// Funding source the SwiftUI form picked for the next
+    /// `startCreateUsername:` call. Defaults to `.core` so any caller
+    /// that doesn't set it (legacy Obj-C call sites, future paths)
+    /// gets the pre-PR-5 behavior. Reset back to `.core` on every
+    /// terminal phase so a stale value can't leak into the next
+    /// attempt.
+    ///
+    /// Written by `CreateUsernameView`'s Continue handler immediately
+    /// before `DWDashPayModel.createUsername:invitation:` so the
+    /// model→bridge call picks it up. Kept as a property (not a
+    /// method parameter) to avoid widening `DWDashPayProtocol`'s
+    /// surface for what is effectively SwiftDashSDK-path-only state.
+    @objc public var preferredFundingSource: DWIdentityFundingSource = .core
+
     // MARK: - Subscriptions
 
     private var coordinatorSubscription: AnyCancellable?
@@ -91,10 +121,13 @@ public final class DWIdentityRegistrationBridge: NSObject {
         _ username: String,
         completion: @escaping (String?, NSError?) -> Void
     ) {
-        Self.logger.info("🪪 IDENT-BRIDGE :: startCreateUsername username=\(username, privacy: .public)")
+        let source = preferredFundingSource
+        Self.logger.info("🪪 IDENT-BRIDGE :: startCreateUsername username=\(username, privacy: .public) funding=\(source == .core ? "core" : "pp", privacy: .public)")
         Task { @MainActor in
             do {
-                let identityId = try await DWIdentityRegistrationCoordinator.shared.startCreateUsername(username)
+                let identityId = try await DWIdentityRegistrationCoordinator.shared.startCreateUsername(
+                    username,
+                    fundingSource: source)
                 let hex = identityId.map { String(format: "%02x", $0) }.joined()
                 completion(hex, nil)
             } catch {
@@ -109,10 +142,13 @@ public final class DWIdentityRegistrationBridge: NSObject {
         username: String,
         completion: @escaping (String?, NSError?) -> Void
     ) {
-        Self.logger.info("🪪 IDENT-BRIDGE :: retry username=\(username, privacy: .public)")
+        let source = preferredFundingSource
+        Self.logger.info("🪪 IDENT-BRIDGE :: retry username=\(username, privacy: .public) funding=\(source == .core ? "core" : "pp", privacy: .public)")
         Task { @MainActor in
             do {
-                let identityId = try await DWIdentityRegistrationCoordinator.shared.retry(username)
+                let identityId = try await DWIdentityRegistrationCoordinator.shared.retry(
+                    username,
+                    fundingSource: source)
                 let hex = identityId.map { String(format: "%02x", $0) }.joined()
                 completion(hex, nil)
             } catch {
@@ -188,6 +224,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         currentState = DWRegistrationPhaseAdapter.map(
             phase: phase,
             assetLockStatus: assetLockStatus,
+            fundingSource: coord.currentFundingSource,
             failedAtPhase: coord.failedAtPhase)
         switch phase {
         case .failed:
@@ -202,6 +239,17 @@ public final class DWIdentityRegistrationBridge: NSObject {
         }
         currentUsername = coord.currentUsername
         lastErrorMessage = coord.lastErrorMessage
+
+        // Reset preferredFundingSource to the safe default on every
+        // terminal phase so a stale picker selection can't bleed into
+        // the next attempt. The SwiftUI form re-writes it right
+        // before each submit so this won't drop intentional choices.
+        switch phase {
+        case .completed, .failed:
+            preferredFundingSource = .core
+        default:
+            break
+        }
 
         // Internal notification — DWDashPayModel observes this,
         // rebuilds its own state, and then posts the canonical
