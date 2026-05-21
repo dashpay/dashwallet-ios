@@ -52,18 +52,6 @@ NS_ASSUME_NONNULL_BEGIN
         self.inputController = inputController;
         inputController.delegate = self;
 
-        UIView *hostView = inputController.viewController.view;
-        hostView.translatesAutoresizingMaskIntoConstraints = NO;
-        hostView.backgroundColor = self.backgroundColor;
-        [self addSubview:hostView];
-        self.inputHostView = hostView;
-
-        [NSLayoutConstraint activateConstraints:@[
-            [hostView.topAnchor constraintEqualToAnchor:self.topAnchor],
-            [hostView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-            [hostView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-            [hostView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-        ]];
     }
     return self;
 }
@@ -77,6 +65,20 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
     [parentViewController addChildViewController:child];
+
+    UIView *hostView = child.view;
+    hostView.translatesAutoresizingMaskIntoConstraints = NO;
+    hostView.backgroundColor = self.backgroundColor;
+    [self addSubview:hostView];
+    self.inputHostView = hostView;
+
+    [NSLayoutConstraint activateConstraints:@[
+        [hostView.topAnchor constraintEqualToAnchor:self.topAnchor],
+        [hostView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+        [hostView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+        [hostView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+    ]];
+
     [child didMoveToParentViewController:parentViewController];
     self.parentViewControllerAttached = YES;
 }

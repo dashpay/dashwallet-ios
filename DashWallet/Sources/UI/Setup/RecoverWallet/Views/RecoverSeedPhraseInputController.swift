@@ -134,11 +134,6 @@ final class RecoverSeedPhraseInputController: NSObject {
     // MARK: - State
 
     private let state = RecoverSeedPhraseInputState()
-    /// `DWRecoverAction` is imported from Objective-C. In this codebase,
-    /// `DWRecoverAction_Recover` is declared as the first case, so raw value
-    /// `0` maps to recover.
-    private let recoverActionRawValue: UInt = 0
-
     @objc weak var delegate: DWRecoverSeedPhraseInputControllerDelegate?
     @objc var model: DWRecoverModel?
 
@@ -318,7 +313,7 @@ final class RecoverSeedPhraseInputController: NSObject {
     // MARK: - Private
 
     private func isRecoverAction(_ model: DWRecoverModel) -> Bool {
-        model.action.rawValue == recoverActionRawValue
+        model.action == DWRecoverAction_Recover
     }
 
     private func isWipePhrase(_ phrase: String, model: DWRecoverModel) -> Bool {
