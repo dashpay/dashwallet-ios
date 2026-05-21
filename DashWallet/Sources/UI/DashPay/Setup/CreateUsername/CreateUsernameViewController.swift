@@ -38,11 +38,7 @@ class CreateUsernameViewController: UIViewController {
         
         self.view.backgroundColor = UIColor.dw_secondaryBackground()
 
-        let content = CreateUsernameView(dashPayModel: dashPayModel) { dialog in
-            self.showModalDialog(dialog: dialog)
-        } dismissDialog: {
-            self.dismiss(animated: true)
-        } finish: {
+        let content = CreateUsernameView(dashPayModel: dashPayModel) {
             self.navigationController?.popViewController(animated: true)
             self.completionHandler?(true)
         }
@@ -65,13 +61,7 @@ struct CreateUsernameView: View {
     @State var dashPayModel: DWDashPayProtocol
     @StateObject private var viewModel = CreateUsernameViewModel()
     @FocusState private var isTextInputFocused: Bool
-    @State private var showVotingInfo: Bool = false
-    @State private var showVerifyIdentity: Bool = false
-    @State private var confirmUsernameRequest: Bool = false
     @State private var inProgress: Bool = false
-    @State private var prove: URL? = nil
-    var showVerifyConfirmation: (any View) -> Void
-    var dismissDialog: () -> Void
     var finish: () -> Void
 
     var body: some View {
@@ -115,21 +105,6 @@ struct CreateUsernameView: View {
                 ).padding(.top, 20)
             }
             
-            if viewModel.uiState.usernameBlockedRule == .warning {
-                DashButton(
-                    text: NSLocalizedString("What is username voting?", comment: "Usernames"),
-                    leadingIcon: .system("plus"),
-                    style: .plain,
-                    size: .small,
-                    stretch: false
-                ) {
-                    showVotingInfo = true
-                }
-                .overrideForegroundColor(.dashBlue)
-                .padding(.leading, 12)
-                .padding(.top, 4)
-            }
-            
             Spacer()
             
             DashButton(
@@ -137,18 +112,18 @@ struct CreateUsernameView: View {
                 isEnabled: viewModel.uiState.canContinue,
                 isLoading: inProgress
             ) {
-                if viewModel.uiState.usernameBlockedRule == .valid {
-                    Task {
-                        inProgress = true
-                        let result = await viewModel.submitUsernameRequest(withProve: nil, dashPayModel: dashPayModel)
-                        inProgress = false
+                // `viewModel.uiState.canContinue` is only true after
+                // `checkIfBlocked` flips `usernameBlockedRule` to
+                // `.valid`, so the button is gated on the same condition
+                // — no `if .valid` check needed here.
+                Task {
+                    inProgress = true
+                    let result = await viewModel.submitUsernameRequest(withProve: nil, dashPayModel: dashPayModel)
+                    inProgress = false
 
-                        if result {
-                            finish()
-                        }
+                    if result {
+                        finish()
                     }
-                } else {
-                    showVerifyConfirmation(getVerifyConfirmation())
                 }
             }
         }
@@ -158,96 +133,16 @@ struct CreateUsernameView: View {
         .onAppear {
             isTextInputFocused = true
         }
-        .sheet(isPresented: $showVotingInfo) {
-            let dialog = BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
-                VotingInfoScreen {
-                    showVotingInfo = false
-                }
-            }
-            
-            if #available(iOS 16.0, *) {
-                dialog.presentationDetents([.height(600)])
-            } else {
-                dialog
-            }
-        }
-        .sheet(isPresented: $showVerifyIdentity, onDismiss: {
-            guard let url = self.prove else { return }
-            
-            if viewModel.currentUsernameRequest == nil {
-                confirmUsernameRequest = true
-            } else {
-                viewModel.updateRequest(with: url)
-            }
-        }) {
-            let dialog = BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
-                VerifyIdentityScreen(
-                    viewModel: viewModel,
-                    onConfirmed: { url in
-                        self.prove = url
-                        showVerifyIdentity = false
-                    }
-                )
-            }
-            
-            if #available(iOS 16.0, *) {
-                dialog.presentationDetents([.height(650)])
-            } else {
-                dialog
-            }
-        }
-        .sheet(isPresented: $confirmUsernameRequest) {
-            let dialog = ConfirmSpendDialog(username: viewModel.username, amount: Int64(viewModel.uiState.requiredDash)) {
-                confirmUsernameRequest = false
-            } onConfirm: {
-                confirmUsernameRequest = false
-                Task {
-                    inProgress = true
-                    let result = await viewModel.submitUsernameRequest(withProve: self.prove, dashPayModel: dashPayModel)
-                    inProgress = false
+    }
 
-                    if result {
-                        finish()
-                    }
-                }
-            }
-            
-            if #available(iOS 16.0, *) {
-                dialog.presentationDetents([.height(340)])
-            } else {
-                dialog
-            }
-        }
-    }
-    
-    @ViewBuilder
-    private func getVerifyConfirmation() -> some View {
-        ModalDialog(
-            heading: NSLocalizedString("Verify your identity to enhance your chances of getting your requested username", comment: "Usernames"),
-            textBlock1: NSLocalizedString("If somebody else requests the same username as you, we will let the network decide whom to give this username", comment: "Usernames"),
-            positiveButtonText: NSLocalizedString("Verify", comment: ""),
-            positiveButtonAction: {
-                dismissDialog()
-                self.prove = nil
-                showVerifyIdentity = true
-            },
-            negativeButtonText: NSLocalizedString("Skip", comment: ""),
-            negativeButtonAction: {
-                dismissDialog()
-                confirmUsernameRequest = true
-            },
-            buttonsOrientation: .horizontal
-        )
-    }
-    
     private func getMessageForBlockedRule() -> String {
+        // After PR 2.5 the only rule state the user ever sees here is
+        // `.valid` (set by `CreateUsernameViewModel.checkIfBlocked`);
+        // `.loading` shows briefly before that. The `.warning`,
+        // `.invalid`, `.invalidCritical` rule states no longer fire
+        // because the SDK v1 doesn't surface contested-username or
+        // already-taken checks in the SwiftUI form's pipeline.
         switch viewModel.uiState.usernameBlockedRule {
-        case .invalid:
-            return NSLocalizedString("This username is blocked by the Dash Network", comment: "Usernames")
-        case .invalidCritical:
-            return NSLocalizedString("This username is already created by someone else", comment: "Usernames")
-        case .warning:
-            return NSLocalizedString("The Dash network will vote on this username. We will notify you of the results on March 14, 2024.", comment: "Usernames") // TODO: date
         case .loading:
             return ""
         default:

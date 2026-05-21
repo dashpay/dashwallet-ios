@@ -52,10 +52,6 @@ class CreateUsernameViewModel: ObservableObject {
     private let illegalChars = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-").inverted
     static let shared = CreateUsernameViewModel()
     
-    var hasUsernameRequest: Bool {
-        prefs.requestedUsernameId != nil
-    }
-    
     var shouldRequestPayment: Bool {
         get { !prefs.alreadyPaid }
         set { prefs.alreadyPaid = !newValue }
@@ -101,10 +97,6 @@ class CreateUsernameViewModel: ObservableObject {
         observeBalance()
     }
     
-    func hasRequests(for username: String) async -> Bool {
-        return await dao.get(byUsername: username) != nil
-    }
-    
     func submitUsernameRequest(withProve link: URL?, dashPayModel: DWDashPayProtocol) async -> Bool {
         // Fire-and-forget. With DASHPAY_SWIFT_SDK_REGISTRATION=1 the
         // model routes new-user registrations through
@@ -140,16 +132,6 @@ class CreateUsernameViewModel: ObservableObject {
                 username = ""
                 await dao.delete(by: requestId)
                 prefs.requestedUsernameId = nil
-            }
-        }
-    }
-    
-    func updateRequest(with link: URL) {
-        Task {
-            if var usernameRequest = currentUsernameRequest {
-                usernameRequest.link = link.absoluteString
-                await dao.update(dto: usernameRequest)
-                currentUsernameRequest = usernameRequest
             }
         }
     }
