@@ -338,6 +338,7 @@
 		471DD1B8290A92CD00E030C8 /* Tools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471DD1B7290A92CD00E030C8 /* Tools.swift */; };
 		471DD1BA290A962B00E030C8 /* String+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471DD1B9290A962B00E030C8 /* String+DashWallet.swift */; };
 		471DD1C0290AECE900E030C8 /* String+DashWalletTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471DD1BB290AE30B00E030C8 /* String+DashWalletTests.swift */; };
+		A5D5DD000000000000001201 /* DWRegistrationPhaseAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001200 /* DWRegistrationPhaseAdapterTests.swift */; };
 		472CEE012924AA6D00656B48 /* PointOfUseListEmptyResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472CEE002924AA6D00656B48 /* PointOfUseListEmptyResultsView.swift */; };
 		472D13DF299DF5C6006903F1 /* TaxReportGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13DE299DF5C6006903F1 /* TaxReportGenerator.swift */; };
 		472D13E1299E1F2F006903F1 /* CSVBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E0299E1F2F006903F1 /* CSVBuilder.swift */; };
@@ -388,6 +389,11 @@
 		A5D5DD000000000000000211 /* PlatformAddressSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000212 /* PlatformAddressSyncCoordinator.swift */; };
 		A5D5DD000000000000000271 /* SwiftDashSDKHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000270 /* SwiftDashSDKHost.swift */; };
 		A5D5DD000000000000000272 /* SwiftDashSDKHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000270 /* SwiftDashSDKHost.swift */; };
+		A5D5DD000000000000001102 /* DWRegistrationPhaseAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001001 /* DWRegistrationPhaseAdapter.swift */; };
+		A5D5DD000000000000001104 /* DWIdentityRegistrationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001002 /* DWIdentityRegistrationController.swift */; };
+		A5D5DD000000000000001106 /* DWIdentityAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001003 /* DWIdentityAuthorizer.swift */; };
+		A5D5DD000000000000001108 /* DWIdentityRegistrationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001004 /* DWIdentityRegistrationCoordinator.swift */; };
+		A5D5DD00000000000000110A /* DWIdentityRegistrationBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001005 /* DWIdentityRegistrationBridge.swift */; };
 		A5D5DD000000000000000213 /* PlatformSyncStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000215 /* PlatformSyncStatusScreen.swift */; };
 		A5D5DD000000000000000214 /* PlatformSyncStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000215 /* PlatformSyncStatusScreen.swift */; };
 		A5D5DD000000000000000216 /* PlatformCreditsFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000218 /* PlatformCreditsFormatter.swift */; };
@@ -2356,6 +2362,7 @@
 		471DD1B7290A92CD00E030C8 /* Tools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools.swift; sourceTree = "<group>"; };
 		471DD1B9290A962B00E030C8 /* String+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+DashWallet.swift"; sourceTree = "<group>"; };
 		471DD1BB290AE30B00E030C8 /* String+DashWalletTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+DashWalletTests.swift"; sourceTree = "<group>"; };
+		A5D5DD000000000000001200 /* DWRegistrationPhaseAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWRegistrationPhaseAdapterTests.swift; sourceTree = "<group>"; };
 		471DD1BE290AE9F000E030C8 /* DashWalletTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DashWalletTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		472CEE002924AA6D00656B48 /* PointOfUseListEmptyResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseListEmptyResultsView.swift; sourceTree = "<group>"; };
 		472D13DE299DF5C6006903F1 /* TaxReportGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaxReportGenerator.swift; sourceTree = "<group>"; };
@@ -2423,6 +2430,11 @@
 		A5D5DD000000000000000320 /* DWPreviewSeedPhraseModel+Mnemonic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DWPreviewSeedPhraseModel+Mnemonic.swift"; sourceTree = "<group>"; };
 		A5D5DD000000000000000131 /* SwiftDashSDKReceiveAddressReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKReceiveAddressReader.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000124 /* SwiftDashSDKTransactionSender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKTransactionSender.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001001 /* DWRegistrationPhaseAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWRegistrationPhaseAdapter.swift; path = Identity/DWRegistrationPhaseAdapter.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001002 /* DWIdentityRegistrationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWIdentityRegistrationController.swift; path = Identity/DWIdentityRegistrationController.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001003 /* DWIdentityAuthorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWIdentityAuthorizer.swift; path = Identity/DWIdentityAuthorizer.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001004 /* DWIdentityRegistrationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWIdentityRegistrationCoordinator.swift; path = Identity/DWIdentityRegistrationCoordinator.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001005 /* DWIdentityRegistrationBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWIdentityRegistrationBridge.swift; path = Identity/DWIdentityRegistrationBridge.swift; sourceTree = "<group>"; };
 		4762C947276CAF6800F5F42D /* DWPaymentCurrency.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentCurrency.h; sourceTree = "<group>"; };
 		4774DCDA28F3FA9C008CF87D /* Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coinbase.swift; sourceTree = "<group>"; };
 		4774DCDC28F43A68008CF87D /* ServiceDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceDataSource.swift; sourceTree = "<group>"; };
@@ -5633,6 +5645,11 @@
 				A5D5DD00000000000000010E /* SwiftDashSDKWalletState.swift */,
 					A5D5DD000000000000000131 /* SwiftDashSDKReceiveAddressReader.swift */,
 					A5D5DD000000000000000124 /* SwiftDashSDKTransactionSender.swift */,
+					A5D5DD000000000000001001 /* DWRegistrationPhaseAdapter.swift */,
+					A5D5DD000000000000001002 /* DWIdentityRegistrationController.swift */,
+					A5D5DD000000000000001003 /* DWIdentityAuthorizer.swift */,
+					A5D5DD000000000000001004 /* DWIdentityRegistrationCoordinator.swift */,
+					A5D5DD000000000000001005 /* DWIdentityRegistrationBridge.swift */,
 				);
 			path = SwiftDashSDK;
 			sourceTree = "<group>";
@@ -6549,6 +6566,7 @@
 				2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */,
 				471DD1BB290AE30B00E030C8 /* String+DashWalletTests.swift */,
 				47976E492987772700612988 /* AmountObjectTests.swift */,
+				A5D5DD000000000000001200 /* DWRegistrationPhaseAdapterTests.swift */,
 			);
 			path = DashWalletTests;
 			sourceTree = "<group>";
@@ -9392,6 +9410,7 @@
 				2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */,
 				471DD1C0290AECE900E030C8 /* String+DashWalletTests.swift in Sources */,
 				47976E4A2987772700612988 /* AmountObjectTests.swift in Sources */,
+				A5D5DD000000000000001201 /* DWRegistrationPhaseAdapterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9945,6 +9964,11 @@
 				A5D5DD0000000000000000F9 /* SwiftDashSDKKeyMigrator.swift in Sources */,
 				A5D5DD000000000000000130 /* SwiftDashSDKWalletRuntime.swift in Sources */,
 				A5D5DD000000000000000272 /* SwiftDashSDKHost.swift in Sources */,
+				A5D5DD000000000000001102 /* DWRegistrationPhaseAdapter.swift in Sources */,
+				A5D5DD000000000000001104 /* DWIdentityRegistrationController.swift in Sources */,
+				A5D5DD000000000000001106 /* DWIdentityAuthorizer.swift in Sources */,
+				A5D5DD000000000000001108 /* DWIdentityRegistrationCoordinator.swift in Sources */,
+				A5D5DD00000000000000110A /* DWIdentityRegistrationBridge.swift in Sources */,
 				A5D5DD0000000000000000FC /* SwiftDashSDKSPVCoordinator.swift in Sources */,
 					A5D5DD0000000000000000FF /* SwiftDashSDKSPVStatusScreen.swift in Sources */,
 					A5D5DD000000000000000211 /* PlatformAddressSyncCoordinator.swift in Sources */,
@@ -11225,6 +11249,7 @@
 					"PB_NO_PACKED_STRUCTS=1",
 					"PB_ENABLE_MALLOC=1",
 					"DASHPAY=1",
+					"DASHPAY_SWIFT_SDK_REGISTRATION=0",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
@@ -11359,6 +11384,7 @@
 					"PB_NO_PACKED_STRUCTS=1",
 					"PB_ENABLE_MALLOC=1",
 					"DASHPAY=1",
+					"DASHPAY_SWIFT_SDK_REGISTRATION=0",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
@@ -11493,6 +11519,7 @@
 					"PB_NO_PACKED_STRUCTS=1",
 					"PB_ENABLE_MALLOC=1",
 					"DASHPAY=1",
+					"DASHPAY_SWIFT_SDK_REGISTRATION=0",
 				);
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = (
 					"$(inherited)",
@@ -11504,6 +11531,7 @@
 					"PB_NO_PACKED_STRUCTS=1",
 					"PB_ENABLE_MALLOC=1",
 					"DASHPAY=1",
+					"DASHPAY_SWIFT_SDK_REGISTRATION=0",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
@@ -11647,6 +11675,7 @@
 					"PB_NO_PACKED_STRUCTS=1",
 					"PB_ENABLE_MALLOC=1",
 					"DASHPAY=1",
+					"DASHPAY_SWIFT_SDK_REGISTRATION=0",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
