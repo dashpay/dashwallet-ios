@@ -134,6 +134,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         case dpnsRegistration(Error)
         case availabilityCheck(Error)
         case insufficientPlatformCredits(required: UInt64, available: UInt64)
+        case alreadyInFlight
 
         var errorDescription: String? {
             switch self {
@@ -159,6 +160,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 return underlying.localizedDescription
             case .insufficientPlatformCredits:
                 return NSLocalizedString("Not enough Platform credits to register an identity", comment: "DashPay")
+            case .alreadyInFlight:
+                return NSLocalizedString("Identity registration already in progress", comment: "DashPay")
             }
         }
     }
@@ -199,9 +202,27 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             throw CoordinatorError.noModelContainer
         }
 
-        // Tear down any prior controller / subscription before
-        // creating a fresh attempt. Safe even if no prior attempt
-        // ran — `resetState()` is idempotent.
+        // Single-flight guard. The FFI calls we're about to make
+        // (`registerIdentityWithFunding` / `registerIdentityFromAddresses`
+        // / `registerDpnsName`) can't be cancelled — `resetState()`
+        // would drop our observers but the underlying network work
+        // keeps racing to its terminal. Letting a second submit in
+        // would race two asset-lock broadcasts against the same
+        // identity index and tear up the DWGlobalOptions mirror on
+        // whichever completion fires last. Reject overlapping starts
+        // and let the existing attempt finish or fail terminally.
+        let currentPhase = phase
+        switch currentPhase {
+        case .preparingKeys, .inFlight:
+            Self.logger.warning("🪪 IDENT-COORD :: rejecting concurrent start; phase=\(String(describing: currentPhase), privacy: .public)")
+            throw CoordinatorError.alreadyInFlight
+        case .idle, .completed, .failed:
+            break
+        }
+
+        // Tear down any prior terminal controller / subscription
+        // before creating a fresh attempt. Safe even if no prior
+        // attempt ran — `resetState()` is idempotent.
         resetState()
 
         currentUsername = username
@@ -261,9 +282,27 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // strong reference here for the duration of the awaits.
         let signer = KeychainSigner(modelContainer: modelContainer)
 
-        // Step 2: IdentityCreate. Two paths depending on funding source.
+        // Step 2: IdentityCreate. Two paths depending on funding
+        // source, OR skipped entirely if a prior attempt at this
+        // identity index already landed an identity on Platform —
+        // re-running IdentityCreate would fail with a unique-key
+        // collision because the DIP-9 derived authentication keys
+        // at `pinnedIdentityIndex` are deterministic per wallet and
+        // already bound to the prior identity in Platform's unique-
+        // key index. The resume path picks up the persisted
+        // identityId from SwiftData and falls through to DPNS
+        // register so a transient failure between IdentityCreate
+        // success and DPNS register can be retried without leaving
+        // the user stuck.
         newController.enterInFlight()
         let identityId: Identifier
+        if let resumedId = lookupExistingIdentityId(
+            walletId: wallet.walletId,
+            modelContainer: modelContainer)
+        {
+            Self.logger.info("🪪 IDENT-COORD :: resume — identity already exists at index \(Self.pinnedIdentityIndex, privacy: .public), skipping IdentityCreate")
+            identityId = resumedId
+        } else {
         do {
             switch fundingSource {
             case .core:
@@ -321,6 +360,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             newController.enterFailed(error.localizedDescription)
             throw CoordinatorError.identityRegistration(error)
         }
+        } // end if-let resumedId
 
         // Step 3: DPNS preorder + register.
         do {
@@ -471,6 +511,33 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         lastErrorMessage = nil
         currentUsername = nil
         currentFundingSource = .core
+    }
+
+    /// Look up the persisted identity at `pinnedIdentityIndex` for
+    /// the given wallet. Returns the 32-byte identifier if found, or
+    /// `nil` if no prior attempt completed IdentityCreate.
+    ///
+    /// Used by `startCreateUsername` to skip the IdentityCreate step
+    /// when a previous attempt landed the identity but failed before
+    /// DPNS register completed. Re-running IdentityCreate in that
+    /// state would always fail with a unique-key collision (the
+    /// DIP-9 derived authentication keys are deterministic per
+    /// identity index), so detection + resume is the only way to
+    /// recover without bumping the index.
+    private func lookupExistingIdentityId(
+        walletId: Data,
+        modelContainer: ModelContainer
+    ) -> Identifier? {
+        let context = modelContainer.mainContext
+        let pinnedIndex = Self.pinnedIdentityIndex
+        var descriptor = FetchDescriptor<PersistentIdentity>(
+            predicate: #Predicate { identity in
+                identity.wallet?.walletId == walletId
+                    && identity.identityIndex == pinnedIndex
+            }
+        )
+        descriptor.fetchLimit = 1
+        return (try? context.fetch(descriptor))?.first?.identityId
     }
 
     /// Greedy-select DIP-17 Platform Payment addresses to cover

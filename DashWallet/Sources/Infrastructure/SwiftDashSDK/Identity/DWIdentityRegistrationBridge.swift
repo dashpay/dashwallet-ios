@@ -240,15 +240,15 @@ public final class DWIdentityRegistrationBridge: NSObject {
         currentUsername = coord.currentUsername
         lastErrorMessage = coord.lastErrorMessage
 
-        // Reset preferredFundingSource to the safe default on every
-        // terminal phase so a stale picker selection can't bleed into
-        // the next attempt. The SwiftUI form re-writes it right
-        // before each submit so this won't drop intentional choices.
-        switch phase {
-        case .completed, .failed:
+        // Reset preferredFundingSource to the safe default on
+        // `.completed` only. On `.failed`, preserve the source so a
+        // retry (which goes through `DWDashPayModel.retry` →
+        // `createUsername:invitation:` → bridge without re-running the
+        // SwiftUI picker) uses the same funding the user originally
+        // picked — flipping a PP-funded failure back to `.core` would
+        // strand a PP-only wallet on a path that has no Core balance.
+        if case .completed = phase {
             preferredFundingSource = .core
-        default:
-            break
         }
 
         // Internal notification — DWDashPayModel observes this,

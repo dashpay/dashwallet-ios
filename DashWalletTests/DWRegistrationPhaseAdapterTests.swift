@@ -12,6 +12,16 @@
 import XCTest
 @testable import dashwallet
 
+// NOTE: DashWalletTests links against the `dashwallet` target, but the
+// types under test (`DWIdentityRegistrationController`,
+// `DWRegistrationPhaseAdapter`, `DWIdentityFundingSource`) are
+// registered on the `dashpay` target only. The test bundle is
+// pre-existing broken — `TodayExtension` `DSDynamicOptions` link
+// failure stops the test run before these tests compile. Fixing the
+// bundle requires the test target to depend on `dashpay` (or the
+// types to also be on `dashwallet`); both are out of scope for the
+// identity-migration stage. Adapter is a pure function; the cases
+// here are documentation-as-tests until the test bundle is repaired.
 final class DWRegistrationPhaseAdapterTests: XCTestCase {
 
     typealias Phase = DWIdentityRegistrationController.Phase
