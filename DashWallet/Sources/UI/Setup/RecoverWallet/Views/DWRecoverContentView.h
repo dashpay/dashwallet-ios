@@ -53,6 +53,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)appendText:(NSString *)text;
 - (void)replaceText:(NSString *)target replacement:(NSString *)replacement;
 
+/// Establishes UIHostingController containment for the embedded SwiftUI input.
+/// Must be called by the owning view controller once after the content view
+/// has been created. Idempotent — safe to call more than once.
+- (void)attachToParentViewController:(UIViewController *)parentViewController;
+
 @end
 
 NS_ASSUME_NONNULL_END

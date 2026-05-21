@@ -11,6 +11,7 @@ static const bool _SNAPSHOT = 0;
 #endif /* SNAPSHOT */
 
 //MARK: DashSync
+#import <DashSync/DashSync.h>
 #import <DashSync/DSLogger.h>
 #import "DSTransaction.h"
 #import "DSCoinbaseTransaction.h"
@@ -152,6 +153,7 @@ static const bool _SNAPSHOT = 0;
 //MARK: Home
 #import "DWHomeModel.h"
 #import "DWRecoverViewController.h"
+#import "DWRecoverModel.h"
 #import "DSAuthenticationManager.h"
 #import "DSAuthenticationManager+Private.h"
 #import "DWSecureWalletDelegate.h"

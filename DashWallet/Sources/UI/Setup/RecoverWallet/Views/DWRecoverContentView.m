@@ -17,23 +17,24 @@
 
 #import "DWRecoverContentView.h"
 
-#import <DashSync/DashSync.h>
-
 #import "DWRecoverModel.h"
-#import "DWRecoverTextView.h"
 #import "DWSeedUIConstants.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRecoverContentView () <UITextViewDelegate>
+@interface DWRecoverContentView () <DWRecoverSeedPhraseInputControllerDelegate>
 
-@property (readonly, nonatomic, strong) UILabel *titleLabel;
-@property (readonly, nonatomic, strong) DWRecoverTextView *textView;
+/// Swift bridge that owns the SwiftUI `RecoverSeedPhraseInputView` hosting
+/// controller and routes user actions back into Objective-C.
+@property (nonatomic, strong) DWRecoverSeedPhraseInputController *inputController;
 
-@property (readonly, nonatomic, strong) NSLayoutConstraint *topConstraint;
-@property (readonly, nonatomic, strong) NSLayoutConstraint *textViewMinHeightConstraint;
+/// Convenience pointer to the bridged hosting controller's view; kept so we
+/// can size DWRecoverContentView against it.
+@property (nonatomic, weak) UIView *inputHostView;
+
+@property (nonatomic, assign) BOOL parentViewControllerAttached;
 
 @end
 
@@ -44,55 +45,40 @@ NS_ASSUME_NONNULL_BEGIN
     if (self) {
         self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
-        UILabel *titleLabel = [[UILabel alloc] init];
-        titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        titleLabel.backgroundColor = self.backgroundColor;
-        titleLabel.textAlignment = NSTextAlignmentCenter;
-        titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle2];
-        titleLabel.textColor = [UIColor dw_darkTitleColor];
-        titleLabel.adjustsFontForContentSizeCategory = YES;
-        titleLabel.numberOfLines = 0;
-        [self addSubview:titleLabel];
-        _titleLabel = titleLabel;
+        // Stage 3 bridge: Swift now owns phrase validation + recover/wipe
+        // branching. This Objective-C view is a container/forwarder only.
+        DWRecoverSeedPhraseInputController *inputController =
+            [[DWRecoverSeedPhraseInputController alloc] init];
+        self.inputController = inputController;
+        inputController.delegate = self;
 
-        DWRecoverTextView *textView = [[DWRecoverTextView alloc] initWithFrame:CGRectZero];
-        textView.translatesAutoresizingMaskIntoConstraints = NO;
-        textView.delegate = self;
-        [self addSubview:textView];
-        _textView = textView;
-
-        UIView *dummyView = [[UIView alloc] initWithFrame:CGRectZero];
-        dummyView.translatesAutoresizingMaskIntoConstraints = NO;
-        dummyView.backgroundColor = self.backgroundColor;
-        [self addSubview:dummyView];
-
-        [titleLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
-                                      forAxis:UILayoutConstraintAxisVertical];
-        [textView setContentCompressionResistancePriority:UILayoutPriorityRequired
-                                                  forAxis:UILayoutConstraintAxisVertical];
-
-        _topConstraint = [titleLabel.topAnchor constraintEqualToAnchor:self.topAnchor
-                                                              constant:DW_TOP_COMPACT_PADDING];
-        _textViewMinHeightConstraint = [textView.heightAnchor constraintGreaterThanOrEqualToConstant:0.0];
+        UIView *hostView = inputController.viewController.view;
+        hostView.translatesAutoresizingMaskIntoConstraints = NO;
+        hostView.backgroundColor = self.backgroundColor;
+        [self addSubview:hostView];
+        self.inputHostView = hostView;
 
         [NSLayoutConstraint activateConstraints:@[
-            _topConstraint,
-            [titleLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-            [titleLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-
-            [textView.topAnchor constraintEqualToAnchor:titleLabel.bottomAnchor
-                                               constant:DWTitleSeedPhrasePadding()],
-            [textView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-            [textView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-            _textViewMinHeightConstraint,
-
-            [dummyView.topAnchor constraintEqualToAnchor:textView.bottomAnchor],
-            [dummyView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-            [dummyView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-            [dummyView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+            [hostView.topAnchor constraintEqualToAnchor:self.topAnchor],
+            [hostView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+            [hostView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+            [hostView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
         ]];
     }
     return self;
+}
+
+- (void)attachToParentViewController:(UIViewController *)parentViewController {
+    if (self.parentViewControllerAttached || parentViewController == nil) {
+        return;
+    }
+    UIViewController *child = self.inputController.viewController;
+    if (child == nil) {
+        return;
+    }
+    [parentViewController addChildViewController:child];
+    [child didMoveToParentViewController:parentViewController];
+    self.parentViewControllerAttached = YES;
 }
 
 - (void)layoutSubviews {
@@ -104,8 +90,26 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (CGSize)intrinsicContentSize {
-    const CGFloat height = self.topConstraint.constant +
-                           [self minimumContentHeightWithoutTopPadding];
+    // Mirror the legacy formula so the surrounding scroll view + keyboard
+    // handling continue to produce the same content size. We can't ask the
+    // SwiftUI host for an exact intrinsic value cheaply, so we approximate
+    // using the same constants the SwiftUI Layout enum already uses.
+    UIFont *titleFont = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle2];
+    const CGFloat titleHeight = titleFont.lineHeight;
+    UIFont *wordFont = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    const CGFloat approxLineHeight = wordFont.lineHeight;
+    const CGFloat lineSpacing = 10.0;  // matches Layout.lineSpacing
+    const CGFloat textInset = 12.0;    // matches Layout.textInset
+    const NSInteger numberOfLines = 5; // matches Layout.numberOfLines
+    const CGFloat inputMinHeight = approxLineHeight * numberOfLines +
+                                   lineSpacing * MAX(numberOfLines - 1, 0) +
+                                   textInset * 2.0;
+
+    const CGFloat height = DW_TOP_COMPACT_PADDING +
+                           titleHeight +
+                           DWTitleSeedPhrasePadding() +
+                           inputMinHeight +
+                           DW_BOTTOM_PADDING;
 
     return CGSizeMake(self.visibleSize.width, MAX(height, self.visibleSize.height));
 }
@@ -113,160 +117,81 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setVisibleSize:(CGSize)visibleSize {
     _visibleSize = visibleSize;
 
-    self.textViewMinHeightConstraint.constant = [self.textView minimumHeight];
-
+    [self invalidateIntrinsicContentSize];
     [self setNeedsLayout];
 }
 
+- (void)setModel:(DWRecoverModel *)model {
+    _model = model;
+    self.inputController.model = model;
+}
+
 - (nullable NSString *)title {
-    return self.titleLabel.text;
+    return self.inputController.title;
 }
 
 - (void)setTitle:(nullable NSString *)title {
-    self.titleLabel.text = title;
+    self.inputController.title = title ?: @"";
 }
 
 - (void)activateTextView {
-    [self.textView becomeFirstResponder];
+    [self.inputController activate];
 }
 
 - (void)continueAction {
-    [self recoverWalletWithCurrentSeedPhrase];
+    [self.inputController continueAction];
 }
 
 - (void)appendText:(NSString *)text {
-    self.textView.text = [self.textView.text stringByAppendingFormat:@" %@", text];
+    [self.inputController appendText:text];
 }
 
 - (void)replaceText:(NSString *)target replacement:(NSString *)replacement {
-    self.textView.text = [self.textView.text stringByReplacingOccurrencesOfString:target
-                                                                       withString:replacement
-                                                                          options:NSCaseInsensitiveSearch
-                                                                            range:NSMakeRange(0, self.textView.text.length)];
+    [self.inputController replaceText:target with:replacement];
 }
 
-#pragma mark - UITextViewDelegate
+#pragma mark - DWRecoverSeedPhraseInputControllerDelegate
 
-- (void)textViewDidChange:(UITextView *)textView {
-    [self.delegate recoverContentView:self phraseDidChange:textView.text];
+- (void)recoverSeedPhraseInputController:(DWRecoverSeedPhraseInputController *)controller
+                         phraseDidChange:(NSString *)phrase {
+    [self.delegate recoverContentView:self phraseDidChange:phrase];
 }
 
-- (BOOL)textView:(UITextView *)textView
-    shouldChangeTextInRange:(NSRange)range
-            replacementText:(NSString *)text {
-    if ([text isEqual:@"\n"]) {
-        [self recoverWalletWithCurrentSeedPhrase];
-        return NO;
-    }
-    else {
-        return YES;
-    }
+- (void)recoverSeedPhraseInputController:(DWRecoverSeedPhraseInputController *)controller
+                       showIncorrectWord:(NSString *)incorrectWord {
+    [self.delegate recoverContentView:self showIncorrectWord:incorrectWord];
 }
 
-#pragma mark - Private
-
-- (void)recoverWalletWithCurrentSeedPhrase {
-    NSUInteger count = [self.textView.text wordsCount];
-    if (count < 10) {
-        return;
-    }
-
-    @autoreleasepool { // @autoreleasepool ensures sensitive data will be deallocated immediately
-        UITextView *textView = self.textView;
-        NSString *phrase = textView.text;
-
-        NSString *incorrectWord = nil;
-        uint32_t incorrectWordCount = 0;
-
-        if (![phrase isEqualToString:DW_WIPE_STRONG]) {
-            phrase = [self.model cleanupPhrase:phrase];
-
-
-            if (![textView.text hasPrefix:DW_WATCH] && ![phrase isEqual:textView.text]) {
-                textView.text = phrase;
-            }
-            phrase = [self.model normalizePhrase:phrase];
-        }
-
-        NSArray<NSString *> *words = CFBridgingRelease(
-            CFStringCreateArrayBySeparatingStrings(
-                SecureAllocator(), (CFStringRef)phrase,
-                CFSTR(" ")));
-
-        for (NSString *word in words) {
-            if (![[DSBIP39Mnemonic sharedInstance] wordIsValid:word]) {
-                if (incorrectWord == nil) {
-                    incorrectWord = word;
-                }
-                incorrectWordCount++;
-            }
-        }
-
-        if ([phrase isEqualToString:DW_WIPE] || [phrase isEqualToString:DW_WIPE_STRONG] ||
-            [[phrase lowercaseString] isEqualToString:[self.model.wipeAcceptPhrase lowercaseString]]) {
-            [self wipeWithPhrase:phrase];
-        }
-        else if (incorrectWord && incorrectWordCount > 1) {
-            textView.selectedRange = [textView.text.lowercaseString rangeOfString:incorrectWord];
-            [self.delegate recoverContentView:self showIncorrectWord:incorrectWord];
-        }
-        else if (incorrectWord && incorrectWordCount == 1 && self.model.action == DWRecoverAction_Recover) {
-            [self.delegate recoverContentView:self offerToReplaceIncorrectWord:incorrectWord inPhrase:phrase];
-        }
-        else if (self.model.action == DWRecoverAction_Recover && (words.count < DW_PHRASE_MIN_LENGTH || words.count % DW_PHRASE_MULTIPLE)) {
-            [self.delegate recoverContentView:self usedWordsHaveInvalidCount:words];
-        }
-        else if (![self.model phraseIsValid:phrase]) {
-            [self.delegate recoverContentViewBadRecoveryPhrase:self];
-        }
-        else if ([self.model hasWallet]) {
-            [self wipeWithPhrase:phrase];
-        }
-        else {
-            if (self.model.action == DWRecoverAction_Recover) {
-                [self.delegate recoverContentViewDidRecoverWallet:self phrase:phrase];
-            }
-            else {
-                [self wipeWithPhrase:phrase];
-            }
-        }
-    }
+- (void)recoverSeedPhraseInputController:(DWRecoverSeedPhraseInputController *)controller
+             offerToReplaceIncorrectWord:(NSString *)incorrectWord
+                                inPhrase:(NSString *)phrase {
+    [self.delegate recoverContentView:self offerToReplaceIncorrectWord:incorrectWord inPhrase:phrase];
 }
 
-- (void)wipeWithPhrase:(NSString *)phrase {
-    @autoreleasepool {
-        if ([phrase isEqualToString:DW_WIPE]) {
-            if ([self.model isWalletEmpty]) {
-                [self.delegate recoverContentViewPerformWipe:self];
-            }
-            else {
-                [self.delegate recoverContentViewWipeNotAllowed:self];
-            }
-        }
-        else if ([phrase isEqualToString:DW_WIPE_STRONG] || [phrase.lowercaseString isEqualToString:self.model.wipeAcceptPhrase.lowercaseString]) {
-            [self.delegate recoverContentViewPerformWipe:self];
-        }
-        else {
-            if ([self.model canWipeWithPhrase:phrase]) {
-                [self.delegate recoverContentViewPerformWipe:self];
-            }
-            else if (phrase) {
-                [self.delegate recoverContentViewWipeNotAllowedPhraseMismatch:self];
-            }
-        }
-    }
+- (void)recoverSeedPhraseInputController:(DWRecoverSeedPhraseInputController *)controller
+               usedWordsHaveInvalidCount:(NSArray *)words {
+    [self.delegate recoverContentView:self usedWordsHaveInvalidCount:words];
 }
 
-- (CGFloat)minimumContentHeightWithoutTopPadding {
-    const CGFloat textViewMinimumHeight = self.textViewMinHeightConstraint.constant;
-    const CGFloat textViewHeight = self.textView.intrinsicContentSize.height;
+- (void)recoverSeedPhraseInputControllerBadRecoveryPhrase:(DWRecoverSeedPhraseInputController *)controller {
+    [self.delegate recoverContentViewBadRecoveryPhrase:self];
+}
 
-    const CGFloat height = self.titleLabel.intrinsicContentSize.height +
-                           DWTitleSeedPhrasePadding() +
-                           MAX(textViewMinimumHeight, textViewHeight) +
-                           DW_BOTTOM_PADDING;
+- (void)recoverSeedPhraseInputController:(DWRecoverSeedPhraseInputController *)controller
+                    didRecoverWalletWith:(NSString *)phrase {
+    [self.delegate recoverContentViewDidRecoverWallet:self phrase:phrase];
+}
 
-    return height;
+- (void)recoverSeedPhraseInputControllerPerformWipe:(DWRecoverSeedPhraseInputController *)controller {
+    [self.delegate recoverContentViewPerformWipe:self];
+}
+
+- (void)recoverSeedPhraseInputControllerWipeNotAllowed:(DWRecoverSeedPhraseInputController *)controller {
+    [self.delegate recoverContentViewWipeNotAllowed:self];
+}
+
+- (void)recoverSeedPhraseInputControllerWipeNotAllowedPhraseMismatch:(DWRecoverSeedPhraseInputController *)controller {
+    [self.delegate recoverContentViewWipeNotAllowedPhraseMismatch:self];
 }
 
 @end

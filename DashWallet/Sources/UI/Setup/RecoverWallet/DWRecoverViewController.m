@@ -236,6 +236,11 @@ NS_ASSUME_NONNULL_BEGIN
     [self.scrollView addSubview:contentView];
     self.contentView = contentView;
 
+    // Stage 2: the seed-entry input is now hosted in a SwiftUI view that
+    // lives inside `contentView`. Register UIHostingController containment
+    // so traits / size classes / appearance callbacks propagate properly.
+    [contentView attachToParentViewController:self];
+
     [NSLayoutConstraint activateConstraints:@[
         [contentView.topAnchor constraintEqualToAnchor:self.scrollView.topAnchor],
         [contentView.leadingAnchor constraintEqualToAnchor:self.scrollView.leadingAnchor],
