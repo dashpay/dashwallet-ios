@@ -24,6 +24,10 @@
 #import "DWLengthUsernameValidationRule.h"
 #import "DWUsernameValidationRule+Protected.h"
 
+#if DASHPAY_SWIFT_SDK_REGISTRATION
+#import "dashwallet-Swift.h"
+#endif
+
 NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval VALIDATION_DEBOUNCE_DELAY = 0.4;
@@ -106,17 +110,50 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)performValidationWithUsername:(NSString *)username {
-    DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;
     __weak typeof(self) weakSelf = self;
-    
+
     if (MOCK_DASHPAY) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             self.validationResult = DWUsernameValidationRuleResultValid;
         });
-        
+
         return;
     }
-    
+
+#if DASHPAY_SWIFT_SDK_REGISTRATION
+    // SwiftDashSDK path: forward to the bridge's DPNS availability
+    // check. No cancellable request token from this surface, so
+    // `self.request` stays nil under the flag; the existing
+    // `cancelPreviousPerformRequestsWithTarget:` debounce in
+    // `validateText:` keeps in-flight typing harmless, and the
+    // `self.username == username` guard inside the completion
+    // discards stale results.
+    [DWIdentityRegistrationBridge.shared
+        checkAvailability:username
+               completion:^(BOOL available, NSError *_Nullable error) {
+                   __strong typeof(weakSelf) strongSelf = weakSelf;
+                   if (!strongSelf) {
+                       return;
+                   }
+
+                   NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+                   // search query was changed before results arrive, ignore results
+                   if (![strongSelf.username isEqualToString:username]) {
+                       return;
+                   }
+
+                   if (error != nil) {
+                       strongSelf.validationResult = DWUsernameValidationRuleResultError;
+                   }
+                   else {
+                       strongSelf.validationResult = available
+                           ? DWUsernameValidationRuleResultValid
+                           : DWUsernameValidationRuleResultInvalidCritical;
+                   }
+               }];
+#else
+    DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;
     self.request = [manager
         searchIdentityByDashpayUsername:username
                          withCompletion:^(BOOL succeess, DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error) {
@@ -144,6 +181,7 @@ NS_ASSUME_NONNULL_END
                                  strongSelf.validationResult = DWUsernameValidationRuleResultError;
                              }
                          }];
+#endif
 }
 
 @end

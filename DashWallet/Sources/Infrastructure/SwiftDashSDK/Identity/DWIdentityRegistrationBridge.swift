@@ -36,6 +36,16 @@ public final class DWIdentityRegistrationBridge: NSObject {
 
     @objc public static let shared = DWIdentityRegistrationBridge()
 
+    /// Internal notification posted by the bridge on every phase or
+    /// asset-lock-status transition. Only `DWDashPayModel` is expected
+    /// to observe this — the model then rebuilds its own
+    /// `registrationStatus` from the bridge's cached @objc state and
+    /// posts the canonical `DWDashPayRegistrationStatusUpdatedNotification`
+    /// so existing UI consumers see a consistent model + notification
+    /// pair (registration-order race avoidance).
+    @objc public static let stateChangedNotification =
+        NSNotification.Name("DWIdentityRegistrationBridgeStateChangedNotification")
+
     private static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.identity-bridge")
@@ -141,10 +151,15 @@ public final class DWIdentityRegistrationBridge: NSObject {
     // MARK: - Internal
 
     /// Subscribe to the coordinator's published surface and mirror
-    /// each transition into the cached @objc state + the legacy
-    /// `DWDashPayRegistrationStatusUpdatedNotification` so existing
-    /// home-screen / contacts observers fire identically to the
-    /// pre-migration DashSync flow.
+    /// each transition into the cached @objc state + post the internal
+    /// `stateChangedNotification`. `DWDashPayModel` is the sole
+    /// observer of that notification — it mirrors the bridge's state
+    /// into its own `registrationStatus` / `lastRegistrationError`
+    /// and then posts the canonical
+    /// `DWDashPayRegistrationStatusUpdatedNotification` for the wider
+    /// UI. The bridge intentionally does NOT post the canonical name
+    /// to avoid a registration-order race where existing UI observers
+    /// would read stale model state.
     ///
     /// `@Published` emits in `willSet`, so a subscriber that re-reads
     /// the coordinator's properties from the sink can see stale state
@@ -188,8 +203,14 @@ public final class DWIdentityRegistrationBridge: NSObject {
         currentUsername = coord.currentUsername
         lastErrorMessage = coord.lastErrorMessage
 
+        // Internal notification — DWDashPayModel observes this,
+        // rebuilds its own state, and then posts the canonical
+        // DWDashPayRegistrationStatusUpdatedNotification for the
+        // wider UI. We avoid posting the canonical name here so
+        // existing observers can't see stale `DWDashPayModel`
+        // state during the registration-order window.
         NotificationCenter.default.post(
-            name: .DWDashPayRegistrationStatusUpdated,
+            name: DWIdentityRegistrationBridge.stateChangedNotification,
             object: nil)
     }
 

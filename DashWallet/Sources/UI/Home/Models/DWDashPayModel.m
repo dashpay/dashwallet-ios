@@ -75,6 +75,12 @@ NS_ASSUME_NONNULL_END
                                selector:@selector(notificationsDidUpdate)
                                    name:DWNotificationsProviderDidUpdateNotification
                                  object:nil];
+#if DASHPAY_SWIFT_SDK_REGISTRATION
+        [notificationCenter addObserver:self
+                               selector:@selector(bridgeRegistrationStateChanged:)
+                                   name:DWIdentityRegistrationBridge.stateChangedNotification
+                                 object:nil];
+#endif
     }
     return self;
 }
@@ -163,6 +169,50 @@ NS_ASSUME_NONNULL_END
     }
 
     DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
+
+#if DASHPAY_SWIFT_SDK_REGISTRATION
+    if (blockchainIdentity == nil) {
+        // New user — no existing DashSync identity. Route through
+        // SwiftDashSDK. The bridge's state-change notification drives
+        // `bridgeRegistrationStateChanged:` which rebuilds
+        // `self.registrationStatus` and posts the canonical
+        // `DWDashPayRegistrationStatusUpdatedNotification`.
+        //
+        // The completion is a safety net for early-exit failures that
+        // never reach a terminal phase notification: SDK preconditions
+        // (no wallet / no network / no model container) throw before
+        // the controller is wired, and auth-cancel calls resetState()
+        // which clears `bridge.currentUsername` so the observer
+        // early-returns without updating model state. In those cases
+        // we'd leave `dashpayUsername` (set above at line 131) cached
+        // forever — surface the error here.
+        __weak typeof(self) weakSelf = self;
+        [DWIdentityRegistrationBridge.shared
+            startCreateUsername:username
+                     completion:^(NSString *_Nullable idHex, NSError *_Nullable error) {
+                         __strong typeof(weakSelf) strongSelf = weakSelf;
+                         if (strongSelf == nil || error == nil) {
+                             return;
+                         }
+                         // If the notification path already surfaced a
+                         // failed state, `registrationStatus` is non-nil
+                         // and the UI is showing the right error. Only
+                         // clean up when nothing surfaced — i.e. the
+                         // coordinator threw before any phase change.
+                         if (strongSelf.registrationStatus != nil) {
+                             return;
+                         }
+                         [DWGlobalOptions sharedInstance].dashpayUsername = nil;
+                         strongSelf.lastRegistrationError = error;
+                         [[NSNotificationCenter defaultCenter]
+                             postNotificationName:DWDashPayRegistrationStatusUpdatedNotification
+                                           object:nil];
+                     }];
+        return;
+    }
+    // Existing-identity user: fall through to DashSync. SDK doesn't yet
+    // have an "import existing identity" path (v2 follow-up).
+#endif
 
     if (blockchainIdentity) {
         [self createFundingPrivateKeyForBlockchainIdentity:blockchainIdentity isNew:NO];
@@ -324,6 +374,45 @@ NS_ASSUME_NONNULL_END
     NSString *key = DW_KEYPATH(self, unreadNotificationsCount);
     [self didChangeValueForKey:key];
 }
+
+#if DASHPAY_SWIFT_SDK_REGISTRATION
+- (void)bridgeRegistrationStateChanged:(NSNotification *)note {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+    DWIdentityRegistrationBridge *bridge = DWIdentityRegistrationBridge.shared;
+    NSString *bridgeUsername = bridge.currentUsername;
+    if (bridgeUsername == nil) {
+        // Bridge inactive — DashSync path is driving (or nothing in flight).
+        return;
+    }
+
+    if (bridge.isCompleted) {
+        // Mirror the success side-effects of `completeRegistration`
+        // EXCEPT clearing `DWGlobalOptions.dashpayUsername` — that
+        // method nils it on the assumption that
+        // `wallet.defaultBlockchainIdentity.currentDashpayUsername`
+        // becomes the source of truth, but the SDK path has no
+        // DashSync identity, so nil'ing here would make `self.username`
+        // permanently nil. Keep the cached username; row #17 will
+        // eventually migrate the read sites off DashSync.
+        [DWGlobalOptions sharedInstance].shouldShowInvitationsBadge = YES;
+        NSAssert(self.username != nil, @"SDK identity has an empty username");
+        self.registrationStatus = nil;
+        [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayRegistrationStatusUpdatedNotification object:nil];
+        return;
+    }
+
+    if (bridge.isFailed && bridge.lastErrorMessage != nil) {
+        self.lastRegistrationError = [NSError errorWithDomain:@"DWDashPay"
+                                                         code:-1
+                                                     userInfo:@{NSLocalizedDescriptionKey : bridge.lastErrorMessage}];
+    }
+
+    self.registrationStatus = [[DWDPRegistrationStatus alloc] initWithState:bridge.currentState
+                                                                     failed:bridge.isFailed
+                                                                   username:bridgeUsername];
+    [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayRegistrationStatusUpdatedNotification object:nil];
+}
+#endif
 
 #pragma mark - Private
 
