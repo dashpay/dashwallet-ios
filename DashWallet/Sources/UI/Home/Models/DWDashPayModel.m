@@ -110,6 +110,23 @@ NS_ASSUME_NONNULL_END
     return [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted;
 }
 
+- (BOOL)hasIdentity {
+    // Row #17 stage A — true for either DashSync-side identity OR
+    // SwiftDashSDK-side identity. The legacy `blockchainIdentity`
+    // getter returns nil for the SDK path (DashSync has no on-chain
+    // footprint for PP-funded identities and no scanner-driven
+    // reconstruction), so consumers that only need to know "does
+    // this wallet have a DashPay identity?" should read this
+    // property instead. Callers that need the `DSBlockchainIdentity`
+    // object (Edit Profile, contacts) still read `blockchainIdentity`
+    // and handle nil — row #17 proper migrates those.
+    DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+    if (blockchainIdentity != nil) {
+        return YES;
+    }
+    return [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted;
+}
+
 - (NSUInteger)unreadNotificationsCount {
     if (self.isInvitationNotificationAllowed &&
         [DWGlobalOptions sharedInstance].shouldShowInvitationsBadge) {

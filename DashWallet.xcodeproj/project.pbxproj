@@ -394,6 +394,7 @@
 		A5D5DD000000000000001106 /* DWIdentityAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001003 /* DWIdentityAuthorizer.swift */; };
 		A5D5DD000000000000001108 /* DWIdentityRegistrationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001004 /* DWIdentityRegistrationCoordinator.swift */; };
 		A5D5DD00000000000000110A /* DWIdentityRegistrationBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001005 /* DWIdentityRegistrationBridge.swift */; };
+		A5D5DD00000000000000110C /* SDKIdentityProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001006 /* SDKIdentityProfileSheet.swift */; };
 		A5D5DD000000000000000213 /* PlatformSyncStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000215 /* PlatformSyncStatusScreen.swift */; };
 		A5D5DD000000000000000214 /* PlatformSyncStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000215 /* PlatformSyncStatusScreen.swift */; };
 		A5D5DD000000000000000216 /* PlatformCreditsFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000218 /* PlatformCreditsFormatter.swift */; };
@@ -2435,6 +2436,7 @@
 		A5D5DD000000000000001003 /* DWIdentityAuthorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWIdentityAuthorizer.swift; path = Identity/DWIdentityAuthorizer.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000001004 /* DWIdentityRegistrationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWIdentityRegistrationCoordinator.swift; path = Identity/DWIdentityRegistrationCoordinator.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000001005 /* DWIdentityRegistrationBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWIdentityRegistrationBridge.swift; path = Identity/DWIdentityRegistrationBridge.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001006 /* SDKIdentityProfileSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDKIdentityProfileSheet.swift; sourceTree = "<group>"; };
 		4762C947276CAF6800F5F42D /* DWPaymentCurrency.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentCurrency.h; sourceTree = "<group>"; };
 		4774DCDA28F3FA9C008CF87D /* Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coinbase.swift; sourceTree = "<group>"; };
 		4774DCDC28F43A68008CF87D /* ServiceDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceDataSource.swift; sourceTree = "<group>"; };
@@ -7170,6 +7172,7 @@
 				C943B3EA2A40A54600AF23C5 /* DWModalUserProfileViewController.h */,
 				C943B3F42A40A54600AF23C5 /* DWUserProfileViewController.m */,
 				C943B3F52A40A54600AF23C5 /* DWModalUserProfileViewController.m */,
+				A5D5DD000000000000001006 /* SDKIdentityProfileSheet.swift */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -9969,6 +9972,7 @@
 				A5D5DD000000000000001106 /* DWIdentityAuthorizer.swift in Sources */,
 				A5D5DD000000000000001108 /* DWIdentityRegistrationCoordinator.swift in Sources */,
 				A5D5DD00000000000000110A /* DWIdentityRegistrationBridge.swift in Sources */,
+				A5D5DD00000000000000110C /* SDKIdentityProfileSheet.swift in Sources */,
 				A5D5DD0000000000000000FC /* SwiftDashSDKSPVCoordinator.swift in Sources */,
 					A5D5DD0000000000000000FF /* SwiftDashSDKSPVStatusScreen.swift in Sources */,
 					A5D5DD000000000000000211 /* PlatformAddressSyncCoordinator.swift in Sources */,
