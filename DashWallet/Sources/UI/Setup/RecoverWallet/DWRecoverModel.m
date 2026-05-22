@@ -59,6 +59,10 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
     return (wallet.balance == 0) && (lastBlockTimestamp + delta > now) && isSyncedUp;
 }
 
+- (BOOL)isRecoverAction {
+    return self.action == DWRecoverAction_Recover;
+}
+
 - (NSString *)cleanupPhrase:(NSString *)phrase {
     return [[DSBIP39Mnemonic sharedInstance] cleanupPhrase:phrase];
 }

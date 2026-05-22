@@ -30,6 +30,7 @@ extern NSInteger const DW_PHRASE_MULTIPLE;
 @interface DWRecoverModel : NSObject
 
 @property (readonly, nonatomic, assign) DWRecoverAction action;
+@property (readonly, nonatomic, assign) BOOL isRecoverAction;
 
 - (BOOL)hasWallet;
 - (BOOL)isWalletEmpty;

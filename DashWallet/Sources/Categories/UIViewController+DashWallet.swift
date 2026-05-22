@@ -56,7 +56,20 @@ extension UIViewController {
 
     @objc func presentSupportEmailController() {
         let logFiles = DSLogger.sharedInstance().logFiles()
-        
+
+#if SEED_INPUT_DIAGNOSTICS
+        // TEMPORARY: Diagnostic TestFlight workaround. Bypass Mail composer
+        // because remote users may have outgoing SMTP issues. Remove/disable
+        // before production release.
+        let activityViewController = UIActivityViewController(
+            activityItems: logFiles,
+            applicationActivities: nil
+        )
+        activityViewController.popoverPresentationController?.sourceView = view
+        present(activityViewController, animated: true)
+        return
+#endif
+
         if MFMailComposeViewController.canSendMail() {
             let mailComposer = MFMailComposeViewController()
             mailComposer.mailComposeDelegate = self as? MFMailComposeViewControllerDelegate

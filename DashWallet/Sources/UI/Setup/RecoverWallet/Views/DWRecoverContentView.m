@@ -51,7 +51,6 @@ NS_ASSUME_NONNULL_BEGIN
             [[DWRecoverSeedPhraseInputController alloc] init];
         self.inputController = inputController;
         inputController.delegate = self;
-
     }
     return self;
 }

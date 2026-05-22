@@ -313,7 +313,7 @@ final class RecoverSeedPhraseInputController: NSObject {
     // MARK: - Private
 
     private func isRecoverAction(_ model: DWRecoverModel) -> Bool {
-        model.action == DWRecoverAction_Recover
+        model.isRecoverAction
     }
 
     private func isWipePhrase(_ phrase: String, model: DWRecoverModel) -> Bool {
