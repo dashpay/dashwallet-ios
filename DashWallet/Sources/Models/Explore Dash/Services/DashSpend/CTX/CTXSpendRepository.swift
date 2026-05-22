@@ -213,8 +213,12 @@ class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
                 case 401, 403:
                     throw DashSpendError.unauthorized
                 case 404:
-                    let body = String(data: response.data, encoding: .utf8) ?? "<undecodable>"
-                    DSLogger.log("CTXSpend getMerchant 404 for merchantId: \(merchantId), body: \(body)")
+                    #if DEBUG
+                    let payloadSummary = sanitizedDebugPayloadSummary(from: response.data)
+                    DSLogger.log("CTXSpend getMerchant 404 for merchantId: \(merchantId), payload: \(payloadSummary)")
+                    #else
+                    DSLogger.log("CTXSpend getMerchant 404 for merchantId: \(merchantId)")
+                    #endif
                     throw DashSpendError.invalidMerchant
                 case 500...599:
                     throw DashSpendError.networkError
@@ -247,6 +251,27 @@ class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
         }
         
         return DashSpendError.networkError
+    }
+
+    private func sanitizedDebugPayloadSummary(from data: Data) -> String {
+        guard !data.isEmpty else {
+            return "<empty payload>"
+        }
+
+        guard let jsonObject = try? JSONSerialization.jsonObject(with: data) else {
+            return "<non-json payload, size: \(data.count) bytes>"
+        }
+
+        if let dictionary = jsonObject as? [String: Any] {
+            let keys = dictionary.keys.sorted().joined(separator: ", ")
+            return "{keys: [\(keys)], size: \(data.count) bytes}"
+        }
+
+        if let array = jsonObject as? [Any] {
+            return "[items: \(array.count), size: \(data.count) bytes]"
+        }
+
+        return "<json payload, size: \(data.count) bytes>"
     }
 }
 
