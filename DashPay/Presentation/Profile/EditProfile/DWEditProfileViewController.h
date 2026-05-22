@@ -35,6 +35,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, copy) NSString *displayName;
 @property (readonly, nonatomic, copy) NSString *aboutMe;
 @property (nullable, readonly, nonatomic, copy) NSString *avatarURLString;
+/// Cropped avatar UIImage held in memory after a new avatar is
+/// picked, or `nil` when the user hasn't changed the avatar in this
+/// session. Row #17 proper consumes it as `avatarBytes` for the
+/// SwiftDashSDK profile-update path (SDK computes SHA-256 + dHash
+/// from the bytes).
+@property (nullable, readonly, nonatomic, strong) UIImage *unsavedAvatarImage;
 @property (readonly, nonatomic, assign, getter=isValid) BOOL valid;
 
 @property (nullable, nonatomic, weak) id<DWEditProfileViewControllerDelegate> delegate;

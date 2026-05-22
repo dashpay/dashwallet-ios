@@ -33,6 +33,7 @@
 #import "DWSharedUIConstants.h"
 #import "DWTextInputFormTableViewCell.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 // if MOCK_DASHPAY
 #import "DWDashPayConstants.h"
 #import "DWGlobalOptions.h"
@@ -47,6 +48,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) DWProfileDisplayNameCellModel *displayNameModel;
 @property (nullable, nonatomic, strong) DWProfileAboutCellModel *aboutModel;
 @property (nullable, nonatomic, copy) NSString *unsavedAvatarURL;
+// Row #17 proper: cropped avatar UIImage stashed in `cropAvatarViewController:didCropImage:urlString:`
+// so the SDK profile-update path can hand the bytes to `DashPayProfileUpdate.avatarBytes`.
+// Stays `readwrite` here, exposed as `readonly` in the header.
+@property (nullable, nonatomic, strong, readwrite) UIImage *unsavedAvatarImage;
 
 @end
 
@@ -62,11 +67,22 @@ NS_ASSUME_NONNULL_END
 }
 
 - (BOOL)hasChanges {
-    if (![self.displayName isEqualToString:[self.blockchainIdentity dw_displayNameOrUsername]]) {
+    // Row #17 proper: compare against `DWCurrentUserIdentityInfo`
+    // (SDK-side profile cache) so the "user has unsaved changes"
+    // dialog fires correctly for SDK-only identities. The category
+    // method `dw_displayNameOrUsername` on `DSBlockchainIdentity`
+    // returns nil for SDK identities (no DashSync row), which made
+    // the comparison always-true and incorrectly prompted the save
+    // dialog on Cancel.
+    DWCurrentUserIdentityInfo *me = DWCurrentUserIdentityInfo.shared;
+    NSString *currentTitle = me.displayTitle ?: @"";
+    if (![self.displayName isEqualToString:currentTitle]) {
         return YES;
     }
 
-    if (self.aboutMe && ![self.aboutMe isEqualToString:self.blockchainIdentity.matchingDashpayUserInViewContext.publicMessage]) {
+    NSString *currentAbout = me.publicMessage ?: @"";
+    NSString *enteredAbout = self.aboutMe ?: @"";
+    if (![enteredAbout isEqualToString:currentAbout]) {
         return YES;
     }
 
@@ -86,7 +102,11 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSString *)avatarURLString {
-    return self.unsavedAvatarURL ?: self.blockchainIdentity.avatarPath;
+    // Row #17 proper: fall back to the SDK-sourced avatar URL when
+    // the user hasn't picked a new image. Avatars set via DashSync
+    // were keyed on `DSBlockchainIdentity.avatarPath` — that read is
+    // nil for SDK-only identities.
+    return self.unsavedAvatarURL ?: DWCurrentUserIdentityInfo.shared.avatarURL;
 }
 
 - (BOOL)isValid {
@@ -103,17 +123,26 @@ NS_ASSUME_NONNULL_END
 
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
+    // Row #17 proper: the legacy `defaultBlockchainIdentity` read is
+    // retained for MOCK_DASHPAY and DashSync-identity backwards
+    // compatibility, but for the SDK-only path
+    // (`hasIdentity == YES && defaultBlockchainIdentity == nil`) the
+    // assertion would fire — so we only assert when MOCK_DASHPAY is
+    // on. The SDK path proceeds without a DSBlockchainIdentity; all
+    // reads go through `DWCurrentUserIdentityInfo`.
     self.blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
-    
+
     if (MOCK_DASHPAY && self.blockchainIdentity == nil) {
         NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
-        
+
         if (username != nil) {
             self.blockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
         }
     }
-    
-    NSParameterAssert(self.blockchainIdentity);
+
+    if (MOCK_DASHPAY) {
+        NSParameterAssert(self.blockchainIdentity);
+    }
 
     [self setupItems];
     [self setupView];
@@ -137,7 +166,11 @@ NS_ASSUME_NONNULL_END
 - (void)setupView {
     self.headerView = [[DWEditProfileAvatarView alloc] initWithFrame:CGRectZero];
     self.headerView.delegate = self;
-    [self.headerView setImageWithBlockchainIdentity:self.blockchainIdentity];
+    // Row #17 proper: source the avatar from SwiftDashSDK. The
+    // legacy `setImageWithBlockchainIdentity:` reads
+    // `DSBlockchainIdentity.avatarPath` which is nil for SDK-only
+    // identities.
+    [self.headerView setImageForCurrentUser];
 
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
     self.tableView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
@@ -164,7 +197,8 @@ NS_ASSUME_NONNULL_END
         self.displayNameModel = cellModel;
         cellModel.autocorrectionType = UITextAutocorrectionTypeNo;
         cellModel.returnKeyType = UIReturnKeyNext;
-        cellModel.text = [self.blockchainIdentity dw_displayNameOrUsername];
+        // Row #17 proper: prefill from SwiftDashSDK profile cache.
+        cellModel.text = DWCurrentUserIdentityInfo.shared.displayTitle;
         __weak typeof(self) weakSelf = self;
         cellModel.didChangeValueBlock = ^(DWTextFieldFormCellModel *_Nonnull cellModel) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -180,7 +214,8 @@ NS_ASSUME_NONNULL_END
     {
         DWProfileAboutCellModel *cellModel = [[DWProfileAboutCellModel alloc] initWithTitle:NSLocalizedString(@"About me", nil)];
         self.aboutModel = cellModel;
-        cellModel.text = self.blockchainIdentity.matchingDashpayUserInViewContext.publicMessage;
+        // Row #17 proper: prefill from SwiftDashSDK profile cache.
+        cellModel.text = DWCurrentUserIdentityInfo.shared.publicMessage;
         __weak typeof(self) weakSelf = self;
         cellModel.didChangeValueBlock = ^(DWTextFieldFormCellModel *_Nonnull cellModel) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -297,6 +332,10 @@ NS_ASSUME_NONNULL_END
                        urlString:(NSString *)urlString {
     self.headerView.image = croppedImage;
     self.unsavedAvatarURL = urlString;
+    // Row #17 proper: retain the cropped UIImage so the SDK
+    // profile-update path can hand the bytes to the SDK for hash
+    // computation (`DashPayProfileUpdate.avatarBytes`).
+    self.unsavedAvatarImage = croppedImage;
 
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
@@ -338,6 +377,10 @@ NS_ASSUME_NONNULL_END
     if (!shouldCrop) {
         self.headerView.image = image;
         self.unsavedAvatarURL = url.absoluteString;
+        // Row #17 proper: retain the image bytes for SDK hash
+        // computation when the source view didn't go through the
+        // cropper.
+        self.unsavedAvatarImage = image;
         [controller dismissViewControllerAnimated:YES completion:nil];
     }
     else {

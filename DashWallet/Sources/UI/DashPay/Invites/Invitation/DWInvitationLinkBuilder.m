@@ -21,6 +21,7 @@
 #import <Firebase/Firebase.h>
 
 #import "DSBlockchainIdentity+DWDisplayName.h"
+#import "dashwallet-Swift.h"
 
 static NSString *const AndroidBundleID = @"org.dash.dashpay.testnet";
 // TODO: DP set app store id
@@ -31,16 +32,23 @@ static NSString *const iOSAppStoreID = @"1563288407";
 + (void)dynamicLinkFrom:(NSString *)linkString
     myBlockchainIdentity:(DSBlockchainIdentity *)myBlockchainIdentity
               completion:(void (^)(NSURL *_Nullable url))completion {
-    NSString *encodedName = [[myBlockchainIdentity dw_displayNameOrUsername] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    // Row #17 proper: source inviter profile fields from
+    // SwiftDashSDK via `DWCurrentUserIdentityInfo`. The
+    // `myBlockchainIdentity` argument is retained for ABI
+    // compatibility with the legacy caller surface but is no longer
+    // read — it would be nil for SDK-registered identities anyway.
+    DWCurrentUserIdentityInfo *me = DWCurrentUserIdentityInfo.shared;
+    NSString *displayTitle = me.displayTitle ?: @"";
+    NSString *encodedName = [displayTitle stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]] ?: @"";
 
     NSString *displayNameParam = @"";
-    if (myBlockchainIdentity.displayName.length != 0) {
+    if (me.displayName.length != 0) {
         displayNameParam = [NSString stringWithFormat:@"&display-name=%@", encodedName];
     }
 
     NSString *avatarParam = @"";
-    if (myBlockchainIdentity.avatarPath.length > 0) {
-        NSString *encodedAvatar = [myBlockchainIdentity.avatarPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    if (me.avatarURL.length > 0) {
+        NSString *encodedAvatar = [me.avatarURL stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
         avatarParam = [NSString stringWithFormat:@"&avatar-url=%@", encodedAvatar];
     }
 
@@ -68,7 +76,7 @@ static NSString *const iOSAppStoreID = @"1563288407";
     linkBuilder.socialMetaTagParameters.imageURL = [NSURL URLWithString:urlFormat];
     linkBuilder.socialMetaTagParameters.descriptionText =
         [NSString stringWithFormat:NSLocalizedString(@"You have been invited by %@. Start using Dash cryptocurrency.", nil),
-                                   [myBlockchainIdentity dw_displayNameOrUsername]];
+                                   displayTitle];
 
     [linkBuilder shortenWithCompletion:^(NSURL *_Nullable shortURL,
                                          NSArray<NSString *> *_Nullable warnings,

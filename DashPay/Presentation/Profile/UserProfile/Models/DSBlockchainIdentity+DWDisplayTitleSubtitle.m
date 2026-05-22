@@ -20,6 +20,7 @@
 #import <DashSync/DashSync.h>
 
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 @implementation DSBlockchainIdentity (DWDisplayTitleSubtitle)
 
@@ -57,3 +58,39 @@
 }
 
 @end
+
+NSAttributedString *DWCurrentUserTitleSubtitleAttributedString(void) {
+    NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
+    [result beginEditing];
+    DWCurrentUserIdentityInfo *info = DWCurrentUserIdentityInfo.shared;
+    NSString *displayName = info.displayName;
+    NSString *username = info.username;
+    NSString *title = nil;
+    NSString *subtitle = nil;
+    if (displayName != nil) {
+        title = displayName;
+        subtitle = username;
+    }
+    else {
+        title = username;
+    }
+    if (title != nil) {
+        [result appendAttributedString:[[NSAttributedString alloc]
+                                           initWithString:title
+                                               attributes:@{
+                                                   NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3],
+                                                   NSForegroundColorAttributeName : [UIColor dw_darkTitleColor],
+                                               }]];
+    }
+    if (subtitle != nil) {
+        [result appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
+        [result appendAttributedString:[[NSAttributedString alloc]
+                                           initWithString:subtitle
+                                               attributes:@{
+                                                   NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleCallout],
+                                                   NSForegroundColorAttributeName : [UIColor dw_tertiaryTextColor],
+                                               }]];
+    }
+    [result endEditing];
+    return result;
+}

@@ -26,6 +26,12 @@ struct SDKIdentityProfileSheet: View {
     @State private var identityIdHex: String? = nil
     @State private var copyToast: String? = nil
 
+    /// Callback invoked when the user taps Edit. Owner (HomeViewController)
+    /// dismisses the sheet and pushes `RootEditProfileViewController`.
+    /// Nil → no Edit button is shown (back-compat with callers that
+    /// haven't wired up the edit flow yet).
+    var onEditTapped: (() -> Void)?
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -33,12 +39,10 @@ struct SDKIdentityProfileSheet: View {
                     header
                     Divider()
                     infoSection
+                    if onEditTapped != nil {
+                        editButton
+                    }
                     Spacer(minLength: 24)
-                    Text(NSLocalizedString("Profile editing for SwiftDashSDK-registered identities will land in a future update.",
-                                            comment: "SDK identity profile sheet — hint"))
-                        .font(.footnote)
-                        .foregroundColor(.secondaryText)
-                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 24)
@@ -70,6 +74,27 @@ struct SDKIdentityProfileSheet: View {
                 walletState.refreshPlatformPaymentCredits()
                 loadIdentityId()
             }
+        }
+    }
+
+    // MARK: - Edit button
+
+    private var editButton: some View {
+        Button {
+            // The sheet's owner (HomeViewController) is responsible for
+            // dismissing this sheet AND pushing `RootEditProfileViewController`
+            // — keep the SwiftUI side free of UIKit presentation plumbing.
+            dismiss()
+            onEditTapped?()
+        } label: {
+            Text(NSLocalizedString("Edit Profile", comment: "SDK identity profile sheet — edit button"))
+                .font(.body)
+                .fontWeight(.semibold)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(Color.dashBlue)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
 

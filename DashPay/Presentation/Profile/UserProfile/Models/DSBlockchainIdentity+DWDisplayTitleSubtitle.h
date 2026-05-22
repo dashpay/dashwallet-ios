@@ -25,4 +25,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/// Build a title+subtitle attributed string for the current
+/// SwiftDashSDK-side user identity. Mirrors the (display name / username)
+/// layout of `-dw_asTitleSubtitle` but sources the strings from
+/// `DWCurrentUserIdentityInfo.shared`. Returns an empty attributed
+/// string when no identity is registered.
+///
+/// Row #17 proper entry point — used by the current-user surfaces
+/// (My Profile, Edit Profile preview). Contact / other-user
+/// rendering keeps using the existing category method until row #18
+/// migrates `DSBlockchainIdentity` reads on the contact side too.
+extern NSAttributedString *DWCurrentUserTitleSubtitleAttributedString(void);
+
 NS_ASSUME_NONNULL_END

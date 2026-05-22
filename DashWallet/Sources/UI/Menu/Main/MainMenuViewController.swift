@@ -569,9 +569,10 @@ extension MainMenuScreen {
         func editProfileViewController(_ controller: RootEditProfileViewController,
                                      updateDisplayName rawDisplayName: String,
                                      aboutMe rawAboutMe: String,
-                                     avatarURLString: String?) {
+                                     avatarURLString: String?,
+                                     avatarImage: UIImage?) {
             #if DASHPAY
-            viewModel.userProfileModel?.updateModel.update(withDisplayName: rawDisplayName, aboutMe: rawAboutMe, avatarURLString: avatarURLString)
+            viewModel.userProfileModel?.updateModel.update(withDisplayName: rawDisplayName, aboutMe: rawAboutMe, avatarURLString: avatarURLString, avatarImage: avatarImage)
             
             if MOCK_DASHPAY.boolValue {
                 BuyCreditsModel.currentCredits -= 0.25

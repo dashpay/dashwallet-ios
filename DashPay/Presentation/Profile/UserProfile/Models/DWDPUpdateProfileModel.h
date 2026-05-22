@@ -16,6 +16,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,9 +30,23 @@ typedef NS_ENUM(NSUInteger, DWDPUpdateProfileModelState) {
 
 @property (readonly, nonatomic, assign) DWDPUpdateProfileModelState state;
 
+/// Update the current user's DashPay profile.
+///
+/// Row #17 proper: branches on whether DashSync has a registered
+/// `defaultBlockchainIdentity` for this wallet — yes → legacy
+/// DashSync write path (DSBlockchainIdentity sign-and-publish);
+/// no → SwiftDashSDK write path
+/// (`DWProfileUpdateBridge.updateProfile:...`).
+///
+/// `avatarImage` is the cropped UIImage the user picked, or `nil` if
+/// the avatar wasn't changed in this session. The DashSync path
+/// ignores it (legacy code uses the URL only); the SDK path
+/// JPEG-encodes it and hands the bytes to the SDK for hash
+/// computation.
 - (void)updateWithDisplayName:(NSString *)rawDisplayName
                       aboutMe:(NSString *)rawAboutMe
-              avatarURLString:(nullable NSString *)avatarURLString;
+              avatarURLString:(nullable NSString *)avatarURLString
+                  avatarImage:(nullable UIImage *)avatarImage;
 
 - (void)retry;
 - (void)reset;

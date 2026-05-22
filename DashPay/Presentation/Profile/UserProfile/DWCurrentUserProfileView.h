@@ -34,6 +34,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, weak) id<DWCurrentUserProfileViewDelegate> delegate;
 @property (nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
 
+/// Refresh the avatar image + info label from
+/// `DWCurrentUserIdentityInfo.shared`. Row #17 proper entry point —
+/// equivalent to setting `blockchainIdentity` from the DashSync path,
+/// but sourced from SwiftDashSDK. Safe to call repeatedly; the
+/// underlying `dw_setAvatarWithURLString:` helper cancels any
+/// in-flight image load.
+- (void)reloadFromCurrentUser;
+
 @end
 
 NS_ASSUME_NONNULL_END

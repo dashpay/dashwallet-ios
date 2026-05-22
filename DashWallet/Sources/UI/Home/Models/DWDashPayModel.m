@@ -90,6 +90,16 @@ NS_ASSUME_NONNULL_END
         return [DWGlobalOptions sharedInstance].dashpayUsername;
     }
 
+    // Row #17 proper: prefer the SwiftDashSDK-sourced username via
+    // `DWCurrentUserIdentityInfo`. The helper itself falls back to
+    // `DWGlobalOptions.dashpayUsername` when the DPNS cache is empty
+    // (immediately post-register), and we also fall back to it here
+    // for legacy DashSync-side identities whose DPNS data the SDK
+    // doesn't know about.
+    NSString *sdkUsername = DWCurrentUserIdentityInfo.shared.username;
+    if (sdkUsername.length > 0) {
+        return sdkUsername;
+    }
     DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
     return blockchainIdentity.currentDashpayUsername ?: [DWGlobalOptions sharedInstance].dashpayUsername;
 }

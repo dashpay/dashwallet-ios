@@ -36,6 +36,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setImageWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
+/// Row #17 proper entry point — fetches the avatar URL from
+/// `DWCurrentUserIdentityInfo.shared.avatarURL` instead of a
+/// `DSBlockchainIdentity`. Falls back to the `dp_current_user_placeholder`
+/// image when no avatar URL is set, matching the behaviour of the
+/// DashSync path.
+- (void)setImageForCurrentUser;
+
 @end
 
 NS_ASSUME_NONNULL_END

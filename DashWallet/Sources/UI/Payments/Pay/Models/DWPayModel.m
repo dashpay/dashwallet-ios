@@ -26,6 +26,7 @@
 #if DASHPAY
 #import "DWDashPayConstants.h"
 #import "DWEnvironment.h"
+#import "dashwallet-Swift.h"
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
@@ -63,8 +64,11 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableArray<DWPayOptionModel *> *options = [NSMutableArray array];
 
 #if DASHPAY
-    DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
-    if (blockchainIdentity.currentDashpayUsername != nil || MOCK_DASHPAY) {
+    // Row #17 proper: the DashPay send button is enabled whenever the
+    // user has any kind of registered identity. `hasIdentity` is true
+    // for both DashSync-side (`defaultBlockchainIdentity != nil`) and
+    // SwiftDashSDK-side (`DWGlobalOptions.dashpayRegistrationCompleted`).
+    if (DWCurrentUserIdentityInfo.shared.hasIdentity || MOCK_DASHPAY) {
         DWPayOptionModel *option = [[DWPayOptionModel alloc] initWithType:DWPayOptionModelType_DashPayUser];
         [options addObject:option];
     }

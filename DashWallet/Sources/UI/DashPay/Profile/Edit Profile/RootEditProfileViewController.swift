@@ -19,7 +19,12 @@ import UIKit
 
 #if DASHPAY
 protocol RootEditProfileViewControllerDelegate: AnyObject {
-    func editProfileViewController(_ controller: RootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?)
+    /// Row #17 proper: `avatarImage` is the cropped UIImage the user
+    /// picked (or `nil` if the avatar wasn't changed in this session).
+    /// The SDK profile-update path JPEG-encodes it and hands the bytes
+    /// to `DashPayProfileUpdate.avatarBytes` for hash computation.
+    /// DashSync-side callers can ignore the parameter.
+    func editProfileViewController(_ controller: RootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?, avatarImage: UIImage?)
     func editProfileViewControllerDidCancel(_ controller: RootEditProfileViewController)
 }
 
@@ -74,7 +79,12 @@ class RootEditProfileViewController: ActionButtonViewController, DWEditProfileVi
     }
     
     private func performSave() {
-        self.delegate?.editProfileViewController(self, updateDisplayName: self.editController.displayName, aboutMe: self.editController.aboutMe, avatarURLString: self.editController.avatarURLString)
+        self.delegate?.editProfileViewController(
+            self,
+            updateDisplayName: self.editController.displayName,
+            aboutMe: self.editController.aboutMe,
+            avatarURLString: self.editController.avatarURLString,
+            avatarImage: self.editController.unsavedAvatarImage)
     }
     
     // MARK: - DWEditProfileViewControllerDelegate

@@ -22,6 +22,7 @@
 #import "DWUIKit.h"
 
 #import "UIImageView+DWDPAvatar.h"
+#import "dashwallet-Swift.h"
 #import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -114,12 +115,21 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    // Row #17 proper: this view always renders the current user, so
+    // the data flows from `DWCurrentUserIdentityInfo.shared` rather
+    // than the DashSync `DSBlockchainIdentity` argument. The arg is
+    // retained as a property so callers' shape is unchanged until
+    // the legacy setter is retired in Row #25.
     _blockchainIdentity = blockchainIdentity;
+    [self reloadFromCurrentUser];
+}
 
+- (void)reloadFromCurrentUser {
     self.avatarImageView.image = [UIImage imageNamed:@"dp_current_user_placeholder"];
-    
+
+    NSString *avatarURL = DWCurrentUserIdentityInfo.shared.avatarURL;
     __weak typeof(self) weakSelf = self;
-    [self.avatarImageView dw_setAvatarWithURLString:blockchainIdentity.avatarPath
+    [self.avatarImageView dw_setAvatarWithURLString:avatarURL
                                          completion:^(UIImage *_Nullable image) {
                                              __strong typeof(weakSelf) strongSelf = weakSelf;
                                              if (!strongSelf) {
@@ -154,7 +164,11 @@ NS_ASSUME_NONNULL_END
 #pragma mark - Private
 
 - (void)reloadAttributedData {
-    self.infoLabel.attributedText = [self.blockchainIdentity dw_asTitleSubtitle];
+    // Row #17 proper: source from `DWCurrentUserIdentityInfo`. The
+    // helper falls back to `DWGlobalOptions.dashpayUsername` when the
+    // SDK's DPNS cache is empty (immediately after registration), so
+    // the label is populated even before the next sync round.
+    self.infoLabel.attributedText = DWCurrentUserTitleSubtitleAttributedString();
 }
 
 @end

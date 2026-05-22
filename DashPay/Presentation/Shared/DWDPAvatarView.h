@@ -37,6 +37,14 @@ typedef NS_ENUM(NSUInteger, DWDPAvatarBackgroundMode) {
 - (void)setAsDashPlaceholder;
 - (void)configureWithUsername:(NSString *)username;
 
+/// Paint the avatar for the current SwiftDashSDK-side user identity.
+/// Reads username + avatar URL from `DWCurrentUserIdentityInfo.shared`
+/// and triggers the same async image-load + letter-fallback pattern
+/// as `setBlockchainIdentity:`. Row #17 proper entry point; the
+/// legacy `setBlockchainIdentity:` path stays for contact / other-
+/// user rendering (Row #18).
+- (void)configureAsCurrentUser;
+
 @end
 
 NS_ASSUME_NONNULL_END

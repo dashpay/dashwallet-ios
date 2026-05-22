@@ -18,6 +18,7 @@
 #import "DWEditProfileAvatarView.h"
 
 #import "UIImageView+DWDPAvatar.h"
+#import "dashwallet-Swift.h"
 #import <DashSync/DashSync.h>
 
 static CGFloat const AvatarSize = 134.0;
@@ -46,6 +47,28 @@ NS_ASSUME_NONNULL_END
 - (void)setImageWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     __weak typeof(self) weakSelf = self;
     [self.avatarImageView dw_setAvatarWithURLString:blockchainIdentity.avatarPath
+                                         completion:^(UIImage *_Nullable image) {
+                                             __strong typeof(weakSelf) strongSelf = weakSelf;
+                                             if (!strongSelf) {
+                                                 return;
+                                             }
+
+                                             if (image) {
+                                                 strongSelf.avatarImageView.image = image;
+                                             }
+                                             else {
+                                                 strongSelf.avatarImageView.image = [UIImage imageNamed:@"dp_current_user_placeholder"];
+                                             }
+                                         }];
+}
+
+- (void)setImageForCurrentUser {
+    // SwiftDashSDK-backed avatar (Row #17 proper). Same fallback-to-
+    // placeholder shape as `setImageWithBlockchainIdentity:`; only the
+    // URL source changes.
+    NSString *avatarURL = DWCurrentUserIdentityInfo.shared.avatarURL;
+    __weak typeof(self) weakSelf = self;
+    [self.avatarImageView dw_setAvatarWithURLString:avatarURL
                                          completion:^(UIImage *_Nullable image) {
                                              __strong typeof(weakSelf) strongSelf = weakSelf;
                                              if (!strongSelf) {

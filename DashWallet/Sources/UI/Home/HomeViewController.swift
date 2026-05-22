@@ -179,15 +179,16 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
     @objc func profileAction() {
         // Row #17 stage A — branch on the underlying DashSync identity
-        // object. Edit Profile requires a non-nil `DSBlockchainIdentity`
-        // (DWEditProfileViewController reads its properties to render
-        // header, display name, about-me), which only exists for
-        // DashSync-side identities (Core-funded path reconstructed by
-        // DashSync's on-chain scanner, or a wallet that already had
-        // a DashSync identity before the migration). For SwiftDashSDK-
+        // object. DashSync-side identities (Core-funded path
+        // reconstructed by DashSync's on-chain scanner, or a wallet
+        // that already had a DashSync identity before the migration)
+        // open `DWEditProfileViewController` directly. SwiftDashSDK-
         // only identities (Platform-Payment path, or any future SDK
-        // path with no Core footprint) we present a read-only sheet
-        // instead. Row #17 proper migrates the editor.
+        // path with no Core footprint) get the SDK profile sheet,
+        // which now (Row #17 proper) carries an Edit button that
+        // re-enters `RootEditProfileViewController`. The editor reads
+        // from `DWCurrentUserIdentityInfo` and writes via
+        // `DWProfileUpdateBridge`, so it works for both paths.
         if model.dashPayModel.blockchainIdentity != nil {
             let controller = RootEditProfileViewController()
             controller.delegate = self
@@ -195,7 +196,18 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             navigation.modalPresentationStyle = .fullScreen
             present(navigation, animated: true, completion: nil)
         } else {
-            let hosting = UIHostingController(rootView: SDKIdentityProfileSheet())
+            let sheet = SDKIdentityProfileSheet { [weak self] in
+                // SDKIdentityProfileSheet has already called dismiss()
+                // by the time this fires; chain into the same editor
+                // after the dismissal completes.
+                guard let self else { return }
+                let controller = RootEditProfileViewController()
+                controller.delegate = self
+                let navigation = BaseNavigationController(rootViewController: controller)
+                navigation.modalPresentationStyle = .fullScreen
+                self.present(navigation, animated: true, completion: nil)
+            }
+            let hosting = UIHostingController(rootView: sheet)
             present(hosting, animated: true, completion: nil)
         }
     }
@@ -357,8 +369,17 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 // MARK: - RootEditProfileViewControllerDelegate
 
 extension HomeViewController: RootEditProfileViewControllerDelegate {
-    func editProfileViewController(_ controller: RootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?) {
-        model.dashPayModel.userProfile.updateModel.update(withDisplayName: rawDisplayName, aboutMe: rawAboutMe, avatarURLString: avatarURLString)
+    func editProfileViewController(_ controller: RootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?, avatarImage: UIImage?) {
+        // Row #17 proper: pass the cropped UIImage through so the
+        // SDK profile-update path can hand the bytes to
+        // `DashPayProfileUpdate.avatarBytes` for hash computation.
+        // The DashSync path inside `DWDPUpdateProfileModel` ignores
+        // the image parameter — it uses the URL only.
+        model.dashPayModel.userProfile.updateModel.update(
+            withDisplayName: rawDisplayName,
+            aboutMe: rawAboutMe,
+            avatarURLString: avatarURLString,
+            avatarImage: avatarImage)
         controller.dismiss(animated: true, completion: nil)
     }
 
