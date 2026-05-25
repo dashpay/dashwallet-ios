@@ -188,6 +188,15 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     }
 
     @objc func profileAction() {
+        // Gate every avatar tap on the strict SDK-side identity
+        // check. The Save path in `DWProfileUpdateBridge` resolves
+        // the identity from the SDK helper, so opening Edit Profile
+        // without `hasIdentity` would just produce a broken screen
+        // (no display name, names list empty, save fails). Belt-
+        // and-suspenders for the avatar that should already be
+        // hidden when this is false.
+        guard DWCurrentUserIdentityInfo.shared.hasIdentity else { return }
+
         // Row #17 stage A — branch on the underlying DashSync identity
         // object. DashSync-side identities (Core-funded path
         // reconstructed by DashSync's on-chain scanner, or a wallet

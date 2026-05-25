@@ -25,6 +25,7 @@ struct SDKIdentityProfileSheet: View {
     @StateObject private var walletState = SwiftDashSDKWalletState.shared
     @State private var identityIdHex: String? = nil
     @State private var dpnsNames: [String] = []
+    @State private var hasIdentity: Bool = false
     @State private var copyToast: String? = nil
 
     /// Callback invoked when the user taps Edit. Owner (HomeViewController)
@@ -43,7 +44,11 @@ struct SDKIdentityProfileSheet: View {
                     if !dpnsNames.isEmpty {
                         namesSection
                     }
-                    if onEditTapped != nil {
+                    // Edit Profile gated on hasIdentity: the editor's
+                    // Save path resolves the identity via the SDK
+                    // helper, so without it the button would lead to
+                    // a broken screen.
+                    if onEditTapped != nil && hasIdentity {
                         editButton
                     }
                     Spacer(minLength: 24)
@@ -78,6 +83,7 @@ struct SDKIdentityProfileSheet: View {
                 walletState.refreshPlatformPaymentCredits()
                 loadIdentityId()
                 dpnsNames = DWCurrentUserIdentityInfo.shared.usernames
+                hasIdentity = DWCurrentUserIdentityInfo.shared.hasIdentity
             }
         }
     }

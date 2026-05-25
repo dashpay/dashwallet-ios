@@ -493,6 +493,11 @@ struct MainMenuScreen: View {
     }
     
     private func editProfile() {
+        // Gate on the strict SDK-side identity check so the editor
+        // never opens against a missing identity — Save would fail
+        // and the screen would render blank. See profileAction() in
+        // HomeViewController for the same gate.
+        guard DWCurrentUserIdentityInfo.shared.hasIdentity else { return }
         let controller = RootEditProfileViewController()
         controller.delegate = delegateInternal
         let navigation = BaseNavigationController(rootViewController: controller)
