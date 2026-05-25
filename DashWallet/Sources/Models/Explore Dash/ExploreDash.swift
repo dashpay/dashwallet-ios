@@ -123,8 +123,8 @@ public class ExploreDash {
         // Firebase Storage sync disabled — placeholder GoogleService-Info.plist
         // points at a different bucket than the hardcoded gs://dash-wallet-firebase URL.
         // The bundled explore.db is used instead.
-        // databaseSyncManager = ExploreDatabaseSyncManager.share
-        // databaseSyncManager.start()
+        databaseSyncManager = ExploreDatabaseSyncManager.share
+        databaseSyncManager.start()
 
         merchantDAO = MerchantDAO(dbConnection: databaseConnection)
         atmDAO = AtmDAO(dbConnection: databaseConnection)
@@ -164,8 +164,8 @@ public class ExploreDash {
         try FileManager.default.copyItem(at: dbURL, to: destinationPath)
 
         // Firebase Storage sync disabled — see configure() for context.
-        // ExploreDatabaseSyncManager.share.exploreDatabaseLastVersion = bundleExploreDatabaseSyncTime
-        // ExploreDatabaseSyncManager.share.exploreDatabaseLastSyncTimestamp = bundleExploreDatabaseSyncTime
+        ExploreDatabaseSyncManager.share.exploreDatabaseLastVersion = bundleExploreDatabaseSyncTime
+        ExploreDatabaseSyncManager.share.exploreDatabaseLastSyncTimestamp = bundleExploreDatabaseSyncTime
     }
 
     private func removeCurrentDatabaseIfNeeded() {
@@ -181,9 +181,9 @@ public class ExploreDash {
 
         /// Remove if bundled version is newer than last downloaded
         // Firebase Storage sync disabled — see configure() for context.
-        // if ExploreDatabaseSyncManager.share.exploreDatabaseLastVersion < bundleExploreDatabaseSyncTime {
-        //     try? FileManager.default.removeItem(at: destinationPath)
-        // }
+        if ExploreDatabaseSyncManager.share.exploreDatabaseLastVersion < bundleExploreDatabaseSyncTime {
+            try? FileManager.default.removeItem(at: destinationPath)
+        }
     }
 
     public static let shared = ExploreDash()
