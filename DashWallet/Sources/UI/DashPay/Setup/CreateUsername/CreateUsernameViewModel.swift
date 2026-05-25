@@ -16,6 +16,7 @@
 //
 
 import Combine
+import SwiftDashSDK
 
 struct CreateUsernameUIState {
     var lengthRule: UsernameValidationRuleResult
@@ -63,6 +64,15 @@ class CreateUsernameViewModel: ObservableObject {
     @Published private(set) var hasMinimumRequiredBalance = false
     @Published private(set) var hasRecommendedBalance = false
     @Published private(set) var balance: String = ""
+
+    /// `true` when the trimmed input is a contested-eligible DPNS
+    /// label (≤19 chars + only `[a-zA-Z0-9-]`) AND otherwise passes
+    /// the local validators (length + chars + hyphen-placement).
+    /// Drives the orange warning box and the Continue-button
+    /// confirmation alert in `CreateUsernameView`. Computed
+    /// client-side via the SDK's deterministic FFI helper
+    /// `dash_sdk_dpns_is_contested_username` — no network call.
+    @Published private(set) var isContestedCandidate: Bool = false
 
     /// Per-funding-source eligibility flags. `hasMinimumRequiredBalance`
     /// (above) is kept as the legacy OR-of-both flag for any existing
@@ -151,13 +161,22 @@ class CreateUsernameViewModel: ObservableObject {
 
         guard !username.isEmpty else {
             uiState = CreateUsernameUIState()
+            isContestedCandidate = false
             return
         }
 
-        let isContested = false // TODO MOCK_DASHPAY
         let lengthValid = username.count >= DW_MIN_USERNAME_LENGTH && username.count <= DW_MAX_USERNAME_LENGTH
         let hasIllegalCharacters = username.rangeOfCharacter(from: illegalChars) != nil
         let startsOrEndsWithHyphen = username.first == "-" || username.last == "-"
+        // The FFI helper returns 1 for labels ≤19 chars consisting
+        // only of `[a-zA-Z0-9-]` (the masternode-vote threshold from
+        // the DPNS contract). We still gate the published flag on
+        // the other local validators so the warning doesn't flash
+        // for unsubmittable names like "ab" (2 chars — contested-
+        // eligible by FFI but length-invalid for the user anyway).
+        let isContested = DWContestedNameStatusService.isContestedLabel(username)
+        let contestedCandidate = isContested && lengthValid && !hasIllegalCharacters && !startsOrEndsWithHyphen
+        isContestedCandidate = contestedCandidate
         let requiredCost = isContested ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME : DWDP_MIN_BALANCE_TO_CREATE_USERNAME
         // Either funding source can satisfy the cost rule. Core
         // spends BIP44 UTXOs via `registerIdentityWithFunding`;

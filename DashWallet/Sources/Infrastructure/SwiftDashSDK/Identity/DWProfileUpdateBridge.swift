@@ -84,8 +84,10 @@ public final class DWProfileUpdateBridge: NSObject {
                     publicMessage: publicMessage,
                     avatarUrl: avatarURL,
                     avatarBytes: avatarBytes)
+                Self.logger.info("🪪 PROFILE-BRIDGE :: profile update completed")
                 completion(nil)
             } catch {
+                Self.logger.error("🪪 PROFILE-BRIDGE :: profile update failed: \(String(describing: error), privacy: .public)")
                 completion(Self.nsError(from: error))
             }
         }

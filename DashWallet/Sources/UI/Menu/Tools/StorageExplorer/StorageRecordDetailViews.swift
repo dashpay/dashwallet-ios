@@ -7,12 +7,30 @@ import SwiftDashSDK
 private struct FieldRow: View {
     let label: String
     let value: String
+    @State private var didCopy: Bool = false
 
     var body: some View {
         HStack {
             Text(label).foregroundColor(.secondary)
             Spacer()
             Text(value).lineLimit(1).truncationMode(.middle).textSelection(.enabled)
+            if didCopy {
+                Image(systemName: "checkmark")
+                    .font(.caption)
+                    .foregroundColor(.green)
+            } else {
+                Image(systemName: "doc.on.doc")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            UIPasteboard.general.string = value
+            didCopy = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                didCopy = false
+            }
         }
     }
 }

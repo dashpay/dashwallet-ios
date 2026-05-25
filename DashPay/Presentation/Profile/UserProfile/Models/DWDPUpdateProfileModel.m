@@ -53,12 +53,20 @@ NS_ASSUME_NONNULL_END
                       aboutMe:(NSString *)rawAboutMe
               avatarURLString:(nullable NSString *)avatarURLString
                   avatarImage:(nullable UIImage *)avatarImage {
-    // Stash the prepared payload for `-retry` (DashSync path) and
-    // for the SDK branch below. `displayName` is normalised to empty
-    // string when it equals the bare username (legacy DashSync
-    // convention: "displayName same as username means no override").
-    DSBlockchainIdentity *dashSyncIdentity = self.blockchainIdentity;
+    // Row #17 proper: branch on whether DashSync *actually* has a
+    // registered identity for this wallet — NOT via `self.blockchainIdentity`
+    // (which synthesises a fake DSBlockchainIdentity from
+    // `dashpayUsername` when `MOCK_DASHPAY == YES`, defeating the
+    // SDK-vs-DashSync split). Read `defaultBlockchainIdentity`
+    // directly: nil → SDK write path; non-nil → legacy DashSync
+    // sign-and-publish path.
+    DSBlockchainIdentity *dashSyncIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
     NSString *displayName = rawDisplayName;
+    // `displayName` is normalised to empty string when it equals the
+    // bare username (legacy DashSync convention: "displayName same
+    // as username means no override"). Use the helper for the
+    // reference username so the SDK path also gets the
+    // normalisation.
     NSString *referenceUsername = dashSyncIdentity.currentDashpayUsername
         ?: DWCurrentUserIdentityInfo.shared.username;
     if (referenceUsername != nil && [rawDisplayName isEqualToString:referenceUsername]) {
@@ -73,11 +81,6 @@ NS_ASSUME_NONNULL_END
         avatar = nil;
     }
 
-    // Row #17 proper: branch on the wallet's identity provenance.
-    // DashSync-side identities keep the legacy state-transition
-    // write path. SDK-only identities (no DashSync footprint) go
-    // through `DWProfileUpdateBridge` which calls
-    // `wallet.updateDashPayProfile` / `createDashPayProfile`.
     if (dashSyncIdentity != nil) {
         [dashSyncIdentity updateDashpayProfileWithDisplayName:displayName
                                                 publicMessage:aboutMe

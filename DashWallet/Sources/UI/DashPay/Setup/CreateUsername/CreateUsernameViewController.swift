@@ -35,7 +35,7 @@ class CreateUsernameViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         self.view.backgroundColor = UIColor.dw_secondaryBackground()
 
         let content = CreateUsernameView(dashPayModel: dashPayModel) {
@@ -46,12 +46,12 @@ class CreateUsernameViewController: UIViewController {
         swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
         self.dw_embedChild(swiftUIController)
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.applyOpaqueAppearance(with: UIColor.dw_secondaryBackground(), shadowColor: .clear)
     }
-    
+
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
     }
@@ -68,6 +68,10 @@ struct CreateUsernameView: View {
     /// Written into `DWIdentityRegistrationBridge.shared.preferredFundingSource`
     /// in the Continue handler right before the submit call.
     @State private var fundingSource: DWIdentityFundingSource = .core
+    /// Tracks the contested-name confirmation alert. Continue routes
+    /// through this alert (instead of submitting directly) when the
+    /// typed name is contested-eligible — `viewModel.isContestedCandidate`.
+    @State private var showContestedConfirmation: Bool = false
     var finish: () -> Void
 
     var body: some View {
@@ -111,6 +115,18 @@ struct CreateUsernameView: View {
                 ).padding(.top, 20)
             }
 
+            // Contested-name warning. Shown when the typed label is
+            // ≤19 chars + only [a-zA-Z0-9-] AND otherwise passes the
+            // local validators. Submitting a contested name triggers
+            // masternode voting (~45 min testnet, ~2 weeks mainnet)
+            // before the name is actually claimed — the user gets a
+            // separate confirmation alert on Continue. Mirrors the
+            // example app's `RegisterNameView.swift:277-293` styling.
+            if viewModel.isContestedCandidate {
+                contestedNameWarning
+                    .padding(.top, 20)
+            }
+
             // Funding source picker. Visible only when both Core and
             // Platform Payment have enough balance to cover the
             // identity-registration cost. When only one source is
@@ -143,20 +159,14 @@ struct CreateUsernameView: View {
                 // `.valid`, so the button is gated on the same condition
                 // — no `if .valid` check needed here.
                 //
-                // Write the funding-source pick into the bridge right
-                // before submit. The bridge resets to `.core` on every
-                // terminal phase, so a stale picker value can't leak
-                // into a future attempt; this single write is the only
-                // synchronization needed.
-                DWIdentityRegistrationBridge.shared.preferredFundingSource = fundingSource
-                Task {
-                    inProgress = true
-                    let result = await viewModel.submitUsernameRequest(withProve: nil, dashPayModel: dashPayModel)
-                    inProgress = false
-
-                    if result {
-                        finish()
-                    }
+                // Contested-name submissions go through a confirmation
+                // alert first so the user explicitly acknowledges the
+                // ~45 min testnet / ~2 weeks mainnet voting wait and
+                // the locked Dash. Non-contested names submit directly.
+                if viewModel.isContestedCandidate {
+                    showContestedConfirmation = true
+                } else {
+                    performSubmit()
                 }
             }
         }
@@ -175,6 +185,64 @@ struct CreateUsernameView: View {
         }
         .onChange(of: viewModel.hasMinimumRequiredPlatformBalance) { _ in
             syncFundingSourceToViableSource()
+        }
+        .alert(
+            NSLocalizedString("Contested name", comment: "Usernames"),
+            isPresented: $showContestedConfirmation
+        ) {
+            Button(NSLocalizedString("Submit anyway", comment: "Usernames"), role: .destructive) {
+                performSubmit()
+            }
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+        } message: {
+            Text(NSLocalizedString(
+                "This name requires voting. Your Dash will be locked until voting completes.",
+                comment: "Usernames"))
+        }
+    }
+
+    /// Orange warning callout shown above the Continue button when
+    /// the typed name is contested-eligible. Styled to match the
+    /// example app's `RegisterNameView.swift:277-293`.
+    private var contestedNameWarning: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(.orange)
+                .font(.system(size: 20))
+            VStack(alignment: .leading, spacing: 4) {
+                Text(NSLocalizedString("Contested name", comment: "Usernames"))
+                    .font(.subheadline.bold())
+                    .foregroundColor(.orange)
+                Text(NSLocalizedString(
+                    "This name requires a masternode vote.",
+                    comment: "Usernames"))
+                    .font(.caption)
+                    .foregroundColor(.secondaryText)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.orange.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    /// Encapsulates the submit-to-bridge dance so both the direct
+    /// Continue path and the contested-name alert's "Submit anyway"
+    /// button can share the code. Writes the funding-source pick
+    /// into the bridge right before submit. The bridge resets to
+    /// `.core` on every terminal phase, so a stale picker value
+    /// can't leak into a future attempt; this single write is the
+    /// only synchronization needed.
+    private func performSubmit() {
+        DWIdentityRegistrationBridge.shared.preferredFundingSource = fundingSource
+        Task {
+            inProgress = true
+            let result = await viewModel.submitUsernameRequest(withProve: nil, dashPayModel: dashPayModel)
+            inProgress = false
+
+            if result {
+                finish()
+            }
         }
     }
 

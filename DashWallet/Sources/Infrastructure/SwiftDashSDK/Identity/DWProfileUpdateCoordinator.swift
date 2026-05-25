@@ -123,17 +123,44 @@ final class DWProfileUpdateCoordinator {
         Self.logger.info("🪪 PROFILE-COORD :: updateProfile displayName=\(displayName ?? "(nil)", privacy: .public) avatar=\(avatarUrl ?? "(nil)", privacy: .public) bytes=\(avatarBytes?.count ?? 0, privacy: .public)")
 
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
+            Self.logger.error("🪪 PROFILE-COORD :: noWallet — SwiftDashSDKHost.shared.wallet is nil")
             throw CoordinatorError.noWallet
         }
         guard let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
+            Self.logger.error("🪪 PROFILE-COORD :: noModelContainer — SwiftDashSDKHost.shared.modelContainer is nil")
             throw CoordinatorError.noModelContainer
         }
         guard let identityId = lookupIdentityId(
             walletId: wallet.walletId,
             modelContainer: modelContainer)
         else {
+            Self.logger.error("🪪 PROFILE-COORD :: noIdentity — no PersistentIdentity row at index \(Self.pinnedIdentityIndex, privacy: .public) for wallet \(wallet.walletId.prefix(4).map { String(format: "%02x", $0) }.joined(), privacy: .public)…")
             throw CoordinatorError.noIdentity
         }
+        Self.logger.info("🪪 PROFILE-COORD :: identity resolved \(identityId.prefix(4).map { String(format: "%02x", $0) }.joined(), privacy: .public)…, awaiting auth")
+
+        // Yield a beat before triggering the PIN/biometric prompt.
+        // The caller's typical flow is:
+        //   delegate.editProfileViewController(...) →
+        //   updateModel.update(...) (this Task starts) →
+        //   controller.dismiss(animated: true)  // .fullScreen modal
+        // The dismiss animation runs ~300ms; if we synchronously hit
+        // `DSAuthenticationManager.authenticate(...)` immediately, the
+        // top view controller is the *dismissing* editor and iOS
+        // silently refuses to present the PIN modal — the
+        // authentication callback never fires and this coroutine
+        // hangs forever. Sleeping ~500ms lets the dismiss animation
+        // complete so the parent (HomeViewController / MainMenu)
+        // becomes the presenting controller for the PIN prompt.
+        //
+        // Not load-bearing for correctness in the abstract — a future
+        // refactor that hands the editor an explicit completion
+        // callback and dismisses only after the bridge resolves would
+        // remove the need for this sleep — but the existing
+        // fire-and-forget delegate shape (matches the legacy DashSync
+        // flow) needs this hop.
+        try? await Task.sleep(nanoseconds: 500_000_000)
+        Self.logger.info("🪪 PROFILE-COORD :: dismiss-yield complete, requesting auth")
 
         // PIN / biometric prompt. Throws `.cancelled` on user cancel
         // (translated to our own error so callers don't pull in
@@ -145,12 +172,25 @@ final class DWProfileUpdateCoordinator {
         } catch {
             throw CoordinatorError.authFailed
         }
+        Self.logger.info("🪪 PROFILE-COORD :: auth granted, proceeding to SDK profile write")
 
         let signer = KeychainSigner(modelContainer: modelContainer)
+        // DIP-15 enforces a minimum length of 1 character on each
+        // profile-document string field. Sending an empty string
+        // (e.g. the user typed only a display name and left About Me
+        // blank) trips a `JsonSchemaError: "" is shorter than 1
+        // character` from Platform. Normalise empty → nil so the
+        // SDK omits the field entirely. v1 doesn't support clearing
+        // a previously-set field (DIP-15 has no explicit "delete"
+        // signal — once a field is set it stays unless the user
+        // overwrites it with a non-empty value).
+        let normalizedDisplayName = Self.nilIfEmpty(displayName)
+        let normalizedPublicMessage = Self.nilIfEmpty(publicMessage)
+        let normalizedAvatarUrl = Self.nilIfEmpty(avatarUrl)
         let update = DashPayProfileUpdate(
-            displayName: displayName,
-            publicMessage: publicMessage,
-            avatarUrl: avatarUrl,
+            displayName: normalizedDisplayName,
+            publicMessage: normalizedPublicMessage,
+            avatarUrl: normalizedAvatarUrl,
             avatarBytes: avatarBytes)
 
         // create vs update is decided from the cached profile state.
@@ -174,29 +214,37 @@ final class DWProfileUpdateCoordinator {
                     signer: signer)
             }
         } catch let firstError {
-            // Cache was wrong — flip the verb and try once more.
-            // Most likely cases:
-            //   - `preferCreate` and the document already exists on
-            //     Platform (post-register but pre-sync).
-            //   - `!preferCreate` and the cache wrongly reports an
-            //     existing document (rare; can happen after a
-            //     local-cache rebuild).
-            Self.logger.warning("🪪 PROFILE-COORD :: \(preferCreate ? "create" : "update", privacy: .public) failed (\(String(describing: firstError), privacy: .public)); retrying with opposite verb")
-            do {
-                if preferCreate {
-                    result = try await wallet.updateDashPayProfile(
-                        identityId: identityId,
-                        update: update,
-                        signer: signer)
-                } else {
-                    result = try await wallet.createDashPayProfile(
-                        identityId: identityId,
-                        update: update,
-                        signer: signer)
+            // Flip the verb only when the error string makes it
+            // unambiguous that we picked the wrong one. Transport /
+            // decoding / network errors are propagated as-is — they
+            // would fail the same way with the opposite verb and the
+            // resulting "duplicate" / "not found" noise on the fall-
+            // back would mask the real failure.
+            let errorText = String(describing: firstError).lowercased()
+            let wrongVerb = preferCreate
+                ? errorText.contains("duplicate unique") || errorText.contains("duplicate $ownerid")
+                : errorText.contains("not found") || errorText.contains("document not found")
+            if wrongVerb {
+                Self.logger.warning("🪪 PROFILE-COORD :: \(preferCreate ? "create" : "update", privacy: .public) failed with wrong-verb signature; retrying with opposite verb")
+                do {
+                    if preferCreate {
+                        result = try await wallet.updateDashPayProfile(
+                            identityId: identityId,
+                            update: update,
+                            signer: signer)
+                    } else {
+                        result = try await wallet.createDashPayProfile(
+                            identityId: identityId,
+                            update: update,
+                            signer: signer)
+                    }
+                } catch let secondError {
+                    Self.logger.error("🪪 PROFILE-COORD :: retry failed: \(String(describing: secondError), privacy: .public)")
+                    throw CoordinatorError.profileWrite(secondError)
                 }
-            } catch let secondError {
-                Self.logger.error("🪪 PROFILE-COORD :: retry failed: \(String(describing: secondError), privacy: .public)")
-                throw CoordinatorError.profileWrite(secondError)
+            } else {
+                Self.logger.error("🪪 PROFILE-COORD :: \(preferCreate ? "create" : "update", privacy: .public) failed: \(String(describing: firstError), privacy: .public)")
+                throw CoordinatorError.profileWrite(firstError)
             }
         }
 
@@ -214,6 +262,11 @@ final class DWProfileUpdateCoordinator {
     }
 
     // MARK: - Internals
+
+    private static func nilIfEmpty(_ value: String?) -> String? {
+        guard let value, !value.isEmpty else { return nil }
+        return value
+    }
 
     /// Resolve the current wallet's identity at `pinnedIdentityIndex`
     /// via SwiftData. Returns `nil` when no `PersistentIdentity` row

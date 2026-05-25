@@ -398,6 +398,7 @@
 		A5D5DD00000000000000110E /* DWCurrentUserIdentityInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001007 /* DWCurrentUserIdentityInfo.swift */; };
 		A5D5DD000000000000001110 /* DWProfileUpdateCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001008 /* DWProfileUpdateCoordinator.swift */; };
 		A5D5DD000000000000001112 /* DWProfileUpdateBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001009 /* DWProfileUpdateBridge.swift */; };
+		A5D5DD000000000000001114 /* DWContestedNameStatusService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000100A /* DWContestedNameStatusService.swift */; };
 		A5D5DD000000000000000213 /* PlatformSyncStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000215 /* PlatformSyncStatusScreen.swift */; };
 		A5D5DD000000000000000214 /* PlatformSyncStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000215 /* PlatformSyncStatusScreen.swift */; };
 		A5D5DD000000000000000216 /* PlatformCreditsFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000218 /* PlatformCreditsFormatter.swift */; };
@@ -2443,6 +2444,7 @@
 		A5D5DD000000000000001007 /* DWCurrentUserIdentityInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWCurrentUserIdentityInfo.swift; path = Identity/DWCurrentUserIdentityInfo.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000001008 /* DWProfileUpdateCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWProfileUpdateCoordinator.swift; path = Identity/DWProfileUpdateCoordinator.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000001009 /* DWProfileUpdateBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWProfileUpdateBridge.swift; path = Identity/DWProfileUpdateBridge.swift; sourceTree = "<group>"; };
+		A5D5DD00000000000000100A /* DWContestedNameStatusService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWContestedNameStatusService.swift; path = Identity/DWContestedNameStatusService.swift; sourceTree = "<group>"; };
 		4762C947276CAF6800F5F42D /* DWPaymentCurrency.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentCurrency.h; sourceTree = "<group>"; };
 		4774DCDA28F3FA9C008CF87D /* Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coinbase.swift; sourceTree = "<group>"; };
 		4774DCDC28F43A68008CF87D /* ServiceDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceDataSource.swift; sourceTree = "<group>"; };
@@ -5661,6 +5663,7 @@
 					A5D5DD000000000000001007 /* DWCurrentUserIdentityInfo.swift */,
 					A5D5DD000000000000001008 /* DWProfileUpdateCoordinator.swift */,
 					A5D5DD000000000000001009 /* DWProfileUpdateBridge.swift */,
+					A5D5DD00000000000000100A /* DWContestedNameStatusService.swift */,
 				);
 			path = SwiftDashSDK;
 			sourceTree = "<group>";
@@ -9985,6 +9988,7 @@
 				A5D5DD00000000000000110E /* DWCurrentUserIdentityInfo.swift in Sources */,
 				A5D5DD000000000000001110 /* DWProfileUpdateCoordinator.swift in Sources */,
 				A5D5DD000000000000001112 /* DWProfileUpdateBridge.swift in Sources */,
+				A5D5DD000000000000001114 /* DWContestedNameStatusService.swift in Sources */,
 				A5D5DD0000000000000000FC /* SwiftDashSDKSPVCoordinator.swift in Sources */,
 					A5D5DD0000000000000000FF /* SwiftDashSDKSPVStatusScreen.swift in Sources */,
 					A5D5DD000000000000000211 /* PlatformAddressSyncCoordinator.swift in Sources */,

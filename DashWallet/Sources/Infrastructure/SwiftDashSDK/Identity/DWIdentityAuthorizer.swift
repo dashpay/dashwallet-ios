@@ -49,12 +49,15 @@ final class DWIdentityAuthorizer {
 
     @MainActor
     func authorize() async throws {
+        let biometricEnabled = DWGlobalOptions.sharedInstance().biometricAuthEnabled
+        Self.logger.info("🪪 IDENTITY-AUTH :: calling DSAuthenticationManager.authenticate(biometric=\(biometricEnabled, privacy: .public))")
         let result = await withCheckedContinuation { continuation in
             DSAuthenticationManager.sharedInstance().authenticate(
                 withPrompt: nil,
-                usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
+                usingBiometricAuthentication: biometricEnabled,
                 alertIfLockout: true
             ) { authenticatedOrSuccess, _, cancelled in
+                Self.logger.info("🪪 IDENTITY-AUTH :: authenticate callback authenticated=\(authenticatedOrSuccess, privacy: .public) cancelled=\(cancelled, privacy: .public)")
                 if cancelled {
                     continuation.resume(returning: AuthorizationResult.cancelled)
                 } else if authenticatedOrSuccess {
@@ -67,13 +70,13 @@ final class DWIdentityAuthorizer {
 
         switch result {
         case .authorized:
-            Self.logger.info("🔐 IDENTITY-AUTH :: user authorized identity registration")
+            Self.logger.info("🪪 IDENTITY-AUTH :: user authorized identity registration")
             return
         case .cancelled:
-            Self.logger.info("🔐 IDENTITY-AUTH :: user cancelled authentication")
+            Self.logger.info("🪪 IDENTITY-AUTH :: user cancelled authentication")
             throw AuthError.cancelled
         case .failed:
-            Self.logger.error("🔐 IDENTITY-AUTH :: authentication failed")
+            Self.logger.error("🪪 IDENTITY-AUTH :: authentication failed")
             throw AuthError.failed
         }
     }

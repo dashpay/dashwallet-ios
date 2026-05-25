@@ -176,6 +176,31 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         invalidate()
     }
 
+    /// Fire-and-forget blockchain refresh of the local DPNS-names
+    /// cache via `wallet.syncDpnsNames(identityId:)`. The local
+    /// cache (`ManagedIdentity.dpns_names`) only contains names
+    /// that were either written by `registerDpnsName` in this
+    /// session or pulled by a prior sync — wallet reinstalls,
+    /// network switches, or contested-sync rewrites can leave it
+    /// missing legitimately-owned names. Wired from
+    /// `HomeViewController.viewDidAppear` so the helper picks up
+    /// blockchain-side names automatically.
+    @objc public func syncFromNetwork() {
+        Task { @MainActor in
+            Self.logger.info("🪪 IDENT-INFO :: syncFromNetwork called")
+            guard let wallet = SwiftDashSDKHost.shared.wallet,
+                  let identityId = snapshot.identityId
+            else { return }
+            do {
+                let added = try await wallet.syncDpnsNames(identityId: identityId)
+                Self.logger.info("🪪 IDENT-INFO :: syncDpnsNames added=\(added, privacy: .public)")
+                self.invalidate()
+            } catch {
+                Self.logger.warning("🪪 IDENT-INFO :: syncDpnsNames failed: \(String(describing: error), privacy: .public)")
+            }
+        }
+    }
+
     // MARK: - Internals
 
     @objc private func handleInvalidationNotification(_ notification: Notification) {
@@ -228,9 +253,24 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         var avatarURL: String? = nil
         var publicMessage: String? = nil
 
+        // Row #18: filter the pending-contested label out of every
+        // candidate username source. `registerDpnsName` creates the
+        // DPNS domain document immediately for both contested and
+        // uncontested submissions — voting only decides who keeps
+        // it. Without this filter, the contested-but-not-yet-owned
+        // label leaks into Edit Profile, the SDK profile sheet,
+        // invitation links, and the payment-side username memo. The
+        // service-side bookmark in `DWContestedNameStatusService`
+        // is single-writer/single-reader and cleared on resolution.
+        let pendingContested = DWContestedNameStatusService.shared.pendingLabel
+        let isPending: (String) -> Bool = { name in
+            guard let pending = pendingContested else { return false }
+            return name == pending || name == "\(pending).dash"
+        }
+
         if let managed = try? wallet.managedIdentity(identityId: identityId) {
-            if let names = try? managed.getDpnsNames(), let first = names.first {
-                username = first
+            if let names = try? managed.getDpnsNames() {
+                username = names.first(where: { !isPending($0) })
             }
             if let profile = try? managed.getDashPayProfile() {
                 displayName = Self.nilIfEmpty(profile.displayName)
@@ -242,8 +282,10 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         // Post-register fallback: SwiftDashSDK's DPNS cache is empty
         // immediately after `registerDpnsName` returns until the next
         // `syncDpnsNames` round, but the coordinator writes
-        // `DWGlobalOptions.dashpayUsername` on `.completed`, so the
-        // user-visible name is available without a sync round-trip.
+        // `DWGlobalOptions.dashpayUsername` on `.completed` for
+        // uncontested submissions only — contested submissions defer
+        // the write entirely, so the fallback can't match a pending
+        // contested label by construction.
         if username == nil {
             username = Self.nilIfEmpty(DWGlobalOptions.sharedInstance().dashpayUsername)
         }

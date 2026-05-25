@@ -377,10 +377,40 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             throw CoordinatorError.dpnsRegistration(error)
         }
 
+        // Step 3.5: branch on contested-name status. The SDK uses the
+        // same `registerDpnsName` call for contested and uncontested
+        // labels, but the on-chain effect differs: a contested name
+        // is "preregistered" pending masternode voting (~45 min
+        // testnet, ~2 weeks mainnet). The label is NOT actually
+        // claimed until the vote resolves. We:
+        //   1. Bookmark the submission via DWContestedNameStatusService
+        //      so the CreateUsername form can detect the in-flight
+        //      submission on relaunch and swap to the status screen.
+        //   2. Refresh the SDK's contested-names cache so a
+        //      subsequent `getContestedDpnsNames()` read sees the
+        //      label (otherwise we'd race against the next idle
+        //      sync).
+        //   3. Skip the DWGlobalOptions mirror writes in
+        //      `handlePhaseChange` — those run on resolution
+        //      (DWContestedNameStatusService.finalizeWon) once the
+        //      vote actually grants the name.
+        let isContestedSubmission = DWContestedNameStatusService.isContestedLabel(username)
+        Self.logger.info("🪪 IDENT-COORD :: contested=\(isContestedSubmission, privacy: .public) label=\(username, privacy: .public)")
+        if isContestedSubmission {
+            DWContestedNameStatusService.shared.recordSubmission(label: username)
+            do {
+                _ = try await wallet.syncContestedDpnsNames(identityId: identityId)
+                Self.logger.info("🪪 IDENT-COORD :: contested-names cache synced")
+            } catch {
+                Self.logger.warning("🪪 IDENT-COORD :: syncContestedDpnsNames failed: \(String(describing: error), privacy: .public)")
+            }
+        }
+
         // Step 4: mark complete + mirror to DWGlobalOptions. The
         // controller transition triggers the phaseSubscription
         // sink which posts the notification + writes
-        // DWGlobalOptions.
+        // DWGlobalOptions (skipped for contested submissions —
+        // see handlePhaseChange).
         newController.enterCompleted(identityId: identityId)
         Self.logger.info("🪪 IDENT-COORD :: registration complete")
         return identityId
@@ -442,9 +472,22 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // Obj-C consumers (87 sites referencing
         // DSBlockchainIdentity.currentDashpayUsername) keep working
         // until row #17 migrates them individually.
+        //
+        // Contested submissions defer these writes — the username
+        // isn't actually claimed until masternode voting resolves
+        // (~45 min testnet, ~2 weeks mainnet). The pending-submission
+        // bookmark is the signal: `DWContestedNameStatusService.shared.pendingLabel`
+        // matches `currentUsername` iff Step 3.5 wrote it just now.
+        // `DWContestedNameStatusService.finalizeWon(...)` does the
+        // mirror writes when the vote resolves in our favor.
         if case .completed = newPhase, let username = currentUsername {
-            DWGlobalOptions.sharedInstance().dashpayUsername = username
-            DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted = true
+            let isContestedSubmission = DWContestedNameStatusService.shared.pendingLabel == username
+            if isContestedSubmission {
+                Self.logger.info("🪪 IDENT-COORD :: completed (contested) — deferring DWGlobalOptions mirror writes")
+            } else {
+                DWGlobalOptions.sharedInstance().dashpayUsername = username
+                DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted = true
+            }
         }
 
         // Stop asset-lock polling on terminal phases — no further

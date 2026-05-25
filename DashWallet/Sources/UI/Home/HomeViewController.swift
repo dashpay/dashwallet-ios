@@ -94,6 +94,16 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        // Refresh the SDK's local DPNS-names cache from the blockchain
+        // so the avatar/profile sheet/Edit Profile see legitimately-
+        // owned names that weren't written by registerDpnsName in this
+        // session (e.g. names registered before a reinstall, names
+        // synced after a network switch, names that fell out of the
+        // local cache after a contested-sync rewrite). Fire-and-forget —
+        // the helper invalidates its snapshot on completion so the
+        // next read picks up new names automatically.
+        DWCurrentUserIdentityInfo.shared.syncFromNetwork()
+
         let upgrading = model.performOnSetupUpgrades()
         if !upgrading {
             // since these both methods might display modals, don't allow running them simultaneously
