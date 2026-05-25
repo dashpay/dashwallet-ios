@@ -120,6 +120,9 @@ public class ExploreDash {
         databaseConnection = ExploreDatabaseConnection()
         try databaseConnection.connect()
 
+        // Firebase Storage sync disabled — placeholder GoogleService-Info.plist
+        // points at a different bucket than the hardcoded gs://dash-wallet-firebase URL.
+        // The bundled explore.db is used instead.
         databaseSyncManager = ExploreDatabaseSyncManager.share
         databaseSyncManager.start()
 
@@ -160,6 +163,7 @@ public class ExploreDash {
 
         try FileManager.default.copyItem(at: dbURL, to: destinationPath)
 
+        // Firebase Storage sync disabled — see configure() for context.
         ExploreDatabaseSyncManager.share.exploreDatabaseLastVersion = bundleExploreDatabaseSyncTime
         ExploreDatabaseSyncManager.share.exploreDatabaseLastSyncTimestamp = bundleExploreDatabaseSyncTime
     }
@@ -176,6 +180,7 @@ public class ExploreDash {
         }
 
         /// Remove if bundled version is newer than last downloaded
+        // Firebase Storage sync disabled — see configure() for context.
         if ExploreDatabaseSyncManager.share.exploreDatabaseLastVersion < bundleExploreDatabaseSyncTime {
             try? FileManager.default.removeItem(at: destinationPath)
         }

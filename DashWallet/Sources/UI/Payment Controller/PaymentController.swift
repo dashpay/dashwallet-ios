@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import SafariServices
 import UIKit
 
 typealias PaymentControllerPresentationAnchor = UIViewController
@@ -242,6 +243,26 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
     func paymentProcessor(_ processor: DWPaymentProcessor, showProgressHUDWithMessage message: String?) {
         presentationAnchor?.topController().view.dw_showProgressHUD(withMessage: message)
+    }
+
+    func paymentProcessor(_ processor: DWPaymentProcessor, openInAppBrowserWith url: URL) {
+        // Defer so the confirm-screen dismiss + nav pop animations finish first.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
+            // Use the external presentation context (e.g. the screen the user came from)
+            // rather than `presentationAnchor`, whose first branch is the now-popped
+            // ProvideAmountViewController.
+            guard let self = self,
+                  let stableAnchor = self.presentationContextProvider?.presentationAnchorForPaymentController(self),
+                  stableAnchor.view.window != nil else { return }
+            let presenter = stableAnchor.topController()
+            // Mirror the TxDetailViewController flow: dw_controller factory for tint,
+            // .overFullScreen so the underlying view stays in the hierarchy on dismiss
+            // (otherwise revealing a detached VC crashes inside its viewWillAppear).
+            let safari = SFSafariViewController.dw_controller(with: url)
+            safari.modalPresentationStyle = .overFullScreen
+            safari.modalPresentationCapturesStatusBarAppearance = true
+            presenter.present(safari, animated: true)
+        }
     }
 }
 

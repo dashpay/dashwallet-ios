@@ -53,3 +53,5 @@ TODO.md
 
 # Transifex CLI binary
 tx
+.claude/settings.local.json
+docs/
