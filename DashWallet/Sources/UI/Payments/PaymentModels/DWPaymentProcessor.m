@@ -701,6 +701,12 @@ static NSString *sanitizeString(NSString *s) {
                                      completionHandler:nil];
         }
     }
+
+    // BIP21 `callback=<https-url>` — already https-validated at parse time.
+    NSURL *inAppCallback = self.paymentInput.request.callback;
+    if (inAppCallback && [self.delegate respondsToSelector:@selector(paymentProcessor:openInAppBrowserWithURL:)]) {
+        [self.delegate paymentProcessor:self openInAppBrowserWithURL:inAppCallback];
+    }
 }
 
 - (void)cancelPayment {

@@ -147,7 +147,9 @@ final class ProvideAmountViewController: SendAmountViewController {
 
         let compactAppearance = standardAppearance.copy()
 
-        let navigationBar = navigationController!.navigationBar
+        // viewWillAppear can fire after this VC has been popped (e.g. when a modal
+        // presented from it is dismissed), at which point navigationController is nil.
+        guard let navigationBar = navigationController?.navigationBar else { return }
         navigationBar.isTranslucent = true
         navigationBar.standardAppearance = standardAppearance
         navigationBar.scrollEdgeAppearance = standardAppearance

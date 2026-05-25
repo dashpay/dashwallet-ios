@@ -67,6 +67,11 @@ NS_ASSUME_NONNULL_BEGIN
          didSweepRequest:(DSPaymentRequest *)protocolRequest
              transaction:(DSTransaction *)transaction;
 
+// Fires after a successful payment when the BIP21 URI carried `callback=<https-url>`.
+@optional
+- (void)paymentProcessor:(DWPaymentProcessor *)processor openInAppBrowserWithURL:(NSURL *)url;
+@required
+
 // Handle File
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor displayFileProcessResult:(NSString *)result;
