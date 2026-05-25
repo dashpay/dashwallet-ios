@@ -76,7 +76,19 @@ class MainMenuViewController: UIViewController {
         super.viewDidLoad()
         // Navigation is now handled in SwiftUI
     }
-    
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // Restore the tab bar when returning to this root screen. The
+        // Join DashPay → CreateUsername push uses
+        // `hidesBottomBarWhenPushed = true`; if the PIN modal sits on
+        // top of the tab bar controller and the CreateUsername VC pops
+        // out from underneath it (the known early-dismiss bug), UIKit
+        // never restores the tab bar on the pop. Forcing it visible
+        // here is a no-op when the bar is already showing.
+        tabBarController?.tabBar.isHidden = false
+    }
+
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
     }

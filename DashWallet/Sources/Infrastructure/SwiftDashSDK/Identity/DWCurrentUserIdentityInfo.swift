@@ -74,6 +74,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         let identityId: Data?
         let identityIdHex: String?
         let username: String?
+        let usernames: [String]
         let displayName: String?
         let avatarURL: String?
         let publicMessage: String?
@@ -82,6 +83,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             identityId: nil,
             identityIdHex: nil,
             username: nil,
+            usernames: [],
             displayName: nil,
             avatarURL: nil,
             publicMessage: nil)
@@ -133,6 +135,13 @@ public final class DWCurrentUserIdentityInfo: NSObject {
     /// no identity is registered.
     @objc public var username: String? {
         snapshot.username
+    }
+
+    /// All DPNS labels the identity owns (`ManagedIdentity.getDpnsNames()`),
+    /// with the pending-contested label filtered out same as `username`.
+    /// Empty when no identity is registered or the cache is unpopulated.
+    @objc public var usernames: [String] {
+        snapshot.usernames
     }
 
     /// `dashpay.profile.displayName`. Nil when the profile document
@@ -214,34 +223,58 @@ public final class DWCurrentUserIdentityInfo: NSObject {
 
     private var snapshot: Snapshot {
         if cachedRevision != currentRevision {
-            cachedSnapshot = computeSnapshot()
-            cachedRevision = currentRevision
+            if let computed = computeSnapshot() {
+                cachedSnapshot = computed
+                cachedRevision = currentRevision
+            }
+            // else: host wasn't ready (wallet/container hydrating).
+            // Don't bump cachedRevision so the next read retries
+            // instead of caching `.empty` until the next
+            // notification fires — at app cold launch there's no
+            // such notification, which previously left the helper
+            // permanently empty.
         }
         return cachedSnapshot
     }
 
     /// Resolve the current identity from SwiftData + `ManagedIdentity`
-    /// reads. Falls back gracefully when any step fails — the helper
-    /// returns nil rather than throwing so the 22 read-site call
-    /// patterns stay simple.
-    private func computeSnapshot() -> Snapshot {
+    /// reads. Returns nil when the host hasn't hydrated wallet +
+    /// container yet (cold-launch race) — the caller uses nil to
+    /// mean "don't cache, retry on next read." A non-nil return is
+    /// the authoritative snapshot, including `.empty` for "host is
+    /// ready but no identity registered." Inner reads still bail
+    /// gracefully (returning nil fields) rather than throwing so
+    /// the 22 read-site call patterns stay simple.
+    private func computeSnapshot() -> Snapshot? {
         guard let wallet = SwiftDashSDKHost.shared.wallet,
               let container = SwiftDashSDKHost.shared.modelContainer
         else {
-            return .empty
+            return nil
         }
 
         let context = container.mainContext
         let walletId = wallet.walletId
         let pinnedIndex = Self.pinnedIdentityIndex
-        var descriptor = FetchDescriptor<PersistentIdentity>(
-            predicate: #Predicate { identity in
-                identity.wallet?.walletId == walletId
-                    && identity.identityIndex == pinnedIndex
-            }
+        // Query from the wallet side rather than via the
+        // `identity.wallet?.walletId` relationship predicate. The
+        // `#Predicate` macro compiles relationship traversals to SQL
+        // that requires the inverse-edge graph to be hydrated at
+        // query time. On cold launch the `PersistentIdentity` rows
+        // exist on disk but SwiftData hasn't walked the inverse yet,
+        // so the relationship predicate silently misses — the row
+        // shows up later (the coordinator's identical lookup
+        // succeeds because by the time it runs, other code paths
+        // have already touched the relationship). `walletId` is a
+        // direct attribute on `PersistentWallet`, so filtering there
+        // requires no traversal; accessing `.identities` in Swift
+        // hydrates the inverse on demand.
+        var walletDescriptor = FetchDescriptor<PersistentWallet>(
+            predicate: #Predicate { $0.walletId == walletId }
         )
-        descriptor.fetchLimit = 1
-        guard let persisted = try? context.fetch(descriptor).first else {
+        walletDescriptor.fetchLimit = 1
+        guard let persistedWallet = try? context.fetch(walletDescriptor).first,
+              let persisted = persistedWallet.identities.first(where: { $0.identityIndex == pinnedIndex })
+        else {
             return .empty
         }
 
@@ -249,6 +282,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         let hex = identityId.map { String(format: "%02x", $0) }.joined()
 
         var username: String? = nil
+        var usernames: [String] = []
         var displayName: String? = nil
         var avatarURL: String? = nil
         var publicMessage: String? = nil
@@ -270,7 +304,8 @@ public final class DWCurrentUserIdentityInfo: NSObject {
 
         if let managed = try? wallet.managedIdentity(identityId: identityId) {
             if let names = try? managed.getDpnsNames() {
-                username = names.first(where: { !isPending($0) })
+                usernames = names.filter { !isPending($0) }
+                username = usernames.first
             }
             if let profile = try? managed.getDashPayProfile() {
                 displayName = Self.nilIfEmpty(profile.displayName)
@@ -297,6 +332,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             identityId: identityId,
             identityIdHex: hex,
             username: username,
+            usernames: usernames,
             displayName: displayName,
             avatarURL: avatarURL,
             publicMessage: publicMessage)

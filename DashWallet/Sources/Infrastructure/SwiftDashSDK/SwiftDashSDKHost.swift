@@ -230,7 +230,17 @@ final class SwiftDashSDKHost {
 
         let newSDK: SDK
         do {
-            newSDK = try SDK(network: network)
+            // Pin Platform protocol version 11. Server side is currently
+            // v11; without pinning the client auto-detects and may pick
+            // an incompatible newer encoding (e.g. v12 protobuf shape for
+            // `GetDataContractsRequest.version`), which surfaces as
+            // `decoding error: could not decode data contracts query` on
+            // every contract-touching call (profile read/write,
+            // `syncDpnsNames`, `fetchContestVoteState`, etc.). Tracked
+            // upstream by dashpay/platform PR #3734 which exposes this
+            // FFI knob. Drop the second arg when v12 is the agreed
+            // protocol.
+            newSDK = try SDK(network: network, protocolVersion: 11)
         } catch {
             Self.logger.error("🪺 HOST :: SDK init failed: \(String(describing: error), privacy: .public)")
             throw HostError.sdkInitFailed(error)

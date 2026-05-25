@@ -159,6 +159,23 @@ NS_ASSUME_NONNULL_END
             self.tableView.tableHeaderView = tableHeaderView;
         }
     }
+
+    UIView *tableFooterView = self.tableView.tableFooterView;
+    if (tableFooterView) {
+        CGFloat width = CGRectGetWidth(self.tableView.bounds);
+        // Size the footer to the table's width first, then ask Auto
+        // Layout for the natural height. Mirrors the standard pattern
+        // for self-sizing table headers/footers.
+        CGSize target = CGSizeMake(width, UILayoutFittingCompressedSize.height);
+        CGSize footerSize = [tableFooterView systemLayoutSizeFittingSize:target
+                                       withHorizontalFittingPriority:UILayoutPriorityRequired
+                                             verticalFittingPriority:UILayoutPriorityFittingSizeLevel];
+        if (CGRectGetHeight(tableFooterView.frame) != footerSize.height
+            || CGRectGetWidth(tableFooterView.frame) != width) {
+            tableFooterView.frame = CGRectMake(0.0, 0.0, width, footerSize.height);
+            self.tableView.tableFooterView = tableFooterView;
+        }
+    }
 }
 
 #pragma mark - Private
@@ -177,7 +194,7 @@ NS_ASSUME_NONNULL_END
     self.tableView.rowHeight = UITableViewAutomaticDimension;
     self.tableView.estimatedRowHeight = 60.0;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.tableView.tableFooterView = [[UIView alloc] init];
+    self.tableView.tableFooterView = [self makeDpnsNamesFooterView];
     self.tableView.tableHeaderView = self.headerView;
 
     NSArray<Class> *cellClasses = @[
@@ -187,6 +204,85 @@ NS_ASSUME_NONNULL_END
     for (Class cellClass in cellClasses) {
         [self.tableView registerClass:cellClass forCellReuseIdentifier:NSStringFromClass(cellClass)];
     }
+}
+
+/// Build the table footer that lists every DPNS label the current
+/// identity owns. Reads from `DWCurrentUserIdentityInfo.usernames`
+/// (the pending-contested label is already filtered out there).
+/// Returns an empty placeholder when the list is empty so the table
+/// keeps its existing layout.
+- (UIView *)makeDpnsNamesFooterView {
+    NSArray<NSString *> *names = DWCurrentUserIdentityInfo.shared.usernames;
+    if (names.count == 0) {
+        return [[UIView alloc] init];
+    }
+
+    UILabel *titleLabel = [[UILabel alloc] init];
+    titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    titleLabel.text = NSLocalizedString(@"DPNS Names", @"Edit profile — usernames list section header");
+    titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+    titleLabel.textColor = [UIColor dw_secondaryTextColor];
+
+    UIStackView *rowsStack = [[UIStackView alloc] init];
+    rowsStack.translatesAutoresizingMaskIntoConstraints = NO;
+    rowsStack.axis = UILayoutConstraintAxisVertical;
+    rowsStack.spacing = 0;
+    rowsStack.backgroundColor = [UIColor dw_backgroundColor];
+    rowsStack.layer.cornerRadius = 12;
+    rowsStack.layer.masksToBounds = YES;
+    rowsStack.layoutMargins = UIEdgeInsetsMake(0, 16, 0, 16);
+    rowsStack.layoutMarginsRelativeArrangement = YES;
+
+    for (NSUInteger i = 0; i < names.count; i++) {
+        UILabel *nameLabel = [[UILabel alloc] init];
+        nameLabel.text = names[i];
+        nameLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+        nameLabel.textColor = [UIColor dw_darkTitleColor];
+        nameLabel.userInteractionEnabled = YES;
+        UITapGestureRecognizer *tap =
+            [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dpnsNameLabelTapped:)];
+        [nameLabel addGestureRecognizer:tap];
+
+        UIView *row = [[UIView alloc] init];
+        row.translatesAutoresizingMaskIntoConstraints = NO;
+        [row addSubview:nameLabel];
+        nameLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        [NSLayoutConstraint activateConstraints:@[
+            [nameLabel.topAnchor constraintEqualToAnchor:row.topAnchor constant:14],
+            [nameLabel.bottomAnchor constraintEqualToAnchor:row.bottomAnchor constant:-14],
+            [nameLabel.leadingAnchor constraintEqualToAnchor:row.leadingAnchor],
+            [nameLabel.trailingAnchor constraintEqualToAnchor:row.trailingAnchor],
+        ]];
+        [rowsStack addArrangedSubview:row];
+
+        if (i < names.count - 1) {
+            UIView *divider = [[UIView alloc] init];
+            divider.translatesAutoresizingMaskIntoConstraints = NO;
+            divider.backgroundColor = [UIColor dw_separatorLineColor];
+            [divider.heightAnchor constraintEqualToConstant:(1.0 / UIScreen.mainScreen.scale)].active = YES;
+            [rowsStack addArrangedSubview:divider];
+        }
+    }
+
+    UIView *container = [[UIView alloc] init];
+    [container addSubview:titleLabel];
+    [container addSubview:rowsStack];
+    [NSLayoutConstraint activateConstraints:@[
+        [titleLabel.topAnchor constraintEqualToAnchor:container.topAnchor constant:24],
+        [titleLabel.leadingAnchor constraintEqualToAnchor:container.leadingAnchor constant:16],
+        [titleLabel.trailingAnchor constraintEqualToAnchor:container.trailingAnchor constant:-16],
+        [rowsStack.topAnchor constraintEqualToAnchor:titleLabel.bottomAnchor constant:8],
+        [rowsStack.leadingAnchor constraintEqualToAnchor:container.leadingAnchor constant:16],
+        [rowsStack.trailingAnchor constraintEqualToAnchor:container.trailingAnchor constant:-16],
+        [rowsStack.bottomAnchor constraintEqualToAnchor:container.bottomAnchor constant:-24],
+    ]];
+    return container;
+}
+
+- (void)dpnsNameLabelTapped:(UITapGestureRecognizer *)gesture {
+    UILabel *label = (UILabel *)gesture.view;
+    UIPasteboard.generalPasteboard.string = label.text;
+    [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Copied", @"") offsetForNavBar:YES];
 }
 
 - (void)setupItems {

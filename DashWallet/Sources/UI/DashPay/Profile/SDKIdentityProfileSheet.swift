@@ -24,6 +24,7 @@ struct SDKIdentityProfileSheet: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var walletState = SwiftDashSDKWalletState.shared
     @State private var identityIdHex: String? = nil
+    @State private var dpnsNames: [String] = []
     @State private var copyToast: String? = nil
 
     /// Callback invoked when the user taps Edit. Owner (HomeViewController)
@@ -39,6 +40,9 @@ struct SDKIdentityProfileSheet: View {
                     header
                     Divider()
                     infoSection
+                    if !dpnsNames.isEmpty {
+                        namesSection
+                    }
                     if onEditTapped != nil {
                         editButton
                     }
@@ -73,6 +77,7 @@ struct SDKIdentityProfileSheet: View {
             .onAppear {
                 walletState.refreshPlatformPaymentCredits()
                 loadIdentityId()
+                dpnsNames = DWCurrentUserIdentityInfo.shared.usernames
             }
         }
     }
@@ -134,6 +139,45 @@ struct SDKIdentityProfileSheet: View {
                 monospaced: false,
                 copyable: false
             )
+        }
+    }
+
+    // MARK: - DPNS names list
+
+    /// Lists every DPNS label `getDpnsNames()` returns for the current
+    /// identity (with the pending-contested label filtered out by the
+    /// helper). Pending-contested names show in the dedicated
+    /// `ContestedNameStatusView` instead, not here.
+    private var namesSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(NSLocalizedString("DPNS Names", comment: "SDK identity profile sheet — usernames list"))
+                .font(.caption)
+                .foregroundColor(.secondaryText)
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(Array(dpnsNames.enumerated()), id: \.offset) { index, name in
+                    HStack {
+                        Text(name)
+                            .font(.body)
+                            .foregroundColor(.primaryText)
+                        Spacer()
+                        Button {
+                            UIPasteboard.general.string = name
+                            showCopyToast()
+                        } label: {
+                            Image(systemName: "doc.on.doc")
+                                .foregroundColor(.secondaryText)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.vertical, 12)
+                    if index < dpnsNames.count - 1 {
+                        Divider()
+                    }
+                }
+            }
+            .padding(.horizontal, 12)
+            .background(Color.secondaryBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
 
