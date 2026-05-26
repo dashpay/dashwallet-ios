@@ -2971,6 +2971,54 @@
 /* DashSpend */
 "You can buy up to %@ in gift cards per order" = "You can buy up to %@ in gift cards per order";
 
+/* DashSpend */
+"Single" = "Single";
+
+/* DashSpend */
+"Multiple" = "Multiple";
+
+/* DashSpend */
+"Loading gift card options..." = "Loading gift card options...";
+
+/* DashSpend */
+"Unable to load merchant details. Please try again." = "Unable to load merchant details. Please try again.";
+
+/* DashSpend */
+"Gift card details are unavailable. Please contact support." = "Gift card details are unavailable. Please contact support.";
+
+/* DashSpend */
+"As soon as your code is generated, it will be displayed here" = "As soon as your code is generated, it will be displayed here";
+
+/* DashSpend */
+"Original Price" = "Original Price";
+
+/* DashSpend */
+"See card details" = "See card details";
+
+/* DashSpend */
+"Cashier instructions" = "Cashier instructions";
+
+/* DashSpend */
+"Gift card is being prepared" = "Gift card is being prepared";
+
+/* DashSpend */
+"View your gift card details" = "View your gift card details";
+
+/* DashSpend */
+"Decrease quantity" = "Decrease quantity";
+
+/* DashSpend */
+"Increase quantity" = "Increase quantity";
+
+/* DashSpend */
+"Double tap to change quantity" = "Double tap to change quantity";
+
+/* DashSpend */
+"Unavailable at this limit" = "Unavailable at this limit";
+
+/* SegmentedControl */
+"Double tap to select" = "Double tap to select";
+
 /* No comment provided by engineer. */
 "You can always delete the image uploaded, as long as you have access to this wallet." = "You can always delete the image uploaded, as long as you have access to this wallet.";
 
