@@ -75,12 +75,10 @@ NS_ASSUME_NONNULL_END
                                selector:@selector(notificationsDidUpdate)
                                    name:DWNotificationsProviderDidUpdateNotification
                                  object:nil];
-#if DASHPAY_SWIFT_SDK_REGISTRATION
         [notificationCenter addObserver:self
                                selector:@selector(bridgeRegistrationStateChanged:)
                                    name:DWIdentityRegistrationBridge.stateChangedNotification
                                  object:nil];
-#endif
     }
     return self;
 }
@@ -90,18 +88,15 @@ NS_ASSUME_NONNULL_END
         return [DWGlobalOptions sharedInstance].dashpayUsername;
     }
 
-    // Row #17 proper: prefer the SwiftDashSDK-sourced username via
-    // `DWCurrentUserIdentityInfo`. The helper itself falls back to
-    // `DWGlobalOptions.dashpayUsername` when the DPNS cache is empty
-    // (immediately post-register), and we also fall back to it here
-    // for legacy DashSync-side identities whose DPNS data the SDK
-    // doesn't know about.
-    NSString *sdkUsername = DWCurrentUserIdentityInfo.shared.username;
-    if (sdkUsername.length > 0) {
-        return sdkUsername;
-    }
-    DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
-    return blockchainIdentity.currentDashpayUsername ?: [DWGlobalOptions sharedInstance].dashpayUsername;
+    // SwiftDashSDK-sourced username via `DWCurrentUserIdentityInfo`.
+    // The helper itself falls back to `DWGlobalOptions.dashpayUsername`
+    // when the DPNS cache is empty (immediately post-register), so
+    // this getter terminates on the global as a last resort. The
+    // legacy `defaultBlockchainIdentity.currentDashpayUsername` tail
+    // was dropped — both registration paths (SDK and the deprecated
+    // DashSync one) mirror into `DWGlobalOptions.dashpayUsername`, so
+    // it never fired in practice.
+    return DWCurrentUserIdentityInfo.shared.username ?: [DWGlobalOptions sharedInstance].dashpayUsername;
 }
 
 - (DSBlockchainIdentity *)blockchainIdentity {
@@ -197,7 +192,6 @@ NS_ASSUME_NONNULL_END
 
     DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
 
-#if DASHPAY_SWIFT_SDK_REGISTRATION
     if (blockchainIdentity == nil) {
         // New user — no existing DashSync identity. Route through
         // SwiftDashSDK. The bridge's state-change notification drives
@@ -239,7 +233,6 @@ NS_ASSUME_NONNULL_END
     }
     // Existing-identity user: fall through to DashSync. SDK doesn't yet
     // have an "import existing identity" path (v2 follow-up).
-#endif
 
     if (blockchainIdentity) {
         [self createFundingPrivateKeyForBlockchainIdentity:blockchainIdentity isNew:NO];
@@ -402,7 +395,6 @@ NS_ASSUME_NONNULL_END
     [self didChangeValueForKey:key];
 }
 
-#if DASHPAY_SWIFT_SDK_REGISTRATION
 - (void)bridgeRegistrationStateChanged:(NSNotification *)note {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
     DWIdentityRegistrationBridge *bridge = DWIdentityRegistrationBridge.shared;
@@ -439,7 +431,6 @@ NS_ASSUME_NONNULL_END
                                                                    username:bridgeUsername];
     [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayRegistrationStatusUpdatedNotification object:nil];
 }
-#endif
 
 #pragma mark - Private
 

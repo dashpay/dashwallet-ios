@@ -23,10 +23,7 @@
 #import "DWFirstUsernameSymbolValidationRule.h"
 #import "DWLengthUsernameValidationRule.h"
 #import "DWUsernameValidationRule+Protected.h"
-
-#if DASHPAY_SWIFT_SDK_REGISTRATION
 #import "dashwallet-Swift.h"
-#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -120,11 +117,9 @@ NS_ASSUME_NONNULL_END
         return;
     }
 
-#if DASHPAY_SWIFT_SDK_REGISTRATION
-    // SwiftDashSDK path: forward to the bridge's DPNS availability
-    // check. No cancellable request token from this surface, so
-    // `self.request` stays nil under the flag; the existing
-    // `cancelPreviousPerformRequestsWithTarget:` debounce in
+    // SwiftDashSDK DPNS availability check. No cancellable request
+    // token from this surface, so `self.request` stays nil; the
+    // existing `cancelPreviousPerformRequestsWithTarget:` debounce in
     // `validateText:` keeps in-flight typing harmless, and the
     // `self.username == username` guard inside the completion
     // discards stale results.
@@ -152,36 +147,6 @@ NS_ASSUME_NONNULL_END
                            : DWUsernameValidationRuleResultInvalidCritical;
                    }
                }];
-#else
-    DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;
-    self.request = [manager
-        searchIdentityByDashpayUsername:username
-                         withCompletion:^(BOOL succeess, DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error) {
-                             __strong typeof(weakSelf) strongSelf = weakSelf;
-                             if (!strongSelf) {
-                                 return;
-                             }
-
-                             NSAssert([NSThread isMainThread], @"Main thread is assumed here");
-
-                             // search query was changed before results arrive, ignore results
-                             if (![strongSelf.username isEqualToString:username]) {
-                                 return;
-                             }
-
-                             if (succeess) {
-                                 if (blockchainIdentity != nil) {
-                                     strongSelf.validationResult = DWUsernameValidationRuleResultInvalidCritical;
-                                 }
-                                 else {
-                                     strongSelf.validationResult = DWUsernameValidationRuleResultValid;
-                                 }
-                             }
-                             else {
-                                 strongSelf.validationResult = DWUsernameValidationRuleResultError;
-                             }
-                         }];
-#endif
 }
 
 @end

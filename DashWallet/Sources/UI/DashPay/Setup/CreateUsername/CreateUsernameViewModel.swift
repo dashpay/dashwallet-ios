@@ -118,8 +118,8 @@ class CreateUsernameViewModel: ObservableObject {
     }
     
     func submitUsernameRequest(withProve link: URL?, dashPayModel: DWDashPayProtocol) async -> Bool {
-        // Fire-and-forget. With DASHPAY_SWIFT_SDK_REGISTRATION=1 the
-        // model routes new-user registrations through
+        // Fire-and-forget. `DWDashPayModel.createUsername:invitation:`
+        // routes new-user registrations through
         // `DWIdentityRegistrationBridge` → `DWIdentityRegistrationCoordinator`
         // (PIN gate → asset-lock + IdentityCreate → DPNS register).
         // Progress flows to the rest of the app via
