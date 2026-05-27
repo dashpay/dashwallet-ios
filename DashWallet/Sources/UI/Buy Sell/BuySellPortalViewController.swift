@@ -149,6 +149,14 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
     private func setupSwiftUIView() {
         let portalView = BuySellPortalView(
             showCoinbase: CoinbaseDataSource.shouldShow(),
+            onBack: { [weak self] in
+                guard let self else { return }
+                if self.showCloseButton {
+                    self.closeAction()
+                } else {
+                    self.navigationController?.popViewController(animated: true)
+                }
+            },
             onUphold: { [weak self] in self?.upholdAction() },
             onCoinbase: { [weak self] in self?.coinbaseAction() },
             onTopper: { [weak self] in self?.topperAction() },
@@ -217,11 +225,16 @@ extension BuySellPortalViewController: DWLocationObserver {
     }
 
     private func requestLocation() {
+        let geoblockMessage = NSLocalizedString(
+            "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features.",
+            comment: "Geoblock"
+        )
+
         showModalDialog(
             style: .regular,
             icon: .system("location.fill"),
             heading: NSLocalizedString("Location", comment: ""),
-            textBlock1: NSLocalizedString("Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features.", comment: "Geoblock"),
+            textBlock1: geoblockMessage,
             positiveButtonText: NSLocalizedString("Continue", comment: ""),
             positiveButtonAction: { [weak self] in
                 self?.locationRequested = true

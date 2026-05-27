@@ -45,6 +45,8 @@ struct CoinRowView: View {
         .padding(.vertical, Layout.vPadding)
         .opacity(item.isHalted ? 0.5 : 1.0)
         .contentShape(.rect)
+
+
     }
 
     // MARK: - Subviews
@@ -58,19 +60,24 @@ struct CoinRowView: View {
     }
 
     private var coinIcon: some View {
-        Icon(name: .custom(item.coin.iconAssetName, maxHeight: Layout.iconSize))
-            .clipShape(.rect(cornerRadius: Layout.iconCornerRadius))
+        MayaCoinIconView(
+            coin: item.coin,
+            size: Layout.iconSize,
+            cornerRadius: Layout.iconCornerRadius
+        )
     }
 
     private var coinInfo: some View {
         VStack(alignment: .leading, spacing: Layout.textSpacing) {
-            Text(item.coin.name)
+            Text(item.coin.code)
                 .font(.subheadMedium)
                 .foregroundColor(.primaryText)
 
-            Text(item.coin.code)
+            Text(item.coin.name)
                 .font(.caption1)
                 .foregroundColor(.tertiaryText)
+                .lineLimit(1)
+                .truncationMode(.tail)
         }
     }
 
@@ -110,8 +117,8 @@ struct CoinRowView: View {
 #Preview("Halted") {
     VStack {
         CoinRowView(item: CoinDisplayItem(
-            id: MayaCryptoCurrency.supportedCoins[1].id,
-            coin: MayaCryptoCurrency.supportedCoins[1],
+            id: MayaCryptoCurrency.supportedCoins[7].id,
+            coin: MayaCryptoCurrency.supportedCoins[7],
             fiatPrice: "$3,200",
             isHalted: true
         ))

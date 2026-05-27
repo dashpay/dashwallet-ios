@@ -30,18 +30,6 @@ private struct MenuItemButtonStyle: ButtonStyle {
     }
 }
 
-// MARK: - MenuCardStyle
-
-private struct MenuCardStyle: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .padding(6)
-            .background(Color.secondaryBackground)
-            .clipShape(.rect(cornerRadius: 12))
-            .shadow(color: .shadow, radius: 10, x: 0, y: 5)
-    }
-}
-
 // MARK: - MayaPortalView
 
 struct MayaPortalView: View {
@@ -55,7 +43,7 @@ struct MayaPortalView: View {
                 Spacer()
             }
             .padding(.horizontal, 20)
-            .padding(.top, 20)
+            .padding(.top, 10)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.primaryBackground.ignoresSafeArea())
@@ -74,29 +62,19 @@ struct MayaPortalView: View {
         convertDashButton
             .padding(6)
             .background(Color.secondaryBackground)
-            .cornerRadius(12)
+            .cornerRadius(20)
             .shadow(color: .shadow, radius: 10, x: 0, y: 5)
     }
 
     // MARK: - Subviews
 
     private var logoContainer: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color(red: 0.08, green: 0.11, blue: 0.25))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .strokeBorder(Color(white: 0.6, opacity: 0.5), lineWidth: 1)
-                )
-
-            Icon(name: .custom("maya.logo", maxHeight: 20))
-                .frame(width: 44)
-        }
-        .frame(width: 79, height: 80)
+        Icon(name: .custom("maya-illustration", maxHeight: 90))
+            .frame(width: 90, height: 90)
     }
 
     private var descriptionBlock: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 6) {
             Text(NSLocalizedString("Maya", comment: "Maya Portal"))
                 .font(.title2)
                 .foregroundColor(.primaryText)

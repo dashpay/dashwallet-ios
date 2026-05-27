@@ -38,6 +38,11 @@ struct MayaConvertView: View {
         static let hSpacing: CGFloat = 10
         static let textSpacing: CGFloat = 1
         static let padding: CGFloat = 10
+        static let hPadding: CGFloat = 20
+        static let topPadding: CGFloat = 20
+        static let contentSpacing: CGFloat = 20
+        static let arrowIconSize: CGFloat = 24
+        static let arrowIconHeight: CGFloat = 12
     }
 
     enum MenuItemState {
@@ -45,26 +50,131 @@ struct MayaConvertView: View {
         case dash(balance: String)
     }
 
-    private let coin: MayaCryptoCurrency
-    private let address: String
-    private let dashBalance: String
+    @StateObject private var viewModel: MayaConvertViewModel
+    @State private var showLocalCurrency = false
+    private let onContinue: () -> Void
 
-    init(coin: MayaCryptoCurrency, address: String, dashBalance: String) {
-        self.coin = coin
-        self.address = address
-        self.dashBalance = dashBalance
+    init(viewModel: MayaConvertViewModel, onContinue: @escaping () -> Void = {}) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+        self.onContinue = onContinue
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            VStack(spacing: 2) {
-                menuItem(state: .dash(balance: dashBalance))
-                menuItem(state: .coin(coin, address: address))
-            }
-            .modifier(MenuCardStyle())
+        VStack(alignment: .leading, spacing: 0) {
+            amountSection
+            keyboard
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 20)
+        .sheet(isPresented: $showLocalCurrency) {
+            let dialog = BottomSheet(
+                showBackButton: Binding<Bool>.constant(false)
+            ) {
+                LocalCurrencyView { code in
+                    App.shared.fiatCurrency = code
+                    viewModel.objectWillChange.send()
+                    showLocalCurrency = false
+                }
+            }
+
+            if #available(iOS 16.0, *) {
+                dialog.presentationDetents([.large])
+            } else {
+                dialog
+            }
+        }
+    }
+
+    // MARK: - Top Section
+
+    private var amountSection: some View {
+        VStack(alignment: .leading, spacing: Layout.contentSpacing) {
+            EnterAmountView(
+                value: $viewModel.inputValue,
+                selectedCurrency: $viewModel.selectedCurrency,
+                options: viewModel.currencyOptions,
+                onMax: { viewModel.setMax() },
+                onCurrencyTap: { showLocalCurrency = true }
+            )
+            .frame(height: 100)
+            conversionCard
+            receiveSection
+        }
+        .padding(.horizontal, Layout.hPadding)
+        .padding(.top, Layout.topPadding)
+        .frame(maxHeight: .infinity, alignment: .top)
+        .animation(.easeInOut(duration: 0.2), value: viewModel.inputValue.isEmpty)
+    }
+
+    // MARK: - Conversion Card
+
+    private var conversionCard: some View {
+        VStack(spacing: 2) {
+            menuItem(state: .dash(balance: viewModel.dashBalance))
+            arrowDivider
+            menuItem(state: .coin(viewModel.coin, address: viewModel.address))
+        }
+        .modifier(MenuCardStyle())
+    }
+
+    private var arrowDivider: some View {
+        ZStack {
+            Rectangle()
+                .fill(Color.gray100)
+                .frame(height: 1)
+                .padding(.horizontal, Layout.padding)
+
+            ZStack {
+                Circle()
+                    .stroke(Color.gray100, lineWidth: 1)
+                    .frame(width: Layout.arrowIconSize, height: Layout.arrowIconSize)
+
+                Icon(name: .custom("downarrow-icon", maxHeight: Layout.arrowIconHeight))
+            }
+            .background(Color.secondaryBackground)
+        }
+    }
+
+    // MARK: - Receive Section
+
+    @ViewBuilder
+    private var receiveSection: some View {
+        if !viewModel.inputValue.isEmpty {
+            VStack(alignment: .center, spacing: 0) {
+                if viewModel.isLoading {
+                    SwiftUI.ProgressView()
+                } else if let amount = viewModel.receiveAmount {
+                    Text(NSLocalizedString("Receive amount", comment: "Maya"))
+                        .font(.caption1)
+                        .foregroundStyle(Color.tertiaryText)
+
+                    Text("~ \(amount)")
+                        .font(.subhead)
+                        .foregroundStyle(Color.primaryText)
+                } else if let error = viewModel.errorMessage {
+                    Text(error)
+                        .font(.caption1)
+                        .foregroundStyle(Color.systemRed)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
+            .transition(.opacity)
+        }
+    }
+
+    // MARK: - Keyboard
+
+    private var keyboard: some View {
+        NumericKeyboardView(
+            value: $viewModel.inputValue,
+            showDecimalSeparator: true,
+            actionButtonText: NSLocalizedString("Continue", comment: ""),
+            actionEnabled: viewModel.canOpenOrderPreview,
+            inProgress: viewModel.isLoading,
+            actionHandler: onContinue
+        )
+        .frame(maxWidth: .infinity, maxHeight: 320)
+        .padding(.horizontal, Layout.hPadding)
+        .background(Color.secondaryBackground)
+        .clipShape(.rect(cornerRadius: 20))
     }
 
     // MARK: - Menu Item
@@ -74,13 +184,14 @@ struct MayaConvertView: View {
         HStack(spacing: Layout.hSpacing) {
             menuItemIcon(for: state)
             menuItemLabels(for: state)
-            Spacer()
+            Spacer(minLength: 0)
             if case .dash(let balance) = state {
                 balanceView(balance: balance)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+
             }
         }
         .padding(Layout.padding)
-        .contentShape(.rect)
     }
 
     // MARK: - Menu Item Subviews
@@ -89,8 +200,7 @@ struct MayaConvertView: View {
     private func menuItemIcon(for state: MenuItemState) -> some View {
         switch state {
         case .coin(let coin, _):
-            Icon(name: .custom(coin.iconAssetName))
-                .frame(width: Layout.iconSize, height: Layout.iconSize)
+            MayaCoinIconView(coin: coin, size: Layout.iconSize, cornerRadius: 7)
         case .dash:
             Icon(name: .custom("dashCircleFilled"))
                 .frame(width: Layout.iconSize, height: Layout.iconSize)
@@ -133,7 +243,7 @@ struct MayaConvertView: View {
                 Icon(name: .custom("dash-logo-black", maxHeight: 12))
             }
 
-            Text("0.00 US$")
+            Text(viewModel.dashBalanceFiat)
                 .font(.caption1)
                 .foregroundColor(.tertiaryText)
         }
@@ -143,10 +253,12 @@ struct MayaConvertView: View {
 #if DEBUG
 #Preview {
     MayaConvertView(
-        coin: MayaCryptoCurrency.supportedCoins[0],
-        address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
-        dashBalance: "0.00"
+        viewModel: MayaConvertViewModel(
+            coin: MayaCryptoCurrency.supportedCoins[0],
+            address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+        )
     )
     .background(Color.primaryBackground)
+    .padding(.top, 80)
 }
 #endif

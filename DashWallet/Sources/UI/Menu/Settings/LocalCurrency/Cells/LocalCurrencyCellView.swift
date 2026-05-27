@@ -43,6 +43,7 @@ struct LocalCurrencyCellView: View {
         }
         .padding(.horizontal, Layout.horizontalPadding)
         .clipShape(.rect)
+        .contentShape(.rect)
     }
 
     private var flagSection: some View {

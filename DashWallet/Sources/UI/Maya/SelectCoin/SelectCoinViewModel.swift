@@ -56,8 +56,8 @@ class SelectCoinViewModel: ObservableObject {
 
             let (pools, inboundAddresses) = try await (poolsRequest, inboundRequest)
 
-            let poolsByAsset = Dictionary(pools.map { ($0.asset, $0) }, uniquingKeysWith: { first, _ in first })
-            let haltedChains = Set(inboundAddresses.filter { $0.halted }.map { $0.chain })
+            let inboundChains = Set(inboundAddresses.map { $0.chain.uppercased() })
+            let haltedChains = Set(inboundAddresses.filter { $0.halted }.map { $0.chain.uppercased() })
 
             let fiatCurrency = App.fiatCurrency
             let formatter = NumberFormatter()
@@ -67,10 +67,12 @@ class SelectCoinViewModel: ObservableObject {
 
             var items: [CoinDisplayItem] = []
 
-            for coin in MayaCryptoCurrency.supportedCoins {
-                guard let pool = poolsByAsset[coin.mayaAsset], pool.isAvailable else { continue }
+            for pool in pools where pool.isAvailable {
+                guard pool.asset.uppercased() != "DASH.DASH" else { continue }
+                guard let coin = MayaCryptoCurrency.coin(for: pool.asset) else { continue }
+                guard inboundChains.contains(coin.chain.uppercased()) else { continue }
 
-                let isHalted = haltedChains.contains(coin.chain)
+                let isHalted = haltedChains.contains(coin.chain.uppercased())
                 var priceString: String?
 
                 if let priceUSD = pool.priceUSD, priceUSD > 0 {
@@ -88,12 +90,14 @@ class SelectCoinViewModel: ObservableObject {
                 ))
             }
 
-            // Sort: available coins first, then halted; alphabetically within each group
+            // Sort only by code (A->Z), fallback by name when codes match
             items.sort { a, b in
-                if a.isHalted != b.isHalted {
-                    return !a.isHalted
+                let codeComparison = a.coin.code.localizedCaseInsensitiveCompare(b.coin.code)
+                if codeComparison != .orderedSame {
+                    return codeComparison == .orderedAscending
                 }
-                return a.coin.name < b.coin.name
+
+                return a.coin.name.localizedCaseInsensitiveCompare(b.coin.name) == .orderedAscending
             }
 
             coins = items

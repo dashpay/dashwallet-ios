@@ -22,12 +22,22 @@ import SwiftUI
 import UIKit
 
 class EnterAddressHostingController: UIViewController {
+    #if DEBUG
+    private let isDemoValidationBypassEnabled = true
+    #else
+    private let isDemoValidationBypassEnabled = false
+    #endif
 
     var onAddressConfirmed: ((MayaCryptoCurrency, String) -> Void)?
 
     private let coin: MayaCryptoCurrency
     private let viewModel: EnterAddressViewModel
     private var authSession: ASWebAuthenticationSession?
+    private lazy var keyboardDismissTapRecognizer: UITapGestureRecognizer = {
+        let recognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        recognizer.cancelsTouchesInView = false
+        return recognizer
+    }()
 
     init(coin: MayaCryptoCurrency) {
         self.coin = coin
@@ -78,35 +88,34 @@ class EnterAddressHostingController: UIViewController {
             hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
+
+        hostingController.view.addGestureRecognizer(keyboardDismissTapRecognizer)
     }
 
-    // MARK: - Address Validation (Maya API)
+    // MARK: - Address Validation
 
     private func validateAndContinue(address: String) {
+        dismissKeyboard()
         viewModel.errorMessage = nil
 
         Task {
-            let error = await MayaAPIService.shared.validateAddress(
-                destination: address,
-                toAsset: coin.mayaAsset
-            )
+            let error = await MayaAPIService.shared.validateAddress(destination: address, toAsset: coin.mayaAsset)
 
             if let error = error {
-                viewModel.errorMessage = error
+                if isDemoValidationBypassEnabled {
+                    onAddressConfirmed?(coin, address)
+                } else {
+                    viewModel.errorMessage = error
+                }
             } else {
-                // Temp success dialog — will be replaced in later stories
-                let alert = UIAlertController(
-                    title: "SUCCESS",
-                    message: "Address validation passed for \(coin.code):\n\(address)",
-                    preferredStyle: .alert
-                )
-                alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
-                    guard let self else { return }
-                    self.onAddressConfirmed?(self.coin, address)
-                })
-                present(alert, animated: true)
+                self.onAddressConfirmed?(self.coin, address)
             }
         }
+    }
+
+    @objc
+    private func dismissKeyboard() {
+        view.endEditing(true)
     }
 
     // MARK: - QR Scanner

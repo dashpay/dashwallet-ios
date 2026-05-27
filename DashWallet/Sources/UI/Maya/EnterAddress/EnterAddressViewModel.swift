@@ -27,38 +27,47 @@ class EnterAddressViewModel: ObservableObject {
 
     @Published var addressText: String = ""
     @Published var errorMessage: String?
+    @Published private(set) var shouldShowAddressValidationError: Bool = false
 
     // MARK: - Address Sources
 
     @Published var upholdState: AddressSourceState = .loggedOut
     @Published var coinbaseState: AddressSourceState = .loggedOut
 
-    // MARK: - Clipboard (two-step: detect → reveal → paste)
+    // MARK: - Clipboard
 
-    @Published var hasClipboardContent: Bool = false
-    @Published var revealedClipboardContent: String?
+    @Published var hasClipboardCandidate: Bool = false
+    @Published var clipboardContent: String?
 
-    var isClipboardRevealed: Bool {
-        revealedClipboardContent != nil
+    var hasClipboardContent: Bool {
+        clipboardContent != nil
     }
 
     private let addressProvider = MayaExchangeAddressProvider()
     private var upholdAddress: String?
     private var coinbaseAddress: String?
 
+    var addressLabel: String {
+        String(format: NSLocalizedString("%@ address", comment: "Maya"), coin.code)
+    }
+
     var placeholderText: String {
         String(format: NSLocalizedString("%@ address", comment: "Maya"), coin.code)
     }
 
-    var isAddressValid: Bool {
+    private var isAddressValid: Bool {
         let trimmed = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return false }
         return MayaAddressValidator.isValid(address: trimmed, for: coin)
     }
 
-    var showAddressError: Bool {
+    var isContinueEnabled: Bool {
         let trimmed = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
-        return !trimmed.isEmpty && !MayaAddressValidator.isValid(address: trimmed, for: coin)
+        return !trimmed.isEmpty && addressValidationErrorMessage == nil && errorMessage == nil
+    }
+
+    var showAddressError: Bool {
+        shouldShowAddressValidationError && !isAddressValid
     }
 
     var addressValidationErrorMessage: String? {
@@ -145,31 +154,35 @@ class EnterAddressViewModel: ObservableObject {
     func selectUpholdAddress() {
         guard let address = upholdAddress else { return }
         addressText = address
+        shouldShowAddressValidationError = false
         errorMessage = nil
     }
 
     func selectCoinbaseAddress() {
         guard let address = coinbaseAddress else { return }
         addressText = address
+        shouldShowAddressValidationError = false
         errorMessage = nil
     }
 
     // MARK: - Clipboard
 
     func checkClipboard() {
-        hasClipboardContent = UIPasteboard.general.hasStrings || UIPasteboard.general.hasURLs
+        hasClipboardCandidate = UIPasteboard.general.hasStrings || UIPasteboard.general.hasURLs
     }
 
-    func revealClipboard() {
-        let content = UIPasteboard.general.url?.absoluteString ?? UIPasteboard.general.string
-        withAnimation(.easeInOut(duration: 0.2)) {
-            revealedClipboardContent = content
-        }
+    func requestClipboardContent() {
+        clipboardContent = currentClipboardContent()
+        hasClipboardCandidate = clipboardContent != nil
     }
 
     func pasteFromClipboard() {
-        guard let content = revealedClipboardContent else { return }
+        if clipboardContent == nil {
+            requestClipboardContent()
+        }
+        guard let content = clipboardContent else { return }
         addressText = extractAddressFromURI(content)
+        shouldShowAddressValidationError = false
         errorMessage = nil
     }
 
@@ -209,7 +222,26 @@ class EnterAddressViewModel: ObservableObject {
 
     func setAddress(_ address: String) {
         addressText = extractAddressFromURI(address)
+        shouldShowAddressValidationError = false
         errorMessage = nil
+    }
+
+    func onAddressChanged() {
+        shouldShowAddressValidationError = false
+        errorMessage = nil
+    }
+
+    func attemptContinue() -> String? {
+        let trimmedAddress = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedAddress.isEmpty else { return nil }
+
+        shouldShowAddressValidationError = true
+        guard MayaAddressValidator.isValid(address: trimmedAddress, for: coin) else {
+            return nil
+        }
+
+        errorMessage = nil
+        return trimmedAddress
     }
 
     // MARK: - Private
@@ -248,5 +280,13 @@ class EnterAddressViewModel: ObservableObject {
         }
 
         return address
+    }
+
+    private func currentClipboardContent() -> String? {
+        let rawContent = UIPasteboard.general.url?.absoluteString ?? UIPasteboard.general.string
+        guard let rawContent else { return nil }
+
+        let trimmed = rawContent.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 }

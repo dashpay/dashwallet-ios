@@ -92,6 +92,45 @@ public final class SendCoinsService: NSObject {
 
         return transaction
     }
+    
+    /// Sends a MAYA swap transaction where:
+    /// - VOUT0 pays DASH to the MAYA vault address
+    /// - VOUT1 stores MAYA memo in OP_RETURN
+    func sendMayaSwap(vaultAddress: String, dashAmount: UInt64, memo: String) async throws -> DSTransaction {
+        let chain = DWEnvironment.sharedInstance().currentChain
+        let account = DWEnvironment.sharedInstance().currentAccount
+        let transaction = DSTransaction(on: chain)
+
+        let vaultScript = NSData.scriptPubKey(forAddress: vaultAddress, for: chain)
+        let memoScript = opReturnScript(for: memo)
+
+        _ = account.update(
+            transaction,
+            forAmounts: [NSNumber(value: dashAmount), NSNumber(value: 0)],
+            toOutputScripts: [vaultScript, memoScript],
+            withFee: true
+        )
+
+        guard transaction.outputs.count >= 2 else {
+            throw DashSpendError.paymentProcessingError("Failed to build MAYA swap outputs")
+        }
+        guard transaction.outputs[0].address == vaultAddress else {
+            throw DashSpendError.paymentProcessingError("MAYA swap output ordering is invalid")
+        }
+        guard transaction.outputs[1].amount == 0 else {
+            throw DashSpendError.paymentProcessingError("MAYA memo output is invalid")
+        }
+
+        let authenticated = await authenticate()
+        if !authenticated {
+            throw DashSpendError.paymentProcessingError("Authentication cancelled")
+        }
+
+        account.sign(transaction)
+        account.register(transaction, saveImmediately: false)
+        try await transactionManager.publishTransaction(transaction)
+        return transaction
+    }
 
     // MARK: - BIP70
     
@@ -143,6 +182,41 @@ public final class SendCoinsService: NSObject {
         } else {
             continuation.resume(throwing: DashSpendError.paymentProcessingError("No transaction returned"))
         }
+    }
+    
+    private func authenticate() async -> Bool {
+        @MainActor func performAuthentication() async -> Bool {
+            await withCheckedContinuation { continuation in
+                DSAuthenticationManager.sharedInstance().authenticate(
+                    withPrompt: nil,
+                    usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
+                    alertIfLockout: true
+                ) { authenticatedOrSuccess, _, cancelled in
+                    continuation.resume(returning: authenticatedOrSuccess && !cancelled)
+                }
+            }
+        }
+        return await performAuthentication()
+    }
+    
+    private func opReturnScript(for memo: String) -> Data {
+        let payload = Data(memo.utf8)
+        var script = Data([0x6a]) // OP_RETURN
+
+        let count = payload.count
+        if count <= 0x4b {
+            script.append(UInt8(count))
+        } else if count <= 0xff {
+            script.append(0x4c) // OP_PUSHDATA1
+            script.append(UInt8(count))
+        } else {
+            script.append(0x4d) // OP_PUSHDATA2
+            script.append(UInt8(count & 0xff))
+            script.append(UInt8((count >> 8) & 0xff))
+        }
+
+        script.append(payload)
+        return script
     }
 }
 
