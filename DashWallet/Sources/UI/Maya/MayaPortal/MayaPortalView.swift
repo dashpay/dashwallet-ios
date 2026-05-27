@@ -19,33 +19,29 @@
 
 import SwiftUI
 
-// MARK: - MenuItemButtonStyle
-
-private struct MenuItemButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
-            .opacity(configuration.isPressed ? 0.85 : 1.0)
-            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: configuration.isPressed)
-    }
-}
-
 // MARK: - MayaPortalView
 
 struct MayaPortalView: View {
+    var onBack: () -> Void
     var onConvertDash: (() -> Void)?
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                introSection
-                actionsCard
-                Spacer()
+        VStack(spacing: 0) {
+            NavigationBar(leading: {
+                NavigationBarElement.back.button { onBack() }
+            })
+
+            ScrollView {
+                VStack(spacing: 20) {
+                    introSection
+                    actionsCard
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 10)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.primaryBackground.ignoresSafeArea())
     }
 
@@ -60,10 +56,7 @@ struct MayaPortalView: View {
 
     private var actionsCard: some View {
         convertDashButton
-            .padding(6)
-            .background(Color.secondaryBackground)
-            .cornerRadius(20)
-            .shadow(color: .shadow, radius: 10, x: 0, y: 5)
+            .modifier(MayaMenuCardStyle())
     }
 
     // MARK: - Subviews
@@ -96,10 +89,10 @@ struct MayaPortalView: View {
                 description: NSLocalizedString("From Dash Wallet to any crypto", comment: "Maya Portal")
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(MayaMenuItemButtonStyle())
     }
 }
 
 #Preview {
-    MayaPortalView(onConvertDash: {})
+    MayaPortalView(onBack: {}, onConvertDash: {})
 }

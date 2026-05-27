@@ -25,27 +25,19 @@ import UIKit
 class EnterAddressViewModel: ObservableObject {
     let coin: MayaCryptoCurrency
 
+    // MARK: - Published State
+
     @Published var addressText: String = ""
     @Published var errorMessage: String?
     @Published private(set) var shouldShowAddressValidationError: Bool = false
 
-    // MARK: - Address Sources
-
     @Published var upholdState: AddressSourceState = .loggedOut
     @Published var coinbaseState: AddressSourceState = .loggedOut
-
-    // MARK: - Clipboard
 
     @Published var hasClipboardCandidate: Bool = false
     @Published var clipboardContent: String?
 
-    var hasClipboardContent: Bool {
-        clipboardContent != nil
-    }
-
-    private let addressProvider = MayaExchangeAddressProvider()
-    private var upholdAddress: String?
-    private var coinbaseAddress: String?
+    // MARK: - Computed Properties
 
     var addressLabel: String {
         String(format: NSLocalizedString("%@ address", comment: "Maya"), coin.code)
@@ -53,12 +45,6 @@ class EnterAddressViewModel: ObservableObject {
 
     var placeholderText: String {
         String(format: NSLocalizedString("%@ address", comment: "Maya"), coin.code)
-    }
-
-    private var isAddressValid: Bool {
-        let trimmed = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return false }
-        return MayaAddressValidator.isValid(address: trimmed, for: coin)
     }
 
     var isContinueEnabled: Bool {
@@ -75,94 +61,30 @@ class EnterAddressViewModel: ObservableObject {
         return String(format: NSLocalizedString("%@ address is not valid", comment: "Maya"), coin.code)
     }
 
-    /// The currency code to look up on exchanges.
-    /// Uses the coin code directly — exchanges manage their own currency listings.
-    /// If the exchange doesn't support the currency, the UI shows "Not available".
-    private var exchangeCurrencyCode: String {
-        coin.code
-    }
+    // MARK: - Private
+
+    private let addressProvider = MayaExchangeAddressProvider()
+    private var upholdAddress: String?
+    private var coinbaseAddress: String?
+
+    /// The currency code used for exchange lookups. Exchanges manage their own currency listings.
+    private var exchangeCurrencyCode: String { coin.code }
+
+    // MARK: - Init
 
     init(coin: MayaCryptoCurrency) {
         self.coin = coin
     }
 
-    // MARK: - Load Address Sources
+    // MARK: - Source Loading
 
     func loadAddressSources() {
         #if DEBUG
         if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" { return }
         #endif
-        loadUpholdState()
-        loadCoinbaseState()
+        loadAddressSource(.uphold)
+        loadAddressSource(.coinbase)
         checkClipboard()
-    }
-
-    private func loadUpholdState() {
-        guard addressProvider.isUpholdAuthorized else {
-            upholdState = .loggedOut
-            return
-        }
-
-        upholdState = .loading
-
-        Task {
-            let address = await addressProvider.fetchUpholdAddress(for: exchangeCurrencyCode)
-            if let address = address {
-                upholdAddress = address
-                upholdState = .available(address)
-            } else {
-                // Re-check authorization: if the session was revoked during the fetch,
-                // show "Log In" instead of "Not available".
-                if !addressProvider.isUpholdAuthorized {
-                    upholdState = .loggedOut
-                } else {
-                    upholdState = .notAvailable
-                }
-            }
-        }
-    }
-
-    private func loadCoinbaseState() {
-        guard addressProvider.isCoinbaseAuthorized else {
-            coinbaseState = .loggedOut
-            return
-        }
-
-        coinbaseState = .loading
-
-        Task {
-            // Uses cached address if available, otherwise creates a new one
-            let address = await addressProvider.fetchCoinbaseAddress(for: exchangeCurrencyCode)
-            if let address = address {
-                coinbaseAddress = address
-                coinbaseState = .available(address)
-            } else {
-                // Re-check authorization: if the session was revoked during the fetch
-                // (e.g., expired token after device restart), show "Log In" instead of
-                // "Not available" so the user can re-authenticate.
-                if !addressProvider.isCoinbaseAuthorized {
-                    coinbaseState = .loggedOut
-                } else {
-                    coinbaseState = .notAvailable
-                }
-            }
-        }
-    }
-
-    // MARK: - Address Selection
-
-    func selectUpholdAddress() {
-        guard let address = upholdAddress else { return }
-        addressText = address
-        shouldShowAddressValidationError = false
-        errorMessage = nil
-    }
-
-    func selectCoinbaseAddress() {
-        guard let address = coinbaseAddress else { return }
-        addressText = address
-        shouldShowAddressValidationError = false
-        errorMessage = nil
     }
 
     // MARK: - Clipboard
@@ -171,80 +93,162 @@ class EnterAddressViewModel: ObservableObject {
         hasClipboardCandidate = UIPasteboard.general.hasStrings || UIPasteboard.general.hasURLs
     }
 
-    func requestClipboardContent() {
-        clipboardContent = currentClipboardContent()
-        hasClipboardCandidate = clipboardContent != nil
-    }
-
     func pasteFromClipboard() {
         if clipboardContent == nil {
             requestClipboardContent()
         }
         guard let content = clipboardContent else { return }
         addressText = extractAddressFromURI(content)
-        shouldShowAddressValidationError = false
-        errorMessage = nil
+        clearValidationError()
     }
 
-    // MARK: - Post-Login Refresh
-
-    func onUpholdLoginCompleted() {
-        upholdState = .loading
-
-        Task {
-            // Login triggers a fresh API fetch, replacing any cached address
-            let address = await addressProvider.fetchAndCacheUpholdAddress(for: exchangeCurrencyCode)
-            if let address = address {
-                upholdAddress = address
-                upholdState = .available(address)
-            } else {
-                upholdState = .notAvailable
-            }
-        }
-    }
-
-    func onCoinbaseLoginCompleted() {
-        coinbaseState = .loading
-
-        Task {
-            // Login triggers a fresh address creation (POST), replacing any cached address
-            let address = await addressProvider.createAndCacheCoinbaseAddress(for: exchangeCurrencyCode)
-            if let address = address {
-                coinbaseAddress = address
-                coinbaseState = .available(address)
-            } else {
-                coinbaseState = .notAvailable
-            }
-        }
-    }
-
-    // MARK: - QR / Manual
+    // MARK: - Manual Input
 
     func setAddress(_ address: String) {
         addressText = extractAddressFromURI(address)
-        shouldShowAddressValidationError = false
-        errorMessage = nil
+        clearValidationError()
     }
 
     func onAddressChanged() {
+        clearValidationError()
+    }
+
+    // MARK: - Address Selection
+
+    func selectUpholdAddress() { selectStoredAddress(.uphold) }
+    func selectCoinbaseAddress() { selectStoredAddress(.coinbase) }
+
+    // MARK: - Continue Action
+
+    /// Validates the current address text. Returns the trimmed address on success, or `nil` if invalid.
+    /// Validation only happens here — the error state is NOT set on text changes.
+    func attemptContinue() -> String? {
+        let trimmed = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        guard validateCurrentAddress() else { return nil }
+        return trimmed
+    }
+
+    // MARK: - Post-Login Callbacks
+
+    func onUpholdLoginCompleted() { handleLoginCompleted(.uphold) }
+    func onCoinbaseLoginCompleted() { handleLoginCompleted(.coinbase) }
+
+    // MARK: - Private: Validation
+
+    private var isAddressValid: Bool {
+        let trimmed = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+        return MayaAddressValidator.isValid(address: trimmed, for: coin)
+    }
+
+    @discardableResult
+    private func validateCurrentAddress() -> Bool {
+        shouldShowAddressValidationError = true
+        return isAddressValid
+    }
+
+    private func clearValidationError() {
         shouldShowAddressValidationError = false
         errorMessage = nil
     }
 
-    func attemptContinue() -> String? {
-        let trimmedAddress = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedAddress.isEmpty else { return nil }
+    // MARK: - Private: Source Kind
 
-        shouldShowAddressValidationError = true
-        guard MayaAddressValidator.isValid(address: trimmedAddress, for: coin) else {
-            return nil
+    private enum AddressSourceKind { case uphold, coinbase }
+
+    private func loadAddressSource(_ kind: AddressSourceKind) {
+        guard isAuthorized(kind) else { setSourceState(.loggedOut, for: kind); return }
+        setSourceState(.loading, for: kind)
+        Task {
+            let address = await fetchAddressForLoad(kind)
+            storeAddress(address, for: kind)
+            // Re-check authorization in case the session was revoked during the fetch.
+            setSourceState(resolveSourceState(address: address, isStillAuthorized: isAuthorized(kind)), for: kind)
         }
-
-        errorMessage = nil
-        return trimmedAddress
     }
 
-    // MARK: - Private
+    private func handleLoginCompleted(_ kind: AddressSourceKind) {
+        setSourceState(.loading, for: kind)
+        Task {
+            let address = await fetchAddressAfterLogin(kind)
+            storeAddress(address, for: kind)
+            setSourceState(resolveSourceState(address: address, isStillAuthorized: isAuthorized(kind)), for: kind)
+        }
+    }
+
+    private func selectStoredAddress(_ kind: AddressSourceKind) {
+        guard let address = storedAddress(for: kind) else { return }
+        addressText = address
+        clearValidationError()
+    }
+
+    private func isAuthorized(_ kind: AddressSourceKind) -> Bool {
+        switch kind {
+        case .uphold: return addressProvider.isUpholdAuthorized
+        case .coinbase: return addressProvider.isCoinbaseAuthorized
+        }
+    }
+
+    private func setSourceState(_ state: AddressSourceState, for kind: AddressSourceKind) {
+        switch kind {
+        case .uphold: upholdState = state
+        case .coinbase: coinbaseState = state
+        }
+    }
+
+    private func storeAddress(_ address: String?, for kind: AddressSourceKind) {
+        switch kind {
+        case .uphold: upholdAddress = address
+        case .coinbase: coinbaseAddress = address
+        }
+    }
+
+    private func storedAddress(for kind: AddressSourceKind) -> String? {
+        switch kind {
+        case .uphold: return upholdAddress
+        case .coinbase: return coinbaseAddress
+        }
+    }
+
+    private func fetchAddressForLoad(_ kind: AddressSourceKind) async -> String? {
+        switch kind {
+        case .uphold: return await addressProvider.fetchUpholdAddress(for: exchangeCurrencyCode)
+        case .coinbase: return await addressProvider.fetchCoinbaseAddress(for: exchangeCurrencyCode)
+        }
+    }
+
+    private func fetchAddressAfterLogin(_ kind: AddressSourceKind) async -> String? {
+        switch kind {
+        case .uphold: return await addressProvider.fetchAndCacheUpholdAddress(for: exchangeCurrencyCode)
+        case .coinbase: return await addressProvider.createAndCacheCoinbaseAddress(for: exchangeCurrencyCode)
+        }
+    }
+
+    // MARK: - Private: Source State Mapping
+
+    /// Maps a fetch result to the appropriate `AddressSourceState`.
+    /// On failure, re-checks authorization to distinguish "not available" from "session expired".
+    private func resolveSourceState(address: String?, isStillAuthorized: Bool) -> AddressSourceState {
+        if let address { return .available(address) }
+        return isStillAuthorized ? .notAvailable : .loggedOut
+    }
+
+    // MARK: - Private: Clipboard
+
+    private func requestClipboardContent() {
+        clipboardContent = currentClipboardContent()
+        hasClipboardCandidate = clipboardContent != nil
+    }
+
+    private func currentClipboardContent() -> String? {
+        let rawContent = UIPasteboard.general.url?.absoluteString ?? UIPasteboard.general.string
+        guard let rawContent else { return nil }
+        let trimmed = rawContent.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    // MARK: - Private: URI Parsing
 
     /// Strips recognized crypto URI schemes and query parameters, returning the bare address.
     /// For example, `bitcoin:1abc...?amount=0.1` becomes `1abc...`.
@@ -280,13 +284,5 @@ class EnterAddressViewModel: ObservableObject {
         }
 
         return address
-    }
-
-    private func currentClipboardContent() -> String? {
-        let rawContent = UIPasteboard.general.url?.absoluteString ?? UIPasteboard.general.string
-        guard let rawContent else { return nil }
-
-        let trimmed = rawContent.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? nil : trimmed
     }
 }

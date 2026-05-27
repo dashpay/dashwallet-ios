@@ -544,7 +544,7 @@
 		51A5774C2FBB3A6E00FB4097 /* OrderPreviewHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A5774A2FBB3A6E00FB4097 /* OrderPreviewHostingController.swift */; };
 		51A57B022FBB41DE00FB4097 /* OrderPreviewTableRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57B012FBB41DE00FB4097 /* OrderPreviewTableRow.swift */; };
 		51A57B032FBB41DE00FB4097 /* OrderPreviewTableRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57B012FBB41DE00FB4097 /* OrderPreviewTableRow.swift */; };
-		6FD1512E7774A997C1F8466B /* OrderPreviewMenuCardStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0286D4D1CADBBD51F09BE8E8 /* OrderPreviewMenuCardStyle.swift */; };
+		6FD1512E7774A997C1F8466B /* MayaMenuStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0286D4D1CADBBD51F09BE8E8 /* MayaMenuStyles.swift */; };
 		7502A4872AE401EF00ACDDD3 /* UsernameVotingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7502A4862AE401EF00ACDDD3 /* UsernameVotingViewController.swift */; };
 		7503643A2C89CFB70029EC0D /* CoinJoinProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */; };
 		7503643B2C89CFB70029EC0D /* CoinJoinProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */; };
@@ -1734,7 +1734,7 @@
 		EE5F3D5C458E92B69D14BFD8 /* NavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD6615F1246B5935365B05BD /* NavigationBar.swift */; };
 		EEEF8B708189DE9500235280 /* ExploreMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E885671E3CD719B868599531 /* ExploreMenuScreen.swift */; };
 		F8208C62742D4746B1D29A79 /* TopIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10F1F64BEA504250AC161D34 /* TopIntro.swift */; };
-		F8BA4B9BBB650F7F50AD936F /* OrderPreviewMenuCardStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0286D4D1CADBBD51F09BE8E8 /* OrderPreviewMenuCardStyle.swift */; };
+		F8BA4B9BBB650F7F50AD936F /* MayaMenuStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0286D4D1CADBBD51F09BE8E8 /* MayaMenuStyles.swift */; };
 		FB248B5D1F73803100405AE0 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB248B5C1F73803100405AE0 /* UserNotifications.framework */; };
 		FB248B631F79BB7C00405AE0 /* SafariServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB248B621F79BB7C00405AE0 /* SafariServices.framework */; };
 		FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB2E5536218BA161003A1B7C /* DWVersionManager.m */; };
@@ -1833,7 +1833,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0286D4D1CADBBD51F09BE8E8 /* OrderPreviewMenuCardStyle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OrderPreviewMenuCardStyle.swift; sourceTree = "<group>"; };
+		0286D4D1CADBBD51F09BE8E8 /* MayaMenuStyles.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MayaMenuStyles.swift; sourceTree = "<group>"; };
 		04D182469170A3A2843F51CA /* Pods-WatchApp.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.testflight.xcconfig"; path = "Target Support Files/Pods-WatchApp/Pods-WatchApp.testflight.xcconfig"; sourceTree = "<group>"; };
 		0995737D764092DF77CB88AC /* Pods-WatchApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.debug.xcconfig"; path = "Target Support Files/Pods-WatchApp/Pods-WatchApp.debug.xcconfig"; sourceTree = "<group>"; };
 		0F36937D2919A5DB007F4E91 /* TwoFactorAuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoFactorAuthViewController.swift; sourceTree = "<group>"; };
@@ -6286,7 +6286,6 @@
 		51A5774D2FBB3A7100FB4097 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				0286D4D1CADBBD51F09BE8E8 /* OrderPreviewMenuCardStyle.swift */,
 				C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */,
 				51A57B012FBB41DE00FB4097 /* OrderPreviewTableRow.swift */,
 			);
@@ -6704,6 +6703,7 @@
 		AA0001042AA9F58E00A1B203 /* Maya */ = {
 			isa = PBXGroup;
 			children = (
+				0286D4D1CADBBD51F09BE8E8 /* MayaMenuStyles.swift */,
 				514AEA162FB3291A00F9B54C /* OrderPreview */,
 				514AEA112FB324DA00F9B54C /* Convert */,
 				AA0005012EA0F58E00D1D601 /* MayaPortal */,
@@ -9564,7 +9564,7 @@
 				AA0004042DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift in Sources */,
 				893AE6F535290DD1CEE89219 /* ImportPrivateKeySheet.swift in Sources */,
 				429281E6D1C2A8F6E6F5E1BF /* ExploreMenuScreen.swift in Sources */,
-				6FD1512E7774A997C1F8466B /* OrderPreviewMenuCardStyle.swift in Sources */,
+				6FD1512E7774A997C1F8466B /* MayaMenuStyles.swift in Sources */,
 				1F3FF21B0295D5A326F08B74 /* OrderPreviewFeeRow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -10504,7 +10504,7 @@
 				AA0004052DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift in Sources */,
 				3A0C6A2A57DFF02865E36200 /* ImportPrivateKeySheet.swift in Sources */,
 				EEEF8B708189DE9500235280 /* ExploreMenuScreen.swift in Sources */,
-				F8BA4B9BBB650F7F50AD936F /* OrderPreviewMenuCardStyle.swift in Sources */,
+				F8BA4B9BBB650F7F50AD936F /* MayaMenuStyles.swift in Sources */,
 				C124DF94278D4238FAE0975D /* OrderPreviewFeeRow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

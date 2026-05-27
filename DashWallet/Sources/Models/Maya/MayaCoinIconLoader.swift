@@ -19,21 +19,19 @@
 
 import UIKit
 
-/// Remote coin icon loader with two-level cache: NSCache (memory) + URLCache (disk).
+/// Loads remote coin icons with a two-level cache: memory (`NSCache`) + disk (`URLCache`).
 ///
-/// Caching strategy:
-/// - Memory: NSCache<NSString, UIImage> keyed by lowercased coin code.
-///   Auto-evicted under system memory pressure.  Fast O(1) lookup.
-/// - Disk: URLCache (100 MB) backing URLSession.  Entries survive app restarts
-///   and are served via `.returnCacheDataElseLoad` — no re-download until cache
-///   is purged by the OS.
-/// - Icons are fetched from https://raw.githubusercontent.com/jsupa/crypto-icons/
-///   using the lowercased coin code, matching the Android implementation.
+/// Icons are fetched from the jsupa/crypto-icons repository using the lowercased coin code,
+/// matching the Android implementation. Disk-cached entries survive app restarts and are
+/// served without re-downloading until the OS purges the cache.
+///
+/// This actor is responsible only for remote loading and caching.
+/// Local asset fallback is handled by `MayaCoinIconView`.
 actor MayaCoinIconLoader {
-
     static let shared = MayaCoinIconLoader()
 
     private static let baseURL = "https://raw.githubusercontent.com/jsupa/crypto-icons/main/icons/"
+
     private let memoryCache = NSCache<NSString, UIImage>()
     private let session: URLSession
 
@@ -52,8 +50,8 @@ actor MayaCoinIconLoader {
         memoryCache.countLimit = 200
     }
 
-    /// Loads the icon for a given coin code (lowercased).
-    /// Returns nil on network failure or invalid image data.
+    /// Returns the icon for `code`, or `nil` if unavailable.
+    /// Memory cache is checked first; on miss the image is downloaded and cached.
     func loadIcon(for code: String) async -> UIImage? {
         let key = code.lowercased() as NSString
 

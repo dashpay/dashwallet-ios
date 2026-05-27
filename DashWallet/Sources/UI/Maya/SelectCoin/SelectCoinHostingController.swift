@@ -20,19 +20,23 @@
 import SwiftUI
 import UIKit
 
-class SelectCoinHostingController: UIViewController {
+class SelectCoinHostingController: UIViewController, NavigationBarDisplayable {
+    var isNavigationBarHidden: Bool { true }
     var onCoinSelected: ((MayaCryptoCurrency) -> Void)?
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = NSLocalizedString("Select coin", comment: "Maya")
         view.backgroundColor = UIColor.dw_secondaryBackground()
-        navigationItem.largeTitleDisplayMode = .never
 
-        let selectCoinView = SelectCoinView { [weak self] coin in
-            self?.onCoinSelected?(coin)
-        }
+        let selectCoinView = SelectCoinView(
+            onBack: { [weak self] in
+                self?.navigationController?.popViewController(animated: true)
+            },
+            onCoinSelected: { [weak self] coin in
+                self?.onCoinSelected?(coin)
+            }
+        )
 
         let hostingController = UIHostingController(rootView: selectCoinView)
         hostingController.view.backgroundColor = .clear

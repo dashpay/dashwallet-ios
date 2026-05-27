@@ -20,17 +20,36 @@
 import SwiftUI
 import UIKit
 
-class MayaPortalViewController: UIViewController {
+// MARK: - Maya Flow Architecture Note
+//
+// The Maya feature uses one UIViewController per screen rather than a single SwiftUI NavigationStack
+// container. This is intentional: EnterAddressHostingController requires UIKit for
+// ASWebAuthenticationSession (Uphold OAuth), Coinbase.shared.signIn, and QR scanner presentation,
+// all of which need a UIViewController as presentation context. Consolidating into a pure SwiftUI
+// NavigationStack would require non-trivial UIViewControllerRepresentable bridges for those flows.
+//
+// Navigation coordination: MayaPortalViewController orchestrates the full flow
+// (portal → select coin → enter address → convert). MayaConvertHostingController independently
+// pushes OrderPreviewHostingController because it owns the OrderPreviewViewModel factory.
+// Both approaches use NavigationBarDisplayable to hide the UIKit nav bar and render their own
+// SwiftUI NavigationBar, ensuring a consistent look across all screens.
+
+class MayaPortalViewController: UIViewController, NavigationBarDisplayable {
+    var isNavigationBarHidden: Bool { true }
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         view.backgroundColor = UIColor.dw_secondaryBackground()
-        navigationItem.largeTitleDisplayMode = .never
 
-        let portalView = MayaPortalView(onConvertDash: { [weak self] in
-            self?.navigateToSelectCoin()
-        })
+        let portalView = MayaPortalView(
+            onBack: { [weak self] in
+                self?.navigationController?.popViewController(animated: true)
+            },
+            onConvertDash: { [weak self] in
+                self?.navigateToSelectCoin()
+            }
+        )
 
         let hostingController = UIHostingController(rootView: portalView)
         hostingController.view.backgroundColor = .clear

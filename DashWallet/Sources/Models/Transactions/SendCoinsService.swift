@@ -96,6 +96,12 @@ public final class SendCoinsService: NSObject {
     /// Sends a MAYA swap transaction where:
     /// - VOUT0 pays DASH to the MAYA vault address
     /// - VOUT1 stores MAYA memo in OP_RETURN
+    /// - VOUT2 is change back to the wallet (if any)
+    ///
+    /// DSTransactionSortType.none is used so the wallet builder preserves the
+    /// vault→memo→change insertion order without BIP69 sorting or shuffling,
+    /// matching the Android sendRequest.sortByBIP69 = false / shuffleOutputs = false
+    /// requirement from MayaBlockchainApi.kt.
     func sendMayaSwap(vaultAddress: String, dashAmount: UInt64, memo: String) async throws -> DSTransaction {
         let chain = DWEnvironment.sharedInstance().currentChain
         let account = DWEnvironment.sharedInstance().currentAccount
@@ -108,17 +114,44 @@ public final class SendCoinsService: NSObject {
             transaction,
             forAmounts: [NSNumber(value: dashAmount), NSNumber(value: 0)],
             toOutputScripts: [vaultScript, memoScript],
-            withFee: true
+            withFee: true,
+            sortType: DSTransactionSortType.none  // preserve vault→memo→change order
         )
 
         guard transaction.outputs.count >= 2 else {
+            logOutputs(transaction, label: "build-failed")
             throw DashSpendError.paymentProcessingError("Failed to build MAYA swap outputs")
         }
+
+        // Validate VOUT0: must be the vault payment output
         guard transaction.outputs[0].address == vaultAddress else {
+            logOutputs(transaction, label: "order-invalid")
             throw DashSpendError.paymentProcessingError("MAYA swap output ordering is invalid")
         }
-        guard transaction.outputs[1].amount == 0 else {
+
+        // Validate VOUT1: must be the OP_RETURN memo output (amount 0, script starts with 0x6a)
+        let memoOutput = transaction.outputs[1]
+        guard memoOutput.amount == 0,
+              let firstByte = memoOutput.outScript.first, firstByte == 0x6a else {
+            logOutputs(transaction, label: "memo-invalid")
             throw DashSpendError.paymentProcessingError("MAYA memo output is invalid")
+        }
+
+        // Pre-sign diagnostics: log full tx structure, fee, and VIN0 relationship
+        // (mirrors Android's log.info("maya swap transaction: {}", sendRequest.tx))
+        let txSize = transaction.size
+        let estimatedFee = chain.fee(forTxSize: UInt(txSize))
+        let feePerByte = txSize > 0 ? estimatedFee / UInt64(txSize) : 0
+        DSLogger.log("sendMayaSwap pre-sign: inputs=\(transaction.inputs.count) outputs=\(transaction.outputs.count) size=\(txSize) estimatedFee=\(estimatedFee) feePerByte=\(feePerByte)")
+        logOutputs(transaction, label: "pre-sign")
+        logVin0(transaction, chain: chain)
+
+        // Guard: fee rate must be at least the network minimum (1 duff/byte).
+        // Mirrors Android: fee < Transaction.DEFAULT_TX_FEE → failure.
+        guard feePerByte >= TX_FEE_PER_B else {
+            throw DashSpendError.paymentProcessingError(
+                "Transaction fee too low: \(feePerByte) duff/byte (min \(TX_FEE_PER_B))"
+            )
         }
 
         let authenticated = await authenticate()
@@ -127,9 +160,39 @@ public final class SendCoinsService: NSObject {
         }
 
         account.sign(transaction)
+        DSLogger.log("sendMayaSwap post-sign txid=\(transaction.txHashHexString)")
         account.register(transaction, saveImmediately: false)
         try await transactionManager.publishTransaction(transaction)
+        DSLogger.log("sendMayaSwap published txid=\(transaction.txHashHexString)")
         return transaction
+    }
+
+    private func logOutputs(_ tx: DSTransaction, label: String) {
+        DSLogger.log("sendMayaSwap [\(label)] \(tx.outputs.count) output(s):")
+        for (i, out) in tx.outputs.enumerated() {
+            let scriptHex = out.outScript.map { String(format: "%02x", $0) }.joined()
+            let isOpReturn = out.outScript.first == 0x6a
+            if isOpReturn {
+                let payload = out.outScript.dropFirst(2)
+                let memoStr = String(bytes: payload, encoding: .utf8) ?? scriptHex
+                DSLogger.log("  [\(i)] amount=\(out.amount) OP_RETURN memo=\(memoStr)")
+            } else {
+                DSLogger.log("  [\(i)] amount=\(out.amount) addr=\(out.address ?? "(none)") script=\(scriptHex.prefix(40))")
+            }
+        }
+    }
+
+    private func logVin0(_ tx: DSTransaction, chain: DSChain) {
+        guard let vin0 = tx.inputs.first else { return }
+        var hash = vin0.inputHash
+        let hashData = withUnsafeBytes(of: &hash) { Data($0) }
+        let hashHex = hashData.reversed().map { String(format: "%02x", $0) }.joined()
+        DSLogger.log("sendMayaSwap VIN0: prevout=\(hashHex):\(vin0.index)")
+        if let parentTx = chain.transaction(forHash: vin0.inputHash),
+           Int(vin0.index) < parentTx.outputs.count {
+            let vin0Out = parentTx.outputs[Int(vin0.index)]
+            DSLogger.log("sendMayaSwap VIN0 script: addr=\(vin0Out.address ?? "(none)")")
+        }
     }
 
     // MARK: - BIP70

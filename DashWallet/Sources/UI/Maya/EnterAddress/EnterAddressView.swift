@@ -19,22 +19,11 @@
 
 import SwiftUI
 
-// MARK: - MenuCardStyle
-
-private struct MenuCardStyle: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .padding(6)
-            .background(Color.secondaryBackground)
-            .clipShape(.rect(cornerRadius: 20))
-            .shadow(color: .shadow, radius: 10, x: 0, y: 5)
-    }
-}
-
 // MARK: - EnterAddressView
 
 struct EnterAddressView: View {
     @ObservedObject var viewModel: EnterAddressViewModel
+    var onBack: (() -> Void)?
     var onScanQR: (() -> Void)?
     var onContinue: ((String) -> Void)?
     var onLoginUphold: (() -> Void)?
@@ -46,6 +35,11 @@ struct EnterAddressView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
+                NavigationBar(
+                    leading: { NavigationBarElement.back.button { onBack?() } },
+                    central: { Text(NSLocalizedString("Enter address", comment: "Maya")).font(.subheadMedium) }
+                )
+
                 ScrollView {
                     VStack(alignment: .leading, spacing: 2) {
                         addressField
@@ -58,7 +52,7 @@ struct EnterAddressView: View {
                             clipboardPermissionRow
                         }
                     }
-                    .modifier(MenuCardStyle())
+                    .modifier(MayaMenuCardStyle())
                     .padding(.horizontal, 20)
                     .padding(.top, 10)
                 }
@@ -176,13 +170,16 @@ struct EnterAddressView: View {
 }
 
 #Preview("Default") {
-    EnterAddressView(viewModel: EnterAddressViewModel(coin: MayaCryptoCurrency.supportedCoins[0]))
+    EnterAddressView(viewModel: EnterAddressViewModel(coin: MayaCryptoCurrency.supportedCoins[0]), onBack: {})
 }
 
 #Preview("Clipboard Revealed") {
-    EnterAddressView(viewModel: {
-        let viewModel = EnterAddressViewModel(coin: MayaCryptoCurrency.supportedCoins[0])
-        viewModel.clipboardContent = "dash:Xq9M8LkYh6sQa7u7pVv3mY8i7fQ5j8m4Kc?amount=0.1"
-        return viewModel
-    }())
+    EnterAddressView(
+        viewModel: {
+            let viewModel = EnterAddressViewModel(coin: MayaCryptoCurrency.supportedCoins[0])
+            viewModel.clipboardContent = "dash:Xq9M8LkYh6sQa7u7pVv3mY8i7fQ5j8m4Kc?amount=0.1"
+            return viewModel
+        }(),
+        onBack: {}
+    )
 }
