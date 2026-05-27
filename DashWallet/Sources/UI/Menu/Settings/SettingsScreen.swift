@@ -41,6 +41,10 @@ struct SettingsScreen: View {
             }
 
             TopIntro(title: NSLocalizedString("Settings", comment: ""))
+                .padding(.leading, 20)
+                .padding(.trailing, 60)
+                .padding(.top, 10)
+                .padding(.bottom, 20)
 
             // Menu list
             VStack(spacing: 2) {

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00C5FE923D8D4B13A805B0FB /* TopIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10F1F64BEA504250AC161D34 /* TopIntro.swift */; };
 		09A6CB66AEDCEA04C9D670DF /* libPods-TodayExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D18D0D69B7365947239D4F97 /* libPods-TodayExtension.a */; };
 		09F4E16CAEAE41E2C6EA7A27 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 38C4CA9D73A147BA44601741 /* libPods-WatchApp.a */; };
 		0F36937E2919A5DB007F4E91 /* TwoFactorAuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F36937D2919A5DB007F4E91 /* TwoFactorAuthViewController.swift */; };
@@ -356,9 +357,6 @@
 		474C7215298A1FCF00475CA6 /* TxDetailActionCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C7214298A1FCF00475CA6 /* TxDetailActionCell.xib */; };
 		474C7218298A422500475CA6 /* TransactionItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 474C7217298A422400475CA6 /* TransactionItemView.swift */; };
 		4751136C28D9A3DB00223B77 /* BuySellPortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751136B28D9A3DB00223B77 /* BuySellPortalViewController.swift */; };
-		AA00000128D9A3DB00223B77 /* BuySellPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000028D9A3DB00223B77 /* BuySellPortalView.swift */; };
-		8DF3D24EE3B247B79AE9CAB5 /* BuySellPortalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B94B3697D7742BFA991B5CC /* BuySellPortalScreen.swift */; };
-		E5767AEAEF7C4921886E915A /* BuySellPortalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B94B3697D7742BFA991B5CC /* BuySellPortalScreen.swift */; };
 		4751136F28D9B50E00223B77 /* CoinbaseInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751136E28D9B50E00223B77 /* CoinbaseInfoViewController.swift */; };
 		4751137528DAF28800223B77 /* UIAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751137428DAF28800223B77 /* UIAssembly.swift */; };
 		4751CAC0296EFD2900F63AC4 /* AccountListController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751CABF296EFD2900F63AC4 /* AccountListController.swift */; };
@@ -495,6 +493,14 @@
 		47F4B6CD29485A8B00AED4C9 /* ConfirmOrderCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F4B6CC29485A8B00AED4C9 /* ConfirmOrderCells.swift */; };
 		47FA3AFF29350929008D58DC /* SyncingActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3AFE29350929008D58DC /* SyncingActivityMonitor.swift */; };
 		47FA3B0229364991008D58DC /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3B0129364991008D58DC /* HTTPClient.swift */; };
+		514AE85E2FB1F9DB00F9B54C /* DashSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AE85D2FB1F9DB00F9B54C /* DashSwitch.swift */; };
+		514AE85F2FB1F9DB00F9B54C /* DashSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AE85D2FB1F9DB00F9B54C /* DashSwitch.swift */; };
+		514AE9F32FB2F4C500F9B54C /* HaltedToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AE9F22FB2F4C500F9B54C /* HaltedToast.swift */; };
+		514AE9F42FB2F4C500F9B54C /* HaltedToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AE9F22FB2F4C500F9B54C /* HaltedToast.swift */; };
+		514AEA0F2FB31BD800F9B54C /* AddressFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA0E2FB31BD800F9B54C /* AddressFieldView.swift */; };
+		514AEA102FB31BD800F9B54C /* AddressFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA0E2FB31BD800F9B54C /* AddressFieldView.swift */; };
+		514AEA132FB324FA00F9B54C /* MayaConvertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA122FB324FA00F9B54C /* MayaConvertView.swift */; };
+		514AEA142FB324FA00F9B54C /* MayaConvertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA122FB324FA00F9B54C /* MayaConvertView.swift */; };
 		5151C8C62F913BF100F0A604 /* Coinbase-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5151C8C22F913BF100F0A604 /* Coinbase-Info.plist */; };
 		5151C8C72F913BF100F0A604 /* ZenLedger-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5151C8C52F913BF100F0A604 /* ZenLedger-Info.plist */; };
 		5151C8C82F913BF100F0A604 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5151C8C32F913BF100F0A604 /* GoogleService-Info.plist */; };
@@ -592,16 +598,16 @@
 		754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
 		754495DD2AE91B6300492817 /* GroupedRequestCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754495DC2AE91B6300492817 /* GroupedRequestCell.swift */; };
 		754495DF2AE91D3500492817 /* UsernameRequestCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754495DE2AE91D3500492817 /* UsernameRequestCell.swift */; };
-		754565C82DAA52A000DA4E8E /* CTXSpendAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C42DAA52A000DA4E8E /* CTXSpendAPI.swift */; };
-		754565CA2DAA52A000DA4E8E /* CTXSpendRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C72DAA52A000DA4E8E /* CTXSpendRepository.swift */; };
-		754565CB2DAA52A000DA4E8E /* CTXSpendEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C52DAA52A000DA4E8E /* CTXSpendEndpoint.swift */; };
-		754565CC2DAA52A000DA4E8E /* CTXSpendAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C42DAA52A000DA4E8E /* CTXSpendAPI.swift */; };
-		754565CE2DAA52A000DA4E8E /* CTXSpendRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C72DAA52A000DA4E8E /* CTXSpendRepository.swift */; };
-		754565CF2DAA52A000DA4E8E /* CTXSpendEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C52DAA52A000DA4E8E /* CTXSpendEndpoint.swift */; };
+		754565C82DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C42DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendAPI.swift */; };
+		754565CA2DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C72DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendRepository.swift */; };
+		754565CB2DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C52DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendEndpoint.swift */; };
+		754565CC2DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C42DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendAPI.swift */; };
+		754565CE2DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C72DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendRepository.swift */; };
+		754565CF2DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565C52DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendEndpoint.swift */; };
 		754565D12DABA5F300DA4E8E /* MerchantTypesDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565D02DABA5EB00DA4E8E /* MerchantTypesDialog.swift */; };
 		754565D22DABA5F300DA4E8E /* MerchantTypesDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754565D02DABA5EB00DA4E8E /* MerchantTypesDialog.swift */; };
-		7545ED532DA91A2F0075F45C /* CTXConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7545ED522DA91A2F0075F45C /* CTXConstants.swift */; };
-		7545ED542DA91A2F0075F45C /* CTXConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7545ED522DA91A2F0075F45C /* CTXConstants.swift */; };
+		7545ED532DA91A2F0075F45C /* DashSpend/CTXConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7545ED522DA91A2F0075F45C /* DashSpend/CTXConstants.swift */; };
+		7545ED542DA91A2F0075F45C /* DashSpend/CTXConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7545ED522DA91A2F0075F45C /* DashSpend/CTXConstants.swift */; };
 		7545ED572DA91AF10075F45C /* DashSpendUserAuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7545ED562DA91AEA0075F45C /* DashSpendUserAuthViewModel.swift */; };
 		7545ED582DA91AF10075F45C /* DashSpendUserAuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7545ED562DA91AEA0075F45C /* DashSpendUserAuthViewModel.swift */; };
 		7545ED5D2DA91F590075F45C /* DashSpendTermsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7545ED5C2DA91F590075F45C /* DashSpendTermsScreen.swift */; };
@@ -647,8 +653,6 @@
 		7566F4842BB6949E005238D2 /* ToolsMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */; };
 		7566F48A2BB6CAF2005238D2 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4892BB6CAF2005238D2 /* MenuItem.swift */; };
 		7566F48B2BB6CAF2005238D2 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4892BB6CAF2005238D2 /* MenuItem.swift */; };
-		00C5FE923D8D4B13A805B0FB /* TopIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10F1F64BEA504250AC161D34 /* TopIntro.swift */; };
-		F8208C62742D4746B1D29A79 /* TopIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10F1F64BEA504250AC161D34 /* TopIntro.swift */; };
 		7569D6832DE6DA6800768BFF /* ExploreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7569D6822DE6DA6800768BFF /* ExploreViewController.swift */; };
 		7569D6842DE6DA6800768BFF /* ExploreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7569D6822DE6DA6800768BFF /* ExploreViewController.swift */; };
 		7569D6862DE6DB2200768BFF /* ExploreHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7569D6852DE6DB1B00768BFF /* ExploreHeaderView.swift */; };
@@ -706,8 +710,8 @@
 		759C8FA02B593589004B1305 /* CrowdNodeAPYView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */; };
 		75A0A3F32CA7DBCF003ED48B /* TimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */; };
 		75A0A3F42CA7DBCF003ED48B /* TimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */; };
-		75A2F3032DE48C860046BE17 /* CTXSpendTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A2F3022DE48C860046BE17 /* CTXSpendTokenService.swift */; };
-		75A2F3042DE48C860046BE17 /* CTXSpendTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A2F3022DE48C860046BE17 /* CTXSpendTokenService.swift */; };
+		75A2F3032DE48C860046BE17 /* DashSpend/CTX/CTXSpendTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A2F3022DE48C860046BE17 /* DashSpend/CTX/CTXSpendTokenService.swift */; };
+		75A2F3042DE48C860046BE17 /* DashSpend/CTX/CTXSpendTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A2F3022DE48C860046BE17 /* DashSpend/CTX/CTXSpendTokenService.swift */; };
 		75A8C1652AE5726B0042256E /* UsernameRequestsDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1632AE5725C0042256E /* UsernameRequestsDAO.swift */; };
 		75A8C1672AE5734A0042256E /* UsernameRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1662AE5734A0042256E /* UsernameRequest.swift */; };
 		75A8C1692AE6A1AC0042256E /* VotingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1682AE6A1AC0042256E /* VotingViewModel.swift */; };
@@ -808,14 +812,56 @@
 		75FFD6C82BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
 		893AE6F535290DD1CEE89219 /* ImportPrivateKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53435DCAF024BC82E0247F3 /* ImportPrivateKeySheet.swift */; };
 		8A7607606A594C6E99A2FAC7 /* DerivationPathKeysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC1F4DB87C442BEABDF0DB2 /* DerivationPathKeysView.swift */; };
+		8DF3D24EE3B247B79AE9CAB5 /* BuySellPortalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B94B3697D7742BFA991B5CC /* BuySellPortalScreen.swift */; };
 		91F0B8B92F3FAB7C00E713AE /* KeysOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F0B8B82F3FAB7C00E713AE /* KeysOverviewView.swift */; };
 		91F0B8BA2F3FAB7C00E713AE /* KeysOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F0B8B82F3FAB7C00E713AE /* KeysOverviewView.swift */; };
 		A0795C9369A1402498C00F69 /* DerivationPathKeysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC1F4DB87C442BEABDF0DB2 /* DerivationPathKeysView.swift */; };
 		A30AF4A11189A2EFB04EB535 /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C22BC09CF6178544B2300A4 /* libPods-WatchApp Extension.a */; };
+		AA00000128D9A3DB00223B77 /* BuySellPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000028D9A3DB00223B77 /* BuySellPortalView.swift */; };
 		AA0000012DUMMYID001234567 /* AddProviderToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000032DUMMYID001234567 /* AddProviderToGiftCardsTable.swift */; };
+		AA00000228D9A3DB00223B77 /* BuySellPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000028D9A3DB00223B77 /* BuySellPortalView.swift */; };
 		AA0000022DUMMYID001234567 /* AddProviderToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000032DUMMYID001234567 /* AddProviderToGiftCardsTable.swift */; };
-		AA0000042DUMMYID001234567 /* GiftCardProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000062DUMMYID001234567 /* GiftCardProvider.swift */; };
-		AA0000052DUMMYID001234567 /* GiftCardProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000062DUMMYID001234567 /* GiftCardProvider.swift */; };
+		AA0000042DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000062DUMMYID001234567 /* DashSpend/GiftCardProvider.swift */; };
+		AA0000052DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000062DUMMYID001234567 /* DashSpend/GiftCardProvider.swift */; };
+		AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */; };
+		AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */; };
+		AA0001052AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */; };
+		AA0001062AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */; };
+		AA0002022BA0F58E00A1B301 /* MayaCryptoCurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002012BA0F58E00A1B301 /* MayaCryptoCurrency.swift */; };
+		AA0002032BA0F58E00A1B301 /* MayaCryptoCurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002012BA0F58E00A1B301 /* MayaCryptoCurrency.swift */; };
+		AA0002052BA0F58E00A1B302 /* MayaPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002042BA0F58E00A1B302 /* MayaPool.swift */; };
+		AA0002062BA0F58E00A1B302 /* MayaPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002042BA0F58E00A1B302 /* MayaPool.swift */; };
+		AA0002082BA0F58E00A1B303 /* MayaEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002072BA0F58E00A1B303 /* MayaEndpoint.swift */; };
+		AA0002092BA0F58E00A1B303 /* MayaEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002072BA0F58E00A1B303 /* MayaEndpoint.swift */; };
+		AA00020B2BA0F58E00A1B304 /* MayaAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00020A2BA0F58E00A1B304 /* MayaAPIService.swift */; };
+		AA00020C2BA0F58E00A1B304 /* MayaAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00020A2BA0F58E00A1B304 /* MayaAPIService.swift */; };
+		AA00020E2BA0F58E00A1B305 /* SelectCoinViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00020D2BA0F58E00A1B305 /* SelectCoinViewModel.swift */; };
+		AA00020F2BA0F58E00A1B305 /* SelectCoinViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00020D2BA0F58E00A1B305 /* SelectCoinViewModel.swift */; };
+		AA0002112BA0F58E00A1B306 /* CoinRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002102BA0F58E00A1B306 /* CoinRowView.swift */; };
+		AA0002122BA0F58E00A1B306 /* CoinRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002102BA0F58E00A1B306 /* CoinRowView.swift */; };
+		AA0002142BA0F58E00A1B307 /* SelectCoinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002132BA0F58E00A1B307 /* SelectCoinView.swift */; };
+		AA0002152BA0F58E00A1B307 /* SelectCoinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002132BA0F58E00A1B307 /* SelectCoinView.swift */; };
+		AA0002172BA0F58E00A1B308 /* SelectCoinHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002162BA0F58E00A1B308 /* SelectCoinHostingController.swift */; };
+		AA0002182BA0F58E00A1B308 /* SelectCoinHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002162BA0F58E00A1B308 /* SelectCoinHostingController.swift */; };
+		AA0003012CA0F58E00A1B401 /* MayaAddressValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003002CA0F58E00A1B401 /* MayaAddressValidator.swift */; };
+		AA0003022CA0F58E00A1B401 /* MayaAddressValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003002CA0F58E00A1B401 /* MayaAddressValidator.swift */; };
+		AA0003022CA0F58E00B1B401 /* EnterAddressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */; };
+		AA0003032CA0F58E00B1B401 /* EnterAddressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */; };
+		AA0003042CA0F58E00A1B402 /* MayaAddressValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003032CA0F58E00A1B402 /* MayaAddressValidatorTests.swift */; };
+		AA0003052CA0F58E00B1B402 /* EnterAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */; };
+		AA0003062CA0F58E00B1B402 /* EnterAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */; };
+		AA0003082CA0F58E00B1B403 /* EnterAddressHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */; };
+		AA0003092CA0F58E00B1B403 /* EnterAddressHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */; };
+		AA00030B2CA0F58E00B1B404 /* GenericQRScannerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */; };
+		AA00030C2CA0F58E00B1B404 /* GenericQRScannerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */; };
+		AA00030E2CA0F58E00B1B405 /* QRCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */; };
+		AA00030F2CA0F58E00B1B405 /* QRCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */; };
+		AA0003112CA0F58E00B1B406 /* GenericQRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */; };
+		AA0003122CA0F58E00B1B406 /* GenericQRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */; };
+		AA0004012DA0F58E00C1C501 /* AddressSourceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0004002DA0F58E00C1C501 /* AddressSourceView.swift */; };
+		AA0004022DA0F58E00C1C501 /* AddressSourceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0004002DA0F58E00C1C501 /* AddressSourceView.swift */; };
+		AA0004042DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0004032DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift */; };
+		AA0004052DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0004032DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift */; };
 		AE99C52D130994B720927E8F /* libPods-dashpay.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D6E23A2DA41FE189E773C705 /* libPods-dashpay.a */; };
 		AEAE60406265A73AFD573FD1 /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3BA4BE42F52588AED15BF7E /* libPods-dashwallet.a */; };
 		B3A1F2C4D5E6078901234568 /* ExtendedPublicKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A1F2C4D5E6078901234567 /* ExtendedPublicKeySheet.swift */; };
@@ -836,12 +882,12 @@
 		BAA6E3F11BD5CA5900773205 /* BRAWReceiveMoneyInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA6E3F01BD5CA5900773205 /* BRAWReceiveMoneyInterfaceController.swift */; };
 		BAE12BF21B2DEE7F00895CC5 /* TodayExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BAE12C061B2DEEF700895CC5 /* DWTodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12C051B2DEEF700895CC5 /* DWTodayViewController.m */; };
-		BB0000012DUMMYID001234567 /* DashSpendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000072DUMMYID001234567 /* DashSpendError.swift */; };
-		BB0000022DUMMYID001234567 /* DashSpendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000072DUMMYID001234567 /* DashSpendError.swift */; };
-		BB0000032DUMMYID001234567 /* DashSpendRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000082DUMMYID001234567 /* DashSpendRepository.swift */; };
-		BB0000042DUMMYID001234567 /* DashSpendRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000082DUMMYID001234567 /* DashSpendRepository.swift */; };
-		BB0000052DUMMYID001234567 /* DashSpendRepositoryFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000092DUMMYID001234567 /* DashSpendRepositoryFactory.swift */; };
-		BB0000062DUMMYID001234567 /* DashSpendRepositoryFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000092DUMMYID001234567 /* DashSpendRepositoryFactory.swift */; };
+		BB0000012DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */; };
+		BB0000022DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */; };
+		BB0000032DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */; };
+		BB0000042DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */; };
+		BB0000052DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000092DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift */; };
+		BB0000062DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000092DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift */; };
 		C3DAD268246AA6F10001624F /* DWScreenshotWarningViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD267246AA6F10001624F /* DWScreenshotWarningViewController.m */; };
 		C3DAD2CF247585C10001624F /* NSPredicate+DWFullTextSearch.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2CE247585C10001624F /* NSPredicate+DWFullTextSearch.m */; };
 		C5D7E9F1A2B3C4D5E6F70012 /* CSVExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D7E9F1A2B3C4D5E6F70011 /* CSVExportSheet.swift */; };
@@ -1099,7 +1145,6 @@
 		C9D2C6AD2A320AA000D15901 /* HairlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1428C6378E00490F5E /* HairlineView.swift */; };
 		C9D2C6AE2A320AA000D15901 /* DWInitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E9423A3F75F006A2A59 /* DWInitialViewController.m */; };
 		C9D2C6AF2A320AA000D15901 /* BuySellPortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751136B28D9A3DB00223B77 /* BuySellPortalViewController.swift */; };
-		AA00000228D9A3DB00223B77 /* BuySellPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000028D9A3DB00223B77 /* BuySellPortalView.swift */; };
 		C9D2C6B02A320AA000D15901 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BD52348CB6600451078 /* SettingsScreen.swift */; };
 		C9D2C6B22A320AA000D15901 /* UISpringTimingParameters+DWInit.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69D92314727F001B8C90 /* UISpringTimingParameters+DWInit.m */; };
 		C9D2C6B62A320AA000D15901 /* NumberKeyboardButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AC28F972BD00028A8D /* NumberKeyboardButton.swift */; };
@@ -1179,7 +1224,7 @@
 		C9D2C70C2A320AA000D15901 /* DWUpholdLogoutTutorialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE652230FF4600956D5F /* DWUpholdLogoutTutorialViewController.m */; };
 		C9D2C70D2A320AA000D15901 /* CBAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CF46A429654E190067B6EE /* CBAccount.swift */; };
 		C9D2C70E2A320AA000D15901 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AF180429070B720025803E /* Types.swift */; };
-		C9D2C70F2A320AA000D15901 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		C9D2C70F2A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C7112A320AA000D15901 /* Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4774DCDA28F3FA9C008CF87D /* Coinbase.swift */; };
 		C9D2C7122A320AA000D15901 /* SyncModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F452072A11F28600825057 /* SyncModel.swift */; };
 		C9D2C7132A320AA000D15901 /* ReceiveContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FAA29DC1098001BC549 /* ReceiveContentView.swift */; };
@@ -1199,7 +1244,7 @@
 		C9D2C7242A320AA000D15901 /* WKWebView+CrowdNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110D1780298BA9AF005BEB30 /* WKWebView+CrowdNode.swift */; };
 		C9D2C7252A320AA000D15901 /* SyncingActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3AFE29350929008D58DC /* SyncingActivityMonitor.swift */; };
 		C9D2C7262A320AA000D15901 /* EmptyUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FAF29DC27F4001BC549 /* EmptyUIView.swift */; };
-		C9D2C7272A320AA000D15901 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		C9D2C7272A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C7282A320AA000D15901 /* DWQRScanModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C891FEB0B8B008CAEE0 /* DWQRScanModel.m */; };
 		C9D2C72A2A320AA000D15901 /* SyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451F62A0CAE1300825057 /* SyncView.swift */; };
 		C9D2C72B2A320AA000D15901 /* SuccessfulOperationStatusViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47522F4F2927CB9000EE143E /* SuccessfulOperationStatusViewController.swift */; };
@@ -1230,7 +1275,7 @@
 		C9D2C7492A320AA000D15901 /* DWCurrencyObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AA87CF926E5681100F0CEA6 /* DWCurrencyObject.m */; };
 		C9D2C74A2A320AA000D15901 /* ShortcutsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8F29D4060A0034FD57 /* ShortcutsView.swift */; };
 		C9D2C74B2A320AA000D15901 /* DWFormSectionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE3E2230FF4600956D5F /* DWFormSectionModel.m */; };
-		C9D2C74C2A320AA000D15901 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		C9D2C74C2A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C74D2A320AA000D15901 /* CoinbasePlaceBuyOrderResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFA628C896BC000427E7 /* CoinbasePlaceBuyOrderResponse.swift */; };
 		C9D2C74E2A320AA000D15901 /* ExploreMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BDC28C1305E00490F5E /* ExploreMapView.swift */; };
 		C9D2C74F2A320AA000D15901 /* DWSeedPhraseRow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE9322DD078600C99324 /* DWSeedPhraseRow.m */; };
@@ -1254,7 +1299,7 @@
 		C9D2C7642A320AA000D15901 /* BasePageSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */; };
 		C9D2C7662A320AA000D15901 /* CrowdNodeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D0329051F9900D406C1 /* CrowdNodeRequest.swift */; };
 		C9D2C7672A320AA000D15901 /* CoinbaseExchangeRateResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFAF28C896BC000427E7 /* CoinbaseExchangeRateResponse.swift */; };
-		C9D2C7692A320AA000D15901 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		C9D2C7692A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C76A2A320AA000D15901 /* CrowdNodePortalItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117728A2297A7D24006F1553 /* CrowdNodePortalItem.swift */; };
 		C9D2C76B2A320AA000D15901 /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B528FE75A700028A8D /* BaseViewController.swift */; };
 		C9D2C76C2A320AA000D15901 /* AccountListController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751CABF296EFD2900F63AC4 /* AccountListController.swift */; };
@@ -1304,12 +1349,12 @@
 		C9D2C7A52A320AA000D15901 /* DWModalPresentationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69C523142AA4001B8C90 /* DWModalPresentationController.m */; };
 		C9D2C7A72A320AA000D15901 /* ActionButtonViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B328FDCF7800028A8D /* ActionButtonViewController.swift */; };
 		C9D2C7A82A320AA000D15901 /* BuySellServiceItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4774DCE428F4668B008CF87D /* BuySellServiceItemCell.swift */; };
-		C9D2C7AA2A320AA000D15901 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		C9D2C7AA2A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C7AB2A320AA000D15901 /* DWBaseFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BC82347E0D700451078 /* DWBaseFormTableViewCell.m */; };
 		C9D2C7AC2A320AA000D15901 /* AccountCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751CAC6296FAEBB00F63AC4 /* AccountCell.swift */; };
 		C9D2C7AD2A320AA000D15901 /* DWTransactionListDataProviderStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913EA723A79AD2006A2A59 /* DWTransactionListDataProviderStub.m */; };
 		C9D2C7B12A320AA000D15901 /* CoinbaseBaseIDForCurrencyResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFA028C896BC000427E7 /* CoinbaseBaseIDForCurrencyResponse.swift */; };
-		C9D2C7B22A320AA000D15901 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		C9D2C7B22A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C7B32A320AA000D15901 /* SpecifyAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AC8412297822E000BD1B49 /* SpecifyAmountViewController.swift */; };
 		C9D2C7B42A320AA000D15901 /* DWUpholdTransactionObject+DWView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9C323BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m */; };
 		C9D2C7B62A320AA000D15901 /* CrowdNodeDepositTx.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114CFECF296469D9005F421B /* CrowdNodeDepositTx.swift */; };
@@ -1320,14 +1365,14 @@
 		C9D2C7BD2A320AA000D15901 /* DWSharedUIConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E2822FB1C5D00FF8653 /* DWSharedUIConstants.m */; };
 		C9D2C7BE2A320AA000D15901 /* BRAppleWatchTransactionData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A0E237EE89B0097A7B5 /* BRAppleWatchTransactionData.m */; };
 		C9D2C7C02A320AA000D15901 /* HomeHeaderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F4520A2A1209D100825057 /* HomeHeaderModel.swift */; };
-		C9D2C7C22A320AA000D15901 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		C9D2C7C22A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C7C32A320AA000D15901 /* DWDPRegistrationStatus.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFF01DA243F4559003718DC /* DWDPRegistrationStatus.m */; };
 		C9D2C7C42A320AA000D15901 /* CurrencyExchanger_Objc.m in Sources */ = {isa = PBXBuildFile; fileRef = 472D13EC299E6579006903F1 /* CurrencyExchanger_Objc.m */; };
 		C9D2C7C62A320AA000D15901 /* Tools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471DD1B7290A92CD00E030C8 /* Tools.swift */; };
 		C9D2C7C72A320AA000D15901 /* BuySellPortalModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A2C7028DC554200AD1420 /* BuySellPortalModel.swift */; };
 		C9D2C7C92A320AA000D15901 /* BuyDashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C98252942DC2700FAA0F0 /* BuyDashViewController.swift */; };
 		C9D2C7CA2A320AA000D15901 /* DWModalDismissalAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69CF23143435001B8C90 /* DWModalDismissalAnimation.m */; };
-		C9D2C7CB2A320AA000D15901 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		C9D2C7CB2A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C7CD2A320AA000D15901 /* UIViewController+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CDEECD294A3CF2008AE06D /* UIViewController+DashWallet.swift */; };
 		C9D2C7CE2A320AA000D15901 /* CrowdNodeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470617D5299A671900DCC667 /* CrowdNodeCell.swift */; };
 		C9D2C7CF2A320AA000D15901 /* MerchantListLocationOffCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BD128C1305E00490F5E /* MerchantListLocationOffCell.swift */; };
@@ -1421,7 +1466,7 @@
 		C9D2C8472A320AA000D15901 /* DWBaseTransactionListDataProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913EAD23A7AC86006A2A59 /* DWBaseTransactionListDataProvider.m */; };
 		C9D2C8482A320AA000D15901 /* CoinbaseTransactionsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFA828C896BC000427E7 /* CoinbaseTransactionsRequest.swift */; };
 		C9D2C8492A320AA000D15901 /* DWAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */; };
-		C9D2C84A2A320AA000D15901 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		C9D2C84A2A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C84B2A320AA000D15901 /* UITableView+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F005FE297164600029EB10 /* UITableView+DashWallet.swift */; };
 		C9D2C84C2A320AA000D15901 /* TransferAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B128FDC72700028A8D /* TransferAmountViewController.swift */; };
 		C9D2C84D2A320AA000D15901 /* ShortcutCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8D29D404850034FD57 /* ShortcutCell.swift */; };
@@ -1444,7 +1489,7 @@
 		C9D2C8622A320AA000D15901 /* BackupInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FB129DD5141001BC549 /* BackupInfoViewController.swift */; };
 		C9D2C8652A320AA000D15901 /* DWCaptureSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BAD234770C900451078 /* DWCaptureSessionManager.m */; };
 		C9D2C8662A320AA000D15901 /* DWDataMigrationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F59E2194BD6200E7B563 /* DWDataMigrationManager.m */; };
-		C9D2C86A2A320AA000D15901 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		C9D2C86A2A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C86B2A320AA000D15901 /* AmountPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E5299E3C81006903F1 /* AmountPreviewView.swift */; };
 		C9D2C86C2A320AA000D15901 /* ModalNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4759D513292FEFFB002F20DC /* ModalNavigationController.swift */; };
 		C9D2C86E2A320AA000D15901 /* TransferAmountModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A50F3A2913BC0900C70123 /* TransferAmountModel.swift */; };
@@ -1477,7 +1522,7 @@
 		C9D2C8952A320AA000D15901 /* ConvertCryptoOrderPreviewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751CACF2970224D00F63AC4 /* ConvertCryptoOrderPreviewModel.swift */; };
 		C9D2C8972A320AA000D15901 /* RatesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2E3A82972B15F0032A63B /* RatesProvider.swift */; };
 		C9D2C8982A320AA000D15901 /* CBAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2A2E8293E612900938DB7 /* CBAuth.swift */; };
-		C9D2C8992A320AA000D15901 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		C9D2C8992A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C89A2A320AA000D15901 /* CoinbaseCreateAddressesRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFAE28C896BC000427E7 /* CoinbaseCreateAddressesRequest.swift */; };
 		C9D2C89B2A320AA000D15901 /* DWImportWalletInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A10EB342358996700C38B61 /* DWImportWalletInfoViewController.m */; };
 		C9D2C89D2A320AA000D15901 /* SyncingAlertContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451ED2A0BF1F500825057 /* SyncingAlertContentView.swift */; };
@@ -1528,7 +1573,7 @@
 		C9D2C8DD2A320AA000D15901 /* AtmDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BD528C1305E00490F5E /* AtmDataProvider.swift */; };
 		C9D2C8DE2A320AA000D15901 /* GettingStartedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110C67942921147F006B580C /* GettingStartedViewController.swift */; };
 		C9D2C8DF2A320AA000D15901 /* NetworkUnavailableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477A963D292CD27D0013605B /* NetworkUnavailableView.swift */; };
-		C9D2C8E02A320AA000D15901 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		C9D2C8E02A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C8E12A320AA000D15901 /* DWLockScreenViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A63004D2328F37C00827825 /* DWLockScreenViewController.m */; };
 		C9D2C8E22A320AA000D15901 /* UpholdTransferViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4789D2302981069700BAFEFA /* UpholdTransferViewController.swift */; };
 		C9D2C8E32A320AA000D15901 /* DWVerifySeedPhraseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE8322DC9B5D00C99324 /* DWVerifySeedPhraseViewController.m */; };
@@ -1587,7 +1632,7 @@
 		C9D2C9272A320AA000D15901 /* SyncView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E531922EA382B00E5168A /* SyncView.xib */; };
 		C9D2C9292A320AA000D15901 /* BackupInfoItemView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9F42FB529DD8702001BC549 /* BackupInfoItemView.xib */; };
 		C9D2C92A2A320AA000D15901 /* explore.db in Resources */ = {isa = PBXBuildFile; fileRef = 47AE8BAF28BFF28400490F5E /* explore.db */; };
-		C9D2C92B2A320AA000D15901 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
+		C9D2C92B2A320AA000D15901 /* (null) in Resources */ = {isa = PBXBuildFile; };
 		C9D2C92C2A320AA000D15901 /* Coinbase.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0F3693812919A70B007F4E91 /* Coinbase.storyboard */; };
 		C9D2C92E2A320AA000D15901 /* ImportWalletInfo.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A10EB3D2358BDA500C38B61 /* ImportWalletInfo.storyboard */; };
 		C9D2C92F2A320AA000D15901 /* ReceiveContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9F42FAC29DC115A001BC549 /* ReceiveContentView.xib */; };
@@ -1651,13 +1696,15 @@
 		CC0000192DUMMYID001234567 /* PiggyCardsTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000102DUMMYID001234567 /* PiggyCardsTokenService.swift */; };
 		CC0000202DUMMYID001234567 /* PiggyCardsTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000102DUMMYID001234567 /* PiggyCardsTokenService.swift */; };
 		D0B1968E57F8D7B118C22CED /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C20BCC772DF4075F8EADAE0 /* libPods-DashWalletScreenshotsUITests.a */; };
-		DE3A167A235B79D705C0A962 /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
+		DE3A167A235B79D705C0A962 /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+		E5767AEAEF7C4921886E915A /* BuySellPortalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B94B3697D7742BFA991B5CC /* BuySellPortalScreen.swift */; };
 		EE0000012DUMMYID001234567 /* POIDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000032DUMMYID001234567 /* POIDetailsViewModel.swift */; };
 		EE0000022DUMMYID001234567 /* POIDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000032DUMMYID001234567 /* POIDetailsViewModel.swift */; };
 		EE0000042DUMMYID001234567 /* PercentageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000052DUMMYID001234567 /* PercentageFormatter.swift */; };
 		EE0000062DUMMYID001234567 /* PercentageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000052DUMMYID001234567 /* PercentageFormatter.swift */; };
 		EE5F3D5C458E92B69D14BFD8 /* NavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD6615F1246B5935365B05BD /* NavigationBar.swift */; };
 		EEEF8B708189DE9500235280 /* ExploreMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E885671E3CD719B868599531 /* ExploreMenuScreen.swift */; };
+		F8208C62742D4746B1D29A79 /* TopIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10F1F64BEA504250AC161D34 /* TopIntro.swift */; };
 		FB248B5D1F73803100405AE0 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB248B5C1F73803100405AE0 /* UserNotifications.framework */; };
 		FB248B631F79BB7C00405AE0 /* SafariServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB248B621F79BB7C00405AE0 /* SafariServices.framework */; };
 		FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB2E5536218BA161003A1B7C /* DWVersionManager.m */; };
@@ -1671,49 +1718,8 @@
 		FBF3F42D1E42B00C00C7248E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42C1E42B00C00C7248E /* UIKit.framework */; };
 		FBF3F42F1E42B01E00C7248E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */; };
 		FBF3F4311E42B02800C7248E /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F4301E42B02800C7248E /* ImageIO.framework */; };
-AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */; };
-		AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */; };
-		AA0001052AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */; };
-		AA0001062AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */; };
-		AA0002022BA0F58E00A1B301 /* MayaCryptoCurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002012BA0F58E00A1B301 /* MayaCryptoCurrency.swift */; };
-		AA0002032BA0F58E00A1B301 /* MayaCryptoCurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002012BA0F58E00A1B301 /* MayaCryptoCurrency.swift */; };
-		AA0003012CA0F58E00A1B401 /* MayaAddressValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003002CA0F58E00A1B401 /* MayaAddressValidator.swift */; };
-		AA0003022CA0F58E00A1B401 /* MayaAddressValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003002CA0F58E00A1B401 /* MayaAddressValidator.swift */; };
-		AA0003042CA0F58E00A1B402 /* MayaAddressValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003032CA0F58E00A1B402 /* MayaAddressValidatorTests.swift */; };
-		AA0002052BA0F58E00A1B302 /* MayaPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002042BA0F58E00A1B302 /* MayaPool.swift */; };
-		AA0002062BA0F58E00A1B302 /* MayaPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002042BA0F58E00A1B302 /* MayaPool.swift */; };
-		AA0002082BA0F58E00A1B303 /* MayaEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002072BA0F58E00A1B303 /* MayaEndpoint.swift */; };
-		AA0002092BA0F58E00A1B303 /* MayaEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002072BA0F58E00A1B303 /* MayaEndpoint.swift */; };
-		AA00020B2BA0F58E00A1B304 /* MayaAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00020A2BA0F58E00A1B304 /* MayaAPIService.swift */; };
-		AA00020C2BA0F58E00A1B304 /* MayaAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00020A2BA0F58E00A1B304 /* MayaAPIService.swift */; };
-		AA00020E2BA0F58E00A1B305 /* SelectCoinViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00020D2BA0F58E00A1B305 /* SelectCoinViewModel.swift */; };
-		AA00020F2BA0F58E00A1B305 /* SelectCoinViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00020D2BA0F58E00A1B305 /* SelectCoinViewModel.swift */; };
-		AA0002112BA0F58E00A1B306 /* CoinRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002102BA0F58E00A1B306 /* CoinRowView.swift */; };
-		AA0002122BA0F58E00A1B306 /* CoinRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002102BA0F58E00A1B306 /* CoinRowView.swift */; };
-		AA0002142BA0F58E00A1B307 /* SelectCoinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002132BA0F58E00A1B307 /* SelectCoinView.swift */; };
-		AA0002152BA0F58E00A1B307 /* SelectCoinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002132BA0F58E00A1B307 /* SelectCoinView.swift */; };
-		AA0002172BA0F58E00A1B308 /* SelectCoinHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002162BA0F58E00A1B308 /* SelectCoinHostingController.swift */; };
-		AA0002182BA0F58E00A1B308 /* SelectCoinHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002162BA0F58E00A1B308 /* SelectCoinHostingController.swift */; };
-		AA0003022CA0F58E00B1B401 /* EnterAddressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */; };
-		AA0003032CA0F58E00B1B401 /* EnterAddressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */; };
-		AA0003052CA0F58E00B1B402 /* EnterAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */; };
-		AA0003062CA0F58E00B1B402 /* EnterAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */; };
-		AA0003082CA0F58E00B1B403 /* EnterAddressHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */; };
-		AA0003092CA0F58E00B1B403 /* EnterAddressHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */; };
-		AA00030B2CA0F58E00B1B404 /* GenericQRScannerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */; };
-		AA00030C2CA0F58E00B1B404 /* GenericQRScannerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */; };
-		AA00030E2CA0F58E00B1B405 /* QRCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */; };
-		AA00030F2CA0F58E00B1B405 /* QRCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */; };
-		AA0003112CA0F58E00B1B406 /* GenericQRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */; };
-		AA0003122CA0F58E00B1B406 /* GenericQRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */; };
-		AA0004012DA0F58E00C1C501 /* AddressSourceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0004002DA0F58E00C1C501 /* AddressSourceView.swift */; };
-		AA0004022DA0F58E00C1C501 /* AddressSourceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0004002DA0F58E00C1C501 /* AddressSourceView.swift */; };
-		AA0004042DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0004032DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift */; };
-		AA0004052DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0004032DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift */; };
 		FF0000012DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000042DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift */; };
 		FF0000022DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000042DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift */; };
-		FF0000012DUMMYID001234567 /* PiggyCardsConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000042DUMMYID001234567 /* PiggyCardsConstants.swift */; };
-		FF0000022DUMMYID001234567 /* PiggyCardsConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000042DUMMYID001234567 /* PiggyCardsConstants.swift */; };
 		FF0000052DUMMYID001234567 /* PiggyCardsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000062DUMMYID001234567 /* PiggyCardsModels.swift */; };
 		FF0000072DUMMYID001234567 /* PiggyCardsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000062DUMMYID001234567 /* PiggyCardsModels.swift */; };
 		FF0000082DUMMYID001234567 /* BarcodeScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000092DUMMYID001234567 /* BarcodeScanner.swift */; };
@@ -1822,6 +1828,7 @@ AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuild
 		0F71317628F436920072F454 /* ServiceOverviewTableCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceOverviewTableCell.swift; sourceTree = "<group>"; };
 		0F71317828F436ED0072F454 /* ServiceOverviewViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceOverviewViewController.swift; sourceTree = "<group>"; };
 		0FC75A8E28F03E22000E4858 /* libDashSync.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libDashSync.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		10F1F64BEA504250AC161D34 /* TopIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopIntro.swift; sourceTree = "<group>"; };
 		110C67942921147F006B580C /* GettingStartedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GettingStartedViewController.swift; sourceTree = "<group>"; };
 		110C679929227948006B580C /* UINavigationController+CrowdNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UINavigationController+CrowdNode.swift"; sourceTree = "<group>"; };
 		110D1780298BA9AF005BEB30 /* WKWebView+CrowdNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WKWebView+CrowdNode.swift"; sourceTree = "<group>"; };
@@ -2374,8 +2381,6 @@ AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuild
 		474C7214298A1FCF00475CA6 /* TxDetailActionCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TxDetailActionCell.xib; sourceTree = "<group>"; };
 		474C7217298A422400475CA6 /* TransactionItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionItemView.swift; sourceTree = "<group>"; };
 		4751136B28D9A3DB00223B77 /* BuySellPortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuySellPortalViewController.swift; sourceTree = "<group>"; };
-		AA00000028D9A3DB00223B77 /* BuySellPortalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuySellPortalView.swift; sourceTree = "<group>"; };
-		7B94B3697D7742BFA991B5CC /* BuySellPortalScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuySellPortalScreen.swift; sourceTree = "<group>"; };
 		4751136E28D9B50E00223B77 /* CoinbaseInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseInfoViewController.swift; sourceTree = "<group>"; };
 		4751137428DAF28800223B77 /* UIAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIAssembly.swift; sourceTree = "<group>"; };
 		4751CABF296EFD2900F63AC4 /* AccountListController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountListController.swift; sourceTree = "<group>"; };
@@ -2522,6 +2527,10 @@ AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuild
 		4944819B9E17D4CC7DBFF293 /* Pods-WatchApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.release.xcconfig"; path = "Target Support Files/Pods-WatchApp/Pods-WatchApp.release.xcconfig"; sourceTree = "<group>"; };
 		4C22BC09CF6178544B2300A4 /* libPods-WatchApp Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D37A3F73905BC239A9D127D /* Pods-WatchApp Extension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testnet.xcconfig"; path = "Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testnet.xcconfig"; sourceTree = "<group>"; };
+		514AE85D2FB1F9DB00F9B54C /* DashSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSwitch.swift; sourceTree = "<group>"; };
+		514AE9F22FB2F4C500F9B54C /* HaltedToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaltedToast.swift; sourceTree = "<group>"; };
+		514AEA0E2FB31BD800F9B54C /* AddressFieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressFieldView.swift; sourceTree = "<group>"; };
+		514AEA122FB324FA00F9B54C /* MayaConvertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaConvertView.swift; sourceTree = "<group>"; };
 		5151C8C22F913BF100F0A604 /* Coinbase-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Coinbase-Info.plist"; sourceTree = "<group>"; };
 		5151C8C32F913BF100F0A604 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		5151C8C42F913BF100F0A604 /* Topper-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Topper-Info.plist"; sourceTree = "<group>"; };
@@ -2590,11 +2599,11 @@ AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuild
 		753FDBED2AECF52B0005EEC3 /* UsernameVoting.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UsernameVoting.storyboard; sourceTree = "<group>"; };
 		754495DC2AE91B6300492817 /* GroupedRequestCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupedRequestCell.swift; sourceTree = "<group>"; };
 		754495DE2AE91D3500492817 /* UsernameRequestCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequestCell.swift; sourceTree = "<group>"; };
-		754565C42DAA52A000DA4E8E /* CTXSpendAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/CTX/CTXSpendAPI.swift; sourceTree = "<group>"; };
-		754565C52DAA52A000DA4E8E /* CTXSpendEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/CTX/CTXSpendEndpoint.swift; sourceTree = "<group>"; };
-		754565C72DAA52A000DA4E8E /* CTXSpendRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/CTX/CTXSpendRepository.swift; sourceTree = "<group>"; };
+		754565C42DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/CTX/CTXSpendAPI.swift; sourceTree = "<group>"; };
+		754565C52DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/CTX/CTXSpendEndpoint.swift; sourceTree = "<group>"; };
+		754565C72DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/CTX/CTXSpendRepository.swift; sourceTree = "<group>"; };
 		754565D02DABA5EB00DA4E8E /* MerchantTypesDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantTypesDialog.swift; sourceTree = "<group>"; };
-		7545ED522DA91A2F0075F45C /* CTXConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/CTXConstants.swift; sourceTree = "<group>"; };
+		7545ED522DA91A2F0075F45C /* DashSpend/CTXConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/CTXConstants.swift; sourceTree = "<group>"; };
 		7545ED562DA91AEA0075F45C /* DashSpendUserAuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendUserAuthViewModel.swift; sourceTree = "<group>"; };
 		7545ED5C2DA91F590075F45C /* DashSpendTermsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendTermsScreen.swift; sourceTree = "<group>"; };
 		7545ED5F2DA91FC60075F45C /* NumericKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumericKeyboardView.swift; sourceTree = "<group>"; };
@@ -2622,7 +2631,6 @@ AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuild
 		756557B42CE84FF70060348D /* FeeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeInfo.swift; sourceTree = "<group>"; };
 		7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsMenuScreen.swift; sourceTree = "<group>"; };
 		7566F4892BB6CAF2005238D2 /* MenuItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuItem.swift; sourceTree = "<group>"; };
-		10F1F64BEA504250AC161D34 /* TopIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopIntro.swift; sourceTree = "<group>"; };
 		7569D6822DE6DA6800768BFF /* ExploreViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreViewController.swift; sourceTree = "<group>"; };
 		7569D6852DE6DB1B00768BFF /* ExploreHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreHeaderView.swift; sourceTree = "<group>"; };
 		7569D6882DE6DB6700768BFF /* ExploreContentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreContentsView.swift; sourceTree = "<group>"; };
@@ -2662,7 +2670,7 @@ AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuild
 		759AFDE22CC67E89007072D2 /* VotingInfoScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingInfoScreen.swift; sourceTree = "<group>"; };
 		759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeAPYView.swift; sourceTree = "<group>"; };
 		75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimeUtils.swift; sourceTree = "<group>"; };
-		75A2F3022DE48C860046BE17 /* CTXSpendTokenService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/CTX/CTXSpendTokenService.swift; sourceTree = "<group>"; };
+		75A2F3022DE48C860046BE17 /* DashSpend/CTX/CTXSpendTokenService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/CTX/CTXSpendTokenService.swift; sourceTree = "<group>"; };
 		75A8C1632AE5725C0042256E /* UsernameRequestsDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequestsDAO.swift; sourceTree = "<group>"; };
 		75A8C1662AE5734A0042256E /* UsernameRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequest.swift; sourceTree = "<group>"; };
 		75A8C1682AE6A1AC0042256E /* VotingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingViewModel.swift; sourceTree = "<group>"; };
@@ -2734,13 +2742,35 @@ AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuild
 		75FFD6C32BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeViewController+ImportPrivateKeyDelegateImpl.swift"; sourceTree = "<group>"; };
 		75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeViewController+Shortcuts.swift"; sourceTree = "<group>"; };
 		77215C3978EE089C06A41979 /* Pods-DashWalletTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.debug.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.debug.xcconfig"; sourceTree = "<group>"; };
+		7B94B3697D7742BFA991B5CC /* BuySellPortalScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuySellPortalScreen.swift; sourceTree = "<group>"; };
 		8391BA0D088FF516D63DE9A1 /* Pods-dashpay.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashpay.testflight.xcconfig"; path = "Target Support Files/Pods-dashpay/Pods-dashpay.testflight.xcconfig"; sourceTree = "<group>"; };
 		86CC430C535DAEBF900E5914 /* Pods-dashwallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.debug.xcconfig"; path = "Target Support Files/Pods-dashwallet/Pods-dashwallet.debug.xcconfig"; sourceTree = "<group>"; };
 		91F0B8B82F3FAB7C00E713AE /* KeysOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysOverviewView.swift; sourceTree = "<group>"; };
 		9EC1F4DB87C442BEABDF0DB2 /* DerivationPathKeysView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationPathKeysView.swift; sourceTree = "<group>"; };
 		A47B6DF71195E41A5B7B5F99 /* Pods-dashpay.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashpay.debug.xcconfig"; path = "Target Support Files/Pods-dashpay/Pods-dashpay.debug.xcconfig"; sourceTree = "<group>"; };
+		AA00000028D9A3DB00223B77 /* BuySellPortalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuySellPortalView.swift; sourceTree = "<group>"; };
 		AA0000032DUMMYID001234567 /* AddProviderToGiftCardsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddProviderToGiftCardsTable.swift; sourceTree = "<group>"; };
-		AA0000062DUMMYID001234567 /* GiftCardProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/GiftCardProvider.swift; sourceTree = "<group>"; };
+		AA0000062DUMMYID001234567 /* DashSpend/GiftCardProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/GiftCardProvider.swift; sourceTree = "<group>"; };
+		AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPortalView.swift; sourceTree = "<group>"; };
+		AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPortalViewController.swift; sourceTree = "<group>"; };
+		AA0002012BA0F58E00A1B301 /* MayaCryptoCurrency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaCryptoCurrency.swift; sourceTree = "<group>"; };
+		AA0002042BA0F58E00A1B302 /* MayaPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPool.swift; sourceTree = "<group>"; };
+		AA0002072BA0F58E00A1B303 /* MayaEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaEndpoint.swift; sourceTree = "<group>"; };
+		AA00020A2BA0F58E00A1B304 /* MayaAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAPIService.swift; sourceTree = "<group>"; };
+		AA00020D2BA0F58E00A1B305 /* SelectCoinViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectCoinViewModel.swift; sourceTree = "<group>"; };
+		AA0002102BA0F58E00A1B306 /* CoinRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinRowView.swift; sourceTree = "<group>"; };
+		AA0002132BA0F58E00A1B307 /* SelectCoinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectCoinView.swift; sourceTree = "<group>"; };
+		AA0002162BA0F58E00A1B308 /* SelectCoinHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectCoinHostingController.swift; sourceTree = "<group>"; };
+		AA0003002CA0F58E00A1B401 /* MayaAddressValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAddressValidator.swift; sourceTree = "<group>"; };
+		AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressViewModel.swift; sourceTree = "<group>"; };
+		AA0003032CA0F58E00A1B402 /* MayaAddressValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAddressValidatorTests.swift; sourceTree = "<group>"; };
+		AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressView.swift; sourceTree = "<group>"; };
+		AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressHostingController.swift; sourceTree = "<group>"; };
+		AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericQRScannerController.swift; sourceTree = "<group>"; };
+		AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCaptureView.swift; sourceTree = "<group>"; };
+		AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericQRScannerView.swift; sourceTree = "<group>"; };
+		AA0004002DA0F58E00C1C501 /* AddressSourceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressSourceView.swift; sourceTree = "<group>"; };
+		AA0004032DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaExchangeAddressProvider.swift; sourceTree = "<group>"; };
 		AD6615F1246B5935365B05BD /* NavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBar.swift; sourceTree = "<group>"; };
 		AF918A810315A7BE335BFFA6 /* Pods-WatchApp.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.testnet.xcconfig"; path = "Target Support Files/Pods-WatchApp/Pods-WatchApp.testnet.xcconfig"; sourceTree = "<group>"; };
 		B1A681489B9516DC10084A61 /* Pods-DashWalletScreenshotsUITests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; path = "Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -2767,9 +2797,9 @@ AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuild
 		BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
 		BAE12BEA1B2DEE7F00895CC5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BAE12C051B2DEEF700895CC5 /* DWTodayViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWTodayViewController.m; sourceTree = "<group>"; };
-		BB0000072DUMMYID001234567 /* DashSpendError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendError.swift; sourceTree = "<group>"; };
-		BB0000082DUMMYID001234567 /* DashSpendRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendRepository.swift; sourceTree = "<group>"; };
-		BB0000092DUMMYID001234567 /* DashSpendRepositoryFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendRepositoryFactory.swift; sourceTree = "<group>"; };
+		BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendError.swift; sourceTree = "<group>"; };
+		BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendRepository.swift; sourceTree = "<group>"; };
+		BB0000092DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendRepositoryFactory.swift; sourceTree = "<group>"; };
 		BC46CEE26088DC2B21D22315 /* Pods-DashWalletScreenshotsUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.debug.xcconfig"; path = "Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		C09FD41E863456F8BF96B2DB /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
 		C1AFBC4E154DF42D982613E4 /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; path = "Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; sourceTree = "<group>"; };
@@ -3280,34 +3310,15 @@ AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuild
 		FBF3F42C1E42B00C00C7248E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		FBF3F4301E42B02800C7248E /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
-AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPortalView.swift; sourceTree = "<group>"; };
-		AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPortalViewController.swift; sourceTree = "<group>"; };
-		AA0002012BA0F58E00A1B301 /* MayaCryptoCurrency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaCryptoCurrency.swift; sourceTree = "<group>"; };
-		AA0003002CA0F58E00A1B401 /* MayaAddressValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAddressValidator.swift; sourceTree = "<group>"; };
-		AA0003032CA0F58E00A1B402 /* MayaAddressValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAddressValidatorTests.swift; sourceTree = "<group>"; };
-		AA0002042BA0F58E00A1B302 /* MayaPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPool.swift; sourceTree = "<group>"; };
-		AA0002072BA0F58E00A1B303 /* MayaEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaEndpoint.swift; sourceTree = "<group>"; };
-		AA00020A2BA0F58E00A1B304 /* MayaAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAPIService.swift; sourceTree = "<group>"; };
-		AA00020D2BA0F58E00A1B305 /* SelectCoinViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectCoinViewModel.swift; sourceTree = "<group>"; };
-		AA0002102BA0F58E00A1B306 /* CoinRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinRowView.swift; sourceTree = "<group>"; };
-		AA0002132BA0F58E00A1B307 /* SelectCoinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectCoinView.swift; sourceTree = "<group>"; };
-		AA0002162BA0F58E00A1B308 /* SelectCoinHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectCoinHostingController.swift; sourceTree = "<group>"; };
-		AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressViewModel.swift; sourceTree = "<group>"; };
-		AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressView.swift; sourceTree = "<group>"; };
-		AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressHostingController.swift; sourceTree = "<group>"; };
-		AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericQRScannerController.swift; sourceTree = "<group>"; };
-		AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCaptureView.swift; sourceTree = "<group>"; };
-		AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericQRScannerView.swift; sourceTree = "<group>"; };
-		AA0004002DA0F58E00C1C501 /* AddressSourceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressSourceView.swift; sourceTree = "<group>"; };
-		AA0004032DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaExchangeAddressProvider.swift; sourceTree = "<group>"; };
 		FC016B99DFFB0CBAC3D19290 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
-		FF0000042DUMMYID001234567 /* PiggyCardsConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/PiggyCardsConstants.swift; sourceTree = "<group>"; };
+		FF0000042DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/PiggyCardsConstants.swift; sourceTree = "<group>"; };
 		FF0000062DUMMYID001234567 /* PiggyCardsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsModels.swift; sourceTree = "<group>"; };
 		FF0000092DUMMYID001234567 /* BarcodeScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScanner.swift; sourceTree = "<group>"; };
 		GG0000032DUMMYID001234567 /* GeoRestrictionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoRestrictionService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		514AE3442FAE361D00F9B54C /* Components */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Components; sourceTree = "<group>"; };
 		5151CDF22F929C2300F0A604 /* Geometry Readers */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Geometry Readers"; sourceTree = "<group>"; };
 		5151CDF62F929D3F00F0A604 /* ScrollViews */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ScrollViews; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -3344,7 +3355,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				222E7F561C46E9B8009AB45D /* Security.framework in Frameworks */,
 				222040C61C1A1940005CE1C3 /* WebKit.framework in Frameworks */,
 				22B6A4481C0E963900673913 /* libbz2.tbd in Frameworks */,
-				DE3A167A235B79D705C0A962 /* BuildFile in Frameworks */,
+				DE3A167A235B79D705C0A962 /* (null) in Frameworks */,
 				AEAE60406265A73AFD573FD1 /* libPods-dashwallet.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4145,7 +4156,6 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				11C5F51128E5D0C500F6F135 /* CrowdNode */,
 				47A50F362912D9A800C70123 /* Payment Controller */,
 				4751136A28D9A3BE00223B77 /* Buy Sell */,
-				0F6EDFE028C8AE32000427E7 /* Coinbase */,
 				47AE8BB328C1305E00490F5E /* Explore Dash */,
 				2AB231CF2196E23200A6E7E6 /* Start */,
 				2A913E6C23A26469006A2A59 /* Onboarding */,
@@ -4165,39 +4175,6 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				AA0001042AA9F58E00A1B203 /* Maya */,
 			);
 			path = UI;
-			sourceTree = "<group>";
-		};
-		AA0001042AA9F58E00A1B203 /* Maya */ = {
-			isa = PBXGroup;
-			children = (
-				AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */,
-				AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */,
-				AA00020D2BA0F58E00A1B305 /* SelectCoinViewModel.swift */,
-				AA0002102BA0F58E00A1B306 /* CoinRowView.swift */,
-				AA0002132BA0F58E00A1B307 /* SelectCoinView.swift */,
-				AA0002162BA0F58E00A1B308 /* SelectCoinHostingController.swift */,
-				AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */,
-				AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */,
-				AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */,
-				AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */,
-				AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */,
-				AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */,
-				AA0004002DA0F58E00C1C501 /* AddressSourceView.swift */,
-			);
-			path = Maya;
-			sourceTree = "<group>";
-		};
-		AA0002192BA0F58E00A1B309 /* Maya */ = {
-			isa = PBXGroup;
-			children = (
-				AA0003002CA0F58E00A1B401 /* MayaAddressValidator.swift */,
-				AA0002012BA0F58E00A1B301 /* MayaCryptoCurrency.swift */,
-				AA0002042BA0F58E00A1B302 /* MayaPool.swift */,
-				AA0002072BA0F58E00A1B303 /* MayaEndpoint.swift */,
-				AA00020A2BA0F58E00A1B304 /* MayaAPIService.swift */,
-				AA0004032DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift */,
-			);
-			path = Maya;
 			sourceTree = "<group>";
 		};
 		2A44313D22CF632F009BAF7F /* Models */ = {
@@ -5437,6 +5414,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 		4751136A28D9A3BE00223B77 /* Buy Sell */ = {
 			isa = PBXGroup;
 			children = (
+				514AE3442FAE361D00F9B54C /* Components */,
 				4774DCE328F46679008CF87D /* Views */,
 				478A2C6F28DC551E00AD1420 /* Model */,
 				4751136B28D9A3DB00223B77 /* BuySellPortalViewController.swift */,
@@ -5822,9 +5800,9 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 		47AE8B9628BFACE800490F5E /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				7545ED522DA91A2F0075F45C /* CTXConstants.swift */,
-				AA0000062DUMMYID001234567 /* GiftCardProvider.swift */,
-				FF0000042DUMMYID001234567 /* PiggyCardsConstants.swift */,
+				7545ED522DA91A2F0075F45C /* DashSpend/CTXConstants.swift */,
+				AA0000062DUMMYID001234567 /* DashSpend/GiftCardProvider.swift */,
+				FF0000042DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift */,
 				47AE8B9A28BFAD2000490F5E /* Entites */,
 				47AE8B9928BFAD0B00490F5E /* DAO */,
 			);
@@ -5844,15 +5822,15 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 			isa = PBXGroup;
 			children = (
 				FF0000092DUMMYID001234567 /* BarcodeScanner.swift */,
-				75A2F3022DE48C860046BE17 /* CTXSpendTokenService.swift */,
-				754565C42DAA52A000DA4E8E /* CTXSpendAPI.swift */,
-				754565C52DAA52A000DA4E8E /* CTXSpendEndpoint.swift */,
-				754565C72DAA52A000DA4E8E /* CTXSpendRepository.swift */,
-				BB0000072DUMMYID001234567 /* DashSpendError.swift */,
-				BB0000082DUMMYID001234567 /* DashSpendRepository.swift */,
-				BB0000092DUMMYID001234567 /* DashSpendRepositoryFactory.swift */,
+				75A2F3022DE48C860046BE17 /* DashSpend/CTX/CTXSpendTokenService.swift */,
+				754565C42DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendAPI.swift */,
+				754565C52DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendEndpoint.swift */,
+				754565C72DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendRepository.swift */,
+				BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */,
+				BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */,
+				BB0000092DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift */,
 				GG0000032DUMMYID001234567 /* GeoRestrictionService.swift */,
-				DD0000012DUMMYID001234567 /* PiggyCards */,
+				DD0000012DUMMYID001234567 /* DashSpend/PiggyCards */,
 				47AE8BAC28BFAE6700490F5E /* DWLocationManager.swift */,
 				47AE8BA828BFAE5800490F5E /* ExploreDatabaseSyncManager.swift */,
 			);
@@ -6208,6 +6186,47 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 			path = Networking;
 			sourceTree = "<group>";
 		};
+		514AE9F12FB2F48F00F9B54C /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				AA0002102BA0F58E00A1B306 /* CoinRowView.swift */,
+				514AE9F22FB2F4C500F9B54C /* HaltedToast.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		514AEA0D2FB31BBC00F9B54C /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				AA0004002DA0F58E00C1C501 /* AddressSourceView.swift */,
+				514AEA0E2FB31BD800F9B54C /* AddressFieldView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		514AEA112FB324DA00F9B54C /* Convert */ = {
+			isa = PBXGroup;
+			children = (
+				514AEA152FB3258F00F9B54C /* Components */,
+				514AEA122FB324FA00F9B54C /* MayaConvertView.swift */,
+			);
+			path = Convert;
+			sourceTree = "<group>";
+		};
+		514AEA152FB3258F00F9B54C /* Components */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		514AEA162FB3291A00F9B54C /* OrderPreview */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = OrderPreview;
+			sourceTree = "<group>";
+		};
 		7502A4852AE401DA00ACDDD3 /* Voting */ = {
 			isa = PBXGroup;
 			children = (
@@ -6323,6 +6342,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				7545ED5F2DA91FC60075F45C /* NumericKeyboardView.swift */,
 				756FE7092CDCD6CD00E6C195 /* ValidationCheck.swift */,
 				5151CD612F926D1900F0A604 /* SearchBar.swift */,
+				514AE85D2FB1F9DB00F9B54C /* DashSwitch.swift */,
 			);
 			path = "SwiftUI Components";
 			sourceTree = "<group>";
@@ -6612,6 +6632,73 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				6DC4B39C45C824674E05DB22 /* Pods-dashwallet.testflight.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		AA0001042AA9F58E00A1B203 /* Maya */ = {
+			isa = PBXGroup;
+			children = (
+				514AEA162FB3291A00F9B54C /* OrderPreview */,
+				514AEA112FB324DA00F9B54C /* Convert */,
+				AA0005012EA0F58E00D1D601 /* MayaPortal */,
+				AA0005022EA0F58E00D1D602 /* SelectCoin */,
+				AA0005032EA0F58E00D1D603 /* EnterAddress */,
+				AA0005042EA0F58E00D1D604 /* QRScanner */,
+			);
+			path = Maya;
+			sourceTree = "<group>";
+		};
+		AA0002192BA0F58E00A1B309 /* Maya */ = {
+			isa = PBXGroup;
+			children = (
+				AA0003002CA0F58E00A1B401 /* MayaAddressValidator.swift */,
+				AA0002012BA0F58E00A1B301 /* MayaCryptoCurrency.swift */,
+				AA0002042BA0F58E00A1B302 /* MayaPool.swift */,
+				AA0002072BA0F58E00A1B303 /* MayaEndpoint.swift */,
+				AA00020A2BA0F58E00A1B304 /* MayaAPIService.swift */,
+				AA0004032DA0F58E00C1C502 /* MayaExchangeAddressProvider.swift */,
+			);
+			path = Maya;
+			sourceTree = "<group>";
+		};
+		AA0005012EA0F58E00D1D601 /* MayaPortal */ = {
+			isa = PBXGroup;
+			children = (
+				AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */,
+				AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */,
+			);
+			path = MayaPortal;
+			sourceTree = "<group>";
+		};
+		AA0005022EA0F58E00D1D602 /* SelectCoin */ = {
+			isa = PBXGroup;
+			children = (
+				514AE9F12FB2F48F00F9B54C /* Components */,
+				AA0002132BA0F58E00A1B307 /* SelectCoinView.swift */,
+				AA00020D2BA0F58E00A1B305 /* SelectCoinViewModel.swift */,
+				AA0002162BA0F58E00A1B308 /* SelectCoinHostingController.swift */,
+			);
+			path = SelectCoin;
+			sourceTree = "<group>";
+		};
+		AA0005032EA0F58E00D1D603 /* EnterAddress */ = {
+			isa = PBXGroup;
+			children = (
+				514AEA0D2FB31BBC00F9B54C /* Components */,
+				AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */,
+				AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */,
+				AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */,
+			);
+			path = EnterAddress;
+			sourceTree = "<group>";
+		};
+		AA0005042EA0F58E00D1D604 /* QRScanner */ = {
+			isa = PBXGroup;
+			children = (
+				AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */,
+				AA0003102CA0F58E00B1B406 /* GenericQRScannerView.swift */,
+				AA00030D2CA0F58E00B1B405 /* QRCaptureView.swift */,
+			);
+			path = QRScanner;
 			sourceTree = "<group>";
 		};
 		BA913BDF1BD57E4D005A7C0E /* WatchApp */ = {
@@ -7839,7 +7926,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 			path = "Sync View";
 			sourceTree = "<group>";
 		};
-		DD0000012DUMMYID001234567 /* PiggyCards */ = {
+		DD0000012DUMMYID001234567 /* DashSpend/PiggyCards */ = {
 			isa = PBXGroup;
 			children = (
 				CC0000062DUMMYID001234567 /* PiggyCardsAPI.swift */,
@@ -7906,6 +7993,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				BA913BF91BD57E4D005A7C0E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
+				514AE3442FAE361D00F9B54C /* Components */,
 				5151CDF22F929C2300F0A604 /* Geometry Readers */,
 				5151CDF62F929D3F00F0A604 /* ScrollViews */,
 			);
@@ -8009,6 +8097,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				514AE3442FAE361D00F9B54C /* Components */,
 				5151CDF22F929C2300F0A604 /* Geometry Readers */,
 				5151CDF62F929D3F00F0A604 /* ScrollViews */,
 			);
@@ -8267,7 +8356,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C9D2C9272A320AA000D15901 /* SyncView.xib in Resources */,
 				C9D2C9292A320AA000D15901 /* BackupInfoItemView.xib in Resources */,
 				C9D2C92A2A320AA000D15901 /* explore.db in Resources */,
-				C9D2C92B2A320AA000D15901 /* BuildFile in Resources */,
+				C9D2C92B2A320AA000D15901 /* (null) in Resources */,
 				C9D2C92C2A320AA000D15901 /* Coinbase.storyboard in Resources */,
 				5151C8C62F913BF100F0A604 /* Coinbase-Info.plist in Resources */,
 				5151C8C72F913BF100F0A604 /* ZenLedger-Info.plist in Resources */,
@@ -8768,7 +8857,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C9F451EB2A0BF10B00825057 /* SyncingAlertViewController.swift in Sources */,
 				11B8449628F5B9F80082770C /* CrowdNodeResponse.swift in Sources */,
 				47AE8BB228BFF61A00490F5E /* FileManager+DashWallet.swift in Sources */,
-				7545ED532DA91A2F0075F45C /* CTXConstants.swift in Sources */,
+				7545ED532DA91A2F0075F45C /* DashSpend/CTXConstants.swift in Sources */,
 				47AE8BF228C1306000490F5E /* PointOfUseItemCell.swift in Sources */,
 				47083B3229892D770010AF71 /* DSTransaction+DashWallet.swift in Sources */,
 				751B61C82AE0EDD000D1C2EF /* CoinJoinLevelsViewController.swift in Sources */,
@@ -8779,12 +8868,13 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				4751136C28D9A3DB00223B77 /* BuySellPortalViewController.swift in Sources */,
 				AA00000128D9A3DB00223B77 /* BuySellPortalView.swift in Sources */,
 				8DF3D24EE3B247B79AE9CAB5 /* BuySellPortalScreen.swift in Sources */,
+				514AEA0F2FB31BD800F9B54C /* AddressFieldView.swift in Sources */,
 				2A7A7BD62348CB6600451078 /* SettingsScreen.swift in Sources */,
 				2A0C69DA2314727F001B8C90 /* UISpringTimingParameters+DWInit.m in Sources */,
 				47C661AD28F972BD00028A8D /* NumberKeyboardButton.swift in Sources */,
 				11AE3DD82997C599000856EE /* IsDefaultEmail.swift in Sources */,
 				2A9FFF2A2233E60F00956D5F /* DWUpholdAccountObject.m in Sources */,
-				75A2F3042DE48C860046BE17 /* CTXSpendTokenService.swift in Sources */,
+				75A2F3042DE48C860046BE17 /* DashSpend/CTX/CTXSpendTokenService.swift in Sources */,
 				2A9FFE812230FF4700956D5F /* DWFormTableViewController.m in Sources */,
 				C909614D29EFF7D600002D82 /* WalletKeysOverviewModel.swift in Sources */,
 				4751137528DAF28800223B77 /* UIAssembly.swift in Sources */,
@@ -8854,6 +8944,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				47AE8BFA28C1306000490F5E /* PointOfUseListModel.swift in Sources */,
 				C3DAD2CF247585C10001624F /* NSPredicate+DWFullTextSearch.m in Sources */,
 				47F2C6842860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift in Sources */,
+				514AE9F32FB2F4C500F9B54C /* HaltedToast.swift in Sources */,
 				2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */,
 				752D03B22E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift in Sources */,
 				C9F451FD2A0CC4A300825057 /* BadgeView.swift in Sources */,
@@ -8903,6 +8994,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C9F451F72A0CAE1300825057 /* SyncView.swift in Sources */,
 				47522F502927CB9000EE143E /* SuccessfulOperationStatusViewController.swift in Sources */,
 				47E94B9A296D7F99000FE68E /* CustodialSwapsModel.swift in Sources */,
+				514AEA142FB324FA00F9B54C /* MayaConvertView.swift in Sources */,
 				2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */,
 				757422242DF87B5200CB0175 /* TerritoryPickerView.swift in Sources */,
 				757422252DF87B5200CB0175 /* MerchantFiltersView.swift in Sources */,
@@ -8966,6 +9058,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				75EAFBB12B04C057005ABC6A /* CustomHUDView.swift in Sources */,
 				47C661B628FE75A700028A8D /* BaseViewController.swift in Sources */,
 				4751CAC0296EFD2900F63AC4 /* AccountListController.swift in Sources */,
+				514AE85F2FB1F9DB00F9B54C /* DashSwitch.swift in Sources */,
 				2A9FFE032230FF2B00956D5F /* DWUpholdTransactionObject.m in Sources */,
 				2AF26F3B230C0E4C007F9228 /* DWBaseSeedViewController.m in Sources */,
 				2A8B9E4D22FEBF7A00FF8653 /* DWProgressAnimator.mm in Sources */,
@@ -9097,10 +9190,10 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				7549BE582DEAECB8004F0BAF /* CustomIconMetadataProvider.swift in Sources */,
 				7549BE602DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */,
 				AA0000012DUMMYID001234567 /* AddProviderToGiftCardsTable.swift in Sources */,
-				AA0000042DUMMYID001234567 /* GiftCardProvider.swift in Sources */,
-				BB0000012DUMMYID001234567 /* DashSpendError.swift in Sources */,
-				BB0000032DUMMYID001234567 /* DashSpendRepository.swift in Sources */,
-				BB0000052DUMMYID001234567 /* DashSpendRepositoryFactory.swift in Sources */,
+				AA0000042DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */,
+				BB0000012DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */,
+				BB0000032DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */,
+				BB0000052DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift in Sources */,
 				GG0000012DUMMYID001234567 /* GeoRestrictionService.swift in Sources */,
 				CC0000112DUMMYID001234567 /* PiggyCardsAPI.swift in Sources */,
 				CC0000132DUMMYID001234567 /* PiggyCardsCache.swift in Sources */,
@@ -9109,7 +9202,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				CC0000192DUMMYID001234567 /* PiggyCardsTokenService.swift in Sources */,
 				EE0000012DUMMYID001234567 /* POIDetailsViewModel.swift in Sources */,
 				EE0000042DUMMYID001234567 /* PercentageFormatter.swift in Sources */,
-				FF0000012DUMMYID001234567 /* PiggyCardsConstants.swift in Sources */,
+				FF0000012DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift in Sources */,
 				FF0000052DUMMYID001234567 /* PiggyCardsModels.swift in Sources */,
 				FF0000082DUMMYID001234567 /* BarcodeScanner.swift in Sources */,
 				2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressExtractor.m in Sources */,
@@ -9125,9 +9218,9 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */,
 				47AE8C0528C1F74A00490F5E /* PointOfUseListFiltersCell.swift in Sources */,
 				47AE8C1A28C6A21A00490F5E /* AllMerchantLocationsDataProvider.swift in Sources */,
-				754565CC2DAA52A000DA4E8E /* CTXSpendAPI.swift in Sources */,
-				754565CE2DAA52A000DA4E8E /* CTXSpendRepository.swift in Sources */,
-				754565CF2DAA52A000DA4E8E /* CTXSpendEndpoint.swift in Sources */,
+				754565CC2DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendAPI.swift in Sources */,
+				754565CE2DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendRepository.swift in Sources */,
+				754565CF2DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendEndpoint.swift in Sources */,
 				C9F451E52A0B986E00825057 /* MainTabbarController.swift in Sources */,
 				7545ED612DA91FC60075F45C /* NumericKeyboardView.swift in Sources */,
 				47B30D78290BFCA60080C326 /* NumberFormatter+DashWallet.swift in Sources */,
@@ -9397,13 +9490,6 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		80B4C633F37C0A089A9C7138 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		BA913BE61BD57E4D005A7C0E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -9545,6 +9631,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				B3A1F2C4D5E6078901234569 /* ExtendedPublicKeySheet.swift in Sources */,
 				C5D7E9F1A2B3C4D5E6F70013 /* CSVExportSheet.swift in Sources */,
 				C9D2C6D82A320AA000D15901 /* AtmListViewController.swift in Sources */,
+				514AE85E2FB1F9DB00F9B54C /* DashSwitch.swift in Sources */,
 				C9D2C6D92A320AA000D15901 /* TxDetailViewController.swift in Sources */,
 				C9D2C6DA2A320AA000D15901 /* NSAttributedString+Builder.swift in Sources */,
 				75D9EBB92DE5CC3A009416A2 /* AddGiftCardsTable.swift in Sources */,
@@ -9577,7 +9664,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C943B31D2A408CED00AF23C5 /* DWUserProfileContainerView.m in Sources */,
 				C9D2C6F02A320AA000D15901 /* UIImage+Utils.m in Sources */,
 				C943B4BE2A40A54600AF23C5 /* DWGlobalMatchFailedHeaderView.m in Sources */,
-				75A2F3032DE48C860046BE17 /* CTXSpendTokenService.swift in Sources */,
+				75A2F3032DE48C860046BE17 /* DashSpend/CTX/CTXSpendTokenService.swift in Sources */,
 				C943B4C22A40A54600AF23C5 /* BaseCollectionReusableView.m in Sources */,
 				C9D2C6F22A320AA000D15901 /* DWSetupViewController.m in Sources */,
 				C9D2C6F32A320AA000D15901 /* ExploreDatabaseConnection.swift in Sources */,
@@ -9586,6 +9673,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				752D03AC2E2F758B00B88784 /* MainMenuViewController.swift in Sources */,
 				C943B31B2A408CED00AF23C5 /* DWUpdatingUserProfileView.m in Sources */,
 				C9D2C6F52A320AA000D15901 /* CoinbaseTransactionResponse.swift in Sources */,
+				514AEA132FB324FA00F9B54C /* MayaConvertView.swift in Sources */,
 				C943B52F2A40A54600AF23C5 /* DWNotificationsData.m in Sources */,
 				C9D2C6F72A320AA000D15901 /* TxDetailModel.swift in Sources */,
 				757514E22B15DB510026AD8E /* ShadowView.swift in Sources */,
@@ -9608,6 +9696,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C9D2C7032A320AA000D15901 /* UIViewController+DWDisplayError.m in Sources */,
 				C9D2C7042A320AA000D15901 /* BRAppleWatchData.m in Sources */,
 				755049AD2C846576008FA7EB /* MenuItemModel.swift in Sources */,
+				514AE9F42FB2F4C500F9B54C /* HaltedToast.swift in Sources */,
 				C9D2C7052A320AA000D15901 /* DWRequestAmountContentView.m in Sources */,
 				C943B3312A408CED00AF23C5 /* DWProfileAboutCellModel.m in Sources */,
 				C943B4C42A40A54600AF23C5 /* DWSearchViewController.m in Sources */,
@@ -9629,7 +9718,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				75A8C1672AE5734A0042256E /* UsernameRequest.swift in Sources */,
 				C9D2C70D2A320AA000D15901 /* CBAccount.swift in Sources */,
 				C9D2C70E2A320AA000D15901 /* Types.swift in Sources */,
-				C9D2C70F2A320AA000D15901 /* BuildFile in Sources */,
+				C9D2C70F2A320AA000D15901 /* (null) in Sources */,
 				C943B33B2A408CED00AF23C5 /* DWUploadAvatarChildView.m in Sources */,
 				C9D2C7112A320AA000D15901 /* Coinbase.swift in Sources */,
 				C9D2C7122A320AA000D15901 /* SyncModel.swift in Sources */,
@@ -9661,7 +9750,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C9D2C7252A320AA000D15901 /* SyncingActivityMonitor.swift in Sources */,
 				75EE38D82CBFE52E00845FFF /* ContactsPlaceholderViewController.swift in Sources */,
 				C9D2C7262A320AA000D15901 /* EmptyUIView.swift in Sources */,
-				C9D2C7272A320AA000D15901 /* BuildFile in Sources */,
+				C9D2C7272A320AA000D15901 /* (null) in Sources */,
 				C9D2C7282A320AA000D15901 /* DWQRScanModel.m in Sources */,
 				C943B3292A408CED00AF23C5 /* DWExternalSourceViewController.m in Sources */,
 				C9D2C72A2A320AA000D15901 /* SyncView.swift in Sources */,
@@ -9718,7 +9807,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C9D2C74A2A320AA000D15901 /* ShortcutsView.swift in Sources */,
 				C9D2C74B2A320AA000D15901 /* DWFormSectionModel.m in Sources */,
 				754C27CF2CC3C7AF00BA7B9F /* MixDashDialog.swift in Sources */,
-				C9D2C74C2A320AA000D15901 /* BuildFile in Sources */,
+				C9D2C74C2A320AA000D15901 /* (null) in Sources */,
 				C9D2C74D2A320AA000D15901 /* CoinbasePlaceBuyOrderResponse.swift in Sources */,
 				C9D2C74E2A320AA000D15901 /* ExploreMapView.swift in Sources */,
 				C943B32F2A408CED00AF23C5 /* DWSaveAlertViewController.m in Sources */,
@@ -9739,7 +9828,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C9D2C7552A320AA000D15901 /* DWPaymentInput.m in Sources */,
 				C9D2C7572A320AA000D15901 /* OnlineAccountDetailsController.swift in Sources */,
 				C9D2C7582A320AA000D15901 /* UIApplication+DashWallet.swift in Sources */,
-				7545ED542DA91A2F0075F45C /* CTXConstants.swift in Sources */,
+				7545ED542DA91A2F0075F45C /* DashSpend/CTXConstants.swift in Sources */,
 				C9D2C7592A320AA000D15901 /* OnlineAccountInfoController.swift in Sources */,
 				C9D2C75A2A320AA000D15901 /* PaymentController.swift in Sources */,
 				C9D2C75B2A320AA000D15901 /* CALayer+MBAnimationPersistence.m in Sources */,
@@ -9768,7 +9857,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				75EBAA0A2BB9791B004488E3 /* Icon.swift in Sources */,
 				754C27C72CC3C0B900BA7B9F /* UsernamePrefs.swift in Sources */,
 				C9D2C7672A320AA000D15901 /* CoinbaseExchangeRateResponse.swift in Sources */,
-				C9D2C7692A320AA000D15901 /* BuildFile in Sources */,
+				C9D2C7692A320AA000D15901 /* (null) in Sources */,
 				C9D2C76A2A320AA000D15901 /* CrowdNodePortalItem.swift in Sources */,
 				C943B4C82A40A54600AF23C5 /* DWSearchStateViewController.m in Sources */,
 				C9D2C76B2A320AA000D15901 /* BaseViewController.swift in Sources */,
@@ -9855,7 +9944,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C9D2C7A72A320AA000D15901 /* ActionButtonViewController.swift in Sources */,
 				C9D2C7A82A320AA000D15901 /* BuySellServiceItemCell.swift in Sources */,
 				C956AF122A5B5949002FAB75 /* PasteboardContentView.swift in Sources */,
-				C9D2C7AA2A320AA000D15901 /* BuildFile in Sources */,
+				C9D2C7AA2A320AA000D15901 /* (null) in Sources */,
 				C943B5002A40A54600AF23C5 /* DWDPTxItemView.m in Sources */,
 				C9D2C7AB2A320AA000D15901 /* DWBaseFormTableViewCell.m in Sources */,
 				C9D2C7AC2A320AA000D15901 /* AccountCell.swift in Sources */,
@@ -9865,7 +9954,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C943B3392A408CED00AF23C5 /* DWUploadAvatarViewController.m in Sources */,
 				759609242C455B2000F3BF04 /* SendIntro.swift in Sources */,
 				C9D2C7B12A320AA000D15901 /* CoinbaseBaseIDForCurrencyResponse.swift in Sources */,
-				C9D2C7B22A320AA000D15901 /* BuildFile in Sources */,
+				C9D2C7B22A320AA000D15901 /* (null) in Sources */,
 				C9D2C7B32A320AA000D15901 /* SpecifyAmountViewController.swift in Sources */,
 				C943B4EA2A40A54600AF23C5 /* DWUserProfileViewController.m in Sources */,
 				756557B62CE84FFA0060348D /* FeeInfo.swift in Sources */,
@@ -9886,7 +9975,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C956AF212A5C33E5002FAB75 /* DWButton.m in Sources */,
 				C9D2C7C02A320AA000D15901 /* HomeHeaderModel.swift in Sources */,
 				C943B5942A40ED7B00AF23C5 /* DWPlanetarySystemView.m in Sources */,
-				C9D2C7C22A320AA000D15901 /* BuildFile in Sources */,
+				C9D2C7C22A320AA000D15901 /* (null) in Sources */,
 				C9D2C7C32A320AA000D15901 /* DWDPRegistrationStatus.m in Sources */,
 				C9D2C7C42A320AA000D15901 /* CurrencyExchanger_Objc.m in Sources */,
 				752F81982E30F55E00ADA76D /* SecurityMenuScreen.swift in Sources */,
@@ -9900,7 +9989,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C9D2C7C92A320AA000D15901 /* BuyDashViewController.swift in Sources */,
 				C956AF0D2A5B592E002FAB75 /* TappableLabel.swift in Sources */,
 				C9D2C7CA2A320AA000D15901 /* DWModalDismissalAnimation.m in Sources */,
-				C9D2C7CB2A320AA000D15901 /* BuildFile in Sources */,
+				C9D2C7CB2A320AA000D15901 /* (null) in Sources */,
 				C9D2C7CD2A320AA000D15901 /* UIViewController+DashWallet.swift in Sources */,
 				75D5D5332CC928630049ED7B /* UIHostingController+DashWallet.swift in Sources */,
 				C9D2C7CE2A320AA000D15901 /* CrowdNodeCell.swift in Sources */,
@@ -9929,10 +10018,10 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C9D2C7E22A320AA000D15901 /* CrowdNodeWithdrawalReceivedTx.swift in Sources */,
 				7549BE612DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */,
 				AA0000022DUMMYID001234567 /* AddProviderToGiftCardsTable.swift in Sources */,
-				AA0000052DUMMYID001234567 /* GiftCardProvider.swift in Sources */,
-				BB0000022DUMMYID001234567 /* DashSpendError.swift in Sources */,
-				BB0000042DUMMYID001234567 /* DashSpendRepository.swift in Sources */,
-				BB0000062DUMMYID001234567 /* DashSpendRepositoryFactory.swift in Sources */,
+				AA0000052DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */,
+				BB0000022DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */,
+				BB0000042DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */,
+				BB0000062DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift in Sources */,
 				GG0000022DUMMYID001234567 /* GeoRestrictionService.swift in Sources */,
 				CC0000122DUMMYID001234567 /* PiggyCardsAPI.swift in Sources */,
 				CC0000142DUMMYID001234567 /* PiggyCardsCache.swift in Sources */,
@@ -9941,7 +10030,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				CC0000202DUMMYID001234567 /* PiggyCardsTokenService.swift in Sources */,
 				EE0000022DUMMYID001234567 /* POIDetailsViewModel.swift in Sources */,
 				EE0000062DUMMYID001234567 /* PercentageFormatter.swift in Sources */,
-				FF0000022DUMMYID001234567 /* PiggyCardsConstants.swift in Sources */,
+				FF0000022DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift in Sources */,
 				FF0000072DUMMYID001234567 /* PiggyCardsModels.swift in Sources */,
 				FF0000102DUMMYID001234567 /* BarcodeScanner.swift in Sources */,
 				C943B4B62A40A54600AF23C5 /* DWFetchedResultsDataSource.m in Sources */,
@@ -10075,7 +10164,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C9D2C8482A320AA000D15901 /* CoinbaseTransactionsRequest.swift in Sources */,
 				C943B3372A408CED00AF23C5 /* DWEditProfileTextFieldCell.m in Sources */,
 				C9D2C8492A320AA000D15901 /* DWAppRootViewController.m in Sources */,
-				C9D2C84A2A320AA000D15901 /* BuildFile in Sources */,
+				C9D2C84A2A320AA000D15901 /* (null) in Sources */,
 				7513DA882AB175E0005D55F6 /* TopperViewModel.swift in Sources */,
 				C9D2C84B2A320AA000D15901 /* UITableView+DashWallet.swift in Sources */,
 				C9D2C84C2A320AA000D15901 /* TransferAmountViewController.swift in Sources */,
@@ -10093,6 +10182,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C9D2C8562A320AA000D15901 /* TransactionItemView.swift in Sources */,
 				C9D2C8572A320AA000D15901 /* UIView+Reuse.swift in Sources */,
 				C9D2C8582A320AA000D15901 /* DWUpholdClient.m in Sources */,
+				514AEA102FB31BD800F9B54C /* AddressFieldView.swift in Sources */,
 				C9D2C8592A320AA000D15901 /* CrowdNodePortalViewController.swift in Sources */,
 				C9D2C85A2A320AA000D15901 /* ConfirmOrderModel.swift in Sources */,
 				C943B53F2A40A6BE00AF23C5 /* DPAlertChildContentsView.m in Sources */,
@@ -10111,7 +10201,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C9D2C8652A320AA000D15901 /* DWCaptureSessionManager.m in Sources */,
 				C9D2C8662A320AA000D15901 /* DWDataMigrationManager.m in Sources */,
 				7502A4872AE401EF00ACDDD3 /* UsernameVotingViewController.swift in Sources */,
-				C9D2C86A2A320AA000D15901 /* BuildFile in Sources */,
+				C9D2C86A2A320AA000D15901 /* (null) in Sources */,
 				C943B51F2A40A54600AF23C5 /* DWSuccessInvitationView.m in Sources */,
 				C9D2C86B2A320AA000D15901 /* AmountPreviewView.swift in Sources */,
 				75CDD7812C0898E400F433D2 /* Shape.swift in Sources */,
@@ -10169,7 +10259,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C9D2C8972A320AA000D15901 /* RatesProvider.swift in Sources */,
 				C9D2C8982A320AA000D15901 /* CBAuth.swift in Sources */,
 				C943B51C2A40A54600AF23C5 /* SuccessInvitationViewController.swift in Sources */,
-				C9D2C8992A320AA000D15901 /* BuildFile in Sources */,
+				C9D2C8992A320AA000D15901 /* (null) in Sources */,
 				C9D2C89A2A320AA000D15901 /* CoinbaseCreateAddressesRequest.swift in Sources */,
 				C943B3382A408CED00AF23C5 /* DWEditProfileAvatarView.m in Sources */,
 				C943B5582A40DA3700AF23C5 /* DWFullScreenModalControllerViewController.m in Sources */,
@@ -10205,9 +10295,9 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				757422222DF87B5200CB0175 /* MerchantFiltersView.swift in Sources */,
 				C943B5382A40A65B00AF23C5 /* DWScrollingViewController.m in Sources */,
 				C9D2C8B22A320AA000D15901 /* CoinbaseAccountAddress.swift in Sources */,
-				754565C82DAA52A000DA4E8E /* CTXSpendAPI.swift in Sources */,
-				754565CA2DAA52A000DA4E8E /* CTXSpendRepository.swift in Sources */,
-				754565CB2DAA52A000DA4E8E /* CTXSpendEndpoint.swift in Sources */,
+				754565C82DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendAPI.swift in Sources */,
+				754565CA2DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendRepository.swift in Sources */,
+				754565CB2DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendEndpoint.swift in Sources */,
 				C930784E2A6AD59E00906E4B /* ConfirmPaymentModel.swift in Sources */,
 				C9D2C8B42A320AA000D15901 /* CrowdNodeTransferViewController.swift in Sources */,
 				C9D2C8B62A320AA000D15901 /* CBAuthInterop.swift in Sources */,
@@ -10257,7 +10347,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C943B50E2A40A54600AF23C5 /* DWConfirmInvitationContentView.m in Sources */,
 				C9D2C8DE2A320AA000D15901 /* GettingStartedViewController.swift in Sources */,
 				C9D2C8DF2A320AA000D15901 /* NetworkUnavailableView.swift in Sources */,
-				C9D2C8E02A320AA000D15901 /* BuildFile in Sources */,
+				C9D2C8E02A320AA000D15901 /* (null) in Sources */,
 				751B61C32ADFF9AE00D1C2EF /* UpholdPortalModel.swift in Sources */,
 				C943B4FC2A40A54600AF23C5 /* DWDPEstablishedContactNotificationObject.m in Sources */,
 				C9D2C8E12A320AA000D15901 /* DWLockScreenViewController.m in Sources */,
@@ -10289,7 +10379,7 @@ AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; l
 				C9D2C8F42A320AA000D15901 /* DWQuickReceiveViewController.m in Sources */,
 				75A8C1692AE6A1AC0042256E /* VotingViewModel.swift in Sources */,
 				1DD7BE9CD62998F12672140D /* RadioButtonRow.swift in Sources */,
-AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
+				AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 				AA0001062AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */,
 				AA0003022CA0F58E00A1B401 /* MayaAddressValidator.swift in Sources */,
 				AA0002032BA0F58E00A1B301 /* MayaCryptoCurrency.swift in Sources */,
@@ -10715,7 +10805,7 @@ AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -10846,7 +10936,7 @@ AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11053,7 +11143,7 @@ AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -11075,7 +11165,7 @@ AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -11095,7 +11185,7 @@ AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 2E17397DF35152CAFBB79068 /* Pods-WatchApp Extension.debug.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -11122,7 +11212,7 @@ AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E57EEDA37189E949FBAAA627 /* Pods-WatchApp Extension.release.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -11150,7 +11240,7 @@ AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 			baseConfigurationReference = EDE78DB35CE393ADB4F3C5DD /* Pods-TodayExtension.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -11179,7 +11269,7 @@ AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -11830,7 +11920,7 @@ AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11967,7 +12057,7 @@ AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -12032,7 +12122,7 @@ AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -12052,7 +12142,7 @@ AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = FC016B99DFFB0CBAC3D19290 /* Pods-WatchApp Extension.testflight.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -12151,7 +12241,7 @@ AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -12277,7 +12367,7 @@ AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 			baseConfigurationReference = 74F4F603C555A521F738DC9E /* Pods-TodayExtension.testnet.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -12341,7 +12431,7 @@ AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -12361,7 +12451,7 @@ AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4D37A3F73905BC239A9D127D /* Pods-WatchApp Extension.testnet.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
