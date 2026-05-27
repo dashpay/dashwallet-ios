@@ -236,11 +236,13 @@ final class SwiftDashSDKHost {
             // `GetDataContractsRequest.version`), which surfaces as
             // `decoding error: could not decode data contracts query` on
             // every contract-touching call (profile read/write,
-            // `syncDpnsNames`, `fetchContestVoteState`, etc.). Tracked
-            // upstream by dashpay/platform PR #3734 which exposes this
-            // FFI knob. Drop the second arg when v12 is the agreed
-            // protocol.
-            newSDK = try SDK(network: network, protocolVersion: 11)
+            // `syncDpnsNames`, `fetchContestVoteState`, etc.). The knob
+            // is now upstream-canonical via dashpay/platform PR #3751
+            // (the earlier #3734 fork-PR was superseded by this one,
+            // which adds the version as a `DashSDKConfig` field rather
+            // than parallel FFI functions). Drop the second arg when
+            // v12 is the agreed protocol.
+            newSDK = try SDK(network: network, platformVersion: 11)
         } catch {
             Self.logger.error("🪺 HOST :: SDK init failed: \(String(describing: error), privacy: .public)")
             throw HostError.sdkInitFailed(error)
