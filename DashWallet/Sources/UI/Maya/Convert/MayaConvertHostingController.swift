@@ -18,7 +18,8 @@
 import SwiftUI
 import UIKit
 
-class MayaConvertHostingController: UIViewController {
+class MayaConvertHostingController: UIViewController, NavigationBarDisplayable {
+    var isNavigationBarHidden: Bool { true }
 
     private let coin: MayaCryptoCurrency
     private let address: String
@@ -36,12 +37,13 @@ class MayaConvertHostingController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = NSLocalizedString("Convert", comment: "Maya")
-        navigationItem.largeTitleDisplayMode = .never
         view.backgroundColor = UIColor.dw_secondaryBackground()
 
         let swiftUIView = MayaConvertView(
             viewModel: viewModel,
+            onBack: { [weak self] in
+                self?.navigationController?.popViewController(animated: true)
+            },
             onContinue: { [weak self] in
                 self?.showOrderPreview()
             }

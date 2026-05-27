@@ -17,15 +17,13 @@
 
 import SwiftUI
 
-// MARK: - MenuCardStyle
+private enum MenuItemSlot { case top, bottom }
 
-private struct MenuCardStyle: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .padding(6)
-            .background(Color.secondaryBackground)
-            .clipShape(.rect(cornerRadius: 12))
-            .shadow(color: .shadow, radius: 10, x: 0, y: 5)
+private struct MenuItemHeightKey: PreferenceKey {
+    static var defaultValue: [MenuItemSlot: CGFloat] = [:]
+
+    static func reduce(value: inout [MenuItemSlot: CGFloat], nextValue: () -> [MenuItemSlot: CGFloat]) {
+        value.merge(nextValue()) { _, new in new }
     }
 }
 
@@ -41,8 +39,14 @@ struct MayaConvertView: View {
         static let hPadding: CGFloat = 20
         static let topPadding: CGFloat = 20
         static let contentSpacing: CGFloat = 20
+        static let cardSpacing: CGFloat = 5
+        static let topMenuItemHeightFallback: CGFloat = 74
         static let arrowIconSize: CGFloat = 24
-        static let arrowIconHeight: CGFloat = 12
+        static let arrowIconHeight: CGFloat = 11
+        static let arrowConnectorHeight: CGFloat = 8
+        static let arrowBadgeSize: CGFloat = 30
+        static let arrowBadgeCornerRadius: CGFloat = 10
+        static let arrowBadgeInset: CGFloat = 5
     }
 
     enum MenuItemState {
@@ -52,15 +56,23 @@ struct MayaConvertView: View {
 
     @StateObject private var viewModel: MayaConvertViewModel
     @State private var showLocalCurrency = false
+    @State private var topMenuItemHeight: CGFloat = Layout.topMenuItemHeightFallback
+    @State private var bottomMenuItemHeight: CGFloat = Layout.topMenuItemHeightFallback
+    private let onBack: (() -> Void)?
     private let onContinue: () -> Void
 
-    init(viewModel: MayaConvertViewModel, onContinue: @escaping () -> Void = {}) {
+    init(viewModel: MayaConvertViewModel, onBack: (() -> Void)? = nil, onContinue: @escaping () -> Void = {}) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.onBack = onBack
         self.onContinue = onContinue
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            NavigationBar(leading: { NavigationBarElement.back.button { onBack?() } })
+            TopIntro(title: String(format: NSLocalizedString("Convert Dash to %@", comment: "Maya"), viewModel.coin.name))
+                .padding(.horizontal, Layout.hPadding)
+                .padding(.bottom, 6)
             amountSection
             keyboard
         }
@@ -69,8 +81,7 @@ struct MayaConvertView: View {
                 showBackButton: Binding<Bool>.constant(false)
             ) {
                 LocalCurrencyView { code in
-                    App.shared.fiatCurrency = code
-                    viewModel.objectWillChange.send()
+                    viewModel.selectFiatCurrency(code)
                     showLocalCurrency = false
                 }
             }
@@ -94,7 +105,7 @@ struct MayaConvertView: View {
                 onMax: { viewModel.setMax() },
                 onCurrencyTap: { showLocalCurrency = true }
             )
-            .frame(height: 100)
+            .frame(height: 70)
             conversionCard
             receiveSection
         }
@@ -107,30 +118,56 @@ struct MayaConvertView: View {
     // MARK: - Conversion Card
 
     private var conversionCard: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: Layout.cardSpacing) {
             menuItem(state: .dash(balance: viewModel.dashBalance))
-            arrowDivider
+                .modifier(MayaMenuCardStyle())
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear
+                            .preference(key: MenuItemHeightKey.self, value: [.top: proxy.size.height])
+                    }
+                )
+
             menuItem(state: .coin(viewModel.coin, address: viewModel.address))
+                .modifier(MayaMenuCardStyle())
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear
+                            .preference(key: MenuItemHeightKey.self, value: [.bottom: proxy.size.height])
+                    }
+                )
         }
-        .modifier(MenuCardStyle())
+        .overlay(alignment: .top) {
+            arrowDivider
+                .offset(y: arrowCenterY - (Layout.arrowBadgeSize / 2) - Layout.cardSpacing - 3)
+        }
+        .onPreferenceChange(MenuItemHeightKey.self) { heights in
+            if let h = heights[.top], h > 0 { topMenuItemHeight = h }
+            if let h = heights[.bottom], h > 0 { bottomMenuItemHeight = h }
+        }
+    }
+
+    private var arrowCenterY: CGFloat {
+        let topCenterY = topMenuItemHeight / 2
+        let bottomCenterY = topMenuItemHeight + Layout.cardSpacing + (bottomMenuItemHeight / 2)
+        return (topCenterY + bottomCenterY) / 2
     }
 
     private var arrowDivider: some View {
         ZStack {
-            Rectangle()
-                .fill(Color.gray100)
-                .frame(height: 1)
-                .padding(.horizontal, Layout.padding)
-
-            ZStack {
-                Circle()
-                    .stroke(Color.gray100, lineWidth: 1)
-                    .frame(width: Layout.arrowIconSize, height: Layout.arrowIconSize)
-
-                Icon(name: .custom("downarrow-icon", maxHeight: Layout.arrowIconHeight))
-            }
-            .background(Color.secondaryBackground)
+            RoundedRectangle(cornerRadius: Layout.arrowBadgeCornerRadius, style: .continuous)
+                .fill(Color.secondaryBackground)
+                .frame(width: Layout.arrowBadgeSize, height: Layout.arrowBadgeSize)
+                .overlay(
+                    RoundedRectangle(cornerRadius: Layout.arrowBadgeCornerRadius, style: .continuous)
+                        .stroke(Color.primaryBackground, lineWidth: Layout.arrowBadgeInset)
+                )
+                .overlay(
+                    Icon(name: .custom("arrow-down", maxHeight: Layout.arrowIconHeight))
+                )
         }
+        .frame(height: Layout.arrowBadgeSize)
+        .padding(.horizontal, Layout.padding)
     }
 
     // MARK: - Receive Section
@@ -256,9 +293,9 @@ struct MayaConvertView: View {
         viewModel: MayaConvertViewModel(
             coin: MayaCryptoCurrency.supportedCoins[0],
             address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
-        )
+        ),
+        onBack: {}
     )
     .background(Color.primaryBackground)
-    .padding(.top, 80)
 }
 #endif

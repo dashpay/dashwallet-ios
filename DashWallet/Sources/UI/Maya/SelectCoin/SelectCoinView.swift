@@ -19,18 +19,6 @@
 
 import SwiftUI
 
-// MARK: - MenuCardStyle
-
-private struct MenuCardStyle: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .padding(6)
-            .background(Color.secondaryBackground)
-            .clipShape(.rect(cornerRadius: 20))
-            .shadow(color: .shadow, radius: 10, x: 0, y: 5)
-    }
-}
-
 // MARK: - SelectCoinView
 
 struct SelectCoinView: View {
@@ -48,16 +36,24 @@ struct SelectCoinView: View {
     }
 
     @StateObject private var viewModel = SelectCoinViewModel()
+    var onBack: (() -> Void)?
     var onCoinSelected: ((MayaCryptoCurrency) -> Void)?
 
-    init(onCoinSelected: ((MayaCryptoCurrency) -> Void)? = nil) {
+    init(onBack: (() -> Void)? = nil, onCoinSelected: ((MayaCryptoCurrency) -> Void)? = nil) {
+        self.onBack = onBack
         self.onCoinSelected = onCoinSelected
     }
 
     var body: some View {
         ZStack {
             Color.primaryBackground.ignoresSafeArea()
-            mainContent
+            VStack(spacing: 0) {
+                NavigationBar(
+                    leading: { NavigationBarElement.back.button { onBack?() } },
+                    central: { Text(NSLocalizedString("Select coin", comment: "Maya")).font(.subheadMedium) }
+                )
+                mainContent
+            }
         }
         .overlay(alignment: .bottom) {
             if viewModel.showHaltedToast {
@@ -79,6 +75,7 @@ struct SelectCoinView: View {
     private var mainContent: some View {
         if viewModel.isLoading {
             SwiftUI.ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if let error = viewModel.errorMessage {
             errorView(message: error)
         } else {
@@ -109,7 +106,7 @@ struct SelectCoinView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .modifier(MenuCardStyle())
+            .modifier(MayaMenuCardStyle())
         }
     }
 
@@ -152,6 +149,6 @@ struct SelectCoinView: View {
 
 #if DEBUG
 #Preview {
-    SelectCoinView()
+    SelectCoinView(onBack: {})
 }
 #endif

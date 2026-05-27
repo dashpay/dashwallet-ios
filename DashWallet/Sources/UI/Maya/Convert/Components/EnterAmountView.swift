@@ -20,13 +20,18 @@ import SwiftUI
 // MARK: - CurrencyOption
 
 enum CurrencyOption: Hashable {
-    case localCurrency
+    case fiat(String)
     case dash
     case coin(String)
 
+    var isFiat: Bool {
+        if case .fiat = self { return true }
+        return false
+    }
+
     var displayName: String {
         switch self {
-        case .localCurrency: return App.fiatCurrency
+        case .fiat(let code): return code
         case .dash: return "DASH"
         case .coin(let code): return code
         }
@@ -34,10 +39,10 @@ enum CurrencyOption: Hashable {
 
     var symbol: String? {
         switch self {
-        case .localCurrency:
+        case .fiat(let code):
             let formatter = NumberFormatter()
             formatter.numberStyle = .currency
-            formatter.currencyCode = App.fiatCurrency
+            formatter.currencyCode = code
             return formatter.currencySymbol
         case .dash: return nil
         case .coin(let code): return code
@@ -84,7 +89,7 @@ struct EnterAmountView: View {
             amount: value,
             symbol: selectedCurrency.symbol,
             showDashLogo: selectedCurrency == .dash,
-            showCurrencyButton: selectedCurrency == .localCurrency,
+            showCurrencyButton: selectedCurrency.isFiat,
             onCurrencyTap: onCurrencyTap
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -105,7 +110,7 @@ struct EnterAmountView: View {
     EnterAmountView(
         value: .constant("12.5"),
         selectedCurrency: .constant(.dash),
-        options: [.localCurrency, .dash, .coin("BTC")]
+        options: [.fiat("USD"), .dash, .coin("BTC")]
     )
     .frame(height: 110)
     .background(.red.opacity(0.3))

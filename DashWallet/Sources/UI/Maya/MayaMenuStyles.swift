@@ -17,12 +17,23 @@
 
 import SwiftUI
 
-struct OrderPreviewMenuCardStyle: ViewModifier {
+struct MayaMenuCardStyle: ViewModifier {
+    var shadowRadius: CGFloat = 10
+
     func body(content: Content) -> some View {
         content
             .padding(6)
             .background(Color.secondaryBackground)
             .clipShape(.rect(cornerRadius: 20))
-            .shadow(color: .shadow, radius: 20, x: 0, y: 5)
+            .shadow(color: .shadow, radius: shadowRadius, x: 0, y: 5)
+    }
+}
+
+struct MayaMenuItemButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .opacity(configuration.isPressed ? 0.85 : 1.0)
+            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: configuration.isPressed)
     }
 }

@@ -35,11 +35,12 @@ struct OrderPreviewView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(NSLocalizedString("Order preview", comment: "Maya"))
-                .font(.title1)
-                .foregroundColor(.primaryText)
+            NavigationBar(leading: {
+                NavigationBarElement.back.button { onCancel() }
+            })
+
+            TopIntro(title: String(format: NSLocalizedString("Convert Dash to %@", comment: "Maya"), viewModel.coin.name))
                 .padding(.horizontal, 20)
-                .padding(.top, 10)
                 .padding(.bottom, 20)
 
             VStack(spacing: Layout.cardSpacing) {
@@ -50,7 +51,7 @@ struct OrderPreviewView: View {
                 feeRow
                 totalRow
             }
-            .modifier(OrderPreviewMenuCardStyle())
+            .modifier(MayaMenuCardStyle(shadowRadius: 20))
             .padding(.horizontal, 20)
 
             Spacer(minLength: 0)

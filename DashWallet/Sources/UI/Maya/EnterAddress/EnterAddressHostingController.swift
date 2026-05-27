@@ -21,7 +21,8 @@ import AuthenticationServices
 import SwiftUI
 import UIKit
 
-class EnterAddressHostingController: UIViewController {
+class EnterAddressHostingController: UIViewController, NavigationBarDisplayable {
+    var isNavigationBarHidden: Bool { true }
     #if DEBUG
     private let isDemoValidationBypassEnabled = true
     #else
@@ -52,12 +53,13 @@ class EnterAddressHostingController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = NSLocalizedString("Enter address", comment: "Maya")
         view.backgroundColor = UIColor.dw_secondaryBackground()
-        navigationItem.largeTitleDisplayMode = .never
 
         let enterAddressView = EnterAddressView(
             viewModel: viewModel,
+            onBack: { [weak self] in
+                self?.navigationController?.popViewController(animated: true)
+            },
             onScanQR: { [weak self] in
                 self?.presentQRScanner()
             },

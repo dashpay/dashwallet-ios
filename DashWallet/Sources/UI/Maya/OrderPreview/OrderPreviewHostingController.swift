@@ -19,7 +19,8 @@ import Foundation
 import SwiftUI
 import UIKit
 
-final class OrderPreviewHostingController: UIViewController {
+final class OrderPreviewHostingController: UIViewController, NavigationBarDisplayable {
+    var isNavigationBarHidden: Bool { true }
     private let viewModel: OrderPreviewViewModel
 
     init(viewModel: OrderPreviewViewModel) {
@@ -33,7 +34,6 @@ final class OrderPreviewHostingController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.largeTitleDisplayMode = .never
         view.backgroundColor = UIColor.dw_secondaryBackground()
 
         let rootView = OrderPreviewContainerView(

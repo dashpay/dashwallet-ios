@@ -22,13 +22,19 @@ import Foundation
 final class MayaAPIService: HTTPClient<MayaEndpoint> {
     static let shared = MayaAPIService()
 
+    // MARK: - Pools and Prices (Midgard)
+
     func fetchPools() async throws -> [MayaPool] {
         try await request(.getPools)
     }
 
+    // MARK: - Inbound Addresses (mayanode)
+
     func fetchInboundAddresses() async throws -> [MayaInboundAddress] {
         try await request(.getInboundAddresses)
     }
+
+    // MARK: - Quote and Swap (mayanode)
 
     func fetchQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> MayaSwapQuote {
         try await request(
@@ -45,6 +51,8 @@ final class MayaAPIService: HTTPClient<MayaEndpoint> {
         try await request(.getSwapTransactionInfo(txid: txid))
     }
 
+    // MARK: - Address Validation
+
     /// Validates a destination address by requesting a swap quote from the Maya API.
     /// Returns nil if the address is valid, or an error string if invalid.
     func validateAddress(destination: String, toAsset: String) async -> String? {
@@ -59,17 +67,18 @@ final class MayaAPIService: HTTPClient<MayaEndpoint> {
             )
             return quote.error
         } catch {
-            // Non-200 responses may contain an error body with the validation message
-            if case HTTPClientError.statusCode(let response) = error {
-                if let body = try? JSONDecoder().decode(MayaSwapQuote.self, from: response.data) {
-                    return body.error
-                }
+            // Non-200 responses may still carry a structured error body with the validation message.
+            if case HTTPClientError.statusCode(let response) = error,
+               let body = try? JSONDecoder().decode(MayaSwapQuote.self, from: response.data) {
+                return body.error
             }
             DSLogger.log("Maya: Address validation request failed: \(error)")
             return NSLocalizedString("Address validation unavailable — please check your connection", comment: "Maya")
         }
     }
 }
+
+// MARK: - Inbound Address Model
 
 struct MayaInboundAddress: Decodable {
     let chain: String
@@ -100,6 +109,8 @@ struct MayaInboundAddress: Decodable {
         case pubKey = "pub_key"
     }
 }
+
+// MARK: - Quote Models
 
 struct MayaSwapQuote: Decodable {
     let error: String?
@@ -141,29 +152,6 @@ struct MayaSwapQuote: Decodable {
         case routeProviders
         case executionNetwork
     }
-
-    static func error(message: String) -> MayaSwapQuote {
-        MayaSwapQuote(
-            error: message,
-            expectedAmountOut: nil,
-            dustThreshold: nil,
-            expiry: nil,
-            fees: nil,
-            inboundAddress: nil,
-            inboundConfirmationBlocks: nil,
-            inboundConfirmationSeconds: nil,
-            memo: nil,
-            notes: nil,
-            outboundDelayBlocks: nil,
-            outboundDelaySeconds: nil,
-            recommendedMinAmountIn: nil,
-            slippageBps: nil,
-            warning: nil,
-            routeId: nil,
-            routeProviders: nil,
-            executionNetwork: nil
-        )
-    }
 }
 
 struct MayaSwapFees: Decodable {
@@ -185,6 +173,8 @@ struct MayaSwapFees: Decodable {
         case totalBps = "total_bps"
     }
 }
+
+// MARK: - Transaction Tracking Models
 
 struct MayaSwapTransactionInfo: Decodable {
     let observedTx: MayaObservedTx?
@@ -245,6 +235,7 @@ struct MayaCoinAmount: Decodable {
 
 struct MayaKeysignMetric: Decodable {
     let txId: String?
+    // The API may return node TSS times as either Double or Int depending on the node version.
     let nodeTssTimes: [String: Double]?
 
     enum CodingKeys: String, CodingKey {
