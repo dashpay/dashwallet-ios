@@ -26,7 +26,7 @@ private struct MenuCardStyle: ViewModifier {
         content
             .padding(6)
             .background(Color.secondaryBackground)
-            .clipShape(.rect(cornerRadius: 12))
+            .clipShape(.rect(cornerRadius: 20))
             .shadow(color: .shadow, radius: 10, x: 0, y: 5)
     }
 }
@@ -34,7 +34,6 @@ private struct MenuCardStyle: ViewModifier {
 // MARK: - SelectCoinView
 
 struct SelectCoinView: View {
-
     private enum Layout {
         static let hPadding: CGFloat = 20
         static let topPadding: CGFloat = 10
@@ -48,8 +47,12 @@ struct SelectCoinView: View {
         static let errorTextHPadding: CGFloat = 40
     }
 
-    @StateObject private var viewModel: SelectCoinViewModel = SelectCoinViewModel()
+    @StateObject private var viewModel = SelectCoinViewModel()
     var onCoinSelected: ((MayaCryptoCurrency) -> Void)?
+
+    init(onCoinSelected: ((MayaCryptoCurrency) -> Void)? = nil) {
+        self.onCoinSelected = onCoinSelected
+    }
 
     var body: some View {
         ZStack {
@@ -58,7 +61,7 @@ struct SelectCoinView: View {
         }
         .overlay(alignment: .bottom) {
             if viewModel.showHaltedToast {
-                HaltedToast(showHaltedToast: viewModel.showHaltedToast)
+                HaltedToast(showHaltedToast: $viewModel.showHaltedToast)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     .padding(.horizontal, Layout.toastHPadding)
                     .padding(.bottom, Layout.toastBPadding)
@@ -99,14 +102,11 @@ struct SelectCoinView: View {
             LazyVStack(spacing: Layout.listSpacing) {
                 ForEach(viewModel.filteredCoins) { item in
                     Button {
-                        if !item.isHalted {
-                            onCoinSelected?(item.coin)
-                        }
+                        onCoinSelected?(item.coin)
                     } label: {
                         CoinRowView(item: item)
                     }
                     .buttonStyle(.plain)
-                    .disabled(item.isHalted)
                 }
             }
             .modifier(MenuCardStyle())
@@ -151,7 +151,7 @@ struct SelectCoinView: View {
 }
 
 #if DEBUG
-#Preview() {
+#Preview {
     SelectCoinView()
 }
 #endif

@@ -116,5 +116,3 @@ class BuySellPortalModel: ObservableObject, NetworkReachabilityHandling {
         stopNetworkMonitoring()
     }
 }
-
-

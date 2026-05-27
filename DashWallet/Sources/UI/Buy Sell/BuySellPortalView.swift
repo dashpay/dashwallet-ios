@@ -37,7 +37,7 @@ private struct MenuCardStyle: ViewModifier {
         content
             .padding(6)
             .background(Color.secondaryBackground)
-            .clipShape(.rect(cornerRadius: 12))
+            .clipShape(.rect(cornerRadius: 20))
             .shadow(color: .shadow, radius: 10, x: 0, y: 5)
     }
 }
@@ -46,6 +46,7 @@ private struct MenuCardStyle: ViewModifier {
 
 struct BuySellPortalView: View {
     let showCoinbase: Bool
+    var onBack: () -> Void
     var onUphold: () -> Void
     var onCoinbase: () -> Void
     var onTopper: () -> Void
@@ -54,14 +55,19 @@ struct BuySellPortalView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                NavigationBar(leading: { NavigationBarElement.back.button { } })
+                NavigationBar(leading: { NavigationBarElement.back.button { onBack() } })
 
                 VStack(alignment: .leading, spacing: 20) {
                     topIntro
-                    exchangeServicesCard
+
                     topperCard
+                    upholdCard
+                    if showCoinbase {
+                        coinbaseCard
+                    }
                     mayaCard
                 }
+                .padding(.top, 10)
                 .padding(.horizontal, 20)
             }
         }
@@ -69,16 +75,6 @@ struct BuySellPortalView: View {
     }
 
     // MARK: - Cards
-
-    private var exchangeServicesCard: some View {
-        VStack(spacing: 2) {
-            menuItem(for: .uphold, action: onUphold)
-            if showCoinbase {
-                menuItem(for: .coinbase, action: onCoinbase)
-            }
-        }
-        .modifier(MenuCardStyle())
-    }
 
     private var topperCard: some View {
         VStack(spacing: 2) {
@@ -88,18 +84,25 @@ struct BuySellPortalView: View {
         .modifier(MenuCardStyle())
     }
 
-    private var mayaCard: some View {
-        menuItem(for: .maya, action: onMaya)
-            .modifier(MenuCardStyle())
+    private var upholdCard: some View {
+        VStack(spacing: 2) {
+            menuItem(for: .uphold, action: onUphold)
+        }
+        .modifier(MenuCardStyle())
     }
 
-    // MARK: - Subviews
+    private var coinbaseCard: some View {
+        VStack(spacing: 2) {
+            menuItem(for: .coinbase, action: onCoinbase)
+        }
+        .modifier(MenuCardStyle())
+    }
 
-    private var topIntro: some View {
-        TopIntro(
-            title: NSLocalizedString("Buy & sell Dash", comment: "Buy Sell Portal"),
-            subtitle: NSLocalizedString("Select a service to buy, sell, convert and transfer Dash", comment: "Buy Sell Portal")
-        )
+    private var mayaCard: some View {
+        VStack(spacing: 2) {
+            menuItem(for: .maya, action: onMaya)
+        }
+        .modifier(MenuCardStyle())
     }
 
     private var poweredByUpholdBadge: some View {
@@ -116,7 +119,7 @@ struct BuySellPortalView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 5)
         .background(Color.gray300Alpha10)
-        .clipShape(.rect(cornerRadius: 8))
+        .clipShape(.rect(cornerRadius: 14))
     }
 
     // MARK: - Helpers
@@ -131,12 +134,22 @@ struct BuySellPortalView: View {
         }
         .buttonStyle(MenuItemButtonStyle())
     }
+
+    // MARK: - Subviews
+
+    private var topIntro: some View {
+        TopIntro(
+            title: NSLocalizedString("Buy & sell Dash", comment: "Buy Sell Portal"),
+            subtitle: NSLocalizedString("Select a service to buy, sell, convert and transfer Dash", comment: "Buy Sell Portal")
+        )
+    }
 }
 
 #if DEBUG
 #Preview("BuySell Portal - Coinbase") {
     BuySellPortalView(
         showCoinbase: true,
+        onBack: {},
         onUphold: {},
         onCoinbase: {},
         onTopper: {},
@@ -147,6 +160,7 @@ struct BuySellPortalView: View {
 #Preview("BuySell Portal - No Coinbase") {
     BuySellPortalView(
         showCoinbase: false,
+        onBack: {},
         onUphold: {},
         onCoinbase: {},
         onTopper: {},

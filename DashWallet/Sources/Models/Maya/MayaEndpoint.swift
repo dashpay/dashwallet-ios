@@ -23,6 +23,7 @@ enum MayaEndpoint {
     case getPools
     case getInboundAddresses
     case quoteSwap(fromAsset: String, toAsset: String, amount: Int64, destination: String)
+    case getSwapTransactionInfo(txid: String)
 }
 
 extension MayaEndpoint: TargetType {
@@ -31,7 +32,7 @@ extension MayaEndpoint: TargetType {
         switch self {
         case .getPools:
             return URL(string: "https://midgard.mayachain.info/v2/")!
-        case .getInboundAddresses, .quoteSwap:
+        case .getInboundAddresses, .quoteSwap, .getSwapTransactionInfo:
             return URL(string: "https://mayanode.mayachain.info/mayachain/")!
         }
     }
@@ -44,6 +45,8 @@ extension MayaEndpoint: TargetType {
             return "inbound_addresses"
         case .quoteSwap:
             return "quote/swap"
+        case .getSwapTransactionInfo(let txid):
+            return "tx/\(txid)"
         }
     }
 
@@ -63,6 +66,8 @@ extension MayaEndpoint: TargetType {
                 ],
                 encoding: URLEncoding.queryString
             )
+        case .getSwapTransactionInfo:
+            return .requestPlain
         default:
             return .requestPlain
         }

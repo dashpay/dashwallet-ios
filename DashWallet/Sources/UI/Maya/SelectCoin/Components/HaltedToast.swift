@@ -19,16 +19,13 @@ import SwiftUI
 
 struct HaltedToast: View {
     
-    @State var showHaltedToast: Bool
+    @Binding var showHaltedToast: Bool
     
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
             HStack(alignment: .top, spacing: 10) {
-                Icon(name: .system("exclamationmark.triangle.fill"))
-                    .foregroundColor(Color.white)
-                    .font(.system(size: 15))
-                    .frame(width: 24, height: 24)
-                
+                Icon(name: .custom("toast-warning-yellow", maxHeight: 15.5))
+
                 Text(NSLocalizedString("Some coins are not available because of the halted chain", comment: "Maya"))
                     .font(.subhead)
                     .foregroundColor(.white)
@@ -44,8 +41,11 @@ struct HaltedToast: View {
                     Circle()
                         .fill(Color.whiteAlpha10)
                         .frame(width: 24, height: 24)
-                    
-                    Icon(name: .custom("xmark", maxHeight: 7))
+
+                    Image("xmark")
+                        .renderingMode(.template)
+                        .foregroundStyle(.white)
+                        .frame(width: 7, height: 7)
                 }
             }
         }
@@ -59,6 +59,6 @@ struct HaltedToast: View {
 }
 
 #Preview {
-    HaltedToast(showHaltedToast: false)
+    HaltedToast(showHaltedToast: .constant(false))
         .padding(20)
 }

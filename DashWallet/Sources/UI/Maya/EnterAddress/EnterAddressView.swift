@@ -26,7 +26,7 @@ private struct MenuCardStyle: ViewModifier {
         content
             .padding(6)
             .background(Color.secondaryBackground)
-            .clipShape(.rect(cornerRadius: 12))
+            .clipShape(.rect(cornerRadius: 20))
             .shadow(color: .shadow, radius: 10, x: 0, y: 5)
     }
 }
@@ -44,47 +44,36 @@ struct EnterAddressView: View {
         ZStack {
             Color.primaryBackground
                 .ignoresSafeArea()
-                .onTapGesture { dismissKeyboard() }
 
             VStack(spacing: 0) {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 2) {
                         addressField
-                            .padding(.top, 20)
-
-                        if let error = viewModel.addressValidationErrorMessage ?? viewModel.errorMessage {
-                            Text(error)
-                                .font(.system(size: 12))
-                                .foregroundColor(.systemRed)
-                                .padding(.horizontal, 16)
-                                .padding(.top, -10)
-                        }
 
                         addressSourcesMenu
 
-                        if viewModel.hasClipboardContent {
-                            if viewModel.isClipboardRevealed {
-                                clipboardSection
-                            } else {
-                                showClipboardButton
-                            }
+                        if let clipboardContent = viewModel.clipboardContent {
+                            clipboardContentRow(clipboardContent)
+                        } else if viewModel.hasClipboardCandidate {
+                            clipboardPermissionRow
                         }
                     }
+                    .modifier(MenuCardStyle())
                     .padding(.horizontal, 20)
+                    .padding(.top, 10)
                 }
 
                 continueButton
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 60)
                     .padding(.bottom, 16)
             }
+        }
+        .onChange(of: viewModel.addressText) { _ in
+            viewModel.onAddressChanged()
         }
         .onAppear {
             viewModel.loadAddressSources()
         }
-    }
-
-    private func dismissKeyboard() {
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 
     // MARK: - Address Field
@@ -92,10 +81,13 @@ struct EnterAddressView: View {
     private var addressField: some View {
         AddressFieldView(
             text: $viewModel.addressText,
+            label: viewModel.addressLabel,
             placeholder: viewModel.placeholderText,
             hasError: viewModel.showAddressError,
+            errorText: viewModel.addressValidationErrorMessage ?? viewModel.errorMessage,
             onScanQR: onScanQR
         )
+        .padding(14)
     }
 
     // MARK: - Address Sources Menu
@@ -105,7 +97,8 @@ struct EnterAddressView: View {
             Text(NSLocalizedString("Paste address from", comment: "Maya"))
                 .font(.footnote)
                 .foregroundColor(.tertiaryText)
-                .padding(10)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 14)
 
             AddressSourceView(
                 sourceType: .uphold,
@@ -131,62 +124,43 @@ struct EnterAddressView: View {
                 }
             )
         }
-        .modifier(MenuCardStyle())
     }
 
     // MARK: - Clipboard
 
-    private var showClipboardButton: some View {
-        Button(action: { viewModel.revealClipboard() }) {
-            HStack(spacing: 8) {
-                Image(systemName: "doc.on.clipboard")
-                    .font(.system(size: 14))
-                    .foregroundColor(.dashBlue)
+    private var clipboardPermissionRow: some View {
+        Button(action: { viewModel.pasteFromClipboard() }) {
+            HStack(spacing: 10) {
+                Icon(name: .custom("masternode-keys"))
+                    .frame(width: 30, height: 30)
 
-                Text(NSLocalizedString("Show content in the clipboard", comment: "Maya"))
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.dashBlue)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Clipboard")
+                        .font(Font.subheadMedium)
+                        .foregroundColor(Color.gray500)
+
+                    Text(NSLocalizedString("Show content in the clipboard", comment: "Maya"))
+                        .font(Font.footnote)
+                        .foregroundColor(.tertiaryText)
+                }
+
+                Spacer()
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(Color.secondaryBackground)
-            .cornerRadius(12)
-            .shadow(color: .shadow, radius: 10, x: 0, y: 5)
+            .padding(10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(.rect)
         }
         .buttonStyle(.plain)
     }
 
-    private var clipboardSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(NSLocalizedString("Tap the address from the clipboard to paste it", comment: "Maya"))
-                .font(.system(size: 13, weight: .regular))
-                .foregroundColor(.secondaryText)
-
-            Button(action: { viewModel.pasteFromClipboard() }) {
-                HStack(spacing: 12) {
-                    Image(systemName: "doc.on.clipboard")
-                        .font(.system(size: 16))
-                        .foregroundColor(.dashBlue)
-                        .frame(width: 24, height: 24)
-
-                    if let content = viewModel.revealedClipboardContent {
-                        Text(content)
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.primaryText)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                    }
-
-                    Spacer()
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+    private func clipboardContentRow(_ content: String) -> some View {
+        AddressSourceView(
+            sourceType: .clipboard,
+            state: .available(content),
+            onTap: {
+                viewModel.pasteFromClipboard()
             }
-            .buttonStyle(.plain)
-            .background(Color.secondaryBackground)
-            .cornerRadius(12)
-            .shadow(color: .shadow, radius: 10, x: 0, y: 5)
-        }
+        )
     }
 
     // MARK: - Continue Button
@@ -194,13 +168,21 @@ struct EnterAddressView: View {
     private var continueButton: some View {
         DashButton(
             text: NSLocalizedString("Continue", comment: ""),
-            isEnabled: viewModel.isAddressValid) {
-                let address = viewModel.addressText.trimmingCharacters(in: .whitespacesAndNewlines)
+            isEnabled: viewModel.isContinueEnabled) {
+                guard let address = viewModel.attemptContinue() else { return }
                 onContinue?(address)
             }
     }
 }
 
-#Preview {
+#Preview("Default") {
     EnterAddressView(viewModel: EnterAddressViewModel(coin: MayaCryptoCurrency.supportedCoins[0]))
+}
+
+#Preview("Clipboard Revealed") {
+    EnterAddressView(viewModel: {
+        let viewModel = EnterAddressViewModel(coin: MayaCryptoCurrency.supportedCoins[0])
+        viewModel.clipboardContent = "dash:Xq9M8LkYh6sQa7u7pVv3mY8i7fQ5j8m4Kc?amount=0.1"
+        return viewModel
+    }())
 }

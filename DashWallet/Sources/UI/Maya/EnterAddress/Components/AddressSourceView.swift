@@ -24,11 +24,13 @@ import SwiftUI
 enum AddressSourceType: Identifiable {
     case uphold
     case coinbase
+    case clipboard
 
     var id: String {
         switch self {
         case .uphold: return "uphold"
         case .coinbase: return "coinbase"
+        case .clipboard: return "clipboard"
         }
     }
 
@@ -36,6 +38,7 @@ enum AddressSourceType: Identifiable {
         switch self {
         case .uphold: return "Uphold"
         case .coinbase: return "Coinbase"
+        case .clipboard: return "Clipboard"
         }
     }
 }
@@ -120,6 +123,9 @@ struct AddressSourceView: View {
         case .coinbase:
             Icon(name: .custom("maya.coinbase.logo"))
                 .frame(width: 30, height: 30)
+        case .clipboard:
+            Icon(name: .custom("masternode-keys"))
+                .frame(width: 30, height: 30)
         }
     }
 
@@ -139,6 +145,8 @@ struct AddressSourceView: View {
         }
         .font(Font.footnote)
         .foregroundColor(.tertiaryText)
+        .lineLimit(sourceType == .clipboard ? 2 : nil)
+        .truncationMode(.tail)
     }
 
     private var isDisabled: Bool {
@@ -156,9 +164,10 @@ struct AddressSourceView: View {
     VStack(spacing: 0) {
         AddressSourceView(sourceType: .uphold, state: .loggedOut, onTap: {})
         AddressSourceView(sourceType: .coinbase, state: .loggedOut, onTap: {})
+            .background(.red.opacity(0.5))
     }
     .padding(6)
-    .background(Color.secondaryBackground)
+    .background(Color.red.opacity(0.3))
     .cornerRadius(12)
     .padding()
 }
@@ -185,4 +194,3 @@ struct AddressSourceView: View {
     .padding()
 }
 #endif
-
