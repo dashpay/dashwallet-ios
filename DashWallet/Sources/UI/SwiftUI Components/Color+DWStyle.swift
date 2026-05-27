@@ -90,12 +90,20 @@ extension Color {
         Color("BlackAlpha40")
     }
 
+    static var black1000Alpha8: Color {
+        Color("Black1000Alpha8")
+    }
+
     static var black1000Alpha30: Color {
         Color("Black1000Alpha30")
     }
 
     static var black1000Alpha50: Color {
         Color("Black1000Alpha50")
+    }
+
+    static var black1000Alpha90: Color {
+        Color("Black1000Alpha90")
     }
 
 // Gray
@@ -159,7 +167,11 @@ extension Color {
     static var gray400: Color {
         Color("Gray400")
     }
-    
+
+    static var gray400Alpha10: Color {
+        Color("Gray400Alpha10")
+    }
+
     static var gray500: Color {
         Color("Gray500")
     }

@@ -22,6 +22,128 @@
 
 import SwiftUI
 
+struct NavigationBar<Leading: View, Central: View, Trailing: View>: View {
+    private let leading: Leading
+    private let central: Central
+    private let trailing: Trailing
+
+    init(
+        @ViewBuilder leading: () -> Leading,
+        @ViewBuilder central: () -> Central,
+        @ViewBuilder trailing: () -> Trailing
+    ) {
+        self.leading = leading()
+        self.central = central()
+        self.trailing = trailing()
+    }
+
+    var body: some View {
+        ZStack {
+            HStack {
+                leading
+
+                Spacer()
+
+                trailing
+
+            }
+            .padding(.horizontal, 20)
+
+            central
+        }
+        .frame(maxWidth: .infinity, minHeight: 64)
+    }
+}
+
+// MARK: - Convenience Initializers (2 elements)
+
+extension NavigationBar where Trailing == EmptyView {
+    init(@ViewBuilder leading: () -> Leading, @ViewBuilder central: () -> Central) {
+        self.init(leading: leading, central: central, trailing: { EmptyView() })
+    }
+}
+
+extension NavigationBar where Central == EmptyView {
+    init(@ViewBuilder leading: () -> Leading, @ViewBuilder trailing: () -> Trailing) {
+        self.init(leading: leading, central: { EmptyView() }, trailing: trailing)
+    }
+}
+
+extension NavigationBar where Leading == EmptyView {
+    init(@ViewBuilder central: () -> Central, @ViewBuilder trailing: () -> Trailing) {
+        self.init(leading: { EmptyView() }, central: central, trailing: trailing)
+    }
+}
+
+// MARK: - Convenience Initializers (1 element)
+
+extension NavigationBar where Central == EmptyView, Trailing == EmptyView {
+    init(@ViewBuilder leading: () -> Leading) {
+        self.init(leading: leading, central: { EmptyView() }, trailing: { EmptyView() })
+    }
+}
+
+extension NavigationBar where Leading == EmptyView, Trailing == EmptyView {
+    init(@ViewBuilder central: () -> Central) {
+        self.init(leading: { EmptyView() }, central: central, trailing: { EmptyView() })
+    }
+}
+
+extension NavigationBar where Leading == EmptyView, Central == EmptyView {
+    init(@ViewBuilder trailing: () -> Trailing) {
+        self.init(leading: { EmptyView() }, central: { EmptyView() }, trailing: trailing)
+    }
+}
+
+enum NavigationBarElement: String {
+    case template = "cotrols-template"
+    case back = "toolbar-back"
+    case close = "toolbar-close"
+    case plus = "toolbar-plus"
+    case info = "controls-info"
+
+    private var iconMaxHeight: CGFloat {
+        switch self {
+        case .template: return 5
+        case .back: return 10
+        case .close: return 9
+        case .plus: return 10
+        case .info: return 22
+        }
+    }
+
+    var icon: some View {
+        Group {
+            if self == .info {
+                Icon(name: .custom(rawValue, maxHeight: 22))
+            } else {
+                ZStack {
+                    Circle()
+                        .stroke(Color.gray300Alpha30, lineWidth: 1.5)
+                        .frame(width: 34, height: 34)
+                    Icon(name: .custom(rawValue, maxHeight: iconMaxHeight))
+                }
+            }
+        }
+    }
+
+    func button(action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            icon.frame(width: 44, height: 44)
+        }
+        .buttonStyle(NavigationBarButtonStyle())
+    }
+}
+
+private struct NavigationBarButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.88 : 1.0)
+            .opacity(configuration.isPressed ? 0.7 : 1.0)
+            .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
 // MARK: - NavBarBack
 
 /// Navigation bar with only a back button
@@ -203,52 +325,73 @@ struct NavBarClose: View {
     }
 }
 
-// MARK: - Legacy Support
-
-/// Legacy name for NavBarBack - use NavBarBack instead
-@available(*, deprecated, renamed: "NavBarBack", message: "Use NavBarBack for clarity")
-typealias NavigationBar = NavBarBack
-
 // MARK: - Previews
 
-struct NavigationBar_Previews: PreviewProvider {
-    static var previews: some View {
-        VStack(spacing: 0) {
-            NavBarBack {
-                print("Back tapped")
-            }
+#Preview("NavBarBack") {
+    NavigationBar(
+        leading: { NavigationBarElement.back.button { } }
+    )
+}
 
-            Spacer()
-        }
-        .previewDisplayName("NavBarBack - Light")
+#Preview("NavBarBackTitle") {
+    NavigationBar(
+        leading: { NavigationBarElement.back.button { } },
+        central: { Text("Title").font(.subheadMedium) }
+    )
+}
 
-        VStack(spacing: 0) {
-            NavBarBack {
-                print("Back tapped")
-            }
+#Preview("NavBarBackTitleInfo") {
+    NavigationBar(
+        leading: { NavigationBarElement.back.button { } },
+        central: { Text("Title").font(.subheadMedium) },
+        trailing: { NavigationBarElement.info.button { } }
+    )
+}
 
-            Spacer()
-        }
-        .preferredColorScheme(.dark)
-        .previewDisplayName("NavBarBack - Dark")
+#Preview("NavBarBackInfo") {
+    NavigationBar(
+        leading: { NavigationBarElement.back.button { } },
+        trailing: { NavigationBarElement.info.button { } }
+    )
+}
 
-        VStack(spacing: 0) {
-            NavBarClose {
-                print("Close tapped")
-            }
+#Preview("NavBarTitleClose") {
+    NavigationBar(
+        central: { Text("Title").font(.subheadMedium) },
+        trailing: { NavigationBarElement.close.button { } }
+    )
+}
 
-            Spacer()
-        }
-        .previewDisplayName("NavBarClose - Light")
+#Preview("NavBarBackTitlePlus") {
+    NavigationBar(
+        leading: { NavigationBarElement.back.button { } },
+        central: { Text("Title").font(.subheadMedium) },
+        trailing: { NavigationBarElement.close.button { } }
+    )
+}
 
-        VStack(spacing: 0) {
-            NavBarClose {
-                print("Close tapped")
-            }
+#Preview("NavBarBackPlus") {
+    NavigationBar(
+        leading: { NavigationBarElement.back.button { } },
+        trailing: { NavigationBarElement.plus.button { } }
+    )
+}
 
-            Spacer()
-        }
-        .preferredColorScheme(.dark)
-        .previewDisplayName("NavBarClose - Dark")
-    }
+#Preview("NavBarTitle") {
+    NavigationBar(
+        central: { Text("Title").font(.subheadMedium) }
+    )
+}
+
+#Preview("NavBarClose") {
+    NavigationBar(
+        trailing: { NavigationBarElement.close.button { } }
+    )
+}
+
+#Preview("NavBarTitleClose") {
+    NavigationBar(
+        central: { Text("Title").font(.subheadMedium) },
+        trailing: { NavigationBarElement.close.button { } }
+    )
 }

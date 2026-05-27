@@ -55,6 +55,10 @@ struct ExploreMenuScreen: View {
                 title: NSLocalizedString("Explore Dash", comment: ""),
                 subtitle: NSLocalizedString("Find merchants that accept Dash, where to buy it and how to earn income with it.", comment: "")
             )
+            .padding(.leading, 20)
+            .padding(.trailing, 60)
+            .padding(.top, 10)
+            .padding(.bottom, 20)
 
             // Menu list
             VStack(spacing: 2) {

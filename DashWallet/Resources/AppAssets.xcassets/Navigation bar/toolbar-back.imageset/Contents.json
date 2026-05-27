@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "control-back.png",
+      "filename" : "toolbar-back@x1.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "control-back@2x.png",
+      "filename" : "toolbar-back@x2.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "control-back@3x.png",
+      "filename" : "toolbar-back@x3.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

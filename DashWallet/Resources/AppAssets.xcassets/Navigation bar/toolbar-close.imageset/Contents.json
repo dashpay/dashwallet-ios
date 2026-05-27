@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "control-close.png",
+      "filename" : "toolbar-close@x1.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "control-close@2x.png",
+      "filename" : "toolbar-close@x2.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "control-close@3x.png",
+      "filename" : "toolbar-close@x3.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
