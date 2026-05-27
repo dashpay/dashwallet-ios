@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2025 Dash Core Group. All rights reserved.
 //
@@ -19,143 +19,205 @@ import SwiftUI
 import SDWebImageSwiftUI
 
 struct DashSpendConfirmationDialog: View {
-    let amount: String
     let merchantName: String
     let merchantIconUrl: String
     let originalPrice: Decimal
     let discount: Decimal
+    let quantities: [Decimal: Int]?
     let onConfirm: () -> Void
     let onCancel: () -> Void
-    
-    @Environment(\.presentationMode) private var presentationMode
-    
+    @Binding var contentHeight: CGFloat
+
     private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: kDefaultCurrencyCode)
-    
+    private var youPayAmount: Decimal { originalPrice * (1 - discount) }
+
+    private var formattedPayAmount: String {
+        let hasCents = youPayAmount != Decimal(Int(truncating: NSDecimalNumber(decimal: youPayAmount)))
+        let formatter = NumberFormatter.fiatFormatter(currencyCode: kDefaultCurrencyCode)
+        if !hasCents {
+            formatter.minimumFractionDigits = 0
+            formatter.maximumFractionDigits = 0
+        }
+        return formatter.string(from: NSDecimalNumber(decimal: youPayAmount))?.strippingCurrencySymbol(formatter) ?? ""
+    }
+
+    private var quantityLines: [String] {
+        guard let quantities = quantities else { return [] }
+        return quantities
+            .filter { $0.value > 0 }
+            .sorted { $0.key < $1.key }
+            .map { denomination, count in
+                let amount = fiatFormatter.string(from: NSDecimalNumber(decimal: denomination)) ?? "$\(denomination)"
+                return "\(count) x \(amount)"
+            }
+    }
+
     var body: some View {
-        VStack(spacing: 40) {
-            HStack {
-                Text(fiatFormatter.currencySymbol + amount)
-                    .font(.system(size: 32, weight: .medium))
-                    .foregroundColor(.primaryText)
+        VStack(spacing: 0) {
+            Capsule()
+                .fill(Color(red: 0.69, green: 0.71, blue: 0.74).opacity(0.5))
+                .frame(width: 36, height: 5)
+                .padding(.top, 6)
+                .padding(.bottom, 13)
+
+            Text(NSLocalizedString("Confirm", comment: "DashSpend"))
+                .font(.calloutMedium)
+                .foregroundColor(.primaryText)
+                .frame(height: 44)
+
+            VStack(spacing: 20) {
+                DashSpendAmountView(
+                    currencySymbol: fiatFormatter.currencySymbol,
+                    amount: formattedPayAmount
+                )
+                .frame(height: 85)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    detailsRow(title: NSLocalizedString("From", comment: "DashSpend")) {
+                        HStack(spacing: 8) {
+                            Image("image.explore.dash.wts.dash")
+                                .resizable()
+                                .frame(width: 20, height: 20)
+                                .clipShape(RoundedRectangle(cornerRadius: 7))
+                            Text(NSLocalizedString("Dash Wallet", comment: "DashSpend"))
+                                .font(.subhead)
+                                .foregroundColor(.primaryText)
+                        }
+                    }
+
+                    detailsRow(title: NSLocalizedString("To", comment: "DashSpend")) {
+                        HStack(spacing: 8) {
+                            WebImage(url: URL(string: merchantIconUrl))
+                                .resizable()
+                                .indicator(.activity)
+                                .transition(.fade(duration: 0.3))
+                                .scaledToFit()
+                                .frame(width: 20, height: 20)
+                                .clipShape(RoundedRectangle(cornerRadius: 7))
+                            Text(merchantName)
+                                .font(.subhead)
+                                .foregroundColor(.primaryText)
+                        }
+                    }
+
+                    detailsRow(title: NSLocalizedString("Gift card", comment: "DashSpend")) {
+                        Text(fiatFormatter.string(from: NSDecimalNumber(decimal: originalPrice)) ?? "")
+                            .font(.subhead)
+                            .foregroundColor(.primaryText)
+                    }
+
+                    if !quantityLines.isEmpty {
+                        detailsRow(title: NSLocalizedString("Quantity", comment: "DashSpend")) {
+                            VStack(alignment: .trailing, spacing: 2) {
+                                ForEach(quantityLines, id: \.self) { line in
+                                    Text(line)
+                                        .font(.subhead)
+                                        .foregroundColor(.primaryText)
+                                }
+                            }
+                        }
+                    }
+
+                    detailsRow(title: NSLocalizedString("Discount", comment: "DashSpend")) {
+                        Text(PercentageFormatter.format(percent: NSDecimalNumber(decimal: discount * 100).doubleValue))
+                            .font(.subhead)
+                            .foregroundColor(.primaryText)
+                    }
+
+                    detailsRow(title: NSLocalizedString("You pay", comment: "DashSpend")) {
+                        Text(fiatFormatter.string(from: NSDecimalNumber(decimal: youPayAmount)) ?? "")
+                            .font(.subhead)
+                            .foregroundColor(.primaryText)
+                    }
+                }
+                .padding(6)
+                .background(Color.secondaryBackground)
+                .cornerRadius(20)
+                .shadow(color: Color(red: 0.72, green: 0.76, blue: 0.8).opacity(0.1), radius: 20, x: 0, y: 5)
+
+                HStack(spacing: 20) {
+                    DashButton(
+                        text: NSLocalizedString("Cancel", comment: "DashSpend"),
+                        action: onCancel
+                    )
+                    .overrideForegroundColor(.primaryText)
+                    .overrideBackgroundColor(.gray300Alpha10)
+
+                    DashButton(
+                        text: NSLocalizedString("Confirm", comment: "DashSpend"),
+                        action: onConfirm
+                    )
+                }
+                .padding(.horizontal, 10)
             }
-            
-            // Details
-            VStack(spacing: 0) {
-                HStack(spacing: 8) {
-                    Text(NSLocalizedString("From", comment: "DashSpend"))
-                        .font(.subhead)
-                        .fontWeight(.medium)
-                        .foregroundColor(.tertiaryText)
-                        
-                    Spacer()
-                        
-                    Image("image.explore.dash.wts.dash")
-                        .resizable()
-                        .frame(width: 24, height: 24)
-                            
-                    Text(NSLocalizedString("Dash Wallet", comment: "DashSpend"))
-                        .font(.subhead)
-                        .foregroundColor(.primaryText)
-                }
-                .padding(.horizontal, 12)
-                .frame(height: 50)
-                    
-                HStack(spacing: 8) {
-                    Text(NSLocalizedString("To", comment: "DashSpend"))
-                        .font(.subhead)
-                        .fontWeight(.medium)
-                        .foregroundColor(.tertiaryText)
-                        
-                    Spacer()
-                        
-                    WebImage(url: URL(string: merchantIconUrl))
-                        .resizable()
-                        .indicator(.activity)
-                        .transition(.fade(duration: 0.3))
-                        .scaledToFit()
-                        .frame(width: 24, height: 24)
-                        .clipShape(Circle())
-                            
-                    Text(merchantName)
-                        .font(.subhead)
-                        .foregroundColor(.primaryText)
-                }
-                .padding(.horizontal, 12)
-                .frame(height: 50)
-                    
-                HStack {
-                    Text(NSLocalizedString("Gift card total", comment: "DashSpend"))
-                        .font(.subhead)
-                        .fontWeight(.medium)
-                        .foregroundColor(.tertiaryText)
-                        
-                    Spacer()
-                        
-                    Text(fiatFormatter.string(from: NSDecimalNumber(decimal: originalPrice)) ?? "")
-                        .font(.subhead)
-                        .foregroundColor(.primaryText)
-                }
-                .padding(.horizontal, 12)
-                .frame(height: 50)
-                    
-                HStack {
-                    Text(NSLocalizedString("Discount", comment: "DashSpend"))
-                        .font(.subhead)
-                        .fontWeight(.medium)
-                        .foregroundColor(.tertiaryText)
-                        
-                    Spacer()
-                        
-                    Text(PercentageFormatter.format(percent: NSDecimalNumber(decimal: discount * 100).doubleValue))
-                        .font(.subhead)
-                        .foregroundColor(.primaryText)
-                }
-                .padding(.horizontal, 12)
-                .frame(height: 50)
-                    
-                HStack {
-                    Text(NSLocalizedString("You pay", comment: "DashSpend"))
-                        .font(.subhead)
-                        .fontWeight(.medium)
-                        .foregroundColor(.tertiaryText)
-                        
-                    Spacer()
-                    
-                    Text(fiatFormatter.string(from: NSDecimalNumber(decimal: originalPrice * (1 - discount))) ?? "")
-                        .font(.subhead)
-                        .foregroundColor(.primaryText)
-                }
-                .padding(.horizontal, 12)
-                .frame(height: 50)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 20)
+        }
+        .background(
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { contentHeight = proxy.size.height }
+                    .onChange(of: proxy.size.height) { contentHeight = $0 }
             }
-            .background(Color.secondaryBackground)
-            .cornerRadius(12)
-            .shadow(color: Color.shadow, radius: 10, x: 0, y: 5)
-            
-            HStack(spacing: 20) {
-                Button(action: onCancel) {
-                    Text(NSLocalizedString("Cancel", comment: "DashSpend"))
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.primaryText)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 46)
-                }
-                .background(Color(UIColor.systemGray5))
-                .cornerRadius(12)
-                    
-                Button(action: onConfirm) {
-                    Text(NSLocalizedString("Confirm", comment: "DashSpend"))
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.white)
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: 46)
-                .background(Color.dashBlue)
-                .cornerRadius(12)
+        )
+    }
+
+    private func detailsRow(title: String, @ViewBuilder value: () -> some View) -> some View {
+        HStack(alignment: .top) {
+            Text(title)
+                .font(.subhead)
+                .fontWeight(.medium)
+                .foregroundColor(.tertiaryText)
+
+            Spacer()
+
+            value()
+        }
+        .padding(.horizontal, 14)
+        .frame(minHeight: 46)
+    }
+}
+
+private extension String {
+    func strippingCurrencySymbol(_ formatter: NumberFormatter) -> String {
+        replacingOccurrences(of: formatter.currencySymbol, with: "").trimmingCharacters(in: .whitespaces)
+    }
+}
+
+#Preview {
+    DashSpendConfirmationDialogPreview()
+}
+
+private struct DashSpendConfirmationDialogPreview: View {
+    @State private var isPresented = true
+    @State private var contentHeight: CGFloat = 0
+
+    var body: some View {
+        VStack {
+            Text("Tap to open")
+                .onTapGesture { isPresented = true }
+        }
+        .sheet(isPresented: $isPresented) {
+            let content = DashSpendConfirmationDialog(
+                merchantName: "Amazon",
+                merchantIconUrl: "",
+                originalPrice: 75.70,
+                discount: 0.10,
+                quantities: [50: 1, 25: 2],
+                onConfirm: {},
+                onCancel: {},
+                contentHeight: $contentHeight
+            )
+
+            if #available(iOS 18.0, *) {
+                content
+                    .presentationBackground(Color.primaryBackground)
+                    .presentationDetents([.height(contentHeight > 0 ? contentHeight : 550)])
+                    .presentationCornerRadius(32)
+                    .presentationDragIndicator(.hidden)
+            } else {
+                content
             }
         }
-        .padding(.top, 15)
-        .padding(.horizontal, 20)
-        .edgesIgnoringSafeArea(.bottom)
     }
 }

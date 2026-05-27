@@ -463,24 +463,202 @@ struct HomeViewContent<Content: View>: View {
 }
 
 struct GiftCardDetailsSheet: View {
-    var txId: Data
+    @Environment(\.dismiss) private var dismiss
+
+    let txId: Data
     @State private var showBackButton: Bool = false
     @State private var backNavigationRequested: Bool = false
+    @State private var selectedCardIndex: Int? = nil
+    @State private var txDetailRoute: TxDetailRoute? = nil
+    @State private var prefersLargeDetent: Bool = false
+    @State private var compactSheetHeight: CGFloat = 0
+    @StateObject private var viewModel: GiftCardDetailsViewModel
+
+    init(txId: Data) {
+        self.txId = txId
+        _viewModel = StateObject(wrappedValue: GiftCardDetailsViewModel(txId: txId))
+    }
     
     var body: some View {
-        BottomSheet(showBackButton: $showBackButton, onBackButtonPressed: {
-            backNavigationRequested = true
+        let dialog = BottomSheet(showBackButton: $showBackButton, onBackButtonPressed: {
+            handleBackNavigation()
         }) {
-            GiftCardDetailsView(
-                txId: txId,
-                backNavigationRequested: $backNavigationRequested,
-                onShowBackButton: { show in
-                    showBackButton = show
-                }
-            )
+            if let txDetailRoute {
+                TXDetailVCWrapper(
+                    tx: txDetailRoute.tx,
+                    navigateBack: $backNavigationRequested,
+                    onDismissed: {
+                        showBackButton = shouldShowBackButton
+                    }
+                )
+            } else if let selectedCardIndex {
+                GiftCardDetailsView(
+                    viewModel: viewModel,
+                    selectedCardIndex: selectedCardIndex,
+                    backNavigationRequested: $backNavigationRequested,
+                    onShowBackButton: { show in
+                        showBackButton = show
+                    },
+                    onOpenTransaction: { transaction in
+                        txDetailRoute = TxDetailRoute(
+                            tx: Transaction(transaction: transaction),
+                            selectedCardIndex: selectedCardIndex
+                        )
+                        showBackButton = true
+                        prefersLargeDetent = true
+                    }
+                )
+            } else {
+                GiftCardPurchaseSelectionSheet(
+                    merchantIcon: viewModel.uiState.merchantIcon,
+                    merchantName: viewModel.uiState.merchantName,
+                    provider: viewModel.uiState.provider,
+                    cards: viewModel.uiState.cards,
+                    isLoadingCardDetails: viewModel.uiState.isLoadingCardDetails,
+                    hasBeenPollingForLongTime: viewModel.uiState.hasBeenPollingForLongTime,
+                    onSelectCard: { index in
+                        selectedCardIndex = index
+                        showBackButton = true
+                        prefersLargeDetent = true
+                    }
+                )
+            }
+        }
+
+        Group {
+            if #available(iOS 16.4, *) {
+                dialog
+                    .presentationBackground(Color.primaryBackground)
+                    .presentationDetents(
+                        [.height(effectiveCompactSheetHeight), .large],
+                        selection: sheetDetentSelection
+                    )
+                    .presentationCornerRadius(32)
+                    .presentationDragIndicator(.hidden)
+            } else {
+                dialog
+            }
         }
         .background(Color.primaryBackground)
+        .onAppear {
+            viewModel.startObserving()
+            cacheCompactSheetHeightIfNeeded()
+            showBackButton = shouldShowBackButton
+            prefersLargeDetent = selectedCardIndex != nil || txDetailRoute != nil
+        }
+        .onDisappear {
+            viewModel.stopObserving()
+        }
+        .onChange(of: selectedCardIndex) { _ in
+            showBackButton = shouldShowBackButton
+            if selectedCardIndex != nil || txDetailRoute != nil {
+                prefersLargeDetent = true
+            }
+        }
+        .onChange(of: txDetailRoute?.id) { _ in
+            showBackButton = shouldShowBackButton
+            if selectedCardIndex != nil || txDetailRoute != nil {
+                prefersLargeDetent = true
+            }
+        }
+        .onChange(of: viewModel.uiState.cards.count) { cardsCount in
+            if cardsCount > 0 {
+                cacheCompactSheetHeightIfNeeded(force: true)
+            } else {
+                cacheCompactSheetHeightIfNeeded()
+            }
+            if selectedCardIndex == nil, txDetailRoute == nil, cardsCount == 1 {
+                selectedCardIndex = 0
+                prefersLargeDetent = true
+            }
+            showBackButton = shouldShowBackButton
+        }
+        .onChange(of: backNavigationRequested) { requested in
+            guard requested else { return }
+            backNavigationRequested = false
+            handleBackNavigation()
+        }
     }
+
+    @available(iOS 16.4, *)
+    private var sheetDetentSelection: Binding<PresentationDetent> {
+        Binding(
+            get: {
+                prefersLargeDetent ? .large : .height(effectiveCompactSheetHeight)
+            },
+            set: { newDetent in
+                prefersLargeDetent = newDetent == .large
+            }
+        )
+    }
+
+    private var effectiveCompactSheetHeight: CGFloat {
+        compactSheetHeight > 0 ? compactSheetHeight : calculatedSelectionSheetHeight
+    }
+
+    private var calculatedSelectionSheetHeight: CGFloat {
+        // Merchant header + cards/loading + provider + paddings + bottom safe area.
+        let baseHeight: CGFloat = 250
+        if viewModel.uiState.cards.isEmpty {
+            return baseHeight + 120
+        }
+
+        let rowHeight: CGFloat = 64
+        let dividerHeight: CGFloat = 1
+        let cardsCount = CGFloat(viewModel.uiState.cards.count)
+        let listHeight = cardsCount * rowHeight + max(0, cardsCount - 1) * dividerHeight
+        let cappedListHeight = min(listHeight, 5 * rowHeight + 4 * dividerHeight)
+
+        return baseHeight + cappedListHeight
+    }
+
+    private func cacheCompactSheetHeightIfNeeded(force: Bool = false) {
+        let candidate = calculatedSelectionSheetHeight
+        guard candidate > 0 else { return }
+        if force {
+            compactSheetHeight = candidate
+            return
+        }
+        guard compactSheetHeight <= 0 else { return }
+        compactSheetHeight = candidate
+    }
+
+    private var shouldShowBackButton: Bool {
+        txDetailRoute != nil
+    }
+
+    private func handleBackNavigation() {
+        if let txDetailRoute {
+            selectedCardIndex = txDetailRoute.selectedCardIndex
+            self.txDetailRoute = nil
+            prefersLargeDetent = true
+            return
+        }
+
+        if selectedCardIndex != nil {
+            if viewModel.uiState.cards.count > 1 {
+                selectedCardIndex = nil
+                // Two-step transition avoids the UIKit/SwiftUI detent jump-to-top glitch:
+                // 1) switch content to selection, 2) collapse detent on next runloop tick.
+                DispatchQueue.main.async {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        prefersLargeDetent = false
+                    }
+                }
+            } else {
+                dismiss()
+            }
+            return
+        }
+
+        dismiss()
+    }
+}
+
+private struct TxDetailRoute: Identifiable {
+    let id = UUID()
+    let tx: Transaction
+    let selectedCardIndex: Int?
 }
 
 struct TransactionDetailsSheet: View {
