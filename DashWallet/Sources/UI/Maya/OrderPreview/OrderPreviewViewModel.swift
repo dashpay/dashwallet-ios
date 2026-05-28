@@ -18,6 +18,14 @@
 import Combine
 import Foundation
 
+enum MayaSwapStatus {
+    case idle
+    case pendingConfirmation    // Dash tx broadcast, waiting for block
+    case processingSwap         // Maya has observed the Dash tx, swap running
+    case completed(outHashes: [String])
+    case failed(reason: String)
+}
+
 @MainActor
 final class OrderPreviewViewModel: ObservableObject {
     private enum Constants {
@@ -43,6 +51,7 @@ final class OrderPreviewViewModel: ObservableObject {
     // Records that the Dash transaction was submitted to the blockchain network.
     // This does NOT confirm Maya swap completion — that requires separate on-chain confirmation.
     @Published var submittedTxId: String?
+    @Published var swapStatus: MayaSwapStatus = .idle
 
     var confirmButtonText: String {
         if remainingSubmitSeconds > 0 {
@@ -59,6 +68,8 @@ final class OrderPreviewViewModel: ObservableObject {
     private var quote: MayaSwapQuote
     private var countdownCancellable: AnyCancellable?
     private let sendCoinsService = SendCoinsService()
+    private var pollingTask: Task<Void, Never>?
+    private var isLockCancellable: AnyCancellable?
 
     init(
         coin: MayaCryptoCurrency,
@@ -80,6 +91,8 @@ final class OrderPreviewViewModel: ObservableObject {
 
     deinit {
         countdownCancellable?.cancel()
+        pollingTask?.cancel()
+        isLockCancellable?.cancel()
     }
 
     func handlePrimaryAction() async {
@@ -88,6 +101,15 @@ final class OrderPreviewViewModel: ObservableObject {
         } else {
             await refreshQuoteForDisplay()
         }
+    }
+
+    func resetToIdle() {
+        pollingTask?.cancel()
+        pollingTask = nil
+        isLockCancellable?.cancel()
+        isLockCancellable = nil
+        swapStatus = .idle
+        submittedTxId = nil
     }
 
     // MARK: - Private: Countdown
@@ -195,6 +217,81 @@ final class OrderPreviewViewModel: ObservableObject {
 
     private func setSubmittedTransaction(_ tx: DSTransaction) {
         submittedTxId = tx.txHashHexString
+        swapStatus = .pendingConfirmation
+        startObservingISLock(txid: tx.txHashHexString)
+        startPolling(txid: tx.txHashHexString)
+    }
+
+    // MARK: - Private: IS-Lock Observation
+
+    private func startObservingISLock(txid: String) {
+        isLockCancellable = NotificationCenter.default
+            .publisher(for: .DSTransactionManagerTransactionStatusDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] notification in
+                guard let self else { return }
+
+                guard
+                    let userInfo = notification.userInfo,
+                    let tx = userInfo[DSTransactionManagerNotificationTransactionKey] as? DSTransaction,
+                    tx.txHashHexString == txid
+                else { return }
+
+                guard
+                    let changes = userInfo[DSTransactionManagerNotificationTransactionChangesKey] as? [String: Any],
+                    changes[DSTransactionManagerNotificationInstantSendTransactionLockKey] != nil
+                else { return }
+
+                DSLogger.log("sendMayaSwap IS-lock received for \(txid)")
+
+                if case .pendingConfirmation = self.swapStatus {
+                    self.swapStatus = .processingSwap
+                }
+
+                self.isLockCancellable = nil  // one-shot
+            }
+    }
+
+    // MARK: - Private: Polling
+
+    private func startPolling(txid: String) {
+        pollingTask?.cancel()
+        pollingTask = Task {
+            let maxIterations = 360 // 5 s × 360 = 30 min
+            for iteration in 0..<maxIterations {
+                guard !Task.isCancelled else { return }
+
+                if iteration > 0 {
+                    try? await Task.sleep(nanoseconds: 5_000_000_000)
+                    guard !Task.isCancelled else { return }
+                }
+
+                do {
+                    let info = try await MayaAPIService.shared.fetchSwapTransactionInfo(txid: txid)
+
+                    if info.error != nil {
+                        // Maya hasn't seen the Dash tx yet — block not confirmed yet.
+                        continue
+                    }
+
+                    if let observedTx = info.observedTx {
+                        if observedTx.status == "done" {
+                            swapStatus = .completed(outHashes: observedTx.outHashes ?? [])
+                            return
+                        } else {
+                            swapStatus = .processingSwap
+                        }
+                    }
+                } catch {
+                    // Transient network error — keep current status and retry next tick.
+                }
+            }
+
+            swapStatus = .failed(reason: NSLocalizedString(
+                "Swap timed out after 30 minutes. Contact Maya support if funds were sent.",
+                comment: "Maya"
+            ))
+        }
     }
 
     private func applyQuote(_ quote: MayaSwapQuote) {

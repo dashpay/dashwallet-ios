@@ -103,6 +103,12 @@ public final class SendCoinsService: NSObject {
     /// matching the Android sendRequest.sortByBIP69 = false / shuffleOutputs = false
     /// requirement from MayaBlockchainApi.kt.
     func sendMayaSwap(vaultAddress: String, dashAmount: UInt64, memo: String) async throws -> DSTransaction {
+        let memoByteCount = memo.utf8.count
+        DSLogger.log("sendMayaSwap memo=\(memo) bytes=\(memoByteCount)")
+        guard memoByteCount <= 80 else {
+            throw DashSpendError.paymentProcessingError("Swap memo (\(memoByteCount) bytes) exceeds the 80-byte OP_RETURN limit. Try a simpler destination asset.")
+        }
+
         let chain = DWEnvironment.sharedInstance().currentChain
         let account = DWEnvironment.sharedInstance().currentAccount
         let transaction = DSTransaction(on: chain)
