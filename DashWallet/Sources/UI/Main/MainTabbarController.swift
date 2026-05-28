@@ -158,7 +158,7 @@ class MainTabbarController: UITabBarController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
-        tabBar.addSubview(paymentButton)
+        view.bringSubviewToFront(paymentButton)
     }
 
     override func viewDidLoad() {
@@ -172,8 +172,8 @@ class MainTabbarController: UITabBarController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        // Add Payment Button again to make sure it's at the top
-        tabBar.addSubview(paymentButton)
+        // Bring Payment Button to the front to make sure it's at the top
+        view.bringSubviewToFront(paymentButton)
     }
 }
 
@@ -260,7 +260,7 @@ extension MainTabbarController {
         paymentButton = PaymentButton()
         paymentButton.translatesAutoresizingMaskIntoConstraints = false
         paymentButton.addTarget(self, action: #selector(paymentButtonAction), for: .touchUpInside)
-        tabBar.addSubview(paymentButton)
+        view.addSubview(paymentButton)
 
         NSLayoutConstraint.activate([
             paymentButton.centerXAnchor.constraint(equalTo: tabBar.centerXAnchor),
@@ -400,26 +400,20 @@ extension MainTabbarController: HomeViewControllerDelegate {
     func showPaymentsController(withActivePage pageIndex: PaymentsViewControllerState) {
         paymentButton.isOpened = true
 
+        let tab: PaymentsLandingTab
         switch pageIndex {
         case .receive:
-            presentReceiveScreen()
+            tab = .receive
         case .pay, .enterAddress, .none:
-            presentSendScreen()
+            tab = .send
         }
+        presentPaymentsLandingScreen(activeTab: tab)
     }
 
-    private func presentSendScreen() {
-        let controller = SendScreenViewController()
+    private func presentPaymentsLandingScreen(activeTab: PaymentsLandingTab) {
+        let controller = PaymentsLandingHostingController(activeTab: activeTab)
         controller.homeModel = homeModel
         let navigationController = BaseNavigationController(rootViewController: controller)
-        navigationController.isNavigationBarHidden = true
-        navigationController.isModalInPresentation = false
-        presentModal(navigationController)
-    }
-
-    private func presentReceiveScreen() {
-        let host = ReceiveScreenHostingController()
-        let navigationController = BaseNavigationController(rootViewController: host)
         navigationController.isNavigationBarHidden = true
         navigationController.isModalInPresentation = false
         presentModal(navigationController)

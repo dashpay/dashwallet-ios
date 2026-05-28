@@ -423,6 +423,12 @@
 		A5D5DD000000000000000244 /* ReceiveScreenHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000245 /* ReceiveScreenHostingController.swift */; };
 		A5D5DD000000000000000246 /* ReceiveViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000248 /* ReceiveViewModel.swift */; };
 		A5D5DD000000000000000247 /* ReceiveViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000248 /* ReceiveViewModel.swift */; };
+		A5D5DD000000000000000400 /* PaymentsLandingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000402 /* PaymentsLandingScreen.swift */; };
+		A5D5DD000000000000000401 /* PaymentsLandingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000402 /* PaymentsLandingScreen.swift */; };
+		A5D5DD000000000000000410 /* PaymentsLandingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000412 /* PaymentsLandingViewModel.swift */; };
+		A5D5DD000000000000000411 /* PaymentsLandingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000412 /* PaymentsLandingViewModel.swift */; };
+		A5D5DD000000000000000420 /* PaymentsLandingHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000422 /* PaymentsLandingHostingController.swift */; };
+		A5D5DD000000000000000421 /* PaymentsLandingHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000422 /* PaymentsLandingHostingController.swift */; };
 		A5D5DD000000000000000249 /* PlatformSendExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000251 /* PlatformSendExecutor.swift */; };
 		A5D5DD000000000000000250 /* PlatformSendExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000251 /* PlatformSendExecutor.swift */; };
 		A5D5DD000000000000000252 /* StorageExplorerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000254 /* StorageExplorerView.swift */; };
@@ -2423,6 +2429,9 @@
 		A5D5DD000000000000000242 /* ReceiveScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiveScreen.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000245 /* ReceiveScreenHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiveScreenHostingController.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000248 /* ReceiveViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiveViewModel.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000402 /* PaymentsLandingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsLandingScreen.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000412 /* PaymentsLandingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsLandingViewModel.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000422 /* PaymentsLandingHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsLandingHostingController.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000251 /* PlatformSendExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSendExecutor.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000254 /* StorageExplorerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageExplorerView.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000257 /* StorageModelListViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageModelListViews.swift; sourceTree = "<group>"; };
@@ -4523,11 +4532,22 @@
 				2AB8CDD5220D80F100A3D1DB /* Amount */,
 				2A8B9E712302E43400FF8653 /* Receive */,
 				2A8B9E5722FF6F2900FF8653 /* Pay */,
+				A5D5DD000000000000000430 /* Landing */,
 				C9F42FA229DBC183001BC549 /* PaymentsViewController.swift */,
 				C917023E29D44E0B008C034D /* SendReceivePageController.swift */,
 				2A8B9E3C22FD71E100FF8653 /* Payments.storyboard */,
 			);
 			path = Payments;
+			sourceTree = "<group>";
+		};
+		A5D5DD000000000000000430 /* Landing */ = {
+			isa = PBXGroup;
+			children = (
+				A5D5DD000000000000000402 /* PaymentsLandingScreen.swift */,
+				A5D5DD000000000000000412 /* PaymentsLandingViewModel.swift */,
+				A5D5DD000000000000000422 /* PaymentsLandingHostingController.swift */,
+			);
+			path = Landing;
 			sourceTree = "<group>";
 		};
 		2A8B9E4422FD8CF500FF8653 /* SegmentedControl */ = {
@@ -9121,6 +9141,9 @@
 					A5D5DD000000000000000240 /* ReceiveScreen.swift in Sources */,
 					A5D5DD000000000000000243 /* ReceiveScreenHostingController.swift in Sources */,
 					A5D5DD000000000000000246 /* ReceiveViewModel.swift in Sources */,
+					A5D5DD000000000000000400 /* PaymentsLandingScreen.swift in Sources */,
+					A5D5DD000000000000000410 /* PaymentsLandingViewModel.swift in Sources */,
+					A5D5DD000000000000000420 /* PaymentsLandingHostingController.swift in Sources */,
 					A5D5DD000000000000000249 /* PlatformSendExecutor.swift in Sources */,
 					A5D5DD000000000000000252 /* StorageExplorerView.swift in Sources */,
 					A5D5DD000000000000000255 /* StorageModelListViews.swift in Sources */,
@@ -10003,6 +10026,9 @@
 					A5D5DD000000000000000241 /* ReceiveScreen.swift in Sources */,
 					A5D5DD000000000000000244 /* ReceiveScreenHostingController.swift in Sources */,
 					A5D5DD000000000000000247 /* ReceiveViewModel.swift in Sources */,
+					A5D5DD000000000000000401 /* PaymentsLandingScreen.swift in Sources */,
+					A5D5DD000000000000000411 /* PaymentsLandingViewModel.swift in Sources */,
+					A5D5DD000000000000000421 /* PaymentsLandingHostingController.swift in Sources */,
 					A5D5DD000000000000000250 /* PlatformSendExecutor.swift in Sources */,
 					A5D5DD000000000000000253 /* StorageExplorerView.swift in Sources */,
 					A5D5DD000000000000000256 /* StorageModelListViews.swift in Sources */,
