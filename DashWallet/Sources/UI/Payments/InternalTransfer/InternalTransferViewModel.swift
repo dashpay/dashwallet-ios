@@ -16,7 +16,12 @@ enum InternalTransferUnit: String {
 final class InternalTransferViewModel: ObservableObject {
 
     @Published var amountText: String = "0"
-    @Published var unit: InternalTransferUnit = .dash
+    @Published var unit: InternalTransferUnit = .dash {
+        didSet {
+            guard oldValue != unit else { return }
+            convertAmountText(from: oldValue, to: unit)
+        }
+    }
     @Published private(set) var coreBalance: UInt64 = 0
     @Published private(set) var platformBalance: UInt64 = 0
 
@@ -41,17 +46,44 @@ final class InternalTransferViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    var parsedDashAmount: Decimal {
+    /// The raw numeric value the user has typed, with locale comma normalised
+    /// to a dot. Interpretation depends on `unit` — this is *not yet* the DASH
+    /// amount when in `.fiat` mode.
+    private var rawTypedDecimal: Decimal {
         let sanitized = amountText.replacingOccurrences(of: ",", with: ".")
         return Decimal(string: sanitized, locale: Locale(identifier: "en_US_POSIX")) ?? 0
+    }
+
+    var parsedDashAmount: Decimal {
+        let raw = rawTypedDecimal
+        switch unit {
+        case .dash:
+            return raw
+        case .fiat:
+            guard raw > 0 else { return 0 }
+            return (try? CurrencyExchanger.shared.convertToDash(amount: raw, currency: App.fiatCurrency)) ?? 0
+        }
     }
 
     var canContinue: Bool {
         parsedDashAmount > 0
     }
 
-    var fiatString: String {
-        CurrencyExchanger.shared.fiatAmountString(for: parsedDashAmount)
+    /// Currency symbol for the active fiat (e.g. `$`). Used by the view to
+    /// prefix the big-number text in FIAT mode.
+    var primaryCurrencySymbol: String {
+        NumberFormatter.fiatFormatter.currencySymbol ?? ""
+    }
+
+    /// The small grey line under the big number. Shows whichever unit is *not*
+    /// currently the input unit.
+    var secondaryDisplayString: String {
+        switch unit {
+        case .dash:
+            return CurrencyExchanger.shared.fiatAmountString(for: parsedDashAmount)
+        case .fiat:
+            return parsedDashAmount.formattedDashAmount
+        }
     }
 
     var creditsPreview: UInt64 {
@@ -73,7 +105,58 @@ final class InternalTransferViewModel: ObservableObject {
     }
 
     func fillMaxFromWallet() {
-        amountText = coreBalance.formattedDashAmountWithoutCurrencySymbol
+        switch unit {
+        case .dash:
+            amountText = coreBalance.formattedDashAmountWithoutCurrencySymbol
+        case .fiat:
+            let dashDecimal = coreBalance.dashAmount
+            guard dashDecimal > 0 else {
+                amountText = "0"
+                return
+            }
+            if let fiat = try? CurrencyExchanger.shared.convertDash(amount: dashDecimal, to: App.fiatCurrency) {
+                amountText = Self.formatTyped(fiat, fractionDigits: 2)
+            } else {
+                amountText = "0"
+            }
+        }
+    }
+
+    // MARK: - Conversion on unit toggle
+
+    private func convertAmountText(from old: InternalTransferUnit, to new: InternalTransferUnit) {
+        let raw = rawTypedDecimal
+        guard raw > 0 else { return }
+        let currency = App.fiatCurrency
+        do {
+            switch (old, new) {
+            case (.dash, .fiat):
+                let fiat = try CurrencyExchanger.shared.convertDash(amount: raw, to: currency)
+                amountText = Self.formatTyped(fiat, fractionDigits: 2)
+            case (.fiat, .dash):
+                let dash = try CurrencyExchanger.shared.convertToDash(amount: raw, currency: currency)
+                amountText = Self.formatTyped(dash, fractionDigits: 8)
+            default:
+                break
+            }
+        } catch {
+            // Rate fetch failed — leave `amountText` as-is so the user can re-type.
+        }
+    }
+
+    /// Formats a Decimal as a user-typed-style string: no grouping separator,
+    /// dot as the decimal mark, trailing zeros trimmed. Capped at
+    /// `fractionDigits` decimals.
+    private static func formatTyped(_ value: Decimal, fractionDigits: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.numberStyle = .decimal
+        formatter.usesGroupingSeparator = false
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = fractionDigits
+        formatter.decimalSeparator = "."
+        let rounded = NSDecimalNumber(decimal: value)
+        return formatter.string(from: rounded) ?? "\(value)"
     }
 
     private static let creditsFormatter: NumberFormatter = {

@@ -17,12 +17,6 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         }
     }
 
-    /// Invoked when the user wants to enter the shielded-balance flow. The
-    /// landing modal is dismissed *before* this fires, so the receiver can
-    /// push the destination onto the underlying tab's navigation stack
-    /// (keeping the tab bar visible).
-    var onEnterShieldedFlow: (() -> Void)?
-
     private let viewModel: PaymentsLandingViewModel
     private lazy var hostingController: UIHostingController<PaymentsLandingScreen> = {
         let screen = PaymentsLandingScreen(
@@ -107,7 +101,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     private func handleShieldedBalanceTap() {
         let alreadyShown = UserDefaults.standard.bool(forKey: Self.shieldedBalanceTimingShownKey)
         if alreadyShown {
-            dismissAndEnterShieldedFlow()
+            pushInternalTransfer()
         } else {
             presentTransferTimingSheet()
         }
@@ -117,7 +111,9 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         let host = UIHostingController(
             rootView: TransferTimingSheet(onConfirm: { [weak self] in
                 UserDefaults.standard.set(true, forKey: Self.shieldedBalanceTimingShownKey)
-                self?.dismissAndEnterShieldedFlow()
+                self?.dismiss(animated: true) {
+                    self?.pushInternalTransfer()
+                }
             }))
         if let sheet = host.sheetPresentationController {
             sheet.detents = [.medium()]
@@ -126,14 +122,11 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         present(host, animated: true)
     }
 
-    /// Dismisses the entire landing modal (and the timing sheet on top of it,
-    /// if present) by asking the presenter, then hands off to whoever owns
-    /// the tab navigation stack via `onEnterShieldedFlow`.
-    private func dismissAndEnterShieldedFlow() {
-        let handoff = onEnterShieldedFlow
-        presentingViewController?.dismiss(animated: true) {
-            handoff?()
-        }
+    /// Pushes the internal-transfer screen onto the landing modal's own
+    /// navigation stack, keeping the user inside the same presentation.
+    private func pushInternalTransfer() {
+        let target = InternalTransferHostingController()
+        navigationController?.pushViewController(target, animated: true)
     }
 
     private static func tabRawValue(for objcCase: Int) -> String {

@@ -8,7 +8,6 @@ import SwiftUI
 struct InternalTransferScreen: View {
     @ObservedObject var viewModel: InternalTransferViewModel
 
-    var onBack: () -> Void
     var onContinue: () -> Void
 
     var body: some View {
@@ -45,26 +44,15 @@ struct InternalTransferScreen: View {
                 .padding(.bottom, 12)
         }
         .background(Color.primaryBackground)
-        .navigationBarHidden(true)
     }
 
     // MARK: - Header
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Button(action: onBack) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
-                    .frame(width: 36, height: 36)
-                    .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
-            }
-
-            Text(NSLocalizedString("Internal transfer", comment: ""))
-                .font(.system(size: 24, weight: .bold))
-                .foregroundColor(.primaryText)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        Text(NSLocalizedString("Internal transfer", comment: ""))
+            .font(.system(size: 24, weight: .bold))
+            .foregroundColor(.primaryText)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Amount row
@@ -82,19 +70,9 @@ struct InternalTransferScreen: View {
             }
 
             VStack(spacing: 4) {
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text(viewModel.amountText)
-                        .font(.system(size: 36, weight: .bold))
-                        .foregroundColor(.primaryText)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
-                    Image("icon_dash_currency")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 22, height: 22)
-                }
+                primaryAmountDisplay
 
-                Text(viewModel.fiatString)
+                Text(viewModel.secondaryDisplayString)
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.secondary)
             }
@@ -107,6 +85,33 @@ struct InternalTransferScreen: View {
                 unitPill(label: "FIAT", selected: viewModel.unit == .fiat) {
                     viewModel.unit = .fiat
                 }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var primaryAmountDisplay: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 4) {
+            switch viewModel.unit {
+            case .dash:
+                Text(viewModel.amountText)
+                    .font(.system(size: 36, weight: .bold))
+                    .foregroundColor(.primaryText)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
+                Image("icon_dash_currency")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 22, height: 22)
+            case .fiat:
+                Text(viewModel.primaryCurrencySymbol)
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(.primaryText)
+                Text(viewModel.amountText)
+                    .font(.system(size: 36, weight: .bold))
+                    .foregroundColor(.primaryText)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
             }
         }
     }

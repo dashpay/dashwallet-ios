@@ -14,9 +14,6 @@ final class InternalTransferHostingController: UIViewController {
     private lazy var hostingController: UIHostingController<InternalTransferScreen> = {
         let screen = InternalTransferScreen(
             viewModel: viewModel,
-            onBack: { [weak self] in
-                self?.navigationController?.popViewController(animated: true)
-            },
             onContinue: { /* no-op for now — shielding logic lands later */ })
         return UIHostingController(rootView: screen)
     }()
@@ -43,7 +40,7 @@ final class InternalTransferHostingController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         previousNavBarHidden = navigationController?.isNavigationBarHidden ?? false
-        navigationController?.setNavigationBarHidden(true, animated: animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
     }
 
     override func viewWillDisappear(_ animated: Bool) {

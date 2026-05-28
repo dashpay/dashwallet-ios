@@ -413,23 +413,11 @@ extension MainTabbarController: HomeViewControllerDelegate {
     private func presentPaymentsLandingScreen(activeTab: PaymentsLandingTab) {
         let controller = PaymentsLandingHostingController(activeTab: activeTab)
         controller.homeModel = homeModel
-        controller.onEnterShieldedFlow = { [weak self] in
-            self?.pushInternalTransferOnSelectedTab()
-        }
         let navigationController = BaseNavigationController(rootViewController: controller)
         navigationController.isNavigationBarHidden = true
         navigationController.isModalInPresentation = false
+        navigationController.modalPresentationStyle = .fullScreen
         presentModal(navigationController)
-    }
-
-    private func pushInternalTransferOnSelectedTab() {
-        paymentButton.isOpened = false
-        let target = InternalTransferHostingController()
-        if let nav = selectedViewController as? UINavigationController {
-            nav.pushViewController(target, animated: true)
-        } else if let nav = selectedViewController?.navigationController {
-            nav.pushViewController(target, animated: true)
-        }
     }
 
     private func presentModal(_ nav: UIViewController) {
