@@ -83,6 +83,18 @@ final class InternalTransferViewModel: ObservableObject {
         parsedDashAmount > 0
     }
 
+    /// `parsedDashAmount` expressed as Int64 duffs, for `DashAmount` views.
+    var dashDuffs: Int64 {
+        Int64(parsedDashAmount.plainDashAmount)
+    }
+
+    /// Fiat-formatted DASH amount — always returns the fiat representation
+    /// regardless of `unit`. Used by the confirm sheet which always shows
+    /// fiat alongside the credits.
+    var fiatAmountString: String {
+        CurrencyExchanger.shared.fiatAmountString(for: parsedDashAmount)
+    }
+
     /// Currency symbol for the active fiat (e.g. `$`). Used by the view to
     /// prefix the big-number text in FIAT mode.
     var primaryCurrencySymbol: String {

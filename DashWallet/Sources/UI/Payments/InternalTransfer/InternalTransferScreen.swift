@@ -8,7 +8,7 @@ import SwiftUI
 struct InternalTransferScreen: View {
     @ObservedObject var viewModel: InternalTransferViewModel
 
-    var onContinue: () -> Void
+    @State private var showConfirm: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -39,11 +39,21 @@ struct InternalTransferScreen: View {
                 actionButtonText: NSLocalizedString("Continue", comment: ""),
                 actionEnabled: viewModel.canContinue,
                 inProgress: false,
-                actionHandler: { onContinue() })
+                actionHandler: { showConfirm = true })
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
         }
         .background(Color.primaryBackground)
+        .sheet(isPresented: $showConfirm) {
+            InternalTransferConfirmSheet(
+                dashDuffs: viewModel.dashDuffs,
+                creditsText: viewModel.creditsPreviewFormatted,
+                fiatText: viewModel.fiatAmountString,
+                onCancel: { showConfirm = false },
+                onConfirm: { showConfirm = false })
+                .presentationDetents([.large])
+                .presentationDragIndicator(.hidden)
+        }
     }
 
     // MARK: - Header

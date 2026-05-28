@@ -12,9 +12,7 @@ final class InternalTransferHostingController: UIViewController {
     private let viewModel = InternalTransferViewModel()
 
     private lazy var hostingController: UIHostingController<InternalTransferScreen> = {
-        let screen = InternalTransferScreen(
-            viewModel: viewModel,
-            onContinue: { /* no-op for now — shielding logic lands later */ })
+        let screen = InternalTransferScreen(viewModel: viewModel)
         return UIHostingController(rootView: screen)
     }()
 
