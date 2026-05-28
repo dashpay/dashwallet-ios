@@ -544,7 +544,13 @@
 		51A5774C2FBB3A6E00FB4097 /* OrderPreviewHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A5774A2FBB3A6E00FB4097 /* OrderPreviewHostingController.swift */; };
 		51A57B022FBB41DE00FB4097 /* OrderPreviewTableRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57B012FBB41DE00FB4097 /* OrderPreviewTableRow.swift */; };
 		51A57B032FBB41DE00FB4097 /* OrderPreviewTableRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57B012FBB41DE00FB4097 /* OrderPreviewTableRow.swift */; };
+		51A57B042FBB41DE00FB4097 /* MayaFeeInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57B052FBB41DE00FB4097 /* MayaFeeInfoSheet.swift */; };
+		51A57B062FBB41DE00FB4097 /* MayaFeeInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57B052FBB41DE00FB4097 /* MayaFeeInfoSheet.swift */; };
 		6FD1512E7774A997C1F8466B /* MayaMenuStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0286D4D1CADBBD51F09BE8E8 /* MayaMenuStyles.swift */; };
+		51A57C042FBB5A0000FB4097 /* MayaTransactionSuccessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57C022FBB5A0000FB4097 /* MayaTransactionSuccessView.swift */; };
+		51A57C052FBB5A0000FB4097 /* MayaTransactionSuccessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57C022FBB5A0000FB4097 /* MayaTransactionSuccessView.swift */; };
+		51A57C062FBB5A0000FB4097 /* MayaTransactionFailureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57C032FBB5A0000FB4097 /* MayaTransactionFailureView.swift */; };
+		51A57C072FBB5A0000FB4097 /* MayaTransactionFailureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57C032FBB5A0000FB4097 /* MayaTransactionFailureView.swift */; };
 		7502A4872AE401EF00ACDDD3 /* UsernameVotingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7502A4862AE401EF00ACDDD3 /* UsernameVotingViewController.swift */; };
 		7503643A2C89CFB70029EC0D /* CoinJoinProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */; };
 		7503643B2C89CFB70029EC0D /* CoinJoinProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */; };
@@ -2569,6 +2575,8 @@
 		514AEAD42FB34F8600F9B54C /* OrderPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderPreviewView.swift; sourceTree = "<group>"; };
 		514AF1BF2FB5F02D00F9B54C /* MayaConvertViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaConvertViewModel.swift; sourceTree = "<group>"; };
 		514BEA002FB5F02D00F9B54C /* MayaConvertAmount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaConvertAmount.swift; sourceTree = "<group>"; };
+		51A57C022FBB5A0000FB4097 /* MayaTransactionSuccessView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaTransactionSuccessView.swift; sourceTree = "<group>"; };
+		51A57C032FBB5A0000FB4097 /* MayaTransactionFailureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaTransactionFailureView.swift; sourceTree = "<group>"; };
 		5151C8C22F913BF100F0A604 /* Coinbase-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Coinbase-Info.plist"; sourceTree = "<group>"; };
 		5151C8C32F913BF100F0A604 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		5151C8C42F913BF100F0A604 /* Topper-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Topper-Info.plist"; sourceTree = "<group>"; };
@@ -2581,6 +2589,7 @@
 		51A577472FBB3A6000FB4097 /* OrderPreviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderPreviewViewModel.swift; sourceTree = "<group>"; };
 		51A5774A2FBB3A6E00FB4097 /* OrderPreviewHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderPreviewHostingController.swift; sourceTree = "<group>"; };
 		51A57B012FBB41DE00FB4097 /* OrderPreviewTableRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderPreviewTableRow.swift; sourceTree = "<group>"; };
+		51A57B052FBB41DE00FB4097 /* MayaFeeInfoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaFeeInfoSheet.swift; sourceTree = "<group>"; };
 		62C1F7A3ABEE7CF3BBB270C4 /* Pods-DashWalletTests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.testflight.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.testflight.xcconfig"; sourceTree = "<group>"; };
 		67217DE34817FB304EDEA8D4 /* Pods-dashpay.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashpay.testnet.xcconfig"; path = "Target Support Files/Pods-dashpay/Pods-dashpay.testnet.xcconfig"; sourceTree = "<group>"; };
 		6A44C167AF8F881176AFB256 /* Pods-TodayExtension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.testflight.xcconfig"; path = "Target Support Files/Pods-TodayExtension/Pods-TodayExtension.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -6288,6 +6297,7 @@
 			children = (
 				C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */,
 				51A57B012FBB41DE00FB4097 /* OrderPreviewTableRow.swift */,
+				51A57B052FBB41DE00FB4097 /* MayaFeeInfoSheet.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -6710,8 +6720,18 @@
 				AA0005022EA0F58E00D1D602 /* SelectCoin */,
 				AA0005032EA0F58E00D1D603 /* EnterAddress */,
 				AA0005042EA0F58E00D1D604 /* QRScanner */,
+				51A57C012FBB5A0000FB4097 /* TransactionStatus */,
 			);
 			path = Maya;
+			sourceTree = "<group>";
+		};
+		51A57C012FBB5A0000FB4097 /* TransactionStatus */ = {
+			isa = PBXGroup;
+			children = (
+				51A57C022FBB5A0000FB4097 /* MayaTransactionSuccessView.swift */,
+				51A57C032FBB5A0000FB4097 /* MayaTransactionFailureView.swift */,
+			);
+			path = TransactionStatus;
 			sourceTree = "<group>";
 		};
 		AA0002192BA0F58E00A1B309 /* Maya */ = {
@@ -8970,6 +8990,7 @@
 				750CED602C94BFD7000FB837 /* SettingsMenuViewModel.swift in Sources */,
 				75D5D5342CC928630049ED7B /* UIHostingController+DashWallet.swift in Sources */,
 				51A57B032FBB41DE00FB4097 /* OrderPreviewTableRow.swift in Sources */,
+				51A57B042FBB41DE00FB4097 /* MayaFeeInfoSheet.swift in Sources */,
 				2ACD53EE234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m in Sources */,
 				11860923297598B400279FCC /* AddressStatus.swift in Sources */,
 				C91E919729FBACE6003E7883 /* ExtendedPublicKeysModel.swift in Sources */,
@@ -9075,6 +9096,8 @@
 				47E94B9A296D7F99000FE68E /* CustodialSwapsModel.swift in Sources */,
 				514AEA142FB324FA00F9B54C /* MayaConvertView.swift in Sources */,
 				514AEA492FB33B4300F9B54C /* MayaConvertHostingController.swift in Sources */,
+				51A57C042FBB5A0000FB4097 /* MayaTransactionSuccessView.swift in Sources */,
+				51A57C062FBB5A0000FB4097 /* MayaTransactionFailureView.swift in Sources */,
 				2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */,
 				757422242DF87B5200CB0175 /* TerritoryPickerView.swift in Sources */,
 				757422252DF87B5200CB0175 /* MerchantFiltersView.swift in Sources */,
@@ -9766,6 +9789,8 @@
 				C9D2C6F52A320AA000D15901 /* CoinbaseTransactionResponse.swift in Sources */,
 				514AEA132FB324FA00F9B54C /* MayaConvertView.swift in Sources */,
 				514AEA4B2FB33B4300F9B54C /* MayaConvertHostingController.swift in Sources */,
+				51A57C052FBB5A0000FB4097 /* MayaTransactionSuccessView.swift in Sources */,
+				51A57C072FBB5A0000FB4097 /* MayaTransactionFailureView.swift in Sources */,
 				C943B52F2A40A54600AF23C5 /* DWNotificationsData.m in Sources */,
 				C9D2C6F72A320AA000D15901 /* TxDetailModel.swift in Sources */,
 				757514E22B15DB510026AD8E /* ShadowView.swift in Sources */,
@@ -10111,6 +10136,7 @@
 				C943B5122A40A54600AF23C5 /* DWInvitationHistoryModel.m in Sources */,
 				C943B31A2A408CED00AF23C5 /* DWCurrentUserProfileView.m in Sources */,
 				51A57B022FBB41DE00FB4097 /* OrderPreviewTableRow.swift in Sources */,
+				51A57B062FBB41DE00FB4097 /* MayaFeeInfoSheet.swift in Sources */,
 				751B61C22ADFF99D00D1C2EF /* CoinbaseDepositResponse.swift in Sources */,
 				753E46E92DE1E24300A3FF2A /* CTXSpendModels.swift in Sources */,
 				C943B4F32A40A54600AF23C5 /* DWDPEstablishedContactObject.m in Sources */,
