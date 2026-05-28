@@ -16,6 +16,7 @@ struct PaymentsLandingScreen: View {
     var onImportPrivateKey: () -> Void
     var onScanQR: () -> Void
     var onSendToAddress: () -> Void
+    var onShieldedBalance: () -> Void
 
     var body: some View {
         VStack(alignment: .center, spacing: 20) {
@@ -195,7 +196,7 @@ struct PaymentsLandingScreen: View {
             actionRow(
                 iconSystemName: "shield.fill",
                 title: NSLocalizedString("Shielded balance", comment: ""),
-                action: nil)
+                action: onShieldedBalance)
                 .padding(.horizontal, 20)
         }
     }
@@ -204,9 +205,6 @@ struct PaymentsLandingScreen: View {
 
     private var sendContent: some View {
         VStack(alignment: .center, spacing: 12) {
-            ChainNetworkToggle(selection: $viewModel.network)
-                .padding(.horizontal, 20)
-
             actionRow(
                 iconSystemName: "qrcode.viewfinder",
                 title: NSLocalizedString("Scan QR", comment: ""),

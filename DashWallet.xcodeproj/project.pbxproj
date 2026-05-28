@@ -429,6 +429,14 @@
 		A5D5DD000000000000000411 /* PaymentsLandingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000412 /* PaymentsLandingViewModel.swift */; };
 		A5D5DD000000000000000420 /* PaymentsLandingHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000422 /* PaymentsLandingHostingController.swift */; };
 		A5D5DD000000000000000421 /* PaymentsLandingHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000422 /* PaymentsLandingHostingController.swift */; };
+		A5D5DD000000000000000500 /* TransferTimingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000502 /* TransferTimingSheet.swift */; };
+		A5D5DD000000000000000501 /* TransferTimingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000502 /* TransferTimingSheet.swift */; };
+		A5D5DD000000000000000510 /* InternalTransferViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000512 /* InternalTransferViewModel.swift */; };
+		A5D5DD000000000000000511 /* InternalTransferViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000512 /* InternalTransferViewModel.swift */; };
+		A5D5DD000000000000000520 /* InternalTransferScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000522 /* InternalTransferScreen.swift */; };
+		A5D5DD000000000000000521 /* InternalTransferScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000522 /* InternalTransferScreen.swift */; };
+		A5D5DD000000000000000530 /* InternalTransferHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000532 /* InternalTransferHostingController.swift */; };
+		A5D5DD000000000000000531 /* InternalTransferHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000532 /* InternalTransferHostingController.swift */; };
 		A5D5DD000000000000000249 /* PlatformSendExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000251 /* PlatformSendExecutor.swift */; };
 		A5D5DD000000000000000250 /* PlatformSendExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000251 /* PlatformSendExecutor.swift */; };
 		A5D5DD000000000000000252 /* StorageExplorerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000254 /* StorageExplorerView.swift */; };
@@ -2432,6 +2440,10 @@
 		A5D5DD000000000000000402 /* PaymentsLandingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsLandingScreen.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000412 /* PaymentsLandingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsLandingViewModel.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000422 /* PaymentsLandingHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsLandingHostingController.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000502 /* TransferTimingSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferTimingSheet.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000512 /* InternalTransferViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalTransferViewModel.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000522 /* InternalTransferScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalTransferScreen.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000532 /* InternalTransferHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalTransferHostingController.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000251 /* PlatformSendExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSendExecutor.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000254 /* StorageExplorerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageExplorerView.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000257 /* StorageModelListViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageModelListViews.swift; sourceTree = "<group>"; };
@@ -4533,6 +4545,7 @@
 				2A8B9E712302E43400FF8653 /* Receive */,
 				2A8B9E5722FF6F2900FF8653 /* Pay */,
 				A5D5DD000000000000000430 /* Landing */,
+				A5D5DD000000000000000540 /* InternalTransfer */,
 				C9F42FA229DBC183001BC549 /* PaymentsViewController.swift */,
 				C917023E29D44E0B008C034D /* SendReceivePageController.swift */,
 				2A8B9E3C22FD71E100FF8653 /* Payments.storyboard */,
@@ -4548,6 +4561,17 @@
 				A5D5DD000000000000000422 /* PaymentsLandingHostingController.swift */,
 			);
 			path = Landing;
+			sourceTree = "<group>";
+		};
+		A5D5DD000000000000000540 /* InternalTransfer */ = {
+			isa = PBXGroup;
+			children = (
+				A5D5DD000000000000000502 /* TransferTimingSheet.swift */,
+				A5D5DD000000000000000512 /* InternalTransferViewModel.swift */,
+				A5D5DD000000000000000522 /* InternalTransferScreen.swift */,
+				A5D5DD000000000000000532 /* InternalTransferHostingController.swift */,
+			);
+			path = InternalTransfer;
 			sourceTree = "<group>";
 		};
 		2A8B9E4422FD8CF500FF8653 /* SegmentedControl */ = {
@@ -9144,6 +9168,10 @@
 					A5D5DD000000000000000400 /* PaymentsLandingScreen.swift in Sources */,
 					A5D5DD000000000000000410 /* PaymentsLandingViewModel.swift in Sources */,
 					A5D5DD000000000000000420 /* PaymentsLandingHostingController.swift in Sources */,
+					A5D5DD000000000000000500 /* TransferTimingSheet.swift in Sources */,
+					A5D5DD000000000000000510 /* InternalTransferViewModel.swift in Sources */,
+					A5D5DD000000000000000520 /* InternalTransferScreen.swift in Sources */,
+					A5D5DD000000000000000530 /* InternalTransferHostingController.swift in Sources */,
 					A5D5DD000000000000000249 /* PlatformSendExecutor.swift in Sources */,
 					A5D5DD000000000000000252 /* StorageExplorerView.swift in Sources */,
 					A5D5DD000000000000000255 /* StorageModelListViews.swift in Sources */,
@@ -10029,6 +10057,10 @@
 					A5D5DD000000000000000401 /* PaymentsLandingScreen.swift in Sources */,
 					A5D5DD000000000000000411 /* PaymentsLandingViewModel.swift in Sources */,
 					A5D5DD000000000000000421 /* PaymentsLandingHostingController.swift in Sources */,
+					A5D5DD000000000000000501 /* TransferTimingSheet.swift in Sources */,
+					A5D5DD000000000000000511 /* InternalTransferViewModel.swift in Sources */,
+					A5D5DD000000000000000521 /* InternalTransferScreen.swift in Sources */,
+					A5D5DD000000000000000531 /* InternalTransferHostingController.swift in Sources */,
 					A5D5DD000000000000000250 /* PlatformSendExecutor.swift in Sources */,
 					A5D5DD000000000000000253 /* StorageExplorerView.swift in Sources */,
 					A5D5DD000000000000000256 /* StorageModelListViews.swift in Sources */,

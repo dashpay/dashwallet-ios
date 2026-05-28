@@ -17,6 +17,12 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         }
     }
 
+    /// Invoked when the user wants to enter the shielded-balance flow. The
+    /// landing modal is dismissed *before* this fires, so the receiver can
+    /// push the destination onto the underlying tab's navigation stack
+    /// (keeping the tab bar visible).
+    var onEnterShieldedFlow: (() -> Void)?
+
     private let viewModel: PaymentsLandingViewModel
     private lazy var hostingController: UIHostingController<PaymentsLandingScreen> = {
         let screen = PaymentsLandingScreen(
@@ -27,9 +33,12 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             onSpecifyAmount: { [weak self] in self?.pushSpecifyAmount() },
             onImportPrivateKey: { [weak self] in self?.performScanQRCodeAction() },
             onScanQR: { [weak self] in self?.performScanQRCodeAction() },
-            onSendToAddress: { [weak self] in self?.pushSendScreen() })
+            onSendToAddress: { [weak self] in self?.pushSendScreen() },
+            onShieldedBalance: { [weak self] in self?.handleShieldedBalanceTap() })
         return UIHostingController(rootView: screen)
     }()
+
+    private static let shieldedBalanceTimingShownKey = "DWShieldedBalanceTimingShown"
 
     @objc init(activeTab: Int) {
         let resolved = PaymentsLandingTab.allCases.first { $0.rawValue == Self.tabRawValue(for: activeTab) }
@@ -93,6 +102,38 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         let controller = SendScreenViewController()
         controller.homeModel = homeModel
         navigationController?.pushViewController(controller, animated: true)
+    }
+
+    private func handleShieldedBalanceTap() {
+        let alreadyShown = UserDefaults.standard.bool(forKey: Self.shieldedBalanceTimingShownKey)
+        if alreadyShown {
+            dismissAndEnterShieldedFlow()
+        } else {
+            presentTransferTimingSheet()
+        }
+    }
+
+    private func presentTransferTimingSheet() {
+        let host = UIHostingController(
+            rootView: TransferTimingSheet(onConfirm: { [weak self] in
+                UserDefaults.standard.set(true, forKey: Self.shieldedBalanceTimingShownKey)
+                self?.dismissAndEnterShieldedFlow()
+            }))
+        if let sheet = host.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(host, animated: true)
+    }
+
+    /// Dismisses the entire landing modal (and the timing sheet on top of it,
+    /// if present) by asking the presenter, then hands off to whoever owns
+    /// the tab navigation stack via `onEnterShieldedFlow`.
+    private func dismissAndEnterShieldedFlow() {
+        let handoff = onEnterShieldedFlow
+        presentingViewController?.dismiss(animated: true) {
+            handoff?()
+        }
     }
 
     private static func tabRawValue(for objcCase: Int) -> String {
