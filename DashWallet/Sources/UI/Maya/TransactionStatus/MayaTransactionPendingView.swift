@@ -17,16 +17,15 @@
 
 import SwiftUI
 
-struct MayaTransactionSuccessView: View {
+struct MayaTransactionPendingView: View {
     let message: String
 
     var body: some View {
         VStack(spacing: 24) {
-
             HStack {
-                successIcon
+                pendingIcon
 
-                Text(NSLocalizedString("Conversion Submitted", comment: "Maya"))
+                Text(NSLocalizedString("Conversion In Progress", comment: "Maya"))
                     .font(.title1)
                     .foregroundColor(.primaryText)
                     .multilineTextAlignment(.center)
@@ -40,30 +39,31 @@ struct MayaTransactionSuccessView: View {
         }
     }
 
-    private var successIcon: some View {
+    private var pendingIcon: some View {
         ZStack {
             Circle()
                 .fill(Color.dashBlue.opacity(0.1))
                 .frame(width: 100, height: 100)
 
-            Icon(name: .system("checkmark.circle.fill"))
-                .frame(width: 56, height: 56)
-                .foregroundColor(.dashBlue)
+            SwiftUI.ProgressView()
+                .progressViewStyle(.circular)
+                .tint(.dashBlue)
+                .scaleEffect(1.5)
         }
     }
 }
 
 #if DEBUG
 #Preview {
-    MayaTransactionSuccessView(
+    MayaTransactionPendingView(
         message: NSLocalizedString(
-            "Your swap has been submitted to Maya Protocol. It may take a few minutes to complete.",
+            "Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins.",
             comment: "Maya"
         )
     )
 }
 
-private struct MayaTransactionSuccessSheetPreviewHost: View {
+private struct MayaTransactionPendingSheetPreviewHost: View {
     @State private var isPresented = true
 
     var body: some View {
@@ -71,9 +71,9 @@ private struct MayaTransactionSuccessSheetPreviewHost: View {
             .ignoresSafeArea()
             .sheet(isPresented: $isPresented) {
                 let sheet = BottomSheet(showBackButton: .constant(false)) {
-                    MayaTransactionSuccessView(
+                    MayaTransactionPendingView(
                         message: NSLocalizedString(
-                            "Your swap has been submitted to Maya Protocol. It may take a few minutes to complete.",
+                            "Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins.",
                             comment: "Maya"
                         )
                     )
@@ -89,6 +89,6 @@ private struct MayaTransactionSuccessSheetPreviewHost: View {
 }
 
 #Preview("Bottom sheet") {
-    MayaTransactionSuccessSheetPreviewHost()
+    MayaTransactionPendingSheetPreviewHost()
 }
 #endif

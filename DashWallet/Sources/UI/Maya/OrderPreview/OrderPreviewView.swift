@@ -33,7 +33,46 @@ struct OrderPreviewView: View {
     @ObservedObject var viewModel: OrderPreviewViewModel
     let onCancel: () -> Void
 
+    @Environment(\.openURL) private var openURL
+
     var body: some View {
+        switch viewModel.swapStatus {
+        case .idle:
+            orderPreviewContent
+        case .pendingConfirmation:
+            statusScreen {
+                MayaTransactionPendingView(message: NSLocalizedString(
+                    "Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend.",
+                    comment: "Maya"
+                ))
+            }
+        case .processingSwap:
+            statusScreen {
+                MayaTransactionPendingView(message: NSLocalizedString(
+                    "Maya Protocol has received your transaction and is processing the swap.",
+                    comment: "Maya"
+                ))
+            }
+        case .completed:
+            statusScreen {
+                MayaTransactionSuccessView(message: NSLocalizedString(
+                    "Your swap has been submitted to Maya Protocol. It may take a few minutes to arrive in your destination wallet.",
+                    comment: "Maya"
+                ))
+            }
+        case .failed(let reason):
+            statusScreen {
+                MayaTransactionFailureView(
+                    message: reason,
+                    onRetry: { viewModel.resetToIdle() },
+                    onCancel: onCancel,
+                    onSupport: { openURL(kMayaSupportURL) }
+                )
+            }
+        }
+    }
+
+    private var orderPreviewContent: some View {
         VStack(alignment: .leading, spacing: 0) {
             NavigationBar(leading: {
                 NavigationBarElement.back.button { onCancel() }
@@ -71,6 +110,20 @@ struct OrderPreviewView: View {
             .padding(.horizontal, 60)
             .padding(.vertical, 20)
         }
+    }
+
+    @ViewBuilder
+    private func statusScreen<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        VStack(spacing: 0) {
+            NavigationBar(leading: {
+                NavigationBarElement.back.button { onCancel() }
+            })
+
+            content()
+                .padding(.horizontal, 20)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        }
+        .background(Color.primaryBackground.ignoresSafeArea())
     }
 
     // MARK: - Rows
