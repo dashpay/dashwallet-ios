@@ -8,6 +8,11 @@ import SwiftUI
 struct InternalTransferScreen: View {
     @ObservedObject var viewModel: InternalTransferViewModel
 
+    /// Invoked when the user finishes a successful transfer via the
+    /// confirm sheet's `Done` button. The hosting controller wires it
+    /// to `navigationController?.popViewController`.
+    var onCompleted: () -> Void = {}
+
     @State private var showConfirm: Bool = false
 
     var body: some View {
@@ -46,11 +51,17 @@ struct InternalTransferScreen: View {
         .background(Color.primaryBackground)
         .sheet(isPresented: $showConfirm) {
             InternalTransferConfirmSheet(
+                source: viewModel.source,
                 dashDuffs: viewModel.dashDuffs,
+                amountDuffsUnsigned: viewModel.dashDuffsUnsigned,
+                creditsAmount: viewModel.creditsPreview,
                 creditsText: viewModel.creditsPreviewFormatted,
                 fiatText: viewModel.fiatAmountString,
                 onCancel: { showConfirm = false },
-                onConfirm: { showConfirm = false })
+                onCompleted: {
+                    showConfirm = false
+                    onCompleted()
+                })
                 .presentationDetents([.large])
                 .presentationDragIndicator(.hidden)
         }
@@ -143,30 +154,55 @@ struct InternalTransferScreen: View {
     private var directionCards: some View {
         ZStack {
             VStack(spacing: 8) {
-                fromCard
+                coreSourceCard
+                platformSourceCard
                 toCard
             }
 
+            // Decorative swap badge — sits between the source rows and the
+            // To card. ZStack-overlay keeps it visually centered without
+            // needing a third VStack split.
             swapBadge
+                .offset(y: 32)
         }
     }
 
-    private var fromCard: some View {
-        directionCard(
+    private var coreSourceCard: some View {
+        sourceRow(
             iconSystemName: "d.circle.fill",
-            iconColor: .blue,
             caption: NSLocalizedString("From", comment: ""),
             title: NSLocalizedString("Dash Wallet", comment: ""),
             balanceTrailing: AnyView(
                 HStack(spacing: 2) {
-                    Text(coreDashString(viewModel.coreBalance))
+                    Text(viewModel.coreBalanceFormatted)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.primaryText)
                     Image("icon_dash_currency")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 14, height: 14)
-                }))
+                }),
+            selected: viewModel.source == .core,
+            action: { viewModel.source = .core })
+    }
+
+    private var platformSourceCard: some View {
+        sourceRow(
+            iconSystemName: "creditcard.fill",
+            caption: NSLocalizedString("From", comment: ""),
+            title: NSLocalizedString("Platform Payment", comment: ""),
+            balanceTrailing: AnyView(
+                HStack(spacing: 2) {
+                    Text(viewModel.platformCreditsFormatted)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.primaryText)
+                    Image("icon_dash_currency")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 14, height: 14)
+                }),
+            selected: viewModel.source == .platform,
+            action: { viewModel.source = .platform })
     }
 
     private var toCard: some View {
@@ -179,6 +215,65 @@ struct InternalTransferScreen: View {
                 Text(viewModel.shieldedBalanceFormatted)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.primaryText)))
+    }
+
+    /// Tappable source row with a trailing radio indicator. Reuses the
+    /// `directionCard` layout for the icon / caption / title / trailing
+    /// balance, then appends a radio circle.
+    private func sourceRow(
+        iconSystemName: String,
+        caption: String,
+        title: String,
+        balanceTrailing: AnyView,
+        selected: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                Image(systemName: iconSystemName)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.blue)
+                    .frame(width: 36, height: 36)
+                    .background(Color.blue.opacity(0.08))
+                    .clipShape(Circle())
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(caption)
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                    Text(title)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.primaryText)
+                }
+
+                Spacer()
+
+                balanceTrailing
+
+                radioIndicator(selected: selected)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(Color.secondaryBackground)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(selected ? Color.dashBlue : Color.clear, lineWidth: selected ? 1.5 : 0))
+            .cornerRadius(12)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func radioIndicator(selected: Bool) -> some View {
+        ZStack {
+            Circle()
+                .stroke(selected ? Color.dashBlue : Color.gray300.opacity(0.6), lineWidth: 1.5)
+                .frame(width: 18, height: 18)
+            if selected {
+                Circle()
+                    .fill(Color.dashBlue)
+                    .frame(width: 10, height: 10)
+            }
+        }
     }
 
     private func directionCard(
@@ -256,9 +351,5 @@ struct InternalTransferScreen: View {
                     viewModel.amountText = newValue
                 }
             })
-    }
-
-    private func coreDashString(_ duffs: UInt64) -> String {
-        duffs.formattedDashAmountWithoutCurrencySymbol
     }
 }

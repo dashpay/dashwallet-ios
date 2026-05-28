@@ -5,11 +5,20 @@
 
 import Combine
 import Foundation
+import SwiftDashSDK
 import SwiftUI
 
 enum InternalTransferUnit: String {
     case dash
     case fiat
+}
+
+/// Source bucket the user is funding the shielded transfer from. Decides
+/// which SDK route the `ShieldedTransferCoordinator` runs (asset-lock vs
+/// transparent shield) and which balance the screen validates against.
+enum InternalTransferSource: String {
+    case core
+    case platform
 }
 
 @MainActor
@@ -22,42 +31,71 @@ final class InternalTransferViewModel: ObservableObject {
             convertAmountText(from: oldValue, to: unit)
         }
     }
-    /// Total user-visible wallet balance in duffs. Combines the SPV-tracked
-    /// BIP44 balance (`SwiftDashSDKWalletState.balance.total`) with the
-    /// DIP-17 Platform Payment credits expressed as duffs
-    /// (`platformPaymentCredits / 1000`). Both buckets are spendable Dash on
-    /// the Core chain, just tracked through different SDK paths — combining
-    /// them mirrors what the user thinks of as "my Dash Wallet balance".
-    @Published private(set) var coreBalance: UInt64 = 0
 
-    /// Shielded-balance source isn't wired yet — actual shielding logic
-    /// hasn't shipped, so this stays at zero. `PlatformAddressSyncCoordinator`
-    /// .platformBalance is *Platform Payment* credits (identity funding),
-    /// NOT shielded credits — using it here was the bug.
+    /// Which "From" bucket the user picked on the source rows. Defaults to
+    /// `.core` because most users have BIP44 balance before they have
+    /// Platform Payment credits.
+    @Published var source: InternalTransferSource = .core
+
+    /// BIP44-only Core balance in duffs — the same number as
+    /// `SwiftDashSDKWalletState.balance.total`. Used to validate
+    /// `.core` source transfers (which go through `shieldedFundFromAssetLock`,
+    /// drawing from BIP44 UTXOs only).
+    @Published private(set) var coreBalanceDuffs: UInt64 = 0
+
+    /// DIP-17 Platform Payment credits (1e11 per DASH). Sourced from
+    /// `PlatformAddressSyncCoordinator.platformBalance`. Used to validate
+    /// `.platform` source transfers (which go through `shieldedShield`,
+    /// drawing transparent credits directly).
+    @Published private(set) var platformCredits: UInt64 = 0
+
+    /// Real shielded balance in credits, fed by the SDK's shielded sync
+    /// pass (`PlatformWalletManager.$lastShieldedSyncEvent → result(for:)`).
+    /// Updates whenever the shielded sync loop completes a pass — including
+    /// the manual `syncShieldedNow()` kick after a successful transfer.
     @Published private(set) var shieldedBalance: UInt64 = 0
 
     private var cancellables = Set<AnyCancellable>()
 
     init() {
-        coreBalance = Self.combinedCoreBalance(
-            walletTotal: SwiftDashSDKWalletState.shared.balance?.total ?? 0,
-            platformPaymentCredits: PlatformAddressSyncCoordinator.shared.platformBalance)
+        coreBalanceDuffs = SwiftDashSDKWalletState.shared.balance?.total ?? 0
+        platformCredits = PlatformAddressSyncCoordinator.shared.platformBalance
 
         SwiftDashSDKWalletState.shared.$balance
-            .combineLatest(PlatformAddressSyncCoordinator.shared.$platformBalance)
             .receive(on: RunLoop.main)
-            .sink { [weak self] (balance, platformCredits) in
-                self?.coreBalance = Self.combinedCoreBalance(
-                    walletTotal: balance?.total ?? 0,
-                    platformPaymentCredits: platformCredits)
+            .sink { [weak self] balance in
+                self?.coreBalanceDuffs = balance?.total ?? 0
             }
             .store(in: &cancellables)
-    }
 
-    /// `platformPaymentCredits` is in credits (1e11 per DASH); convert to
-    /// duffs (1e8 per DASH) by dividing by 1000, then add to BIP44 duffs.
-    private static func combinedCoreBalance(walletTotal: UInt64, platformPaymentCredits: UInt64) -> UInt64 {
-        walletTotal + platformPaymentCredits / 1000
+        PlatformAddressSyncCoordinator.shared.$platformBalance
+            .receive(on: RunLoop.main)
+            .sink { [weak self] credits in
+                self?.platformCredits = credits
+            }
+            .store(in: &cancellables)
+
+        if let manager = SwiftDashSDKHost.shared.manager,
+           let wallet = SwiftDashSDKHost.shared.wallet {
+            let walletId = wallet.walletId
+            // Seed once from whatever the manager already saw — the
+            // publisher only fires on new sync events.
+            shieldedBalance = manager.lastShieldedSyncEvent?
+                .result(for: walletId)?
+                .balance ?? 0
+
+            manager.$lastShieldedSyncEvent
+                .receive(on: RunLoop.main)
+                .sink { [weak self] event in
+                    guard let self else { return }
+                    if let walletResult = event?.result(for: walletId),
+                       walletResult.success,
+                       !walletResult.cooldownSkip {
+                        self.shieldedBalance = walletResult.balance
+                    }
+                }
+                .store(in: &cancellables)
+        }
     }
 
     /// The raw numeric value the user has typed, with locale comma normalised
@@ -79,13 +117,30 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
+    /// Continue is enabled when the typed amount is > 0 AND fits in the
+    /// currently-selected source bucket. Each route has its own balance
+    /// envelope — asset-lock spends BIP44 duffs, transparent shield spends
+    /// DIP-17 credits.
     var canContinue: Bool {
-        parsedDashAmount > 0
+        let dash = parsedDashAmount
+        guard dash > 0 else { return false }
+        switch source {
+        case .core:
+            return dashDuffsUnsigned <= coreBalanceDuffs
+        case .platform:
+            return creditsPreview <= platformCredits
+        }
     }
 
     /// `parsedDashAmount` expressed as Int64 duffs, for `DashAmount` views.
     var dashDuffs: Int64 {
         Int64(parsedDashAmount.plainDashAmount)
+    }
+
+    /// Same as `dashDuffs` but unsigned, for SDK calls and balance compares
+    /// (avoids re-rounding via Int64).
+    var dashDuffsUnsigned: UInt64 {
+        parsedDashAmount.plainDashAmount
     }
 
     /// Fiat-formatted DASH amount — always returns the fiat representation
@@ -121,21 +176,42 @@ final class InternalTransferViewModel: ObservableObject {
         Self.creditsFormatter.string(from: NSNumber(value: creditsPreview)) ?? "\(creditsPreview)"
     }
 
+    /// Formatted BIP44 balance as DASH (no currency symbol). Used by the
+    /// Dash Wallet source row.
     var coreBalanceFormatted: String {
-        coreBalance.formattedDashAmount
+        coreBalanceDuffs.formattedDashAmountWithoutCurrencySymbol
     }
 
+    /// Formatted Platform Payment balance as DASH (no currency symbol). The
+    /// credits-to-duffs conversion is `/ 1000` (1e8 duffs per DASH vs 1e11
+    /// credits per DASH).
+    var platformCreditsFormatted: String {
+        (platformCredits / 1000).formattedDashAmountWithoutCurrencySymbol
+    }
+
+    /// Formatted live shielded balance for the To card.
     var shieldedBalanceFormatted: String {
         let formatted = Self.creditsFormatter.string(from: NSNumber(value: shieldedBalance)) ?? "\(shieldedBalance)"
         return "\(formatted) credits"
     }
 
+    /// Source-aware Max fill. Keeps the same unit semantics — DASH or fiat —
+    /// but draws the upper bound from whichever bucket the user picked.
     func fillMaxFromWallet() {
+        let sourceDuffs: UInt64
+        switch source {
+        case .core:
+            sourceDuffs = coreBalanceDuffs
+        case .platform:
+            // Credits → duffs: integer divide by 1000.
+            sourceDuffs = platformCredits / 1000
+        }
+
         switch unit {
         case .dash:
-            amountText = coreBalance.formattedDashAmountWithoutCurrencySymbol
+            amountText = sourceDuffs.formattedDashAmountWithoutCurrencySymbol
         case .fiat:
-            let dashDecimal = coreBalance.dashAmount
+            let dashDecimal = sourceDuffs.dashAmount
             guard dashDecimal > 0 else {
                 amountText = "0"
                 return
