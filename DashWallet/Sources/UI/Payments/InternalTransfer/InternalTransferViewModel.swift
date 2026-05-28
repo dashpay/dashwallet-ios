@@ -22,28 +22,42 @@ final class InternalTransferViewModel: ObservableObject {
             convertAmountText(from: oldValue, to: unit)
         }
     }
+    /// Total user-visible wallet balance in duffs. Combines the SPV-tracked
+    /// BIP44 balance (`SwiftDashSDKWalletState.balance.total`) with the
+    /// DIP-17 Platform Payment credits expressed as duffs
+    /// (`platformPaymentCredits / 1000`). Both buckets are spendable Dash on
+    /// the Core chain, just tracked through different SDK paths — combining
+    /// them mirrors what the user thinks of as "my Dash Wallet balance".
     @Published private(set) var coreBalance: UInt64 = 0
-    @Published private(set) var platformBalance: UInt64 = 0
+
+    /// Shielded-balance source isn't wired yet — actual shielding logic
+    /// hasn't shipped, so this stays at zero. `PlatformAddressSyncCoordinator`
+    /// .platformBalance is *Platform Payment* credits (identity funding),
+    /// NOT shielded credits — using it here was the bug.
+    @Published private(set) var shieldedBalance: UInt64 = 0
 
     private var cancellables = Set<AnyCancellable>()
 
     init() {
-        coreBalance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
-        platformBalance = PlatformAddressSyncCoordinator.shared.platformBalance
+        coreBalance = Self.combinedCoreBalance(
+            walletTotal: SwiftDashSDKWalletState.shared.balance?.total ?? 0,
+            platformPaymentCredits: PlatformAddressSyncCoordinator.shared.platformBalance)
 
         SwiftDashSDKWalletState.shared.$balance
+            .combineLatest(PlatformAddressSyncCoordinator.shared.$platformBalance)
             .receive(on: RunLoop.main)
-            .sink { [weak self] balance in
-                self?.coreBalance = balance?.total ?? 0
+            .sink { [weak self] (balance, platformCredits) in
+                self?.coreBalance = Self.combinedCoreBalance(
+                    walletTotal: balance?.total ?? 0,
+                    platformPaymentCredits: platformCredits)
             }
             .store(in: &cancellables)
+    }
 
-        PlatformAddressSyncCoordinator.shared.$platformBalance
-            .receive(on: RunLoop.main)
-            .sink { [weak self] credits in
-                self?.platformBalance = credits
-            }
-            .store(in: &cancellables)
+    /// `platformPaymentCredits` is in credits (1e11 per DASH); convert to
+    /// duffs (1e8 per DASH) by dividing by 1000, then add to BIP44 duffs.
+    private static func combinedCoreBalance(walletTotal: UInt64, platformPaymentCredits: UInt64) -> UInt64 {
+        walletTotal + platformPaymentCredits / 1000
     }
 
     /// The raw numeric value the user has typed, with locale comma normalised
@@ -99,8 +113,8 @@ final class InternalTransferViewModel: ObservableObject {
         coreBalance.formattedDashAmount
     }
 
-    var platformBalanceFormatted: String {
-        let formatted = Self.creditsFormatter.string(from: NSNumber(value: platformBalance)) ?? "\(platformBalance)"
+    var shieldedBalanceFormatted: String {
+        let formatted = Self.creditsFormatter.string(from: NSNumber(value: shieldedBalance)) ?? "\(shieldedBalance)"
         return "\(formatted) credits"
     }
 

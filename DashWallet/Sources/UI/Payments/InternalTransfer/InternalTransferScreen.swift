@@ -166,7 +166,7 @@ struct InternalTransferScreen: View {
             caption: NSLocalizedString("To", comment: ""),
             title: NSLocalizedString("Shielded balance", comment: ""),
             balanceTrailing: AnyView(
-                Text(viewModel.platformBalanceFormatted)
+                Text(viewModel.shieldedBalanceFormatted)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.primaryText)))
     }
