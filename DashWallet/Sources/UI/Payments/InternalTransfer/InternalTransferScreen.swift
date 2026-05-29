@@ -161,23 +161,24 @@ struct InternalTransferScreen: View {
                     toCard
                 case .fromShielded:
                     fromShieldedCard
-                    toCoreCard
+                    coreSourceCard
+                    platformSourceCard
                 }
             }
 
             // Tappable swap badge — toggles the transfer direction. Sits over
-            // the boundary between the From row(s) and the To card. The forward
-            // 3-card stack needs it nudged down (y:32); the reverse 2-card stack
-            // centers it (y:0).
+            // the boundary between the From and To sides. Forward (2 source rows
+            // above the To card) nudges it down (y:32); reverse (1 From card
+            // above 2 destination rows) nudges it up (y:-32).
             swapBadge
-                .offset(y: viewModel.direction == .toShielded ? 32 : 0)
+                .offset(y: viewModel.direction == .toShielded ? 32 : -32)
         }
     }
 
     private var coreSourceCard: some View {
         sourceRow(
             iconSystemName: "d.circle.fill",
-            caption: NSLocalizedString("From", comment: ""),
+            caption: sourceCaption,
             title: NSLocalizedString("Dash Wallet", comment: ""),
             balanceTrailing: AnyView(
                 HStack(spacing: 2) {
@@ -196,7 +197,7 @@ struct InternalTransferScreen: View {
     private var platformSourceCard: some View {
         sourceRow(
             iconSystemName: "creditcard.fill",
-            caption: NSLocalizedString("From", comment: ""),
+            caption: sourceCaption,
             title: NSLocalizedString("Platform Payment", comment: ""),
             balanceTrailing: AnyView(
                 HStack(spacing: 2) {
@@ -224,10 +225,11 @@ struct InternalTransferScreen: View {
                     .foregroundColor(.primaryText)))
     }
 
-    // MARK: - Reverse-direction cards (Shielded → Dash Wallet)
+    // MARK: - Reverse-direction From card
 
-    /// "From" card in reverse mode — the shielded balance. Non-tappable
-    /// (reverse has a single fixed source).
+    /// "From" card in reverse mode — the shielded balance (non-tappable). The
+    /// reverse *destination* is chosen via the reused `coreSourceCard` /
+    /// `platformSourceCard` radio rows rendered below it.
     private var fromShieldedCard: some View {
         directionCard(
             iconSystemName: "shield.fill",
@@ -240,24 +242,12 @@ struct InternalTransferScreen: View {
                     .foregroundColor(.primaryText)))
     }
 
-    /// "To" card in reverse mode — the transparent Dash Wallet. Non-tappable
-    /// (reverse has a single fixed destination).
-    private var toCoreCard: some View {
-        directionCard(
-            iconSystemName: "d.circle.fill",
-            iconColor: .blue,
-            caption: NSLocalizedString("To", comment: ""),
-            title: NSLocalizedString("Dash Wallet", comment: ""),
-            balanceTrailing: AnyView(
-                HStack(spacing: 2) {
-                    Text(viewModel.coreBalanceFormatted)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.primaryText)
-                    Image("icon_dash_currency")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 14, height: 14)
-                }))
+    /// Caption for the reusable source rows: "From" in the forward direction,
+    /// "To" in reverse (where they act as the destination picker).
+    private var sourceCaption: String {
+        viewModel.direction == .toShielded
+            ? NSLocalizedString("From", comment: "")
+            : NSLocalizedString("To", comment: "")
     }
 
     /// Tappable source row with a trailing radio indicator. Reuses the

@@ -80,6 +80,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case noManager
         case noShieldedAddress
         case noReceiveAddress
+        case noPlatformAddress
         case authCancelled
         case authFailed
         case transferFailed(Error)
@@ -98,6 +99,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString("Shielded address is not bound for this wallet", comment: "InternalTransfer")
             case .noReceiveAddress:
                 return NSLocalizedString("Could not resolve a destination wallet address", comment: "InternalTransfer")
+            case .noPlatformAddress:
+                return NSLocalizedString("Could not resolve a destination Platform Payment address", comment: "InternalTransfer")
             case .authCancelled:
                 return NSLocalizedString("Authentication cancelled", comment: "InternalTransfer")
             case .authFailed:
@@ -258,6 +261,74 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .broadcasting
         phase = .success
         scheduleShieldedResync(manager: env.manager)
+    }
+
+    /// Route 4 (reverse): shielded Orchard notes → the wallet's own transparent
+    /// Platform Payment balance (DIP-17 credits). Stages: `.signing → .proving →
+    /// .broadcasting → .success`. Like `shieldedShield` / `shieldedWithdraw`,
+    /// `shieldedUnshield` is a single opaque async call with no intermediate
+    /// signals. `amount` is in credits; no signer required.
+    func performUnshield(amountCredits: UInt64) async {
+        guard beginTransfer() else { return }
+        Self.logger.info("🛡️ SHIELD-TX :: unshield route amount=\(amountCredits) credits")
+
+        let env: Environment
+        do {
+            env = try resolveEnvironment()
+        } catch {
+            handleFailure(error)
+            return
+        }
+
+        // Destination Platform Payment (bech32m) address — the wallet's own
+        // next receive address, mirroring `PaymentsLandingViewModel
+        // .pickNextPlatformAddress`. Resolve before advancing the phase.
+        guard let platformAddress = Self.pickPlatformAddress(
+                from: PlatformAddressSyncCoordinator.shared.derivedAddresses),
+              !platformAddress.isEmpty else {
+            handleFailure(CoordinatorError.noPlatformAddress)
+            return
+        }
+
+        do {
+            try await authorize()
+        } catch {
+            handleFailure(error)
+            return
+        }
+
+        phase = .proving
+
+        do {
+            try await env.manager.shieldedUnshield(
+                walletId: env.walletId,
+                account: 0,
+                toPlatformAddress: platformAddress,
+                amount: amountCredits)
+        } catch {
+            handleFailure(CoordinatorError.transferFailed(error))
+            return
+        }
+
+        Self.logger.info("🛡️ SHIELD-TX :: unshield route completed")
+        phase = .broadcasting
+        phase = .success
+        scheduleShieldedResync(manager: env.manager)
+    }
+
+    /// Lowest-indexed unused Platform Payment address (fallback: lowest-indexed
+    /// overall) for the wallet's own receive — mirrors the selection in
+    /// `PaymentsLandingViewModel.pickNextPlatformAddress(from:)`. Pure; the
+    /// `derivedAddresses` read happens on the `@MainActor` caller.
+    private static func pickPlatformAddress(from addresses: [DerivedPlatformAddress]) -> String? {
+        if let unused = addresses
+            .filter({ !$0.isUsed })
+            .min(by: { ($0.accountIndex, $0.addressIndex) < ($1.accountIndex, $1.addressIndex) }) {
+            return unused.address
+        }
+        return addresses
+            .min(by: { ($0.accountIndex, $0.addressIndex) < ($1.accountIndex, $1.addressIndex) })?
+            .address
     }
 
     /// Reset to `.idle` so the user can retry from a `.failed` state.

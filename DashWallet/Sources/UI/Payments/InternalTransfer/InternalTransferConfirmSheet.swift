@@ -224,7 +224,8 @@ struct InternalTransferConfirmSheet: View {
         case .toShielded:
             return NSLocalizedString("Shielded balance", comment: "")
         case .fromShielded:
-            return NSLocalizedString("Dash Wallet", comment: "")
+            // Reverse destination is the picked transparent endpoint.
+            return sourceLabel
         }
     }
 
@@ -295,33 +296,39 @@ struct InternalTransferConfirmSheet: View {
         .cornerRadius(12)
     }
 
-    /// The tip card reframes per direction: forward is a privacy nudge,
-    /// reverse explains the up-to-10-minute spend delay (matches the mockup).
+    /// The tip card is route-aware:
+    /// - forward (any source): privacy nudge.
+    /// - reverse → Dash Wallet (L1 withdraw): up-to-10-minute spend delay.
+    /// - reverse → Platform Payment (unshield): settles fast, so a privacy nudge.
+    private var showsWithdrawDelayTip: Bool {
+        direction == .fromShielded && source == .core
+    }
+
     private var privacyTipIcon: String {
-        switch direction {
-        case .toShielded: return "shield.fill"
-        case .fromShielded: return "clock.fill"
-        }
+        showsWithdrawDelayTip ? "clock.fill" : "shield.fill"
     }
 
     private var privacyTipTitle: String {
-        switch direction {
-        case .toShielded:
-            return NSLocalizedString("Privacy tip", comment: "")
-        case .fromShielded:
-            return NSLocalizedString("Up to 10 minutes to spend", comment: "")
-        }
+        showsWithdrawDelayTip
+            ? NSLocalizedString("Up to 10 minutes to spend", comment: "")
+            : NSLocalizedString("Privacy tip", comment: "")
     }
 
     private var privacyTipBody: String {
+        if showsWithdrawDelayTip {
+            return NSLocalizedString(
+                "After this transfer, it can take up to 10 minutes before you can use your Dash. This delay is part of how your privacy is protected.",
+                comment: "")
+        }
         switch direction {
         case .toShielded:
             return NSLocalizedString(
                 "For best privacy, wait at least 2 hours before using these funds.",
                 comment: "")
         case .fromShielded:
+            // Unshield to Platform Payment settles quickly.
             return NSLocalizedString(
-                "After this transfer, it can take up to 10 minutes before you can use your Dash. This delay is part of how your privacy is protected.",
+                "These funds move to your Platform Payment balance and are ready to spend right away.",
                 comment: "")
         }
     }
@@ -432,7 +439,12 @@ struct InternalTransferConfirmSheet: View {
                     await coordinator.performShield(amountCredits: creditsAmount)
                 }
             case .fromShielded:
-                await coordinator.performWithdraw(amountCredits: creditsAmount)
+                switch source {
+                case .core:
+                    await coordinator.performWithdraw(amountCredits: creditsAmount)
+                case .platform:
+                    await coordinator.performUnshield(amountCredits: creditsAmount)
+                }
             }
         }
     }
