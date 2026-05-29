@@ -263,6 +263,15 @@ public final class DWIdentityRegistrationBridge: NSObject {
     }
 
     private static func nsError(from error: Error) -> NSError {
+        // PIN / biometric cancellation is a user action, not a failure.
+        // Surface it as the canonical Cocoa user-cancel (domain, code)
+        // so the awaiting SwiftUI form can suppress the error popup
+        // without depending on the Swift enum → NSError bridging
+        // ordinal (which shifts if `CoordinatorError`'s cases reorder).
+        if let coordError = error as? DWIdentityRegistrationCoordinator.CoordinatorError,
+           case .authCancelled = coordError {
+            return NSError(domain: NSCocoaErrorDomain, code: NSUserCancelledError, userInfo: nil)
+        }
         if let nsError = error as NSError? {
             return nsError
         }

@@ -19,13 +19,14 @@ import UIKit
 import SwiftUI
 
 class CreateUsernameViewController: UIViewController {
-    private let dashPayModel: DWDashPayProtocol
     @objc var completionHandler: ((Bool) -> ())?
-    
+
     @objc
     init(dashPayModel: DWDashPayProtocol, invitationURL: URL?, definedUsername: String?) {
-        // TODO: invites
-        self.dashPayModel = dashPayModel
+        // TODO: invites. `dashPayModel` / `invitationURL` / `definedUsername`
+        // are part of the Obj-C navigation contract (3 call sites) but the
+        // new-user SwiftUI flow drives registration straight through
+        // `DWIdentityRegistrationBridge`, so none are stored here.
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -38,9 +39,22 @@ class CreateUsernameViewController: UIViewController {
 
         self.view.backgroundColor = UIColor.dw_secondaryBackground()
 
-        let content = CreateUsernameView(dashPayModel: dashPayModel) {
-            self.navigationController?.popViewController(animated: true)
+        let content = CreateUsernameView {
+            let navigationController = self.navigationController
+            #if DASHPAY
+            let mainTabController = self.tabBarController as? MainTabbarController
+            #endif
+            navigationController?.popViewController(animated: true)
             self.completionHandler?(true)
+            #if DASHPAY
+            if let transitionCoordinator = navigationController?.transitionCoordinator {
+                transitionCoordinator.animate(alongsideTransition: nil) { _ in
+                    mainTabController?.applyPendingDashPayTabReconfiguration()
+                }
+            } else {
+                mainTabController?.applyPendingDashPayTabReconfiguration()
+            }
+            #endif
         }
         let swiftUIController = UIHostingController(rootView: content)
         swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
@@ -58,10 +72,10 @@ class CreateUsernameViewController: UIViewController {
 }
 
 struct CreateUsernameView: View {
-    @State var dashPayModel: DWDashPayProtocol
     @StateObject private var viewModel = CreateUsernameViewModel()
     @FocusState private var isTextInputFocused: Bool
     @State private var inProgress: Bool = false
+    @State private var screenLockedAfterAuth: Bool = false
     /// Funding source for the SwiftDashSDK identity registration. Defaults
     /// to Core; auto-pinned to Platform when only PP credits are available;
     /// user-selectable via the segmented picker when both sources have enough.
@@ -72,6 +86,13 @@ struct CreateUsernameView: View {
     /// through this alert (instead of submitting directly) when the
     /// typed name is contested-eligible — `viewModel.isContestedCandidate`.
     @State private var showContestedConfirmation: Bool = false
+    /// Drives the success alert shown when registration reaches the
+    /// terminal `.completed` phase. OK dismisses the screen.
+    @State private var showSuccess: Bool = false
+    /// Non-nil drives the error alert; holds the coordinator's
+    /// human-readable failure message. OK clears it and keeps the
+    /// screen up so the user can edit or retry.
+    @State private var registrationErrorMessage: String? = nil
     var finish: () -> Void
 
     var body: some View {
@@ -83,9 +104,10 @@ struct CreateUsernameView: View {
             Text(NSLocalizedString("Please note that you will not be able to change it in future", comment: "Usernames"))
                 .foregroundColor(.primaryText)
                 .font(.system(size: 14))
-            TextInput(label: "Username", text: $viewModel.username)
+            TextInput(label: "Username", text: $viewModel.username, isEnabled: !screenLockedAfterAuth)
                 .padding(.top, 20)
                 .focused($isTextInputFocused)
+                .disabled(screenLockedAfterAuth)
                 
             if viewModel.uiState.lengthRule != .hidden {
                 ValidationCheck(
@@ -143,6 +165,7 @@ struct CreateUsernameView: View {
                         Text("Platform (\(viewModel.platformPaymentBalance) Dash)").tag(DWIdentityFundingSource.platformPayment)
                     }
                     .pickerStyle(.segmented)
+                    .disabled(screenLockedAfterAuth)
                 }
                 .padding(.top, 20)
             }
@@ -151,7 +174,7 @@ struct CreateUsernameView: View {
 
             DashButton(
                 text: NSLocalizedString("Continue", comment: ""),
-                isEnabled: viewModel.uiState.canContinue,
+                isEnabled: viewModel.uiState.canContinue && !screenLockedAfterAuth,
                 isLoading: inProgress
             ) {
                 // `viewModel.uiState.canContinue` is only true after
@@ -199,6 +222,35 @@ struct CreateUsernameView: View {
                 "This name requires voting. Your Dash will be locked until voting completes.",
                 comment: "Usernames"))
         }
+        .alert(
+            NSLocalizedString("Username registered", comment: "Usernames"),
+            isPresented: $showSuccess
+        ) {
+            Button(NSLocalizedString("OK", comment: "")) { finish() }
+        } message: {
+            Text(String.localizedStringWithFormat(
+                NSLocalizedString("“%@” has been registered.", comment: "Usernames"),
+                viewModel.username))
+        }
+        .alert(
+            NSLocalizedString("Registration failed", comment: "Usernames"),
+            isPresented: Binding(
+                get: { registrationErrorMessage != nil },
+                set: { newValue in
+                    if !newValue {
+                        registrationErrorMessage = nil
+                        screenLockedAfterAuth = false
+                    }
+                }
+            )
+        ) {
+            Button(NSLocalizedString("OK", comment: "")) {
+                registrationErrorMessage = nil
+                screenLockedAfterAuth = false
+            }
+        } message: {
+            Text(registrationErrorMessage ?? "")
+        }
     }
 
     /// Orange warning callout shown above the Continue button when
@@ -236,12 +288,25 @@ struct CreateUsernameView: View {
     private func performSubmit() {
         DWIdentityRegistrationBridge.shared.preferredFundingSource = fundingSource
         Task {
+            // `inProgress` keeps the Continue spinner up — and the screen
+            // alive — across the PIN gate and the whole registration. The
+            // bridge completion resolves the outcome at the terminal phase.
             inProgress = true
-            let result = await viewModel.submitUsernameRequest(withProve: nil, dashPayModel: dashPayModel)
+            screenLockedAfterAuth = false
+            let outcome = await viewModel.submitUsernameRequest {
+                isTextInputFocused = false
+                screenLockedAfterAuth = true
+            }
             inProgress = false
 
-            if result {
-                finish()
+            switch outcome {
+            case .success:
+                showSuccess = true
+            case .cancelled:
+                screenLockedAfterAuth = false
+                break // user backed out of the PIN — stay on screen, allow retry
+            case .failure(let message):
+                registrationErrorMessage = message
             }
         }
     }

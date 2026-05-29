@@ -88,6 +88,7 @@ class MainTabbarController: UITabBarController {
     #if DASHPAY
     weak var contactsNavigationController: DWRootContactsViewController?
     weak var exploreNavigationController: ExploreViewController?
+    private var pendingDashPayTabReconfiguration = false
     #endif
 
     // TODO: Refactor this and send notification about wiped wallet instead of chaining the delegate
@@ -128,15 +129,7 @@ class MainTabbarController: UITabBarController {
         #if DASHPAY
         NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)
             .sink { [weak self] _ in
-                guard let self = self else { return }
-
-                if self.blockchainIdentity != nil {
-                    let previousIndex = self.selectedIndex
-                    self.configureControllers()
-                    self.selectedIndex = previousIndex == 0 ? 0 : previousIndex + 2
-                    self.view.setNeedsLayout()
-                    self.view.layoutIfNeeded()
-                }
+                self?.reconfigureDashPayTabsIfNeeded()
             }
             .store(in: &cancellableBag)
         #endif
@@ -255,6 +248,62 @@ extension MainTabbarController {
 
         self.viewControllers = viewControllers
     }
+
+    #if DASHPAY
+    private func reconfigureDashPayTabsIfNeeded() {
+        guard blockchainIdentity != nil else { return }
+
+        if containsCreateUsernameController(in: self) {
+            pendingDashPayTabReconfiguration = true
+            return
+        }
+
+        reconfigureDashPayTabsPreservingSelection()
+    }
+
+    private func reconfigureDashPayTabsPreservingSelection() {
+        let previousIndex = selectedIndex
+        pendingDashPayTabReconfiguration = false
+        configureControllers()
+        selectedIndex = previousIndex == 0 ? 0 : previousIndex + 2
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
+    }
+
+    private func containsCreateUsernameController(in controller: UIViewController?) -> Bool {
+        guard let controller else { return false }
+
+        if controller is CreateUsernameViewController {
+            return true
+        }
+
+        if let navigationController = controller as? UINavigationController,
+           navigationController.viewControllers.contains(where: { $0 is CreateUsernameViewController }) {
+            return true
+        }
+
+        if let tabBarController = controller as? UITabBarController,
+           tabBarController.viewControllers?.contains(where: { containsCreateUsernameController(in: $0) }) == true {
+            return true
+        }
+
+        if controller.children.contains(where: { containsCreateUsernameController(in: $0) }) {
+            return true
+        }
+
+        return containsCreateUsernameController(in: controller.presentedViewController)
+    }
+
+    func applyPendingDashPayTabReconfiguration() {
+        guard pendingDashPayTabReconfiguration else { return }
+
+        if containsCreateUsernameController(in: self) {
+            return
+        }
+
+        reconfigureDashPayTabsIfNeeded()
+    }
+    #endif
 
     private func configureHierarchy() {
         paymentButton = PaymentButton()

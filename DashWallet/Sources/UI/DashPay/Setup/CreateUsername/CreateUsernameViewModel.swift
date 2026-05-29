@@ -51,6 +51,9 @@ class CreateUsernameViewModel: ObservableObject {
     private let dao: UsernameRequestsDAO = UsernameRequestsDAOImpl.shared
     private let prefs = UsernamePrefs.shared
     private let illegalChars = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-").inverted
+    private var submittedRegistrationUsername: String?
+    private var didNotifyRegistrationStarted = false
+    private var onRegistrationStarted: (@MainActor () -> Void)?
     static let shared = CreateUsernameViewModel()
     
     var shouldRequestPayment: Bool {
@@ -113,27 +116,84 @@ class CreateUsernameViewModel: ObservableObject {
                 self?.validateUsername(username: text)
             }
             .store(in: &cancellableBag)
+
+        DWIdentityRegistrationCoordinator.shared.$phase
+            .receive(on: RunLoop.main)
+            .sink { [weak self] phase in
+                self?.handleRegistrationPhase(phase)
+            }
+            .store(in: &cancellableBag)
         
         observeBalance()
     }
     
-    func submitUsernameRequest(withProve link: URL?, dashPayModel: DWDashPayProtocol) async -> Bool {
-        // Fire-and-forget. `DWDashPayModel.createUsername:invitation:`
-        // routes new-user registrations through
-        // `DWIdentityRegistrationBridge` → `DWIdentityRegistrationCoordinator`
-        // (PIN gate → asset-lock + IdentityCreate → DPNS register).
-        // Progress flows to the rest of the app via
-        // `DWDashPayRegistrationStatusUpdatedNotification` →
-        // `DWDashPayModel.registrationStatus` → home-screen banner +
-        // `DWDPRegistrationStatusViewController`.
-        //
-        // `link` (verify-identity proof URL) is accepted in the
-        // signature for source compatibility with the contested-name
-        // path but isn't forwarded — the SDK v1 doesn't surface a
-        // verify-identity hook through `DWDashPayProtocol.createUsername`.
-        // Contested-username voting is a future stage.
-        dashPayModel.createUsername(username, invitation: nil)
-        return true
+    /// Terminal outcome of a username-registration attempt, surfaced to
+    /// the SwiftUI form so it can keep the screen up through the PIN +
+    /// registration and then show the right native alert.
+    enum UsernameRegistrationOutcome {
+        case success
+        case cancelled
+        case failure(String)
+    }
+
+    /// Kick off SwiftDashSDK identity + DPNS registration and suspend
+    /// until the terminal phase. Routes straight to
+    /// `DWIdentityRegistrationBridge` (instead of
+    /// `DWDashPayModel.createUsername:invitation:`) so the awaiting
+    /// caller gets a one-shot success / cancel / failure signal to drive
+    /// the on-screen popup. The model's `bridgeRegistrationStateChanged:`
+    /// observer still mirrors progress to the home banner + writes the
+    /// `DWGlobalOptions` success mirror, because it listens on the
+    /// bridge's `stateChangedNotification`, not on this call path.
+    ///
+    /// The funding source is read from
+    /// `DWIdentityRegistrationBridge.shared.preferredFundingSource`,
+    /// written by `CreateUsernameView` immediately before this call.
+    func submitUsernameRequest(onRegistrationStarted: @escaping @MainActor () -> Void = {}) async -> UsernameRegistrationOutcome {
+        let submittedUsername = username
+        submittedRegistrationUsername = submittedUsername
+        didNotifyRegistrationStarted = false
+        self.onRegistrationStarted = onRegistrationStarted
+
+        return await withCheckedContinuation { (continuation: CheckedContinuation<UsernameRegistrationOutcome, Never>) in
+            DWIdentityRegistrationBridge.shared.startCreateUsername(submittedUsername) { [weak self] _, error in
+                Task { @MainActor in
+                    self?.submittedRegistrationUsername = nil
+                    self?.didNotifyRegistrationStarted = false
+                    self?.onRegistrationStarted = nil
+
+                    guard let error else {
+                        continuation.resume(returning: .success)
+                        return
+                    }
+                    // PIN / biometric cancel surfaces as the canonical Cocoa
+                    // user-cancel — a silent no-op, not an error popup.
+                    if error.domain == NSCocoaErrorDomain && error.code == NSUserCancelledError {
+                        continuation.resume(returning: .cancelled)
+                    } else {
+                        continuation.resume(returning: .failure(error.localizedDescription))
+                    }
+                }
+            }
+        }
+    }
+
+    private func handleRegistrationPhase(_ phase: DWIdentityRegistrationController.Phase) {
+        guard
+            let submittedRegistrationUsername,
+            DWIdentityRegistrationCoordinator.shared.currentUsername == submittedRegistrationUsername
+        else {
+            return
+        }
+
+        switch phase {
+        case .preparingKeys, .inFlight:
+            guard !didNotifyRegistrationStarted else { return }
+            didNotifyRegistrationStarted = true
+            onRegistrationStarted?()
+        case .idle, .completed, .failed:
+            break
+        }
     }
     
     func fetchUsernameRequestData() {
