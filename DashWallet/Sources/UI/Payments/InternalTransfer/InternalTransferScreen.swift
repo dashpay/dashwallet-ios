@@ -30,7 +30,7 @@ struct InternalTransferScreen: View {
                     .padding(.horizontal, 20)
 
                 if viewModel.canContinue {
-                    creditsPreview
+                    transferPreview
                         .padding(.horizontal, 20)
                 }
             }
@@ -52,10 +52,10 @@ struct InternalTransferScreen: View {
         .sheet(isPresented: $showConfirm) {
             InternalTransferConfirmSheet(
                 source: viewModel.source,
+                direction: viewModel.direction,
                 dashDuffs: viewModel.dashDuffs,
                 amountDuffsUnsigned: viewModel.dashDuffsUnsigned,
                 creditsAmount: viewModel.creditsPreview,
-                creditsText: viewModel.creditsPreviewFormatted,
                 fiatText: viewModel.fiatAmountString,
                 onCancel: { showConfirm = false },
                 onCompleted: {
@@ -154,16 +154,23 @@ struct InternalTransferScreen: View {
     private var directionCards: some View {
         ZStack {
             VStack(spacing: 8) {
-                coreSourceCard
-                platformSourceCard
-                toCard
+                switch viewModel.direction {
+                case .toShielded:
+                    coreSourceCard
+                    platformSourceCard
+                    toCard
+                case .fromShielded:
+                    fromShieldedCard
+                    toCoreCard
+                }
             }
 
-            // Decorative swap badge — sits between the source rows and the
-            // To card. ZStack-overlay keeps it visually centered without
-            // needing a third VStack split.
+            // Tappable swap badge — toggles the transfer direction. Sits over
+            // the boundary between the From row(s) and the To card. The forward
+            // 3-card stack needs it nudged down (y:32); the reverse 2-card stack
+            // centers it (y:0).
             swapBadge
-                .offset(y: 32)
+                .offset(y: viewModel.direction == .toShielded ? 32 : 0)
         }
     }
 
@@ -215,6 +222,42 @@ struct InternalTransferScreen: View {
                 Text(viewModel.shieldedBalanceFormatted)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.primaryText)))
+    }
+
+    // MARK: - Reverse-direction cards (Shielded → Dash Wallet)
+
+    /// "From" card in reverse mode — the shielded balance. Non-tappable
+    /// (reverse has a single fixed source).
+    private var fromShieldedCard: some View {
+        directionCard(
+            iconSystemName: "shield.fill",
+            iconColor: .blue,
+            caption: NSLocalizedString("From", comment: ""),
+            title: NSLocalizedString("Shielded balance", comment: ""),
+            balanceTrailing: AnyView(
+                Text(viewModel.shieldedBalanceFormatted)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.primaryText)))
+    }
+
+    /// "To" card in reverse mode — the transparent Dash Wallet. Non-tappable
+    /// (reverse has a single fixed destination).
+    private var toCoreCard: some View {
+        directionCard(
+            iconSystemName: "d.circle.fill",
+            iconColor: .blue,
+            caption: NSLocalizedString("To", comment: ""),
+            title: NSLocalizedString("Dash Wallet", comment: ""),
+            balanceTrailing: AnyView(
+                HStack(spacing: 2) {
+                    Text(viewModel.coreBalanceFormatted)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.primaryText)
+                    Image("icon_dash_currency")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 14, height: 14)
+                }))
     }
 
     /// Tappable source row with a trailing radio indicator. Reuses the
@@ -311,29 +354,37 @@ struct InternalTransferScreen: View {
     }
 
     private var swapBadge: some View {
-        Image(systemName: "arrow.up.arrow.down")
-            .font(.system(size: 12, weight: .semibold))
-            .foregroundColor(.primaryText)
-            .frame(width: 28, height: 28)
-            .background(Color.primaryBackground)
-            .clipShape(Circle())
-            .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
+        Button(action: toggleDirection) {
+            Image(systemName: "arrow.up.arrow.down")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(.primaryText)
+                .frame(width: 28, height: 28)
+                .background(Color.primaryBackground)
+                .clipShape(Circle())
+                .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
     }
 
-    // MARK: - Credits preview
+    private func toggleDirection() {
+        viewModel.direction = viewModel.direction == .toShielded ? .fromShielded : .toShielded
+    }
 
-    private var creditsPreview: some View {
+    // MARK: - Transfer preview
+
+    private var transferPreview: some View {
         VStack(spacing: 2) {
             Text(NSLocalizedString("You will transfer", comment: ""))
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
             HStack(spacing: 4) {
-                Text("~ \(viewModel.creditsPreviewFormatted)")
+                Text("~ \(viewModel.dashAmountFormatted)")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.primaryText)
-                Text(NSLocalizedString("credits", comment: ""))
-                    .font(.system(size: 12))
-                    .foregroundColor(.secondary)
+                Image("icon_dash_currency")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 13, height: 13)
             }
         }
         .frame(maxWidth: .infinity)

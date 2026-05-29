@@ -21,6 +21,15 @@ enum InternalTransferSource: String {
     case platform
 }
 
+/// Direction of the transfer, toggled by the swap badge. `.toShielded`
+/// funds the shielded balance from Core/Platform (forward); `.fromShielded`
+/// withdraws from the shielded balance back to the transparent Dash Wallet
+/// (reverse, via `PlatformWalletManager.shieldedWithdraw`).
+enum InternalTransferDirection {
+    case toShielded
+    case fromShielded
+}
+
 @MainActor
 final class InternalTransferViewModel: ObservableObject {
 
@@ -34,8 +43,13 @@ final class InternalTransferViewModel: ObservableObject {
 
     /// Which "From" bucket the user picked on the source rows. Defaults to
     /// `.core` because most users have BIP44 balance before they have
-    /// Platform Payment credits.
+    /// Platform Payment credits. Only meaningful while `.toShielded`.
     @Published var source: InternalTransferSource = .core
+
+    /// Forward (Core/Platform → Shielded) vs reverse (Shielded → Dash Wallet),
+    /// toggled by the swap badge. Reverse has a single fixed destination
+    /// (Dash Wallet), so `source` is ignored while `.fromShielded`.
+    @Published var direction: InternalTransferDirection = .toShielded
 
     /// BIP44-only Core balance in duffs — the same number as
     /// `SwiftDashSDKWalletState.balance.total`. Used to validate
@@ -122,13 +136,22 @@ final class InternalTransferViewModel: ObservableObject {
     /// envelope — asset-lock spends BIP44 duffs, transparent shield spends
     /// DIP-17 credits.
     var canContinue: Bool {
-        let dash = parsedDashAmount
-        guard dash > 0 else { return false }
-        switch source {
-        case .core:
-            return dashDuffsUnsigned <= coreBalanceDuffs
-        case .platform:
-            return creditsPreview <= platformCredits
+        // Gate on duffs, not raw DASH: a sub-duff amount (e.g. 1e-9 DASH)
+        // renders as 0 in the confirm sheet, so it must not enable Continue —
+        // otherwise the credit routes would submit a nonzero amount while the
+        // UI shows 0.
+        guard dashDuffsUnsigned > 0 else { return false }
+        switch direction {
+        case .toShielded:
+            switch source {
+            case .core:
+                return dashDuffsUnsigned <= coreBalanceDuffs
+            case .platform:
+                return creditsPreview <= platformCredits
+            }
+        case .fromShielded:
+            // Reverse spends shielded credits; gate on the shielded balance.
+            return creditsPreview <= shieldedBalance
         }
     }
 
@@ -167,13 +190,21 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
+    /// Credit amount handed to the SDK, aligned to the displayed duff precision
+    /// (1 duff = 1000 credits) so the confirm sheet's DASH amount exactly equals
+    /// what gets submitted — no sub-duff dust that shows as 0 but transfers a
+    /// nonzero credit amount. Decimal keeps the conversion overflow-safe for
+    /// absurd inputs (saturates rather than trapping).
     var creditsPreview: UInt64 {
-        let credits = parsedDashAmount * Decimal(PlatformCreditsFormatter.creditsPerDash)
-        return NSDecimalNumber(decimal: credits.rounded(.down)).uint64Value
+        NSDecimalNumber(decimal: Decimal(dashDuffsUnsigned) * 1000).uint64Value
     }
 
-    var creditsPreviewFormatted: String {
-        Self.creditsFormatter.string(from: NSNumber(value: creditsPreview)) ?? "\(creditsPreview)"
+    /// The transfer amount as DASH (no currency symbol), for the
+    /// "You will transfer" preview line. Credits are never shown to the user;
+    /// `creditsPreview` (the raw integer) is kept only for SDK args + the
+    /// reverse balance check.
+    var dashAmountFormatted: String {
+        parsedDashAmount.formattedDashAmountWithoutCurrencySymbol
     }
 
     /// Formatted BIP44 balance as DASH (no currency symbol). Used by the
@@ -189,22 +220,28 @@ final class InternalTransferViewModel: ObservableObject {
         (platformCredits / 1000).formattedDashAmountWithoutCurrencySymbol
     }
 
-    /// Formatted live shielded balance for the To card.
+    /// Formatted live shielded balance as DASH (no currency symbol).
+    /// Credits → duffs is `/ 1000` (1e8 duffs per DASH vs 1e11 credits).
     var shieldedBalanceFormatted: String {
-        let formatted = Self.creditsFormatter.string(from: NSNumber(value: shieldedBalance)) ?? "\(shieldedBalance)"
-        return "\(formatted) credits"
+        (shieldedBalance / 1000).formattedDashAmountWithoutCurrencySymbol
     }
 
     /// Source-aware Max fill. Keeps the same unit semantics — DASH or fiat —
     /// but draws the upper bound from whichever bucket the user picked.
     func fillMaxFromWallet() {
         let sourceDuffs: UInt64
-        switch source {
-        case .core:
-            sourceDuffs = coreBalanceDuffs
-        case .platform:
-            // Credits → duffs: integer divide by 1000.
-            sourceDuffs = platformCredits / 1000
+        switch direction {
+        case .toShielded:
+            switch source {
+            case .core:
+                sourceDuffs = coreBalanceDuffs
+            case .platform:
+                // Credits → duffs: integer divide by 1000.
+                sourceDuffs = platformCredits / 1000
+            }
+        case .fromShielded:
+            // Reverse: the upper bound is the shielded balance (credits → duffs).
+            sourceDuffs = shieldedBalance / 1000
         }
 
         switch unit {
@@ -260,13 +297,4 @@ final class InternalTransferViewModel: ObservableObject {
         let rounded = NSDecimalNumber(decimal: value)
         return formatter.string(from: rounded) ?? "\(value)"
     }
-
-    private static let creditsFormatter: NumberFormatter = {
-        let f = NumberFormatter()
-        f.numberStyle = .decimal
-        f.groupingSeparator = ","
-        f.usesGroupingSeparator = true
-        f.maximumFractionDigits = 0
-        return f
-    }()
 }

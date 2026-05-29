@@ -79,6 +79,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case noModelContainer
         case noManager
         case noShieldedAddress
+        case noReceiveAddress
         case authCancelled
         case authFailed
         case transferFailed(Error)
@@ -95,6 +96,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString("Platform wallet manager unavailable", comment: "InternalTransfer")
             case .noShieldedAddress:
                 return NSLocalizedString("Shielded address is not bound for this wallet", comment: "InternalTransfer")
+            case .noReceiveAddress:
+                return NSLocalizedString("Could not resolve a destination wallet address", comment: "InternalTransfer")
             case .authCancelled:
                 return NSLocalizedString("Authentication cancelled", comment: "InternalTransfer")
             case .authFailed:
@@ -197,6 +200,61 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
 
         Self.logger.info("🛡️ SHIELD-TX :: shield route completed")
+        phase = .broadcasting
+        phase = .success
+        scheduleShieldedResync(manager: env.manager)
+    }
+
+    /// Route 3 (reverse): shielded Orchard notes → Core L1 transparent
+    /// address (Dash Wallet). Stages: `.signing → .proving → .broadcasting →
+    /// .success`. Like `shieldedShield`, `shieldedWithdraw` is a single opaque
+    /// async call with no intermediate signals — `.proving` covers it until it
+    /// returns. `amount` is in credits (1e11 / DASH), same scale as
+    /// `shieldedShield`. No signer required.
+    func performWithdraw(amountCredits: UInt64) async {
+        guard beginTransfer() else { return }
+        Self.logger.info("🛡️ SHIELD-TX :: withdraw route amount=\(amountCredits) credits")
+
+        let env: Environment
+        do {
+            env = try resolveEnvironment()
+        } catch {
+            handleFailure(error)
+            return
+        }
+
+        // Destination Core (BIP44, Base58Check) receive address. Resolve before
+        // advancing the phase — same ordering as `resolveEnvironment()`. The
+        // reader is main-actor-safe and we're already on @MainActor, so call it
+        // directly (no GCD hop).
+        guard let coreAddress = SwiftDashSDKReceiveAddressReader.receiveAddress(
+                on: DWEnvironment.sharedInstance().currentChain),
+              !coreAddress.isEmpty else {
+            handleFailure(CoordinatorError.noReceiveAddress)
+            return
+        }
+
+        do {
+            try await authorize()
+        } catch {
+            handleFailure(error)
+            return
+        }
+
+        phase = .proving
+
+        do {
+            try await env.manager.shieldedWithdraw(
+                walletId: env.walletId,
+                account: 0,
+                toCoreAddress: coreAddress,
+                amount: amountCredits)
+        } catch {
+            handleFailure(CoordinatorError.transferFailed(error))
+            return
+        }
+
+        Self.logger.info("🛡️ SHIELD-TX :: withdraw route completed")
         phase = .broadcasting
         phase = .success
         scheduleShieldedResync(manager: env.manager)

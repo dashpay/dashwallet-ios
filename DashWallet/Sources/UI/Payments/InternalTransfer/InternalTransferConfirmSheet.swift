@@ -14,16 +14,18 @@ import SwiftUI
 ///   - `.success`        → green check + amount + Done.
 ///   - `.failed(msg)`    → summary card with red error + Try again / Close.
 ///
-/// Confirm routes to one of the two SDK paths via the coordinator:
-///   - `.core`     → `performAssetLock(amountDuffs:)`
-///   - `.platform` → `performShield(amountCredits:)`
+/// Confirm routes to one of three SDK paths via the coordinator, keyed by
+/// `direction` then `source`:
+///   - `.toShielded` + `.core`     → `performAssetLock(amountDuffs:)`
+///   - `.toShielded` + `.platform` → `performShield(amountCredits:)`
+///   - `.fromShielded`             → `performWithdraw(amountCredits:)`
 struct InternalTransferConfirmSheet: View {
 
     let source: InternalTransferSource
+    let direction: InternalTransferDirection
     let dashDuffs: Int64
     let amountDuffsUnsigned: UInt64
     let creditsAmount: UInt64
-    let creditsText: String
     let fiatText: String
     var onCancel: () -> Void
     var onCompleted: () -> Void
@@ -175,17 +177,9 @@ struct InternalTransferConfirmSheet: View {
     }
 
     private var secondaryLine: some View {
-        HStack(spacing: 4) {
-            Text("~ \(creditsText)")
-                .font(.subheadline)
-                .foregroundColor(.secondaryText)
-            Text("c")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.secondaryText)
-            Text("/ \(fiatText)")
-                .font(.subheadline)
-                .foregroundColor(.secondaryText)
-        }
+        Text(fiatText)
+            .font(.subheadline)
+            .foregroundColor(.secondaryText)
     }
 
     // MARK: - Summary card
@@ -194,30 +188,44 @@ struct InternalTransferConfirmSheet: View {
         VStack(spacing: 0) {
             summaryRow(
                 label: NSLocalizedString("From", comment: ""),
-                value: sourceLabel)
+                value: fromLabel)
             divider
             summaryRow(
                 label: NSLocalizedString("To", comment: ""),
-                value: NSLocalizedString("Shielded balance", comment: ""))
+                value: toLabel)
             divider
             summaryRow(
                 label: NSLocalizedString("Network fee", comment: ""),
                 value: "~ $X")
             divider
             summaryRow(
-                label: NSLocalizedString("Total credits", comment: ""),
-                valueView: AnyView(
-                    HStack(spacing: 4) {
-                        Text("~ \(creditsText)")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.primaryText)
-                        Text("c")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.primaryText)
-                    }))
+                label: NSLocalizedString("Total", comment: ""),
+                value: dashDuffs.formattedDashAmount)
         }
         .background(Color.secondaryBackground)
         .cornerRadius(12)
+    }
+
+    /// "From" side of the summary. Forward = the picked source; reverse =
+    /// the shielded balance.
+    private var fromLabel: String {
+        switch direction {
+        case .toShielded:
+            return sourceLabel
+        case .fromShielded:
+            return NSLocalizedString("Shielded balance", comment: "")
+        }
+    }
+
+    /// "To" side of the summary. Forward = the shielded balance; reverse =
+    /// the transparent Dash Wallet.
+    private var toLabel: String {
+        switch direction {
+        case .toShielded:
+            return NSLocalizedString("Shielded balance", comment: "")
+        case .fromShielded:
+            return NSLocalizedString("Dash Wallet", comment: "")
+        }
     }
 
     private var sourceLabel: String {
@@ -265,18 +273,16 @@ struct InternalTransferConfirmSheet: View {
                 Circle()
                     .fill(Color.dashBlue)
                     .frame(width: 30, height: 30)
-                Image(systemName: "shield.fill")
+                Image(systemName: privacyTipIcon)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.white)
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(NSLocalizedString("Privacy tip", comment: ""))
+                Text(privacyTipTitle)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.primaryText)
-                Text(NSLocalizedString(
-                    "For best privacy, wait at least 2 hours before using these credits.",
-                    comment: ""))
+                Text(privacyTipBody)
                     .font(.system(size: 13))
                     .foregroundColor(.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -289,16 +295,48 @@ struct InternalTransferConfirmSheet: View {
         .cornerRadius(12)
     }
 
+    /// The tip card reframes per direction: forward is a privacy nudge,
+    /// reverse explains the up-to-10-minute spend delay (matches the mockup).
+    private var privacyTipIcon: String {
+        switch direction {
+        case .toShielded: return "shield.fill"
+        case .fromShielded: return "clock.fill"
+        }
+    }
+
+    private var privacyTipTitle: String {
+        switch direction {
+        case .toShielded:
+            return NSLocalizedString("Privacy tip", comment: "")
+        case .fromShielded:
+            return NSLocalizedString("Up to 10 minutes to spend", comment: "")
+        }
+    }
+
+    private var privacyTipBody: String {
+        switch direction {
+        case .toShielded:
+            return NSLocalizedString(
+                "For best privacy, wait at least 2 hours before using these funds.",
+                comment: "")
+        case .fromShielded:
+            return NSLocalizedString(
+                "After this transfer, it can take up to 10 minutes before you can use your Dash. This delay is part of how your privacy is protected.",
+                comment: "")
+        }
+    }
+
     // MARK: - Progress checklist
 
     /// Vertical step list — one row per phase the route advances through.
-    /// Asset-lock has 4 stages; the transparent shield route hides
-    /// `.locking` because the FFI doesn't surface that intermediate step.
+    /// Only the forward asset-lock route has 4 stages; the transparent shield
+    /// and the reverse withdraw routes hide `.locking` because the FFI doesn't
+    /// surface that intermediate step.
     private var progressChecklist: some View {
         VStack(alignment: .leading, spacing: 14) {
             stepRow(label: NSLocalizedString("Authorizing", comment: ""), state: stepState(for: .signing))
 
-            if source == .core {
+            if direction == .toShielded && source == .core {
                 stepRow(label: NSLocalizedString("Locking funds", comment: ""), state: stepState(for: .locking))
             }
 
@@ -385,11 +423,16 @@ struct InternalTransferConfirmSheet: View {
 
     private func confirm() {
         Task {
-            switch source {
-            case .core:
-                await coordinator.performAssetLock(amountDuffs: amountDuffsUnsigned)
-            case .platform:
-                await coordinator.performShield(amountCredits: creditsAmount)
+            switch direction {
+            case .toShielded:
+                switch source {
+                case .core:
+                    await coordinator.performAssetLock(amountDuffs: amountDuffsUnsigned)
+                case .platform:
+                    await coordinator.performShield(amountCredits: creditsAmount)
+                }
+            case .fromShielded:
+                await coordinator.performWithdraw(amountCredits: creditsAmount)
             }
         }
     }
