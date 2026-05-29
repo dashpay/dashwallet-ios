@@ -112,6 +112,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// The intermediate stages are polled from `PersistentAssetLock.statusRaw`;
     /// the SDK returns `Void` only on `Consumed`/success.
     func performAssetLock(amountDuffs: UInt64) async {
+        guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route amount=\(amountDuffs)")
 
         let env: Environment
@@ -150,8 +151,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         stopAssetLockPolling()
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route completed")
-        await kickShieldedResync(manager: env.manager)
         phase = .success
+        scheduleShieldedResync(manager: env.manager)
     }
 
     /// Route 2: DIP-17 transparent Platform Payment credits → Type 15 shield.
@@ -159,6 +160,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// intermediate signals from the FFI — `.proving` covers the whole opaque
     /// ~30 s call; on return we jump to `.success`.
     func performShield(amountCredits: UInt64) async {
+        guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: shield route amount=\(amountCredits) credits")
 
         let env: Environment
@@ -196,8 +198,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         Self.logger.info("🛡️ SHIELD-TX :: shield route completed")
         phase = .broadcasting
-        await kickShieldedResync(manager: env.manager)
         phase = .success
+        scheduleShieldedResync(manager: env.manager)
     }
 
     /// Reset to `.idle` so the user can retry from a `.failed` state.
@@ -249,8 +251,22 @@ final class ShieldedTransferCoordinator: ObservableObject {
             shieldedRecipient: recipient)
     }
 
-    private func authorize() async throws {
+    /// Synchronous single-flight gate. Returns `false` when a transfer is
+    /// already in progress (or finished and not yet `reset()`), so a fast
+    /// double-tap on Confirm can't queue a second transfer. Because the
+    /// coordinator is `@MainActor`, the `phase == .idle` check and the
+    /// `.signing` write run with no suspension point between them — the
+    /// first caller wins atomically and the second sees `.signing` + bails.
+    private func beginTransfer() -> Bool {
+        guard phase == .idle else { return false }
         phase = .signing
+        return true
+    }
+
+    /// PIN/biometric gate. `phase` is already `.signing` (set synchronously
+    /// by `beginTransfer()`); this just awaits user authorization and maps
+    /// the cancel/fail outcomes onto coordinator errors.
+    private func authorize() async throws {
         do {
             try await authorizer.authorize()
         } catch DWIdentityAuthorizer.AuthError.cancelled {
@@ -271,11 +287,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .failed(message)
     }
 
-    private func kickShieldedResync(manager: PlatformWalletManager) async {
-        do {
-            try await manager.syncShieldedNow()
-        } catch {
-            Self.logger.warning("🛡️ SHIELD-TX :: syncShieldedNow failed (ignored): \(String(describing: error), privacy: .public)")
+    /// Fire-and-forget shielded readback refresh after a successful transfer.
+    /// Detached from the transfer flow so a slow/blocked sync can't hold the
+    /// sheet on a non-dismissible phase after the transfer already landed.
+    /// Captures only `manager` (a long-lived singleton) — no retain on the
+    /// coordinator past the sheet's lifetime.
+    private func scheduleShieldedResync(manager: PlatformWalletManager) {
+        Task {
+            do {
+                try await manager.syncShieldedNow()
+            } catch {
+                Self.logger.warning("🛡️ SHIELD-TX :: syncShieldedNow failed (ignored): \(String(describing: error), privacy: .public)")
+            }
         }
     }
 
