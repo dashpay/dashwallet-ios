@@ -570,3 +570,139 @@ struct POIDetailsView: View {
             .frame(height: 1/UIScreen.main.scale)
     }
 }
+
+// MARK: - Previews
+
+#if DEBUG
+
+private extension ExplorePointOfUse {
+    static func previewMock(
+        id: Int64 = 1,
+        name: String = "Merchant",
+        category: Category,
+        active: Bool = true,
+        city: String? = nil,
+        territory: String? = nil,
+        address1: String? = nil,
+        address2: String? = nil,
+        address3: String? = nil,
+        address4: String? = nil,
+        latitude: Double? = nil,
+        longitude: Double? = nil,
+        website: String? = nil,
+        phone: String? = nil,
+        logoLocation: String? = nil,
+        coverImage: String? = nil,
+        source: String? = nil
+    ) -> ExplorePointOfUse {
+        ExplorePointOfUse(
+            id: id,
+            name: name,
+            category: category,
+            active: active,
+            city: city,
+            territory: territory,
+            address1: address1,
+            address2: address2,
+            address3: address3,
+            address4: address4,
+            latitude: latitude,
+            longitude: longitude,
+            website: website,
+            phone: phone,
+            logoLocation: logoLocation,
+            coverImage: coverImage,
+            source: source
+        )
+    }
+}
+
+#Preview("Merchant — Gift Card (single provider)") {
+    let merchant = ExplorePointOfUse.previewMock(
+        name: "Amazon",
+        category: .merchant(
+            ExplorePointOfUse.Merchant(
+                merchantId: "amazon-ctx",
+                paymentMethod: .giftCard,
+                type: .online,
+                deeplink: nil,
+                savingsBasisPoints: 1000,
+                denominationsType: "Fixed",
+                denominations: [],
+                redeemType: "online",
+                giftCardProviders: [
+                    ExplorePointOfUse.Merchant.GiftCardProviderInfo(
+                        providerId: "ctx",
+                        savingsPercentage: 1000,
+                        denominationsType: "Fixed",
+                        sourceId: "84793fe2-603d-465c-8899-6c90f6e11b63"
+                    )
+                ]
+            )
+        )
+    )
+    ScrollView {
+        POIDetailsView(merchant: merchant)
+    }
+    .background(Color.primaryBackground)
+}
+
+#if PIGGYCARDS_ENABLED
+#Preview("Merchant — Gift Card (multi-provider)") {
+    let merchant = ExplorePointOfUse.previewMock(
+        name: "Domino's",
+        category: .merchant(
+            ExplorePointOfUse.Merchant(
+                merchantId: "dominos-multi",
+                paymentMethod: .giftCard,
+                type: .online,
+                deeplink: nil,
+                savingsBasisPoints: 1000,
+                denominationsType: "Fixed",
+                denominations: [],
+                redeemType: "online",
+                giftCardProviders: [
+                    ExplorePointOfUse.Merchant.GiftCardProviderInfo(
+                        providerId: "ctx",
+                        savingsPercentage: 1000,
+                        denominationsType: "Fixed",
+                        sourceId: nil
+                    ),
+                    ExplorePointOfUse.Merchant.GiftCardProviderInfo(
+                        providerId: "piggycards",
+                        savingsPercentage: 800,
+                        denominationsType: "Fixed",
+                        sourceId: "45"
+                    )
+                ]
+            )
+        )
+    )
+    ScrollView {
+        POIDetailsView(merchant: merchant)
+    }
+    .background(Color.primaryBackground)
+}
+#endif
+
+#Preview("ATM — Buy & Sell") {
+    let merchant = ExplorePointOfUse.previewMock(
+        id: 42,
+        name: "Coinsource",
+        category: .atm(ExplorePointOfUse.Atm(manufacturer: "Coinsource", type: .buySell)),
+        city: "Phoenix",
+        territory: "AZ",
+        address1: "2800 E Camelback Rd",
+        latitude: 33.5092,
+        longitude: -112.0186,
+        website: "https://coinsource.net",
+        phone: "6025551234",
+        source: "Coinsource"
+    )
+    ScrollView {
+        POIDetailsView(merchant: merchant)
+    }
+    .background(Color.primaryBackground)
+}
+
+#endif

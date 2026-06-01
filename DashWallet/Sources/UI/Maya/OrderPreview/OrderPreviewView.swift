@@ -32,8 +32,45 @@ struct OrderPreviewView: View {
 
     @ObservedObject var viewModel: OrderPreviewViewModel
     let onCancel: () -> Void
+    /// Pop the entire Maya nav stack to the root (Home).
+    let onNavigateHome: () -> Void
+    /// Dismiss the status sheet and reset to the editable order-preview form.
+    /// Uses resetToIdle() so the current (still-valid) quote is kept.
+    let onRetry: () -> Void
+
+    @Environment(\.openURL) private var openURL
+
+    // True while the Dash tx is in-flight; sheet swipe-to-dismiss is blocked.
+    private var isSwapInFlight: Bool {
+        switch viewModel.swapStatus {
+        case .pendingConfirmation, .processingSwap: return true
+        default: return false
+        }
+    }
 
     var body: some View {
+        // Order-preview form is always the base content.
+        // Status screens appear as a bottom sheet driven by swapStatus.
+        orderPreviewContent
+            .sheet(
+                isPresented: Binding(
+                    get: { viewModel.swapStatus != .idle },
+                    // Any dismiss (programmatic or swipe-to-dismiss on
+                    // completed/failed) resets the VM so the form re-appears.
+                    // In-flight states are protected by interactiveDismissDisabled.
+                    set: { _ in viewModel.resetToIdle() }
+                )
+            ) {
+                StatusSheetContent(
+                    viewModel: viewModel,
+                    onNavigateHome: onNavigateHome,
+                    onRetry: onRetry,
+                    onCancel: onCancel
+                )
+            }
+    }
+
+    private var orderPreviewContent: some View {
         VStack(alignment: .leading, spacing: 0) {
             NavigationBar(leading: {
                 NavigationBarElement.back.button { onCancel() }
@@ -175,6 +212,73 @@ struct OrderPreviewView: View {
     }
 }
 
+// MARK: - StatusSheetContent
+
+/// Content of the bottom sheet that's presented while swapStatus != .idle.
+/// A single sheet instance transitions through pending → processing → completed/failed
+/// without dismiss/re-present, because isPresented stays true across all statuses.
+private struct StatusSheetContent: View {
+    @ObservedObject var viewModel: OrderPreviewViewModel
+    let onNavigateHome: () -> Void
+    let onRetry: () -> Void
+    let onCancel: () -> Void
+
+    private var isSwapInFlight: Bool {
+        switch viewModel.swapStatus {
+        case .pendingConfirmation, .processingSwap: return true
+        default: return false
+        }
+    }
+
+    var body: some View {
+        sheetBody
+            // Prevent accidental swipe-to-dismiss while the Dash tx is in-flight.
+            // Completed/failed states allow swipe, which resets to idle via the
+            // isPresented binding's set closure in OrderPreviewView.
+            .interactiveDismissDisabled(isSwapInFlight)
+    }
+
+    @ViewBuilder
+    private var sheetBody: some View {
+        let sheet = BottomSheet(showBackButton: .constant(false)) {
+            switch viewModel.swapStatus {
+            case .idle:
+                EmptyView()
+            case .pendingConfirmation:
+                MayaTransactionPendingView(message: NSLocalizedString(
+                    "Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend.",
+                    comment: "Maya"
+                ))
+            case .processingSwap:
+                MayaTransactionPendingView(message: NSLocalizedString(
+                    "Maya Protocol has received your transaction and is processing the swap.",
+                    comment: "Maya"
+                ))
+            case .completed:
+                MayaTransactionSuccessView(
+                    coinCode: viewModel.coin.code,
+                    coinName: viewModel.coin.name,
+                    onDone: onNavigateHome
+                )
+            case .failed(let reason):
+                MayaTransactionFailureView(
+                    reason: reason,
+                    onRetry: onRetry,
+                    onCancel: onCancel
+                )
+            }
+        }
+
+        if #available(iOS 16.4, *) {
+            sheet
+                .presentationDetents([.large])
+                .presentationCornerRadius(32)
+        } else {
+            sheet
+        }
+    }
+}
+
 #if DEBUG
 #Preview {
     let quote = MayaSwapQuote(
@@ -215,7 +319,7 @@ struct OrderPreviewView: View {
         initialQuote: quote
     )
 
-    OrderPreviewView(viewModel: viewModel, onCancel: {})
+    OrderPreviewView(viewModel: viewModel, onCancel: {}, onNavigateHome: {}, onRetry: {})
         .background(Color.primaryBackground.ignoresSafeArea())
 }
 #endif

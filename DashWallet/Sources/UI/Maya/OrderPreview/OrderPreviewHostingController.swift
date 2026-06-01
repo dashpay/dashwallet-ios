@@ -39,7 +39,19 @@ final class OrderPreviewHostingController: UIViewController, NavigationBarDispla
         let rootView = OrderPreviewContainerView(
             viewModel: viewModel,
             onCancel: { [weak self] in
+                // Pop one level back (convert screen).
                 self?.navigationController?.popViewController(animated: true)
+            },
+            onNavigateHome: { [weak self] in
+                // Dismiss the entire Maya flow to the root (HomeViewController).
+                // popToRootViewController is the canonical "go home" action for
+                // pushed flows in this app (cf. MainTabbarController:284).
+                self?.navigationController?.popToRootViewController(animated: true)
+            },
+            onRetry: { [weak self] in
+                // Reset to idle: the status sheet dismisses and the order-preview
+                // form reappears with the current (still-valid) quote intact.
+                self?.viewModel.resetToIdle()
             }
         )
         let hostingController = UIHostingController(rootView: rootView)
@@ -62,34 +74,30 @@ final class OrderPreviewHostingController: UIViewController, NavigationBarDispla
 private struct OrderPreviewContainerView: View {
     @ObservedObject var viewModel: OrderPreviewViewModel
     let onCancel: () -> Void
+    let onNavigateHome: () -> Void
+    let onRetry: () -> Void
 
     var body: some View {
-        OrderPreviewView(viewModel: viewModel, onCancel: onCancel)
-            .alert(
-                NSLocalizedString("Swap Failed", comment: "Maya"),
-                isPresented: Binding(
-                    get: { viewModel.submitErrorMessage != nil },
-                    set: { visible in
-                        if !visible { viewModel.submitErrorMessage = nil }
-                    }
-                )
-            ) {
-                Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
-            } message: {
-                Text(viewModel.submitErrorMessage ?? "")
-            }
-            .alert(
-                NSLocalizedString("Swap Submitted", comment: "Maya"),
-                isPresented: Binding(
-                    get: { viewModel.submittedTxId != nil },
-                    set: { visible in
-                        if !visible { viewModel.submittedTxId = nil }
-                    }
-                )
-            ) {
-                Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
-            } message: {
-                Text(viewModel.submittedTxId ?? "")
-            }
+        OrderPreviewView(
+            viewModel: viewModel,
+            onCancel: onCancel,
+            onNavigateHome: onNavigateHome,
+            onRetry: onRetry
+        )
+        // Pre-submission errors (auth failure, network, double-spend guard).
+        // Distinct from swapStatus.failed which covers post-broadcast failures.
+        .alert(
+            NSLocalizedString("Swap Failed", comment: "Maya"),
+            isPresented: Binding(
+                get: { viewModel.submitErrorMessage != nil },
+                set: { visible in
+                    if !visible { viewModel.submitErrorMessage = nil }
+                }
+            )
+        ) {
+            Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
+        } message: {
+            Text(viewModel.submitErrorMessage ?? "")
+        }
     }
 }
