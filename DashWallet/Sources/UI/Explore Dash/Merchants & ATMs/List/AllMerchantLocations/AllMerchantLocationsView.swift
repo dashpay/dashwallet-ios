@@ -103,8 +103,8 @@ private struct MerchantLocationsMapView: UIViewRepresentable {
 
     func updateUIView(_ mapView: MKMapView, context: Context) {
         let newKeys = Set(items.compactMap { item -> String? in
-            guard let lat = item.latitude, let lon = item.longitude else { return nil }
-            return "\(item.id)|\(lat)|\(lon)"
+            guard let coord = validCoordinate(for: item) else { return nil }
+            return "\(item.id)|\(coord.latitude)|\(coord.longitude)"
         })
 
         guard newKeys != context.coordinator.lastKeys else { return }
@@ -114,9 +114,9 @@ private struct MerchantLocationsMapView: UIViewRepresentable {
         mapView.removeAnnotations(existing)
 
         let annotations: [MKPointAnnotation] = items.compactMap { item in
-            guard let lat = item.latitude, let lon = item.longitude else { return nil }
+            guard let coord = validCoordinate(for: item) else { return nil }
             let annotation = MKPointAnnotation()
-            annotation.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            annotation.coordinate = coord
             annotation.title = item.name
             return annotation
         }
@@ -128,6 +128,12 @@ private struct MerchantLocationsMapView: UIViewRepresentable {
             context.coordinator.didInitialZoom = true
             mapView.showAnnotations(annotations, animated: false)
         }
+    }
+
+    private func validCoordinate(for item: ExplorePointOfUse) -> CLLocationCoordinate2D? {
+        guard let lat = item.latitude, let lon = item.longitude else { return nil }
+        let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+        return CLLocationCoordinate2DIsValid(coord) ? coord : nil
     }
 
     final class Coordinator {

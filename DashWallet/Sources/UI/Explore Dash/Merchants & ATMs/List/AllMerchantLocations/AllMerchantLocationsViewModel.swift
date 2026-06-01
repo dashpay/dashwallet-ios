@@ -72,11 +72,11 @@ class AllMerchantLocationsViewModel: ObservableObject {
         self.isLoading = true
 
         listModel.itemsDidChange = { [weak self] in
-            guard let self else { return }
-            let newItems = listModel.items
+            guard let self, let model = self.model else { return }
+            let newItems = model.items
             self.distanceTexts = self.computeDistanceTexts(for: newItems)
             self.items = newItems
-            self.isLoading = listModel.isFetching
+            self.isLoading = model.isFetching
         }
     }
 
@@ -116,6 +116,8 @@ class AllMerchantLocationsViewModel: ObservableObject {
         for item in items {
             if case .merchant(let m) = item.category, m.type == .online { continue }
             guard let lat = item.latitude, let lon = item.longitude else { continue }
+            let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            guard CLLocationCoordinate2DIsValid(coord) else { continue }
             let distance = CLLocation(latitude: lat, longitude: lon).distance(from: reference)
             let measurement: Measurement<UnitLength> = Measurement(value: floor(distance), unit: .meters)
             result[item.id] = ExploreDash.distanceFormatter.string(from: measurement)
@@ -124,7 +126,7 @@ class AllMerchantLocationsViewModel: ObservableObject {
     }
 
     private func referenceLocation() -> CLLocation? {
-        if let center = modelSearchCenter {
+        if let center = modelSearchCenter, CLLocationCoordinate2DIsValid(center) {
             return CLLocation(latitude: center.latitude, longitude: center.longitude)
         }
         if DWLocationManager.shared.isAuthorized {

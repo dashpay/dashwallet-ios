@@ -269,6 +269,7 @@ struct POIDetailsView: View {
             .background(Color.secondaryBackground)
             .cornerRadius(12)
             .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
+            .contentShape(.rect)
         }
         .buttonStyle(PlainButtonStyle())
     }
