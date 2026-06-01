@@ -110,7 +110,7 @@ struct AddressFieldView: View {
                 .accessibilityLabel(NSLocalizedString("Scan QR code", comment: "Maya"))
             } else {
                 Button(action: { text = "" }) {
-                    Image("xmark")
+                    Image("text-field-clear")
                         .renderingMode(.template)
                         .foregroundStyle(Color(uiColor: UIColor(red: 0.14, green: 0.12, blue: 0.13, alpha: 1)))
                         .frame(width: 11, height: 11)

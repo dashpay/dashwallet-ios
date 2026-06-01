@@ -27,6 +27,10 @@ struct OrderPreviewFeeRow: View {
     let infoSpacing: CGFloat
     let rowMinHeight: CGFloat
 
+    // Sheet state lives here: the row owns the info icon and is the natural
+    // owner of its tap target. OrderPreviewView is not involved.
+    @State private var showInfoSheet = false
+
     var body: some View {
         HStack(alignment: .top, spacing: labelSpacing) {
             HStack(spacing: infoSpacing) {
@@ -41,6 +45,8 @@ struct OrderPreviewFeeRow: View {
 
                     Icon(name: .custom("info-icon", maxHeight: 8))
                 }
+                .contentShape(Circle())
+                .onTapGesture { showInfoSheet = true }
             }
 
             VStack(alignment: .trailing, spacing: 2) {
@@ -60,6 +66,12 @@ struct OrderPreviewFeeRow: View {
         .padding(.horizontal, rowHPadding)
         .padding(.vertical, rowVPadding)
         .frame(minHeight: rowMinHeight)
+        .sheet(isPresented: $showInfoSheet) {
+            BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
+                MayaFeeInfoSheet(onDismiss: { showInfoSheet = false })
+            }
+            .selfSizingSheet(cornerRadius: 32)
+        }
     }
 }
 

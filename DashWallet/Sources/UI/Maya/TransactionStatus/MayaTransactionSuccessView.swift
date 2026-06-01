@@ -1,0 +1,95 @@
+//
+//  Created by Roman Chornyi
+//  Copyright © 2026 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+import SwiftUI
+
+struct MayaTransactionSuccessView: View {
+    let coinCode: String
+    let coinName: String
+    var onDone: () -> Void = {}
+
+    var body: some View {
+        VStack(spacing: 0) {
+
+            Spacer()
+
+            SuccessIllustration()
+                .padding(.top, 20)
+                .padding(.bottom, 10)
+
+
+            VStack(spacing: 6) {
+                Text(NSLocalizedString("You successfully converted DASH to \(coinCode)", comment: "Maya"))
+                    .font(.title1)
+                    .foregroundColor(.primaryText)
+                    .multilineTextAlignment(.center)
+
+                Text(NSLocalizedString("It can take up to a few minutes for your \(coinName) to arrive at the destination address", comment: "Maya"))
+                    .font(.subhead)
+                    .foregroundColor(.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(3)
+            }
+            .padding(.horizontal, 60)
+            .padding(.top, 20)
+            .padding(.bottom, 32)
+
+            Spacer()
+
+            DashButton(text: NSLocalizedString("Done", comment: "")) {
+                onDone()
+            }
+            .padding(.vertical, 20)
+            .padding(.horizontal, 60)
+        }
+    }
+}
+
+#if DEBUG
+#Preview {
+    MayaTransactionSuccessView(
+        coinCode: "BTC",
+        coinName: "Bitcoin"
+    )
+}
+
+private struct MayaTransactionSuccessSheetPreviewHost: View {
+    @State private var isPresented = true
+
+    var body: some View {
+        Color.primaryBackground
+            .ignoresSafeArea()
+            .sheet(isPresented: $isPresented) {
+                let sheet = BottomSheet(showBackButton: .constant(false)) {
+                    MayaTransactionSuccessView(
+                        coinCode: "BTC",
+                        coinName: "Bitcoin"
+                    )
+                }
+                if #available(iOS 16.0, *) {
+                    sheet.presentationDetents([.large])
+                } else {
+                    sheet
+                }
+            }
+    }
+}
+
+#Preview("Bottom sheet") {
+    MayaTransactionSuccessSheetPreviewHost()
+}
+#endif
