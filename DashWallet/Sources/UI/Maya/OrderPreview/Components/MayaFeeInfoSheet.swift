@@ -25,51 +25,43 @@ struct MayaFeeInfoSheet: View {
     @Environment(\.openURL) private var openURL
 
     var body: some View {
-        VStack(spacing: 20) {
-            HStack {
-                infoIcon
+        VStack(spacing: 0) {
 
+            VStack(alignment: .leading, spacing: 6) {
                 Text(NSLocalizedString("Fees in crypto purchases", comment: "Maya"))
-                    .font(.calloutMedium)
+                    .font(Font.title1)
                     .foregroundColor(.primaryText)
-                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+
+                Text(NSLocalizedString(
+                    "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution.",
+                    comment: "Maya"
+                ))
+                .font(Font.body)
+                .foregroundStyle(Color.gray500)
+                .multilineTextAlignment(.leading)
             }
+            .padding(.top, 20)
+            .padding(.bottom, 32)
+            .padding(.horizontal, 60)
 
-            Text(NSLocalizedString(
-                "Maya charges a fee to facilitate cross-chain swaps. It covers rewards to liquidity providers and estimated outbound network costs. The displayed amount is an estimate and may vary slightly at execution time.",
-                comment: "Maya"
-            ))
-            .font(.subhead)
-            .foregroundColor(.secondaryText)
-            .multilineTextAlignment(.center)
-            .lineSpacing(3)
-
-            Button {
-                openURL(kMayaFeeDocsURL)
-            } label: {
-                HStack(spacing: 4) {
-                    Text(NSLocalizedString("Learn more", comment: "Maya"))
-                        .font(.footnote)
-                        .foregroundColor(.dashBlue)
-
-                    Icon(name: .system("arrow.up.right"))
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(.dashBlue)
+            VStack(alignment: .leading, spacing: 16) {
+                // Opens the Maya fee docs in the system browser via @Environment(\.openURL).
+                // Assumption: https://docs.mayaprotocol.com/how-it-works/fees is the correct URL.
+                // Using openURL (system Safari) rather than SFSafariViewController because the
+                // sheet has no UIViewController context for modal presentation.
+                DashButton(text: NSLocalizedString("Learn more", comment: "Maya")) {
+                    openURL(kMayaFeeDocsURL)
                 }
-                .padding(.vertical, 4)
+
+                DashButton(text: NSLocalizedString("Close", comment: "Maya")) {
+                    onDismiss()
+                }
+                .overrideBackgroundColor(Color.gray300Alpha10)
+                .overrideForegroundColor(Color.black)
             }
-        }
-    }
-
-    private var infoIcon: some View {
-        ZStack {
-            Circle()
-                .fill(Color.dashBlue)
-                .frame(width: 46, height: 46)
-
-            Icon(name: .system("info"))
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.white)
+            .padding(.horizontal, 60)
+            .padding(.vertical, 20)
         }
     }
 }
@@ -87,15 +79,20 @@ private struct MayaFeeInfoSheetPreviewHost: View {
         Color.primaryBackground
             .ignoresSafeArea()
             .sheet(isPresented: $isPresented) {
-                let sheet = BottomSheet(showBackButton: .constant(false)) {
-                        MayaFeeInfoSheet(onDismiss: {})
-                    }
+//                let sheet = BottomSheet(showBackButton: .constant(false)) {
+//                        MayaFeeInfoSheet(onDismiss: {})
+//                    }
+//
+//                if #available(iOS 16.0, *) {
+//                    sheet.presentationDetents([.height(450)])
+//                } else {
+//                    sheet
+//                }
 
-                if #available(iOS 16.0, *) {
-                    sheet.presentationDetents([.height(300)])
-                } else {
-                    sheet
+                BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
+                    MayaFeeInfoSheet(onDismiss: {})
                 }
+                .selfSizingSheet()
             }
     }
 }

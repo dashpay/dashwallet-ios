@@ -17,65 +17,54 @@
 
 import SwiftUI
 
-let kMayaSupportURL = URL(string: "https://discord.gg/mayaprotocol")!
-
 struct MayaTransactionFailureView: View {
-    let message: String
+    /// Specific failure reason surfaced from the swap or submission error.
+    /// When nil, the generic fallback message is shown.
+    var reason: String? = nil
     let onRetry: () -> Void
+    /// Close behavior: one pop back via onCancel (onNavigateHome if full exit is needed).
     let onCancel: () -> Void
-    let onSupport: () -> Void
 
     var body: some View {
-        VStack(spacing: 24) {
-            HStack {
-                failureIcon
+        VStack(spacing: 0) {
 
-                Text(NSLocalizedString("Conversion Failed", comment: "Maya"))
+            Spacer()
+
+            ErrorIllustration()
+                .padding(.top, 20)
+                .padding(.bottom, 10)
+
+            VStack(spacing: 6) {
+                Text(NSLocalizedString("Conversion failed", comment: "Maya"))
                     .font(.title1)
                     .foregroundColor(.primaryText)
                     .multilineTextAlignment(.center)
-            }
 
-            Text(message)
-                .font(.subhead)
-                .foregroundColor(.secondaryText)
-                .multilineTextAlignment(.center)
-                .lineSpacing(3)
-
-            Button(action: onSupport) {
-                Text(NSLocalizedString("Contact Maya Support", comment: "Maya"))
+                Text(reason ?? NSLocalizedString("Your DASH was not converted and no funds were deducted. Try again, or come back later.", comment: "Maya"))
                     .font(.subhead)
-                    .foregroundColor(.dashBlue)
-                    .padding(.vertical, 8)
+                    .foregroundColor(.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(3)
             }
+            .padding(.horizontal, 60)
+            .padding(.top, 20)
+            .padding(.bottom, 32)
 
-            VStack(spacing: 12) {
-                DashButton(text: NSLocalizedString("Retry", comment: "Maya")) {
+            Spacer()
+
+            VStack(spacing: 16) {
+                DashButton(text: NSLocalizedString("Try Again", comment: "Maya")) {
                     onRetry()
                 }
 
-                DashButton(text: NSLocalizedString("Cancel", comment: "Maya")) {
+                DashButton(text: NSLocalizedString("Close", comment: "")) {
                     onCancel()
                 }
-                .overrideForegroundColor(.primaryText)
-                .overrideBackgroundColor(.gray300Alpha10)
-
-
+                .overrideBackgroundColor(Color.gray300Alpha10)
+                .overrideForegroundColor(Color.black)
             }
+            .padding(.vertical, 20)
             .padding(.horizontal, 60)
-            .padding(.bottom, 20)
-        }
-    }
-
-    private var failureIcon: some View {
-        ZStack {
-            Circle()
-                .fill(Color.systemRed.opacity(0.1))
-                .frame(width: 100, height: 100)
-
-            Icon(name: .system("xmark.circle.fill"))
-                .frame(width: 56, height: 56)
-                .foregroundColor(.systemRed)
         }
     }
 }
@@ -83,15 +72,37 @@ struct MayaTransactionFailureView: View {
 #if DEBUG
 #Preview {
     MayaTransactionFailureView(
-        message: NSLocalizedString(
-            "The swap could not be submitted. Please check your network connection and try again.",
-            comment: "Maya"
-        ),
+        reason: "Input 0 is already spent by a pending transaction. Wait for the previous swap to confirm before initiating a new one.",
         onRetry: {},
-        onCancel: {},
-        onSupport: {}
+        onCancel: {}
     )
 }
 
+private struct MayaTransactionFailureSheetPreviewHost: View {
+    @State private var isPresented = true
+
+    var body: some View {
+        Color.primaryBackground
+            .ignoresSafeArea()
+            .sheet(isPresented: $isPresented) {
+                let sheet = BottomSheet(showBackButton: .constant(false)) {
+                    MayaTransactionFailureView(
+                        reason: "Input 0 is already spent by a pending transaction.",
+                        onRetry: {},
+                        onCancel: {}
+                    )
+                }
+                if #available(iOS 16.0, *) {
+                    sheet.presentationDetents([.large])
+                } else {
+                    sheet
+                }
+            }
+    }
+}
+
+#Preview("Bottom sheet") {
+    MayaTransactionFailureSheetPreviewHost()
+}
 
 #endif

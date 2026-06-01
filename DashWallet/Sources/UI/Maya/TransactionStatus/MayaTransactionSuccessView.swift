@@ -18,37 +18,43 @@
 import SwiftUI
 
 struct MayaTransactionSuccessView: View {
-    let message: String
+    let coinCode: String
+    let coinName: String
+    var onDone: () -> Void = {}
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 0) {
 
-            HStack {
-                successIcon
+            Spacer()
 
-                Text(NSLocalizedString("Conversion Submitted", comment: "Maya"))
+            SuccessIllustration()
+                .padding(.top, 20)
+                .padding(.bottom, 10)
+
+
+            VStack(spacing: 6) {
+                Text(NSLocalizedString("You successfully converted DASH to \(coinCode)", comment: "Maya"))
                     .font(.title1)
                     .foregroundColor(.primaryText)
                     .multilineTextAlignment(.center)
+
+                Text(NSLocalizedString("It can take up to a few minutes for your \(coinName) to arrive at the destination address", comment: "Maya"))
+                    .font(.subhead)
+                    .foregroundColor(.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(3)
             }
+            .padding(.horizontal, 60)
+            .padding(.top, 20)
+            .padding(.bottom, 32)
 
-            Text(message)
-                .font(.subhead)
-                .foregroundColor(.secondaryText)
-                .multilineTextAlignment(.center)
-                .lineSpacing(3)
-        }
-    }
+            Spacer()
 
-    private var successIcon: some View {
-        ZStack {
-            Circle()
-                .fill(Color.dashBlue.opacity(0.1))
-                .frame(width: 100, height: 100)
-
-            Icon(name: .system("checkmark.circle.fill"))
-                .frame(width: 56, height: 56)
-                .foregroundColor(.dashBlue)
+            DashButton(text: NSLocalizedString("Done", comment: "")) {
+                onDone()
+            }
+            .padding(.vertical, 20)
+            .padding(.horizontal, 60)
         }
     }
 }
@@ -56,10 +62,8 @@ struct MayaTransactionSuccessView: View {
 #if DEBUG
 #Preview {
     MayaTransactionSuccessView(
-        message: NSLocalizedString(
-            "Your swap has been submitted to Maya Protocol. It may take a few minutes to complete.",
-            comment: "Maya"
-        )
+        coinCode: "BTC",
+        coinName: "Bitcoin"
     )
 }
 
@@ -72,15 +76,12 @@ private struct MayaTransactionSuccessSheetPreviewHost: View {
             .sheet(isPresented: $isPresented) {
                 let sheet = BottomSheet(showBackButton: .constant(false)) {
                     MayaTransactionSuccessView(
-                        message: NSLocalizedString(
-                            "Your swap has been submitted to Maya Protocol. It may take a few minutes to complete.",
-                            comment: "Maya"
-                        )
+                        coinCode: "BTC",
+                        coinName: "Bitcoin"
                     )
                 }
-
                 if #available(iOS 16.0, *) {
-                    sheet.presentationDetents([.height(300)])
+                    sheet.presentationDetents([.large])
                 } else {
                     sheet
                 }
