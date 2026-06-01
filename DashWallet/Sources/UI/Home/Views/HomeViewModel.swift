@@ -38,6 +38,9 @@ class HomeViewModel: ObservableObject {
     private let queue = DispatchQueue(label: "HomeViewModel", qos: .userInitiated)
     private let coinJoinService = CoinJoinService.shared
     private var timeSkewDialogShown: Bool = false
+    /// Session guard so the proactive CoinJoin-sweep popup shows at most once
+    /// per launch (re-evaluated each launch while a leftover balance exists).
+    private var coinJoinSweepDialogShown: Bool = false
 
     static let shared: HomeViewModel = {
         return HomeViewModel(transactionSource: SwiftDashSDKWalletSource())
@@ -64,6 +67,7 @@ class HomeViewModel: ObservableObject {
     @Published var shortcutItems: [ShortcutAction] = []
     @Published private(set) var coinJoinItem = CoinJoinMenuItemModel(title: NSLocalizedString("Mixing", comment: "CoinJoin"), isOn: false, state: .notStarted, progress: 0.0, mixed: 0.0, total: 0.0)
     @Published var showTimeSkewAlertDialog: Bool = false
+    @Published var showCoinJoinSweepDialog: Bool = false
     @Published private(set) var timeSkew: TimeInterval = 0
     @Published private(set) var showJoinDashpay: Bool = true
     @Published var displayMode: HomeTxDisplayMode = .all {
@@ -124,6 +128,7 @@ class HomeViewModel: ObservableObject {
         self.recalculateHeight()
 
         self.observeCoinJoin()
+        self.observeCoinJoinSweep()
         self.observeWallet()
         self.observeNetworkChange()
         #if DASHPAY
@@ -241,6 +246,7 @@ class HomeViewModel: ObservableObject {
             .sink { [weak self] state in
                 guard let self = self else { return }
                 self.onSyncStateChanged()
+                self.maybeShowCoinJoinSweepDialog()
             }
             .store(in: &cancellableBag)
     }
@@ -623,6 +629,61 @@ extension HomeViewModel {
     func reloadTxsAndShortcuts() {
         self.reloadTxDataSource()
         self.reloadShortcuts()
+    }
+}
+
+// MARK: - CoinJoin Recovery Sweep (post-migration)
+
+extension HomeViewModel {
+    /// Live CoinJoin-account leftover balance (duffs) — SDK source of truth,
+    /// the same value the Settings "Move CoinJoin Funds" row binds to.
+    var coinJoinSweepAmountDuffs: UInt64 {
+        SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs
+    }
+
+    /// Formatted leftover amount for the popup message.
+    var coinJoinSweepAmountFormatted: String {
+        String(format: "%.6f DASH", Double(coinJoinSweepAmountDuffs) / Double(DUFFS))
+    }
+
+    private func observeCoinJoinSweep() {
+        // The leftover balance lands after the (wide) recovery scan completes,
+        // sometimes just after `.syncDone`; observe it so the popup still
+        // surfaces if the balance arrives a beat later than the state change.
+        SwiftDashSDKWalletState.shared.$coinJoinBalanceDuffs
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.maybeShowCoinJoinSweepDialog()
+            }
+            .store(in: &cancellableBag)
+    }
+
+    /// Proactively surface the "move your mixed coins" popup once per session
+    /// after sync completes, while a recoverable CoinJoin balance exists.
+    /// Bound to the live balance (not a persistent flag): it re-prompts each
+    /// launch until the user sweeps, then self-stops (balance → 0). The durable
+    /// Settings row covers the same action for users who dismiss it.
+    func maybeShowCoinJoinSweepDialog() {
+        guard !coinJoinSweepDialogShown,
+              syncModel.state == .syncDone,
+              coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs else { return }
+        coinJoinSweepDialogShown = true
+        showCoinJoinSweepDialog = true
+    }
+
+    /// Sweep the leftover CoinJoin balance into the user's spendable balance
+    /// via the shared `WalletSendService` flow (PIN → own BIP44 dest → sweep →
+    /// balance refresh + recovery-flag clear). Auth-cancel is an expected no-op;
+    /// the Settings row remains for retry on other failures.
+    func performCoinJoinSweep() async {
+        do {
+            _ = try await WalletSendService.shared.sweepCoinJoin()
+        } catch {
+            #if DEBUG
+            print("🎯 CoinJoin sweep (home popup) failed: \(error)")
+            #endif
+        }
     }
 }
 

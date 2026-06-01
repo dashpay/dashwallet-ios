@@ -80,6 +80,48 @@ final class SwiftDashSDKTransactionSender: NSObject {
         return (txData, fee, txHash)
     }
 
+    // MARK: - CoinJoin Sweep
+
+    /// Sweep the entire CoinJoin-account balance to `address` (the user's own
+    /// BIP44 receive address) in a single transaction, fully emptying the
+    /// CoinJoin account. Build + sign + broadcast are bundled by the SDK's
+    /// `coreWallet().sweepCoinJoinAccount(...)` FFI call, mirroring
+    /// `buildAndSign`.
+    ///
+    /// Used by the post-migration "move your mixed coins" flow: CoinJoin is no
+    /// longer supported, so we move the user's mixed coins into their normal
+    /// spendable balance.
+    ///
+    /// - Parameter address: Destination Dash address (the user's own BIP44
+    ///   receive address, resolved via `SwiftDashSDKReceiveAddressReader`).
+    /// - Returns: Tuple of (serialized signed tx bytes, 32-byte txHash).
+    static func sweepCoinJoin(to address: String) throws -> (txData: Data, txHash: Data) {
+        logger.info("💸 TXSEND :: sweeping CoinJoin account → spendable balance")
+
+        let sweep = { @MainActor () throws -> Data in
+            guard let wallet = SwiftDashSDKHost.shared.wallet else {
+                throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
+            }
+            let core = try wallet.coreWallet()
+            return try core.sweepCoinJoinAccount(accountIndex: 0, destination: address)
+        }
+
+        let txData: Data
+        if Thread.isMainThread {
+            txData = try MainActor.assumeIsolated { try sweep() }
+        } else {
+            var captured: Result<Data, Error> = .failure(SendError.walletNotReady("uninitialized result"))
+            DispatchQueue.main.sync {
+                captured = Result { try MainActor.assumeIsolated { try sweep() } }
+            }
+            txData = try captured.get()
+        }
+
+        let txHash = computeTxHash(from: txData)
+        logger.info("💸 TXSEND :: coinjoin sweep broadcast — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public)")
+        return (txData, txHash)
+    }
+
     // MARK: - Broadcast
 
     /// No-op. The transaction was already broadcast by `buildAndSign` —

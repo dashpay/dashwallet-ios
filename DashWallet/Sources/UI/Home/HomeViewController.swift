@@ -327,12 +327,20 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         viewModel.$showTimeSkewAlertDialog
             .sink { [weak self] showTimeSkew in
                 guard let self = self else { return }
-                
+
                 if showTimeSkew {
                     let diffSeconds = (viewModel.timeSkew < 0 ? -1 : 1) * Int64(ceil(abs(viewModel.timeSkew)))
                     let coinJoinOn = viewModel.coinJoinMode != .none
                     self.showTimeSkewDialog(diffSeconds: diffSeconds, coinjoin: coinJoinOn)
                 }
+            }
+            .store(in: &cancellableBag)
+
+        viewModel.$showCoinJoinSweepDialog
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] show in
+                guard let self = self, show else { return }
+                self.showCoinJoinSweepDialog()
             }
             .store(in: &cancellableBag)
         
@@ -378,6 +386,25 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             negativeButtonText: NSLocalizedString("Dismiss", comment: ""),
             negativeButtonAction: {
                 self.viewModel.showTimeSkewAlertDialog = false
+            }
+        )
+    }
+
+    private func showCoinJoinSweepDialog() {
+        let amount = viewModel.coinJoinSweepAmountFormatted
+        showModalDialog(
+            style: .regular,
+            icon: .system("arrow.down.circle"),
+            heading: NSLocalizedString("Move your mixed coins", comment: "CoinJoin"),
+            textBlock1: String(format: NSLocalizedString("You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance.", comment: "CoinJoin"), amount),
+            positiveButtonText: NSLocalizedString("Move funds", comment: "CoinJoin"),
+            positiveButtonAction: {
+                self.viewModel.showCoinJoinSweepDialog = false
+                Task { await self.viewModel.performCoinJoinSweep() }
+            },
+            negativeButtonText: NSLocalizedString("Later", comment: "CoinJoin"),
+            negativeButtonAction: {
+                self.viewModel.showCoinJoinSweepDialog = false
             }
         )
     }

@@ -85,6 +85,51 @@ final class WalletSendService: NSObject {
         return preparedSend.transaction
     }
 
+    /// Sweep the entire CoinJoin-account balance into the user's own BIP44
+    /// spendable balance. The shared flow behind both post-migration sweep
+    /// surfaces (the Home popup and the Settings row): authorize
+    /// (PIN/biometric, reusing `sendAuthorizer`) → resolve the user's own
+    /// receive address → sweep via `SwiftDashSDKTransactionSender` → force a
+    /// CoinJoin-balance re-tally so both surfaces self-clear without waiting
+    /// for the next SPV balance event.
+    ///
+    /// - Returns: the CoinJoin balance (duffs) that was swept, for the success
+    ///   message; the on-chain amount delivered is this minus the network fee.
+    @discardableResult
+    func sweepCoinJoin() async throws -> UInt64 {
+        let amount = await MainActor.run { SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs }
+        guard amount > 0 else {
+            throw Self.makeError(
+                code: .coinJoinSweepUnavailable,
+                description: "No CoinJoin balance to move"
+            )
+        }
+
+        Self.logger.info("💸 TXSEND :: preparing CoinJoin sweep of \(amount) duffs")
+        try await sendAuthorizer.authorizeSend()
+
+        guard let destination = SwiftDashSDKReceiveAddressReader.receiveAddress(
+            on: DWEnvironment.sharedInstance().currentChain
+        ) else {
+            throw Self.makeError(
+                code: .coinJoinSweepUnavailable,
+                description: "Could not resolve a destination address for the CoinJoin sweep"
+            )
+        }
+
+        _ = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination)
+        Self.logger.info("💸 TXSEND :: CoinJoin sweep broadcast")
+
+        await MainActor.run {
+            SwiftDashSDKWalletState.shared.refreshCoinJoinBalance()
+            // The sweep emptied the CoinJoin account — recovery is complete.
+            // Clear the per-network recovery flag so future launches revert to
+            // the fast default address gap.
+            CoinJoinRecovery.shared.markCurrentNetworkRecovered()
+        }
+        return amount
+    }
+
     @objc(prepareStandardSendForConfirmationWithAddress:amount:completion:)
     func prepareStandardSendForConfirmation(
         address: String,
@@ -222,6 +267,7 @@ private extension WalletSendService {
         case authenticationCancelled = 1
         case authenticationFailed = 2
         case insufficientSelectedFunds = 3
+        case coinJoinSweepUnavailable = 4
     }
 
     static let errorDomain = "org.dashfoundation.dash.wallet-send-service"

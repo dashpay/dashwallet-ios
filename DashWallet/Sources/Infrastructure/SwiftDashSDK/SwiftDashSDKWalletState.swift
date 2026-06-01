@@ -100,6 +100,16 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         platformPaymentCredits / 1000
     }
 
+    /// Spendable balance (in duffs) sitting in the wallet's CoinJoin
+    /// account(s) — the "mixed coins" left stranded once CoinJoin support is
+    /// dropped. Refreshed in lockstep with `balance` from
+    /// `SwiftDashSDKCoinJoinBalanceReader`. This is the single source of
+    /// truth for the post-migration "move your mixed coins" surfaces (the
+    /// one-time Home popup and the conditional Settings row), both of which
+    /// gate their visibility on `> dust`. Bound here — NOT to the legacy
+    /// DashSync `CoinJoinService`, which is being removed.
+    @Published public private(set) var coinJoinBalanceDuffs: UInt64 = 0
+
     // MARK: - Obj-C bridge
 
     /// Notification posted on the main queue whenever the published
@@ -138,6 +148,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             // way to satisfy the isolation requirement.
             MainActor.assumeIsolated {
                 self.refreshPlatformPaymentCredits()
+                self.refreshCoinJoinBalance()
             }
             NotificationCenter.default.post(
                 name: SwiftDashSDKWalletState.balanceDidChangeNotification,
@@ -195,6 +206,24 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         }
     }
 
+    /// Re-tally the CoinJoin-account spendable balance via
+    /// `SwiftDashSDKCoinJoinBalanceReader` (an in-memory read of the live
+    /// per-account balances). Idempotent; safe to call from any MainActor
+    /// consumer that needs a fresh snapshot — e.g. the sweep coordinator
+    /// forces a refresh right after a successful sweep so the popup/Settings
+    /// row self-clear without waiting for the next balance event.
+    ///
+    /// `@MainActor` for symmetry with `refreshPlatformPaymentCredits`; the
+    /// reader detects the main thread and reads synchronously.
+    @MainActor
+    public func refreshCoinJoinBalance() {
+        let duffs = SwiftDashSDKCoinJoinBalanceReader.coinJoinSpendableDuffs()
+        if coinJoinBalanceDuffs != duffs {
+            coinJoinBalanceDuffs = duffs
+            Self.logger.info("💰 WALLET :: coinJoinBalanceDuffs=\(duffs, privacy: .public)")
+        }
+    }
+
     // MARK: - Seed (called from coordinator after wallet import)
 
     /// Called from `SwiftDashSDKSPVCoordinator.performStart` after
@@ -238,6 +267,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             Self.logger.info("💰 WALLET :: clearing balance")
             self?.balance = nil
             self?.platformPaymentCredits = 0
+            self?.coinJoinBalanceDuffs = 0
             NotificationCenter.default.post(
                 name: SwiftDashSDKWalletState.balanceDidChangeNotification,
                 object: nil)
@@ -252,6 +282,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             Self.logger.info("💰 WALLET :: clearing all wallet state")
             self?.balance = nil
             self?.platformPaymentCredits = 0
+            self?.coinJoinBalanceDuffs = 0
             NotificationCenter.default.post(
                 name: SwiftDashSDKWalletState.balanceDidChangeNotification,
                 object: nil)

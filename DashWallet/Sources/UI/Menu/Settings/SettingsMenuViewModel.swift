@@ -37,6 +37,27 @@ class SettingsMenuViewModel: ObservableObject {
     @Published var notificationsEnabled: Bool
     @Published var showCSVExportActivity = false
     @Published var csvExportData: (fileName: String, file: URL)?
+    @Published var showCoinJoinSweepConfirmation = false
+
+    /// Minimum CoinJoin-account balance (duffs) worth surfacing a sweep for —
+    /// below this it's un-sweepable dust/fragments, not a real denomination.
+    private static let minCoinJoinSweepDuffs: UInt64 = 1000
+
+    /// Live CoinJoin-account spendable balance (duffs) — the SDK source of
+    /// truth, NOT the legacy DashSync `CoinJoinService`.
+    private var coinJoinLeftoverDuffs: UInt64 {
+        SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs
+    }
+
+    /// Whether to show the conditional "Move CoinJoin Funds" row.
+    var hasCoinJoinLeftover: Bool {
+        coinJoinLeftoverDuffs > Self.minCoinJoinSweepDuffs
+    }
+
+    /// Formatted leftover amount for the confirmation dialog.
+    var coinJoinLeftoverFormatted: String {
+        String(format: "%.6f DASH", Double(coinJoinLeftoverDuffs) / Double(DUFFS))
+    }
     
     var networkName: String {
         return DWEnvironment.sharedInstance().currentChain.name
@@ -81,6 +102,17 @@ class SettingsMenuViewModel: ObservableObject {
             .store(in: &cancellableBag)
         
         coinJoinService.$mixingState
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshMenuItems()
+            }
+            .store(in: &cancellableBag)
+
+        // SDK CoinJoin-account balance drives the conditional "Move CoinJoin
+        // Funds" row: it appears while a leftover exists and self-removes once
+        // the post-sweep balance refresh drops it below the threshold.
+        SwiftDashSDKWalletState.shared.$coinJoinBalanceDuffs
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -154,6 +186,20 @@ class SettingsMenuViewModel: ObservableObject {
                 }
             )
         ]
+
+        // Conditional migration row: only while leftover CoinJoin funds exist.
+        if hasCoinJoinLeftover {
+            items.append(
+                MenuItemModel(
+                    title: NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"),
+                    subtitle: NSLocalizedString("CoinJoin is no longer supported", comment: "CoinJoin"),
+                    icon: .custom("image.coinjoin.menu", maxHeight: 22),
+                    action: { [weak self] in
+                        self?.showCoinJoinSweepConfirmation = true
+                    }
+                )
+            )
+        }
         
         #if DASHPAY
         items.append(contentsOf: [
@@ -168,7 +214,25 @@ class SettingsMenuViewModel: ObservableObject {
         ])
         #endif
     }
-    
+
+    // MARK: - CoinJoin Sweep
+
+    /// Sweep the leftover CoinJoin-account balance into the user's spendable
+    /// balance via the shared `WalletSendService` flow (PIN → resolve own
+    /// BIP44 address → sweep → balance refresh). The "Move CoinJoin Funds"
+    /// row self-removes once the refreshed balance drops below the threshold.
+    func performCoinJoinSweep() async {
+        do {
+            _ = try await WalletSendService.shared.sweepCoinJoin()
+        } catch {
+            // Auth-cancel is an expected no-op; on other failures the row
+            // stays visible (balance unchanged) so the user can retry.
+            #if DEBUG
+            print("🎯 CoinJoin sweep failed: \(error)")
+            #endif
+        }
+    }
+
     // MARK: - Network Switching
     
     func switchToMainnet() async -> Bool {

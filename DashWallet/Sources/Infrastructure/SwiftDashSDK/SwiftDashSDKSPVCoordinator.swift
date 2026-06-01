@@ -107,6 +107,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     private var runningNetwork: Network?
     private var progressCancellable: AnyCancellable?
 
+    /// Network whose CoinJoin gap was widened for a one-time recovery scan
+    /// during the current run, so a subsequent full sync can mark recovery
+    /// complete when nothing remains to recover. `nil` when no widen is active.
+    private var coinJoinRecoveryWidenedNetwork: Network?
+
     // MARK: - Init
 
     private override init() {
@@ -173,6 +178,14 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             restrictToConfiguredPeers: false,
             startFromHeight: 0)
 
+        // One-time wide CoinJoin recovery scan: for wallets that used CoinJoin,
+        // widen the CoinJoin address gap (matching DashSync) and pre-generate
+        // the addresses BEFORE startSpv, so the initial filter already covers
+        // the full window and scattered mixed coins are found. No-op for
+        // wallets that never used CoinJoin; reverts automatically once
+        // recovered.
+        applyCoinJoinRecoveryGapIfNeeded(for: network)
+
         do {
             try manager.startSpv(config: config)
         } catch {
@@ -211,9 +224,57 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         SwiftDashSDKWalletState.shared.clearBalance()
 
         runningNetwork = nil
+        coinJoinRecoveryWidenedNetwork = nil
         resetPublishedState()
         if let lastError {
             self.lastError = lastError
+        }
+    }
+
+    // MARK: - CoinJoin recovery (one-time wide gap)
+
+    /// Widen the CoinJoin address gap limit for a one-time recovery scan when
+    /// the active wallet is flagged as having used CoinJoin (see
+    /// `CoinJoinRecovery`). Must run BEFORE `startSpv` so the initial filter
+    /// covers the wide window. No-op otherwise. Best-effort: a failure is
+    /// logged and leaves the recovery flag set to retry next launch.
+    @MainActor
+    private func applyCoinJoinRecoveryGapIfNeeded(for network: Network) {
+        coinJoinRecoveryWidenedNetwork = nil
+        guard CoinJoinRecovery.shared.needsWideRecoveryGap(for: network) else { return }
+
+        guard let wallet = SwiftDashSDKHost.shared.wallet else {
+            Self.logger.warning("🛰️ SPVCOORD :: coinjoin recovery: wallet not bound — skipping gap widen")
+            return
+        }
+
+        do {
+            let highest = try wallet.coreWallet().setCoinJoinGapLimit(
+                accountIndex: 0,
+                gapLimit: CoinJoinRecovery.recoveryGapLimit)
+            coinJoinRecoveryWidenedNetwork = network
+            Self.logger.info(
+                "🛰️ SPVCOORD :: coinjoin recovery gap widened to \(CoinJoinRecovery.recoveryGapLimit, privacy: .public) (highest idx \(highest, privacy: .public))")
+        } catch {
+            Self.logger.error(
+                "🛰️ SPVCOORD :: coinjoin recovery widen failed: \(String(describing: error), privacy: .public)")
+        }
+    }
+
+    /// After a full recovery-scan sync, mark recovery complete if nothing
+    /// remains to recover, so future launches revert to the fast default gap.
+    /// If a balance remains, leave the flag set — the wide window persists
+    /// across launches until the user sweeps (cleared then in
+    /// `WalletSendService.sweepCoinJoin()`).
+    @MainActor
+    private func maybeCompleteCoinJoinRecovery(state: SPVSyncState) {
+        guard state == .synced,
+              let network = coinJoinRecoveryWidenedNetwork,
+              network == runningNetwork else { return }
+
+        if SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs <= CoinJoinRecovery.recoveryDustThresholdDuffs {
+            CoinJoinRecovery.shared.markRecovered(for: network)
+            coinJoinRecoveryWidenedNetwork = nil
         }
     }
 
@@ -270,6 +331,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         // balance into `SwiftDashSDKWalletState.shared` for downstream
         // consumers (BalanceModel, SendAmountModel, etc.).
         refreshBalanceBridge()
+
+        // Once a wide recovery scan has fully synced, revert to the fast gap if
+        // there's nothing (left) to recover. Runs after the balance refresh so
+        // `coinJoinBalanceDuffs` reflects the completed scan.
+        maybeCompleteCoinJoinRecovery(state: mappedState)
     }
 
     /// Pull the latest core-wallet balance via FFI and republish through
