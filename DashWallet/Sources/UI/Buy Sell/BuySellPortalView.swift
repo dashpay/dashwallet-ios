@@ -46,6 +46,7 @@ private struct MenuCardStyle: ViewModifier {
 
 struct BuySellPortalView: View {
     let showCoinbase: Bool
+    @ObservedObject var model: BuySellPortalModel
     var onBack: () -> Void
     var onUphold: () -> Void
     var onCoinbase: () -> Void
@@ -125,13 +126,33 @@ struct BuySellPortalView: View {
     // MARK: - Helpers
 
     private func menuItem(for service: Service, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            BuySellMenuItem(
-                iconName: service.icon,
-                title: service.title,
-                description: service.subtitle
-            )
-        }
+        let item = model.items.first { $0.service == service }
+
+        // Show balance when an account-based service is connected.
+        // For 0 balance we still show the amount (not the subtitle) so the
+        // "connected" state is clear — MenuItem hides the fiat line for 0.
+        let isConnected = item?.status == .authorized
+            && (service == .uphold || service == .coinbase)
+
+        let dashAmount: Int64? = isConnected
+            ? Int64(item?.dashBalance ?? 0)
+            : nil
+
+        let subtitle: String? = isConnected
+            ? nil
+            : service.subtitle
+
+        // Apply MenuItemButtonStyle to MenuItem's inner Button so the press
+        // animation works without double-wrapping taps.
+        return MenuItem(
+            title: service.title,
+            subtitle: subtitle,
+            icon: .custom(service.icon),
+            dashAmount: dashAmount,
+            showDashAmountDirection: false,
+            overrideFiatAmount: isConnected ? item?.fiatBalanceFormatted : nil,
+            action: action
+        )
         .buttonStyle(MenuItemButtonStyle())
     }
 
@@ -146,9 +167,14 @@ struct BuySellPortalView: View {
 }
 
 #if DEBUG
+private extension BuySellPortalModel {
+    static var preview: BuySellPortalModel { BuySellPortalModel() }
+}
+
 #Preview("BuySell Portal - Coinbase") {
     BuySellPortalView(
         showCoinbase: true,
+        model: .preview,
         onBack: {},
         onUphold: {},
         onCoinbase: {},
@@ -160,6 +186,7 @@ struct BuySellPortalView: View {
 #Preview("BuySell Portal - No Coinbase") {
     BuySellPortalView(
         showCoinbase: false,
+        model: .preview,
         onBack: {},
         onUphold: {},
         onCoinbase: {},

@@ -124,31 +124,17 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        let screen = BuySellPortalScreen(
-            model: model,
-            onBack: { [weak self] in
-                guard let self else { return }
-                if self.showCloseButton {
-                    self.closeAction()
-                } else {
-                    self.navigationController?.popViewController(animated: true)
-                }
-            },
-            onTopper: { [weak self] in self?.topperAction() },
-            onCoinbase: { [weak self] in self?.coinbaseAction() },
-            onUphold: { [weak self] in self?.upholdAction() }
-        )
-        
+
         title = nil
         navigationItem.largeTitleDisplayMode = .never
-        
+
         setupSwiftUIView()
     }
-    
+
     private func setupSwiftUIView() {
         let portalView = BuySellPortalView(
             showCoinbase: CoinbaseDataSource.shouldShow(),
+            model: model,
             onBack: { [weak self] in
                 guard let self else { return }
                 if self.showCloseButton {
