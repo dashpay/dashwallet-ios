@@ -226,3 +226,64 @@ extension ShortcutsView {
         false
     }
 }
+
+// MARK: - Xcode Canvas Previews
+
+#if DEBUG
+import SwiftUI
+
+// Thin UIViewRepresentable that hosts the UIKit ShortcutsView in SwiftUI Canvas.
+private struct ShortcutsViewRepresentable: UIViewRepresentable {
+    let items: [ShortcutAction]
+
+    func makeUIView(context: Context) -> ShortcutsView {
+        ShortcutsView(frame: .zero, viewModel: .makeForPreview(shortcuts: items))
+    }
+
+    func updateUIView(_ uiView: ShortcutsView, context: Context) {}
+}
+
+// Helper to keep #Preview bodies one-liners.
+private func shortcutsPreview(_ items: [ShortcutAction]) -> some View {
+    ShortcutsViewRepresentable(items: items)
+        .frame(width: 375, height: 92) // 68 cell + 8×2 vertical padding
+}
+
+private let previewState1: [ShortcutAction] = [ // zero balance + backup needed
+    .init(type: .secureWallet),
+    .init(type: .receive),
+    .init(type: .buySellDash),
+    .init(type: .spend)
+]
+private let previewState2: [ShortcutAction] = [ // zero balance + verified
+    .init(type: .receive),
+    .init(type: .send),
+    .init(type: .buySellDash),
+    .init(type: .spend)
+]
+private let previewState3: [ShortcutAction] = [ // has balance + verified
+    .init(type: .receive),
+    .init(type: .send),
+    .init(type: .sendToContact),
+    .init(type: .payToAddress)
+]
+private let previewState4: [ShortcutAction] = [ // has balance + backup needed
+    .init(type: .secureWallet),
+    .init(type: .receive),
+    .init(type: .send),
+    .init(type: .spend)
+]
+
+#Preview("Zero bal · backup needed") {
+    shortcutsPreview(previewState1)
+}
+#Preview("Zero bal · verified") {
+    shortcutsPreview(previewState2)
+}
+#Preview("Has balance · verified") {
+    shortcutsPreview(previewState3)
+}
+#Preview("Has balance · backup needed") {
+    shortcutsPreview(previewState4)
+}
+#endif
