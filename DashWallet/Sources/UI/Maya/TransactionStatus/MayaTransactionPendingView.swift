@@ -78,7 +78,6 @@ private struct MayaTransactionPendingSheetPreviewHost: View {
                         )
                     )
                 }
-
                 if #available(iOS 16.0, *) {
                     sheet.presentationDetents([.height(300)])
                 } else {

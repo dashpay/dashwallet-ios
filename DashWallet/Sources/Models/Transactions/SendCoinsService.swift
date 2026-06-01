@@ -75,6 +75,21 @@ public final class SendCoinsService: NSObject {
             }
         }
 
+        // Guard against stale UTXOs: DSAccount.updateBalance skips reconciliation
+        // (removing spent entries from utxos) when a transaction is "pending".
+        // spentOutputs IS always correct; utxos may lag after a Maya swap because
+        // the OP_RETURN output (amount=0 < TX_MIN_OUTPUT_AMOUNT) marks the whole
+        // swap tx as pending, bypassing the reconciliation step. Reject here to
+        // prevent broadcasting a double-spend.
+        for input in transaction.inputs {
+            if account.isInputSpent(input.inputHash, at: input.index) {
+                throw DashSpendError.paymentProcessingError(
+                    "Input \(input.index) is already spent by a pending transaction. " +
+                    "Wait for the previous transaction to confirm before sending again."
+                )
+            }
+        }
+
         let authenticated = await authenticate()
 
         if !authenticated {
@@ -84,15 +99,19 @@ public final class SendCoinsService: NSObject {
         // Sign the transaction after authentication
         account.sign(transaction)
 
-        // Register the transaction
-        account.register(transaction, saveImmediately: false)
+        // saveImmediately:true: if the app crashes between register and publish the
+        // transaction is already in Core Data and will be reloaded on next launch.
+        // NOTE: this does NOT affect UTXO state — updateBalance runs identically
+        // for both true and false; the standard send path uses false + a post-broadcast
+        // saveInitial call, but the net Core Data outcome is the same.
+        account.register(transaction, saveImmediately: true)
 
         // Publish the transaction
         try await transactionManager.publishTransaction(transaction)
 
         return transaction
     }
-    
+
     /// Sends a MAYA swap transaction where:
     /// - VOUT0 pays DASH to the MAYA vault address
     /// - VOUT1 stores MAYA memo in OP_RETURN
@@ -148,16 +167,67 @@ public final class SendCoinsService: NSObject {
         let txSize = transaction.size
         let estimatedFee = chain.fee(forTxSize: UInt(txSize))
         let feePerByte = txSize > 0 ? estimatedFee / UInt64(txSize) : 0
+
+        // Real wire size of the OP_RETURN output: transaction.size uses TX_OUTPUT_SIZE=34
+        // for every output, but OP_RETURN is 8 (value) + varint(scriptLen) + scriptLen.
+        let memoScriptLen = memoOutput.outScript.count
+        let varintLen = memoScriptLen < 253 ? 1 : 3
+        let realOpReturnSize = 8 + varintLen + memoScriptLen
+        let realEstimatedSize = Int(txSize) - 34 + realOpReturnSize
+
+        // FEE FIX: account.update uses TX_OUTPUT_SIZE=34 for every output, but the
+        // OP_RETURN output is realOpReturnSize bytes. The builder therefore under-pays
+        // the fee by extraBytes duffs. Close the gap by reducing the change output (VOUT2)
+        // so the effective fee rate clears TX_FEE_PER_B against the real wire size.
+        // DSTransactionOutput.amount is readonly in the public header but readwrite in its
+        // class extension, so KVC setValue(_:forKey:) reaches the private setter safely.
+        var correctedFee = estimatedFee
+        let extraBytes = realEstimatedSize > Int(txSize) ? realEstimatedSize - Int(txSize) : 0
+        if extraBytes > 0 {
+            let requiredFee = chain.fee(forTxSize: UInt(realEstimatedSize) + 1) // +1 byte safety margin
+            if requiredFee > estimatedFee, transaction.outputs.count >= 3 {
+                let feeDelta = requiredFee - estimatedFee
+                let changeOutput = transaction.outputs[2]
+                guard changeOutput.amount >= feeDelta + chain.minOutputAmount else {
+                    throw DashSpendError.paymentProcessingError(
+                        "Change output (\(changeOutput.amount) duffs) too small to absorb fee correction (\(feeDelta) duffs)"
+                    )
+                }
+                let correctedChangeAmount = changeOutput.amount - feeDelta
+                changeOutput.setValue(NSNumber(value: correctedChangeAmount), forKey: "amount")
+                correctedFee = requiredFee
+                DSLogger.log("sendMayaSwap FEE FIX: extraBytes=\(extraBytes) feeDelta=\(feeDelta) requiredFee=\(requiredFee) correctedChange=\(correctedChangeAmount)")
+            }
+        }
+
         DSLogger.log("sendMayaSwap pre-sign: inputs=\(transaction.inputs.count) outputs=\(transaction.outputs.count) size=\(txSize) estimatedFee=\(estimatedFee) feePerByte=\(feePerByte)")
         logOutputs(transaction, label: "pre-sign")
         logVin0(transaction, chain: chain)
 
-        // Guard: fee rate must be at least the network minimum (1 duff/byte).
-        // Mirrors Android: fee < Transaction.DEFAULT_TX_FEE → failure.
-        guard feePerByte >= TX_FEE_PER_B else {
+        // Guard: check fee rate against the REAL wire size, not the builder's undercount.
+        // Before this fix, feePerByte was measured against txSize (= under-counted estimate),
+        // giving a false pass even when the relay fee was below the 1 duff/byte minimum.
+        let correctedFeePerByte = realEstimatedSize > 0 ? correctedFee / UInt64(realEstimatedSize) : 0
+        guard correctedFeePerByte >= TX_FEE_PER_B else {
             throw DashSpendError.paymentProcessingError(
-                "Transaction fee too low: \(feePerByte) duff/byte (min \(TX_FEE_PER_B))"
+                "Transaction fee too low: \(correctedFeePerByte) duff/byte against real size \(realEstimatedSize) (min \(TX_FEE_PER_B))"
             )
+        }
+
+        // Guard against stale UTXOs caused by DSAccount.updateBalance treating the
+        // Maya swap tx as "pending" (OP_RETURN output amount=0 < TX_MIN_OUTPUT_AMOUNT,
+        // i.e. 546 duffs). The pending path calls `continue` before the reconciliation
+        // step that removes spent entries from `utxos`, so the just-spent input stays
+        // visible to the next coin-selection call and gets re-selected — producing a
+        // double-spend. `spentOutputs` IS always updated correctly (before the continue);
+        // `-isInputSpent:atIndex:` reads that set and catches stale re-use early.
+        for input in transaction.inputs {
+            if account.isInputSpent(input.inputHash, at: input.index) {
+                throw DashSpendError.paymentProcessingError(
+                    "Input \(input.index) is already spent by a pending transaction. " +
+                    "Wait for the previous swap to confirm before initiating a new one."
+                )
+            }
         }
 
         let authenticated = await authenticate()
@@ -167,7 +237,9 @@ public final class SendCoinsService: NSObject {
 
         account.sign(transaction)
         DSLogger.log("sendMayaSwap post-sign txid=\(transaction.txHashHexString)")
-        account.register(transaction, saveImmediately: false)
+        // saveImmediately:true: crash-safe — tx is in Core Data before broadcast.
+        // Does NOT affect UTXO state; updateBalance runs the same either way.
+        account.register(transaction, saveImmediately: true)
         try await transactionManager.publishTransaction(transaction)
         DSLogger.log("sendMayaSwap published txid=\(transaction.txHashHexString)")
         return transaction
