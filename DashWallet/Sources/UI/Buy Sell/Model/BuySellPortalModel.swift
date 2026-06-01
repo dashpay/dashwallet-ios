@@ -56,10 +56,10 @@ extension Service {
 
     var icon: String {
         switch self {
-        case .coinbase: return "portal.coinbase"
-        case .uphold: return "portal.uphold"
-        case .topper: return "portal.topper"
-        case .maya: return "portal.maya"
+        case .coinbase: return "menu-coinbase"
+        case .uphold: return "menu-uphold"
+        case .topper: return "menu-topper"
+        case .maya: return "menu-maya"
         }
     }
 

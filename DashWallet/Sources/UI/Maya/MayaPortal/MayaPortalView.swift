@@ -82,13 +82,12 @@ struct MayaPortalView: View {
     }
 
     private var convertDashButton: some View {
-        Button(action: { onConvertDash?() }) {
-            BuySellMenuItem(
-                iconName: "convert.crypto",
-                title: NSLocalizedString("Convert Dash", comment: "Maya Portal"),
-                description: NSLocalizedString("From Dash Wallet to any crypto", comment: "Maya Portal")
-            )
-        }
+        MenuItem(
+            title: NSLocalizedString("Convert Dash", comment: "Maya Portal"),
+            subtitle: NSLocalizedString("From Dash Wallet to any crypto", comment: "Maya Portal"),
+            icon: .custom("convert.crypto"),
+            action: { onConvertDash?() }
+        )
         .buttonStyle(MayaMenuItemButtonStyle())
     }
 }

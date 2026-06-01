@@ -37,7 +37,9 @@ struct MenuItem: View {
     var showToggle: Bool = false
     @State private var isToggled: Bool = false
     var action: (() -> Void)?
-    init(title: String,
+
+    init(
+        title: String,
          subtitle: String? = nil,
          subtitleLineLimit: Int? = 1,
          details: String? = nil,
@@ -86,7 +88,8 @@ struct MenuItem: View {
         )
     }
 
-    init(title: String,
+    init(
+        title: String,
          subtitleView: AnyView? = nil,
          details: String? = nil,
          topText: String? = nil,
@@ -238,8 +241,8 @@ struct MenuItem: View {
                     }
                 }
             }
+            .contentShape(Rectangle())
         }
-        .contentShape(Rectangle())
         .padding(10)
         .frame(maxWidth: .infinity)
         .onChange(of: isToggled) { newValue in
@@ -258,12 +261,14 @@ struct MenuItem: View {
 }
 
 #Preview {
-    MenuItem(
-        title: "Title",
-        subtitle: "Easily stake Dash and earn passive income with a few simple steps",
-        icon: .system("faceid"),
-        showInfo: true,
-        showToggle: true,
-        isToggled: true
-    )
+    VStack {
+        MenuItem(
+            title: "Title",
+            subtitle: "Easily stake Dash and earn passive income with a few simple steps",
+            icon: .custom("uphold_logo"),
+            showInfo: true,
+            showToggle: true,
+            isToggled: true
+        )
+    }
 }
