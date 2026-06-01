@@ -37,24 +37,26 @@ struct MenuItem: View {
     var showToggle: Bool = false
     @State private var isToggled: Bool = false
     var action: (() -> Void)?
-    init(title: String,
-         subtitle: String? = nil,
-         subtitleLineLimit: Int? = 1,
-         details: String? = nil,
-         topText: String? = nil,
-         icon: IconName? = nil,
-         secondaryIcon: IconName? = nil,
-         iconAlignment: VerticalAlignment = .center,
-         showInfo: Bool = false,
-         showChevron: Bool = false,
-         badgeText: String? = nil,
-         dashAmount: Int64? = nil,
-         showDashAmountDirection: Bool = true,
-         overrideFiatAmount: String? = nil,
-         trailingView: AnyView? = nil,
-         showToggle: Bool = false,
-         isToggled: Bool = false,
-         action: (() -> Void)? = nil
+
+    init(
+        title: String,
+        subtitle: String? = nil,
+        subtitleLineLimit: Int? = 1,
+        details: String? = nil,
+        topText: String? = nil,
+        icon: IconName? = nil,
+        secondaryIcon: IconName? = nil,
+        iconAlignment: VerticalAlignment = .center,
+        showInfo: Bool = false,
+        showChevron: Bool = false,
+        badgeText: String? = nil,
+        dashAmount: Int64? = nil,
+        showDashAmountDirection: Bool = true,
+        overrideFiatAmount: String? = nil,
+        trailingView: AnyView? = nil,
+        showToggle: Bool = false,
+        isToggled: Bool = false,
+        action: (() -> Void)? = nil
     ) {
         self.init(
             title: title,
@@ -86,23 +88,24 @@ struct MenuItem: View {
         )
     }
 
-    init(title: String,
-         subtitleView: AnyView? = nil,
-         details: String? = nil,
-         topText: String? = nil,
-         icon: IconName? = nil,
-         secondaryIcon: IconName? = nil,
-         iconAlignment: VerticalAlignment = .center,
-         showInfo: Bool = false,
-         showChevron: Bool = false,
-         badgeText: String? = nil,
-         dashAmount: Int64? = nil,
-         showDashAmountDirection: Bool = true,
-         overrideFiatAmount: String? = nil,
-         trailingView: AnyView? = nil,
-         showToggle: Bool = false,
-         isToggled: Bool = false,
-         action: (() -> Void)? = nil
+    init(
+        title: String,
+        subtitleView: AnyView? = nil,
+        details: String? = nil,
+        topText: String? = nil,
+        icon: IconName? = nil,
+        secondaryIcon: IconName? = nil,
+        iconAlignment: VerticalAlignment = .center,
+        showInfo: Bool = false,
+        showChevron: Bool = false,
+        badgeText: String? = nil,
+        dashAmount: Int64? = nil,
+        showDashAmountDirection: Bool = true,
+        overrideFiatAmount: String? = nil,
+        trailingView: AnyView? = nil,
+        showToggle: Bool = false,
+        isToggled: Bool = false,
+        action: (() -> Void)? = nil
     ) {
         self.title = title
         self.subtitleView = subtitleView
@@ -238,8 +241,8 @@ struct MenuItem: View {
                     }
                 }
             }
+            .contentShape(Rectangle())
         }
-        .contentShape(Rectangle())
         .padding(10)
         .frame(maxWidth: .infinity)
         .onChange(of: isToggled) { newValue in
