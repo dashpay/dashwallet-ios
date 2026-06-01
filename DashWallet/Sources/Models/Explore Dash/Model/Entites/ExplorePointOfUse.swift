@@ -206,6 +206,17 @@ struct ExplorePointOfUse {
     }
 }
 
+// MARK: - Address
+
+extension ExplorePointOfUse {
+    var address: String {
+        [name, address1, address2, address3, address4, city, territory]
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .joined(separator: ", ")
+    }
+}
+
 // MARK: RowDecodable
 
 extension ExplorePointOfUse: RowDecodable {

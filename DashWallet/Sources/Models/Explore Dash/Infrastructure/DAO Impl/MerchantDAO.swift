@@ -206,11 +206,13 @@ class MerchantDAO: PointOfUseDAO {
                     var allItems: [ExplorePointOfUse] = try wSelf.connection.execute(query: allLocationsQuery)
 
                     // Fetch gift card providers for each merchant that accepts gift cards
+                    #if PIGGYCARDS_ENABLED
+                    let excludePiggyCards = isPiggyCardsGeoRestricted()
+                    #endif
                     for (index, item) in allItems.enumerated() {
                         if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
                             // Only fetch CTX providers when PiggyCards is disabled or user is in restricted region
                             #if PIGGYCARDS_ENABLED
-                            let excludePiggyCards = isPiggyCardsGeoRestricted()
                             let providersQuery: String
                             if excludePiggyCards {
                                 providersQuery = """
@@ -447,11 +449,13 @@ class MerchantDAO: PointOfUseDAO {
                 var items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
                 
                 // Fetch gift card providers for each merchant that accepts gift cards
+                #if PIGGYCARDS_ENABLED
+                let excludePiggyCards = isPiggyCardsGeoRestricted()
+                #endif
                 for (index, item) in items.enumerated() {
                     if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
                         // Only fetch CTX providers when PiggyCards is disabled or user is in restricted region
                         #if PIGGYCARDS_ENABLED
-                        let excludePiggyCards = isPiggyCardsGeoRestricted()
                         let providersQuery: String
                         if excludePiggyCards {
                             providersQuery = """
@@ -651,11 +655,13 @@ extension MerchantDAO {
                 }
 
                 // Fetch gift card provider information for gift card merchants
+                #if PIGGYCARDS_ENABLED
+                let excludePiggyCards = isPiggyCardsGeoRestricted()
+                #endif
                 for (index, item) in items.enumerated() {
                     if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
                         // Filter out PiggyCards providers when user is in restricted region
                         #if PIGGYCARDS_ENABLED
-                        let excludePiggyCards = isPiggyCardsGeoRestricted()
                         let providersQuery: String
                         if excludePiggyCards {
                             providersQuery = """
