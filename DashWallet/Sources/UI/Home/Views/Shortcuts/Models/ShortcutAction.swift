@@ -52,110 +52,6 @@ extension ShortcutActionType {
         .crowdNode, .coinbase, .uphold, .topper
     ]
 
-    var icon: UIImage {
-        switch self {
-        case .secureWallet:
-            guard let image = UIImage(named: "shortcut-bar-backup") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .scanToPay:
-            guard let image = UIImage(named: "shortcut-bar-scan-qr") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .payToAddress:
-            guard let image = UIImage(named: "shortcut-bar-send-address") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .buySellDash:
-            guard let image = UIImage(named: "shortcut-bar-buy-sell") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .payWithNFC:
-            guard let image = UIImage(named: "shortcut_payWithNFC") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .localCurrency:
-            guard let image = UIImage(named: "shortcut_localCurrency") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .importPrivateKey:
-            guard let image = UIImage(named: "shortcut_importPrivateKey") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .switchToTestnet, .switchToMainnet:
-            guard let image = UIImage(named: "shortcut_switchNetwork") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .reportAnIssue:
-            guard let image = UIImage(named: "shortcut_reportAnIssue") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .createUsername:
-            fatalError("Image not found for shortcut type: \(self)")
-        case .receive:
-            guard let image = UIImage(named: "shortcut-bar-receive") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .explore:
-            guard let image = UIImage(named: "shortcut-bar-explore") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .spend:
-            guard let image = UIImage(named: "shortcut-bar-spend") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .send:
-            guard let image = UIImage(named: "shortcut-bar-send") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .atm:
-            guard let image = UIImage(named: "shortcut-bar-atm") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .sendToContact:
-            guard let image = UIImage(named: "shortcut-bar-send-contact") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .crowdNode:
-            guard let image = UIImage(named: "shortcut-bar-crowdnode") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .coinbase:
-            guard let image = UIImage(named: "shortcut-bar-coinbase") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .uphold:
-            guard let image = UIImage(named: "shortcut-bar-uphold") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        case .topper:
-            guard let image = UIImage(named: "shortcut-bar-topper") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        default:
-            fatalError("Image not found for shortcut type: \(self)")
-        }
-    }
-
     var iconName: String {
         switch self {
 
@@ -292,7 +188,10 @@ extension ShortcutAction {
     }
 
     var icon: UIImage {
-        type.icon
+        guard let image = UIImage(named: type.iconName) else {
+            fatalError("Image not found for shortcut type: \(self)")
+        }
+        return image
     }
 
     var alpha: CGFloat {

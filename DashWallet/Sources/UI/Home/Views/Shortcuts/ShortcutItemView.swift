@@ -21,21 +21,16 @@ import UIKit
 struct ShortcutItemView: View {
     let title: String
     let iconName: String
-    var textColor: Color = Color(uiColor: .dw_darkTitle())
     var alpha: CGFloat = 1.0
 
-    init(title: String, iconName: String, textColor: Color = Color(uiColor: .dw_darkTitle()), alpha: CGFloat = 1.0) {
+    init(title: String, iconName: String) {
         self.title = title
         self.iconName = iconName
-        self.textColor = textColor
-        self.alpha = alpha
     }
 
     init(model: ShortcutAction) {
         self.title = model.title
         self.iconName = model.type.iconName
-        self.textColor = Color(uiColor: model.textColor)
-        self.alpha = model.alpha
     }
 
     var body: some View {
@@ -53,13 +48,12 @@ struct ShortcutItemView: View {
         .padding(.top, 8)
         .padding(.bottom, 10)
         .clipShape(.rect(cornerRadius: 16))
-        .opacity(Double(alpha))
         .contentShape(.rect)
     }
 }
 
 #if DEBUG
-private func shortcutItemGrid(_ alpha: CGFloat) -> some View {
+private func shortcutItemGrid() -> some View {
     HStack(spacing: 4) {
         ShortcutItemView(model: .init(type: .receive))
         ShortcutItemView(model: .init(type: .send))
@@ -67,7 +61,6 @@ private func shortcutItemGrid(_ alpha: CGFloat) -> some View {
         ShortcutItemView(
             title: ShortcutAction(type: .buySellDash).title,
             iconName: ShortcutActionType.buySellDash.iconName,
-            alpha: alpha
         )
     }
     .padding(8)
@@ -75,11 +68,11 @@ private func shortcutItemGrid(_ alpha: CGFloat) -> some View {
 }
 
 #Preview("Enabled") {
-    shortcutItemGrid(1.0)
+    shortcutItemGrid()
 }
 
 
 #Preview("Disabled") {
-    shortcutItemGrid(0.4)
+    shortcutItemGrid()
 }
 #endif
