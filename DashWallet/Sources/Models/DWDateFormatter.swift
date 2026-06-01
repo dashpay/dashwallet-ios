@@ -88,7 +88,8 @@ class DWDateFormatter: NSObject {
 }
 
 @objc extension DWDateFormatter {
-    @objc func shortStringFromDate(_ date: Date) -> String {
+    @objc func shortStringFromDate(_ date: Date?) -> String {
+        guard let date else { return "" }
         return dateOnly(from: date)
     }
 }
