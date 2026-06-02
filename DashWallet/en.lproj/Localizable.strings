@@ -2587,6 +2587,12 @@
 /* Dash Portal */
 "Topper" = "Topper";
 
+/* Dash Portal */
+"SwapKit" = "SwapKit";
+
+/* Dash Portal */
+"Sell Dash · Best price across networks" = "Sell Dash · Best price across networks";
+
 /* No comment provided by engineer. */
 "Total" = "Total";
 
@@ -3327,3 +3333,24 @@
 
 /* Maya */
 "Review your Dash to %@ order" = "Review your Dash to %@ order";
+
+/* Maya/SwapKit order preview */
+"Network" = "Network";
+
+/* Maya/SwapKit order preview - %@ is the executing provider, e.g. "Maya fee" or "NEAR fee" */
+"%@ fee" = "%@ fee";
+
+/* Maya/SwapKit order preview - shown while execution network is loading */
+"Swap fee" = "Swap fee";
+
+/* Swap pending confirmation status */
+"Your Dash transaction has been sent. Waiting for block confirmation." = "Your Dash transaction has been sent. Waiting for block confirmation.";
+
+/* Swap processing - %@ is provider name e.g. Maya */
+"%@ has received your transaction and is processing the swap." = "%@ has received your transaction and is processing the swap.";
+
+/* Swap refund message — %@ is the provider name e.g. Maya */
+"Your DASH was refunded by %@." = "Your DASH was refunded by %@.";
+
+/* SwapKit tracker link */
+"View on SwapKit Tracker" = "View on SwapKit Tracker";

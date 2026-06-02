@@ -32,6 +32,7 @@ class EnterAddressHostingController: UIViewController, NavigationBarDisplayable 
     var onAddressConfirmed: ((MayaCryptoCurrency, String) -> Void)?
 
     private let coin: MayaCryptoCurrency
+    private let swapProvider: SwapProvider
     private let viewModel: EnterAddressViewModel
     private var authSession: ASWebAuthenticationSession?
     private lazy var keyboardDismissTapRecognizer: UITapGestureRecognizer = {
@@ -40,8 +41,9 @@ class EnterAddressHostingController: UIViewController, NavigationBarDisplayable 
         return recognizer
     }()
 
-    init(coin: MayaCryptoCurrency) {
+    init(coin: MayaCryptoCurrency, swapProvider: SwapProvider = MayaSwapProvider()) {
         self.coin = coin
+        self.swapProvider = swapProvider
         self.viewModel = EnterAddressViewModel(coin: coin)
         super.init(nibName: nil, bundle: nil)
     }
@@ -108,7 +110,7 @@ class EnterAddressHostingController: UIViewController, NavigationBarDisplayable 
         viewModel.errorMessage = nil
 
         Task {
-            let error = await MayaAPIService.shared.validateAddress(destination: address, toAsset: coin.mayaAsset)
+            let error = await swapProvider.validateAddress(destination: address, toAsset: coin.mayaAsset)
 
             if let error = error {
                 if isDemoValidationBypassEnabled {

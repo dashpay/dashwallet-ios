@@ -32,6 +32,11 @@ struct CoinDisplayItem: Identifiable {
 
 @MainActor
 class SelectCoinViewModel: ObservableObject {
+    private let swapProvider: SwapProvider
+
+    init(swapProvider: SwapProvider = MayaSwapProvider()) {
+        self.swapProvider = swapProvider
+    }
     // MARK: - Published State
 
     @Published var coins: [CoinDisplayItem] = []
@@ -75,8 +80,8 @@ class SelectCoinViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            async let poolsRequest = MayaAPIService.shared.fetchPools()
-            async let inboundRequest = MayaAPIService.shared.fetchInboundAddresses()
+            async let poolsRequest = swapProvider.fetchPools()
+            async let inboundRequest = swapProvider.fetchInboundAddresses()
             let (pools, inboundAddresses) = try await (poolsRequest, inboundRequest)
 
             let fiatCurrency = App.fiatCurrency

@@ -40,9 +40,12 @@ class ServiceDataProviderImpl: ServiceDataProvider {
             items.insert(.init(service: .coinbase, dataProvider: CoinbaseDataSource()), at: 0)
         }
 
-        // Maya always at the end of the list
+        // Maya always near the end; SwapKit follows when configured.
         items.append(.init(service: .maya, dataProvider: nil))
-        
+        if SwapKitConstants.isConfigured {
+            items.append(.init(service: .swapKit, dataProvider: nil))
+        }
+
         for item in items {
             item.didUpdate = { [weak self] in
                 self?.updateServices()
@@ -61,15 +64,15 @@ class ServiceDataProviderImpl: ServiceDataProvider {
     }
 
     private func updateServices() {
-        // Separate Maya from sorting so it stays at the end
-        let nonMayaItems = items.filter { $0.service != .maya }
-        let mayaItems = items.filter { $0.service == .maya }
+        // Keep Maya and SwapKit pinned at the end; sort the rest by usage/activity.
+        let pinned: [Service] = [.maya, .swapKit]
+        let nonPinnedItems = items.filter { !pinned.contains($0.service) }
+        let pinnedItems = items.filter { pinned.contains($0.service) }
 
-        let sortedItems = nonMayaItems
+        let sortedItems = nonPinnedItems
             .sorted(by: { $0.usageCount > $1.usageCount })
             .sorted(by: { $0.isInUse && !$1.isInUse })
-            + mayaItems
 
-        handler?(sortedItems + mayaItems)
+        handler?(sortedItems + pinnedItems)
     }
 }

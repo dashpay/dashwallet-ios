@@ -25,6 +25,7 @@ enum Service: CaseIterable {
     case uphold
     case topper
     case maya
+    case swapKit
 }
 
 // MARK: - BuySellPortalModel.Section
@@ -42,6 +43,7 @@ extension Service {
         case .uphold: return NSLocalizedString("Uphold", comment: "Dash Portal")
         case .topper: return NSLocalizedString("Topper", comment: "Dash Portal")
         case .maya: return NSLocalizedString("Maya", comment: "Dash Portal")
+        case .swapKit: return NSLocalizedString("SwapKit", comment: "Dash Portal")
         }
     }
 
@@ -51,6 +53,7 @@ extension Service {
         case .uphold: return NSLocalizedString("Link your account", comment: "Dash Portal")
         case .topper: return NSLocalizedString("Buy Dash · No account needed", comment: "Dash Portal")
         case .maya: return NSLocalizedString("Swap Dash · No account needed", comment: "Dash Portal")
+        case .swapKit: return NSLocalizedString("Sell Dash · Best price across networks", comment: "Dash Portal")
         }
     }
 
@@ -60,6 +63,7 @@ extension Service {
         case .uphold: return "menu-uphold"
         case .topper: return "menu-topper"
         case .maya: return "menu-maya"
+        case .swapKit: return "menu-swapkit"
         }
     }
 
@@ -69,6 +73,7 @@ extension Service {
         case .uphold: return true
         case .topper: return true
         case .maya: return true
+        case .swapKit: return SwapKitConstants.isConfigured
         }
     }
 
@@ -89,7 +94,12 @@ class BuySellPortalModel: ObservableObject, NetworkReachabilityHandling {
 
     @Published var items: [ServiceItem] = []
 
-    var services: [Service] = Service.allCases
+    var services: [Service] {
+        Service.allCases.filter { service in
+            if service == .swapKit { return SwapKitConstants.isConfigured }
+            return true
+        }
+    }
     private var upholdDashCard: DWUpholdCardObject?
 
     private var serviceItemDataProvider: ServiceDataProvider

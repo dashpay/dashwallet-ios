@@ -81,6 +81,7 @@ struct OrderPreviewView: View {
                     purchaseRow
                     feeRow
                     totalRow
+                    networkRow
                 }
                 .modifier(MayaMenuCardStyle(shadowRadius: 20))
                 .padding(.horizontal, 20)
@@ -188,7 +189,7 @@ struct OrderPreviewView: View {
 
     private var feeRow: some View {
         OrderPreviewFeeRow(
-            feeTitle: NSLocalizedString("Maya fee", comment: "Maya"),
+            feeTitle: viewModel.feeLabel,
             feeText: viewModel.mayaFee,
             feeTextSecondary: viewModel.mayaFeeFiatAmount,
             rowHPadding: Layout.rowHPadding,
@@ -213,43 +214,35 @@ struct OrderPreviewView: View {
         .padding(.horizontal, Layout.rowHPadding)
         .padding(.vertical, Layout.rowVPadding)
     }
+
+    /// Execution network row — AC#5: shows which provider (Maya, NEAR, …) runs this swap.
+    private var networkRow: some View {
+        OrderPreviewTableRow(
+            leading: NSLocalizedString("Network", comment: "Maya/SwapKit order preview"),
+            trailing: viewModel.executionNetwork,
+            rowHPadding: Layout.rowHPadding,
+            rowVPadding: Layout.rowVPadding,
+            labelSpacing: Layout.labelSpacing,
+            rowMinHeight: Layout.rowMinHeight
+        )
+    }
 }
 
 #if DEBUG
 #Preview {
-    let quote = MayaSwapQuote(
+    let quote = SwapQuoteResult(
         error: nil,
         expectedAmountOut: "25700000",
-        dustThreshold: nil,
-        expiry: nil,
-        fees: MayaSwapFees(
-            affiliate: nil,
-            asset: nil,
-            liquidity: nil,
-            outbound: "180000",
-            slippageBps: nil,
-            total: "320000",
-            totalBps: nil
-        ),
+        fees: SwapFeeResult(total: "320000", outbound: "180000"),
         inboundAddress: "XhzzCcWvvx3rFfbEgkf39rE5Bqt7TP66hR",
-        inboundConfirmationBlocks: nil,
-        inboundConfirmationSeconds: nil,
         memo: "=:ETH.ETH:0x1234...",
-        notes: nil,
-        outboundDelayBlocks: nil,
-        outboundDelaySeconds: nil,
-        recommendedMinAmountIn: nil,
-        slippageBps: nil,
-        warning: nil,
-        routeId: nil,
-        routeProviders: nil,
-        executionNetwork: nil
+        executionNetwork: "Maya"
     )
 
     let viewModel = OrderPreviewViewModel(
         coin: MayaCryptoCurrency.supportedCoins[0],
         address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
-        dashSatoshis: 10000000,
+        dashSatoshis: 10_000_000,
         fromDashAmount: "0.1",
         fromFiatAmount: "$2.75",
         cryptoFiatRate: 4000,

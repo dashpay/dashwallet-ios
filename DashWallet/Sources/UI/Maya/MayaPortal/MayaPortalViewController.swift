@@ -37,6 +37,17 @@ import UIKit
 class MayaPortalViewController: UIViewController, NavigationBarDisplayable {
     var isNavigationBarHidden: Bool { true }
 
+    private let swapProvider: SwapProvider
+
+    init(backend: SwapBackend = .maya) {
+        self.swapProvider = backend.makeProvider()
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -68,7 +79,7 @@ class MayaPortalViewController: UIViewController, NavigationBarDisplayable {
     }
 
     private func navigateToSelectCoin() {
-        let selectCoinVC = SelectCoinHostingController()
+        let selectCoinVC = SelectCoinHostingController(swapProvider: swapProvider)
         selectCoinVC.onCoinSelected = { [weak self] coin in
             DSLogger.log("Maya: Selected coin \(coin.code) (\(coin.name))")
             self?.navigateToEnterAddress(for: coin)
@@ -77,7 +88,7 @@ class MayaPortalViewController: UIViewController, NavigationBarDisplayable {
     }
 
     private func navigateToEnterAddress(for coin: MayaCryptoCurrency) {
-        let enterAddressVC = EnterAddressHostingController(coin: coin)
+        let enterAddressVC = EnterAddressHostingController(coin: coin, swapProvider: swapProvider)
         enterAddressVC.onAddressConfirmed = { [weak self] coin, address in
             self?.navigateToConvert(coin: coin, address: address)
         }
@@ -85,7 +96,7 @@ class MayaPortalViewController: UIViewController, NavigationBarDisplayable {
     }
 
     private func navigateToConvert(coin: MayaCryptoCurrency, address: String) {
-        let convertVC = MayaConvertHostingController(coin: coin, address: address)
+        let convertVC = MayaConvertHostingController(coin: coin, address: address, swapProvider: swapProvider)
         navigationController?.pushViewController(convertVC, animated: true)
     }
 }

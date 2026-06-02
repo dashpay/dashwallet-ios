@@ -23,11 +23,13 @@ class MayaConvertHostingController: UIViewController, NavigationBarDisplayable {
 
     private let coin: MayaCryptoCurrency
     private let address: String
-    private lazy var viewModel = MayaConvertViewModel(coin: coin, address: address)
+    private let swapProvider: SwapProvider
+    private lazy var viewModel = MayaConvertViewModel(coin: coin, address: address, swapProvider: swapProvider)
 
-    init(coin: MayaCryptoCurrency, address: String) {
+    init(coin: MayaCryptoCurrency, address: String, swapProvider: SwapProvider = MayaSwapProvider()) {
         self.coin = coin
         self.address = address
+        self.swapProvider = swapProvider
         super.init(nibName: nil, bundle: nil)
     }
 

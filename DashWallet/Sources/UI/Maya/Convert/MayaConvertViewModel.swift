@@ -46,8 +46,9 @@ final class MayaConvertViewModel: ObservableObject {
 
     // MARK: - Private State
 
+    private let swapProvider: SwapProvider
     private var amount = MayaConvertAmount()
-    private var latestQuote: MayaSwapQuote?
+    private var latestQuote: SwapQuoteResult?
     // Monotonically increasing; stale responses are discarded when their snapshot id no longer matches.
     private var quoteRequestID = 0
     // Suppresses input observation while we programmatically sync the displayed value during a currency switch.
@@ -86,9 +87,10 @@ final class MayaConvertViewModel: ObservableObject {
 
     // MARK: - Init
 
-    init(coin: MayaCryptoCurrency, address: String) {
+    init(coin: MayaCryptoCurrency, address: String, swapProvider: SwapProvider = MayaSwapProvider()) {
         self.coin = coin
         self.address = address
+        self.swapProvider = swapProvider
         let initialFiat = App.fiatCurrency
         self.currentFiatCurrency = initialFiat
         self.selectedCurrency = .fiat(initialFiat)
@@ -147,7 +149,8 @@ final class MayaConvertViewModel: ObservableObject {
             fromFiatAmount: MayaInputFormatter.fiat(amount.fiat, currencyCode: currentFiatCurrency),
             cryptoFiatRate: amount.cryptoFiatRate,
             fiatCurrencyCode: currentFiatCurrency,
-            initialQuote: quote
+            initialQuote: quote,
+            swapProvider: swapProvider
         )
     }
 
@@ -160,7 +163,7 @@ final class MayaConvertViewModel: ObservableObject {
 
     private func fetchCryptoRate() async {
         do {
-            let pools = try await MayaAPIService.shared.fetchPools()
+            let pools = try await swapProvider.fetchPools()
             guard let pool = pools.first(where: { $0.asset.uppercased() == coin.mayaAsset.uppercased() }),
                   let cryptoUsdPrice = pool.priceUSD,
                   cryptoUsdPrice > 0 else { return }
@@ -216,7 +219,7 @@ final class MayaConvertViewModel: ObservableObject {
         receiveAmount = nil
     }
 
-    private func applySuccessfulQuote(_ quote: MayaSwapQuote) {
+    private func applySuccessfulQuote(_ quote: SwapQuoteResult) {
         guard let raw = quote.expectedAmountOut, let rawValue = Double(raw) else {
             latestQuote = nil
             errorMessage = nil
@@ -302,7 +305,7 @@ final class MayaConvertViewModel: ObservableObject {
             if quoteRequestID == snapshot.id { isLoading = false }
         }
         do {
-            let quote = try await MayaAPIService.shared.fetchQuote(
+            let quote = try await swapProvider.fetchQuote(
                 dashSatoshis: snapshot.dashSatoshis,
                 toAsset: coin.mayaAsset,
                 destination: address
