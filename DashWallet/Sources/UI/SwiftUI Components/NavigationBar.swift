@@ -41,11 +41,10 @@ struct NavigationBar<Leading: View, Central: View, Trailing: View>: View {
         ZStack {
             HStack {
                 leading
-
+                
                 Spacer()
 
                 trailing
-
             }
             .padding(.horizontal, 20)
 
@@ -96,40 +95,21 @@ extension NavigationBar where Leading == EmptyView, Central == EmptyView {
 }
 
 enum NavigationBarElement: String {
-    case template = "cotrols-template"
-    case back = "toolbar-back"
-    case close = "toolbar-close"
-    case plus = "toolbar-plus"
-    case info = "controls-info"
-
-    private var iconMaxHeight: CGFloat {
-        switch self {
-        case .template: return 5
-        case .back: return 10
-        case .close: return 9
-        case .plus: return 10
-        case .info: return 22
-        }
-    }
+    case back = "navigationbar-back"
+    case close = "navigationbar-close"
+    case plus = "navigationbar-plus"
+    case info = "navigationbar-info"
 
     var icon: some View {
-        Group {
-            if self == .info {
-                Icon(name: .custom(rawValue, maxHeight: 22))
-            } else {
-                ZStack {
-                    Circle()
-                        .stroke(Color.gray300Alpha30, lineWidth: 1.5)
-                        .frame(width: 34, height: 34)
-                    Icon(name: .custom(rawValue, maxHeight: iconMaxHeight))
-                }
-            }
-        }
+        Icon(name: .custom(rawValue))
     }
 
     func button(action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            icon.frame(width: 44, height: 44)
+            icon
+                .fixedSize()
+                .frame(width: 44, height: 44, alignment: .center)
+            .contentShape(Rectangle())
         }
         .buttonStyle(NavigationBarButtonStyle())
     }

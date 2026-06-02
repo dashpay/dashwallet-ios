@@ -33,6 +33,9 @@ struct SelectCoinView: View {
         static let toastBPadding: CGFloat = 16
         static let errorIconSize: CGFloat = 40
         static let errorTextHPadding: CGFloat = 40
+        static let emptyStateIconSize: CGFloat = 28
+        static let emptyStateSpacing: CGFloat = 8
+        static let emptyStateTextHPadding: CGFloat = 24
     }
 
     @StateObject private var viewModel = SelectCoinViewModel()
@@ -86,7 +89,12 @@ struct SelectCoinView: View {
     private var contentView: some View {
         VStack(spacing: Layout.contentSpacing) {
             SearchBar(text: $viewModel.searchText)
-            coinList
+
+            if viewModel.showSearchEmptyState {
+                emptyStateView
+            } else {
+                coinList
+            }
         }
         .padding(.horizontal, Layout.hPadding)
         .padding(.top, Layout.topPadding)
@@ -95,7 +103,7 @@ struct SelectCoinView: View {
     // MARK: - Coin List
 
     private var coinList: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: false) {
             LazyVStack(spacing: Layout.listSpacing) {
                 ForEach(viewModel.filteredCoins) { item in
                     Button {
@@ -107,6 +115,23 @@ struct SelectCoinView: View {
                 }
             }
             .modifier(MayaMenuCardStyle())
+        }
+    }
+
+    // MARK: - Empty State
+
+    private var emptyStateView: some View {
+        VStack {
+            VStack(spacing: Layout.emptyStateSpacing) {
+                Text(NSLocalizedString("No coins found", comment: "Maya"))
+                    .font(.footnote)
+                    .foregroundColor(Color.gray500)
+            }
+            .padding(10)
+            .frame(maxWidth: .infinity, maxHeight: 80)
+            .modifier(MayaMenuCardStyle())
+
+            Spacer()
         }
     }
 

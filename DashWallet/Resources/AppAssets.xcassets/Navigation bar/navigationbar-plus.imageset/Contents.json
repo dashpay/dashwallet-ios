@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "toolbar-plus@x1.png",
+      "filename" : "navigationbar-plus@1x.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "toolbar-plus@x2.png",
+      "filename" : "navigationbar-plus@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "toolbar-plus@x3.png",
+      "filename" : "navigationbar-plus@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
