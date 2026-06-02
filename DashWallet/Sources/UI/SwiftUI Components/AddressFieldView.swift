@@ -75,10 +75,11 @@ struct AddressFieldView: View {
     // MARK: - Subviews
 
     @ViewBuilder private var textField: some View {
-        if #available(iOS 16.0, *) {
+        if #available(iOS 17.0, *) {
             TextField(
-                NSLocalizedString(placeholder, comment: ""),
+                "",
                 text: $text,
+                prompt: Text(placeholder).font(.subhead).foregroundStyle(Color.black1000Alpha30),
                 axis: .vertical
             )
             .font(.subhead)
@@ -141,7 +142,7 @@ struct AddressFieldView: View {
     }
 
     private var borderColor: Color {
-        isFocusedState ? .gray300Alpha10 : .clear
+        isFocusedState ? .gray300Alpha40 : .clear
     }
 
     private var borderWidth: CGFloat {

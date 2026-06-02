@@ -44,7 +44,7 @@ class EnterAddressViewModel: ObservableObject {
     }
 
     var placeholderText: String {
-        String(format: NSLocalizedString("%@ address", comment: "Maya"), coin.code)
+        String(format: NSLocalizedString("Long press to paste", comment: "Maya"))
     }
 
     var isContinueEnabled: Bool {

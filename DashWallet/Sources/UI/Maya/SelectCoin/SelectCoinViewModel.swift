@@ -43,6 +43,13 @@ class SelectCoinViewModel: ObservableObject {
         return coins.filter { matchesSearch($0, query: searchText) }
     }
 
+    var showSearchEmptyState: Bool {
+        !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        filteredCoins.isEmpty &&
+        !isLoading &&
+        errorMessage == nil
+    }
+
     // MARK: - Loading
 
     func loadCoins() async {

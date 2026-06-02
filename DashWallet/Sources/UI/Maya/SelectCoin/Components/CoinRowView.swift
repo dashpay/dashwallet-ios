@@ -22,12 +22,10 @@ import SwiftUI
 struct CoinRowView: View {
 
     private enum Layout {
-        static let outerSpacing: CGFloat = 20
-        static let innerSpacing: CGFloat = 12
+        static let spacing: CGFloat = 16
         static let textSpacing: CGFloat = 1
-        static let hPadding: CGFloat = 10
-        static let vPadding: CGFloat = 6
-        static let iconSize: CGFloat = 26
+        static let padding: CGFloat = 10
+        static let iconSize: CGFloat = 30
         static let iconCornerRadius: CGFloat = 6
         static let badgeHPadding: CGFloat = 8
         static let badgeVPadding: CGFloat = 2
@@ -37,12 +35,12 @@ struct CoinRowView: View {
     let item: CoinDisplayItem
 
     var body: some View {
-        HStack(spacing: Layout.outerSpacing) {
-            coinDetails
+        HStack(spacing: Layout.spacing) {
+            coinIcon
+            coinInfo
             trailingBadge
         }
-        .padding(.horizontal, Layout.hPadding)
-        .padding(.vertical, Layout.vPadding)
+        .padding(Layout.padding)
         .opacity(item.isHalted ? 0.5 : 1.0)
         .contentShape(.rect)
 
@@ -50,14 +48,6 @@ struct CoinRowView: View {
     }
 
     // MARK: - Subviews
-
-    private var coinDetails: some View {
-        HStack(spacing: Layout.innerSpacing) {
-            coinIcon
-            coinInfo
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
 
     private var coinIcon: some View {
         MayaCoinIconView(
@@ -69,16 +59,19 @@ struct CoinRowView: View {
 
     private var coinInfo: some View {
         VStack(alignment: .leading, spacing: Layout.textSpacing) {
-            Text(item.coin.code)
+            Text(item.coin.name)
                 .font(.subheadMedium)
                 .foregroundColor(.primaryText)
-
-            Text(item.coin.name)
-                .font(.caption1)
-                .foregroundColor(.tertiaryText)
                 .lineLimit(1)
                 .truncationMode(.tail)
+
+            Text(item.coin.code)
+                .font(.footnote)
+                .foregroundColor(.tertiaryText)
+                .kerning(0.26)
+                .textCase(.uppercase)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder
@@ -111,7 +104,7 @@ struct CoinRowView: View {
         fiatPrice: "$65,000",
         isHalted: false
     ))
-    .background(.red.opacity(0.3))
+//    .background(.red.opacity(0.3))
 }
 
 #Preview("Halted") {

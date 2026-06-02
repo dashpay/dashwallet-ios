@@ -48,10 +48,11 @@ struct MayaPortalView: View {
     // MARK: - Sections
 
     private var introSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             logoContainer
             descriptionBlock
         }
+        .padding(.bottom, 20)
     }
 
     private var actionsCard: some View {
