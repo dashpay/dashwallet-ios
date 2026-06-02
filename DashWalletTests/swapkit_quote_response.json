@@ -1,0 +1,83 @@
+{
+  "quoteId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "routes": [
+    {
+      "routeId": "r1b2c3d4-e5f6-7890-abcd-ef1234567891",
+      "providers": ["MAYACHAIN_STREAMING"],
+      "sellAsset": "DASH.DASH",
+      "buyAsset": "BTC.BTC",
+      "sellAmount": "0.1",
+      "expectedBuyAmount": "0.00057",
+      "expectedBuyAmountMaxSlippage": "0.00055",
+      "fees": [
+        {
+          "type": "inbound",
+          "asset": "DASH.DASH",
+          "chain": "DASH",
+          "amount": "0.00002"
+        },
+        {
+          "type": "liquidity",
+          "asset": "CACAO.CACAO",
+          "chain": "MAYA",
+          "amount": "0.000003"
+        },
+        {
+          "type": "outbound",
+          "asset": "BTC.BTC",
+          "chain": "BTC",
+          "amount": "0.000001"
+        }
+      ],
+      "estimatedTime": {
+        "inbound": 60,
+        "swap": 10,
+        "outbound": 600,
+        "total": 670
+      },
+      "totalSlippageBps": 35.0,
+      "warnings": [],
+      "meta": {
+        "tags": ["RECOMMENDED"],
+        "txType": null
+      }
+    },
+    {
+      "routeId": "r2b2c3d4-e5f6-7890-abcd-ef1234567892",
+      "providers": ["MAYACHAIN"],
+      "sellAsset": "DASH.DASH",
+      "buyAsset": "BTC.BTC",
+      "sellAmount": "0.1",
+      "expectedBuyAmount": "0.00056",
+      "expectedBuyAmountMaxSlippage": "0.00054",
+      "fees": [
+        {
+          "type": "inbound",
+          "asset": "DASH.DASH",
+          "chain": "DASH",
+          "amount": "0.00002"
+        }
+      ],
+      "estimatedTime": {
+        "inbound": 60,
+        "swap": 6,
+        "outbound": 600,
+        "total": 666
+      },
+      "totalSlippageBps": 45.0,
+      "warnings": [],
+      "meta": {
+        "tags": ["FASTEST"],
+        "txType": null
+      }
+    }
+  ],
+  "providerErrors": [
+    {
+      "provider": "THORCHAIN",
+      "errorCode": "noRoutesFound",
+      "message": "No DASH pool on THORChain"
+    }
+  ],
+  "error": null
+}

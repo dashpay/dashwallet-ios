@@ -38,12 +38,17 @@ struct SelectCoinView: View {
         static let emptyStateTextHPadding: CGFloat = 24
     }
 
-    @StateObject private var viewModel = SelectCoinViewModel()
+    @StateObject private var viewModel: SelectCoinViewModel
     @StateObject private var reachability = NetworkReachabilityMonitor()
     var onBack: (() -> Void)?
     var onCoinSelected: ((MayaCryptoCurrency) -> Void)?
 
-    init(onBack: (() -> Void)? = nil, onCoinSelected: ((MayaCryptoCurrency) -> Void)? = nil) {
+    init(
+        swapProvider: SwapProvider = MayaSwapProvider(),
+        onBack: (() -> Void)? = nil,
+        onCoinSelected: ((MayaCryptoCurrency) -> Void)? = nil
+    ) {
+        _viewModel = StateObject(wrappedValue: SelectCoinViewModel(swapProvider: swapProvider))
         self.onBack = onBack
         self.onCoinSelected = onCoinSelected
     }

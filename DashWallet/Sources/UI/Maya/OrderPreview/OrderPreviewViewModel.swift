@@ -105,6 +105,19 @@ final class OrderPreviewViewModel: ObservableObject {
     /// Never causes the success screen to be removed — only recorded for tx history.
     @Published var backendOutcome: MayaBackendOutcome = .pending
 
+    /// Deep-link to the provider's hosted transaction tracker (nil for Maya).
+    var trackerURL: URL? {
+        guard let txid = submittedTxId, !txid.isEmpty else { return nil }
+        return swapProvider.trackerURL(for: txid)
+    }
+
+    /// Fee-row label that tracks the executing network, e.g. "Maya fee" or "NEAR fee".
+    var feeLabel: String {
+        executionNetwork == "—"
+            ? NSLocalizedString("Swap fee", comment: "Maya/SwapKit order preview")
+            : String(format: NSLocalizedString("%@ fee", comment: "Maya/SwapKit order preview"), executionNetwork)
+    }
+
     var confirmButtonText: String {
         if remainingSubmitSeconds > 0 {
             return String(
@@ -121,9 +134,10 @@ final class OrderPreviewViewModel: ObservableObject {
     // fiat lines. <= 0 means the rate is unavailable → those lines are hidden.
     private let cryptoFiatRate: Decimal
     private let fiatCurrencyCode: String
-    private var quote: MayaSwapQuote
+    private var quote: SwapQuoteResult
     private var countdownCancellable: AnyCancellable?
     private let sendCoinsService = SendCoinsService()
+    private let swapProvider: SwapProvider
     private var pollingTask: Task<Void, Never>?
     private var isLockCancellable: AnyCancellable?
     // Strong reference to the broadcast Dash tx. DashSync mutates its `blockHeight` in place
@@ -140,7 +154,8 @@ final class OrderPreviewViewModel: ObservableObject {
         fromFiatAmount: String,
         cryptoFiatRate: Decimal,
         fiatCurrencyCode: String,
-        initialQuote: MayaSwapQuote
+        initialQuote: SwapQuoteResult,
+        swapProvider: SwapProvider = MayaSwapProvider()
     ) {
         self.coin = coin
         self.address = address
@@ -149,6 +164,7 @@ final class OrderPreviewViewModel: ObservableObject {
         self.fromFiatAmount = fromFiatAmount
         self.cryptoFiatRate = cryptoFiatRate
         self.fiatCurrencyCode = fiatCurrencyCode
+        self.swapProvider = swapProvider
         self.quote = initialQuote
         applyQuote(initialQuote)
         startCountdown()
@@ -207,7 +223,8 @@ final class OrderPreviewViewModel: ObservableObject {
                 fromFiatAmount: fromFiatAmount,
                 cryptoFiatRate: cryptoFiatRate,
                 fiatCurrencyCode: fiatCurrencyCode,
-                initialQuote: freshQuote
+                initialQuote: freshQuote,
+                swapProvider: swapProvider
             )
         } catch {
             swapStatus = .failed(reason: error.localizedDescription)
@@ -256,8 +273,8 @@ final class OrderPreviewViewModel: ObservableObject {
         }
     }
 
-    private func fetchFreshQuote() async throws -> MayaSwapQuote {
-        try await MayaAPIService.shared.fetchQuote(
+    private func fetchFreshQuote() async throws -> SwapQuoteResult {
+        try await swapProvider.fetchQuote(
             dashSatoshis: dashSatoshis,
             toAsset: coin.mayaAsset,
             destination: address
@@ -298,14 +315,14 @@ final class OrderPreviewViewModel: ObservableObject {
         NSError(domain: "Maya", code: 0, userInfo: [NSLocalizedDescriptionKey: message])
     }
 
-    private func resolveExecutionData(from quote: MayaSwapQuote) throws -> SwapExecutionData {
+    private func resolveExecutionData(from quote: SwapQuoteResult) throws -> SwapExecutionData {
         guard let vaultAddress = quote.inboundAddress, !vaultAddress.isEmpty else {
             throw mayaFieldError(NSLocalizedString("Vault address is missing. Please refresh and try again.", comment: "Maya"))
         }
         guard let memo = quote.memo, !memo.isEmpty else {
             throw mayaFieldError(NSLocalizedString("Swap memo is missing. Please refresh and try again.", comment: "Maya"))
         }
-        return SwapExecutionData(vaultAddress: vaultAddress, memo: memo, executionNetwork: "Maya")
+        return SwapExecutionData(vaultAddress: vaultAddress, memo: memo, executionNetwork: quote.executionNetwork ?? swapProvider.displayName)
     }
 
     private func submitDashTransaction(using execution: SwapExecutionData) async throws -> DSTransaction {
@@ -449,12 +466,12 @@ final class OrderPreviewViewModel: ObservableObject {
                 }
 
                 do {
-                    let info = try await MayaAPIService.shared.fetchSwapTransactionInfo(txid: txid)
+                    let info = try await swapProvider.fetchSwapStatus(txid: txid)
 
-                    // Maya hasn't seen the Dash tx yet (block not confirmed) — keep waiting.
-                    guard info.error == nil, let observedTx = info.observedTx else { continue }
+                    // Provider hasn't seen the Dash tx yet (block not confirmed) — keep waiting.
+                    guard info.error == nil, info.isObserved else { continue }
 
-                    let outcome = Self.classifyObservedTx(observedTx)
+                    let outcome = Self.classifyStatus(info)
                     if self.handlePollingOutcome(outcome, txid: txid) { return }
                 } catch {
                     // Transient network error — keep current status and retry next tick.
@@ -499,9 +516,12 @@ final class OrderPreviewViewModel: ObservableObject {
             backendOutcome = outcome
             return true
         case .refunded:
-            swapStatus = .failed(reason: NSLocalizedString(
-                "Your DASH was refunded by Maya Protocol.",
-                comment: "Maya"
+            swapStatus = .failed(reason: String(
+                format: NSLocalizedString(
+                    "Your DASH was refunded by %@.",
+                    comment: "Swap refund message — %@ is the provider name e.g. Maya"
+                ),
+                swapProvider.displayName
             ))
             backendOutcome = outcome
             return true
@@ -533,17 +553,16 @@ final class OrderPreviewViewModel: ObservableObject {
         return false
     }
 
-    /// Maps a Maya `observed_tx.status` string to `MayaBackendOutcome`.
+    /// Maps a `SwapStatusResult` to a `MayaBackendOutcome`.
     ///
-    /// Status strings verified against Maya/Thorchain API:
-    /// - `"done"`     — funds arrived at destination chain (terminal success)
-    /// - `"refunded"` — Maya returned DASH to sender (terminal, treated as failure for UX)
-    /// - `"aborted"`  — transaction aborted, may result in refund (terminal, treated as refund)
-    /// - anything else (nil, "unknown", in-progress states) → `.pending`
-    private static func classifyObservedTx(_ observedTx: MayaObservedTx) -> MayaBackendOutcome {
-        switch observedTx.status {
+    /// Normalised status strings:
+    /// - `"done"`               — funds arrived at destination chain (terminal success)
+    /// - `"refunded"/"aborted"` — sent DASH was returned (terminal, treated as failure for UX)
+    /// - anything else          → `.pending`
+    private static func classifyStatus(_ result: SwapStatusResult) -> MayaBackendOutcome {
+        switch result.observedStatus {
         case "done":
-            return .done(outHashes: observedTx.outHashes ?? [])
+            return .done(outHashes: result.outHashes ?? [])
         case "refunded", "aborted":
             return .refunded
         default:
@@ -551,7 +570,7 @@ final class OrderPreviewViewModel: ObservableObject {
         }
     }
 
-    private func applyQuote(_ quote: MayaSwapQuote) {
+    private func applyQuote(_ quote: SwapQuoteResult) {
         let expectedOut = assetDecimalFromBaseUnits(quote.expectedAmountOut)
         let fee = assetDecimalFromBaseUnits(quote.fees?.total ?? quote.fees?.outbound)
         let total = expectedOut + fee
@@ -560,7 +579,7 @@ final class OrderPreviewViewModel: ObservableObject {
         purchaseAmount = toAmount
         mayaFee = formatFeeAmount(fee)
         totalAmount = formatCryptoAmount(total)
-        executionNetwork = quote.executionNetwork ?? "Maya"
+        executionNetwork = quote.executionNetwork ?? swapProvider.displayName
 
         // Fiat lines = coin amount × cryptoFiatRate (fiat value of 1 destination coin), in the
         // active fiat currency — matching how the source-side fromFiatAmount is produced.

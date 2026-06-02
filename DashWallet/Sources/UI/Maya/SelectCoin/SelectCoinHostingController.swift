@@ -24,12 +24,24 @@ class SelectCoinHostingController: UIViewController, NavigationBarDisplayable {
     var isNavigationBarHidden: Bool { true }
     var onCoinSelected: ((MayaCryptoCurrency) -> Void)?
 
+    private let swapProvider: SwapProvider
+
+    init(swapProvider: SwapProvider = MayaSwapProvider()) {
+        self.swapProvider = swapProvider
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
         view.backgroundColor = UIColor.dw_secondaryBackground()
 
         let selectCoinView = SelectCoinView(
+            swapProvider: swapProvider,
             onBack: { [weak self] in
                 self?.navigationController?.popViewController(animated: true)
             },

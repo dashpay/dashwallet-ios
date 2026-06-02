@@ -116,6 +116,15 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
+
+    func swapKitAction() {
+        // Reuse the same Maya flow, injected with the SwapKit backend.
+        // `SwapBackend.swapKit` creates `SwapKitSwapProvider` and threads it
+        // through SelectCoin → EnterAddress → Convert → OrderPreview.
+        let vc = MayaPortalViewController(backend: .swapKit)
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
+    }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -146,7 +155,8 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
             onUphold: { [weak self] in self?.upholdAction() },
             onCoinbase: { [weak self] in self?.coinbaseAction() },
             onTopper: { [weak self] in self?.topperAction() },
-            onMaya: { [weak self] in self?.mayaAction() }
+            onMaya: { [weak self] in self?.mayaAction() },
+            onSwapKit: { [weak self] in self?.swapKitAction() }
         )
         
         let hostingController = UIHostingController(rootView: portalView)
