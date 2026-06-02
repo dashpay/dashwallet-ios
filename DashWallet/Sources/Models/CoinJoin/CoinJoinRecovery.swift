@@ -18,8 +18,9 @@
 //
 //    • Detection (this file) reads DashSync's persisted used-CoinJoin-address
 //      state — reconstructed from Core Data on account load, no network sync
-//      needed — once per network, while DashSync is still linked. If the wallet
-//      used CoinJoin, the per-network "recovery needed" flag is set.
+//      needed — on every launch until recovery completes (see the TODO below),
+//      while DashSync is still linked. usedCoinJoinReceiveAddresses count > 0 ⇒
+//      widen.
 //    • `SwiftDashSDKSPVCoordinator.performStart` widens the CoinJoin gap (via
 //      the SDK's `setCoinJoinGapLimit`) before `startSpv` whenever the flag is
 //      set, so the recovery scan covers the full window.
@@ -64,28 +65,42 @@ final class CoinJoinRecovery: NSObject {
     private func networkTag(_ network: Network) -> String {
         network == .mainnet ? "mainnet" : "testnet"
     }
-    private func evaluatedKey(_ network: Network) -> String {
-        "coinJoinRecovery.v1.evaluated.\(networkTag(network))"
-    }
-    private func neededKey(_ network: Network) -> String {
-        "coinJoinRecovery.v1.needed.\(networkTag(network))"
+    /// Terminal per-network flag: set once recovery completes (coins swept, or a
+    /// full wide-gap scan found nothing left). Once set we never widen again,
+    /// even though DashSync's used-address history persists. (The older
+    /// `…evaluated` / `…needed` keys are no longer used; any stale values are
+    /// harmless.)
+    private func recoveredKey(_ network: Network) -> String {
+        "coinJoinRecovery.v1.recovered.\(networkTag(network))"
     }
 
     // MARK: - API
 
+    // TODO(coinjoin-recovery — revisit before release):
+    //  1. This RE-EVALUATES DashSync's used-CoinJoin-address state on every call
+    //     (until recovery is marked complete) instead of caching a one-time
+    //     result — so an account not yet loaded at first launch is still picked
+    //     up on a later launch. Reconsider the per-launch read / caching once the
+    //     end-to-end flow is verified on a real pre-migration mixed wallet.
+    //  2. Detection is DashSync-dependent — revise/remove this whole path when
+    //     DashSync is unlinked.
+
     /// Whether the wide CoinJoin recovery gap should be applied for `network`.
-    /// Lazily evaluates once per network (reading DashSync's persisted
-    /// used-CoinJoin-address state); thereafter returns the stored flag.
+    /// Re-evaluates DashSync's live used-CoinJoin-address state on every call
+    /// until recovery is marked complete (then it's terminally off).
     ///
-    /// `@MainActor` because evaluation touches DashSync's `DSAccount`
-    /// (Core Data, main-thread-affine). Called from `performStart` (@MainActor).
+    /// `@MainActor` because it touches DashSync's `DSAccount` (Core Data,
+    /// main-thread-affine). Called from `performStart` (@MainActor).
     @MainActor
     func needsWideRecoveryGap(for network: Network) -> Bool {
         lock.lock(); defer { lock.unlock() }
-        if !defaults.bool(forKey: evaluatedKey(network)) {
-            evaluateLocked(for: network)
+
+        // Terminal: once recovery completed we never widen again — even though
+        // DashSync's used-address history persists.
+        if defaults.bool(forKey: recoveredKey(network)) {
+            return false
         }
-        return defaults.bool(forKey: neededKey(network))
+        return evaluateLive(for: network)
     }
 
     /// Mark recovery complete for `network` — coins swept, or the wide scan
@@ -93,8 +108,8 @@ final class CoinJoinRecovery: NSObject {
     /// the fast default gap. Idempotent and thread-safe.
     func markRecovered(for network: Network) {
         lock.lock(); defer { lock.unlock() }
-        guard defaults.bool(forKey: neededKey(network)) else { return }
-        defaults.set(false, forKey: neededKey(network))
+        guard !defaults.bool(forKey: recoveredKey(network)) else { return }
+        defaults.set(true, forKey: recoveredKey(network))
         Self.logger.info(
             "🪙 CJRECOV :: recovery complete for \(self.networkTag(network), privacy: .public) — reverting to default gap")
     }
@@ -107,18 +122,17 @@ final class CoinJoinRecovery: NSObject {
         markRecovered(for: network)
     }
 
-    // MARK: - Detection (DashSync-backed, one-time per network)
+    // MARK: - Detection (DashSync-backed, live each launch until recovered)
 
     @MainActor
-    private func evaluateLocked(for network: Network) {
+    private func evaluateLive(for network: Network) -> Bool {
         // Only evaluate when DashSync's current chain matches the network we're
         // about to scan, so we read the right chain's CoinJoin history. If they
-        // don't match yet, defer (leave unevaluated) and retry next launch.
+        // don't match yet, defer — the next launch on the right chain re-checks.
         let chainIsMainnet = DWEnvironment.sharedInstance().currentChain.isMainnet()
         guard (network == .mainnet) == chainIsMainnet else {
-            Self.logger.info(
-                "🪙 CJRECOV :: chain/network mismatch — deferring evaluation for \(self.networkTag(network), privacy: .public)")
-            return
+            // Wrong chain loaded — defer; the next launch on the right chain re-checks.
+            return false
         }
 
         // `usedCoinJoinReceiveAddresses` is reconstructed from DashSync's
@@ -128,11 +142,6 @@ final class CoinJoinRecovery: NSObject {
         // SPV start runs; only the addresses array itself is nullable.
         let usedCount = DWEnvironment.sharedInstance().currentAccount
             .usedCoinJoinReceiveAddresses?.count ?? 0
-        let needed = usedCount > 0
-
-        defaults.set(needed, forKey: neededKey(network))
-        defaults.set(true, forKey: evaluatedKey(network))
-        Self.logger.info(
-            "🪙 CJRECOV :: evaluated \(self.networkTag(network), privacy: .public) — usedCoinJoinAddresses=\(usedCount, privacy: .public) → recoveryNeeded=\(needed, privacy: .public)")
+        return usedCount > 0
     }
 }
