@@ -28,6 +28,11 @@ struct BottomSheet<Content: View>: View {
     /// Set to false for self-sizing sheets (`.selfSizingSheet()`) — the content
     /// is measured at its natural height and the sheet snaps to fit.
     var fillsHeight: Bool = true
+    /// Controls the xmark dismiss button in the top-right corner.
+    /// Defaults to true to preserve existing caller behaviour.
+    /// Pass false to suppress the button (and programmatic dismiss via it)
+    /// while an in-flight operation must not be interrupted.
+    var showsCloseButton: Bool = true
     @ViewBuilder var content: () -> Content
 
     var body: some View {
@@ -62,15 +67,19 @@ struct BottomSheet<Content: View>: View {
 
                 Spacer()
 
-                Button {
-                    presentationMode.wrappedValue.dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .foregroundColor(Color.primaryText)
-                        .imageScale(.large)
-                        .font(Font.system(size: 14).weight(.semibold))
+                if showsCloseButton {
+                    Button {
+                        presentationMode.wrappedValue.dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .foregroundColor(Color.primaryText)
+                            .imageScale(.large)
+                            .font(Font.system(size: 14).weight(.semibold))
+                    }
+                    .frame(maxWidth: 50, maxHeight: .infinity)
+                } else {
+                    ZStack { }.frame(maxWidth: 50)
                 }
-                .frame(maxWidth: 50, maxHeight: .infinity)
             }
             .frame(height: 50)
             .padding(.horizontal, 10)

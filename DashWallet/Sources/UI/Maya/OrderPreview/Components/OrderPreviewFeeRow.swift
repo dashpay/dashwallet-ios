@@ -51,17 +51,14 @@ struct OrderPreviewFeeRow: View {
 
             VStack(alignment: .trailing, spacing: 2) {
                 Text(feeText)
-                    .font(.subhead)
-                    .foregroundColor(.primaryText)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
 
                 if let secondary = feeTextSecondary {
                     Text(secondary)
-                        .font(.subhead)
-                        .foregroundColor(.primaryText)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
                 }
             }
+            .font(.subhead)
+            .foregroundColor(.primaryText)
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(.horizontal, rowHPadding)
         .padding(.vertical, rowVPadding)

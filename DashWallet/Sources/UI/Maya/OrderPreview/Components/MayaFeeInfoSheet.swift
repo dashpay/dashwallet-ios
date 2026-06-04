@@ -17,8 +17,6 @@
 
 import SwiftUI
 
-private let kMayaFeeDocsURL = URL(string: "https://docs.mayaprotocol.com/how-it-works/fees")!
-
 struct MayaFeeInfoSheet: View {
     let onDismiss: () -> Void
 
@@ -47,11 +45,10 @@ struct MayaFeeInfoSheet: View {
 
             VStack(alignment: .leading, spacing: 16) {
                 // Opens the Maya fee docs in the system browser via @Environment(\.openURL).
-                // Assumption: https://docs.mayaprotocol.com/how-it-works/fees is the correct URL.
                 // Using openURL (system Safari) rather than SFSafariViewController because the
                 // sheet has no UIViewController context for modal presentation.
                 DashButton(text: NSLocalizedString("Learn more", comment: "Maya")) {
-                    openURL(kMayaFeeDocsURL)
+                    openURL(MayaConstants.feesDocsURL)
                 }
 
                 DashButton(text: NSLocalizedString("Close", comment: "Maya")) {

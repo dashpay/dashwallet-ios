@@ -51,7 +51,7 @@ struct AddressFieldView: View {
                 textField
                     .padding(.vertical, 15)
 
-                if !isDisabled {
+                if !isDisabled && !isBlurredFilledState {
                     actionButton
                 }
             }
@@ -67,7 +67,7 @@ struct AddressFieldView: View {
             if let errorText {
                 Text(errorText)
                     .font(.footnote)
-                    .foregroundColor(Color(UIColor(red: 0.92, green: 0.22, blue: 0.26, alpha: 1)))
+                    .foregroundStyle(Color(UIColor(red: 0.92, green: 0.22, blue: 0.26, alpha: 1)))
             }
         }
     }
@@ -85,7 +85,7 @@ struct AddressFieldView: View {
             .font(.subhead)
             .autocapitalization(.none)
             .disableAutocorrection(true)
-            .foregroundColor(.primaryText)
+            .foregroundStyle(Color.primaryText)
             .tint(.primaryText)
             .focused($isTextFieldFocused)
             .disabled(isDisabled)
@@ -94,7 +94,7 @@ struct AddressFieldView: View {
                 .font(.subhead)
                 .autocapitalization(.none)
                 .disableAutocorrection(true)
-                .foregroundColor(.primaryText)
+                .foregroundStyle(Color.primaryText)
                 .tint(.primaryText)
                 .focused($isTextFieldFocused)
                 .disabled(isDisabled)
@@ -156,6 +156,13 @@ struct AddressFieldView: View {
     private var isFilledState: Bool {
         !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isFocusedState
     }
+
+    /// Field is unfocused ("tapped outside"), has text, and has no error — a clean read-out state
+    /// with no editing affordance (the trailing action button is suppressed).
+    /// `isFilledState` already implies `!isFocusedState` and non-empty text.
+    private var isBlurredFilledState: Bool {
+        isFilledState && !hasError && !isDisabled
+    }
 }
 
 #if DEBUG
@@ -204,6 +211,19 @@ struct AddressFieldView: View {
 }
 
 #Preview("Filled") {
+    AddressFieldView(
+        text: .constant("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"),
+        label: "Destination address",
+        placeholder: "BTC address",
+        hasError: false, errorText: nil,
+        onScanQR: {}
+    )
+    .padding()
+}
+
+// Blurred + filled (no error): unfocused with text → clean read-out on gray300Alpha10 in
+// primaryText, with NO trailing QR/clear button.
+#Preview("Blurred + filled (no action button)") {
     AddressFieldView(
         text: .constant("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"),
         label: "Destination address",

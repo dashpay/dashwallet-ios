@@ -24,7 +24,19 @@ struct HaltedToast: View {
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
             HStack(alignment: .top, spacing: 10) {
-                Icon(name: .custom("toast-warning-yellow", maxHeight: 15.5))
+
+                ZStack {
+                    Color.black.opacity(0.001)
+                        .frame(width: 24, height: 24)
+
+                    ExclamationIcon(
+                        size: CGSize(width: 18, height: 17),
+                        fillColor: .systemYellow,
+                        strokeColor: .systemYellow,
+                        symbolColor: .primaryText
+                    )
+                }
+
 
                 Text(NSLocalizedString("Some coins are not available because of the halted chain", comment: "Maya"))
                     .font(.subhead)
@@ -37,16 +49,9 @@ struct HaltedToast: View {
             Button {
                 showHaltedToast = false
             } label: {
-                ZStack {
-                    Circle()
-                        .fill(Color.whiteAlpha10)
-                        .frame(width: 24, height: 24)
-
-                    Image("xmark")
-                        .renderingMode(.template)
-                        .foregroundStyle(.white)
-                        .frame(width: 7, height: 7)
-                }
+                XmarkIcon(size: 9, color: Color(red: 1, green: 1, blue: 1), lineWidth: 1.5)
+                    .padding(8)
+                    .background(Color.whiteAlpha10, in: .circle)
             }
         }
         .padding(.leading, 12)

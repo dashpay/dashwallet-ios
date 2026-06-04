@@ -59,47 +59,61 @@ struct MayaAmountView: View {
 
     private var primaryRow: some View {
         HStack(spacing: 10) {
-            HStack(alignment: .center, spacing: 4) {
-                amountText
-                    .font(.largeTitle)
-                    .foregroundStyle(Color.primaryText)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.35)
-                    .allowsTightening(true)
-                    .layoutPriority(1)
-
-                if showDashLogo {
-                    Icon(name: .custom("dash-logo-black", maxHeight: 20))
-                }
-            }
+            // Symbol + amount + dash logo scale down together as one unit (scaleToFitWidth),
+            // unlike minimumScaleFactor which would only shrink each Text independently.
+            amountView
+                .foregroundStyle(Color.primaryText)
+                .scaleToFitWidth()
+                .layoutPriority(1)
 
             if showCurrencyButton {
                 Button {
                     onCurrencyTap?()
                 } label: {
-                    Icon(name: .custom("chevron-down-icon", maxHeight: 10))
+                    Image("chevron-down-currency-select")
+                        .frame(width: 10, height: 5)
                 }
                 .buttonStyle(.plain)
+                .fixedSize()  // never compress the currency button
             }
         }
+        .frame(maxWidth: .infinity)
     }
 
-    private var amountText: Text {
-        let valueText = Text(amount.isEmpty ? "0" : amount)
-        guard let sym = symbol, !sym.isEmpty else {
-            return valueText
+    /// The numeric string as shown to the user. Pure display transform:
+    /// - empty → "0"
+    /// - bare-decimal input gets a leading zero: ".34" → "0.34", "." → "0." (same for ",")
+    /// Does NOT trim, reformat, or cap precision — that happens upstream in `sanitize`.
+    private var displayAmount: String {
+        guard !amount.isEmpty else { return "0" }
+        if let first = amount.first, first == "." || first == "," {
+            return "0" + amount
         }
+        return amount
+    }
 
-        return Text(sym + " ") + valueText
+    private var amountView: some View {
+        HStack(spacing: 4) {
+            if let sym = symbol, !sym.isEmpty {
+                Text(sym)
+                    .font(.largeTitle)
+            }
+
+            Text(displayAmount)
+                .font(.largeTitle)
+
+            if showDashLogo {
+                Image("enter-amount-dash")
+            }
+        }
     }
 }
 
 #if DEBUG
-#Preview {
+#Preview("Normal amounts") {
     VStack(spacing: 20) {
         MayaAmountView(
             amount: "1.5",
-            symbol: "Ð",
             secondaryText: "$ 150.00",
             topText: "Enter amount",
             showDashLogo: true
@@ -107,7 +121,78 @@ struct MayaAmountView: View {
         MayaAmountView(
             amount: "100",
             symbol: "$",
-            secondaryText: "Ð 1.0"
+            secondaryText: "Ð 1.0",
+            showCurrencyButton: true
+        )
+    }
+    .padding(20)
+}
+
+#Preview("Edge cases — scaling") {
+    VStack(spacing: 20) {
+        // Long Dash amount: icon + text must both shrink
+        MayaAmountView(
+            amount: "99999.99999999",
+            topText: "Dash — very long",
+            showDashLogo: true
+        )
+        // Long fiat — currency button must stay visible
+        MayaAmountView(
+            amount: "123456.78",
+            symbol: "$",
+            topText: "Fiat — long with button",
+            showCurrencyButton: true
+        )
+        // Long crypto
+        MayaAmountView(
+            amount: "0.00012345",
+            symbol: "BTC",
+            topText: "Crypto — small value"
+        )
+    }
+    .padding(20)
+}
+
+#Preview("Edge cases — precision") {
+    VStack(spacing: 20) {
+        // Fiat: 2 dp is the max; "0.1344255" sanitizes to "0.13"
+        MayaAmountView(
+            amount: "0.13",
+            symbol: "$",
+            topText: "Fiat 0.13 (max 2 dp)",
+            showCurrencyButton: true
+        )
+        // Leading-zero normalized: "01" → "1"
+        MayaAmountView(
+            amount: "1",
+            topText: "Normalized from 01 → 1",
+            showDashLogo: true
+        )
+        // In-progress decimal "0." — preserved
+        MayaAmountView(
+            amount: "0.",
+            symbol: "$",
+            topText: "In-progress: 0.",
+            showCurrencyButton: true
+        )
+    }
+    .padding(20)
+}
+
+#Preview("Leading zero — bare decimal") {
+    VStack(spacing: 20) {
+        // Bare decimal: ".34" renders as "0.34"
+        MayaAmountView(
+            amount: ".34",
+            topText: "Bare decimal: .34 → 0.34",
+            showDashLogo: true
+        )
+        // In-progress: just the decimal key tapped — "." renders as "0."
+        MayaAmountView(
+            amount: ".",
+            symbol: "$",
+            topText: "In-progress: . → 0.",
+            showCurrencyButton: true
         )
     }
     .padding(20)

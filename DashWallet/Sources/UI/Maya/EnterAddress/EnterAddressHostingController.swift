@@ -94,6 +94,13 @@ class EnterAddressHostingController: UIViewController, NavigationBarDisplayable 
         hostingController.view.addGestureRecognizer(keyboardDismissTapRecognizer)
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // Returning from a pushed screen (QR scanner, Uphold/Coinbase login) may not re-fire
+        // SwiftUI's onAppear, so refresh the clipboard card here too.
+        viewModel.refreshClipboardAddress()
+    }
+
     // MARK: - Address Validation
 
     private func validateAndContinue(address: String) {

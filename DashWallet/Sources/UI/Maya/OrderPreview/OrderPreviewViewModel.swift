@@ -36,6 +36,13 @@ enum MayaSuccessTrigger {
     /// Conservative. Show success only when `observedTx.status == "done"` — i.e. funds
     /// have arrived at the destination chain. Previous behaviour.
     case onDone
+
+    /// Show success once the submitted Dash transaction receives its first block
+    /// confirmation on the Dash network (>= 1 confirmation), i.e. the Blockchair-style
+    /// "In block …, Confirmations: 1" state. Detected locally via DashSync — no external
+    /// explorer. Maya API polling keeps running only to record `backendOutcome`; it never
+    /// drives the user-facing success.
+    case onDashConfirmation
 }
 
 // MARK: - MayaBackendOutcome
@@ -68,7 +75,7 @@ final class OrderPreviewViewModel: ObservableObject {
 
     // ── PRODUCT CONFIG ──────────────────────────────────────────────────────
     /// Change this ONE LINE to control when the success screen appears.
-    static let successTrigger: MayaSuccessTrigger = .onDone
+    static let successTrigger: MayaSuccessTrigger = .onDashConfirmation
     // ────────────────────────────────────────────────────────────────────────
 
     let coin: MayaCryptoCurrency
@@ -86,7 +93,8 @@ final class OrderPreviewViewModel: ObservableObject {
     @Published var remainingSubmitSeconds: Int = Constants.submitCountdownSeconds
     @Published var isSubmitting: Bool = false
     @Published var isRefreshing: Bool = false
-    @Published var submitErrorMessage: String?
+    // True while a fresh quote is being fetched for the failure-screen "Retry" action.
+    @Published var isRetrying: Bool = false
     // Records that the Dash transaction was submitted to the blockchain network.
     // This does NOT confirm Maya swap completion — that requires separate on-chain confirmation.
     @Published var submittedTxId: String?
@@ -108,11 +116,20 @@ final class OrderPreviewViewModel: ObservableObject {
     }
 
     private let dashSatoshis: Int64
+    // Fiat value of 1 destination coin, in `fiatCurrencyCode`. Used to derive the Purchase/fee
+    // fiat lines. <= 0 means the rate is unavailable → those lines are hidden.
+    private let cryptoFiatRate: Decimal
+    private let fiatCurrencyCode: String
     private var quote: MayaSwapQuote
     private var countdownCancellable: AnyCancellable?
     private let sendCoinsService = SendCoinsService()
     private var pollingTask: Task<Void, Never>?
     private var isLockCancellable: AnyCancellable?
+    // Strong reference to the broadcast Dash tx. DashSync mutates its `blockHeight` in place
+    // when the tx is included in a block, which the confirmation observer re-reads on each
+    // transaction-status notification.
+    private var submittedTransaction: DSTransaction?
+    private var confirmationCancellable: AnyCancellable?
 
     init(
         coin: MayaCryptoCurrency,
@@ -120,6 +137,8 @@ final class OrderPreviewViewModel: ObservableObject {
         dashSatoshis: Int64,
         fromDashAmount: String,
         fromFiatAmount: String,
+        cryptoFiatRate: Decimal,
+        fiatCurrencyCode: String,
         initialQuote: MayaSwapQuote
     ) {
         self.coin = coin
@@ -127,6 +146,8 @@ final class OrderPreviewViewModel: ObservableObject {
         self.dashSatoshis = dashSatoshis
         self.fromDashAmount = fromDashAmount
         self.fromFiatAmount = fromFiatAmount
+        self.cryptoFiatRate = cryptoFiatRate
+        self.fiatCurrencyCode = fiatCurrencyCode
         self.quote = initialQuote
         applyQuote(initialQuote)
         startCountdown()
@@ -136,6 +157,7 @@ final class OrderPreviewViewModel: ObservableObject {
         countdownCancellable?.cancel()
         pollingTask?.cancel()
         isLockCancellable?.cancel()
+        confirmationCancellable?.cancel()
     }
 
     func handlePrimaryAction() async {
@@ -151,12 +173,44 @@ final class OrderPreviewViewModel: ObservableObject {
         pollingTask = nil
         isLockCancellable?.cancel()
         isLockCancellable = nil
+        confirmationCancellable?.cancel()
+        confirmationCancellable = nil
+        submittedTransaction = nil
         swapStatus = .idle
         submittedTxId = nil
         backendOutcome = .pending
-        // Clear error so the submitErrorMessage alert doesn't fire after the
-        // failure sheet dismisses and swapStatus returns to .idle.
-        submitErrorMessage = nil
+    }
+
+    /// "Retry" from the failure screen: fetches a fresh Maya quote for the SAME coin,
+    /// destination address, and Dash amount.
+    /// - Returns: a new `OrderPreviewViewModel` ready for a fresh Order Preview when the quote
+    ///   refresh succeeds; `nil` when it fails (in which case `swapStatus` is updated with the
+    ///   new failure reason so the caller can stay on the failed screen).
+    func retryQuote() async -> OrderPreviewViewModel? {
+        guard !isRetrying else { return nil }
+        isRetrying = true
+        defer { isRetrying = false }
+
+        do {
+            let freshQuote = try await fetchFreshQuote()
+            if let apiError = freshQuote.error {
+                swapStatus = .failed(reason: apiError)
+                return nil
+            }
+            return OrderPreviewViewModel(
+                coin: coin,
+                address: address,
+                dashSatoshis: dashSatoshis,
+                fromDashAmount: fromDashAmount,
+                fromFiatAmount: fromFiatAmount,
+                cryptoFiatRate: cryptoFiatRate,
+                fiatCurrencyCode: fiatCurrencyCode,
+                initialQuote: freshQuote
+            )
+        } catch {
+            swapStatus = .failed(reason: error.localizedDescription)
+            return nil
+        }
     }
 
     // MARK: - Private: Countdown
@@ -189,14 +243,14 @@ final class OrderPreviewViewModel: ObservableObject {
         do {
             let newQuote = try await fetchFreshQuote()
             if let apiError = newQuote.error {
-                submitErrorMessage = apiError
+                setFailure(apiError)
                 return
             }
             quote = newQuote
             applyQuote(newQuote)
             resetCountdown()
         } catch {
-            submitErrorMessage = error.localizedDescription
+            setFailure(error.localizedDescription)
         }
     }
 
@@ -211,7 +265,6 @@ final class OrderPreviewViewModel: ObservableObject {
     private func submitSwap() async {
         guard !isSubmitting else { return }
         submittedTxId = nil
-        submitErrorMessage = nil
         isSubmitting = true
         defer { isSubmitting = false }
 
@@ -220,7 +273,7 @@ final class OrderPreviewViewModel: ObservableObject {
             // Mirrors Android's getSwapInfo call in MayaBlockchainApi.commitSwapTransaction.
             let freshQuote = try await fetchFreshQuote()
             if let apiError = freshQuote.error {
-                setSubmitError(apiError)
+                setFailure(apiError)
                 return
             }
             quote = freshQuote
@@ -230,7 +283,7 @@ final class OrderPreviewViewModel: ObservableObject {
             let tx = try await submitDashTransaction(using: execution)
             setSubmittedTransaction(tx)
         } catch {
-            setSubmitError(error.localizedDescription)
+            setFailure(error.localizedDescription)
         }
     }
 
@@ -258,19 +311,20 @@ final class OrderPreviewViewModel: ObservableObject {
 
     // MARK: - Private: State Mutation
 
-    private func setSubmitError(_ message: String) {
-        submitErrorMessage = message
-        // Route ALL submission errors (pre-broadcast guard failures, network errors,
-        // Maya API errors) through the failure sheet so the user sees the real reason.
-        // Quote-refresh errors (refreshQuoteForDisplay) are intentionally excluded —
-        // they don't change swapStatus and show as the submitErrorMessage alert instead.
+    private func setFailure(_ message: String) {
+        // Keep Maya failures on the status sheet path so SwiftUI does not try to
+        // present a native alert and a bottom sheet for the same event.
         swapStatus = .failed(reason: message)
     }
 
     private func setSubmittedTransaction(_ tx: DSTransaction) {
+        submittedTransaction = tx
         submittedTxId = tx.txHashHexString
         swapStatus = .pendingConfirmation
         startObservingISLock(txid: tx.txHashHexString)
+        if Self.successTrigger == .onDashConfirmation {
+            startObservingDashConfirmation(tx: tx)
+        }
         startPolling(txid: tx.txHashHexString)
     }
 
@@ -302,13 +356,70 @@ final class OrderPreviewViewModel: ObservableObject {
                         // Show success immediately. Polling keeps running in the background
                         // to track the real backend outcome (backendOutcome).
                         self.swapStatus = .completed(outHashes: [])
-                    case .onObserved, .onDone:
+                    case .onObserved, .onDone, .onDashConfirmation:
+                        // IS-lock alone is NOT success here — it only advances the UI to
+                        // "processing". Success requires a block confirmation (or, for the
+                        // other triggers, their own backend condition).
                         self.swapStatus = .processingSwap
                     }
                 }
 
                 self.isLockCancellable = nil  // one-shot
             }
+    }
+
+    // MARK: - Private: Dash Confirmation Observation
+
+    /// Observes the broadcast Dash transaction locally and shows success once it reaches
+    /// its first block confirmation. Uses DashSync state/notifications only — no external
+    /// explorer. The transaction-status notification fires on every block/mempool sync
+    /// update (sometimes without a transaction payload), so each firing simply re-reads the
+    /// tracked tx's confirmation count.
+    private func startObservingDashConfirmation(tx: DSTransaction) {
+        // Fast path: already confirmed (e.g. re-entry after a quick block).
+        if completeIfConfirmed(tx: tx) { return }
+
+        confirmationCancellable = NotificationCenter.default
+            .publisher(for: .DSTransactionManagerTransactionStatusDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.completeIfConfirmed(tx: tx)
+            }
+    }
+
+    /// Flips `swapStatus` to `.completed` when `tx` has >= 1 confirmation.
+    /// Never regresses a terminal user-facing state. Returns true once terminal so the
+    /// caller can stop observing.
+    @discardableResult
+    private func completeIfConfirmed(tx: DSTransaction) -> Bool {
+        switch swapStatus {
+        case .completed, .failed:
+            confirmationCancellable?.cancel()
+            confirmationCancellable = nil
+            return true
+        default:
+            break
+        }
+
+        let confirmations = Self.confirmations(for: tx)
+        guard confirmations >= 1 else { return false }
+
+        DSLogger.log("Maya: Dash tx \(tx.txHashHexString) confirmed in block "
+            + "(blockHeight=\(tx.blockHeight), confirmations=\(confirmations)) — showing success")
+        swapStatus = .completed(outHashes: [])
+        confirmationCancellable?.cancel()
+        confirmationCancellable = nil
+        return true
+    }
+
+    /// Number of block confirmations for `tx` against the current chain tip.
+    /// Returns 0 while the tx is still in the mempool (`blockHeight == TX_UNCONFIRMED`).
+    /// Mirrors the calculation in `Transaction.swift`.
+    private static func confirmations(for tx: DSTransaction) -> Int {
+        let lastHeight = DWEnvironment.sharedInstance().currentChain.lastTerminalBlockHeight
+        let txHeight = tx.blockHeight
+        guard txHeight != UInt32(TX_UNCONFIRMED), txHeight <= lastHeight else { return 0 }
+        return Int(lastHeight - txHeight) + 1
     }
 
     // MARK: - Private: Polling
@@ -337,77 +448,82 @@ final class OrderPreviewViewModel: ObservableObject {
                     guard info.error == nil, let observedTx = info.observedTx else { continue }
 
                     let outcome = Self.classifyObservedTx(observedTx)
-                    let successAlreadyShown: Bool = {
-                        if case .completed = self.swapStatus { return true }
-                        return false
-                    }()
-
-                    if successAlreadyShown {
-                        // Success is on screen — NEVER regress swapStatus.
-                        // Only update backendOutcome for tx history / future use.
-                        switch outcome {
-                        case .pending:
-                            break  // still running, continue polling
-                        case .done, .refunded:
-                            self.backendOutcome = outcome
-                            if case .refunded = outcome {
-                                // Post-success refund detected. Record it; do not yank the
-                                // success screen. Future: surface in tx history / a badge.
-                                DSLogger.log("Maya: post-success refund detected for \(txid)")
-                            }
-                            return  // terminal state reached, stop polling
-                        }
-                    } else {
-                        // Success not yet shown — drive swapStatus.
-                        switch outcome {
-                        case .done(let hashes):
-                            self.swapStatus = .completed(outHashes: hashes)
-                            self.backendOutcome = outcome
-                            return
-                        case .refunded:
-                            self.swapStatus = .failed(reason: NSLocalizedString(
-                                "Your DASH was refunded by Maya Protocol.",
-                                comment: "Maya"
-                            ))
-                            self.backendOutcome = outcome
-                            return
-                        case .pending:
-                            switch Self.successTrigger {
-                            case .onISLock:
-                                // IS-lock drives success; if IS-lock never arrived and we're
-                                // still in pendingConfirmation, advance to processingSwap.
-                                if case .pendingConfirmation = self.swapStatus {
-                                    self.swapStatus = .processingSwap
-                                }
-                            case .onObserved:
-                                // observedTx is present and not terminal-bad → show success.
-                                // Keep polling so backendOutcome is eventually resolved.
-                                self.swapStatus = .completed(outHashes: [])
-                            case .onDone:
-                                self.swapStatus = .processingSwap
-                            }
-                        }
-                    }
+                    if self.handlePollingOutcome(outcome, txid: txid) { return }
                 } catch {
                     // Transient network error — keep current status and retry next tick.
                 }
             }
 
             // 30-minute timeout.
-            let successAlreadyShown: Bool = {
-                if case .completed = self.swapStatus { return true }
-                return false
-            }()
-
-            if !successAlreadyShown {
+            // If success was already shown, silently stop. backendOutcome stays .pending
+            // which signals that the terminal state was never confirmed within 30 min.
+            if !self.isSuccessAlreadyShown {
                 self.swapStatus = .failed(reason: NSLocalizedString(
                     "Swap timed out after 30 minutes. Contact Maya support if funds were sent.",
                     comment: "Maya"
                 ))
             }
-            // If success was already shown, silently stop. backendOutcome stays .pending
-            // which signals that the terminal state was never confirmed within 30 min.
         }
+    }
+
+    /// Applies a single polled Maya outcome to the view-model state.
+    /// - Returns: `true` when a terminal state was reached and polling should stop.
+    private func handlePollingOutcome(_ outcome: MayaBackendOutcome, txid: String) -> Bool {
+        // Success already on screen — NEVER regress swapStatus; only record backendOutcome.
+        if isSuccessAlreadyShown {
+            switch outcome {
+            case .pending:
+                return false  // still running, continue polling
+            case .done, .refunded:
+                backendOutcome = outcome
+                if case .refunded = outcome {
+                    // Post-success refund detected. Record it; do not yank the success
+                    // screen. Future: surface in tx history / a badge.
+                    DSLogger.log("Maya: post-success refund detected for \(txid)")
+                }
+                return true  // terminal state reached, stop polling
+            }
+        }
+
+        // Success not yet shown — drive swapStatus.
+        switch outcome {
+        case .done(let hashes):
+            swapStatus = .completed(outHashes: hashes)
+            backendOutcome = outcome
+            return true
+        case .refunded:
+            swapStatus = .failed(reason: NSLocalizedString(
+                "Your DASH was refunded by Maya Protocol.",
+                comment: "Maya"
+            ))
+            backendOutcome = outcome
+            return true
+        case .pending:
+            advanceUIForPendingObservation()
+            return false
+        }
+    }
+
+    /// Advances the UI on a non-terminal Maya observation, per the active success trigger.
+    private func advanceUIForPendingObservation() {
+        switch Self.successTrigger {
+        case .onObserved:
+            // observedTx is present and not terminal-bad → show success.
+            // Keep polling so backendOutcome is eventually resolved.
+            swapStatus = .completed(outHashes: [])
+        case .onISLock, .onDone, .onDashConfirmation:
+            // For these triggers success is driven elsewhere (IS-lock, Maya done, or the
+            // local block-confirmation observer). While still waiting, only advance
+            // pending → processing; never overwrite a success that was already shown.
+            if case .pendingConfirmation = swapStatus {
+                swapStatus = .processingSwap
+            }
+        }
+    }
+
+    private var isSuccessAlreadyShown: Bool {
+        if case .completed = swapStatus { return true }
+        return false
     }
 
     /// Maps a Maya `observed_tx.status` string to `MayaBackendOutcome`.
@@ -438,6 +554,17 @@ final class OrderPreviewViewModel: ObservableObject {
         mayaFee = formatFeeAmount(fee)
         totalAmount = formatCryptoAmount(total)
         executionNetwork = quote.executionNetwork ?? "Maya"
+
+        // Fiat lines = coin amount × cryptoFiatRate (fiat value of 1 destination coin), in the
+        // active fiat currency — matching how the source-side fromFiatAmount is produced.
+        // Rate unavailable (<= 0) → hide the lines instead of showing a wrong/zero value.
+        if cryptoFiatRate > 0 {
+            purchaseFiatAmount = formatFiat(expectedOut * cryptoFiatRate)
+            mayaFeeFiatAmount = fee > 0 ? formatFiat(fee * cryptoFiatRate) : nil
+        } else {
+            purchaseFiatAmount = nil
+            mayaFeeFiatAmount = nil
+        }
     }
 
     // MARK: - Private: Formatting
@@ -453,6 +580,17 @@ final class OrderPreviewViewModel: ObservableObject {
 
     private func formatFeeAmount(_ value: Decimal) -> String {
         value > 0 ? formatCryptoAmount(value) : "—"
+    }
+
+    /// Formats a fiat value in `fiatCurrencyCode`. Mirrors `MayaInputFormatter.fiat(_:currencyCode:)`
+    /// so the Purchase/fee fiat lines match the source-side fiat format.
+    private func formatFiat(_ value: Decimal) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = fiatCurrencyCode
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        return formatter.string(from: value as NSDecimalNumber) ?? "\(value)"
     }
 
     private func formatDecimal(_ value: Decimal) -> String {

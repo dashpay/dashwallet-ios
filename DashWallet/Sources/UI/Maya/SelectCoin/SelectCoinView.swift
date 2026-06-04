@@ -39,6 +39,7 @@ struct SelectCoinView: View {
     }
 
     @StateObject private var viewModel = SelectCoinViewModel()
+    @StateObject private var reachability = NetworkReachabilityMonitor()
     var onBack: (() -> Void)?
     var onCoinSelected: ((MayaCryptoCurrency) -> Void)?
 
@@ -68,7 +69,16 @@ struct SelectCoinView: View {
         }
         .animation(.easeInOut(duration: 0.3), value: viewModel.showHaltedToast)
         .task {
-            await viewModel.loadCoins()
+            if reachability.isOnline {
+                await viewModel.loadCoins()
+            }
+        }
+        .onChange(of: reachability.isOnline) { isOnline in
+            // Restore the coin list when connectivity returns. loadCoins() is a no-op
+            // unless coins are missing or a prior fetch errored, so this never resets
+            // an already-loaded list or its scroll position.
+            guard isOnline else { return }
+            Task { await viewModel.loadCoins() }
         }
     }
 
@@ -76,7 +86,10 @@ struct SelectCoinView: View {
 
     @ViewBuilder
     private var mainContent: some View {
-        if viewModel.isLoading {
+        if !reachability.isOnline {
+            NetworkUnavailableStateView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else if viewModel.isLoading {
             SwiftUI.ProgressView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if let error = viewModel.errorMessage {
@@ -103,18 +116,30 @@ struct SelectCoinView: View {
     // MARK: - Coin List
 
     private var coinList: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            LazyVStack(spacing: Layout.listSpacing) {
-                ForEach(viewModel.filteredCoins) { item in
-                    Button {
-                        onCoinSelected?(item.coin)
-                    } label: {
-                        CoinRowView(item: item)
+        ScrollViewReader { proxy in
+            ScrollView(.vertical, showsIndicators: false) {
+                LazyVStack(spacing: Layout.listSpacing) {
+                    ForEach(viewModel.filteredCoins) { item in
+                        Button {
+                            viewModel.willSelectCoin(item)
+                            onCoinSelected?(item.coin)
+                        } label: {
+                            CoinRowView(item: item)
+                        }
+                        .buttonStyle(.plain)
+                        .id(item.id)
                     }
-                    .buttonStyle(.plain)
+                }
+                .modifier(MayaMenuCardStyle())
+            }
+            .onAppear {
+                // Restore scroll position after back-navigation.
+                // One run-loop defer lets the LazyVStack finish initial layout.
+                guard let id = viewModel.scrollAnchorID else { return }
+                DispatchQueue.main.async {
+                    proxy.scrollTo(id, anchor: .center)
                 }
             }
-            .modifier(MayaMenuCardStyle())
         }
     }
 
@@ -159,7 +184,7 @@ struct SelectCoinView: View {
 
     private var retryButton: some View {
         Button(action: {
-            Task { await viewModel.loadCoins() }
+            Task { await viewModel.loadCoins(force: true) }
         }) {
             Text(NSLocalizedString("Retry", comment: ""))
                 .font(.system(size: 14, weight: .semibold))

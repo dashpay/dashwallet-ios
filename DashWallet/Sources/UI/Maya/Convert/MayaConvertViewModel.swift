@@ -56,7 +56,12 @@ final class MayaConvertViewModel: ObservableObject {
 
     // MARK: - Computed Properties
 
-    var dashBalance: String {
+    var dashBalance: Int64 {
+        Int64(DWEnvironment.sharedInstance().currentAccount.balance)
+    }
+
+    /// Symbol-free formatted Dash balance (e.g. "1.5") for the convert source row.
+    var dashBalanceFormatted: String {
         DWEnvironment.sharedInstance().currentAccount.balance.formattedDashAmountWithoutCurrencySymbol
     }
 
@@ -136,6 +141,8 @@ final class MayaConvertViewModel: ObservableObject {
             dashSatoshis: amount.dashSatoshis,
             fromDashAmount: amount.dash.formattedDashAmountWithoutCurrencySymbol,
             fromFiatAmount: MayaInputFormatter.fiat(amount.fiat, currencyCode: currentFiatCurrency),
+            cryptoFiatRate: amount.cryptoFiatRate,
+            fiatCurrencyCode: currentFiatCurrency,
             initialQuote: quote
         )
     }
@@ -231,6 +238,16 @@ final class MayaConvertViewModel: ObservableObject {
         $inputValue
             .sink { [weak self] value in
                 guard let self, !self.isSwitchingCurrency else { return }
+
+                // Sanitize raw input: normalize leading zeros and cap decimal precision.
+                // Writing back sanitized != value re-triggers this sink once; the second
+                // pass is already clean so no infinite loop occurs.
+                let clean = Self.sanitize(value, currency: self.selectedCurrency)
+                if clean != value {
+                    self.inputValue = clean
+                    return
+                }
+
                 self.clearQuoteState()
                 guard self.parseInput(value) != nil else {
                     self.errorMessage = nil
@@ -345,6 +362,38 @@ final class MayaConvertViewModel: ObservableObject {
         let normalized = value.replacingOccurrences(of: ",", with: ".")
         guard let d = Double(normalized), d > 0 else { return nil }
         return d
+    }
+
+    // MARK: - Private: Input Sanitization
+
+    /// Normalizes a raw keyboard string before it reaches the amount model.
+    /// Rules:
+    ///   - Leading zeros stripped from the integer part: "01" → "1", but "0." and "0.12" stay.
+    ///   - Decimal precision capped: fiat → 2 places, dash/crypto → 8 places.
+    ///   - Empty string and in-progress decimals (e.g. "0.") pass through unchanged.
+    private static func sanitize(_ raw: String, currency: CurrencyOption) -> String {
+        guard !raw.isEmpty else { return raw }
+
+        let s = raw.replacingOccurrences(of: ",", with: ".")
+        let maxDecimals: Int
+        switch currency {
+        case .fiat: maxDecimals = 2
+        case .dash, .coin: maxDecimals = 8
+        }
+
+        if let dotRange = s.range(of: ".") {
+            let intPart = String(s[s.startIndex..<dotRange.lowerBound])
+            let decPart = String(s[dotRange.upperBound...].prefix(maxDecimals))
+            return normalizeLeadingZeros(intPart) + "." + decPart
+        }
+        return normalizeLeadingZeros(s)
+    }
+
+    private static func normalizeLeadingZeros(_ s: String) -> String {
+        if s.isEmpty { return "0" }
+        var result = s
+        while result.count > 1, result.hasPrefix("0") { result.removeFirst() }
+        return result
     }
 }
 

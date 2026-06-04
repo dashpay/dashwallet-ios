@@ -129,7 +129,7 @@ struct MayaCryptoCurrency: Identifiable, Hashable {
             chain: "ARB", iconAssetName: "maya.coin.usdc"
         ),
         MayaCryptoCurrency(
-            id: "usdt_arb", code: "USDT", name: "USDT",
+            id: "usdt_arb", code: "USDT", name: "Tether",
             mayaAsset: "ARB.USDT-0XFD086BC7CD5C481DCC9C85EBE478A1C0B69FCBB9",
             chain: "ARB", iconAssetName: "maya.coin.usdt"
         ),
@@ -139,7 +139,7 @@ struct MayaCryptoCurrency: Identifiable, Hashable {
             chain: "ARB", iconAssetName: "maya.coin.wbtc"
         ),
         MayaCryptoCurrency(
-            id: "wsteth_arb", code: "WSTETH", name: "Wrapped stETH (ARB)",
+            id: "wsteth_arb", code: "WSTETH", name: "Wrapped stETH",
             mayaAsset: "ARB.WSTETH-0X5979D7B546E38E414F7E9822514BE443A4800529",
             chain: "ARB", iconAssetName: "maya.coin.wsteth"
         ),
@@ -201,16 +201,44 @@ struct MayaCryptoCurrency: Identifiable, Hashable {
         let assetComponent = parts[1]
         let code = assetComponent.split(separator: "-", maxSplits: 1).first.map(String.init) ?? assetComponent
 
+        // Generate a network-aware display name so ambiguous symbols (e.g. two USDC pools on
+        // different chains) remain distinguishable without hardcoding suffixes in the UI layer.
+        let chainLabel = Self.chainDisplayName(chain)
+        let synthesizedName = chainLabel.isEmpty ? code : "\(code) (\(chainLabel))"
+
         return MayaCryptoCurrency(
             id: normalizedAsset
                 .lowercased()
                 .replacingOccurrences(of: ".", with: "_")
                 .replacingOccurrences(of: "-", with: "_"),
             code: code,
-            name: code,
+            name: synthesizedName,
             mayaAsset: normalizedAsset,
             chain: chain,
             iconAssetName: "convert.crypto"
         )
+    }
+
+    // MARK: - Chain display helpers
+
+    /// Maps a Maya chain identifier to a human-readable label used in synthesised coin names.
+    /// Returns the raw chain string as-is for chains not in the table.
+    static func chainDisplayName(_ chain: String) -> String {
+        switch chain.uppercased() {
+        case "ARB":  return "Arbitrum"
+        case "ETH":  return "Ethereum"
+        case "BTC":  return "Bitcoin"
+        case "SOL":  return "Solana"
+        case "NEAR": return "NEAR"
+        case "TRON": return "Tron"
+        case "ZEC":  return "Zcash"
+        case "XRD":  return "Radix"
+        case "KUJI": return "Kujira"
+        case "THOR": return "THORChain"
+        case "ADA":  return "Cardano"
+        case "MAYA": return "Maya"
+        case "DASH": return ""   // source chain — never synthesised
+        default:     return chain
+        }
     }
 }
