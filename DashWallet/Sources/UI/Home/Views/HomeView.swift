@@ -213,12 +213,14 @@ struct HomeViewContent<Content: View>: View {
                     .padding(.top, 5)
                     .padding(.bottom, -12)
 
-                    PlatformBalanceView()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.navigationBarColor)
+                    VStack(spacing: 0) {
+                        PlatformBalanceView()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.navigationBarColor)
 
-                    headerView()
-                        .frame(height: viewModel.headerHeight)
+                        headerView()
+                            .frame(height: viewModel.headerHeight)
+                    }
                     
                     if viewModel.coinJoinItem.isOn {
                         CoinJoinProgressView(
