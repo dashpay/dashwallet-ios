@@ -66,6 +66,10 @@ class EnterAddressViewModel: ObservableObject {
     private let addressProvider = MayaExchangeAddressProvider()
     private var upholdAddress: String?
     private var coinbaseAddress: String?
+    /// True once the user has opted in to reading the clipboard (tapped the clipboard row).
+    /// Until then we only probe pasteboard metadata so the iOS paste banner is never surfaced
+    /// unexpectedly — this preserves the existing permission flow.
+    private var hasRevealedClipboard = false
 
     /// The currency code used for exchange lookups. Exchanges manage their own currency listings.
     private var exchangeCurrencyCode: String { coin.code }
@@ -84,18 +88,41 @@ class EnterAddressViewModel: ObservableObject {
         #endif
         loadAddressSource(.uphold)
         loadAddressSource(.coinbase)
-        checkClipboard()
     }
 
     // MARK: - Clipboard
 
-    func checkClipboard() {
-        hasClipboardCandidate = UIPasteboard.general.hasStrings || UIPasteboard.general.hasURLs
+    /// Re-reads the clipboard and refreshes the clipboard card. Safe to call repeatedly —
+    /// invoke it whenever the screen reappears or the app returns to the foreground so the card
+    /// never shows a stale, previously-copied address.
+    func refreshClipboardAddress() {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" { return }
+        #endif
+
+        let hasCandidate = UIPasteboard.general.hasStrings || UIPasteboard.general.hasURLs
+
+        // Preserve the permission flow: before the user opts in (taps the clipboard row) we only
+        // probe pasteboard metadata — never the contents — so the iOS paste banner is not
+        // surfaced. This just toggles the "Show content in the clipboard" row.
+        guard hasRevealedClipboard else {
+            hasClipboardCandidate = hasCandidate
+            clipboardContent = nil
+            return
+        }
+
+        // Opted in: re-read live and gate the card on a valid address for the selected coin.
+        // Recomputed on every call so a newly-copied address replaces the old one, and a
+        // cleared / invalid clipboard hides the card.
+        clipboardContent = validClipboardAddress()
+        hasClipboardCandidate = clipboardContent != nil
     }
 
     func pasteFromClipboard() {
-        if clipboardContent == nil {
-            requestClipboardContent()
+        // First tap on the clipboard row opts the user in and reads the live clipboard.
+        if !hasRevealedClipboard {
+            hasRevealedClipboard = true
+            refreshClipboardAddress()
         }
         guard let content = clipboardContent else { return }
         addressText = extractAddressFromURI(content)
@@ -236,9 +263,13 @@ class EnterAddressViewModel: ObservableObject {
 
     // MARK: - Private: Clipboard
 
-    private func requestClipboardContent() {
-        clipboardContent = currentClipboardContent()
-        hasClipboardCandidate = clipboardContent != nil
+    /// Returns the raw clipboard string when it holds a valid address for the selected coin,
+    /// otherwise nil. Reads the pasteboard contents — only call once the user has opted in.
+    private func validClipboardAddress() -> String? {
+        guard let raw = currentClipboardContent() else { return nil }
+        let address = extractAddressFromURI(raw)
+        guard MayaAddressValidator.isValid(address: address, for: coin) else { return nil }
+        return raw
     }
 
     private func currentClipboardContent() -> String? {

@@ -28,9 +28,7 @@ struct MayaTransactionSuccessView: View {
             Spacer()
 
             SuccessIllustration()
-                .padding(.top, 20)
-                .padding(.bottom, 10)
-
+                .padding(.bottom, 30)
 
             VStack(spacing: 6) {
                 Text(NSLocalizedString("You successfully converted DASH to \(coinCode)", comment: "Maya"))
@@ -45,8 +43,6 @@ struct MayaTransactionSuccessView: View {
                     .lineSpacing(3)
             }
             .padding(.horizontal, 60)
-            .padding(.top, 20)
-            .padding(.bottom, 32)
 
             Spacer()
 
@@ -65,31 +61,7 @@ struct MayaTransactionSuccessView: View {
         coinCode: "BTC",
         coinName: "Bitcoin"
     )
-}
-
-private struct MayaTransactionSuccessSheetPreviewHost: View {
-    @State private var isPresented = true
-
-    var body: some View {
-        Color.primaryBackground
-            .ignoresSafeArea()
-            .sheet(isPresented: $isPresented) {
-                let sheet = BottomSheet(showBackButton: .constant(false)) {
-                    MayaTransactionSuccessView(
-                        coinCode: "BTC",
-                        coinName: "Bitcoin"
-                    )
-                }
-                if #available(iOS 16.0, *) {
-                    sheet.presentationDetents([.large])
-                } else {
-                    sheet
-                }
-            }
-    }
-}
-
-#Preview("Bottom sheet") {
-    MayaTransactionSuccessSheetPreviewHost()
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(Color.primaryBackground)
 }
 #endif

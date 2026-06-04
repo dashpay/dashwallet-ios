@@ -59,7 +59,7 @@ struct CoinRowView: View {
 
     private var coinInfo: some View {
         VStack(alignment: .leading, spacing: Layout.textSpacing) {
-            Text(item.coin.name)
+            Text(item.displayName)
                 .font(.subheadMedium)
                 .foregroundColor(.primaryText)
                 .lineLimit(1)
@@ -68,8 +68,7 @@ struct CoinRowView: View {
             Text(item.coin.code)
                 .font(.footnote)
                 .foregroundColor(.tertiaryText)
-                .kerning(0.26)
-                .textCase(.uppercase)
+                .lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -97,30 +96,65 @@ struct CoinRowView: View {
 }
 
 #if DEBUG
-#Preview("Available") {
-    CoinRowView(item: CoinDisplayItem(
-        id: "eth_arb",
-        coin: MayaCryptoCurrency(id: "eth_arb", code: "ETH", name: "Ethereum (Arbitrum)", mayaAsset: "ARB.ETH", chain: "ARB", iconAssetName: "maya.coin.eth"),
-        fiatPrice: "$65,000",
-        isHalted: false
-    ))
-//    .background(.red.opacity(0.3))
+private func makeItem(
+    id: String, coin: MayaCryptoCurrency,
+    displayName: String? = nil, price: String? = nil, halted: Bool = false
+) -> CoinDisplayItem {
+    CoinDisplayItem(id: id, coin: coin, displayName: displayName ?? coin.name, fiatPrice: price, isHalted: halted)
+}
+
+// iOS hierarchy: full name (+ network) on top, code below.
+#Preview("Network-qualified rows") {
+    VStack(spacing: 0) {
+        // USDC / USD Coin (Ethereum)
+        CoinRowView(item: makeItem(
+            id: "usdc",
+            coin: MayaCryptoCurrency(id: "usdc", code: "USDC", name: "USD Coin",
+                                     mayaAsset: "ETH.USDC-0XA0B8...", chain: "ETH",
+                                     iconAssetName: "maya.coin.usdc"),
+            displayName: "USD Coin (Ethereum)",
+            price: "USD 1.00"
+        ))
+        // USDC / USD Coin (Arbitrum)
+        CoinRowView(item: makeItem(
+            id: "usdc_arb",
+            coin: MayaCryptoCurrency(id: "usdc_arb", code: "USDC", name: "USD Coin (Arbitrum)",
+                                     mayaAsset: "ARB.USDC-0XAF88...", chain: "ARB",
+                                     iconAssetName: "maya.coin.usdc"),
+            price: "UAH 44.54"
+        ))
+        // USDT / Tether (Ethereum)
+        CoinRowView(item: makeItem(
+            id: "usdt",
+            coin: MayaCryptoCurrency(id: "usdt", code: "USDT", name: "Tether",
+                                     mayaAsset: "ETH.USDT-0XDAC1...", chain: "ETH",
+                                     iconAssetName: "maya.coin.usdt"),
+            displayName: "Tether (Ethereum)",
+            price: "USD 1.00"
+        ))
+        // USDT / Tether (Arbitrum)
+        CoinRowView(item: makeItem(
+            id: "usdt_arb",
+            coin: MayaCryptoCurrency(id: "usdt_arb", code: "USDT", name: "Tether",
+                                     mayaAsset: "ARB.USDT-0XFD08...", chain: "ARB",
+                                     iconAssetName: "maya.coin.usdt"),
+            displayName: "Tether (Arbitrum)",
+            price: "USD 1.00"
+        ))
+    }
 }
 
 #Preview("Halted") {
     VStack {
-        CoinRowView(item: CoinDisplayItem(
+        CoinRowView(item: makeItem(
             id: MayaCryptoCurrency.supportedCoins[7].id,
             coin: MayaCryptoCurrency.supportedCoins[7],
-            fiatPrice: "$3,200",
-            isHalted: true
+            price: "USD 3,200.00", halted: true
         ))
-
-        CoinRowView(item: CoinDisplayItem(
+        CoinRowView(item: makeItem(
             id: MayaCryptoCurrency.supportedCoins[1].id,
             coin: MayaCryptoCurrency.supportedCoins[1],
-            fiatPrice: "$3,200",
-            isHalted: true
+            price: "USD 3,200.00", halted: true
         ))
     }
 }

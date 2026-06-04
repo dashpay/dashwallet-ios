@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Roman Chornyi
 //  Copyright © 2026 Dash Core Group. All rights reserved.
 //
@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import Foundation
 import SwiftUI
 import UIKit
@@ -22,6 +23,10 @@ import UIKit
 final class OrderPreviewHostingController: UIViewController, NavigationBarDisplayable {
     var isNavigationBarHidden: Bool { true }
     private let viewModel: OrderPreviewViewModel
+
+    // Observes swapStatus to push the full-screen status flow once a swap is submitted.
+    private var statusCancellable: AnyCancellable?
+    private var didPresentStatusScreen = false
 
     init(viewModel: OrderPreviewViewModel) {
         self.viewModel = viewModel
@@ -36,22 +41,11 @@ final class OrderPreviewHostingController: UIViewController, NavigationBarDispla
         super.viewDidLoad()
         view.backgroundColor = UIColor.dw_secondaryBackground()
 
-        let rootView = OrderPreviewContainerView(
+        let rootView = OrderPreviewView(
             viewModel: viewModel,
             onCancel: { [weak self] in
                 // Pop one level back (convert screen).
                 self?.navigationController?.popViewController(animated: true)
-            },
-            onNavigateHome: { [weak self] in
-                // Dismiss the entire Maya flow to the root (HomeViewController).
-                // popToRootViewController is the canonical "go home" action for
-                // pushed flows in this app (cf. MainTabbarController:284).
-                self?.navigationController?.popToRootViewController(animated: true)
-            },
-            onRetry: { [weak self] in
-                // Reset to idle: the status sheet dismisses and the order-preview
-                // form reappears with the current (still-valid) quote intact.
-                self?.viewModel.resetToIdle()
             }
         )
         let hostingController = UIHostingController(rootView: rootView)
@@ -68,36 +62,20 @@ final class OrderPreviewHostingController: UIViewController, NavigationBarDispla
             hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+
+        observeSwapStatus()
     }
-}
 
-private struct OrderPreviewContainerView: View {
-    @ObservedObject var viewModel: OrderPreviewViewModel
-    let onCancel: () -> Void
-    let onNavigateHome: () -> Void
-    let onRetry: () -> Void
-
-    var body: some View {
-        OrderPreviewView(
-            viewModel: viewModel,
-            onCancel: onCancel,
-            onNavigateHome: onNavigateHome,
-            onRetry: onRetry
-        )
-        // Pre-submission errors (auth failure, network, double-spend guard).
-        // Distinct from swapStatus.failed which covers post-broadcast failures.
-        .alert(
-            NSLocalizedString("Swap Failed", comment: "Maya"),
-            isPresented: Binding(
-                get: { viewModel.submitErrorMessage != nil },
-                set: { visible in
-                    if !visible { viewModel.submitErrorMessage = nil }
-                }
-            )
-        ) {
-            Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
-        } message: {
-            Text(viewModel.submitErrorMessage ?? "")
-        }
+    /// Once the swap leaves `.idle` (submission started, or it failed immediately), navigate to
+    /// the dedicated full-screen status screen. Guarded so the push happens exactly once.
+    private func observeSwapStatus() {
+        statusCancellable = viewModel.$swapStatus
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] status in
+                guard let self, !self.didPresentStatusScreen, status != .idle else { return }
+                self.didPresentStatusScreen = true
+                let statusVC = MayaTransactionStatusHostingController(viewModel: self.viewModel)
+                self.navigationController?.pushViewController(statusVC, animated: true)
+            }
     }
 }

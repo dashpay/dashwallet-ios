@@ -18,11 +18,13 @@
 //
 
 import SwiftUI
+import UIKit
 
 // MARK: - EnterAddressView
 
 struct EnterAddressView: View {
     @ObservedObject var viewModel: EnterAddressViewModel
+    @StateObject private var reachability = NetworkReachabilityMonitor()
     var onBack: (() -> Void)?
     var onScanQR: (() -> Void)?
     var onContinue: ((String) -> Void)?
@@ -65,8 +67,15 @@ struct EnterAddressView: View {
         .onChange(of: viewModel.addressText) { _ in
             viewModel.onAddressChanged()
         }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            // UIKit app lifecycle: scenePhase isn't driven here, so refresh on the foreground
+            // notification — the only moment iOS exposes another app's freshly-copied clipboard.
+            viewModel.refreshClipboardAddress()
+        }
         .onAppear {
             viewModel.loadAddressSources()
+            // Refresh whenever the screen (re)appears so the clipboard card is never stale.
+            viewModel.refreshClipboardAddress()
         }
     }
 
@@ -161,8 +170,9 @@ struct EnterAddressView: View {
 
     private var continueButton: some View {
         DashButton(
+            // Offline disables Continue because address validation and the quote flow both require network.
             text: NSLocalizedString("Continue", comment: ""),
-            isEnabled: viewModel.isContinueEnabled) {
+            isEnabled: viewModel.isContinueEnabled && reachability.isOnline) {
                 guard let address = viewModel.attemptContinue() else { return }
                 onContinue?(address)
             }

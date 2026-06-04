@@ -25,6 +25,9 @@ struct MenuItem: View {
     var details: String?
     var topText: String?
     var icon: IconName?
+    /// Optional custom leading view, used when the icon cannot be expressed as an `IconName`
+    /// (e.g. a remotely-loaded coin icon). Takes precedence over `icon` when non-nil.
+    var iconView: AnyView?
     var secondaryIcon: IconName?
     var iconAlignment: VerticalAlignment = .center
     var showInfo: Bool = false
@@ -45,6 +48,7 @@ struct MenuItem: View {
          details: String? = nil,
          topText: String? = nil,
          icon: IconName? = nil,
+         iconView: AnyView? = nil,
          secondaryIcon: IconName? = nil,
          iconAlignment: VerticalAlignment = .center,
          showInfo: Bool = false,
@@ -73,6 +77,7 @@ struct MenuItem: View {
             details: details,
             topText: topText,
             icon: icon,
+            iconView: iconView,
             secondaryIcon: secondaryIcon,
             iconAlignment: iconAlignment,
             showInfo: showInfo,
@@ -94,6 +99,7 @@ struct MenuItem: View {
          details: String? = nil,
          topText: String? = nil,
          icon: IconName? = nil,
+         iconView: AnyView? = nil,
          secondaryIcon: IconName? = nil,
          iconAlignment: VerticalAlignment = .center,
          showInfo: Bool = false,
@@ -112,6 +118,7 @@ struct MenuItem: View {
         self.details = details
         self.topText = topText
         self.icon = icon
+        self.iconView = iconView
         self.secondaryIcon = secondaryIcon
         self.iconAlignment = iconAlignment
         self.showInfo = showInfo
@@ -135,7 +142,9 @@ struct MenuItem: View {
             }
         }) {
             HStack(alignment: iconAlignment, spacing: 10) {
-                if let icon = icon {
+                if let iconView = iconView {
+                    iconView
+                } else if let icon = icon {
                     ZStack(alignment: .leading) {
                         Icon(name: icon)
                             .frame(width: 30, height: 30)
@@ -265,6 +274,7 @@ struct MenuItem: View {
         MenuItem(
             title: "Title",
             subtitle: "Easily stake Dash and earn passive income with a few simple steps",
+            subtitleLineLimit: 2,
             icon: .custom("uphold_logo"),
             showInfo: true,
             showToggle: true,

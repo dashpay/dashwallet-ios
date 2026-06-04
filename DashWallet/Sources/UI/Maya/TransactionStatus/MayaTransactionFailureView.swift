@@ -21,9 +21,16 @@ struct MayaTransactionFailureView: View {
     /// Specific failure reason surfaced from the swap or submission error.
     /// When nil, the generic fallback message is shown.
     var reason: String? = nil
+    /// True while a fresh quote is being fetched after the user tapped Retry.
+    var isRetrying: Bool = false
+    /// Inbound Dash tx hash, when the swap failed AFTER broadcast. Drives the MayaScan deep link.
+    /// nil when the failure happened before broadcast (quote/build error, cancelled PIN).
+    var transactionHash: String? = nil
     let onRetry: () -> Void
-    /// Close behavior: one pop back via onCancel (onNavigateHome if full exit is needed).
+    /// Close behavior: dismisses the failure screen (returns to the Maya Portal).
     let onCancel: () -> Void
+
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         VStack(spacing: 0) {
@@ -31,8 +38,7 @@ struct MayaTransactionFailureView: View {
             Spacer()
 
             ErrorIllustration()
-                .padding(.top, 20)
-                .padding(.bottom, 10)
+                .padding(.bottom, 30)
 
             VStack(spacing: 6) {
                 Text(NSLocalizedString("Conversion failed", comment: "Maya"))
@@ -47,17 +53,22 @@ struct MayaTransactionFailureView: View {
                     .lineSpacing(3)
             }
             .padding(.horizontal, 60)
-            .padding(.top, 20)
-            .padding(.bottom, 32)
+            .padding(.bottom, 16)
+
+            contactSupportButton
 
             Spacer()
 
             VStack(spacing: 16) {
-                DashButton(text: NSLocalizedString("Try Again", comment: "Maya")) {
+                DashButton(
+                    text: NSLocalizedString("Retry", comment: "Maya"),
+                    isEnabled: !isRetrying,
+                    isLoading: isRetrying
+                ) {
                     onRetry()
                 }
 
-                DashButton(text: NSLocalizedString("Close", comment: "")) {
+                DashButton(text: NSLocalizedString("Close", comment: "Maya")) {
                     onCancel()
                 }
                 .overrideBackgroundColor(Color.gray300Alpha10)
@@ -67,42 +78,53 @@ struct MayaTransactionFailureView: View {
             .padding(.horizontal, 60)
         }
     }
+
+    private var contactSupportButton: some View {
+        // With a broadcast tx, link the user to THEIR swap on MayaScan; otherwise fall back to
+        // the generic Maya support docs.
+        let (url, label): (URL, String) = {
+            if let transactionHash, !transactionHash.isEmpty {
+                return (
+                    MayaConstants.mayaScanTransactionURL(txHash: transactionHash),
+                    NSLocalizedString("View transaction on MayaScan", comment: "Maya")
+                )
+            }
+            return (
+                MayaConstants.supportURL,
+                NSLocalizedString("Contact Maya Support", comment: "Maya")
+            )
+        }()
+
+        return Button {
+            openURL(url)
+        } label: {
+            Text(label)
+                .font(.subheadMedium)
+                .foregroundColor(.dashBlue)
+        }
+        .buttonStyle(.plain)
+    }
 }
 
 #if DEBUG
-#Preview {
+#Preview("Before broadcast — support fallback") {
     MayaTransactionFailureView(
         reason: "Input 0 is already spent by a pending transaction. Wait for the previous swap to confirm before initiating a new one.",
         onRetry: {},
         onCancel: {}
     )
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(Color.primaryBackground)
 }
 
-private struct MayaTransactionFailureSheetPreviewHost: View {
-    @State private var isPresented = true
-
-    var body: some View {
-        Color.primaryBackground
-            .ignoresSafeArea()
-            .sheet(isPresented: $isPresented) {
-                let sheet = BottomSheet(showBackButton: .constant(false)) {
-                    MayaTransactionFailureView(
-                        reason: "Input 0 is already spent by a pending transaction.",
-                        onRetry: {},
-                        onCancel: {}
-                    )
-                }
-                if #available(iOS 16.0, *) {
-                    sheet.presentationDetents([.large])
-                } else {
-                    sheet
-                }
-            }
-    }
+#Preview("After broadcast — MayaScan link") {
+    MayaTransactionFailureView(
+        reason: "Your DASH was refunded by Maya Protocol.",
+        transactionHash: "d891ed43f1f3eedfb7078e02d6be0423b741533b4b0407a822307b2637703649",
+        onRetry: {},
+        onCancel: {}
+    )
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(Color.primaryBackground)
 }
-
-#Preview("Bottom sheet") {
-    MayaTransactionFailureSheetPreviewHost()
-}
-
 #endif
