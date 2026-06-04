@@ -29,10 +29,6 @@ private enum MainTabbarTabs: Int, CaseIterable {
 }
 
 extension MainTabbarTabs {
-    var isEmpty: Bool {
-        self == .payment
-    }
-
     var icon: UIImage {
         let name: String
 
@@ -42,7 +38,7 @@ extension MainTabbarTabs {
         case .contacts:
             name = "tabbar_contacts_icon"
         case .payment:
-            return UIImage()
+            name = "tabbar_pay_button"
         case .explore:
             name = "tabbar_discover_icon"
         case .more:
@@ -61,7 +57,7 @@ extension MainTabbarTabs {
         case .contacts:
             name = "tabbar_contacts_selected"
         case .payment:
-            return UIImage()
+            name = "tabbar_pay_button"
         case .explore:
             name = "tabbar_discover_selected"
         case .more:
@@ -94,8 +90,6 @@ class MainTabbarController: UITabBarController {
     // TODO: Refactor this and send notification about wiped wallet instead of chaining the delegate
     @objc
     weak var wipeDelegate: DWWipeDelegate?
-
-    private var paymentButton: PaymentButton!
 
     @objc
     var isDemoMode = false
@@ -139,34 +133,14 @@ class MainTabbarController: UITabBarController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    // MARK: Actions
-
-    @objc
-    private func paymentButtonAction() {
-        showPaymentsController(withActivePage: .none)
-    }
-
     // MARK: Life Cycle
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-
-        view.bringSubviewToFront(paymentButton)
-    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         delegate = self
-        configureHierarchy()
+        tabBar.barTintColor = .dw_background()
         setupRatesErrorHandling()
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-
-        // Bring Payment Button to the front to make sure it's at the top
-        view.bringSubviewToFront(paymentButton)
     }
 }
 
@@ -205,13 +179,15 @@ extension MainTabbarController {
         }
         #endif
 
-        // Payment
-        item = UITabBarItem(title: "", image: UIImage(), tag: 2)
+        // Payment (tapping this tab opens the payment modal instead of switching tabs)
+        let paymentImage = Self.makePaymentTabImage()
+        item = UITabBarItem(title: nil, image: paymentImage, selectedImage: paymentImage)
         item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
+        item.accessibilityIdentifier = "tabbar_payments_button"
 
-        let vc = EmptyController()
-        vc.tabBarItem = item
-        viewControllers.append(vc)
+        let paymentVC = EmptyController()
+        paymentVC.tabBarItem = item
+        viewControllers.append(paymentVC)
         
         #if DASHPAY
         if identity != nil {
@@ -305,26 +281,26 @@ extension MainTabbarController {
     }
     #endif
 
-    private func configureHierarchy() {
-        paymentButton = PaymentButton()
-        paymentButton.translatesAutoresizingMaskIntoConstraints = false
-        paymentButton.addTarget(self, action: #selector(paymentButtonAction), for: .touchUpInside)
-        view.addSubview(paymentButton)
+    private static func makePaymentTabImage() -> UIImage {
+        let size: CGFloat = 47
+        let rect = CGRect(x: 0, y: 0, width: size, height: size)
 
-        NSLayoutConstraint.activate([
-            paymentButton.centerXAnchor.constraint(equalTo: tabBar.centerXAnchor),
-            paymentButton.topAnchor.constraint(equalTo: tabBar.topAnchor, constant: UIDevice.hasHomeIndicator ? 4 : 1),
+        let renderer = UIGraphicsImageRenderer(size: rect.size)
+        let image = renderer.image { _ in
+            UIColor.dw_dashBlue().setFill()
+            UIBezierPath(ovalIn: rect).fill()
 
-            paymentButton.widthAnchor.constraint(equalToConstant: PaymentButton.kCenterCircleSize),
-            paymentButton.heightAnchor.constraint(equalToConstant: PaymentButton.kCenterCircleSize),
-        ])
+            if let icon = UIImage(named: "tabbar_pay_button") {
+                let iconSize = CGSize(width: 22, height: 22)
+                let iconOrigin = CGPoint(x: (size - iconSize.width) / 2, y: (size - iconSize.height) / 2)
+                icon.draw(in: CGRect(origin: iconOrigin, size: iconSize))
+            }
+        }
 
-        tabBar.barTintColor = .dw_background()
+        return image.withRenderingMode(.alwaysOriginal)
     }
 
     private func closePayments(completion: (() -> Void)? = nil) {
-        paymentButton.isOpened = false
-
         guard let top = selectedViewController?.topController(),
               top != selectedViewController
         else {
@@ -427,8 +403,6 @@ extension MainTabbarController: PaymentsViewControllerDelegate {
     }
 
     func paymentsViewControllerWantsToImportPrivateKey(_ controller: PaymentsViewController) {
-        paymentButton.isOpened = false
-
         controller.dismiss(animated: true) {
             self.performScanQRCodeAction()
         }
@@ -447,8 +421,6 @@ extension MainTabbarController: HomeViewControllerDelegate {
     }
 
     func showPaymentsController(withActivePage pageIndex: PaymentsViewControllerState) {
-        paymentButton.isOpened = true
-
         let tab: PaymentsLandingTab
         switch pageIndex {
         case .receive:
@@ -482,7 +454,12 @@ extension MainTabbarController: HomeViewControllerDelegate {
 
 extension MainTabbarController: UITabBarControllerDelegate {
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
-        !(viewController is EmptyController)
+        if viewController is EmptyController {
+            showPaymentsController(withActivePage: .none)
+            return false
+        }
+
+        return true
     }
 }
 
