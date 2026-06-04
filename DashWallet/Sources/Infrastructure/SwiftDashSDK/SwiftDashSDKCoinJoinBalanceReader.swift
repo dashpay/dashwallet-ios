@@ -78,4 +78,23 @@ final class SwiftDashSDKCoinJoinBalanceReader: NSObject {
 
         return total
     }
+
+    /// 🧪 CJTEST (temporary): dump EVERY per-account balance entry the SDK
+    /// tracks — type tag / index / confirmed / unconfirmed / keys — so we can
+    /// see WHERE (if anywhere) funded coins land. If funded coins appear under a
+    /// tag/index other than (1, 0) the reader+sweep filter is wrong; if they
+    /// appear nowhere, the SDK isn't watching that address (path mismatch).
+    /// Remove with the debug console before release.
+    @MainActor
+    static func debugDumpAllBalances() -> [String] {
+        let host = SwiftDashSDKHost.shared
+        guard let manager = host.manager, let wallet = host.wallet else {
+            return ["host has no wallet/manager yet"]
+        }
+        let entries = manager.accountBalances(for: wallet.walletId)
+        guard !entries.isEmpty else { return ["accountBalances: (empty)"] }
+        return entries.map { e in
+            "tag=\(e.typeTag) std=\(e.standardTag) idx=\(e.index) conf=\(e.confirmed) unconf=\(e.unconfirmed) imm=\(e.immature) keys=\(e.keysUsed)/\(e.keysTotal)"
+        }
+    }
 }

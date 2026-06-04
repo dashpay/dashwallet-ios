@@ -27,6 +27,7 @@ enum ToolsMenuNavigationDestination {
     case swiftDashSDKSPVStatus
     case platformSyncStatus
     case storageExplorer
+    case coinJoinRecoveryDebug
 }
 
 @MainActor
@@ -90,6 +91,15 @@ class ToolsMenuViewModel: ObservableObject {
                 icon: .system("cylinder.split.1x2"),
                 action: { [weak self] in
                     self?.navigationDestination = .storageExplorer
+                }
+            ),
+            // 🧪 CJTEST — TEMPORARY debug row; remove before release.
+            MenuItemModel(
+                title: "CoinJoin Recovery 🧪",
+                subtitle: "Debug: fund + sweep CoinJoin",
+                icon: .system("ladybug"),
+                action: { [weak self] in
+                    self?.navigationDestination = .coinJoinRecoveryDebug
                 }
             ),
             MenuItemModel(
