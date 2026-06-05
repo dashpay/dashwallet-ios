@@ -118,11 +118,10 @@ final class CrowdNodeModel {
     var primaryAddress: String? { crowdNode.primaryAddress }
 
     var portalItems: [CrowdNodePortalItem] {
-        let hasAccount = CrowdNode.shared.signUpState == .finished
         return CrowdNodePortalItem.allCases.filter { item in
             switch item {
             case .deposit, .onlineAccount:
-                return hasAccount
+                return false
             default:
                 return true
             }
