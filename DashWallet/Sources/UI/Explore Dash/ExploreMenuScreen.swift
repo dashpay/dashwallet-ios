@@ -32,7 +32,8 @@ struct ExploreMenuScreen: View {
     }
 
     private var hasCrowdNodeAccount: Bool {
-        CrowdNode.shared.signUpState == .finished
+        let state = CrowdNode.shared.signUpState
+        return state == .finished || state == .linkedOnline
     }
 
     init(vc: UINavigationController,

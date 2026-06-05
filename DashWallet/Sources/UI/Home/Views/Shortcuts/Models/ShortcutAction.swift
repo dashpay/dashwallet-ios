@@ -52,7 +52,8 @@ extension ShortcutActionType {
             .send, .scanToPay, .payToAddress,
             .coinbase, .uphold, .topper
         ]
-        if CrowdNode.shared.signUpState == .finished {
+        let state = CrowdNode.shared.signUpState
+        if state == .finished || state == .linkedOnline {
             actions.append(.crowdNode)
         }
         return actions

@@ -718,7 +718,8 @@ extension HomeViewModel {
             }
             .filter { action in
                 if action.type == .crowdNode {
-                    return CrowdNode.shared.signUpState == .finished
+                    let state = CrowdNode.shared.signUpState
+                    return state == .finished || state == .linkedOnline
                 }
                 return true
             }
