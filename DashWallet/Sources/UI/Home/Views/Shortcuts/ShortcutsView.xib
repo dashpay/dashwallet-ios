@@ -29,7 +29,7 @@
                     </constraints>
                 </view>
                 <collectionView multipleTouchEnabled="YES" contentMode="scaleToFill" showsVerticalScrollIndicator="NO" delaysContentTouches="NO" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="nkl-dj-KFj">
-                    <rect key="frame" x="10" y="10" width="430" height="68"/>
+                    <rect key="frame" x="20" y="4" width="410" height="68"/>
                     <color key="backgroundColor" name="BackgroundColor"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="68" id="PfC-em-8tk"/>
@@ -50,18 +50,18 @@
             <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
             <color key="backgroundColor" name="SecondaryBackgroundColor"/>
             <constraints>
-                <constraint firstItem="nkl-dj-KFj" firstAttribute="trailing" secondItem="iN0-l3-epB" secondAttribute="trailingMargin" id="2CW-aY-plM"/>
-                <constraint firstItem="nkl-dj-KFj" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leadingMargin" id="Cvz-Zp-FKq"/>
-                <constraint firstAttribute="bottom" secondItem="nkl-dj-KFj" secondAttribute="bottom" constant="12" id="L1L-Oi-Rfc"/>
+                <constraint firstItem="nkl-dj-KFj" firstAttribute="trailing" secondItem="iN0-l3-epB" secondAttribute="trailing" constant="-20" id="2CW-aY-plM"/>
+                <constraint firstItem="nkl-dj-KFj" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="20" id="Cvz-Zp-FKq"/>
+                <constraint firstAttribute="bottom" secondItem="nkl-dj-KFj" secondAttribute="bottom" constant="4" id="L1L-Oi-Rfc"/>
                 <constraint firstItem="2Zi-tv-jET" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="Oy7-LX-Hpd"/>
                 <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="2Zi-tv-jET" secondAttribute="trailing" id="XaP-SI-ClF"/>
                 <constraint firstItem="2Zi-tv-jET" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="cmG-0b-jh6"/>
-                <constraint firstItem="nkl-dj-KFj" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="10" id="uE6-A6-3Hb"/>
+                <constraint firstItem="nkl-dj-KFj" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="4" id="uE6-A6-3Hb"/>
             </constraints>
             <nil key="simulatedTopBarMetrics"/>
             <nil key="simulatedBottomBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-            <edgeInsets key="layoutMargins" top="0.0" left="10" bottom="0.0" right="10"/>
+            <edgeInsets key="layoutMargins" top="0.0" left="20" bottom="0.0" right="20"/>
             <variation key="widthClass=regular">
                 <edgeInsets key="layoutMargins" top="0.0" left="20" bottom="0.0" right="20"/>
             </variation>

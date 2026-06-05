@@ -19,7 +19,7 @@ import UIKit
 import Combine
 
 func cellSize(for contentSizeCategory: UIContentSizeCategory, viewWidth: CGFloat) -> CGSize {
-    let margin: CGFloat = 10.0       // Figma: container px padding
+    let margin: CGFloat = 20.0       // Outer spacing to the screen edges
     let spacing: CGFloat = 4.0       // Figma: shortcut-bar/gap
     let visibleCells: CGFloat = 4.0
     let cellWidth = floor((viewWidth - margin * 2.0 - spacing * (visibleCells - 1)) / visibleCells)
@@ -49,7 +49,7 @@ protocol ShortcutsViewDelegate: AnyObject {
 // MARK: - ShortcutsView
 
 class ShortcutsView: UIView {
-    private static let verticalPadding: CGFloat = 8.0
+    private static let verticalPadding: CGFloat = 4.0
 
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel: HomeViewModel
@@ -102,11 +102,11 @@ class ShortcutsView: UIView {
             contentView.widthAnchor.constraint(equalTo: widthAnchor),
         ])
 
-        collectionView.layer.cornerRadius = 16
+        collectionView.layer.cornerRadius = 20
         collectionView.layer.masksToBounds = true
 
         if UIDevice.current.userInterfaceIdiom == .pad {
-            collectionView.contentInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0)
+            collectionView.contentInset = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 0)
         }
 
         collectionView.register(UINib(nibName: "DWShortcutCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: ShortcutCell.reuseIdentifier)

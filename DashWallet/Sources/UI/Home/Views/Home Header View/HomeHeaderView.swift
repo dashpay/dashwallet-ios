@@ -32,23 +32,22 @@ protocol HomeHeaderViewDelegate: AnyObject {
 
 final class HomeHeaderView: UIView {
 
+    /// Gap between the shortcut bar and the customize banner. Shared with
+    /// `HomeViewModel.recalculateHeight()` so the fixed header height accounts for it.
+    static let shortcutBarBannerSpacing: CGFloat = 20
+
     public weak var delegate: HomeHeaderViewDelegate?
 
     private(set) var syncView: SyncView!
-    private(set) var shortcutsView: ShortcutsView!
     private(set) var stackView: UIStackView!
 
-    weak var shortcutsDelegate: ShortcutsActionDelegate? {
-        get {
-            shortcutsView.actionDelegate
-        }
-        set {
-            shortcutsView.actionDelegate = newValue
-        }
-    }
+    /// Bridges shortcut taps/long-presses to `HomeViewController`. The SwiftUI bar adapts to it
+    /// via plain closures, so the public API used by `HomeView`/`HomeViewController` is unchanged.
+    weak var shortcutsDelegate: ShortcutsActionDelegate?
 
     private let model: HomeHeaderModel
-    private var bannerHostingController: UIHostingController<ShortcutCustomizeBannerView>?
+    private var bannerHostingController: UIHostingController<AnyView>?
+    private var barHostingController: UIHostingController<AnyView>?
     private var cancellableBag = Set<AnyCancellable>()
 
     init(frame: CGRect, viewModel: HomeViewModel) {
@@ -59,20 +58,40 @@ final class HomeHeaderView: UIView {
         syncView = SyncView.view()
         syncView.delegate = self
 
-        shortcutsView = ShortcutsView(frame: .zero, viewModel: viewModel)
-        shortcutsView.translatesAutoresizingMaskIntoConstraints = false
+        // SwiftUI shortcut bar, hosted like the banner below. Closures adapt to the existing
+        // ShortcutsActionDelegate; the hosting view is clear-backed and self-sizes so the bar's
+        // own backgrounds (blue strip / grey content) show and it sits flush to the top.
+        let barView = ShortcutsBarView(
+            viewModel: viewModel,
+            onSelect: { [weak self] action in
+                self?.shortcutsDelegate?.shortcutsView(didSelectAction: action, sender: nil)
+            },
+            onLongPress: { [weak self] position, action in
+                self?.shortcutsDelegate?.shortcutsView(didLongPressPosition: position, currentAction: action)
+            }
+        )
+        // Paint the 13pt top-padding strip navigation-blue so it merges with the balance above
+        // instead of revealing the white page background (the bar's own grey base background fills
+        // the content area, so the blue only shows through this transparent padding).
+        let barHosting = UIHostingController(
+            rootView: AnyView(barView.padding(.top, 13).background(Color.navigationBarColor))
+        )
+        barHosting.view.translatesAutoresizingMaskIntoConstraints = false
+        barHosting.view.backgroundColor = .clear
+        self.barHostingController = barHosting
 
         // Check if we should show the shortcut customization banner
         viewModel.checkShortcutBanner()
 
-        var views: [UIView] = [shortcutsView]
+        var views: [UIView] = [barHosting.view]
 
         if viewModel.shouldShowShortcutBanner {
             let bannerView = ShortcutCustomizeBannerView(onDismiss: { [weak self] in
                 viewModel.dismissShortcutBanner()
                 self?.hideBanner()
             })
-            let hosting = UIHostingController(rootView: bannerView)
+            
+            let hosting = UIHostingController(rootView: AnyView(bannerView.padding(.horizontal, 20)))
             hosting.view.translatesAutoresizingMaskIntoConstraints = false
             hosting.view.backgroundColor = .clear
             self.bannerHostingController = hosting
@@ -86,6 +105,11 @@ final class HomeHeaderView: UIView {
         stackView.axis = .vertical
         addSubview(stackView)
         self.stackView = stackView
+
+        // Gap between the shortcut bar and the customize banner (only when the banner shows).
+        if bannerHostingController != nil {
+            stackView.setCustomSpacing(Self.shortcutBarBannerSpacing, after: barHosting.view)
+        }
 
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: topAnchor),
@@ -145,14 +169,6 @@ final class HomeHeaderView: UIView {
 
     private func showSyncView() {
         syncView.isHidden = false
-        delegate?.homeHeaderViewDidUpdateContents(self)
-    }
-}
-
-// MARK: ShortcutsViewDelegate
-
-extension HomeHeaderView: ShortcutsViewDelegate {
-    func shortcutsViewDidUpdateContentSize(_ view: ShortcutsView) {
         delegate?.homeHeaderViewDidUpdateContents(self)
     }
 }
