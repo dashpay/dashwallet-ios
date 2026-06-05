@@ -716,6 +716,12 @@ extension HomeViewModel {
                 guard let type = ShortcutActionType(rawValue: number.intValue) else { return nil }
                 return ShortcutAction(type: type)
             }
+            .filter { action in
+                if action.type == .crowdNode {
+                    return CrowdNode.shared.signUpState == .finished
+                }
+                return true
+            }
             if items.count == maxShortcutsCount {
                 DispatchQueue.main.async {
                     self.shortcutItems = items

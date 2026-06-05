@@ -117,7 +117,17 @@ final class CrowdNodeModel {
 
     var primaryAddress: String? { crowdNode.primaryAddress }
 
-    let portalItems: [CrowdNodePortalItem] = CrowdNodePortalItem.allCases
+    var portalItems: [CrowdNodePortalItem] {
+        let hasAccount = CrowdNode.shared.signUpState == .finished
+        return CrowdNodePortalItem.allCases.filter { item in
+            switch item {
+            case .deposit, .onlineAccount:
+                return hasAccount
+            default:
+                return true
+            }
+        }
+    }
     var withdrawalLimits: [Int] { [
         Int(prefs.crowdNodeWithdrawalLimitPerTx / kOneDash),
         Int(prefs.crowdNodeWithdrawalLimitPerHour / kOneDash),
