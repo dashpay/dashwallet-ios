@@ -200,8 +200,6 @@ struct ToolsMenuScreen: View {
             showPlatformSyncStatus()
         case .storageExplorer:
             showStorageExplorer()
-        case .coinJoinRecoveryDebug:
-            showCoinJoinRecoveryDebug()
         case .none:
             break
         }
@@ -223,15 +221,6 @@ struct ToolsMenuScreen: View {
     private func showPlatformSyncStatus() {
         let hosting = UIHostingController(
             rootView: PlatformSyncStatusScreen(vc: vc)
-        )
-        hosting.hidesBottomBarWhenPushed = true
-        vc.pushViewController(hosting, animated: true)
-    }
-
-    // 🧪 CJTEST — TEMPORARY; remove with CoinJoinRecoveryDebugScreen before release.
-    private func showCoinJoinRecoveryDebug() {
-        let hosting = UIHostingController(
-            rootView: CoinJoinRecoveryDebugScreen(vc: vc)
         )
         hosting.hidesBottomBarWhenPushed = true
         vc.pushViewController(hosting, animated: true)
