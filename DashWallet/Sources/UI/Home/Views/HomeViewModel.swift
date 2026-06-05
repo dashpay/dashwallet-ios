@@ -50,6 +50,7 @@ class HomeViewModel: ObservableObject {
     private var txByHash: [String: TransactionListDataItem] = [:]
     private var crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
     private var coinJoinTxSets: [String: CoinJoinMixingTxSet] = [:] // Grouped by date
+    private var coinJoinWithdrawalSet = CoinJoinWithdrawalTxSet() // Single combined "CoinJoin Withdrawals" group (app's sweep tx)
     private var metadataProviders: [MetadataProvider] = []
 
     /// Tracks whether a full reload is currently in progress to prevent race conditions
@@ -263,6 +264,7 @@ class HomeViewModel: ObservableObject {
             let transactions = transactionSource.allTransactions
             self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
             self.coinJoinTxSets = [:]
+            self.coinJoinWithdrawalSet = CoinJoinWithdrawalTxSet()
 
             var items: [TransactionListDataItem] = transactions.compactMap { wrappedTx -> TransactionListDataItem? in
                 Tx.shared.updateRateIfNeeded(for: wrappedTx)
@@ -284,6 +286,23 @@ class HomeViewModel: ObservableObject {
                     self.coinJoinTxSets[date] = coinJoinTxSet
 
                     if coinJoinTxSet.tryInclude(tx: dsTx) {
+                        return nil
+                    }
+                } else if wrappedTx.isCoinJoinMixing {
+                    // SDK-sourced CoinJoin mixing tx — no DSTransaction, so the
+                    // DSCoinJoinWrapper path above can't see it. Group it into the
+                    // same per-day "Mixing Transactions" set via the SDK overload.
+                    let date = DWDateFormatter.sharedInstance.dateOnly(from: wrappedTx.date)
+                    let coinJoinTxSet = self.coinJoinTxSets[date] ?? CoinJoinMixingTxSet()
+                    self.coinJoinTxSets[date] = coinJoinTxSet
+
+                    if coinJoinTxSet.tryInclude(wrappedTx) {
+                        return nil
+                    }
+                } else if wrappedTx.isCoinJoinWithdrawal {
+                    // App-tagged CoinJoin offload (sweep) tx → the single
+                    // combined "CoinJoin Withdrawals" group.
+                    if self.coinJoinWithdrawalSet.tryInclude(wrappedTx) {
                         return nil
                     }
                 }
@@ -308,6 +327,12 @@ class HomeViewModel: ObservableObject {
                     items.append(item)
                     self.txByHash[coinJoinTxSet.id] = item
                 }
+            }
+
+            if !self.coinJoinWithdrawalSet.transactionMap.isEmpty {
+                let item: TransactionListDataItem = .coinjoinWithdrawal(self.coinJoinWithdrawalSet)
+                items.append(item)
+                self.txByHash[self.coinJoinWithdrawalSet.id] = item
             }
 
             let groupedItems = Dictionary(
@@ -871,34 +896,78 @@ protocol TransactionSource {
 /// briefly is acceptable.
 class SwiftDashSDKWalletSource: TransactionSource {
     var allTransactions: Array<Transaction> {
-        let rows: [PersistentTransaction]
+        let wrapped: [Transaction]
         if Thread.isMainThread {
-            rows = MainActor.assumeIsolated { Self.fetchRowsOnMain() }
+            wrapped = MainActor.assumeIsolated { Self.fetchAndWrapOnMain() }
         } else {
-            var fetched: [PersistentTransaction] = []
+            var fetched: [Transaction] = []
             DispatchQueue.main.sync {
-                fetched = MainActor.assumeIsolated { Self.fetchRowsOnMain() }
+                fetched = MainActor.assumeIsolated { Self.fetchAndWrapOnMain() }
             }
-            rows = fetched
+            wrapped = fetched
         }
-        return rows
-            .map { Transaction(persistentTransaction: $0) }
-            .sorted { $0.date > $1.date }
+        return wrapped.sorted { $0.date > $1.date }
     }
 
+    /// Fetch + wrap on the main actor. Wrapping (and the per-tx CoinJoin
+    /// membership computation it performs) must run here, not on the caller's
+    /// background queue: `Transaction.sdkCoinJoinMixing` is derived by walking
+    /// SwiftData relationships (outputs → coreAddress → account), which are
+    /// bound to `mainContext`'s actor. The fetch is fast (<10ms for a few
+    /// hundred rows) so briefly blocking the worker queue is acceptable.
     @MainActor
-    private static func fetchRowsOnMain() -> [PersistentTransaction] {
+    private static func fetchAndWrapOnMain() -> [Transaction] {
         guard let container = SwiftDashSDKHost.shared.modelContainer else {
             return []
         }
         let descriptor = FetchDescriptor<PersistentTransaction>(
             sortBy: [SortDescriptor(\.firstSeen, order: .reverse)])
+        let rows: [PersistentTransaction]
         do {
-            return try container.mainContext.fetch(descriptor)
+            rows = try container.mainContext.fetch(descriptor)
         } catch {
             DSLogger.log("HomeViewModel: PersistentTransaction fetch failed: \(error)")
             return []
         }
+        return rows.map { row -> Transaction in
+            let tx = Transaction(persistentTransaction: row)
+            tx.sdkCoinJoinMixing = Self.isCoinJoinMixingTx(row)
+            return tx
+        }
+    }
+
+    // PersistentAccount.accountType discriminants (stable across releases).
+    private static let coinJoinAccountType: UInt32 = 1 // 0=Standard(BIP44/BIP32), 1=CoinJoin
+    private static let standardAccountType: UInt32 = 0
+
+    /// Account type owning a TXO — canonical path is `coreAddress?.account`;
+    /// `account` is the fallback used before the address row is linked.
+    @MainActor
+    private static func ownerAccountType(_ txo: PersistentTxo) -> UInt32? {
+        (txo.coreAddress?.account ?? txo.account)?.accountType
+    }
+
+    /// CoinJoin mixing-operation detection (main actor — traverses SwiftData
+    /// relationships). DashSync grouped by CoinJoin-account *role*, not tx
+    /// structure, so the SDK's structural `typedKind` (mixing rounds only) is
+    /// too narrow. We classify a tx as a mixing operation when:
+    ///   1. it DEPOSITS into the CoinJoin account (≥1 CoinJoin output) — covers
+    ///      create-denomination, make-collateral-inputs and the mixing rounds; or
+    ///   2. it SPENDS from the CoinJoin account (≥1 CoinJoin input) and deposits
+    ///      nothing into a Standard (BIP44/BIP32) account — i.e. a mixing-fee /
+    ///      collateral spend (the tiny "Sent 0.0001" txs). A Standard output
+    ///      marks the CoinJoin→BIP44 sweep or an internal transfer out, which
+    ///      must stay an individual row — matching DashSync's "Send" exclusion.
+    @MainActor
+    private static func isCoinJoinMixingTx(_ p: PersistentTransaction) -> Bool {
+        if p.typedKind == .coinJoin { return true }
+        if p.outputs.contains(where: { ownerAccountType($0) == coinJoinAccountType }) {
+            return true
+        }
+        let spendsCoinJoin = p.inputs.contains { ownerAccountType($0) == coinJoinAccountType }
+        guard spendsCoinJoin else { return false }
+        let depositsToStandard = p.outputs.contains { ownerAccountType($0) == standardAccountType }
+        return !depositsToStandard
     }
 }
 

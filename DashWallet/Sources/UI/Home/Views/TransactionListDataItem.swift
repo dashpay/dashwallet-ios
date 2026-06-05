@@ -31,6 +31,7 @@ enum TransactionListDataItem {
     case tx(Transaction, TxRowMetadata?)
     case crowdnode(FullCrowdNodeSignUpTxSet)
     case coinjoin(CoinJoinMixingTxSet)
+    case coinjoinWithdrawal(CoinJoinWithdrawalTxSet)
 }
 
 extension TransactionListDataItem: Identifiable {
@@ -39,6 +40,8 @@ extension TransactionListDataItem: Identifiable {
         case .crowdnode(_):
             return FullCrowdNodeSignUpTxSet.id
         case .coinjoin(let set):
+            return set.id
+        case .coinjoinWithdrawal(let set):
             return set.id
         case .tx(let tx, _):
             return tx.txHashHexString
@@ -50,6 +53,8 @@ extension TransactionListDataItem: Identifiable {
         case .crowdnode(let set):
             return set.transactionMap.values.first!.date
         case .coinjoin(let set):
+            return set.groupDay
+        case .coinjoinWithdrawal(let set):
             return set.groupDay
         case .tx(let tx, _):
             return tx.date

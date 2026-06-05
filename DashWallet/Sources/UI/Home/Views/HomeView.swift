@@ -430,6 +430,19 @@ struct HomeViewContent<Content: View>: View {
                 self.selectedTxDataItem = txDataItem
             }
             .frame(height: 80)
+
+        case .coinjoinWithdrawal(let set):
+            let firstTx = set.transactionMap.values.first
+            TransactionPreview(
+                title: NSLocalizedString("CoinJoin Withdrawals", comment: "CoinJoin"),
+                subtitle: firstTx?.shortTimeString ?? "",
+                topText: String.localizedStringWithFormat(NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
+                icon: .custom("tx.item.internal.icon"),
+                dashAmount: set.amount
+            ) {
+                self.selectedTxDataItem = txDataItem
+            }
+            .frame(height: 80)
             
         case .tx(let txItem, let metadata):
             TransactionPreview(
@@ -518,6 +531,14 @@ struct TransactionDetailsSheet: View {
                 }
             )
         case .coinjoin(let set):
+            GroupedTransactionsScreen(
+                model: set,
+                backNavigationRequested: $backNavigationRequested,
+                onShowBackButton: { show in
+                    showBackButton = show
+                }
+            )
+        case .coinjoinWithdrawal(let set):
             GroupedTransactionsScreen(
                 model: set,
                 backNavigationRequested: $backNavigationRequested,

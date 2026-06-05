@@ -494,6 +494,7 @@
 		47F4B6CD29485A8B00AED4C9 /* ConfirmOrderCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F4B6CC29485A8B00AED4C9 /* ConfirmOrderCells.swift */; };
 		47FA3AFF29350929008D58DC /* SyncingActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3AFE29350929008D58DC /* SyncingActivityMonitor.swift */; };
 		47FA3B0229364991008D58DC /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3B0129364991008D58DC /* HTTPClient.swift */; };
+		4C82F4CC545EF336DA11D8E0 /* CoinJoinWithdrawalTxSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A063B43468112BA7E93B79A /* CoinJoinWithdrawalTxSet.swift */; };
 		7502A4872AE401EF00ACDDD3 /* UsernameVotingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7502A4862AE401EF00ACDDD3 /* UsernameVotingViewController.swift */; };
 		7503643A2C89CFB70029EC0D /* CoinJoinProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */; };
 		7503643B2C89CFB70029EC0D /* CoinJoinProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */; };
@@ -626,8 +627,6 @@
 		756557B62CE84FFA0060348D /* FeeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756557B42CE84FF70060348D /* FeeInfo.swift */; };
 		7566F4832BB6949E005238D2 /* ToolsMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */; };
 		7566F4842BB6949E005238D2 /* ToolsMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */; };
-		CAFEBABEDEADBEEF000000F1 /* CoinJoinRecoveryDebugScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAFEBABEDEADBEEF000000F0 /* CoinJoinRecoveryDebugScreen.swift */; };
-		CAFEBABEDEADBEEF000000F2 /* CoinJoinRecoveryDebugScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAFEBABEDEADBEEF000000F0 /* CoinJoinRecoveryDebugScreen.swift */; };
 		7566F48A2BB6CAF2005238D2 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4892BB6CAF2005238D2 /* MenuItem.swift */; };
 		7566F48B2BB6CAF2005238D2 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4892BB6CAF2005238D2 /* MenuItem.swift */; };
 		7569D6832DE6DA6800768BFF /* ExploreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7569D6822DE6DA6800768BFF /* ExploreViewController.swift */; };
@@ -789,10 +788,12 @@
 		75FFD6C52BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C32BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift */; };
 		75FFD6C72BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
 		75FFD6C82BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
+		85ACE88D5CB4C6A41DFC8204 /* CoinJoinWithdrawalTxSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A063B43468112BA7E93B79A /* CoinJoinWithdrawalTxSet.swift */; };
 		893AE6F535290DD1CEE89219 /* ImportPrivateKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53435DCAF024BC82E0247F3 /* ImportPrivateKeySheet.swift */; };
 		8A7607606A594C6E99A2FAC7 /* DerivationPathKeysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC1F4DB87C442BEABDF0DB2 /* DerivationPathKeysView.swift */; };
 		91F0B8B92F3FAB7C00E713AE /* KeysOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F0B8B82F3FAB7C00E713AE /* KeysOverviewView.swift */; };
 		91F0B8BA2F3FAB7C00E713AE /* KeysOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F0B8B82F3FAB7C00E713AE /* KeysOverviewView.swift */; };
+		99E48BDCD767A5233189CC59 /* CoinJoinWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13AA99A0E952A99D1C22EA1 /* CoinJoinWithdrawalStore.swift */; };
 		A0795C9369A1402498C00F69 /* DerivationPathKeysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC1F4DB87C442BEABDF0DB2 /* DerivationPathKeysView.swift */; };
 		A30AF4A11189A2EFB04EB535 /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C22BC09CF6178544B2300A4 /* libPods-WatchApp Extension.a */; };
 		A5D5DD0000000000000000B1 /* SwiftDashSDK in Frameworks */ = {isa = PBXBuildFile; productRef = A5D5DD0000000000000000B2 /* SwiftDashSDK */; };
@@ -892,6 +893,7 @@
 		A5D5DD000000000000001112 /* DWProfileUpdateBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001009 /* DWProfileUpdateBridge.swift */; };
 		A5D5DD000000000000001114 /* DWContestedNameStatusService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000100A /* DWContestedNameStatusService.swift */; };
 		A5D5DD000000000000001201 /* DWRegistrationPhaseAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001200 /* DWRegistrationPhaseAdapterTests.swift */; };
+		A8990032BA8C9AF46AA51EFA /* CoinJoinWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13AA99A0E952A99D1C22EA1 /* CoinJoinWithdrawalStore.swift */; };
 		AA0000012DUMMYID001234567 /* AddProviderToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000032DUMMYID001234567 /* AddProviderToGiftCardsTable.swift */; };
 		AA0000022DUMMYID001234567 /* AddProviderToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000032DUMMYID001234567 /* AddProviderToGiftCardsTable.swift */; };
 		AA0000042DUMMYID001234567 /* GiftCardProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000062DUMMYID001234567 /* GiftCardProvider.swift */; };
@@ -1717,6 +1719,8 @@
 		C9F4520B2A1209D100825057 /* HomeHeaderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F4520A2A1209D100825057 /* HomeHeaderModel.swift */; };
 		C9FAABB52AB793CE00878224 /* BuySellPortal.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C9FAABB42AB793CE00878224 /* BuySellPortal.storyboard */; };
 		C9FAABB72AB799AE00878224 /* UpholdPortalModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9FAABB62AB799AE00878224 /* UpholdPortalModel.swift */; };
+		CAFEBABEDEADBEEF000000F1 /* CoinJoinRecoveryDebugScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAFEBABEDEADBEEF000000F0 /* CoinJoinRecoveryDebugScreen.swift */; };
+		CAFEBABEDEADBEEF000000F2 /* CoinJoinRecoveryDebugScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAFEBABEDEADBEEF000000F0 /* CoinJoinRecoveryDebugScreen.swift */; };
 		CC0000112DUMMYID001234567 /* PiggyCardsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000062DUMMYID001234567 /* PiggyCardsAPI.swift */; };
 		CC0000122DUMMYID001234567 /* PiggyCardsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000062DUMMYID001234567 /* PiggyCardsAPI.swift */; };
 		CC0000132DUMMYID001234567 /* PiggyCardsCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000072DUMMYID001234567 /* PiggyCardsCache.swift */; };
@@ -2351,6 +2355,7 @@
 		2AFF01DA243F4559003718DC /* DWDPRegistrationStatus.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPRegistrationStatus.m; sourceTree = "<group>"; };
 		2E17397DF35152CAFBB79068 /* Pods-WatchApp Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.debug.xcconfig"; path = "Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.debug.xcconfig"; sourceTree = "<group>"; };
 		38C4CA9D73A147BA44601741 /* libPods-WatchApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3A063B43468112BA7E93B79A /* CoinJoinWithdrawalTxSet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoinJoinWithdrawalTxSet.swift; sourceTree = "<group>"; };
 		3C20BCC772DF4075F8EADAE0 /* libPods-DashWalletScreenshotsUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletScreenshotsUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		470617D5299A671900DCC667 /* CrowdNodeCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeCell.swift; sourceTree = "<group>"; };
 		47081196298CF20B003FCA3D /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
@@ -2627,7 +2632,6 @@
 		755E6DFD2A99E7A000A42870 /* DWInvitationSetupState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInvitationSetupState.h; sourceTree = "<group>"; };
 		756557B42CE84FF70060348D /* FeeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeInfo.swift; sourceTree = "<group>"; };
 		7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsMenuScreen.swift; sourceTree = "<group>"; };
-		CAFEBABEDEADBEEF000000F0 /* CoinJoinRecoveryDebugScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinRecoveryDebugScreen.swift; sourceTree = "<group>"; };
 		7566F4892BB6CAF2005238D2 /* MenuItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuItem.swift; sourceTree = "<group>"; };
 		7569D6822DE6DA6800768BFF /* ExploreViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreViewController.swift; sourceTree = "<group>"; };
 		7569D6852DE6DB1B00768BFF /* ExploreHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreHeaderView.swift; sourceTree = "<group>"; };
@@ -3285,6 +3289,7 @@
 		C9F4520A2A1209D100825057 /* HomeHeaderModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeHeaderModel.swift; sourceTree = "<group>"; };
 		C9FAABB42AB793CE00878224 /* BuySellPortal.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BuySellPortal.storyboard; sourceTree = "<group>"; };
 		C9FAABB62AB799AE00878224 /* UpholdPortalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpholdPortalModel.swift; sourceTree = "<group>"; };
+		CAFEBABEDEADBEEF000000F0 /* CoinJoinRecoveryDebugScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinRecoveryDebugScreen.swift; sourceTree = "<group>"; };
 		CC0000062DUMMYID001234567 /* PiggyCardsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsAPI.swift; sourceTree = "<group>"; };
 		CC0000072DUMMYID001234567 /* PiggyCardsCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsCache.swift; sourceTree = "<group>"; };
 		CC0000082DUMMYID001234567 /* PiggyCardsEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsEndpoint.swift; sourceTree = "<group>"; };
@@ -3296,6 +3301,7 @@
 		D8081505E0E9F335B395C4FA /* CoinJoinRecovery.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoinJoinRecovery.swift; sourceTree = "<group>"; };
 		D8BD81810F2B0C11C86E7A5E /* Pods-DashWalletTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.release.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.release.xcconfig"; sourceTree = "<group>"; };
 		D96AAF71E3E67F7AD309BCC4 /* Pods-TodayExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.release.xcconfig"; path = "Target Support Files/Pods-TodayExtension/Pods-TodayExtension.release.xcconfig"; sourceTree = "<group>"; };
+		E13AA99A0E952A99D1C22EA1 /* CoinJoinWithdrawalStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoinJoinWithdrawalStore.swift; sourceTree = "<group>"; };
 		E57EEDA37189E949FBAAA627 /* Pods-WatchApp Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.release.xcconfig"; path = "Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.release.xcconfig"; sourceTree = "<group>"; };
 		EDE78DB35CE393ADB4F3C5DD /* Pods-TodayExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.debug.xcconfig"; path = "Target Support Files/Pods-TodayExtension/Pods-TodayExtension.debug.xcconfig"; sourceTree = "<group>"; };
 		EE0000032DUMMYID001234567 /* POIDetailsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POIDetailsViewModel.swift; sourceTree = "<group>"; };
@@ -6249,6 +6255,8 @@
 				7503643D2C89D49A0029EC0D /* CoinJoinService.swift */,
 				753FD7E12CA44BDD00B7751F /* CoinJoinProgress.swift */,
 				D8081505E0E9F335B395C4FA /* CoinJoinRecovery.swift */,
+				E13AA99A0E952A99D1C22EA1 /* CoinJoinWithdrawalStore.swift */,
+				3A063B43468112BA7E93B79A /* CoinJoinWithdrawalTxSet.swift */,
 			);
 			path = CoinJoin;
 			sourceTree = "<group>";
@@ -9472,6 +9480,8 @@
 				893AE6F535290DD1CEE89219 /* ImportPrivateKeySheet.swift in Sources */,
 				B79BF2D3B0AA8CCD0E43D4FB /* SwiftDashSDKCoinJoinBalanceReader.swift in Sources */,
 				1757908E42D241CC48B277ED /* CoinJoinRecovery.swift in Sources */,
+				99E48BDCD767A5233189CC59 /* CoinJoinWithdrawalStore.swift in Sources */,
+				4C82F4CC545EF336DA11D8E0 /* CoinJoinWithdrawalTxSet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -10427,6 +10437,8 @@
 				3A0C6A2A57DFF02865E36200 /* ImportPrivateKeySheet.swift in Sources */,
 				103055A5122610EE8ACB5CA2 /* SwiftDashSDKCoinJoinBalanceReader.swift in Sources */,
 				40E95C8539D80D6001ED0E72 /* CoinJoinRecovery.swift in Sources */,
+				A8990032BA8C9AF46AA51EFA /* CoinJoinWithdrawalStore.swift in Sources */,
+				85ACE88D5CB4C6A41DFC8204 /* CoinJoinWithdrawalTxSet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

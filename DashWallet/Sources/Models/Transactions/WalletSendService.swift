@@ -117,7 +117,12 @@ final class WalletSendService: NSObject {
             )
         }
 
-        _ = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination)
+        let (_, txHash) = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination)
+        // Tag this sweep's txid so the home screen groups it into the
+        // "CoinJoin Withdrawals" cell. The sender returns a display-order
+        // (byte-reversed) hash; store wire order to match
+        // PersistentTransaction.txid / Transaction.txHashData.
+        CoinJoinWithdrawalStore.shared.record(txid: Data(txHash.reversed()))
         Self.logger.info("💸 TXSEND :: CoinJoin sweep broadcast")
 
         await MainActor.run {

@@ -71,6 +71,47 @@ class Transaction: TransactionDataItem, Identifiable {
         return nil
     }
 
+    /// CoinJoin "mixing operation" flag for SwiftDashSDK-sourced txs — drives
+    /// grouping into the single "Mixing Transactions" home-screen row.
+    ///
+    /// Computed and cached on the MAIN actor at wrap time
+    /// (`SwiftDashSDKWalletSource.fetchAndWrapOnMain`), because deciding
+    /// membership traverses SwiftData relationships (outputs → coreAddress →
+    /// account) that are bound to the model-context actor and must not be read
+    /// from the background grouping queue. Defaults to false; the home tx source
+    /// is the sole producer of `.sdk` wrappers and always populates it.
+    /// DS-sourced txs use the legacy `DSCoinJoinWrapper` path, so this stays
+    /// false for them.
+    var sdkCoinJoinMixing: Bool = false
+
+    /// True only for SwiftDashSDK-sourced CoinJoin mixing transactions. The flag
+    /// is computed via CoinJoin-account *role* (a tx that deposits into the
+    /// CoinJoin account, or spends a fee/collateral from it without depositing
+    /// to a Standard account — see `SwiftDashSDKWalletSource.isCoinJoinMixingTx`),
+    /// NOT just the SDK's structural `typedKind`, which only tags the mixing
+    /// *rounds* and misses create-denomination / collateral / mixing-fee txs.
+    var isCoinJoinMixing: Bool {
+        if case .sdk = source { return sdkCoinJoinMixing }
+        return false
+    }
+
+    /// Raw signed wallet net change (duffs) for SDK-sourced txs; nil for DS.
+    /// Used to total a CoinJoin mixing group's cost: summing this across the
+    /// group yields the net wallet change (mixing rounds net ~0; denomination /
+    /// fee txs net `-fee`), i.e. the total mixing fee paid (negative).
+    var sdkNetAmount: Int64? {
+        if case .sdk(let p) = source { return p.netAmount }
+        return nil
+    }
+
+    /// True when this tx is the app's CoinJoin offload (sweep) tx — tagged on
+    /// sweep success in `CoinJoinWithdrawalStore`. Drives grouping into the
+    /// single "CoinJoin Withdrawals" home cell. Source-agnostic txid lookup
+    /// (cheap, thread-safe, no SwiftData traversal — unlike `isCoinJoinMixing`).
+    var isCoinJoinWithdrawal: Bool {
+        CoinJoinWithdrawalStore.shared.contains(txHashData)
+    }
+
     var id: String {
         switch source {
         case .ds(let dsTx): return dsTx.txHashHexString

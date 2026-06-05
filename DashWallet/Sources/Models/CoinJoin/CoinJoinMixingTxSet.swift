@@ -120,4 +120,47 @@ final class CoinJoinMixingTxSet: GroupedTransactions, TransactionWrapper {
 
         return true
     }
+
+    /// SwiftDashSDK variant of `tryInclude`. The legacy overload above needs a
+    /// `DSTransaction` (for `DSCoinJoinWrapper`'s per-tx classification); SDK
+    /// rows carry no `DSTransaction`, but the wallet already classifies them by
+    /// CoinJoin-account membership, so we gate on `Transaction.isCoinJoinMixing`
+    /// (a tx with ≥1 output owned by the CoinJoin account — see
+    /// `SwiftDashSDKWalletSource.isCoinJoinMixingTx`) and store the wrapper directly.
+    /// Same per-calendar-day grouping as the DS path. A `CoinJoinMixingTxSet`
+    /// is rebuilt from scratch on every full `reloadTxDataSource`, so `_amount`
+    /// accumulates each tx exactly once per build (no cross-reload double count).
+    @discardableResult
+    func tryInclude(_ tx: Transaction) -> Bool {
+        guard tx.isCoinJoinMixing else { return false }
+
+        let key = tx.txHashData
+
+        txMapLock.lock()
+        if _transactionMap[key] != nil {
+            // Already in this build — refresh the stored wrapper (state may have
+            // advanced, e.g. mempool → confirmed) without re-counting the amount.
+            _transactionMap[key] = tx
+            txMapLock.unlock()
+            return true
+        }
+        let isEmpty = _transactionMap.isEmpty
+        txMapLock.unlock()
+
+        if isEmpty {
+            groupDay = tx.date
+        } else if !Calendar.current.isDate(tx.date, inSameDayAs: groupDay) {
+            return false
+        }
+
+        txMapLock.lock()
+        _transactionMap[key] = tx
+        txMapLock.unlock()
+
+        amountLock.lock()
+        _amount += (tx.sdkNetAmount ?? 0)
+        amountLock.unlock()
+
+        return true
+    }
 }
