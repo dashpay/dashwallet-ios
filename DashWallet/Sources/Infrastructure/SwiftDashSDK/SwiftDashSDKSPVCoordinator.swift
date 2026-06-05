@@ -178,12 +178,12 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             restrictToConfiguredPeers: false,
             startFromHeight: 0)
 
-        // One-time wide CoinJoin recovery scan: for wallets that used CoinJoin,
-        // widen the CoinJoin address gap (matching DashSync) and pre-generate
-        // the addresses BEFORE startSpv, so the initial filter already covers
-        // the full window and scattered mixed coins are found. No-op for
-        // wallets that never used CoinJoin; reverts automatically once
-        // recovered.
+        // One-time wide CoinJoin recovery scan: on the first launch (per
+        // network) of every wallet, widen the CoinJoin address gap (matching
+        // DashSync) and pre-generate the addresses BEFORE startSpv, so the
+        // initial filter already covers the full window and scattered mixed
+        // coins are found. Reverts to the default gap once the scan completes
+        // (a near-empty one-time scan for wallets that never used CoinJoin).
         applyCoinJoinRecoveryGapIfNeeded(for: network)
 
         do {
@@ -233,11 +233,12 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     // MARK: - CoinJoin recovery (one-time wide gap)
 
-    /// Widen the CoinJoin address gap limit for a one-time recovery scan when
-    /// the active wallet is flagged as having used CoinJoin (see
-    /// `CoinJoinRecovery`). Must run BEFORE `startSpv` so the initial filter
-    /// covers the wide window. No-op otherwise. Best-effort: a failure is
-    /// logged and leaves the recovery flag set to retry next launch.
+    /// Widen the CoinJoin address gap limit for the one-time recovery scan —
+    /// applied on the first launch per network for every wallet, until the
+    /// recovery flag is set (see `CoinJoinRecovery`). Must run BEFORE `startSpv`
+    /// so the initial filter covers the wide window. No-op once recovered.
+    /// Best-effort: a failure is logged and leaves the flag unset to retry next
+    /// launch.
     @MainActor
     private func applyCoinJoinRecoveryGapIfNeeded(for network: Network) {
         coinJoinRecoveryWidenedNetwork = nil
@@ -261,21 +262,22 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
     }
 
-    /// After a full recovery-scan sync, mark recovery complete if nothing
-    /// remains to recover, so future launches revert to the fast default gap.
-    /// If a balance remains, leave the flag set — the wide window persists
-    /// across launches until the user sweeps (cleared then in
-    /// `WalletSendService.sweepCoinJoin()`).
+    /// After a widened recovery scan reaches `.synced`, mark recovery complete
+    /// so future launches revert to the fast default gap. One completed wide
+    /// scan is sufficient: the deep CoinJoin (4') UTXOs it discovered — and
+    /// their address metadata — are persisted and reload on every later launch
+    /// independently of the gap limit, so re-widening would only re-find the
+    /// same coins. An interrupted scan never reaches `.synced`, so it safely
+    /// retries next launch. (Sweeping is the user's separate choice and no
+    /// longer drives re-scanning.)
     @MainActor
     private func maybeCompleteCoinJoinRecovery(state: SPVSyncState) {
         guard state == .synced,
               let network = coinJoinRecoveryWidenedNetwork,
               network == runningNetwork else { return }
 
-        if SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs <= CoinJoinRecovery.recoveryDustThresholdDuffs {
-            CoinJoinRecovery.shared.markRecovered(for: network)
-            coinJoinRecoveryWidenedNetwork = nil
-        }
+        CoinJoinRecovery.shared.markRecovered(for: network)
+        coinJoinRecoveryWidenedNetwork = nil
     }
 
     /// DEBUG / TEST ONLY (🧪 CJTEST). Unconditionally widen the CoinJoin

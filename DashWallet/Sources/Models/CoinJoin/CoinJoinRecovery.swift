@@ -11,26 +11,29 @@
 //  post-migration scan at gap 30 would silently miss deep coins → balance
 //  understated, funds appear lost.
 //
-//  To keep normal sync fast for everyone (a wider gap means more watched
-//  scripts → more BIP158 false positives → more full-block downloads), the
-//  wide recovery window is applied ONLY for wallets that actually used CoinJoin
-//  and ONLY until recovery is complete:
+//  The wide recovery window runs ONCE on the first launch (per network) of
+//  every wallet, then reverts to the fast default gap. We deliberately do NOT
+//  detect "did this wallet use CoinJoin?" first: that signal (DashSync's
+//  used-address state) isn't reliably loaded when the SDK SPV start reads it,
+//  so detection silently skipped the widen and understated balances. A one-time
+//  wide scan for every wallet (a near-empty scan for those that never mixed) is
+//  the robust trade — a wider gap means more watched scripts → more BIP158
+//  false positives → more full-block downloads, but only on that first scan.
 //
-//    • Detection (this file) reads DashSync's persisted used-CoinJoin-address
-//      state — reconstructed from Core Data on account load, no network sync
-//      needed — on every launch until recovery completes (see the TODO below),
-//      while DashSync is still linked. usedCoinJoinReceiveAddresses count > 0 ⇒
-//      widen.
+//    • `needsWideRecoveryGap` (this file) returns true until a terminal
+//      per-network flag is set — no DashSync read.
 //    • `SwiftDashSDKSPVCoordinator.performStart` widens the CoinJoin gap (via
-//      the SDK's `setCoinJoinGapLimit`) before `startSpv` whenever the flag is
-//      set, so the recovery scan covers the full window.
+//      the SDK's `setCoinJoinGapLimit`) before `startSpv` while the flag is
+//      unset, so the recovery scan covers the full window.
 //    • Recovery is marked complete — reverting future launches to the fast
-//      default gap — when the coins are swept (`WalletSendService`) or when a
-//      full recovery-scan sync confirms there is nothing (left) to recover
-//      (`SwiftDashSDKSPVCoordinator`).
+//      default gap — when the first full recovery-scan sync completes (the deep
+//      coins it found are then persisted and reload at the default gap), or
+//      when the coins are swept (`WalletSendService`). See
+//      `SwiftDashSDKSPVCoordinator.maybeCompleteCoinJoinRecovery`.
 //
-//  This is the single app-side place that reads DashSync's CoinJoin history, so
-//  it is the only file to revisit when DashSync is eventually unlinked.
+//  The lone remaining DashSync touch is `markCurrentNetworkRecovered`, which
+//  reads `currentChain` only to infer the network — revisit when DashSync is
+//  eventually unlinked.
 //
 
 import Foundation
@@ -50,9 +53,10 @@ final class CoinJoinRecovery: NSObject {
     /// `SEQUENCE_GAP_LIMIT_INITIAL_COINJOIN`.
     static let recoveryGapLimit: UInt32 = 400
 
-    /// CoinJoin balances at or below this (duffs) are treated as "nothing to
-    /// recover". Mirrors `SettingsMenuViewModel.minCoinJoinSweepDuffs` so the
-    /// flag clears exactly when the sweep surfaces stop offering to move funds.
+    /// CoinJoin balances at or below this (duffs) are treated as "nothing worth
+    /// sweeping" — the floor below which the post-sync "move funds" surfaces
+    /// stay hidden (see `HomeViewModel`). Mirrors
+    /// `SettingsMenuViewModel.minCoinJoinSweepDuffs`.
     static let recoveryDustThresholdDuffs: UInt64 = 1000
 
     private let defaults = UserDefaults.standard
@@ -65,47 +69,35 @@ final class CoinJoinRecovery: NSObject {
     private func networkTag(_ network: Network) -> String {
         network == .mainnet ? "mainnet" : "testnet"
     }
-    /// Terminal per-network flag: set once recovery completes (coins swept, or a
-    /// full wide-gap scan found nothing left). Once set we never widen again,
-    /// even though DashSync's used-address history persists. (The older
-    /// `…evaluated` / `…needed` keys are no longer used; any stale values are
-    /// harmless.)
+    /// Terminal per-network flag: set once the first full wide-gap scan
+    /// completes (the deep coins it found are persisted thereafter) or the
+    /// coins are swept. Once set we never widen again, even though DashSync's
+    /// used-address history persists. (The older `…evaluated` / `…needed` keys
+    /// are no longer used; any stale values are harmless.)
     private func recoveredKey(_ network: Network) -> String {
         "coinJoinRecovery.v1.recovered.\(networkTag(network))"
     }
 
     // MARK: - API
 
-    // TODO(coinjoin-recovery — revisit before release):
-    //  1. This RE-EVALUATES DashSync's used-CoinJoin-address state on every call
-    //     (until recovery is marked complete) instead of caching a one-time
-    //     result — so an account not yet loaded at first launch is still picked
-    //     up on a later launch. Reconsider the per-launch read / caching once the
-    //     end-to-end flow is verified on a real pre-migration mixed wallet.
-    //  2. Detection is DashSync-dependent — revise/remove this whole path when
-    //     DashSync is unlinked.
+    // TODO(coinjoin-recovery): `markCurrentNetworkRecovered` still infers the
+    // network from DashSync's `currentChain` — replace when DashSync is unlinked.
 
-    /// Whether the wide CoinJoin recovery gap should be applied for `network`.
-    /// Re-evaluates DashSync's live used-CoinJoin-address state on every call
-    /// until recovery is marked complete (then it's terminally off).
-    ///
-    /// `@MainActor` because it touches DashSync's `DSAccount` (Core Data,
-    /// main-thread-affine). Called from `performStart` (@MainActor).
-    @MainActor
+    /// Whether the one-time wide CoinJoin recovery gap should be applied for
+    /// `network`. True until the recovery scan has completed once (then the
+    /// terminal flag turns it off). Applied to every wallet on its first launch
+    /// per network — no "did this wallet use CoinJoin?" detection, because that
+    /// signal isn't reliably loaded when the SDK SPV start reads it. The full
+    /// window is scanned once; the deep UTXOs it finds are persisted, so later
+    /// launches load them at the default gap.
     func needsWideRecoveryGap(for network: Network) -> Bool {
         lock.lock(); defer { lock.unlock() }
-
-        // Terminal: once recovery completed we never widen again — even though
-        // DashSync's used-address history persists.
-        if defaults.bool(forKey: recoveredKey(network)) {
-            return false
-        }
-        return evaluateLive(for: network)
+        return !defaults.bool(forKey: recoveredKey(network))
     }
 
-    /// Mark recovery complete for `network` — coins swept, or the wide scan
-    /// confirmed there is nothing to recover — so future launches revert to
-    /// the fast default gap. Idempotent and thread-safe.
+    /// Mark recovery complete for `network` — the first wide-gap scan completed
+    /// (deep coins now persisted), or the coins were swept — so future launches
+    /// revert to the fast default gap. Idempotent and thread-safe.
     func markRecovered(for network: Network) {
         lock.lock(); defer { lock.unlock() }
         guard !defaults.bool(forKey: recoveredKey(network)) else { return }
@@ -120,28 +112,5 @@ final class CoinJoinRecovery: NSObject {
     @objc func markCurrentNetworkRecovered() {
         let network: Network = DWEnvironment.sharedInstance().currentChain.isMainnet() ? .mainnet : .testnet
         markRecovered(for: network)
-    }
-
-    // MARK: - Detection (DashSync-backed, live each launch until recovered)
-
-    @MainActor
-    private func evaluateLive(for network: Network) -> Bool {
-        // Only evaluate when DashSync's current chain matches the network we're
-        // about to scan, so we read the right chain's CoinJoin history. If they
-        // don't match yet, defer — the next launch on the right chain re-checks.
-        let chainIsMainnet = DWEnvironment.sharedInstance().currentChain.isMainnet()
-        guard (network == .mainnet) == chainIsMainnet else {
-            // Wrong chain loaded — defer; the next launch on the right chain re-checks.
-            return false
-        }
-
-        // `usedCoinJoinReceiveAddresses` is reconstructed from DashSync's
-        // persisted address-usage (Core Data) on account load — no fresh sync
-        // required. count > 0 ⇒ this wallet has CoinJoin history. `currentAccount`
-        // is non-optional (NS_ASSUME_NONNULL) and loaded by the time the SDK
-        // SPV start runs; only the addresses array itself is nullable.
-        let usedCount = DWEnvironment.sharedInstance().currentAccount
-            .usedCoinJoinReceiveAddresses?.count ?? 0
-        return usedCount > 0
     }
 }
