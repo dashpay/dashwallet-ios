@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "control-close.png",
+      "filename" : "Close.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "control-close@2x.png",
+      "filename" : "Close@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "control-close@3x.png",
+      "filename" : "Close@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
@@ -21,7 +21,6 @@
     "version" : 1
   },
   "properties" : {
-    "localizable" : true,
-    "template-rendering-intent" : "template"
+    "localizable" : true
   }
 }

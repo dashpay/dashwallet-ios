@@ -22,18 +22,17 @@ struct ShortcutCustomizeBannerView: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            Image("shortcut_customize_banner")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 24, height: 24)
+            Icon(name: .custom("menu-shortcuts"))
+                .frame(width: 26, height: 26)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(NSLocalizedString("Customize shortcut bar", comment: "Shortcut banner"))
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(Color(.dw_darkTitle()))
+                    .font(.footnoteMedium)
+                    .foregroundStyle(Color.primaryText)
+
                 Text(NSLocalizedString("Hold any button above to replace it with the function you need", comment: "Shortcut banner"))
-                    .font(.system(size: 13))
-                    .foregroundColor(Color(.dw_secondaryText()))
+                    .font(.footnote)
+                    .foregroundStyle(Color.gray500)
             }
 
             Spacer(minLength: 0)
@@ -47,11 +46,27 @@ struct ShortcutCustomizeBannerView: View {
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color(.dw_background()))
-                .shadow(color: Color(red: 0.72, green: 0.76, blue: 0.80).opacity(0.1), radius: 10, x: 0, y: 5)
-        )
-        .padding(.horizontal, 20)
+        .background(Color.white)
+        .clipShape(.rect(cornerRadius: 20))
+        .shadow(color: Color.shadow, radius: 10, x: 0, y: 5)
     }
 }
+
+#if DEBUG
+private func bannerPreview() -> some View {
+    ShortcutCustomizeBannerView(onDismiss: {})
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .padding(.vertical, 20)
+        .padding(.horizontal, 20)
+        .background(Color.primaryBackground)
+}
+
+#Preview("Light") {
+    bannerPreview()
+}
+
+#Preview("Dark") {
+    bannerPreview()
+        .preferredColorScheme(.dark)
+}
+#endif

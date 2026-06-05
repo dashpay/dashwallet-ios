@@ -29,7 +29,7 @@ struct ShortcutSelectionView: View {
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack {
+            VStack(alignment: .leading, spacing: 2) {
                 if availableActions.isEmpty {
                     Text(NSLocalizedString("All shortcuts are already in use", comment: "Shortcut selection empty state"))
                         .font(.subheadline)

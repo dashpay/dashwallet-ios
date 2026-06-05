@@ -532,7 +532,10 @@ class HomeViewModel: ObservableObject {
         }
 
         if shouldShowShortcutBanner {
-            height += 70
+            // Banner height + the gap between the bar and the banner (added via setCustomSpacing
+            // in HomeHeaderView). Without the gap term the fixed header height is too short and
+            // the .fill stack shrinks the bar, shifting its card upward.
+            height += 70 + HomeHeaderView.shortcutBarBannerSpacing
         }
 
         self.headerHeight = height
