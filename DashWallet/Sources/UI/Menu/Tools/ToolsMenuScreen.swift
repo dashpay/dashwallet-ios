@@ -130,6 +130,14 @@ struct ToolsMenuScreen: View {
         } message: {
             Text(NSLocalizedString("All payments will be considered as an Expense and all incoming transactions will be Income. The owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.", comment: ""))
         }
+        .alert(NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"), isPresented: $viewModel.showCoinJoinSweepConfirmation) {
+            Button(NSLocalizedString("Move funds", comment: "CoinJoin")) {
+                Task { await viewModel.performCoinJoinSweep() }
+            }
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+        } message: {
+            Text(String(format: NSLocalizedString("Move your %@ in mixed coins to your spendable balance? CoinJoin is no longer supported.", comment: "CoinJoin"), viewModel.coinJoinLeftoverFormatted))
+        }
         .sheet(isPresented: $showCSVExportActivity) {
             if let csvData = viewModel.csvExportData {
                 ActivityView(activityItems: [csvData.file])
