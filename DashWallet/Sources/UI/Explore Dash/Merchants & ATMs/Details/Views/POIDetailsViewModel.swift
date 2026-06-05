@@ -79,12 +79,14 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
         guard let provider = provider, let repository = repositories[provider] else { return }
 
         repository.isUserSignedInPublisher
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] isSignedIn in
                 self?.isUserSignedIn = isSignedIn
             }
             .store(in: &cancellableBag)
 
         repository.userEmailPublisher
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] email in
                 self?.userEmail = email
             }
@@ -228,10 +230,14 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
 
         do {
             let merchantResponse = try await repository.getMerchant(merchantId: m.merchantId)
-            merchantEnabled = merchantResponse.enabled
+            await MainActor.run {
+                self.merchantEnabled = merchantResponse.enabled
+            }
         } catch {
             // On error, default to enabled to avoid blocking legitimate purchases
-            merchantEnabled = true
+            await MainActor.run {
+                self.merchantEnabled = true
+            }
         }
     }
     
