@@ -117,13 +117,25 @@ final class WalletSendService: NSObject {
             )
         }
 
-        let (_, txHash) = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination)
-        // Tag this sweep's txid so the home screen groups it into the
-        // "CoinJoin Withdrawals" cell. The sender returns a display-order
-        // (byte-reversed) hash; store wire order to match
-        // PersistentTransaction.txid / Transaction.txHashData.
-        CoinJoinWithdrawalStore.shared.record(txid: Data(txHash.reversed()))
-        Self.logger.info("💸 TXSEND :: CoinJoin sweep broadcast")
+        let txids = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination)
+        guard !txids.isEmpty else {
+            // A reported-success sweep that produced no transaction is treated
+            // as a failure, so the caller surfaces an error (the sweep alert)
+            // rather than silently "succeeding" with the balance unchanged.
+            throw Self.makeError(
+                code: .coinJoinSweepUnavailable,
+                description: "CoinJoin sweep produced no transactions"
+            )
+        }
+        // Tag every sweep tx's txid so the home screen groups them into the
+        // single "CoinJoin Withdrawals" cell. A large UTXO set is swept across
+        // multiple transactions (chunks); the sender returns wire-order txids
+        // (matching PersistentTransaction.txid / Transaction.txHashData), so
+        // record each directly.
+        for txid in txids {
+            CoinJoinWithdrawalStore.shared.record(txid: txid)
+        }
+        Self.logger.info("💸 TXSEND :: CoinJoin sweep broadcast — \(txids.count) tx(s)")
 
         await MainActor.run {
             SwiftDashSDKWalletState.shared.refreshCoinJoinBalance()

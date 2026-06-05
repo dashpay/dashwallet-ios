@@ -83,10 +83,11 @@ final class SwiftDashSDKTransactionSender: NSObject {
     // MARK: - CoinJoin Sweep
 
     /// Sweep the entire CoinJoin-account balance to `address` (the user's own
-    /// BIP44 receive address) in a single transaction, fully emptying the
-    /// CoinJoin account. Build + sign + broadcast are bundled by the SDK's
-    /// `coreWallet().sweepCoinJoinAccount(...)` FFI call, mirroring
-    /// `buildAndSign`.
+    /// BIP44 receive address), fully emptying the CoinJoin account. Build +
+    /// sign + broadcast are bundled by the SDK's
+    /// `coreWallet().sweepCoinJoinAccount(...)` FFI call, which splits the
+    /// sweep across one or more transactions when the UTXO set is too large
+    /// for a single relayable transaction (a heavy mixer).
     ///
     /// Used by the post-migration "move your mixed coins" flow: CoinJoin is no
     /// longer supported, so we move the user's mixed coins into their normal
@@ -94,11 +95,13 @@ final class SwiftDashSDKTransactionSender: NSObject {
     ///
     /// - Parameter address: Destination Dash address (the user's own BIP44
     ///   receive address, resolved via `SwiftDashSDKReceiveAddressReader`).
-    /// - Returns: Tuple of (serialized signed tx bytes, 32-byte txHash).
-    static func sweepCoinJoin(to address: String) throws -> (txData: Data, txHash: Data) {
+    /// - Returns: The **wire-order** txids of the broadcast sweep transactions
+    ///   (one per chunk), as provided by the SDK — ready to record in
+    ///   `CoinJoinWithdrawalStore` (matches `Transaction.txHashData`).
+    static func sweepCoinJoin(to address: String) throws -> [Data] {
         logger.info("💸 TXSEND :: sweeping CoinJoin account → spendable balance")
 
-        let sweep = { @MainActor () throws -> Data in
+        let sweep = { @MainActor () throws -> [Data] in
             guard let wallet = SwiftDashSDKHost.shared.wallet else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
             }
@@ -106,20 +109,23 @@ final class SwiftDashSDKTransactionSender: NSObject {
             return try core.sweepCoinJoinAccount(accountIndex: 0, destination: address)
         }
 
-        let txData: Data
+        let txids: [Data]
         if Thread.isMainThread {
-            txData = try MainActor.assumeIsolated { try sweep() }
+            txids = try MainActor.assumeIsolated { try sweep() }
         } else {
-            var captured: Result<Data, Error> = .failure(SendError.walletNotReady("uninitialized result"))
+            var captured: Result<[Data], Error> = .failure(SendError.walletNotReady("uninitialized result"))
             DispatchQueue.main.sync {
                 captured = Result { try MainActor.assumeIsolated { try sweep() } }
             }
-            txData = try captured.get()
+            txids = try captured.get()
         }
 
-        let txHash = computeTxHash(from: txData)
-        logger.info("💸 TXSEND :: coinjoin sweep broadcast — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public)")
-        return (txData, txHash)
+        // Log display-order hex (byte-reversed wire order) to match explorers.
+        let hexes = txids.map { txid -> String in
+            Data(txid.reversed()).map { String(format: "%02x", $0) }.joined()
+        }
+        logger.info("💸 TXSEND :: coinjoin sweep broadcast — \(txids.count, privacy: .public) tx(s): \(hexes.joined(separator: ","), privacy: .public)")
+        return txids
     }
 
     // MARK: - Broadcast
