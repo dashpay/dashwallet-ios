@@ -42,21 +42,18 @@ struct EnterAddressView: View {
                     central: { Text(NSLocalizedString("Enter address", comment: "Maya")).font(.subheadMedium) }
                 )
 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 2) {
-                        addressField
+                // Offline: hide the whole address-entry content (address sources and the
+                // server-side address validation both need network) and show the offline state,
+                // matching Convert / Order Preview. Continue stays disabled below.
+                if reachability.isOnline {
+                    addressContent
+                } else {
+                    NetworkUnavailableStateView()
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 40)
 
-                        addressSourcesMenu
-
-                        if let clipboardContent = viewModel.clipboardContent {
-                            clipboardContentRow(clipboardContent)
-                        } else if viewModel.hasClipboardCandidate {
-                            clipboardPermissionRow
-                        }
-                    }
-                    .modifier(MayaMenuCardStyle())
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
+                    Spacer(minLength: 0)
                 }
 
                 continueButton
@@ -76,6 +73,28 @@ struct EnterAddressView: View {
             viewModel.loadAddressSources()
             // Refresh whenever the screen (re)appears so the clipboard card is never stale.
             viewModel.refreshClipboardAddress()
+        }
+    }
+
+    // MARK: - Content
+
+    /// The online address-entry content: address field + sources menu + clipboard rows.
+    private var addressContent: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 2) {
+                addressField
+
+                addressSourcesMenu
+
+                if let clipboardContent = viewModel.clipboardContent {
+                    clipboardContentRow(clipboardContent)
+                } else if viewModel.hasClipboardCandidate {
+                    clipboardPermissionRow
+                }
+            }
+            .modifier(MayaMenuCardStyle())
+            .padding(.horizontal, 20)
+            .padding(.top, 10)
         }
     }
 

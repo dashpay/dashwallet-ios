@@ -56,8 +56,13 @@ struct MayaPortalView: View {
     }
 
     private var actionsCard: some View {
-        convertDashButton
-            .modifier(MayaMenuCardStyle())
+        MenuItem(
+            title: NSLocalizedString("Convert Dash", comment: "Maya Portal"),
+            subtitle: NSLocalizedString("From Dash Wallet to any crypto", comment: "Maya Portal"),
+            icon: .custom("convert.crypto"),
+            action: { onConvertDash?() }
+        )
+        .modifier(MayaMenuCardStyle())
     }
 
     // MARK: - Subviews
@@ -80,16 +85,6 @@ struct MayaPortalView: View {
                 .lineSpacing(2)
         }
         .padding(.horizontal, 20)
-    }
-
-    private var convertDashButton: some View {
-        MenuItem(
-            title: NSLocalizedString("Convert Dash", comment: "Maya Portal"),
-            subtitle: NSLocalizedString("From Dash Wallet to any crypto", comment: "Maya Portal"),
-            icon: .custom("convert.crypto"),
-            action: { onConvertDash?() }
-        )
-        .buttonStyle(MayaMenuItemButtonStyle())
     }
 }
 
