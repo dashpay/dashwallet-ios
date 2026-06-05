@@ -101,6 +101,15 @@ public class ExploreDatabaseSyncManager {
 
             let timeInterval = timeIntervalMillesecond/1000
             let installedVersion = wSelf.exploreDatabaseLastVersion
+            let localDatabaseExists = wSelf.hasLocalExploreDatabase()
+
+            // If local DB is missing (e.g. removed due to schema mismatch), force download
+            // regardless of saved version timestamp to avoid falling back to in-memory DB.
+            if !localDatabaseExists {
+                DSLogger.log("ExploreDash: local explore.db missing, forcing cloud database download")
+                wSelf.downloadDatabase(metadata: metadata)
+                return
+            }
 
             guard timeInterval > installedVersion else {
                 wSelf.syncState = .synced(Date())
@@ -178,6 +187,11 @@ extension ExploreDatabaseSyncManager {
     private func getDocumentsDirectory() -> URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         return paths[0]
+    }
+
+    private func hasLocalExploreDatabase() -> Bool {
+        let localDbPath = getDocumentsDirectory().appendingPathComponent(kExploreDashDatabaseName).path
+        return FileManager.default.fileExists(atPath: localDbPath)
     }
 }
 

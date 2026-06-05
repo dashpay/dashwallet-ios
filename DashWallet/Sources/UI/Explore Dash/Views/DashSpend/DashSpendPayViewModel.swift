@@ -20,15 +20,20 @@ import Combine
 
 private let defaultCurrency = kDefaultCurrencyCode
 
+private struct GiftCardOrderMetadata: Codable {
+    let orderId: String
+    let cardAmounts: [String]?
+}
+
 @MainActor
 class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHandling {
     private var cancellableBag = Set<AnyCancellable>()
     private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: defaultCurrency)
     private let ctxSpendRepository = CTXSpendRepository.shared
     private let provider: GiftCardProvider
-    private let customIconProvider = CustomIconMetadataProvider.shared
-    private let txMetadataDao = TransactionMetadataDAOImpl.shared
-    private let sendCoinsService = SendCoinsService()
+    private lazy var customIconProvider = CustomIconMetadataProvider.shared
+    private lazy var txMetadataDao = TransactionMetadataDAOImpl.shared
+    private lazy var sendCoinsService = SendCoinsService()
     
     private let repository: [GiftCardProvider: any DashSpendRepository] = {
         var dict: [GiftCardProvider: any DashSpendRepository] = [
@@ -47,6 +52,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private var merchantId: String = ""
     private var merchantUrl: String? = nil
     private var sourceId: String?
+    private let providerConfiguredIsFixed: Bool?
     private(set) var amount: Decimal = 0
     private(set) var savingsFraction: Decimal = 0.0
     @Published private(set) var isLoading = false
@@ -67,8 +73,11 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     @Published var error: Error? = nil
     @Published var isFixedDenomination: Bool = false
     @Published var denominations: [Int] = []
+    /// Maps each denomination to its available inventory count
+    @Published var denominationInventory: [Int: Int] = [:]
     /// Maps each denomination to its specific discount percentage (after service fee)
     private var denominationDiscounts: [Int: Decimal] = [:]
+    @Published private var basketSavingsFraction: Decimal? = nil
     @Published var selectedDenomination: Int? = nil {
         didSet {
             if let denom = selectedDenomination {
@@ -82,6 +91,16 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             }
         }
     }
+    var displaySavingsFraction: Decimal {
+        basketSavingsFraction ?? savingsFraction
+    }
+
+    func updateTotalAmount(_ total: Decimal, quantities: [Decimal: Int]? = nil) {
+        amount = total
+        basketSavingsFraction = basketDiscountFraction(from: quantities)
+        checkAmountForErrors()
+    }
+
     @Published var input: String = "0" {
         didSet {
             // Replace the initial "0" when entering a new digit
@@ -108,10 +127,11 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     
     var costMessage: String {
         let originalPrice = fiatFormatter.string(for: amount) ?? "0.00"
-        let discountedPrice = amount * (1 - savingsFraction)
+        let savingsToDisplay = displaySavingsFraction
+        let discountedPrice = amount * (1 - savingsToDisplay)
         let formattedDiscountedPrice = fiatFormatter.string(for: discountedPrice) ?? "0.00"
 
-        let discountPercent = NSDecimalNumber(decimal: savingsFraction * 100).doubleValue
+        let discountPercent = NSDecimalNumber(decimal: savingsToDisplay * 100).doubleValue
         let discountText = PercentageFormatter.format(percent: discountPercent, includePercent: false)
 
         return String(format:
@@ -134,6 +154,24 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     var minimumLimitMessage: String { String.localizedStringWithFormat(NSLocalizedString("Min: %@", comment: "DashSpend"), fiatFormatter.string(for: minimumAmount) ?? "0.0" ) }
     var maximumLimitMessage: String { String.localizedStringWithFormat(NSLocalizedString("Max: %@", comment: "DashSpend"), fiatFormatter.string(for: maximumAmount) ?? "0.0" ) }
     var isMixing: Bool { CoinJoinService.shared.mixingState.isInProgress }
+
+    var supportsMultipleMode: Bool {
+        #if PIGGYCARDS_ENABLED
+        return provider == .piggyCards
+        #else
+        return false
+        #endif
+    }
+
+    var maxOrderLimitMessage: String? {
+        #if PIGGYCARDS_ENABLED
+        if provider == .piggyCards {
+            let formatted = fiatFormatter.string(for: PiggyCardsConstants.maxOrderAmount) ?? "$2,500"
+            return String(format: NSLocalizedString("You can buy up to %@ in gift cards per order", comment: "DashSpend"), formatted)
+        }
+        #endif
+        return nil
+    }
     
     init(merchant: ExplorePointOfUse, provider: GiftCardProvider = .ctx) {
         self.provider = provider
@@ -146,7 +184,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
 
         // Get the sourceId and denomination type for the current provider from giftCardProviders
-        var providerIsFixed = false  // Local variable to store denomination type
+        var providerIsFixed: Bool? = nil  // Local variable to store denomination type
         var providerSavingsFraction = Decimal(merchant.merchant?.toSavingsFraction() ?? 0.0)
 
         if let giftCardProviders = merchant.merchant?.giftCardProviders {
@@ -176,16 +214,24 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
         // Store initial savingsFraction
         savingsFraction = providerSavingsFraction
+        // Seed initial UI state from local merchant data while remote details are loading.
+        if let merchantData = merchant.merchant {
+            let localDenominations = merchantData.denominations
+            let localDenominationType = merchantData.denominationsType
 
-        // Only use merchant-level denominations as fallback if we don't have provider-specific info
-        if merchant.merchant?.denominations != nil {
-            self.denominations = merchant.merchant?.denominations.compactMap { Int($0) } ?? []
+            if providerIsFixed == true {
+                self.denominations = localDenominations
+            } else if localDenominationType == DenominationType.Range.rawValue, localDenominations.count >= 2 {
+                self.minimumAmount = Decimal(localDenominations[0])
+                self.maximumAmount = Decimal(localDenominations[1])
+            }
         }
+        self.providerConfiguredIsFixed = providerIsFixed
 
         super.init()
 
         // Set the denomination type after super.init()
-        self.isFixedDenomination = providerIsFixed
+        self.isFixedDenomination = providerIsFixed ?? false
 
         // Log debug info after super.init()
 
@@ -204,6 +250,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             .store(in: &cancellableBag)
         
         repository[provider]?.isUserSignedInPublisher
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] isSignedIn in
                 self?.isUserSignedIn = isSignedIn
             }
@@ -226,12 +273,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
     }
     
-    func purchaseGiftCardAndPay() async throws -> Data {
+    func purchaseGiftCardAndPay(selectedQuantities: [Decimal: Int] = [:]) async throws -> Data {
         isProcessingPayment = true
         defer { isProcessingPayment = false }
 
         let transaction: DSTransaction
-        let giftCardId: String
+        let giftCardNote: String
 
         switch provider {
         case .ctx:
@@ -242,7 +289,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 throw DashSpendError.paymentProcessingError("No payment URL received")
             }
 
-            giftCardId = response.paymentId
+            giftCardNote = response.paymentId
 
             // CTX uses BIP70 payment request URLs
             transaction = try await sendCoinsService.payWithDashUrl(url: url)
@@ -255,11 +302,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 throw DashSpendError.unauthorized
             }
 
-            let fiatAmountDouble = Double(truncating: amount as NSDecimalNumber)
-
-            let giftCardInfo = try await piggyCardsRepo.orderGiftCard(
+            let lineItems = buildPiggyOrderLineItems(selectedQuantities: selectedQuantities)
+            let giftCardInfo = try await piggyCardsRepo.orderGiftCards(
                 merchantId: merchantId,
-                fiatAmount: fiatAmountDouble,
+                lineItems: lineItems,
                 fiatCurrency: "USD",
                 cryptoCurrency: "DASH"
             )
@@ -278,14 +324,14 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             )
 
 
-            giftCardId = giftCardInfo.orderId
+            giftCardNote = buildPiggyOrderNote(orderId: giftCardInfo.orderId, selectedQuantities: selectedQuantities)
         #endif
         }
 
         // Payment successful - save gift card information
         markGiftCardTransaction(txId: transaction.txHashData, provider: provider.displayName)
         customIconProvider.updateIcon(txId: transaction.txHashData, iconUrl: merchantIconUrl)
-        saveGiftCardDummy(txHashData: transaction.txHashData, giftCardId: giftCardId)
+        saveGiftCardDummy(txHashData: transaction.txHashData, giftCardNote: giftCardNote)
 
         return transaction.txHashData
     }
@@ -329,9 +375,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         walletBalance = DWEnvironment.sharedInstance().currentWallet.balance
     }
     
-    private func checkAmountForErrors() {
-        // Check network availability first
-        guard networkStatus == .online else {
+    var isNetworkAvailable: Bool { networkStatus == .online }
+
+    func checkAmountForErrors() {
+        guard isNetworkAvailable else {
             error = SendAmountError.networkUnavailable
             return
         }
@@ -342,6 +389,15 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             error = SendAmountError.syncingChain
             return
         }
+
+        #if PIGGYCARDS_ENABLED
+        if provider == .piggyCards && amount > 0 {
+            guard amount <= PiggyCardsConstants.maxOrderAmount else {
+                error = DashSpendError.purchaseLimitExceeded
+                return
+            }
+        }
+        #endif
 
         guard !canShowInsufficientFunds else {
             error = isMixing ? SendAmountError.insufficientMixedFunds : SendAmountError.insufficientFunds
@@ -361,11 +417,19 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
     
     // MARK: - CTX Integration
-    
+
     private func updateMerchantInfo() async {
-        guard !merchantId.isEmpty, repository[provider]?.isUserSignedIn == true else {
-            return
-        }
+        guard !merchantId.isEmpty else { return }
+
+        // CTX getMerchant is a public endpoint — fetch limits even when not signed in.
+        // PiggyCards requires authentication, so skip if not signed in.
+        let requiresAuth: Bool
+        #if PIGGYCARDS_ENABLED
+        requiresAuth = provider == .piggyCards
+        #else
+        requiresAuth = false
+        #endif
+        if requiresAuth && repository[provider]?.isUserSignedIn != true { return }
 
 
         // Set loading state
@@ -378,23 +442,27 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             case .ctx:
                 let merchantInfo = try await ctxSpendRepository.getMerchant(merchantId: merchantId)
 
-                // Update merchant details from API (API is source of truth when signed in)
-                // Use discount property for backwards compatibility (handles both savingsPercentage and userDiscount)
-                savingsFraction = Decimal(merchantInfo.discount) / Decimal(10000)
+                let newSavings = Decimal(merchantInfo.discount) / Decimal(10000)
+                let isRange = merchantInfo.denominationType == .Range
+                let apiMin = Decimal(merchantInfo.minimumCardPurchase)
+                let apiMax = Decimal(merchantInfo.maximumCardPurchase)
+                let newMin = isRange ? (apiMin > 0 ? apiMin : minimumAmount) : Decimal(0)
+                let newMax = isRange ? (apiMax > 0 ? apiMax : maximumAmount) : Decimal(0)
+                let newDenominations = isRange ? [] : merchantInfo.denominations.compactMap { parseWholeDollarDenomination($0) }
 
-                // Set denomination type from API response
-                if merchantInfo.denominationType == .Range {
-                    isFixedDenomination = false
-                    minimumAmount = Decimal(merchantInfo.minimumCardPurchase)
-                    maximumAmount = Decimal(merchantInfo.maximumCardPurchase)
-                    // Clear fixed denomination values
-                    denominations = []
-                } else {
-                    isFixedDenomination = true
-                    denominations = merchantInfo.denominations.compactMap { Int($0) }
-                    // Clear flexible amount values
-                    minimumAmount = 0
-                    maximumAmount = 0
+                await MainActor.run {
+                    self.savingsFraction = newSavings
+                    self.isFixedDenomination = !isRange
+                    self.minimumAmount = newMin
+                    self.maximumAmount = newMax
+                    self.denominations = newDenominations
+                    self.basketSavingsFraction = nil
+
+                    if isRange {
+                        self.selectedDenomination = nil
+                    } else if let selected = self.selectedDenomination, !newDenominations.contains(selected) {
+                        self.selectedDenomination = nil
+                    }
                 }
 
             #if PIGGYCARDS_ENABLED
@@ -425,6 +493,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 // Each fixed denomination card is a separate entry in the API response
                 var allFixedDenominations: Set<Int> = []
                 var denomDiscounts: [Int: Decimal] = [:]  // Track discount per denomination
+                var denomInventory: [Int: Int] = [:]      // Track inventory per denomination
                 var hasRangeCard = false
                 var rangeMin: Double = 0
                 var rangeMax: Double = 0
@@ -441,17 +510,19 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
                     if normalizedPriceType == PiggyCardsPriceType.fixed.rawValue {
                         // Fixed type: collect the denomination and its specific discount
-                        if let fixedValue = Int(card.denomination.trimmingCharacters(in: .whitespaces)) {
+                        if let fixedValue = parseWholeDollarDenomination(card.denomination) {
                             allFixedDenominations.insert(fixedValue)
                             denomDiscounts[fixedValue] = cardDiscount
+                            denomInventory[fixedValue] = card.quantity
                         }
                     } else if normalizedPriceType == PiggyCardsPriceType.option.rawValue {
                         // Option type: parse comma-separated values (all share same discount)
                         let denominationValues = card.denomination.split(separator: ",")
-                            .compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }
+                            .compactMap { parseWholeDollarDenomination(String($0)) }
                         for value in denominationValues {
                             allFixedDenominations.insert(value)
                             denomDiscounts[value] = cardDiscount
+                            denomInventory[value] = card.quantity
                         }
                     } else if normalizedPriceType == PiggyCardsPriceType.range.rawValue {
                         // Range type: track min/max for flexible amounts
@@ -469,37 +540,65 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                     }
                 }
 
-                // Store denomination-specific discounts
-                denominationDiscounts = denomDiscounts
+                // Compute final state on background, then publish on MainActor.
+                // Signed-in API response is the source of truth for PiggyCards denomination mode.
+                var finalFixed = false
+                var finalMin = Decimal(0)
+                var finalMax = Decimal(0)
+                var finalDenominations: [Int] = []
+                var finalSavings = Decimal(0)
 
-                // Determine UI mode: fixed denominations take precedence if available
-                if !allFixedDenominations.isEmpty {
-                    // Show fixed denomination buttons
-                    isFixedDenomination = true
-                    denominations = allFixedDenominations.sorted()
-                    // Clear flexible amount values
-                    minimumAmount = 0
-                    maximumAmount = 0
-                    // Set initial savingsFraction to 0 until user selects a denomination
-                    savingsFraction = 0
+                let hasFixedCards = !allFixedDenominations.isEmpty
+                let preferredFixedInMixedSet = providerConfiguredIsFixed
+
+                if hasRangeCard && hasFixedCards {
+                    // Some sources (e.g. test data) can return mixed types for the same sourceId.
+                    // In that case, honor merchant/provider configuration from the local database.
+                    if preferredFixedInMixedSet == true {
+                        finalFixed = true
+                        finalDenominations = allFixedDenominations.sorted()
+                        finalSavings = denomDiscounts.values.max() ?? 0
+                    } else {
+                        finalFixed = false
+                        finalMin = Decimal(rangeMin > 0 ? rangeMin : 10)
+                        finalMax = Decimal(rangeMax > 0 ? rangeMax : 500)
+                        finalSavings = max(0, Decimal(rangeDiscount) - serviceFee) / 100
+                    }
                 } else if hasRangeCard {
-                    // Only range cards available - show keyboard input
-                    isFixedDenomination = false
-                    minimumAmount = Decimal(rangeMin > 0 ? rangeMin : 10)
-                    maximumAmount = Decimal(rangeMax > 0 ? rangeMax : 500)
-                    denominations = []
-                    // Apply range card discount
-                    savingsFraction = max(0, Decimal(rangeDiscount) - serviceFee) / 100
-                } else if let firstCard = giftCards.first {
-                    // Fallback: use first card's denomination
-                    if let fixedValue = Int(firstCard.denomination.trimmingCharacters(in: .whitespaces)) {
-                        isFixedDenomination = true
-                        denominations = [fixedValue]
-                        minimumAmount = 0
-                        maximumAmount = 0
-                        let cardDiscount = max(0, Decimal(firstCard.discountPercentage) - serviceFee) / 100
-                        denominationDiscounts[fixedValue] = cardDiscount
-                        savingsFraction = cardDiscount
+                    finalFixed = false
+                    finalMin = Decimal(rangeMin > 0 ? rangeMin : 10)
+                    finalMax = Decimal(rangeMax > 0 ? rangeMax : 500)
+                    finalSavings = max(0, Decimal(rangeDiscount) - serviceFee) / 100
+                } else if hasFixedCards {
+                    finalFixed = true
+                    finalDenominations = allFixedDenominations.sorted()
+                    finalSavings = denomDiscounts.values.max() ?? 0
+                } else if let firstCard = giftCards.first,
+                          let fixedValue = parseWholeDollarDenomination(firstCard.denomination) {
+                    finalFixed = true
+                    finalDenominations = [fixedValue]
+                    finalSavings = max(0, Decimal(firstCard.discountPercentage) - serviceFee) / 100
+                }
+
+                await MainActor.run {
+                    DSLogger.log(
+                        "DashSpend: PiggyCards mode=\(finalFixed ? "fixed" : "flexible"), " +
+                        "range=[\(finalMin), \(finalMax)], fixedCount=\(finalDenominations.count)"
+                    )
+                    self.denominationDiscounts = finalFixed ? denomDiscounts : [:]
+                    self.denominationInventory = finalFixed ? denomInventory : [:]
+                    self.isFixedDenomination = finalFixed
+                    self.minimumAmount = finalMin
+                    self.maximumAmount = finalMax
+                    self.denominations = finalDenominations
+                    self.savingsFraction = finalSavings
+                    self.basketSavingsFraction = nil
+                    if finalFixed {
+                        if let selected = self.selectedDenomination, !finalDenominations.contains(selected) {
+                            self.selectedDenomination = nil
+                        }
+                    } else {
+                        self.selectedDenomination = nil
                     }
                 }
             #endif
@@ -513,8 +612,17 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 self.checkAmountForErrors()
             }
         } catch {
+            DSLogger.log("DashSpend updateMerchantInfo failed for provider \(provider.displayName): \(error.localizedDescription)")
+
             await MainActor.run {
                 self.isLoading = false
+                if let dashError = error as? DashSpendError {
+                    self.error = dashError
+                } else {
+                    self.error = DashSpendError.customError(
+                        NSLocalizedString("Unable to load merchant details. Please try again.", comment: "DashSpend")
+                    )
+                }
             }
         }
     }
@@ -552,15 +660,15 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
     }
     
-    private func saveGiftCardDummy(txHashData: Data, giftCardId: String) {
-        DSLogger.log("Gift card saved - txId: \(txHashData.hexEncodedString()), giftCardId: \(giftCardId)")
+    private func saveGiftCardDummy(txHashData: Data, giftCardNote: String) {
+        DSLogger.log("Gift card saved - txId: \(txHashData.hexEncodedString())")
 
         let giftCard = GiftCard(
             txId: txHashData,
             merchantName: merchantTitle,
             merchantUrl: merchantUrl,
             price: amount,
-            note: giftCardId, // Store payment ID in note field temporarily
+            note: giftCardNote, // Store payment/order metadata in note field temporarily
             provider: provider.displayName  // Store provider (CTX or PiggyCards)
         )
 
@@ -589,5 +697,109 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private func handleNetworkStatusChange(_ status: NetworkStatus) {
         // Re-check errors when network status changes
         checkAmountForErrors()
+    }
+
+    private func buildPiggyOrderLineItems(selectedQuantities: [Decimal: Int]) -> [PiggyCardsRepository.OrderLineItem] {
+        let positiveSelections = selectedQuantities
+            .filter { $0.value > 0 }
+            .map { PiggyCardsRepository.OrderLineItem(denomination: decimalToDouble($0.key), quantity: $0.value) }
+
+        if !positiveSelections.isEmpty {
+            return positiveSelections
+        }
+
+        return [PiggyCardsRepository.OrderLineItem(denomination: decimalToDouble(amount), quantity: 1)]
+    }
+
+    private func buildPiggyOrderNote(orderId: String, selectedQuantities: [Decimal: Int]) -> String {
+        var expandedAmounts = selectedQuantities
+            .filter { $0.value > 0 }
+            .sorted { $0.key < $1.key }
+            .flatMap { entry in Array(repeating: entry.key.description, count: entry.value) }
+
+        if expandedAmounts.isEmpty {
+            expandedAmounts = [amount.description]
+        }
+
+        let metadata = GiftCardOrderMetadata(
+            orderId: orderId,
+            cardAmounts: expandedAmounts
+        )
+
+        guard
+            let encoded = try? JSONEncoder().encode(metadata),
+            let serialized = String(data: encoded, encoding: .utf8)
+        else {
+            return orderId
+        }
+
+        return serialized
+    }
+
+    private func decimalToDouble(_ value: Decimal) -> Double {
+        Double(truncating: value as NSDecimalNumber)
+    }
+
+    private func basketDiscountFraction(from quantities: [Decimal: Int]?) -> Decimal? {
+        #if PIGGYCARDS_ENABLED
+        guard
+            provider == .piggyCards,
+            isFixedDenomination,
+            let quantities,
+            !quantities.isEmpty
+        else { return nil }
+
+        var originalTotal = Decimal(0)
+        var discountedTotal = Decimal(0)
+
+        for (denomination, quantity) in quantities where quantity > 0 {
+            let discount = discountForDenomination(denomination)
+            let lineOriginal = denomination * Decimal(quantity)
+            let lineDiscounted = lineOriginal * (1 - discount)
+            originalTotal += lineOriginal
+            discountedTotal += lineDiscounted
+        }
+
+        guard originalTotal > 0 else { return nil }
+        return 1 - (discountedTotal / originalTotal)
+        #else
+        return nil
+        #endif
+    }
+
+    private func discountForDenomination(_ denomination: Decimal) -> Decimal {
+        guard let key = wholeDollarDenominationKey(from: denomination),
+              let mappedDiscount = denominationDiscounts[key] else {
+            return savingsFraction
+        }
+
+        return mappedDiscount
+    }
+
+    private func wholeDollarDenominationKey(from denomination: Decimal) -> Int? {
+        let asDouble = NSDecimalNumber(decimal: denomination).doubleValue
+        let rounded = Int(asDouble.rounded())
+        guard abs(asDouble - Double(rounded)) < 0.0001 else { return nil }
+        return rounded
+    }
+
+    private func parseWholeDollarDenomination(_ raw: String) -> Int? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        // Accept values like "5", "5.0", "5.00".
+        if let intValue = Int(trimmed) {
+            return intValue
+        }
+
+        if let decimalValue = Decimal(string: trimmed, locale: Locale(identifier: "en_US_POSIX")) {
+            let asDouble = NSDecimalNumber(decimal: decimalValue).doubleValue
+            let rounded = Int(asDouble.rounded())
+            if abs(asDouble - Double(rounded)) < 0.0001 {
+                return rounded
+            }
+        }
+
+        return nil
     }
 }

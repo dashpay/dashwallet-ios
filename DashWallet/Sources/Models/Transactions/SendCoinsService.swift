@@ -18,11 +18,48 @@
 import Combine
 
 public final class SendCoinsService: NSObject {
+    private enum PaymentAuthenticationResult {
+        case success
+        case cancelled
+        case failed
+    }
+
     private let transactionManager: DSTransactionManager = DWEnvironment.sharedInstance().currentChainManager.transactionManager
     
     // Payment processing
     private var paymentProcessor: DWPaymentProcessor?
     private var pendingPaymentContinuation: CheckedContinuation<DSTransaction, Swift.Error>?
+
+    @MainActor
+    private func authenticateForPayment() async -> PaymentAuthenticationResult {
+        await withCheckedContinuation { continuation in
+            DSAuthenticationManager.sharedInstance().authenticate(
+                withPrompt: nil,
+                usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
+                alertIfLockout: true
+            ) { authenticatedOrSuccess, _, cancelled in
+                if cancelled {
+                    continuation.resume(returning: .cancelled)
+                } else if authenticatedOrSuccess {
+                    continuation.resume(returning: .success)
+                } else {
+                    continuation.resume(returning: .failed)
+                }
+            }
+        }
+    }
+
+    @MainActor
+    private func ensureAuthenticatedForPayment() async throws {
+        switch await authenticateForPayment() {
+        case .success:
+            return
+        case .cancelled:
+            throw DashSpendError.paymentProcessingError("Authentication cancelled")
+        case .failed:
+            throw DashSpendError.paymentProcessingError("Authentication failed")
+        }
+    }
 
     func sendCoins(address: String, amount: UInt64,
                    inputSelector: SingleInputAddressSelector? = nil, adjustAmountDownwards: Bool = false) async throws
@@ -276,7 +313,7 @@ public final class SendCoinsService: NSObject {
     // MARK: - BIP70
     
     func payWithDashUrl(url paymentUrlString: String) async throws -> DSTransaction {
-        // Create payment input from the URL
+        // Validate URL and payment request before prompting auth.
         guard let paymentUrl = URL(string: paymentUrlString) else {
             throw DashSpendError.paymentProcessingError("Invalid payment URL")
         }
@@ -289,6 +326,9 @@ public final class SendCoinsService: NSObject {
         guard paymentInput.request?.r != nil else {
             throw DashSpendError.paymentProcessingError("Invalid payment request")
         }
+
+        // Keep CTX (BIP70) behavior consistent with direct send flow.
+        try await ensureAuthenticatedForPayment()
         
         return try await fetchAndProcessPaymentRequest(paymentInput: paymentInput)
     }

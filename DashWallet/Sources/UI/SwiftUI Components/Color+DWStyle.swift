@@ -55,7 +55,7 @@ extension Color {
     static var systemRed: Color {
         Color("SystemRedColor")
     }
-    
+
     static var systemYellow: Color {
         Color("SystemYellowColor")
     }
