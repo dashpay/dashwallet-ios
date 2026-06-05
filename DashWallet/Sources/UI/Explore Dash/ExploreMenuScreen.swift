@@ -31,6 +31,10 @@ struct ExploreMenuScreen: View {
         DWEnvironment.sharedInstance().currentChain.isTestnet()
     }
 
+    private var hasCrowdNodeAccount: Bool {
+        CrowdNode.shared.signUpState == .finished
+    }
+
     init(vc: UINavigationController,
          showBackButton: Bool = true,
          onShowSendPayment: @escaping () -> Void,
@@ -84,14 +88,16 @@ struct ExploreMenuScreen: View {
                 )
                 .frame(minHeight: 56)
 
-                MenuItem(
-                    title: NSLocalizedString("Staking", comment: ""),
-                    subtitleView: AnyView(StakingSubtitle()),
-                    icon: .custom("image-menu-staking", maxHeight: 30),
-                    iconAlignment: .top,
-                    action: { showStaking() }
-                )
-                .frame(minHeight: 56)
+                if hasCrowdNodeAccount {
+                    MenuItem(
+                        title: NSLocalizedString("Staking", comment: ""),
+                        subtitleView: AnyView(StakingSubtitle()),
+                        icon: .custom("image-menu-staking", maxHeight: 30),
+                        iconAlignment: .top,
+                        action: { showStaking() }
+                    )
+                    .frame(minHeight: 56)
+                }
             }
             .padding(6)
             .background(Color.secondaryBackground)
