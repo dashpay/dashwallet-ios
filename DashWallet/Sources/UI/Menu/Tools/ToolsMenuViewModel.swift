@@ -37,6 +37,7 @@ class ToolsMenuViewModel: ObservableObject {
     @Published var csvExportData: (fileName: String, file: URL)?
     @Published var safariLink: String?
     @Published var showCoinJoinSweepConfirmation = false
+    @Published var coinJoinSweepErrorMessage: String?
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -168,11 +169,12 @@ class ToolsMenuViewModel: ObservableObject {
         do {
             _ = try await WalletSendService.shared.sweepCoinJoin()
         } catch {
-            // Auth-cancel is an expected no-op; on other failures the row stays
-            // visible (balance unchanged) so the user can retry.
             #if DEBUG
             print("🎯 CoinJoin sweep failed: \(error)")
             #endif
+            // Auth-cancel is an expected no-op (nil message); a real failure
+            // surfaces an alert. The row stays visible so the user can retry.
+            coinJoinSweepErrorMessage = WalletSendService.coinJoinSweepUserMessage(for: error)
         }
     }
     

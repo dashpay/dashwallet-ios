@@ -160,6 +160,15 @@ final class WalletSendService: NSObject {
         error.domain == errorDomain && error.code == ErrorCode.authenticationCancelled.rawValue
     }
 
+    /// User-facing message for a CoinJoin sweep failure, or nil if the user
+    /// simply cancelled authentication (callers stay silent). Centralizes the
+    /// cancel predicate + copy so every sweep entry point behaves identically.
+    static func coinJoinSweepUserMessage(for error: Error) -> String? {
+        guard !isAuthenticationCancelledError(error as NSError) else { return nil }
+        return NSLocalizedString(
+            "Couldn't move your CoinJoin funds. Please try again.", comment: "CoinJoin")
+    }
+
     private func buildPreparedStandardSend(address: String, amount: UInt64) throws -> PreparedStandardSend {
         let (txData, fee, txHash) = try SwiftDashSDKTransactionSender.buildAndSign(address: address, amount: amount)
         let chain = DWEnvironment.sharedInstance().currentChain

@@ -701,13 +701,16 @@ extension HomeViewModel {
     /// via the shared `WalletSendService` flow (PIN → own BIP44 dest → sweep →
     /// balance refresh + recovery-flag clear). Auth-cancel is an expected no-op;
     /// the Settings row remains for retry on other failures.
-    func performCoinJoinSweep() async {
+    func performCoinJoinSweep() async -> String? {
         do {
             _ = try await WalletSendService.shared.sweepCoinJoin()
+            return nil
         } catch {
             #if DEBUG
             print("🎯 CoinJoin sweep (home popup) failed: \(error)")
             #endif
+            // nil when the user cancelled auth; a message on real failures.
+            return WalletSendService.coinJoinSweepUserMessage(for: error)
         }
     }
 }

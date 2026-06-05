@@ -400,7 +400,19 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             positiveButtonText: NSLocalizedString("Move funds", comment: "CoinJoin"),
             positiveButtonAction: {
                 self.viewModel.showCoinJoinSweepDialog = false
-                Task { await self.viewModel.performCoinJoinSweep() }
+                Task {
+                    let errorMessage = await self.viewModel.performCoinJoinSweep()
+                    guard let errorMessage else { return }
+                    await MainActor.run {
+                        self.showModalDialog(
+                            style: .error,
+                            icon: .system("exclamationmark.triangle"),
+                            heading: NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"),
+                            textBlock1: errorMessage,
+                            positiveButtonText: NSLocalizedString("OK", comment: "")
+                        )
+                    }
+                }
             },
             negativeButtonText: NSLocalizedString("Later", comment: "CoinJoin"),
             negativeButtonAction: {

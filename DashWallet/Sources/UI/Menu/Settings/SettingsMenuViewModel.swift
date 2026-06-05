@@ -38,6 +38,7 @@ class SettingsMenuViewModel: ObservableObject {
     @Published var showCSVExportActivity = false
     @Published var csvExportData: (fileName: String, file: URL)?
     @Published var showCoinJoinSweepConfirmation = false
+    @Published var coinJoinSweepErrorMessage: String?
 
     /// Minimum CoinJoin-account balance (duffs) worth surfacing a sweep for —
     /// below this it's un-sweepable dust/fragments, not a real denomination.
@@ -225,11 +226,12 @@ class SettingsMenuViewModel: ObservableObject {
         do {
             _ = try await WalletSendService.shared.sweepCoinJoin()
         } catch {
-            // Auth-cancel is an expected no-op; on other failures the row
-            // stays visible (balance unchanged) so the user can retry.
             #if DEBUG
             print("🎯 CoinJoin sweep failed: \(error)")
             #endif
+            // Auth-cancel is an expected no-op (nil message); a real failure
+            // surfaces an alert. The row stays visible so the user can retry.
+            coinJoinSweepErrorMessage = WalletSendService.coinJoinSweepUserMessage(for: error)
         }
     }
 

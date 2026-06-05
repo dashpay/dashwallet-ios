@@ -155,6 +155,18 @@ struct SettingsScreen: View {
         } message: {
             Text(String(format: NSLocalizedString("Move your %@ in mixed coins to your spendable balance? CoinJoin is no longer supported.", comment: "CoinJoin"), viewModel.coinJoinLeftoverFormatted))
         }
+        .alert(
+            NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"),
+            isPresented: Binding(
+                get: { viewModel.coinJoinSweepErrorMessage != nil },
+                set: { if !$0 { viewModel.coinJoinSweepErrorMessage = nil } }
+            ),
+            presenting: viewModel.coinJoinSweepErrorMessage
+        ) { _ in
+            Button(NSLocalizedString("OK", comment: "")) { viewModel.coinJoinSweepErrorMessage = nil }
+        } message: { message in
+            Text(message)
+        }
         .sheet(isPresented: $showCSVExportActivity) {
             if let csvData = viewModel.csvExportData {
                 ActivityView(activityItems: [csvData.file])
