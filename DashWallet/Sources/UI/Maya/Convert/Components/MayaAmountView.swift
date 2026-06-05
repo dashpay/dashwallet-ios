@@ -63,8 +63,8 @@ struct MayaAmountView: View {
             // unlike minimumScaleFactor which would only shrink each Text independently.
             amountView
                 .foregroundStyle(Color.primaryText)
-                .scaleToFitWidth()
-                .layoutPriority(1)
+//                .scaleToFitWidth()
+//                .layoutPriority(1)
 
             if showCurrencyButton {
                 Button {

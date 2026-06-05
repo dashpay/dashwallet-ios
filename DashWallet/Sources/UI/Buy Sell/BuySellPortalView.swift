@@ -160,7 +160,7 @@ struct BuySellPortalView: View {
 
     private var topIntro: some View {
         TopIntro(
-            title: NSLocalizedString("Buy & sell Dash", comment: "Buy Sell Portal"),
+            title: NSLocalizedString("Buy & Sell Dash", comment: "Buy Sell Portal"),
             subtitle: NSLocalizedString("Select a service to buy, sell, convert and transfer Dash", comment: "Buy Sell Portal")
         )
     }

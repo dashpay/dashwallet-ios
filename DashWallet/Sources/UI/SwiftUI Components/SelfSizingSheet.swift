@@ -62,7 +62,8 @@ extension View {
     /// Applies a self-sizing sheet detent so the sheet fits its content automatically.
     ///
     /// - Parameter cornerRadius: Optional corner radius applied via `presentationCornerRadius`
-    ///   on iOS 16.4+. Pass `nil` (default) to skip.
+    ///   on iOS 16.4..<26 only. Pass `nil` (default) to skip. iOS 26+ uses the system sheet
+    ///   corner styling, so the custom radius is intentionally not applied there.
     ///
     /// The iOS 16 guard is built-in; callers do NOT need their own `#available` check.
     @ViewBuilder
@@ -70,9 +71,16 @@ extension View {
         if #available(iOS 16.0, *) {
             let modified = modifier(SelfSizingSheetModifier())
             if #available(iOS 16.4, *), let r = cornerRadius {
-                modified
-                    .presentationCornerRadius(r)
-                    .presentationBackground(Color.primaryBackground)
+                if #unavailable(iOS 26.0) {
+                    // iOS 16.4..<26: apply the custom corner radius.
+                    modified
+                        .presentationCornerRadius(r)
+                        .presentationBackground(Color.primaryBackground)
+                } else {
+                    // iOS 26+: keep the system corner styling, skip the custom radius.
+                    modified
+                        .presentationBackground(Color.primaryBackground)
+                }
             } else {
                 modified
             }

@@ -153,7 +153,7 @@ struct SelectCoinView: View {
                     .foregroundColor(Color.gray500)
             }
             .padding(10)
-            .frame(maxWidth: .infinity, maxHeight: 80)
+            .frame(maxWidth: .infinity, maxHeight: 100)
             .modifier(MayaMenuCardStyle())
 
             Spacer()

@@ -232,6 +232,7 @@ struct MayaConvertView: View {
         .padding(.horizontal, Layout.hPadding)
         .background(Color.secondaryBackground)
         .clipShape(.rect(cornerRadius: 20))
+        .background(Color.secondaryBackground, ignoresSafeAreaEdges: .bottom)
     }
 }
 
