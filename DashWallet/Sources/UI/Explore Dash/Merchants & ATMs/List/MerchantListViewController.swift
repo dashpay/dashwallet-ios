@@ -119,6 +119,17 @@ class MerchantListViewController: ExplorePointOfUseListViewController, Navigatio
 
     var isBackButtonHidden: Bool { customNavBar != nil }
     var isNavigationBarHidden: Bool { customNavBar != nil }
+    override var expandedTableTopInset: CGFloat {
+        guard customNavBar != nil else { return 0 }
+
+        let hostHeight = customNavBarHost?.view.bounds.height ?? 0
+        if hostHeight > 0 {
+            return hostHeight
+        }
+
+        let fittingHeight = customNavBarHost?.view.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height ?? 0
+        return fittingHeight > 0 ? fittingHeight : 64
+    }
 
     override var locationServicePopupTitle: String {
         NSLocalizedString("Merchant search works better with Location Services turned on.", comment: "")
@@ -418,6 +429,9 @@ class MerchantListViewController: ExplorePointOfUseListViewController, Navigatio
             host.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             host.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
+
+        view.layoutIfNeeded()
+        updateTableViewInsetsForCurrentSheetPosition()
     }
 
     @objc

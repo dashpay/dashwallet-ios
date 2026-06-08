@@ -16,18 +16,17 @@
 //
 
 import CoreLocation
-import MapKit
 import SDWebImageSwiftUI
 import SwiftUI
 
 private enum Layout {
-    static let cardSpacing: CGFloat = 20
-    static let cardCornerRadius: CGFloat = 20
-    static let cardInsets: CGFloat = 20
+    static let contentSpacing: CGFloat = 20
+    static let contentInsets: CGFloat = 20
     static let logoSize: CGFloat = 60
     static let listSpacing: CGFloat = 16
-    static let topInset: CGFloat = 32
-    static let bottomInset: CGFloat = 32
+    static let topInset: CGFloat = 16
+    static let bottomInset: CGFloat = 16
+    static let scrollBottomInset: CGFloat = 40
 }
 
 struct AllMerchantLocationsView: View {
@@ -36,6 +35,7 @@ struct AllMerchantLocationsView: View {
     var payWithDashHandler: (() -> Void)?
     var sellDashHandler: (() -> Void)?
     var onItemTapped: ((ExplorePointOfUse) -> Void)?
+    var onItemsUpdated: (([ExplorePointOfUse]) -> Void)?
 
     init(pointOfUse: ExplorePointOfUse, searchRadius: Double = kDefaultRadius, searchCenterCoordinate: CLLocationCoordinate2D? = nil, currentFilters: PointOfUseListFilters? = nil) {
         _viewModel = StateObject(wrappedValue: AllMerchantLocationsViewModel(
@@ -57,88 +57,42 @@ struct AllMerchantLocationsView: View {
     #endif
 
     var body: some View {
-        VStack(spacing: 0) {
-            MerchantLocationsMapView(items: viewModel.items)
-                .frame(height: kDefaultOpenedMapPosition)
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: Layout.contentSpacing) {
+                MerchantHeaderView(pointOfUse: viewModel.currentItem)
 
-            ScrollView(.vertical, showsIndicators: false) {
-                Card {
-                    VStack(alignment: .leading, spacing: Layout.cardSpacing) {
-                        MerchantHeaderView(pointOfUse: viewModel.currentItem)
-
-                        LocationsSection(
-                            items: viewModel.items,
-                            distanceTexts: viewModel.distanceTexts,
-                            isLoading: viewModel.isLoading,
-                            onItemTapped: { onItemTapped?($0) }
-                        )
-                    }
-                }
-                .padding(.horizontal, Layout.cardInsets)
-                .padding(.top, Layout.topInset)
-                .padding(.bottom, Layout.bottomInset)
+                LocationsSection(
+                    items: viewModel.items,
+                    distanceTexts: viewModel.distanceTexts,
+                    isLoading: viewModel.isLoading,
+                    isLoadingNextPage: viewModel.isLoadingNextPage,
+                    hasNextPage: viewModel.hasNextPage,
+                    onItemTapped: { onItemTapped?($0) },
+                    onLoadMore: { viewModel.loadMoreIfNeeded(currentItem: $0) }
+                )
             }
-            .background(Color.primaryBackground)
         }
-        .onAppear { viewModel.onAppear() }
-        .navigationTitle(NSLocalizedString("Where to Spend", comment: ""))
-        .navigationBarTitleDisplayMode(.inline)
-    }
-}
-
-// MARK: - Map representable
-
-private struct MerchantLocationsMapView: UIViewRepresentable {
-    let items: [ExplorePointOfUse]
-
-    func makeCoordinator() -> Coordinator { Coordinator() }
-
-    func makeUIView(context: Context) -> MKMapView {
-        let mapView = MKMapView()
-        mapView.showsUserLocation = true
-        mapView.isZoomEnabled = true
-        mapView.isScrollEnabled = true
-        return mapView
-    }
-
-    func updateUIView(_ mapView: MKMapView, context: Context) {
-        let newKeys = Set(items.compactMap { item -> String? in
-            guard let coord = validCoordinate(for: item) else { return nil }
-            return "\(item.id)|\(coord.latitude)|\(coord.longitude)"
-        })
-
-        guard newKeys != context.coordinator.lastKeys else { return }
-        context.coordinator.lastKeys = newKeys
-
-        let existing = mapView.annotations.filter { !($0 is MKUserLocation) }
-        mapView.removeAnnotations(existing)
-
-        let annotations: [MKPointAnnotation] = items.compactMap { item in
-            guard let coord = validCoordinate(for: item) else { return nil }
-            let annotation = MKPointAnnotation()
-            annotation.coordinate = coord
-            annotation.title = item.name
-            return annotation
+        .safeAreaInset(edge: .bottom) {
+            Color.clear
+                .frame(height: Layout.scrollBottomInset)
         }
-
-        guard !annotations.isEmpty else { return }
-        mapView.addAnnotations(annotations)
-
-        if !context.coordinator.didInitialZoom {
-            context.coordinator.didInitialZoom = true
-            mapView.showAnnotations(annotations, animated: false)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .padding(20)
+        .background(Color.secondaryBackground)
+        .clipShape(.rect(cornerRadius: 20))
+        .padding(.horizontal, Layout.contentInsets)
+        .padding(.top, Layout.topInset)
+        .padding(.bottom, Layout.bottomInset)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.primaryBackground)
+        .onAppear {
+            viewModel.onItemsUpdated = onItemsUpdated
+            onItemsUpdated?(viewModel.items)
+            viewModel.onAppear()
         }
-    }
-
-    private func validCoordinate(for item: ExplorePointOfUse) -> CLLocationCoordinate2D? {
-        guard let lat = item.latitude, let lon = item.longitude else { return nil }
-        let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
-        return CLLocationCoordinate2DIsValid(coord) ? coord : nil
-    }
-
-    final class Coordinator {
-        var lastKeys: Set<String> = []
-        var didInitialZoom = false
+        .onDisappear {
+            viewModel.onItemsUpdated = nil
+        }
     }
 }
 
@@ -148,7 +102,7 @@ private struct MerchantHeaderView: View {
     let pointOfUse: ExplorePointOfUse
 
     var body: some View {
-        HStack(spacing: Layout.cardSpacing) {
+        HStack(spacing: Layout.contentSpacing) {
             Group {
                 if let logoUrl = pointOfUse.logoLocation, let url = URL(string: logoUrl) {
                     WebImage(url: url)
@@ -186,7 +140,10 @@ private struct LocationsSection: View {
     let items: [ExplorePointOfUse]
     let distanceTexts: [Int64: String]
     let isLoading: Bool
+    let isLoadingNextPage: Bool
+    let hasNextPage: Bool
     let onItemTapped: (ExplorePointOfUse) -> Void
+    let onLoadMore: (ExplorePointOfUse) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: Layout.listSpacing) {
@@ -210,7 +167,7 @@ private struct LocationsSection: View {
                 emptyPlaceholder
             } else {
                 LazyVStack(spacing: Layout.listSpacing) {
-                    ForEach(items, id: \.id) { item in
+                    ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                         Button {
                             onItemTapped(item)
                         } label: {
@@ -220,10 +177,22 @@ private struct LocationsSection: View {
                             )
                         }
                         .buttonStyle(.plain)
+                        .onAppear {
+                            guard hasNextPage else { return }
+                            let triggerIndex = max(items.count - 5, 0)
+                            guard index >= triggerIndex else { return }
+                            onLoadMore(item)
+                        }
+                    }
+
+                    if isLoadingNextPage {
+                        footerLoader
                     }
                 }
+                .padding(.bottom, Layout.scrollBottomInset)
             }
         }
+
     }
 
     private var loadingPlaceholder: some View {
@@ -248,18 +217,16 @@ private struct LocationsSection: View {
         }
         .frame(minHeight: 120)
     }
-}
 
-// MARK: - Card container
-
-private struct Card<Content: View>: View {
-    @ViewBuilder let content: () -> Content
-
-    var body: some View {
-        content()
-            .padding(Layout.cardInsets)
-            .background(Color.secondaryBackground)
-            .clipShape(.rect(cornerRadius: Layout.cardCornerRadius))
+    private var footerLoader: some View {
+        HStack {
+            Spacer()
+            SwiftUI.ProgressView()
+                .progressViewStyle(.circular)
+                .controlSize(.small)
+            Spacer()
+        }
+        .padding(.vertical, 8)
     }
 }
 

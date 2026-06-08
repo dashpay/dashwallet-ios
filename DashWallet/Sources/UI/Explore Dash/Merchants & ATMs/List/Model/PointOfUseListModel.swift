@@ -123,6 +123,7 @@ final class PointOfUseListModel {
     var items: [ExplorePointOfUse] = []
     var itemsDidChange: (() -> Void)?
     var nextPageDidLoaded: ((_ offset: Int, _ count: Int) -> Void)?
+    var fetchingStateDidChange: (() -> Void)?
 
     var segments: [PointOfUseListSegment] = []
     var segmentTitles: [String] { segments.map { $0.title } }
@@ -241,6 +242,9 @@ extension PointOfUseListModel {
     internal func _fetch(query: String?) {
         let segment = currentSegment
         isFetching = true
+        DispatchQueue.main.async { [weak self] in
+            self?.fetchingStateDidChange?()
+        }
         currentDataProvider?
             .items(query: query, in: currentMapBounds, userPoint: userCoordinates, with: filters) { [weak self] result in
                 guard self?.currentSegment == segment else { return }
@@ -250,11 +254,15 @@ extension PointOfUseListModel {
                     DispatchQueue.main.async {
                         self?.items = items
                         self?.isFetching = false
+                        self?.fetchingStateDidChange?()
                         self?.itemsDidChange?()
                     }
                     break
                 case .failure:
-                    self?.isFetching = false
+                    DispatchQueue.main.async {
+                        self?.isFetching = false
+                        self?.fetchingStateDidChange?()
+                    }
                     break // TODO: handler failure
                 }
             }
@@ -262,6 +270,10 @@ extension PointOfUseListModel {
 
     public func fetchNextPage() {
         let segment = currentSegment
+        isFetching = true
+        DispatchQueue.main.async { [weak self] in
+            self?.fetchingStateDidChange?()
+        }
         currentDataProvider?.nextPage { [weak self] result in
             guard self?.currentSegment == segment else { return }
 
@@ -270,12 +282,18 @@ extension PointOfUseListModel {
                 let offset = self?.items.count ?? 0
                 let count = items.count
 
-                self?.items += items
                 DispatchQueue.main.async {
+                    self?.items += items
+                    self?.isFetching = false
+                    self?.fetchingStateDidChange?()
                     self?.nextPageDidLoaded?(offset, count)
                 }
                 break
             case .failure:
+                DispatchQueue.main.async {
+                    self?.isFetching = false
+                    self?.fetchingStateDidChange?()
+                }
                 break // TODO: handler failure
             }
         }

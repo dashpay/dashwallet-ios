@@ -34,9 +34,17 @@ class POIDetailsViewController: UIViewController {
 
     private var contentView: UIView!
     private var mapView: ExploreMapView!
+    private weak var detailsSheetViewController: UIViewController?
+    private var didPresentDetailsSheet = false
     private let defaultBottomSheetHeight: CGFloat = 450
 
-    public init(pointOfUse: ExplorePointOfUse, isShowAllHidden: Bool = true, searchRadius: Double? = nil, searchCenterCoordinate: CLLocationCoordinate2D? = nil, currentFilters: PointOfUseListFilters? = nil) {
+    public init(
+        pointOfUse: ExplorePointOfUse,
+        isShowAllHidden: Bool = true,
+        searchRadius: Double? = nil,
+        searchCenterCoordinate: CLLocationCoordinate2D? = nil,
+        currentFilters: PointOfUseListFilters? = nil
+    ) {
         self.pointOfUse = pointOfUse
         self.isShowAllHidden = isShowAllHidden
         self.searchRadius = searchRadius
@@ -61,6 +69,11 @@ class POIDetailsViewController: UIViewController {
         title = pointOfUse.name
         configureHierarchy()
         refreshTokenAndMerchantInfo()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        presentDetailsSheetIfNeeded()
     }
 
 }
@@ -104,65 +117,33 @@ extension POIDetailsViewController {
     }
     
     private func adjustMapCenterForBottomSheet() {
-        updateMapForSheetHeight(defaultBottomSheetHeight)
-    }
-    
-    private func updateMapForSheetHeight(_ sheetHeight: CGFloat) {
         guard let mapView = mapView, let location = mapView.initialCenterLocation else { return }
-        
-        // Set content insets to push the map center up based on sheet height
-        let contentInsets = UIEdgeInsets(top: 0, left: 0, bottom: sheetHeight, right: 0)
-        mapView.setContentInsets(contentInsets, animated: true)
-        
-        // Re-center the location
-        mapView.setCenter(location, animated: true)
+
+        let contentInsets = UIEdgeInsets(top: 0, left: 0, bottom: defaultBottomSheetHeight, right: 0)
+        mapView.setContentInsets(contentInsets, animated: false)
+        mapView.setCenter(location, animated: false)
     }
 
     private func prepareContentView() {
         contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = .dw_secondaryBackground()
-        
-        if pointOfUse.showMap {
-            // Create a bottom sheet container
-            let sheetViewController = BottomSheetViewController()
-            sheetViewController.contentView = contentView
-            sheetViewController.view.backgroundColor = .clear
-            
-            // Set up height change callback to update map
-            sheetViewController.onHeightChanged = { [weak self] height in
-                self?.updateMapForSheetHeight(height)
-            }
-            
-            // Add sheet as child view controller
-            addChild(sheetViewController)
-            view.addSubview(sheetViewController.view)
-            sheetViewController.view.translatesAutoresizingMaskIntoConstraints = false
-            
-            NSLayoutConstraint.activate([
-                sheetViewController.view.topAnchor.constraint(equalTo: view.topAnchor),
-                sheetViewController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-                sheetViewController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                sheetViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            ])
-            
-            sheetViewController.didMove(toParent: self)
-        } else {
-            // Non-map view: use regular layout
-            view.addSubview(contentView)
-            
-            NSLayoutConstraint.activate([
-                contentView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-                contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            ])
-        }
+
+        guard !pointOfUse.showMap else { return }
+
+        view.addSubview(contentView)
+
+        NSLayoutConstraint.activate([
+            contentView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
     }
 
-    private func showDetailsView() {
-        if case .unknown = pointOfUse.category { return }
-        
+    private func makeDetailsView() -> POIDetailsView? {
+        if case .unknown = pointOfUse.category { return nil }
+
         // Get current search radius from parent controller if available
         let effectiveRadius: Double
         if let searchRadius = searchRadius, searchRadius == Double.greatestFiniteMagnitude {
@@ -175,8 +156,16 @@ extension POIDetailsViewController {
         }
 
         var detailsView = POIDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden, searchRadius: effectiveRadius, searchCenterCoordinate: searchCenterCoordinate)
-        detailsView.payWithDashHandler = payWithDashHandler
-        detailsView.sellDashHandler = sellDashHandler
+        detailsView.payWithDashHandler = { [weak self] in
+            self?.performAfterDismissingDetailsSheetIfNeeded {
+                self?.payWithDashHandler?()
+            }
+        }
+        detailsView.sellDashHandler = { [weak self] in
+            self?.performAfterDismissingDetailsSheetIfNeeded {
+                self?.sellDashHandler?()
+            }
+        }
         detailsView.showAllLocationsActionBlock = { [weak self] in
             guard let wSelf = self else { return }
 
@@ -187,10 +176,17 @@ extension POIDetailsViewController {
             // For other tabs (Online, Nearby), use the current radius filtering
             let searchRadiusToUse = isFromAllTab ? Double.greatestFiniteMagnitude : effectiveRadius
 
-            let vc = AllMerchantLocationsViewController(pointOfUse: wSelf.pointOfUse, searchRadius: searchRadiusToUse, searchCenterCoordinate: wSelf.searchCenterCoordinate, currentFilters: wSelf.currentFilters)
-            vc.payWithDashHandler = wSelf.payWithDashHandler
-            vc.sellDashHandler = wSelf.sellDashHandler
-            wSelf.navigationController?.pushViewController(vc, animated: true)
+            wSelf.performAfterDismissingDetailsSheetIfNeeded {
+                let vc = AllMerchantLocationsViewController(
+                    pointOfUse: wSelf.pointOfUse,
+                    searchRadius: searchRadiusToUse,
+                    searchCenterCoordinate: wSelf.searchCenterCoordinate,
+                    currentFilters: wSelf.currentFilters
+                )
+                vc.payWithDashHandler = wSelf.payWithDashHandler
+                vc.sellDashHandler = wSelf.sellDashHandler
+                wSelf.navigationController?.pushViewController(vc, animated: true)
+            }
         }
         detailsView.buyGiftCardHandler = { [weak self] provider in
             Task {
@@ -215,7 +211,13 @@ extension POIDetailsViewController {
         detailsView.dashSpendAuthHandler = { [weak self] provider in
             self?.showDashSpendLoginInfo(provider: provider)
         }
-        
+
+        return detailsView
+    }
+
+    private func showDetailsView() {
+        guard let detailsView = makeDetailsView() else { return }
+
         let hostingController = UIHostingController(rootView: detailsView)
         hostingController.view.backgroundColor = .dw_secondaryBackground()
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
@@ -231,10 +233,60 @@ extension POIDetailsViewController {
         ])
     }
 
+    private func presentDetailsSheetIfNeeded() {
+        guard pointOfUse.showMap, !didPresentDetailsSheet, presentedViewController == nil else { return }
+        guard let detailsView = makeDetailsView() else { return }
+
+        let sheetViewController = UIHostingController(rootView: detailsView)
+        sheetViewController.view.backgroundColor = .dw_secondaryBackground()
+        sheetViewController.modalPresentationStyle = .pageSheet
+        sheetViewController.isModalInPresentation = true
+
+        if let sheet = sheetViewController.sheetPresentationController {
+            // A small "collapsed" detent lets the user drop the sheet down to a peek
+            // so they can see/interact with the map underneath (custom detent is iOS 16+).
+            if #available(iOS 16.0, *) {
+                let collapsed = UISheetPresentationController.Detent.custom(identifier: .init("collapsed")) { context in
+                    max(120, context.maximumDetentValue * 0.12)
+                }
+                sheet.detents = [collapsed, .medium(), .large()]
+            } else {
+                sheet.detents = [.medium(), .large()]
+            }
+            sheet.selectedDetentIdentifier = .medium
+            sheet.prefersGrabberVisible = true
+            sheet.largestUndimmedDetentIdentifier = .large
+            // Custom corner radius only on iOS 16.4..<26; iOS 26+ uses the system sheet corner styling.
+            if #available(iOS 16.4, *) {
+                if #unavailable(iOS 26.0) {
+                    sheet.preferredCornerRadius = 20
+                }
+            }
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = true
+        }
+
+        detailsSheetViewController = sheetViewController
+        didPresentDetailsSheet = true
+        present(sheetViewController, animated: true)
+    }
+
+    private func performAfterDismissingDetailsSheetIfNeeded(_ action: @escaping () -> Void) {
+        guard pointOfUse.showMap, let sheetViewController = detailsSheetViewController else {
+            action()
+            return
+        }
+
+        detailsSheetViewController = nil
+        didPresentDetailsSheet = false
+        sheetViewController.dismiss(animated: false, completion: action)
+    }
+
     private func configureHierarchy() {
         showMapIfNeeded()
         prepareContentView()
-        showDetailsView()
+        if !pointOfUse.showMap {
+            showDetailsView()
+        }
         
         // Adjust map center after layout is complete
         if pointOfUse.showMap {
@@ -250,15 +302,16 @@ extension POIDetailsViewController {
 
 extension POIDetailsViewController {
     private func showDashSpendLoginInfo(provider: GiftCardProvider) {
+        let presenter = detailsSheetViewController ?? self
         let swiftUIView = DashSpendLoginInfoView(
             provider: provider,
-            onCreateNewAccount: { [weak self] in
-                self?.dismiss(animated: true) {
+            onCreateNewAccount: { [weak self, weak presenter] in
+                presenter?.dismiss(animated: true) {
                     self?.showDashSpendTerms(provider: provider)
                 }
             },
-            onLogIn: { [weak self] in
-                self?.dismiss(animated: true) {
+            onLogIn: { [weak self, weak presenter] in
+                presenter?.dismiss(animated: true) {
                     self?.showDashSpendAuth(authType: .signIn, provider: provider)
                 }
             },
@@ -268,40 +321,52 @@ extension POIDetailsViewController {
         )
         let hostingController = UIHostingController(rootView: swiftUIView)
         hostingController.setDetent(450)
-        self.present(hostingController, animated: true)
+        presenter.present(hostingController, animated: true)
     }
     
     private func showDashSpendTerms(provider: GiftCardProvider) {
-        let hostingController = UIHostingController(
-            rootView: DashSpendTermsScreen(provider: provider) {
-                self.navigationController?.popToViewController(ofType: POIDetailsViewController.self, animated: false)
-                self.showDashSpendPayScreen(provider: provider, justAuthenticated: true)
-            }
-        )
-        hostingController.modalPresentationStyle = .fullScreen
-        self.navigationController?.pushViewController(hostingController, animated: true)
+        performAfterDismissingDetailsSheetIfNeeded { [weak self] in
+            guard let self = self else { return }
+
+            let hostingController = UIHostingController(
+                rootView: DashSpendTermsScreen(provider: provider) {
+                    self.navigationController?.popToViewController(ofType: POIDetailsViewController.self, animated: false)
+                    self.showDashSpendPayScreen(provider: provider, justAuthenticated: true)
+                }
+            )
+            hostingController.modalPresentationStyle = .fullScreen
+            self.navigationController?.pushViewController(hostingController, animated: true)
+        }
     }
 
     private func showDashSpendAuth(authType: DashSpendUserAuthType, provider: GiftCardProvider) {
-        let hostingController = UIHostingController(
-            rootView: DashSpendUserAuthScreen(authType: authType, provider: provider) {
-                self.navigationController?.popViewController(animated: false)
-                self.showDashSpendPayScreen(provider: provider, justAuthenticated: true)
-            }
-        )
-        
-        self.navigationController?.pushViewController(hostingController, animated: true)
+        performAfterDismissingDetailsSheetIfNeeded { [weak self] in
+            guard let self = self else { return }
+
+            let hostingController = UIHostingController(
+                rootView: DashSpendUserAuthScreen(authType: authType, provider: provider) {
+                    self.navigationController?.popViewController(animated: false)
+                    self.showDashSpendPayScreen(provider: provider, justAuthenticated: true)
+                }
+            )
+
+            self.navigationController?.pushViewController(hostingController, animated: true)
+        }
     }
     
     private func showDashSpendPayScreen(provider: GiftCardProvider, justAuthenticated: Bool = false) {
-        let hostingController = UIHostingController(
-            rootView: DashSpendPayScreen(merchant: self.pointOfUse, provider: provider, justAuthenticated: justAuthenticated) { [weak self] txId in
-                // Navigate back to home and show gift card details
-                self?.onGiftCardPurchased?(txId)
-            }
-        )
-        
-        self.navigationController?.pushViewController(hostingController, animated: true)
+        performAfterDismissingDetailsSheetIfNeeded { [weak self] in
+            guard let self = self else { return }
+
+            let hostingController = UIHostingController(
+                rootView: DashSpendPayScreen(merchant: self.pointOfUse, provider: provider, justAuthenticated: justAuthenticated) { [weak self] txId in
+                    // Navigate back to home and show gift card details
+                    self?.onGiftCardPurchased?(txId)
+                }
+            )
+
+            self.navigationController?.pushViewController(hostingController, animated: true)
+        }
     }
     
     private func refreshTokenAndMerchantInfo() {
@@ -434,164 +499,17 @@ extension ExplorePointOfUse {
     }
 }
 
-// MARK: - BottomSheetViewController
+#if DEBUG
+private struct POIDetailsViewControllerRepresentable: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> POIDetailsViewController {
+        POIDetailsViewController(pointOfUse: .previewBurgerKing())
+    }
 
-class BottomSheetViewController: UIViewController {
-    var contentView: UIView!
-    var onHeightChanged: ((CGFloat) -> Void)?
-    
-    private var sheetContainerView: UIView!
-    private var dragHandleView: UIView!
-    private var scrollView: UIScrollView!
-    private var contentHeightConstraint: NSLayoutConstraint!
-    
-    private let defaultHeight: CGFloat = 450
-    private let dragHandleHeight: CGFloat = 36
-    private let dragHandleWidth: CGFloat = 36
-    private let dragHandleCornerRadius: CGFloat = 3
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupViews()
-        setupGestures()
-        updateScrollViewScrollability()
-    }
-    
-    private func setupViews() {
-        // Sheet container
-        sheetContainerView = UIView()
-        sheetContainerView.translatesAutoresizingMaskIntoConstraints = false
-        sheetContainerView.backgroundColor = .dw_secondaryBackground()
-        sheetContainerView.layer.cornerRadius = 20.0
-        sheetContainerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        sheetContainerView.clipsToBounds = true
-        view.addSubview(sheetContainerView)
-        
-        // Drag handle
-        dragHandleView = UIView()
-        dragHandleView.translatesAutoresizingMaskIntoConstraints = false
-        dragHandleView.backgroundColor = UIColor(white: 0.6, alpha: 0.3)
-        dragHandleView.layer.cornerRadius = dragHandleCornerRadius
-        sheetContainerView.addSubview(dragHandleView)
-        
-        // Scroll view
-        scrollView = UIScrollView()
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.showsVerticalScrollIndicator = true
-        scrollView.alwaysBounceVertical = false
-        sheetContainerView.addSubview(scrollView)
-        
-        // Add content view to scroll view
-        scrollView.addSubview(contentView)
-        
-        // Setup constraints
-        contentHeightConstraint = sheetContainerView.heightAnchor.constraint(equalToConstant: defaultHeight)
-        
-        NSLayoutConstraint.activate([
-            // Sheet container
-            sheetContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            sheetContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            sheetContainerView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            contentHeightConstraint,
-            
-            // Drag handle
-            dragHandleView.centerXAnchor.constraint(equalTo: sheetContainerView.centerXAnchor),
-            dragHandleView.topAnchor.constraint(equalTo: sheetContainerView.topAnchor, constant: 8),
-            dragHandleView.widthAnchor.constraint(equalToConstant: dragHandleWidth),
-            dragHandleView.heightAnchor.constraint(equalToConstant: 5),
-            
-            // Scroll view
-            scrollView.topAnchor.constraint(equalTo: dragHandleView.bottomAnchor, constant: 8),
-            scrollView.leadingAnchor.constraint(equalTo: sheetContainerView.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: sheetContainerView.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: sheetContainerView.bottomAnchor),
-            
-            // Content view in scroll view
-            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
-        ])
-    }
-    
-    private func setupGestures() {
-        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture))
-        panGesture.delegate = self
-        sheetContainerView.addGestureRecognizer(panGesture)
-    }
-    
-    @objc private func handlePanGesture(_ gesture: UIPanGestureRecognizer) {
-        let translation = gesture.translation(in: view)
-        let velocity = gesture.velocity(in: view)
-        
-        let minHeight: CGFloat = dragHandleHeight + 20
-        let maxHeight = view.frame.height - view.safeAreaInsets.top - 20
-        
-        switch gesture.state {
-        case .changed:
-            let newHeight = contentHeightConstraint.constant - translation.y
-            contentHeightConstraint.constant = min(max(newHeight, minHeight), maxHeight)
-            gesture.setTranslation(.zero, in: view)
-            updateScrollViewScrollability()
-            onHeightChanged?(contentHeightConstraint.constant)
-            
-        case .ended:
-            let currentHeight = contentHeightConstraint.constant
-            let targetHeight: CGFloat
-            
-            // Determine target height based on velocity and position
-            if velocity.y > 500 {
-                // Fast downward swipe - minimize
-                targetHeight = minHeight
-            } else if velocity.y < -500 {
-                // Fast upward swipe - maximize
-                targetHeight = maxHeight
-            } else {
-                // Based on position
-                let threshold = (maxHeight - minHeight) / 2 + minHeight
-                targetHeight = currentHeight > threshold ? maxHeight : defaultHeight
-            }
-            
-            UIView.animate(withDuration: 0.3, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.5, options: .curveEaseInOut) {
-                self.contentHeightConstraint.constant = targetHeight
-                self.view.layoutIfNeeded()
-                self.updateScrollViewScrollability()
-                self.onHeightChanged?(targetHeight)
-            }
-            
-        default:
-            break
-        }
-    }
-    
-    private func updateScrollViewScrollability() {
-        let maxHeight = view.frame.height - view.safeAreaInsets.top - 20
-        let isFullyExpanded = contentHeightConstraint.constant >= maxHeight - 10
-        
-        // Enable scrolling only when fully expanded
-        scrollView.isScrollEnabled = isFullyExpanded
-        
-        // If not fully expanded, ensure scroll is at top
-        if !isFullyExpanded && scrollView.contentOffset.y > 0 {
-            scrollView.setContentOffset(.zero, animated: false)
-        }
-    }
+    func updateUIViewController(_ uiViewController: POIDetailsViewController, context: Context) { }
 }
 
-// MARK: - UIGestureRecognizerDelegate
-
-extension BottomSheetViewController: UIGestureRecognizerDelegate {
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        // Allow simultaneous recognition with scroll view
-        if otherGestureRecognizer.view == scrollView {
-            let velocity = (gestureRecognizer as? UIPanGestureRecognizer)?.velocity(in: view) ?? .zero
-            let isScrollingDown = velocity.y > 0
-            let isAtTop = scrollView.contentOffset.y <= 0
-            
-            // Only allow sheet dragging when scrolling down and at top of content
-            return isScrollingDown && isAtTop
-        }
-        return false
-    }
+#Preview("Merchant details (full screen)") {
+    POIDetailsViewControllerRepresentable()
+        .ignoresSafeArea()
 }
+#endif

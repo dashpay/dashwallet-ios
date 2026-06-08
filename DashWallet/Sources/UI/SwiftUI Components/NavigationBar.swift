@@ -45,7 +45,6 @@ struct NavigationBar<Leading: View, Central: View, Trailing: View>: View {
                Spacer()
 
                trailing
-
            }
            .padding(.horizontal, 20)
 
@@ -96,40 +95,21 @@ extension NavigationBar where Leading == EmptyView, Central == EmptyView {
 }
 
 enum NavigationBarElement: String {
-   case template = "cotrols-template"
    case back = "toolbar-back"
    case close = "toolbar-close"
    case plus = "toolbar-plus"
    case info = "toolbar-info"
 
-   private var iconMaxHeight: CGFloat {
-       switch self {
-       case .template: return 5
-       case .back: return 10
-       case .close: return 9
-       case .plus: return 10
-       case .info: return 22
-       }
-   }
-
    var icon: some View {
-       Group {
-           if self == .info {
-               Icon(name: .custom(rawValue, maxHeight: 22))
-           } else {
-               ZStack {
-                   Circle()
-                       .stroke(Color.gray300Alpha30, lineWidth: 1.5)
-                       .frame(width: 34, height: 34)
-                   Icon(name: .custom(rawValue, maxHeight: iconMaxHeight))
-               }
-           }
-       }
+       Icon(name: .custom(rawValue))
    }
 
    func button(action: @escaping () -> Void) -> some View {
        Button(action: action) {
-           icon.frame(width: 44, height: 44)
+           icon
+               .fixedSize()
+               .frame(width: 44, height: 44, alignment: .center)
+               .contentShape(Rectangle())
        }
        .buttonStyle(NavigationBarButtonStyle())
    }
@@ -349,16 +329,33 @@ struct NavBarClose: View {
 }
 
 #Preview("NavBarBackInfo") {
-   NavigationBar(
-       leading: { NavigationBarElement.back.button { } },
-       trailing: { NavigationBarElement.info.button { } }
-   )
+   VStack {
+       NavigationBar(
+           leading: { NavigationBarElement.back.button { } },
+           trailing: { NavigationBarElement.info.button { } }
+       )
+
+       NavigationBar(
+           leading: { NavigationBarElement.back.button { } },
+           trailing: { NavigationBarElement.back.button { } }
+       )
+
+       NavigationBar(
+           leading: { NavigationBarElement.back.button { } },
+           trailing: { NavigationBarElement.close.button { } }
+       )
+
+       NavigationBar(
+           leading: { NavigationBarElement.back.button { } },
+           trailing: { NavigationBarElement.plus.button { } }
+       )
+   }
 }
 
 #Preview("NavBarTitleClose") {
    NavigationBar(
        central: { Text("Title").font(.subheadMedium) },
-       trailing: { NavigationBarElement.close.button { } }
+       trailing: { NavigationBarElement.back.button { } }
    )
 }
 
@@ -366,7 +363,7 @@ struct NavBarClose: View {
    NavigationBar(
        leading: { NavigationBarElement.back.button { } },
        central: { Text("Title").font(.subheadMedium) },
-       trailing: { NavigationBarElement.close.button { } }
+       trailing: { NavigationBarElement.plus.button { } }
    )
 }
 

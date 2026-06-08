@@ -21,32 +21,65 @@ struct MerchantCellRow: View {
     let pointOfUse: ExplorePointOfUse
     let distanceText: String?
 
-    var body: some View {
-        HStack(spacing: 20) {
-            VStack(alignment: .leading, spacing: 4) {
-                if let distanceText {
-                    HStack(spacing: 8) {
-                        Icon(name: .custom("image.explore.dash.distance", maxHeight: 15))
-                        Text(distanceText)
-                            .font(.footnote)
-                            .foregroundStyle(Color.gray500)
-                    }
-                }
+    private enum Layout {
+        static let rowSpacing: CGFloat = 20
+        static let textSpacing: CGFloat = 4
+        static let distanceSpacing: CGFloat = 8
+        static let distanceIconHeight: CGFloat = 15
+        static let chevronHeight: CGFloat = 10
+        static let chevronWidth: CGFloat = 10
+        static let addressLineLimit = 2
+        static let contentPadding: CGFloat = 20
+        static let cornerRadius: CGFloat = 16
+    }
 
-                Text(pointOfUse.address)
-                    .font(.subhead)
-                    .foregroundStyle(Color.primaryText)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+    private enum Asset {
+        static let distanceIcon = "image.explore.dash.distance"
+        static let chevronIcon = "list-chevron-right"
+    }
+
+    var body: some View {
+        HStack(spacing: Layout.rowSpacing) {
+            contentStack
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            Icon(name: .custom("list-chevron-right", maxHeight: 10))
-                .frame(width: 10)
+            chevron
         }
-        .padding(20)
+        .padding(Layout.contentPadding)
         .background(Color.gray300Alpha10)
-        .clipShape(.rect(cornerRadius: 16))
+        .clipShape(.rect(cornerRadius: Layout.cornerRadius))
+    }
+
+    private var contentStack: some View {
+        VStack(alignment: .leading, spacing: Layout.textSpacing) {
+            distanceLabel
+            addressLabel
+        }
+    }
+
+    @ViewBuilder
+    private var distanceLabel: some View {
+        if let distanceText {
+            HStack(spacing: Layout.distanceSpacing) {
+                Icon(name: .custom(Asset.distanceIcon, maxHeight: Layout.distanceIconHeight))
+                Text(distanceText)
+                    .font(.footnote)
+                    .foregroundStyle(Color.gray500)
+            }
+        }
+    }
+
+    private var addressLabel: some View {
+        Text(pointOfUse.address)
+            .font(.subhead)
+            .foregroundStyle(Color.primaryText)
+            .lineLimit(Layout.addressLineLimit)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var chevron: some View {
+        Icon(name: .custom(Asset.chevronIcon, maxHeight: Layout.chevronHeight))
+            .frame(width: Layout.chevronWidth)
     }
 }
 

@@ -317,7 +317,6 @@
 		2AFCB9C423BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9C323BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m */; };
 		2AFF01DB243F4559003718DC /* DWDPRegistrationStatus.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFF01DA243F4559003718DC /* DWDPRegistrationStatus.m */; };
 		3A0C6A2A57DFF02865E36200 /* ImportPrivateKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53435DCAF024BC82E0247F3 /* ImportPrivateKeySheet.swift */; };
-		3A2B98E34A5449FCA1AE7C8F /* AllMerchantLocationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D48FA3F1C2848F1B8251AE5 /* AllMerchantLocationsView.swift */; };
 		42F932EBC8934A35AF7D4266 /* SegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17BCA69033084CE5836FA509 /* SegmentedControl.swift */; };
 		470617D6299A671900DCC667 /* CrowdNodeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470617D5299A671900DCC667 /* CrowdNodeCell.swift */; };
 		47081197298CF20C003FCA3D /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47081196298CF20B003FCA3D /* Transaction.swift */; };
@@ -420,7 +419,6 @@
 		47AC8413297822E000BD1B49 /* SpecifyAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AC8412297822E000BD1B49 /* SpecifyAmountViewController.swift */; };
 		47AE8B9528BFACA100490F5E /* ExploreDash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8B9428BFACA100490F5E /* ExploreDash.swift */; };
 		47AE8B9C28BFAD3600490F5E /* ExplorePointOfUse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8B9B28BFAD2800490F5E /* ExplorePointOfUse.swift */; };
-		42608D7AE9124D23B85F400A /* ExplorePointOfUse+PreviewMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84498D7EEBA64F96AC30291B /* ExplorePointOfUse+PreviewMock.swift */; };
 		47AE8B9F28BFAD8200490F5E /* SQLite+ExloreDash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8B9E28BFAD8200490F5E /* SQLite+ExloreDash.swift */; };
 		47AE8BA128BFADB600490F5E /* PointOfUseDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BA028BFADB600490F5E /* PointOfUseDAO.swift */; };
 		47AE8BA528BFADD900490F5E /* MerchantDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BA328BFADD800490F5E /* MerchantDAO.swift */; };
@@ -430,7 +428,6 @@
 		47AE8BAD28BFAE6700490F5E /* DWLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BAC28BFAE6700490F5E /* DWLocationManager.swift */; };
 		47AE8BB028BFF28700490F5E /* explore.db in Resources */ = {isa = PBXBuildFile; fileRef = 47AE8BAF28BFF28400490F5E /* explore.db */; };
 		47AE8BB228BFF61A00490F5E /* FileManager+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BB128BFF61A00490F5E /* FileManager+DashWallet.swift */; };
-		47AE8BE628C1305F00490F5E /* AllMerchantLocationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BB728C1305E00490F5E /* AllMerchantLocationsViewController.swift */; };
 		47AE8BF028C1306000490F5E /* AtmItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BC928C1305E00490F5E /* AtmItemCell.swift */; };
 		47AE8BF228C1306000490F5E /* PointOfUseItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BCB28C1305E00490F5E /* PointOfUseItemCell.swift */; };
 		47AE8BF328C1306000490F5E /* MerchantItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BCC28C1305E00490F5E /* MerchantItemCell.swift */; };
@@ -512,8 +509,18 @@
 		5151CDF12F928D7D00F0A604 /* LocalCurrencyCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5151CDEF2F928D7D00F0A604 /* LocalCurrencyCellView.swift */; };
 		5151CE182F9624D000F0A604 /* CurrencyItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5151CE172F9624D000F0A604 /* CurrencyItem.swift */; };
 		5151CE192F9624D000F0A604 /* CurrencyItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5151CE172F9624D000F0A604 /* CurrencyItem.swift */; };
-		516985432FCD83BE00BA91A2 /* MerchantCellRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516985422FCD83BE00BA91A2 /* MerchantCellRow.swift */; };
-		516985442FCD83BE00BA91A2 /* MerchantCellRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516985422FCD83BE00BA91A2 /* MerchantCellRow.swift */; };
+		51530E662FD6EB4400175308 /* SelfSizingSheetModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E652FD6EB4400175308 /* SelfSizingSheetModifier.swift */; };
+		51530E672FD6EB4400175308 /* SelfSizingSheetModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E652FD6EB4400175308 /* SelfSizingSheetModifier.swift */; };
+		A1060800B100000000000001 /* ExplorePointOfUse+PreviewMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1060800F100000000000001 /* ExplorePointOfUse+PreviewMock.swift */; };
+		A1060800B200000000000001 /* ExplorePointOfUse+PreviewMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1060800F100000000000001 /* ExplorePointOfUse+PreviewMock.swift */; };
+		51530E6E2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6B2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift */; };
+		51530E6F2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6C2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift */; };
+		51530E702FD6EE1D00175308 /* MerchantCellRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E682FD6EE1D00175308 /* MerchantCellRow.swift */; };
+		51530E712FD6EE1D00175308 /* AllMerchantLocationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6A2FD6EE1D00175308 /* AllMerchantLocationsView.swift */; };
+		51530E722FD6EE1D00175308 /* AllMerchantLocationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6B2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift */; };
+		51530E732FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6C2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift */; };
+		51530E742FD6EE1D00175308 /* MerchantCellRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E682FD6EE1D00175308 /* MerchantCellRow.swift */; };
+		51530E752FD6EE1D00175308 /* AllMerchantLocationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6A2FD6EE1D00175308 /* AllMerchantLocationsView.swift */; };
 		5193BE482F9FC05E00C24A58 /* DashSpendPayIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE472F9FC05E00C24A58 /* DashSpendPayIntro.swift */; };
 		5193BE492F9FC05E00C24A58 /* DashSpendPayIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE472F9FC05E00C24A58 /* DashSpendPayIntro.swift */; };
 		5193BE4A2F9FC05E00C24A58 /* DashSpendMultiplePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE4B2F9FC05E00C24A58 /* DashSpendMultiplePanel.swift */; };
@@ -530,7 +537,6 @@
 		5193BE5A2F9FC05E00C24A58 /* DashSpendFixedContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE5B2F9FC05E00C24A58 /* DashSpendFixedContent.swift */; };
 		51DFA7F82FA8A9DF001EDB3A /* DashStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DFA7F72FA8A9DF001EDB3A /* DashStepper.swift */; };
 		51DFA7F92FA8A9DF001EDB3A /* DashStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DFA7F72FA8A9DF001EDB3A /* DashStepper.swift */; };
-		6C8CB719C6564B7CBF39DDD7 /* AllMerchantLocationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE70F7F0740F47CDBB427862 /* AllMerchantLocationsViewModel.swift */; };
 		736A08CB9556A395E59D3F78 /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9BF7550EF8D4BA009CB1EB5 /* libPods-WatchApp Extension.a */; };
 		7502A4872AE401EF00ACDDD3 /* UsernameVotingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7502A4862AE401EF00ACDDD3 /* UsernameVotingViewController.swift */; };
 		7503643A2C89CFB70029EC0D /* CoinJoinProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */; };
@@ -823,7 +829,6 @@
 		75FFD6C52BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C32BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift */; };
 		75FFD6C72BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
 		75FFD6C82BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
-		87ED104882C745868D69223F /* AllMerchantLocationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D48FA3F1C2848F1B8251AE5 /* AllMerchantLocationsView.swift */; };
 		893AE6F535290DD1CEE89219 /* ImportPrivateKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53435DCAF024BC82E0247F3 /* ImportPrivateKeySheet.swift */; };
 		8A7607606A594C6E99A2FAC7 /* DerivationPathKeysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC1F4DB87C442BEABDF0DB2 /* DerivationPathKeysView.swift */; };
 		91F0B8B92F3FAB7C00E713AE /* KeysOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F0B8B82F3FAB7C00E713AE /* KeysOverviewView.swift */; };
@@ -839,7 +844,6 @@
 		B3A1F2C4D5E6078901234569 /* ExtendedPublicKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A1F2C4D5E6078901234567 /* ExtendedPublicKeySheet.swift */; };
 		B3D26F853F876FE4F2081CFF /* libPods-dashpay.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B6C652479D19F2169F565A6C /* libPods-dashpay.a */; };
 		B453B34B871E4125607DACDC /* NavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD6615F1246B5935365B05BD /* NavigationBar.swift */; };
-		B651D5E9146C4F6296A91DCD /* AllMerchantLocationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE70F7F0740F47CDBB427862 /* AllMerchantLocationsViewModel.swift */; };
 		BA4A72671BE11AFA00E39C01 /* BRAWWeakTimerTarget.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA4A72661BE11AFA00E39C01 /* BRAWWeakTimerTarget.swift */; };
 		BA54D3CE1B2EA74000C9CB28 /* TodayExtensionAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA54D3CD1B2EA74000C9CB28 /* TodayExtensionAssets.xcassets */; };
 		BA6645961BD924EB007A6BB1 /* BRAWTransactionRowControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA6645951BD924EB007A6BB1 /* BRAWTransactionRowControl.swift */; };
@@ -1127,7 +1131,6 @@
 		C9D2C6BE2A320AA000D15901 /* DWLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BAC28BFAE6700490F5E /* DWLocationManager.swift */; };
 		C9D2C6BF2A320AA000D15901 /* FetchingNextPageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BCE28C1305E00490F5E /* FetchingNextPageCell.swift */; };
 		C9D2C6C02A320AA000D15901 /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47081196298CF20B003FCA3D /* Transaction.swift */; };
-		C9D2C6C12A320AA000D15901 /* AllMerchantLocationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BB728C1305E00490F5E /* AllMerchantLocationsViewController.swift */; };
 		C9D2C6C22A320AA000D15901 /* DWPaymentOutput.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD84C23180E7E00A96B62 /* DWPaymentOutput.m */; };
 		C9D2C6C32A320AA000D15901 /* DWPayModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3415D23A8133A004E37A7 /* DWPayModelStub.m */; };
 		C9D2C6C42A320AA000D15901 /* DWRecoverContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFF0230531DA00C475EB /* DWRecoverContentView.m */; };
@@ -1521,7 +1524,6 @@
 		C9D2C8BB2A320AA000D15901 /* DWSeedPhraseView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE5F22D8E9D900C99324 /* DWSeedPhraseView.m */; };
 		C9D2C8BD2A320AA000D15901 /* UIStackView+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B30D7B29100ABA0080C326 /* UIStackView+DashWallet.swift */; };
 		C9D2C8BF2A320AA000D15901 /* ExplorePointOfUse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8B9B28BFAD2800490F5E /* ExplorePointOfUse.swift */; };
-		97EA3F4627094EB99AFD89EB /* ExplorePointOfUse+PreviewMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84498D7EEBA64F96AC30291B /* ExplorePointOfUse+PreviewMock.swift */; };
 		C9D2C8C12A320AA000D15901 /* DWDashPayModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A56EF0524193AEB002C32F3 /* DWDashPayModel.m */; };
 		C9D2C8C22A320AA000D15901 /* TransactionObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ED4A028EC86E0006E3EE4 /* TransactionObserver.swift */; };
 		C9D2C8C32A320AA000D15901 /* DWInfoTextCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431D322D52F67009BAF7F /* DWInfoTextCell.m */; };
@@ -1782,7 +1784,6 @@
 /* Begin PBXFileReference section */
 		072C1DA82BFD4F254498DD98 /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; path = "Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; sourceTree = "<group>"; };
 		0CE0B7C2888E32EB9DCBA989 /* Pods-dashpay.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashpay.testflight.xcconfig"; path = "Target Support Files/Pods-dashpay/Pods-dashpay.testflight.xcconfig"; sourceTree = "<group>"; };
-		0D48FA3F1C2848F1B8251AE5 /* AllMerchantLocationsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsView.swift; sourceTree = "<group>"; };
 		0F36937D2919A5DB007F4E91 /* TwoFactorAuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoFactorAuthViewController.swift; sourceTree = "<group>"; };
 		0F3693802919A70B007F4E91 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Coinbase.storyboard; sourceTree = "<group>"; };
 		0F6EDF9D28C896BC000427E7 /* CoinbaseUserAuthInformation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoinbaseUserAuthInformation.swift; sourceTree = "<group>"; };
@@ -2430,7 +2431,6 @@
 		47AC8412297822E000BD1B49 /* SpecifyAmountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpecifyAmountViewController.swift; sourceTree = "<group>"; };
 		47AE8B9428BFACA100490F5E /* ExploreDash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreDash.swift; sourceTree = "<group>"; };
 		47AE8B9B28BFAD2800490F5E /* ExplorePointOfUse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorePointOfUse.swift; sourceTree = "<group>"; };
-		84498D7EEBA64F96AC30291B /* ExplorePointOfUse+PreviewMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExplorePointOfUse+PreviewMock.swift"; sourceTree = "<group>"; };
 		47AE8B9E28BFAD8200490F5E /* SQLite+ExloreDash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SQLite+ExloreDash.swift"; sourceTree = "<group>"; };
 		47AE8BA028BFADB600490F5E /* PointOfUseDAO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PointOfUseDAO.swift; sourceTree = "<group>"; };
 		47AE8BA328BFADD800490F5E /* MerchantDAO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MerchantDAO.swift; sourceTree = "<group>"; };
@@ -2440,7 +2440,6 @@
 		47AE8BAC28BFAE6700490F5E /* DWLocationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DWLocationManager.swift; sourceTree = "<group>"; };
 		47AE8BAF28BFF28400490F5E /* explore.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = explore.db; sourceTree = "<group>"; };
 		47AE8BB128BFF61A00490F5E /* FileManager+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileManager+DashWallet.swift"; sourceTree = "<group>"; };
-		47AE8BB728C1305E00490F5E /* AllMerchantLocationsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsViewController.swift; sourceTree = "<group>"; };
 		47AE8BC928C1305E00490F5E /* AtmItemCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AtmItemCell.swift; sourceTree = "<group>"; };
 		47AE8BCB28C1305E00490F5E /* PointOfUseItemCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PointOfUseItemCell.swift; sourceTree = "<group>"; };
 		47AE8BCC28C1305E00490F5E /* MerchantItemCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MerchantItemCell.swift; sourceTree = "<group>"; };
@@ -2517,7 +2516,12 @@
 		5151CD612F926D1900F0A604 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
 		5151CDEF2F928D7D00F0A604 /* LocalCurrencyCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalCurrencyCellView.swift; sourceTree = "<group>"; };
 		5151CE172F9624D000F0A604 /* CurrencyItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrencyItem.swift; sourceTree = "<group>"; };
-		516985422FCD83BE00BA91A2 /* MerchantCellRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantCellRow.swift; sourceTree = "<group>"; };
+		51530E652FD6EB4400175308 /* SelfSizingSheetModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfSizingSheetModifier.swift; sourceTree = "<group>"; };
+		51530E682FD6EE1D00175308 /* MerchantCellRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantCellRow.swift; sourceTree = "<group>"; };
+		51530E6A2FD6EE1D00175308 /* AllMerchantLocationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsView.swift; sourceTree = "<group>"; };
+		51530E6B2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsViewController.swift; sourceTree = "<group>"; };
+		51530E6C2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsViewModel.swift; sourceTree = "<group>"; };
+		A1060800F100000000000001 /* ExplorePointOfUse+PreviewMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExplorePointOfUse+PreviewMock.swift"; sourceTree = "<group>"; };
 		5193BE472F9FC05E00C24A58 /* DashSpendPayIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendPayIntro.swift; sourceTree = "<group>"; };
 		5193BE4B2F9FC05E00C24A58 /* DashSpendMultiplePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendMultiplePanel.swift; sourceTree = "<group>"; };
 		5193BE4E2F9FC05E00C24A58 /* DashSpendSinglePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendSinglePanel.swift; sourceTree = "<group>"; };
@@ -3223,7 +3227,6 @@
 		CC0000082DUMMYID001234567 /* PiggyCardsEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsEndpoint.swift; sourceTree = "<group>"; };
 		CC0000092DUMMYID001234567 /* PiggyCardsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsRepository.swift; sourceTree = "<group>"; };
 		CC0000102DUMMYID001234567 /* PiggyCardsTokenService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsTokenService.swift; sourceTree = "<group>"; };
-		CE70F7F0740F47CDBB427862 /* AllMerchantLocationsViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsViewModel.swift; sourceTree = "<group>"; };
 		D53435DCAF024BC82E0247F3 /* ImportPrivateKeySheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImportPrivateKeySheet.swift; sourceTree = "<group>"; };
 		D6B46D7DC3023BAABB5E5090 /* Pods-WatchApp.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.testnet.xcconfig"; path = "Target Support Files/Pods-WatchApp/Pods-WatchApp.testnet.xcconfig"; sourceTree = "<group>"; };
 		D7EEDD5662619D97CDB157CD /* libPods-WatchApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -5813,7 +5816,7 @@
 				75D9EBBB2DE5CD8B009416A2 /* GiftCard.swift */,
 				753E46E72DE1E24300A3FF2A /* CTXSpendModels.swift */,
 				47AE8B9B28BFAD2800490F5E /* ExplorePointOfUse.swift */,
-				84498D7EEBA64F96AC30291B /* ExplorePointOfUse+PreviewMock.swift */,
+				A1060800F100000000000001 /* ExplorePointOfUse+PreviewMock.swift */,
 				FF0000062DUMMYID001234567 /* PiggyCardsModels.swift */,
 			);
 			path = Entites;
@@ -5885,7 +5888,7 @@
 		47AE8BC528C1305E00490F5E /* List */ = {
 			isa = PBXGroup;
 			children = (
-				516985402FCD7D2800BA91A2 /* AllMerchantLocations */,
+				51530E6D2FD6EE1D00175308 /* AllMerchantLocations */,
 				47838B7B290133440003E8AB /* Filters */,
 				47AE8BD428C1305E00490F5E /* Model */,
 				47AE8BD828C1305E00490F5E /* Views */,
@@ -6148,23 +6151,23 @@
 			path = Networking;
 			sourceTree = "<group>";
 		};
-		516985402FCD7D2800BA91A2 /* AllMerchantLocations */ = {
+		51530E692FD6EE1D00175308 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				516985412FCD83A600BA91A2 /* Components */,
-				47AE8BB728C1305E00490F5E /* AllMerchantLocationsViewController.swift */,
-				CE70F7F0740F47CDBB427862 /* AllMerchantLocationsViewModel.swift */,
-				0D48FA3F1C2848F1B8251AE5 /* AllMerchantLocationsView.swift */,
-			);
-			path = AllMerchantLocations;
-			sourceTree = "<group>";
-		};
-		516985412FCD83A600BA91A2 /* Components */ = {
-			isa = PBXGroup;
-			children = (
-				516985422FCD83BE00BA91A2 /* MerchantCellRow.swift */,
+				51530E682FD6EE1D00175308 /* MerchantCellRow.swift */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		51530E6D2FD6EE1D00175308 /* AllMerchantLocations */ = {
+			isa = PBXGroup;
+			children = (
+				51530E692FD6EE1D00175308 /* Components */,
+				51530E6A2FD6EE1D00175308 /* AllMerchantLocationsView.swift */,
+				51530E6B2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift */,
+				51530E6C2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift */,
+			);
+			path = AllMerchantLocations;
 			sourceTree = "<group>";
 		};
 		5193BE462F9FC05000C24A58 /* Components */ = {
@@ -6279,6 +6282,7 @@
 		7566F4882BB6CAD6005238D2 /* SwiftUI Components */ = {
 			isa = PBXGroup;
 			children = (
+				51530E652FD6EB4400175308 /* SelfSizingSheetModifier.swift */,
 				51DFA7F72FA8A9DF001EDB3A /* DashStepper.swift */,
 				5151CDF62F929D3F00F0A604 /* ScrollViews */,
 				5151CDF22F929C2300F0A604 /* Geometry Readers */,
@@ -8777,9 +8781,6 @@
 				47AE8BAD28BFAE6700490F5E /* DWLocationManager.swift in Sources */,
 				47AE8BF428C1306000490F5E /* FetchingNextPageCell.swift in Sources */,
 				47081197298CF20C003FCA3D /* Transaction.swift in Sources */,
-				47AE8BE628C1305F00490F5E /* AllMerchantLocationsViewController.swift in Sources */,
-				B651D5E9146C4F6296A91DCD /* AllMerchantLocationsViewModel.swift in Sources */,
-				87ED104882C745868D69223F /* AllMerchantLocationsView.swift in Sources */,
 				5151CE192F9624D000F0A604 /* CurrencyItem.swift in Sources */,
 				2ACCD84D23180E7E00A96B62 /* DWPaymentOutput.m in Sources */,
 				2AB3415E23A8133A004E37A7 /* DWPayModelStub.m in Sources */,
@@ -8826,6 +8827,7 @@
 				2A913E9C23A53B8E006A2A59 /* DWExtendedContainerViewController.m in Sources */,
 				11517C852949E6F0004FC7BF /* CrowdNodeEndpoint.swift in Sources */,
 				0F71317528F4365C0072F454 /* ServiceEntryPointModel.swift in Sources */,
+				51530E672FD6EB4400175308 /* SelfSizingSheetModifier.swift in Sources */,
 				759ADD572BF3447400767ACD /* Button.swift in Sources */,
 				47AE8B9528BFACA100490F5E /* ExploreDash.swift in Sources */,
 				4789D22F2981067C00BAFEFA /* UpholdAmountModel.swift in Sources */,
@@ -8833,6 +8835,7 @@
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
 				2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */,
 				47AE8BAB28BFAE5800490F5E /* ExploreDatabaseConnection.swift in Sources */,
+				A1060800B100000000000001 /* ExplorePointOfUse+PreviewMock.swift in Sources */,
 				111C3C4C296C51B500788E18 /* WithdrawalLimitsController.swift in Sources */,
 				75FFD6B82BF47BA20032879E /* HomeViewController.swift in Sources */,
 				0F6EDFCD28C896BD000427E7 /* CoinbaseTransactionResponse.swift in Sources */,
@@ -9090,7 +9093,6 @@
 				BB0000032DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */,
 				BB0000052DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift in Sources */,
 				GG0000012DUMMYID001234567 /* GeoRestrictionService.swift in Sources */,
-				516985442FCD83BE00BA91A2 /* MerchantCellRow.swift in Sources */,
 				CC0000112DUMMYID001234567 /* PiggyCardsAPI.swift in Sources */,
 				CC0000132DUMMYID001234567 /* PiggyCardsCache.swift in Sources */,
 				CC0000152DUMMYID001234567 /* PiggyCardsEndpoint.swift in Sources */,
@@ -9246,6 +9248,10 @@
 				479E7924287C00EC00D0F7D7 /* DatabaseConnection.swift in Sources */,
 				75889B762AD296E700C17F5D /* CoinJoinInfoViewController.swift in Sources */,
 				2A9FFE822230FF4700956D5F /* DWSwitcherFormCellModel.m in Sources */,
+				51530E6E2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift in Sources */,
+				51530E6F2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift in Sources */,
+				51530E702FD6EE1D00175308 /* MerchantCellRow.swift in Sources */,
+				51530E712FD6EE1D00175308 /* AllMerchantLocationsView.swift in Sources */,
 				2A74EFF823053ECE00C475EB /* DWIntrinsicTextView.m in Sources */,
 				471A2608289ACDA00056B7B2 /* AddressUserInfoDAO.swift in Sources */,
 				2A0C69D323143568001B8C90 /* DWModalTransition.m in Sources */,
@@ -9304,7 +9310,6 @@
 				2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */,
 				47B30D7C29100ABA0080C326 /* UIStackView+DashWallet.swift in Sources */,
 				47AE8B9C28BFAD3600490F5E /* ExplorePointOfUse.swift in Sources */,
-				42608D7AE9124D23B85F400A /* ExplorePointOfUse+PreviewMock.swift in Sources */,
 				117ED4A128EC86E0006E3EE4 /* TransactionObserver.swift in Sources */,
 				2A4431D522D52F67009BAF7F /* DWInfoTextCell.m in Sources */,
 				47EE17192959CDC200BA1986 /* ColorizedText.swift in Sources */,
@@ -9482,9 +9487,6 @@
 				C943B32E2A408CED00AF23C5 /* DWAvatarGravatarViewController.m in Sources */,
 				C9D2C6C02A320AA000D15901 /* Transaction.swift in Sources */,
 				C943B3232A408CED00AF23C5 /* DWFaceDetector.m in Sources */,
-				C9D2C6C12A320AA000D15901 /* AllMerchantLocationsViewController.swift in Sources */,
-				6C8CB719C6564B7CBF39DDD7 /* AllMerchantLocationsViewModel.swift in Sources */,
-				3A2B98E34A5449FCA1AE7C8F /* AllMerchantLocationsView.swift in Sources */,
 				5151CDF02F928D7D00F0A604 /* LocalCurrencyCellView.swift in Sources */,
 				C9D2C6C22A320AA000D15901 /* DWPaymentOutput.m in Sources */,
 				753FDBEA2AEA422F0005EEC3 /* VotingPrefs.swift in Sources */,
@@ -9682,6 +9684,8 @@
 				C9D2C7462A320AA000D15901 /* CBAccountManager.swift in Sources */,
 				C9D2C7472A320AA000D15901 /* FailedOperationStatusViewController.swift in Sources */,
 				C9D2C7482A320AA000D15901 /* UIPanGestureRecognizer+DWProjected.m in Sources */,
+				51530E662FD6EB4400175308 /* SelfSizingSheetModifier.swift in Sources */,
+				A1060800B200000000000001 /* ExplorePointOfUse+PreviewMock.swift in Sources */,
 				C956AF182A5C3306002FAB75 /* DWPressableButton.m in Sources */,
 				C943B50A2A40A54600AF23C5 /* DWDPContactsItemsFactory.m in Sources */,
 				C93078492A6AD4FC00906E4B /* UpholdConfirmViewController.swift in Sources */,
@@ -9852,7 +9856,6 @@
 				756557B62CE84FFA0060348D /* FeeInfo.swift in Sources */,
 				C943B5922A40ED7B00AF23C5 /* DWTextField.m in Sources */,
 				75EBAA0D2BB9792F004488E3 /* FeatureTopText.swift in Sources */,
-				516985432FCD83BE00BA91A2 /* MerchantCellRow.swift in Sources */,
 				C9D2C7B42A320AA000D15901 /* DWUpholdTransactionObject+DWView.m in Sources */,
 				C943B54A2A40B52F00AF23C5 /* NSLayoutConstraint+DWAutolayout.m in Sources */,
 				C9D2C7B62A320AA000D15901 /* CrowdNodeDepositTx.swift in Sources */,
@@ -9929,6 +9932,10 @@
 				C943B4B62A40A54600AF23C5 /* DWFetchedResultsDataSource.m in Sources */,
 				C9D2C7E32A320AA000D15901 /* PointOfUseListSegmentedCell.swift in Sources */,
 				7513DA892AB17606005D55F6 /* Topper.swift in Sources */,
+				51530E722FD6EE1D00175308 /* AllMerchantLocationsViewController.swift in Sources */,
+				51530E732FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift in Sources */,
+				51530E742FD6EE1D00175308 /* MerchantCellRow.swift in Sources */,
+				51530E752FD6EE1D00175308 /* AllMerchantLocationsView.swift in Sources */,
 				C943B33C2A408CED00AF23C5 /* DWHourGlassAnimationView.m in Sources */,
 				C956AF0E2A5B592E002FAB75 /* UIControl+Dash.swift in Sources */,
 				C9D2C7E42A320AA000D15901 /* DWURLRequestHandler.m in Sources */,
@@ -10201,7 +10208,6 @@
 				C9D2C8BD2A320AA000D15901 /* UIStackView+DashWallet.swift in Sources */,
 				C943B34E2A40A4C500AF23C5 /* DWInfoPopupContentView.m in Sources */,
 				C9D2C8BF2A320AA000D15901 /* ExplorePointOfUse.swift in Sources */,
-				97EA3F4627094EB99AFD89EB /* ExplorePointOfUse+PreviewMock.swift in Sources */,
 				C9D2C8C12A320AA000D15901 /* DWDashPayModel.m in Sources */,
 				C943B5912A40ED7B00AF23C5 /* DWUsernameValidationView.m in Sources */,
 				C9D2C8C22A320AA000D15901 /* TransactionObserver.swift in Sources */,
@@ -10409,7 +10415,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -10446,7 +10452,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -10482,7 +10488,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -10518,7 +10524,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -10679,7 +10685,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -10708,7 +10714,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -10810,7 +10816,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -10848,7 +10854,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -10947,7 +10953,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -10982,7 +10988,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11017,12 +11023,12 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -11039,12 +11045,12 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -11059,7 +11065,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3BA20785E162F1AF2F455D9C /* Pods-WatchApp Extension.debug.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -11069,7 +11075,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -11086,7 +11092,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4457C976B1DB0CF402FF3C5F /* Pods-WatchApp Extension.release.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -11096,7 +11102,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -11114,7 +11120,7 @@
 			baseConfigurationReference = DA1B05DBBDFF0A504976BEE4 /* Pods-TodayExtension.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 14;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -11128,7 +11134,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -11143,7 +11149,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 14;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -11157,7 +11163,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -11177,7 +11183,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 177;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -11207,7 +11213,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -11313,7 +11319,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 177;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11342,7 +11348,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -11447,7 +11453,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 177;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11487,7 +11493,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -11591,7 +11597,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 177;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11630,7 +11636,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -11795,7 +11801,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11833,7 +11839,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -11932,7 +11938,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 14;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -11946,7 +11952,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -11962,7 +11968,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11997,12 +12003,12 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -12017,7 +12023,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9617AF26A5D14E531A1426A5 /* Pods-WatchApp Extension.testflight.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -12027,7 +12033,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -12116,7 +12122,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -12144,7 +12150,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -12242,7 +12248,7 @@
 			baseConfigurationReference = 6C742C25446DB994AEE3D0D3 /* Pods-TodayExtension.testnet.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 14;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -12256,7 +12262,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -12271,7 +12277,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -12306,12 +12312,12 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -12326,7 +12332,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 811955848CCC3E8994440CB6 /* Pods-WatchApp Extension.testnet.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -12336,7 +12342,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 8.5.7;
+				MARKETING_VERSION = 8.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
