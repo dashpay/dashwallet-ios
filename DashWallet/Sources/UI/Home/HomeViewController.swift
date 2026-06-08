@@ -401,18 +401,33 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             positiveButtonAction: {
                 DSLogger.log("CJTEST HomeViewController: sweep invoked from Home popup (\(amount))")
                 self.viewModel.showCoinJoinSweepDialog = false
-                Task {
+                Task { @MainActor in
+                    // The post-sync popup (ModalDialog) is mid-dismissal here —
+                    // its wrapper calls dismiss(animated:) immediately before
+                    // running this action. Presenting the PIN now races that
+                    // dismissal: DSAuthenticationManager.presentController:
+                    // silently fails to present over the dismissing modal, so
+                    // the auth continuation never resumes and the sweep hangs
+                    // after the "preparing CoinJoin sweep" log. Wait (bounded
+                    // ~3s) for the modal to finish dismissing first, so the PIN
+                    // presents over a stable HomeViewController.
+                    var waited = 0
+                    while self.presentedViewController != nil, waited < 60 {
+                        try? await Task.sleep(nanoseconds: 50_000_000)
+                        waited += 1
+                    }
                     let errorMessage = await self.viewModel.performCoinJoinSweep()
                     guard let errorMessage else { return }
-                    await MainActor.run {
-                        self.showModalDialog(
-                            style: .error,
-                            icon: .system("exclamationmark.triangle"),
-                            heading: NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"),
-                            textBlock1: errorMessage,
-                            positiveButtonText: NSLocalizedString("OK", comment: "")
-                        )
-                    }
+                    // `positiveButtonAction:` binds the void overload (the async
+                    // `-> Bool` overload has no action parameter).
+                    self.showModalDialog(
+                        style: .error,
+                        icon: .system("exclamationmark.triangle"),
+                        heading: NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"),
+                        textBlock1: errorMessage,
+                        positiveButtonText: NSLocalizedString("OK", comment: ""),
+                        positiveButtonAction: nil
+                    )
                 }
             },
             negativeButtonText: NSLocalizedString("Later", comment: "CoinJoin"),
