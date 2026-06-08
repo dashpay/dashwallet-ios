@@ -31,9 +31,8 @@
 //      when the coins are swept (`WalletSendService`). See
 //      `SwiftDashSDKSPVCoordinator.maybeCompleteCoinJoinRecovery`.
 //
-//  The lone remaining DashSync touch is `markCurrentNetworkRecovered`, which
-//  reads `currentChain` only to infer the network — revisit when DashSync is
-//  eventually unlinked.
+//  This file no longer touches DashSync — it relies only on the SDK `Network`
+//  and UserDefaults.
 //
 
 import Foundation
@@ -80,9 +79,6 @@ final class CoinJoinRecovery: NSObject {
 
     // MARK: - API
 
-    // TODO(coinjoin-recovery): `markCurrentNetworkRecovered` still infers the
-    // network from DashSync's `currentChain` — replace when DashSync is unlinked.
-
     /// Whether the one-time wide CoinJoin recovery gap should be applied for
     /// `network`. True until the recovery scan has completed once (then the
     /// terminal flag turns it off). Applied to every wallet on its first launch
@@ -104,13 +100,5 @@ final class CoinJoinRecovery: NSObject {
         defaults.set(true, forKey: recoveredKey(network))
         Self.logger.info(
             "🪙 CJRECOV :: recovery complete for \(self.networkTag(network), privacy: .public) — reverting to default gap")
-    }
-
-    /// Convenience for callers that don't carry an SDK `Network` (e.g. the
-    /// sweep success path): mark recovery complete for whatever network
-    /// DashSync's chain is currently on. Call on the main thread.
-    @objc func markCurrentNetworkRecovered() {
-        let network: Network = DWEnvironment.sharedInstance().currentChain.isMainnet() ? .mainnet : .testnet
-        markRecovered(for: network)
     }
 }
