@@ -199,7 +199,7 @@ class AllMerchantLocationsViewController: UIViewController {
 
             let vc = POIDetailsViewController(
                 pointOfUse: item,
-                searchRadius: kDefaultRadius,
+                searchRadius: searchRadius,
                 searchCenterCoordinate: searchCenterCoordinate,
                 currentFilters: currentFilters
             )
