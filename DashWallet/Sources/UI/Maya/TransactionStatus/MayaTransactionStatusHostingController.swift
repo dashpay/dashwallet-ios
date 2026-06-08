@@ -50,8 +50,21 @@ final class MayaTransactionStatusHostingController: UIViewController, Navigation
         let statusView = MayaTransactionStatusView(
             viewModel: viewModel,
             onDone: { [weak self] in
-                // Success → return to Home (root of the pushed Maya flow).
-                self?.navigationController?.popToRootViewController(animated: true)
+                guard let self else { return }
+                // Return to Home — handle BOTH entry paths:
+                // • Shortcuts: the Buy&Sell/Maya flow is a modal presented over the tab bar → dismiss.
+                // • More menu: the flow is PUSHED inside a tab's nav → pop it away and switch to the
+                //   Home tab (index 0 = MainTabbarTabs.home). dismiss would be a no-op there, so branch.
+                if self.navigationController?.presentingViewController != nil {
+                    self.navigationController?.dismiss(animated: true)
+                } else {
+                    // `self.tabBarController` can be nil here (hidesBottomBarWhenPushed), so find the
+                    // app's tab bar controller via the window hierarchy and select the Home tab.
+                    let tab = self.tabBarController
+                        ?? self.view.window?.rootViewController?.dw_firstTabBarController()
+                    self.navigationController?.popToRootViewController(animated: false)
+                    tab?.selectedIndex = 0
+                }
             },
             onClose: { [weak self] in
                 // Failure dismissed → return to the Maya Portal, never to Order Preview / Convert.
@@ -170,8 +183,26 @@ private struct MayaTransactionStatusView: View {
     }
 
     private func pending(message: String) -> some View {
-        MayaTransactionPendingView(message: message)
+        MayaTransactionPendingView(
+            message: message,
+            onGoHome: onDone
+        )
             .padding(.horizontal, 40)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private extension UIViewController {
+    /// Finds the first UITabBarController in the view-controller hierarchy reachable from `self`
+    /// (children + presented), used to switch back to the Home tab when the flow was pushed.
+    func dw_firstTabBarController() -> UITabBarController? {
+        if let tab = self as? UITabBarController { return tab }
+        for child in children {
+            if let tab = child.dw_firstTabBarController() { return tab }
+        }
+        if let presented = presentedViewController {
+            return presented.dw_firstTabBarController()
+        }
+        return nil
     }
 }

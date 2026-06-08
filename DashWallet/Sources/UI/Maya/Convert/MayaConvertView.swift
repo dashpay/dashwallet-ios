@@ -221,7 +221,10 @@ struct MayaConvertView: View {
 
     private var keyboard: some View {
         NumericKeyboardView(
-            value: $viewModel.inputValue,
+            value: Binding(
+                get: { viewModel.inputValue },
+                set: { viewModel.setInput($0) }
+            ),
             showDecimalSeparator: true,
             actionButtonText: NSLocalizedString("Continue", comment: ""),
             actionEnabled: viewModel.canOpenOrderPreview,

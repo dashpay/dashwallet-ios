@@ -133,6 +133,10 @@ final class MayaConvertViewModel: ObservableObject {
         Task { await fetchCryptoRate() }
     }
 
+    func setInput(_ raw: String) {
+        inputValue = Self.sanitize(raw, currency: selectedCurrency)
+    }
+
     func makeOrderPreviewViewModel() -> OrderPreviewViewModel? {
         guard let quote = latestQuote else { return nil }
         return OrderPreviewViewModel(
@@ -238,15 +242,6 @@ final class MayaConvertViewModel: ObservableObject {
         $inputValue
             .sink { [weak self] value in
                 guard let self, !self.isSwitchingCurrency else { return }
-
-                // Sanitize raw input: normalize leading zeros and cap decimal precision.
-                // Writing back sanitized != value re-triggers this sink once; the second
-                // pass is already clean so no infinite loop occurs.
-                let clean = Self.sanitize(value, currency: self.selectedCurrency)
-                if clean != value {
-                    self.inputValue = clean
-                    return
-                }
 
                 self.clearQuoteState()
                 guard self.parseInput(value) != nil else {

@@ -72,81 +72,54 @@ struct AddressSourceView: View {
     }
 
     var body: some View {
-        Button(action: onTap, label: {
-            HStack(spacing: 10) {
-                icon
-
-                VStack(alignment: .leading, spacing: 1) {
-                    HStack {
-                        Text(sourceType.title)
-                            .font(Font.subheadMedium)
-                            .foregroundColor(Color.gray500)
-
-                        Spacer()
-
-                        if isLoggedOut {
-                            Text(NSLocalizedString("Log In", comment: "Maya"))
-                                .font(Font.subheadMedium)
-                                .foregroundColor(.dashBlue)
-                        }
-                    }
-
-                    subtitle
-                }
-
-                Spacer()
-
-                if isLoading {
-                    loadingIndicator
-                }
-            }
-            .padding(10)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(.rect)
-        })
-        .buttonStyle(.plain)
+        MenuItem(
+            title: sourceType.title,
+            subtitle: subtitleText,
+            subtitleLineLimit: sourceType == .clipboard ? 2 : nil,
+            icon: iconName,
+            trailingView: trailingView,
+            action: onTap
+        )
         .disabled(isDisabled)
     }
 
-    // MARK: - Subviews
-
-    private var loadingIndicator: some View {
-        SwiftUI.ProgressView()
-    }
-
-    @ViewBuilder
-    private var icon: some View {
+    private var iconName: IconName {
         switch sourceType {
         case .uphold:
-            Icon(name: .custom("maya.uphold.logo"))
-                .frame(width: 30, height: 30)
+            .custom("maya.uphold.logo")
         case .coinbase:
-            Icon(name: .custom("maya.coinbase.logo"))
-                .frame(width: 30, height: 30)
+            .custom("maya.coinbase.logo")
         case .clipboard:
-            Icon(name: .custom("masternode-keys"))
-                .frame(width: 30, height: 30)
+            .custom("masternode-keys")
         }
     }
 
-    @ViewBuilder
-    private var subtitle: some View {
-        Group {
-            switch state {
-            case .available(let address):
-                Text(address)
-            case .notAvailable:
-                Text(NSLocalizedString("Not available", comment: "Maya"))
-            case .loading:
-                Text(NSLocalizedString("Loading...", comment: "Maya"))
-            case .loggedOut:
-                EmptyView()
-            }
+    private var subtitleText: String? {
+        switch state {
+        case .available(let address):
+            address
+        case .notAvailable:
+            NSLocalizedString("Not available", comment: "Maya")
+        case .loading:
+            NSLocalizedString("Loading...", comment: "Maya")
+        case .loggedOut:
+            nil
         }
-        .font(Font.footnote)
-        .foregroundColor(.tertiaryText)
-        .lineLimit(sourceType == .clipboard ? 2 : nil)
-        .truncationMode(.tail)
+    }
+
+    private var trailingView: AnyView? {
+        switch state {
+        case .loggedOut:
+            AnyView(
+                Text(NSLocalizedString("Log In", comment: "Maya"))
+                    .font(.subheadMedium)
+                    .foregroundColor(.dashBlue)
+            )
+        case .loading:
+            AnyView(SwiftUI.ProgressView())
+        case .available, .notAvailable:
+            nil
+        }
     }
 
     private var isDisabled: Bool {

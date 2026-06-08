@@ -19,6 +19,7 @@ import SwiftUI
 
 struct MayaTransactionPendingView: View {
     let message: String
+    var onGoHome: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 0) {
@@ -44,6 +45,12 @@ struct MayaTransactionPendingView: View {
             .padding(.horizontal, 60)
 
             Spacer()
+
+            DashButton(text: NSLocalizedString("Go to Home", comment: "Maya")) {
+                onGoHome()
+            }
+            .padding(.vertical, 20)
+            .padding(.horizontal, 60)
         }
     }
 }
@@ -54,7 +61,8 @@ struct MayaTransactionPendingView: View {
         message: NSLocalizedString(
             "Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins.",
             comment: "Maya"
-        )
+        ),
+        onGoHome: {}
     )
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Color.primaryBackground)
