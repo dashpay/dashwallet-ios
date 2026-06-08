@@ -21,13 +21,18 @@ import Foundation
 @MainActor
 class AllMerchantLocationsViewModel: ObservableObject {
     private let model: PointOfUseListModel?
+    private var distanceComputationRevision = 0
 
     @Published private(set) var currentItem: ExplorePointOfUse
     @Published private(set) var items: [ExplorePointOfUse] = []
     @Published private(set) var distanceTexts: [Int64: String] = [:]
     @Published private(set) var isLoading: Bool = false
+    @Published private(set) var isLoadingNextPage: Bool = false
+    @Published private(set) var hasNextPage: Bool = false
     @Published private(set) var showMap: Bool = true
     @Published var selectedItem: ExplorePointOfUse? = nil
+
+    var onItemsUpdated: (([ExplorePointOfUse]) -> Void)?
 
     var currentRadius: Double { model?.filters?.currentRadius ?? kDefaultRadius }
     var modelFilters: PointOfUseListFilters? { model?.filters }
@@ -73,10 +78,21 @@ class AllMerchantLocationsViewModel: ObservableObject {
 
         listModel.itemsDidChange = { [weak self] in
             guard let self, let model = self.model else { return }
-            let newItems = model.items
-            self.distanceTexts = self.computeDistanceTexts(for: newItems)
-            self.items = newItems
-            self.isLoading = model.isFetching
+            self.apply(items: model.items, appendedRange: nil)
+            self.updateFetchingState()
+        }
+
+        listModel.nextPageDidLoaded = { [weak self] offset, count in
+            guard let self, let model = self.model else { return }
+            let upperBound = min(offset + count, model.items.count)
+            let range = offset..<upperBound
+            self.apply(items: model.items, appendedRange: range)
+            self.updateFetchingState()
+        }
+
+        listModel.fetchingStateDidChange = { [weak self] in
+            guard let self else { return }
+            self.updateFetchingState()
         }
     }
 
@@ -86,6 +102,7 @@ class AllMerchantLocationsViewModel: ObservableObject {
         self.model = nil
         self.items = previewItems
         self.isLoading = isLoading
+        self.hasNextPage = false
     }
     #endif
 
@@ -108,21 +125,57 @@ class AllMerchantLocationsViewModel: ObservableObject {
         selectedItem = item
     }
 
+    func loadMoreIfNeeded(currentItem item: ExplorePointOfUse) {
+        guard let model else { return }
+        guard hasNextPage, !isLoadingNextPage else { return }
+        guard let currentIndex = items.firstIndex(where: { $0.id == item.id }) else { return }
+
+        let thresholdIndex = max(items.count - 5, 0)
+        guard currentIndex >= thresholdIndex else { return }
+
+        model.fetchNextPage()
+    }
+
     // MARK: - Private
 
-    private func computeDistanceTexts(for items: [ExplorePointOfUse]) -> [Int64: String] {
-        guard let reference = referenceLocation() else { return [:] }
-        var result: [Int64: String] = [:]
-        for item in items {
-            if case .merchant(let m) = item.category, m.type == .online { continue }
-            guard let lat = item.latitude, let lon = item.longitude else { continue }
-            let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
-            guard CLLocationCoordinate2DIsValid(coord) else { continue }
-            let distance = CLLocation(latitude: lat, longitude: lon).distance(from: reference)
-            let measurement: Measurement<UnitLength> = Measurement(value: floor(distance), unit: .meters)
-            result[item.id] = ExploreDash.distanceFormatter.string(from: measurement)
+    private func updateFetchingState() {
+        guard let model else { return }
+        let hasLoadedItems = !model.items.isEmpty
+        isLoading = model.isFetching && !hasLoadedItems
+        isLoadingNextPage = model.isFetching && hasLoadedItems
+        hasNextPage = model.hasNextPage
+    }
+
+    private func apply(items newItems: [ExplorePointOfUse], appendedRange: Range<Int>?) {
+        items = newItems
+        onItemsUpdated?(newItems)
+
+        let itemsToMeasure: [ExplorePointOfUse]
+        let shouldResetDistances = appendedRange == nil
+
+        if let appendedRange, !appendedRange.isEmpty {
+            itemsToMeasure = Array(newItems[appendedRange])
+        } else {
+            itemsToMeasure = newItems
         }
-        return result
+
+        let reference = referenceLocation()
+        distanceComputationRevision += 1
+        let revision = distanceComputationRevision
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            let newDistanceTexts = Self.computeDistanceTexts(for: itemsToMeasure, reference: reference)
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self, self.distanceComputationRevision == revision else { return }
+
+                if shouldResetDistances {
+                    self.distanceTexts = newDistanceTexts
+                } else {
+                    self.distanceTexts.merge(newDistanceTexts) { _, new in new }
+                }
+            }
+        }
     }
 
     private func referenceLocation() -> CLLocation? {
@@ -133,5 +186,26 @@ class AllMerchantLocationsViewModel: ObservableObject {
             return DWLocationManager.shared.currentLocation
         }
         return nil
+    }
+
+    nonisolated private static func computeDistanceTexts(for items: [ExplorePointOfUse], reference: CLLocation?) -> [Int64: String] {
+        guard let reference else { return [:] }
+
+        var result: [Int64: String] = [:]
+        for item in items {
+            if case .merchant(let merchant) = item.category, merchant.type == .online {
+                continue
+            }
+
+            guard let lat = item.latitude, let lon = item.longitude else { continue }
+            let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            guard CLLocationCoordinate2DIsValid(coord) else { continue }
+
+            let distance = CLLocation(latitude: lat, longitude: lon).distance(from: reference)
+            let measurement = Measurement(value: floor(distance), unit: UnitLength.meters)
+            result[item.id] = ExploreDash.distanceFormatter.string(from: measurement)
+        }
+
+        return result
     }
 }

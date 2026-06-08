@@ -44,65 +44,67 @@ struct POIDetailsView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            VStack(spacing: 20) {
-                headerView
-                
-                if case .atm = merchant.category {
-                    atmButtonsView
-                    separatorView
-                }
-                
-                if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
-                    if viewModel.showProviderPicker {
-                        providerSectionView
-                    } else {
-                        singleProviderInfoView
+        ScrollView {
+            VStack(spacing: 0) {
+                VStack(spacing: 20) {
+                    headerView
+
+                    if case .atm = merchant.category {
+                        atmButtonsView
+                        separatorView
+                    }
+
+                    if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
+                        if viewModel.showProviderPicker {
+                            providerSectionView
+                        } else {
+                            singleProviderInfoView
+                        }
+                    }
+
+                    if case .merchant = merchant.category {
+                        countryRestrictionView
+                        bottomButtonView
+                        loginStatusView
                     }
                 }
-                
-                if case .merchant = merchant.category {
-                    countryRestrictionView
-                    bottomButtonView
-                    loginStatusView
-                }
-            }
-            .padding(20)
-            .background(Color.secondaryBackground)
-            .cornerRadius(12)
-            
-            // Location and contact info card
-            if shouldShowLocationView || hasContactInfo {
-                VStack(spacing: 2) {
-                    if shouldShowLocationView {
-                        locationCardView
-                    }
-                    
-                    if let phone = merchant.phone, !phone.isEmpty {
-                        phoneCardView
-                    }
-                    
-                    if merchant.website != nil {
-                        websiteCardView
-                    }
-                }
-                .padding(10)
+                .padding(20)
                 .background(Color.secondaryBackground)
                 .cornerRadius(12)
-                .padding(.top, 16)
-            }
-            
-            // Show all locations button (only if more than 1 location)
-            if !isShowAllHidden && shouldShowLocationView && viewModel.locationCount > 1 {
-                showAllLocationsButton
+
+                // Location and contact info card
+                if shouldShowLocationView || hasContactInfo {
+                    VStack(spacing: 2) {
+                        if shouldShowLocationView {
+                            locationCardView
+                        }
+
+                        if let phone = merchant.phone, !phone.isEmpty {
+                            phoneCardView
+                        }
+
+                        if merchant.website != nil {
+                            websiteCardView
+                        }
+                    }
+                    .padding(10)
+                    .background(Color.secondaryBackground)
+                    .cornerRadius(12)
                     .padding(.top, 16)
+                }
+
+                // Show all locations button (only if more than 1 location)
+                if !isShowAllHidden && shouldShowLocationView && viewModel.locationCount > 1 {
+                    showAllLocationsButton
+                        .padding(.top, 16)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                }
             }
-            
-            Spacer()
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            .padding(.bottom, 20)
+            .animation(.easeInOut(duration: 0.2), value: viewModel.locationCount)
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 10)
-        .padding(.bottom, 20)
     }
     
     // MARK: - Header View
@@ -571,3 +573,56 @@ struct POIDetailsView: View {
             .frame(height: 1/UIScreen.main.scale)
     }
 }
+
+#if DEBUG
+extension ExplorePointOfUse {
+    static func previewBurgerKing() -> ExplorePointOfUse {
+        ExplorePointOfUse(
+            id: 1,
+            name: "Burger King",
+            category: .merchant(
+                .init(
+                    merchantId: "burger-king-123",
+                    paymentMethod: .giftCard,
+                    type: .physical,
+                    deeplink: nil,
+                    savingsBasisPoints: 150,
+                    denominationsType: "Flexible",
+                    redeemType: "in_store",
+                    giftCardProviders: [
+                        .init(
+                            providerId: "piggycards",
+                            savingsPercentage: 150,
+                            denominationsType: "Flexible"
+                        ),
+                        .init(
+                            providerId: "ctx",
+                            savingsPercentage: 100,
+                            denominationsType: "Flexible"
+                        ),
+                    ]
+                )
+            ),
+            active: true,
+            city: "Beebe",
+            territory: "AR",
+            address1: "206 W Center St",
+            address2: nil,
+            address3: nil,
+            address4: nil,
+            latitude: 35.0717,
+            longitude: -91.8746,
+            website: nil,
+            phone: nil,
+            logoLocation: nil,
+            coverImage: nil,
+            source: "preview"
+        )
+    }
+}
+
+#Preview("Merchant details") {
+    POIDetailsView(merchant: .previewBurgerKing())
+        .background(Color.primaryBackground)
+}
+#endif
