@@ -18,6 +18,7 @@
 #import "DWPaymentProcessor.h"
 
 #import "CurrencyExchanger_Objc.h"
+#import "DSAccount+SpentInputCheck.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWPaymentInput+Private.h"
@@ -197,6 +198,20 @@ static NSString *sanitizeString(NSString *s) {
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
     NSString *address = paymentOutput.address;
     DSPaymentProtocolRequest *protocolRequest = paymentOutput.protocolRequest;
+
+    // Blanket lock: block ANY spend while a Maya swap is still confirming, because the
+    // pending swap leaves a stale UTXO that coin selection can re-use (double-spend).
+    if ([account hasUnconfirmedSwapTransaction]) {
+        NSString *title = NSLocalizedString(@"Swap in progress", @"Shown when a previous Dash conversion is still confirming and blocks a new general send.");
+        NSString *message = NSLocalizedString(@"A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before sending.", @"Shown when a pending Dash conversion blocks a regular send.");
+        // Must pass a NON-nil error: the PaymentController delegate early-returns on a nil
+        // error, which would leave the Send button stuck spinning and show nothing.
+        NSError *swapError = [NSError errorWithDomain:@"DashWallet.MayaSwapGuard"
+                                                 code:1
+                                             userInfo:@{NSLocalizedDescriptionKey : message}];
+        [self failedWithError:swapError title:title message:message];
+        return;
+    }
 
     self.request = protocolRequest;
     self.didSendRequestDelegateNotified = NO;

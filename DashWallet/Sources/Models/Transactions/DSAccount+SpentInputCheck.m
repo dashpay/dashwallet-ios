@@ -17,12 +17,29 @@
 
 #import "DSAccount+SpentInputCheck.h"
 #import <DashSync/BigIntTypes.h>
+#import <DashSync/DSTransaction.h>
+#import <DashSync/DSTransactionOutput.h>
 
 @implementation DSAccount (SpentInputCheck)
 
 - (BOOL)isInputSpent:(UInt256)txHash atIndex:(uint32_t)index {
     DSUTXO utxo = {.hash = txHash, .n = (unsigned long)index};
     return [self isSpent:dsutxo_obj(utxo)];
+}
+
+- (BOOL)hasUnconfirmedSwapTransaction {
+    for (DSTransaction *tx in self.allTransactions) {
+        if (tx.confirmed) {
+            continue;
+        }
+        for (DSTransactionOutput *output in tx.outputs) {
+            NSData *script = output.outScript;
+            if (script.length > 0 && ((const uint8_t *)script.bytes)[0] == 0x6a) {
+                return YES;
+            }
+        }
+    }
+    return NO;
 }
 
 @end

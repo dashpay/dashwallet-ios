@@ -45,7 +45,7 @@ struct DashPickerView<Option: Hashable>: View {
     private func pickerOption(_ option: Option) -> some View {
         Text(title(option))
             .font(.caption2)
-            .foregroundColor(selected == option ? .primaryText : Color.black1000Alpha40)
+            .foregroundColor(selected == option ? .primaryText : Color.tertiaryText)
             .padding(.horizontal, Layout.hPadding)
             .padding(.vertical, Layout.vPadding)
             .background(selected == option ? Color.black1000Alpha5 : Color.clear)

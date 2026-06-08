@@ -151,28 +151,12 @@ struct EnterAddressView: View {
     // MARK: - Clipboard
 
     private var clipboardPermissionRow: some View {
-        Button(action: { viewModel.pasteFromClipboard() }) {
-            HStack(spacing: 10) {
-                Icon(name: .custom("masternode-keys"))
-                    .frame(width: 30, height: 30)
-
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Clipboard")
-                        .font(Font.subheadMedium)
-                        .foregroundColor(Color.gray500)
-
-                    Text(NSLocalizedString("Show content in the clipboard", comment: "Maya"))
-                        .font(Font.footnote)
-                        .foregroundColor(.tertiaryText)
-                }
-
-                Spacer()
-            }
-            .padding(10)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(.rect)
-        }
-        .buttonStyle(.plain)
+        MenuItem(
+            title: "Clipboard",
+            subtitle: NSLocalizedString("Show content in the clipboard", comment: "Maya"),
+            icon: .custom("masternode-keys"),
+            action: { viewModel.pasteFromClipboard() }
+        )
     }
 
     private func clipboardContentRow(_ content: String) -> some View {

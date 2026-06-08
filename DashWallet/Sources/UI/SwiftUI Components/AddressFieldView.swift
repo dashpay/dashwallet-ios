@@ -82,6 +82,7 @@ struct AddressFieldView: View {
                 prompt: Text(placeholder).font(.subhead).foregroundStyle(Color.black1000Alpha30),
                 axis: .vertical
             )
+            .lineLimit(1...3) // cap growth at 3 lines; longer addresses scroll inside the field
             .font(.subhead)
             .autocapitalization(.none)
             .disableAutocorrection(true)
