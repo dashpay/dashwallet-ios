@@ -399,6 +399,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             textBlock1: String(format: NSLocalizedString("You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance.", comment: "CoinJoin"), amount),
             positiveButtonText: NSLocalizedString("Move funds", comment: "CoinJoin"),
             positiveButtonAction: {
+                DSLogger.log("CJTEST HomeViewController: sweep invoked from Home popup (\(amount))")
                 self.viewModel.showCoinJoinSweepDialog = false
                 Task {
                     let errorMessage = await self.viewModel.performCoinJoinSweep()

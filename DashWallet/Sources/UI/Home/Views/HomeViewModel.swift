@@ -690,6 +690,7 @@ extension HomeViewModel {
     /// launch until the user sweeps, then self-stops (balance → 0). The durable
     /// Settings row covers the same action for users who dismiss it.
     func maybeShowCoinJoinSweepDialog() {
+        DSLogger.log("CJTEST HomeViewModel: sweep dialog check — \(coinJoinSweepAmountDuffs) duffs (\(String(format: "%.6f", Double(coinJoinSweepAmountDuffs) / Double(DUFFS))) DASH), threshold \(CoinJoinRecovery.recoveryDustThresholdDuffs), above=\(coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs), syncDone=\(syncModel.state == .syncDone), alreadyShown=\(coinJoinSweepDialogShown)")
         guard !coinJoinSweepDialogShown,
               syncModel.state == .syncDone,
               coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs else { return }
@@ -706,9 +707,7 @@ extension HomeViewModel {
             _ = try await WalletSendService.shared.sweepCoinJoin()
             return nil
         } catch {
-            #if DEBUG
-            print("🎯 CoinJoin sweep (home popup) failed: \(error)")
-            #endif
+            DSLogger.log("CJTEST HomeViewModel: sweep (home popup) failed: \(error)")
             // nil when the user cancelled auth; a message on real failures.
             return WalletSendService.coinJoinSweepUserMessage(for: error)
         }

@@ -105,7 +105,7 @@ final class WalletSendService: NSObject {
             )
         }
 
-        Self.logger.info("💸 TXSEND :: preparing CoinJoin sweep of \(amount) duffs")
+        Self.logger.info("💸 TXSEND :: CJTEST preparing CoinJoin sweep — balance \(amount, privacy: .public) duffs (\(Double(amount) / 1e8, privacy: .public) DASH)")
         try await sendAuthorizer.authorizeSend()
 
         guard let destination = SwiftDashSDKReceiveAddressReader.receiveAddress(
@@ -117,11 +117,13 @@ final class WalletSendService: NSObject {
             )
         }
 
+        Self.logger.info("💸 TXSEND :: CJTEST CoinJoin sweep destination resolved \(destination, privacy: .public)")
         let txids = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination)
         guard !txids.isEmpty else {
             // A reported-success sweep that produced no transaction is treated
             // as a failure, so the caller surfaces an error (the sweep alert)
             // rather than silently "succeeding" with the balance unchanged.
+            Self.logger.error("💸 TXSEND :: CJTEST CoinJoin sweep returned no transactions for \(amount, privacy: .public) duffs — treating as failure")
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
                 description: "CoinJoin sweep produced no transactions"
@@ -135,10 +137,15 @@ final class WalletSendService: NSObject {
         for txid in txids {
             CoinJoinWithdrawalStore.shared.record(txid: txid)
         }
-        Self.logger.info("💸 TXSEND :: CoinJoin sweep broadcast — \(txids.count) tx(s)")
+        let recordedHexes: [String] = txids.map { (txid: Data) in
+            txid.reversed().map { String(format: "%02x", $0) }.joined()
+        }
+        Self.logger.info("💸 TXSEND :: CJTEST recorded \(txids.count, privacy: .public) sweep txid(s) in CoinJoinWithdrawalStore: \(recordedHexes.joined(separator: ","), privacy: .public)")
 
         await MainActor.run {
             SwiftDashSDKWalletState.shared.refreshCoinJoinBalance()
+            let post = SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs
+            Self.logger.info("💸 TXSEND :: CJTEST post-sweep CoinJoin balance \(post, privacy: .public) duffs (was \(amount, privacy: .public)) — clearing recovery flag")
             // The sweep emptied the CoinJoin account — recovery is complete.
             // Clear the per-network recovery flag so future launches revert to
             // the fast default address gap.
