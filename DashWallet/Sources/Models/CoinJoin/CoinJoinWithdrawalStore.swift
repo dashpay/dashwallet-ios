@@ -57,4 +57,15 @@ final class CoinJoinWithdrawalStore {
         lock.lock(); defer { lock.unlock() }
         return loaded().contains(txid)
     }
+
+    /// Clear the recorded sweep txids on a wallet wipe so the global tag set
+    /// does not carry a previous wallet's sweeps into a restored one (and does
+    /// not grow unbounded across wipes). Also resets the in-memory cache on the
+    /// long-lived `shared` singleton, so stale txids don't linger until the next
+    /// process launch. Thread-safe.
+    func resetForWipe() {
+        lock.lock(); defer { lock.unlock() }
+        defaults.removeObject(forKey: key)
+        cache = []
+    }
 }

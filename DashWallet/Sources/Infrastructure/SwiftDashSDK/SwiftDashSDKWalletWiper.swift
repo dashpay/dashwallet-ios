@@ -81,6 +81,16 @@ final class SwiftDashSDKWalletWiper: NSObject {
     /// Idempotent. Never throws, never crashes; all errors swallowed
     /// to os.log.
     private static func performWipe() {
+        // Clear app-level CoinJoin state that is NOT per-wallet-keyed and
+        // therefore survives the SDK/SwiftData/Keychain teardown below. Done
+        // FIRST so it runs on every wipe — including the enumeration-failure
+        // early return — letting a wallet restored afterwards re-run the
+        // one-time wide recovery scan and start with a clean withdrawal tag set.
+        // Both touch only UserDefaults + an NSLock, so they're safe from this
+        // background queue with no @MainActor hop (unlike deleteWalletsFromSDK).
+        CoinJoinRecovery.shared.resetForWipe()
+        CoinJoinWithdrawalStore.shared.resetForWipe()
+
         // Enumerate every wallet that still has stored material BEFORE any
         // deletion runs. Both the SDK wipe and the mnemonic safety-net below
         // consume this list, and once mnemonics are gone (or the runtime is

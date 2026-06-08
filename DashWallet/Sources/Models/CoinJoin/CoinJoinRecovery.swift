@@ -101,4 +101,20 @@ final class CoinJoinRecovery: NSObject {
         Self.logger.info(
             "🪙 CJRECOV :: recovery complete for \(self.networkTag(network), privacy: .public) — reverting to default gap")
     }
+
+    /// Clear the terminal per-network recovery flags on a wallet wipe so a
+    /// wallet restored afterwards re-runs the one-time wide CoinJoin scan. The
+    /// flag is app-level (UserDefaults), not per-wallet, and a wipe deletes the
+    /// persisted deep UTXOs, so without this a restored heavy-mixer wallet would
+    /// skip the wide scan and understate its balance. Clears BOTH networks —
+    /// the wipe removes all wallet material and we don't know the next restored
+    /// wallet's network; `recoveredKey` only ever produces those two keys.
+    /// Thread-safe.
+    func resetForWipe() {
+        lock.lock(); defer { lock.unlock() }
+        defaults.removeObject(forKey: recoveredKey(.mainnet))
+        defaults.removeObject(forKey: recoveredKey(.testnet))
+        Self.logger.info(
+            "🪙 CJRECOV :: recovery flags cleared on wipe — next wallet re-runs the one-time wide scan")
+    }
 }
