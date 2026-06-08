@@ -38,7 +38,7 @@ class POIDetailsViewController: UIViewController {
     private var didPresentDetailsSheet = false
     private let defaultBottomSheetHeight: CGFloat = 450
 
-    public init(
+    init(
         pointOfUse: ExplorePointOfUse,
         isShowAllHidden: Bool = true,
         searchRadius: Double? = nil,

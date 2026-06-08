@@ -553,11 +553,18 @@ class MerchantDAO: PointOfUseDAO {
 }
 
 extension MerchantDAO {
-    private func expandedCoordinates(for bounds: ExploreMapBounds) -> (swLat: Double, neLat: Double, swLon: Double, neLon: Double) {
+    private struct ExpandedBounds {
+        let swLat: Double
+        let neLat: Double
+        let swLon: Double
+        let neLon: Double
+    }
+
+    private func expandedCoordinates(for bounds: ExploreMapBounds) -> ExpandedBounds {
         let latBuffer = (bounds.neCoordinate.latitude - bounds.swCoordinate.latitude) * 0.5
         let lonBuffer = (bounds.neCoordinate.longitude - bounds.swCoordinate.longitude) * 0.5
 
-        return (
+        return ExpandedBounds(
             swLat: bounds.swCoordinate.latitude - latBuffer,
             neLat: bounds.neCoordinate.latitude + latBuffer,
             swLon: bounds.swCoordinate.longitude - lonBuffer,
@@ -645,7 +652,8 @@ extension MerchantDAO {
                     Expression<Bool>(literal: "ABS(latitude-\(anchorLatitude)) + ABS(longitude - \(anchorLongitude)) ASC")
             }
 
-            query = query.order(distanceSorting)
+            // Stable secondary sort (id) so offset pagination is deterministic across pages.
+            query = query.order([distanceSorting, ExplorePointOfUse.id])
             query = query.limit(pageLimit, offset: offset)
 
             do {
@@ -814,6 +822,9 @@ extension MerchantDAO {
                               let longitude = self.coordinateValue(from: row[1]) else {
                             continue
                         }
+
+                        let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+                        guard CLLocationCoordinate2DIsValid(coordinate) else { continue }
 
                         let distance = centerLocation.distance(from: CLLocation(latitude: latitude, longitude: longitude))
                         if distance <= radius {
