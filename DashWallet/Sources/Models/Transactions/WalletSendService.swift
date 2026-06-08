@@ -145,11 +145,13 @@ final class WalletSendService: NSObject {
         await MainActor.run {
             SwiftDashSDKWalletState.shared.refreshCoinJoinBalance()
             let post = SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs
-            Self.logger.info("💸 TXSEND :: CJTEST post-sweep CoinJoin balance \(post, privacy: .public) duffs (was \(amount, privacy: .public)) — clearing recovery flag")
-            // The sweep emptied the CoinJoin account — recovery is complete.
-            // Clear the per-network recovery flag so future launches revert to
-            // the fast default address gap.
-            CoinJoinRecovery.shared.markCurrentNetworkRecovered()
+            Self.logger.info("💸 TXSEND :: CJTEST post-sweep CoinJoin balance \(post, privacy: .public) duffs (was \(amount, privacy: .public))")
+            // The per-network recovery flag is owned solely by the recovery scan-
+            // completion path (SwiftDashSDKSPVCoordinator.maybeCompleteCoinJoinRecovery,
+            // which marks recovered once the one-time wide scan reaches .synced). A
+            // sweep may be partial across chunks and does NOT imply the wide scan
+            // completed, so it must not mark recovered here — doing so would suppress
+            // a legitimate re-widen after an interrupted scan.
         }
         return amount
     }

@@ -12,8 +12,9 @@
 //  txids are stored in WIRE order — the orientation of
 //  `PersistentTransaction.txid` / `Transaction.txHashData` — so callers can
 //  match with `contains(tx.txHashData)` directly. The sweep's
-//  `SwiftDashSDKTransactionSender` hands back a display-order (byte-reversed)
-//  hash, so the recording site reverses it before calling `record`.
+//  `SwiftDashSDKTransactionSender` returns WIRE-order txids, which are recorded
+//  here directly with no reversal; byte-reversal to display order happens only
+//  at logging sites (to match block explorers).
 //
 
 import Foundation
