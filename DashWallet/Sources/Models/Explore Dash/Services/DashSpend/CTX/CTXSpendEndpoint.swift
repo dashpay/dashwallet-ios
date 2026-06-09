@@ -46,7 +46,8 @@ public enum CTXSpendEndpoint {
     case refreshToken(RefreshTokenRequest)
     case purchaseGiftCard(PurchaseGiftCardRequest)
     case getMerchant(String)
-    case getGiftCard(String)
+    case getGiftCardByTxid(String)
+    case getGiftCardByOrderId(String)
 }
 
 // MARK: TargetType, AccessTokenAuthorizable
@@ -78,7 +79,8 @@ extension CTXSpendEndpoint: TargetType, AccessTokenAuthorizable {
         case .refreshToken: return "refresh-token"
         case .purchaseGiftCard: return "gift-cards"
         case .getMerchant(let merchantId): return "merchants/\(merchantId)"
-        case .getGiftCard(_): return "gift-cards"
+        case .getGiftCardByTxid: return "gift-cards"
+        case .getGiftCardByOrderId(let orderId): return "gift-cards/\(orderId)"
         }
     }
     
@@ -103,8 +105,10 @@ extension CTXSpendEndpoint: TargetType, AccessTokenAuthorizable {
             return .requestJSONEncodable(request)
         case .purchaseGiftCard(let request):
             return .requestJSONEncodable(request)
-        case .getGiftCard(let txid):
+        case .getGiftCardByTxid(let txid):
             return .requestParameters(parameters: ["txid": txid], encoding: URLEncoding.queryString)
+        case .getGiftCardByOrderId:
+            return .requestPlain
         default:
             return .requestPlain
         }
