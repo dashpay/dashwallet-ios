@@ -39,6 +39,27 @@ struct OrderPreviewView: View {
         // full-screen transaction status flow (pending → success / failure) is pushed by
         // OrderPreviewHostingController, which observes `viewModel.swapStatus`.
         orderPreviewContent
+            .alert(
+                NSLocalizedString("Swap in progress", comment: "Maya"),
+                isPresented: pendingSwapAlertIsPresented
+            ) {
+                Button(NSLocalizedString("OK", comment: "Maya")) {
+                    viewModel.pendingSwapAlertMessage = nil
+                }
+            } message: {
+                Text(viewModel.pendingSwapAlertMessage ?? "")
+            }
+    }
+
+    private var pendingSwapAlertIsPresented: Binding<Bool> {
+        Binding(
+            get: { viewModel.pendingSwapAlertMessage != nil },
+            set: { isPresented in
+                if !isPresented {
+                    viewModel.pendingSwapAlertMessage = nil
+                }
+            }
+        )
     }
 
     private var orderPreviewContent: some View {

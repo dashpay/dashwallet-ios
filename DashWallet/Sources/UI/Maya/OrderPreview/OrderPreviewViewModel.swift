@@ -99,6 +99,7 @@ final class OrderPreviewViewModel: ObservableObject {
     // This does NOT confirm Maya swap completion — that requires separate on-chain confirmation.
     @Published var submittedTxId: String?
     @Published var swapStatus: MayaSwapStatus = .idle
+    @Published var pendingSwapAlertMessage: String?
     /// The true backend outcome from Maya's API, tracked independently of `swapStatus`.
     /// Updated by background polling after early success is shown.
     /// Never causes the success screen to be removed — only recorded for tx history.
@@ -178,6 +179,7 @@ final class OrderPreviewViewModel: ObservableObject {
         submittedTransaction = nil
         swapStatus = .idle
         submittedTxId = nil
+        pendingSwapAlertMessage = nil
         backendOutcome = .pending
     }
 
@@ -265,6 +267,7 @@ final class OrderPreviewViewModel: ObservableObject {
     private func submitSwap() async {
         guard !isSubmitting else { return }
         submittedTxId = nil
+        pendingSwapAlertMessage = nil
         isSubmitting = true
         defer { isSubmitting = false }
 
@@ -283,6 +286,10 @@ final class OrderPreviewViewModel: ObservableObject {
             let tx = try await submitDashTransaction(using: execution)
             setSubmittedTransaction(tx)
         } catch {
+            if case .some(.previousSwapPending) = error as? DashSpendError {
+                pendingSwapAlertMessage = error.localizedDescription
+                return
+            }
             setFailure(error.localizedDescription)
         }
     }
