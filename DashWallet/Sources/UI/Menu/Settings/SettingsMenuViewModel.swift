@@ -19,7 +19,6 @@ import Combine
 import UIKit
 
 enum SettingsMenuNavigationDestination {
-    case coinjoin
     case currencySelector
     case network
     case rescan
@@ -30,8 +29,7 @@ enum SettingsMenuNavigationDestination {
 @MainActor
 class SettingsMenuViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
-    private let coinJoinService = CoinJoinService.shared
-    
+
     @Published var items: [MenuItemModel] = []
     @Published var navigationDestination: SettingsMenuNavigationDestination?
     @Published var notificationsEnabled: Bool
@@ -86,30 +84,6 @@ class SettingsMenuViewModel: ObservableObject {
     }
     
     private func setupCoinJoinObservers() {
-        coinJoinService.$progress
-            .removeDuplicates()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.refreshMenuItems()
-            }
-            .store(in: &cancellableBag)
-        
-        coinJoinService.$mode
-            .removeDuplicates()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.refreshMenuItems()
-            }
-            .store(in: &cancellableBag)
-        
-        coinJoinService.$mixingState
-            .removeDuplicates()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.refreshMenuItems()
-            }
-            .store(in: &cancellableBag)
-
         // SDK CoinJoin-account balance drives the conditional "Move CoinJoin
         // Funds" row: it appears while a leftover exists and self-removes once
         // the post-sweep balance refresh drops it below the threshold.
@@ -173,17 +147,6 @@ class SettingsMenuViewModel: ObservableObject {
                 icon: .custom("image.about", maxHeight: 22),
                 action: { [weak self] in
                     self?.navigationDestination = .about
-                }
-            ),
-            CoinJoinMenuItemModel(
-                title: NSLocalizedString("CoinJoin", comment: "CoinJoin"),
-                isOn: coinJoinService.mode != .none,
-                state: coinJoinService.mixingState,
-                progress: coinJoinService.progress.progress,
-                mixed: Double(coinJoinService.progress.coinJoinBalance) / Double(DUFFS),
-                total: Double(coinJoinService.progress.totalBalance) / Double(DUFFS),
-                action: { [weak self] in
-                    self?.navigationDestination = .coinjoin
                 }
             )
         ]

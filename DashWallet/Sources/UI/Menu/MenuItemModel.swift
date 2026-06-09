@@ -48,24 +48,3 @@ class MenuItemModel: Identifiable, Equatable, Hashable {
         hasher.combine(id)
     }
 }
-
-class CoinJoinMenuItemModel: MenuItemModel {
-    @State var isOn: Bool
-    @State var state: MixingStatus
-    @State var progress: Double
-    @State var mixed: Double
-    @State var total: Double
-
-    init(title: String, isOn: Bool, state: MixingStatus, progress: Double, mixed: Double, total: Double, action: (() -> Void)? = nil) {
-        self.isOn = isOn
-        self.state = state
-        self.progress = progress
-        self.mixed = mixed
-        self.total = total
-        super.init(title: title, action: action)
-    }
-
-    var description: String {
-        return "CoinJoinMenuItemModel(title: \(title), isOn: \(isOn), state: \(state), progress: \(progress), mixed: \(mixed), total: \(total))"
-    }
-}

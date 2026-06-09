@@ -151,7 +151,6 @@ struct MainMenuScreen: View {
     @State private var openSettings: Bool = false
     @State private var showTools: Bool = false
     @State private var showSecurity: Bool = false
-    @State private var showMixDialog: Bool = false
     @State private var showDashPayInfo: Bool = false
     @State private var showCreditsPurchasedToast: Bool = false
     
@@ -360,29 +359,6 @@ struct MainMenuScreen: View {
             handleNavigation(destination)
         }
         #if DASHPAY
-        .sheet(isPresented: $showMixDialog) {
-            let dialog = MixDashDialog(
-                positiveAction: {
-                    let controller = CoinJoinLevelsViewController.controller(isFullScreen: false)
-                    controller.hidesBottomBarWhenPushed = true
-                    self.vc.pushViewController(controller, animated: true)
-                },
-                negativeAction: {
-                    if UsernamePrefs.shared.joinDashPayInfoShown {
-                        self.joinDashPay()
-                    } else {
-                        UsernamePrefs.shared.joinDashPayInfoShown = true
-                        showDashPayInfo = true
-                    }
-                }
-            )
-            
-            if #available(iOS 16.0, *) {
-                dialog.presentationDetents([.height(250)])
-            } else {
-                dialog
-            }
-        }
         .sheet(isPresented: $showDashPayInfo) {
             let dialog = JoinDashPayInfoDialog {
                 self.joinDashPay()
@@ -421,12 +397,10 @@ struct MainMenuScreen: View {
     }
     
     private func handleJoinButtonAction() {
-        let shouldShowMixDashDialog = CoinJoinService.shared.mode == .none || !UsernamePrefs.shared.mixDashShown
         let shouldShowDashPayInfo = !UsernamePrefs.shared.joinDashPayInfoShown
-        
-        if shouldShowMixDashDialog {
-            showMixDialog = true
-        } else if shouldShowDashPayInfo {
+
+        if shouldShowDashPayInfo {
+            UsernamePrefs.shared.joinDashPayInfoShown = true
             showDashPayInfo = true
         } else {
             joinDashPay()

@@ -23,8 +23,7 @@ import Combine
 
 protocol HomeViewDelegate: AnyObject {
     func homeViewShowSyncingStatus()
-    func homeViewShowCoinJoin()
-    
+
 #if DASHPAY
     func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt)
     func homeViewRequestUsername()
@@ -175,12 +174,9 @@ struct TxPreviewModel: Identifiable, Equatable {
 
 struct HomeViewContent<Content: View>: View {
     @State private var selectedTxDataItem: TransactionListDataItem? = nil
-    @State private var shouldShowMixDialog: Bool = false
     @State private var showFilterDialog: Bool = false
     @State private var shouldShowJoinDashPayInfo: Bool = false
     @State private var navigateToDashPayFlow: Bool = false
-    @State private var navigateToCoinJoin: Bool = false
-    @State private var skipToCreateUsername: Bool = false
     @State private var giftCardTxId: Data? = nil
     
     @ObservedObject var viewModel: HomeViewModel
@@ -222,19 +218,6 @@ struct HomeViewContent<Content: View>: View {
                             .frame(height: viewModel.headerHeight)
                     }
                     
-                    if viewModel.coinJoinItem.isOn {
-                        CoinJoinProgressView(
-                            state: viewModel.coinJoinItem.state,
-                            progress: viewModel.coinJoinItem.progress,
-                            mixed: viewModel.coinJoinItem.mixed,
-                            total: viewModel.coinJoinItem.total,
-                            showBalance: !balanceModel.isBalanceHidden
-                        )
-                        .padding(.horizontal, 15)
-                        .id(viewModel.coinJoinItem.id)
-                        .onTapGesture { delegate?.homeViewShowCoinJoin() }
-                    }
-
                     #if DASHPAY
                     if viewModel.showJoinDashpay {
                         JoinDashPayView(
@@ -247,11 +230,8 @@ struct HomeViewContent<Content: View>: View {
                                     viewModel.checkJoinDashPay()
                                 } else {
                                     // TODO: ? MOCK_DASHPAY if failed, maybe need to call model?.dashPayModel.retry()
-                                    if viewModel.shouldShowMixDashDialog {
-                                        self.navigateToDashPayFlow = false
-                                        self.navigateToCoinJoin = false
-                                        self.shouldShowMixDialog = true
-                                    } else if viewModel.shouldShowDashPayInfo {
+                                    if viewModel.shouldShowDashPayInfo {
+                                        UsernamePrefs.shared.joinDashPayInfoShown = true
                                         self.shouldShowJoinDashPayInfo = true
                                     } else {
                                         delegate?.homeViewRequestUsername()
@@ -321,28 +301,6 @@ struct HomeViewContent<Content: View>: View {
             }
         }
         #if DASHPAY
-        .sheet(isPresented: $shouldShowMixDialog, onDismiss: {
-            viewModel.shouldShowMixDashDialog = false
-            finishMixDialogNavigation()
-        }) {
-            let mixDashDialog = MixDashDialog(
-                positiveAction: { self.navigateToCoinJoin = true },
-                negativeAction: {
-                    if UsernamePrefs.shared.joinDashPayInfoShown {
-                        skipToCreateUsername = true
-                    } else {
-                        UsernamePrefs.shared.joinDashPayInfoShown = true
-                        navigateToDashPayFlow = true
-                    }
-                }
-            )
-
-            if #available(iOS 16.0, *) {
-                mixDashDialog.presentationDetents([.height(260)])
-            } else {
-                mixDashDialog
-            }
-        }
         .sheet(isPresented: $shouldShowJoinDashPayInfo, onDismiss: {
             if navigateToDashPayFlow {
                 navigateToDashPayFlow = false
@@ -464,21 +422,6 @@ struct HomeViewContent<Content: View>: View {
             .frame(minHeight: 66)
         }
     }
-    
-    #if DASHPAY
-    private func finishMixDialogNavigation() {
-        if navigateToDashPayFlow {
-            navigateToDashPayFlow = false
-            shouldShowJoinDashPayInfo = true
-        } else if navigateToCoinJoin {
-            navigateToCoinJoin = false
-            delegate?.homeViewShowCoinJoin()
-        } else if skipToCreateUsername {
-            skipToCreateUsername = false
-            delegate?.homeViewRequestUsername()
-        }
-    }
-    #endif
 }
 
 struct GiftCardDetailsSheet: View {

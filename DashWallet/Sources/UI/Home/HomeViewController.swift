@@ -466,11 +466,6 @@ extension HomeViewController: RootEditProfileViewControllerDelegate {
 // MARK: - HomeViewDelegate
 
 extension HomeViewController: HomeViewDelegate {
-    func homeViewShowCoinJoin() {
-        let controller = CoinJoinLevelsViewController.controller(isFullScreen: true)
-        present(controller, animated: true, completion: nil)
-    }
-    
     func homeViewRequestUsername() {
         let action = ShortcutAction(type: .createUsername)
         performAction(for: action, sender: nil)

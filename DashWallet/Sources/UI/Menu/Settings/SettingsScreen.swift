@@ -59,29 +59,18 @@ struct SettingsScreen: View {
             
             VStack(spacing: 0) {
                 ForEach(viewModel.items) { item in
-                    if let cjItem = item as? CoinJoinMenuItemModel {
-                        MenuItem(
-                            title: cjItem.title,
-                            subtitleView: AnyView(CoinJoinSubtitle(cjItem)),
-                            icon: .custom("image.coinjoin.menu", maxHeight: 22),
-                            badgeText: nil,
-                            action: cjItem.action
-                        )
-                        .frame(minHeight: 60)
-                    } else {
-                        MenuItem(
-                            title: item.title,
-                            subtitle: item.subtitle,
-                            details: item.details,
-                            icon: item.icon,
-                            showInfo: item.showInfo,
-                            showChevron: false,
-                            showToggle: item.showToggle,
-                            isToggled: item.isToggled,
-                            action: item.action
-                        )
-                        .frame(minHeight: 60)
-                    }
+                    MenuItem(
+                        title: item.title,
+                        subtitle: item.subtitle,
+                        details: item.details,
+                        icon: item.icon,
+                        showInfo: item.showInfo,
+                        showChevron: false,
+                        showToggle: item.showToggle,
+                        isToggled: item.isToggled,
+                        action: item.action
+                    )
+                    .frame(minHeight: 60)
                 }
             }
             .padding(.horizontal, 20)
@@ -176,8 +165,6 @@ struct SettingsScreen: View {
     
     private func handleNavigation(_ destination: SettingsMenuNavigationDestination?) {
         switch destination {
-        case .coinjoin:
-            showCoinJoinController()
         case .currencySelector:
             showCurrencySelector()
         case .network:
@@ -196,18 +183,6 @@ struct SettingsScreen: View {
         if destination != nil {
             viewModel.resetNavigation()
         }
-    }
-    
-    private func showCoinJoinController() {
-        let nextVC: UIViewController
-        
-        if CoinJoinLevelViewModel.shared.infoShown {
-            nextVC = CoinJoinLevelsViewController.controller()
-        } else {
-            nextVC = CoinJoinInfoViewController.controller()
-        }
-        nextVC.hidesBottomBarWhenPushed = true
-        vc.pushViewController(nextVC, animated: true)
     }
     
     private func showCurrencySelector() {
@@ -234,20 +209,6 @@ struct SettingsScreen: View {
     private func updateView() {
         // Trigger view refresh after network change
         viewModel.resetNavigation()
-    }
-    
-    @ViewBuilder
-    private func CoinJoinSubtitle(_ cjItem: CoinJoinMenuItemModel) -> some View {
-        if cjItem.isOn {
-            CoinJoinProgressInfo(state: cjItem.state, progress: cjItem.progress, mixed: cjItem.mixed, total: cjItem.total, showBalance: !viewModel.isBalanceHidden, textColor: .tertiaryText, font: .caption)
-                .padding(.top, 2)
-        } else {
-            Text(NSLocalizedString("Turned off", comment: "CoinJoin"))
-                .font(.caption)
-                .foregroundColor(.tertiaryText)
-                .padding(.leading, 4)
-                .padding(.top, 2)
-        }
     }
 }
 

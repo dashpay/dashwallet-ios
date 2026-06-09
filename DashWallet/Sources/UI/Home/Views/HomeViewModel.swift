@@ -66,7 +66,6 @@ class HomeViewModel: ObservableObject {
     
     @Published private(set) var txItems: [TransactionGroup] = []
     @Published var shortcutItems: [ShortcutAction] = []
-    @Published private(set) var coinJoinItem = CoinJoinMenuItemModel(title: NSLocalizedString("Mixing", comment: "CoinJoin"), isOn: false, state: .notStarted, progress: 0.0, mixed: 0.0, total: 0.0)
     @Published var showTimeSkewAlertDialog: Bool = false
     @Published var showCoinJoinSweepDialog: Bool = false
     @Published private(set) var timeSkew: TimeInterval = 0
@@ -107,11 +106,6 @@ class HomeViewModel: ObservableObject {
     }
     
     #if DASHPAY
-    var shouldShowMixDashDialog: Bool {
-        get { coinJoinService.mode == .none || !UsernamePrefs.shared.mixDashShown }
-        set(value) { UsernamePrefs.shared.mixDashShown = !value }
-    }
-    
     var shouldShowDashPayInfo: Bool {
         get { !UsernamePrefs.shared.joinDashPayInfoShown }
         set(value) { UsernamePrefs.shared.joinDashPayInfoShown = !value }
@@ -128,7 +122,6 @@ class HomeViewModel: ObservableObject {
         self.onSyncStateChanged()
         self.recalculateHeight()
 
-        self.observeCoinJoin()
         self.observeCoinJoinSweep()
         self.observeWallet()
         self.observeNetworkChange()
@@ -592,46 +585,7 @@ class HomeViewModel: ObservableObject {
     }
 }
 
-// MARK: - CoinJoin
-
 extension HomeViewModel {
-    private func observeCoinJoin() {
-        coinJoinService.$progress
-            .removeDuplicates()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.refreshCoinJoinItem()
-            }
-            .store(in: &cancellableBag)
-        
-        coinJoinService.$mode
-            .removeDuplicates()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.refreshCoinJoinItem()
-            }
-            .store(in: &cancellableBag)
-        
-        coinJoinService.$mixingState
-            .removeDuplicates()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.refreshCoinJoinItem()
-            }
-            .store(in: &cancellableBag)
-    }
-    
-    private func refreshCoinJoinItem() {
-        self.coinJoinItem = CoinJoinMenuItemModel(
-            title: self.coinJoinService.mixingState == .finishing ? NSLocalizedString("Mixing Finishing…", comment: "CoinJoin") : NSLocalizedString("Mixing", comment: "CoinJoin"),
-            isOn: coinJoinService.mixingState.isInProgress,
-            state: coinJoinService.mixingState,
-            progress: coinJoinService.progress.progress,
-            mixed: Double(coinJoinService.progress.coinJoinBalance) / Double(DUFFS),
-            total: Double(coinJoinService.progress.totalBalance) / Double(DUFFS)
-        )
-    }
-    
     private func onSyncStateChanged() {
         // Fix #4: Debounce sync state changes to prevent excessive reloads.
         // During active sync, state can change rapidly which would cause
