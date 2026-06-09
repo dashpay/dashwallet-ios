@@ -237,7 +237,17 @@ class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
         do {
             let baseURL = CTXConstants.baseURI
             DSLogger.log("DashSpend: CTX API request - BaseURL: \(baseURL), Endpoint: gift-cards, TxId: \(txid)")
-            return try await CTXSpendAPI.shared.request(.getGiftCard(txid))
+            return try await CTXSpendAPI.shared.request(.getGiftCardByTxid(txid))
+        } catch {
+            throw mapError(error)
+        }
+    }
+
+    func getGiftCardByOrderId(orderId: String) async throws -> GiftCardResponse {
+        do {
+            let baseURL = CTXConstants.baseURI
+            DSLogger.log("DashSpend: CTX API request - BaseURL: \(baseURL), Endpoint: gift-cards/\(orderId), OrderId: \(orderId)")
+            return try await CTXSpendAPI.shared.request(.getGiftCardByOrderId(orderId))
         } catch {
             throw mapError(error)
         }

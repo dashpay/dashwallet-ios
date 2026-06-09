@@ -158,7 +158,6 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         }
         controller.onGiftCardPurchased = { [weak self] txId in
             guard let self = self else { return }
-            self.dismiss(animated: true)
             self.showGiftCardDetails(txId: txId)
         }
         let navigationController = BaseNavigationController(rootViewController: controller)
@@ -321,4 +320,3 @@ extension HomeViewController: DWContactsViewControllerPayDelegate {
     }
 }
 #endif
-

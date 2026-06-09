@@ -41,13 +41,17 @@ struct DashSpendPayIntro: View {
     }
 
     private var merchantIcon: some View {
-        WebImage(url: URL(string: merchantIconUrl))
-            .resizable()
-            .indicator(.activity)
-            .transition(.fade)
-            .scaledToFit()
-            .clipShape(Circle())
-            .frame(width: Layout.merchantIconSize, height: Layout.merchantIconSize)
+        WebImage(url: URL(string: merchantIconUrl)) { image in
+            image
+                .resizable()
+                .scaledToFit()
+                .clipShape(Circle())
+        } placeholder: {
+            // No icon yet (missing URL or still loading): show a grey circle of the same size.
+            Circle()
+                .fill(Color.gray300Alpha50)
+        }
+        .frame(width: Layout.merchantIconSize, height: Layout.merchantIconSize)
     }
 
     private var eyeIcon: some View {

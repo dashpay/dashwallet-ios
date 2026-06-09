@@ -827,6 +827,8 @@
 		A3C23D69973C499291EDF8D4 /* SegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17BCA69033084CE5836FA509 /* SegmentedControl.swift */; };
 		AA0000012DUMMYID001234567 /* AddProviderToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000032DUMMYID001234567 /* AddProviderToGiftCardsTable.swift */; };
 		AA0000022DUMMYID001234567 /* AddProviderToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000032DUMMYID001234567 /* AddProviderToGiftCardsTable.swift */; };
+		F4C406090000000100000001 /* AddRedeemUrlChallengeToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */; };
+		F4C406090000000100000002 /* AddRedeemUrlChallengeToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */; };
 		AA0000042DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000062DUMMYID001234567 /* DashSpend/GiftCardProvider.swift */; };
 		AA0000052DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000062DUMMYID001234567 /* DashSpend/GiftCardProvider.swift */; };
 		B3A1F2C4D5E6078901234568 /* ExtendedPublicKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A1F2C4D5E6078901234567 /* ExtendedPublicKeySheet.swift */; };
@@ -2725,6 +2727,7 @@
 		9EC1F4DB87C442BEABDF0DB2 /* DerivationPathKeysView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationPathKeysView.swift; sourceTree = "<group>"; };
 		A3764D3370611FF0EAD41CFF /* libPods-DashWalletScreenshotsUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletScreenshotsUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000032DUMMYID001234567 /* AddProviderToGiftCardsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddProviderToGiftCardsTable.swift; sourceTree = "<group>"; };
+		F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRedeemUrlChallengeToGiftCardsTable.swift; sourceTree = "<group>"; };
 		AA0000062DUMMYID001234567 /* DashSpend/GiftCardProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/GiftCardProvider.swift; sourceTree = "<group>"; };
 		AD6615F1246B5935365B05BD /* NavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBar.swift; sourceTree = "<group>"; };
 		AF8C68D8C33339A7A0743FDB /* Pods-dashwallet.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testflight.xcconfig"; path = "Target Support Files/Pods-dashwallet/Pods-dashwallet.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -5282,6 +5285,7 @@
 				7549BE5F2DEAF628004F0BAF /* AddIconBitmapsTable.swift */,
 				75D9EBB72DE5CC3A009416A2 /* AddGiftCardsTable.swift */,
 				AA0000032DUMMYID001234567 /* AddProviderToGiftCardsTable.swift */,
+				F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */,
 				4709C311287E78BD00B4BD48 /* SeedDB.swift */,
 			);
 			path = Migrations;
@@ -9051,6 +9055,7 @@
 				7549BE582DEAECB8004F0BAF /* CustomIconMetadataProvider.swift in Sources */,
 				7549BE602DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */,
 				AA0000012DUMMYID001234567 /* AddProviderToGiftCardsTable.swift in Sources */,
+				F4C406090000000100000001 /* AddRedeemUrlChallengeToGiftCardsTable.swift in Sources */,
 				AA0000042DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */,
 				BB0000012DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */,
 				BB0000032DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */,
@@ -9872,6 +9877,7 @@
 				C9D2C7E22A320AA000D15901 /* CrowdNodeWithdrawalReceivedTx.swift in Sources */,
 				7549BE612DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */,
 				AA0000022DUMMYID001234567 /* AddProviderToGiftCardsTable.swift in Sources */,
+				F4C406090000000100000002 /* AddRedeemUrlChallengeToGiftCardsTable.swift in Sources */,
 				AA0000052DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */,
 				BB0000022DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */,
 				BB0000042DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */,
