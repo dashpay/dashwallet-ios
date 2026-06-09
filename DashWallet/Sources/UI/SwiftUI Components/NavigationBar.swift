@@ -95,10 +95,10 @@ extension NavigationBar where Leading == EmptyView, Central == EmptyView {
 }
 
 enum NavigationBarElement: String {
-   case back = "toolbar-back"
-   case close = "toolbar-close"
-   case plus = "toolbar-plus"
-   case info = "toolbar-info"
+   case back = "navigationbar-back"
+   case close = "navigationbar-close"
+   case plus = "navigationbar-plus"
+   case info = "navigationbar-info"
 
    var icon: some View {
        Icon(name: .custom(rawValue))
