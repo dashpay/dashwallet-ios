@@ -260,10 +260,7 @@ public final class SendCoinsService: NSObject {
         // `-isInputSpent:atIndex:` reads that set and catches stale re-use early.
         for input in transaction.inputs {
             if account.isInputSpent(input.inputHash, at: input.index) {
-                throw DashSpendError.paymentProcessingError(
-                    "Input \(input.index) is already spent by a pending transaction. " +
-                    "Wait for the previous swap to confirm before initiating a new one."
-                )
+                throw DashSpendError.previousSwapPending
             }
         }
 

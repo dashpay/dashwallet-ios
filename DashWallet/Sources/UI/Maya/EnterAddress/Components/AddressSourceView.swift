@@ -72,14 +72,31 @@ struct AddressSourceView: View {
     }
 
     var body: some View {
-        MenuItem(
-            title: sourceType.title,
-            subtitle: subtitleText,
-            subtitleLineLimit: sourceType == .clipboard ? 2 : nil,
-            icon: iconName,
-            trailingView: trailingView,
-            action: onTap
-        )
+
+        Group {
+            if let subtitleText {
+                MenuItem(
+                    title: sourceType.title,
+                    subtitleView: AnyView(
+                        Text(subtitleText)
+                            .font(.footnote)
+                            .lineSpacing(4)
+                            .foregroundColor(Color.tertiaryText)
+                            .lineLimit(sourceType == .clipboard ? 2 : nil)
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    ),
+                    icon: iconName,
+                    trailingView: trailingView,
+                    action: onTap)
+            } else {
+                MenuItem(
+                    title: sourceType.title,
+                    icon: iconName,
+                    trailingView: trailingView,
+                    action: onTap)
+            }
+        }
         .disabled(isDisabled)
     }
 
