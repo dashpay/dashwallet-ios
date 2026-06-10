@@ -261,6 +261,19 @@ extension Coinbase {
         try await accountService.allAccounts()
     }
 
+    /// Returns all crypto accounts regardless of balance.
+    /// Used by Maya to find accounts for currencies with zero balance.
+    public func accountsIncludingEmpty() async throws -> [CBAccount] {
+        try await accountService.allAccountsIncludingEmpty()
+    }
+
+    /// Fetches a specific account by currency code (e.g., "BTC", "ETH").
+    /// Uses direct `GET /v2/accounts/{currencyCode}` lookup which is more reliable
+    /// than listing all accounts when you know the currency you need.
+    public func account(byCurrencyCode currencyCode: String) async throws -> CBAccount {
+        try await accountService.account(by: currencyCode)
+    }
+
     public func addUserDidChangeListener(_ listener: @escaping UserDidChangeListenerBlock) -> UserDidChangeListenerHandle {
         auth.addUserDidChangeListener(listener)
     }

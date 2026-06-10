@@ -3321,3 +3321,9 @@
 
 /* #bc-ignore! */
 "%ld used" = "%ld used";
+
+/* Maya */
+"Convert Dash to %@" = "Convert Dash to %@";
+
+/* Maya */
+"Review your Dash to %@ order" = "Review your Dash to %@ order";
