@@ -194,7 +194,7 @@ NS_ASSUME_NONNULL_BEGIN
                 CFSTR(" ")));
 
         for (NSString *word in words) {
-            if (![[DSBIP39Mnemonic sharedInstance] wordIsValid:word]) {
+            if (![self.model wordIsValid:word]) {
                 if (incorrectWord == nil) {
                     incorrectWord = word;
                 }
