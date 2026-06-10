@@ -2593,6 +2593,21 @@
 /* Dash Portal */
 "Sell Dash · Best price across networks" = "Sell Dash · Best price across networks";
 
+/* Swap portal */
+"Convert Dash" = "Convert Dash";
+
+/* Swap portal */
+"From Dash Wallet to any crypto" = "From Dash Wallet to any crypto";
+
+/* Maya Portal */
+"Maya" = "Maya";
+
+/* Maya Portal */
+"Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet";
+
+/* SwapKit Portal */
+"Sell Dash for any supported crypto at the best available price across networks" = "Sell Dash for any supported crypto at the best available price across networks";
+
 /* No comment provided by engineer. */
 "Total" = "Total";
 

@@ -118,10 +118,7 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
     }
 
     func swapKitAction() {
-        // Reuse the same Maya flow, injected with the SwapKit backend.
-        // `SwapBackend.swapKit` creates `SwapKitSwapProvider` and threads it
-        // through SelectCoin → EnterAddress → Convert → OrderPreview.
-        let vc = MayaPortalViewController(backend: .swapKit)
+        let vc = SwapKitPortalViewController()
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
