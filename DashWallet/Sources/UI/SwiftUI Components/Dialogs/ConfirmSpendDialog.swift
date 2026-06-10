@@ -76,7 +76,7 @@ struct ConfirmSpendDialog: View {
         let text = (try? CurrencyExchanger.shared.convertDash(amount: abs(dashAmount.dashAmount), to: App.fiatCurrency).formattedFiatAmount) ?? NSLocalizedString("Not available", comment: "")
         Text(text)
             .font(.subhead)
-            .foregroundColor(.secondaryText)
+            .foregroundStyle(Color.secondaryText)
     }
 }
 

@@ -80,6 +80,7 @@ struct SearchBar: View {
             isFocused = false
         }, label: {
             Text(NSLocalizedString("Cancel", comment: ""))
+                .font(.footnote.weight(.semibold))
                 .padding(.horizontal, Layout.cancelHorizontalPadding)
                 .padding(.vertical, Layout.cancelVerticalPadding)
         })
@@ -106,7 +107,7 @@ struct SearchBar: View {
         if #available(iOS 17.0, *) {
             TextField(
                 text: $text,
-                prompt: Text(NSLocalizedString("Search", comment: "")).foregroundStyle(Color.black1000Alpha30)
+                prompt: Text(NSLocalizedString("Search", comment: "")).font(.subhead).foregroundStyle(Color.black1000Alpha30)
             ) {
                 EmptyView()
             }

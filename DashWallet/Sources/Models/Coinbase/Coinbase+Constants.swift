@@ -19,8 +19,8 @@ import Foundation
 
 extension Coinbase {
     // MARK: API
-    static let callbackURLScheme = "authhub"
-    static let redirectUri = "authhub://oauth-callback"
+    static let callbackURLScheme = "dashwallet"
+    static let redirectUri = "dashwallet://brokers/coinbase/connect"
     static let grantType = "authorization_code"
     static let responseType = "code"
     static let scope =
