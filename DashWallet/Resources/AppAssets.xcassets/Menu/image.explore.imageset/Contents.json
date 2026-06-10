@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Explore-Blue.png",
+      "filename" : "explore-2.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Explore-Blue@2x.png",
+      "filename" : "explore-2@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Explore-Blue@3x.png",
+      "filename" : "explore-2@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

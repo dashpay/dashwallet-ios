@@ -24,15 +24,14 @@ import Combine
 // MARK: - BuySellPortalViewController
 
 @objc
-final class BuySellPortalViewController: UIViewController, NavigationBarDisplayable, NavigationStackControllable {
-
-    var isBackButtonHidden: Bool { false }
-
+final class BuySellPortalViewController: UIViewController, NavigationBarDisplayable {
+    var isNavigationBarHidden: Bool { true }
+    private var model = BuySellPortalModel()
     private let topperViewModel = TopperViewModel.shared
     private var locationRequested = false
-
+    
     @objc var showCloseButton = false
-
+    
     func shouldPopViewController() -> Bool {
         if navigationController?.viewControllers.first == self {
             dismiss(animated: true)
@@ -40,14 +39,18 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
         }
         return true
     }
-
+    
+    func closeAction() {
+        dismiss(animated: true)
+    }
+    
     @objc
     func upholdAction() {
         let vc = IntegrationViewController.controller(model: UpholdPortalModel())
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
-
+    
     @objc
     func coinbaseAction() {
         Task {
@@ -55,29 +58,29 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
                 requestLocation()
                 return
             }
-
+            
             if DWLocationManager.shared.currentLocation == nil {
                 self.locationRequested = true
                 return
             }
-
+            
             if await isGeoblocked() {
                 informGeoblocked()
                 return
             }
-
+            
             navigateToCoinbase()
         }
     }
-
+    
     func navigateToCoinbase() {
         if Coinbase.shared.isAuthorized {
             let vc = IntegrationViewController.controller(model: CoinbaseEntryPointModel())
             vc.userSignedOutBlock = { [weak self] isNeedToShowSignOutError in
                 guard let self else { return }
-
+                
                 self.navigationController!.popToViewController(self, animated: true)
-
+                
                 if isNeedToShowSignOutError {
                     DispatchQueue.main.asyncAfter(deadline: DispatchTime.now().advanced(by: .milliseconds(500))) {
                         self.showAlert(with: NSLocalizedString("Error", comment: ""),
@@ -94,7 +97,7 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
             navigationController?.pushViewController(vc, animated: true)
         }
     }
-
+    
     @objc
     func topperAction() {
         let walletName = Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? "Dash Wallet"
@@ -104,7 +107,7 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
             present(safariViewController, animated: true)
         }
     }
-
+    
     func mayaAction() {
         // UIHostingController hides the UIKit navigation bar when pushed directly,
         // so a thin UIViewController wrapper is required for BaseNavigationController
@@ -113,11 +116,14 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
-
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        model.refreshData()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        view.backgroundColor = UIColor.dw_secondaryBackground()
 
         title = nil
         navigationItem.largeTitleDisplayMode = .never
@@ -128,19 +134,28 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
     private func setupSwiftUIView() {
         let portalView = BuySellPortalView(
             showCoinbase: CoinbaseDataSource.shouldShow(),
+            model: model,
+            onBack: { [weak self] in
+                guard let self else { return }
+                if self.showCloseButton {
+                    self.closeAction()
+                } else {
+                    self.navigationController?.popViewController(animated: true)
+                }
+            },
             onUphold: { [weak self] in self?.upholdAction() },
             onCoinbase: { [weak self] in self?.coinbaseAction() },
             onTopper: { [weak self] in self?.topperAction() },
             onMaya: { [weak self] in self?.mayaAction() }
         )
-
+        
         let hostingController = UIHostingController(rootView: portalView)
         hostingController.view.backgroundColor = .clear
-
+        
         addChild(hostingController)
         view.addSubview(hostingController.view)
         hostingController.didMove(toParent: self)
-
+        
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
@@ -149,17 +164,17 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
             hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
-
+    
     @objc
     class func controller() -> BuySellPortalViewController {
         BuySellPortalViewController()
     }
-
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         DWLocationManager.shared.add(observer: self)
     }
-
+    
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         DWLocationManager.shared.remove(observer: self)
@@ -196,11 +211,16 @@ extension BuySellPortalViewController: DWLocationObserver {
     }
 
     private func requestLocation() {
+        let geoblockMessage = NSLocalizedString(
+            "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features.",
+            comment: "Geoblock"
+        )
+
         showModalDialog(
             style: .regular,
             icon: .system("location.fill"),
             heading: NSLocalizedString("Location", comment: ""),
-            textBlock1: NSLocalizedString("Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features.", comment: "Geoblock"),
+            textBlock1: geoblockMessage,
             positiveButtonText: NSLocalizedString("Continue", comment: ""),
             positiveButtonAction: { [weak self] in
                 self?.locationRequested = true

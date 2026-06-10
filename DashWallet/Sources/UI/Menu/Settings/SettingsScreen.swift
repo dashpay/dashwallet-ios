@@ -21,53 +21,43 @@ import Combine
 
 struct SettingsScreen: View {
     private let vc: UINavigationController
-    private let delegateInternal: DelegateInternal
     private let onDidRescan: () -> ()
-    
+
     @StateObject private var viewModel = SettingsMenuViewModel()
     @State private var showNetworkAlert = false
     @State private var showRescanWarningAlert = false
     @State private var showRescanActionAlert = false
     @State private var showCSVExportActivity = false
-    
+
     init(vc: UINavigationController, onDidRescan: @escaping () -> ()) {
         self.vc = vc
         self.onDidRescan = onDidRescan
-        self.delegateInternal = DelegateInternal(onHide: {
-            vc.popViewController(animated: true)
-        })
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Navigation bar with back button
-            NavigationBar {
+            NavBarBack {
                 vc.popViewController(animated: true)
             }
 
-            // Header
-            HStack {
-                Text(NSLocalizedString("Settings", comment: ""))
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primaryText)
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 30)
-            .padding(.bottom, 20)
-            
-            VStack(spacing: 0) {
+            TopIntro(title: NSLocalizedString("Settings", comment: ""))
+                .padding(.leading, 20)
+                .padding(.trailing, 60)
+                .padding(.top, 10)
+                .padding(.bottom, 20)
+
+            // Menu list
+            VStack(spacing: 2) {
                 ForEach(viewModel.items) { item in
                     if let cjItem = item as? CoinJoinMenuItemModel {
                         MenuItem(
                             title: cjItem.title,
                             subtitleView: AnyView(CoinJoinSubtitle(cjItem)),
-                            icon: .custom("image.coinjoin.menu", maxHeight: 22),
+                            icon: .custom("image.coinjoin.menu", maxHeight: 30),
                             badgeText: nil,
                             action: cjItem.action
                         )
-                        .frame(minHeight: 60)
+                        .frame(minHeight: 56)
                     } else {
                         MenuItem(
                             title: item.title,
@@ -80,16 +70,16 @@ struct SettingsScreen: View {
                             isToggled: item.isToggled,
                             action: item.action
                         )
-                        .frame(minHeight: 60)
+                        .frame(minHeight: 56)
                     }
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 5)
+            .padding(6)
             .background(Color.secondaryBackground)
-            .cornerRadius(12)
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
-            
+            .padding(.horizontal, 20)
+
             Spacer()
         }
         .background(Color.primaryBackground)
@@ -191,8 +181,17 @@ struct SettingsScreen: View {
     }
     
     private func showCurrencySelector() {
-        let controller = DWLocalCurrencyViewController(navigationAppearance: .default, presentationMode: .screen, currencyCode: nil)
-        controller.delegate = delegateInternal
+        let view = LocalCurrencyView(
+            currencyCode: nil,
+            onSelect: { [weak vc] _ in
+                vc?.popViewController(animated: true)
+            },
+            onBack: { [weak vc] in
+                vc?.popViewController(animated: true)
+            }
+        )
+        let controller = LocalCurrencyHostingViewController(rootView: view)
+        controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }
     
@@ -225,26 +224,11 @@ struct SettingsScreen: View {
             Text(NSLocalizedString("Turned off", comment: "CoinJoin"))
                 .font(.caption)
                 .foregroundColor(.tertiaryText)
-                .padding(.leading, 4)
                 .padding(.top, 2)
         }
     }
 }
 
-extension SettingsScreen {
-    class DelegateInternal: NSObject, DWLocalCurrencyViewControllerDelegate {
-        let onHide: () -> ()
-        
-        init(onHide: @escaping () -> ()) {
-            self.onHide = onHide
-        }
-        
-        func localCurrencyViewController(_ controller: DWLocalCurrencyViewController, didSelectCurrency currencyCode: String) { 
-            onHide() 
-        }
-        func localCurrencyViewControllerDidCancel(_ controller: DWLocalCurrencyViewController) { onHide() }
-    }
-}
 
 struct ActivityView: UIViewControllerRepresentable {
     let activityItems: [Any]
@@ -254,4 +238,33 @@ struct ActivityView: UIViewControllerRepresentable {
     }
     
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+private final class LocalCurrencyHostingViewController: BaseViewController {
+    private let rootView: LocalCurrencyView
+
+    init(rootView: LocalCurrencyView) {
+        self.rootView = rootView
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        view.backgroundColor = .dw_background()
+
+        let hostingController = UIHostingController(rootView: rootView)
+        hostingController.view.backgroundColor = .clear
+        dw_embedChild(hostingController)
+    }
+}
+
+extension LocalCurrencyHostingViewController: NavigationBarDisplayable {
+    var isBackButtonHidden: Bool { true }
+    var isNavigationBarHidden: Bool { true }
 }

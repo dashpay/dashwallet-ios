@@ -19,20 +19,27 @@
 
 import Moya
 
+// Pool/price data comes from Midgard (analytics layer).
+// All swap operations — inbound addresses, quotes, tx lookup — go to mayanode (protocol layer).
+private enum MayaHost {
+    static let midgard = "https://midgard.mayachain.info/v2/"
+    static let mayanode = "https://mayanode.mayachain.info/mayachain/"
+}
+
 enum MayaEndpoint {
     case getPools
     case getInboundAddresses
     case quoteSwap(fromAsset: String, toAsset: String, amount: Int64, destination: String)
+    case getSwapTransactionInfo(txid: String)
 }
 
 extension MayaEndpoint: TargetType {
-
     var baseURL: URL {
         switch self {
         case .getPools:
-            return URL(string: "https://midgard.mayachain.info/v2/")!
-        case .getInboundAddresses, .quoteSwap:
-            return URL(string: "https://mayanode.mayachain.info/mayachain/")!
+            return URL(string: MayaHost.midgard)!
+        case .getInboundAddresses, .quoteSwap, .getSwapTransactionInfo:
+            return URL(string: MayaHost.mayanode)!
         }
     }
 
@@ -44,6 +51,8 @@ extension MayaEndpoint: TargetType {
             return "inbound_addresses"
         case .quoteSwap:
             return "quote/swap"
+        case .getSwapTransactionInfo(let txid):
+            return "tx/\(txid)"
         }
     }
 
@@ -53,7 +62,7 @@ extension MayaEndpoint: TargetType {
 
     var task: Moya.Task {
         switch self {
-        case .quoteSwap(let fromAsset, let toAsset, let amount, let destination):
+        case let .quoteSwap(fromAsset, toAsset, amount, destination):
             return .requestParameters(
                 parameters: [
                     "from_asset": fromAsset,
@@ -63,12 +72,12 @@ extension MayaEndpoint: TargetType {
                 ],
                 encoding: URLEncoding.queryString
             )
-        default:
+        case .getPools, .getInboundAddresses, .getSwapTransactionInfo:
             return .requestPlain
         }
     }
 
     var headers: [String: String]? {
-        [:]
+        nil
     }
 }

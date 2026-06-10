@@ -19,7 +19,7 @@ import UIKit
 import SafariServices
 import SwiftUI
 
-extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreViewControllerDelegate {
+extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     func performAction(for action: ShortcutAction, sender: UIView?) {
         switch action.type {
         case .secureWallet:
@@ -132,10 +132,22 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
     }
 
     private func showExploreDash() {
-        let controller = ExploreViewController()
-        controller.delegate = self
-        let navigationController = BaseNavigationController(rootViewController: controller)
-        present(navigationController, animated: true, completion: nil)
+        guard let navController = navigationController else { return }
+        let screen = ExploreMenuScreen(
+            vc: navController,
+            onShowSendPayment: { [weak self] in
+                self?.delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.pay.rawValue)
+            },
+            onShowReceivePayment: { [weak self] in
+                self?.delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.receive.rawValue)
+            },
+            onShowGiftCard: { [weak self] txId in
+                self?.showGiftCardDetails(txId: txId)
+            }
+        )
+        let hostingController = UIHostingController(rootView: screen)
+        hostingController.hidesBottomBarWhenPushed = true
+        navController.pushViewController(hostingController, animated: true)
     }
 
     private func showWhereToSpend() {
@@ -170,7 +182,8 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
 
     private func showSendToContact() {
         #if DASHPAY
-        let controller = DWContactsViewController()
+        let controller = DWContactsViewController(payModel: payModel, dataProvider: dataProvider)
+        controller.intent = .payToSelector
         controller.payDelegate = self
         let navigationController = BaseNavigationController(rootViewController: controller)
         present(navigationController, animated: true, completion: nil)
@@ -298,17 +311,15 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
         controller.navigationController?.dismiss(animated: true, completion: nil)
     }
 
-    // MARK: - DWExploreTestnetViewControllerDelegate
-
-    func exploreViewControllerShowSendPayment(_ controller: ExploreViewController) {
-        delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.pay.rawValue)
-    }
-
-    func exploreViewControllerShowReceivePayment(_ controller: ExploreViewController) {
-        delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.receive.rawValue)
-    }
-    
-    func exploreViewControllerShowGiftCard(_ controller: ExploreViewController, txId: Data) {
-        showGiftCardDetails(txId: txId)
+}
+#if DASHPAY
+// MARK: DWContactsViewControllerPayDelegate
+extension HomeViewController: DWContactsViewControllerPayDelegate {
+    func contactsViewController(_ controller: DWContactsViewController, payTo item: DWDPBasicUserItem) {
+        dismiss(animated: true) { [weak self] in
+            self?.performPay(toUser: item)
+        }
     }
 }
+#endif
+

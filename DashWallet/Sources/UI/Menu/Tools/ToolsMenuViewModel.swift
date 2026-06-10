@@ -42,28 +42,28 @@ class ToolsMenuViewModel: ObservableObject {
         items = [
             MenuItemModel(
                 title: NSLocalizedString("Import Private Key", comment: ""),
-                icon: .custom("image.import.private.key", maxHeight: 22),
+                icon: .custom("image.import.private.key", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .importPrivateKey
                 }
             ),
             MenuItemModel(
                 title: NSLocalizedString("Extended public key (BIP44)", comment: ""),
-                icon: .custom("image.extend.public.key", maxHeight: 22),
+                icon: .custom("image.extend.public.key", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .extendedPublicKeys
                 }
             ),
             MenuItemModel(
                 title: NSLocalizedString("Show Masternode Keys", comment: ""),
-                icon: .custom("image.masternode.keys", maxHeight: 22),
+                icon: .custom("image.masternode.keys", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .masternodeKeys
                 }
             ),
             MenuItemModel(
                 title: NSLocalizedString("CSV Export", comment: ""),
-                icon: .custom("image.csv.export", maxHeight: 22),
+                icon: .custom("image.csv.export", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .csvExport
                 }
@@ -71,7 +71,7 @@ class ToolsMenuViewModel: ObservableObject {
             MenuItemModel(
                 title: NSLocalizedString("ZenLedger", comment: ""),
                 subtitle: NSLocalizedString("Simplify your crypto taxes", comment: ""),
-                icon: .custom("zenledger"),
+                icon: .custom("zenledger", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .zenLedger
                 }

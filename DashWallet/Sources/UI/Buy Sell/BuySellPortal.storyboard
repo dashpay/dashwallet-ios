@@ -586,9 +586,6 @@
                                 <constraint firstAttribute="bottom" secondItem="qd5-Z5-oBS" secondAttribute="bottom" id="pMR-5x-rbt"/>
                             </constraints>
                         </view>
-                        <barButtonItem key="rightBarButtonItem" enabled="NO" id="jKH-G2-hOt">
-                            <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        </barButtonItem>
                     </navigationItem>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>

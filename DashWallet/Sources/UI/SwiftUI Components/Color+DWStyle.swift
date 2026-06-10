@@ -40,10 +40,6 @@ extension Color {
     
 // System
 
-    static var blue: Color {
-        Color("Blue")
-    }
-
     static var dashBlue: Color {
         Color("DashBlueColor")
     }
@@ -59,18 +55,36 @@ extension Color {
     static var systemRed: Color {
         Color("SystemRedColor")
     }
-    
+
     static var systemYellow: Color {
         Color("SystemYellowColor")
     }
-    
+
+// Search
+
+    static var searchBg: Color {
+        Color("SearchBackground")
+    }
+
 // Blue
+
+    static var blue: Color {
+        Color("Blue")
+    }
 
     static var blueAlpha5: Color {
         Color("BlueAlpha5")
     }
 
+    static var blueAlpha10: Color {
+        Color("BlueAlpha10")
+    }
+
 // Black
+
+    static var black800: Color {
+        Color("Black800")
+    }
 
     static var blackAlpha5: Color {
         Color("BlackAlpha5")
@@ -78,6 +92,30 @@ extension Color {
 
     static var blackAlpha40: Color {
         Color("BlackAlpha40")
+    }
+
+    static var black1000Alpha5: Color {
+        Color("Black1000Alpha5")
+    }
+
+    static var black1000Alpha8: Color {
+        Color("Black1000Alpha8")
+    }
+
+    static var black1000Alpha30: Color {
+        Color("Black1000Alpha30")
+    }
+
+    static var black1000Alpha40: Color {
+        Color("Black1000Alpha40")
+    }
+
+    static var black1000Alpha50: Color {
+        Color("Black1000Alpha50")
+    }
+
+    static var black1000Alpha90: Color {
+        Color("Black1000Alpha90")
     }
 
 // Gray
@@ -141,7 +179,11 @@ extension Color {
     static var gray400: Color {
         Color("Gray400")
     }
-    
+
+    static var gray400Alpha10: Color {
+        Color("Gray400Alpha10")
+    }
+
     static var gray500: Color {
         Color("Gray500")
     }
@@ -221,7 +263,7 @@ extension Color {
          Color(UIColor { traitCollection in
             switch traitCollection.userInterfaceStyle {
             case .dark:
-                return UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 0.5) // TODO
+                return UIColor.clear
             default:
                 return UIColor(red: 0.72, green: 0.76, blue: 0.8, alpha: 0.1)
             }

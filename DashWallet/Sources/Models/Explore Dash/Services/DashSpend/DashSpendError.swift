@@ -32,6 +32,7 @@ enum DashSpendError: Error, LocalizedError {
     case customError(String)
     case unknown
     case paymentProcessingError(String)
+    case previousSwapPending
 
     var errorDescription: String? {
         switch self {
@@ -67,6 +68,11 @@ enum DashSpendError: Error, LocalizedError {
             return NSLocalizedString("An unknown error occurred. Please try again later.", comment: "DashSpend")
         case .paymentProcessingError(let details):
             return String(format: NSLocalizedString("Payment processing error: %@", comment: "DashSpend"), details)
+        case .previousSwapPending:
+            return NSLocalizedString(
+                "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.",
+                comment: "DashSpend/Maya"
+            )
         }
     }
 }

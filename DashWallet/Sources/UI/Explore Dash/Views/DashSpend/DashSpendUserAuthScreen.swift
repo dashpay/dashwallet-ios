@@ -190,10 +190,9 @@ struct DashSpendUserAuthScreen: View {
                 EmptyView()
             }
         }
-        .background(Color.secondaryBackground)
+        .background(Color.secondaryBackground.ignoresSafeArea(edges: .top))
         .navigationBarHidden(true)
         .navigationBarBackButtonHidden(true)
-        .edgesIgnoringSafeArea(.top)
         .onAppear {
             viewModel.screenType = authType
             
