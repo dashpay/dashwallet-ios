@@ -46,11 +46,18 @@ enum ShortcutActionType: Int {
 
 extension ShortcutActionType {
     /// The 13 features available for shortcut bar customization
-    static let customizableActions: [ShortcutActionType] = [
-        .buySellDash, .explore, .spend, .atm, .receive,
-        .send, .scanToPay, .payToAddress,
-        .crowdNode, .coinbase, .uphold, .topper
-    ]
+    static var customizableActions: [ShortcutActionType] {
+        var actions: [ShortcutActionType] = [
+            .buySellDash, .explore, .spend, .atm, .receive,
+            .send, .scanToPay, .payToAddress,
+            .coinbase, .uphold, .topper
+        ]
+        let state = CrowdNode.shared.signUpState
+        if state == .finished || state == .linkedOnline {
+            actions.append(.crowdNode)
+        }
+        return actions
+    }
 
     var icon: UIImage {
         switch self {

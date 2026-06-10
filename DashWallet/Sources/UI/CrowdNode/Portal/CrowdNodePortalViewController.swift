@@ -198,11 +198,12 @@ extension CrowdNodePortalController {
 
 extension CrowdNodePortalController : UITableViewDelegate, UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        2
+        Int(ceil(Double(viewModel.portalItems.count) / 2.0))
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        2
+        let startIndex = section * 2
+        return max(0, min(2, viewModel.portalItems.count - startIndex))
     }
 
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
