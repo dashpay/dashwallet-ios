@@ -167,6 +167,16 @@ public final class SendCoinsService: NSObject {
 
         let chain = DWEnvironment.sharedInstance().currentChain
         let account = DWEnvironment.sharedInstance().currentAccount
+
+        // Wallet-level guard (fail fast): refuse to start a new swap while a previous
+        // swap is still unconfirmed. The per-input `isInputSpent` check below catches
+        // stale-UTXO reuse, but a new swap could select *different* inputs and slip past
+        // it; `hasUnconfirmedSwapTransaction` enforces the previousSwapPending semantics
+        // at the wallet level. Both guards are intentionally kept.
+        if account.hasUnconfirmedSwapTransaction() {
+            throw DashSpendError.previousSwapPending
+        }
+
         let transaction = DSTransaction(on: chain)
 
         let vaultScript = NSData.scriptPubKey(forAddress: vaultAddress, for: chain)
