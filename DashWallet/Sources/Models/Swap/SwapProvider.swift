@@ -61,6 +61,16 @@ extension SwapProvider {
     /// Optional deep-link to a hosted transaction tracker for this provider.
     /// Returns `nil` for providers without a public tracker (Maya uses its own explorer).
     func trackerURL(for txid: String) -> URL? { nil }
+
+    /// Controls whether the order-preview fee row uses a backend-specific label
+    /// (`"Maya fee"`) or a generic one (`"Fee"`).
+    var usesGenericFeeLabel: Bool { false }
+
+    /// Indicative quote used by the amount screen. Providers that do not have a cheaper
+    /// quote-only path can fall back to the full quote implementation.
+    func fetchIndicativeQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult {
+        try await fetchQuote(dashSatoshis: dashSatoshis, toAsset: toAsset, destination: destination)
+    }
 }
 
 // MARK: - Protocol
@@ -73,6 +83,7 @@ extension SwapProvider {
 protocol SwapProvider {
     /// Human-readable label shown as the execution network (e.g. "Maya", "MAYACHAIN").
     var displayName: String { get }
+    var usesGenericFeeLabel: Bool { get }
 
     func fetchPools() async throws -> [MayaPool]
     func fetchInboundAddresses() async throws -> [MayaInboundAddress]
@@ -82,6 +93,10 @@ protocol SwapProvider {
 
     /// Quote for a DASH→toAsset swap. `dashSatoshis` is in 1e8 base units.
     func fetchQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult
+
+    /// Indicative quote for the amount screen: expected output + execution network only.
+    /// Must not perform heavy swap-build work because it runs on every keystroke.
+    func fetchIndicativeQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult
 
     /// Status lookup for a submitted swap.
     /// Maya: queries by Dash txid via `/tx/{txid}`.

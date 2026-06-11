@@ -18,6 +18,15 @@
 import Combine
 import Foundation
 
+private extension Error {
+    var isUserAuthenticationCancellation: Bool {
+        // `DashSpendError` is not Equatable, so match the case with `if case` instead of `==`.
+        // `.some(...)` matches through the optional from `as?` (same form as `.previousSwapPending` below).
+        if case .some(.authenticationCancelled) = self as? DashSpendError { return true }
+        return false
+    }
+}
+
 // MARK: - MayaSuccessTrigger
 
 /// Controls when the success screen is shown to the user.
@@ -111,11 +120,20 @@ final class OrderPreviewViewModel: ObservableObject {
         return swapProvider.trackerURL(for: txid)
     }
 
-    /// Fee-row label that tracks the executing network, e.g. "Maya fee" or "NEAR fee".
+    /// Fee-row label varies by provider: Maya keeps the network-specific label while
+    /// SwapKit uses a generic "Fee" label.
     var feeLabel: String {
-        executionNetwork == "—"
-            ? NSLocalizedString("Swap fee", comment: "Maya/SwapKit order preview")
-            : String(format: NSLocalizedString("%@ fee", comment: "Maya/SwapKit order preview"), executionNetwork)
+        swapProvider.usesGenericFeeLabel
+            ? NSLocalizedString("Fee", comment: "Swap order preview")
+            : (
+                executionNetwork == "—"
+                    ? NSLocalizedString("Swap fee", comment: "Maya/SwapKit order preview")
+                    : String(format: NSLocalizedString("%@ fee", comment: "Maya/SwapKit order preview"), executionNetwork)
+            )
+    }
+
+    var usesGenericFeeLabel: Bool {
+        swapProvider.usesGenericFeeLabel
     }
 
     var confirmButtonText: String {
@@ -145,6 +163,7 @@ final class OrderPreviewViewModel: ObservableObject {
     // transaction-status notification.
     private var submittedTransaction: DSTransaction?
     private var confirmationCancellable: AnyCancellable?
+    private var didInitialLoad = false
 
     init(
         coin: MayaCryptoCurrency,
@@ -167,7 +186,6 @@ final class OrderPreviewViewModel: ObservableObject {
         self.swapProvider = swapProvider
         self.quote = initialQuote
         applyQuote(initialQuote)
-        startCountdown()
     }
 
     deinit {
@@ -183,6 +201,12 @@ final class OrderPreviewViewModel: ObservableObject {
         } else {
             await refreshQuoteForDisplay()
         }
+    }
+
+    func onAppearLoad() async {
+        guard !didInitialLoad else { return }
+        didInitialLoad = true
+        await refreshQuoteForDisplay()
     }
 
     func resetToIdle() {
@@ -212,7 +236,7 @@ final class OrderPreviewViewModel: ObservableObject {
         do {
             let freshQuote = try await fetchFreshQuote()
             if let apiError = freshQuote.error {
-                swapStatus = .failed(reason: apiError)
+                setFailure(apiError)
                 return nil
             }
             return OrderPreviewViewModel(
@@ -227,7 +251,7 @@ final class OrderPreviewViewModel: ObservableObject {
                 swapProvider: swapProvider
             )
         } catch {
-            swapStatus = .failed(reason: error.localizedDescription)
+            setFailure(error.localizedDescription)
             return nil
         }
     }
@@ -267,7 +291,9 @@ final class OrderPreviewViewModel: ObservableObject {
             }
             quote = newQuote
             applyQuote(newQuote)
+            stopCountdown()
             resetCountdown()
+            startCountdown()
         } catch {
             setFailure(error.localizedDescription)
         }
@@ -307,6 +333,10 @@ final class OrderPreviewViewModel: ObservableObject {
                 pendingSwapAlertMessage = error.localizedDescription
                 return
             }
+            if error.isUserAuthenticationCancellation {
+                swapStatus = .idle
+                return
+            }
             setFailure(error.localizedDescription)
         }
     }
@@ -338,7 +368,24 @@ final class OrderPreviewViewModel: ObservableObject {
     private func setFailure(_ message: String) {
         // Keep Maya failures on the status sheet path so SwiftUI does not try to
         // present a native alert and a bottom sheet for the same event.
-        swapStatus = .failed(reason: message)
+        swapStatus = .failed(reason: userFacingErrorMessage(for: message))
+    }
+
+    private func userFacingErrorMessage(for message: String) -> String {
+        if message.localizedCaseInsensitiveContains("invalidDestinationAddress") {
+            let chainLabel = MayaCryptoCurrency.chainDisplayName(coin.chain)
+            return String(
+                format: NSLocalizedString(
+                    "The destination address isn’t valid for %@ (%@). Go back and enter a %@ address.",
+                    comment: "Swap"
+                ),
+                coin.name,
+                chainLabel,
+                chainLabel
+            )
+        }
+
+        return message
     }
 
     private func setSubmittedTransaction(_ tx: DSTransaction) {

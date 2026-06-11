@@ -21,6 +21,7 @@ struct OrderPreviewFeeRow: View {
     let feeTitle: String
     let feeText: String
     var feeTextSecondary: String? = nil
+    let usesGenericFeeInfo: Bool
     let rowHPadding: CGFloat
     let rowVPadding: CGFloat
     let labelSpacing: CGFloat
@@ -65,7 +66,10 @@ struct OrderPreviewFeeRow: View {
         .frame(minHeight: rowMinHeight)
         .sheet(isPresented: $showInfoSheet) {
             BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
-                SwapFeeInfoSheet(onDismiss: { showInfoSheet = false })
+                SwapFeeInfoSheet(
+                    usesGenericFeeInfo: usesGenericFeeInfo,
+                    onDismiss: { showInfoSheet = false }
+                )
             }
             .selfSizingSheet(cornerRadius: 32)
         }
@@ -77,6 +81,7 @@ struct OrderPreviewFeeRow: View {
     OrderPreviewFeeRow(
         feeTitle: "Maya fee",
         feeText: "BTC 0.00042",
+        usesGenericFeeInfo: false,
         rowHPadding: 10,
         rowVPadding: 12,
         labelSpacing: 20,

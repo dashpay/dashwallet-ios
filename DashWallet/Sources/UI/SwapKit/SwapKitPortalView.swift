@@ -26,7 +26,7 @@ struct SwapKitPortalView: View {
             logoAssetName: "swapkit-illustration",
             title: NSLocalizedString("SwapKit", comment: "SwapKit Portal"),
             description: NSLocalizedString(
-                "Sell Dash for any supported crypto at the best available price across networks",
+                "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet",
                 comment: "SwapKit Portal"
             ),
             onBack: onBack,

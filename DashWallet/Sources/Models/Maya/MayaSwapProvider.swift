@@ -52,6 +52,10 @@ final class MayaSwapProvider: SwapProvider {
         )
     }
 
+    func fetchIndicativeQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult {
+        try await fetchQuote(dashSatoshis: dashSatoshis, toAsset: toAsset, destination: destination)
+    }
+
     func fetchSwapStatus(txid: String) async throws -> SwapStatusResult {
         let info = try await MayaAPIService.shared.fetchSwapTransactionInfo(txid: txid)
         guard let observedTx = info.observedTx else {

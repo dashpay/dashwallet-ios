@@ -116,7 +116,7 @@ class SelectCoinViewModel: ObservableObject {
         return pools.compactMap { pool in
             guard pool.isAvailable else { return nil }
             guard pool.asset.uppercased() != "DASH.DASH" else { return nil }
-            guard let coin = MayaCryptoCurrency.coin(for: pool.asset) else { return nil }
+            guard let coin = MayaCryptoCurrency.knownCoin(for: pool.asset) else { return nil }
             guard inboundChains.contains(coin.chain.uppercased()) else { return nil }
 
             return CoinDisplayItem(
@@ -174,6 +174,7 @@ class SelectCoinViewModel: ObservableObject {
         items.sorted { a, b in
             let codeComparison = a.coin.code.localizedCaseInsensitiveCompare(b.coin.code)
             if codeComparison != .orderedSame { return codeComparison == .orderedAscending }
+            // Match Android's primary sort by code while keeping equal-code rows stable.
             return a.displayName.localizedCaseInsensitiveCompare(b.displayName) == .orderedAscending
         }
     }

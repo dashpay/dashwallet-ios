@@ -234,9 +234,24 @@ final class SwapConvertViewModel: ObservableObject {
     private func applyQuoteError(_ apiError: String) {
         latestQuote = nil
         receiveAmount = nil
-        errorMessage = apiError.contains("not enough asset to pay for fees")
-            ? NSLocalizedString("Amount too small to cover fees", comment: "Maya")
-            : NSLocalizedString("Unable to get a quote", comment: "Maya")
+        if apiError.contains("not enough asset to pay for fees") {
+            errorMessage = NSLocalizedString("Amount too small to cover fees", comment: "Maya")
+        } else if apiError.localizedCaseInsensitiveContains("noRoutesFound") {
+            errorMessage = NSLocalizedString("No routes available for this coin right now", comment: "Swap")
+        } else if apiError.localizedCaseInsensitiveContains("invalidDestinationAddress") {
+            let chainLabel = MayaCryptoCurrency.chainDisplayName(coin.chain)
+            errorMessage = String(
+                format: NSLocalizedString(
+                    "The destination address isn’t valid for %@ (%@). Go back and enter a %@ address.",
+                    comment: "Swap"
+                ),
+                coin.name,
+                chainLabel,
+                chainLabel
+            )
+        } else {
+            errorMessage = NSLocalizedString("Unable to get a quote", comment: "Maya")
+        }
     }
 
     // MARK: - Private: Combine Subscriptions
@@ -305,7 +320,7 @@ final class SwapConvertViewModel: ObservableObject {
             if quoteRequestID == snapshot.id { isLoading = false }
         }
         do {
-            let quote = try await swapProvider.fetchQuote(
+            let quote = try await swapProvider.fetchIndicativeQuote(
                 dashSatoshis: snapshot.dashSatoshis,
                 toAsset: coin.mayaAsset,
                 destination: address
@@ -319,8 +334,8 @@ final class SwapConvertViewModel: ObservableObject {
         } catch {
             guard quoteRequestID == snapshot.id else { return }
             latestQuote = nil
-            errorMessage = nil
             receiveAmount = nil
+            errorMessage = NSLocalizedString("Unable to get a quote", comment: "Swap")
         }
     }
 

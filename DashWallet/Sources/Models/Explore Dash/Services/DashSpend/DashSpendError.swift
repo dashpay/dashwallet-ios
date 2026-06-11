@@ -33,6 +33,7 @@ enum DashSpendError: Error, LocalizedError {
     case unknown
     case paymentProcessingError(String)
     case previousSwapPending
+    case authenticationCancelled
 
     var errorDescription: String? {
         switch self {
@@ -73,6 +74,8 @@ enum DashSpendError: Error, LocalizedError {
                 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.",
                 comment: "DashSpend/Maya"
             )
+        case .authenticationCancelled:
+            return NSLocalizedString("Authentication cancelled", comment: "DashSpend/Maya")
         }
     }
 }

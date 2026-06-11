@@ -55,7 +55,7 @@ public final class SendCoinsService: NSObject {
         case .success:
             return
         case .cancelled:
-            throw DashSpendError.paymentProcessingError("Authentication cancelled")
+            throw DashSpendError.authenticationCancelled
         case .failed:
             throw DashSpendError.paymentProcessingError("Authentication failed")
         }
@@ -130,7 +130,7 @@ public final class SendCoinsService: NSObject {
         let authenticated = await authenticate()
 
         if !authenticated {
-            throw DashSpendError.paymentProcessingError("Authentication cancelled")
+            throw DashSpendError.authenticationCancelled
         }
 
         // Sign the transaction after authentication
@@ -266,7 +266,7 @@ public final class SendCoinsService: NSObject {
 
         let authenticated = await authenticate()
         if !authenticated {
-            throw DashSpendError.paymentProcessingError("Authentication cancelled")
+            throw DashSpendError.authenticationCancelled
         }
 
         account.sign(transaction)

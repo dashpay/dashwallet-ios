@@ -39,6 +39,7 @@ struct OrderPreviewView: View {
         // full-screen transaction status flow (pending → success / failure) is pushed by
         // OrderPreviewHostingController, which observes `viewModel.swapStatus`.
         orderPreviewContent
+            .task { await viewModel.onAppearLoad() }
             .alert(
                 NSLocalizedString("Swap in progress", comment: "Maya"),
                 isPresented: pendingSwapAlertIsPresented
@@ -80,8 +81,8 @@ struct OrderPreviewView: View {
                     addressRow
                     purchaseRow
                     feeRow
-                    totalRow
                     networkRow
+                    totalRow
                 }
                 .modifier(SwapMenuCardStyle(shadowRadius: 20))
                 .padding(.horizontal, 20)
@@ -192,6 +193,7 @@ struct OrderPreviewView: View {
             feeTitle: viewModel.feeLabel,
             feeText: viewModel.mayaFee,
             feeTextSecondary: viewModel.mayaFeeFiatAmount,
+            usesGenericFeeInfo: viewModel.usesGenericFeeLabel,
             rowHPadding: Layout.rowHPadding,
             rowVPadding: Layout.rowVPadding,
             labelSpacing: Layout.labelSpacing,
