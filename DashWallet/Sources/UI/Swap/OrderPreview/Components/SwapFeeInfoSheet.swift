@@ -18,6 +18,7 @@
 import SwiftUI
 
 struct SwapFeeInfoSheet: View {
+    let usesGenericFeeInfo: Bool
     let onDismiss: () -> Void
 
     @Environment(\.openURL) private var openURL
@@ -31,10 +32,7 @@ struct SwapFeeInfoSheet: View {
                     .foregroundColor(.primaryText)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
 
-                Text(NSLocalizedString(
-                    "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution.",
-                    comment: "Maya"
-                ))
+                Text(infoDescription)
                 .font(Font.body)
                 .foregroundStyle(Color.gray500)
                 .multilineTextAlignment(.leading)
@@ -47,8 +45,10 @@ struct SwapFeeInfoSheet: View {
                 // Opens the Maya fee docs in the system browser via @Environment(\.openURL).
                 // Using openURL (system Safari) rather than SFSafariViewController because the
                 // sheet has no UIViewController context for modal presentation.
-                DashButton(text: NSLocalizedString("Learn more", comment: "Maya")) {
-                    openURL(MayaConstants.feesDocsURL)
+                if !usesGenericFeeInfo {
+                    DashButton(text: NSLocalizedString("Learn more", comment: "Maya")) {
+                        openURL(MayaConstants.feesDocsURL)
+                    }
                 }
 
                 DashButton(text: NSLocalizedString("Close", comment: "Maya")) {
@@ -61,11 +61,25 @@ struct SwapFeeInfoSheet: View {
             .padding(.vertical, 20)
         }
     }
+
+    private var infoDescription: String {
+        if usesGenericFeeInfo {
+            return NSLocalizedString(
+                "The displayed fee combines SwapKit routing costs, including service, outbound, and on-chain network fees. It is shown in the coin you are buying, and the quoted receive amount already accounts for it.",
+                comment: "SwapKit"
+            )
+        }
+
+        return NSLocalizedString(
+            "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution.",
+            comment: "Maya"
+        )
+    }
 }
 
 #if DEBUG
 #Preview("Standalone") {
-    SwapFeeInfoSheet(onDismiss: {})
+    SwapFeeInfoSheet(usesGenericFeeInfo: false, onDismiss: {})
         .background(Color.secondaryBackground)
 }
 
@@ -87,7 +101,7 @@ private struct SwapFeeInfoSheetPreviewHost: View {
 //                }
 
                 BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
-                    SwapFeeInfoSheet(onDismiss: {})
+                    SwapFeeInfoSheet(usesGenericFeeInfo: false, onDismiss: {})
                 }
                 .selfSizingSheet()
             }

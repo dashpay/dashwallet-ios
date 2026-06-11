@@ -64,6 +64,8 @@ struct SwapKitQuoteResponse: Decodable {
     let routes: [SwapKitRoute]?
     let providerErrors: [SwapKitProviderError]?
     let error: String?
+    /// Human-readable detail on a non-2xx error body, e.g. "No routes found for DASH.DASH -> BASE.ETH".
+    let message: String?
 }
 
 struct SwapKitRoute: Decodable {
@@ -133,7 +135,7 @@ struct SwapKitSwapResponse: Decodable {
 struct SwapKitPriceResponse: Decodable {
     let identifier: String
     /// USD price. 0 means "unknown / not found" — never interpret as free.
-    let priceUsd: Double
+    let priceUsd: Double?
     let cg: SwapKitCoinGeckoData?
 
     enum CodingKeys: String, CodingKey {

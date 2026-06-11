@@ -66,7 +66,7 @@ extension SwapKitEndpoint: TargetType {
         case .getPrices(let identifiers):
             let body = SwapKitPriceRequest(
                 tokens: identifiers.map { SwapKitPriceToken(identifier: $0) },
-                metadata: true
+                metadata: false
             )
             return .requestJSONEncodable(body)
         case .quote(let request):

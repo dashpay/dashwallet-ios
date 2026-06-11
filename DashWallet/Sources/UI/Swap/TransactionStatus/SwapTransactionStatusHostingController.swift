@@ -67,9 +67,17 @@ final class SwapTransactionStatusHostingController: UIViewController, Navigation
                 }
             },
             onClose: { [weak self] in
-                // Failure dismissed → return to the Maya Portal, never to Order Preview / Convert.
+                // Failure dismissed → return to whichever swap portal launched the flow
+                // (Maya or SwapKit), never to Order Preview / Convert. The flow can be rooted
+                // at either portal after the UI/Swap refactor, so don't hardcode one type.
                 guard let nav = self?.navigationController else { return }
-                nav.popToViewController(ofType: MayaPortalViewController.self, animated: true)
+                if let portal = nav.viewControllers.last(where: {
+                    $0 is MayaPortalViewController || $0 is SwapKitPortalViewController
+                }) {
+                    nav.popToViewController(portal, animated: true)
+                } else {
+                    nav.popToRootViewController(animated: true)
+                }
             },
             onRetry: { [weak self] in
                 self?.handleRetry()

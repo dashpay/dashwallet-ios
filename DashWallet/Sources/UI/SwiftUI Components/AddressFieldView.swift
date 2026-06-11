@@ -42,7 +42,7 @@ struct AddressFieldView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(NSLocalizedString(label, comment: ""))
+            Text(label)
                 .font(.footnote)
                 .foregroundStyle(Color.gray500)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -91,7 +91,7 @@ struct AddressFieldView: View {
             .focused($isTextFieldFocused)
             .disabled(isDisabled)
         } else {
-            TextField(NSLocalizedString(placeholder, comment: ""), text: $text)
+            TextField(placeholder, text: $text)
                 .font(.subhead)
                 .autocapitalization(.none)
                 .disableAutocorrection(true)

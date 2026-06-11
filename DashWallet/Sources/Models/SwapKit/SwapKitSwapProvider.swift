@@ -29,6 +29,7 @@ import Foundation
 /// - The DASH tx is still built locally from `vaultAddress + memo` — no PSBT parsing.
 final class SwapKitSwapProvider: SwapProvider {
     var displayName: String { "SwapKit" }
+    var usesGenericFeeLabel: Bool { true }
 
     // MARK: - Cache
 
@@ -54,14 +55,17 @@ final class SwapKitSwapProvider: SwapProvider {
         let reachable = try await SwapKitAPIService.shared.swapTo(sellAsset: SwapKitConstants.dashAsset)
 
         // Add DASH itself so the convert screen can look up DASH's USD price for DASH↔fiat ratio.
-        let identifiers = Array(Set((reachable + [SwapKitConstants.dashAsset]).map { $0.uppercased() }))
+        var seenIdentifiers = Set<String>()
+        let identifiers = (reachable + [SwapKitConstants.dashAsset]).filter {
+            seenIdentifiers.insert($0.uppercased()).inserted
+        }
 
         // 2. Batch price fetch — one call for all assets (AC#3).
         let priceItems = (try? await SwapKitAPIService.shared.prices(identifiers: identifiers)) ?? []
         let priceMap = Dictionary(
             priceItems.compactMap { item -> (String, Double)? in
-                guard item.priceUsd > 0 else { return nil }
-                return (item.identifier.uppercased(), item.priceUsd)
+                guard let price = item.priceUsd, price > 0 else { return nil }
+                return (item.identifier.uppercased(), price)
             },
             uniquingKeysWith: { first, _ in first }
         )
@@ -71,7 +75,7 @@ final class SwapKitSwapProvider: SwapProvider {
 
         // 4. Map to MayaPool — `status = "available"` (lowercase) because `isAvailable` checks that.
         let pools = identifiers.map { identifier -> MayaPool in
-            let priceUsd = priceMap[identifier] ?? 0.0
+            let priceUsd = priceMap[identifier.uppercased()] ?? 0.0
             return MayaPool(
                 asset: identifier,
                 status: "available",
@@ -134,22 +138,40 @@ final class SwapKitSwapProvider: SwapProvider {
         }
     }
 
-    /// AC#4 + AC#5: pick the best SwapKit route and build the swap.
-    func fetchQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult {
-        let sellAmount = baseUnitsToHuman(dashSatoshis)
-
-        // Step 1: quote — get ranked routes.
-        let quoteRequest = SwapKitQuoteRequest(
-            sellAsset: SwapKitConstants.dashAsset,
-            buyAsset: toAsset,
-            sellAmount: sellAmount,
-            slippage: SwapKitConstants.defaultSlippagePercent,
-            sourceAddress: nil,
-            destinationAddress: destination,
-            providers: nil,
-            affiliateFee: nil
+    func fetchIndicativeQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult {
+        let quoteResponse = try await fetchQuoteResponse(
+            dashSatoshis: dashSatoshis,
+            toAsset: toAsset,
+            destination: destination
         )
-        let quoteResponse = try await SwapKitAPIService.shared.quote(quoteRequest)
+
+        if let err = quoteResponse.error {
+            return errorResult(err)
+        }
+
+        guard let best = bestRoute(from: quoteResponse.routes ?? []) else {
+            let msg = quoteResponse.providerErrors?.first?.message
+                ?? NSLocalizedString("No route available", comment: "SwapKit")
+            return errorResult(msg)
+        }
+
+        return SwapQuoteResult(
+            error: nil,
+            expectedAmountOut: humanToBaseUnits(best.expectedBuyAmount),
+            fees: nil,
+            inboundAddress: nil,
+            memo: nil,
+            executionNetwork: prettifyProviders(best.providers)
+        )
+    }
+
+    /// Pick the best SwapKit route and build the swap.
+    func fetchQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult {
+        let quoteResponse = try await fetchQuoteResponse(
+            dashSatoshis: dashSatoshis,
+            toAsset: toAsset,
+            destination: destination
+        )
 
         if let err = quoteResponse.error {
             return errorResult(err)
@@ -174,7 +196,15 @@ final class SwapKitSwapProvider: SwapProvider {
             disableBuildTx: true,       // we build the DASH tx locally from vault+memo
             overrideSlippage: nil
         )
-        let swapResponse = try await SwapKitAPIService.shared.swap(swapRequest)
+        let swapResponse: SwapKitSwapResponse
+        do {
+            swapResponse = try await SwapKitAPIService.shared.swap(swapRequest)
+        } catch {
+            if let apiError = decodeSwapError(from: error) {
+                return errorResult(apiError)
+            }
+            throw error
+        }
 
         if let err = swapResponse.error {
             let detail = swapResponse.message.map { ": \($0)" } ?? ""
@@ -188,14 +218,18 @@ final class SwapKitSwapProvider: SwapProvider {
         // Step 4: map to neutral result.
         let expectedOut = humanToBaseUnits(swapResponse.expectedBuyAmount ?? best.expectedBuyAmount)
         let fees = swapResponse.fees ?? best.fees ?? []
-        let outboundFee = outboundFeeBaseUnits(from: fees)
+        let expectedOutTarget = Decimal(string: swapResponse.expectedBuyAmount ?? best.expectedBuyAmount) ?? 0
+        let sellDash = Decimal(dashSatoshis) / Decimal(100_000_000)
+        let targetPerDash = sellDash > 0 ? expectedOutTarget / sellDash : 0
+        let feeTarget = totalFeeInTargetUnits(fees: fees, targetAsset: toAsset, targetPerDash: targetPerDash)
+        let feeBaseUnits = decimalToBaseUnits(feeTarget)
         // AC#5: executionNetwork surfaces the winning provider(s).
         let executionNetwork = prettifyProviders(best.providers)
 
         return SwapQuoteResult(
             error: nil,
             expectedAmountOut: expectedOut,
-            fees: SwapFeeResult(total: outboundFee, outbound: outboundFee),
+            fees: SwapFeeResult(total: feeBaseUnits, outbound: feeBaseUnits),
             inboundAddress: vaultAddress,
             memo: swapResponse.memo,
             executionNetwork: executionNetwork
@@ -227,6 +261,63 @@ final class SwapKitSwapProvider: SwapProvider {
             ?? routes.first
     }
 
+    private func fetchQuoteResponse(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapKitQuoteResponse {
+        let sellAmount = baseUnitsToHuman(dashSatoshis)
+        let quoteRequest = SwapKitQuoteRequest(
+            sellAsset: SwapKitConstants.dashAsset,
+            buyAsset: toAsset,
+            sellAmount: sellAmount,
+            slippage: SwapKitConstants.defaultSlippagePercent,
+            sourceAddress: nil,
+            destinationAddress: destination,
+            providers: nil,
+            affiliateFee: nil
+        )
+
+        do {
+            return try await SwapKitAPIService.shared.quote(quoteRequest)
+        } catch {
+            if let apiError = decodeQuoteError(from: error) {
+                return SwapKitQuoteResponse(
+                    quoteId: nil,
+                    routes: nil,
+                    providerErrors: nil,
+                    error: apiError,
+                    message: nil
+                )
+            }
+            throw error
+        }
+    }
+
+    private func decodeQuoteError(from error: Error) -> String? {
+        guard case HTTPClientError.statusCode(let response) = error,
+              let body = try? JSONDecoder().decode(SwapKitQuoteResponse.self, from: response.data)
+        else {
+            return nil
+        }
+
+        return body.message ?? body.error ?? body.providerErrors?.first?.message
+    }
+
+    private func decodeSwapError(from error: Error) -> String? {
+        guard case HTTPClientError.statusCode(let response) = error,
+              let body = try? JSONDecoder().decode(SwapKitSwapResponse.self, from: response.data)
+        else {
+            return nil
+        }
+
+        guard let code = body.error, !code.isEmpty else {
+            return body.message
+        }
+
+        if let message = body.message, !message.isEmpty {
+            return "\(code): \(message)"
+        }
+
+        return code
+    }
+
     // MARK: - Private: Amount Conversion
 
     private func baseUnitsToHuman(_ satoshis: Int64) -> String {
@@ -252,10 +343,47 @@ final class SwapKitSwapProvider: SwapProvider {
         return NSDecimalNumber(decimal: rounded).int64Value.description
     }
 
-    private func outboundFeeBaseUnits(from fees: [SwapKitFee]) -> String {
-        let fee = fees.first { $0.type?.lowercased() == "outbound" }
-            ?? fees.first { $0.type?.lowercased() == "network" }
-        return humanToBaseUnits(fee?.amount)
+    private func decimalToBaseUnits(_ value: Decimal) -> String {
+        guard value > 0 else { return "0" }
+        var scaled = value * Decimal(100_000_000)
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &scaled, 0, .plain)
+        return NSDecimalNumber(decimal: rounded).int64Value.description
+    }
+
+    /// Total SwapKit fee, summed across categories, expressed in the target asset.
+    /// Mirrors Android's total fee summation, but converts DASH legs into target units
+    /// because the iOS order preview renders fees in the purchased asset.
+    private func totalFeeInTargetUnits(
+        fees: [SwapKitFee],
+        targetAsset: String,
+        targetPerDash: Decimal
+    ) -> Decimal {
+        let targetUpper = targetAsset.uppercased()
+        let targetChain = targetUpper.components(separatedBy: ".").first ?? ""
+        var total: Decimal = 0
+
+        for fee in fees {
+            guard let amountString = fee.amount,
+                  let amount = Decimal(string: amountString),
+                  amount > 0
+            else {
+                continue
+            }
+
+            let chain = fee.chain?.uppercased()
+            let asset = fee.asset?.uppercased()
+
+            if chain == targetChain || asset == targetUpper {
+                total += amount
+            } else if chain == "DASH" || (asset?.contains("DASH") ?? false) {
+                total += amount * targetPerDash
+            } else {
+                DSLogger.log("SwapKit fee skipped: type=\(fee.type ?? "?") asset=\(fee.asset ?? "?") chain=\(fee.chain ?? "?")")
+            }
+        }
+
+        return total
     }
 
     // MARK: - Private: Provider Display
