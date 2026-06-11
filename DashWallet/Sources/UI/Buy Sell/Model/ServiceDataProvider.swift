@@ -70,6 +70,6 @@ class ServiceDataProviderImpl: ServiceDataProvider {
             .sorted(by: { $0.isInUse && !$1.isInUse })
             + mayaItems
 
-        handler?(sortedItems + mayaItems)
+        handler?(sortedItems)
     }
 }
