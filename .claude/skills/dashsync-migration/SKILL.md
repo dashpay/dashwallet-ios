@@ -107,6 +107,8 @@ These apply universally regardless of which shape you're using.
 - **Obj-C call sites** that use a new Swift `@objc` class need `#import "dashwallet-Swift.h"`. Most files in `DashWallet/Sources/UI/Payments/PaymentModels/` already have it; check before adding.
 - **Both targets share `dashwallet-Swift.h`** as the auto-generated bridging header (verified via `SWIFT_OBJC_INTERFACE_HEADER_NAME` in pbxproj).
 - **Swift migration files** should `import SwiftDashSDK`; they should never `import DashSync`.
+- **`String` shadowing via the DashSDKFFI umbrella**: SwiftDashSDK does `@_exported import DashSDKFFI`, which leaks C enum-case constants into expression scope — e.g. `DashSDKResultDataType`'s `String` case. In metatype *expressions* like `withTaskGroup(of: (String, [String: UInt]).self)` the bare `String` resolves to that constant and produces a baffling `(DashSDKResultDataType, …)` type error. Route tuple metatypes through a `typealias` (type-resolution context) or write `Swift.String`. Learned in the phrase-repair port (`SwiftDashSDKPhraseRepairer.swift`).
+- **Obj-C blocks with out-pointer params** (`void (^)(float, BOOL *stop)`): bridge as `UnsafeMutablePointer<ObjCBool>` whose memory the Swift side owns on the **heap**, retained by the final completion closure scheduled on the same serial queue as the ticks — never expose a stack address to a block that may write via deferred `dispatch_async` (DashSync did; latent use-after-return). Pattern: `CancellationBox` in `SwiftDashSDKPhraseRepairer.swift`.
 - **Remove obsolete DashSync-only files, references, and imports** as part of the cutover when they're no longer needed.
 - **UUID family** for migration shim pbxproj entries: extend the existing `A5D5DD0000000000000000…` family. Prefer the `…F1` through `…F4` range used by prior migration files.
 
@@ -138,6 +140,11 @@ Most of the time the two libraries already behave the same way and the fallback 
 Run these checks for each cutover. Build verification proves static correctness; a focused runtime smoke test of the migrated flow is the second gate. Since the app no longer preserves staged parity, the runtime gate is the migrated behavior itself — not mismatch logging.
 
 ```bash
+# 0. if the build errors with "sandbox is not in sync with Podfile.lock":
+#    pod install needs a UTF-8 locale in non-interactive shells, or Ruby's
+#    unicode_normalize crashes (Encoding::CompatibilityError)
+LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 pod install
+
 # 1. pbxproj sanity
 plutil -lint DashWallet.xcodeproj/project.pbxproj
 

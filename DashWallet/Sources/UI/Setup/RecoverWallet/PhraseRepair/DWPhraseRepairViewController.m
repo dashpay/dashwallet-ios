@@ -17,8 +17,8 @@
 
 #import "DWPhraseRepairViewController.h"
 
-#import "DWEnvironment.h"
 #import "DWPhraseRepairChildViewController.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_END
 
         __weak typeof(self) weakSelf = self;
 
-        void (^progressBlock)(float, bool *) = ^(float progress, bool *stop) {
+        void (^progressBlock)(float, BOOL *) = ^(float progress, BOOL *stop) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -58,7 +58,7 @@ NS_ASSUME_NONNULL_END
                 strongSelf.controller.progress = progress;
 
                 if (strongSelf.cancelled) {
-                    *stop = true;
+                    *stop = YES;
                     [strongSelf dismissViewControllerAnimated:YES completion:nil];
                 }
             });
@@ -70,7 +70,7 @@ NS_ASSUME_NONNULL_END
                 return;
             }
 
-            if ([missingWordsDictionary count] == 1 && [[[missingWordsDictionary allValues] firstObject] unsignedIntegerValue] == DSBIP39RecoveryWordConfidence_Max) {
+            if ([missingWordsDictionary count] == 1 && [[[missingWordsDictionary allValues] firstObject] unsignedIntegerValue] == DWSwiftDashSDKPhraseRepairer.maxConfidence) {
                 [strongSelf finishWithFoundWords:[[missingWordsDictionary allKeys] firstObject]];
             }
             else if ([missingWordsDictionary count] > 0) {
@@ -84,15 +84,15 @@ NS_ASSUME_NONNULL_END
         };
 
         if (incorrectWord != nil) {
-            [[DSBIP39Mnemonic sharedInstance] findPotentialWordsOfMnemonicForPassphrase:phrase
-                                                                      replacementString:incorrectWord
-                                                                         progressUpdate:progressBlock
-                                                                             completion:completion];
+            [DWSwiftDashSDKPhraseRepairer findPotentialWordsOfMnemonicForPassphrase:phrase
+                                                                  replacementString:incorrectWord
+                                                                     progressUpdate:progressBlock
+                                                                         completion:completion];
         }
         else {
-            [[DSBIP39Mnemonic sharedInstance] findLastPotentialWordsOfMnemonicForPassphrase:phrase
-                                                                             progressUpdate:progressBlock
-                                                                                 completion:completion];
+            [DWSwiftDashSDKPhraseRepairer findLastPotentialWordsOfMnemonicForPassphrase:phrase
+                                                                         progressUpdate:progressBlock
+                                                                             completion:completion];
         }
 
         DWAlertAction *action = [DWAlertAction

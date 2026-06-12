@@ -789,6 +789,13 @@
 		A5D5DD0000000000000000C1 /* SwiftDashSDK in Frameworks */ = {isa = PBXBuildFile; productRef = A5D5DD0000000000000000B2 /* SwiftDashSDK */; };
 		A5D5DD0000000000000000F8 /* SwiftDashSDKKeyMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000FA /* SwiftDashSDKKeyMigrator.swift */; };
 		A5D5DD0000000000000000F9 /* SwiftDashSDKKeyMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000FA /* SwiftDashSDKKeyMigrator.swift */; };
+		A5D5DD000000000000001303 /* SwiftDashSDKPhraseRepairer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001300 /* SwiftDashSDKPhraseRepairer.swift */; };
+		A5D5DD000000000000001304 /* SwiftDashSDKPhraseRepairer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001300 /* SwiftDashSDKPhraseRepairer.swift */; };
+		A5D5DD000000000000001305 /* SwiftDashSDKInsightClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001301 /* SwiftDashSDKInsightClient.swift */; };
+		A5D5DD000000000000001306 /* SwiftDashSDKInsightClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001301 /* SwiftDashSDKInsightClient.swift */; };
+		A5D5DD000000000000001307 /* DamerauLevenshtein.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001302 /* DamerauLevenshtein.swift */; };
+		A5D5DD000000000000001308 /* DamerauLevenshtein.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001302 /* DamerauLevenshtein.swift */; };
+		A5D5DD000000000000001311 /* PhraseRepairEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001310 /* PhraseRepairEngineTests.swift */; };
 		A5D5DD0000000000000000FB /* SwiftDashSDKSPVCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */; };
 		A5D5DD0000000000000000FC /* SwiftDashSDKSPVCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */; };
 		A5D5DD0000000000000000FE /* SwiftDashSDKSPVStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000100 /* SwiftDashSDKSPVStatusScreen.swift */; };
@@ -2733,6 +2740,10 @@
 		9EC1F4DB87C442BEABDF0DB2 /* DerivationPathKeysView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationPathKeysView.swift; sourceTree = "<group>"; };
 		A47B6DF71195E41A5B7B5F99 /* Pods-dashpay.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashpay.debug.xcconfig"; path = "Target Support Files/Pods-dashpay/Pods-dashpay.debug.xcconfig"; sourceTree = "<group>"; };
 		A5D5DD0000000000000000FA /* SwiftDashSDKKeyMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKKeyMigrator.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001300 /* SwiftDashSDKPhraseRepairer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKPhraseRepairer.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001301 /* SwiftDashSDKInsightClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKInsightClient.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001302 /* DamerauLevenshtein.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DamerauLevenshtein.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001310 /* PhraseRepairEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhraseRepairEngineTests.swift; sourceTree = "<group>"; };
 		A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKSPVCoordinator.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000100 /* SwiftDashSDKSPVStatusScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKSPVStatusScreen.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000105 /* SwiftDashSDKWalletCreator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletCreator.swift; sourceTree = "<group>"; };
@@ -6536,6 +6547,7 @@
 				471DD1BB290AE30B00E030C8 /* String+DashWalletTests.swift */,
 				47976E492987772700612988 /* AmountObjectTests.swift */,
 				A5D5DD000000000000001200 /* DWRegistrationPhaseAdapterTests.swift */,
+				A5D5DD000000000000001310 /* PhraseRepairEngineTests.swift */,
 			);
 			path = DashWalletTests;
 			sourceTree = "<group>";
@@ -6607,6 +6619,9 @@
 			isa = PBXGroup;
 			children = (
 				A5D5DD0000000000000000FA /* SwiftDashSDKKeyMigrator.swift */,
+				A5D5DD000000000000001300 /* SwiftDashSDKPhraseRepairer.swift */,
+				A5D5DD000000000000001301 /* SwiftDashSDKInsightClient.swift */,
+				A5D5DD000000000000001302 /* DamerauLevenshtein.swift */,
 				A5D5DD00000000000000012E /* SwiftDashSDKWalletRuntime.swift */,
 				A5D5DD000000000000000270 /* SwiftDashSDKHost.swift */,
 				A5D5DD0000000000000000FD /* SwiftDashSDKSPVCoordinator.swift */,
@@ -9128,6 +9143,9 @@
 				A5D5DD000000000000000311 /* NSString+SwiftDashSDKAddress.swift in Sources */,
 				A5D5DD000000000000000301 /* DWRecoverModel+Mnemonic.swift in Sources */,
 				A5D5DD0000000000000000F8 /* SwiftDashSDKKeyMigrator.swift in Sources */,
+				A5D5DD000000000000001303 /* SwiftDashSDKPhraseRepairer.swift in Sources */,
+				A5D5DD000000000000001305 /* SwiftDashSDKInsightClient.swift in Sources */,
+				A5D5DD000000000000001307 /* DamerauLevenshtein.swift in Sources */,
 				A5D5DD00000000000000012F /* SwiftDashSDKWalletRuntime.swift in Sources */,
 				A5D5DD000000000000000271 /* SwiftDashSDKHost.swift in Sources */,
 				A5D5DD0000000000000000FB /* SwiftDashSDKSPVCoordinator.swift in Sources */,
@@ -9460,6 +9478,7 @@
 				471DD1C0290AECE900E030C8 /* String+DashWalletTests.swift in Sources */,
 				47976E4A2987772700612988 /* AmountObjectTests.swift in Sources */,
 				A5D5DD000000000000001201 /* DWRegistrationPhaseAdapterTests.swift in Sources */,
+				A5D5DD000000000000001311 /* PhraseRepairEngineTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -10015,6 +10034,9 @@
 				A5D5DD000000000000000312 /* NSString+SwiftDashSDKAddress.swift in Sources */,
 				A5D5DD000000000000000302 /* DWRecoverModel+Mnemonic.swift in Sources */,
 				A5D5DD0000000000000000F9 /* SwiftDashSDKKeyMigrator.swift in Sources */,
+				A5D5DD000000000000001304 /* SwiftDashSDKPhraseRepairer.swift in Sources */,
+				A5D5DD000000000000001306 /* SwiftDashSDKInsightClient.swift in Sources */,
+				A5D5DD000000000000001308 /* DamerauLevenshtein.swift in Sources */,
 				A5D5DD000000000000000130 /* SwiftDashSDKWalletRuntime.swift in Sources */,
 				A5D5DD000000000000000272 /* SwiftDashSDKHost.swift in Sources */,
 				A5D5DD000000000000001102 /* DWRegistrationPhaseAdapter.swift in Sources */,
