@@ -349,18 +349,38 @@ final class OrderPreviewViewModel: ObservableObject {
         guard let vaultAddress = quote.inboundAddress, !vaultAddress.isEmpty else {
             throw mayaFieldError(NSLocalizedString("Vault address is missing. Please refresh and try again.", comment: "Maya"))
         }
-        guard let memo = quote.memo, !memo.isEmpty else {
+
+        let memo: String?
+        if let quoteMemo = quote.memo, !quoteMemo.isEmpty {
+            memo = quoteMemo
+        } else if swapProvider.buildsSwapKitDeposit {
+            let shortAsset = coin.mayaAsset.uppercased().components(separatedBy: "-").first
+                ?? coin.mayaAsset.uppercased()
+            memo = "=:\(shortAsset):\(address)"
+        } else {
             throw mayaFieldError(NSLocalizedString("Swap memo is missing. Please refresh and try again.", comment: "Maya"))
         }
+
         return SwapExecutionData(vaultAddress: vaultAddress, memo: memo, executionNetwork: quote.executionNetwork ?? swapProvider.displayName)
     }
 
     private func submitDashTransaction(using execution: SwapExecutionData) async throws -> DSTransaction {
-        try await sendCoinsService.sendMayaSwap(
-            vaultAddress: execution.vaultAddress,
-            dashAmount: UInt64(dashSatoshis),
-            memo: execution.memo
-        )
+        if swapProvider.buildsSwapKitDeposit {
+            return try await sendCoinsService.sendSwapKitSwap(
+                depositAddress: execution.vaultAddress,
+                dashAmount: UInt64(dashSatoshis),
+                memo: execution.memo
+            )
+        } else {
+            guard let memo = execution.memo, !memo.isEmpty else {
+                throw mayaFieldError(NSLocalizedString("Swap memo is missing. Please refresh and try again.", comment: "Maya"))
+            }
+            return try await sendCoinsService.sendMayaSwap(
+                vaultAddress: execution.vaultAddress,
+                dashAmount: UInt64(dashSatoshis),
+                memo: memo
+            )
+        }
     }
 
     // MARK: - Private: State Mutation

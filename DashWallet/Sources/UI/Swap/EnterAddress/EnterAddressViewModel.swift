@@ -58,7 +58,16 @@ class EnterAddressViewModel: ObservableObject {
 
     var addressValidationErrorMessage: String? {
         guard showAddressError else { return nil }
-        return String(format: NSLocalizedString("%@ address is not valid", comment: "Maya"), coin.code)
+        let chainLabel = MayaCryptoCurrency.chainDisplayName(coin.chain)
+        return String(
+            format: NSLocalizedString(
+                "Enter a valid %@ address. %@ here is on %@, so an Ethereum (0x…) address won’t work.",
+                comment: "Swap"
+            ),
+            chainLabel,
+            coin.code,
+            chainLabel
+        )
     }
 
     // MARK: - Private
@@ -70,9 +79,6 @@ class EnterAddressViewModel: ObservableObject {
     /// Until then we only probe pasteboard metadata so the iOS paste banner is never surfaced
     /// unexpectedly — this preserves the existing permission flow.
     private var hasRevealedClipboard = false
-
-    /// The currency code used for exchange lookups. Exchanges manage their own currency listings.
-    private var exchangeCurrencyCode: String { coin.code }
 
     // MARK: - Init
 
@@ -240,15 +246,15 @@ class EnterAddressViewModel: ObservableObject {
 
     private func fetchAddressForLoad(_ kind: AddressSourceKind) async -> String? {
         switch kind {
-        case .uphold: return await addressProvider.fetchUpholdAddress(for: exchangeCurrencyCode)
-        case .coinbase: return await addressProvider.fetchCoinbaseAddress(for: exchangeCurrencyCode)
+        case .uphold: return await addressProvider.fetchUpholdAddress(for: coin)
+        case .coinbase: return await addressProvider.fetchCoinbaseAddress(for: coin)
         }
     }
 
     private func fetchAddressAfterLogin(_ kind: AddressSourceKind) async -> String? {
         switch kind {
-        case .uphold: return await addressProvider.fetchAndCacheUpholdAddress(for: exchangeCurrencyCode)
-        case .coinbase: return await addressProvider.createAndCacheCoinbaseAddress(for: exchangeCurrencyCode)
+        case .uphold: return await addressProvider.fetchAndCacheUpholdAddress(for: coin)
+        case .coinbase: return await addressProvider.createAndCacheCoinbaseAddress(for: coin)
         }
     }
 

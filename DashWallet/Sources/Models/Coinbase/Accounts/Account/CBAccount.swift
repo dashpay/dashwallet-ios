@@ -86,13 +86,17 @@ extension CBAccount {
         return newAccount
     }
 
-    func retrieveAddress() async throws -> String {
+    func retrieveAddressInfo() async throws -> CoinbaseAccountAddress {
         do {
             let result: BaseDataResponse<CoinbaseAccountAddress> = try await httpClient.request(.createCoinbaseAccountAddress(accountId))
-            return result.data.address
+            return result.data
         } catch {
             throw Coinbase.Error.transactionFailed(.failedToObtainNewAddress)
         }
+    }
+
+    func retrieveAddress() async throws -> String {
+        try await retrieveAddressInfo().address
     }
 }
 
