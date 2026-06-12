@@ -48,9 +48,9 @@ final class CoinJoinRecovery: NSObject {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.coinjoin-recovery")
 
-    /// Wide gap limit applied for the recovery scan — matches DashSync's
-    /// `SEQUENCE_GAP_LIMIT_INITIAL_COINJOIN`.
-    static let recoveryGapLimit: UInt32 = 400
+    /// Wide gap limit applied for the recovery scan. DashSync used 400
+    /// (`SEQUENCE_GAP_LIMIT_INITIAL_COINJOIN`); we use a narrower window here.
+    static let recoveryGapLimit: UInt32 = 100
 
     /// CoinJoin balances at or below this (duffs) are treated as "nothing worth
     /// sweeping" — the floor below which the post-sync "move funds" surfaces
