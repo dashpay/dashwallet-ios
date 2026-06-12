@@ -59,22 +59,6 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
     return (wallet.balance == 0) && (lastBlockTimestamp + delta > now) && isSyncedUp;
 }
 
-- (NSString *)cleanupPhrase:(NSString *)phrase {
-    return [[DSBIP39Mnemonic sharedInstance] cleanupPhrase:phrase];
-}
-
-- (nullable NSString *)normalizePhrase:(NSString *)phrase {
-    return [[DSBIP39Mnemonic sharedInstance] normalizePhrase:phrase];
-}
-
-- (BOOL)wordIsLocal:(NSString *)word {
-    return [[DSBIP39Mnemonic sharedInstance] wordIsLocal:word];
-}
-
-- (BOOL)wordIsValid:(NSString *)word {
-    return [[DSBIP39Mnemonic sharedInstance] wordIsValid:word];
-}
-
 - (void)wipeWallet {
     [DWApp cleanUp]; // Send notificaiton
     [[DWEnvironment sharedInstance] clearAllWallets];

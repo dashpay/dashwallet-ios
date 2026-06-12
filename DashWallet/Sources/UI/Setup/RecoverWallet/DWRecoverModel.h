@@ -34,11 +34,9 @@ extern NSInteger const DW_PHRASE_MULTIPLE;
 - (BOOL)hasWallet;
 - (BOOL)isWalletEmpty;
 
-- (NSString *)cleanupPhrase:(NSString *)phrase;
-- (nullable NSString *)normalizePhrase:(NSString *)phrase;
-
-- (BOOL)wordIsLocal:(NSString *)word;
-- (BOOL)wordIsValid:(NSString *)word;
+// `cleanupPhrase:`, `normalizePhrase:`, `wordIsLocal:`, `wordIsValid:` are
+// provided by the Swift extension `DWRecoverModel+Mnemonic.swift` (SwiftDashSDK)
+// and reach Obj-C callers through the generated `dashwallet-Swift.h`.
 
 - (void)wipeWallet;
 - (BOOL)canWipeWithPhrase:(NSString *)phrase;
