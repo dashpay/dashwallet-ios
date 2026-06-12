@@ -66,6 +66,10 @@ extension SwapProvider {
     /// (`"Maya fee"`) or a generic one (`"Fee"`).
     var usesGenericFeeLabel: Bool { false }
 
+    /// True when the provider expects the client to build and submit the DASH deposit
+    /// transaction locally for SwapKit-style routes.
+    var buildsSwapKitDeposit: Bool { false }
+
     /// Indicative quote used by the amount screen. Providers that do not have a cheaper
     /// quote-only path can fall back to the full quote implementation.
     func fetchIndicativeQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult {
@@ -84,6 +88,7 @@ protocol SwapProvider {
     /// Human-readable label shown as the execution network (e.g. "Maya", "MAYACHAIN").
     var displayName: String { get }
     var usesGenericFeeLabel: Bool { get }
+    var buildsSwapKitDeposit: Bool { get }
 
     func fetchPools() async throws -> [MayaPool]
     func fetchInboundAddresses() async throws -> [MayaInboundAddress]

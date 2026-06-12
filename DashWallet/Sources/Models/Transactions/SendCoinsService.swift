@@ -279,6 +279,34 @@ public final class SendCoinsService: NSObject {
         return transaction
     }
 
+    /// Submits a SwapKit deposit. Two shapes:
+    /// - memo present: deposit output + OP_RETURN memo (same on-chain shape as Maya swaps)
+    /// - memo nil/empty: plain send to the route-specific deposit address (no OP_RETURN)
+    /// Kept separate from `sendMayaSwap` so the Maya path stays untouched while SwapKit can
+    /// diverge for memo-less routes such as NEAR intents.
+    func sendSwapKitSwap(depositAddress: String, dashAmount: UInt64, memo: String?) async throws -> DSTransaction {
+        let chain = DWEnvironment.sharedInstance().currentChain
+        let account = DWEnvironment.sharedInstance().currentAccount
+
+        let transaction: DSTransaction
+        if let memo, !memo.isEmpty {
+            transaction = try buildSwapKitVaultPlusMemoTx(
+                account: account,
+                chain: chain,
+                vaultAddress: depositAddress,
+                dashAmount: dashAmount,
+                memo: memo
+            )
+        } else {
+            guard let plainSendTransaction = account.transaction(for: dashAmount, to: depositAddress, withFee: true) else {
+                throw DashSpendError.paymentProcessingError("Failed to build SwapKit deposit transaction")
+            }
+            transaction = plainSendTransaction
+        }
+
+        return try await publishSwapTransaction(transaction, account: account)
+    }
+
     private func logOutputs(_ tx: DSTransaction, label: String) {
         DSLogger.log("sendMayaSwap [\(label)] \(tx.outputs.count) output(s):")
         for (i, out) in tx.outputs.enumerated() {
@@ -375,6 +403,90 @@ public final class SendCoinsService: NSObject {
             }
         }
         return await performAuthentication()
+    }
+
+    private func buildSwapKitVaultPlusMemoTx(
+        account: DSAccount,
+        chain: DSChain,
+        vaultAddress: String,
+        dashAmount: UInt64,
+        memo: String
+    ) throws -> DSTransaction {
+        let memoByteCount = memo.utf8.count
+        DSLogger.log("sendSwapKitSwap memo=\(memo) bytes=\(memoByteCount)")
+        guard memoByteCount <= 80 else {
+            throw DashSpendError.paymentProcessingError("Swap memo (\(memoByteCount) bytes) exceeds the 80-byte OP_RETURN limit. Try a simpler destination asset.")
+        }
+
+        let transaction = DSTransaction(on: chain)
+        let vaultScript = NSData.scriptPubKey(forAddress: vaultAddress, for: chain)
+        let memoScript = opReturnScript(for: memo)
+
+        _ = account.update(
+            transaction,
+            forAmounts: [NSNumber(value: dashAmount), NSNumber(value: 0)],
+            toOutputScripts: [vaultScript, memoScript],
+            withFee: true,
+            sortType: DSTransactionSortType.none
+        )
+
+        guard transaction.outputs.count >= 2 else {
+            logOutputs(transaction, label: "swapkit-build-failed")
+            throw DashSpendError.paymentProcessingError("Failed to build SwapKit deposit outputs")
+        }
+
+        guard transaction.outputs[0].address == vaultAddress else {
+            logOutputs(transaction, label: "swapkit-order-invalid")
+            throw DashSpendError.paymentProcessingError("SwapKit deposit output ordering is invalid")
+        }
+
+        let memoOutput = transaction.outputs[1]
+        guard memoOutput.amount == 0,
+              let firstByte = memoOutput.outScript.first, firstByte == 0x6a else {
+            logOutputs(transaction, label: "swapkit-memo-invalid")
+            throw DashSpendError.paymentProcessingError("SwapKit memo output is invalid")
+        }
+
+        let txSize = transaction.size
+        let estimatedFee = chain.fee(forTxSize: UInt(txSize))
+        let memoScriptLength = memoOutput.outScript.count
+        let varintLength = memoScriptLength < 253 ? 1 : 3
+        let realOpReturnSize = 8 + varintLength + memoScriptLength
+        let realEstimatedSize = Int(txSize) - 34 + realOpReturnSize
+
+        let extraBytes = realEstimatedSize > Int(txSize) ? realEstimatedSize - Int(txSize) : 0
+        if extraBytes > 0 {
+            let requiredFee = chain.fee(forTxSize: UInt(realEstimatedSize) + 1)
+            if requiredFee > estimatedFee, transaction.outputs.count >= 3 {
+                let feeDelta = requiredFee - estimatedFee
+                let changeOutput = transaction.outputs[2]
+                guard changeOutput.amount >= feeDelta + chain.minOutputAmount else {
+                    throw DashSpendError.paymentProcessingError(
+                        "Change output (\(changeOutput.amount) duffs) too small to absorb fee correction (\(feeDelta) duffs)"
+                    )
+                }
+                let correctedChangeAmount = changeOutput.amount - feeDelta
+                changeOutput.setValue(NSNumber(value: correctedChangeAmount), forKey: "amount")
+                DSLogger.log("sendSwapKitSwap fee correction: extraBytes=\(extraBytes) feeDelta=\(feeDelta) correctedChange=\(correctedChangeAmount)")
+            }
+        }
+
+        return transaction
+    }
+
+    private func publishSwapTransaction(_ transaction: DSTransaction, account: DSAccount) async throws -> DSTransaction {
+        for input in transaction.inputs where account.isInputSpent(input.inputHash, at: input.index) {
+            throw DashSpendError.previousSwapPending
+        }
+
+        guard await authenticate() else {
+            throw DashSpendError.authenticationCancelled
+        }
+
+        account.sign(transaction)
+        account.register(transaction, saveImmediately: true)
+        try await transactionManager.publishTransaction(transaction)
+        return transaction
     }
     
     private func opReturnScript(for memo: String) -> Data {

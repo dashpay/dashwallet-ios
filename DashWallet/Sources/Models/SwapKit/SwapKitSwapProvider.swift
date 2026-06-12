@@ -30,6 +30,7 @@ import Foundation
 final class SwapKitSwapProvider: SwapProvider {
     var displayName: String { "SwapKit" }
     var usesGenericFeeLabel: Bool { true }
+    var buildsSwapKitDeposit: Bool { true }
 
     // MARK: - Cache
 

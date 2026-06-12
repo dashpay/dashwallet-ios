@@ -10,9 +10,6 @@
 /* Maya */
 "%@ address" = "%@ address";
 
-/* Maya */
-"%@ address is not valid" = "%@ address is not valid";
-
 /* Maya/SwapKit order preview */
 "%@ fee" = "%@ fee";
 
@@ -904,6 +901,9 @@
 
 /* No comment provided by engineer. */
 "Enter" = "輸入";
+
+/* Swap */
+"Enter a valid %@ address. %@ here is on %@, so an Ethereum (0x…) address won’t work." = "Enter a valid %1$@ address. %2$@ here is on %3$@, so an Ethereum (0x…) address won’t work.";
 
 /* Maya */
 "Enter address" = "Enter address";

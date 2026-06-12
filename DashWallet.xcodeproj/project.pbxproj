@@ -915,6 +915,7 @@
 		AA0003022CA0F58E00B1B401 /* EnterAddressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */; };
 		AA0003032CA0F58E00B1B401 /* EnterAddressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */; };
 		AA0003042CA0F58E00A1B402 /* MayaAddressValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003032CA0F58E00A1B402 /* MayaAddressValidatorTests.swift */; };
+		AA00F1012FF0A10000A1B402 /* MayaExchangeAddressLookupContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00F1002FF0A10000A1B402 /* MayaExchangeAddressLookupContextTests.swift */; };
 		AA0003052CA0F58E00B1B402 /* EnterAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */; };
 		AA0003062CA0F58E00B1B402 /* EnterAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */; };
 		AA0003082CA0F58E00B1B403 /* EnterAddressHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */; };
@@ -2913,6 +2914,7 @@
 		AA0003002CA0F58E00A1B401 /* MayaAddressValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAddressValidator.swift; sourceTree = "<group>"; };
 		AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressViewModel.swift; sourceTree = "<group>"; };
 		AA0003032CA0F58E00A1B402 /* MayaAddressValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAddressValidatorTests.swift; sourceTree = "<group>"; };
+		AA00F1002FF0A10000A1B402 /* MayaExchangeAddressLookupContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaExchangeAddressLookupContextTests.swift; sourceTree = "<group>"; };
 		AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressView.swift; sourceTree = "<group>"; };
 		AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressHostingController.swift; sourceTree = "<group>"; };
 		AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericQRScannerController.swift; sourceTree = "<group>"; };
@@ -6872,6 +6874,7 @@
 				471DD1BB290AE30B00E030C8 /* String+DashWalletTests.swift */,
 				47976E492987772700612988 /* AmountObjectTests.swift */,
 				AA0003032CA0F58E00A1B402 /* MayaAddressValidatorTests.swift */,
+				AA00F1002FF0A10000A1B402 /* MayaExchangeAddressLookupContextTests.swift */,
 				AA00100D2CA0B10001A0B10D /* SwapKitQuoteDecodingTests.swift */,
 			);
 			path = DashWalletTests;
@@ -9891,6 +9894,7 @@
 				471DD1C0290AECE900E030C8 /* String+DashWalletTests.swift in Sources */,
 				47976E4A2987772700612988 /* AmountObjectTests.swift in Sources */,
 				AA0003042CA0F58E00A1B402 /* MayaAddressValidatorTests.swift in Sources */,
+				AA00F1012FF0A10000A1B402 /* MayaExchangeAddressLookupContextTests.swift in Sources */,
 				AA00100E2CA0B10001A0B10E /* SwapKitQuoteDecodingTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

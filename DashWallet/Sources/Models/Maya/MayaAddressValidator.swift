@@ -24,23 +24,43 @@ import Foundation
 /// Performs local format validation (regex-based) to catch obvious errors.
 /// The Maya API provides second-level validation when the user taps Continue.
 struct MayaAddressValidator {
+    /// SwapKit/Maya chains that use the standard EVM 0x-address family.
+    private static let evmChains: Set<String> = [
+        "ETH", "ARB", "AVAX", "BASE", "BSC", "BERA", "MONAD", "POL", "OP", "GNO", "XLAYER"
+    ]
 
     /// Validates whether the given address is a plausible format for the coin's chain.
     static func isValid(address: String, for coin: MayaCryptoCurrency) -> Bool {
         let trimmed = address.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return false }
 
-        switch coin.chain {
-        case "BTC":
+        let chain = coin.chain.uppercased()
+        let looksEVM = isValidEVMAddress(trimmed)
+
+        // Cross-family guard: an EVM address can only be valid on an EVM chain, and a non-EVM
+        // chain must reject obvious 0x-address input (e.g. ETH address pasted for NEAR.USDC).
+        if evmChains.contains(chain) {
+            return looksEVM
+        }
+
+        if looksEVM {
+            return false
+        }
+
+        switch chain {
+        case "BTC", "BCH", "LTC", "DOGE":
             return isValidBitcoinAddress(trimmed)
-        case "ETH", "ARB":
-            return isValidEVMAddress(trimmed)
+        case "NEAR":
+            return isValidNEARAddress(trimmed)
         case "KUJI":
             return isValidBech32Address(trimmed, hrp: "kujira", dataLength: 38)
         case "THOR":
             return isValidBech32Address(trimmed, hrp: "thor", dataLength: 38)
+        case "MAYA":
+            return isValidBech32Address(trimmed, hrp: "maya", dataLength: 38)
         default:
-            // Unknown chain — allow any non-empty input; Maya API will validate
+            // Remaining chains are not strictly validated yet, but the EVM/non-EVM family guard
+            // above already catches the main wrong-chain mistake.
             return true
         }
     }
@@ -74,6 +94,19 @@ struct MayaAddressValidator {
 
     private static func isValidEVMAddress(_ address: String) -> Bool {
         matchesPattern("^0x[a-fA-F0-9]{40}$", address)
+    }
+
+    // MARK: - NEAR
+
+    /// Named NEAR accounts must contain at least one dot. Implicit accounts are 64 hex chars.
+    private static func isValidNEARAddress(_ address: String) -> Bool {
+        let lower = address.lowercased()
+
+        if matchesPattern("^[0-9a-f]{64}$", lower) {
+            return true
+        }
+
+        return lower.contains(".") && matchesPattern("^[a-z0-9._-]{2,64}$", lower)
     }
 
     // MARK: - Bech32 (Kujira, THORChain)
