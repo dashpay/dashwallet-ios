@@ -152,6 +152,12 @@ class EnterAddressHostingController: UIViewController, NavigationBarDisplayable 
 
     private func presentUpholdLogin() {
         let url = DWUpholdClient.sharedInstance().startAuthRoutineByURL()
+        // ASWebAuthenticationSession crashes ("unsupported scheme") if the URL isn't http/https.
+        // On mainnet the Uphold OAuth config can be empty in dev builds → empty URL → crash.
+        guard let scheme = url.scheme?.lowercased(), scheme == "https" || scheme == "http" else {
+            DSLogger.log("Uphold login: auth URL has unsupported scheme — Uphold not configured for this network")
+            return
+        }
         let callbackURLScheme = "dashwallet"
 
         let session = ASWebAuthenticationSession(url: url, callbackURLScheme: callbackURLScheme) { [weak self] callbackURL, error in

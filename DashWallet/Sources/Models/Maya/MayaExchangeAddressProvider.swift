@@ -54,6 +54,25 @@ struct MayaExchangeAddressLookupContext: Hashable {
 
     var acceptedCoinbaseNetworkKeys: Set<String> {
         switch normalizedNetworkKey {
+        // Native non-EVM chains: Coinbase reports the full network name (e.g. "bitcoin"),
+        // but normalizedNetworkKey is the short chain id (e.g. "btc"). Without these aliases
+        // the match fails and native BTC/LTC/DOGE/BCH/SOL/XRP/ADA wrongly show "not available".
+        case "btc":
+            return ["btc", "bitcoin"]
+        case "bch":
+            return ["bch", "bitcoin-cash", "bitcoincash"]
+        case "ltc":
+            return ["ltc", "litecoin"]
+        case "doge":
+            return ["doge", "dogecoin"]
+        case "sol":
+            return ["sol", "solana"]
+        case "xrp":
+            return ["xrp", "ripple", "xrp-ledger"]
+        case "ada":
+            return ["ada", "cardano"]
+        case "zec":
+            return ["zec", "zcash"]
         case "arbitrum":
             return ["arb", "arbitrum", "arbitrum one"]
         case "avalanche":
