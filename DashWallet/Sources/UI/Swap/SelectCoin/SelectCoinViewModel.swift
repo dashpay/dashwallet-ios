@@ -130,13 +130,13 @@ class SelectCoinViewModel: ObservableObject {
     }
 
     private func makePriceFormatter(for fiatCurrency: String) -> NumberFormatter {
-        // Decimal style so we can prepend the currency code ourselves,
-        // producing "USD 1.00" / "UAH 44.54" to match Android format.
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
+        // Reuse the app-wide fiat formatter (currency style) so prices render with the locale
+        // currency *symbol* — "$0.18", "₴44,54", "€0,18" — consistent with the rest of the wallet,
+        // instead of an ISO-code prefix. iOS falls back to the ISO code for currencies that have
+        // no symbol. The amount is always shown with 2 fraction digits so sub-unit prices stay legible.
+        let formatter = NumberFormatter.fiatFormatter(currencyCode: fiatCurrency)
         formatter.minimumFractionDigits = 2
         formatter.maximumFractionDigits = 2
-        formatter.usesGroupingSeparator = true
         return formatter
     }
 
@@ -188,9 +188,9 @@ class SelectCoinViewModel: ObservableObject {
     private func priceForCoin(_ pool: MayaPool, fiatCurrency: String, formatter: NumberFormatter) -> String? {
         guard let priceUSD = pool.priceUSD, priceUSD > 0 else { return nil }
         guard let fiatAmount = convertUSDToFiat(usdAmount: priceUSD, fiatCurrency: fiatCurrency) else { return nil }
-        guard let formatted = formatter.string(from: NSNumber(value: fiatAmount)) else { return nil }
-        // Android format: currency code followed by the numeric amount, e.g. "USD 1.00", "UAH 44.54"
-        return "\(fiatCurrency) \(formatted)"
+        // Locale currency symbol + amount (e.g. "$0.18", "₴44,54"); the shared fiat formatter
+        // positions the symbol per the user's locale.
+        return formatter.string(from: NSNumber(value: fiatAmount))
     }
 
     private func convertUSDToFiat(usdAmount: Double, fiatCurrency: String) -> Double? {

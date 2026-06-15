@@ -52,7 +52,7 @@ struct SwapConvertView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             NavigationBar(leading: { NavigationBarElement.back.button { onBack?() } })
-            TopIntro(title: String(format: NSLocalizedString("Convert Dash to %@", comment: "Maya"), viewModel.coin.name))
+            TopIntro(title: NSLocalizedString("Convert Dash", comment: "Maya"))
                 .padding(.horizontal, Layout.hPadding)
                 .padding(.bottom, 6)
             amountSection
@@ -138,8 +138,8 @@ struct SwapConvertView: View {
             icon: .custom("dashCircleFilled"),
             trailingView: AnyView(
                 DashBalanceView(
-                    balance: viewModel.dashBalanceFormatted,
-                    fiat: viewModel.dashBalance != 0 ? viewModel.dashBalanceFiat : nil
+                    balance: viewModel.enteredDashFormatted,
+                    fiat: viewModel.enteredAmountIsZero ? nil : viewModel.enteredFiatFormatted
                 )
             ),
             action: nil

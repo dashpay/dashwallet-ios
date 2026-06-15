@@ -21,7 +21,7 @@ struct SuccessIllustration: View {
 
     var body: some View {
         ZStack {
-            Color.green
+            Color(uiColor: UIColor(red: 0.24, green: 0.71, blue: 0.54, alpha: 1))
 
             Icon(name: .custom("checkmark", maxHeight: 29))
         }

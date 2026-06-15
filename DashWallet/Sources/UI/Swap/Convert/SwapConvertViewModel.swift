@@ -71,6 +71,22 @@ final class SwapConvertViewModel: ObservableObject {
         return CurrencyExchanger.shared.fiatAmountString(for: balance.dashAmount)
     }
 
+    /// Symbol-free Dash amount the user has entered (the amount being converted), shown on the
+    /// source row instead of the wallet balance.
+    var enteredDashFormatted: String {
+        Self.dashRoundedDown(amount.dash).formattedDashAmountWithoutCurrencySymbol
+    }
+
+    /// Fiat value of the entered amount, in the active fiat currency.
+    var enteredFiatFormatted: String {
+        MayaInputFormatter.fiat(amount.fiat, currencyCode: currentFiatCurrency)
+    }
+
+    /// True when nothing meaningful has been entered yet (used to hide the fiat sub-line).
+    var enteredAmountIsZero: Bool {
+        amount.dash.isZero
+    }
+
     var currencyOptions: [CurrencyOption] {
         [.fiat(currentFiatCurrency), .dash, .coin(coin.code)]
     }
@@ -105,7 +121,7 @@ final class SwapConvertViewModel: ObservableObject {
     /// Sets the input to the wallet's full balance, preserving the active currency display.
     func setMax() {
         let balance = DWEnvironment.sharedInstance().currentAccount.balance
-        amount.setDash(balance.dashAmount)
+        amount.setDash(Self.dashRoundedDown(balance.dashAmount))
         clearQuoteState()
         errorMessage = nil
         isSwitchingCurrency = true
@@ -250,7 +266,7 @@ final class SwapConvertViewModel: ObservableObject {
                 chainLabel
             )
         } else {
-            errorMessage = NSLocalizedString("Unable to get a quote", comment: "Maya")
+            errorMessage = NSLocalizedString("Amount too small to cover fees", comment: "Maya")
         }
     }
 
@@ -335,7 +351,7 @@ final class SwapConvertViewModel: ObservableObject {
             guard quoteRequestID == snapshot.id else { return }
             latestQuote = nil
             receiveAmount = nil
-            errorMessage = NSLocalizedString("Unable to get a quote", comment: "Swap")
+            errorMessage = NSLocalizedString("Amount too small to cover fees", comment: "Swap")
         }
     }
 
@@ -359,7 +375,8 @@ final class SwapConvertViewModel: ObservableObject {
     private func syncInputValueForCurrency(_ currency: CurrencyOption) {
         switch currency {
         case .dash:
-            inputValue = amount.dash.isZero ? "" : amount.dash.formattedDashAmountWithoutCurrencySymbol
+            let dash5 = Self.dashRoundedDown(amount.dash)
+            inputValue = dash5.isZero ? "" : dash5.formattedDashAmountWithoutCurrencySymbol
         case .fiat:
             guard !amount.fiat.isZero else { inputValue = ""; return }
             let d = (amount.fiat as NSDecimalNumber).doubleValue
@@ -384,6 +401,15 @@ final class SwapConvertViewModel: ObservableObject {
     ///   - Leading zeros stripped from the integer part: "01" → "1", but "0." and "0.12" stay.
     ///   - Decimal precision capped: fiat → 2 places, dash/crypto → 8 places.
     ///   - Empty string and in-progress decimals (e.g. "0.") pass through unchanged.
+    /// Dash on the convert screen is shown to at most 5 decimals. Rounds DOWN so a displayed or
+    /// Max value never exceeds the real wallet amount.
+    static func dashRoundedDown(_ value: Decimal) -> Decimal {
+        var input = value
+        var result = Decimal()
+        NSDecimalRound(&result, &input, 5, .down)
+        return result
+    }
+
     private static func sanitize(_ raw: String, currency: CurrencyOption) -> String {
         guard !raw.isEmpty else { return raw }
 
@@ -391,7 +417,8 @@ final class SwapConvertViewModel: ObservableObject {
         let maxDecimals: Int
         switch currency {
         case .fiat: maxDecimals = 2
-        case .dash, .coin: maxDecimals = 8
+        case .dash: maxDecimals = 5
+        case .coin: maxDecimals = 8
         }
 
         if let dotRange = s.range(of: ".") {
