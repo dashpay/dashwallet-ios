@@ -290,6 +290,10 @@ final class OrderPreviewViewModel: ObservableObject {
                 pendingSwapAlertMessage = error.localizedDescription
                 return
             }
+            if case .some(.swapAwaitingInstantLock) = error as? DashSpendError {
+                pendingSwapAlertMessage = error.localizedDescription
+                return
+            }
             setFailure(error.localizedDescription)
         }
     }
