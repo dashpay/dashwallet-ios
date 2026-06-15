@@ -159,6 +159,11 @@ public final class SendCoinsService: NSObject {
     /// matching the Android sendRequest.sortByBIP69 = false / shuffleOutputs = false
     /// requirement from MayaBlockchainApi.kt.
     func sendMayaSwap(vaultAddress: String, dashAmount: UInt64, memo: String) async throws -> DSTransaction {
+        // Serialise swaps: don't start a new one until the previous swap tx is InstantSend-locked.
+        if MayaSwapPendingGate.shared.isAwaitingISLock {
+            throw DashSpendError.swapAwaitingInstantLock
+        }
+
         let memoByteCount = memo.utf8.count
         DSLogger.log("sendMayaSwap memo=\(memo) bytes=\(memoByteCount)")
         guard memoByteCount <= 80 else {
@@ -167,15 +172,6 @@ public final class SendCoinsService: NSObject {
 
         let chain = DWEnvironment.sharedInstance().currentChain
         let account = DWEnvironment.sharedInstance().currentAccount
-
-        // Wallet-level guard (fail fast): refuse to start a new swap while a previous
-        // swap is still unconfirmed. The per-input `isInputSpent` check below catches
-        // stale-UTXO reuse, but a new swap could select *different* inputs and slip past
-        // it; `hasUnconfirmedSwapTransaction` enforces the previousSwapPending semantics
-        // at the wallet level. Both guards are intentionally kept.
-        if account.hasUnconfirmedSwapTransaction() {
-            throw DashSpendError.previousSwapPending
-        }
 
         let transaction = DSTransaction(on: chain)
 
@@ -286,6 +282,7 @@ public final class SendCoinsService: NSObject {
         account.register(transaction, saveImmediately: true)
         try await transactionManager.publishTransaction(transaction)
         DSLogger.log("sendMayaSwap published txid=\(transaction.txHashHexString)")
+        MayaSwapPendingGate.shared.register(txid: transaction.txHashHexString)
         return transaction
     }
 
