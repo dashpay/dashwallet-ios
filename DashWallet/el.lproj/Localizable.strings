@@ -599,9 +599,6 @@
 /* Maya Portal */
 "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet";
 
-/* Maya */
-"Convert Dash to %@" = "Convert Dash to %@";
-
 /* No comment provided by engineer. */
 "Copied" = "Αντιγράφηκε";
 
@@ -1765,9 +1762,6 @@
 /* Network Unavailable */
 "Network Unavailable" = "Μη διαθέσιμο δίκτυο";
 
-/* Maya/SwapKit */
-"Network: %@" = "Network: %@";
-
 /* (List of) New (notifications) */
 "New" = "Νέο";
 
@@ -1899,6 +1893,9 @@
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "Προεπισκόπηση παραγγελίας";
+
+/* Maya */
+"Order preview" = "Order preview";
 
 /* DashSpend */
 "Original Price" = "Original Price";
@@ -2907,9 +2904,6 @@
 
 /* No comment provided by engineer. */
 "Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Δεν είναι δυνατή η λήψη του Gravatar σας. Παρακαλούμε εισάγετε ένα έγκυρο Gravatar email ID.";
-
-/* Maya */
-"Unable to get a quote" = "Unable to get a quote";
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Δεν είναι δυνατή η λήψη νέου QR κωδικού";

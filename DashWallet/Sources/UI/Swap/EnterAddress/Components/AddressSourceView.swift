@@ -103,9 +103,9 @@ struct AddressSourceView: View {
     private var iconName: IconName {
         switch sourceType {
         case .uphold:
-            .custom("maya.uphold.logo")
+            .custom("menu-uphold")
         case .coinbase:
-            .custom("maya.coinbase.logo")
+            .custom("menu-coinbase")
         case .clipboard:
             .custom("masternode-keys")
         }

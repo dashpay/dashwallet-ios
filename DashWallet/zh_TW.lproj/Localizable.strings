@@ -599,9 +599,6 @@
 /* Maya Portal */
 "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet";
 
-/* Maya */
-"Convert Dash to %@" = "Convert Dash to %@";
-
 /* No comment provided by engineer. */
 "Copied" = "已複製";
 
@@ -1765,9 +1762,6 @@
 /* Network Unavailable */
 "Network Unavailable" = "網絡不可用";
 
-/* Maya/SwapKit */
-"Network: %@" = "Network: %@";
-
 /* (List of) New (notifications) */
 "New" = "新的";
 
@@ -1899,6 +1893,9 @@
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "訂單預覽";
+
+/* Maya */
+"Order preview" = "Order preview";
 
 /* DashSpend */
 "Original Price" = "Original Price";
@@ -2907,9 +2904,6 @@
 
 /* No comment provided by engineer. */
 "Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "無法獲取您的 Gravatar。請輸入有效的 Gravatar 電子郵件 ID。";
-
-/* Maya */
-"Unable to get a quote" = "Unable to get a quote";
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "無法獲取新的二維碼";

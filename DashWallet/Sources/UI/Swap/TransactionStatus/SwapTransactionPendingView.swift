@@ -55,18 +55,6 @@ struct SwapTransactionPendingView: View {
                         .lineSpacing(3)
                         .padding(.top, 8)
                 }
-
-                Text(
-                    String(
-                        format: NSLocalizedString("Network: %@", comment: "Maya/SwapKit"),
-                        executionNetwork
-                    )
-                )
-                .font(.subhead)
-                .foregroundColor(.secondaryText)
-                .multilineTextAlignment(.center)
-                .lineSpacing(3)
-                .padding(.top, 8)
             }
             .padding(.horizontal, 60)
             .padding(.bottom, 16)

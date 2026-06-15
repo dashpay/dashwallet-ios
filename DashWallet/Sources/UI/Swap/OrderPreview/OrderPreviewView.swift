@@ -69,7 +69,7 @@ struct OrderPreviewView: View {
                 NavigationBarElement.back.button { onCancel() }
             })
 
-            TopIntro(title: String(format: NSLocalizedString("Order Preview", comment: "Maya")))
+            TopIntro(title: String(format: NSLocalizedString("Order preview", comment: "Maya")))
                 .padding(.top, 10)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)

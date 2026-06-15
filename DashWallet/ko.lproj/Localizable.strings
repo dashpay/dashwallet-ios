@@ -599,9 +599,6 @@
 /* Maya Portal */
 "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet";
 
-/* Maya */
-"Convert Dash to %@" = "Convert Dash to %@";
-
 /* No comment provided by engineer. */
 "Copied" = "복사됨";
 
@@ -1765,9 +1762,6 @@
 /* Network Unavailable */
 "Network Unavailable" = "네트워크를 이용할 수 없음";
 
-/* Maya/SwapKit */
-"Network: %@" = "Network: %@";
-
 /* (List of) New (notifications) */
 "New" = "새로운 알림";
 
@@ -1899,6 +1893,9 @@
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "주문 미리보기";
+
+/* Maya */
+"Order preview" = "Order preview";
 
 /* DashSpend */
 "Original Price" = "Original Price";
@@ -2907,9 +2904,6 @@
 
 /* No comment provided by engineer. */
 "Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "당신의 Gravatar를 불러올 수 없습니다. 유효한 Gravatar 이메일 ID를 입력하세요.";
-
-/* Maya */
-"Unable to get a quote" = "Unable to get a quote";
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "새로운 QR 코드를 불러올 수 없습니다";

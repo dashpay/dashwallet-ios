@@ -42,20 +42,8 @@ struct SwapTransactionSuccessView: View {
                     .foregroundColor(.secondaryText)
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
-
-                Text(
-                    String(
-                        format: NSLocalizedString("Network: %@", comment: "Maya/SwapKit"),
-                        executionNetwork
-                    )
-                )
-                .font(.subhead)
-                .foregroundColor(.secondaryText)
-                .multilineTextAlignment(.center)
-                .lineSpacing(3)
-                .padding(.top, 8)
             }
-            .padding(.horizontal, 60)
+            .padding(.horizontal, 40)
 
             Spacer()
 

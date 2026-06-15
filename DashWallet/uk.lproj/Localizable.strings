@@ -599,9 +599,6 @@
 /* Maya Portal */
 "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet";
 
-/* Maya */
-"Convert Dash to %@" = "Convert Dash to %@";
-
 /* No comment provided by engineer. */
 "Copied" = "Скопійовано";
 
@@ -1765,9 +1762,6 @@
 /* Network Unavailable */
 "Network Unavailable" = "Мережа Недоступна";
 
-/* Maya/SwapKit */
-"Network: %@" = "Network: %@";
-
 /* (List of) New (notifications) */
 "New" = "Нові";
 
@@ -1899,6 +1893,9 @@
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "Попередній перегляд замовлення";
+
+/* Maya */
+"Order preview" = "Order preview";
 
 /* DashSpend */
 "Original Price" = "Original Price";
@@ -2907,9 +2904,6 @@
 
 /* No comment provided by engineer. */
 "Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Неможливо отримати ваш Gravatar. Введіть дійсний ідентифікатор електронної пошти gravatar.";
-
-/* Maya */
-"Unable to get a quote" = "Unable to get a quote";
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Не вдалося отримати новий QR-код";

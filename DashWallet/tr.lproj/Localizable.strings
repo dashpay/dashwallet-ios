@@ -599,9 +599,6 @@
 /* Maya Portal */
 "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet";
 
-/* Maya */
-"Convert Dash to %@" = "Convert Dash to %@";
-
 /* No comment provided by engineer. */
 "Copied" = "Kopyalandı";
 
@@ -1765,9 +1762,6 @@
 /* Network Unavailable */
 "Network Unavailable" = "Ağ Kullanılamıyor";
 
-/* Maya/SwapKit */
-"Network: %@" = "Network: %@";
-
 /* (List of) New (notifications) */
 "New" = "Yeni";
 
@@ -1899,6 +1893,9 @@
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "Sipariş Önizleme";
+
+/* Maya */
+"Order preview" = "Order preview";
 
 /* DashSpend */
 "Original Price" = "Original Price";
@@ -2907,9 +2904,6 @@
 
 /* No comment provided by engineer. */
 "Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Gravatarınız alınamadı. Lütfen geçerli bir gravatar e-posta kimliği girin.";
-
-/* Maya */
-"Unable to get a quote" = "Unable to get a quote";
 
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Yeni QR kod alınamıyor";

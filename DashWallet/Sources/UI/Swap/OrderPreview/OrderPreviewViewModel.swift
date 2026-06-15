@@ -708,7 +708,8 @@ final class OrderPreviewViewModel: ObservableObject {
     }
 
     private func formatCryptoAmount(_ value: Decimal) -> String {
-        "\(coin.code) \(formatDecimal(value))"
+        // Amount first, then coin code (e.g. "0.00042 BTC").
+        "\(formatDecimal(value)) \(coin.code)"
     }
 
     private func formatFeeAmount(_ value: Decimal) -> String {

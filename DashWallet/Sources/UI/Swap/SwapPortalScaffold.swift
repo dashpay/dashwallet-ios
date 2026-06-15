@@ -45,11 +45,14 @@ struct SwapPortalScaffold: View {
     }
 
     private var introSection: some View {
-        VStack(spacing: 20) {
+        VStack(alignment: .leading, spacing: 20) {
             logoContainer
             descriptionBlock
         }
-        .padding(.bottom, 20)
+        .padding(20)
+        .background(Color.secondaryBackground)
+        .clipShape(.rect(cornerRadius: 20))
+        .shadow(color: .shadow, radius: 10, x: 0, y: 5)
     }
 
     private var actionsCard: some View {
@@ -63,12 +66,12 @@ struct SwapPortalScaffold: View {
     }
 
     private var logoContainer: some View {
-        Icon(name: .custom(logoAssetName, maxHeight: 90))
-            .frame(width: 90, height: 90)
+        Icon(name: .custom(logoAssetName, maxHeight: 60))
+            .frame(width: 60, height: 60)
     }
 
     private var descriptionBlock: some View {
-        VStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.title2)
                 .foregroundColor(.primaryText)
@@ -76,9 +79,9 @@ struct SwapPortalScaffold: View {
             Text(description)
                 .font(.footnote)
                 .foregroundColor(.secondaryText)
-                .multilineTextAlignment(.center)
+                .multilineTextAlignment(.leading)
                 .lineSpacing(2)
         }
-        .padding(.horizontal, 20)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import Combine
 
 // MARK: - LoadingIllustration
 
@@ -39,22 +40,40 @@ struct LoadingIllustration: View {
 
 // MARK: - LoadingSpinner
 
-/// A spinner built from `spokeCount` capsules arranged in a ring with a graduated
-/// "comet-tail" opacity. The spokes are static; the whole ring rotates continuously.
+/// A spinner built from `spokeCount` capsules arranged in a ring. Mirrors the standard iOS
+/// `UIActivityIndicatorView`: the spokes are **static**, and instead of rotating the whole ring
+/// the bright "head" steps clockwise from spoke to spoke while the others fade — i.e. each line
+/// changes opacity in turn. The opacity crossfades between steps for a smooth iOS-style look.
 struct LoadingSpinner: View {
     /// Default tint — Maya blue (#008DE4).
     static let defaultColor = Color(red: 0, green: 141 / 255, blue: 228 / 255)
 
     /// Diameter of the spinner.
-    var size: CGFloat = 61.73
+    let size: CGFloat
     /// Spoke tint.
-    var color: Color = defaultColor
+    let color: Color
     /// Number of spokes in the ring.
-    var spokeCount: Int = 12
-    /// Seconds for one full rotation.
-    var duration: Double = 1
+    let spokeCount: Int
+    /// Seconds for the bright head to travel once around the ring.
+    let duration: Double
 
-    @State private var isAnimating = false
+    /// Index of the currently-brightest spoke; advances clockwise on each timer tick.
+    @State private var phase = 0
+    /// Fires once per spoke step (duration / spokeCount). Created once so it isn't restarted
+    /// on every body re-evaluation.
+    private let timer: Publishers.Autoconnect<Timer.TimerPublisher>
+
+    init(size: CGFloat = 61.73, color: Color = defaultColor, spokeCount: Int = 12, duration: Double = 1) {
+        self.size = size
+        self.color = color
+        self.spokeCount = spokeCount
+        self.duration = duration
+        self.timer = Timer
+            .publish(every: duration / Double(max(spokeCount, 1)), on: .main, in: .common)
+            .autoconnect()
+    }
+
+    private var stepInterval: Double { duration / Double(max(spokeCount, 1)) }
 
     var body: some View {
         ZStack {
@@ -70,14 +89,20 @@ struct LoadingSpinner: View {
             }
         }
         .frame(width: size, height: size)
-        .rotationEffect(.degrees(isAnimating ? 360 : 0))
-        .animation(.linear(duration: duration).repeatForever(autoreverses: false), value: isAnimating)
-        .onAppear { isAnimating = true }
+        .onReceive(timer) { _ in
+            // Step the bright head one spoke clockwise; crossfade the opacities.
+            withAnimation(.linear(duration: stepInterval)) {
+                phase = (phase + 1) % spokeCount
+            }
+        }
     }
 
+    /// Graduated "comet-tail" opacity, brightest at the head (`phase`) and fading backward
+    /// (counter-clockwise) along the ring.
     private func opacity(for index: Int) -> Double {
         guard spokeCount > 1 else { return 0.75 }
-        return 0.2 + 0.55 * Double(index) / Double(spokeCount - 1)
+        let distanceFromHead = (index - phase + spokeCount) % spokeCount
+        return 0.2 + 0.55 * (1 - Double(distanceFromHead) / Double(spokeCount - 1))
     }
 }
 

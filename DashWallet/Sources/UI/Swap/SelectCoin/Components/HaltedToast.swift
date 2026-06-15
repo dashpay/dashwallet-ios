@@ -57,8 +57,8 @@ struct HaltedToast: View {
         .padding(.leading, 12)
         .padding(.trailing, 8)
         .padding(.vertical, 8)
-        .background(Color.black1000Alpha90)
-        .clipShape(.rect(cornerRadius: 20))
+        .background(Color.blue)
+        .clipShape(.rect(cornerRadius: 8))
         .contentShape(.rect)
     }
 }
