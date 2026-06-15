@@ -42,6 +42,8 @@ final class SwapConvertViewModel: ObservableObject {
     private struct QuoteRequestSnapshot {
         let id: Int
         let dashSatoshis: Int64
+        let selectedCurrency: CurrencyOption
+        let enteredCoinAmount: Decimal?
     }
 
     // MARK: - Private State
@@ -49,6 +51,7 @@ final class SwapConvertViewModel: ObservableObject {
     private let swapProvider: SwapProvider
     private var amount = SwapConvertAmount()
     private var latestQuote: SwapQuoteResult?
+    private var effectiveSellSatoshis: Int64?
     // Monotonically increasing; stale responses are discarded when their snapshot id no longer matches.
     private var quoteRequestID = 0
     // Suppresses input observation while we programmatically sync the displayed value during a currency switch.
@@ -74,17 +77,17 @@ final class SwapConvertViewModel: ObservableObject {
     /// Symbol-free Dash amount the user has entered (the amount being converted), shown on the
     /// source row instead of the wallet balance.
     var enteredDashFormatted: String {
-        Self.dashRoundedDown(amount.dash).formattedDashAmountWithoutCurrencySymbol
+        Self.dashRoundedDown(displayDashAmount).formattedDashAmountWithoutCurrencySymbol
     }
 
     /// Fiat value of the entered amount, in the active fiat currency.
     var enteredFiatFormatted: String {
-        MayaInputFormatter.fiat(amount.fiat, currencyCode: currentFiatCurrency)
+        MayaInputFormatter.fiat(displayFiatAmount, currencyCode: currentFiatCurrency)
     }
 
     /// True when nothing meaningful has been entered yet (used to hide the fiat sub-line).
     var enteredAmountIsZero: Bool {
-        amount.dash.isZero
+        displayDashAmount.isZero
     }
 
     var currencyOptions: [CurrencyOption] {
@@ -160,9 +163,9 @@ final class SwapConvertViewModel: ObservableObject {
         return OrderPreviewViewModel(
             coin: coin,
             address: address,
-            dashSatoshis: amount.dashSatoshis,
-            fromDashAmount: amount.dash.formattedDashAmountWithoutCurrencySymbol,
-            fromFiatAmount: MayaInputFormatter.fiat(amount.fiat, currencyCode: currentFiatCurrency),
+            dashSatoshis: activeSellSatoshis,
+            fromDashAmount: displayDashAmount.formattedDashAmountWithoutCurrencySymbol,
+            fromFiatAmount: MayaInputFormatter.fiat(displayFiatAmount, currencyCode: currentFiatCurrency),
             cryptoFiatRate: amount.cryptoFiatRate,
             fiatCurrencyCode: currentFiatCurrency,
             initialQuote: quote,
@@ -211,7 +214,7 @@ final class SwapConvertViewModel: ObservableObject {
             return .exchangeRateUnavailable
         }
 
-        let satoshis = amount.dashSatoshis
+        let satoshis = activeSellSatoshis
         guard satoshis > 0 else { return .empty }
 
         let accountBalance = Int64(DWEnvironment.sharedInstance().currentAccount.balance)
@@ -221,7 +224,7 @@ final class SwapConvertViewModel: ObservableObject {
     }
 
     private func checkBalance() {
-        let satoshis = amount.dashSatoshis
+        let satoshis = activeSellSatoshis
         let accountBalance = Int64(DWEnvironment.sharedInstance().currentAccount.balance)
         errorMessage = satoshis > accountBalance
             ? NSLocalizedString("Insufficient balance", comment: "Maya")
@@ -233,18 +236,21 @@ final class SwapConvertViewModel: ObservableObject {
     private func clearQuoteState() {
         latestQuote = nil
         receiveAmount = nil
+        effectiveSellSatoshis = nil
     }
 
     private func applySuccessfulQuote(_ quote: SwapQuoteResult) {
         guard let raw = quote.expectedAmountOut, let rawValue = Double(raw) else {
             latestQuote = nil
             errorMessage = nil
-            receiveAmount = nil
+            receiveAmount = selectedCurrency.isCoinInput ? fixedCoinReceiveAmount : nil
             return
         }
         latestQuote = quote
-        errorMessage = nil
-        receiveAmount = "\(coin.code) \(MayaInputFormatter.receiveAmount(rawValue / 1e8))"
+        receiveAmount = selectedCurrency.isCoinInput
+            ? fixedCoinReceiveAmount
+            : "\(coin.code) \(MayaInputFormatter.receiveAmount(rawValue / 1e8))"
+        checkBalance()
     }
 
     private func applyQuoteError(_ apiError: String) {
@@ -326,7 +332,12 @@ final class SwapConvertViewModel: ObservableObject {
             errorMessage = nil
             isLoading = true
             quoteRequestID += 1
-            let snapshot = QuoteRequestSnapshot(id: quoteRequestID, dashSatoshis: satoshis)
+            let snapshot = QuoteRequestSnapshot(
+                id: quoteRequestID,
+                dashSatoshis: satoshis,
+                selectedCurrency: selectedCurrency,
+                enteredCoinAmount: selectedCurrency.isCoinInput ? amount.crypto : nil
+            )
             Task { await fetchQuote(snapshot: snapshot) }
         }
     }
@@ -336,21 +347,25 @@ final class SwapConvertViewModel: ObservableObject {
             if quoteRequestID == snapshot.id { isLoading = false }
         }
         do {
-            let quote = try await swapProvider.fetchIndicativeQuote(
+            let firstQuote = try await swapProvider.fetchIndicativeQuote(
                 dashSatoshis: snapshot.dashSatoshis,
                 toAsset: coin.mayaAsset,
                 destination: address
             )
             guard quoteRequestID == snapshot.id else { return }
-            if let apiError = quote.error {
+            if let apiError = firstQuote.error {
                 applyQuoteError(apiError)
             } else {
-                applySuccessfulQuote(quote)
+                let resolution = try await resolveQuote(firstQuote, snapshot: snapshot)
+                guard quoteRequestID == snapshot.id else { return }
+                effectiveSellSatoshis = resolution.effectiveSellSatoshis
+                applySuccessfulQuote(resolution.quote)
             }
         } catch {
             guard quoteRequestID == snapshot.id else { return }
             latestQuote = nil
-            receiveAmount = nil
+            effectiveSellSatoshis = nil
+            receiveAmount = snapshot.selectedCurrency.isCoinInput ? fixedCoinReceiveAmount : nil
             errorMessage = NSLocalizedString("Amount too small to cover fees", comment: "Swap")
         }
     }
@@ -370,6 +385,64 @@ final class SwapConvertViewModel: ObservableObject {
             guard amount.cryptoFiatRate > 0 else { return }
             amount.setCrypto(decimal)
         }
+    }
+
+    private func resolveQuote(_ quote: SwapQuoteResult, snapshot: QuoteRequestSnapshot) async throws -> (quote: SwapQuoteResult, effectiveSellSatoshis: Int64?) {
+        guard snapshot.selectedCurrency.isCoinInput,
+              let enteredCoinAmount = snapshot.enteredCoinAmount,
+              enteredCoinAmount > 0,
+              let expectedOut = decimalFromBaseUnits(quote.expectedAmountOut),
+              expectedOut > 0 else {
+            return (quote, nil)
+        }
+
+        let firstGuessDash = dashAmount(from: snapshot.dashSatoshis)
+        guard firstGuessDash > 0 else {
+            return (quote, nil)
+        }
+
+        let effectiveRate = expectedOut / firstGuessDash
+        guard effectiveRate > 0 else {
+            return (quoteWithFixedReceive(quote, enteredCoinAmount: enteredCoinAmount), nil)
+        }
+
+        let requiredDash = enteredCoinAmount / effectiveRate
+        let requiredSellSatoshis = max(1, satoshisRoundedUp(fromDash: requiredDash))
+        guard requiredSellSatoshis > 0 else {
+            return (quoteWithFixedReceive(quote, enteredCoinAmount: enteredCoinAmount), nil)
+        }
+
+        let resolvedQuote: SwapQuoteResult
+        if requiredSellSatoshis != snapshot.dashSatoshis {
+            let requote = try await swapProvider.fetchIndicativeQuote(
+                dashSatoshis: requiredSellSatoshis,
+                toAsset: coin.mayaAsset,
+                destination: address
+            )
+            if requote.error == nil {
+                resolvedQuote = requote
+            } else {
+                resolvedQuote = quote
+            }
+        } else {
+            resolvedQuote = quote
+        }
+
+        return (
+            quoteWithFixedReceive(resolvedQuote, enteredCoinAmount: enteredCoinAmount),
+            requiredSellSatoshis
+        )
+    }
+
+    private func quoteWithFixedReceive(_ quote: SwapQuoteResult, enteredCoinAmount: Decimal) -> SwapQuoteResult {
+        SwapQuoteResult(
+            error: quote.error,
+            expectedAmountOut: baseUnitsString(fromHumanAmount: enteredCoinAmount),
+            fees: quote.fees,
+            inboundAddress: quote.inboundAddress,
+            memo: quote.memo,
+            executionNetwork: quote.executionNetwork
+        )
     }
 
     private func syncInputValueForCurrency(_ currency: CurrencyOption) {
@@ -392,6 +465,54 @@ final class SwapConvertViewModel: ObservableObject {
         let normalized = value.replacingOccurrences(of: ",", with: ".")
         guard let d = Double(normalized), d > 0 else { return nil }
         return d
+    }
+
+    private var activeSellSatoshis: Int64 {
+        if selectedCurrency.isCoinInput, let effectiveSellSatoshis, effectiveSellSatoshis > 0 {
+            return effectiveSellSatoshis
+        }
+        return amount.dashSatoshis
+    }
+
+    private var displayDashAmount: Decimal {
+        dashAmount(from: activeSellSatoshis)
+    }
+
+    private var displayFiatAmount: Decimal {
+        displayDashAmount * amount.dashFiatRate
+    }
+
+    private var fixedCoinReceiveAmount: String? {
+        guard selectedCurrency.isCoinInput, amount.crypto > 0 else { return nil }
+        let value = (amount.crypto as NSDecimalNumber).doubleValue
+        return "\(coin.code) \(MayaInputFormatter.receiveAmount(value))"
+    }
+
+    private func dashAmount(from satoshis: Int64) -> Decimal {
+        Decimal(satoshis) / Decimal(100_000_000)
+    }
+
+    private func satoshisRoundedUp(fromDash dash: Decimal) -> Int64 {
+        guard dash > 0 else { return 0 }
+        var scaled = dash * Decimal(100_000_000)
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &scaled, 0, .up)
+        return NSDecimalNumber(decimal: rounded).int64Value
+    }
+
+    private func decimalFromBaseUnits(_ raw: String?) -> Decimal? {
+        guard let raw,
+              let decimal = Decimal(string: raw) else {
+            return nil
+        }
+        return decimal / Decimal(100_000_000)
+    }
+
+    private func baseUnitsString(fromHumanAmount amount: Decimal) -> String {
+        var scaled = amount * Decimal(100_000_000)
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &scaled, 0, .plain)
+        return NSDecimalNumber(decimal: rounded).stringValue
     }
 
     // MARK: - Private: Input Sanitization
