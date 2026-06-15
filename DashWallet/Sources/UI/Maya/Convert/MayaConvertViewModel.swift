@@ -261,9 +261,7 @@ final class MayaConvertViewModel: ObservableObject {
     private func applyQuoteError(_ apiError: String) {
         latestQuote = nil
         receiveAmount = nil
-        errorMessage = apiError.contains("not enough asset to pay for fees")
-            ? NSLocalizedString("Amount too small to cover fees", comment: "Maya")
-            : NSLocalizedString("Amount too small to cover fees", comment: "Maya")
+        errorMessage = NSLocalizedString("Amount too small to cover fees", comment: "Maya")
     }
 
     // MARK: - Private: Combine Subscriptions
