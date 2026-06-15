@@ -127,6 +127,9 @@ struct SelectCoinView: View {
                             CoinRowView(item: item)
                         }
                         .buttonStyle(.plain)
+                        // Halted coins are shown (dimmed) but not selectable — the chain can't
+                        // route a swap while halted, so block the tap here.
+                        .disabled(item.isHalted)
                         .id(item.id)
                     }
                 }

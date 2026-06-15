@@ -57,7 +57,13 @@ struct HaltedToast: View {
         .padding(.leading, 12)
         .padding(.trailing, 8)
         .padding(.vertical, 8)
-        .background(Color.black1000Alpha90)
+        .background {
+            // Backdrop blur behind the 90%-black translucent fill.
+            ZStack {
+                BackgroundBlurView()
+                Color.black1000Alpha90
+            }
+        }
         .clipShape(.rect(cornerRadius: 20))
         .contentShape(.rect)
     }
