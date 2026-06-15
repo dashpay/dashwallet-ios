@@ -29,6 +29,11 @@ enum CurrencyOption: Hashable {
         return false
     }
 
+    var isCoinInput: Bool {
+        if case .coin = self { return true }
+        return false
+    }
+
     var displayName: String {
         switch self {
         case .fiat(let code): return code
