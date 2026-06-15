@@ -1765,6 +1765,9 @@
 /* Network Unavailable */
 "Network Unavailable" = "Network Unavailable";
 
+/* Maya/SwapKit */
+"Network: %@" = "Network: %@";
+
 /* (List of) New (notifications) */
 "New" = "Thêm mới";
 
@@ -2623,6 +2626,9 @@
    SwapKit Portal */
 "SwapKit" = "SwapKit";
 
+/* Maya/SwapKit */
+"Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later." = "Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later.";
+
 /* No comment provided by engineer. */
 "Swept!" = "Đã quét!";
 
@@ -3063,6 +3069,9 @@
 /* No comment provided by engineer. */
 "View All" = "Xem tất cả";
 
+/* Maya/SwapKit */
+"View details" = "View details";
+
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Xem trên công cụ khám phá khối";
 
@@ -3438,6 +3447,9 @@
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";
+
+/* Maya/SwapKit */
+"Your previous swap is still locking in. Please wait a few seconds before starting another one." = "Your previous swap is still locking in. Please wait a few seconds before starting another one.";
 
 /* CrowdNode */
 "Your primary Dash address that you currently use for your CrowdNode account" = "Your primary Dash address that you currently use for your CrowdNode account";

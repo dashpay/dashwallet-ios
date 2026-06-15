@@ -159,6 +159,10 @@ public final class SendCoinsService: NSObject {
     /// matching the Android sendRequest.sortByBIP69 = false / shuffleOutputs = false
     /// requirement from MayaBlockchainApi.kt.
     func sendMayaSwap(vaultAddress: String, dashAmount: UInt64, memo: String) async throws -> DSTransaction {
+        // Serialise swaps: don't start a new one until the previous swap tx is InstantSend-locked.
+        if MayaSwapPendingGate.shared.isAwaitingISLock {
+            throw DashSpendError.swapAwaitingInstantLock
+        }
         let memoByteCount = memo.utf8.count
         DSLogger.log("sendMayaSwap memo=\(memo) bytes=\(memoByteCount)")
         guard memoByteCount <= 80 else {
@@ -276,6 +280,7 @@ public final class SendCoinsService: NSObject {
         account.register(transaction, saveImmediately: true)
         try await transactionManager.publishTransaction(transaction)
         DSLogger.log("sendMayaSwap published txid=\(transaction.txHashHexString)")
+        MayaSwapPendingGate.shared.register(txid: transaction.txHashHexString)
         return transaction
     }
 
@@ -285,6 +290,10 @@ public final class SendCoinsService: NSObject {
     /// Kept separate from `sendMayaSwap` so the Maya path stays untouched while SwapKit can
     /// diverge for memo-less routes such as NEAR intents.
     func sendSwapKitSwap(depositAddress: String, dashAmount: UInt64, memo: String?) async throws -> DSTransaction {
+        // Serialise swaps: don't start a new one until the previous swap tx is InstantSend-locked.
+        if MayaSwapPendingGate.shared.isAwaitingISLock {
+            throw DashSpendError.swapAwaitingInstantLock
+        }
         let chain = DWEnvironment.sharedInstance().currentChain
         let account = DWEnvironment.sharedInstance().currentAccount
 
@@ -485,7 +494,8 @@ public final class SendCoinsService: NSObject {
 
         account.sign(transaction)
         account.register(transaction, saveImmediately: true)
-        try await transactionManager.publishTransaction(transaction)
+        try await transactionManager    .publishTransaction(transaction)
+        MayaSwapPendingGate.shared.register(txid: transaction.txHashHexString)
         return transaction
     }
     

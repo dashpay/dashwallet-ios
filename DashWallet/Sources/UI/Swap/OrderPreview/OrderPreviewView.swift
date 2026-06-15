@@ -221,7 +221,7 @@ struct OrderPreviewView: View {
     private var networkRow: some View {
         OrderPreviewTableRow(
             leading: NSLocalizedString("Network", comment: "Maya/SwapKit order preview"),
-            trailing: viewModel.executionNetwork,
+            trailing: viewModel.resolvedExecutionNetwork,
             rowHPadding: Layout.rowHPadding,
             rowVPadding: Layout.rowVPadding,
             labelSpacing: Layout.labelSpacing,

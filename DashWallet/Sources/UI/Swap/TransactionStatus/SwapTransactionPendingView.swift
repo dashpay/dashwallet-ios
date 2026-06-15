@@ -19,7 +19,12 @@ import SwiftUI
 
 struct SwapTransactionPendingView: View {
     let message: String
+    let executionNetwork: String
+    let detailMessage: String?
+    let trackerURL: URL?
     var onGoHome: () -> Void = {}
+
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         VStack(spacing: 0) {
@@ -41,8 +46,42 @@ struct SwapTransactionPendingView: View {
                     .foregroundColor(.secondaryText)
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
+
+                if let detailMessage, !detailMessage.isEmpty {
+                    Text(detailMessage)
+                        .font(.subhead)
+                        .foregroundColor(.secondaryText)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(3)
+                        .padding(.top, 8)
+                }
+
+                Text(
+                    String(
+                        format: NSLocalizedString("Network: %@", comment: "Maya/SwapKit"),
+                        executionNetwork
+                    )
+                )
+                .font(.subhead)
+                .foregroundColor(.secondaryText)
+                .multilineTextAlignment(.center)
+                .lineSpacing(3)
+                .padding(.top, 8)
             }
             .padding(.horizontal, 60)
+            .padding(.bottom, 16)
+
+            if let trackerURL {
+                Button {
+                    openURL(trackerURL)
+                } label: {
+                    Text(NSLocalizedString("View details", comment: "Maya/SwapKit"))
+                        .font(.subheadMedium)
+                        .foregroundColor(.dashBlue)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 60)
+            }
 
             Spacer()
 
@@ -62,6 +101,12 @@ struct SwapTransactionPendingView: View {
             "Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins.",
             comment: "Maya"
         ),
+        executionNetwork: "NEAR",
+        detailMessage: NSLocalizedString(
+            "Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later.",
+            comment: "Maya/SwapKit"
+        ),
+        trackerURL: URL(string: "https://example.com"),
         onGoHome: {}
     )
     .frame(maxWidth: .infinity, maxHeight: .infinity)

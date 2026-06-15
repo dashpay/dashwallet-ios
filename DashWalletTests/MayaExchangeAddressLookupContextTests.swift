@@ -129,4 +129,59 @@ final class MayaExchangeAddressLookupContextTests: XCTestCase {
         XCTAssertFalse(context.matchesCoinbaseReportedNetwork("Ethereum"))
         XCTAssertFalse(context.matchesCoinbaseReportedNetwork("Base"))
     }
+
+    func testCoinbaseCreateNetworkUsesSpecificEvmSlugs() {
+        let arbitrumUSDC = MayaCryptoCurrency(
+            id: "usdc_arb",
+            code: "USDC",
+            name: "USD Coin (Arbitrum)",
+            mayaAsset: "ARB.USDC-0XAF88D065E77C8CC2239327C5EDB3A432268E5831",
+            chain: "ARB",
+            iconAssetName: "maya.coin.usdc"
+        )
+        let avalancheUSDC = MayaCryptoCurrency(
+            id: "usdc_avax",
+            code: "USDC",
+            name: "USD Coin (Avalanche)",
+            mayaAsset: "AVAX.USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E",
+            chain: "AVAX",
+            iconAssetName: "maya.coin.usdc"
+        )
+        let polygonUSDC = MayaCryptoCurrency(
+            id: "usdc_pol",
+            code: "USDC",
+            name: "USD Coin (Polygon)",
+            mayaAsset: "POL.USDC-0X3C499C542CEF5E3811E1192CE70D8CC03D5C3359",
+            chain: "POL",
+            iconAssetName: "maya.coin.usdc"
+        )
+
+        XCTAssertEqual(MayaExchangeAddressLookupContext(coin: arbitrumUSDC).coinbaseCreateNetwork, "arbitrum")
+        XCTAssertEqual(MayaExchangeAddressLookupContext(coin: avalancheUSDC).coinbaseCreateNetwork, "avacchain")
+        XCTAssertEqual(MayaExchangeAddressLookupContext(coin: polygonUSDC).coinbaseCreateNetwork, "polygon")
+    }
+
+    func testCoinbaseCreateNetworkReturnsNilForNativeSingleNetworkAssets() {
+        let bitcoin = MayaCryptoCurrency(
+            id: "btc",
+            code: "BTC",
+            name: "Bitcoin",
+            mayaAsset: "BTC.BTC",
+            chain: "BTC",
+            iconAssetName: "maya.coin.btc"
+        )
+
+        XCTAssertNil(MayaExchangeAddressLookupContext(coin: bitcoin).coinbaseCreateNetwork)
+    }
+
+    func testClearCoinbaseCacheRemovesPersistedCoinbaseAddresses() async {
+        let persistedKey = "maya.coinbase.depositAddress.v1.default.USDC|arbitrum"
+        UserDefaults.standard.set("0x1234567890", forKey: persistedKey)
+
+        await MainActor.run {
+            MayaExchangeAddressProvider.clearCoinbaseCache()
+        }
+
+        XCTAssertNil(UserDefaults.standard.string(forKey: persistedKey))
+    }
 }

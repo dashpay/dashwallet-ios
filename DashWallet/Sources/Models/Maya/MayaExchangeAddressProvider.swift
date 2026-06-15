@@ -140,6 +140,28 @@ struct MayaExchangeAddressLookupContext: Hashable {
         }
         return Array(Set(hints.map { $0.uppercased() }))
     }
+
+    /// Coinbase's create-address API accepts explicit network slugs only for selected
+    /// multi-network chains. Native single-network assets keep the legacy nil path.
+    var coinbaseCreateNetwork: String? {
+        switch normalizedNetworkKey {
+        case "ethereum":
+            return "ethereum"
+        case "base":
+            return "base"
+        case "arbitrum":
+            return "arbitrum"
+        case "optimism":
+            return "optimism"
+        case "polygon":
+            return "polygon"
+        case "avalanche":
+            // Coinbase's create-address API uses the Avalanche C-Chain slug.
+            return "avacchain"
+        default:
+            return nil
+        }
+    }
 }
 
 /// Provides deposit addresses from Uphold and Coinbase for a given cryptocurrency.
@@ -374,12 +396,56 @@ class MayaExchangeAddressProvider {
     }
 
     /// In-memory session cache for Coinbase addresses, keyed by currency + destination network.
-    /// Cleared automatically on app restart. Call `clearCoinbaseCache()` on app launch for safety.
+    /// Persistent storage is handled separately so validated addresses survive app restarts.
     private static var coinbaseAddressCache: [String: String] = [:]
+    private static let coinbaseAddressPersistenceVersion = "v1"
+    private static let coinbaseAddressPersistenceKeyPrefix = "maya.coinbase.depositAddress"
+
+    /// A stable Coinbase user id is not currently exposed by the auth layer, so we scope the
+    /// persisted addresses to the logged-in user's Dash account id when available.
+    /// On logout we still wipe the whole Coinbase namespace for safety.
+    private static func coinbasePersistentStorePrefix(scope: String? = nil) -> String {
+        let resolvedScope = scope ?? Coinbase.shared.currentUserAddressCacheScope ?? "default"
+        return "\(coinbaseAddressPersistenceKeyPrefix).\(coinbaseAddressPersistenceVersion).\(resolvedScope)"
+    }
+
+    private static func persistedCoinbaseAddress(for cacheKey: String) -> String? {
+        let storageKey = "\(coinbasePersistentStorePrefix()).\(cacheKey)"
+        guard let address = UserDefaults.standard.string(forKey: storageKey)?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+              !address.isEmpty else {
+            return nil
+        }
+
+        return address
+    }
+
+    private static func persistCoinbaseAddress(_ address: String, for cacheKey: String) {
+        let normalizedAddress = address.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedAddress.isEmpty else { return }
+
+        let storageKey = "\(coinbasePersistentStorePrefix()).\(cacheKey)"
+        UserDefaults.standard.set(normalizedAddress, forKey: storageKey)
+    }
+
+    private static func cacheCoinbaseAddress(_ address: String, for cacheKey: String) {
+        coinbaseAddressCache[cacheKey] = address
+        persistCoinbaseAddress(address, for: cacheKey)
+    }
+
+    private static func clearPersistedCoinbaseAddresses() {
+        let defaults = UserDefaults.standard
+        let prefix = "\(coinbaseAddressPersistenceKeyPrefix).\(coinbaseAddressPersistenceVersion)."
+
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(prefix) {
+            defaults.removeObject(forKey: key)
+        }
+    }
 
     /// Clears the Coinbase address cache.
     static func clearCoinbaseCache() {
         coinbaseAddressCache.removeAll()
+        clearPersistedCoinbaseAddresses()
     }
 
     /// Clears all exchange address caches (Uphold and Coinbase).
@@ -401,6 +467,12 @@ class MayaExchangeAddressProvider {
         if let cached = Self.coinbaseAddressCache[context.cacheKey] {
             DSLogger.log("Maya Coinbase: Returning cached address for \(context.cacheKey)")
             return cached
+        }
+
+        if let persistedAddress = Self.persistedCoinbaseAddress(for: context.cacheKey) {
+            DSLogger.log("Maya Coinbase: Returning persisted address for \(context.cacheKey)")
+            Self.coinbaseAddressCache[context.cacheKey] = persistedAddress
+            return persistedAddress
         }
 
         DSLogger.log("Maya Coinbase: No cache for \(context.cacheKey), creating new address")
@@ -425,14 +497,14 @@ class MayaExchangeAddressProvider {
         // do not silently collapse onto the same default Coinbase account.
         if context.usesAmbiguousCurrencyCode {
             if let address = await fetchCoinbaseAddressViaAccountList(context: context) {
-                Self.coinbaseAddressCache[context.cacheKey] = address
+                Self.cacheCoinbaseAddress(address, for: context.cacheKey)
                 return address
             }
         } else if let address = await fetchCoinbaseAddressViaDirectLookup(context: context) {
-            Self.coinbaseAddressCache[context.cacheKey] = address
+            Self.cacheCoinbaseAddress(address, for: context.cacheKey)
             return address
         } else if let address = await fetchCoinbaseAddressViaAccountList(context: context) {
-            Self.coinbaseAddressCache[context.cacheKey] = address
+            Self.cacheCoinbaseAddress(address, for: context.cacheKey)
             return address
         }
 
@@ -446,7 +518,7 @@ class MayaExchangeAddressProvider {
             DSLogger.log("Maya Coinbase: Trying direct account lookup for \(context.currencyCode)")
             let account = try await Coinbase.shared.account(byCurrencyCode: context.currencyCode)
             DSLogger.log("Maya Coinbase: Direct lookup found account for \(context.currencyCode): \(account.info.currency.code)")
-            let addressInfo = try await account.retrieveAddressInfo()
+            let addressInfo = try await account.retrieveAddressInfo(network: context.coinbaseCreateNetwork)
             guard let address = validatedCoinbaseAddress(addressInfo: addressInfo, context: context, source: "direct lookup") else {
                 return nil
             }
@@ -475,7 +547,7 @@ class MayaExchangeAddressProvider {
                 return nil
             }
 
-            let addressInfo = try await account.retrieveAddressInfo()
+            let addressInfo = try await account.retrieveAddressInfo(network: context.coinbaseCreateNetwork)
             guard let address = validatedCoinbaseAddress(addressInfo: addressInfo, context: context, source: "account list") else {
                 return nil
             }
