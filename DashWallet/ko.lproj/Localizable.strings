@@ -1765,6 +1765,9 @@
 /* Network Unavailable */
 "Network Unavailable" = "네트워크를 이용할 수 없음";
 
+/* Maya/SwapKit */
+"Network: %@" = "Network: %@";
+
 /* (List of) New (notifications) */
 "New" = "새로운 알림";
 
@@ -2621,6 +2624,9 @@
    SwapKit Portal */
 "SwapKit" = "SwapKit";
 
+/* Maya/SwapKit */
+"Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later." = "Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later.";
+
 /* No comment provided by engineer. */
 "Swept!" = "잔액이 지갑으로 보내졌습니다!";
 
@@ -3061,6 +3067,9 @@
 /* No comment provided by engineer. */
 "View All" = "모두 보기";
 
+/* Maya/SwapKit */
+"View details" = "View details";
+
 /* No comment provided by engineer. */
 "View in Block Explorer" = "탐색기에서 보기";
 
@@ -3436,6 +3445,9 @@
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "당신의 위치는 지도상 당신의 장소와 선택된 반경 내 상점의 위치를 표시하는 것 및 검색 결과 향상을 위해 사용됩니다.";
+
+/* Maya/SwapKit */
+"Your previous swap is still locking in. Please wait a few seconds before starting another one." = "Your previous swap is still locking in. Please wait a few seconds before starting another one.";
 
 /* CrowdNode */
 "Your primary Dash address that you currently use for your CrowdNode account" = "당신이 현재 크라우드노드 계정을 위해 사용하고 있는 주요 대시 주소";

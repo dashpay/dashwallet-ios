@@ -20,6 +20,7 @@ import SwiftUI
 struct SwapTransactionSuccessView: View {
     let coinCode: String
     let coinName: String
+    let executionNetwork: String
     var onDone: () -> Void = {}
 
     var body: some View {
@@ -41,6 +42,18 @@ struct SwapTransactionSuccessView: View {
                     .foregroundColor(.secondaryText)
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
+
+                Text(
+                    String(
+                        format: NSLocalizedString("Network: %@", comment: "Maya/SwapKit"),
+                        executionNetwork
+                    )
+                )
+                .font(.subhead)
+                .foregroundColor(.secondaryText)
+                .multilineTextAlignment(.center)
+                .lineSpacing(3)
+                .padding(.top, 8)
             }
             .padding(.horizontal, 60)
 
@@ -59,7 +72,8 @@ struct SwapTransactionSuccessView: View {
 #Preview {
     SwapTransactionSuccessView(
         coinCode: "BTC",
-        coinName: "Bitcoin"
+        coinName: "Bitcoin",
+        executionNetwork: "Maya"
     )
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Color.primaryBackground)

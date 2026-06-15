@@ -1765,6 +1765,9 @@
 /* Network Unavailable */
 "Network Unavailable" = "เครือข่ายไม่พร้อมใช้งาน";
 
+/* Maya/SwapKit */
+"Network: %@" = "Network: %@";
+
 /* (List of) New (notifications) */
 "New" = "ใหม่";
 
@@ -2621,6 +2624,9 @@
    SwapKit Portal */
 "SwapKit" = "SwapKit";
 
+/* Maya/SwapKit */
+"Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later." = "Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later.";
+
 /* No comment provided by engineer. */
 "Swept!" = "ลบล้าง";
 
@@ -3061,6 +3067,9 @@
 /* No comment provided by engineer. */
 "View All" = "ดูทั้งหมด";
 
+/* Maya/SwapKit */
+"View details" = "View details";
+
 /* No comment provided by engineer. */
 "View in Block Explorer" = "ดูใน Explorer";
 
@@ -3436,6 +3445,9 @@
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "ตำแหน่งของคุณใช้เพื่อแสดงตำแหน่งของคุณบนแผนที่ร้านค้าใน redius ที่เลือกและปรับปรุงผลการค้นหา";
+
+/* Maya/SwapKit */
+"Your previous swap is still locking in. Please wait a few seconds before starting another one." = "Your previous swap is still locking in. Please wait a few seconds before starting another one.";
 
 /* CrowdNode */
 "Your primary Dash address that you currently use for your CrowdNode account" = "ที่อยู่หลัก Dash ของคุณที่คุณใช้สำหรับบัญชี CrowdNode ของคุณในปัจจุบัน";

@@ -237,20 +237,28 @@ final class SwapKitSwapProvider: SwapProvider {
         )
     }
 
-    func fetchSwapStatus(txid: String) async throws -> SwapStatusResult {
+    func fetchSwapStatus(txid: String, depositAddress: String?) async throws -> SwapStatusResult {
         do {
-            let request = SwapKitTrackRequest(hash: txid, chainId: "dash", depositAddress: nil)
+            let request: SwapKitTrackRequest
+            if let depositAddress, !depositAddress.isEmpty {
+                request = SwapKitTrackRequest(hash: nil, chainId: nil, depositAddress: depositAddress)
+            } else {
+                request = SwapKitTrackRequest(hash: txid, chainId: "dash", depositAddress: nil)
+            }
             let response = try await SwapKitAPIService.shared.track(request)
             return mapTrackResponse(response)
         } catch {
             // Non-fatal; return not-yet-observed so polling continues.
-            DSLogger.log("SwapKit: track request failed for \(txid): \(error)")
+            DSLogger.log("SwapKit: track request failed (deposit=\(depositAddress ?? "nil")): \(error)")
             return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil)
         }
     }
 
-    func trackerURL(for txid: String) -> URL? {
-        URL(string: "https://track.swapkit.dev/?hash=\(txid)")
+    func trackerURL(for _: String, depositAddress _: String?) -> URL? {
+        // The hosted tracker URL verified for `?hash=` 500s on NEAR-routed swaps, and this
+        // change intentionally does not guess a `depositAddress` query form without proof.
+        // Hide the link until a working hosted tracker format is confirmed.
+        nil
     }
 
     // MARK: - Private: Route Selection
@@ -394,12 +402,16 @@ final class SwapKitSwapProvider: SwapProvider {
             switch p.uppercased() {
             case "MAYACHAIN", "MAYACHAIN_STREAMING": return "Maya"
             case "THORCHAIN", "THORCHAIN_STREAMING": return "THORChain"
-            case "NEAR": return "NEAR"
+            case "NEAR", "NEAR_INTENTS", "NEAR-INTENTS": return "NEAR"
             case "CHAINFLIP", "CHAINFLIP_STREAMING": return "Chainflip"
             default: return p
             }
         }
-        return labels.joined(separator: ", ")
+        var uniqueLabels = [String]()
+        for label in labels where !uniqueLabels.contains(label) {
+            uniqueLabels.append(label)
+        }
+        return uniqueLabels.joined(separator: ", ")
     }
 
     // MARK: - Private: Track Status Mapping
@@ -436,10 +448,17 @@ final class SwapKitSwapProvider: SwapProvider {
     }
 
     private func extractOutHashes(from response: SwapKitTrackResponse) -> [String] {
-        // Collect hashes from all outbound legs. For a single-hop swap the legs array
-        // has one entry; for a multi-hop route it has one per chain segment.
+        // Prefer outbound leg hashes. Deposit-address tracking can include the inbound DASH
+        // leg alongside the destination chain leg(s); filter DASH out first.
         let legs = response.legs ?? []
-        let legHashes = legs.compactMap { $0.hash }
+        let outboundHashes = legs.compactMap { leg -> String? in
+            guard let hash = leg.hash, !hash.isEmpty else { return nil }
+            if leg.chainId?.lowercased() == "dash" { return nil }
+            return hash
+        }
+        if !outboundHashes.isEmpty { return outboundHashes }
+
+        let legHashes = legs.compactMap(\.hash)
         if !legHashes.isEmpty { return legHashes }
         // No legs — fall back to the top-level response hash (single-hop DASH source).
         return response.hash.map { [$0] } ?? []

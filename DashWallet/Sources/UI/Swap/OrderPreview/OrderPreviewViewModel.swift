@@ -117,7 +117,18 @@ final class OrderPreviewViewModel: ObservableObject {
     /// Deep-link to the provider's hosted transaction tracker (nil for Maya).
     var trackerURL: URL? {
         guard let txid = submittedTxId, !txid.isEmpty else { return nil }
-        return swapProvider.trackerURL(for: txid)
+        return swapProvider.trackerURL(for: txid, depositAddress: lastDepositAddress)
+    }
+
+    /// NEAR Intents routes can remain genuinely in-flight for much longer than Maya routes.
+    /// Drive the pending-screen note from the execution network already chosen by the quote.
+    var isSlowRoute: Bool {
+        executionNetwork.localizedCaseInsensitiveContains("near")
+    }
+
+    var resolvedExecutionNetwork: String {
+        let trimmed = executionNetwork.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty || trimmed == "—" ? swapProvider.displayName : trimmed
     }
 
     /// Fee-row label varies by provider: Maya keeps the network-specific label while
@@ -164,6 +175,7 @@ final class OrderPreviewViewModel: ObservableObject {
     private var submittedTransaction: DSTransaction?
     private var confirmationCancellable: AnyCancellable?
     private var didInitialLoad = false
+    private var lastDepositAddress: String?
 
     init(
         coin: MayaCryptoCurrency,
@@ -219,6 +231,7 @@ final class OrderPreviewViewModel: ObservableObject {
         submittedTransaction = nil
         swapStatus = .idle
         submittedTxId = nil
+        lastDepositAddress = nil
         pendingSwapAlertMessage = nil
         backendOutcome = .pending
     }
@@ -310,6 +323,7 @@ final class OrderPreviewViewModel: ObservableObject {
     private func submitSwap() async {
         guard !isSubmitting else { return }
         submittedTxId = nil
+        lastDepositAddress = nil
         pendingSwapAlertMessage = nil
         isSubmitting = true
         defer { isSubmitting = false }
@@ -327,9 +341,14 @@ final class OrderPreviewViewModel: ObservableObject {
 
             let execution = try resolveExecutionData(from: freshQuote)
             let tx = try await submitDashTransaction(using: execution)
-            setSubmittedTransaction(tx)
+            setSubmittedTransaction(tx, depositAddress: execution.vaultAddress)
         } catch {
             if case .some(.previousSwapPending) = error as? DashSpendError {
+                pendingSwapAlertMessage = error.localizedDescription
+                return
+            }
+            if case .some(.swapAwaitingInstantLock) = error as? DashSpendError {
+                // Previous swap not yet IS-locked — show a soft "wait a moment" alert, not a failure.
                 pendingSwapAlertMessage = error.localizedDescription
                 return
             }
@@ -361,7 +380,18 @@ final class OrderPreviewViewModel: ObservableObject {
             throw mayaFieldError(NSLocalizedString("Swap memo is missing. Please refresh and try again.", comment: "Maya"))
         }
 
-        return SwapExecutionData(vaultAddress: vaultAddress, memo: memo, executionNetwork: quote.executionNetwork ?? swapProvider.displayName)
+        let resolvedExecutionNetwork = quote.executionNetwork?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return SwapExecutionData(
+            vaultAddress: vaultAddress,
+            memo: memo,
+            executionNetwork: {
+                if let resolvedExecutionNetwork, !resolvedExecutionNetwork.isEmpty {
+                    return resolvedExecutionNetwork
+                }
+                return swapProvider.displayName
+            }()
+        )
     }
 
     private func submitDashTransaction(using execution: SwapExecutionData) async throws -> DSTransaction {
@@ -408,9 +438,10 @@ final class OrderPreviewViewModel: ObservableObject {
         return message
     }
 
-    private func setSubmittedTransaction(_ tx: DSTransaction) {
+    private func setSubmittedTransaction(_ tx: DSTransaction, depositAddress: String) {
         submittedTransaction = tx
         submittedTxId = tx.txHashHexString
+        lastDepositAddress = depositAddress
         swapStatus = .pendingConfirmation
         startObservingISLock(txid: tx.txHashHexString)
         if Self.successTrigger == .onDashConfirmation {
@@ -533,7 +564,10 @@ final class OrderPreviewViewModel: ObservableObject {
                 }
 
                 do {
-                    let info = try await swapProvider.fetchSwapStatus(txid: txid)
+                    let info = try await swapProvider.fetchSwapStatus(
+                        txid: txid,
+                        depositAddress: self.lastDepositAddress
+                    )
 
                     // Provider hasn't seen the Dash tx yet (block not confirmed) — keep waiting.
                     guard info.error == nil, info.isObserved else { continue }
@@ -646,7 +680,13 @@ final class OrderPreviewViewModel: ObservableObject {
         purchaseAmount = toAmount
         mayaFee = formatFeeAmount(fee)
         totalAmount = formatCryptoAmount(total)
-        executionNetwork = quote.executionNetwork ?? swapProvider.displayName
+        let resolvedExecutionNetwork = quote.executionNetwork?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        if let resolvedExecutionNetwork, !resolvedExecutionNetwork.isEmpty {
+            executionNetwork = resolvedExecutionNetwork
+        } else {
+            executionNetwork = swapProvider.displayName
+        }
 
         // Fiat lines = coin amount × cryptoFiatRate (fiat value of 1 destination coin), in the
         // active fiat currency — matching how the source-side fromFiatAmount is produced.

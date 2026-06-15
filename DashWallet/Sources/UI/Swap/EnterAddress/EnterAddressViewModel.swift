@@ -269,12 +269,19 @@ class EnterAddressViewModel: ObservableObject {
 
     // MARK: - Private: Clipboard
 
-    /// Returns the raw clipboard string when it holds a valid address for the selected coin,
-    /// otherwise nil. Reads the pasteboard contents — only call once the user has opted in.
+    /// Returns the raw clipboard string when it holds a plausible address token, otherwise nil.
+    /// Reads the pasteboard contents — only call once the user has opted in.
+    ///
+    /// Intentionally does NOT validate against the selected coin's chain: the clipboard row is
+    /// offered for any address-like content (even a wrong-chain address) and the per-chain check
+    /// happens on Continue. The only gate here is a cheap "looks like an address" heuristic — a
+    /// single non-empty token with no internal whitespace — so multi-line/prose clipboard isn't
+    /// surfaced as a paste suggestion.
     private func validClipboardAddress() -> String? {
         guard let raw = currentClipboardContent() else { return nil }
         let address = extractAddressFromURI(raw)
-        guard MayaAddressValidator.isValid(address: address, for: coin) else { return nil }
+        guard !address.isEmpty,
+              address.rangeOfCharacter(from: .whitespacesAndNewlines) == nil else { return nil }
         return raw
     }
 

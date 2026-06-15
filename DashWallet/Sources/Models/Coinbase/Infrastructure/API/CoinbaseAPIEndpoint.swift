@@ -143,7 +143,7 @@ public enum CoinbaseEndpoint {
     case swapTrade(CoinbaseSwapeTradeRequest)
     case swapTradeCommit(String)
     case accountAddress(String)
-    case createCoinbaseAccountAddress(String)
+    case createCoinbaseAccountAddress(String, network: String?)
     case getToken(String)
     case revokeToken(token: String)
     case refreshToken(refreshToken: String)
@@ -189,7 +189,7 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
         case .swapTrade: return "/v2/trades"
         case .swapTradeCommit(let tradeId): return "/v2/trades/\(tradeId)/commit"
         case .accountAddress(let accountId): return "/v2/accounts/\(accountId)/addresses"
-        case .createCoinbaseAccountAddress(let accountId): return "/v2/accounts/\(accountId)/addresses"
+        case .createCoinbaseAccountAddress(let accountId, _): return "/v2/accounts/\(accountId)/addresses"
         case .getToken, .refreshToken: return "/oauth2/token"
         case .revokeToken: return "/oauth2/revoke"
         case .signIn: return "/oauth2/auth"
@@ -240,6 +240,11 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
             return .requestJSONEncodable(dto)
         case .deposit(_, let dto):
             return .requestJSONEncodable(dto)
+        case let .createCoinbaseAccountAddress(_, network):
+            if let network, !network.isEmpty {
+                return .requestJSONEncodable(CoinbaseCreateAddressesRequest(name: nil, network: network))
+            }
+            return .requestPlain
         case .accounts:
             return .requestParameters(parameters: ["limit": 300, "order": "asc"], encoding: URLEncoding.default)
         case .getBaseIdForUSDModel(let base):

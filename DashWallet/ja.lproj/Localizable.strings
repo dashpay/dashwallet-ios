@@ -1765,6 +1765,9 @@
 /* Network Unavailable */
 "Network Unavailable" = "ネットワークが利用できません";
 
+/* Maya/SwapKit */
+"Network: %@" = "Network: %@";
+
 /* (List of) New (notifications) */
 "New" = "新規";
 
@@ -2621,6 +2624,9 @@
    SwapKit Portal */
 "SwapKit" = "SwapKit";
 
+/* Maya/SwapKit */
+"Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later." = "Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later.";
+
 /* No comment provided by engineer. */
 "Swept!" = "スイープしました!";
 
@@ -3061,6 +3067,9 @@
 /* No comment provided by engineer. */
 "View All" = "全てを見る";
 
+/* Maya/SwapKit */
+"View details" = "View details";
+
 /* No comment provided by engineer. */
 "View in Block Explorer" = "エクスプローラーで表示";
 
@@ -3436,6 +3445,9 @@
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "お客様の位置情報は、地図上でお客様の位置を表示したり、選択された距離内の加盟店を表示したり、検索結果を向上するために使用されます。";
+
+/* Maya/SwapKit */
+"Your previous swap is still locking in. Please wait a few seconds before starting another one." = "Your previous swap is still locking in. Please wait a few seconds before starting another one.";
 
 /* CrowdNode */
 "Your primary Dash address that you currently use for your CrowdNode account" = "お客様のCrowdNodeアカウントで使用中のメインのDashアドレス";

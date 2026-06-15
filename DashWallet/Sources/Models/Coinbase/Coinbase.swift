@@ -91,6 +91,15 @@ class Coinbase {
 extension Coinbase {
     var isAuthorized: Bool { auth.currentUser != nil }
 
+    var currentUserAddressCacheScope: String? {
+        guard let accountId = accountService?.dashAccount?.accountId.trimmingCharacters(in: .whitespacesAndNewlines),
+              !accountId.isEmpty else {
+            return nil
+        }
+
+        return accountId
+    }
+
     var paymentMethods: [CoinbasePaymentMethod] {
         get async throws {
             try await paymentMethodsService.fetchPaymentMethods()
@@ -131,7 +140,7 @@ extension Coinbase {
             Taxes.shared.mark(address: address, with: .transferOut)
             return address
         } catch Coinbase.Error.userSessionRevoked {
-            try await auth.signOut()
+            try await signOut()
             throw Coinbase.Error.userSessionRevoked
         } catch {
             throw error
@@ -142,7 +151,7 @@ extension Coinbase {
         do {
             return try await coinbaseService.getCoinbaseExchangeRates(currency: kDashCurrency)
         } catch Coinbase.Error.userSessionRevoked {
-            try await auth.signOut()
+            try await signOut()
             throw Coinbase.Error.userSessionRevoked
         } catch {
             throw error
@@ -160,7 +169,7 @@ extension Coinbase {
             }
             return tx
         } catch Coinbase.Error.userSessionRevoked {
-            try await auth.signOut()
+            try await signOut()
             throw Coinbase.Error.userSessionRevoked
         } catch {
             throw error
@@ -180,7 +189,7 @@ extension Coinbase {
         do {
             return try await accountService.placeBuyOrder(for: kDashAccount, amount: amount)
         } catch Coinbase.Error.userSessionRevoked {
-            try await auth.signOut()
+            try await signOut()
             throw Coinbase.Error.userSessionRevoked
         }
     }
@@ -197,7 +206,7 @@ extension Coinbase {
         do {
             try await accountService.deposit(to: Coinbase.defaultFiat, from: paymentMethodId, amount: amount)
         } catch Coinbase.Error.userSessionRevoked {
-            try await auth.signOut()
+            try await signOut()
             throw Coinbase.Error.userSessionRevoked
         }
     }
@@ -220,7 +229,7 @@ extension Coinbase {
         do {
             return try await accountService.placeTradeOrder(from: origin, to: destination, amount: amount)
         } catch Coinbase.Error.userSessionRevoked {
-            try await auth.signOut()
+            try await signOut()
             throw Coinbase.Error.userSessionRevoked
         } catch {
             throw error
@@ -241,7 +250,7 @@ extension Coinbase {
         do {
             return try await accountService.commitTradeOrder(origin: origin, orderID: orderID)
         } catch Coinbase.Error.userSessionRevoked {
-            try await auth.signOut()
+            try await signOut()
             throw Coinbase.Error.userSessionRevoked
         } catch {
             throw error
@@ -255,6 +264,9 @@ extension Coinbase {
 
         try await auth.signOut()
         accountService.removeStoredAccount()
+        await MainActor.run {
+            MayaExchangeAddressProvider.clearCoinbaseCache()
+        }
     }
 
     public func accounts() async throws -> [CBAccount] {
@@ -306,4 +318,3 @@ extension Coinbase: CoinbaseAPIAccessTokenProvider {
         try await auth.refreshTokenIfNeeded()
     }
 }
-

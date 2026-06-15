@@ -177,6 +177,7 @@ private struct SwapTransactionStatusView: View {
             SwapTransactionSuccessView(
                 coinCode: viewModel.coin.code,
                 coinName: viewModel.coin.name,
+                executionNetwork: viewModel.resolvedExecutionNetwork,
                 onDone: onDone
             )
         case .failed(let reason):
@@ -193,6 +194,14 @@ private struct SwapTransactionStatusView: View {
     private func pending(message: String) -> some View {
         SwapTransactionPendingView(
             message: message,
+            executionNetwork: viewModel.resolvedExecutionNetwork,
+            detailMessage: viewModel.isSlowRoute
+                ? NSLocalizedString(
+                    "Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later.",
+                    comment: "Maya/SwapKit"
+                )
+                : nil,
+            trackerURL: viewModel.trackerURL,
             onGoHome: onDone
         )
             .padding(.horizontal, 40)

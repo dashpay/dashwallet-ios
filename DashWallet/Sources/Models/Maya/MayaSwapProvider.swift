@@ -56,7 +56,7 @@ final class MayaSwapProvider: SwapProvider {
         try await fetchQuote(dashSatoshis: dashSatoshis, toAsset: toAsset, destination: destination)
     }
 
-    func fetchSwapStatus(txid: String) async throws -> SwapStatusResult {
+    func fetchSwapStatus(txid: String, depositAddress _: String?) async throws -> SwapStatusResult {
         let info = try await MayaAPIService.shared.fetchSwapTransactionInfo(txid: txid)
         guard let observedTx = info.observedTx else {
             return SwapStatusResult(error: info.error, isObserved: false, observedStatus: nil, outHashes: nil)

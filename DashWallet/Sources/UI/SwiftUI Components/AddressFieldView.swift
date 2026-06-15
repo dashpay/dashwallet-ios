@@ -51,8 +51,14 @@ struct AddressFieldView: View {
                 textField
                     .padding(.vertical, 15)
 
-                if !isDisabled && !isBlurredFilledState {
+                if !isDisabled {
+                    // In the blurred-filled state (text present, unfocused, no error) the trailing
+                    // icon stays in the layout so the field width — and the address text wrapping —
+                    // doesn't shift between focused and unfocused. Per design it's just hidden:
+                    // opacity 0 and non-interactive, but the space is reserved.
                     actionButton
+                        .opacity(isBlurredFilledState ? 0 : 1)
+                        .allowsHitTesting(!isBlurredFilledState)
                 }
             }
             .padding(.leading, Layout.lPadding)

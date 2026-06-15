@@ -60,7 +60,7 @@ struct SwapStatusResult {
 extension SwapProvider {
     /// Optional deep-link to a hosted transaction tracker for this provider.
     /// Returns `nil` for providers without a public tracker (Maya uses its own explorer).
-    func trackerURL(for txid: String) -> URL? { nil }
+    func trackerURL(for txid: String, depositAddress: String?) -> URL? { nil }
 
     /// Controls whether the order-preview fee row uses a backend-specific label
     /// (`"Maya fee"`) or a generic one (`"Fee"`).
@@ -106,5 +106,5 @@ protocol SwapProvider {
     /// Status lookup for a submitted swap.
     /// Maya: queries by Dash txid via `/tx/{txid}`.
     /// SwapKit: queries via `/track`.
-    func fetchSwapStatus(txid: String) async throws -> SwapStatusResult
+    func fetchSwapStatus(txid: String, depositAddress: String?) async throws -> SwapStatusResult
 }
