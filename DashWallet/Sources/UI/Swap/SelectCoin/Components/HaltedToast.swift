@@ -57,8 +57,16 @@ struct HaltedToast: View {
         .padding(.leading, 12)
         .padding(.trailing, 8)
         .padding(.vertical, 8)
-        .background(Color.blue)
-        .clipShape(.rect(cornerRadius: 8))
+        .background {
+            // Backdrop blur of the content behind the toast, with the 90%-black translucent fill
+            // on top — the toast reads dark, and what's behind it is gently blurred (the 10%
+            // translucency lets the blur show through). Reuses the app's BackgroundBlurView.
+            ZStack {
+                BackgroundBlurView()
+                Color.black1000Alpha90
+            }
+        }
+        .clipShape(.rect(cornerRadius: 20))
         .contentShape(.rect)
     }
 }
