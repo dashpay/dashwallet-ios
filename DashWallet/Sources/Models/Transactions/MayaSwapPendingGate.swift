@@ -53,11 +53,15 @@ final class MayaSwapPendingGate {
     /// Call right after a swap's Dash tx is published. Begins gating until the tx is IS-locked.
     func register(txid: String) {
         lock.lock()
+        defer { lock.unlock() }
+
         pendingTxid = txid
         registeredAt = Date()
         if let observer { NotificationCenter.default.removeObserver(observer) }
-        lock.unlock()
 
+        // Assign inside the lock so it can't race with `clearLocked()` (also lock-held).
+        // `addObserver(forName:…)` only registers — the block is never invoked synchronously,
+        // so `handle()` (which re-acquires the lock) cannot deadlock here.
         observer = NotificationCenter.default.addObserver(
             forName: .DSTransactionManagerTransactionStatusDidChange,
             object: nil,
