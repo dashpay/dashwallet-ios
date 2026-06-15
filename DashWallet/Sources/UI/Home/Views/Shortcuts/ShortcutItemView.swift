@@ -34,7 +34,7 @@ struct ShortcutItemView: View {
     }
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 5) {
             Icon(name: .custom(iconName))
                 .frame(width: 46, height: 46, alignment: .center)
 
@@ -43,6 +43,7 @@ struct ShortcutItemView: View {
                 .foregroundStyle(Color.primaryText)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
+                .padding(.horizontal, 8)
         }
         .padding(.horizontal, 2)
         .padding(.top, 8)

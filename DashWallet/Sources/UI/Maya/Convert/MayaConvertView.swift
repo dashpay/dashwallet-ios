@@ -138,8 +138,8 @@ struct MayaConvertView: View {
             icon: .custom("dashCircleFilled"),
             trailingView: AnyView(
                 DashBalanceView(
-                    balance: viewModel.dashBalanceFormatted,
-                    fiat: viewModel.dashBalance != 0 ? viewModel.dashBalanceFiat : nil
+                    balance: viewModel.enteredDashFormatted,
+                    fiat: viewModel.enteredAmountIsZero ? nil : viewModel.enteredFiatFormatted
                 )
             ),
             action: nil
@@ -198,6 +198,12 @@ struct MayaConvertView: View {
             VStack(alignment: .center, spacing: 0) {
                 if viewModel.isLoading {
                     SwiftUI.ProgressView()
+                } else if let error = viewModel.errorMessage {
+                    // An error (e.g. insufficient balance after coin-mode gross-up) supersedes the
+                    // receive estimate — both can be set at once, so show the error first.
+                    Text(error)
+                        .font(.caption1)
+                        .foregroundStyle(Color.systemRed)
                 } else if let amount = viewModel.receiveAmount {
                     Text(NSLocalizedString("Receive amount", comment: "Maya"))
                         .font(.caption1)
@@ -206,10 +212,6 @@ struct MayaConvertView: View {
                     Text("~ \(amount)")
                         .font(.subhead)
                         .foregroundStyle(Color.primaryText)
-                } else if let error = viewModel.errorMessage {
-                    Text(error)
-                        .font(.caption1)
-                        .foregroundStyle(Color.systemRed)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .center)

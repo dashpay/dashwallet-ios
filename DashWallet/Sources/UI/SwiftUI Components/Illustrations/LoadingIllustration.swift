@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import SwiftUI
 
 // MARK: - LoadingIllustration
@@ -39,22 +40,30 @@ struct LoadingIllustration: View {
 
 // MARK: - LoadingSpinner
 
-/// A spinner built from `spokeCount` capsules arranged in a ring with a graduated
-/// "comet-tail" opacity. The spokes are static; the whole ring rotates continuously.
 struct LoadingSpinner: View {
     /// Default tint — Maya blue (#008DE4).
     static let defaultColor = Color(red: 0, green: 141 / 255, blue: 228 / 255)
 
-    /// Diameter of the spinner.
-    var size: CGFloat = 61.73
-    /// Spoke tint.
-    var color: Color = defaultColor
-    /// Number of spokes in the ring.
-    var spokeCount: Int = 12
-    /// Seconds for one full rotation.
-    var duration: Double = 1
+    let size: CGFloat
+    let color: Color
+    let spokeCount: Int
+    /// Seconds for the bright head to travel once around the ring.
+    let duration: Double
 
-    @State private var isAnimating = false
+    @State private var phase = 0
+    private let timer: Publishers.Autoconnect<Timer.TimerPublisher>
+
+    init(size: CGFloat = 61.73, color: Color = defaultColor, spokeCount: Int = 12, duration: Double = 1) {
+        self.size = size
+        self.color = color
+        self.spokeCount = spokeCount
+        self.duration = duration
+        self.timer = Timer
+            .publish(every: duration / Double(max(spokeCount, 1)), on: .main, in: .common)
+            .autoconnect()
+    }
+
+    private var stepInterval: Double { duration / Double(max(spokeCount, 1)) }
 
     var body: some View {
         ZStack {
@@ -62,22 +71,23 @@ struct LoadingSpinner: View {
                 Capsule()
                     .fill(color)
                     .opacity(opacity(for: index))
-                    // Proportions taken from the Figma SVG (viewBox 61.73):
-                    // width 0.083·size, height 0.25·size, outer edge at radius 0.5·size.
                     .frame(width: size * 0.083, height: size * 0.25)
                     .offset(y: -size * 0.375)
                     .rotationEffect(.degrees(Double(index) / Double(spokeCount) * 360))
             }
         }
         .frame(width: size, height: size)
-        .rotationEffect(.degrees(isAnimating ? 360 : 0))
-        .animation(.linear(duration: duration).repeatForever(autoreverses: false), value: isAnimating)
-        .onAppear { isAnimating = true }
+        .onReceive(timer) { _ in
+            withAnimation(.linear(duration: stepInterval)) {
+                phase = (phase + 1) % spokeCount
+            }
+        }
     }
 
     private func opacity(for index: Int) -> Double {
         guard spokeCount > 1 else { return 0.75 }
-        return 0.2 + 0.55 * Double(index) / Double(spokeCount - 1)
+        let distanceFromHead = (index - phase + spokeCount) % spokeCount
+        return 0.2 + 0.55 * (1 - Double(distanceFromHead) / Double(spokeCount - 1))
     }
 }
 

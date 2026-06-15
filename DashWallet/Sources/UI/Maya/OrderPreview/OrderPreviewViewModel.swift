@@ -75,7 +75,7 @@ final class OrderPreviewViewModel: ObservableObject {
 
     // ── PRODUCT CONFIG ──────────────────────────────────────────────────────
     /// Change this ONE LINE to control when the success screen appears.
-    static let successTrigger: MayaSuccessTrigger = .onDashConfirmation
+    static let successTrigger: MayaSuccessTrigger = .onISLock
     // ────────────────────────────────────────────────────────────────────────
 
     let coin: MayaCryptoCurrency
@@ -582,7 +582,8 @@ final class OrderPreviewViewModel: ObservableObject {
     }
 
     private func formatCryptoAmount(_ value: Decimal) -> String {
-        "\(coin.code) \(formatDecimal(value))"
+        // Amount first, then coin code (e.g. "0.00042 BTC").
+        "\(formatDecimal(value)) \(coin.code)"
     }
 
     private func formatFeeAmount(_ value: Decimal) -> String {

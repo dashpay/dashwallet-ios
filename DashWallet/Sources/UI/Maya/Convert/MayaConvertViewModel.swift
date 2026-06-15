@@ -42,16 +42,25 @@ final class MayaConvertViewModel: ObservableObject {
     private struct QuoteRequestSnapshot {
         let id: Int
         let dashSatoshis: Int64
+        let selectedCurrency: CurrencyOption
+        let enteredCoinAmount: Decimal?
+        let isMaxFromBalance: Bool
     }
 
     // MARK: - Private State
 
     private var amount = MayaConvertAmount()
     private var latestQuote: MayaSwapQuote?
+    private var effectiveSellSatoshis: Int64?
+    private var isMaxFromBalance = false
     // Monotonically increasing; stale responses are discarded when their snapshot id no longer matches.
     private var quoteRequestID = 0
     // Suppresses input observation while we programmatically sync the displayed value during a currency switch.
     private var isSwitchingCurrency = false
+    // Suppresses amount-model writes while we programmatically update the visible coin input from a quote.
+    private var isSyncingQuotedInput = false
+    // Prevents a programmatic input sync from immediately triggering another debounced quote request.
+    private var suppressNextDebouncedQuoteFetch = false
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Computed Properties
@@ -68,6 +77,22 @@ final class MayaConvertViewModel: ObservableObject {
     var dashBalanceFiat: String {
         let balance = DWEnvironment.sharedInstance().currentAccount.balance
         return CurrencyExchanger.shared.fiatAmountString(for: balance.dashAmount)
+    }
+
+    /// Symbol-free Dash amount the user has entered (the amount being converted), shown on the
+    /// source row instead of the wallet balance.
+    var enteredDashFormatted: String {
+        Self.dashRoundedDown(displayDashAmount).formattedDashAmountWithoutCurrencySymbol
+    }
+
+    /// Fiat value of the entered amount, in the active fiat currency.
+    var enteredFiatFormatted: String {
+        MayaInputFormatter.fiat(displayFiatAmount, currencyCode: currentFiatCurrency)
+    }
+
+    /// True when nothing meaningful has been entered yet (used to hide the fiat sub-line).
+    var enteredAmountIsZero: Bool {
+        displayDashAmount.isZero
     }
 
     var currencyOptions: [CurrencyOption] {
@@ -103,7 +128,8 @@ final class MayaConvertViewModel: ObservableObject {
     /// Sets the input to the wallet's full balance, preserving the active currency display.
     func setMax() {
         let balance = DWEnvironment.sharedInstance().currentAccount.balance
-        amount.setDash(balance.dashAmount)
+        amount.setDash(Self.dashRoundedDown(balance.dashAmount))
+        isMaxFromBalance = true
         clearQuoteState()
         errorMessage = nil
         isSwitchingCurrency = true
@@ -142,9 +168,9 @@ final class MayaConvertViewModel: ObservableObject {
         return OrderPreviewViewModel(
             coin: coin,
             address: address,
-            dashSatoshis: amount.dashSatoshis,
-            fromDashAmount: amount.dash.formattedDashAmountWithoutCurrencySymbol,
-            fromFiatAmount: MayaInputFormatter.fiat(amount.fiat, currencyCode: currentFiatCurrency),
+            dashSatoshis: activeSellSatoshis,
+            fromDashAmount: displayDashAmount.formattedDashAmountWithoutCurrencySymbol,
+            fromFiatAmount: MayaInputFormatter.fiat(displayFiatAmount, currencyCode: currentFiatCurrency),
             cryptoFiatRate: amount.cryptoFiatRate,
             fiatCurrencyCode: currentFiatCurrency,
             initialQuote: quote
@@ -192,7 +218,7 @@ final class MayaConvertViewModel: ObservableObject {
             return .exchangeRateUnavailable
         }
 
-        let satoshis = amount.dashSatoshis
+        let satoshis = activeSellSatoshis
         guard satoshis > 0 else { return .empty }
 
         let accountBalance = Int64(DWEnvironment.sharedInstance().currentAccount.balance)
@@ -202,7 +228,7 @@ final class MayaConvertViewModel: ObservableObject {
     }
 
     private func checkBalance() {
-        let satoshis = amount.dashSatoshis
+        let satoshis = activeSellSatoshis
         let accountBalance = Int64(DWEnvironment.sharedInstance().currentAccount.balance)
         errorMessage = satoshis > accountBalance
             ? NSLocalizedString("Insufficient balance", comment: "Maya")
@@ -214,18 +240,22 @@ final class MayaConvertViewModel: ObservableObject {
     private func clearQuoteState() {
         latestQuote = nil
         receiveAmount = nil
+        effectiveSellSatoshis = nil
     }
 
     private func applySuccessfulQuote(_ quote: MayaSwapQuote) {
         guard let raw = quote.expectedAmountOut, let rawValue = Double(raw) else {
             latestQuote = nil
             errorMessage = nil
-            receiveAmount = nil
+            receiveAmount = selectedCurrency.isCoinInput && !isMaxFromBalance ? fixedCoinReceiveAmount : nil
             return
         }
         latestQuote = quote
-        errorMessage = nil
-        receiveAmount = "\(coin.code) \(MayaInputFormatter.receiveAmount(rawValue / 1e8))"
+        receiveAmount = selectedCurrency.isCoinInput && !isMaxFromBalance
+            ? fixedCoinReceiveAmount
+            : "\(coin.code) \(MayaInputFormatter.receiveAmount(rawValue / 1e8))"
+        checkBalance()
+        syncCoinInputToQuotedReceiveIfNeeded(quote)
     }
 
     private func applyQuoteError(_ apiError: String) {
@@ -233,7 +263,7 @@ final class MayaConvertViewModel: ObservableObject {
         receiveAmount = nil
         errorMessage = apiError.contains("not enough asset to pay for fees")
             ? NSLocalizedString("Amount too small to cover fees", comment: "Maya")
-            : NSLocalizedString("Unable to get a quote", comment: "Maya")
+            : NSLocalizedString("Amount too small to cover fees", comment: "Maya")
     }
 
     // MARK: - Private: Combine Subscriptions
@@ -242,7 +272,9 @@ final class MayaConvertViewModel: ObservableObject {
         $inputValue
             .sink { [weak self] value in
                 guard let self, !self.isSwitchingCurrency else { return }
+                guard !self.isSyncingQuotedInput else { return }
 
+                self.isMaxFromBalance = false
                 self.clearQuoteState()
                 guard self.parseInput(value) != nil else {
                     self.errorMessage = nil
@@ -255,7 +287,14 @@ final class MayaConvertViewModel: ObservableObject {
 
         $inputValue
             .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
-            .sink { [weak self] _ in self?.scheduleQuoteFetch() }
+            .sink { [weak self] _ in
+                guard let self else { return }
+                if self.suppressNextDebouncedQuoteFetch {
+                    self.suppressNextDebouncedQuoteFetch = false
+                    return
+                }
+                self.scheduleQuoteFetch()
+            }
             .store(in: &cancellables)
     }
 
@@ -292,7 +331,13 @@ final class MayaConvertViewModel: ObservableObject {
             errorMessage = nil
             isLoading = true
             quoteRequestID += 1
-            let snapshot = QuoteRequestSnapshot(id: quoteRequestID, dashSatoshis: satoshis)
+            let snapshot = QuoteRequestSnapshot(
+                id: quoteRequestID,
+                dashSatoshis: satoshis,
+                selectedCurrency: selectedCurrency,
+                enteredCoinAmount: selectedCurrency.isCoinInput ? amount.crypto : nil,
+                isMaxFromBalance: isMaxFromBalance
+            )
             Task { await fetchQuote(snapshot: snapshot) }
         }
     }
@@ -302,22 +347,28 @@ final class MayaConvertViewModel: ObservableObject {
             if quoteRequestID == snapshot.id { isLoading = false }
         }
         do {
-            let quote = try await MayaAPIService.shared.fetchQuote(
+            let firstQuote = try await MayaAPIService.shared.fetchQuote(
                 dashSatoshis: snapshot.dashSatoshis,
                 toAsset: coin.mayaAsset,
                 destination: address
             )
             guard quoteRequestID == snapshot.id else { return }
-            if let apiError = quote.error {
+            if let apiError = firstQuote.error {
                 applyQuoteError(apiError)
             } else {
-                applySuccessfulQuote(quote)
+                let resolution = try await resolveQuote(firstQuote, snapshot: snapshot)
+                guard quoteRequestID == snapshot.id else { return }
+                effectiveSellSatoshis = resolution.effectiveSellSatoshis
+                applySuccessfulQuote(resolution.quote)
             }
         } catch {
             guard quoteRequestID == snapshot.id else { return }
             latestQuote = nil
-            errorMessage = nil
-            receiveAmount = nil
+            effectiveSellSatoshis = nil
+            errorMessage = NSLocalizedString("Amount too small to cover fees", comment: "Maya")
+            receiveAmount = snapshot.selectedCurrency.isCoinInput && !snapshot.isMaxFromBalance
+                ? fixedCoinReceiveAmount
+                : nil
         }
     }
 
@@ -338,15 +389,94 @@ final class MayaConvertViewModel: ObservableObject {
         }
     }
 
+    private func resolveQuote(_ quote: MayaSwapQuote, snapshot: QuoteRequestSnapshot) async throws -> (quote: MayaSwapQuote, effectiveSellSatoshis: Int64?) {
+        if snapshot.isMaxFromBalance {
+            return (quote, nil)
+        }
+
+        guard snapshot.selectedCurrency.isCoinInput,
+              let enteredCoinAmount = snapshot.enteredCoinAmount,
+              enteredCoinAmount > 0,
+              let expectedOut = decimalFromBaseUnits(quote.expectedAmountOut),
+              expectedOut > 0 else {
+            return (quote, nil)
+        }
+
+        let firstGuessDash = dashAmount(from: snapshot.dashSatoshis)
+        guard firstGuessDash > 0 else {
+            return (quote, nil)
+        }
+
+        let effectiveRate = expectedOut / firstGuessDash
+        guard effectiveRate > 0 else {
+            return (quoteWithFixedReceive(quote, enteredCoinAmount: enteredCoinAmount), nil)
+        }
+
+        let requiredDash = enteredCoinAmount / effectiveRate
+        let requiredSellSatoshis = max(1, satoshisRoundedUp(fromDash: requiredDash))
+        guard requiredSellSatoshis > 0 else {
+            return (quoteWithFixedReceive(quote, enteredCoinAmount: enteredCoinAmount), nil)
+        }
+
+        let resolvedQuote: MayaSwapQuote
+        if requiredSellSatoshis != snapshot.dashSatoshis {
+            let requote = try await MayaAPIService.shared.fetchQuote(
+                dashSatoshis: requiredSellSatoshis,
+                toAsset: coin.mayaAsset,
+                destination: address
+            )
+            if requote.error == nil {
+                resolvedQuote = requote
+            } else {
+                resolvedQuote = quote
+            }
+        } else {
+            resolvedQuote = quote
+        }
+
+        return (
+            quoteWithFixedReceive(resolvedQuote, enteredCoinAmount: enteredCoinAmount),
+            requiredSellSatoshis
+        )
+    }
+
+    private func quoteWithFixedReceive(_ quote: MayaSwapQuote, enteredCoinAmount: Decimal) -> MayaSwapQuote {
+        MayaSwapQuote(
+            error: quote.error,
+            expectedAmountOut: baseUnitsString(fromHumanAmount: enteredCoinAmount),
+            dustThreshold: quote.dustThreshold,
+            expiry: quote.expiry,
+            fees: quote.fees,
+            inboundAddress: quote.inboundAddress,
+            inboundConfirmationBlocks: quote.inboundConfirmationBlocks,
+            inboundConfirmationSeconds: quote.inboundConfirmationSeconds,
+            memo: quote.memo,
+            notes: quote.notes,
+            outboundDelayBlocks: quote.outboundDelayBlocks,
+            outboundDelaySeconds: quote.outboundDelaySeconds,
+            recommendedMinAmountIn: quote.recommendedMinAmountIn,
+            slippageBps: quote.slippageBps,
+            warning: quote.warning,
+            routeId: quote.routeId,
+            routeProviders: quote.routeProviders,
+            executionNetwork: quote.executionNetwork
+        )
+    }
+
     private func syncInputValueForCurrency(_ currency: CurrencyOption) {
         switch currency {
         case .dash:
-            inputValue = amount.dash.isZero ? "" : amount.dash.formattedDashAmountWithoutCurrencySymbol
+            let dash5 = Self.dashRoundedDown(amount.dash)
+            inputValue = dash5.isZero ? "" : dash5.formattedDashAmountWithoutCurrencySymbol
         case .fiat:
             guard !amount.fiat.isZero else { inputValue = ""; return }
             let d = (amount.fiat as NSDecimalNumber).doubleValue
             inputValue = String(format: "%.2f", d)
         case .coin:
+            if let quotedReceiveInputValue {
+                inputValue = quotedReceiveInputValue
+                return
+            }
             guard !amount.crypto.isZero, amount.cryptoFiatRate > 0 else { inputValue = ""; return }
             let d = (amount.crypto as NSDecimalNumber).doubleValue
             inputValue = MayaInputFormatter.trimTrailingZeros(String(format: "%.8f", d))
@@ -359,13 +489,99 @@ final class MayaConvertViewModel: ObservableObject {
         return d
     }
 
+    private var activeSellSatoshis: Int64 {
+        if !isMaxFromBalance, selectedCurrency.isCoinInput, let effectiveSellSatoshis, effectiveSellSatoshis > 0 {
+            return effectiveSellSatoshis
+        }
+        return amount.dashSatoshis
+    }
+
+    private var displayDashAmount: Decimal {
+        dashAmount(from: activeSellSatoshis)
+    }
+
+    private var displayFiatAmount: Decimal {
+        displayDashAmount * amount.dashFiatRate
+    }
+
+    private var fixedCoinReceiveAmount: String? {
+        guard selectedCurrency.isCoinInput, amount.crypto > 0 else { return nil }
+        let value = (amount.crypto as NSDecimalNumber).doubleValue
+        return "\(coin.code) \(MayaInputFormatter.receiveAmount(value))"
+    }
+
+    private var quotedReceiveInputValue: String? {
+        guard isMaxFromBalance,
+              selectedCurrency.isCoinInput,
+              let latestQuote,
+              let expectedOut = decimalFromBaseUnits(latestQuote.expectedAmountOut),
+              expectedOut > 0 else {
+            return nil
+        }
+        let value = (expectedOut as NSDecimalNumber).doubleValue
+        return MayaInputFormatter.receiveAmount(value)
+    }
+
+    private func dashAmount(from satoshis: Int64) -> Decimal {
+        Decimal(satoshis) / Decimal(100_000_000)
+    }
+
+    private func satoshisRoundedUp(fromDash dash: Decimal) -> Int64 {
+        guard dash > 0 else { return 0 }
+        var scaled = dash * Decimal(100_000_000)
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &scaled, 0, .up)
+        return NSDecimalNumber(decimal: rounded).int64Value
+    }
+
+    private func decimalFromBaseUnits(_ raw: String?) -> Decimal? {
+        guard let raw,
+              let decimal = Decimal(string: raw) else {
+            return nil
+        }
+        return decimal / Decimal(100_000_000)
+    }
+
+    private func baseUnitsString(fromHumanAmount amount: Decimal) -> String {
+        var scaled = amount * Decimal(100_000_000)
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &scaled, 0, .plain)
+        return NSDecimalNumber(decimal: rounded).stringValue
+    }
+
+    private func syncCoinInputToQuotedReceiveIfNeeded(_ quote: MayaSwapQuote) {
+        guard isMaxFromBalance,
+              selectedCurrency.isCoinInput,
+              let expectedOut = decimalFromBaseUnits(quote.expectedAmountOut),
+              expectedOut > 0 else {
+            return
+        }
+
+        let displayValue = MayaInputFormatter.receiveAmount((expectedOut as NSDecimalNumber).doubleValue)
+        guard inputValue != displayValue else { return }
+
+        isSyncingQuotedInput = true
+        suppressNextDebouncedQuoteFetch = true
+        inputValue = displayValue
+        isSyncingQuotedInput = false
+    }
+
     // MARK: - Private: Input Sanitization
 
     /// Normalizes a raw keyboard string before it reaches the amount model.
     /// Rules:
     ///   - Leading zeros stripped from the integer part: "01" → "1", but "0." and "0.12" stay.
-    ///   - Decimal precision capped: fiat → 2 places, dash/crypto → 8 places.
+    ///   - Decimal precision capped: fiat → 2 places, dash → 5 places, crypto → 8 places.
     ///   - Empty string and in-progress decimals (e.g. "0.") pass through unchanged.
+    /// Dash on the convert screen is shown to at most 5 decimals. Rounds DOWN so a displayed or
+    /// Max value never exceeds the real wallet amount.
+    static func dashRoundedDown(_ value: Decimal) -> Decimal {
+        var input = value
+        var result = Decimal()
+        NSDecimalRound(&result, &input, 5, .down)
+        return result
+    }
+
     private static func sanitize(_ raw: String, currency: CurrencyOption) -> String {
         guard !raw.isEmpty else { return raw }
 
@@ -373,7 +589,8 @@ final class MayaConvertViewModel: ObservableObject {
         let maxDecimals: Int
         switch currency {
         case .fiat: maxDecimals = 2
-        case .dash, .coin: maxDecimals = 8
+        case .dash: maxDecimals = 5
+        case .coin: maxDecimals = 8
         }
 
         if let dotRange = s.range(of: ".") {
