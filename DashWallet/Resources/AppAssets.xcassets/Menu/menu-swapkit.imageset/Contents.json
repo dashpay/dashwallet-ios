@@ -1,8 +1,19 @@
 {
   "images" : [
     {
-      "filename" : "menu-swapkit.svg",
-      "idiom" : "universal"
+      "filename" : "dash-dex.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "dash-dex@2x.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "dash-dex@3x.png",
+      "idiom" : "universal",
+      "scale" : "3x"
     }
   ],
   "info" : {

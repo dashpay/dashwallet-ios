@@ -23,11 +23,12 @@ import SwiftUI
 ///
 /// Priority:
 /// 1. Local asset (when `iconAssetName != "convert.crypto"`)
-/// 2. Remote icon fetched and cached by `MayaCoinIconLoader`
-/// 3. Placeholder (`convert.crypto`) if remote load fails
+/// 2. SwapKit CDN icon fetched by full asset identifier
+/// 3. jsupa remote fallback fetched by ticker code
+/// 4. Placeholder (`convert.crypto`) if all remote loads fail
 ///
 /// Remote icons crossfade in when loaded.  Fast-scrolling is safe: the
-/// `task(id: coin.code)` modifier cancels in-flight requests when the view
+/// `task(id: coin.mayaAsset)` modifier cancels in-flight requests when the view
 /// disappears, and `remoteImage` resets to nil on reuse (because @State is
 /// tied to view identity in LazyVStack).
 struct SwapCoinIconView: View {
@@ -53,9 +54,14 @@ struct SwapCoinIconView: View {
         }
         .frame(width: size, height: size)
         .clipShape(.rect(cornerRadius: cornerRadius))
-        .task(id: coin.code) {
+        .task(id: coin.mayaAsset) {
+            remoteImage = nil
             guard needsRemoteIcon else { return }
-            let loaded = await MayaCoinIconLoader.shared.loadIcon(for: coin.code)
+
+            var loaded = await MayaCoinIconLoader.shared.loadSwapKitIcon(for: coin.mayaAsset)
+            if loaded == nil {
+                loaded = await MayaCoinIconLoader.shared.loadJsupaIcon(for: coin.code)
+            }
             withAnimation(.easeIn(duration: 0.15)) {
                 remoteImage = loaded
             }

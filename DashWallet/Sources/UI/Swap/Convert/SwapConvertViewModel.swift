@@ -175,6 +175,7 @@ final class SwapConvertViewModel: ObservableObject {
             fromFiatAmount: MayaInputFormatter.fiat(displayFiatAmount, currencyCode: currentFiatCurrency),
             cryptoFiatRate: amount.cryptoFiatRate,
             fiatCurrencyCode: currentFiatCurrency,
+            targetReceiveAmount: selectedCurrency.isReceiveTargetMode && !isMaxFromBalance ? amount.crypto : nil,
             initialQuote: quote,
             swapProvider: swapProvider
         )
@@ -252,12 +253,12 @@ final class SwapConvertViewModel: ObservableObject {
         guard let raw = quote.expectedAmountOut, let rawValue = Double(raw) else {
             latestQuote = nil
             errorMessage = nil
-            receiveAmount = selectedCurrency.isCoinInput && !isMaxFromBalance ? fixedCoinReceiveAmount : nil
+            receiveAmount = selectedCurrency.isReceiveTargetMode && !isMaxFromBalance ? fixedTargetReceiveAmount : nil
             return
         }
         latestQuote = quote
-        receiveAmount = selectedCurrency.isCoinInput && !isMaxFromBalance
-            ? fixedCoinReceiveAmount
+        receiveAmount = selectedCurrency.isReceiveTargetMode && !isMaxFromBalance
+            ? fixedTargetReceiveAmount
             : "\(coin.code) \(MayaInputFormatter.receiveAmount(rawValue / 1e8))"
         checkBalance()
         syncCoinInputToQuotedReceiveIfNeeded(quote)
@@ -355,7 +356,7 @@ final class SwapConvertViewModel: ObservableObject {
                 id: quoteRequestID,
                 dashSatoshis: satoshis,
                 selectedCurrency: selectedCurrency,
-                enteredCoinAmount: selectedCurrency.isCoinInput ? amount.crypto : nil,
+                enteredCoinAmount: selectedCurrency.isReceiveTargetMode ? amount.crypto : nil,
                 isMaxFromBalance: isMaxFromBalance
             )
             Task { await fetchQuote(snapshot: snapshot) }
@@ -385,8 +386,8 @@ final class SwapConvertViewModel: ObservableObject {
             guard quoteRequestID == snapshot.id else { return }
             latestQuote = nil
             effectiveSellSatoshis = nil
-            receiveAmount = snapshot.selectedCurrency.isCoinInput && !snapshot.isMaxFromBalance
-                ? fixedCoinReceiveAmount
+            receiveAmount = snapshot.selectedCurrency.isReceiveTargetMode && !snapshot.isMaxFromBalance
+                ? fixedTargetReceiveAmount
                 : nil
             errorMessage = NSLocalizedString("Amount too small to cover fees", comment: "Swap")
         }
@@ -414,7 +415,7 @@ final class SwapConvertViewModel: ObservableObject {
             return (quote, nil)
         }
 
-        guard snapshot.selectedCurrency.isCoinInput,
+        guard snapshot.selectedCurrency.isReceiveTargetMode,
               let enteredCoinAmount = snapshot.enteredCoinAmount,
               enteredCoinAmount > 0,
               let expectedOut = decimalFromBaseUnits(quote.expectedAmountOut),
@@ -427,21 +428,23 @@ final class SwapConvertViewModel: ObservableObject {
             return (quote, nil)
         }
 
-        let effectiveRate = expectedOut / firstGuessDash
-        guard effectiveRate > 0 else {
+        let fee = decimalFromBaseUnits(quote.fees?.total ?? quote.fees?.outbound) ?? 0
+        let grossOut = expectedOut + fee
+        guard grossOut > 0 else {
             return (quoteWithFixedReceive(quote, enteredCoinAmount: enteredCoinAmount), nil)
         }
 
-        let requiredDash = enteredCoinAmount / effectiveRate
+        let requiredDash = firstGuessDash * (enteredCoinAmount + fee) / grossOut
         let requiredSellSatoshis = max(1, satoshisRoundedUp(fromDash: requiredDash))
         guard requiredSellSatoshis > 0 else {
             return (quoteWithFixedReceive(quote, enteredCoinAmount: enteredCoinAmount), nil)
         }
+        let cappedSellSatoshis = min(requiredSellSatoshis, dashBalance)
 
         let resolvedQuote: SwapQuoteResult
-        if requiredSellSatoshis != snapshot.dashSatoshis {
+        if cappedSellSatoshis != snapshot.dashSatoshis {
             let requote = try await swapProvider.fetchIndicativeQuote(
-                dashSatoshis: requiredSellSatoshis,
+                dashSatoshis: cappedSellSatoshis,
                 toAsset: coin.mayaAsset,
                 destination: address
             )
@@ -477,8 +480,8 @@ final class SwapConvertViewModel: ObservableObject {
             let dash5 = Self.dashRoundedDown(displayDashAmount)
             inputValue = dash5.isZero ? "" : dash5.formattedDashAmountWithoutCurrencySymbol
         case .fiat:
-            guard !displayFiatAmount.isZero else { inputValue = ""; return }
-            let d = (displayFiatAmount as NSDecimalNumber).doubleValue
+            guard !amount.fiat.isZero else { inputValue = ""; return }
+            let d = (amount.fiat as NSDecimalNumber).doubleValue
             inputValue = String(format: "%.2f", d)
         case .coin:
             if let quotedReceiveInputValue {
@@ -512,8 +515,8 @@ final class SwapConvertViewModel: ObservableObject {
         displayDashAmount * amount.dashFiatRate
     }
 
-    private var fixedCoinReceiveAmount: String? {
-        guard selectedCurrency.isCoinInput, amount.crypto > 0 else { return nil }
+    private var fixedTargetReceiveAmount: String? {
+        guard selectedCurrency.isReceiveTargetMode, amount.crypto > 0 else { return nil }
         let value = (amount.crypto as NSDecimalNumber).doubleValue
         return "\(coin.code) \(MayaInputFormatter.receiveAmount(value))"
     }
@@ -637,5 +640,11 @@ private struct MayaInputFormatter {
         formatter.minimumFractionDigits = 2
         formatter.maximumFractionDigits = 2
         return formatter.string(from: value as NSDecimalNumber) ?? "\(value)"
+    }
+}
+
+private extension CurrencyOption {
+    var isReceiveTargetMode: Bool {
+        isCoinInput || isFiat
     }
 }

@@ -147,12 +147,15 @@ public class HTTPClient<Target: TargetType> {
     }
 
     private func retrieveAccessToken(for target: Target) -> String {
+        // Never crash when a bearer request is made without a token — e.g. opening a merchant
+        // before signing in to the gift-card provider, or after the token expired. Return an empty
+        // string so the request goes out without a valid Bearer and the server's 401 is handled by
+        // the normal error path, instead of force-unwrapping nil (TestFlight crash, HTTPClient:152).
         if let target = target as? AccessTokenAuthorizable, target.authorizationType == .bearer,
            let provider = accessTokenProvider {
-            return provider()! // Assume that we have token when we need it
+            return provider() ?? ""
         }
-
-        fatalError("Token should be provided")
+        return ""
     }
 
     deinit {
