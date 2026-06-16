@@ -86,8 +86,8 @@ struct SwapTransactionPendingView: View {
 #Preview {
     SwapTransactionPendingView(
         message: NSLocalizedString(
-            "Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins.",
-            comment: "Maya"
+            "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.",
+            comment: "Maya/SwapKit"
         ),
         executionNetwork: "NEAR",
         detailMessage: NSLocalizedString(

@@ -165,8 +165,8 @@ private struct SwapTransactionStatusView: View {
         switch viewModel.swapStatus {
         case .idle, .pendingConfirmation:
             pending(message: NSLocalizedString(
-                "Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend.",
-                comment: "Maya"
+                "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.",
+                comment: "Maya/SwapKit"
             ))
         case .processingSwap:
             pending(message: NSLocalizedString(
