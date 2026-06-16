@@ -21,16 +21,19 @@ import UIKit
 
 /// Loads remote coin icons with a two-level cache: memory (`NSCache`) + disk (`URLCache`).
 ///
-/// Icons are fetched from the jsupa/crypto-icons repository using the lowercased coin code,
-/// matching the Android implementation. Disk-cached entries survive app restarts and are
-/// served without re-downloading until the OS purges the cache.
+/// The primary remote source is the SwapKit token-list CDN keyed by the full asset identifier
+/// (for example `ETH.USDC-...`), which avoids collisions between multi-chain tokens sharing the
+/// same ticker. A secondary fallback uses the jsupa/crypto-icons repository keyed by ticker code.
+/// Disk-cached entries survive app restarts and are served without re-downloading until the OS
+/// purges the cache.
 ///
 /// This actor is responsible only for remote loading and caching.
 /// Local asset fallback is handled by `MayaCoinIconView`.
 actor MayaCoinIconLoader {
     static let shared = MayaCoinIconLoader()
 
-    private static let baseURL = "https://raw.githubusercontent.com/jsupa/crypto-icons/main/icons/"
+    private static let swapKitCDNBaseURL = "https://storage.googleapis.com/token-list-swapkit/images/"
+    private static let jsupaBaseURL = "https://raw.githubusercontent.com/jsupa/crypto-icons/main/icons/"
 
     private let memoryCache = NSCache<NSString, UIImage>()
     private let session: URLSession
@@ -50,17 +53,28 @@ actor MayaCoinIconLoader {
         memoryCache.countLimit = 200
     }
 
-    /// Returns the icon for `code`, or `nil` if unavailable.
+    /// Returns the icon for a full SwapKit/Maya asset identifier, or `nil` if unavailable.
     /// Memory cache is checked first; on miss the image is downloaded and cached.
-    func loadIcon(for code: String) async -> UIImage? {
-        let key = code.lowercased() as NSString
+    func loadSwapKitIcon(for identifier: String) async -> UIImage? {
+        guard let url = URL(string: Self.swapKitCDNBaseURL + "\(identifier.lowercased()).png") else {
+            return nil
+        }
+        return await loadIcon(cacheKey: "swapkit:\(identifier.lowercased())", from: url)
+    }
+
+    /// Returns the jsupa fallback icon for `code`, or `nil` if unavailable.
+    func loadJsupaIcon(for code: String) async -> UIImage? {
+        guard let url = URL(string: Self.jsupaBaseURL + "\(code.lowercased()).png") else {
+            return nil
+        }
+        return await loadIcon(cacheKey: "jsupa:\(code.lowercased())", from: url)
+    }
+
+    private func loadIcon(cacheKey: String, from url: URL) async -> UIImage? {
+        let key = cacheKey as NSString
 
         if let cached = memoryCache.object(forKey: key) {
             return cached
-        }
-
-        guard let url = URL(string: Self.baseURL + "\(code.lowercased()).png") else {
-            return nil
         }
 
         do {

@@ -80,6 +80,15 @@ enum MayaSwapStatus: Equatable {
 final class OrderPreviewViewModel: ObservableObject {
     private enum Constants {
         static let submitCountdownSeconds = 10
+        static let minimumTolerance = Decimal(string: "0.00000001")!
+        static let targetToleranceFraction = Decimal(string: "0.001")!
+    }
+
+    private struct QuotePoint {
+        let dashSatoshis: Int64
+        let quote: SwapQuoteResult
+        let net: Decimal
+        let fee: Decimal
     }
 
     // ── PRODUCT CONFIG ──────────────────────────────────────────────────────
@@ -158,11 +167,12 @@ final class OrderPreviewViewModel: ObservableObject {
         }
     }
 
-    private let dashSatoshis: Int64
+    private var dashSatoshis: Int64
     // Fiat value of 1 destination coin, in `fiatCurrencyCode`. Used to derive the Purchase/fee
     // fiat lines. <= 0 means the rate is unavailable → those lines are hidden.
     private let cryptoFiatRate: Decimal
     private let fiatCurrencyCode: String
+    private let targetReceiveAmount: Decimal?
     private var quote: SwapQuoteResult
     private var countdownCancellable: AnyCancellable?
     private let sendCoinsService = SendCoinsService()
@@ -185,6 +195,7 @@ final class OrderPreviewViewModel: ObservableObject {
         fromFiatAmount: String,
         cryptoFiatRate: Decimal,
         fiatCurrencyCode: String,
+        targetReceiveAmount: Decimal? = nil,
         initialQuote: SwapQuoteResult,
         swapProvider: SwapProvider = MayaSwapProvider()
     ) {
@@ -195,6 +206,7 @@ final class OrderPreviewViewModel: ObservableObject {
         self.fromFiatAmount = fromFiatAmount
         self.cryptoFiatRate = cryptoFiatRate
         self.fiatCurrencyCode = fiatCurrencyCode
+        self.targetReceiveAmount = targetReceiveAmount
         self.swapProvider = swapProvider
         self.quote = initialQuote
         applyQuote(initialQuote)
@@ -260,6 +272,7 @@ final class OrderPreviewViewModel: ObservableObject {
                 fromFiatAmount: fromFiatAmount,
                 cryptoFiatRate: cryptoFiatRate,
                 fiatCurrencyCode: fiatCurrencyCode,
+                targetReceiveAmount: targetReceiveAmount,
                 initialQuote: freshQuote,
                 swapProvider: swapProvider
             )
@@ -297,13 +310,24 @@ final class OrderPreviewViewModel: ObservableObject {
         defer { isRefreshing = false }
 
         do {
-            let newQuote = try await fetchFreshQuote()
-            if let apiError = newQuote.error {
-                setFailure(apiError)
-                return
+            let refreshedPoint: QuotePoint
+            if let targetReceiveAmount, targetReceiveAmount > 0 {
+                refreshedPoint = try await convergeQuoteToTarget(targetReceiveAmount)
+            } else {
+                let newQuote = try await fetchFreshQuote(dashSatoshis: dashSatoshis)
+                if let apiError = newQuote.error {
+                    setFailure(apiError)
+                    return
+                }
+                guard let point = makeQuotePoint(dashSatoshis: dashSatoshis, quote: newQuote) else {
+                    setFailure(NSLocalizedString("Unable to refresh quote. Please try again.", comment: "Swap"))
+                    return
+                }
+                refreshedPoint = point
             }
-            quote = newQuote
-            applyQuote(newQuote)
+            dashSatoshis = refreshedPoint.dashSatoshis
+            quote = refreshedPoint.quote
+            applyQuote(refreshedPoint.quote)
             stopCountdown()
             resetCountdown()
             startCountdown()
@@ -313,6 +337,10 @@ final class OrderPreviewViewModel: ObservableObject {
     }
 
     private func fetchFreshQuote() async throws -> SwapQuoteResult {
+        try await fetchFreshQuote(dashSatoshis: dashSatoshis)
+    }
+
+    private func fetchFreshQuote(dashSatoshis: Int64) async throws -> SwapQuoteResult {
         try await swapProvider.fetchQuote(
             dashSatoshis: dashSatoshis,
             toAsset: coin.mayaAsset,
@@ -674,9 +702,10 @@ final class OrderPreviewViewModel: ObservableObject {
     private func applyQuote(_ quote: SwapQuoteResult) {
         let expectedOut = assetDecimalFromBaseUnits(quote.expectedAmountOut)
         let fee = assetDecimalFromBaseUnits(quote.fees?.total ?? quote.fees?.outbound)
-        let total = expectedOut + fee
+        let displayOut = targetReceiveAmount.flatMap { $0 > 0 ? $0 : nil } ?? expectedOut
+        let total = displayOut + fee
 
-        toAmount = formatCryptoAmount(expectedOut)
+        toAmount = formatCryptoAmount(displayOut)
         purchaseAmount = toAmount
         mayaFee = formatFeeAmount(fee)
         totalAmount = formatCryptoAmount(total)
@@ -692,12 +721,131 @@ final class OrderPreviewViewModel: ObservableObject {
         // active fiat currency — matching how the source-side fromFiatAmount is produced.
         // Rate unavailable (<= 0) → hide the lines instead of showing a wrong/zero value.
         if cryptoFiatRate > 0 {
-            purchaseFiatAmount = formatFiat(expectedOut * cryptoFiatRate)
+            purchaseFiatAmount = formatFiat(displayOut * cryptoFiatRate)
             mayaFeeFiatAmount = fee > 0 ? formatFiat(fee * cryptoFiatRate) : nil
         } else {
             purchaseFiatAmount = nil
             mayaFeeFiatAmount = nil
         }
+    }
+
+    private func convergeQuoteToTarget(_ target: Decimal) async throws -> QuotePoint {
+        let tolerance = max(target * Constants.targetToleranceFraction, Constants.minimumTolerance)
+        var points: [QuotePoint] = []
+
+        let firstQuote = try await fetchFreshQuote(dashSatoshis: dashSatoshis)
+        if let apiError = firstQuote.error {
+            throw mayaFieldError(apiError)
+        }
+        guard let firstPoint = makeQuotePoint(dashSatoshis: dashSatoshis, quote: firstQuote) else {
+            throw mayaFieldError(NSLocalizedString("Unable to refresh quote. Please try again.", comment: "Swap"))
+        }
+        points.append(firstPoint)
+
+        if isAcceptable(point: firstPoint, target: target, tolerance: tolerance) {
+            return firstPoint
+        }
+
+        if let secondDashSatoshis = grossedUpDashSatoshis(for: target, from: firstPoint),
+           secondDashSatoshis != firstPoint.dashSatoshis,
+           let secondPoint = try await fetchPoint(dashSatoshis: secondDashSatoshis) {
+            points.append(secondPoint)
+
+            if isAcceptable(point: secondPoint, target: target, tolerance: tolerance) {
+                return secondPoint
+            }
+
+            if let thirdDashSatoshis = secantDashSatoshis(previous: firstPoint, current: secondPoint, target: target),
+               thirdDashSatoshis != secondPoint.dashSatoshis,
+               let thirdPoint = try await fetchPoint(dashSatoshis: thirdDashSatoshis) {
+                points.append(thirdPoint)
+            }
+        }
+
+        return bestPoint(from: points, target: target)
+    }
+
+    private func fetchPoint(dashSatoshis: Int64) async throws -> QuotePoint? {
+        let freshQuote = try await fetchFreshQuote(dashSatoshis: dashSatoshis)
+        guard freshQuote.error == nil else { return nil }
+        return makeQuotePoint(dashSatoshis: dashSatoshis, quote: freshQuote)
+    }
+
+    private func makeQuotePoint(dashSatoshis: Int64, quote: SwapQuoteResult) -> QuotePoint? {
+        let net = assetDecimalFromBaseUnits(quote.expectedAmountOut)
+        guard net > 0 else { return nil }
+        let fee = assetDecimalFromBaseUnits(quote.fees?.total ?? quote.fees?.outbound)
+        return QuotePoint(dashSatoshis: dashSatoshis, quote: quote, net: net, fee: fee)
+    }
+
+    private func grossedUpDashSatoshis(for target: Decimal, from point: QuotePoint) -> Int64? {
+        let grossOut = point.net + point.fee
+        guard grossOut > 0 else { return nil }
+
+        let required = Decimal(point.dashSatoshis) * (target + point.fee) / grossOut
+        var next = cappedDashSatoshis(roundUpToSatoshis(required))
+
+        if next == point.dashSatoshis {
+            if point.net < target, point.dashSatoshis < dashBalance {
+                next = min(point.dashSatoshis + 1, dashBalance)
+            } else {
+                return nil
+            }
+        }
+
+        return next
+    }
+
+    private func secantDashSatoshis(previous: QuotePoint, current: QuotePoint, target: Decimal) -> Int64? {
+        let netDelta = current.net - previous.net
+        guard netDelta != 0 else { return nil }
+
+        let dashDelta = Decimal(current.dashSatoshis - previous.dashSatoshis)
+        let next = Decimal(current.dashSatoshis) + (target - current.net) * dashDelta / netDelta
+        guard next > 0 else { return nil }
+
+        var nextSatoshis = cappedDashSatoshis(roundUpToSatoshis(next))
+        if nextSatoshis == current.dashSatoshis {
+            if current.net < target, current.dashSatoshis < dashBalance {
+                nextSatoshis = min(current.dashSatoshis + 1, dashBalance)
+            } else {
+                return nil
+            }
+        }
+        return nextSatoshis
+    }
+
+    private func isAcceptable(point: QuotePoint, target: Decimal, tolerance: Decimal) -> Bool {
+        point.net >= target && absoluteDifference(point.net, target) <= tolerance
+    }
+
+    private func bestPoint(from points: [QuotePoint], target: Decimal) -> QuotePoint {
+        let affordablePoints = points.filter { $0.net >= target }
+        if let bestAffordable = affordablePoints.min(by: { absoluteDifference($0.net, target) < absoluteDifference($1.net, target) }) {
+            return bestAffordable
+        }
+
+        return points.min(by: { absoluteDifference($0.net, target) < absoluteDifference($1.net, target) })!
+    }
+
+    private func absoluteDifference(_ lhs: Decimal, _ rhs: Decimal) -> Decimal {
+        lhs >= rhs ? lhs - rhs : rhs - lhs
+    }
+
+    private func roundUpToSatoshis(_ value: Decimal) -> Int64 {
+        guard value > 0 else { return 0 }
+        var raw = value
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &raw, 0, .up)
+        return NSDecimalNumber(decimal: rounded).int64Value
+    }
+
+    private func cappedDashSatoshis(_ value: Int64) -> Int64 {
+        min(max(1, value), dashBalance)
+    }
+
+    private var dashBalance: Int64 {
+        Int64(DWEnvironment.sharedInstance().currentAccount.balance)
     }
 
     // MARK: - Private: Formatting
