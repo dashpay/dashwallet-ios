@@ -41,12 +41,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// in the account's spentOutputs set.
 - (BOOL)isInputSpent:(UInt256)txHash atIndex:(uint32_t)index;
 
-/// Returns YES if the account has an UNCONFIRMED transaction that carries an
-/// OP_RETURN output (script first byte 0x6a). This app only builds OP_RETURN
-/// outputs for Maya swaps, so this is a wallet-level "a swap is still
-/// confirming" check — used to block other spends until the swap confirms.
-- (BOOL)hasUnconfirmedSwapTransaction;
-
 @end
 
 NS_ASSUME_NONNULL_END

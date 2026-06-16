@@ -84,7 +84,7 @@ final class OrderPreviewViewModel: ObservableObject {
 
     // ── PRODUCT CONFIG ──────────────────────────────────────────────────────
     /// Change this ONE LINE to control when the success screen appears.
-    static let successTrigger: MayaSuccessTrigger = .onDashConfirmation
+    static let successTrigger: MayaSuccessTrigger = .onISLock
     // ────────────────────────────────────────────────────────────────────────
 
     let coin: MayaCryptoCurrency

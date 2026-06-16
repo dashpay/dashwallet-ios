@@ -54,6 +54,14 @@ struct BuySellPortalView: View {
     var onMaya: () -> Void
     var onSwapKit: () -> Void
 
+    private var showsMaya: Bool {
+        model.items.contains { $0.service == .maya }
+    }
+
+    private var showsSwapKit: Bool {
+        model.items.contains { $0.service == .swapKit }
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
@@ -67,8 +75,10 @@ struct BuySellPortalView: View {
                     if showCoinbase {
                         coinbaseCard
                     }
-                    mayaCard
-                    if SwapKitConstants.isConfigured {
+                    if showsMaya {
+                        mayaCard
+                    }
+                    if showsSwapKit {
                         swapKitCard
                     }
                 }

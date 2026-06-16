@@ -44,6 +44,7 @@ final class SwapConvertViewModel: ObservableObject {
         let dashSatoshis: Int64
         let selectedCurrency: CurrencyOption
         let enteredCoinAmount: Decimal?
+        let isMaxFromBalance: Bool
     }
 
     // MARK: - Private State
@@ -52,10 +53,15 @@ final class SwapConvertViewModel: ObservableObject {
     private var amount = SwapConvertAmount()
     private var latestQuote: SwapQuoteResult?
     private var effectiveSellSatoshis: Int64?
+    private var isMaxFromBalance = false
     // Monotonically increasing; stale responses are discarded when their snapshot id no longer matches.
     private var quoteRequestID = 0
     // Suppresses input observation while we programmatically sync the displayed value during a currency switch.
     private var isSwitchingCurrency = false
+    // Suppresses amount-model writes while we programmatically update the visible coin input from a quote.
+    private var isSyncingQuotedInput = false
+    // Prevents a programmatic input sync from immediately triggering another debounced quote request.
+    private var suppressNextDebouncedQuoteFetch = false
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Computed Properties
@@ -125,6 +131,7 @@ final class SwapConvertViewModel: ObservableObject {
     func setMax() {
         let balance = DWEnvironment.sharedInstance().currentAccount.balance
         amount.setDash(Self.dashRoundedDown(balance.dashAmount))
+        isMaxFromBalance = true
         clearQuoteState()
         errorMessage = nil
         isSwitchingCurrency = true
@@ -142,7 +149,7 @@ final class SwapConvertViewModel: ObservableObject {
         let dashFiatRate = (try? CurrencyExchanger.shared.rate(for: code)) ?? 1
         amount.updateRates(dashFiatRate: dashFiatRate, cryptoFiatRate: amount.cryptoFiatRate)
 
-        clearQuoteState()
+        clearQuoteState(keepingEffectiveSell: effectiveSellSatoshis != nil)
 
         // When the picker is already showing fiat, update its identity to the new code so
         // SwiftUI detects the change (fiat(ALL) ≠ fiat(UAH) because CurrencyOption is Hashable).
@@ -233,24 +240,27 @@ final class SwapConvertViewModel: ObservableObject {
 
     // MARK: - Private: Quote State
 
-    private func clearQuoteState() {
+    private func clearQuoteState(keepingEffectiveSell: Bool = false) {
         latestQuote = nil
         receiveAmount = nil
-        effectiveSellSatoshis = nil
+        if !keepingEffectiveSell {
+            effectiveSellSatoshis = nil
+        }
     }
 
     private func applySuccessfulQuote(_ quote: SwapQuoteResult) {
         guard let raw = quote.expectedAmountOut, let rawValue = Double(raw) else {
             latestQuote = nil
             errorMessage = nil
-            receiveAmount = selectedCurrency.isCoinInput ? fixedCoinReceiveAmount : nil
+            receiveAmount = selectedCurrency.isCoinInput && !isMaxFromBalance ? fixedCoinReceiveAmount : nil
             return
         }
         latestQuote = quote
-        receiveAmount = selectedCurrency.isCoinInput
+        receiveAmount = selectedCurrency.isCoinInput && !isMaxFromBalance
             ? fixedCoinReceiveAmount
             : "\(coin.code) \(MayaInputFormatter.receiveAmount(rawValue / 1e8))"
         checkBalance()
+        syncCoinInputToQuotedReceiveIfNeeded(quote)
     }
 
     private func applyQuoteError(_ apiError: String) {
@@ -282,7 +292,9 @@ final class SwapConvertViewModel: ObservableObject {
         $inputValue
             .sink { [weak self] value in
                 guard let self, !self.isSwitchingCurrency else { return }
+                guard !self.isSyncingQuotedInput else { return }
 
+                self.isMaxFromBalance = false
                 self.clearQuoteState()
                 guard self.parseInput(value) != nil else {
                     self.errorMessage = nil
@@ -295,7 +307,14 @@ final class SwapConvertViewModel: ObservableObject {
 
         $inputValue
             .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
-            .sink { [weak self] _ in self?.scheduleQuoteFetch() }
+            .sink { [weak self] _ in
+                guard let self else { return }
+                if self.suppressNextDebouncedQuoteFetch {
+                    self.suppressNextDebouncedQuoteFetch = false
+                    return
+                }
+                self.scheduleQuoteFetch()
+            }
             .store(in: &cancellables)
     }
 
@@ -326,7 +345,7 @@ final class SwapConvertViewModel: ObservableObject {
             errorMessage = NSLocalizedString("Exchange rate not available", comment: "Maya")
         case .insufficientBalance:
             isLoading = false
-            clearQuoteState()
+            clearQuoteState(keepingEffectiveSell: effectiveSellSatoshis != nil)
             errorMessage = NSLocalizedString("Insufficient balance", comment: "Maya")
         case .valid(let satoshis):
             errorMessage = nil
@@ -336,7 +355,8 @@ final class SwapConvertViewModel: ObservableObject {
                 id: quoteRequestID,
                 dashSatoshis: satoshis,
                 selectedCurrency: selectedCurrency,
-                enteredCoinAmount: selectedCurrency.isCoinInput ? amount.crypto : nil
+                enteredCoinAmount: selectedCurrency.isCoinInput ? amount.crypto : nil,
+                isMaxFromBalance: isMaxFromBalance
             )
             Task { await fetchQuote(snapshot: snapshot) }
         }
@@ -365,7 +385,9 @@ final class SwapConvertViewModel: ObservableObject {
             guard quoteRequestID == snapshot.id else { return }
             latestQuote = nil
             effectiveSellSatoshis = nil
-            receiveAmount = snapshot.selectedCurrency.isCoinInput ? fixedCoinReceiveAmount : nil
+            receiveAmount = snapshot.selectedCurrency.isCoinInput && !snapshot.isMaxFromBalance
+                ? fixedCoinReceiveAmount
+                : nil
             errorMessage = NSLocalizedString("Amount too small to cover fees", comment: "Swap")
         }
     }
@@ -388,6 +410,10 @@ final class SwapConvertViewModel: ObservableObject {
     }
 
     private func resolveQuote(_ quote: SwapQuoteResult, snapshot: QuoteRequestSnapshot) async throws -> (quote: SwapQuoteResult, effectiveSellSatoshis: Int64?) {
+        if snapshot.isMaxFromBalance {
+            return (quote, nil)
+        }
+
         guard snapshot.selectedCurrency.isCoinInput,
               let enteredCoinAmount = snapshot.enteredCoinAmount,
               enteredCoinAmount > 0,
@@ -448,13 +474,17 @@ final class SwapConvertViewModel: ObservableObject {
     private func syncInputValueForCurrency(_ currency: CurrencyOption) {
         switch currency {
         case .dash:
-            let dash5 = Self.dashRoundedDown(amount.dash)
+            let dash5 = Self.dashRoundedDown(displayDashAmount)
             inputValue = dash5.isZero ? "" : dash5.formattedDashAmountWithoutCurrencySymbol
         case .fiat:
-            guard !amount.fiat.isZero else { inputValue = ""; return }
-            let d = (amount.fiat as NSDecimalNumber).doubleValue
+            guard !displayFiatAmount.isZero else { inputValue = ""; return }
+            let d = (displayFiatAmount as NSDecimalNumber).doubleValue
             inputValue = String(format: "%.2f", d)
         case .coin:
+            if let quotedReceiveInputValue {
+                inputValue = quotedReceiveInputValue
+                return
+            }
             guard !amount.crypto.isZero, amount.cryptoFiatRate > 0 else { inputValue = ""; return }
             let d = (amount.crypto as NSDecimalNumber).doubleValue
             inputValue = MayaInputFormatter.trimTrailingZeros(String(format: "%.8f", d))
@@ -468,7 +498,7 @@ final class SwapConvertViewModel: ObservableObject {
     }
 
     private var activeSellSatoshis: Int64 {
-        if selectedCurrency.isCoinInput, let effectiveSellSatoshis, effectiveSellSatoshis > 0 {
+        if !isMaxFromBalance, let effectiveSellSatoshis, effectiveSellSatoshis > 0 {
             return effectiveSellSatoshis
         }
         return amount.dashSatoshis
@@ -486,6 +516,18 @@ final class SwapConvertViewModel: ObservableObject {
         guard selectedCurrency.isCoinInput, amount.crypto > 0 else { return nil }
         let value = (amount.crypto as NSDecimalNumber).doubleValue
         return "\(coin.code) \(MayaInputFormatter.receiveAmount(value))"
+    }
+
+    private var quotedReceiveInputValue: String? {
+        guard isMaxFromBalance,
+              selectedCurrency.isCoinInput,
+              let latestQuote,
+              let expectedOut = decimalFromBaseUnits(latestQuote.expectedAmountOut),
+              expectedOut > 0 else {
+            return nil
+        }
+        let value = (expectedOut as NSDecimalNumber).doubleValue
+        return MayaInputFormatter.receiveAmount(value)
     }
 
     private func dashAmount(from satoshis: Int64) -> Decimal {
@@ -513,6 +555,23 @@ final class SwapConvertViewModel: ObservableObject {
         var rounded = Decimal()
         NSDecimalRound(&rounded, &scaled, 0, .plain)
         return NSDecimalNumber(decimal: rounded).stringValue
+    }
+
+    private func syncCoinInputToQuotedReceiveIfNeeded(_ quote: SwapQuoteResult) {
+        guard isMaxFromBalance,
+              selectedCurrency.isCoinInput,
+              let expectedOut = decimalFromBaseUnits(quote.expectedAmountOut),
+              expectedOut > 0 else {
+            return
+        }
+
+        let displayValue = MayaInputFormatter.receiveAmount((expectedOut as NSDecimalNumber).doubleValue)
+        guard inputValue != displayValue else { return }
+
+        isSyncingQuotedInput = true
+        suppressNextDebouncedQuoteFetch = true
+        inputValue = displayValue
+        isSyncingQuotedInput = false
     }
 
     // MARK: - Private: Input Sanitization
