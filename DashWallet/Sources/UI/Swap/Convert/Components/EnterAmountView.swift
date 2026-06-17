@@ -45,10 +45,7 @@ enum CurrencyOption: Hashable {
     var symbol: String? {
         switch self {
         case .fiat(let code):
-            let formatter = NumberFormatter()
-            formatter.numberStyle = .currency
-            formatter.currencyCode = code
-            return formatter.currencySymbol
+            return NumberFormatter.displayCurrencySymbol(for: code)
         case .dash: return nil
         case .coin(let code): return code
         }

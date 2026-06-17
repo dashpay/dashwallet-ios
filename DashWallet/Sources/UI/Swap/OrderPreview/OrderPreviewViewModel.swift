@@ -867,12 +867,8 @@ final class OrderPreviewViewModel: ObservableObject {
     /// Formats a fiat value in `fiatCurrencyCode`. Mirrors `MayaInputFormatter.fiat(_:currencyCode:)`
     /// so the Purchase/fee fiat lines match the source-side fiat format.
     private func formatFiat(_ value: Decimal) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = fiatCurrencyCode
-        formatter.minimumFractionDigits = 2
-        formatter.maximumFractionDigits = 2
-        return formatter.string(from: value as NSDecimalNumber) ?? "\(value)"
+        NumberFormatter.fiatDisplayFormatter(currencyCode: fiatCurrencyCode)
+            .string(from: value as NSDecimalNumber) ?? "\(value)"
     }
 
     private func formatDecimal(_ value: Decimal) -> String {
