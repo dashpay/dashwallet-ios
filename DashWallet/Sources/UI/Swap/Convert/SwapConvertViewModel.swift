@@ -181,8 +181,9 @@ final class SwapConvertViewModel: ObservableObject {
             coin: coin,
             address: address,
             dashSatoshis: activeSellSatoshis,
-            fromDashAmount: displayDashAmount.formattedDashAmountWithoutCurrencySymbol,
-            fromFiatAmount: MayaInputFormatter.fiat(displayFiatAmount, currencyCode: currentFiatCurrency),
+            // Order Preview reflects the real (grossed-up) spend — that's where the fee is shown.
+            fromDashAmount: dashAmount(from: activeSellSatoshis).formattedDashAmountWithoutCurrencySymbol,
+            fromFiatAmount: MayaInputFormatter.fiat(dashAmount(from: activeSellSatoshis) * amount.dashFiatRate, currencyCode: currentFiatCurrency),
             cryptoFiatRate: amount.cryptoFiatRate,
             fiatCurrencyCode: currentFiatCurrency,
             targetReceiveAmount: selectedCurrency.isReceiveTargetMode && !isMaxFromBalance ? amount.crypto : nil,
@@ -406,7 +407,12 @@ final class SwapConvertViewModel: ObservableObject {
     // MARK: - Private: Amount Model
 
     private func updateAmountModel(input: String, currency: CurrencyOption) {
-        guard let d = parseInput(input) else { return }
+        guard let d = parseInput(input) else {
+            // Empty / zero input: reset the model to 0 so the Dash row and receive reflect 0.
+            // Otherwise the previous non-zero amount lingers after the user deletes everything.
+            amount.setDash(0)
+            return
+        }
         let decimal = Decimal(d)
 
         switch currency {
@@ -518,7 +524,10 @@ final class SwapConvertViewModel: ObservableObject {
     }
 
     private var displayDashAmount: Decimal {
-        dashAmount(from: activeSellSatoshis)
+        // Enter Amount's "Dash Wallet" row shows the *entered* amount (e.g. $2), not the grossed-up
+        // cost — the fee / real spend appear only on the Order Preview. The grossed-up
+        // `activeSellSatoshis` still drives the actual swap, balance validation, and the preview.
+        dashAmount(from: amount.dashSatoshis)
     }
 
     private var displayFiatAmount: Decimal {
