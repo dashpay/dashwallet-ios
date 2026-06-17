@@ -169,8 +169,9 @@ final class MayaConvertViewModel: ObservableObject {
             coin: coin,
             address: address,
             dashSatoshis: activeSellSatoshis,
-            fromDashAmount: displayDashAmount.formattedDashAmountWithoutCurrencySymbol,
-            fromFiatAmount: MayaInputFormatter.fiat(displayFiatAmount, currencyCode: currentFiatCurrency),
+            // Order Preview reflects the real (grossed-up) spend — that's where the fee is shown.
+            fromDashAmount: dashAmount(from: activeSellSatoshis).formattedDashAmountWithoutCurrencySymbol,
+            fromFiatAmount: MayaInputFormatter.fiat(dashAmount(from: activeSellSatoshis) * amount.dashFiatRate, currencyCode: currentFiatCurrency),
             cryptoFiatRate: amount.cryptoFiatRate,
             fiatCurrencyCode: currentFiatCurrency,
             initialQuote: quote
@@ -214,7 +215,7 @@ final class MayaConvertViewModel: ObservableObject {
     private func validate() -> ValidationResult {
         guard parseInput(inputValue) != nil else { return .empty }
 
-        if case .coin = selectedCurrency, amount.cryptoFiatRate == 0 {
+        if selectedCurrency.isReceiveTargetMode, amount.cryptoFiatRate == 0 {
             return .exchangeRateUnavailable
         }
 
@@ -247,11 +248,11 @@ final class MayaConvertViewModel: ObservableObject {
         guard let raw = quote.expectedAmountOut, let rawValue = Double(raw) else {
             latestQuote = nil
             errorMessage = nil
-            receiveAmount = selectedCurrency.isCoinInput && !isMaxFromBalance ? fixedCoinReceiveAmount : nil
+            receiveAmount = selectedCurrency.isReceiveTargetMode && !isMaxFromBalance ? fixedCoinReceiveAmount : nil
             return
         }
         latestQuote = quote
-        receiveAmount = selectedCurrency.isCoinInput && !isMaxFromBalance
+        receiveAmount = selectedCurrency.isReceiveTargetMode && !isMaxFromBalance
             ? fixedCoinReceiveAmount
             : "\(coin.code) \(MayaInputFormatter.receiveAmount(rawValue / 1e8))"
         checkBalance()
@@ -333,7 +334,7 @@ final class MayaConvertViewModel: ObservableObject {
                 id: quoteRequestID,
                 dashSatoshis: satoshis,
                 selectedCurrency: selectedCurrency,
-                enteredCoinAmount: selectedCurrency.isCoinInput ? amount.crypto : nil,
+                enteredCoinAmount: selectedCurrency.isReceiveTargetMode ? amount.crypto : nil,
                 isMaxFromBalance: isMaxFromBalance
             )
             Task { await fetchQuote(snapshot: snapshot) }
@@ -364,7 +365,7 @@ final class MayaConvertViewModel: ObservableObject {
             latestQuote = nil
             effectiveSellSatoshis = nil
             errorMessage = NSLocalizedString("Amount too small to cover fees", comment: "Maya")
-            receiveAmount = snapshot.selectedCurrency.isCoinInput && !snapshot.isMaxFromBalance
+            receiveAmount = snapshot.selectedCurrency.isReceiveTargetMode && !snapshot.isMaxFromBalance
                 ? fixedCoinReceiveAmount
                 : nil
         }
@@ -373,7 +374,12 @@ final class MayaConvertViewModel: ObservableObject {
     // MARK: - Private: Amount Model
 
     private func updateAmountModel(input: String, currency: CurrencyOption) {
-        guard let d = parseInput(input) else { return }
+        guard let d = parseInput(input) else {
+            // Empty / zero input: reset the model to 0 so the Dash row and receive reflect 0.
+            // Otherwise the previous non-zero amount lingers after the user deletes everything.
+            amount.setDash(0)
+            return
+        }
         let decimal = Decimal(d)
 
         switch currency {
@@ -392,7 +398,7 @@ final class MayaConvertViewModel: ObservableObject {
             return (quote, nil)
         }
 
-        guard snapshot.selectedCurrency.isCoinInput,
+        guard snapshot.selectedCurrency.isReceiveTargetMode,
               let enteredCoinAmount = snapshot.enteredCoinAmount,
               enteredCoinAmount > 0,
               let expectedOut = decimalFromBaseUnits(quote.expectedAmountOut),
@@ -488,14 +494,17 @@ final class MayaConvertViewModel: ObservableObject {
     }
 
     private var activeSellSatoshis: Int64 {
-        if !isMaxFromBalance, selectedCurrency.isCoinInput, let effectiveSellSatoshis, effectiveSellSatoshis > 0 {
+        if !isMaxFromBalance, let effectiveSellSatoshis, effectiveSellSatoshis > 0 {
             return effectiveSellSatoshis
         }
         return amount.dashSatoshis
     }
 
     private var displayDashAmount: Decimal {
-        dashAmount(from: activeSellSatoshis)
+        // Enter Amount's "Dash Wallet" row shows the *entered* amount (e.g. $2), not the grossed-up
+        // cost — the fee / real spend appear only on the Order Preview. The grossed-up
+        // `activeSellSatoshis` still drives the actual swap, balance validation, and the preview.
+        dashAmount(from: amount.dashSatoshis)
     }
 
     private var displayFiatAmount: Decimal {
@@ -503,7 +512,7 @@ final class MayaConvertViewModel: ObservableObject {
     }
 
     private var fixedCoinReceiveAmount: String? {
-        guard selectedCurrency.isCoinInput, amount.crypto > 0 else { return nil }
+        guard selectedCurrency.isReceiveTargetMode, amount.crypto > 0 else { return nil }
         let value = (amount.crypto as NSDecimalNumber).doubleValue
         return "\(coin.code) \(MayaInputFormatter.receiveAmount(value))"
     }
@@ -627,5 +636,13 @@ private struct MayaInputFormatter {
         formatter.minimumFractionDigits = 2
         formatter.maximumFractionDigits = 2
         return formatter.string(from: value as NSDecimalNumber) ?? "\(value)"
+    }
+}
+
+private extension CurrencyOption {
+    /// Fiat and coin input are "receive targets" (entered amount = what you receive, fee grossed up
+    /// on top); DASH input stays spend-driven.
+    var isReceiveTargetMode: Bool {
+        isCoinInput || isFiat
     }
 }

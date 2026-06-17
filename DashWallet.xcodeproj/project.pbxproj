@@ -80,6 +80,7 @@
 		11BD738128E7356100A34022 /* CrowdNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BD738028E7356100A34022 /* CrowdNode.swift */; };
 		11E47BA828EAE7AD0097CFA0 /* CrowdNodeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BA728EAE7AD0097CFA0 /* CrowdNodeModel.swift */; };
 		11E47BAB28EB38510097CFA0 /* SendCoinsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */; };
+		FE5CA1E0000000000000A002 /* ScaleToFitWidth.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5CA1E0000000000000A001 /* ScaleToFitWidth.swift */; };
 		51BA2EA02F0B2E0100A1B201 /* MayaSwapPendingGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51BA2E9F2F0B2E0100A1B201 /* MayaSwapPendingGate.swift */; };
 		11E47BAD28EB3A7D0097CFA0 /* CrowdNode+Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BAC28EB3A7D0097CFA0 /* CrowdNode+Constants.swift */; };
 		11ED906B29681773003784F9 /* StakingInfoDialogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11ED906A29681773003784F9 /* StakingInfoDialogController.swift */; };
@@ -1603,6 +1604,7 @@
 		C9D2C89D2A320AA000D15901 /* SyncingAlertContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451ED2A0BF1F500825057 /* SyncingAlertContentView.swift */; };
 		C9D2C89E2A320AA000D15901 /* AddressUserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471A2604289ACD5C0056B7B2 /* AddressUserInfo.swift */; };
 		C9D2C8A02A320AA000D15901 /* SendCoinsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */; };
+		FE5CA1E0000000000000A003 /* ScaleToFitWidth.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5CA1E0000000000000A001 /* ScaleToFitWidth.swift */; };
 		51BA2EA12F0B2E0100A1B201 /* MayaSwapPendingGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51BA2E9F2F0B2E0100A1B201 /* MayaSwapPendingGate.swift */; };
 		C9D2C8A12A320AA000D15901 /* ShortcutAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8929D3FCCF0034FD57 /* ShortcutAction.swift */; };
 		C9D2C8A22A320AA000D15901 /* DWModalChevronView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69DF231556D6001B8C90 /* DWModalChevronView.m */; };
@@ -1966,6 +1968,7 @@
 		11BD738028E7356100A34022 /* CrowdNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNode.swift; sourceTree = "<group>"; };
 		11E47BA728EAE7AD0097CFA0 /* CrowdNodeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeModel.swift; sourceTree = "<group>"; };
 		11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCoinsService.swift; sourceTree = "<group>"; };
+		FE5CA1E0000000000000A001 /* ScaleToFitWidth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScaleToFitWidth.swift; path = "DashWallet/Sources/UI/SwiftUI Components/Geometry Readers/ScaleToFitWidth.swift"; sourceTree = SOURCE_ROOT; };
 		11E47BAC28EB3A7D0097CFA0 /* CrowdNode+Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CrowdNode+Constants.swift"; sourceTree = "<group>"; };
 		51BA2E9F2F0B2E0100A1B201 /* MayaSwapPendingGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaSwapPendingGate.swift; sourceTree = "<group>"; };
 		11ED906A29681773003784F9 /* StakingInfoDialogController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StakingInfoDialogController.swift; sourceTree = "<group>"; };
@@ -5461,6 +5464,7 @@
 				472D13E2299E23B7006903F1 /* BalanceNotifier.swift */,
 				51BA2E9F2F0B2E0100A1B201 /* MayaSwapPendingGate.swift */,
 				11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */,
+				FE5CA1E0000000000000A001 /* ScaleToFitWidth.swift */,
 				09950CBE38F14286AC06BB78 /* DSAccount+SpentInputCheck.h */,
 				7BC16BFBFFFA4E488C09164D /* DSAccount+SpentInputCheck.m */,
 			);
@@ -9696,6 +9700,7 @@
 				471A2605289ACD5C0056B7B2 /* AddressUserInfo.swift in Sources */,
 				51BA2EA02F0B2E0100A1B201 /* MayaSwapPendingGate.swift in Sources */,
 				11E47BAB28EB38510097CFA0 /* SendCoinsService.swift in Sources */,
+				FE5CA1E0000000000000A002 /* ScaleToFitWidth.swift in Sources */,
 				EC26E6EBECE04736903F77A2 /* DSAccount+SpentInputCheck.m in Sources */,
 				C94F5E8A29D3FCCF0034FD57 /* ShortcutAction.swift in Sources */,
 				2A0C69E0231556D6001B8C90 /* DWModalChevronView.m in Sources */,
@@ -10642,6 +10647,7 @@
 				C943B5062A40A54600AF23C5 /* UICollectionView+DWDPItemDequeue.m in Sources */,
 				51BA2EA12F0B2E0100A1B201 /* MayaSwapPendingGate.swift in Sources */,
 				C9D2C8A02A320AA000D15901 /* SendCoinsService.swift in Sources */,
+				FE5CA1E0000000000000A003 /* ScaleToFitWidth.swift in Sources */,
 				C049F721C394463EB97CA8FF /* DSAccount+SpentInputCheck.m in Sources */,
 				C9D2C8A12A320AA000D15901 /* ShortcutAction.swift in Sources */,
 				C956AF112A5B592E002FAB75 /* UIButton+Dash.swift in Sources */,

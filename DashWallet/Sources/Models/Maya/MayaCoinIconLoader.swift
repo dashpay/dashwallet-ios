@@ -30,7 +30,8 @@ import UIKit
 actor MayaCoinIconLoader {
     static let shared = MayaCoinIconLoader()
 
-    private static let baseURL = "https://raw.githubusercontent.com/jsupa/crypto-icons/main/icons/"
+    private static let swapKitCDNBaseURL = "https://storage.googleapis.com/token-list-swapkit/images/"
+    private static let jsupaBaseURL = "https://raw.githubusercontent.com/jsupa/crypto-icons/main/icons/"
 
     private let memoryCache = NSCache<NSString, UIImage>()
     private let session: URLSession
@@ -50,17 +51,29 @@ actor MayaCoinIconLoader {
         memoryCache.countLimit = 200
     }
 
-    /// Returns the icon for `code`, or `nil` if unavailable.
+    /// Primary source: the SwapKit token-list CDN, keyed by the full asset identifier
+    /// (e.g. "ARB.USDC-0x…"). Covers ~all SwapKit/Maya tokens.
+    func loadSwapKitIcon(for identifier: String) async -> UIImage? {
+        guard let url = URL(string: Self.swapKitCDNBaseURL + "\(identifier.lowercased()).png") else {
+            return nil
+        }
+        return await loadIcon(cacheKey: "swapkit:\(identifier.lowercased())", from: url)
+    }
+
+    /// Fallback source: the jsupa/crypto-icons repo, keyed by the bare ticker code.
+    func loadJsupaIcon(for code: String) async -> UIImage? {
+        guard let url = URL(string: Self.jsupaBaseURL + "\(code.lowercased()).png") else {
+            return nil
+        }
+        return await loadIcon(cacheKey: "jsupa:\(code.lowercased())", from: url)
+    }
+
     /// Memory cache is checked first; on miss the image is downloaded and cached.
-    func loadIcon(for code: String) async -> UIImage? {
-        let key = code.lowercased() as NSString
+    private func loadIcon(cacheKey: String, from url: URL) async -> UIImage? {
+        let key = cacheKey as NSString
 
         if let cached = memoryCache.object(forKey: key) {
             return cached
-        }
-
-        guard let url = URL(string: Self.baseURL + "\(code.lowercased()).png") else {
-            return nil
         }
 
         do {

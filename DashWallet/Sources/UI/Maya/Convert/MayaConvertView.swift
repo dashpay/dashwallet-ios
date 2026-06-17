@@ -52,7 +52,7 @@ struct MayaConvertView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             NavigationBar(leading: { NavigationBarElement.back.button { onBack?() } })
-            TopIntro(title: String(format: NSLocalizedString("Convert Dash to %@", comment: "Maya"), viewModel.coin.name))
+            TopIntro(title: NSLocalizedString("Convert Dash", comment: "Maya"))
                 .padding(.horizontal, Layout.hPadding)
                 .padding(.bottom, 6)
             amountSection

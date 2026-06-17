@@ -48,7 +48,12 @@ enum CurrencyOption: Hashable {
             let formatter = NumberFormatter()
             formatter.numberStyle = .currency
             formatter.currencyCode = code
-            return formatter.currencySymbol
+            let raw = formatter.currencySymbol ?? code
+            // In foreign locales (e.g. en-BY) NumberFormatter prefixes a country code — "US$",
+            // "CA$". Drop leading ASCII letters so we show the bare symbol ("$", "€", "₴"); fall
+            // back to the raw value for code-only currencies (e.g. "CHF").
+            let bare = String(raw.drop(while: { $0.isLetter }))
+            return bare.isEmpty ? raw : bare
         case .dash: return nil
         case .coin(let code): return code
         }

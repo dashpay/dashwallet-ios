@@ -53,9 +53,13 @@ struct MayaCoinIconView: View {
         }
         .frame(width: size, height: size)
         .clipShape(.rect(cornerRadius: cornerRadius))
-        .task(id: coin.code) {
+        .task(id: coin.mayaAsset) {
             guard needsRemoteIcon else { return }
-            let loaded = await MayaCoinIconLoader.shared.loadIcon(for: coin.code)
+            // Primary: SwapKit token CDN by full asset identifier; fallback: jsupa by ticker code.
+            var loaded = await MayaCoinIconLoader.shared.loadSwapKitIcon(for: coin.mayaAsset)
+            if loaded == nil {
+                loaded = await MayaCoinIconLoader.shared.loadJsupaIcon(for: coin.code)
+            }
             withAnimation(.easeIn(duration: 0.15)) {
                 remoteImage = loaded
             }
