@@ -411,21 +411,30 @@ final class MayaConvertViewModel: ObservableObject {
             return (quote, nil)
         }
 
-        let effectiveRate = expectedOut / firstGuessDash
-        guard effectiveRate > 0 else {
+        // Gross-up the DASH spend so the NET received ≈ entered amount. Maya's fee is largely
+        // FIXED (a flat outbound/total in the output asset), so the naive proportional estimate
+        // `requiredDash = entered / (net/firstGuess)` overshoots badly on small swaps (e.g. a
+        // $0.10 fee on a $0.27 target inflated the receive to $0.33). Use a fee-aware closed form:
+        //   grossOut(dash) ≈ dash · grossRate, where grossRate = (expectedOut + fee) / firstGuess
+        //   net(dash) = grossOut(dash) − fee  ⇒  required dash so that net = entered:
+        //   requiredDash = firstGuess · (entered + fee) / (expectedOut + fee)
+        let fee = decimalFromBaseUnits(quote.fees?.total ?? quote.fees?.outbound) ?? 0
+        let grossOut = expectedOut + fee
+        guard grossOut > 0 else {
             return (quoteWithFixedReceive(quote, enteredCoinAmount: enteredCoinAmount), nil)
         }
 
-        let requiredDash = enteredCoinAmount / effectiveRate
+        let requiredDash = firstGuessDash * (enteredCoinAmount + fee) / grossOut
         let requiredSellSatoshis = max(1, satoshisRoundedUp(fromDash: requiredDash))
         guard requiredSellSatoshis > 0 else {
             return (quoteWithFixedReceive(quote, enteredCoinAmount: enteredCoinAmount), nil)
         }
+        let cappedSellSatoshis = min(requiredSellSatoshis, dashBalance)
 
         let resolvedQuote: MayaSwapQuote
-        if requiredSellSatoshis != snapshot.dashSatoshis {
+        if cappedSellSatoshis != snapshot.dashSatoshis {
             let requote = try await MayaAPIService.shared.fetchQuote(
-                dashSatoshis: requiredSellSatoshis,
+                dashSatoshis: cappedSellSatoshis,
                 toAsset: coin.mayaAsset,
                 destination: address
             )
