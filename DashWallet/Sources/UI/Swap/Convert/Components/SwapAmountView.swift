@@ -58,13 +58,13 @@ struct SwapAmountView: View {
     }
 
     private var primaryRow: some View {
-        HStack(spacing: 10) {
-            // Symbol + amount + dash logo scale down together as one unit (scaleToFitWidth),
-            // unlike minimumScaleFactor which would only shrink each Text independently.
+        // Amount (symbol + number + logo) and the currency chevron scale down together as ONE
+        // centered unit, so the chevron stays right next to the amount instead of being pushed to
+        // the far edge (scaleToFitWidth fills the width, so it must wrap the whole group, not just
+        // the amount). Renders full-size when it fits; shrinks uniformly when it doesn't.
+        HStack(spacing: 6) {
             amountView
                 .foregroundStyle(Color.primaryText)
-//                .scaleToFitWidth()
-//                .layoutPriority(1)
 
             if showCurrencyButton {
                 Button {
@@ -74,9 +74,9 @@ struct SwapAmountView: View {
                         .frame(width: 10, height: 5)
                 }
                 .buttonStyle(.plain)
-                .fixedSize()  // never compress the currency button
             }
         }
+        .scaleToFitWidth()
         .frame(maxWidth: .infinity)
     }
 
