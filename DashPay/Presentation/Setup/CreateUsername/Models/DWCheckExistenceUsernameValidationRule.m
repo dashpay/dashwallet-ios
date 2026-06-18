@@ -35,7 +35,6 @@ static NSTimeInterval VALIDATION_DEBOUNCE_DELAY = 0.4;
 @property (nullable, nonatomic, weak) id<DWCheckExistenceUsernameValidationRuleDelegate> delegate;
 
 @property (nullable, nonatomic, copy) NSString *username;
-@property (nullable, nonatomic, strong) id<DSDAPINetworkServiceRequest> request;
 @property (readonly, nonatomic, copy) NSArray<DWUsernameValidationRule *> *validators;
 
 @end
@@ -76,7 +75,6 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)validateText:(NSString *)text {
-    [self.request cancel];
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(performValidation) object:nil];
     self.username = text;
 
@@ -117,9 +115,9 @@ NS_ASSUME_NONNULL_END
         return;
     }
 
-    // SwiftDashSDK DPNS availability check. No cancellable request
-    // token from this surface, so `self.request` stays nil; the
-    // existing `cancelPreviousPerformRequestsWithTarget:` debounce in
+    // SwiftDashSDK DPNS availability check. There is no cancellable
+    // request token from this surface; the existing
+    // `cancelPreviousPerformRequestsWithTarget:` debounce in
     // `validateText:` keeps in-flight typing harmless, and the
     // `self.username == username` guard inside the completion
     // discards stale results.

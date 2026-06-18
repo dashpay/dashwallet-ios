@@ -53,15 +53,6 @@ class Transaction: TransactionDataItem, Identifiable {
 
     private let source: Source
 
-    /// True for transactions sourced from SwiftDashSDK only. The tx detail
-    /// screen shows reduced information for these — input/output addresses,
-    /// instant-send flags, and account-validity state are not available
-    /// from `WalletTransaction` yet.
-    var isMinimal: Bool {
-        if case .sdk = source { return true }
-        return false
-    }
-
     /// The underlying DashSync transaction, if available. Returns nil for
     /// SDK-sourced transactions. Used by code paths that still depend on
     /// rich `DSTransaction` properties (CrowdNode matchers, CoinJoin
