@@ -18,6 +18,10 @@
 import CoreLocation
 import UIKit
 
+#if DEBUG
+import SwiftUI
+#endif
+
 private let kReuseIdentifier = "PointOfUseItemCell"
 
 // MARK: - PointOfUseItemCell
@@ -99,3 +103,88 @@ extension PointOfUseItemCell {
         ])
     }
 }
+
+// MARK: - Previews
+
+#if DEBUG
+
+private extension ExplorePointOfUse {
+    static func previewMock(
+        name: String = "Merchant",
+        logoLocation: String? = nil
+    ) -> ExplorePointOfUse {
+        ExplorePointOfUse(
+            id: 1,
+            name: name,
+            category: .merchant(
+                Merchant(
+                    merchantId: "preview-id",
+                    paymentMethod: .dash,
+                    type: .onlineAndPhysical,
+                    deeplink: nil,
+                    savingsBasisPoints: 0,
+                    denominationsType: nil,
+                    denominations: [],
+                    redeemType: nil,
+                    giftCardProviders: []
+                )
+            ),
+            active: true,
+            city: nil,
+            territory: nil,
+            address1: nil,
+            address2: nil,
+            address3: nil,
+            address4: nil,
+            latitude: nil,
+            longitude: nil,
+            website: nil,
+            phone: nil,
+            logoLocation: logoLocation,
+            coverImage: nil,
+            source: nil
+        )
+    }
+}
+
+private struct PointOfUseItemCellRepresentable: UIViewRepresentable {
+    let pointOfUse: ExplorePointOfUse
+
+    func makeUIView(context: Context) -> UIView {
+        let cell = PointOfUseItemCell(style: .default, reuseIdentifier: nil)
+        cell.update(with: pointOfUse)
+        return cell.contentView
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {}
+}
+
+#Preview("With logo") {
+    VStack {
+        PointOfUseItemCellRepresentable(
+            pointOfUse: .previewMock(
+                name: "Test Merchant",
+                logoLocation: "https://piggy.cards/image/catalog/piggycards/logo2023_mobile.png"
+            )
+        )
+        .frame(width: 375, height: 60)
+    }
+    .background(Color(.systemBackground))
+    .padding()
+}
+
+#Preview("Empty logo") {
+    VStack {
+        PointOfUseItemCellRepresentable(
+            pointOfUse: .previewMock(
+                name: "No Logo Merchant",
+                logoLocation: nil
+            )
+        )
+        .frame(width: 375, height: 60)
+    }
+    .background(Color(.systemBackground))
+    .padding()
+}
+
+#endif

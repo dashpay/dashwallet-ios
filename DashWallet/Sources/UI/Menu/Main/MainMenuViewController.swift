@@ -196,7 +196,11 @@ struct MainMenuScreen: View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
                 TopIntro(title: NSLocalizedString("More", comment: ""))
-                
+                    .padding(.leading, 20)
+                    .padding(.trailing, 60)
+                    .padding(.top, 10)
+                    .padding(.bottom, 20)
+
                 #if DASHPAY
                 if viewModel.userProfileModel?.showJoinDashpay == true {
                     JoinDashPayView(

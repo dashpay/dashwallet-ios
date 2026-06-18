@@ -39,6 +39,10 @@ struct SecurityMenuScreen: View {
             }
 
             TopIntro(title: NSLocalizedString("Security", comment: ""))
+                .padding(.leading, 20)
+                .padding(.trailing, 60)
+                .padding(.top, 10)
+                .padding(.bottom, 20)
 
             // Menu list
             VStack(spacing: 2) {
