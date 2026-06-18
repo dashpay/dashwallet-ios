@@ -56,6 +56,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     @Published public private(set) var lastError: String? = nil
 
     @Published public private(set) var platformBalance: UInt64 = 0
+    @Published public private(set) var shieldedBalance: UInt64 = 0
     @Published public private(set) var activeAddressCount: Int = 0
     @Published public private(set) var derivedAddresses: [DerivedPlatformAddress] = []
 
@@ -85,6 +86,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     private var syncEventCancellable: AnyCancellable?
     private var syncStateCancellable: AnyCancellable?
+    private var shieldedEventCancellable: AnyCancellable?
+
+    /// Long-lived resolver for the shielded sub-wallet bind in `performStart`.
+    /// Stored (not local) because `MnemonicResolver` hands Rust an unretained
+    /// pointer, so ARC must own it across the bind — mirrors SwiftExampleApp
+    /// holding one `shieldedResolver` for the app lifetime. Reads the mnemonic
+    /// from the keychain silently (no biometric prompt).
+    private let shieldedResolver = MnemonicResolver()
 
     // MARK: - Init
 
@@ -286,6 +295,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// Clear the UI counters/display without tearing down the sync loop.
     public func clearDisplay() {
         platformBalance = 0
+        shieldedBalance = 0
         activeAddressCount = 0
         derivedAddresses = []
         checkpointHeight = 0
@@ -359,6 +369,25 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             return
         }
 
+        // Bind the shielded sub-wallet so `shieldedDefaultAddress` resolves and
+        // the shielded sync loop (→ shielded balance) runs. Mirrors
+        // SwiftExampleApp.rebindWalletScopedServices. Best-effort: a failure
+        // here must NOT abort the platform-address start above, and must NOT
+        // touch `lastError` (that field drives the platform-sync status UI).
+        // If the bind fails, the to-shielded transfer still surfaces its own
+        // clear "not bound" error at transfer time.
+        do {
+            let dbPath = try SwiftDashSDKHost.shared.shieldedTreeDBPath(for: network)
+            try manager.configureShielded(dbPath: dbPath)
+            try manager.bindShielded(walletId: resolvedWallet.walletId, resolver: shieldedResolver)
+            if try !manager.isShieldedSyncRunning() {
+                try manager.startShieldedSync()
+            }
+            Self.logger.info("🛡️ SHIELD :: bound + sync started for \(network.rawValue, privacy: .public)")
+        } catch {
+            Self.logger.error("🛡️ SHIELD :: bind failed: \(String(describing: error), privacy: .public)")
+        }
+
         self.sdk = SwiftDashSDKHost.shared.sdk
         self.modelContainer = SwiftDashSDKHost.shared.modelContainer
         self.walletManager = manager
@@ -400,6 +429,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         syncEventCancellable = nil
         syncStateCancellable?.cancel()
         syncStateCancellable = nil
+        shieldedEventCancellable?.cancel()
+        shieldedEventCancellable = nil
 
         if let manager = walletManager {
             do {
@@ -409,6 +440,18 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                 Self.logger.info("🛰️ PLATFORM-ADDR :: stopped")
             } catch {
                 Self.logger.error("🛰️ PLATFORM-ADDR :: stopPlatformAddressSync threw: \(String(describing: error), privacy: .public)")
+            }
+            // Stop the shielded sync loop alongside BLAST so it doesn't outlive
+            // the manager (also covers network switch — performStart calls
+            // performStop first). Independent do/catch so a shielded-stop throw
+            // can't skip, and isn't skipped by, the BLAST stop above.
+            do {
+                if try manager.isShieldedSyncRunning() {
+                    try manager.stopShieldedSync()
+                }
+                Self.logger.info("🛡️ SHIELD :: stopped")
+            } catch {
+                Self.logger.error("🛡️ SHIELD :: stopShieldedSync threw: \(String(describing: error), privacy: .public)")
             }
         }
 
@@ -486,6 +529,21 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             .sink { [weak self] event in
                 guard let self, let event else { return }
                 self.handleSyncEvent(event, walletId: walletId)
+            }
+
+        // Seed once from whatever the manager already saw (the publisher only
+        // fires on new events), then mirror the shielded balance from each
+        // completed shielded sync pass — same source/filter as
+        // `InternalTransferViewModel`. Balance is in credits (1e11/DASH).
+        shieldedBalance = manager.lastShieldedSyncEvent?.result(for: walletId)?.balance ?? 0
+        shieldedEventCancellable = manager.$lastShieldedSyncEvent
+            .receive(on: RunLoop.main)
+            .sink { [weak self] event in
+                guard let self,
+                      let result = event?.result(for: walletId),
+                      result.success,
+                      !result.cooldownSkip else { return }
+                self.shieldedBalance = result.balance
             }
     }
 

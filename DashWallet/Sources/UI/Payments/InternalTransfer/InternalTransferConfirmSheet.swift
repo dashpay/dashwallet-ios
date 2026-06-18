@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftDashSDK
 
 /// Confirmation half-sheet shown when the user taps `Continue` on the
 /// Internal transfer screen. Body swaps based on the embedded
@@ -182,6 +183,46 @@ struct InternalTransferConfirmSheet: View {
             .foregroundColor(.secondaryText)
     }
 
+    // MARK: - Network fee estimate
+
+    /// Asset-lock processing base cost folded into a ShieldFromAssetLock
+    /// (Type 18) pool fee on top of `compute_minimum_shielded_fee`. Mirrors
+    /// the Rust `shield_from_asset_lock_pool_fee`:
+    /// `required_asset_lock_duff_balance_for_processing_start_for_address_funding`
+    /// (50_000 duffs) × 1000 credits/duff. Versioned constant; estimate-only.
+    private static let assetLockBaseCostCredits: UInt64 = 50_000_000
+
+    /// Platform credits per DASH (1e11).
+    private static let creditsPerDash: Decimal = 100_000_000_000
+
+    /// Flat shielded fee (credits) for the active route, computed offline by
+    /// the SDK against the latest protocol version (so it matches the carved
+    /// fee). `nil` if the SDK estimate is unavailable.
+    private var networkFeeCredits: UInt64? {
+        switch (direction, source) {
+        case (.toShielded, .core):
+            // ShieldFromAssetLock: base shielded fee + asset-lock base cost.
+            guard let base = try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
+            else { return nil }
+            return base + Self.assetLockBaseCostCredits
+        case (.toShielded, .platform):
+            // Shield (Type 15): base shielded fee. Real metered storage is
+            // extra and only knowable on-chain, so this is a lower bound.
+            return try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
+        case (.fromShielded, .core):
+            return try? PlatformWalletManager.estimateShieldedFee(kind: .withdrawal, numActions: 2)
+        case (.fromShielded, .platform):
+            return try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 2)
+        }
+    }
+
+    /// Network-fee estimate as fiat (e.g. "~ $0.08"), or "—" if unavailable.
+    private var networkFeeString: String {
+        guard let credits = networkFeeCredits else { return "—" }
+        let dash = Decimal(credits) / Self.creditsPerDash
+        return "~ " + CurrencyExchanger.shared.fiatAmountString(for: dash)
+    }
+
     // MARK: - Summary card
 
     private var summaryCard: some View {
@@ -196,7 +237,7 @@ struct InternalTransferConfirmSheet: View {
             divider
             summaryRow(
                 label: NSLocalizedString("Network fee", comment: ""),
-                value: "~ $X")
+                value: networkFeeString)
             divider
             summaryRow(
                 label: NSLocalizedString("Total", comment: ""),

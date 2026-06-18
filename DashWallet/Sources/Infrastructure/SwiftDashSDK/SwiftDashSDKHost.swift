@@ -230,19 +230,19 @@ final class SwiftDashSDKHost {
 
         let newSDK: SDK
         do {
-            // Pin Platform protocol version 11. Server side is currently
-            // v11; without pinning the client auto-detects and may pick
-            // an incompatible newer encoding (e.g. v12 protobuf shape for
-            // `GetDataContractsRequest.version`), which surfaces as
-            // `decoding error: could not decode data contracts query` on
-            // every contract-touching call (profile read/write,
-            // `syncDpnsNames`, `fetchContestVoteState`, etc.). The knob
-            // is now upstream-canonical via dashpay/platform PR #3751
-            // (the earlier #3734 fork-PR was superseded by this one,
-            // which adds the version as a `DashSDKConfig` field rather
-            // than parallel FFI functions). Drop the second arg when
-            // v12 is the agreed protocol.
-            newSDK = try SDK(network: network, platformVersion: 11)
+            // Use the SDK's default (latest) Platform protocol version.
+            // The server is now v12, which is also the floor for shielded
+            // transitions — `ShieldFromAssetLock` / `Shield` fees were
+            // introduced in v12. Pinning to v11 made the client compute a
+            // stale, too-low shielded pool fee, so the testnet rejected the
+            // asset lock as underfunded ("needs … credits to start
+            // processing"). The v11 pin originally avoided v12-protobuf
+            // decoding errors (e.g. `GetDataContractsRequest.version`)
+            // against a then-v11 server; that no longer applies now the
+            // server is v12. The version is still a `DashSDKConfig` field
+            // (dashpay/platform #3751) should a future downgrade require
+            // re-pinning.
+            newSDK = try SDK(network: network)
         } catch {
             Self.logger.error("🪺 HOST :: SDK init failed: \(String(describing: error), privacy: .public)")
             throw HostError.sdkInitFailed(error)
@@ -333,5 +333,30 @@ final class SwiftDashSDKHost {
         return try ModelContainer(
             for: DashModelContainer.schema,
             configurations: [configuration])
+    }
+
+    /// Filesystem path for the per-network shielded Orchard commitment-tree
+    /// SQLite file, handed to `PlatformWalletManager.configureShielded(dbPath:)`.
+    /// Mirrors `buildModelContainer`'s `documents/SwiftDashSDK/<subsystem>/<network>/`
+    /// convention in a sibling `Shielded/` directory; creates the directory if
+    /// needed. The manager is rebuilt per network (`buildRuntime`), so a
+    /// per-network path keeps `configureShielded` idempotent — it throws only
+    /// when re-pointed to a different path on the same manager.
+    func shieldedTreeDBPath(for network: Network) throws -> String {
+        let documents = try FileManager.default.url(
+            for: .documentDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true)
+        let dir = documents
+            .appendingPathComponent("SwiftDashSDK", isDirectory: true)
+            .appendingPathComponent("Shielded", isDirectory: true)
+            .appendingPathComponent(network.networkName, isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: dir,
+            withIntermediateDirectories: true)
+        return dir
+            .appendingPathComponent("commitment-tree.sqlite", isDirectory: false)
+            .path
     }
 }
