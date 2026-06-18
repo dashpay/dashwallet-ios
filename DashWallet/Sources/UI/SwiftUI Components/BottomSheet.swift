@@ -19,90 +19,126 @@ import SwiftUI
 
 struct BottomSheet<Content: View>: View {
     @Environment(\.presentationMode) private var presentationMode
-    @Environment(\.colorScheme) private var colorScheme
 
     var title: String = ""
     @Binding var showBackButton: Bool
     var onBackButtonPressed: (() -> Void)? = nil
+    /// `true` (default) — greedy: content fills the sheet (use with an explicit detent or a
+    /// `.large`/`.medium` detent). `false` — natural height: pair with `.selfSizingSheet()` so
+    /// the sheet snaps to its content.
+    var fillsHeight: Bool = true
     @ViewBuilder var content: () -> Content
 
     var body: some View {
-        VStack(spacing: 0) {
+        let sheet = VStack(spacing: 0) {
             grabber
+                .frame(maxWidth: .infinity, minHeight: 18, maxHeight: 18, alignment: .center)
+
             header
 
             contentSection
         }
         .background(Color.primaryBackground)
-        .edgesIgnoringSafeArea(.bottom)
+
+        if fillsHeight {
+            sheet.edgesIgnoringSafeArea(.bottom)
+        } else {
+            // Publish the natural content height for `.selfSizingSheet()`. The bottom safe area is
+            // intentionally NOT ignored here, so the measured height excludes the home-indicator
+            // inset — `.presentationDetents([.height])` adds that inset itself.
+            sheet.background(
+                GeometryReader { proxy in
+                    Color.clear.preference(
+                        key: BottomSheetHeightPreferenceKey.self,
+                        value: proxy.size.height
+                    )
+                }
+            )
+        }
     }
 
     private var grabber: some View {
         Rectangle()
-            .fill(Color(red: 0.83, green: 0.83, blue: 0.85))
+            .foregroundColor(.clear)
             .frame(width: 36, height: 5)
-            .cornerRadius(2.5)
-            .padding(.vertical, 6)
+            .background(Color.gray300Alpha50)
+            .cornerRadius(5)
     }
 
     private var header: some View {
-        HStack(alignment: .center) {
-            backButtonSection
-            Spacer()
-            titleSection
-            Spacer()
-            closeButtonSection
-        }
-        .padding(.horizontal, 20)
-        .fixedSize(horizontal: false, vertical: true)
-    }
-
-    @ViewBuilder
-    private var backButtonSection: some View {
-        if showBackButton {
-            Button {
-                onBackButtonPressed?()
-            } label: {
-                Image(colorScheme == .dark ? "controls-back-dark-mode" : "controls-back")
-                    .offset(x: -5, y: 5)
+        // Reuse the shared NavigationBar (absolutely-centered title, own 64pt height +
+        // horizontal padding). Title styling preserved; back/close use NavigationBarElement.
+        NavigationBar(
+            leading: {
+                if showBackButton {
+                    NavigationBarElement.back.button { onBackButtonPressed?() }
+                }
+            },
+            central: {
+                Text(title)
+                    .font(.calloutMedium)
+                    .foregroundColor(.primaryText)
+            },
+            trailing: {
+                NavigationBarElement.close.button { presentationMode.wrappedValue.dismiss() }
             }
-            .frame(maxWidth: 50, maxHeight: .infinity)
-        } else {
-            ZStack { }
-                .frame(maxWidth: 50)
-        }
-    }
-
-    private var titleSection: some View {
-        Text(title)
-            .font(.calloutMedium)
-            .foregroundColor(.primaryText)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 22)
-    }
-
-    private var closeButtonSection: some View {
-        Button {
-            presentationMode.wrappedValue.dismiss()
-        } label: {
-            Icon(name: .custom("toolbar-close", maxHeight: 14))
-//                .foregroundColor(.primaryText)
-//                .tint(Color(uiColor: UIColor(red: 0.14, green: 0.12, blue: 0.13, alpha: 1)))
-                .tint(.primaryText)
-        }
-        .frame(width: 34, height: 34, alignment: .center)
-        .overlay(
-            RoundedRectangle(cornerRadius: 34)
-                .stroke(Color.gray300Alpha30, lineWidth: 1.5)
         )
     }
 
+    @ViewBuilder
     private var contentSection: some View {
-        NavigationView {
+        if fillsHeight {
+            NavigationView {
+                content()
+                    .navigationBarHidden(true)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.primaryBackground)
+            }
+        } else {
+            // Natural height — no greedy NavigationView / maxHeight so the sheet can self-size.
             content()
-                .navigationBarHidden(true)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity)
                 .background(Color.primaryBackground)
         }
+    }
+}
+
+// MARK: - Auto-sizing
+
+/// Bubbles a `BottomSheet`'s measured natural height up to `.selfSizingSheet()`.
+struct BottomSheetHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+extension View {
+    /// Sizes a `BottomSheet` (built with `fillsHeight: false`) to its content's natural height —
+    /// no hardcoded `.height(...)` needed. On iOS < 16 it is a no-op.
+    @ViewBuilder
+    func selfSizingSheet(fallback: CGFloat = 0, maxHeightFraction: CGFloat = 0.95) -> some View {
+        if #available(iOS 16.0, *) {
+            modifier(SelfSizingSheetModifier(fallback: fallback, maxHeightFraction: maxHeightFraction))
+        } else {
+            self
+        }
+    }
+}
+
+@available(iOS 16.0, *)
+private struct SelfSizingSheetModifier: ViewModifier {
+    let fallback: CGFloat
+    let maxHeightFraction: CGFloat
+    @State private var measured: CGFloat = 0
+
+    func body(content: Content) -> some View {
+        let cap = UIScreen.main.bounds.height * maxHeightFraction
+        let resolved = min(measured > 0 ? measured : fallback, cap)
+        content
+            .onPreferenceChange(BottomSheetHeightPreferenceKey.self) { measured = $0 }
+            // Before the first measurement (and when nothing is provided) fall back to .medium so
+            // the sheet is never given an invalid 0-height detent.
+            .presentationDetents(resolved > 0 ? [.height(resolved)] : [.medium])
     }
 }
