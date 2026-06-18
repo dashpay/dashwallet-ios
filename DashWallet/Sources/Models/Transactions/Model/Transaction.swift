@@ -175,7 +175,30 @@ class Transaction: TransactionDataItem, Identifiable {
 
     var specialInfoAddresses: [String: Int]?
 
+    /// Locked amount (duffs) when this L1 transaction is the funding tx of a
+    /// "to Shielded" internal transfer — a Type-18 asset lock that tops up
+    /// the private shielded balance. Sourced from the SDK's
+    /// `PersistentAssetLock` store (funding type 5), NOT from DashSync:
+    /// neither DashSync nor the SDK net-change view models the lock, so both
+    /// report a self-directed move of 0. `nil` for every other transaction.
+    ///
+    /// Joined by the display-order txid (reversed `txHashData`) to match the
+    /// txid component of `PersistentAssetLock.outPointHex`. Drives both the
+    /// "Shielded transfer" label (`stateTitle`) and the on-screen amount
+    /// (`_dashAmount`).
+    private lazy var shieldedTransferAmountDuffs: UInt64? = {
+        let displayTxid = txHashData.reversed().map { String(format: "%02x", $0) }.joined()
+        return ShieldedTxLookup.shared.amountDuffs(forTxidHex: displayTxid)
+    }()
+
+    /// True when this is the funding tx of a "to Shielded" transfer.
+    var isShieldedTransfer: Bool { shieldedTransferAmountDuffs != nil }
+
     private lazy var _dashAmount: UInt64 = {
+        // A "to Shielded" transfer's L1 funding tx is a Type-18 asset lock;
+        // surface the real locked amount the SDK recorded instead of the 0
+        // the generic per-source logic below derives for a self-directed move.
+        if let shielded = shieldedTransferAmountDuffs { return shielded }
         switch source {
         case .ds(let dsTx): return dsTx.dashAmount
         case .sdk(let p):
@@ -339,6 +362,13 @@ class Transaction: TransactionDataItem, Identifiable {
     }
 
     var stateTitle: String {
+        // A "to Shielded" transfer surfaces as a Type-18 asset lock that the
+        // generic logic would label "Internal Transfer"; relabel it from the
+        // SDK-sourced shielded lookup (see `shieldedTransferAmountDuffs`).
+        if isShieldedTransfer {
+            return NSLocalizedString("Shielded transfer",
+                                     comment: "Transfer of own funds into the private shielded balance")
+        }
         switch transactionType {
         case .classic:
             switch direction {

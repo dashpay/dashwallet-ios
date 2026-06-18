@@ -536,6 +536,12 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         // completed shielded sync pass — same source/filter as
         // `InternalTransferViewModel`. Balance is in credits (1e11/DASH).
         shieldedBalance = manager.lastShieldedSyncEvent?.result(for: walletId)?.balance ?? 0
+        // Seed the shielded funding-tx → locked-amount map (for the home tx
+        // list's "Shielded transfer" rows) from whatever is already
+        // persisted, then refresh it after each completed shielded sync pass
+        // below — a new "to Shielded" transfer's asset lock lands around the
+        // same time its note shows up in the balance.
+        ShieldedTxLookup.shared.refresh()
         shieldedEventCancellable = manager.$lastShieldedSyncEvent
             .receive(on: RunLoop.main)
             .sink { [weak self] event in
@@ -544,6 +550,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                       result.success,
                       !result.cooldownSkip else { return }
                 self.shieldedBalance = result.balance
+                ShieldedTxLookup.shared.refresh()
             }
     }
 
@@ -741,5 +748,98 @@ extension PlatformAddressSyncCoordinator {
                     reason)
             }
         }
+    }
+}
+
+// MARK: - Shielded funding-tx lookup
+
+/// Maps an L1 funding-transaction id to the shielded amount it locked,
+/// sourced entirely from the SDK's `PersistentAssetLock` store — never from
+/// DashSync. Lets the (migration-era, still partly DashSync-driven)
+/// transaction list relabel a "to Shielded" funding tx as a *Shielded
+/// transfer* and show the real locked amount instead of the zero both
+/// DashSync and the SDK's net-change view compute for a self-directed
+/// Type-18 asset lock they can't model.
+///
+/// `PersistentAssetLock` rows are deliberately retained even after the lock
+/// is consumed, precisely so a funding tx can be mapped back to its locked
+/// amount (see `ManagedAssetLockManager.AssetLockStatus.consumed`). The
+/// shielded variant is funding type 5
+/// (`FundingType.assetLockShieldedAddressTopUp`).
+///
+/// Snapshot design: `refresh()` (main actor, SwiftData `mainContext`)
+/// rebuilds an immutable `[txid: duffs]` map; `amountDuffs(forTxidHex:)`
+/// reads it under a lock so the (possibly background) transaction-list
+/// builder in `Transaction` can call in from any thread without touching
+/// SwiftData. Refreshed by `PlatformAddressSyncCoordinator` on wallet start
+/// and on each completed shielded sync pass.
+final class ShieldedTxLookup {
+    static let shared = ShieldedTxLookup()
+
+    /// Funding-type discriminant for `AssetLockShieldedAddressTopUp`
+    /// (`ManagedAssetLockManager.FundingType.assetLockShieldedAddressTopUp`).
+    private static let shieldedFundingType = 5
+
+    private static let logger = Logger(
+        subsystem: "org.dashfoundation.dash",
+        category: "swift-sdk-migration.shielded-tx-lookup")
+
+    private let lock = NSLock()
+    /// txid (display-order hex, lowercased) → locked amount in duffs.
+    private var amountByTxid: [String: UInt64] = [:]
+
+    private init() {}
+
+    /// Locked shielded amount (duffs) for an L1 funding txid, or `nil` if the
+    /// txid is not a tracked shielded asset lock. `txidHex` must be
+    /// display-order hex (reversed wire bytes), matching the txid component
+    /// of `PersistentAssetLock.outPointHex`. Thread-safe; touches no SwiftData.
+    func amountDuffs(forTxidHex txidHex: String) -> UInt64? {
+        let key = txidHex.lowercased()
+        lock.lock()
+        defer { lock.unlock() }
+        return amountByTxid[key]
+    }
+
+    /// Rebuild the snapshot from the active container's shielded asset-lock
+    /// rows. Main actor: reads the SwiftData `mainContext`, matching the rest
+    /// of the wallet's SDK access. A nil container (no wallet running) clears
+    /// the snapshot; a transient fetch error leaves the previous one in place.
+    @MainActor
+    func refresh() {
+        guard let container = SwiftDashSDKHost.shared.modelContainer else {
+            store([:])
+            return
+        }
+        do {
+            // Asset locks are a tiny table; fetch all and filter in Swift
+            // rather than fighting `#Predicate` local-capture rules.
+            let rows = try container.mainContext.fetch(FetchDescriptor<PersistentAssetLock>())
+            var map: [String: UInt64] = [:]
+            for row in rows where row.fundingTypeRaw == Self.shieldedFundingType && row.amountDuffs > 0 {
+                // outPointHex == "<txid display hex>:<vout>"; key on the txid.
+                guard let colon = row.outPointHex.firstIndex(of: ":") else { continue }
+                let txid = row.outPointHex[..<colon].lowercased()
+                // One credit output per funding tx in practice; sum to be safe.
+                map[txid, default: 0] += UInt64(row.amountDuffs)
+            }
+            store(map)
+            Self.logger.info("🛡️ SHIELD-TX :: snapshot \(map.count, privacy: .public) shielded funding tx(s)")
+            // Diagnostic: if asset locks exist but none matched the shielded
+            // funding type, surface the types actually present so a single
+            // test run reveals whether the discriminant assumption is wrong.
+            if map.isEmpty && !rows.isEmpty {
+                let typesSeen = Set(rows.map { $0.fundingTypeRaw }).sorted()
+                Self.logger.info("🛡️ SHIELD-TX :: \(rows.count, privacy: .public) asset lock(s) present, none funding-type \(Self.shieldedFundingType, privacy: .public); types=\(typesSeen, privacy: .public)")
+            }
+        } catch {
+            Self.logger.error("🛡️ SHIELD-TX :: refresh failed: \(String(describing: error), privacy: .public)")
+        }
+    }
+
+    private func store(_ map: [String: UInt64]) {
+        lock.lock()
+        amountByTxid = map
+        lock.unlock()
     }
 }
