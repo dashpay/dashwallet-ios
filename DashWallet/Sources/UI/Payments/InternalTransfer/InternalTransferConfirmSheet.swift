@@ -15,11 +15,12 @@ import SwiftDashSDK
 ///   - `.success`        → green check + amount + Done.
 ///   - `.failed(msg)`    → summary card with red error + Try again / Close.
 ///
-/// Confirm routes to one of three SDK paths via the coordinator, keyed by
+/// Confirm routes to one of four SDK paths via the coordinator, keyed by
 /// `direction` then `source`:
-///   - `.toShielded` + `.core`     → `performAssetLock(amountDuffs:)`
-///   - `.toShielded` + `.platform` → `performShield(amountCredits:)`
-///   - `.fromShielded`             → `performWithdraw(amountCredits:)`
+///   - `.toShielded` + `.core`       → `performAssetLock(amountDuffs:)`
+///   - `.toShielded` + `.platform`   → `performShield(amountCredits:)`
+///   - `.fromShielded` + `.core`     → `performWithdraw(amountCredits:)`
+///   - `.fromShielded` + `.platform` → `performUnshield(amountCredits:)`
 struct InternalTransferConfirmSheet: View {
 
     let source: InternalTransferSource
@@ -47,6 +48,8 @@ struct InternalTransferConfirmSheet: View {
             switch coordinator.phase {
             case .success:
                 successBody
+            case .submittedUnconfirmed:
+                ShieldedSubmittedUnconfirmedView(onDone: onCompleted)
             default:
                 detailsBody
             }
@@ -125,8 +128,8 @@ struct InternalTransferConfirmSheet: View {
                     .padding(.horizontal, 24)
                     .padding(.bottom, 24)
 
-            case .success:
-                // Handled by `successBody`.
+            case .success, .submittedUnconfirmed:
+                // Handled by `successBody` / `ShieldedSubmittedUnconfirmedView`.
                 EmptyView()
             }
         }
@@ -222,6 +225,7 @@ struct InternalTransferConfirmSheet: View {
         let dash = Decimal(credits) / Self.creditsPerDash
         return "~ " + CurrencyExchanger.shared.fiatAmountString(for: dash)
     }
+
 
     // MARK: - Summary card
 
@@ -474,6 +478,8 @@ struct ShieldedRecoverySheet: View {
             switch coordinator.phase {
             case .success:
                 successBody
+            case .submittedUnconfirmed:
+                ShieldedSubmittedUnconfirmedView(onDone: onDismiss)
             case .signing, .locking, .proving, .broadcasting:
                 inFlightBody
             default:
@@ -651,12 +657,15 @@ struct ShieldedRecoverySheet: View {
             ShieldedTxLookup.shared.refresh()
             let displayTxid = op.txidWire.reversed().map { String(format: "%02x", $0) }.joined()
             let statusRaw = ShieldedTxLookup.shared.info(forTxidHex: displayTxid)?.statusRaw
-            guard let statusRaw, (1...3).contains(statusRaw) else {
-                // Consumed (4) or gone → already complete; show success, no resume.
+            if statusRaw == 4 {
+                // Already consumed by a background sync since the row snapshot was
+                // captured → it's done; show success without a doomed ~30s resume.
                 alreadyComplete = true
                 return
             }
-
+            // statusRaw 1...3 (still pending), or nil/0 (status unavailable, e.g. a
+            // failed refresh): attempt the resume. A genuinely gone/consumed lock
+            // surfaces a real SDK error rather than a false "complete".
             await coordinator.resumeAssetLock(outPointTxidWire: op.txidWire, outPointVout: op.vout)
             // On success the shield ST consumed the lock; refresh the snapshot so
             // the history row flips pending → completed even before the next
@@ -720,7 +729,7 @@ struct ShieldedTransferStepList: View {
         case .proving: return 2
         case .broadcasting: return 3
         case .success: return 4
-        case .idle, .failed: return nil
+        case .idle, .failed, .submittedUnconfirmed: return nil
         }
     }
 
@@ -764,6 +773,51 @@ struct ShieldedTransferStepList: View {
                     .font(.system(size: 11, weight: .bold))
                     .foregroundColor(.white)
             }
+        }
+    }
+}
+
+/// Terminal "submitted but unconfirmed" state shared by the shielded transfer
+/// confirm sheet and the recovery sheet. Shown when the SDK reports
+/// `shieldedSpendUnconfirmed` — the broadcast was accepted by relay but its
+/// result isn't yet confirmed, so the user must NOT resend; there is
+/// deliberately no "Try again". The transfer resolves via the next shielded
+/// sync.
+struct ShieldedSubmittedUnconfirmedView: View {
+    var onDone: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "paperplane.circle.fill")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 56, height: 56)
+                .foregroundColor(.dashBlue)
+                .padding(.top, 24)
+
+            Text(NSLocalizedString("Submitted — confirming", comment: "InternalTransfer"))
+                .font(.title3)
+                .fontWeight(.semibold)
+                .foregroundColor(.primaryText)
+
+            Text(NSLocalizedString(
+                "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it.",
+                comment: "InternalTransfer"))
+                .font(.callout)
+                .foregroundColor(.secondaryText)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 24)
+
+            Spacer(minLength: 12)
+
+            DashButton(
+                text: NSLocalizedString("Done", comment: ""),
+                style: .filled,
+                stretch: true,
+                action: onDone)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
         }
     }
 }

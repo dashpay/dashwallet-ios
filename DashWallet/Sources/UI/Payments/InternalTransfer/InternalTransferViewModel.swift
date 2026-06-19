@@ -145,14 +145,51 @@ final class InternalTransferViewModel: ObservableObject {
         case .toShielded:
             switch source {
             case .core:
+                // Asset-lock route: the Platform pool fee is carved from the
+                // locked value (not charged on top of the Core balance) and the
+                // Rust side rejects an undersized lock, so no extra fee headroom
+                // is reserved here.
                 return dashDuffsUnsigned <= coreBalanceDuffs
             case .platform:
-                return creditsPreview <= platformCredits
+                // Shield (Type 15): the SDK debits amount + fee from the
+                // transparent credit balance, so it must cover both.
+                return platformCredits >= feeReserveCredits
+                    && creditsPreview <= platformCredits - feeReserveCredits
             }
         case .fromShielded:
-            // Reverse spends shielded credits; gate on the shielded balance.
-            return creditsPreview <= shieldedBalance
+            // Unshield/withdraw: the SDK debits amount + fee from the shielded
+            // pool (the recipient receives the full amount), so the balance must
+            // cover amount + fee. Compared via subtraction to keep the UInt64
+            // add overflow-safe.
+            return shieldedBalance >= feeReserveCredits
+                && creditsPreview <= shieldedBalance - feeReserveCredits
         }
+    }
+
+    /// Flat shielded-fee estimate (credits) the SDK charges ON TOP of the
+    /// transfer amount for the active route, used by `canContinue` and Max to
+    /// reserve fee headroom in the source balance. Mirrors the confirm sheet's
+    /// `networkFeeCredits`. The `.toShielded` + `.core` asset-lock route returns
+    /// 0 — its pool fee comes out of the locked value, not the source balance.
+    /// Returns 0 when the SDK estimate is unavailable (fail-open).
+    private var feeReserveCredits: UInt64 {
+        switch (direction, source) {
+        case (.toShielded, .platform):
+            return (try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)) ?? 0
+        case (.fromShielded, .core):
+            return (try? PlatformWalletManager.estimateShieldedFee(kind: .withdrawal, numActions: 2)) ?? 0
+        case (.fromShielded, .platform):
+            return (try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 2)) ?? 0
+        case (.toShielded, .core):
+            return 0
+        }
+    }
+
+    /// A credit balance minus the route's fee reserve, floored at 0 — so a Max
+    /// fill leaves room for the fee the SDK charges on top of the amount.
+    private func creditsMinusFeeReserve(_ balanceCredits: UInt64) -> UInt64 {
+        let fee = feeReserveCredits
+        return balanceCredits > fee ? balanceCredits - fee : 0
     }
 
     /// `parsedDashAmount` expressed as Int64 duffs, for `DashAmount` views.
@@ -236,12 +273,14 @@ final class InternalTransferViewModel: ObservableObject {
             case .core:
                 sourceDuffs = coreBalanceDuffs
             case .platform:
-                // Credits → duffs: integer divide by 1000.
-                sourceDuffs = platformCredits / 1000
+                // Reserve the fee the SDK charges on top of the amount so Max
+                // stays sendable (credits → duffs: integer divide by 1000).
+                sourceDuffs = creditsMinusFeeReserve(platformCredits) / 1000
             }
         case .fromShielded:
-            // Reverse: the upper bound is the shielded balance (credits → duffs).
-            sourceDuffs = shieldedBalance / 1000
+            // Reverse: upper bound is the shielded balance minus the fee reserve
+            // (debited on top of the amount), so Max stays sendable.
+            sourceDuffs = creditsMinusFeeReserve(shieldedBalance) / 1000
         }
 
         switch unit {

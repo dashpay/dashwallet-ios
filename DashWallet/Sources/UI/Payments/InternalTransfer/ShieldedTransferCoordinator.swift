@@ -44,6 +44,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case proving
         case broadcasting
         case success
+        /// Broadcast was accepted by relay but its result couldn't be
+        /// confirmed (SDK `shieldedSpendUnconfirmed`). Terminal + NON-retryable:
+        /// re-submitting risks a double-spend / wasted fee. The effect lands via
+        /// the next shielded sync.
+        case submittedUnconfirmed
         case failed(String)
     }
 
@@ -159,7 +164,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 recipients: [recipient])
         } catch {
             stopAssetLockPolling()
-            handleFailure(CoordinatorError.transferFailed(error))
+            // Last-ditch outpoint capture: if the FFI threw before polling
+            // observed the persisted lock row, fetch it now so "Try again"
+            // RESUMES the committed lock instead of building a second one.
+            captureLatestAssetLockOutPoint(
+                walletId: env.walletId,
+                modelContainer: env.modelContainer,
+                since: startTime)
+            handleSpendError(error, manager: env.manager)
             return
         }
 
@@ -216,7 +228,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 outPointVout: outPointVout,
                 recipients: [recipient])
         } catch {
-            handleFailure(CoordinatorError.transferFailed(error))
+            handleSpendError(error, manager: env.manager)
             return
         }
 
@@ -248,6 +260,34 @@ final class ShieldedTransferCoordinator: ObservableObject {
             idx = next
         }
         return (Data(display.reversed()), vout)
+    }
+
+    /// Best-effort capture of the in-flight asset lock's outpoint when polling
+    /// didn't get it — i.e. the FFI failed before a 0.5s poll tick observed the
+    /// persisted row. Fetches the newest matching shielded asset lock at
+    /// Broadcast+ (statusRaw ≥ 1) for this attempt and records its outpoint so a
+    /// retry resumes that lock rather than building a second one. No-op if the
+    /// outpoint is already captured or none is found yet.
+    private func captureLatestAssetLockOutPoint(
+        walletId: Data,
+        modelContainer: ModelContainer,
+        since startTime: Date
+    ) {
+        guard lastAssetLockOutPoint == nil else { return }
+        let shieldedFundingType = Self.shieldedAssetLockFundingType
+        var descriptor = FetchDescriptor<PersistentAssetLock>(
+            predicate: #Predicate { row in
+                row.walletId == walletId
+                    && row.fundingTypeRaw == shieldedFundingType
+                    && row.createdAt >= startTime
+                    && row.statusRaw >= 1
+            },
+            sortBy: [SortDescriptor(\.updatedAt, order: .reverse)])
+        descriptor.fetchLimit = 1
+        if let row = try? modelContainer.mainContext.fetch(descriptor).first,
+           let outPoint = Self.parseOutPoint(row.outPointHex) {
+            lastAssetLockOutPoint = outPoint
+        }
     }
 
     /// Route 2: DIP-17 transparent Platform Payment credits → Type 15 shield.
@@ -287,7 +327,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 amount: amountCredits,
                 addressSigner: signer)
         } catch {
-            handleFailure(CoordinatorError.transferFailed(error))
+            handleSpendError(error, manager: env.manager)
             return
         }
 
@@ -342,7 +382,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 toCoreAddress: coreAddress,
                 amount: amountCredits)
         } catch {
-            handleFailure(CoordinatorError.transferFailed(error))
+            handleSpendError(error, manager: env.manager)
             return
         }
 
@@ -395,7 +435,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 toPlatformAddress: platformAddress,
                 amount: amountCredits)
         } catch {
-            handleFailure(CoordinatorError.transferFailed(error))
+            handleSpendError(error, manager: env.manager)
             return
         }
 
@@ -504,6 +544,22 @@ final class ShieldedTransferCoordinator: ObservableObject {
             message = error.localizedDescription
         }
         phase = .failed(message)
+    }
+
+    /// Map a shielded-spend FFI error to the right terminal phase. The SDK
+    /// throws `PlatformWalletError.shieldedSpendUnconfirmed` when the broadcast
+    /// was accepted by relay but its result couldn't be confirmed — the host
+    /// must NOT re-submit (a retry risks a double-spend / wasted fee). Surface
+    /// that as the distinct, non-retryable `.submittedUnconfirmed` and kick a
+    /// shielded sync so the effect lands; everything else is a normal failure.
+    private func handleSpendError(_ error: Error, manager: PlatformWalletManager) {
+        if case PlatformWalletError.shieldedSpendUnconfirmed = error {
+            Self.logger.info("🛡️ SHIELD-TX :: broadcast unconfirmed — awaiting sync, retry suppressed")
+            phase = .submittedUnconfirmed
+            scheduleShieldedResync(manager: manager)
+        } else {
+            handleFailure(CoordinatorError.transferFailed(error))
+        }
     }
 
     /// Fire-and-forget shielded readback refresh after a successful transfer.

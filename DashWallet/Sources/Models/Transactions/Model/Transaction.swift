@@ -222,10 +222,17 @@ class Transaction: TransactionDataItem, Identifiable {
     /// txid component of `PersistentAssetLock.outPointHex`. Drives both the
     /// "Shielded transfer" label (`stateTitle`) and the on-screen amount
     /// (`_dashAmount`).
-    private lazy var shieldedLockInfo: ShieldedTxLookup.ShieldedLockInfo? = {
-        let displayTxid = txHashData.reversed().map { String(format: "%02x", $0) }.joined()
-        return ShieldedTxLookup.shared.info(forTxidHex: displayTxid)
-    }()
+    /// Display-order txid (reversed wire bytes) — the `ShieldedTxLookup` key.
+    /// Stable for this tx, so cache it; the lookup itself is read live.
+    private lazy var shieldedDisplayTxid: String =
+        txHashData.reversed().map { String(format: "%02x", $0) }.joined()
+
+    /// Live shielded-funding info for this tx. Computed (not cached) so a row
+    /// reflects pending → consumed transitions as soon as `ShieldedTxLookup`
+    /// refreshes, without waiting for the `Transaction` instance to be rebuilt.
+    private var shieldedLockInfo: ShieldedTxLookup.ShieldedLockInfo? {
+        ShieldedTxLookup.shared.info(forTxidHex: shieldedDisplayTxid)
+    }
 
     private var shieldedTransferAmountDuffs: UInt64? { shieldedLockInfo?.amountDuffs }
 
@@ -279,7 +286,11 @@ class Transaction: TransactionDataItem, Identifiable {
         }
     }()
 
-    var dashAmount: UInt64 { _dashAmount }
+    /// Prefer the live shielded amount (computed from `ShieldedTxLookup`) over
+    /// the lazily-cached generic `_dashAmount`, so a row that became a shielded
+    /// transfer after its first render still shows the locked amount — matching
+    /// the now-live `stateTitle` / `isPendingShieldedTransfer`.
+    var dashAmount: UInt64 { shieldedTransferAmountDuffs ?? _dashAmount }
     var signedDashAmount: Int64 {
         if dashAmount == UInt64.max {
             return Int64.max
@@ -289,7 +300,12 @@ class Transaction: TransactionDataItem, Identifiable {
     }
 
     var fiatAmount: String {
-        storedFiatAmount
+        // The shielded amount is read live (see `dashAmount`), so compute its
+        // fiat live too; non-shielded rows keep the lazily-cached value.
+        if shieldedTransferAmountDuffs != nil {
+            return userInfo?.fiatAmountString(from: dashAmount) ?? NSLocalizedString("Not available", comment: "")
+        }
+        return storedFiatAmount
     }
 
     var iconName: String {

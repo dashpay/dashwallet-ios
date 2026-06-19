@@ -845,7 +845,9 @@ final class ShieldedTxLookup {
                 // pending (1…3) one.
                 guard let colon = row.outPointHex.firstIndex(of: ":") else { continue }
                 let txid = row.outPointHex[..<colon].lowercased()
-                let vout = UInt32(row.outPointHex[row.outPointHex.index(after: colon)...]) ?? 0
+                // Skip rows whose vout doesn't parse rather than inventing vout 0 —
+                // a wrong vout would feed a bad outpoint into a recovery resume.
+                guard let vout = UInt32(row.outPointHex[row.outPointHex.index(after: colon)...]) else { continue }
                 let info = ShieldedLockInfo(
                     amountDuffs: UInt64(row.amountDuffs),
                     statusRaw: row.statusRaw,
